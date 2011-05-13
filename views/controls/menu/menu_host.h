@@ -10,6 +10,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/menu/native_menu_host_delegate.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -28,7 +29,8 @@ class Widget;
 // OS destroys the widget out from under us, in which case |MenuHostDestroyed|
 // is invoked back on the SubmenuView and the SubmenuView then drops references
 // to the MenuHost.
-class MenuHost : public internal::NativeMenuHostDelegate {
+class MenuHost : public Widget,
+                 public internal::NativeMenuHostDelegate {
  public:
   explicit MenuHost(SubmenuView* submenu);
   virtual ~MenuHost();
@@ -65,11 +67,14 @@ class MenuHost : public internal::NativeMenuHostDelegate {
   NativeWidget* GetNativeWidget();
 
  private:
+  // Overridden from Widget:
+  virtual RootView* CreateRootView() OVERRIDE;
+  virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
+
   // Overridden from NativeMenuHostDelegate:
   virtual void OnNativeMenuHostDestroy() OVERRIDE;
   virtual void OnNativeMenuHostCancelCapture() OVERRIDE;
-  virtual RootView* CreateRootView() OVERRIDE;
-  virtual bool ShouldReleaseCaptureOnMouseRelease() const OVERRIDE;
+  virtual internal::NativeWidgetDelegate* AsNativeWidgetDelegate() OVERRIDE;
 
   NativeMenuHost* native_menu_host_;
 

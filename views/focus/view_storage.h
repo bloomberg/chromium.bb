@@ -39,7 +39,7 @@ class ViewStorage {
   void RemoveView(int storage_id);
 
   // Notifies the ViewStorage that a view was removed from its parent somewhere.
-  void ViewRemoved(View* parent, View* removed);
+  void ViewRemoved(View* removed);
 
 #ifdef UNIT_TEST
   size_t view_count() const { return view_to_ids_.size(); }

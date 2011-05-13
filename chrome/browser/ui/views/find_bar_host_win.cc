@@ -20,7 +20,8 @@ void FindBarHost::AudibleAlert() {
 void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   RECT frame_rect = {0}, webcontents_rect = {0};
   ::GetWindowRect(
-      static_cast<views::WidgetWin*>(host())->GetParent(), &frame_rect);
+      static_cast<views::WidgetWin*>(host()->native_widget())->GetParent(),
+      &frame_rect);
   ::GetWindowRect(
       find_bar_controller_->
           tab_contents()->tab_contents()->view()->GetNativeView(),

@@ -41,10 +41,9 @@ class WindowDelegate;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class WindowWin : public WidgetWin,
-                  public NativeWindow,
-                  public Window {
+                  public NativeWindow {
  public:
-  WindowWin();
+  explicit WindowWin(internal::NativeWindowDelegate* delegate);
   virtual ~WindowWin();
 
   // Show the window with the specified show command.
@@ -66,6 +65,10 @@ class WindowWin : public WidgetWin,
 
   // Returns the system set window title font.
   static gfx::Font GetWindowTitleFont();
+
+  // Overridden from NativeWindow:
+  virtual Window* GetWindow() OVERRIDE;
+  virtual const Window* GetWindow() const OVERRIDE;
 
  protected:
   friend Window;
@@ -123,8 +126,6 @@ class WindowWin : public WidgetWin,
   virtual void OnSize(UINT size_param, const CSize& new_size) OVERRIDE;
   virtual void OnSysCommand(UINT notification_code, CPoint click) OVERRIDE;
   virtual void OnWindowPosChanging(WINDOWPOS* window_pos) OVERRIDE;
-  virtual Window* GetWindow() OVERRIDE { return this; }
-  virtual const Window* GetWindow() const OVERRIDE { return this; }
   virtual void Close() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
 
@@ -159,7 +160,6 @@ class WindowWin : public WidgetWin,
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
-  virtual bool IsAppWindow() const OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;

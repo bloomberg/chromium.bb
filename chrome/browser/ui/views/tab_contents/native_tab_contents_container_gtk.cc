@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -37,6 +38,8 @@ void NativeTabContentsContainerGtk::DetachContents(TabContents* contents) {
 
   // Now detach the TabContents.
   Detach();
+
+  static_cast<TabContentsViewViews*>(contents->view())->Unparent();
 }
 
 void NativeTabContentsContainerGtk::SetFastResize(bool fast_resize) {

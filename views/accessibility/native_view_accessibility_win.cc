@@ -259,7 +259,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
   } else {
     // Negative values are used for events fired using the view's WidgetWin
     views::WidgetWin* widget =
-        static_cast<views::WidgetWin*>(view_->GetWidget());
+        static_cast<views::WidgetWin*>(view_->GetWidget()->native_widget());
     child_view = widget->GetAccessibilityViewEventAt(child_id);
   }
 

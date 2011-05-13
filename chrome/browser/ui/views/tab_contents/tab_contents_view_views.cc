@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 
-#include <windows.h>
-
 #include <vector>
 
 #include "base/time.h"
@@ -26,6 +24,10 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
@@ -38,10 +40,10 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 
 TabContentsViewViews::TabContentsViewViews(TabContents* tab_contents)
     : TabContentsView(tab_contents),
-      ALLOW_THIS_IN_INITIALIZER_LIST(native_tab_contents_view_(
-          NativeTabContentsView::CreateNativeTabContentsView(this))),
+      native_tab_contents_view_(NULL),
+      sad_tab_(NULL),
       close_tab_after_drag_ends_(false),
-      sad_tab_(NULL) {
+      focus_manager_(NULL) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
@@ -57,11 +59,16 @@ TabContentsViewViews::~TabContentsViewViews() {
 }
 
 void TabContentsViewViews::Unparent() {
-  CHECK(native_tab_contents_view_.get());
+  // Remember who our FocusManager is, we won't be able to access it once
+  // un-parented.
+  focus_manager_ = GetFocusManager();
+  CHECK(native_tab_contents_view_);
   native_tab_contents_view_->Unparent();
 }
 
 void TabContentsViewViews::CreateView(const gfx::Size& initial_size) {
+  native_tab_contents_view_ =
+      NativeTabContentsView::CreateNativeTabContentsView(this);
   native_tab_contents_view_->InitNativeTabContentsView();
 }
 
@@ -79,7 +86,7 @@ RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
 
   // If we were showing sad tab, remove it now.
   if (sad_tab_) {
-    GetWidget()->SetContentsView(new views::View());
+    SetContentsView(new views::View());
     sad_tab_ = NULL;
   }
 
@@ -88,7 +95,7 @@ RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
 }
 
 gfx::NativeView TabContentsViewViews::GetNativeView() const {
-  return GetWidget()->GetNativeView();
+  return Widget::GetNativeView();
 }
 
 gfx::NativeView TabContentsViewViews::GetContentNativeView() const {
@@ -97,11 +104,11 @@ gfx::NativeView TabContentsViewViews::GetContentNativeView() const {
 }
 
 gfx::NativeWindow TabContentsViewViews::GetTopLevelNativeWindow() const {
-  return native_tab_contents_view_->GetTopLevelNativeWindow();
+  return GetTopLevelWidget()->GetNativeWindow();
 }
 
 void TabContentsViewViews::GetContainerBounds(gfx::Rect* out) const {
-  *out = GetWidget()->GetClientAreaScreenBounds();
+  *out = GetClientAreaScreenBounds();
 }
 
 void TabContentsViewViews::StartDragging(const WebDropData& drop_data,
@@ -119,18 +126,18 @@ void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
                                         int /* error_code */) {
   // Force an invalidation to render sad tab.
   // Note that it's possible to get this message after the window was destroyed.
-  if (::IsWindow(GetNativeView())) {
+  if (GetNativeView()) {
     SadTabView::Kind kind =
         status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
         SadTabView::KILLED : SadTabView::CRASHED;
     sad_tab_ = new SadTabView(tab_contents(), kind);
-    GetWidget()->SetContentsView(sad_tab_);
+    SetContentsView(sad_tab_);
     sad_tab_->SchedulePaint();
   }
 }
 
 void TabContentsViewViews::SizeContents(const gfx::Size& size) {
-  GetWidget()->SetSize(size);
+  SetSize(size);
 }
 
 void TabContentsViewViews::Focus() {
@@ -152,8 +159,8 @@ void TabContentsViewViews::Focus() {
   }
 
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
-  GetWidget()->GetFocusManager()->FocusNativeView(rwhv ? rwhv->GetNativeView()
-                                                       : GetNativeView());
+  GetFocusManager()->FocusNativeView(rwhv ? rwhv->GetNativeView()
+                                          : GetNativeView());
 }
 
 void TabContentsViewViews::SetInitialFocus() {
@@ -223,7 +230,7 @@ void TabContentsViewViews::CancelDragAndCloseTab() {
 }
 
 void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
-  *out = GetWidget()->GetWindowScreenBounds();
+  *out = GetWindowScreenBounds();
 }
 
 void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {
@@ -247,14 +254,6 @@ void TabContentsViewViews::TakeFocus(bool reverse) {
   }
 }
 
-views::Widget* TabContentsViewViews::GetWidget() {
-  return native_tab_contents_view_->AsNativeWidget()->GetWidget();
-}
-
-const views::Widget* TabContentsViewViews::GetWidget() const {
-  return native_tab_contents_view_->AsNativeWidget()->GetWidget();
-}
-
 void TabContentsViewViews::CloseTab() {
   tab_contents()->Close(tab_contents()->render_view_host());
 }
@@ -267,14 +266,14 @@ void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
   context_menu_.reset(new RenderViewContextMenuViews(tab_contents(), params));
   context_menu_->Init();
 
-  POINT screen_pt = { params.x, params.y };
-  MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_pt, 1);
+  gfx::Point screen_point(params.x, params.y);
+  views::View::ConvertPointToScreen(GetRootView(), &screen_point);
 
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
-  context_menu_->RunMenuAt(screen_pt.x, screen_pt.y);
+  context_menu_->RunMenuAt(screen_point.x(), screen_point.y());
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
@@ -315,11 +314,9 @@ void TabContentsViewViews::OnNativeTabContentsViewSized(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void TabContentsViewViews::OnNativeTabContentsViewWheelZoom(int distance) {
-  if (tab_contents()->delegate()) {
-    bool zoom_in = distance > 0;
+void TabContentsViewViews::OnNativeTabContentsViewWheelZoom(bool zoom_in) {
+  if (tab_contents()->delegate())
     tab_contents()->delegate()->ContentsZoomChange(zoom_in);
-  }
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewMouseDown() {
@@ -328,12 +325,12 @@ void TabContentsViewViews::OnNativeTabContentsViewMouseDown() {
     tab_contents()->delegate()->ActivateContents(tab_contents());
 }
 
-void TabContentsViewViews::OnNativeTabContentsViewMouseMove() {
+void TabContentsViewViews::OnNativeTabContentsViewMouseMove(bool motion) {
   // Let our delegate know that the mouse moved (useful for resetting status
   // bubble state).
   if (tab_contents()->delegate()) {
     tab_contents()->delegate()->ContentsMouseEvent(
-        tab_contents(), views::Screen::GetCursorScreenPoint(), true);
+        tab_contents(), views::Screen::GetCursorScreenPoint(), motion);
   }
 }
 
@@ -344,3 +341,28 @@ void TabContentsViewViews::OnNativeTabContentsViewDraggingEnded() {
   }
   tab_contents()->SystemDragEnded();
 }
+
+views::internal::NativeWidgetDelegate*
+    TabContentsViewViews::AsNativeWidgetDelegate() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TabContentsViewViews, views::Widget overrides:
+
+views::FocusManager* TabContentsViewViews::GetFocusManager() {
+  views::FocusManager* focus_manager = Widget::GetFocusManager();
+  if (focus_manager) {
+    // If focus_manager_ is non NULL, it means we have been reparented, in which
+    // case its value may not be valid anymore.
+    focus_manager_ = NULL;
+    return focus_manager;
+  }
+  // TODO(jcampan): we should DCHECK on focus_manager_, as it should not be
+  // NULL.  We are not doing it as it breaks some unit-tests.  We should
+  // probably have an empty TabContentView implementation for the unit-tests,
+  // that would prevent that code being executed in the unit-test case.
+  // DCHECK(focus_manager_);
+  return focus_manager_;
+}
+

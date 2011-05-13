@@ -47,7 +47,7 @@ Window::~Window() {
 Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
                                    const gfx::Rect& bounds,
                                    WindowDelegate* window_delegate) {
-  Window* window = NativeWindow::CreateNativeWindow();
+  Window* window = new Window;
   Window::InitParams params(window_delegate);
   params.parent_window = parent;
   params.widget_init_params.bounds = bounds;
@@ -74,34 +74,24 @@ gfx::Size Window::GetLocalizedContentsSize(int col_resource_id,
                    GetLocalizedContentsHeight(row_resource_id));
 }
 
-// static
-void Window::CloseSecondaryWidget(Widget* widget) {
-  if (!widget)
-    return;
-
-  // Close widget if it's identified as a secondary window.
-  Window* window = widget->GetWindow();
-  if (window) {
-    if (!window->IsAppWindow())
-      window->CloseWindow();
-  } else {
-    // If it's not a Window, then close it anyway since it probably is
-    // secondary.
-    widget->Close();
-  }
-}
-
 void Window::InitWindow(const InitParams& params) {
   window_delegate_ = params.window_delegate;
   AsWidget()->set_widget_delegate(window_delegate_);
   DCHECK(window_delegate_);
   DCHECK(!window_delegate_->window_);
   window_delegate_->window_ = this;
+  set_widget_delegate(window_delegate_);
+  native_window_ =
+      params.native_window ? params.native_window
+                           : NativeWindow::CreateNativeWindow(this);
   // If frame_view was set already, don't replace it with default one.
   if (!non_client_view()->frame_view())
     non_client_view()->SetFrameView(CreateFrameViewForWindow());
-  AsWidget()->Init(params.widget_init_params);
-  OnNativeWindowCreated(params.widget_init_params.bounds);
+  InitParams modified_params = params;
+  modified_params.widget_init_params.native_widget =
+      native_window_->AsNativeWidget();
+  Init(modified_params.widget_init_params);
+  OnNativeWindowCreated(modified_params.widget_init_params.bounds);
 }
 
 gfx::Rect Window::GetBounds() const {
@@ -149,7 +139,7 @@ void Window::Deactivate() {
   native_window_->Deactivate();
 }
 
-void Window::CloseWindow() {
+void Window::Close() {
   if (window_closed_) {
     // It appears we can hit this code path if you close a modal dialog then
     // close the last browser before the destructor is hit, which triggers
@@ -159,9 +149,7 @@ void Window::CloseWindow() {
 
   if (non_client_view_->CanClose()) {
     SaveWindowPosition();
-    // TODO(beng): This can be simplified to Widget::Close() once Window
-    //             subclasses Widget.
-    native_window_->AsNativeWidget()->GetWidget()->Close();
+    Widget::Close();
     window_closed_ = true;
   }
 }
@@ -204,10 +192,6 @@ bool Window::IsFullscreen() const {
 
 void Window::SetUseDragFrame(bool use_drag_frame) {
   native_window_->SetUseDragFrame(use_drag_frame);
-}
-
-bool Window::IsAppWindow() const {
-  return native_window_->IsAppWindow();
 }
 
 void Window::EnableClose(bool enable) {
@@ -259,21 +243,6 @@ bool Window::ShouldUseNativeFrame() const {
 
 void Window::FrameTypeChanged() {
   native_window_->FrameTypeChanged();
-}
-
-Widget* Window::AsWidget() {
-  return const_cast<Widget*>(const_cast<const Window*>(this)->AsWidget());
-}
-
-const Widget* Window::AsWidget() const {
-  return native_window_->AsNativeWidget()->GetWidget();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Window, protected:
-
-void Window::SetNativeWindow(NativeWindow* native_window) {
-  native_window_ = native_window;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -362,6 +331,14 @@ void Window::OnNativeWindowDestroyed() {
 
 void Window::OnNativeWindowBoundsChanged() {
   SaveWindowPosition();
+}
+
+Window* Window::AsWindow() {
+  return this;
+}
+
+internal::NativeWidgetDelegate* Window::AsNativeWidgetDelegate() {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

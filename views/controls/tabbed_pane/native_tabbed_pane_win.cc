@@ -292,7 +292,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   SendMessage(tab_control, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
 
   // Create the view container which is a child of the TabControl.
-  content_window_ = Widget::CreateWidget();
+  content_window_ = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.parent = tab_control;
   content_window_->Init(params);

@@ -220,7 +220,7 @@ void WinInputWindowDialog::Show() {
 }
 
 void WinInputWindowDialog::Close() {
-  window_->CloseWindow();
+  window_->Close();
 }
 
 // static

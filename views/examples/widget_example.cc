@@ -29,7 +29,7 @@ class CenterLayout : public views::LayoutManager {
   }
 
   virtual gfx::Size GetPreferredSize(views::View* host) {
-    return host->GetPreferredSize();
+    return gfx::Size();
   }
 
  private:
@@ -108,7 +108,7 @@ void WidgetExample::InitWidget(views::Widget* widget, bool transparent) {
 
 #if defined(OS_LINUX)
 void WidgetExample::CreateChild(views::View* parent, bool transparent) {
-  views::Widget* widget = views::Widget::CreateWidget();
+  views::Widget* widget = new views::Widget;
   // Compute where to place the child widget.
   // We'll place it at the center of the root widget.
   views::Widget* parent_widget = parent->GetWidget();
@@ -126,7 +126,7 @@ void WidgetExample::CreateChild(views::View* parent, bool transparent) {
 #endif
 
 void WidgetExample::CreatePopup(views::View* parent, bool transparent) {
-  views::Widget* widget = views::Widget::CreateWidget();
+  views::Widget* widget = new views::Widget;
 
   // Compute where to place the popup widget.
   // We'll place it right below the create button.

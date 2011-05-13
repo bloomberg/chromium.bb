@@ -50,6 +50,10 @@ class NativeWidgetDelegate {
   virtual bool OnKeyEvent(const KeyEvent& event) = 0;
   virtual bool OnMouseEvent(const MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
+
+  //
+  virtual Widget* AsWidget() = 0;
+  virtual const Widget* AsWidget() const = 0;
 };
 
 }  // namespace internal

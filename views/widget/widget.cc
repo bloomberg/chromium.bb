@@ -9,6 +9,7 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method.h"
+#include "views/views_delegate.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
 #include "views/widget/native_widget.h"
@@ -21,6 +22,7 @@ namespace views {
 Widget::InitParams::InitParams()
     : type(TYPE_WINDOW),
       child(false),
+      transient(false),
       transparent(false),
       accept_events(true),
       can_activate(true),
@@ -37,6 +39,7 @@ Widget::InitParams::InitParams()
 Widget::InitParams::InitParams(Type type)
     : type(type),
       child(type == TYPE_CONTROL),
+      transient(type == TYPE_POPUP || type == TYPE_MENU),
       transparent(false),
       accept_events(true),
       can_activate(type != TYPE_POPUP && type != TYPE_MENU),
@@ -63,41 +66,50 @@ Widget::Widget()
       last_mouse_event_was_move_(false),
       native_widget_(NULL),
       widget_delegate_(NULL),
-      dragged_view_(NULL) {
+      dragged_view_(NULL),
+      delete_on_destroy_(false),
+      is_secondary_widget_(true) {
 }
 
 Widget::~Widget() {
+  DestroyRootView();
+
+  if (!delete_on_destroy_)
+    delete native_widget_;
 }
 
 void Widget::Init(const InitParams& params) {
+  delete_on_destroy_ = params.delete_on_destroy;
+  native_widget_ =
+      params.native_widget ? params.native_widget
+                           : NativeWidget::CreateNativeWidget(this);
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
+  if (params.type == InitParams::TYPE_MENU)
+    is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
   native_widget_->InitNativeWidget(params);
 }
 
 // Unconverted methods (see header) --------------------------------------------
 
 gfx::NativeView Widget::GetNativeView() const {
-  return NULL;
+   return native_widget_->GetNativeView();
 }
 
 gfx::NativeWindow Widget::GetNativeWindow() const {
-  return NULL;
-}
-
-void Widget::GenerateMousePressedForView(View* view, const gfx::Point& point) {
+  return native_widget_->GetNativeWindow();
 }
 
 bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }
 
-Window* Widget::GetWindow() {
-  return NULL;
+Window* Widget::GetContainingWindow() {
+  return native_widget_->GetContainingWindow();
 }
 
-const Window* Widget::GetWindow() const {
-  return NULL;
+const Window* Widget::GetContainingWindow() const {
+  return native_widget_->GetContainingWindow();
 }
 
 void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
@@ -108,7 +120,8 @@ void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager)
       focus_manager->ViewRemoved(child);
-    ViewStorage::GetInstance()->ViewRemoved(parent, child);
+    ViewStorage::GetInstance()->ViewRemoved(child);
+    native_widget_->ViewRemoved(child);
   }
 }
 
@@ -273,6 +286,10 @@ void Widget::SetCursor(gfx::NativeCursor cursor) {
   native_widget_->SetCursor(cursor);
 }
 
+void Widget::ResetLastMouseMoveFlag() {
+  last_mouse_event_was_move_ = false;
+}
+
 FocusTraversable* Widget::GetFocusTraversable() {
   return root_view_.get();
 }
@@ -291,6 +308,18 @@ void Widget::SetFocusTraversableParent(FocusTraversable* parent) {
 
 void Widget::SetFocusTraversableParentView(View* parent_view) {
   root_view_->SetFocusTraversableParentView(parent_view);
+}
+
+void Widget::NotifyAccessibilityEvent(
+    View* view,
+    ui::AccessibilityTypes::Event event_type,
+    bool send_native_event) {
+  // Send the notification to the delegate.
+  if (ViewsDelegate::views_delegate)
+    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(view, event_type);
+
+  if (send_native_event)
+    native_widget_->SendNativeAccessibilityEvent(view, event_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -405,6 +434,14 @@ void Widget::OnMouseCaptureLost() {
   if (is_mouse_button_pressed_)
     GetRootView()->OnMouseCaptureLost();
   is_mouse_button_pressed_ = false;
+}
+
+Widget* Widget::AsWidget() {
+  return this;
+}
+
+const Widget* Widget::AsWidget() const {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

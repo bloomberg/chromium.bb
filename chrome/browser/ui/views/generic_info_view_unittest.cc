@@ -29,7 +29,7 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   const string16 kName = ASCIIToUTF16("Name");
   const string16 kValue = ASCIIToUTF16("Value");
 
-  views::Widget* widget = views::Widget::CreateWidget();
+  views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);

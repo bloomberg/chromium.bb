@@ -561,7 +561,7 @@ void TaskManagerView::Show(bool highlight_background_resources) {
   if (instance_) {
     if (instance_->highlight_background_resources_ !=
         highlight_background_resources) {
-      instance_->window()->CloseWindow();
+      instance_->window()->Close();
     } else {
       // If there's a Task manager window open already, just activate it.
       instance_->window()->Activate();

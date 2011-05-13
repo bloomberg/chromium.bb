@@ -130,20 +130,14 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
   virtual void TearDown() {
     if (focus_change_listener_)
       GetFocusManager()->RemoveFocusChangeListener(focus_change_listener_);
-    window_->CloseWindow();
+    window_->Close();
 
     // Flush the message loop to make Purify happy.
     message_loop()->RunAllPending();
   }
 
   FocusManager* GetFocusManager() {
-#if defined(OS_WIN)
-    return static_cast<WindowWin*>(window_)->GetFocusManager();
-#elif defined(OS_LINUX)
-    return static_cast<WindowGtk*>(window_)->GetFocusManager();
-#else
-    NOTIMPLEMENTED();
-#endif
+    return window_->GetFocusManager();
   }
 
   void FocusNativeView(gfx::NativeView native_view) {
@@ -290,7 +284,7 @@ class BorderView : public NativeViewHost {
 
     if (child == this && is_add) {
       if (!widget_) {
-        widget_ = Widget::CreateWidget();
+        widget_ = new Widget;
         Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
 #if defined(OS_WIN)
         params.parent = parent->GetRootView()->GetWidget()->GetNativeView();
@@ -1602,7 +1596,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   ASSERT_TRUE(hwnd);
 
   // Create a view window parented to native dialog.
-  scoped_ptr<Widget> widget1(Widget::CreateWidget());
+  scoped_ptr<Widget> widget1(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
   params.parent = hwnd;
@@ -1615,7 +1609,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   EXPECT_TRUE(focus_manager_member1);
 
   // Create another view window parented to the first view window.
-  scoped_ptr<Widget> widget2(Widget::CreateWidget());
+  scoped_ptr<Widget> widget2(new Widget);
   params.parent = widget1->GetNativeView();
   widget2->Init(params);
 
@@ -1642,7 +1636,6 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
 }
 #endif
 
-#if defined(OS_CHROMEOS)
 class FocusManagerDtorTest : public FocusManagerTest {
  protected:
   typedef std::vector<std::string> DtorTrackVector;
@@ -1675,20 +1668,19 @@ class FocusManagerDtorTest : public FocusManagerTest {
     DtorTrackVector* dtor_tracker_;
   };
 
-  class WindowGtkDtorTracked : public WindowGtk {
+  class WindowDtorTracked : public Window {
    public:
-    WindowGtkDtorTracked(WindowDelegate* window_delegate,
-                         DtorTrackVector* dtor_tracker)
+    WindowDtorTracked(WindowDelegate* window_delegate,
+                      DtorTrackVector* dtor_tracker)
         : dtor_tracker_(dtor_tracker) {
-      tracked_focus_manager_ = new FocusManagerDtorTracked(this,
-          dtor_tracker_);
+      tracked_focus_manager_ = new FocusManagerDtorTracked(this, dtor_tracker_);
       Window::InitParams params(window_delegate);
       params.widget_init_params.bounds = gfx::Rect(0, 0, 100, 100);
-      GetWindow()->InitWindow(params);
+      InitWindow(params);
       ReplaceFocusManager(tracked_focus_manager_);
     }
 
-    virtual ~WindowGtkDtorTracked() {
+    virtual ~WindowDtorTracked() {
       dtor_tracker_->push_back("WindowGtkDtorTracked");
     }
 
@@ -1698,17 +1690,16 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
  public:
   virtual void SetUp() {
-   // Create WindowGtkDtorTracked that uses FocusManagerDtorTracked.
-   window_ = new WindowGtkDtorTracked(this, &dtor_tracker_);
-   ASSERT_TRUE(GetFocusManager() ==
-        static_cast<WindowGtkDtorTracked*>(window_)->tracked_focus_manager_);
-
-   window_->Show();
+    // Create WindowGtkDtorTracked that uses FocusManagerDtorTracked.
+    window_ = new WindowDtorTracked(this, &dtor_tracker_);
+    ASSERT_TRUE(GetFocusManager() == static_cast<WindowDtorTracked*>(
+        window_)->tracked_focus_manager_);
+    window_->Show();
   }
 
   virtual void TearDown() {
     if (window_) {
-      window_->CloseWindow();
+      window_->Close();
       message_loop()->RunAllPending();
     }
   }
@@ -1726,7 +1717,7 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   tabbed_pane->AddTab(L"Awesome tab", button);
 
   // Close the window.
-  window_->CloseWindow();
+  window_->Close();
   message_loop()->RunAllPending();
 
   // Test window, button and focus manager should all be destructed.
@@ -1739,6 +1730,5 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   window_ = NULL;
 }
 
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace views

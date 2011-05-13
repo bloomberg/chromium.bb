@@ -36,6 +36,11 @@ class NativeWidget {
 
   virtual ~NativeWidget() {}
 
+  // Creates an appropriate default NativeWidget implementation for the current
+  // OS/circumstance.
+  static NativeWidget* CreateNativeWidget(
+      internal::NativeWidgetDelegate* delegate);
+
   // Retrieves the NativeWidget implementation associated with the given
   // NativeView or Window, or NULL if the supplied handle has no associated
   // NativeView.
@@ -64,6 +69,19 @@ class NativeWidget {
   // Returns the Widget associated with this NativeWidget. This function is
   // guaranteed to return non-NULL for the lifetime of the NativeWidget.
   virtual Widget* GetWidget() = 0;
+  virtual const Widget* GetWidget() const = 0;
+
+  // Returns the NativeView/Window associated with this NativeWidget.
+  virtual gfx::NativeView GetNativeView() const = 0;
+  virtual gfx::NativeWindow GetNativeWindow() const = 0;
+
+  // Returns the enclosing Window, or NULL if there is no enclosing Window.
+  virtual Window* GetContainingWindow() = 0;
+  virtual const Window* GetContainingWindow() const = 0;
+
+  // Notifies the NativeWidget that a view was removed from the Widget's view
+  // hierarchy.
+  virtual void ViewRemoved(View* view) = 0;
 
   // Sets/Gets a native window property on the underlying native window object.
   // Returns NULL if the property does not exist. Setting the property value to
@@ -78,12 +96,20 @@ class NativeWidget {
   // Returns true if a system screen reader is active for the NativeWidget.
   virtual bool IsScreenReaderActive() const = 0;
 
+  // Notify native Accessibility clients of an event.
+  virtual void SendNativeAccessibilityEvent(
+      View* view,
+      ui::AccessibilityTypes::Event event_type) = 0;
+
   // Sets or releases event capturing for this native widget.
   virtual void SetMouseCapture() = 0;
   virtual void ReleaseMouseCapture() = 0;
 
   // Returns true if this native widget is capturing all events.
   virtual bool HasMouseCapture() const = 0;
+
+  // Returns true if any mouse button is currently pressed.
+  virtual bool IsMouseButtonDown() const = 0;
 
   // Returns the InputMethod for this native widget.
   // Note that all widgets in a widget hierarchy share the same input method.

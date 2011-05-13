@@ -29,8 +29,6 @@ class MenuHostGtk : public WidgetGtk,
 
   // Overridden from WidgetGtk:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
-  virtual RootView* CreateRootView() OVERRIDE;
-  virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual void OnDestroy(GtkWidget* object) OVERRIDE;
   virtual void HandleGtkGrabBroke() OVERRIDE;
@@ -39,7 +37,7 @@ class MenuHostGtk : public WidgetGtk,
   // Have we done input grab?
   bool did_input_grab_;
 
-  scoped_ptr<internal::NativeMenuHostDelegate> delegate_;
+  internal::NativeMenuHostDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostGtk);
 };

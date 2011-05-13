@@ -20,7 +20,7 @@ DOMBrowserView::~DOMBrowserView() {}
 // static
 BrowserWindow* DOMBrowserView::CreateDOMWindow(Browser* browser) {
   DOMBrowserView* view = new DOMBrowserView(browser);
-  BrowserFrame::Create(view, browser->profile());
+  (new BrowserFrame(view))->InitBrowserFrame();
   return view;
 }
 

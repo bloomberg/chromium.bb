@@ -66,7 +66,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   gfx::Size icon_size = icon->GetPreferredSize();
 
   // An approximate window size. After Layout() we'll get better bounds.
-  popup_ = views::Widget::CreateWidget();
+  popup_ = new views::Widget;
   if (!popup_) {
     NOTREACHED();
     return DIALOG_ERROR;

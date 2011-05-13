@@ -13,7 +13,7 @@
 namespace views {
 
 void FocusManager::ClearNativeFocus() {
-  static_cast<WidgetGtk*>(widget_)->ClearNativeFocus();
+  static_cast<WidgetGtk*>(widget_->native_widget())->ClearNativeFocus();
 }
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {

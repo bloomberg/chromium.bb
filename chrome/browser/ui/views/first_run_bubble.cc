@@ -491,7 +491,7 @@ FirstRunBubble* FirstRunBubble::Show(Profile* profile,
   bubble->set_view(view);
   bubble->InitBubble(
       parent, position_relative_to, arrow_location, view, bubble);
-  bubble->GetFocusManager()->AddFocusChangeListener(view);
+  bubble->GetWidget()->GetFocusManager()->AddFocusChangeListener(view);
   view->BubbleShown();
   return bubble;
 }
@@ -504,7 +504,7 @@ FirstRunBubble::FirstRunBubble()
 
 FirstRunBubble::~FirstRunBubble() {
   enable_window_method_factory_.RevokeAll();
-  GetFocusManager()->RemoveFocusChangeListener(view_);
+  GetWidget()->GetFocusManager()->RemoveFocusChangeListener(view_);
 }
 
 void FirstRunBubble::EnableParent() {
@@ -517,7 +517,7 @@ void FirstRunBubble::EnableParent() {
   views::NativeWidget* parent =
       views::NativeWidget::GetNativeWidgetForNativeView(GetParent());
   if (parent)
-    parent->GetWidget()->GetWindow()->DisableInactiveRendering();
+    parent->GetWidget()->GetContainingWindow()->DisableInactiveRendering();
   // Reactivate the FirstRunBubble so it responds to OnActivate messages.
   SetWindowPos(GetParent(), 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_SHOWWINDOW);

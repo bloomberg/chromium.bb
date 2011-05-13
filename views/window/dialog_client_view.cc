@@ -541,7 +541,7 @@ DialogDelegate* DialogClientView::GetDialogDelegate() const {
 }
 
 void DialogClientView::Close() {
-  window()->CloseWindow();
+  window()->Close();
   GetDialogDelegate()->OnClose();
 }
 

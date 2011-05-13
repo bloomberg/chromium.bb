@@ -85,12 +85,12 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
     view = keyboard_view_;
     view_loc.SetPoint(view->width() / 2, view->height() / 2);
   } else if (!for_keyboard) {
-    RootView* root_view = widget_->GetRootView();
+    RootView* root_view = widget_->GetWidget()->GetRootView();
     view = root_view->GetEventHandlerForPoint(gfx::Point(x, y));
     view_loc.SetPoint(x, y);
     View::ConvertPointFromWidget(view, &view_loc);
   } else {
-    FocusManager* focus_manager = widget_->GetFocusManager();
+    FocusManager* focus_manager = widget_->GetWidget()->GetFocusManager();
     if (focus_manager) {
       view = focus_manager->GetFocusedView();
       if (view)
@@ -116,7 +116,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
 
   int max_width, line_count;
   gfx::Point screen_loc(x, y);
-  View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
+  View::ConvertPointToScreen(widget_->GetWidget()->GetRootView(), &screen_loc);
   TrimTooltipToFit(&text, &max_width, &line_count, screen_loc.x(),
                    screen_loc.y());
   tooltip_window_.SetTooltipText(text);

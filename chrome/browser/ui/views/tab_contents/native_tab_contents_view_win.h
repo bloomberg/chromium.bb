@@ -61,7 +61,6 @@ class NativeTabContentsViewWin : public views::WidgetWin,
   virtual void OnSize(UINT param, const WTL::CSize& size) OVERRIDE;
   virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param) OVERRIDE;
   virtual void OnNCPaint(HRGN rgn) OVERRIDE;
-  virtual views::FocusManager* GetFocusManager() OVERRIDE;
 
   // Backend for all scroll messages, the |message| parameter indicates which
   // one it is.
@@ -76,10 +75,6 @@ class NativeTabContentsViewWin : public views::WidgetWin,
 
   // Used to handle the drag-and-drop.
   scoped_refptr<TabContentsDragWin> drag_handler_;
-
-  // The FocusManager associated with this tab.  Stored as it is not directly
-  // accessible when un-parented.
-  views::FocusManager* focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabContentsViewWin);
 };

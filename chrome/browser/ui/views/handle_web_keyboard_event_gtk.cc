@@ -11,6 +11,7 @@ void HandleWebKeyboardEvent(views::Widget* widget,
                             const NativeWebKeyboardEvent& event) {
   if (widget && event.os_event && !event.skip_in_browser) {
     views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
-    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(views_event);
+    static_cast<views::WidgetGtk*>(widget->native_widget())->
+        HandleKeyboardEvent(views_event);
   }
 }

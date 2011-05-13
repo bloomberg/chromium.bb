@@ -7,9 +7,11 @@
 #include <windows.h>
 
 #include "chrome/browser/ui/views/bubble/border_contents.h"
+#include "views/widget/widget.h"
 
 BorderWidgetWin::BorderWidgetWin()
-    : border_contents_(NULL) {
+    : views::WidgetWin(new views::Widget),
+      border_contents_(NULL) {
 }
 
 void BorderWidgetWin::InitBorderWidgetWin(BorderContents* border_contents,
@@ -21,8 +23,9 @@ void BorderWidgetWin::InitBorderWidgetWin(BorderContents* border_contents,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.parent = owner;
+  params.native_widget = this;
   GetWidget()->Init(params);
-  SetContentsView(border_contents_);
+  GetWidget()->SetContentsView(border_contents_);
   SetWindowPos(owner, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOREDRAW);
 }
@@ -37,7 +40,7 @@ gfx::Rect BorderWidgetWin::SizeAndGetBounds(
   border_contents_->SizeAndGetBounds(position_relative_to, arrow_location,
                                      false, contents_size, &contents_bounds,
                                      &window_bounds);
-  SetBounds(window_bounds);
+  GetWidget()->SetBounds(window_bounds);
 
   // Return |contents_bounds| in screen coordinates.
   contents_bounds.Offset(window_bounds.origin());

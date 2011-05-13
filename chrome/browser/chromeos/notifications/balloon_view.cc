@@ -267,7 +267,7 @@ void BalloonViewImpl::Layout() {
 void BalloonViewImpl::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
   if (is_add && GetWidget() && !control_view_host_.get() && controls_) {
-    control_view_host_.reset(views::Widget::CreateWidget());
+    control_view_host_.reset(new views::Widget);
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_CONTROL);
     params.double_buffer = true;

@@ -79,35 +79,15 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
 
 namespace views {
 
-WindowGtk::WindowGtk()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
+WindowGtk::WindowGtk(internal::NativeWindowDelegate* delegate)
+    : WidgetGtk(delegate->AsNativeWidgetDelegate()),
+      delegate_(delegate),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
-  SetNativeWindow(this);
   is_window_ = true;
 }
 
 WindowGtk::~WindowGtk() {
-}
-
-// static
-void Window::CloseAllSecondaryWindows() {
-  GList* windows = gtk_window_list_toplevels();
-  for (GList* window = windows; window;
-       window = g_list_next(window)) {
-    Window::CloseSecondaryWidget(
-        NativeWidget::GetNativeWidgetForNativeView(
-            GTK_WIDGET(window->data))->GetWidget());
-  }
-  g_list_free(windows);
-}
-
-Window* WindowGtk::AsWindow() {
-  return this;
-}
-
-const Window* WindowGtk::AsWindow() const {
-  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,7 +109,7 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
       if (event->type == GDK_BUTTON_PRESS &&
           !mouse_event.IsOnlyRightMouseButton()) {
         gfx::Point screen_point(event->x, event->y);
-        View::ConvertPointToScreen(GetRootView(), &screen_point);
+        View::ConvertPointToScreen(GetWindow()->GetRootView(), &screen_point);
         gtk_window_begin_move_drag(GetNativeWindow(), event->button,
                                    screen_point.x(), screen_point.y(),
                                    event->time);
@@ -147,7 +127,7 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     case HTTOPLEFT:
     case HTTOPRIGHT: {
       gfx::Point screen_point(event->x, event->y);
-      View::ConvertPointToScreen(GetRootView(), &screen_point);
+      View::ConvertPointToScreen(GetWindow()->GetRootView(), &screen_point);
       // TODO(beng): figure out how to get a good minimum size.
       gtk_widget_set_size_request(GetNativeView(), 100, 100);
       gtk_window_begin_resize_drag(GetNativeWindow(),
@@ -221,9 +201,6 @@ void WindowGtk::IsActiveChanged() {
 }
 
 void WindowGtk::InitNativeWidget(const Widget::InitParams& params) {
-  if (params.parent)
-    make_transient_to_parent();
-
   WidgetGtk::InitNativeWidget(params);
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
@@ -310,7 +287,11 @@ void WindowGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
 Window* WindowGtk::GetWindow() {
-  return this;
+  return delegate_->AsWindow();
+}
+
+const Window* WindowGtk::GetWindow() const {
+  return delegate_->AsWindow();
 }
 
 void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
@@ -320,7 +301,7 @@ void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
 }
 
 void WindowGtk::HideWindow() {
-  Hide();
+  GetWindow()->Hide();
 }
 
 void WindowGtk::Activate() {
@@ -379,18 +360,12 @@ void WindowGtk::SetUseDragFrame(bool use_drag_frame) {
   NOTIMPLEMENTED();
 }
 
+NonClientFrameView* WindowGtk::CreateFrameViewForWindow() {
+  return new CustomFrameView(delegate_->AsWindow());
+}
+
 void WindowGtk::SetAlwaysOnTop(bool always_on_top) {
   gtk_window_set_keep_above(GetNativeWindow(), always_on_top);
-}
-
-bool WindowGtk::IsAppWindow() const {
-  return false;
-}
-
-NonClientFrameView* WindowGtk::CreateFrameViewForWindow() {
-  // TODO(erg): Always use a custom frame view? Are there cases where we let
-  // the window manager deal with the X11 equivalent of the "non-client" area?
-  return new CustomFrameView(this);
 }
 
 void WindowGtk::UpdateFrameAfterFrameChange() {
@@ -410,8 +385,8 @@ bool WindowGtk::ShouldUseNativeFrame() const {
 void WindowGtk::FrameTypeChanged() {
   // This is called when the Theme has changed, so forward the event to the root
   // widget.
-  ThemeChanged();
-  GetRootView()->SchedulePaint();
+  GetWidget()->ThemeChanged();
+  GetWidget()->GetRootView()->SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -437,7 +412,9 @@ void WindowGtk::SaveWindowPosition() {
     return;
 
   bool maximized = window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
-  GetWindow()->window_delegate()->SaveWindowPlacement(GetBounds(), maximized);
+  GetWindow()->window_delegate()->SaveWindowPlacement(
+      GetWidget()->GetWindowScreenBounds(),
+      maximized);
 }
 
 void WindowGtk::OnDestroy(GtkWidget* widget) {
@@ -450,8 +427,10 @@ void WindowGtk::OnDestroy(GtkWidget* widget) {
 // NativeWindow, public:
 
 // static
-Window* NativeWindow::CreateNativeWindow() {
-  return new WindowGtk;
+NativeWindow* NativeWindow::CreateNativeWindow(
+    internal::NativeWindowDelegate* delegate) {
+  return new WindowGtk(delegate);
 }
 
 }  // namespace views
+

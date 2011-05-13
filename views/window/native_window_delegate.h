@@ -6,6 +6,10 @@
 #define VIEWS_WIDGET_NATIVE_WINDOW_DELEGATE_H_
 #pragma once
 
+namespace ui {
+class ThemeProvider;
+}
+
 namespace views {
 namespace internal {
 
@@ -64,6 +68,12 @@ class NativeWindowDelegate {
 
   // Called when the native window's position or size has changed.
   virtual void OnNativeWindowBoundsChanged() = 0;
+
+  //
+  virtual Window* AsWindow() = 0;
+
+  //
+  virtual NativeWidgetDelegate* AsNativeWidgetDelegate() = 0;
 };
 
 }  // namespace internal

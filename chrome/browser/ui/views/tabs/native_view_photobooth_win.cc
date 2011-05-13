@@ -151,7 +151,7 @@ void NativeViewPhotoboothWin::CreateCaptureWindow(HWND initial_hwnd) {
   gfx::Rect capture_bounds(window_position.x(), window_position.y(),
                            contents_rect.right - contents_rect.left,
                            contents_rect.bottom - contents_rect.top);
-  capture_window_ = views::Widget::CreateWidget();
+  capture_window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.bounds = capture_bounds;
