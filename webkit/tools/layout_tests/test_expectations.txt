@@ -22,11 +22,3 @@ BUG_HCLAM WIN : svg/text/text-intro-05-t.svg = IMAGE
 // Failure introduced by Chromium r83848.
 BUG_HCLAM : fast/url/ipv6.html = TEXT
 
-
-// V8 now throws errors when trying to invoke native functions on null or
-// undefined with apply or call. Will fix this upstream and delete when
-// webkit has been rolled with these fixes.
-BUG_RICOW : ietestcenter/Javascript/15.4.4.14-5-28.html = TEXT
-BUG_RICOW : ietestcenter/Javascript/15.4.4.15-5-28.html = TEXT
-BUG_RICOW : ietestcenter/Javascript/15.5.4.20-1-1.html = TEXT
-BUG_RICOW : ietestcenter/Javascript/15.5.4.20-1-2.html = TEXT
