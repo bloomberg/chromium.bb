@@ -115,6 +115,16 @@ redraw_handler(struct window *window, void *data)
 }
 
 static void
+resize_handler(struct window *window,
+	       int32_t width, int32_t height, void *data)
+{
+	struct view *view = data;
+
+	window_set_child_size(view->window, width, height);
+	window_schedule_redraw(window);
+}
+
+static void
 view_page_up(struct view *view)
 {
         if(view->page <= 0)
@@ -233,6 +243,7 @@ view_create(struct display *display, uint32_t key, const char *filename)
 
 	window_set_user_data(view->window, view);
 	window_set_redraw_handler(view->window, redraw_handler);
+	window_set_resize_handler(view->window, resize_handler);
 	window_set_key_handler(view->window, key_handler);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
