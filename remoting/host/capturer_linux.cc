@@ -93,6 +93,7 @@ class CapturerLinux : public Capturer {
   Window root_window_;
 
   // XDamage information.
+  bool use_damage_;
   Damage damage_handle_;
   int damage_event_base_;
   int damage_error_base_;
@@ -126,6 +127,7 @@ CapturerLinux::CapturerLinux()
     : display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
+      use_damage_(false),
       damage_handle_(BadValue),
       damage_event_base_(-1),
       damage_error_base_(-1),
@@ -166,18 +168,22 @@ bool CapturerLinux::Init() {
 
   // Setup XDamage to report changes in the damage window.  Mark the whole
   // window as invalid.
-  if (!XDamageQueryExtension(display_, &damage_event_base_,
-                             &damage_error_base_)) {
-    LOG(ERROR) << "Server does not support XDamage.";
-    DeinitXlib();
-    return false;
-  }
-  damage_handle_ = XDamageCreate(display_, root_window_,
-                                 XDamageReportDeltaRectangles);
-  if (damage_handle_ == BadValue) {
-    LOG(ERROR) << "Unable to create damage handle.";
-    DeinitXlib();
-    return false;
+  if (XDamageQueryExtension(display_, &damage_event_base_,
+                            &damage_error_base_)) {
+    damage_handle_ = XDamageCreate(display_, root_window_,
+                                   XDamageReportDeltaRectangles);
+    if (damage_handle_ == BadValue) {
+      LOG(ERROR) << "Unable to create damage handle.";
+    } else {
+      // TODO(lambroslambrou): Disable DAMAGE in situations where it is known
+      // to fail, such as when Desktop Effects are enabled, with graphics
+      // drivers (nVidia, ATI) that fail to report DAMAGE notifications
+      // properly.
+      use_damage_ = true;
+      LOG(INFO) << "Using XDamage extension.";
+    }
+  } else {
+    LOG(INFO) << "Server does not support XDamage.";
   }
 
   // Register for changes to the dimensions of the root window.
@@ -218,6 +224,8 @@ void CapturerLinux::InvalidateFullScreen() {
 
 void CapturerLinux::CaptureInvalidRects(
     CaptureCompletedCallback* callback) {
+  buffers_[current_buffer_].Update(display_, root_window_);
+
   CalculateInvalidRects();
 
   InvalidRects rects;
@@ -232,16 +240,24 @@ void CapturerLinux::CalculateInvalidRects() {
   int events_to_process = XPending(display_);
   XEvent e;
   InvalidRects invalid_rects;
+
+  if (!use_damage_) {
+    // DAMAGE not available, so fall back to full-screen capture.
+    gfx::Rect screen_rect(buffers_[current_buffer_].size());
+    invalid_rects.insert(screen_rect);
+    // TODO(lambroslambrou): Check which pixels have actually changed, to avoid
+    // encoding the whole screen on every iteration.
+  }
+
   for (int i = 0; i < events_to_process; i++) {
     XNextEvent(display_, &e);
-    if (e.type == damage_event_base_ + XDamageNotify) {
-      // If we're doing a full screen capture, we should just drain the events.
+    if (use_damage_ && (e.type == damage_event_base_ + XDamageNotify)) {
       XDamageNotifyEvent *event = reinterpret_cast<XDamageNotifyEvent*>(&e);
       gfx::Rect damage_rect(event->area.x, event->area.y, event->area.width,
                             event->area.height);
 
       // TODO(hclam): Perform more checks on the rect.
-      if (damage_rect.width() <= 0 && damage_rect.height() <= 0)
+      if (damage_rect.width() <= 0 || damage_rect.height() <= 0)
         continue;
 
       invalid_rects.insert(damage_rect);
@@ -250,6 +266,7 @@ void CapturerLinux::CalculateInvalidRects() {
               << damage_rect.width() << "," << damage_rect.height() << ")";
     } else if (e.type == ConfigureNotify) {
       ScreenConfigurationChanged();
+      invalid_rects.clear();
     } else {
       LOG(WARNING) << "Got unknown event type: " << e.type;
     }
@@ -264,7 +281,6 @@ void CapturerLinux::CaptureRects(
   scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
 
   VideoFrameBuffer& buffer = buffers_[current_buffer_];
-  buffer.Update(display_, root_window_);
   DataPlanes planes;
   planes.data[0] = buffer.ptr();
   planes.strides[0] = buffer.bytes_per_row();
