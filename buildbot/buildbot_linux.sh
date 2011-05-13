@@ -170,8 +170,7 @@ function gscp() {
   ${GSUTIL} -h Cache-Control:no-cache cp -a public-read "$@"
 }
 
-if [ "${BUILDBOT_BUILDERNAME:-}" = "lucid32-m32-n32-dbg" ] ||
-   [ "${BUILDBOT_BUILDERNAME:-}" = "lucid64-m64-n64-dbg" ]; then
+if [ "${ARCHIVE_IRT:-}" = "1" ]; then
   IRT_DIR=nativeclient-archive2/irt
   GSDVIEW=http://gsdview.appspot.com
   GS_PATH=${IRT_DIR}/r${BUILDBOT_GOT_REVISION}/irt_x86_${BITS}.nexe

@@ -153,13 +153,27 @@ BOT_ASSIGNMENT = {
 }
 
 
+IRT_ARCHIVE_BUILDERS = [
+    'lucid-32-newlib-dbg',
+    'lucid-64-newlib-dbg',
+]
+# Require a correspondence with the list above.
+for builder in IRT_ARCHIVE_BUILDERS:
+  assert builder in BOT_ASSIGNMENT, builder
+
+
 def Main():
-  cmd = BOT_ASSIGNMENT.get(os.environ.get('BUILDBOT_BUILDERNAME'))
+  builder = os.environ.get('BUILDBOT_BUILDERNAME')
+  cmd = BOT_ASSIGNMENT.get(builder)
   if not cmd:
     sys.stderr.write('ERROR - unset/invalid builder name\n')
     sys.exit(1)
 
-  p = subprocess.Popen(cmd, shell=True)
+  env = {
+      'ARCHIVE_IRT': builder in IRT_ARCHIVE_BUILDERS and '1' or '0',
+  }
+
+  p = subprocess.Popen(cmd, env=env, shell=True)
   p.wait()
 
   sys.exit(p.returncode)
