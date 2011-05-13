@@ -501,7 +501,7 @@ TEST_F(ContextMenuTest, CFViewSource) {
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
 
-TEST_F(ContextMenuTest, CFPageInfo) {
+TEST_F(ContextMenuTest, DISABLED_CFPageInfo) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockWindowObserver win_observer_mock;
   InSequence expect_in_sequence_for_scope;
