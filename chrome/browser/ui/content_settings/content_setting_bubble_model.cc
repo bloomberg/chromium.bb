@@ -44,8 +44,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
 
  private:
   void SetBlockedResources() {
-    TabSpecificContentSettings* settings = tab_contents()->
-        tab_contents()->GetTabSpecificContentSettings();
+    TabSpecificContentSettings* settings = tab_contents()->content_settings();
     const std::set<std::string>& resources = settings->BlockedResourcesForType(
         content_type());
     for (std::set<std::string>::const_iterator it = resources.begin();
@@ -94,11 +93,9 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
         CONTENT_SETTINGS_NUM_TYPES,
         Need_a_setting_for_every_content_settings_type);
     const int *title_ids = kBlockedTitleIDs;
-    if (tab_contents() &&
-        tab_contents()->tab_contents()->GetTabSpecificContentSettings()->
+    if (tab_contents() && tab_contents()->content_settings()->
             IsContentAccessed(content_type()) &&
-        !tab_contents()->tab_contents()->GetTabSpecificContentSettings()->
-            IsContentBlocked(content_type())) {
+        !tab_contents()->content_settings()->IsContentBlocked(content_type())) {
       title_ids = kAccessedTitleIDs;
     } else if (!bubble_content().resource_identifiers.empty()) {
       title_ids = kResourceSpecificBlockedTitleIDs;
@@ -334,15 +331,14 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
 
  private:
   virtual void OnCustomLinkClicked() OVERRIDE {
-    if (tab_contents()) {
-      NotificationService::current()->Notify(
-          NotificationType::COLLECTED_COOKIES_SHOWN,
-          Source<TabSpecificContentSettings>(
-              tab_contents()->tab_contents()->GetTabSpecificContentSettings()),
-          NotificationService::NoDetails());
-      tab_contents()->tab_contents()->delegate()->
-          ShowCollectedCookiesDialog(tab_contents()->tab_contents());
-    }
+    if (!tab_contents())
+      return;
+    NotificationService::current()->Notify(
+        NotificationType::COLLECTED_COOKIES_SHOWN,
+        Source<TabSpecificContentSettings>(tab_contents()->content_settings()),
+        NotificationService::NoDetails());
+    tab_contents()->tab_contents()->delegate()->
+        ShowCollectedCookiesDialog(tab_contents()->tab_contents());
   }
 };
 
@@ -353,8 +349,8 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
                                   ContentSettingsType content_type)
       : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
     DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
-    set_custom_link_enabled(tab_contents && tab_contents->tab_contents()->
-        GetTabSpecificContentSettings()->load_plugins_link_enabled());
+    set_custom_link_enabled(tab_contents && tab_contents->content_settings()->
+        load_plugins_link_enabled());
   }
 
   virtual ~ContentSettingPluginBubbleModel() {}
@@ -366,8 +362,7 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
     RenderViewHost* host = tab_contents()->render_view_host();
     host->Send(new ViewMsg_LoadBlockedPlugins(host->routing_id()));
     set_custom_link_enabled(false);
-    tab_contents()->tab_contents()->GetTabSpecificContentSettings()->
-        set_load_plugins_link_enabled(false);
+    tab_contents()->content_settings()->set_load_plugins_link_enabled(false);
   }
 };
 
@@ -435,7 +430,7 @@ class ContentSettingDomainListBubbleModel
   }
   void SetDomainsAndCustomLink() {
     TabSpecificContentSettings* content_settings =
-        tab_contents()->tab_contents()->GetTabSpecificContentSettings();
+        tab_contents()->content_settings();
     const GeolocationSettingsState& settings =
         content_settings->geolocation_settings_state();
     GeolocationSettingsState::FormattedHostsPerState formatted_hosts_per_state;
@@ -466,7 +461,7 @@ class ContentSettingDomainListBubbleModel
     // origins currently on the page.
     const GURL& embedder_url = tab_contents()->tab_contents()->GetURL();
     TabSpecificContentSettings* content_settings =
-        tab_contents()->tab_contents()->GetTabSpecificContentSettings();
+        tab_contents()->content_settings();
     const GeolocationSettingsState::StateMap& state_map =
         content_settings->geolocation_settings_state().state_map();
     GeolocationContentSettingsMap* settings_map =

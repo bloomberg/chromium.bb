@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -80,7 +81,8 @@ CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
     : tab_contents_(tab_contents),
       status_changed_(false) {
   TabSpecificContentSettings* content_settings =
-      tab_contents->GetTabSpecificContentSettings();
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+          content_settings();
   registrar_.Add(this, NotificationType::COLLECTED_COOKIES_SHOWN,
                  Source<TabSpecificContentSettings>(content_settings));
 
@@ -181,7 +183,8 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
 
   TabSpecificContentSettings* content_settings =
-      tab_contents_->GetTabSpecificContentSettings();
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+          content_settings();
 
   allowed_cookies_tree_model_.reset(
       content_settings->GetAllowedCookiesTreeModel());
@@ -260,7 +263,8 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
 
   TabSpecificContentSettings* content_settings =
-      tab_contents_->GetTabSpecificContentSettings();
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+          content_settings();
 
   blocked_cookies_tree_model_.reset(
       content_settings->GetBlockedCookiesTreeModel());
@@ -421,8 +425,6 @@ void CollectedCookiesGtk::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   DCHECK(type == NotificationType::COLLECTED_COOKIES_SHOWN);
-  DCHECK_EQ(Source<TabSpecificContentSettings>(source).ptr(),
-            tab_contents_->GetTabSpecificContentSettings());
   window_->CloseConstrainedWindow();
 }
 

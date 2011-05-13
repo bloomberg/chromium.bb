@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -336,7 +335,6 @@ TabContents::~TabContents() {
 }
 
 void TabContents::AddObservers() {
-  content_settings_delegate_.reset(new TabSpecificContentSettings(this));
   plugin_observer_.reset(new PluginObserver(this));
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
@@ -1511,10 +1509,6 @@ RenderViewHostDelegate::BookmarkDrag* TabContents::GetBookmarkDragDelegate() {
 void TabContents::SetBookmarkDragDelegate(
     RenderViewHostDelegate::BookmarkDrag* bookmark_drag) {
   bookmark_drag_ = bookmark_drag;
-}
-
-TabSpecificContentSettings* TabContents::GetTabSpecificContentSettings() const {
-  return content_settings_delegate_.get();
 }
 
 RendererPreferences TabContents::GetRendererPrefs(Profile* profile) const {

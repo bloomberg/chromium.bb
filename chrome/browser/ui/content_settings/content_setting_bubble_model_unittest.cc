@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
@@ -46,7 +47,7 @@ class ContentSettingBubbleModelTest : public TabContentsWrapperTestHarness {
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
   TabSpecificContentSettings* content_settings =
-      contents()->GetTabSpecificContentSettings();
+      contents_wrapper()->content_settings();
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                      std::string());
 
@@ -64,7 +65,7 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 
 TEST_F(ContentSettingBubbleModelTest, Cookies) {
   TabSpecificContentSettings* content_settings =
-      contents()->GetTabSpecificContentSettings();
+      contents_wrapper()->content_settings();
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES,
                                      std::string());
 
@@ -82,7 +83,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
 
 TEST_F(ContentSettingBubbleModelTest, Plugins) {
   TabSpecificContentSettings* content_settings =
-      contents()->GetTabSpecificContentSettings();
+      contents_wrapper()->content_settings();
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string());
 
@@ -118,7 +119,7 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
                           CONTENT_SETTING_ASK);
 
   TabSpecificContentSettings* content_settings =
-      contents()->GetTabSpecificContentSettings();
+      contents_wrapper()->content_settings();
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
                                      fooPlugin);
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -162,7 +163,7 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
 
   NavigateAndCommit(page_url);
   TabSpecificContentSettings* content_settings =
-      contents()->GetTabSpecificContentSettings();
+      contents_wrapper()->content_settings();
 
   // One permitted frame, but not in the content map: requires reload.
   content_settings->OnGeolocationPermissionSet(frame1_url, true);

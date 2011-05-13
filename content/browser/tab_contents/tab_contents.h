@@ -59,7 +59,6 @@ class TabContentsDelegate;
 class TabContentsObserver;
 class TabContentsSSLHelper;
 class TabContentsView;
-class TabSpecificContentSettings;
 class URLPattern;
 struct RendererPreferences;
 struct ThumbnailScore;
@@ -515,10 +514,6 @@ class TabContents : public PageNavigator,
   virtual void SetBookmarkDragDelegate(
       RenderViewHostDelegate::BookmarkDrag* bookmark_drag);
 
-  // The TabSpecificContentSettings object is used to query the blocked content
-  // state by various UI elements.
-  TabSpecificContentSettings* GetTabSpecificContentSettings() const;
-
   // Updates history with the specified navigation. This is called by
   // OnMsgNavigate to update history state.
   void UpdateHistoryForNavigation(
@@ -863,9 +858,6 @@ class TabContents : public PageNavigator,
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;
-
-  // RenderViewHost::ContentSettingsDelegate.
-  scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
 
   // Data for loading state ----------------------------------------------------
 

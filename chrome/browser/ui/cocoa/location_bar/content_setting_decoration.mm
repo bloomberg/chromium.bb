@@ -193,7 +193,8 @@ bool ContentSettingDecoration::UpdateFromTabContents(
 
     // Check if the animation has already run.
     TabSpecificContentSettings* content_settings =
-        tab_contents->GetTabSpecificContentSettings();
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+            content_settings();
     ContentSettingsType content_type =
         content_setting_image_model_->get_content_settings_type();
     bool ran_animation = content_settings->IsBlockageIndicated(content_type);

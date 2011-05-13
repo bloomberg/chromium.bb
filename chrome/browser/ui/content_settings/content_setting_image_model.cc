@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -118,7 +119,8 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
   // If a content type is blocked by default and was accessed, display the
   // accessed icon.
   TabSpecificContentSettings* content_settings =
-      tab_contents->GetTabSpecificContentSettings();
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+          content_settings();
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
     if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
         (tab_contents->profile()->GetHostContentSettingsMap()->
@@ -146,8 +148,11 @@ void ContentSettingGeolocationImageModel::UpdateFromTabContents(
   set_visible(false);
   if (!tab_contents)
     return;
-  const GeolocationSettingsState& settings_state = tab_contents->
-      GetTabSpecificContentSettings()->geolocation_settings_state();
+  TabSpecificContentSettings* content_settings =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+          content_settings();
+  const GeolocationSettingsState& settings_state = content_settings->
+      geolocation_settings_state();
   if (settings_state.state_map().empty())
     return;
   set_visible(true);

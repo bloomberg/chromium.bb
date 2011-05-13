@@ -579,13 +579,10 @@ void GeolocationPermissionContext::NotifyPermissionSet(
     bool allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(render_process_id, render_view_id);
-
   // TabContents may have gone away (or not exists for extension).
-  if (tab_contents) {
-    TabSpecificContentSettings* content_settings =
-        tab_contents->GetTabSpecificContentSettings();
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::Get(render_process_id, render_view_id);
+  if (content_settings) {
     content_settings->OnGeolocationPermissionSet(requesting_frame.GetOrigin(),
                                                  allowed);
   }
