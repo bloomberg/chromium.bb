@@ -27,7 +27,7 @@ char* UTF16ToCharSet(PP_Instance /* instance */,
                      const char* output_char_set,
                      PP_CharSet_ConversionError on_error,
                      uint32_t* output_length) {
-  return pp::shared_impl::CharSetImpl::UTF16ToCharSet(
+  return ppapi::CharSetImpl::UTF16ToCharSet(
       GetCoreInterface(), utf16, utf16_len, output_char_set, on_error,
       output_length);
 }
@@ -37,7 +37,7 @@ uint16_t* CharSetToUTF16(PP_Instance /* instance */,
                          const char* input_char_set,
                          PP_CharSet_ConversionError on_error,
                          uint32_t* output_length) {
-  return pp::shared_impl::CharSetImpl::CharSetToUTF16(
+  return ppapi::CharSetImpl::CharSetToUTF16(
       GetCoreInterface(), input, input_len, input_char_set, on_error,
       output_length);
 }

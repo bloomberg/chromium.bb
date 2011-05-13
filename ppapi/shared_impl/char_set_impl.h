@@ -10,8 +10,7 @@
 
 struct PPB_Core;
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 // Contains the implementation of character set conversion that is shared
 // between the proxy and the renderer.
@@ -32,7 +31,6 @@ class CharSetImpl {
                                   uint32_t* output_length);
 };
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_CHAR_SET_IMPL_H_

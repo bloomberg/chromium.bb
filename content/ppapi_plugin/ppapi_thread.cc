@@ -83,7 +83,7 @@ std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
   return &globally_seen_instance_ids_;
 }
 
-pp::shared_impl::WebKitForwarding* PpapiThread::GetWebKitForwarding() {
+ppapi::WebKitForwarding* PpapiThread::GetWebKitForwarding() {
   if (!webkit_forwarding_.get())
     webkit_forwarding_.reset(new webkit::ppapi::WebKitForwardingImpl);
   return webkit_forwarding_.get();

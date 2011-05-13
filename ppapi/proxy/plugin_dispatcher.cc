@@ -45,7 +45,7 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
   // GetInterface call or name for it, so we insert it into our table now.
   target_proxies_[INTERFACE_ID_PPP_CLASS].reset(new PPP_Class_Proxy(this));
 
-  ::ppapi::shared_impl::TrackerBase::Init(
+  ::ppapi::TrackerBase::Init(
       &PluginResourceTracker::GetTrackerBaseInstance);
 }
 
@@ -208,11 +208,11 @@ void PluginDispatcher::PostToWebKitThread(
   return dispatcher_delegate_->PostToWebKitThread(from_here, task);
 }
 
-pp::shared_impl::WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
+ppapi::WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
   return dispatcher_delegate_->GetWebKitForwarding();
 }
 
-::ppapi::shared_impl::FunctionGroupBase* PluginDispatcher::GetFunctionAPI(
+::ppapi::FunctionGroupBase* PluginDispatcher::GetFunctionAPI(
     pp::proxy::InterfaceID id) {
   if (function_proxies_[id].get())
     return function_proxies_[id].get();

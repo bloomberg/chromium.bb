@@ -25,7 +25,7 @@
 namespace webkit {
 namespace ppapi {
 
-using pp::shared_impl::URLUtilImpl;
+using ::ppapi::URLUtilImpl;
 
 namespace {
 

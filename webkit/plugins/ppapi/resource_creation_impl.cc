@@ -7,6 +7,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/ppb_audio_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -25,6 +26,43 @@ ResourceCreationImpl::AsResourceCreation() {
   return this;
 }
 
+PP_Resource ResourceCreationImpl::CreateAudio(
+    PP_Instance instance_id,
+    PP_Resource config_id,
+    PPB_Audio_Callback audio_callback,
+    void* user_data) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return 0;
+  scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
+  if (!audio->Init(config_id, audio_callback, user_data))
+    return 0;
+  return audio->GetReference();
+}
+
+PP_Resource ResourceCreationImpl::CreateAudioConfig(
+    PP_Instance instance_id,
+    PP_AudioSampleRate sample_rate,
+    uint32_t sample_frame_count) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return 0;
+  scoped_refptr<PPB_AudioConfig_Impl> config(
+      new PPB_AudioConfig_Impl(instance));
+  if (!config->Init(sample_rate, sample_frame_count))
+    return 0;
+  return config->GetReference();
+}
+
+PP_Resource ResourceCreationImpl::CreateAudioTrusted(
+    PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return 0;
+  scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
+  return audio->GetReference();
+}
+
 PP_Resource ResourceCreationImpl::CreateFontObject(
     PP_Instance pp_instance,
     const PP_FontDescription_Dev* description) {
@@ -32,7 +70,7 @@ PP_Resource ResourceCreationImpl::CreateFontObject(
   if (!instance)
     return 0;
 
-  if (!pp::shared_impl::FontImpl::IsPPFontDescriptionValid(*description))
+  if (!::ppapi::FontImpl::IsPPFontDescriptionValid(*description))
     return 0;
 
   scoped_refptr<PPB_Font_Impl> font(new PPB_Font_Impl(instance, *description));

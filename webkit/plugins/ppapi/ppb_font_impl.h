@@ -53,7 +53,7 @@ class PPB_Font_Impl : public Resource,
                                           uint32_t char_offset) OVERRIDE;
 
  private:
-  scoped_ptr<pp::shared_impl::WebKitForwarding::Font> font_forwarding_;
+  scoped_ptr< ::ppapi::WebKitForwarding::Font> font_forwarding_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_Impl);
 };

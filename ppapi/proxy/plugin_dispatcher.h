@@ -80,13 +80,13 @@ class PluginDispatcher : public Dispatcher {
                           const base::Closure& task);
 
   // Returns the WebKitForwarding object used to forward events to WebKit.
-  pp::shared_impl::WebKitForwarding* GetWebKitForwarding();
+  ppapi::WebKitForwarding* GetWebKitForwarding();
 
   // Returns the "new-style" function API for the given interface ID, creating
   // it if necessary.
   // TODO(brettw) this is in progress. It should be merged with the target
   // proxies so there is one list to consult.
-  ::ppapi::shared_impl::FunctionGroupBase* GetFunctionAPI(
+  ppapi::FunctionGroupBase* GetFunctionAPI(
       pp::proxy::InterfaceID id);
 
  private:
@@ -106,7 +106,7 @@ class PluginDispatcher : public Dispatcher {
   // Function proxies created for "new-style" FunctionGroups.
   // TODO(brettw) this is in progress. It should be merged with the target
   // proxies so there is one list to consult.
-  scoped_ptr< ::ppapi::shared_impl::FunctionGroupBase >
+  scoped_ptr< ::ppapi::FunctionGroupBase >
       function_proxies_[INTERFACE_ID_COUNT];
 
   typedef base::hash_map<PP_Instance, InstanceData> InstanceDataMap;

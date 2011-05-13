@@ -37,7 +37,7 @@ class PpapiThread : public ChildThread,
   virtual base::MessageLoopProxy* GetIPCMessageLoop();
   virtual base::WaitableEvent* GetShutdownEvent();
   virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
-  virtual pp::shared_impl::WebKitForwarding* GetWebKitForwarding();
+  virtual ppapi::WebKitForwarding* GetWebKitForwarding();
   virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
                                   const base::Closure& task);
 
@@ -75,7 +75,7 @@ class PpapiThread : public ChildThread,
   std::set<PP_Instance> globally_seen_instance_ids_;
 
   // Lazily created by GetWebKitForwarding.
-  scoped_ptr<pp::shared_impl::WebKitForwarding> webkit_forwarding_;
+  scoped_ptr<ppapi::WebKitForwarding> webkit_forwarding_;
 
   scoped_ptr<PpapiWebKitThread> webkit_thread_;
 

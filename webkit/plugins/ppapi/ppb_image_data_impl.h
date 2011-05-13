@@ -24,7 +24,7 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_ImageData_Impl : public Resource,
-                           public pp::shared_impl::ImageDataImpl,
+                           public ::ppapi::ImageDataImpl,
                            public ::ppapi::thunk::PPB_ImageData_API {
  public:
   explicit PPB_ImageData_Impl(PluginInstance* instance);

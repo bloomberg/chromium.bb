@@ -250,25 +250,14 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* handle */)
 
 // PPB_Audio.
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBAudio_Create,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudio_Create,
                            PP_Instance /* instance_id */,
-                           pp::proxy::HostResource /* config_id */,
+                           int32_t /* sample_rate */,
+                           uint32_t /* sample_frame_count */,
                            pp::proxy::HostResource /* result */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudio_StartOrStop,
                     pp::proxy::HostResource /* audio_id */,
                     bool /* play */)
-
-// PPB_AudioConfig.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudioConfig_Create,
-                           PP_Instance /* instance */,
-                           int32_t /* sample_rate */,
-                           uint32_t /* sample_frame_count */,
-                           pp::proxy::HostResource /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(
-    PpapiHostMsg_PPBAudioConfig_RecommendSampleFrameCount,
-    int32_t /* sample_rate */,
-    uint32_t /* requested */,
-    uint32_t /* result */)
 
 // PPB_Broker.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBBroker_Create,

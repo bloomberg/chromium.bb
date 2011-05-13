@@ -119,7 +119,7 @@ class HostDispatcher : public Dispatcher {
   // Function proxies created for "new-style" FunctionGroups.
   // TODO(brettw) this is in progress. It should be merged with the target
   // proxies so there is one list to consult.
-  scoped_ptr< ::ppapi::shared_impl::FunctionGroupBase >
+  scoped_ptr< ::ppapi::FunctionGroupBase >
       function_proxies_[INTERFACE_ID_COUNT];
 
   // Guaranteed non-NULL.

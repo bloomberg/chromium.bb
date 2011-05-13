@@ -9,7 +9,7 @@
 namespace webkit {
 namespace ppapi {
 
-class WebKitForwardingImpl : public pp::shared_impl::WebKitForwarding {
+class WebKitForwardingImpl : public ::ppapi::WebKitForwarding {
  public:
   WebKitForwardingImpl();
   virtual ~WebKitForwardingImpl();

@@ -27,6 +27,16 @@ class HostResource {
     return !host_resource_;
   }
 
+  // Some resources are plugin-side only and don't have a corresponding
+  // resource in the host. Yet these resources still need an instance to be
+  // associated with. This function creates a HostResource with the given
+  // instances and a 0 host resource ID for these cases.
+  static HostResource MakeInstanceOnly(PP_Instance instance) {
+    HostResource resource;
+    resource.SetHostResource(instance, 0);
+    return resource;
+  }
+
   // Sets and retrieves the internal PP_Resource which is valid for the host
   // (a.k.a. renderer, as opposed to the plugin) process.
   //

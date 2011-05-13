@@ -4,8 +4,7 @@
 
 #include "ppapi/shared_impl/webkit_forwarding.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 WebKitForwarding::Font::DrawTextParams::DrawTextParams(
     skia::PlatformCanvas* destination_arg,
@@ -31,6 +30,5 @@ WebKitForwarding::Font::~Font() {
 WebKitForwarding::~WebKitForwarding() {
 }
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi
 

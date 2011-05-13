@@ -51,7 +51,7 @@ FOR_ALL_RESOURCES(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 
 class Resource : public base::RefCountedThreadSafe<Resource>,
-                 public ::ppapi::shared_impl::ResourceObjectBase {
+                 public ::ppapi::ResourceObjectBase {
  public:
   explicit Resource(PluginInstance* instance);
   virtual ~Resource();

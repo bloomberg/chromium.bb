@@ -7,7 +7,6 @@
 #include "base/logging.h"
 
 namespace ppapi {
-namespace shared_impl {
 
 static TrackerBase* (*g_global_getter)() = NULL;
 
@@ -21,5 +20,4 @@ TrackerBase* TrackerBase::Get() {
   return g_global_getter();
 }
 
-}  // namespace shared_impl
 }  // namespace ppapi

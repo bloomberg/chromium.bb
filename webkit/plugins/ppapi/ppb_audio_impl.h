@@ -13,7 +13,9 @@
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
+#include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/shared_impl/audio_impl.h"
+#include "ppapi/thunk/ppb_audio_trusted_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
@@ -23,54 +25,51 @@ namespace ppapi {
 
 class PluginInstance;
 
-class PPB_AudioConfig_Impl : public Resource {
+// The implementation is actually in AudioConfigImpl.
+class PPB_AudioConfig_Impl : public Resource,
+                             public ::ppapi::AudioConfigImpl {
  public:
-  PPB_AudioConfig_Impl(PluginInstance* instance,
-                       PP_AudioSampleRate sample_rate,
-                       uint32_t sample_frame_count);
-  size_t BufferSize();
-  static const PPB_AudioConfig* GetInterface();
+  // Note that you must call Init (on AudioConfigImpl) before using this class.
+  PPB_AudioConfig_Impl(PluginInstance* instance);
+  ~PPB_AudioConfig_Impl();
 
-  PP_AudioSampleRate sample_rate() { return sample_rate_; }
-  uint32_t sample_frame_count() { return sample_frame_count_; }
+  // ResourceObjectBase overrides.
+  virtual ::ppapi::thunk::PPB_AudioConfig_API* AsAudioConfig_API() OVERRIDE;
 
  private:
-  // Resource override.
-  virtual PPB_AudioConfig_Impl* AsPPB_AudioConfig_Impl();
-
-  PP_AudioSampleRate sample_rate_;
-  uint32_t sample_frame_count_;
+  DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Impl);
 };
 
 // Some of the backend functionality of this class is implemented by the
 // AudioImpl so it can be shared with the proxy.
 class PPB_Audio_Impl : public Resource,
-                       public pp::shared_impl::AudioImpl,
+                       public ::ppapi::AudioImpl,
+                       public ::ppapi::thunk::PPB_AudioTrusted_API,
                        public PluginDelegate::PlatformAudio::Client {
  public:
+  // After creation, either call Init (for non-trusted init) or OpenTrusted
+  // (for trusted init).
   explicit PPB_Audio_Impl(PluginInstance* instance);
   virtual ~PPB_Audio_Impl();
 
-  static const PPB_Audio* GetInterface();
-  static const PPB_AudioTrusted* GetTrustedInterface();
-
-  // PPB_Audio implementation.
-  bool Init(PluginDelegate* plugin_delegate,
-            PP_Resource config_id,
+  // Initialization function for non-trusted init.
+  bool Init(PP_Resource config_id,
             PPB_Audio_Callback user_callback, void* user_data);
-  PP_Resource GetCurrentConfig();
-  bool StartPlayback();
-  bool StopPlayback();
 
-  // PPB_Audio_Trusted implementation.
-  int32_t Open(PluginDelegate* plugin_delegate,
-               PP_Resource config_id,
-               PP_CompletionCallback create_callback);
-  int32_t GetSyncSocket(int* sync_socket);
-  int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size);
+  // ResourceObjectBase overrides.
+  virtual ::ppapi::thunk::PPB_Audio_API* AsAudio_API();
+  virtual ::ppapi::thunk::PPB_AudioTrusted_API* AsAudioTrusted_API();
 
-  // Resource override.
-  virtual PPB_Audio_Impl* AsPPB_Audio_Impl();
+  // PPB_Audio_API implementation.
+  virtual PP_Resource GetCurrentConfig() OVERRIDE;
+  virtual PP_Bool StartPlayback() OVERRIDE;
+  virtual PP_Bool StopPlayback() OVERRIDE;
+
+  // PPB_AudioTrusted_API implementation.
+  virtual int32_t OpenTrusted(PP_Resource config_id,
+                              PP_CompletionCallback create_callback) OVERRIDE;
+  virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
+  virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
 
  private:
   // PluginDelegate::PlatformAudio::Client implementation.
@@ -78,8 +77,8 @@ class PPB_Audio_Impl : public Resource,
                              size_t shared_memory_size_,
                              base::SyncSocket::Handle socket);
 
-  // AudioConfig used for creating this Audio object.
-  scoped_refptr<PPB_AudioConfig_Impl> config_;
+  // AudioConfig used for creating this Audio object. We own a ref.
+  PP_Resource config_id_;
 
   // PluginDelegate audio object that we delegate audio IPC through. We don't
   // own this pointer but are responsible for calling Shutdown on it.

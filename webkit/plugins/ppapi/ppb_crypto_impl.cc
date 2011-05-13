@@ -13,7 +13,7 @@ namespace ppapi {
 namespace {
 
 const PPB_Crypto_Dev ppb_crypto = {
-  &pp::shared_impl::CryptoImpl::GetRandomBytes
+  &::ppapi::CryptoImpl::GetRandomBytes
 };
 
 }  // namespace

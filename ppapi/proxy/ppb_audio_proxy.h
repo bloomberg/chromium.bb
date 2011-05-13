@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PPB_AUDIO_PROXY_H_
 #define PPAPI_PROXY_PPB_AUDIO_PROXY_H_
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
@@ -12,6 +14,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
@@ -30,6 +34,13 @@ class PPB_Audio_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
+  // Creates an Audio object in the plugin process.
+  static PP_Resource CreateProxyResource(PP_Instance instance_id,
+                                         PP_Resource config_id,
+                                         PPB_Audio_Callback audio_callback,
+                                         void* user_data);
+
+
   const PPB_Audio* ppb_audio_target() const {
     return static_cast<const PPB_Audio*>(target_interface());
   }
@@ -40,7 +51,8 @@ class PPB_Audio_Proxy : public InterfaceProxy {
  private:
   // Plugin->renderer message handlers.
   void OnMsgCreate(PP_Instance instance_id,
-                   const HostResource& config_id,
+                   int32_t sample_rate,
+                   uint32_t sample_frame_count,
                    HostResource* result);
   void OnMsgStartOrStop(const HostResource& audio_id, bool play);
 

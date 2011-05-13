@@ -110,7 +110,7 @@
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
-        '<(DEPTH)/ppapi/ppapi_internal.gyp:ppapi_shared_impl',
+        '<(DEPTH)/ppapi/ppapi_internal.gyp:ppapi_shared',
         '<(DEPTH)/printing/printing.gyp:printing',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

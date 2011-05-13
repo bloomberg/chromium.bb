@@ -47,7 +47,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
 
 class ImageData : public PluginResource,
                   public ::ppapi::thunk::PPB_ImageData_API,
-                  public pp::shared_impl::ImageDataImpl {
+                  public ppapi::ImageDataImpl {
  public:
   ImageData(const HostResource& resource,
             const PP_ImageDataDesc& desc,

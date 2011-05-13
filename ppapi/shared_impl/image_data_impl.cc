@@ -6,8 +6,7 @@
 
 #include "third_party/skia/include/core/SkTypes.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 // static
 PP_ImageDataFormat ImageDataImpl::GetNativeImageDataFormat() {
@@ -25,5 +24,4 @@ bool ImageDataImpl::IsImageDataFormatSupported(PP_ImageDataFormat format) {
          format == PP_IMAGEDATAFORMAT_RGBA_PREMUL;
 }
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi

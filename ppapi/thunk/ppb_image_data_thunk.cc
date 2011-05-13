@@ -15,11 +15,11 @@ namespace thunk {
 namespace {
 
 PP_ImageDataFormat GetNativeImageDataFormat() {
-  return pp::shared_impl::ImageDataImpl::GetNativeImageDataFormat();
+  return ppapi::ImageDataImpl::GetNativeImageDataFormat();
 }
 
 PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
-  return pp::shared_impl::ImageDataImpl::IsImageDataFormatSupported(format)
+  return ppapi::ImageDataImpl::IsImageDataFormatSupported(format)
       ? PP_TRUE : PP_FALSE;
 }
 

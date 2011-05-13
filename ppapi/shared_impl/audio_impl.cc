@@ -6,8 +6,7 @@
 
 #include "base/logging.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 AudioImpl::AudioImpl()
     : playing_(false),
@@ -24,6 +23,10 @@ AudioImpl::~AudioImpl() {
     audio_thread_->Join();
     audio_thread_.reset();
   }
+}
+
+::ppapi::thunk::PPB_Audio_API* AudioImpl::AsAudio_API() {
+  return this;
 }
 
 void AudioImpl::SetCallback(PPB_Audio_Callback callback, void* user_data) {
@@ -93,5 +96,4 @@ void AudioImpl::Run() {
   }
 }
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi

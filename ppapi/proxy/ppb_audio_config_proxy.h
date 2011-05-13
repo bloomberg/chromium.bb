@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PPB_AudioConfig;
@@ -24,23 +25,14 @@ class PPB_AudioConfig_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  const PPB_AudioConfig* ppb_audio_config_target() const {
-    return static_cast<const PPB_AudioConfig*>(target_interface());
-  }
+  static PP_Resource CreateProxyResource(PP_Instance instance,
+                                         PP_AudioSampleRate sample_rate,
+                                         uint32_t sample_frame_count);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:
-  // Message handlers.
-  void OnMsgCreateStereo16Bit(PP_Instance instance,
-                              int32_t sample_rate,
-                              uint32_t sample_frame_count,
-                              HostResource* result);
-  void OnMsgRecommendSampleFrameCount(int32_t sample_rate,
-                                      uint32_t requested,
-                                      uint32_t* result);
-
   DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Proxy);
 };
 

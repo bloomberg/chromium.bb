@@ -20,12 +20,11 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
-namespace pp {
-
-namespace shared_impl {
+namespace ppapi {
 class WebKitForwarding;
 }
 
+namespace pp {
 namespace proxy {
 
 class VarSerializationRules;
@@ -60,7 +59,7 @@ class Dispatcher : public ProxyChannel {
 
     // Returns the WebKit forwarding object used to make calls into WebKit.
     // Necessary only on the plugin side. The host side can return NULL.
-    virtual pp::shared_impl::WebKitForwarding* GetWebKitForwarding() = 0;
+    virtual ppapi::WebKitForwarding* GetWebKitForwarding() = 0;
 
     // Posts the given task to the WebKit thread associated with this plugin
     // process. For host processes, this will not be called and can do

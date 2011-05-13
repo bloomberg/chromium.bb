@@ -13,7 +13,7 @@
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/ppapi/var.h"
 
-using pp::shared_impl::WebKitForwarding;
+using ::ppapi::WebKitForwarding;
 
 namespace webkit {
 namespace ppapi {

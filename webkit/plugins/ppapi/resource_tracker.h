@@ -34,7 +34,7 @@ class Var;
 // us to check resource ID validity and to map them to a specific module.
 //
 // This object is NOT threadsafe.
-class ResourceTracker : public ::ppapi::shared_impl::TrackerBase {
+class ResourceTracker : public ::ppapi::TrackerBase {
  public:
   // Returns the pointer to the singleton object.
   static ResourceTracker* Get();
@@ -57,9 +57,9 @@ class ResourceTracker : public ::ppapi::shared_impl::TrackerBase {
   uint32 GetLiveObjectsForInstance(PP_Instance instance) const;
 
   // ResourceTrackerBase.
-  virtual ::ppapi::shared_impl::ResourceObjectBase* GetResourceAPI(
+  virtual ::ppapi::ResourceObjectBase* GetResourceAPI(
       PP_Resource res);
-  virtual ::ppapi::shared_impl::FunctionGroupBase* GetFunctionAPI(
+  virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance inst,
       pp::proxy::InterfaceID id);
 
@@ -188,7 +188,7 @@ class ResourceTracker : public ::ppapi::shared_impl::TrackerBase {
   typedef std::map<PP_Module, PluginModule*> ModuleMap;
   ModuleMap module_map_;
 
-  scoped_ptr< ::ppapi::shared_impl::FunctionGroupBase >
+  scoped_ptr< ::ppapi::FunctionGroupBase >
       function_proxies_[::pp::proxy::INTERFACE_ID_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(ResourceTracker);

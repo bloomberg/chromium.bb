@@ -11,8 +11,7 @@
 #include "unicode/ucnv_err.h"
 #include "unicode/ustring.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 namespace {
 
@@ -149,5 +148,4 @@ uint16_t* CharSetImpl::CharSetToUTF16(const PPB_Core* core,
   return ret_buf;
 }
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi

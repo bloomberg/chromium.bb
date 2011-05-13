@@ -42,6 +42,8 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -63,13 +65,14 @@
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
+#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_audio_impl.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
@@ -235,11 +238,11 @@ const void* GetInterface(const char* name) {
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
   if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)
-    return PPB_AudioConfig_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_AudioConfig_Thunk();
   if (strcmp(name, PPB_AUDIO_INTERFACE) == 0)
-    return PPB_Audio_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Audio_Thunk();
   if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
-    return PPB_Audio_Impl::GetTrustedInterface();
+    return ::ppapi::thunk::GetPPB_AudioTrusted_Thunk();
   if (strcmp(name, PPB_BROKER_TRUSTED_INTERFACE) == 0)
     return PPB_Broker_Impl::GetTrustedInterface();
   if (strcmp(name, PPB_BUFFER_DEV_INTERFACE) == 0)
@@ -563,7 +566,7 @@ PluginDelegate::PpapiBroker* PluginModule::GetBroker(){
   return broker_;
 }
 
-pp::shared_impl::WebKitForwarding* PluginModule::GetWebKitForwarding() {
+::ppapi::WebKitForwarding* PluginModule::GetWebKitForwarding() {
   if (!webkit_forwarding_.get())
     webkit_forwarding_.reset(new WebKitForwardingImpl);
   return webkit_forwarding_.get();

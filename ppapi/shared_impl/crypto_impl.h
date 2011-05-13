@@ -8,15 +8,13 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 class CryptoImpl {
  public:
   static void GetRandomBytes(char* buffer, uint32_t num_bytes);
 };
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_CRYPTO_IMPL_H_

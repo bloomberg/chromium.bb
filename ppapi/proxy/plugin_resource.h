@@ -42,7 +42,7 @@ namespace proxy {
 FOR_ALL_PLUGIN_RESOURCES(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 
-class PluginResource : public ::ppapi::shared_impl::ResourceObjectBase {
+class PluginResource : public ::ppapi::ResourceObjectBase {
  public:
   PluginResource(const HostResource& resource);
   virtual ~PluginResource();

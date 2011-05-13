@@ -9,204 +9,24 @@
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_audio_config_api.h"
+#include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/common.h"
 
 namespace webkit {
 namespace ppapi {
 
-namespace {
-
 // PPB_AudioConfig -------------------------------------------------------------
 
-uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
-                                   uint32_t requested_sample_frame_count);
-
-PP_Resource CreateStereo16bit(PP_Instance instance_id,
-                              PP_AudioSampleRate sample_rate,
-                              uint32_t sample_frame_count) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  // TODO(brettw): Currently we don't actually check what the hardware
-  // supports, so just allow sample rates of the "guaranteed working" ones.
-  if (sample_rate != PP_AUDIOSAMPLERATE_44100 &&
-      sample_rate != PP_AUDIOSAMPLERATE_48000)
-    return 0;
-
-  // TODO(brettw): Currently we don't actually query to get a value from the
-  // hardware, so just validate the range.
-  if (RecommendSampleFrameCount(sample_rate, sample_frame_count) !=
-      sample_frame_count)
-    return 0;
-
-  scoped_refptr<PPB_AudioConfig_Impl> config(
-      new PPB_AudioConfig_Impl(instance, sample_rate, sample_frame_count));
-  return config->GetReference();
+PPB_AudioConfig_Impl::PPB_AudioConfig_Impl(PluginInstance* instance)
+    : Resource(instance) {
 }
 
-uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
-                                   uint32_t requested_sample_frame_count) {
-  // TODO(brettw) Currently we don't actually query to get a value from the
-  // hardware, so we always return the input for in-range values.
-  //
-  // Danger: this code is duplicated in the audio config proxy.
-  if (requested_sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
-    return PP_AUDIOMINSAMPLEFRAMECOUNT;
-  if (requested_sample_frame_count > PP_AUDIOMAXSAMPLEFRAMECOUNT)
-    return PP_AUDIOMAXSAMPLEFRAMECOUNT;
-  return requested_sample_frame_count;
+PPB_AudioConfig_Impl::~PPB_AudioConfig_Impl() {
 }
 
-PP_Bool IsAudioConfig(PP_Resource resource) {
-  scoped_refptr<PPB_AudioConfig_Impl> config =
-      Resource::GetAs<PPB_AudioConfig_Impl>(resource);
-  return BoolToPPBool(!!config);
-}
-
-PP_AudioSampleRate GetSampleRate(PP_Resource config_id) {
-  scoped_refptr<PPB_AudioConfig_Impl> config =
-      Resource::GetAs<PPB_AudioConfig_Impl>(config_id);
-  return config ? config->sample_rate() : PP_AUDIOSAMPLERATE_NONE;
-}
-
-uint32_t GetSampleFrameCount(PP_Resource config_id) {
-  scoped_refptr<PPB_AudioConfig_Impl> config =
-      Resource::GetAs<PPB_AudioConfig_Impl>(config_id);
-  return config ? config->sample_frame_count() : 0;
-}
-
-const PPB_AudioConfig ppb_audioconfig = {
-  &CreateStereo16bit,
-  &RecommendSampleFrameCount,
-  &IsAudioConfig,
-  &GetSampleRate,
-  &GetSampleFrameCount
-};
-
-// PPB_Audio -------------------------------------------------------------------
-
-PP_Resource Create(PP_Instance instance_id, PP_Resource config_id,
-                   PPB_Audio_Callback user_callback, void* user_data) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-  if (!user_callback)
-    return 0;
-  scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
-  if (!audio->Init(instance->delegate(), config_id,
-                   user_callback, user_data))
-    return 0;
-  return audio->GetReference();
-}
-
-PP_Bool IsAudio(PP_Resource resource) {
-  scoped_refptr<PPB_Audio_Impl> audio =
-      Resource::GetAs<PPB_Audio_Impl>(resource);
-  return BoolToPPBool(!!audio);
-}
-
-PP_Resource GetCurrentConfig(PP_Resource audio_id) {
-  scoped_refptr<PPB_Audio_Impl> audio =
-      Resource::GetAs<PPB_Audio_Impl>(audio_id);
-  return audio ? audio->GetCurrentConfig() : 0;
-}
-
-PP_Bool StartPlayback(PP_Resource audio_id) {
-  scoped_refptr<PPB_Audio_Impl> audio =
-      Resource::GetAs<PPB_Audio_Impl>(audio_id);
-  return audio ? BoolToPPBool(audio->StartPlayback()) : PP_FALSE;
-}
-
-PP_Bool StopPlayback(PP_Resource audio_id) {
-  scoped_refptr<PPB_Audio_Impl> audio =
-      Resource::GetAs<PPB_Audio_Impl>(audio_id);
-  return audio ? BoolToPPBool(audio->StopPlayback()) : PP_FALSE;
-}
-
-const PPB_Audio ppb_audio = {
-  &Create,
-  &IsAudio,
-  &GetCurrentConfig,
-  &StartPlayback,
-  &StopPlayback,
-};
-
-// PPB_AudioTrusted ------------------------------------------------------------
-
-PP_Resource CreateTrusted(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-  scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
-  return audio->GetReference();
-}
-
-int32_t Open(PP_Resource audio_id,
-             PP_Resource config_id,
-             PP_CompletionCallback created) {
-  scoped_refptr<PPB_Audio_Impl> audio =
-      Resource::GetAs<PPB_Audio_Impl>(audio_id);
-  if (!audio)
-    return PP_ERROR_BADRESOURCE;
-  if (!created.func)
-    return PP_ERROR_BADARGUMENT;
-  return audio->Open(audio->instance()->delegate(), config_id, created);
-}
-
-int32_t GetSyncSocket(PP_Resource audio_id, int* sync_socket) {
-  scoped_refptr<PPB_Audio_Impl> audio =
-      Resource::GetAs<PPB_Audio_Impl>(audio_id);
-  if (audio)
-    return audio->GetSyncSocket(sync_socket);
-  return PP_ERROR_BADRESOURCE;
-}
-
-int32_t GetSharedMemory(PP_Resource audio_id,
-                        int* shm_handle,
-                        uint32_t* shm_size) {
-  scoped_refptr<PPB_Audio_Impl> audio =
-      Resource::GetAs<PPB_Audio_Impl>(audio_id);
-  if (audio)
-    return audio->GetSharedMemory(shm_handle, shm_size);
-  return PP_ERROR_BADRESOURCE;
-}
-
-const PPB_AudioTrusted ppb_audiotrusted = {
-  &CreateTrusted,
-  &Open,
-  &GetSyncSocket,
-  &GetSharedMemory,
-};
-
-}  // namespace
-
-// PPB_AudioConfig_Impl --------------------------------------------------------
-
-PPB_AudioConfig_Impl::PPB_AudioConfig_Impl(
-    PluginInstance* instance,
-    PP_AudioSampleRate sample_rate,
-    uint32_t sample_frame_count)
-    : Resource(instance),
-      sample_rate_(sample_rate),
-      sample_frame_count_(sample_frame_count) {
-}
-
-const PPB_AudioConfig* PPB_AudioConfig_Impl::GetInterface() {
-  return &ppb_audioconfig;
-}
-
-size_t PPB_AudioConfig_Impl::BufferSize() {
-  // TODO(audio): as more options become available, we'll need to
-  // have additional code here to correctly calculate the size in
-  // bytes of an audio buffer.  For now, only support two channel
-  // int16_t sample buffers.
-  const int kChannels = 2;
-  const int kSizeOfSample = sizeof(int16_t);
-  return static_cast<size_t>(sample_frame_count_ * kSizeOfSample * kChannels);
-}
-
-PPB_AudioConfig_Impl* PPB_AudioConfig_Impl::AsPPB_AudioConfig_Impl() {
+::ppapi::thunk::PPB_AudioConfig_API* PPB_AudioConfig_Impl::AsAudioConfig_API() {
   return this;
 }
 
@@ -214,12 +34,16 @@ PPB_AudioConfig_Impl* PPB_AudioConfig_Impl::AsPPB_AudioConfig_Impl() {
 
 PPB_Audio_Impl::PPB_Audio_Impl(PluginInstance* instance)
     : Resource(instance),
+      config_id_(0),
       audio_(NULL),
       create_callback_pending_(false) {
   create_callback_ = PP_MakeCompletionCallback(NULL, NULL);
 }
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
+  if (config_id_)
+    ResourceTracker::Get()->UnrefResource(config_id_);
+
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore and
   // releases the audio data associated with the pointer. Note however, that
   // until ShutDown returns, StreamCreated may still be called. This will be
@@ -238,70 +62,80 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
   }
 }
 
-const PPB_Audio* PPB_Audio_Impl::GetInterface() {
-  return &ppb_audio;
-}
-
-const PPB_AudioTrusted* PPB_Audio_Impl::GetTrustedInterface() {
-  return &ppb_audiotrusted;
-}
-
-PPB_Audio_Impl* PPB_Audio_Impl::AsPPB_Audio_Impl() {
+::ppapi::thunk::PPB_Audio_API* PPB_Audio_Impl::AsAudio_API() {
   return this;
 }
 
-bool PPB_Audio_Impl::Init(PluginDelegate* plugin_delegate,
-                          PP_Resource config_id,
+::ppapi::thunk::PPB_AudioTrusted_API* PPB_Audio_Impl::AsAudioTrusted_API() {
+  return this;
+}
+
+bool PPB_Audio_Impl::Init(PP_Resource config_id,
                           PPB_Audio_Callback callback, void* user_data) {
-  CHECK(!audio_);
-  config_ = Resource::GetAs<PPB_AudioConfig_Impl>(config_id);
-  if (!config_)
+  // Validate the config and keep a reference to it.
+  ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_AudioConfig_API>
+      enter(config_id, true);
+  if (enter.failed())
+    return false;
+  config_id_ = config_id;
+  ResourceTracker::Get()->AddRefResource(config_id);
+
+  if (!callback)
     return false;
   SetCallback(callback, user_data);
 
   // When the stream is created, we'll get called back on StreamCreated().
-  audio_ = plugin_delegate->CreateAudio(config_->sample_rate(),
-                                        config_->sample_frame_count(),
-                                        this);
+  CHECK(!audio_);
+  audio_ = instance()->delegate()->CreateAudio(
+      enter.object()->GetSampleRate(),
+      enter.object()->GetSampleFrameCount(),
+      this);
   return audio_ != NULL;
 }
 
 PP_Resource PPB_Audio_Impl::GetCurrentConfig() {
-  return config_->GetReference();
+  // AddRef on behalf of caller.
+  ResourceTracker::Get()->AddRefResource(config_id_);
+  return config_id_;
 }
 
-bool PPB_Audio_Impl::StartPlayback() {
+PP_Bool PPB_Audio_Impl::StartPlayback() {
   if (!audio_)
-    return false;
+    return PP_FALSE;
   if (playing())
-    return true;
+    return PP_TRUE;
   SetStartPlaybackState();
-  return audio_->StartPlayback();
+  return BoolToPPBool(audio_->StartPlayback());
 }
 
-bool PPB_Audio_Impl::StopPlayback() {
+PP_Bool PPB_Audio_Impl::StopPlayback() {
   if (!audio_)
-    return false;
+    return PP_FALSE;
   if (!playing())
-    return true;
+    return PP_TRUE;
   if (!audio_->StopPlayback())
-    return false;
+    return PP_FALSE;
   SetStopPlaybackState();
-  return true;
+  return PP_TRUE;
 }
 
-int32_t PPB_Audio_Impl::Open(PluginDelegate* plugin_delegate,
-                             PP_Resource config_id,
-                             PP_CompletionCallback create_callback) {
-  DCHECK(!audio_);
-  config_ = Resource::GetAs<PPB_AudioConfig_Impl>(config_id);
-  if (!config_)
-    return PP_ERROR_BADRESOURCE;
+int32_t PPB_Audio_Impl::OpenTrusted(PP_Resource config_id,
+                                    PP_CompletionCallback create_callback) {
+
+  // Validate the config and keep a reference to it.
+  ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_AudioConfig_API>
+      enter(config_id, true);
+  if (enter.failed())
+    return false;
+  config_id_ = config_id;
+  ResourceTracker::Get()->AddRefResource(config_id);
 
   // When the stream is created, we'll get called back on StreamCreated().
-  audio_ = plugin_delegate->CreateAudio(config_->sample_rate(),
-                                        config_->sample_frame_count(),
-                                        this);
+  DCHECK(!audio_);
+  audio_ = instance()->delegate()->CreateAudio(
+      enter.object()->GetSampleRate(),
+      enter.object()->GetSampleFrameCount(),
+      this);
   if (!audio_)
     return PP_ERROR_FAILED;
 

@@ -6,8 +6,7 @@
 
 #include "googleurl/src/gurl.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 namespace {
 
@@ -102,5 +101,4 @@ PP_Var URLUtilImpl::GenerateURLReturn(VarFromUtf8 var_from_utf8,
       static_cast<uint32_t>(url.possibly_invalid_spec().size()));
 }
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi

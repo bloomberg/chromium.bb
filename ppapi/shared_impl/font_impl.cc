@@ -6,8 +6,7 @@
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 // static
 bool FontImpl::IsPPFontDescriptionValid(const PP_FontDescription_Dev& desc) {
@@ -32,5 +31,4 @@ bool FontImpl::IsPPFontDescriptionValid(const PP_FontDescription_Dev& desc) {
   return true;
 }
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi

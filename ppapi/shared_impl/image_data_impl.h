@@ -8,8 +8,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 // Contains the implementation of some simple image data functions that are
 // shared between the proxy and Chrome's implementation. Since these functions
@@ -26,7 +25,6 @@ class ImageDataImpl {
   static bool IsImageDataFormatSupported(PP_ImageDataFormat format);
 };
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_IMAGE_DATA_IMPL_H_

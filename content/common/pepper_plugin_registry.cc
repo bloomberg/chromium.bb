@@ -236,7 +236,7 @@ std::set<PP_Instance>* PepperPluginRegistry::GetGloballySeenInstanceIDSet() {
   return NULL;
 }
 
-pp::shared_impl::WebKitForwarding* PepperPluginRegistry::GetWebKitForwarding() {
+ppapi::WebKitForwarding* PepperPluginRegistry::GetWebKitForwarding() {
   // This function is not needed on the host side of the proxy.
   NOTREACHED();
   return NULL;

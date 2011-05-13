@@ -20,7 +20,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextRun.h"
 #include "webkit/glue/webkit_glue.h"
 
-using pp::shared_impl::WebKitForwarding;
+using ::ppapi::WebKitForwarding;
 using WebKit::WebCanvas;
 using WebKit::WebFloatPoint;
 using WebKit::WebFloatRect;

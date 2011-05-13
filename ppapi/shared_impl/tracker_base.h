@@ -10,7 +10,6 @@
 #include "ppapi/proxy/interface_id.h"
 
 namespace ppapi {
-namespace shared_impl {
 
 class FunctionGroupBase;
 class ResourceObjectBase;
@@ -43,7 +42,6 @@ class TrackerBase {
                                             pp::proxy::InterfaceID id) = 0;
 };
 
-}  // namespace shared_impl
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_TRACKER_BASE_H_

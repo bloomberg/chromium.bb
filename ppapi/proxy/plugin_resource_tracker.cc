@@ -20,7 +20,7 @@ namespace {
 // When non-NULL, this object overrides the ResourceTrackerSingleton.
 PluginResourceTracker* g_resource_tracker_override = NULL;
 
-::ppapi::shared_impl::TrackerBase* GetTrackerBase() {
+::ppapi::TrackerBase* GetTrackerBase() {
   return PluginResourceTracker::GetInstance();
 }
 
@@ -39,7 +39,7 @@ PluginResourceTracker::ResourceInfo::ResourceInfo(const ResourceInfo& other)
     : ref_count(other.ref_count),
       resource(other.resource) {
   // Wire up the new shared resource tracker base to use our implementation.
-  ::ppapi::shared_impl::TrackerBase::Init(&GetTrackerBase);
+  ::ppapi::TrackerBase::Init(&GetTrackerBase);
 }
 
 PluginResourceTracker::ResourceInfo::~ResourceInfo() {
@@ -75,7 +75,7 @@ PluginResourceTracker* PluginResourceTracker::GetInstance() {
 }
 
 // static
-::ppapi::shared_impl::TrackerBase*
+::ppapi::TrackerBase*
 PluginResourceTracker::GetTrackerBaseInstance() {
   return GetInstance();
 }
@@ -122,7 +122,7 @@ PP_Resource PluginResourceTracker::PluginResourceForHostResource(
   return found->second;
 }
 
-::ppapi::shared_impl::ResourceObjectBase* PluginResourceTracker::GetResourceAPI(
+::ppapi::ResourceObjectBase* PluginResourceTracker::GetResourceAPI(
     PP_Resource res) {
   ResourceMap::iterator found = resource_map_.find(res);
   if (found == resource_map_.end())
@@ -130,7 +130,7 @@ PP_Resource PluginResourceTracker::PluginResourceForHostResource(
   return found->second.resource.get();
 }
 
-::ppapi::shared_impl::FunctionGroupBase* PluginResourceTracker::GetFunctionAPI(
+::ppapi::FunctionGroupBase* PluginResourceTracker::GetFunctionAPI(
     PP_Instance inst,
     pp::proxy::InterfaceID id) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(inst);

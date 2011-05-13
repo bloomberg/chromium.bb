@@ -24,7 +24,8 @@
     ],
   },
   'includes': [
-    'ppapi_shared_proxy.gypi',
+    'ppapi_proxy.gypi',
+    'ppapi_shared.gypi',
     'ppapi_tests.gypi',
   ],
 }

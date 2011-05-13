@@ -15,7 +15,7 @@
 namespace pp {
 namespace proxy {
 
-using pp::shared_impl::URLUtilImpl;
+using ppapi::URLUtilImpl;
 
 namespace {
 

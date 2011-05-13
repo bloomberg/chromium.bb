@@ -14,7 +14,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::thunk::PPB_ImageData_API;
-using pp::shared_impl::WebKitForwarding;
+using ppapi::WebKitForwarding;
 
 namespace pp {
 namespace proxy {
@@ -121,8 +121,8 @@ PP_Bool Font::DrawTextAt(PP_Resource pp_image_data,
                          const PP_Rect* clip,
                          PP_Bool image_data_is_opaque) {
   // Convert to an ImageData object.
-  ppapi::shared_impl::ResourceObjectBase* image_base =
-      ppapi::shared_impl::TrackerBase::Get()->GetResourceAPI(pp_image_data);
+  ppapi::ResourceObjectBase* image_base =
+      ppapi::TrackerBase::Get()->GetResourceAPI(pp_image_data);
   if (!image_base)
     return PP_FALSE;
   PPB_ImageData_API* image_api = image_base->GetAs<PPB_ImageData_API>();

@@ -15,8 +15,7 @@
 
 class GURL;
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 // Contains the implementation of PPB_URLUtil that is shared between the proxy
 // and the renderer.
@@ -61,7 +60,6 @@ class URLUtilImpl {
                                   PP_URLComponents_Dev* components);
 };
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi
 
 #endif

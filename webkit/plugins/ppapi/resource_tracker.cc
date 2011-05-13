@@ -42,14 +42,12 @@ template <typename T> static inline bool CheckIdType(T id, PPIdType type) {
   return (id & mask) == type;
 }
 
-namespace shared_impl = ::ppapi::shared_impl;
-
 namespace webkit {
 namespace ppapi {
 
 namespace {
 
-shared_impl::TrackerBase* GetTrackerBase() {
+::ppapi::TrackerBase* GetTrackerBase() {
   return ResourceTracker::Get();
 }
 
@@ -85,7 +83,7 @@ ResourceTracker::ResourceTracker()
     : last_resource_id_(0),
       last_var_id_(0) {
   // Wire up the new shared resource tracker base to use our implementation.
-  shared_impl::TrackerBase::Init(&GetTrackerBase);
+  ::ppapi::TrackerBase::Init(&GetTrackerBase);
 }
 
 ResourceTracker::~ResourceTracker() {
@@ -240,7 +238,7 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
                              found->second.object_vars.size());
 }
 
-shared_impl::ResourceObjectBase* ResourceTracker::GetResourceAPI(
+::ppapi::ResourceObjectBase* ResourceTracker::GetResourceAPI(
     PP_Resource res) {
   DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
@@ -250,7 +248,7 @@ shared_impl::ResourceObjectBase* ResourceTracker::GetResourceAPI(
   return result->second.first.get();
 }
 
-shared_impl::FunctionGroupBase* ResourceTracker::GetFunctionAPI(
+::ppapi::FunctionGroupBase* ResourceTracker::GetFunctionAPI(
     PP_Instance inst,
     pp::proxy::InterfaceID id) {
   if (function_proxies_[id].get())

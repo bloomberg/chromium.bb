@@ -25,7 +25,7 @@ namespace proxy {
 class PluginDispatcher;
 class PluginResource;
 
-class PluginResourceTracker : public ::ppapi::shared_impl::TrackerBase {
+class PluginResourceTracker : public ::ppapi::TrackerBase {
  public:
   // Called by tests that want to specify a specific ResourceTracker. This
   // allows them to use a unique one each time and avoids singletons sticking
@@ -34,7 +34,7 @@ class PluginResourceTracker : public ::ppapi::shared_impl::TrackerBase {
 
   // Returns the global singleton resource tracker for the plugin.
   static PluginResourceTracker* GetInstance();
-  static ::ppapi::shared_impl::TrackerBase* GetTrackerBaseInstance();
+  static ::ppapi::TrackerBase* GetTrackerBaseInstance();
 
   // Returns the object associated with the given resource ID, or NULL if
   // there isn't one.
@@ -55,9 +55,9 @@ class PluginResourceTracker : public ::ppapi::shared_impl::TrackerBase {
       const HostResource& resource) const;
 
   // TrackerBase.
-  virtual ::ppapi::shared_impl::ResourceObjectBase* GetResourceAPI(
+  virtual ::ppapi::ResourceObjectBase* GetResourceAPI(
       PP_Resource res);
-  virtual ::ppapi::shared_impl::FunctionGroupBase* GetFunctionAPI(
+  virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance inst,
       pp::proxy::InterfaceID id);
 

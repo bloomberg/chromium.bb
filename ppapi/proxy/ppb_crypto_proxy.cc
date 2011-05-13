@@ -14,7 +14,7 @@ namespace proxy {
 namespace {
 
 const PPB_Crypto_Dev crypto_interface = {
-  &pp::shared_impl::CryptoImpl::GetRandomBytes
+  &ppapi::CryptoImpl::GetRandomBytes
 };
 
 InterfaceProxy* CreateCryptoProxy(Dispatcher* dispatcher,

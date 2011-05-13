@@ -11,8 +11,6 @@ namespace thunk {
 class ResourceCreationAPI;
 }
 
-namespace shared_impl {
-
 class FunctionGroupBase {
  public:
   // Dynamic casting for this object. Returns the pointer to the given type if
@@ -23,11 +21,10 @@ class FunctionGroupBase {
 };
 
 template<>
-inline thunk::ResourceCreationAPI* FunctionGroupBase::GetAs() {
+inline ppapi::thunk::ResourceCreationAPI* FunctionGroupBase::GetAs() {
   return AsResourceCreation();
 }
 
-}  // namespace shared_impl
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_FUNCTION_GROUP_BASE_H_

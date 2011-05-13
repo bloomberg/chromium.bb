@@ -15,8 +15,7 @@
 
 struct PP_FontDescription_Dev;
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 class FontImpl {
  public:
@@ -27,7 +26,6 @@ class FontImpl {
   DISALLOW_COPY_AND_ASSIGN(FontImpl);
 };
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_FONT_IMPL_H_

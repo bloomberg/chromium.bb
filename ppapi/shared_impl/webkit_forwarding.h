@@ -23,8 +23,7 @@ namespace skia {
 class PlatformCanvas;
 }
 
-namespace pp {
-namespace shared_impl {
+namespace ppapi {
 
 class WebKitForwarding {
  public:
@@ -98,7 +97,6 @@ class WebKitForwarding {
 
 };
 
-}  // namespace shared_impl
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_WEBKIT_FORWARDING_H_

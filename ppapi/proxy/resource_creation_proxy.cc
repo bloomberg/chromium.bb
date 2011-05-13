@@ -9,18 +9,20 @@
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_graphics_2d_proxy.h"
+#include "ppapi/proxy/ppb_audio_config_proxy.h"
+#include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
+#include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
-using ::ppapi::thunk::ResourceCreationAPI;
+using ppapi::thunk::ResourceCreationAPI;
 
 namespace pp {
 namespace proxy {
@@ -37,17 +39,36 @@ ResourceCreationProxy::AsResourceCreation() {
   return this;
 }
 
+PP_Resource ResourceCreationProxy::CreateAudio(
+    PP_Instance instance,
+    PP_Resource config_id,
+    PPB_Audio_Callback audio_callback,
+    void* user_data) {
+  return PPB_Audio_Proxy::CreateProxyResource(instance, config_id,
+                                              audio_callback, user_data);
+}
+
+PP_Resource ResourceCreationProxy::CreateAudioConfig(
+    PP_Instance instance,
+    PP_AudioSampleRate sample_rate,
+    uint32_t sample_frame_count) {
+  return PPB_AudioConfig_Proxy::CreateProxyResource(
+      instance, sample_rate, sample_frame_count);
+}
+
+PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
+  // Proxied plugins can't created trusted audio devices.
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateFontObject(
     PP_Instance instance,
     const PP_FontDescription_Dev* description) {
-  if (!pp::shared_impl::FontImpl::IsPPFontDescriptionValid(*description))
+  if (!ppapi::FontImpl::IsPPFontDescriptionValid(*description))
     return 0;
 
-  // See the comment above Font's constructor for why we do this.
-  HostResource resource;
-  resource.SetHostResource(instance, 0);
-
-  linked_ptr<Font> object(new Font(resource, *description));
+  linked_ptr<Font> object(new Font(HostResource::MakeInstanceOnly(instance),
+                                   *description));
   return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
@@ -143,8 +164,8 @@ void ResourceCreationProxy::OnMsgCreateImageData(
   result->SetHostResource(instance, resource);
 
   // Get the description, it's just serialized as a string.
-  ppapi::thunk::EnterResource<ppapi::thunk::PPB_ImageData_API> enter_resource(
-      resource, false);
+  ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API>
+      enter_resource(resource, false);
   PP_ImageDataDesc desc;
   if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));

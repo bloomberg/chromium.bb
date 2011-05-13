@@ -41,9 +41,8 @@ class EnterFunction {
  public:
   EnterFunction(PP_Instance instance, bool report_error)
       : functions_(NULL) {
-    shared_impl::FunctionGroupBase* base =
-        shared_impl::TrackerBase::Get()->GetFunctionAPI(
-            instance, FunctionsT::interface_id);
+    FunctionGroupBase* base = TrackerBase::Get()->GetFunctionAPI(
+        instance, FunctionsT::interface_id);
     if (base)
       functions_ = base->GetAs<FunctionsT>();
     // TODO(brettw) check error and if report_error is set, do something.
@@ -61,13 +60,23 @@ class EnterFunction {
   DISALLOW_COPY_AND_ASSIGN(EnterFunction);
 };
 
+// Like EnterResource but assumes the lock is already held.
+// TODO(brettw) actually implement locks, this is just a placeholder for now.
+template<typename FunctionsT>
+class EnterFunctionNoLock : public EnterFunction<FunctionsT> {
+ public:
+  EnterFunctionNoLock(PP_Instance instance, bool report_error)
+      : EnterFunction<FunctionsT>(instance, report_error) {
+    // TODO(brettw) assert the lock is held.
+  }
+};
+
 template<typename ResourceT>
 class EnterResource {
  public:
   EnterResource(PP_Resource resource, bool report_error)
       : object_(NULL) {
-    shared_impl::ResourceObjectBase* base =
-        shared_impl::TrackerBase::Get()->GetResourceAPI(resource);
+    ResourceObjectBase* base = TrackerBase::Get()->GetResourceAPI(resource);
     if (base)
       object_ = base->GetAs<ResourceT>();
     // TODO(brettw) check error and if report_error is set, do something.
@@ -83,6 +92,17 @@ class EnterResource {
   ResourceT* object_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterResource);
+};
+
+// Like EnterResource but assumes the lock is already held.
+// TODO(brettw) actually implement locks, this is just a placeholder for now.
+template<typename ResourceT>
+class EnterResourceNoLock : public EnterResource<ResourceT> {
+ public:
+  EnterResourceNoLock(PP_Resource resource, bool report_error)
+      : EnterResource<ResourceT>(resource, report_error) {
+    // TODO(brettw) assert the lock is held.
+  }
 };
 
 }  // namespace thunk
