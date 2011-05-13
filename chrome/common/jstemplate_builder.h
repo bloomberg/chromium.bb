@@ -50,6 +50,10 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
 // assigned to it.
 void AppendJsonHtml(const DictionaryValue* json, std::string* output);
 
+// Same as AppendJsonHtml(), execpt does not include the <script></script>
+// tag wrappers.
+void AppendJsonJS(const DictionaryValue* json, std::string* output);
+
 // Appends the source for JsTemplates in a script tag.
 void AppendJsTemplateSourceHtml(std::string* output);
 

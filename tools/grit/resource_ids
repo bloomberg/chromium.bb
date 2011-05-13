@@ -142,4 +142,7 @@
   "chrome/browser/debugger/frontend/devtools_frontend_resources.grd": {
     "includes": [21500],
   },
+  "chrome/browser/resources/options_resources.grd": {
+    "includes": [22000],
+  },
 }

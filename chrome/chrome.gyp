@@ -307,6 +307,13 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'options_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/options_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'shared_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/shared_resources.grd',
@@ -1200,6 +1207,7 @@
                   '<(grit_out_dir)/component_extension_resources.pak',
                   '<(grit_out_dir)/devtools_frontend_resources.pak',
                   '<(grit_out_dir)/devtools_resources.pak',
+                  '<(grit_out_dir)/options_resources.pak',
                   '<(grit_out_dir)/net_internals_resources.pak',
                   '<(grit_out_dir)/shared_resources.pak',
                   '<(grit_out_dir)/sync_internals_resources.pak',

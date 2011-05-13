@@ -61,76 +61,7 @@
 <script src="chrome://resources/js/cr/ui/tree.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
-<script src="preferences.js"></script>
-<script src="pref_ui.js"></script>
-<script src="deletable_item_list.js"></script>
-<script src="inline_editable_list.js"></script>
-<script src="options_page.js"></script>
-<if expr="pp_ifdef('chromeos')">
-  <script src="about_page.js"></script>
-  <script src="chromeos/cellular_plan_element.js"></script>
-  <script src="chromeos/change_picture_options.js"></script>
-  <script src="chromeos/internet_network_element.js"></script>
-  <script src="chromeos/internet_options.js"></script>
-  <script src="chromeos/system_options.js"></script>
-  <script src="chromeos/accounts_options.js"></script>
-  <script src="chromeos/proxy_options.js"></script>
-  <script src="chromeos/proxy_rules_list.js"></script>
-  <script src="chromeos/accounts_user_list.js"></script>
-  <script src="chromeos/accounts_user_name_edit.js"></script>
-  <script>
-    var AboutPage = options.AboutPage;
-    var AccountsOptions = options.AccountsOptions;
-    var ChangePictureOptions = options.ChangePictureOptions;
-    var InternetOptions = options.InternetOptions;
-    var SystemOptions = options.SystemOptions;
-  </script>
-</if>
-<if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
-  <script src="certificate_tree.js"></script>
-  <script src="certificate_manager.js"></script>
-  <script src="certificate_restore_overlay.js"></script>
-  <script src="certificate_backup_overlay.js"></script>
-  <script src="certificate_edit_ca_trust_overlay.js"></script>
-  <script src="certificate_import_error_overlay.js"></script>
-  <script>
-    var CertificateManager = options.CertificateManager;
-    var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
-    var CertificateBackupOverlay = options.CertificateBackupOverlay;
-    var CertificateEditCaTrustOverlay = options.CertificateEditCaTrustOverlay;
-    var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
-  </script>
-</if>
-<script src="advanced_options.js"></script>
-<script src="alert_overlay.js"></script>
-<script src="autocomplete_list.js"></script>
-<script src="autofill_edit_address_overlay.js"></script>
-<script src="autofill_edit_creditcard_overlay.js"></script>
-<script src="autofill_options_list.js"></script>
-<script src="autofill_options.js"></script>
-<script src="browser_options.js"></script>
-<script src="browser_options_startup_page_list.js"></script>
-<script src="clear_browser_data_overlay.js"></script>
-<script src="content_settings.js"></script>
-<script src="content_settings_exceptions_area.js"></script>
-<script src="content_settings_ui.js"></script>
-<script src="cookies_list.js"></script>
-<script src="cookies_view.js"></script>
-<script src="font_settings.js"></script>
-<script src="import_data_overlay.js"></script>
-<script src="instant_confirm_overlay.js"></script>
-<script src="language_add_language_overlay.js"></script>
-<script src="language_list.js"></script>
-<script src="language_options.js"></script>
-<script src="password_manager.js"></script>
-<script src="password_manager_list.js"></script>
-<script src="personal_options.js"></script>
-<script src="search_engine_manager.js"></script>
-<script src="search_engine_manager_engine_list.js"></script>
-<script src="search_page.js"></script>
-<script src="sync_setup_overlay.js"></script>
-<script src="options.js"></script>
-
+<script src="chrome://settings/options_bundle.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;">
 <div class="header">
@@ -224,5 +155,8 @@
      </div>
   </div>
 </div>
+<script src="chrome://settings/strings.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_process.js"></script>
 </body>
 </html>

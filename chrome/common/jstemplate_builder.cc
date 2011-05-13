@@ -47,21 +47,28 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
 }
 
 void AppendJsonHtml(const DictionaryValue* json, std::string* output) {
+  std::string javascript_string;
+  AppendJsonJS(json, &javascript_string);
+
+  // </ confuses the HTML parser because it could be a </script> tag.  So we
+  // replace </ with <\/.  The extra \ will be ignored by the JS engine.
+  ReplaceSubstringsAfterOffset(&javascript_string, 0, "</", "<\\/");
+
+  output->append("<script>");
+  output->append(javascript_string);
+  output->append("</script>");
+}
+
+void AppendJsonJS(const DictionaryValue* json, std::string* output) {
   // Convert the template data to a json string.
   DCHECK(json) << "must include json data structure";
 
   std::string jstext;
   JSONStringValueSerializer serializer(&jstext);
   serializer.Serialize(*json);
-  // </ confuses the HTML parser because it could be a </script> tag.  So we
-  // replace </ with <\/.  The extra \ will be ignored by the JS engine.
-  ReplaceSubstringsAfterOffset(&jstext, 0, "</", "<\\/");
-
-  output->append("<script>");
   output->append("var templateData = ");
   output->append(jstext);
   output->append(";");
-  output->append("</script>");
 }
 
 void AppendJsTemplateSourceHtml(std::string* output) {
@@ -107,8 +114,17 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
 }
 
 void AppendI18nTemplateProcessHtml(std::string* output) {
+  static const base::StringPiece i18n_process_src(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_I18N_PROCESS_JS));
+
+  if (i18n_process_src.empty()) {
+    NOTREACHED() << "Unable to get i18n process src";
+    return;
+  }
+
   output->append("<script>");
-  output->append("i18nTemplate.process(document, templateData);");
+  output->append(i18n_process_src.data(), i18n_process_src.size());
   output->append("</script>");
 }
 

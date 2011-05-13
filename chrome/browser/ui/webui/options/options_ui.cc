@@ -44,10 +44,10 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_type.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/options_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -72,6 +72,9 @@
 #if defined(USE_NSS)
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 #endif
+
+static const char kLocalizedStringsFile[] = "strings.js";
+static const char kOptionsBundleJsFile[]  = "options_bundle.js";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -110,22 +113,44 @@ OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
                                            bool is_incognito,
                                            int request_id) {
+  scoped_refptr<RefCountedBytes> response_bytes(new RefCountedBytes);
   SetFontAndTextDirection(localized_strings_.get());
 
-  static const base::StringPiece options_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_OPTIONS_HTML));
-  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      options_html, localized_strings_.get());
+  if (path == kLocalizedStringsFile) {
+    // Return dynamically-generated strings from memory.
+    std::string template_data;
+    jstemplate_builder::AppendJsonJS(localized_strings_.get(), &template_data);
+    response_bytes->data.resize(template_data.size());
+    std::copy(template_data.begin(),
+              template_data.end(),
+              response_bytes->data.begin());
+  } else if (path == kOptionsBundleJsFile) {
+    // Return (and cache) the options javascript code.
+    static const base::StringPiece options_javascript(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_OPTIONS_BUNDLE_JS));
+    response_bytes->data.resize(options_javascript.size());
+    std::copy(options_javascript.begin(),
+              options_javascript.end(),
+              response_bytes->data.begin());
+  } else {
+    // Return (and cache) the main options html page as the default.
+    static const base::StringPiece options_html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_OPTIONS_HTML));
+    response_bytes->data.resize(options_html.size());
+    std::copy(options_html.begin(),
+              options_html.end(),
+              response_bytes->data.begin());
+  }
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, response_bytes);
 }
 
-std::string OptionsUIHTMLSource::GetMimeType(const std::string&) const {
+std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {
+  if (path == kLocalizedStringsFile || path == kOptionsBundleJsFile)
+    return "application/javascript";
+
   return "text/html";
 }
 
