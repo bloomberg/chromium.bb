@@ -115,11 +115,10 @@ found in the LICENSE file.
           To connect to another computer, enter the access code provided to you
           by that computer's user.
         </p>
-        <form action="">
+        <form action="" onsubmit="tryConnect(this); return false;">
           <input type="text"
                  id="access_code_entry"/>
-          <button type="submit"
-                  onclick="tryConnect(this.form);">
+          <button type="submit">
             Connect
           </button>
         </form>
@@ -133,16 +132,33 @@ found in the LICENSE file.
       <div id="connecting">
         <p class="message">
           Verifying access code...
+          <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
+               the eventual server response not to ignore responses for any
+               subsequent requests.
           <button type="button"
                   class="cancel"
                   onclick="cancelConnect();">
             Cancel
           </button>
+          -->
+        </p>
+      </div>
 
+      <div id="connect_failed">
+        <p class="message"
+           id="invalid_access_code">
+          Invalid access code.
         </p>
-        <p class="message mock">
-          (For this mock-up, this message will disappear automatically.)
+        <p class="message"
+           id="other_connect_error">
+          An error occurred. The server response was
+          <strong id="server_response"></strong>.
         </p>
+        <button type="button"
+                class="ok"
+                onclick="setClientMode('unconnected');">
+          OK
+        </button>
       </div>
 
     </div>
@@ -150,9 +166,13 @@ found in the LICENSE file.
     <!-- In-session UI -->
     <div id="session">
       <p class="message">
-        Congratulations! You have connected successfully. Your access code was
-        <em id="access_code_proof"></em>.
+        Congratulations! You have connected successfully. The JID corresponding
+        to your access code is
+        <strong id="host_jid_debug"></strong>.
       </p>
+      <div id="plugin_container">
+        <!-- The plugin will be placed here once a JID has been obtained. -->
+      </div>
     </div>
 
   </body>

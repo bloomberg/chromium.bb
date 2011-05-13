@@ -13,7 +13,8 @@
   },
   "permissions": [
     "tabs",
-    "https://www.google.com/accounts/*"
+    "https://www.google.com/accounts/*",
+    "https://www.googleapis.com/chromoting/*"
   ],
   "PLUGINS": "PLACEHOLDER"
 }

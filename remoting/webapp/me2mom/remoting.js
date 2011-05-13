@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(jamiewalch): Clean up terminology in this web app regarding supportId,
+// sessionId and accessCode.
+
 var remoting = {};
 XMPP_TOKEN_NAME = 'xmpp_token';
 OAUTH2_TOKEN_NAME = 'oauth2_token';
@@ -11,10 +14,10 @@ function updateAuthStatus_() {
   var oauth1_status = document.getElementById('oauth1_status');
   if (remoting.oauth.hasToken()) {
     oauth1_status.innerText = 'OK';
-    oauth1_status.style.color='green';
+    oauth1_status.style.color = 'green';
   } else {
     oauth1_status.innerText = 'Unauthorized';
-    oauth1_status.style.color='red';
+    oauth1_status.style.color = 'red';
   }
   var xmpp_status = document.getElementById('xmpp_status');
   if (remoting.getItem(XMPP_TOKEN_NAME)) {
@@ -179,7 +182,7 @@ function setHostMode(mode) {
 }
 
 function setClientMode(mode) {
-  setMode_(mode, ['unconnected', 'connecting']);
+  setMode_(mode, ['unconnected', 'connecting', 'connect_failed']);
 }
 
 function tryShare() {
@@ -189,11 +192,11 @@ function tryShare() {
   plugin.setAttribute('hidden', 'true');
   plugin.setAttribute('id', HOST_PLUGIN_ID);
   div.appendChild(plugin);
-  plugin.onStateChanged = onStateChanged;
+  plugin.onStateChanged = onStateChanged_;
   plugin.connect('uid', 'authtoken');
 }
 
-function onStateChanged() {
+function onStateChanged_() {
   var plugin = document.getElementById(HOST_PLUGIN_ID);
   var state = plugin.state;
   if (state == plugin.REQUESTED_SUPPORT_ID) {
@@ -201,7 +204,7 @@ function onStateChanged() {
   } else if (state == plugin.RECEIVED_SUPPORT_ID) {
     var support_id = plugin.supportID;
     var access_code = document.getElementById('access_code_display');
-    access_code.innerHTML = support_id;
+    access_code.innerText = support_id;
     setHostMode('ready_to_share');
   } else if (state == plugin.CONNECTED) {
     setHostMode('shared');
@@ -209,7 +212,7 @@ function onStateChanged() {
     setHostMode('unshared');
     plugin.parentNode.removeChild(plugin);
   } else {
-    window.alert("Unknown state -> " + state);
+    window.alert('Unknown state -> ' + state);
   }
 }
 
@@ -218,20 +221,52 @@ function cancelShare() {
   plugin.disconnect();
 }
 
+function startSession_() {
+  var div = document.getElementById('plugin_container');
+  var plugin = document.createElement('embed');
+  plugin.setAttribute('type', 'pepper-application/x-chromoting');
+  plugin.setAttribute('id', 'chromoting_client_plugin');
+  div.appendChild(plugin);
+  remoting.plugin = plugin;
+  setGlobalMode('session');
+}
+
+function sessionIdToJid_(reply, xhr) {
+  if (xhr.status == 200) {
+    var host = JSON.parse(xhr.responseText);
+    if (host.data && host.data.jabberId) {
+      remoting.jid = host.data.jabberId;
+      var proof = document.getElementById('host_jid_debug');
+      proof.innerText = remoting.jid;
+      startSession_();
+      return;
+    }
+  }
+  var invalid = document.getElementById('invalid_access_code');
+  var other = document.getElementById('other_connect_error');
+  if (xhr.status == 404) {
+    invalid.style.display = 'block';
+    other.style.display = 'none';
+  } else {
+    invalid.style.display = 'none';
+    other.style.display = 'block';
+    var responseNode = document.getElementById('server_response');
+    responseNode.innerText = xhr.responseText + ' (' + xhr.status + ')';
+  }
+  setClientMode('connect_failed');
+}
+
 function tryConnect(form) {
-  remoting.accessCode = form['access_code_entry'].value;
+  remoting.supportId = form['access_code_entry'].value;
   setClientMode('connecting');
-  remoting.clientTimer = setTimeout(
-      function() {
-        var code = document.getElementById('access_code_proof');
-        code.innerHTML = remoting.accessCode;
-        setGlobalMode('session');
-      },
-      3000);
+  var urlBase = 'https://www.googleapis.com/chromoting/v1/support-hosts/';
+  remoting.oauth.sendSignedRequest(
+      urlBase + '' + encodeURIComponent(remoting.supportId) + '',
+      sessionIdToJid_);
+  return true;
 }
 
 function cancelConnect() {
   remoting.accessCode = '';
   setClientMode('unconnected');
-  clearTimeout(remoting.clientTimer);
 }
