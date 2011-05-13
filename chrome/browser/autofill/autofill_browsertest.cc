@@ -382,9 +382,13 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormsDistinguishedById) {
 
 // Test that form filling works after reloading the current page.
 // This test brought to you by http://crbug.com/69204
+#if defined(OS_MACOSX)
 // Sometimes times out on Mac: http://crbug.com/81451
-// Currently enabled to try to debug timeouts.
-IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterReload) {
+#define MAYBE_AutofillAfterReload DISABLED_AutofillAfterReload
+#else
+#define MAYBE_AutofillAfterReload AutofillAfterReload
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
   LOG(WARNING) << "Creating test profile.";
   CreateTestProfile();
 
