@@ -1312,7 +1312,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// Test Scribe ID - 386591 - Merge simple bookmark subset under bookmark folder.
+// TCM ID - 3675271 - Merge simple bookmark subset under bookmark folder.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
                        MC_MergeSimpleBMHierarchySubsetUnderBMFolder) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -1338,7 +1338,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// Test Scribe ID - 386587 - Merge subsets of bookmark under bookmark bar.
+// TCM ID - 3727284 - Merge subsets of bookmark under bookmark bar.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
                        MC_MergeSimpleBMHierarchySubsetUnderBookmarkBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -1363,9 +1363,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(1));
 }
 
-// Test Scribe ID - 386590 - Merge subsets of bookmark under bookmark folder.
+// TCM ID - 3659294 - Merge simple bookmark hierarchy under bookmark folder.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       MC_MergeSimpleBMHierarchyUnderBMFolder) {
+                       MC_Merge_SimpleBMHierarchy_Under_BMFolder) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
@@ -1394,10 +1394,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// Test Scribe ID - 386592 - Merge disjoint sets of bookmark hierarchy under
-// bookmark folder.
+// TCM ID - 3711273 - Merge disjoint sets of bookmark hierarchy under bookmark
+// folder.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       MC_MergeSimpleBMHierarchyDisjointSetsUnderBMFolder) {
+                       MC_Merge_SimpleBMHierarchy_DisjointSets_Under_BMFolder) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
@@ -1425,10 +1425,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// Test Scribe ID - 386588 - Merge disjoint sets of bookmark hierarchy under
-// bookmark bar.
+// TCM ID - 3639296 - Merge disjoint sets of bookmark hierarchy under bookmark
+// bar.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       MC_MergeSimpleBMHierarchyDisjointSetsUnderBookmarkBar) {
+    MC_Merge_SimpleBMHierarchy_DisjointSets_Under_BookmarkBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
@@ -1450,10 +1450,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// Test Scribe ID - 386593 - Merge sets of duplicate bookmarks under bookmark
-// bar.
+// TCM ID - 3616282 - Merge sets of duplicate bookmarks under bookmark bar.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       MC_MergeSimpleBMHierarchyDuplicateBMsUnderBMBar) {
+                       MC_Merge_SimpleBMHierarchy_DuplicateBMs_Under_BMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
@@ -1515,4 +1514,158 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, FAILS_DisableSync) {
   GetClient(1)->EnableSyncForAllDatatypes();
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
+}
+
+// TCM ID - 3662298 - Test adding duplicate folder - Both with different BMs
+// underneath.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, MC_DuplicateFolders) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  DisableVerifier();
+
+  const BookmarkNode* folder0 = AddFolder(0, kGenericFolderName);
+  ASSERT_TRUE(folder0 != NULL);
+  const BookmarkNode* folder1 = AddFolder(1, kGenericFolderName);
+  ASSERT_TRUE(folder1 != NULL);
+  for (int i = 0; i < 5; ++i) {
+    std::wstring title0 = IndexedURLTitle(i);
+    GURL url0 = GURL(IndexedURL(i));
+    ASSERT_TRUE(AddURL(0, folder0, i, title0, url0) != NULL);
+    std::wstring title1 = IndexedURLTitle(i+5);
+    GURL url1 = GURL(IndexedURL(i+5));
+    ASSERT_TRUE(AddURL(1, folder1, i, title1, url1) != NULL);
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+}
+
+// TCM ID - 3719307 - Test a scenario of updating the name of the same bookmark
+// from two clients at the same time.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       MC_BookmarkNameChangeConflict) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  const BookmarkNode* folder0 = AddFolder(0, kGenericFolderName);
+  ASSERT_TRUE(folder0 != NULL);
+  for (int i = 0; i < 3; ++i) {
+    std::wstring title = IndexedURLTitle(i);
+    GURL url = GURL(IndexedURL(i));
+    ASSERT_TRUE(AddURL(0, folder0, i, title, url) != NULL);
+  }
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+
+  DisableVerifier();
+  GURL url(IndexedURL(0));
+  SetTitle(0, GetUniqueNodeByURL(0, url), L"Title++");
+  SetTitle(1, GetUniqueNodeByURL(1, url), L"Title--");
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+}
+
+// TCM ID - 3672299 - Test a scenario of updating the URL of the same bookmark
+// from two clients at the same time.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       MC_BookmarkURLChangeConflict) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  const BookmarkNode* folder0 = AddFolder(0, kGenericFolderName);
+  ASSERT_TRUE(folder0 != NULL);
+  for (int i = 0; i < 3; ++i) {
+    std::wstring title = IndexedURLTitle(i);
+    GURL url = GURL(IndexedURL(i));
+    ASSERT_TRUE(AddURL(0, folder0, i, title, url) != NULL);
+  }
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+
+  DisableVerifier();
+  GURL url(IndexedURL(0));
+  ASSERT_TRUE(SetURL(0,
+                     GetUniqueNodeByURL(0, url),
+                     GURL("http://www.google.com/00")));
+  ASSERT_TRUE(SetURL(1,
+                     GetUniqueNodeByURL(1, url),
+                     GURL("http://www.google.com/11")));
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+}
+
+// TCM ID - 3699290 - Test a scenario of updating the BM Folder name from two
+// clients at the same time.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       MC_FolderNameChangeConflict) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  DisableVerifier();
+
+  const BookmarkNode* folderA[2];
+  const BookmarkNode* folderB[2];
+  const BookmarkNode* folderC[2];
+
+  // Create empty folder A on both clients.
+  folderA[0] = AddFolder(0, IndexedFolderName(0));
+  ASSERT_TRUE(folderA[0] != NULL);
+  folderA[1] = AddFolder(1, IndexedFolderName(0));
+  ASSERT_TRUE(folderA[1] != NULL);
+
+  // Create folder B with bookmarks on both clients.
+  folderB[0] = AddFolder(0, IndexedFolderName(1));
+  ASSERT_TRUE(folderB[0] != NULL);
+  folderB[1] = AddFolder(1, IndexedFolderName(1));
+  ASSERT_TRUE(folderB[1] != NULL);
+  for (int i = 0; i < 3; ++i) {
+    std::wstring title = IndexedURLTitle(i);
+    GURL url = GURL(IndexedURL(i));
+    ASSERT_TRUE(AddURL(0, folderB[0], i, title, url) != NULL);
+  }
+
+  // Create folder C with bookmarks and subfolders on both clients.
+  folderC[0] = AddFolder(0, IndexedFolderName(2));
+  ASSERT_TRUE(folderC[0] != NULL);
+  folderC[1] = AddFolder(1, IndexedFolderName(2));
+  ASSERT_TRUE(folderC[1] != NULL);
+  for (int i = 0; i < 3; ++i) {
+    std::wstring folder_name = IndexedSubfolderName(i);
+    const BookmarkNode* subfolder = AddFolder(0, folderC[0], i, folder_name);
+    ASSERT_TRUE(subfolder != NULL);
+    for (int j = 0; j < 3; ++j) {
+      std::wstring title = IndexedURLTitle(j);
+      GURL url = GURL(IndexedURL(j));
+      ASSERT_TRUE(AddURL(0, subfolder, j, title, url) != NULL);
+    }
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+
+  // Simultaneously rename folder A on both clients.
+  SetTitle(0, folderA[0], L"Folder A++");
+  SetTitle(1, folderA[1], L"Folder A--");
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+
+  // Simultaneously rename folder B on both clients.
+  SetTitle(0, folderB[0], L"Folder B++");
+  SetTitle(1, folderB[1], L"Folder B--");
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
+
+  // Simultaneously rename folder C on both clients.
+  SetTitle(0, folderC[0], L"Folder C++");
+  SetTitle(1, folderC[1], L"Folder C--");
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
