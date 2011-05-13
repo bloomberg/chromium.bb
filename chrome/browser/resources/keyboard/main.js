@@ -175,9 +175,8 @@ Key.prototype = {
 
     this.sizeElement(mode, height);
 
-    var cb = sendKeyFunction(this.modes_[mode].keyIdentifier);
-    this.modeElements_[mode].onclick = cb;
-    this.modeElements_[mode].ontouchstart = cb;
+    setupKeyEventHandlers(this.modeElements_[mode],
+                          sendKeyFunction(this.modes_[mode].keyIdentifier));
 
     return this.modeElements_[mode];
   }
@@ -214,7 +213,8 @@ SvgKey.prototype = {
     img.className = 'image-key ' + this.className_;
     this.modeElements_[mode].appendChild(img);
 
-    this.modeElements_[mode].onclick = sendKeyFunction(this.keyId_);
+    setupKeyEventHandlers(this.modeElements_[mode],
+                          sendKeyFunction(this.keyId_));
 
     this.sizeElement(mode, height);
 
@@ -247,7 +247,8 @@ SpecialKey.prototype = {
     this.modeElements_[mode].textContent = this.content_;
     this.modeElements_[mode].className = 'key';
 
-    this.modeElements_[mode].onclick = sendKeyFunction(this.keyId_);
+    setupKeyEventHandlers(this.modeElements_[mode],
+                          sendKeyFunction(this.keyId_));
 
     this.sizeElement(mode, height);
 
@@ -300,9 +301,10 @@ ShiftKey.prototype = {
 
     this.sizeElement(mode, height);
 
-    this.modeElements_[mode].onclick = function() {
-      transitionMode(SHIFT_MODE);
-    };
+    setupKeyEventHandlers(this.modeElements_[mode],
+                          function() {
+                            transitionMode(SHIFT_MODE);
+                          });
     return this.modeElements_[mode];
   },
 };
@@ -339,9 +341,10 @@ SymbolKey.prototype = {
 
     this.sizeElement(mode, height);
 
-    this.modeElements_[mode].onclick = function() {
-      transitionMode(NUMBER_MODE);
-    };
+    setupKeyEventHandlers(this.modeElements_[mode],
+                          function() {
+                            transitionMode(NUMBER_MODE);
+                          });
 
     return this.modeElements_[mode];
   }
@@ -369,12 +372,13 @@ DotComKey.prototype = {
 
     this.sizeElement(mode, height);
 
-    this.modeElements_[mode].onclick = function() {
-      sendKey('.');
-      sendKey('c');
-      sendKey('o');
-      sendKey('m');
-    };
+    setupKeyEventHandlers(this.modeElements_[mode],
+                          function() {
+                            sendKey('.');
+                            sendKey('c');
+                            sendKey('o');
+                            sendKey('m');
+                          });
 
     return this.modeElements_[mode];
   }
@@ -619,12 +623,28 @@ function sendKey(key) {
 }
 
 /**
+ * Setup event handlers for the keys.
+ * @param {BaseKey} key The key to setup event handlers for.
+ * @param {fn} handler The event handler to use for the key.
+ * @return {void}
+ */
+function setupKeyEventHandlers(key, handler) {
+  key.onclick = function(evt) {
+    handler();
+    evt.preventDefault()
+  };
+  key.ontouchstart = key.onclick;
+}
+
+/**
  * Create a closure for the sendKey function.
  * @param {string} key The parameter to sendKey.
  * @return {void}
  */
 function sendKeyFunction(key) {
-  return function() { sendKey(key); }
+  return function() {
+    sendKey(key);
+  }
 }
 
 /**
