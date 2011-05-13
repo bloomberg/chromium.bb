@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -160,6 +161,8 @@ Demuxer* AdaptiveDemuxer::current_demuxer(DemuxerStream::Type type) {
 
 // Helper class that wraps a FilterCallback and expects to get called a set
 // number of times, after which the wrapped callback is fired (and deleted).
+//
+// TODO: Remove this class once Stop() is converted to FilterStatusCB.
 class CountingCallback {
  public:
   CountingCallback(int count, FilterCallback* orig_cb)
@@ -191,21 +194,69 @@ class CountingCallback {
   scoped_ptr<FilterCallback> orig_cb_;
 };
 
+// Helper class that wraps FilterStatusCB and expects to get called a set
+// number of times, after which the wrapped callback is fired. If an error
+// is reported in any of the callbacks, only the first error code is passed
+// to the wrapped callback.
+class CountingStatusCB : public base::RefCountedThreadSafe<CountingStatusCB> {
+ public:
+  CountingStatusCB(int count, const FilterStatusCB& orig_cb)
+      : remaining_count_(count), orig_cb_(orig_cb),
+        overall_status_(PIPELINE_OK) {
+    DCHECK_GT(remaining_count_, 0);
+    DCHECK(!orig_cb.is_null());
+  }
+
+  FilterStatusCB GetACallback() {
+    return base::Bind(&CountingStatusCB::OnChildCallbackDone, this);
+  }
+
+ private:
+  void OnChildCallbackDone(PipelineStatus status) {
+    bool fire_orig_cb = false;
+    PipelineStatus overall_status = PIPELINE_OK;
+
+    {
+      base::AutoLock auto_lock(lock_);
+
+      if (overall_status_ == PIPELINE_OK && status != PIPELINE_OK)
+        overall_status_ = status;
+
+      if (--remaining_count_ == 0) {
+        fire_orig_cb = true;
+        overall_status = overall_status_;
+      }
+    }
+
+    if (fire_orig_cb)
+      orig_cb_.Run(overall_status);
+  }
+
+  base::Lock lock_;
+  int remaining_count_;
+  FilterStatusCB orig_cb_;
+  PipelineStatus overall_status_;
+
+  DISALLOW_COPY_AND_ASSIGN(CountingStatusCB);
+};
+
 void AdaptiveDemuxer::Stop(FilterCallback* callback) {
   // Stop() must be called on all of the demuxers even though only one demuxer
   // is  actively delivering audio and another one is delivering video. This
   // just satisfies the contract that all demuxers must have Stop() called on
   // them before they are destroyed.
+  //
+  // TODO: Remove CountingCallback once Stop() is converted to FilterStatusCB.
   CountingCallback* wrapper = new CountingCallback(demuxers_.size(), callback);
   for (size_t i = 0; i < demuxers_.size(); ++i)
     demuxers_[i]->Stop(wrapper->GetACallback());
 }
 
-void AdaptiveDemuxer::Seek(base::TimeDelta time, FilterCallback* callback) {
+void AdaptiveDemuxer::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   Demuxer* audio = current_demuxer(DemuxerStream::AUDIO);
   Demuxer* video = current_demuxer(DemuxerStream::VIDEO);
   int count = (audio ? 1 : 0) + (video && audio != video ? 1 : 0);
-  CountingCallback* wrapper = new CountingCallback(count, callback);
+  CountingStatusCB* wrapper = new CountingStatusCB(count, cb);
   if (audio)
     audio->Seek(time, wrapper->GetACallback());
   if (video && audio != video)

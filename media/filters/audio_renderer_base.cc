@@ -64,12 +64,13 @@ void AudioRendererBase::Stop(FilterCallback* callback) {
   }
 }
 
-void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
+void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
   DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
+  DCHECK(seek_cb_.is_null());
   state_ = kSeeking;
-  seek_callback_.reset(callback);
+  seek_cb_ = cb;
   seek_timestamp_ = time;
 
   // Throw away everything and schedule our reads.
@@ -159,13 +160,12 @@ void AudioRendererBase::ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in) {
 
   // Check for our preroll complete condition.
   if (state_ == kSeeking) {
-    DCHECK(seek_callback_.get());
+    DCHECK(!seek_cb_.is_null());
     if (algorithm_->IsQueueFull() || recieved_end_of_stream_) {
       // Transition into paused whether we have data in |algorithm_| or not.
       // FillBuffer() will play silence if there's nothing to fill.
       state_ = kPaused;
-      seek_callback_->Run();
-      seek_callback_.reset();
+      ResetAndRunCB(&seek_cb_, PIPELINE_OK);
     }
   } else if (state_ == kPaused && pending_reads_ == 0) {
     // No more pending reads!  We're now officially "paused".

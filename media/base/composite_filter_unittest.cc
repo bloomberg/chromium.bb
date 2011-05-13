@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "media/base/composite_filter.h"
 #include "media/base/mock_callback.h"
@@ -53,9 +54,15 @@ class CompositeFilterTest : public testing::Test {
   // |seek_time| - The time to pass to the Seek() call if |method_to_call|
   //               equals SEEK.
   // |callback| - The callback object to pass to the method.
+  // |expected_status| - Some filter methods use a FilterStatusCB instead of
+  //                     a FilterCallback. For these methods this function
+  //                     creates a FilterStatusCB that makes sure the status
+  //                     passed to the callback matches |expected_status| and
+  //                     then calls |callback|.
   void DoFilterCall(MethodToCall method_to_call, Filter* filter,
                     base::TimeDelta seek_time,
-                    FilterCallback* callback);
+                    FilterCallback* callback,
+                    PipelineStatus expected_status);
 
   // Creates an expectation sequence based on the value of method_to_call.
   //
@@ -82,10 +89,16 @@ class CompositeFilterTest : public testing::Test {
   void ExpectInvalidStateFail(MethodToCall method_to_call,
                   base::TimeDelta seek_time = base::TimeDelta());
 
-  // Run the callback stored in |filter_1_callback_|.
+  // Returns whether |filter_1_callback_| or |filter_1_status_cb_| is set.
+  bool HasFilter1Callback() const;
+
+  // Run the callback stored in |filter_1_callback_| or |filter_2_status_cb_|.
   void RunFilter1Callback();
 
-  // Run the callback stored in |filter_2_callback_|.
+  // Returns whether |filter_2_callback_| or |filter_2_status_cb_| is set.
+  bool HasFilter2Callback() const;
+
+  // Run the callback stored in |filter_2_callback_| or |filter_2_status_cb_|.
   void RunFilter2Callback();
 
  protected:
@@ -98,8 +111,14 @@ class CompositeFilterTest : public testing::Test {
   scoped_refptr<StrictMock<MockFilter> > filter_1_;
 
   // Callback passed to |filter_1_| during last Play(), Pause(), Flush(),
-  // Stop(), or Seek() call.
+  // or Stop() call.
   FilterCallback* filter_1_callback_;
+
+  // Status to pass to |filter_1_status_cb_|.
+  PipelineStatus filter_1_status_;
+
+  // Callback passed to |filter_1_| during last Seek() call.
+  FilterStatusCB filter_1_status_cb_;
 
   // Second filter added to the composite.
   scoped_refptr<StrictMock<MockFilter> > filter_2_;
@@ -107,6 +126,12 @@ class CompositeFilterTest : public testing::Test {
   // Callback passed to |filter_2_| during last Play(), Pause(), Flush(),
   // Stop(), or Seek() call.
   FilterCallback* filter_2_callback_;
+
+  // Status to pass to |filter_2_status_cb_|.
+  PipelineStatus filter_2_status_;
+
+  // Callback passed to |filter_2_| during last Seek() call.
+  FilterStatusCB filter_2_status_cb_;
 
   // FilterHost implementation passed to |composite_| via set_host().
   scoped_ptr<StrictMock<MockFilterHost> > mock_filter_host_;
@@ -117,7 +142,9 @@ class CompositeFilterTest : public testing::Test {
 CompositeFilterTest::CompositeFilterTest() :
     composite_(new CompositeFilter(&message_loop_)),
     filter_1_callback_(NULL),
+    filter_1_status_(PIPELINE_OK),
     filter_2_callback_(NULL),
+    filter_2_status_(PIPELINE_OK),
     mock_filter_host_(new StrictMock<MockFilterHost>()) {
 }
 
@@ -132,6 +159,8 @@ void CompositeFilterTest::SetupAndAdd2Filters() {
   // |filter_1_callback_| when they are called.
   filter_1_ = new StrictMock<MockFilter>();
   filter_1_callback_ = NULL;
+  filter_1_status_ = PIPELINE_OK;
+  filter_1_status_cb_.Reset();
   ON_CALL(*filter_1_, Play(_))
       .WillByDefault(SaveArg<0>(&filter_1_callback_));
   ON_CALL(*filter_1_, Pause(_))
@@ -141,12 +170,14 @@ void CompositeFilterTest::SetupAndAdd2Filters() {
   ON_CALL(*filter_1_, Stop(_))
       .WillByDefault(SaveArg<0>(&filter_1_callback_));
   ON_CALL(*filter_1_, Seek(_,_))
-      .WillByDefault(SaveArg<1>(&filter_1_callback_));
+      .WillByDefault(SaveArg<1>(&filter_1_status_cb_));
 
   // Setup |filter_2_| and arrange for methods to set
   // |filter_2_callback_| when they are called.
   filter_2_ = new StrictMock<MockFilter>();
   filter_2_callback_ = NULL;
+  filter_2_status_ = PIPELINE_OK;
+  filter_2_status_cb_.Reset();
   ON_CALL(*filter_2_, Play(_))
       .WillByDefault(SaveArg<0>(&filter_2_callback_));
   ON_CALL(*filter_2_, Pause(_))
@@ -156,7 +187,7 @@ void CompositeFilterTest::SetupAndAdd2Filters() {
   ON_CALL(*filter_2_, Stop(_))
       .WillByDefault(SaveArg<0>(&filter_2_callback_));
   ON_CALL(*filter_2_, Seek(_,_))
-      .WillByDefault(SaveArg<1>(&filter_2_callback_));
+      .WillByDefault(SaveArg<1>(&filter_2_status_cb_));
 
   composite_->AddFilter(filter_1_);
   composite_->AddFilter(filter_2_);
@@ -184,10 +215,22 @@ void CompositeFilterTest::ExpectFilterCall(MethodToCall method_to_call,
   };
 }
 
+void OnStatusCB(PipelineStatus expected_status, FilterCallback* callback,
+                PipelineStatus status) {
+  EXPECT_EQ(status, expected_status);
+
+  callback->Run();
+  delete callback;
+}
+
 void CompositeFilterTest::DoFilterCall(MethodToCall method_to_call,
                                        Filter* filter,
                                        base::TimeDelta seek_time,
-                                       FilterCallback* callback) {
+                                       FilterCallback* callback,
+                                       PipelineStatus expected_status) {
+  filter_1_status_ = expected_status;
+  filter_2_status_ = expected_status;
+
   switch(method_to_call) {
     case PLAY:
       filter->Play(callback);
@@ -202,7 +245,8 @@ void CompositeFilterTest::DoFilterCall(MethodToCall method_to_call,
       filter->Stop(callback);
       break;
     case SEEK:
-      filter->Seek(seek_time, callback);
+      filter->Seek(seek_time, base::Bind(&OnStatusCB, expected_status,
+                                         callback));
       break;
   };
 }
@@ -221,25 +265,26 @@ void CompositeFilterTest::ExpectSuccess(MethodToCall method_to_call,
 
   // Make method call on the composite.
   StrictMock<MockCallback>* callback = new StrictMock<MockCallback>();
-  DoFilterCall(method_to_call, composite_.get(), seek_time, callback);
+  DoFilterCall(method_to_call, composite_.get(), seek_time, callback,
+               PIPELINE_OK);
 
   if (is_parallel_call) {
     // Make sure both filters have their callbacks set.
-    EXPECT_TRUE(filter_1_callback_ != NULL);
-    EXPECT_TRUE(filter_2_callback_ != NULL);
+    EXPECT_TRUE(HasFilter1Callback());
+    EXPECT_TRUE(HasFilter2Callback());
 
     RunFilter1Callback();
   } else {
     // Make sure that only |filter_1_| has its callback set.
-    EXPECT_TRUE(filter_1_callback_ != NULL);
-    EXPECT_EQ((FilterCallback*)NULL, filter_2_callback_);
+    EXPECT_TRUE(HasFilter1Callback());
+    EXPECT_FALSE(HasFilter2Callback());
 
     ExpectFilterCall(method_to_call, filter_2_.get(), seek_time);
 
     RunFilter1Callback();
 
     // Verify that |filter_2_| was called by checking the callback pointer.
-    EXPECT_TRUE(filter_2_callback_ != NULL);
+    EXPECT_TRUE(HasFilter2Callback());
   }
 
   callback->ExpectRunAndDelete();
@@ -271,18 +316,34 @@ void CompositeFilterTest::ExpectInvalidStateFail(MethodToCall method_to_call,
                                      base::TimeDelta seek_time) {
   InSequence seq;
 
-  EXPECT_CALL(*mock_filter_host_, SetError(PIPELINE_ERROR_INVALID_STATE))
-      .WillOnce(Return());
+  if (method_to_call != SEEK) {
+    EXPECT_CALL(*mock_filter_host_, SetError(PIPELINE_ERROR_INVALID_STATE))
+        .WillOnce(Return());
+  }
 
-  DoFilterCall(method_to_call, composite_, seek_time, NewExpectedCallback());
+  DoFilterCall(method_to_call, composite_, seek_time, NewExpectedCallback(),
+               PIPELINE_ERROR_INVALID_STATE);
 
   // Make sure that neither of the filters were called by
   // verifying that the callback pointers weren't set.
-  EXPECT_EQ((FilterCallback*)NULL, filter_1_callback_);
-  EXPECT_EQ((FilterCallback*)NULL, filter_2_callback_);
+  EXPECT_FALSE(HasFilter1Callback());
+  EXPECT_FALSE(HasFilter2Callback());
+}
+
+bool CompositeFilterTest::HasFilter1Callback() const {
+  CHECK(!(filter_1_callback_ && !filter_1_status_cb_.is_null()));
+  return filter_1_callback_ != NULL || !filter_1_status_cb_.is_null();
 }
 
 void CompositeFilterTest::RunFilter1Callback() {
+  EXPECT_TRUE(HasFilter1Callback());
+
+  if (!filter_1_status_cb_.is_null()) {
+    ResetAndRunCB(&filter_1_status_cb_, filter_1_status_);
+    filter_1_status_ = PIPELINE_OK;
+    return;
+  }
+
   EXPECT_TRUE(filter_1_callback_ != NULL);
   FilterCallback* callback = filter_1_callback_;
   filter_1_callback_ = NULL;
@@ -290,7 +351,20 @@ void CompositeFilterTest::RunFilter1Callback() {
   delete callback;
 }
 
+bool CompositeFilterTest::HasFilter2Callback() const {
+  CHECK(!(filter_2_callback_ && !filter_2_status_cb_.is_null()));
+  return filter_2_callback_ != NULL || !filter_2_status_cb_.is_null();
+}
+
 void CompositeFilterTest::RunFilter2Callback() {
+  EXPECT_TRUE(HasFilter2Callback());
+
+  if (!filter_2_status_cb_.is_null()) {
+    ResetAndRunCB(&filter_2_status_cb_, filter_2_status_);
+    filter_2_status_ = PIPELINE_OK;
+    return;
+  }
+
   EXPECT_TRUE(filter_2_callback_ != NULL);
   FilterCallback* callback = filter_2_callback_;
   filter_2_callback_ = NULL;
@@ -339,8 +413,8 @@ TEST_F(CompositeFilterTest, TestPlay) {
   composite_->Play(NewExpectedCallback());
 
   // Verify that neither of the filter callbacks were set.
-  EXPECT_EQ((FilterCallback*)NULL, filter_1_callback_);
-  EXPECT_EQ((FilterCallback*)NULL, filter_2_callback_);
+  EXPECT_FALSE(HasFilter1Callback());
+  EXPECT_FALSE(HasFilter2Callback());
 
   // Stop playback.
   DoStop();
@@ -351,8 +425,8 @@ TEST_F(CompositeFilterTest, TestPlay) {
   composite_->Stop(NewExpectedCallback());
 
   // Verify that neither of the filter callbacks were set.
-  EXPECT_EQ((FilterCallback*)NULL, filter_1_callback_);
-  EXPECT_EQ((FilterCallback*)NULL, filter_2_callback_);
+  EXPECT_FALSE(HasFilter1Callback());
+  EXPECT_FALSE(HasFilter2Callback());
 
   // Try calling Play() again to make sure we get an error.
   ExpectInvalidStateFail(PLAY);
@@ -418,8 +492,8 @@ TEST_F(CompositeFilterTest, TestPause) {
   composite_->Pause(NewExpectedCallback());
 
   // Verify that neither of the filter callbacks were set.
-  EXPECT_EQ((FilterCallback*)NULL, filter_1_callback_);
-  EXPECT_EQ((FilterCallback*)NULL, filter_2_callback_);
+  EXPECT_FALSE(HasFilter1Callback());
+  EXPECT_FALSE(HasFilter2Callback());
 
   // Verify that we can transition pack to the play state.
   DoPlay();
@@ -460,7 +534,7 @@ TEST_F(CompositeFilterTest, TestPauseErrors) {
   RunFilter1Callback();
 
   // Make sure |filter_2_callback_| was not set.
-  EXPECT_EQ((FilterCallback*)NULL, filter_2_callback_);
+  EXPECT_FALSE(HasFilter2Callback());
 
   // Verify that Play/Pause/Flush/Seek fail now that an error occured.
   ExpectInvalidStateFail(PLAY);
@@ -714,7 +788,7 @@ TEST_F(CompositeFilterTest, TestEmptyComposite) {
 
   // Issue a Seek() and expect no errors.
   composite_->Seek(base::TimeDelta::FromSeconds(5),
-                   NewExpectedCallback());
+                   NewExpectedStatusCB(PIPELINE_OK));
 
   // Issue a Play() and expect no errors.
   composite_->Play(NewExpectedCallback());

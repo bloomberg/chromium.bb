@@ -36,7 +36,7 @@ class RTCVideoDecoder : public VideoDecoder,
 
   // Filter implementation.
   virtual void Play(FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb);
   virtual void Pause(FilterCallback* callback);
   virtual void Stop(FilterCallback* callback);
 
@@ -91,4 +91,3 @@ class RTCVideoDecoder : public VideoDecoder,
 }  // namespace media
 
 #endif  // MEDIA_FILTERS_RTC_VIDEO_DECODER_H_
-

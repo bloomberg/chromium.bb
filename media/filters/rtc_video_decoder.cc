@@ -113,14 +113,11 @@ void RTCVideoDecoder::Stop(FilterCallback* callback) {
   // TODO(ronghuawu): Stop rtc
 }
 
-void RTCVideoDecoder::Seek(base::TimeDelta time,
-                           FilterCallback* callback) {
+void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   if (MessageLoop::current() != message_loop_) {
      message_loop_->PostTask(FROM_HERE,
-                             NewRunnableMethod(this,
-                                               &RTCVideoDecoder::Seek,
-                                               time,
-                                               callback));
+                             NewRunnableMethod(this, &RTCVideoDecoder::Seek,
+                                               time, cb));
      return;
   }
 
@@ -165,8 +162,7 @@ void RTCVideoDecoder::Seek(base::TimeDelta time,
 
   state_ = kNormal;
 
-  callback->Run();
-  delete callback;
+  cb.Run(PIPELINE_OK);
 
   // TODO(ronghuawu): Start rtc
 }

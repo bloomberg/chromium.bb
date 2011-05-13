@@ -32,7 +32,7 @@ class CompositeFilter : public Filter {
   virtual void Flush(FilterCallback* flush_callback);
   virtual void Stop(FilterCallback* stop_callback);
   virtual void SetPlaybackRate(float playback_rate);
-  virtual void Seek(base::TimeDelta time, FilterCallback* seek_callback);
+  virtual void Seek(base::TimeDelta time, const FilterStatusCB& seek_cb);
   virtual void OnAudioRendererDisabled();
 
  protected:
@@ -74,7 +74,7 @@ class CompositeFilter : public Filter {
   void CallFilter(scoped_refptr<Filter>& filter, FilterCallback* callback);
 
   // Calls |callback_| and then clears the reference.
-  void DispatchPendingCallback();
+  void DispatchPendingCallback(PipelineStatus status);
 
   // Gets the state to transition to given |state|.
   State GetNextState(State state) const;
@@ -91,9 +91,6 @@ class CompositeFilter : public Filter {
   // Helper function for sending an error to the FilterHost.
   void SendErrorToHost(PipelineStatus error);
 
-  // Helper function for handling errors during call sequences.
-  void HandleError(PipelineStatus error);
-
   // Creates a callback that can be called from any thread, but is guaranteed
   // to call the specified method on the thread associated with this filter.
   FilterCallback* NewThreadSafeCallback(void (CompositeFilter::*method)());
@@ -107,12 +104,23 @@ class CompositeFilter : public Filter {
   // to the host of this filter.
   bool CanForwardError();
 
+  // Checks to see if a Play(), Pause(), Flush(), Stop(), or Seek() operation is
+  // pending.
+  bool IsOperationPending() const;
+
+  // Called by operations that take a FilterStatusCB instead of a
+  // FilterCallback.
+  // TODO: Remove when FilterCallback goes away.
+  void OnStatusCB(FilterCallback* callback, PipelineStatus status);
+
   // Vector of the filters added to the composite.
   typedef std::vector<scoped_refptr<Filter> > FilterVector;
   FilterVector filters_;
 
   // Callback for the pending request.
+  // TODO: Remove callback_ when FilterCallback is removed.
   scoped_ptr<FilterCallback> callback_;
+  FilterStatusCB status_cb_;
 
   // Time parameter for the pending Seek() request.
   base::TimeDelta pending_seek_time_;

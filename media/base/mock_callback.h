@@ -73,6 +73,7 @@ class MockStatusCallback : public CallbackRunner<Tuple1<PipelineStatus> > {
 // the callback to run.
 MockCallback* NewExpectedCallback();
 MockStatusCallback* NewExpectedStatusCallback(PipelineStatus status);
+base::Callback<void(PipelineStatus)> NewExpectedStatusCB(PipelineStatus status);
 
 }  // namespace media
 

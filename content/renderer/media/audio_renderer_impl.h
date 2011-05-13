@@ -73,7 +73,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // media::Filter implementation.
   virtual void SetPlaybackRate(float rate);
   virtual void Pause(media::FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, media::FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time, const media::FilterStatusCB& cb);
   virtual void Play(media::FilterCallback* callback);
 
   // media::AudioRenderer implementation.

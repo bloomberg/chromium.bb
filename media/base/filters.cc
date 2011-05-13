@@ -8,6 +8,13 @@
 
 namespace media {
 
+void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status) {
+  DCHECK(cb);
+  FilterStatusCB tmp_cb(*cb);
+  cb->Reset();
+  tmp_cb.Run(status);
+}
+
 Filter::Filter() : host_(NULL) {}
 
 Filter::~Filter() {}
@@ -24,43 +31,33 @@ FilterHost* Filter::host() {
 
 void Filter::Play(FilterCallback* callback) {
   DCHECK(callback);
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  callback->Run();
+  delete callback;
 }
 
 void Filter::Pause(FilterCallback* callback) {
   DCHECK(callback);
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  callback->Run();
+  delete callback;
 }
 
 void Filter::Flush(FilterCallback* callback) {
   DCHECK(callback);
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  callback->Run();
+  delete callback;
 }
 
 void Filter::Stop(FilterCallback* callback) {
   DCHECK(callback);
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  callback->Run();
+  delete callback;
 }
 
 void Filter::SetPlaybackRate(float playback_rate) {}
 
-void Filter::Seek(base::TimeDelta time, FilterCallback* callback) {
-  scoped_ptr<FilterCallback> seek_callback(callback);
-  if (seek_callback.get()) {
-    seek_callback->Run();
-  }
+void Filter::Seek(base::TimeDelta time, const FilterStatusCB& callback) {
+  DCHECK(!callback.is_null());
+  callback.Run(PIPELINE_OK);
 }
 
 void Filter::OnAudioRendererDisabled() {

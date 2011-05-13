@@ -132,8 +132,8 @@ void AudioRendererImpl::Pause(media::FilterCallback* callback) {
 }
 
 void AudioRendererImpl::Seek(base::TimeDelta time,
-                             media::FilterCallback* callback) {
-  AudioRendererBase::Seek(time, callback);
+                             const media::FilterStatusCB& cb) {
+  AudioRendererBase::Seek(time, cb);
   base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;

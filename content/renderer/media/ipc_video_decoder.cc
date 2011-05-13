@@ -102,8 +102,8 @@ void IpcVideoDecoder::Flush(media::FilterCallback* callback) {
 }
 
 void IpcVideoDecoder::Seek(base::TimeDelta time,
-                           media::FilterCallback* callback) {
-  seek_callback_.reset(callback);
+                           const media::FilterStatusCB& cb) {
+  seek_cb_ = cb;
   decode_engine_->Seek();
 }
 
@@ -155,8 +155,7 @@ void IpcVideoDecoder::OnFlushComplete() {
 
 void IpcVideoDecoder::OnSeekComplete() {
   DCHECK_EQ(ChildProcess::current()->io_message_loop(), MessageLoop::current());
-  seek_callback_->Run();
-  seek_callback_.reset();
+  ResetAndRunCB(&seek_cb_, media::PIPELINE_OK);
 }
 
 void IpcVideoDecoder::OnError() {

@@ -4,6 +4,8 @@
 
 #include "media/base/mock_callback.h"
 
+#include "base/bind.h"
+
 using ::testing::_;
 using ::testing::StrictMock;
 
@@ -49,6 +51,24 @@ MockStatusCallback* NewExpectedStatusCallback(PipelineStatus status) {
       new StrictMock<MockStatusCallback>();
   callback->ExpectRunAndDelete(status);
   return callback;
+}
+
+class MockStatusCB : public base::RefCountedThreadSafe<MockStatusCB> {
+ public:
+  MockStatusCB() {}
+  virtual ~MockStatusCB() {}
+
+  MOCK_METHOD1(Run, void(PipelineStatus));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockStatusCB);
+};
+
+base::Callback<void(PipelineStatus)> NewExpectedStatusCB(
+    PipelineStatus status) {
+  StrictMock<MockStatusCB>* callback = new StrictMock<MockStatusCB>();
+  EXPECT_CALL(*callback, Run(status));
+  return base::Bind(&MockStatusCB::Run, callback);
 }
 
 }  // namespace media

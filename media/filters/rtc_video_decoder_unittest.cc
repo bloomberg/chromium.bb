@@ -111,7 +111,7 @@ TEST_F(RTCVideoDecoderTest, DoSeek) {
   // Expect Seek and verify the results.
   EXPECT_CALL(*renderer_.get(), ConsumeVideoFrame(_))
       .Times(Limits::kMaxVideoFrames);
-  decoder_->Seek(kZero, NewExpectedCallback());
+  decoder_->Seek(kZero, NewExpectedStatusCB(PIPELINE_OK));
 
   message_loop_.RunAllPending();
   EXPECT_EQ(RTCVideoDecoder::kNormal, decoder_->state_);
@@ -127,7 +127,7 @@ TEST_F(RTCVideoDecoderTest, DoDeliverFrame) {
   decoder_->set_consume_video_frame_callback(
       base::Bind(&RTCVideoDecoder::ProduceVideoFrame,
                  base::Unretained(decoder_.get())));
-  decoder_->Seek(kZero, NewExpectedCallback());
+  decoder_->Seek(kZero, NewExpectedStatusCB(PIPELINE_OK));
 
   decoder_->set_consume_video_frame_callback(
       base::Bind(&MockVideoRenderer::ConsumeVideoFrame,

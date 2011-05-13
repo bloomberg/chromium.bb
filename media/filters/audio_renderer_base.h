@@ -37,7 +37,7 @@ class AudioRendererBase : public AudioRenderer {
   virtual void Pause(FilterCallback* callback);
   virtual void Stop(FilterCallback* callback);
 
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb);
 
   // AudioRenderer implementation.
   virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback);
@@ -125,7 +125,7 @@ class AudioRendererBase : public AudioRenderer {
 
   // Filter callbacks.
   scoped_ptr<FilterCallback> pause_callback_;
-  scoped_ptr<FilterCallback> seek_callback_;
+  FilterStatusCB seek_cb_;
 
   base::TimeDelta seek_timestamp_;
 

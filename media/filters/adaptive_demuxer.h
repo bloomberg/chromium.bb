@@ -79,7 +79,7 @@ class AdaptiveDemuxer : public Demuxer {
 
   // Filter implementation.
   virtual void Stop(FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time, const FilterStatusCB&  cb);
   virtual void OnAudioRendererDisabled();
   virtual void set_host(FilterHost* filter_host);
   virtual void SetPlaybackRate(float playback_rate);

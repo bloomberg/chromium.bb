@@ -34,7 +34,7 @@ class OmxVideoDecoder : public VideoDecoder,
                           StatisticsCallback* stats_callback);
   virtual void Stop(FilterCallback* callback);
   virtual void Flush(FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb);
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
   virtual bool ProvidesBuffer();
   virtual const MediaFormat& media_format();
@@ -67,7 +67,7 @@ class OmxVideoDecoder : public VideoDecoder,
   scoped_ptr<FilterCallback> initialize_callback_;
   scoped_ptr<FilterCallback> uninitialize_callback_;
   scoped_ptr<FilterCallback> flush_callback_;
-  scoped_ptr<FilterCallback> seek_callback_;
+  FilterStatusCB seek_cb_;
   scoped_ptr<StatisticsCallback> statistics_callback_;
 
   VideoCodecInfo info_;

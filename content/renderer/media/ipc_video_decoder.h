@@ -23,7 +23,7 @@ class IpcVideoDecoder : public media::VideoDecoder,
 
   // media::Filter implementation.
   virtual void Stop(media::FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, media::FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time, const media::FilterStatusCB& cb);
   virtual void Pause(media::FilterCallback* callback);
   virtual void Flush(media::FilterCallback* callback);
 
@@ -57,7 +57,7 @@ class IpcVideoDecoder : public media::VideoDecoder,
   media::MediaFormat media_format_;
 
   scoped_ptr<media::FilterCallback> flush_callback_;
-  scoped_ptr<media::FilterCallback> seek_callback_;
+  media::FilterStatusCB seek_cb_;
   scoped_ptr<media::FilterCallback> initialize_callback_;
   scoped_ptr<media::FilterCallback> stop_callback_;
   scoped_ptr<media::StatisticsCallback> statistics_callback_;
