@@ -1269,6 +1269,8 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
 
     # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
     env['ENV']['NACL_SEL_LDR'] = GetSelLdr(env)
+    if env.Bit('irt'):
+      env['ENV']['NACL_IRT_LIBRARY'] = env.GetIrtNexe()
 
     # Enable experimental JavaScript APIs.
     env['ENV']['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
@@ -1301,6 +1303,8 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
      env.Depends(node, GetSelLdr(env))
     if 'force_ppapi_plugin' not in ARGUMENTS:
       env.Depends(node, GetPPAPIPluginPath(env['TRUSTED_ENV']))
+    if env.Bit('irt') and 'force_irt' not in ARGUMENTS:
+      env.Depends(node, env.GetIrtNexe())
 
   # Add an explicit dependency on the files used by pyauto tests.
   env.Depends(node, files)
