@@ -16,6 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+class Browser;
 class Profile;
 class SkBitmap;
 class TabContentsWrapper;
@@ -27,6 +28,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   virtual ~ContentSettingBubbleModel();
 
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
+      Browser* browser,
       TabContentsWrapper* tab_contents,
       Profile* profile,
       ContentSettingsType content_type);

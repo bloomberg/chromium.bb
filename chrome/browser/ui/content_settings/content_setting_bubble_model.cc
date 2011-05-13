@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
@@ -29,10 +30,12 @@
 
 class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  public:
-  ContentSettingTitleAndLinkModel(TabContentsWrapper* tab_contents,
+  ContentSettingTitleAndLinkModel(Browser* browser,
+                                  TabContentsWrapper* tab_contents,
                                   Profile* profile,
                                   ContentSettingsType content_type)
-      : ContentSettingBubbleModel(tab_contents, profile, content_type) {
+      : ContentSettingBubbleModel(tab_contents, profile, content_type),
+        browser_(browser) {
      // Notifications do not have a bubble.
      DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
      SetBlockedResources();
@@ -121,20 +124,22 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   }
 
   virtual void OnManageLinkClicked() {
-    if (tab_contents()) {
-      tab_contents()->tab_contents()->delegate()->
-          ShowContentSettingsPage(content_type());
-    }
+    if (browser_)
+      browser_->ShowContentSettingsPage(content_type());
   }
+
+  Browser* browser_;
 };
 
 class ContentSettingTitleLinkAndCustomModel
     : public ContentSettingTitleAndLinkModel {
  public:
-  ContentSettingTitleLinkAndCustomModel(TabContentsWrapper* tab_contents,
+  ContentSettingTitleLinkAndCustomModel(Browser* browser,
+                                        TabContentsWrapper* tab_contents,
                                         Profile* profile,
                                         ContentSettingsType content_type)
-      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
+      : ContentSettingTitleAndLinkModel(
+            browser, tab_contents, profile, content_type) {
     SetCustomLink();
   }
 
@@ -165,10 +170,11 @@ class ContentSettingTitleLinkAndCustomModel
 class ContentSettingSingleRadioGroup
     : public ContentSettingTitleLinkAndCustomModel {
  public:
-  ContentSettingSingleRadioGroup(TabContentsWrapper* tab_contents,
+  ContentSettingSingleRadioGroup(Browser* browser,
+                                 TabContentsWrapper* tab_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type)
-      : ContentSettingTitleLinkAndCustomModel(tab_contents, profile,
+      : ContentSettingTitleLinkAndCustomModel(browser, tab_contents, profile,
                                               content_type),
         block_setting_(CONTENT_SETTING_BLOCK),
         selected_item_(0) {
@@ -314,10 +320,12 @@ class ContentSettingSingleRadioGroup
 
 class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
  public:
-  ContentSettingCookiesBubbleModel(TabContentsWrapper* tab_contents,
+  ContentSettingCookiesBubbleModel(Browser* browser,
+                                   TabContentsWrapper* tab_contents,
                                    Profile* profile,
                                    ContentSettingsType content_type)
-      : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
+      : ContentSettingSingleRadioGroup(
+            browser, tab_contents, profile, content_type) {
     DCHECK_EQ(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
     set_custom_link_enabled(true);
   }
@@ -344,10 +352,12 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
 
 class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
  public:
-  ContentSettingPluginBubbleModel(TabContentsWrapper* tab_contents,
+  ContentSettingPluginBubbleModel(Browser* browser,
+                                  TabContentsWrapper* tab_contents,
                                   Profile* profile,
                                   ContentSettingsType content_type)
-      : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
+      : ContentSettingSingleRadioGroup(
+            browser, tab_contents, profile, content_type) {
     DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
     set_custom_link_enabled(tab_contents && tab_contents->content_settings()->
         load_plugins_link_enabled());
@@ -368,10 +378,12 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
 
 class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
  public:
-  ContentSettingPopupBubbleModel(TabContentsWrapper* tab_contents,
+  ContentSettingPopupBubbleModel(Browser* browser,
+                                 TabContentsWrapper* tab_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type)
-      : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
+      : ContentSettingSingleRadioGroup(
+            browser, tab_contents, profile, content_type) {
     SetPopups();
   }
 
@@ -408,10 +420,12 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
 class ContentSettingDomainListBubbleModel
     : public ContentSettingTitleAndLinkModel {
  public:
-  ContentSettingDomainListBubbleModel(TabContentsWrapper* tab_contents,
+  ContentSettingDomainListBubbleModel(Browser* browser,
+                                      TabContentsWrapper* tab_contents,
                                       Profile* profile,
                                       ContentSettingsType content_type)
-      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
+      : ContentSettingTitleAndLinkModel(
+            browser, tab_contents, profile, content_type) {
     DCHECK_EQ(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type) <<
         "SetDomains currently only supports geolocation content type";
     SetDomainsAndCustomLink();
@@ -477,26 +491,27 @@ class ContentSettingDomainListBubbleModel
 // static
 ContentSettingBubbleModel*
     ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+        Browser* browser,
         TabContentsWrapper* tab_contents,
         Profile* profile,
         ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    return new ContentSettingCookiesBubbleModel(tab_contents, profile,
+    return new ContentSettingCookiesBubbleModel(browser, tab_contents, profile,
                                                 content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
-    return new ContentSettingPopupBubbleModel(tab_contents, profile,
+    return new ContentSettingPopupBubbleModel(browser, tab_contents, profile,
                                               content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    return new ContentSettingDomainListBubbleModel(tab_contents, profile,
-                                                   content_type);
+    return new ContentSettingDomainListBubbleModel(browser, tab_contents,
+                                                   profile, content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    return new ContentSettingPluginBubbleModel(tab_contents, profile,
+    return new ContentSettingPluginBubbleModel(browser, tab_contents, profile,
                                                content_type);
   }
-  return new ContentSettingSingleRadioGroup(tab_contents, profile,
+  return new ContentSettingSingleRadioGroup(browser, tab_contents, profile,
                                             content_type);
 }
 

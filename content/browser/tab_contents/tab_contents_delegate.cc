@@ -38,8 +38,6 @@ void TabContentsDelegate::ContentsMouseEvent(
 
 void TabContentsDelegate::ContentsZoomChange(bool zoom_in) { }
 
-void TabContentsDelegate::OnContentSettingsChange(TabContents* source) { }
-
 bool TabContentsDelegate::IsApplication() const { return false; }
 
 void TabContentsDelegate::ConvertContentsToApplication(TabContents* source) { }
@@ -165,10 +163,6 @@ void TabContentsDelegate::DragEnded() {
 
 void TabContentsDelegate::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
-}
-
-void TabContentsDelegate::ShowContentSettingsPage(
-    ContentSettingsType content_type) {
 }
 
 void TabContentsDelegate::ShowCollectedCookiesDialog(

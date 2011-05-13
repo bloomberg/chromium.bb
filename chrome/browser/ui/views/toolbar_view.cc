@@ -146,7 +146,7 @@ void ToolbarView::Init(Profile* profile) {
   forward_->SetID(VIEW_ID_FORWARD_BUTTON);
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
-  location_bar_ = new LocationBarView(profile, browser_->command_updater(),
+  location_bar_ = new LocationBarView(profile, browser_,
       model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
           LocationBarView::POPUP : LocationBarView::NORMAL);
 

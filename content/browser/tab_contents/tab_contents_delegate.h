@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/content_settings_types.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"
@@ -131,12 +130,6 @@ class TabContentsDelegate {
   // Request the delegate to change the zoom level of the current tab.
   virtual void ContentsZoomChange(bool zoom_in);
 
-  // Notifies the delegate that something has changed about what content the
-  // TabContents is blocking.  Interested parties should call
-  // TabContents::IsContentBlocked() to see if something they care about has
-  // changed.
-  virtual void OnContentSettingsChange(TabContents* source);
-
   // Check whether this contents is inside a window dedicated to running a web
   // application.
   virtual bool IsApplication() const;
@@ -256,9 +249,6 @@ class TabContentsDelegate {
 
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
-
-  // Shows the Content Settings page for a given content type.
-  virtual void ShowContentSettingsPage(ContentSettingsType content_type);
 
   // Shows the cookies collected in the tab contents.
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);

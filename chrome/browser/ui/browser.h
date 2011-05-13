@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -554,6 +555,8 @@ class Browser : public TabHandlerDelegate,
   void ShowAboutConflictsTab();
   void ShowBrokenPageTab(TabContents* contents);
   void ShowOptionsTab(const std::string& sub_page);
+  // Shows the Content Settings page for a given content type.
+  void ShowContentSettingsPage(ContentSettingsType content_type);
   void OpenClearBrowsingDataDialog();
   void OpenOptionsDialog();
   void OpenPasswordManager();
@@ -796,7 +799,6 @@ class Browser : public TabHandlerDelegate,
   virtual void ContentsMouseEvent(
       TabContents* source, const gfx::Point& location, bool motion);
   virtual void ContentsZoomChange(bool zoom_in);
-  virtual void OnContentSettingsChange(TabContents* source);
   virtual void SetTabContentBlocked(TabContents* contents, bool blocked);
   virtual void TabContentsFocused(TabContents* tab_content);
   virtual bool TakeFocus(bool reverse);
@@ -822,7 +824,6 @@ class Browser : public TabHandlerDelegate,
                                         bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
-  virtual void ShowContentSettingsPage(ContentSettingsType content_type);
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,

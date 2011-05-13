@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/gtk/omnibox/omnibox_view_gtk.h"
 #endif
 
-class CommandUpdater;
+class Browser;
 class ContentSettingImageView;
 class EVBubbleView;
 class ExtensionAction;
@@ -118,7 +118,7 @@ class LocationBarView : public LocationBar,
   };
 
   LocationBarView(Profile* profile,
-                  CommandUpdater* command_updater,
+                  Browser* browser,
                   ToolbarModel* model,
                   Delegate* delegate,
                   Mode mode);
@@ -142,6 +142,7 @@ class LocationBarView : public LocationBar,
 
   void SetProfile(Profile* profile);
   Profile* profile() const { return profile_; }
+  Browser* browser() const { return browser_; }
 
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
@@ -343,8 +344,8 @@ class LocationBarView : public LocationBar,
   scoped_ptr<OmniboxView> location_entry_;
 #endif
 
-  // The CommandUpdater for the Browser object that corresponds to this View.
-  CommandUpdater* command_updater_;
+  // The Browser object that corresponds to this View.
+  Browser* browser_;
 
   // The model.
   ToolbarModel* model_;

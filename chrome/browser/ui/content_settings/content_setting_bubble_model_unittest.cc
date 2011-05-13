@@ -28,7 +28,7 @@ class ContentSettingBubbleModelTest : public TabContentsWrapperTestHarness {
                               bool expect_reload_hint) {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
         ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            contents_wrapper(), profile_.get(),
+            NULL, contents_wrapper(), profile_.get(),
             CONTENT_SETTINGS_TYPE_GEOLOCATION));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
@@ -53,7 +53,8 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
+         NULL, contents_wrapper(), profile_.get(),
+         CONTENT_SETTINGS_TYPE_IMAGES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
@@ -71,7 +72,8 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_COOKIES));
+         NULL, contents_wrapper(), profile_.get(),
+         CONTENT_SETTINGS_TYPE_COOKIES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
@@ -89,7 +91,8 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
+         NULL, contents_wrapper(), profile_.get(),
+         CONTENT_SETTINGS_TYPE_PLUGINS));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
@@ -127,7 +130,8 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
+          NULL, contents_wrapper(), profile_.get(),
+          CONTENT_SETTINGS_TYPE_PLUGINS));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
@@ -193,7 +197,8 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
   NavigateAndCommit(GURL(file_url));
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
+          NULL, contents_wrapper(), profile_.get(),
+          CONTENT_SETTINGS_TYPE_IMAGES));
   std::string title =
       content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
   ASSERT_NE(std::string::npos, title.find(file_url));

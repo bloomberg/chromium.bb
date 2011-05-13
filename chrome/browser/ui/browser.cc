@@ -238,6 +238,8 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
 
   // Need to know when to alert the user of theme install delay.
   registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
@@ -3199,14 +3201,6 @@ void Browser::ContentsZoomChange(bool zoom_in) {
   ExecuteCommand(zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS);
 }
 
-void Browser::OnContentSettingsChange(TabContents* source) {
-  if (source == GetSelectedTabContents()) {
-    LocationBar* location_bar = window()->GetLocationBar();
-    if (location_bar)
-      location_bar->UpdateContentSettingsIcons();
-  }
-}
-
 void Browser::SetTabContentBlocked(TabContents* contents, bool blocked) {
   int index = tabstrip_model()->GetWrapperIndex(contents);
   if (index == TabStripModel::kNoTab) {
@@ -3617,6 +3611,16 @@ void Browser::Observe(NotificationType type,
         UpdateOpenFileState();
       } else {
         NOTREACHED();
+      }
+      break;
+    }
+
+    case NotificationType::TAB_CONTENT_SETTINGS_CHANGED: {
+      TabContents* tab_contents = Source<TabContents>(source).ptr();
+      if (tab_contents == GetSelectedTabContents()) {
+        LocationBar* location_bar = window()->GetLocationBar();
+        if (location_bar)
+          location_bar->UpdateContentSettingsIcons();
       }
       break;
     }

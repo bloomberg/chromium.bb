@@ -243,8 +243,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
         // background pages, or for a chrome frame process on windows).
         browser = Browser::Create(balloon_->profile());
       }
-      static_cast<TabContentsDelegate*>(browser)->ShowContentSettingsPage(
-          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      browser->ShowContentSettingsPage(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
     }
     default:

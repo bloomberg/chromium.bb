@@ -1100,6 +1100,10 @@ class NotificationType {
     // ContentSettingsNotificationsDetails.
     GEOLOCATION_SETTINGS_CHANGED,
 
+    // Sent when content settings change for a tab. The source is a TabContents
+    // object, the details are None.
+    TAB_CONTENT_SETTINGS_CHANGED,
+
     // Sync --------------------------------------------------------------------
 
     // Sent when the syncer is blocked configuring.

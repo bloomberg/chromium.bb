@@ -14,11 +14,6 @@ include_rules = [
 
   "+chrome/browser/browser_url_handler.h",
 
-  # http://crbug.com/76793
-  "+chrome/browser/content_settings/host_content_settings_map.h",
-  "+chrome/browser/content_settings/tab_specific_content_settings.h",
-  "+chrome/common/content_settings_types.h",
-
   "+chrome/browser/chromeos/cros/cros_library.h",
   "+chrome/browser/chromeos/cros/network_library.h",
   "+chrome/browser/chromeos/plugin_selection_policy.h",

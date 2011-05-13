@@ -199,8 +199,10 @@ void TabSpecificContentSettings::OnContentBlocked(
   if (!content_blocked_[type]) {
     content_blocked_[type] = true;
     // TODO: it would be nice to have a way of mocking this in tests.
-    if (tab_contents()->delegate())
-      tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
+    NotificationService::current()->Notify(
+        NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+        Source<TabContents>(tab_contents()),
+        NotificationService::NoDetails());
   }
 }
 
@@ -209,8 +211,10 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   if (!content_accessed_[type]) {
     content_accessed_[type] = true;
-    if (tab_contents()->delegate())
-      tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
+    NotificationService::current()->Notify(
+        NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+        Source<TabContents>(tab_contents()),
+        NotificationService::NoDetails());
   }
 }
 
@@ -320,8 +324,10 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
     bool allowed) {
   geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
                                                          allowed);
-  if (tab_contents()->delegate())
-    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      Source<TabContents>(tab_contents()),
+      NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
@@ -334,8 +340,10 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
     content_blockage_indicated_to_user_[i] = false;
   }
   load_plugins_link_enabled_ = true;
-  if (tab_contents()->delegate())
-    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      Source<TabContents>(tab_contents()),
+      NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
@@ -344,15 +352,19 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   content_blocked_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_accessed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
-  if (tab_contents()->delegate())
-    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      Source<TabContents>(tab_contents()),
+      NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
   content_blocked_[CONTENT_SETTINGS_TYPE_POPUPS] = blocked;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_POPUPS] = false;
-  if (tab_contents()->delegate())
-    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      Source<TabContents>(tab_contents()),
+      NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(

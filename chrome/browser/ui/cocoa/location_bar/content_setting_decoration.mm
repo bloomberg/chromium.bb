@@ -258,8 +258,8 @@ bool ContentSettingDecoration::AcceptsMousePress() {
 
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
-  TabContentsWrapper* tabContents =
-      BrowserList::GetLastActive()->GetSelectedTabContentsWrapper();
+  Browser* browser = BrowserList::GetLastActive();
+  TabContentsWrapper* tabContents = browser->GetSelectedTabContentsWrapper();
   if (!tabContents)
     return true;
 
@@ -282,7 +282,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Open bubble.
   ContentSettingBubbleModel* model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          tabContents, profile_, content_settings_type);
+          browser, tabContents, profile_, content_settings_type);
   [ContentSettingBubbleController showForModel:model
                                   parentWindow:[field window]
                                     anchoredAt:anchor];

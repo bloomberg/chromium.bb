@@ -1371,7 +1371,7 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
   content_setting_bubble_ = new ContentSettingBubbleGtk(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          tab_contents, profile_, content_settings_type),
+          parent_->browser(), tab_contents, profile_, content_settings_type),
       profile_, tab_contents->tab_contents());
   return TRUE;
 }
