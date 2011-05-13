@@ -13,7 +13,7 @@ namespace {
 // TODO(viettrungluu): Do we want common, standard code for drag hysteresis?
 const CGFloat kWebDragStartHysteresisX = 5.0;
 const CGFloat kWebDragStartHysteresisY = 5.0;
-const CGFloat kDragExpirationTimeout = 1.0;
+const CGFloat kDragExpirationTimeout = 0.45;
 
 }
 
