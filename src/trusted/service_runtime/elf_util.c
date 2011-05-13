@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
+#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 /* private */
@@ -556,6 +557,9 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
       return LOAD_SEGMENT_BAD_PARAM;
     }
     /* region from p_filesz to p_memsz should already be zero filled */
+
+    /* Tell Valgrind that we've mapped a segment of nacl_file. */
+    NaClFileMappingForValgrind(paddr, php->p_filesz, php->p_offset);
   }
 
   return LOAD_OK;

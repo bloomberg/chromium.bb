@@ -84,6 +84,7 @@ ldr_inputs = [
     GENERATED + '/nacl_syscall_handlers.c',
     'nacl_syscall_hook.c',
     'nacl_text.c',
+    'nacl_valgrind_hooks.c',
     'name_service/default_name_service.c',
     'name_service/name_service.c',
     'sel_addrspace.c',

@@ -111,6 +111,7 @@
 
 
 #include <stdarg.h>
+#include <inttypes.h>
 
 /* Nb: this file might be included in a file compiled with -ansi.  So
    we can't use C++ style "//" comments nor the "asm" keyword (instead

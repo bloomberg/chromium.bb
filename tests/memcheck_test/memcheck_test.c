@@ -172,7 +172,7 @@ NOINLINE int wrap_me_3(int a, int b, int c) { SHOW_ME; return a+10*b+100*c; }
 
 /* Wrapper functions. */
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_0)() {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_0)() {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -183,7 +183,7 @@ NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_0)() {
   return ret + 777;  /* change the return value */
 }
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_1)(int a) {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_1)(int a) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -192,7 +192,7 @@ NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_1)(int a) {
   return ret * 7;  /* change the return value */
 }
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_2)(int a, int b) {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_2)(int a, int b) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -201,7 +201,8 @@ NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_2)(int a, int b) {
   return ret * 7;  /* change the return value */
 }
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_3)(int a, int b, int c) {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_3)(int a, int b,
+    int c) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -232,8 +233,8 @@ int zz_wrap_me(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
 }
 
 NOINLINE
-int I_WRAP_SONAME_FNNAME_ZZ(NaCl, zz_wrap_me)(int a1, int a2, int a3, int a4,
-    int a5, int a6, int a7) {
+int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, zz_wrap_me)(int a1, int a2, int a3,
+    int a4, int a5, int a6, int a7) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -275,6 +276,17 @@ void strcmp_test() {
   free(s2);
 }
 
+NOINLINE
+void calloc_realloc_test() {
+  char* p = calloc(1, 50);
+  p[10] = 10;
+  free(p);
+  p = calloc(1, 60);
+  p = realloc(p, 70);
+  p[65] = 65;
+  free(p);
+}
+
 /* run all tests */
 int main() {
   if (!RUNNING_ON_VALGRIND) {
@@ -295,6 +307,7 @@ int main() {
   if (1) function_wrapping_test();
   if (1) many_args_wrapping_test();
   if (1) strcmp_test();
+  if (1) calloc_realloc_test();
   SHOW_ME;
   return 0;
 }

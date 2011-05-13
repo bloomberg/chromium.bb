@@ -2619,7 +2619,6 @@ if not nacl_extra_sdk_env.Bit('nacl_glibc'):
         'src/untrusted/startup/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
         'src/untrusted/nosys/nacl.scons',
-        'src/untrusted/valgrind/nacl.scons',
         ####  ALPHABETICALLY SORTED ####
         ])
 
@@ -2632,6 +2631,7 @@ nacl_extra_sdk_env.Append(
       'src/shared/srpc/nacl.scons',
       'src/untrusted/irt_stub/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
+      'src/untrusted/valgrind/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
    ],
 )

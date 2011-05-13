@@ -39,6 +39,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
@@ -1545,6 +1546,8 @@ static void __attribute__ ((noinline)) _ovly_debug_event (void) {
 static void StopForDebuggerInit (uintptr_t mem_start) {
   /* Put xlate_base in a place where gdb can find it.  */
   nacl_global_xlate_base = mem_start;
+
+  NaClSandboxMemoryStartForValgrind(mem_start);
 
 #ifdef __GNUC__
   _ovly_debug_event ();

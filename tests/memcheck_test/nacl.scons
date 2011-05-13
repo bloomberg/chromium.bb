@@ -12,11 +12,16 @@ if env.Bit('bitcode'):
 if not env.IsRunningUnderValgrind():
   Return()
 
+if env.Bit('nacl_glibc'):
+  golden = env.File('memcheck_test.glibc.stderr.golden')
+else:
+  golden = env.File('memcheck_test.stderr.golden')
+
 env.ComponentProgram('memcheck_test.nexe', 'memcheck_test.c')
 node = env.CommandSelLdrTestNacl(
     'memcheck_test.out',
     command=[env.File('memcheck_test.nexe')],
-    stderr_golden=env.File('memcheck_test.stderr.golden'),
+    stderr_golden=golden,
     filter_group_only='true',
     filter_regex=(
       "'(Invalid [a-z]+ of size .+)|"

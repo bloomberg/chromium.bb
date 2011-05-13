@@ -38,6 +38,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
@@ -525,6 +526,7 @@ int main(int  argc,
    * NaClAppLoadFile() enables an outer sandbox.
    */
   if (NULL != blob_library_file) {
+    NaClFileNameForValgrind(blob_library_file);
     if (0 == GioMemoryFileSnapshotCtor(&blob_file, blob_library_file)) {
       perror("sel_main");
       fprintf(stderr, "Cannot open \"%s\".\n", blob_library_file);
@@ -537,6 +539,7 @@ int main(int  argc,
   if (!rpc_supplies_nexe) {
     struct GioMemoryFileSnapshot main_file;
 
+    NaClFileNameForValgrind(nacl_file);
     if (0 == GioMemoryFileSnapshotCtor(&main_file, nacl_file)) {
       perror("sel_main");
       fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);

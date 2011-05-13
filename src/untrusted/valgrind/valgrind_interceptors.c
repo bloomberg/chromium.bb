@@ -31,6 +31,7 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "native_client/src/third_party/valgrind/nacl_valgrind.h"
 #include "native_client/src/third_party/valgrind/nacl_memcheck.h"
@@ -42,8 +43,10 @@
 
 #include "native_client/src/third_party/valgrind/ts_valgrind_client_requests.h"
 
+#ifndef __GLIBC__
 /* For sizeof(nc_thread_memory_block_t) */
 #include "native_client/src/untrusted/pthread/pthread_types.h"
+#endif
 
 /* This variable needs to be referenced by a program (either in sources,
   or using the linker flag -u) to which this library is linked.
@@ -53,10 +56,25 @@ int have_nacl_valgrind_interceptors;
 
 /* TSan interceptors. */
 
-#define VG_NACL_FUNC(f) I_WRAP_SONAME_FNNAME_ZZ(NaCl, f)
-#define VG_NACL_ANN(f) \
-  I_WRAP_SONAME_FNNAME_ZZ(NaCl, DYNAMIC_ANNOTATIONS_NAME(f))
+#ifdef __GLIBC__
+#define VG_NACL_Z_LIBC_SONAME  NaClZulibcZdsoZa
+#define VG_NACL_Z_LIBPTHREAD_SONAME NaClZulibpthreadZdsoZd0
+#define VG_NACL_Z_NONE_SONAME NaClZuNONE
+#define VG_NACL_Z_ANY_SONAME NaClZuZa
+#else
+#define VG_NACL_Z_LIBC_SONAME NaClZuNONE
+#define VG_NACL_Z_LIBPTHREAD_SONAME NaClZuNONE
+#define VG_NACL_Z_NONE_SONAME NaClZuNONE
+#define VG_NACL_Z_ANY_SONAME NaClZuNONE
+#endif
 
+#define VG_NACL_NONE_FUNC(f) I_WRAP_SONAME_FNNAME_ZZ(VG_NACL_Z_NONE_SONAME, f)
+#define VG_NACL_LIBC_FUNC(f) I_WRAP_SONAME_FNNAME_ZZ(VG_NACL_Z_LIBC_SONAME, f)
+#define VG_NACL_LIBPTHREAD_FUNC(f) \
+  I_WRAP_SONAME_FNNAME_ZZ(VG_NACL_Z_LIBPTHREAD_SONAME, f)
+#define VG_NACL_ANY_FUNC(f) I_WRAP_SONAME_FNNAME_ZZ(VG_NACL_Z_ANY_SONAME, f)
+#define VG_NACL_ANN(f) \
+  I_WRAP_SONAME_FNNAME_ZZ(VG_NACL_Z_ANY_SONAME, DYNAMIC_ANNOTATIONS_NAME(f))
 
 #define VG_CREQ_v_v(_req)                                               \
   do {                                                                  \
@@ -227,8 +245,76 @@ INLINE static void handle_free_after() {
   stop_ignore_all_accesses_and_sync();
 }
 
+#ifdef __GLIBC__
+
+static __thread int inside_malloc = 0;
+
+/* malloc() */
+size_t VG_NACL_LIBC_FUNC(malloc)(size_t size) {
+  OrigFn fn;
+  size_t ptr;
+  int nested;
+  VALGRIND_GET_ORIG_FN(fn);
+  nested = inside_malloc++;
+  if (nested) {
+    CALL_FN_W_W(ptr, fn, size);
+  } else {
+    size_t allocSize = handle_malloc_before(size);
+    CALL_FN_W_W(ptr, fn, allocSize);
+    ptr = handle_malloc_after(ptr, size);
+  }
+  inside_malloc--;
+  return ptr;
+}
+
+/* calloc() */
+size_t VG_NACL_LIBC_FUNC(calloc)(size_t nmemb, size_t size) {
+  size_t totalSize = nmemb * size;
+  void* ptr = malloc(totalSize);
+  if (ptr)
+    memset(ptr, 0, totalSize);
+  return (size_t)ptr;
+}
+
+/* realloc() */
+size_t VG_NACL_LIBC_FUNC(realloc)(size_t origPtr, size_t size) {
+  if (!origPtr) {
+    return (size_t)malloc(size);
+  }
+  if (!size) {
+    free((void*)origPtr);
+    return 0;
+  }
+  size_t newPtr = (size_t)malloc(size);
+  if (!newPtr) {
+    free((void*)origPtr);
+    return 0;
+  }
+
+  VALGRIND_MAKE_MEM_DEFINED(VALGRIND_SANDBOX_PTR(origPtr - kRedZoneSize),
+      kRedZoneSize);
+  size_t origSize = ((size_t*)(origPtr - kRedZoneSize))[1];
+  size_t copySize = size < origSize ? size : origSize;
+
+  memcpy((void*)newPtr, (void*)origPtr, copySize);
+  free((void*)origPtr);
+  return newPtr;
+}
+
+/* free() */
+void VG_NACL_LIBC_FUNC(free)(size_t ptr) {
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+  size_t old_ptr = handle_free_before(ptr);
+  if (old_ptr)
+    CALL_FN_v_W(fn, old_ptr);
+  handle_free_after();
+}
+
+#else
+
 /* _malloc_r() */
-size_t VG_NACL_FUNC(_malloc_r)(size_t reent, size_t size) {
+size_t VG_NACL_LIBC_FUNC(_malloc_r)(size_t reent, size_t size) {
   OrigFn fn;
   size_t ptr;
   VALGRIND_GET_ORIG_FN(fn);
@@ -238,7 +324,7 @@ size_t VG_NACL_FUNC(_malloc_r)(size_t reent, size_t size) {
 }
 
 /* _calloc_r() */
-size_t VG_NACL_FUNC(_calloc_r)(size_t reent, size_t nmemb, size_t size) {
+size_t VG_NACL_LIBC_FUNC(_calloc_r)(size_t reent, size_t nmemb, size_t size) {
   size_t totalSize = nmemb * size;
   void* ptr = _malloc_r((void*)reent, totalSize);
   if (ptr)
@@ -247,7 +333,7 @@ size_t VG_NACL_FUNC(_calloc_r)(size_t reent, size_t nmemb, size_t size) {
 }
 
 /* _realloc_r() */
-size_t VG_NACL_FUNC(_realloc_r)(void* reent, size_t origPtr, size_t size) {
+size_t VG_NACL_LIBC_FUNC(_realloc_r)(void* reent, size_t origPtr, size_t size) {
   if (!origPtr) {
     return (size_t)_malloc_r(reent, size);
   }
@@ -272,7 +358,7 @@ size_t VG_NACL_FUNC(_realloc_r)(void* reent, size_t origPtr, size_t size) {
 }
 
 /* _free_r() */
-void VG_NACL_FUNC(_free_r)(size_t reent, size_t ptr) {
+void VG_NACL_LIBC_FUNC(_free_r)(size_t reent, size_t ptr) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
   size_t old_ptr = handle_free_before(ptr);
@@ -281,10 +367,12 @@ void VG_NACL_FUNC(_free_r)(size_t reent, size_t ptr) {
   handle_free_after();
 }
 
+#endif
+
 /* Unoptimized string functions. Optimized versions often read several bytes
    beyond the end of the string. This makes Memcheck sad. */
 /* strlen() */
-size_t VG_NACL_FUNC(strlen)(char* ptr) {
+size_t VG_NACL_ANY_FUNC(strlen)(char* ptr) {
   size_t i = 0;
   while (ptr[i])
     ++i;
@@ -292,7 +380,7 @@ size_t VG_NACL_FUNC(strlen)(char* ptr) {
 }
 
 /* strchr() */
-char* VG_NACL_FUNC(strchr)(char* s, int c) {
+char* VG_NACL_ANY_FUNC(strchr)(char* s, int c) {
   size_t i;
   char *ret = 0;
   for (i = 0; ; i++) {
@@ -306,7 +394,7 @@ char* VG_NACL_FUNC(strchr)(char* s, int c) {
 }
 
 /* strcmp() */
-int VG_NACL_FUNC(strcmp)(char* s1, char* s2) {
+int VG_NACL_ANY_FUNC(strcmp)(char* s1, char* s2) {
   while (*s1 && *s1 == *s2)
     ++s1, ++s2;
   if (*s1 < *s2)
@@ -316,9 +404,9 @@ int VG_NACL_FUNC(strcmp)(char* s1, char* s2) {
   return 0;
 }
 
-
+#ifndef __GLIBC__
 /* nc_allocate_memory_block_mu() - a cached malloc for thread stack & tls. */
-size_t VG_NACL_FUNC(nc_allocate_memory_block_mu)(int type, size_t size) {
+size_t VG_NACL_NONE_FUNC(nc_allocate_memory_block_mu)(int type, size_t size) {
   OrigFn fn;
   size_t ret;
   VALGRIND_GET_ORIG_FN(fn);
@@ -335,7 +423,8 @@ size_t VG_NACL_FUNC(nc_allocate_memory_block_mu)(int type, size_t size) {
 /* Tell the tool that the stack has moved.
    This is the first untrusted function of any NaCl thread and the first
    place after the context switch that we can intercept. */
-void VG_NACL_FUNC(nc_thread_starter)(size_t func, size_t state) {
+/* TODO(eugenis): do the same for GLibC. */
+void VG_NACL_NONE_FUNC(nc_thread_starter)(size_t func, size_t state) {
   OrigFn fn;
   int local_stack_var = 0;
 
@@ -345,13 +434,14 @@ void VG_NACL_FUNC(nc_thread_starter)(size_t func, size_t state) {
   VALGRIND_GET_ORIG_FN(fn);
   CALL_FN_v_WW(fn, func, state);
 }
+#endif
 
 
 /* ------------------------------------------------------------------*/
 /*                        PThread mutex.                             */
 
 /* pthread_mutex_init */
-int VG_NACL_FUNC(pthreadZumutexZuinit)(pthread_mutex_t *mutex,
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZumutexZuinit)(pthread_mutex_t *mutex,
     pthread_mutexattr_t* attr) {
   int    ret;
   OrigFn fn;
@@ -368,7 +458,7 @@ int VG_NACL_FUNC(pthreadZumutexZuinit)(pthread_mutex_t *mutex,
 }
 
 /* pthread_mutex_destroy */
-int VG_NACL_FUNC(pthreadZumutexZudestroy)(pthread_mutex_t *mutex) {
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZumutexZudestroy)(pthread_mutex_t *mutex) {
   int    ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -382,7 +472,7 @@ int VG_NACL_FUNC(pthreadZumutexZudestroy)(pthread_mutex_t *mutex) {
 }
 
 /* pthread_mutex_lock */
-int VG_NACL_FUNC(pthreadZumutexZulock)(pthread_mutex_t *mutex) {
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZumutexZulock)(pthread_mutex_t *mutex) {
   int    ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -400,7 +490,7 @@ int VG_NACL_FUNC(pthreadZumutexZulock)(pthread_mutex_t *mutex) {
 }
 
 /* pthread_mutex_trylock. */
-int VG_NACL_FUNC(pthreadZumutexZutrylock)(pthread_mutex_t *mutex) {
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZumutexZutrylock)(pthread_mutex_t *mutex) {
   int    ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -418,7 +508,7 @@ int VG_NACL_FUNC(pthreadZumutexZutrylock)(pthread_mutex_t *mutex) {
 }
 
 /* pthread_mutex_timedlock. */
-int VG_NACL_FUNC(pthreadZumutexZutimedlock)(pthread_mutex_t *mutex,
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZumutexZutimedlock)(pthread_mutex_t *mutex,
     void* timeout) {
   int    ret;
   OrigFn fn;
@@ -437,7 +527,7 @@ int VG_NACL_FUNC(pthreadZumutexZutimedlock)(pthread_mutex_t *mutex,
 }
 
 /* pthread_mutex_unlock */
-int VG_NACL_FUNC(pthreadZumutexZuunlock)(pthread_mutex_t *mutex) {
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZumutexZuunlock)(pthread_mutex_t *mutex) {
   int    ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -456,7 +546,7 @@ int VG_NACL_FUNC(pthreadZumutexZuunlock)(pthread_mutex_t *mutex) {
 /*                     Conditional variables.                        */
 
 /* pthread_cond_wait */
-int VG_NACL_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -474,7 +564,7 @@ int VG_NACL_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
 }
 
 /* pthread_cond_signal */
-int VG_NACL_FUNC(pthreadZucondZusignal)(size_t cond) {
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZusignal)(size_t cond) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -507,17 +597,17 @@ static int handle_sem_wait(void* sem) {
 }
 
 /* sem_wait */
-int VG_NACL_FUNC(semZuwait)(void* sem) {
+int VG_NACL_LIBPTHREAD_FUNC(semZuwait)(void* sem) {
   return handle_sem_wait(sem);
 }
 
 /* sem_trywait */
-int VG_NACL_FUNC(semZutrywait)(void* sem) {
+int VG_NACL_LIBPTHREAD_FUNC(semZutrywait)(void* sem) {
   return handle_sem_wait(sem);
 }
 
 /* sem_timedwait */
-int VG_NACL_FUNC(semZutimedwait)(void* sem, void* abs_timeout) {
+int VG_NACL_LIBPTHREAD_FUNC(semZutimedwait)(void* sem, void* abs_timeout) {
   OrigFn fn;
   int    ret;
   VALGRIND_GET_ORIG_FN(fn);
@@ -533,7 +623,7 @@ int VG_NACL_FUNC(semZutimedwait)(void* sem, void* abs_timeout) {
 }
 
 /* sem_post */
-int VG_NACL_FUNC(semZupost)(void* sem) {
+int VG_NACL_LIBPTHREAD_FUNC(semZupost)(void* sem) {
   OrigFn fn;
   int    ret;
   VALGRIND_GET_ORIG_FN(fn);

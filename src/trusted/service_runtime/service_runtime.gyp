@@ -49,6 +49,7 @@
           'nacl_syscall_common.c',
           'nacl_syscall_hook.c',
           'nacl_text.c',
+          'nacl_valgrind_hooks.c',
           'name_service/default_name_service.c',
           'name_service/name_service.c',
           'sel_addrspace.c',
