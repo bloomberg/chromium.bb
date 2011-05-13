@@ -1,0 +1,10 @@
+URL: ftp://gee.cs.oswego.edu/pub/misc/malloc.c
+Version: 2.8.4 Wed May 27 09:56:23 2009  Doug Lea  (dl at gee)
+License: Public Domain
+License File: NOTICE
+
+Description:
+This is a highly portable, parameterized malloc implementation.
+
+Local Modifications:
+No modifications.
