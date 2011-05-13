@@ -54,8 +54,6 @@
       '-imports',
       'infobars',
       'instant',
-      # crbug.com/76639
-      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       'navigation',
       'notifications',
       # crbug.com/80510
