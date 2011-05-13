@@ -8306,6 +8306,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT">
         <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
       </message>
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND">
+        Background Apps
+      </message>
 
       <!-- Multiple download warning-->
       <message name="IDS_MULTI_DOWNLOAD_WARNING" desc="Warning invoked if multiple downloads are attempted without user interaction.">

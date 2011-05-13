@@ -113,6 +113,12 @@ var OptionsPage = options.OptionsPage;
         chrome.send('useTLS1CheckboxAction',
             [String($('sslUseTLS1').checked)]);
       };
+      if ($('backgroundModeCheckbox')) {
+        $('backgroundModeCheckbox').onclick = function(event) {
+          chrome.send('backgroundModeAction',
+              [String($('backgroundModeCheckbox').checked)]);
+        };
+      }
 
       // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
       // certain platforms, or could be enabled by a lab.
@@ -234,6 +240,11 @@ var OptionsPage = options.OptionsPage;
   AdvancedOptions.SetUseTLS1CheckboxState = function(checked, disabled) {
     $('sslUseTLS1').checked = checked;
     $('sslUseTLS1').disabled = disabled;
+  };
+
+  // Set the checked state for the backgroundModeCheckbox element.
+  AdvancedOptions.SetBackgroundModeCheckboxState = function(checked) {
+    $('backgroundModeCheckbox').checked = checked;
   };
 
   // Set the Cloud Print proxy UI to enabled, disabled, or processing.

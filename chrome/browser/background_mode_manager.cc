@@ -11,7 +11,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/background_mode_manager.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -48,10 +50,16 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile,
       keep_alive_for_startup_(false),
       status_tray_(NULL),
       status_icon_(NULL) {
-  // If background mode is disabled, just exit - don't listen for any
+  // If background mode is currently disabled, just exit - don't listen for any
   // notifications.
-  if (!IsBackgroundModeEnabled(command_line))
+  if (IsBackgroundModePermanentlyDisabled(command_line))
     return;
+
+  // Listen for the background mode preference changing.
+  if (g_browser_process->local_state()) {  // Skip for unit tests
+    pref_registrar_.Init(g_browser_process->local_state());
+    pref_registrar_.Add(prefs::kBackgroundModeEnabled, this);
+  }
 
   // Keep the browser alive until extensions are done loading - this is needed
   // by the --no-startup-window flag. We want to stay alive until we load
@@ -104,6 +112,14 @@ void BackgroundModeManager::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   switch (type.value) {
+    case NotificationType::PREF_CHANGED:
+      DCHECK(*Details<std::string>(details).ptr() ==
+             prefs::kBackgroundModeEnabled);
+      if (IsBackgroundModePrefEnabled())
+        EnableBackgroundMode();
+      else
+        DisableBackgroundMode();
+      break;
     case NotificationType::EXTENSIONS_READY:
       // Extensions are loaded, so we don't need to manually keep the browser
       // process alive any more when running in no-startup-window mode.
@@ -182,8 +198,9 @@ void BackgroundModeManager::OnBackgroundAppLoaded() {
 }
 
 void BackgroundModeManager::StartBackgroundMode() {
-  // Don't bother putting ourselves in background mode if we're already there.
-  if (in_background_mode_)
+  // Don't bother putting ourselves in background mode if we're already there
+  // or if background mode is disabled.
+  if (in_background_mode_ || !IsBackgroundModePrefEnabled())
     return;
 
   // Mark ourselves as running in background mode.
@@ -215,8 +232,30 @@ void BackgroundModeManager::EndBackgroundMode() {
   RemoveStatusTrayIcon();
 }
 
+void BackgroundModeManager::EnableBackgroundMode() {
+  DCHECK(IsBackgroundModePrefEnabled());
+  // If background mode should be enabled, but isn't, turn it on.
+  if (background_app_count_ > 0 && !in_background_mode_) {
+    StartBackgroundMode();
+    EnableLaunchOnStartup(true);
+  }
+}
+
+void BackgroundModeManager::DisableBackgroundMode() {
+  DCHECK(!IsBackgroundModePrefEnabled());
+  // If background mode is currently enabled, turn it off.
+  if (in_background_mode_) {
+    EndBackgroundMode();
+    EnableLaunchOnStartup(false);
+  }
+}
+
 void BackgroundModeManager::OnBackgroundAppInstalled(
     const Extension* extension) {
+  // Background mode is disabled - don't do anything.
+  if (!IsBackgroundModePrefEnabled())
+    return;
+
   // We're installing a background app. If this is the first background app
   // being installed, make sure we are set to launch on startup.
   if (background_app_count_ == 0)
@@ -294,13 +333,17 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   }
   if (applications_.size() > 0)
     menu->AddSeparator();
+  menu->AddCheckItemWithStringId(
+      IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND,
+      IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND);
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   context_menu_ = menu;
   status_icon_->SetContextMenu(menu);
 }
 
 bool BackgroundModeManager::IsCommandIdChecked(int command_id) const {
-  return false;
+  DCHECK(command_id == IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND);
+  return true;
 }
 
 bool BackgroundModeManager::IsCommandIdEnabled(int command_id) const {
@@ -348,6 +391,31 @@ void BackgroundModeManager::ExecuteCommand(int item) {
     case IDC_TASK_MANAGER:
       GetBrowserWindow()->OpenTaskManager(true);
       break;
+    case IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND: {
+      // Background mode must already be enabled (as otherwise this menu would
+      // not be visible).
+      DCHECK(IsBackgroundModePrefEnabled());
+      DCHECK(BrowserList::WillKeepAlive());
+      if (BrowserList::size() == 0) {
+        // There are no windows open - unchecking this will exit Chrome. Warn
+        // the user.
+        if (!platform_util::SimpleYesNoBox(
+                NULL,
+                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                l10n_util::GetStringFUTF16(
+                    IDS_CONFIRM_EXIT_BACKGROUND_MODE_BODY,
+                    GetPreferencesMenuLabel()))) {
+          return;
+        }
+      }
+
+      // Set the background mode pref to "disabled" - the resulting notification
+      // will result in a call to DisableBackgroundMode().
+      PrefService* service = g_browser_process->local_state();
+      DCHECK(service);
+      service->SetBoolean(prefs::kBackgroundModeEnabled, false);
+      break;
+    }
     default:
       ExecuteApplication(item);
       break;
@@ -364,23 +432,31 @@ Browser* BackgroundModeManager::GetBrowserWindow() {
 }
 
 // static
-bool BackgroundModeManager::IsBackgroundModeEnabled(
+bool BackgroundModeManager::IsBackgroundModePermanentlyDisabled(
     const CommandLine* command_line) {
 
   // Background mode is disabled if the appropriate flag is passed, or if
-  // extensions are disabled. It's always disabled on chromeos since chrome
-  // is always running on that platform, making it superfluous.
+  // extensions are disabled, or if the associated preference is unset. It's
+  // always disabled on chromeos since chrome is always running on that
+  // platform, making it superfluous.
 #if defined(OS_CHROMEOS)
-  return false;
+  return true;
 #else
-  bool background_mode_enabled =
-      !command_line->HasSwitch(switches::kDisableBackgroundMode) &&
-      !command_line->HasSwitch(switches::kDisableExtensions);
-  return background_mode_enabled;
+  bool background_mode_disabled =
+      command_line->HasSwitch(switches::kDisableBackgroundMode) ||
+      command_line->HasSwitch(switches::kDisableExtensions);
+  return background_mode_disabled;
 #endif
+}
+
+bool BackgroundModeManager::IsBackgroundModePrefEnabled() {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  return service->GetBoolean(prefs::kBackgroundModeEnabled);
 }
 
 // static
 void BackgroundModeManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUserCreatedLoginItem, false);
+  prefs->RegisterBooleanPref(prefs::kBackgroundModeEnabled, true);
 }

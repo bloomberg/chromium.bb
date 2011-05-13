@@ -162,6 +162,12 @@ void AdvancedOptionsHandler::GetLocalizedValues(
     { "cloudPrintProxyEnablingButton",
       IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON },
 #endif
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+    { "advancedSectionTitleBackground",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND },
+    { "backgroundModeCheckbox",
+      IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE },
+#endif
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -191,6 +197,9 @@ void AdvancedOptionsHandler::Initialize() {
     RemoveCloudPrintProxySection();
   }
 #endif
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  SetupBackgroundModeSettings();
+#endif
 
   banner_handler_.reset(
       new OptionsManagedBannerHandler(web_ui_,
@@ -219,6 +228,12 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
                      this);
   tls1_enabled_.Init(prefs::kTLS1Enabled, g_browser_process->local_state(),
                      this);
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  background_mode_enabled_.Init(prefs::kBackgroundModeEnabled,
+                                g_browser_process->local_state(),
+                                this);
+#endif
 
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
@@ -283,6 +298,11 @@ void AdvancedOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleUseTLS1Checkbox));
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  web_ui_->RegisterMessageCallback("backgroundModeAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleBackgroundModeCheckbox));
+#endif
 }
 
 void AdvancedOptionsHandler::Observe(NotificationType type,
@@ -307,6 +327,10 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
 #endif
     } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
       SetupFontSizeLabel();
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+    } else if (*pref_name == prefs::kBackgroundModeEnabled) {
+      SetupBackgroundModeSettings();
+#endif
     }
   }
 }
@@ -403,6 +427,24 @@ void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
   tls1_enabled_.SetValue(enabled);
 }
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+void AdvancedOptionsHandler::HandleBackgroundModeCheckbox(
+    const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  std::string metric = enabled ? "Options_BackgroundMode_Enable" :
+                                 "Options_BackgroundMode_Disable";
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+  background_mode_enabled_.SetValue(enabled);
+}
+
+void AdvancedOptionsHandler::SetupBackgroundModeSettings() {
+    FundamentalValue checked(background_mode_enabled_.GetValue());
+    web_ui_->CallJavascriptFunction(
+        "options.AdvancedOptions.SetBackgroundModeCheckboxState", checked);
+}
+#endif
 
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {

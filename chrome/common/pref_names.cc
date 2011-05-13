@@ -1350,6 +1350,9 @@ const char kManagedPopupsBlockedForUrls[] =
 // uninstalling background apps.
 const char kUserCreatedLoginItem[] = "background_mode.user_created_login_item";
 
+// Set to true if background mode is enabled on this browser.
+const char kBackgroundModeEnabled[] = "background_mode.enabled";
+
 // List of protocol handlers.
 const char kRegisteredProtocolHandlers[] =
   "custom_handlers.registered_protocol_handlers";

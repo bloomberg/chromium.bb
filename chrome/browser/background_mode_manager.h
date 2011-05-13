@@ -46,7 +46,6 @@ class BackgroundModeManager
   BackgroundModeManager(Profile* profile, CommandLine* command_line);
   virtual ~BackgroundModeManager();
 
-  static bool IsBackgroundModeEnabled(const CommandLine* command_line);
   static void RegisterPrefs(PrefService* prefs);
 
  private:
@@ -57,11 +56,9 @@ class BackgroundModeManager
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppInstallUninstall);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
-                           BackgroundPrefDisabled);
+                           BackgroundAppInstallUninstallWhileDisabled);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
-                           BackgroundPrefDynamicDisable);
-  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
-                           BackgroundPrefDynamicEnable);
+                           EnableAfterBackgroundAppInstall);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -146,7 +143,24 @@ class BackgroundModeManager
   // window.
   Browser* GetBrowserWindow();
 
+  // Returns true if the "Let chrome run in the background" pref is checked.
+  // (virtual to allow overriding in tests).
+  virtual bool IsBackgroundModePrefEnabled();
+
+  // Turns off background mode if it's currently enabled.
+  void DisableBackgroundMode();
+
+  // Turns on background mode if it's currently disabled.
+  void EnableBackgroundMode();
+
+  // Returns true if background mode is permanently disabled for this chrome
+  // session.
+  static bool IsBackgroundModePermanentlyDisabled(
+      const CommandLine* command_line);
+
+  // Registrars for managing our change observers.
   NotificationRegistrar registrar_;
+  PrefChangeRegistrar pref_registrar_;
 
   // The parent profile for this object.
   Profile* profile_;

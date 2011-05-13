@@ -336,6 +336,15 @@ be available for now. -->
           Please sign out of Chromium OS and sign in again for this change to take effect.
         </message>
       </if>
+      <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
+        Let Chromium Run In The Background
+      </message>
+      <message name="IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE" desc="The label of the check-box that enables background mode">
+        Continue running background apps when Chromium is closed
+      </message>
+      <message name="IDS_CONFIRM_EXIT_BACKGROUND_MODE_BODY" desc="Confirmation displayed when disabling background mode via the status tray context menu when there are no windows open">
+        Are you sure you want to quit Chromium? (This setting can be toggled in <ph name="OPTIONS_MENU_LABEL">$1<ex>Options</ex></ph> - Under the Hood)
+      </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY" desc="Summary of problem displayed in dialog when we can't create a directory for this user.">
         Chromium cannot read and write to its data directory:\n\n<ph name="USER_DATA_DIRECTORY">$1<ex>C:\Documents and Settings\devint\Local Settings\Application Data\Google\Chrome</ex></ph>
       </message>

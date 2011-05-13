@@ -210,4 +210,15 @@
     </div>
   </section>
 </if>
+<if expr="os != 'darwin' and not pp_ifdef('chromeos')">
+  <section id="background-section">
+    <h3 i18n-content="advancedSectionTitleBackground"></h3>
+    <div class="checkbox">
+      <label>
+        <input id="backgroundModeCheckbox" type="checkbox">
+        <span i18n-content="backgroundModeCheckbox"></span>
+      </label>
+    </div>
+  </section>
+</if>
 </div>

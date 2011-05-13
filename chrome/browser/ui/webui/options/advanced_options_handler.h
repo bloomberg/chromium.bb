@@ -116,6 +116,15 @@ class AdvancedOptionsHandler
 
 #endif
 
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  // Sets up the checked state for the "Continue running background apps..."
+  // checkbox.
+  void SetupBackgroundModeSettings();
+
+  // Callback for the "Continue running background apps..." checkbox.
+  void HandleBackgroundModeCheckbox(const ListValue* args);
+#endif
+
   // Setup the checked state for the metrics reporting checkbox.
   void SetupMetricsReportingCheckbox();
 
@@ -153,6 +162,10 @@ class AdvancedOptionsHandler
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember ssl3_enabled_;
   BooleanPrefMember tls1_enabled_;
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  BooleanPrefMember background_mode_enabled_;
+#endif
 
   FilePathPrefMember default_download_location_;
   BooleanPrefMember ask_for_save_location_;
