@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,8 @@ TransportChannelSocketAdapter::TransportChannelSocketAdapter(
     cricket::TransportChannel* channel)
     : message_loop_(MessageLoop::current()),
       channel_(channel),
-      read_pending_(false),
-      write_pending_(false),
+      read_callback_(NULL),
+      write_callback_(NULL),
       closed_error_code_(net::OK) {
   DCHECK(channel_);
 
@@ -38,7 +38,8 @@ int TransportChannelSocketAdapter::Read(
     net::IOBuffer* buf, int buffer_size, net::CompletionCallback* callback) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(buf);
-  CHECK(!read_pending_);
+  DCHECK(callback);
+  CHECK(!read_callback_);
 
   if (!channel_) {
     DCHECK(closed_error_code_ != net::OK);
@@ -48,7 +49,6 @@ int TransportChannelSocketAdapter::Read(
   read_callback_ = callback;
   read_buffer_ = buf;
   read_buffer_size_ = buffer_size;
-  read_pending_ = true;
 
   return net::ERR_IO_PENDING;
 }
@@ -57,7 +57,8 @@ int TransportChannelSocketAdapter::Write(
     net::IOBuffer* buffer, int buffer_size, net::CompletionCallback* callback) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(buffer);
-  CHECK(!write_pending_);
+  DCHECK(callback);
+  CHECK(!write_callback_);
 
   if (!channel_) {
     DCHECK(closed_error_code_ != net::OK);
@@ -75,7 +76,6 @@ int TransportChannelSocketAdapter::Write(
   }
 
   if (result == net::ERR_IO_PENDING) {
-    write_pending_ = true;
     write_callback_ = callback;
     write_buffer_ = buffer;
     write_buffer_size_ = buffer_size;
@@ -108,16 +108,16 @@ void TransportChannelSocketAdapter::Close(int error_code) {
   channel_->SignalDestroyed.disconnect(this);
   channel_ = NULL;
 
-  if (read_pending_) {
+  if (read_callback_) {
     net::CompletionCallback* callback = read_callback_;
-    read_pending_ = false;
+    read_callback_ = NULL;
     read_buffer_ = NULL;
     callback->Run(error_code);
   }
 
-  if (write_pending_) {
+  if (write_callback_) {
     net::CompletionCallback* callback = write_callback_;
-    write_pending_ = false;
+    write_callback_ = NULL;
     write_buffer_ = NULL;
     callback->Run(error_code);
   }
@@ -127,7 +127,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
     cricket::TransportChannel* channel, const char* data, size_t data_size) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK_EQ(channel, channel_);
-  if (read_pending_) {
+  if (read_callback_) {
     DCHECK(read_buffer_);
     CHECK_LT(data_size, static_cast<size_t>(std::numeric_limits<int>::max()));
 
@@ -140,7 +140,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
     memcpy(read_buffer_->data(), data, data_size);
 
     net::CompletionCallback* callback = read_callback_;
-    read_pending_ = false;
+    read_callback_ = NULL;
     read_buffer_ = NULL;
 
     callback->Run(data_size);
@@ -154,7 +154,7 @@ void TransportChannelSocketAdapter::OnWritableState(
     cricket::TransportChannel* channel) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   // Try to send the packet if there is a pending write.
-  if (write_pending_) {
+  if (write_callback_) {
     int result = channel_->SendPacket(write_buffer_->data(),
                                       write_buffer_size_);
     if (result < 0)
@@ -162,7 +162,7 @@ void TransportChannelSocketAdapter::OnWritableState(
 
     if (result != net::ERR_IO_PENDING) {
       net::CompletionCallback* callback = write_callback_;
-      write_pending_ = false;
+      write_callback_ = NULL;
       write_buffer_ = NULL;
       callback->Run(result);
     }
