@@ -24,7 +24,8 @@ class StopParsingException(Exception):
 
 
 class GrdContentHandler(xml.sax.handler.ContentHandler):
-  def __init__(self, stop_after=None, debug=False, defines=None):
+  def __init__(self,
+      stop_after=None, debug=False, defines=None, tags_to_ignore=None):
     # Invariant of data:
     # 'root' is the root of the parse tree being created, or None if we haven't
     # parsed out any elements.
@@ -36,9 +37,19 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
     self.stop_after = stop_after
     self.debug = debug
     self.defines = defines
+    self.tags_to_ignore = tags_to_ignore or set()
+    self.ignore_depth = 0
 
   def startElement(self, name, attrs):
     assert not self.root or len(self.stack) > 0
+
+    if name in self.tags_to_ignore:
+      self.ignore_depth += 1
+      if self.debug:
+        print "Ignoring element %s and its children" % name
+
+    if self.ignore_depth != 0:
+      return
 
     if self.debug:
       attr_list = []
@@ -46,7 +57,8 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
         attr_list.append('%s="%s"' % (attr, attrs.getValue(attr)))
       if len(attr_list) == 0: attr_list = ['(none)']
       attr_list = ' '.join(attr_list)
-      print "Starting parsing of element %s with attributes %r" % (name, attr_list)
+      print ("Starting parsing of element %s with attributes %r" %
+          (name, attr_list))
 
     typeattr = None
     if 'type' in attrs.getNames():
@@ -72,18 +84,23 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
       node.HandleAttribute(attr, attrs.getValue(attr))
 
   def endElement(self, name):
-    if self.debug:
-      print "End parsing of element %s" % name
-    # Pop
-    self.stack[-1].EndParsing()
-    assert len(self.stack) > 0
-    self.stack = self.stack[:-1]
-    if self.stop_after and name == self.stop_after:
-      raise StopParsingException()
+    if self.ignore_depth == 0:
+      if self.debug:
+        print "End parsing of element %s" % name
+      # Pop
+      self.stack[-1].EndParsing()
+      assert len(self.stack) > 0
+      self.stack = self.stack[:-1]
+      if self.stop_after and name == self.stop_after:
+        raise StopParsingException()
+
+    if name in self.tags_to_ignore:
+      self.ignore_depth -= 1
 
   def characters(self, content):
-    if self.stack[-1]:
-      self.stack[-1].AppendContent(content)
+    if self.ignore_depth == 0:
+      if self.stack[-1]:
+        self.stack[-1].AppendContent(content)
 
   def ignorableWhitespace(self, whitespace):
     # TODO(joi)  This is not supported by expat.  Should use a different XML parser?
@@ -92,7 +109,7 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
 
 def Parse(filename_or_stream, dir=None, flexible_root=False,
           stop_after=None, debug=False, first_id_filename=None,
-          defines=None):
+          defines=None, tags_to_ignore=None):
   '''Parses a GRD file into a tree of nodes (from grit.node).
 
   If flexible_root is False, the root node must be a <grit> element.  Otherwise
@@ -127,7 +144,7 @@ def Parse(filename_or_stream, dir=None, flexible_root=False,
     grit.exception.Parsing
   '''
   handler = GrdContentHandler(stop_after=stop_after, debug=debug,
-                              defines=defines)
+                              defines=defines, tags_to_ignore=tags_to_ignore)
   try:
     xml.sax.parse(filename_or_stream, handler)
   except StopParsingException:

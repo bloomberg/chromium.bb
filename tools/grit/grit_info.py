@@ -16,7 +16,8 @@ from grit import util
 
 
 def Outputs(filename, defines):
-  grd = grd_reader.Parse(filename, defines=defines)
+  grd = grd_reader.Parse(
+      filename, defines=defines, tags_to_ignore=set(['messages']))
 
   target = []
   lang_folders = {}
@@ -47,7 +48,8 @@ def Outputs(filename, defines):
 
 
 def Inputs(filename, defines):
-  grd = grd_reader.Parse(filename, debug=False, defines=defines)
+  grd = grd_reader.Parse(
+      filename, debug=False, defines=defines, tags_to_ignore=set(['messages']))
   files = []
   for node in grd:
     if (node.name == 'structure' or node.name == 'skeleton' or
