@@ -114,8 +114,8 @@ class SimpleHost {
           new remoting::SupportAccessVerifier());
       if (!support_access_verifier->Init())
         return 1;
-      std::cout << "Access Code: "
-                << support_access_verifier->access_code() << std::endl;
+      std::cout << "Host secret: "
+                << support_access_verifier->host_secret() << std::endl;
       access_verifier.reset(support_access_verifier.release());
     } else {
       scoped_ptr<remoting::SelfAccessVerifier> self_access_verifier(
@@ -199,7 +199,7 @@ class SimpleHost {
 
   void OnMe2MomHostRegistered(bool successful, const std::string& support_id) {
     if (successful) {
-      std::cout << "Support host registered with SupportID: "
+      std::cout << "Support id: "
                 << support_id << std::endl;
     } else {
       LOG(ERROR) << "Failed to register support host";

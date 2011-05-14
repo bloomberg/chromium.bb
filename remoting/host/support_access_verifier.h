@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_SUPPORT_ACCESS_VERIFIER_H_
 #define REMOTING_HOST_SUPPORT_ACCESS_VERIFIER_H_
 
+#include <string>
+
 #include "remoting/host/access_verifier.h"
 
 #include "base/compiler_specific.h"
@@ -14,14 +16,14 @@ namespace remoting {
 class HostConfig;
 
 // SupportAccessVerifier is used in Me2Mom scenario to verify that the
-// client has access code for the host.
+// client knows the host secret.
 class SupportAccessVerifier : public AccessVerifier {
  public:
   SupportAccessVerifier();
   virtual ~SupportAccessVerifier();
 
   bool Init();
-  const std::string& access_code() const { return access_code_; }
+  const std::string& host_secret() const { return host_secret_; }
 
   // AccessVerifier interface.
   virtual bool VerifyPermissions(
@@ -30,7 +32,7 @@ class SupportAccessVerifier : public AccessVerifier {
 
  private:
   bool initialized_;
-  std::string access_code_;
+  std::string host_secret_;
 
   DISALLOW_COPY_AND_ASSIGN(SupportAccessVerifier);
 };

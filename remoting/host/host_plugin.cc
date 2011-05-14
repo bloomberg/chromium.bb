@@ -29,7 +29,7 @@
 
 /*
  Supported Javascript interface:
- readonly attribute string supportID;
+ readonly attribute string accessCode;
  readonly attribute int state;
  state: {
      DISCONNECTED,
@@ -328,7 +328,7 @@ class HostNPScriptObject {
   void SetException(std::string exception_string);
 };
 
-const char* HostNPScriptObject::kAttrNameSupportID = "supportID";
+const char* HostNPScriptObject::kAttrNameSupportID = "accessCode";
 const char* HostNPScriptObject::kAttrNameState = "state";
 const char* HostNPScriptObject::kAttrNameOnStateChanged = "onStateChanged";
 const char* HostNPScriptObject::kFuncNameConnect = "connect";

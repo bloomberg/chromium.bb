@@ -5,6 +5,7 @@
 #include "remoting/host/support_access_verifier.h"
 
 #include <stdlib.h>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -16,13 +17,13 @@ namespace remoting {
 
 namespace {
 // 5 characters long from 34-letter alphabet gives 4.5M possible
-// access codes with uniform distribution, which should be enough
+// host secrets with uniform distribution, which should be enough
 // for short-term passwords.
-const int kAccessCodeLength = 5;
+const int kHostSecretLength = 5;
 
 // The following set includes 10 digits and Latin alphabet except I
 // and O. I and O are not used to avoid confusion with 1 and 0.
-const char kAccessCodeAlphabet[] = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+const char kHostSecretAlphabet[] = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
 
 // Generates cryptographically strong random number in the range [0, max).
 int CryptoRandomInt(int max) {
@@ -31,12 +32,12 @@ int CryptoRandomInt(int max) {
   return random_int32 % max;
 }
 
-std::string GenerateRandomAccessCode() {
+std::string GenerateRandomHostSecret() {
   std::vector<char> result;
-  int alphabet_size = strlen(kAccessCodeAlphabet);
-  result.resize(kAccessCodeLength);
-  for (int i = 0; i < kAccessCodeLength; ++i) {
-    result[i] = kAccessCodeAlphabet[CryptoRandomInt(alphabet_size)];
+  int alphabet_size = strlen(kHostSecretAlphabet);
+  result.resize(kHostSecretLength);
+  for (int i = 0; i < kHostSecretLength; ++i) {
+    result[i] = kHostSecretAlphabet[CryptoRandomInt(alphabet_size)];
   }
   return std::string(result.begin(), result.end());
 }
@@ -50,7 +51,7 @@ SupportAccessVerifier::SupportAccessVerifier()
 SupportAccessVerifier::~SupportAccessVerifier() { }
 
 bool SupportAccessVerifier::Init() {
-  access_code_ = GenerateRandomAccessCode();
+  host_secret_ = GenerateRandomHostSecret();
   initialized_ = true;
   return true;
 }
@@ -59,8 +60,10 @@ bool SupportAccessVerifier::VerifyPermissions(
     const std::string& client_jid,
     const std::string& encoded_access_token) {
   CHECK(initialized_);
+  // TODO(jamiewalch): This needs to compose the support id with the host
+  // secret before verification.
   return protocol::VerifySupportAuthToken(
-      client_jid, access_code_, encoded_access_token);
+      client_jid, host_secret_, encoded_access_token);
 }
 
 }  // namespace remoting

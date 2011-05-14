@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(jamiewalch): Clean up terminology in this web app regarding supportId,
-// sessionId and accessCode.
-
 var remoting = {};
 XMPP_TOKEN_NAME = 'xmpp_token';
 OAUTH2_TOKEN_NAME = 'oauth2_token';
@@ -24,12 +21,12 @@ function updateAuthStatus_() {
     document.getElementById('xmpp_clear').style.display = 'inline';
     document.getElementById('xmpp_form').style.display = 'none';
     xmpp_status.innerText = 'OK';
-    xmpp_status.style.color='green';
+    xmpp_status.style.color = 'green';
   } else {
     document.getElementById('xmpp_clear').style.display = 'none';
     document.getElementById('xmpp_form').style.display = 'inline';
     xmpp_status.innerText = 'Unauthorized';
-    xmpp_status.style.color='red';
+    xmpp_status.style.color = 'red';
   }
 }
 
@@ -37,7 +34,7 @@ function clientLoginError_(xhr) {
   // If there's an error URL, load it into an iframe.
   var url_line = xhr.responseText.match('Url=.*');
   if (url_line) {
-    url = url_line[0].substr(4)
+    url = url_line[0].substr(4);
     var error_frame = document.getElementById('xmpp_error');
     error_frame.src = url;
     error_frame.style.display = 'block';
@@ -116,7 +113,7 @@ function authorizeXmpp(form) {
     }
   };
   xhr.open('POST', 'https://www.google.com/accounts/ClientLogin', true);
-  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   var post_data =
       'accountType=HOSTED_OR_GOOGLE' +
       '&service=chromiumsync' +
@@ -202,9 +199,9 @@ function onStateChanged_() {
   if (state == plugin.REQUESTED_SUPPORT_ID) {
     setHostMode('preparing_to_share');
   } else if (state == plugin.RECEIVED_SUPPORT_ID) {
-    var support_id = plugin.supportID;
-    var access_code = document.getElementById('access_code_display');
-    access_code.innerText = support_id;
+    var access_code = plugin.accessCode;
+    var access_code_display = document.getElementById('access_code_display');
+    access_code_display.innerText = access_code;
     setHostMode('ready_to_share');
   } else if (state == plugin.CONNECTED) {
     setHostMode('shared');
@@ -231,7 +228,23 @@ function startSession_() {
   setGlobalMode('session');
 }
 
-function sessionIdToJid_(reply, xhr) {
+function showConnectError_(responseCode, responseString) {
+  var invalid = document.getElementById('invalid_access_code');
+  var other = document.getElementById('other_connect_error');
+  if (responseCode == 404) {
+    invalid.style.display = 'block';
+    other.style.display = 'none';
+  } else {
+    invalid.style.display = 'none';
+    other.style.display = 'block';
+    var responseNode = document.getElementById('server_response');
+    responseNode.innerText = responseString + ' (' + responseCode + ')';
+  }
+  remoting.accessCode = '';
+  setClientMode('connect_failed');
+}
+
+function parseServerResponse_(reply, xhr) {
   if (xhr.status == 200) {
     var host = JSON.parse(xhr.responseText);
     if (host.data && host.data.jabberId) {
@@ -242,28 +255,23 @@ function sessionIdToJid_(reply, xhr) {
       return;
     }
   }
-  var invalid = document.getElementById('invalid_access_code');
-  var other = document.getElementById('other_connect_error');
-  if (xhr.status == 404) {
-    invalid.style.display = 'block';
-    other.style.display = 'none';
-  } else {
-    invalid.style.display = 'none';
-    other.style.display = 'block';
-    var responseNode = document.getElementById('server_response');
-    responseNode.innerText = xhr.responseText + ' (' + xhr.status + ')';
-  }
-  setClientMode('connect_failed');
+  showConnectError_(xhr.status, xhr.responseText);
 }
 
 function tryConnect(form) {
-  remoting.supportId = form['access_code_entry'].value;
-  setClientMode('connecting');
-  var urlBase = 'https://www.googleapis.com/chromoting/v1/support-hosts/';
-  remoting.oauth.sendSignedRequest(
-      urlBase + '' + encodeURIComponent(remoting.supportId) + '',
-      sessionIdToJid_);
-  return true;
+  remoting.accessCode = form['access_code_entry'].value;
+  // TODO(jamiewalch): Since the mapping from (SupportId, HostSecret) to
+  // AccessCode is not yet defined, assume it's hyphen-separated for now.
+  var parts = remoting.accessCode.split('-');
+  if (parts.length != 2) {
+    showConnectError_(404);
+  } else {
+    setClientMode('connecting');
+    var urlBase = 'https://www.googleapis.com/chromoting/v1/support-hosts/';
+    remoting.oauth.sendSignedRequest(
+        urlBase + '' + encodeURIComponent(parts[0]) + '',
+        parseServerResponse_);
+  }
 }
 
 function cancelConnect() {
