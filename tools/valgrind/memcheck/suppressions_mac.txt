@@ -1348,7 +1348,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN24BrowserRenderProcessHost4InitEbb
+   fun:_ZN24BrowserRenderProcessHost4InitEb
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN13ExtensionHost19CreateRenderViewNowEv
    fun:_ZN13ExtensionHost20ProcessCreationQueue14ProcessOneHostEv
