@@ -18,8 +18,6 @@ from SCons.Script import GetBuildFailures
 import SCons.Warnings
 SCons.Warnings.warningAsException()
 
-sys.path.append('tools')
-import command_tester
 
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
@@ -1619,30 +1617,6 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
 
 pre_base_env.AddMethod(CommandTest)
 
-def FileSizeTest(env, name, envFile, max_size=None):
-  """FileSizeTest() returns a scons node like the other XYZTest generators.
-  It logs the file size of envFile in a perf-buildbot-recognizable format.
-  Optionally, it can cause a test failure if the file is larger than max_size.
-  """
-  def doSizeCheck(target, source, env):
-    filepath = source[0].abspath
-    actual_size = os.stat(filepath).st_size
-    command_tester.LogPerfResult(name,
-                                 env.GetPerfEnvDescription(),
-                                 '%.3f' % (actual_size / 1024.0),
-                                 'kilobytes')
-    if max_size is not None and actual_size > max_size:
-      # NOTE: this exception only triggers a failure for this particular test,
-      # just like any other test failure.
-      raise Exception("File %s larger than expected: expected up to %i, got %i"
-                      % (filepath, max_size, actual_size))
-  # Do not try to build the dependencies when 'built_elsewhere'.
-  # Everything that needed to be built must have been built already.
-  if env.Bit('built_elsewhere'):
-    env.Ignore(name, envFile)
-  return env.Command(name, envFile, doSizeCheck)
-
-pre_base_env.AddMethod(FileSizeTest)
 
 def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False):
   """AutoDepsCommand() takes a command as an array of arguments.  Each
