@@ -4032,8 +4032,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     WifiNetwork* wifi1 = new WifiNetwork("fw1");
     wifi1->set_name("Fake Wifi Connected");
     wifi1->set_strength(90);
-    wifi1->set_connected(false);
-    wifi1->set_connecting(true);
+    wifi1->set_connected(true);
     wifi1->set_active(true);
     wifi1->set_encryption(SECURITY_NONE);
     AddNetwork(wifi1);
@@ -4062,13 +4061,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     wifi4->set_identity("nobody@google.com");
     wifi4->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
     AddNetwork(wifi4);
+
     active_wifi_ = wifi1;
 
     CellularNetwork* cellular1 = new CellularNetwork("fc1");
     cellular1->set_name("Fake Cellular");
     cellular1->set_strength(70);
-    cellular1->set_connected(false);
-    cellular1->set_connecting(true);
+    cellular1->set_connected(true);
     cellular1->set_active(true);
     cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
     cellular1->set_payment_url(std::string("http://www.google.com"));
@@ -4093,6 +4092,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     data_plans->push_back(paid_plan);
 
     AddNetwork(cellular1);
+    active_cellular_ = cellular1;
 
     CellularNetwork* cellular2 = new CellularNetwork("fc2");
     cellular2->set_name("Fake Cellular 2");
@@ -4298,7 +4298,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     return ethernet_;
   }
   virtual bool ethernet_connecting() const { return false; }
-  virtual bool ethernet_connected() const { return false; }
+  virtual bool ethernet_connected() const { return true; }
 
   virtual const WifiNetwork* wifi_network() const {
     return active_wifi_;
@@ -4318,8 +4318,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual bool virtual_network_connecting() const { return false; }
   virtual bool virtual_network_connected() const { return false; }
 
-  bool Connected() const { return false; }
-  bool Connecting() const { return true; }
+  bool Connected() const { return true; }
+  bool Connecting() const { return false; }
   const std::string& IPAddress() const { return ip_address_; }
   virtual const WifiNetworkVector& wifi_networks() const {
     return wifi_networks_;
