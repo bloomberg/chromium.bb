@@ -1744,3 +1744,14 @@
    fun:_ZN4base6Thread5StartEv
    fun:_ZN4base5debug47TraceEventTestFixture_DataCapturedOnThread_Test8TestBodyEv
 }
+{
+   bug_82680
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN3IPC12ChannelProxy7ContextC2EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
+   fun:_ZN3IPC12ChannelProxy7ContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
+   fun:_ZN3IPC12ChannelProxyC2ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
+   fun:_ZN3IPC12ChannelProxyC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
+   fun:_ZN36IPCChannelTest_ChannelProxyTest_Test8TestBodyEv
+}
