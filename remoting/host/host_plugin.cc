@@ -31,6 +31,7 @@
  Supported Javascript interface:
  readonly attribute string accessCode;
  readonly attribute int state;
+
  state: {
      DISCONNECTED,
      REQUESTED_SUPPORT_ID,
@@ -38,7 +39,8 @@
      CONNECTED,
      AFFIRMING_CONNECTION,
      ERROR,
-  }
+ }
+
  attribute Function void onStateChanged();
 
  void connect(string uid, string auth_token);
@@ -50,11 +52,13 @@ namespace {
 // Global netscape functions initialized in NP_Initialize.
 NPNetscapeFuncs* g_npnetscape_funcs = NULL;
 
-// Values returned in GetValue
-const char* g_plugin_name = "Remoting Host Plugin";
-const char* g_plugin_description = "Remoting Host Plugin";
+// The name and description are returned by GetValue, but are also
+// combined with the MIME type to satisfy GetMIMEDescription, so we
+// use macros here to allow that to happen at compile-time.
+#define HOST_PLUGIN_NAME "Remoting Host Plugin"
+#define HOST_PLUGIN_DESCRIPTION "Remoting Host Plugin"
 
-// Convert an NPIdentifier into a std::string
+// Convert an NPIdentifier into a std::string.
 std::string StringFromNPIdentifier(NPIdentifier identifier) {
   if (!g_npnetscape_funcs->identifierisstring(identifier))
     return std::string();
@@ -64,7 +68,7 @@ std::string StringFromNPIdentifier(NPIdentifier identifier) {
   return string;
 }
 
-// Convert an NPVariant into a std::string
+// Convert an NPVariant into a std::string.
 std::string StringFromNPVariant(const NPVariant& variant) {
   if (!NPVARIANT_IS_STRING(variant))
     return std::string();
@@ -85,14 +89,14 @@ NPVariant NPVariantFromString(const std::string& val) {
   return variant;
 }
 
-// Convert an NPVariant into an NSPObject
+// Convert an NPVariant into an NSPObject.
 NPObject* ObjectFromNPVariant(const NPVariant& variant) {
   if (!NPVARIANT_IS_OBJECT(variant))
     return NULL;
   return NPVARIANT_TO_OBJECT(variant);
 }
 
-// NPAPI plugin implementation for remoting host script object
+// NPAPI plugin implementation for remoting host script object.
 class HostNPScriptObject {
  public:
   HostNPScriptObject(NPP plugin, NPObject* parent)
@@ -101,7 +105,9 @@ class HostNPScriptObject {
         state_(kDisconnected),
         on_state_changed_func_(NULL),
         worker_thread_("remoting_host_plugin"),
-        np_thread_id_(base::PlatformThread::CurrentId()) {}
+        np_thread_id_(base::PlatformThread::CurrentId()) {
+    LOG(INFO) << "HostNPScriptObject";
+  }
 
   ~HostNPScriptObject() {
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
@@ -111,6 +117,7 @@ class HostNPScriptObject {
   }
 
   bool Init() {
+    LOG(INFO) << "Init";
     return worker_thread_.Start();
   }
 
@@ -205,7 +212,7 @@ class HostNPScriptObject {
     LOG(INFO) << "SetProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
-    // Read-only
+    // The support-ID and state are read-only.
     if (property_name == kAttrNameSupportID ||
         property_name == kAttrNameState)
       return false;
@@ -713,11 +720,15 @@ NPError GetValue(NPP instance, NPPVariable variable, void* value) {
     return NPERR_GENERIC_ERROR;
   case NPPVpluginNameString:
     LOG(INFO) << "GetValue - name string";
-    *reinterpret_cast<const char**>(value) = g_plugin_name;
+    *reinterpret_cast<const char**>(value) = HOST_PLUGIN_NAME;
     break;
   case NPPVpluginDescriptionString:
     LOG(INFO) << "GetValue - description string";
-    *reinterpret_cast<const char**>(value) = g_plugin_description;
+    *reinterpret_cast<const char**>(value) = HOST_PLUGIN_DESCRIPTION;
+    break;
+  case NPPVpluginNeedsXEmbed:
+    LOG(INFO) << "GetValue - NeedsXEmbed";
+    *(static_cast<NPBool*>(value)) = true;
     break;
   case NPPVpluginScriptableNPObject:
     LOG(INFO) << "GetValue - scriptable object";
@@ -789,7 +800,9 @@ OSCALL NPError NP_Shutdown() {
 
 OSCALL const char* NP_GetMIMEDescription(void) {
   LOG(INFO) << "NP_GetMIMEDescription";
-  return STRINGIZE(HOST_PLUGIN_MIME_TYPE);
+  return STRINGIZE(HOST_PLUGIN_MIME_TYPE) ":"
+      HOST_PLUGIN_NAME ":"
+      HOST_PLUGIN_DESCRIPTION;
 }
 
 OSCALL NPError NP_GetValue(void* npp, NPPVariable variable, void* value) {
