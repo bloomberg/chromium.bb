@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/network_delegate.h"
 
 class ExtensionEventRouterForwarder;
 template<class T> class PrefMember;
-class ProtocolHandlerRegistry;
 
 typedef PrefMember<bool> BooleanPrefMember;
 
@@ -29,22 +29,22 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   ChromeNetworkDelegate(
       ExtensionEventRouterForwarder* event_router,
       ProfileId profile_id,
-      BooleanPrefMember* enable_referrers,
-      ProtocolHandlerRegistry* protocol_handler_registry);
+      BooleanPrefMember* enable_referrers);
   virtual ~ChromeNetworkDelegate();
 
   // Binds |enable_referrers| to |pref_service| and moves it to the IO thread.
   // This method should be called on the UI thread.
   static void InitializeReferrersEnabled(BooleanPrefMember* enable_referrers,
                                          PrefService* pref_service);
+
  private:
   // NetworkDelegate methods:
   virtual int OnBeforeURLRequest(net::URLRequest* request,
                                  net::CompletionCallback* callback,
-                                 GURL* new_url);
+                                 GURL* new_url) OVERRIDE;
   virtual int OnBeforeSendHeaders(uint64 request_id,
                                   net::CompletionCallback* callback,
-                                  net::HttpRequestHeaders* headers);
+                                  net::HttpRequestHeaders* headers) OVERRIDE;
   virtual void OnRequestSent(uint64 request_id,
                              const net::HostPortPair& socket_address,
                              const net::HttpRequestHeaders& headers);
@@ -54,8 +54,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual void OnCompleted(net::URLRequest* request);
   virtual void OnURLRequestDestroyed(net::URLRequest* request);
   virtual void OnHttpTransactionDestroyed(uint64 request_id);
-  virtual net::URLRequestJob* OnMaybeCreateURLRequestJob(
-      net::URLRequest* request);
   virtual void OnPACScriptError(int line_number, const string16& error);
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
@@ -63,7 +61,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
-  scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };
 

@@ -18,10 +18,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
-typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
-typedef std::vector<ProtocolHandler> ProtocolHandlerList;
-typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
-
 // This is where handlers for protocols registered with
 // navigator.registerProtocolHandler() are registered. Each Profile owns an
 // instance of this class, which is initialized on browser start through
@@ -31,7 +27,16 @@ typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
 class ProtocolHandlerRegistry
     : public base::RefCountedThreadSafe<ProtocolHandlerRegistry> {
  public:
-  class Delegate;
+  // TODO(koz): Refactor this to eliminate the unnecessary virtuals. All that
+  // should be needed is a way to ensure that the list of websafe protocols is
+  // updated.
+  class Delegate {
+   public:
+    virtual ~Delegate();
+    virtual void RegisterExternalHandler(const std::string& protocol);
+    virtual void DeregisterExternalHandler(const std::string& protocol);
+    virtual bool IsExternalHandlerRegistered(const std::string& protocol);
+  };
 
   ProtocolHandlerRegistry(Profile* profile, Delegate* delegate);
   ~ProtocolHandlerRegistry();
@@ -94,11 +99,6 @@ class ProtocolHandlerRegistry
   // Causes the given protocol handler to not be ignored anymore.
   void RemoveIgnoredHandler(const ProtocolHandler& handler);
 
-  // URLRequestFactory for use with URLRequest::RegisterProtocolFactory().
-  // Redirects any URLRequests for which there is a matching protocol handler.
-  static net::URLRequestJob* Factory(net::URLRequest* request,
-                                     const std::string& scheme);
-
   // Registers the preferences that we store registered protocol handlers in.
   static void RegisterPrefs(PrefService* prefService);
 
@@ -114,19 +114,14 @@ class ProtocolHandlerRegistry
   // will not handle requests.
   void Disable();
 
-  bool enabled() { return enabled_; }
-
-  class Delegate {
-   public:
-    virtual ~Delegate();
-    virtual void RegisterExternalHandler(const std::string& protocol);
-    virtual void DeregisterExternalHandler(const std::string& protocol);
-    virtual bool IsExternalHandlerRegistered(const std::string& protocol);
-  };
+  bool enabled() const { return enabled_; }
 
  private:
-
   friend class base::RefCountedThreadSafe<ProtocolHandlerRegistry>;
+
+  typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
+  typedef std::vector<ProtocolHandler> ProtocolHandlerList;
+  typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
 
   // Returns a JSON list of protocol handlers. The caller is responsible for
   // deleting this Value.
@@ -142,7 +137,7 @@ class ProtocolHandlerRegistry
   // Get the DictionaryValues stored under the given pref name that are valid
   // ProtocolHandler values.
   std::vector<const DictionaryValue*> GetHandlersFromPref(
-      const char* pref_name);
+      const char* pref_name) const;
 
   // Ignores future requests to register the given protocol handler.
   void IgnoreProtocolHandler(const ProtocolHandler& handler);
@@ -180,4 +175,3 @@ class ProtocolHandlerRegistry
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };
 #endif  // CHROME_BROWSER_CUSTOM_HANDLERS_PROTOCOL_HANDLER_REGISTRY_H_
-

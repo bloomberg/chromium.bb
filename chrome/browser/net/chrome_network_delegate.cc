@@ -5,7 +5,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
@@ -41,12 +40,10 @@ void ForwardProxyErrors(net::URLRequest* request,
 ChromeNetworkDelegate::ChromeNetworkDelegate(
     ExtensionEventRouterForwarder* event_router,
     ProfileId profile_id,
-    BooleanPrefMember* enable_referrers,
-    ProtocolHandlerRegistry* protocol_handler_registry)
+    BooleanPrefMember* enable_referrers)
     : event_router_(event_router),
       profile_id_(profile_id),
-      enable_referrers_(enable_referrers),
-      protocol_handler_registry_(protocol_handler_registry) {
+      enable_referrers_(enable_referrers) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
 }
@@ -125,13 +122,6 @@ void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
 void ChromeNetworkDelegate::OnHttpTransactionDestroyed(uint64 request_id) {
   ExtensionWebRequestEventRouter::GetInstance()->OnHttpTransactionDestroyed(
       profile_id_, request_id);
-}
-
-net::URLRequestJob* ChromeNetworkDelegate::OnMaybeCreateURLRequestJob(
-      net::URLRequest* request) {
-  if (!protocol_handler_registry_)
-    return NULL;
-  return protocol_handler_registry_->MaybeCreateJob(request);
 }
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,

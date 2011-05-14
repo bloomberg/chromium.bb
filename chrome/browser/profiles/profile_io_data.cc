@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/resource_context.h"
@@ -36,6 +38,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -127,6 +130,38 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   }
 
   scoped_refptr<ProfileGetter> profile_getter_;
+};
+
+class ProtocolHandlerRegistryInterceptor
+    : public net::URLRequestJobFactory::Interceptor {
+ public:
+  explicit ProtocolHandlerRegistryInterceptor(
+      ProtocolHandlerRegistry* protocol_handler_registry)
+      : protocol_handler_registry_(protocol_handler_registry) {
+    DCHECK(protocol_handler_registry_);
+  }
+
+  virtual ~ProtocolHandlerRegistryInterceptor() {}
+
+  virtual net::URLRequestJob* MaybeIntercept(
+      net::URLRequest* request) const OVERRIDE {
+    return protocol_handler_registry_->MaybeCreateJob(request);
+  }
+
+  virtual net::URLRequestJob* MaybeInterceptRedirect(
+      const GURL& url, net::URLRequest* request) const OVERRIDE {
+    return NULL;
+  }
+
+  virtual net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request) const OVERRIDE {
+    return NULL;
+  }
+
+ private:
+  const scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryInterceptor);
 };
 
 }  // namespace
@@ -221,6 +256,29 @@ ProfileIOData::~ProfileIOData() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
+// static
+bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
+  DCHECK_EQ(scheme, StringToLowerASCII(scheme));
+  static const char* const kProtocolList[] = {
+    chrome::kExtensionScheme,
+    chrome::kUserScriptScheme,
+  };
+  for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
+    if (scheme == kProtocolList[i])
+      return true;
+  }
+  return net::URLRequest::IsHandledProtocol(scheme);
+}
+
+bool ProfileIOData::IsHandledURL(const GURL& url) {
+  if (!url.is_valid()) {
+    // We handle error cases.
+    return true;
+  }
+
+  return IsHandledProtocol(url.scheme());
+}
+
 scoped_refptr<ChromeURLRequestContext>
 ProfileIOData::GetMainRequestContext() const {
   LazyInitialize();
@@ -298,8 +356,7 @@ void ProfileIOData::LazyInitialize() const {
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
         profile_params_->profile_id,
-        &enable_referrers_,
-        profile_params_->protocol_handler_registry));
+        &enable_referrers_));
 
   dns_cert_checker_.reset(
       CreateDnsCertProvenanceChecker(io_thread_globals->dnsrr_resolver.get(),
@@ -311,6 +368,25 @@ void ProfileIOData::LazyInitialize() const {
           io_thread_globals->proxy_script_fetcher_context.get(),
           profile_params_->proxy_config_service.release(),
           command_line));
+
+  // NOTE(willchan): Keep these protocol handlers in sync with
+  // ProfileIOData::IsHandledProtocol().
+  job_factory_.reset(new net::URLRequestJobFactory);
+  if (profile_params_->protocol_handler_registry) {
+    job_factory_->AddInterceptor(
+        new ProtocolHandlerRegistryInterceptor(
+            profile_params_->protocol_handler_registry));
+  }
+  bool set_protocol = job_factory_->SetProtocolHandler(
+      chrome::kExtensionScheme,
+      CreateExtensionProtocolHandler(profile_params_->is_incognito,
+                                     profile_params_->extension_info_map));
+  DCHECK(set_protocol);
+  set_protocol = job_factory_->SetProtocolHandler(
+      chrome::kUserScriptScheme,
+      CreateUserScriptProtocolHandler(profile_params_->user_script_dir_path,
+                                      profile_params_->extension_info_map));
+  DCHECK(set_protocol);
 
   // Take ownership over these parameters.
   database_tracker_ = profile_params_->database_tracker;

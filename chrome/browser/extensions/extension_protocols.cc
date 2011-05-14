@@ -119,8 +119,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
 // TODO(aa): This should be moved into ExtensionResourceRequestPolicy, but we
 // first need to find a way to get CanLoadInIncognito state into the renderers.
 bool AllowExtensionResourceLoad(net::URLRequest* request,
-                                ChromeURLRequestContext* context,
-                                const std::string& scheme) {
+                                bool is_incognito,
+                                ExtensionInfoMap* extension_info_map) {
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
 
@@ -135,10 +135,9 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // Don't allow toplevel navigations to extension resources in incognito mode.
   // This is because an extension must run in a single process, and an
   // incognito tab prevents that.
-  if (context->is_incognito() &&
+  if (is_incognito &&
       info->resource_type() == ResourceType::MAIN_FRAME &&
-      !context->extension_info_map()->
-          ExtensionCanLoadInIncognito(request->url().host())) {
+      !extension_info_map->ExtensionCanLoadInIncognito(request->url().host())) {
     LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
                << "incognito tab.";
     return false;
@@ -147,29 +146,42 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   return true;
 }
 
-}  // namespace
+class ExtensionProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  ExtensionProtocolHandler(bool is_incognito,
+                           ExtensionInfoMap* extension_info_map)
+      : is_incognito_(is_incognito),
+        extension_info_map_(extension_info_map) {}
 
-// Factory registered with net::URLRequest to create URLRequestJobs for
-// extension:// URLs.
-static net::URLRequestJob* CreateExtensionURLRequestJob(
-    net::URLRequest* request,
-    const std::string& scheme) {
-  ChromeURLRequestContext* context =
-      static_cast<ChromeURLRequestContext*>(request->context());
+  virtual ~ExtensionProtocolHandler() {}
 
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request) const OVERRIDE;
+
+ private:
+  const bool is_incognito_;
+  ExtensionInfoMap* const extension_info_map_;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionProtocolHandler);
+};
+
+// Creates URLRequestJobs for extension:// URLs.
+net::URLRequestJob*
+ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
   // TODO(mpcomplete): better error code.
-  if (!AllowExtensionResourceLoad(request, context, scheme)) {
+  if (!AllowExtensionResourceLoad(
+           request, is_incognito_, extension_info_map_)) {
     LOG(ERROR) << "disallowed in extension protocols";
     return new net::URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
   }
 
   // chrome-extension://extension-id/resource/path.js
   const std::string& extension_id = request->url().host();
-  FilePath directory_path = context->extension_info_map()->
+  FilePath directory_path = extension_info_map_->
       GetPathForExtension(extension_id);
   if (directory_path.value().empty()) {
-    if (context->extension_info_map()->URLIsForExtensionIcon(request->url()))
-      directory_path = context->extension_info_map()->
+    if (extension_info_map_->URLIsForExtensionIcon(request->url()))
+      directory_path = extension_info_map_->
           GetPathForDisabledExtension(extension_id);
     if (directory_path.value().empty()) {
       LOG(WARNING) << "Failed to GetPathForExtension: " << extension_id;
@@ -177,7 +189,7 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
     }
   }
 
-  const std::string& content_security_policy = context->extension_info_map()->
+  const std::string& content_security_policy = extension_info_map_->
       GetContentSecurityPolicyForExtension(extension_id);
 
   FilePath resources_path;
@@ -221,26 +233,47 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
                                     content_security_policy);
 }
 
+class UserScriptProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  UserScriptProtocolHandler(const FilePath& user_script_dir_path,
+                            ExtensionInfoMap* extension_info_map)
+      : user_script_dir_path_(user_script_dir_path),
+        extension_info_map_(extension_info_map) {}
+
+  virtual ~UserScriptProtocolHandler() {}
+
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request) const OVERRIDE;
+
+ private:
+  const FilePath user_script_dir_path_;
+  ExtensionInfoMap* const extension_info_map_;
+};
+
 // Factory registered with net::URLRequest to create URLRequestJobs for
 // chrome-user-script:/ URLs.
-static net::URLRequestJob* CreateUserScriptURLRequestJob(
-    net::URLRequest* request,
-    const std::string& scheme) {
-  ChromeURLRequestContext* context =
-      static_cast<ChromeURLRequestContext*>(request->context());
-
+net::URLRequestJob* UserScriptProtocolHandler::MaybeCreateJob(
+    net::URLRequest* request) const {
   // chrome-user-script:/user-script-name.user.js
-  FilePath directory_path = context->user_script_dir_path();
-
-  ExtensionResource resource(request->url().host(), directory_path,
+  ExtensionResource resource(
+      request->url().host(), user_script_dir_path_,
       extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
   return new net::URLRequestFileJob(request, resource.GetFilePath());
 }
 
-void RegisterExtensionProtocols() {
-  net::URLRequest::RegisterProtocolFactory(chrome::kExtensionScheme,
-                                           &CreateExtensionURLRequestJob);
-  net::URLRequest::RegisterProtocolFactory(chrome::kUserScriptScheme,
-                                           &CreateUserScriptURLRequestJob);
+}  // namespace
+
+net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
+    bool is_incognito,
+    ExtensionInfoMap* extension_info_map) {
+  return new ExtensionProtocolHandler(is_incognito, extension_info_map);
+}
+
+net::URLRequestJobFactory::ProtocolHandler* CreateUserScriptProtocolHandler(
+    const FilePath& user_script_dir_path,
+    ExtensionInfoMap* extension_info_map) {
+  return new UserScriptProtocolHandler(
+      user_script_dir_path, extension_info_map);
 }

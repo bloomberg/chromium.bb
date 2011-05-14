@@ -419,8 +419,7 @@ void IOThread::Init() {
   globals_->system_network_delegate.reset(new ChromeNetworkDelegate(
       extension_event_router_forwarder_,
       Profile::kInvalidProfileId,
-      &system_enable_referrers_,
-      NULL));
+      &system_enable_referrers_));
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(new net::CertVerifier);

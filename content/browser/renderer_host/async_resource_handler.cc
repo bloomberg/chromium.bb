@@ -126,8 +126,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
-  if (info->resource_type() == ResourceType::MAIN_FRAME &&
-      request->context()) {
+  if (info->resource_type() == ResourceType::MAIN_FRAME && host_zoom_map_) {
     GURL request_url(request->url());
     filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->route_id(),

@@ -64,6 +64,14 @@ class DatabaseTracker;
 // accessor.
 class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
  public:
+  // Returns true if |scheme| is handled in Chrome, or by default handlers in
+  // net::URLRequest.
+  static bool IsHandledProtocol(const std::string& scheme);
+
+  // Returns true if |url| is handled in Chrome, or by default handlers in
+  // net::URLRequest.
+  static bool IsHandledURL(const GURL& url);
+
   // These should only be called at most once each. Ownership is reversed when
   // they get called, from ProfileIOData owning ChromeURLRequestContext to vice
   // versa.
@@ -162,6 +170,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     return proxy_service_.get();
   }
 
+  net::URLRequestJobFactory* job_factory() const {
+    return job_factory_.get();
+  }
+
   ChromeURLRequestContext* main_request_context() const {
     return main_request_context_;
   }
@@ -219,6 +231,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
+  mutable scoped_ptr<net::URLRequestJobFactory> job_factory_;
 
   // Pointed to by ResourceContext.
   mutable scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;

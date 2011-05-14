@@ -4,11 +4,14 @@
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/child_process_security_policy.h"
 #include "net/base/network_delegate.h"
@@ -19,16 +22,16 @@
 
 ProtocolHandlerRegistry::ProtocolHandlerRegistry(Profile* profile,
     Delegate* delegate)
-  : profile_(profile),
-    delegate_(delegate),
-    enabled_(true) {
+    : profile_(profile),
+      delegate_(delegate),
+      enabled_(true) {
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
 }
 
-ProtocolHandlerList& ProtocolHandlerRegistry::GetHandlerListFor(
-    const std::string& scheme) {
+ProtocolHandlerRegistry::ProtocolHandlerList&
+ProtocolHandlerRegistry::GetHandlerListFor(const std::string& scheme) {
   ProtocolHandlerMultiMap::iterator p = protocol_handlers_.find(scheme);
   if (p == protocol_handlers_.end()) {
     protocol_handlers_[scheme] = ProtocolHandlerList();
@@ -60,7 +63,7 @@ void ProtocolHandlerRegistry::Enable() {
   }
   enabled_ = true;
   for (ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.begin();
-      p != protocol_handlers_.end(); p++) {
+       p != protocol_handlers_.end(); ++p) {
     delegate_->RegisterExternalHandler(p->first);
   }
 }
@@ -71,13 +74,13 @@ void ProtocolHandlerRegistry::Disable() {
   }
   enabled_ = false;
   for (ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.begin();
-      p != protocol_handlers_.end(); p++) {
+       p != protocol_handlers_.end(); ++p) {
     delegate_->DeregisterExternalHandler(p->first);
   }
 }
 
 std::vector<const DictionaryValue*>
-ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) {
+ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
   std::vector<const DictionaryValue*> result;
   PrefService* prefs = profile_->GetPrefs();
   if (!prefs->HasPrefPath(pref_name)) {
@@ -86,7 +89,7 @@ ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) {
 
   const ListValue* handlers = prefs->GetList(pref_name);
   if (handlers) {
-    for (size_t i = 0; i < handlers->GetSize(); i++) {
+    for (size_t i = 0; i < handlers->GetSize(); ++i) {
       DictionaryValue* dict;
       handlers->GetDictionary(i, &dict);
       if (ProtocolHandler::IsValidDict(dict)) {
@@ -107,7 +110,7 @@ void ProtocolHandlerRegistry::Load() {
     GetHandlersFromPref(prefs::kRegisteredProtocolHandlers);
   for (std::vector<const DictionaryValue*>::const_iterator p =
       registered_handlers.begin();
-      p != registered_handlers.end(); p++) {
+      p != registered_handlers.end(); ++p) {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(*p);
     RegisterProtocolHandler(handler);
     bool is_default = false;
@@ -118,8 +121,8 @@ void ProtocolHandlerRegistry::Load() {
   std::vector<const DictionaryValue*> ignored_handlers =
     GetHandlersFromPref(prefs::kIgnoredProtocolHandlers);
   for (std::vector<const DictionaryValue*>::const_iterator p =
-      ignored_handlers.begin();
-      p != ignored_handlers.end(); p++) {
+       ignored_handlers.begin();
+       p != ignored_handlers.end(); ++p) {
     IgnoreProtocolHandler(ProtocolHandler::CreateProtocolHandler(*p));
   }
   is_loading_ = false;
@@ -157,7 +160,7 @@ bool ProtocolHandlerRegistry::CanSchemeBeOverridden(
 void ProtocolHandlerRegistry::GetHandledProtocols(
     std::vector<std::string>* output) const {
   ProtocolHandlerMultiMap::const_iterator p;
-  for (p = protocol_handlers_.begin(); p != protocol_handlers_.end(); p++) {
+  for (p = protocol_handlers_.begin(); p != protocol_handlers_.end(); ++p) {
     output->push_back(p->first);
   }
 }
@@ -165,7 +168,7 @@ void ProtocolHandlerRegistry::GetHandledProtocols(
 void ProtocolHandlerRegistry::RemoveIgnoredHandler(
     const ProtocolHandler& handler) {
   for (ProtocolHandlerList::iterator p = ignored_protocol_handlers_.begin();
-      p != ignored_protocol_handlers_.end(); p++) {
+       p != ignored_protocol_handlers_.end(); ++p) {
     if (handler == *p) {
       ignored_protocol_handlers_.erase(p);
       break;
@@ -181,7 +184,7 @@ bool ProtocolHandlerRegistry::IsRegistered(const ProtocolHandler& handler) {
 bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
   ProtocolHandlerList::const_iterator i;
   for (i = ignored_protocol_handlers_.begin();
-      i != ignored_protocol_handlers_.end(); i++) {
+      i != ignored_protocol_handlers_.end(); ++i) {
     if (*i == handler) {
       return true;
     }
@@ -202,15 +205,10 @@ void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
     handlers.erase(p);
   }
 
-  if (default_handlers_[handler.protocol()] == handler) {
-    default_handlers_.erase(handler.protocol());
+  ProtocolHandlerMap::iterator it = default_handlers_.find(handler.protocol());
+  if (it != default_handlers_.end() && it->second == handler) {
+    default_handlers_.erase(it);
   }
-}
-
-net::URLRequestJob* ProtocolHandlerRegistry::Factory(net::URLRequest* request,
-    const std::string& scheme) {
-  return request->context()->network_delegate()->MaybeCreateURLRequestJob(
-      request);
 }
 
 net::URLRequestJob* ProtocolHandlerRegistry::MaybeCreateJob(
@@ -234,9 +232,9 @@ Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
   ListValue* protocol_handlers = new ListValue();
 
   for (ProtocolHandlerMultiMap::iterator i = protocol_handlers_.begin();
-      i != protocol_handlers_.end(); ++i) {
+       i != protocol_handlers_.end(); ++i) {
     for (ProtocolHandlerList::iterator j = i->second.begin();
-        j != i->second.end(); j++) {
+         j != i->second.end(); ++j) {
       DictionaryValue* encoded = j->Encode();
       if (IsDefault(*j)) {
         encoded->Set("default", Value::CreateBooleanValue(true));
@@ -251,7 +249,7 @@ Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
   ListValue* handlers = new ListValue();
 
   for (ProtocolHandlerList::iterator i = ignored_protocol_handlers_.begin();
-      i != ignored_protocol_handlers_.end(); ++i) {
+       i != ignored_protocol_handlers_.end(); ++i) {
     handlers->Append(i->Encode());
   }
   return handlers;
@@ -273,17 +271,18 @@ void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
   Save();
 }
 
-void ProtocolHandlerRegistry::RegisterPrefs(PrefService* prefService) {
-  prefService->RegisterListPref(prefs::kRegisteredProtocolHandlers,
-                                PrefService::UNSYNCABLE_PREF);
-  prefService->RegisterListPref(prefs::kIgnoredProtocolHandlers,
-                                PrefService::UNSYNCABLE_PREF);
-  prefService->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true,
-                                   PrefService::UNSYNCABLE_PREF);
+void ProtocolHandlerRegistry::RegisterPrefs(PrefService* pref_service) {
+  pref_service->RegisterListPref(prefs::kRegisteredProtocolHandlers,
+                                 PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterListPref(prefs::kIgnoredProtocolHandlers,
+                                 PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true,
+                                    PrefService::UNSYNCABLE_PREF);
 }
 
 void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
-  default_handlers_[handler.protocol()] = handler;
+  default_handlers_.erase(handler.protocol());
+  default_handlers_.insert(std::make_pair(handler.protocol(), handler));
   Save();
 }
 
@@ -307,7 +306,7 @@ const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerFor(
   if (q != protocol_handlers_.end() && q->second.size() == 1) {
     return q->second[0];
   }
-  return ProtocolHandler::kEmpty;
+  return ProtocolHandler::EmptyProtocolHandler();
 }
 
 bool ProtocolHandlerRegistry::HasDefault(
@@ -331,16 +330,13 @@ void ProtocolHandlerRegistry::Delegate::RegisterExternalHandler(
   if (!policy->IsWebSafeScheme(protocol)) {
     policy->RegisterWebSafeScheme(protocol);
   }
-  net::URLRequest::RegisterProtocolFactory(protocol,
-      &ProtocolHandlerRegistry::Factory);
 }
 
 void ProtocolHandlerRegistry::Delegate::DeregisterExternalHandler(
     const std::string& protocol) {
-  net::URLRequest::RegisterProtocolFactory(protocol, NULL);
 }
 
 bool ProtocolHandlerRegistry::Delegate::IsExternalHandlerRegistered(
     const std::string& protocol) {
-  return net::URLRequest::IsHandledProtocol(protocol);
+  return ProfileIOData::IsHandledProtocol(protocol);
 }

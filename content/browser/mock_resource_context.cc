@@ -5,6 +5,7 @@
 #include "content/browser/mock_resource_context.h"
 
 #include "base/lazy_instance.h"
+#include "net/url_request/url_request_test_util.h"
 
 namespace content {
 
@@ -15,7 +16,10 @@ const ResourceContext& MockResourceContext::GetInstance() {
   return g_mock_resource_context.Get();
 }
 
-MockResourceContext::MockResourceContext() {}
+MockResourceContext::MockResourceContext()
+    : test_request_context_(new TestURLRequestContext) {
+  set_request_context(test_request_context_);
+}
 MockResourceContext::~MockResourceContext() {}
 
 void MockResourceContext::EnsureInitialized() const {}

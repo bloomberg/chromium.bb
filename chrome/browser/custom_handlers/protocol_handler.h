@@ -29,23 +29,21 @@ class ProtocolHandler {
   static bool IsValidDict(const DictionaryValue* value);
 
   // Canonical empty ProtocolHandler.
-  static const ProtocolHandler kEmpty;
-
-  explicit ProtocolHandler();
+  static const ProtocolHandler& EmptyProtocolHandler();
 
   // Interpolates the given URL into the URL template of this handler.
-  GURL TranslateUrl(const GURL& url);
+  GURL TranslateUrl(const GURL& url) const;
 
   // Encodes this protocol handler as a DictionaryValue. The caller is
   // responsible for deleting the returned value.
-  DictionaryValue* Encode();
+  DictionaryValue* Encode() const;
 
-  std::string protocol() const { return protocol_; }
-  GURL url() const { return url_;}
-  string16 title() const { return title_; }
+  const std::string& protocol() const { return protocol_; }
+  const GURL& url() const { return url_;}
+  const string16& title() const { return title_; }
 
   bool IsEmpty() const {
-    return protocol_ == "";
+    return protocol_.empty();
   }
 
   bool operator==(const ProtocolHandler &other) const;
@@ -54,10 +52,11 @@ class ProtocolHandler {
   ProtocolHandler(const std::string& protocol,
                   const GURL& url,
                   const string16& title);
+  ProtocolHandler();
+
   std::string protocol_;
   GURL url_;
   string16 title_;
 };
 
 #endif  // CHROME_BROWSER_CUSTOM_HANDLERS_PROTOCOL_HANDLER_H_
-

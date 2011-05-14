@@ -178,6 +178,9 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   main_context->set_http_transaction_factory(cache);
   main_context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(main_context->host_resolver()));
+
+  main_context->set_job_factory(job_factory());
+  extensions_context->set_job_factory(job_factory());
 }
 
 scoped_refptr<ProfileIOData::RequestContext>

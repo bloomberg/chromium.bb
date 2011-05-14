@@ -42,7 +42,10 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
 
 
 class ProtocolHandlerRegistryTest : public testing::Test {
- public:
+ protected:
+  ProtocolHandlerRegistryTest()
+      : test_protocol_handler_(CreateProtocolHandler("test", "test")) {}
+
   FakeDelegate* delegate() const { return delegate_; }
   TestingProfile* profile() const { return profile_.get(); }
   PrefService* pref_service() const { return profile_->GetPrefs(); }
@@ -70,9 +73,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     registry_->Load();
   }
 
- private:
   virtual void SetUp() {
-    test_protocol_handler_ = CreateProtocolHandler("test", "test");
     profile_.reset(new TestingProfile());
     profile_->SetPrefService(new TestingPrefService());
     delegate_ = new FakeDelegate();

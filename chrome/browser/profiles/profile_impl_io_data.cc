@@ -272,8 +272,7 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   main_context->set_cookie_store(cookie_store);
   media_request_context_->set_cookie_store(cookie_store);
-  extensions_context->set_cookie_store(
-      extensions_cookie_store);
+  extensions_context->set_cookie_store(extensions_cookie_store);
 
   main_http_factory_.reset(main_cache);
   media_http_factory_.reset(media_cache);
@@ -282,6 +281,10 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   main_context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(io_thread_globals->host_resolver.get()));
+
+  main_context->set_job_factory(job_factory());
+  media_request_context_->set_job_factory(job_factory());
+  extensions_context->set_job_factory(job_factory());
 
   lazy_params_.reset();
 }

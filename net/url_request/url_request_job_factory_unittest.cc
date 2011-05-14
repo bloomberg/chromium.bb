@@ -1,0 +1,152 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "net/url_request/url_request_job_factory.h"
+
+#include "base/task.h"
+#include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_test_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace net {
+
+namespace {
+
+class MockURLRequestJob : public URLRequestJob {
+ public:
+  MockURLRequestJob(URLRequest* request, const URLRequestStatus& status)
+      : URLRequestJob(request),
+        status_(status),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+
+  virtual void Start() {
+    // Start reading asynchronously so that all error reporting and data
+    // callbacks happen as they would for network requests.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(&MockURLRequestJob::StartAsync));
+  }
+
+ private:
+  void StartAsync() {
+    SetStatus(status_);
+    NotifyHeadersComplete();
+  }
+
+  URLRequestStatus status_;
+  ScopedRunnableMethodFactory<MockURLRequestJob> method_factory_;
+};
+
+class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
+ public:
+  virtual URLRequestJob* MaybeCreateJob(URLRequest* request) const {
+    return new MockURLRequestJob(
+        request, URLRequestStatus(URLRequestStatus::SUCCESS, OK));
+  }
+};
+
+class DummyInterceptor : public URLRequestJobFactory::Interceptor {
+ public:
+  virtual URLRequestJob* MaybeIntercept(URLRequest* request) const {
+    return new MockURLRequestJob(
+        request,
+        URLRequestStatus(URLRequestStatus::FAILED, ERR_FAILED));
+  }
+
+  virtual URLRequestJob* MaybeInterceptRedirect(
+      const GURL& /* location */,
+      URLRequest* /* request */) const {
+    return NULL;
+  }
+
+  virtual URLRequestJob* MaybeInterceptResponse(
+      URLRequest* /* request */) const {
+    return NULL;
+  }
+};
+
+TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
+  TestDelegate delegate;
+  scoped_refptr<URLRequestContext> request_context(new TestURLRequestContext);
+  TestURLRequest request(GURL("foo://bar"), &delegate);
+  request.set_context(request_context);
+  request.Start();
+
+  MessageLoop::current()->Run();
+  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
+  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().os_error());
+}
+
+TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
+  TestDelegate delegate;
+  scoped_refptr<URLRequestContext> request_context(new TestURLRequestContext);
+  URLRequestJobFactory job_factory;
+  request_context->set_job_factory(&job_factory);
+  job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
+  TestURLRequest request(GURL("foo://bar"), &delegate);
+  request.set_context(request_context);
+  request.Start();
+
+  MessageLoop::current()->Run();
+  EXPECT_EQ(URLRequestStatus::SUCCESS, request.status().status());
+  EXPECT_EQ(OK, request.status().os_error());
+}
+
+TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {
+  scoped_refptr<URLRequestContext> request_context(new TestURLRequestContext);
+  URLRequestJobFactory job_factory;
+  request_context->set_job_factory(&job_factory);
+  job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
+  job_factory.SetProtocolHandler("foo", NULL);
+}
+
+TEST(URLRequestJobFactoryTest, BasicInterceptor) {
+  TestDelegate delegate;
+  scoped_refptr<URLRequestContext> request_context(new TestURLRequestContext);
+  URLRequestJobFactory job_factory;
+  request_context->set_job_factory(&job_factory);
+  job_factory.AddInterceptor(new DummyInterceptor);
+  TestURLRequest request(GURL("http://bar"), &delegate);
+  request.set_context(request_context);
+  request.Start();
+
+  MessageLoop::current()->Run();
+  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
+  EXPECT_EQ(ERR_FAILED, request.status().os_error());
+}
+
+TEST(URLRequestJobFactoryTest, InterceptorNeedsValidSchemeStill) {
+  TestDelegate delegate;
+  scoped_refptr<URLRequestContext> request_context(new TestURLRequestContext);
+  URLRequestJobFactory job_factory;
+  request_context->set_job_factory(&job_factory);
+  job_factory.AddInterceptor(new DummyInterceptor);
+  TestURLRequest request(GURL("foo://bar"), &delegate);
+  request.set_context(request_context);
+  request.Start();
+
+  MessageLoop::current()->Run();
+  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
+  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().os_error());
+}
+
+TEST(URLRequestJobFactoryTest, InterceptorOverridesProtocolHandler) {
+  TestDelegate delegate;
+  scoped_refptr<URLRequestContext> request_context(new TestURLRequestContext);
+  URLRequestJobFactory job_factory;
+  request_context->set_job_factory(&job_factory);
+  job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
+  job_factory.AddInterceptor(new DummyInterceptor);
+  TestURLRequest request(GURL("foo://bar"), &delegate);
+  request.set_context(request_context);
+  request.Start();
+
+  MessageLoop::current()->Run();
+  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
+  EXPECT_EQ(ERR_FAILED, request.status().os_error());
+}
+
+}  // namespace
+
+}  // namespace net

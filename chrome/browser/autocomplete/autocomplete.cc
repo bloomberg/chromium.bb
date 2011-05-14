@@ -27,6 +27,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -159,7 +160,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
       !LowerCaseEqualsASCII(parsed_scheme, chrome::kHttpScheme) &&
       !LowerCaseEqualsASCII(parsed_scheme, chrome::kHttpsScheme)) {
     // See if we know how to handle the URL internally.
-    if (net::URLRequest::IsHandledProtocol(UTF16ToASCII(parsed_scheme)))
+    if (ProfileIOData::IsHandledProtocol(UTF16ToASCII(parsed_scheme)))
       return URL;
 
     // There are also some schemes that we convert to other things before they

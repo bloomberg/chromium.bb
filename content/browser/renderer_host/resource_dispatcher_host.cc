@@ -75,6 +75,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
@@ -336,14 +337,18 @@ void ResourceDispatcherHost::OnShutdown() {
   }
 }
 
-bool ResourceDispatcherHost::HandleExternalProtocol(int request_id,
-                                                    int child_id,
-                                                    int route_id,
-                                                    const GURL& url,
-                                                    ResourceType::Type type,
-                                                    ResourceHandler* handler) {
-  if (!ResourceType::IsFrame(type) || net::URLRequest::IsHandledURL(url))
+bool ResourceDispatcherHost::HandleExternalProtocol(
+    int request_id,
+    int child_id,
+    int route_id,
+    const GURL& url,
+    ResourceType::Type type,
+    const net::URLRequestJobFactory& job_factory,
+    ResourceHandler* handler) {
+  if (!ResourceType::IsFrame(type) ||
+      job_factory.IsHandledURL(url)) {
     return false;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -491,6 +496,7 @@ void ResourceDispatcherHost::BeginRequest(
 
   if (HandleExternalProtocol(request_id, child_id, route_id,
                              request_data.url, request_data.resource_type,
+                             *resource_context.request_context()->job_factory(),
                              handler)) {
     return;
   }
@@ -806,7 +812,9 @@ void ResourceDispatcherHost::BeginDownload(
                                                 ResourceType::MAIN_FRAME);
   }
 
-  if (!net::URLRequest::IsHandledURL(url)) {
+  const net::URLRequestContext* request_context = context.request_context();
+
+  if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "
             << url.possibly_invalid_spec();
     return;
@@ -843,7 +851,9 @@ void ResourceDispatcherHost::BeginSaveFile(
                                   save_file_manager_.get()));
   request_id_--;
 
-  bool known_proto = net::URLRequest::IsHandledURL(url);
+  const net::URLRequestContext* request_context = context.request_context();
+  bool known_proto =
+      request_context->job_factory()->IsHandledURL(url);
   if (!known_proto) {
     // Since any URLs which have non-standard scheme have been filtered
     // by save manager(see GURL::SchemeIsStandard). This situation
@@ -1095,7 +1105,9 @@ void ResourceDispatcherHost::OnReceivedRedirect(net::URLRequest* request,
 
   if (HandleExternalProtocol(info->request_id(), info->child_id(),
                              info->route_id(), new_url,
-                             info->resource_type(), info->resource_handler())) {
+                             info->resource_type(),
+                             *request->context()->job_factory(),
+                             info->resource_handler())) {
     // The request is complete so we can remove it.
     RemovePendingRequest(info->child_id(), info->request_id());
     return;

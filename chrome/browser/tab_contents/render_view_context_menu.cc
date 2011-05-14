@@ -33,6 +33,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/spellcheck_host.h"
@@ -57,7 +58,6 @@
 #include "content/common/content_restriction.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -945,7 +945,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
         return false;
 
       return params_.link_url.is_valid() &&
-             net::URLRequest::IsHandledURL(params_.link_url);
+          ProfileIOData::IsHandledProtocol(params_.link_url.scheme());
     }
 
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS: {
@@ -956,7 +956,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
         return false;
 
       return params_.src_url.is_valid() &&
-             net::URLRequest::IsHandledURL(params_.src_url);
+          ProfileIOData::IsHandledProtocol(params_.src_url.scheme());
     }
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
@@ -1007,7 +1007,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return (params_.media_flags &
               WebContextMenuData::MediaCanSave) &&
              params_.src_url.is_valid() &&
-             net::URLRequest::IsHandledURL(params_.src_url);
+             ProfileIOData::IsHandledProtocol(params_.src_url.scheme());
     }
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:

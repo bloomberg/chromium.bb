@@ -49,6 +49,9 @@ struct ViewMsg_SwapOut_Params;
 namespace content {
 class ResourceContext;
 }
+namespace net {
+class URLRequestJobFactory;
+}  // namespace net
 
 namespace webkit_blob {
 class DeletableFileReference;
@@ -346,6 +349,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                               int route_id,
                               const GURL& url,
                               ResourceType::Type resource_type,
+                              const net::URLRequestJobFactory& job_factory,
                               ResourceHandler* handler);
 
   // Checks all pending requests and updates the load states and upload

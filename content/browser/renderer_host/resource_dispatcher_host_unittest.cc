@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+
 #include <vector>
 
 #include "base/file_path.h"
@@ -11,7 +13,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/mock_resource_context.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
@@ -125,10 +126,17 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
 class MockURLRequestContextSelector
     : public ResourceMessageFilter::URLRequestContextSelector {
  public:
+  explicit MockURLRequestContextSelector(
+      net::URLRequestContext* request_context)
+      : request_context_(request_context) {}
+
   virtual net::URLRequestContext* GetRequestContext(
       ResourceType::Type request_type) {
-    return NULL;
+    return request_context_;
   }
+
+ private:
+  net::URLRequestContext* const request_context_;
 };
 
 // This class forwards the incoming messages to the ResourceDispatcherHostTest.
@@ -138,11 +146,13 @@ class MockURLRequestContextSelector
 class ForwardingFilter : public ResourceMessageFilter {
  public:
   explicit ForwardingFilter(IPC::Message::Sender* dest)
-    : ResourceMessageFilter(ChildProcessInfo::GenerateChildProcessUniqueId(),
-                            ChildProcessInfo::RENDER_PROCESS,
-                            &content::MockResourceContext::GetInstance(),
-                            new MockURLRequestContextSelector,
-                            NULL),
+    : ResourceMessageFilter(
+        ChildProcessInfo::GenerateChildProcessUniqueId(),
+        ChildProcessInfo::RENDER_PROCESS,
+        &content::MockResourceContext::GetInstance(),
+        new MockURLRequestContextSelector(
+            content::MockResourceContext::GetInstance().request_context()),
+        NULL),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());
   }

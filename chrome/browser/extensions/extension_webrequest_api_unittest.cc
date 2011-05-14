@@ -71,7 +71,7 @@ protected:
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
         event_router_.get(), profile_.GetRuntimeId(),
-        &enable_referrers_, NULL));
+        &enable_referrers_));
     context_ = new TestURLRequestContext();
     context_->set_network_delegate(network_delegate_.get());
   }
