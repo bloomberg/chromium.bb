@@ -2279,8 +2279,10 @@ void RenderView::didStartProvisionalLoad(WebFrame* frame) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidStartProvisionalLoad(frame));
 
+  bool has_opener_set = opener_id_ != MSG_ROUTING_NONE;
   Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, frame->identifier(), is_top_most, ds->request().url()));
+       routing_id_, frame->identifier(), is_top_most, has_opener_set,
+       ds->request().url()));
 }
 
 void RenderView::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame) {
@@ -2296,8 +2298,9 @@ void RenderView::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame) {
   std::vector<GURL> redirects;
   GetRedirectChain(data_source, &redirects);
   if (redirects.size() >= 2) {
+    bool has_opener_set = opener_id_ != MSG_ROUTING_NONE;
     Send(new ViewHostMsg_DidRedirectProvisionalLoad(routing_id_, page_id_,
-        redirects[redirects.size() - 2], redirects.back()));
+        has_opener_set, redirects[redirects.size() - 2], redirects.back()));
   }
 }
 

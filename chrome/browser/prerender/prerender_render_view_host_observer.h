@@ -49,6 +49,7 @@ class PrerenderRenderViewHostObserver : public RenderViewHostObserver {
   void OnRenderViewGone(int status, int exit_code);
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool is_main_frame,
+                                         bool has_opener_set,
                                          const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
   void OnMaybeCancelPrerenderForHTML5Media();
