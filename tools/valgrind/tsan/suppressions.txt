@@ -347,6 +347,14 @@
   fun:uprv_malloc_46
 }
 
+{
+  Two writes, same value (ICU gLibCleanupFunctions[UCLN_UPLUG])
+  ThreadSanitizer:Race
+  fun:ucln_registerCleanup_46
+  fun:uplug_init_46
+  fun:u_init_46
+}
+
 # Reading a pointer to a mutex being initialized in a concurrent thread.
 {
   A benign race in umtx_lock_46
