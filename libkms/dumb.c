@@ -95,7 +95,8 @@ dumb_bo_create(struct kms_driver *kms,
 
 	memset(&arg, 0, sizeof(arg));
 
-	arg.bpp = 16;
+	/* All BO_TYPE currently are 32bpp formats */
+	arg.bpp = 32;
 	arg.width = width;
 	arg.height = height;
 
