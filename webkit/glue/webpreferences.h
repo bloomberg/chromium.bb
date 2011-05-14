@@ -53,6 +53,10 @@ struct WebPreferences {
   bool remote_fonts_enabled;
   bool javascript_can_access_clipboard;
   bool xss_auditor_enabled;
+  // We don't use dns_prefetching_enabled to disable DNS prefetching.  Instead,
+  // we disable the feature at a lower layer so that we catch non-WebKit uses
+  // of DNS prefetch as well.
+  bool dns_prefetching_enabled;
   bool local_storage_enabled;
   bool databases_enabled;
   bool application_cache_enabled;

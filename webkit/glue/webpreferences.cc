@@ -49,6 +49,7 @@ WebPreferences::WebPreferences()
       remote_fonts_enabled(true),
       javascript_can_access_clipboard(false),
       xss_auditor_enabled(false),
+      dns_prefetching_enabled(true),
       local_storage_enabled(false),
       databases_enabled(false),
       application_cache_enabled(false),
@@ -120,6 +121,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDownloadableBinaryFontsEnabled(remote_fonts_enabled);
   settings->setJavaScriptCanAccessClipboard(javascript_can_access_clipboard);
   settings->setXSSAuditorEnabled(xss_auditor_enabled);
+  settings->setDNSPrefetchingEnabled(dns_prefetching_enabled);
   settings->setLocalStorageEnabled(local_storage_enabled);
   WebRuntimeFeatures::enableDatabase(
       WebRuntimeFeatures::isDatabaseEnabled() || databases_enabled);
