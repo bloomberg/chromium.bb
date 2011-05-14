@@ -65,6 +65,8 @@
       'plugins',
       'plugins_check',
       'popups',
+      # crbug.com/82629 - real bug.
+      '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       'prefs',
       'search_engines',
       'shortcuts',
