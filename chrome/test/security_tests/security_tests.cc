@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,12 @@
 #include "sandbox/tests/common/controller.h"
 #include "sandbox/tests/validation_tests/commands.h"
 
+using sandbox::TestOpenKey;
+using sandbox::TestOpenReadFile;
+using sandbox::TestOpenWriteFile;
+
 #define SECURITY_CHECK(x) (*test_count)++; \
-                          if (SBOX_TEST_DENIED != x) { \
+                          if (sandbox::SBOX_TEST_DENIED != x) { \
                             return FALSE; \
                           };
 
@@ -25,7 +29,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD ul_reason_for_call,
 // If a test fails, the return value is FALSE and test_count contains the
 // number of tests executed, including the failing test.
 BOOL __declspec(dllexport) __cdecl RunRendererTests(int *test_count) {
-  using namespace sandbox;
   *test_count = 0;
   SECURITY_CHECK(TestOpenReadFile(L"%SystemDrive%"));
   SECURITY_CHECK(TestOpenReadFile(L"%SystemRoot%"));
@@ -51,7 +54,6 @@ BOOL __declspec(dllexport) __cdecl RunRendererTests(int *test_count) {
 // If a test fails, the return value is FALSE and test_count contains the
 // number of tests executed, including the failing test.
 BOOL __declspec(dllexport) __cdecl RunPluginTests(int *test_count) {
-  using namespace sandbox;
   *test_count = 0;
   SECURITY_CHECK(TestOpenWriteFile(L"%SystemRoot%"));
   SECURITY_CHECK(TestOpenWriteFile(L"%ProgramFiles%"));
