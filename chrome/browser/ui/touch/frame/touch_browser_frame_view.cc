@@ -247,8 +247,10 @@ void TouchBrowserFrameView::Observe(NotificationType type,
     GetFocusedStateAccessor()->SetProperty(
         source_tab->property_bag(), editable);
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+    NavigationController* controller =
+        Source<NavigationController>(source).ptr();
     Browser* source_browser = Browser::GetBrowserForController(
-        Source<NavigationController>(source).ptr(), NULL);
+        controller, NULL);
 
     // If the Browser for the keyboard has navigated, re-evaluate the visibility
     // of the keyboard.
@@ -260,7 +262,7 @@ void TouchBrowserFrameView::Observe(NotificationType type,
       if (view->GetClassName() == RenderWidgetHostViewViews::kViewClassName) {
         // Reset the state of the focused field in the current tab.
         GetFocusedStateAccessor()->SetProperty(
-            source_browser->GetSelectedTabContents()->property_bag(), false);
+            controller->tab_contents()->property_bag(), false);
       }
     }
     if (source_browser == browser)
