@@ -236,7 +236,12 @@ void ThreadWatcher::GotGoodResponse() {
 
 void ThreadWatcher::GotNoResponse() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-  ++unresponsive_count_;
+
+  // Record how other threads are responding when we don't get a response for
+  // ping message atleast three times.
+  if (++unresponsive_count_ < 3)
+    return;
+
   // Record total unresponsive_time since last pong message.
   base::TimeDelta unresponse_time = base::TimeTicks::Now() - pong_time_;
   unresponsive_time_histogram_->AddTime(unresponse_time);
