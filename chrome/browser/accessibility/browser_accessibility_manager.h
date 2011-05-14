@@ -75,6 +75,10 @@ class BrowserAccessibilityManager {
   // does not make a new reference.
   BrowserAccessibility* GetFromChildID(int32 child_id);
 
+  // Return a pointer to the object corresponding to the given renderer_id,
+  // does not make a new reference.
+  BrowserAccessibility* GetFromRendererID(int32 renderer_id);
+
   // Called to notify the accessibility manager that its associated native
   // view got focused.
   void GotFocus();

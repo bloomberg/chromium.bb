@@ -86,6 +86,17 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromChildID(
   }
 }
 
+BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
+    int32 renderer_id) {
+  base::hash_map<int32, int32>::iterator iter =
+      renderer_id_to_child_id_map_.find(renderer_id);
+  if (iter == renderer_id_to_child_id_map_.end())
+    return NULL;
+
+  int32 child_id = iter->second;
+  return GetFromChildID(child_id);
+}
+
 void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
   child_id_map_.erase(child_id);
   renderer_id_to_child_id_map_.erase(renderer_id);

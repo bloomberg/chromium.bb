@@ -138,6 +138,9 @@ class BrowserAccessibility {
     return html_attributes_;
   }
   int32 index_in_parent() const { return index_in_parent_; }
+  const std::vector<int32>& indirect_child_ids() const {
+    return indirect_child_ids_;
+  }
   gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
   const string16& name() const { return name_; }
