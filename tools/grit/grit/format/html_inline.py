@@ -44,7 +44,8 @@ def ReadFile(input_filename):
   f.close()
   return file_contents
 
-def SrcInlineAsDataURL(src_match, base_path, distribution, inlined_files):
+def SrcInlineAsDataURL(
+    src_match, base_path, distribution, inlined_files, names_only=False):
   """regex replace function.
 
   Takes a regex match for src="filename", attempts to read the file
@@ -56,6 +57,9 @@ def SrcInlineAsDataURL(src_match, base_path, distribution, inlined_files):
     src_match: regex match object with 'filename' named capturing group
     base_path: path that to look for files in
     distribution: string that should replace DIST_SUBSTR
+    inlined_files: The name of the opened file is appended to this list.
+    names_only: If true, the function will not read the file but just return "".
+                It will still add the filename to |inlined_files|.
 
   Returns:
     string
@@ -68,8 +72,12 @@ def SrcInlineAsDataURL(src_match, base_path, distribution, inlined_files):
 
   filename = filename.replace('%DISTRIBUTION%', distribution)
   filepath = os.path.join(base_path, filename)
-  mimetype = mimetypes.guess_type(filename)[0] or 'text/plain'
   inlined_files.add(filepath)
+
+  if names_only:
+    return ""
+
+  mimetype = mimetypes.guess_type(filename)[0] or 'text/plain'
   inline_data = base64.standard_b64encode(ReadFile(filepath))
 
   prefix = src_match.string[src_match.start():src_match.start('filename')-1]
@@ -86,7 +94,8 @@ class InlinedData:
     self.inlined_data = inlined_data
     self.inlined_files = inlined_files
 
-def DoInline(input_filename, grd_node, allow_external_script=False):
+def DoInline(
+    input_filename, grd_node, allow_external_script=False, names_only=False):
   """Helper function that inlines the resources in a specified file.
 
   Reads input_filename, finds all the src attributes and attempts to
@@ -96,6 +105,7 @@ def DoInline(input_filename, grd_node, allow_external_script=False):
   Args:
     input_filename: name of file to read in
     grd_node: html node from the grd file for this include tag
+    names_only: |nil| will be returned for the inlined contents (faster).
   Returns:
     a tuple of the inlined data as a string and the set of filenames
     of all the inlined files
@@ -114,7 +124,8 @@ def DoInline(input_filename, grd_node, allow_external_script=False):
   def SrcReplace(src_match, filepath=input_filepath,
                  inlined_files=inlined_files):
     """Helper function to provide SrcInlineAsDataURL with the base file path"""
-    return SrcInlineAsDataURL(src_match, filepath, distribution, inlined_files)
+    return SrcInlineAsDataURL(
+        src_match, filepath, distribution, inlined_files, names_only=names_only)
 
   def GetFilepath(src_match):
     filename = src_match.group('filename')
@@ -173,6 +184,12 @@ def DoInline(input_filename, grd_node, allow_external_script=False):
     if filepath is None:
       return src_match.group(0)
     inlined_files.add(filepath)
+
+    # Even if names_only is set, html files needs to be opened, because it
+    # can link to images that need to be added to the file set.
+    if names_only and not filepath.endswith('.html'):
+      return ""
+
     return pattern % ReadFile(filepath)
 
   def InlineIncludeFiles(src_match):
@@ -201,6 +218,8 @@ def DoInline(input_filename, grd_node, allow_external_script=False):
     if filepath is None:
       return src_match.group(0)
 
+    # Even if names_only is set, the CSS file needs to be opened, because it
+    # can link to images that need to be added to the file set.
     inlined_files.add(filepath)
     # When resolving CSS files we need to pass in the path so that relative URLs
     # can be resolved.
@@ -248,6 +267,8 @@ def DoInline(input_filename, grd_node, allow_external_script=False):
                      SrcReplace,
                      flat_text)
 
+  if names_only:
+    flat_text = None  # Will contains garbage if the flag is set anyway.
   return InlinedData(flat_text, inlined_files)
 
 
@@ -292,7 +313,7 @@ def InlineToFile(input_filename, output_filename, grd_node):
 def GetResourceFilenames(filename):
   """For a grd file, returns a set of all the files that would be inline."""
   try:
-    return DoInline(filename, None).inlined_files
+    return DoInline(filename, None, names_only=True).inlined_files
   except IOError, e:
     raise Exception("Failed to open %s while trying to flatten %s. (%s)" %
                     (e.filename, filename, e.strerror))
