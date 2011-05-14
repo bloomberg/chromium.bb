@@ -1419,7 +1419,7 @@
    fun:_ZN3net13TCPConnectJob6DoLoopEi
    fun:_ZN3net13TCPConnectJob12OnIOCompleteEi
    ...
-   fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteEv
+   fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteERKNS_11AddressListERKN4base9TimeTicksEjii
 }
 {
    bug_22923
@@ -2185,9 +2185,9 @@
    ...
    fun:_ZN3net9HostCache3SetERKNS0_3KeyEiRKNS_11AddressListEN4base9TimeTicksE
    fun:_ZN3net16HostResolverImpl13OnJobCompleteEPNS0_3JobEiiRKNS_11AddressListE
-   fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteEv
-   fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteERKNS_11AddressListERKN4base9TimeTicksEjii
+   fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvRKNS0_11AddressListERKN4base9TimeTicksEjiiES3_S7_jiiEvPT_T0_RK6Tuple5IT1_T2_T3_T4_T5_E
+   fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvRKNS0_11AddressListERKN4base9TimeTicksEjiiE6Tuple5IS3_S7_jiiEE3RunEv
    fun:*18TaskClosureAdapter3RunEv
    fun:_ZN4base8internal8Invoker1*18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
    fun:_ZNK4base8CallbackIFvvEE3RunEv
