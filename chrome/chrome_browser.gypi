@@ -3568,6 +3568,8 @@
             ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
             ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_gtk.cc'],
             ['exclude', '^browser/ui/views/handle_web_keyboard_event_gtk.cc'],
+            ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_views.*'],
+            ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
             ['exclude', '^browser/chromeos/input_method/candidate_window.cc'],
             ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
           ],
@@ -4293,6 +4295,8 @@
                 ['exclude', '^browser/ui/views/tabs/tab_strip_factory.cc'],
                 ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_native.cc'],
                 ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_native.h'],
+                ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_views.*'],
+                ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
               ],
             }],
             ['OS=="linux" and chromeos==1',{
