@@ -750,17 +750,20 @@ TestWebSocketServer::TestWebSocketServer() : started_(false) {
 bool TestWebSocketServer::Start(const FilePath& root_directory) {
   if (started_)
     return true;
+  // Append CommandLine arguments after the server script, switches won't work.
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
-  cmd_line->AppendSwitchASCII("server", "start");
-  cmd_line->AppendSwitch("chromium");
-  cmd_line->AppendSwitch("register_cygwin");
-  cmd_line->AppendSwitchPath("root", root_directory);
+  cmd_line->AppendArg("--server=start");
+  cmd_line->AppendArg("--chromium");
+  cmd_line->AppendArg("--register_cygwin");
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--root=") +
+                            root_directory.value());
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Unable to create a temporary directory.";
     return false;
   }
   websocket_pid_file_ = temp_dir_.path().AppendASCII("websocket.pid");
-  cmd_line->AppendSwitchPath("pidfile", websocket_pid_file_);
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
+                            websocket_pid_file_.value());
   SetPythonPath();
   if (!base::LaunchApp(*cmd_line.get(), true, false, NULL)) {
     LOG(ERROR) << "Unable to launch websocket server.";
@@ -771,6 +774,8 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
 }
 
 CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
+  // Note: Python's first argument must be the script; do not append CommandLine
+  // switches, as they would precede the script path and break this CommandLine.
   return new CommandLine(FilePath(FILE_PATH_LITERAL("python")));
 }
 
@@ -806,10 +811,12 @@ CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
 TestWebSocketServer::~TestWebSocketServer() {
   if (!started_)
     return;
+  // Append CommandLine arguments after the server script, switches won't work.
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
-  cmd_line->AppendSwitchASCII("server", "stop");
-  cmd_line->AppendSwitch("chromium");
-  cmd_line->AppendSwitchPath("pidfile", websocket_pid_file_);
+  cmd_line->AppendArg("--server=stop");
+  cmd_line->AppendArg("--chromium");
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
+                            websocket_pid_file_.value());
   base::LaunchApp(*cmd_line.get(), true, false, NULL);
 }
 

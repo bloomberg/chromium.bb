@@ -176,8 +176,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   // safe to truncate the handle (when passing it from 64-bit to
   // 32-bit) or sign-extend the handle (when passing it from 32-bit to
   // 64-bit)."
-  python_command.AppendSwitchASCII(
-      "startup-pipe",
+  python_command.AppendArg("--startup-pipe=" +
       base::IntToString(reinterpret_cast<uintptr_t>(child_write)));
 
   if (!LaunchTestServerAsJob(python_command,

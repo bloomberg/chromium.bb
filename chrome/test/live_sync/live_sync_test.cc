@@ -401,14 +401,10 @@ bool LiveSyncTest::SetUpLocalTestServer() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   CommandLine::StringType server_cmdline_string = cl->GetSwitchValueNative(
       switches::kSyncServerCommandLine);
-#if defined(OS_WIN)
-  CommandLine server_cmdline = CommandLine::FromString(server_cmdline_string);
-#else
-  std::vector<std::string> server_cmdline_vector;
-  std::string delimiters(" ");
+  CommandLine::StringVector server_cmdline_vector;
+  CommandLine::StringType delimiters(FILE_PATH_LITERAL(" "));
   Tokenize(server_cmdline_string, delimiters, &server_cmdline_vector);
   CommandLine server_cmdline(server_cmdline_vector);
-#endif
   if (!base::LaunchApp(server_cmdline, false, true, &test_server_handle_))
     LOG(ERROR) << "Could not launch local test server.";
 

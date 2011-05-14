@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,8 +112,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   base::file_handle_mapping_vector map_write_fd;
   map_write_fd.push_back(std::make_pair(pipefd[1], pipefd[1]));
 
-  python_command.AppendSwitchASCII("startup-pipe",
-                                   base::IntToString(pipefd[1]));
+  python_command.AppendArg("--startup-pipe=" + base::IntToString(pipefd[1]));
 
   // Try to kill any orphaned testserver processes that may be running.
   OrphanedTestServerFilter filter(testserver_path.value(),

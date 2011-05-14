@@ -1204,7 +1204,7 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
     const FilePath& cur_dir,
     Profile* profile) {
   std::vector<GURL> urls;
-  const std::vector<CommandLine::StringType>& params = command_line.args();
+  CommandLine::StringVector params = command_line.args();
 
   for (size_t i = 0; i < params.size(); ++i) {
     FilePath param = FilePath(params[i]);

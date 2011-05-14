@@ -342,9 +342,10 @@ bool TestServer::LoadTestRootCert() {
 }
 
 bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
-  command_line->AppendSwitchASCII("port",
-                                  base::IntToString(host_port_pair_.port()));
-  command_line->AppendSwitchPath("data-dir", document_root_);
+  command_line->AppendArg("--port=" +
+                          base::IntToString(host_port_pair_.port()));
+  command_line->AppendArgNative(FILE_PATH_LITERAL("--data-dir=") +
+                                document_root_.value());
 
   if (logging::GetMinLogLevel() == logging::LOG_VERBOSE) {
     command_line->AppendArg("--log-to-console");
@@ -363,10 +364,11 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
                  << " doesn't exist. Can't launch https server.";
       return false;
     }
-    command_line->AppendSwitchPath("https", certificate_path);
+    command_line->AppendArgNative(FILE_PATH_LITERAL("--https=") +
+                                  certificate_path.value());
 
     if (https_options_.request_client_certificate)
-      command_line->AppendSwitch("ssl-client-auth");
+      command_line->AppendArg("--ssl-client-auth");
 
     for (std::vector<FilePath>::const_iterator it =
              https_options_.client_authorities.begin();
@@ -377,18 +379,19 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
         return false;
       }
 
-      command_line->AppendSwitchPath("ssl-client-ca", *it);
+      command_line->AppendArgNative(FILE_PATH_LITERAL("--ssl-client-ca=") +
+                                                      it->value());
     }
 
-    const char kBulkCipherSwitch[] = "ssl-bulk-cipher";
+    const std::string kBulkCipherSwitch("--ssl-bulk-cipher");
     if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_RC4)
-      command_line->AppendSwitchASCII(kBulkCipherSwitch, "rc4");
+      command_line->AppendArg(kBulkCipherSwitch + "=rc4");
     if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_AES128)
-      command_line->AppendSwitchASCII(kBulkCipherSwitch, "aes128");
+      command_line->AppendArg(kBulkCipherSwitch + "=aes128");
     if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_AES256)
-      command_line->AppendSwitchASCII(kBulkCipherSwitch, "aes256");
+      command_line->AppendArg(kBulkCipherSwitch + "=aes256");
     if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_3DES)
-      command_line->AppendSwitchASCII(kBulkCipherSwitch, "3des");
+      command_line->AppendArg(kBulkCipherSwitch + "=3des");
   }
 
   return true;

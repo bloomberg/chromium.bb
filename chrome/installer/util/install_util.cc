@@ -356,25 +356,10 @@ int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
 }
 
 // static
-void InstallUtil::MakeUninstallCommand(const std::wstring& exe_path,
+void InstallUtil::MakeUninstallCommand(const std::wstring& program,
                                        const std::wstring& arguments,
                                        CommandLine* command_line) {
-  const bool no_program = exe_path.empty();
-
-  // Return a bunch of nothingness.
-  if (no_program && arguments.empty()) {
-    *command_line = CommandLine(CommandLine::NO_PROGRAM);
-  } else {
-    // Form a full command line string.
-    std::wstring command;
-    command.append(1, L'"')
-        .append(no_program ? L"" : exe_path)
-        .append(L"\" ")
-        .append(arguments);
-
-    // If we have a program name, return this complete command line.
-    *command_line = CommandLine::FromString(command);
-  }
+  *command_line = CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }
 
 std::wstring InstallUtil::GetCurrentDate() {

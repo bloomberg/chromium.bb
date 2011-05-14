@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,25 +127,23 @@ static bool ConvertByteUnitToScale(char unit, uint64_t* out_scale) {
 static bool GetProcessMemoryInfoUsingPS(
     const std::vector<base::ProcessId>& pid_list,
     std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
-  const char kPsPathName[] = "/bin/ps";
-  std::vector<std::string> argv;
-  argv.push_back(kPsPathName);
+  const FilePath kProgram("/bin/ps");
+  CommandLine command_line(kProgram);
 
   // Get resident set size, virtual memory size.
-  argv.push_back("-o");
-  argv.push_back("pid=,rss=,vsz=");
+  command_line.AppendArg("-o");
+  command_line.AppendArg("pid=,rss=,vsz=");
   // Only display the specified PIDs.
   for (std::vector<base::ProcessId>::const_iterator it = pid_list.begin();
-      it != pid_list.end(); ++it) {
-    argv.push_back("-p");
-    argv.push_back(base::Int64ToString(static_cast<int64>(*it)));
+       it != pid_list.end(); ++it) {
+    command_line.AppendArg("-p");
+    command_line.AppendArg(base::Int64ToString(static_cast<int64>(*it)));
   }
 
   std::string output;
-  CommandLine command_line(argv);
   // Limit output read to a megabyte for safety.
   if (!base::GetAppOutputRestricted(command_line, &output, 1024 * 1024)) {
-    LOG(ERROR) << "Failure running " << kPsPathName << " to acquire data.";
+    LOG(ERROR) << "Failure running " << kProgram.value() << " to acquire data.";
     return false;
   }
 
@@ -172,12 +170,12 @@ static bool GetProcessMemoryInfoUsingPS(
     in.ignore(1, ' ');                    // Eat the space.
     std::getline(in, proc_info.command);  // Get the rest of the line.
     if (!in.good()) {
-      LOG(ERROR) << "Error parsing output from " << kPsPathName << ".";
+      LOG(ERROR) << "Error parsing output from " << kProgram.value() << ".";
       return false;
     }
 
     if (!proc_info.pid || ! proc_info.vsize) {
-      LOG(WARNING) << "Invalid data from " << kPsPathName << ".";
+      LOG(WARNING) << "Invalid data from " << kProgram.value() << ".";
       return false;
     }
 
@@ -190,29 +188,27 @@ static bool GetProcessMemoryInfoUsingPS(
 
 static bool GetProcessMemoryInfoUsingTop(
     std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
-  const char kTopPathName[] = "/usr/bin/top";
-  std::vector<std::string> argv;
-  argv.push_back(kTopPathName);
+  const FilePath kProgram("/usr/bin/top");
+  CommandLine command_line(kProgram);
 
   // -stats tells top to print just the given fields as ordered.
-  argv.push_back("-stats");
-  argv.push_back("pid,"    // Process ID
-                 "rsize,"  // Resident memory
-                 "rshrd,"  // Resident shared memory
-                 "rprvt,"  // Resident private memory
-                 "vsize"); // Total virtual memory
+  command_line.AppendArg("-stats");
+  command_line.AppendArg("pid,"    // Process ID
+                         "rsize,"  // Resident memory
+                         "rshrd,"  // Resident shared memory
+                         "rprvt,"  // Resident private memory
+                         "vsize"); // Total virtual memory
   // Run top in logging (non-interactive) mode.
-  argv.push_back("-l");
-  argv.push_back("1");
+  command_line.AppendArg("-l");
+  command_line.AppendArg("1");
   // Set the delay between updates to 0.
-  argv.push_back("-s");
-  argv.push_back("0");
+  command_line.AppendArg("-s");
+  command_line.AppendArg("0");
 
   std::string output;
-  CommandLine command_line(argv);
   // Limit output read to a megabyte for safety.
   if (!base::GetAppOutputRestricted(command_line, &output, 1024 * 1024)) {
-    LOG(ERROR) << "Failure running " << kTopPathName << " to acquire data.";
+    LOG(ERROR) << "Failure running " << kProgram.value() << " to acquire data.";
     return false;
   }
 
@@ -274,29 +270,28 @@ static bool GetProcessMemoryInfoUsingTop(
 
 static bool GetProcessMemoryInfoUsingTop_10_5(
     std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
-  const char kTopPathName[] = "/usr/bin/top";
-  std::vector<std::string> argv;
-  argv.push_back(kTopPathName);
+  const FilePath kProgram("/usr/bin/top");
+  CommandLine command_line(kProgram);
 
   // -p tells top to print just the given fields as ordered.
-  argv.push_back("-p");
-  argv.push_back("^aaaaaaaaaaaaaaaaaaaa "  // Process ID (PID)
-                 "^jjjjjjjjjjjjjjjjjjjj "  // Resident memory (RSIZE)
-                 "^iiiiiiiiiiiiiiiiiiii "  // Resident shared memory (RSHRD)
-                 "^hhhhhhhhhhhhhhhhhhhh "  // Resident private memory (RPRVT)
-                 "^llllllllllllllllllll"); // Total virtual memory (VSIZE)
+  command_line.AppendArg("-p");
+  command_line.AppendArg(
+      "^aaaaaaaaaaaaaaaaaaaa "  // Process ID (PID)
+      "^jjjjjjjjjjjjjjjjjjjj "  // Resident memory (RSIZE)
+      "^iiiiiiiiiiiiiiiiiiii "  // Resident shared memory (RSHRD)
+      "^hhhhhhhhhhhhhhhhhhhh "  // Resident private memory (RPRVT)
+      "^llllllllllllllllllll"); // Total virtual memory (VSIZE)
   // Run top in logging (non-interactive) mode.
-  argv.push_back("-l");
-  argv.push_back("1");
+  command_line.AppendArg("-l");
+  command_line.AppendArg("1");
   // Set the delay between updates to 0.
-  argv.push_back("-s");
-  argv.push_back("0");
+  command_line.AppendArg("-s");
+  command_line.AppendArg("0");
 
   std::string output;
-  CommandLine command_line(argv);
   // Limit output read to a megabyte for safety.
   if (!base::GetAppOutputRestricted(command_line, &output, 1024 * 1024)) {
-    LOG(ERROR) << "Failure running " << kTopPathName << " to acquire data.";
+    LOG(ERROR) << "Failure running " << kProgram.value() << " to acquire data.";
     return false;
   }
 

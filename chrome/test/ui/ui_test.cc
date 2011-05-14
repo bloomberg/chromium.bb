@@ -521,6 +521,8 @@ ProxyLauncher* UITest::CreateProxyLauncher() {
 }
 
 static CommandLine* CreatePythonCommandLine() {
+  // Note: Python's first argument must be the script; do not append CommandLine
+  // switches, as they would precede the script path and break this CommandLine.
   return new CommandLine(FilePath(FILE_PATH_LITERAL("python")));
 }
 
@@ -547,11 +549,13 @@ void UITest::StartHttpServer(const FilePath& root_directory) {
 
 void UITest::StartHttpServerWithPort(const FilePath& root_directory,
                                      int port) {
+  // Append CommandLine arguments after the server script, switches won't work.
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
-  cmd_line->AppendSwitchASCII("server", "start");
-  cmd_line->AppendSwitch("register_cygwin");
-  cmd_line->AppendSwitchPath("root", root_directory);
+  cmd_line->AppendArg("--server=start");
+  cmd_line->AppendArg("--register_cygwin");
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--root=") +
+                            root_directory.value());
 
   FilePath layout_tests_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &layout_tests_dir);
@@ -560,18 +564,19 @@ void UITest::StartHttpServerWithPort(const FilePath& root_directory,
                                      .AppendASCII("data")
                                      .AppendASCII("layout_tests")
                                      .AppendASCII("LayoutTests");
-  cmd_line->AppendSwitchPath("layout_tests_dir", layout_tests_dir);
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--layout_tests_dir=") +
+                            layout_tests_dir.value());
 
   // For Windows 7, if we start the lighttpd server on the foreground mode,
   // it will mess up with the command window and cause conhost.exe to crash. To
   // work around this, we start the http server on the background mode.
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    cmd_line->AppendSwitch("run_background");
+    cmd_line->AppendArg("--run_background");
 #endif
 
   if (port)
-    cmd_line->AppendSwitchASCII("port", base::IntToString(port));
+    cmd_line->AppendArg("--port=" + base::IntToString(port));
 
 #if defined(OS_WIN)
   // TODO(phajdan.jr): is this needed?
@@ -585,9 +590,10 @@ void UITest::StartHttpServerWithPort(const FilePath& root_directory,
 }
 
 void UITest::StopHttpServer() {
+  // Append CommandLine arguments after the server script, switches won't work.
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
-  cmd_line->AppendSwitchASCII("server", "stop");
+  cmd_line->AppendArg("--server=stop");
 
 #if defined(OS_WIN)
   // TODO(phajdan.jr): is this needed?

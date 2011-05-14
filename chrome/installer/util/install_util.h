@@ -151,8 +151,8 @@ class InstallUtil {
   // Returns zero on install success, or an InstallStatus value otherwise.
   static int GetInstallReturnCode(installer::InstallStatus install_status);
 
-  // Composes |exe_path| and |arguments| into |command_line|.
-  static void MakeUninstallCommand(const std::wstring& exe_path,
+  // Composes |program| and |arguments| into |command_line|.
+  static void MakeUninstallCommand(const std::wstring& program,
                                    const std::wstring& arguments,
                                    CommandLine* command_line);
 

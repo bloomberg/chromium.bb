@@ -141,8 +141,9 @@ class SafeBrowsingTestServer {
     CommandLine cmd_line(python_runtime);
     FilePath datafile = testserver_path.Append(datafile_);
     cmd_line.AppendArgPath(testserver);
-    cmd_line.AppendSwitchASCII("port", base::StringPrintf("%d", kPort_));
-    cmd_line.AppendSwitchPath("datafile", datafile);
+    cmd_line.AppendArg(base::StringPrintf("--port=%d", kPort_));
+    cmd_line.AppendArgNative(FILE_PATH_LITERAL("--datafile=") +
+                             datafile.value());
 
     if (!base::LaunchApp(cmd_line, false, true, &server_handle_)) {
       LOG(ERROR) << "Failed to launch server: "

@@ -230,8 +230,7 @@ bool RegisterApplicationRestart(const CommandLine& parsed_command_line) {
   // The Windows Restart Manager expects a string of command line flags only,
   // without the program.
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitches(parsed_command_line);
-  command_line.AppendArgs(parsed_command_line);
+  command_line.AppendArguments(parsed_command_line, false);
   // Ensure restore last session is set.
   if (!command_line.HasSwitch(switches::kRestoreLastSession))
     command_line.AppendSwitch(switches::kRestoreLastSession);
