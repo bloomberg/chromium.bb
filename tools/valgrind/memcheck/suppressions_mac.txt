@@ -1729,3 +1729,18 @@
    fun:_ZN11CUIRenderer4DrawE6CGRectP9CGContextPK14__CFDictionaryPS5_
    fun:_NSDrawThemeBackground
 }
+{
+   bug_82679
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:new_sem_from_pool
+   fun:_pthread_cond_wait
+   fun:pthread_cond_wait$UNIX2003
+   fun:_ZN4base17ConditionVariable4WaitEv
+   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
+   fun:_ZN4base13WaitableEvent4WaitEv
+   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
+   fun:_ZN4base6Thread5StartEv
+   fun:_ZN4base5debug47TraceEventTestFixture_DataCapturedOnThread_Test8TestBodyEv
+}
