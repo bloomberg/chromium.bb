@@ -17,18 +17,9 @@
 # PLY can be found at:
 #   http://www.dabeaz.com/ply/
 
-import getopt
 import os.path
 import re
 import sys
-
-LEXER_OPTIONS = {
-  'output': False,
-  'test_expect' : False,
-  'test_same' : False,
-  'verbose': False
-}
-
 
 #
 # Try to load the ply module, if not, then assume it is in the third_party
@@ -42,7 +33,12 @@ except:
   sys.path.append(third_party)
   from ply import lex
 
+from idl_option import GetOption, Option, ParseOptions
 
+
+Option('output', 'Generate output.')
+Option('test_same', 'Test that the output matches.')
+Option('test_expect', 'Test that the output matches.')
 
 #
 # IDL Lexer
@@ -172,10 +168,8 @@ class IDLLexer(object):
     self.index = [0]
     self.lexobj.input(data)
 
-  def __init__(self, options = {}):
+  def __init__(self):
     self.lexobj = lex.lex(object=self, lextab=None, optimize=0)
-    for k in options:
-      LEXER_OPTIONS[k] = True
 
 
 
@@ -221,12 +215,10 @@ def TextToTokens(source):
 # old set.
 #
 def TestSame(values):
-  global LEXER_OPTIONS
-
   src1 = ' '.join(values)
   src2 = ' '.join(TextToTokens(src1))
 
-  if LEXER_OPTIONS['output']:
+  if GetOption('output'):
     sys.stdout.write('Generating original.txt and tokenized.txt\n')
     open('original.txt', 'w').write(src1)
     open('tokenized.txt', 'w').write(src2)
@@ -273,35 +265,15 @@ def TestExpect(tokens):
 
 
 def Main(args):
-  global LEXER_OPTIONS
+  filenames = ParseOptions(args)
 
   try:
-    long_opts = ['output', 'verbose', 'test_expect', 'test_same']
-    usage = 'Usage: idl_lexer.py %s [<src.idl> ...]' % ' '.join(
-       ['--%s' % opt for opt in long_opts])
-
-    opts, filenames = getopt.getopt(args, '', long_opts)
-  except getopt.error, e:
-    sys.stderr.write('Illegal option: %s\n%s\n' % (str(e), usage))
-    return 1
-
-  output = False
-  test_same = False
-  test_expect = False
-  verbose = False
-
-  for opt, val in opts:
-    LEXER_OPTIONS[opt[2:]] = True
-
-  try:
-    tokens = FilesToTokens(filenames, verbose)
+    tokens = FilesToTokens(filenames, GetOption('verbose'))
     values = [tok.value for tok in tokens]
-    if LEXER_OPTIONS['output']: sys.stdout.write(' <> '.join(values) + '\n')
-    if LEXER_OPTIONS['test_same']:
+    if GetOption('output'): sys.stdout.write(' <> '.join(values) + '\n')
+    if GetOption('test'):
       if TestSame(values):
         return -1
-
-    if LEXER_OPTIONS['test_expect']:
       if TestExpect(tokens):
         return -1
     return 0
@@ -309,7 +281,6 @@ def Main(args):
   except lex.LexError as le:
     sys.stderr.write('%s\n' % str(le))
   return -1
-
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))

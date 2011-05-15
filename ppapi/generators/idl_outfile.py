@@ -22,9 +22,10 @@ from stat import *
 # the output files are used by a timestamp dependent build system
 #
 class IDLOutFile(object):
-  def __init__(self, filename, always_write = False):
+  def __init__(self, filename, always_write = False, create_dir = True):
     self.filename = filename
     self.always_write = always_write
+    self.create_dir = create_dir
     self.outlist = []
     self.open = True
 
@@ -36,15 +37,27 @@ class IDLOutFile(object):
 
   # Close the file
   def Close(self):
+    filename = os.path.realpath(self.filename)
     self.open = False
     outtext = ''.join(self.outlist)
     if not self.always_write:
-      intext = open(filename, 'r').read()
+      if os.path.isfile(filename):
+        intext = open(filename, 'r').read()
+      else:
+        intext = None
+
       if intext == outtext:
         InfoOut.Log('Output %s unchanged.' % self.filename)
         return False
 
     try:
+      # If the directory does not exit, try to create it, if we fail, we
+      # still get the exception when the file is openned.
+      basepath, leafname = os.path.split(filename)
+      if basepath and not os.path.isdir(basepath) and self.create_dir:
+        InfoOut.Log('Creating directory: %s\n' % basepath)
+        os.makedirs(basepath)
+
       outfile = open(filename, 'w')
       outfile.write(''.join(self.outlist))
       InfoOut.Log('Output %s written.' % self.filename)

@@ -32,18 +32,15 @@ import sys
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_lexer import IDLLexer
 from idl_node import IDLAttribute, IDLAst, IDLNode
+from idl_option import GetOption, Option, ParseOptions
 
 from ply import lex
 from ply import yacc
 
-PARSER_OPTIONS = {
-  'build_debug': False,
-  'parse_debug': False,
-  'token_debug': False,
-  'test' : False,
-  'output': False,
-  'verbose': False
-}
+Option('build_debug', 'Debug tree building.')
+Option('parse_debug', 'Debug parse reduction steps.')
+Option('token_debug', 'Debug token generation.')
+Option('dump_tree', 'Dump the tree.')
 
 #
 # ERROR_REMAP
@@ -581,20 +578,15 @@ class IDLParser(IDLLexer):
     self.parse_errors += 1
 
 
-  def __init__(self, options = {}):
-    global PARSER_OPTIONS
-
-    IDLLexer.__init__(self, options)
+  def __init__(self):
+    IDLLexer.__init__(self)
     self.yaccobj = yacc.yacc(module=self, tabmodule=None, debug=False,
                              optimize=0, write_tables=0)
 
-    for k in options:
-      PARSER_OPTIONS[k] = options[k]
-
-    self.build_debug = PARSER_OPTIONS['build_debug']
-    self.parse_debug = PARSER_OPTIONS['parse_debug']
-    self.token_debug = PARSER_OPTIONS['token_debug']
-    self.verbose = PARSER_OPTIONS['verbose']
+    self.build_debug = GetOption('build_debug')
+    self.parse_debug = GetOption('parse_debug')
+    self.token_debug = GetOption('token_debug')
+    self.verbose = GetOption('verbose')
     self.parse_errors = 0
 
 #
@@ -787,11 +779,11 @@ def TestFile(parser, filename):
   return TestErrors(filename, result.out)
 
 
-def TestErrorFiles(options):
+def TestErrorFiles():
   idldir = os.path.split(sys.argv[0])[0]
   idldir = os.path.join(idldir, 'test_parser', '*.idl')
   filenames = glob.glob(idldir)
-  parser = IDLParser(options)
+  parser = IDLParser()
   total_errs = 0
   for filename in filenames:
     errs = TestFile(parser, filename)
@@ -805,13 +797,13 @@ def TestErrorFiles(options):
     InfoOut.Log("Passed parsing test.")
   return total_errs
 
-def TestNamespaceFiles(options):
+def TestNamespaceFiles():
   idldir = os.path.split(sys.argv[0])[0]
   idldir = os.path.join(idldir, 'test_namespace', '*.idl')
   filenames = glob.glob(idldir)
 
   InfoOut.SetConsole(False)
-  result = ParseFiles(filenames, options)
+  result = ParseFiles(filenames)
   InfoOut.SetConsole(True)
 
   if result.errs:
@@ -821,8 +813,8 @@ def TestNamespaceFiles(options):
   return result.errs
 
 
-def ParseFiles(filenames, options):
-  parser = IDLParser(options)
+def ParseFiles(filenames):
+  parser = IDLParser()
   filenodes = []
   errors = 0
 
@@ -849,34 +841,23 @@ def ParseFiles(filenames, options):
 
 
 def Main(args):
-  global PARSER_OPTIONS
+  filenames = ParseOptions(args)
 
-  long_opts = PARSER_OPTIONS.keys()
-  usage = 'Usage: idl_parser.py %s [<src.idl> ...]' % ' '.join(long_opts)
-  try:
-    opts, filenames = getopt.getopt(args, '', long_opts)
-
-  except getopt.error, e:
-    ErrOut.Log('Illegal option: %s\n\t%s' % (str(e) % usage))
-    return 1
-
-  for opt, val in opts:
-    PARSER_OPTIONS[opt[2:]] = True
-
-  if PARSER_OPTIONS['test']:
-    errs = TestErrorFiles(PARSER_OPTIONS)
-    errs = TestNamespaceFiles(PARSER_OPTIONS)
+  # If testing...
+  if GetOption('test'):
+    errs = TestErrorFiles()
+    errs = TestNamespaceFiles()
     if errs:
       ErrOut.Log("Parser failed with %d errors." % errs)
       return  -1
+    return 0
 
-  result = ParseFiles(filenames, PARSER_OPTIONS)
-  if PARSER_OPTIONS['output']:
+  # Otherwise, build the AST
+  result = ParseFiles(filenames)
+  if GetOption('dump_tree'):
     result.out.Dump(0)
-
   if result.errs:
     ErrOut.Log('Found %d error(s).' % result.errors);
-
   InfoOut.Log("%d files processed." % len(filenames))
   return result.errs
 
