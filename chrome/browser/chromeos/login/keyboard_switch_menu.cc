@@ -33,6 +33,10 @@ void KeyboardSwitchMenu::UpdateUI(const std::string& input_method_id,
   views::Widget::NotifyLocaleChanged();
 }
 
+bool KeyboardSwitchMenu::ShouldSupportConfigUI() {
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation.
 void KeyboardSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {

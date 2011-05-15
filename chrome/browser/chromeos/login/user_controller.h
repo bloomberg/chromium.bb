@@ -122,7 +122,7 @@ class UserController : public views::WidgetDelegate,
 
   // UserView::Delegate implementation:
   virtual void OnRemoveUser() OVERRIDE;
-  virtual bool IsUserSelected() const OVERRIDE { return is_user_selected_; }
+  virtual bool IsUserSelected() const OVERRIDE;
 
   // UsernameView::Delegate implementation:
   virtual void OnLocaleChanged() OVERRIDE;

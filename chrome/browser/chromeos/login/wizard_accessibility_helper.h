@@ -51,7 +51,7 @@ class WizardAccessibilityHelper {
 
   WizardAccessibilityHelper();
 
-  virtual ~WizardAccessibilityHelper() {}
+  virtual ~WizardAccessibilityHelper();
 
   void RegisterNotifications();
 

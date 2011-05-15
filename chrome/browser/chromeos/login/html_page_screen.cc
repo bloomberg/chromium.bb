@@ -36,12 +36,18 @@ HTMLPageView::HTMLPageView()
     : dom_view_(new HTMLPageDomView()) {
 }
 
+WebPageDomView* HTMLPageView::dom_view() {
+  return dom_view_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // HTMLPageScreen, public:
 HTMLPageScreen::HTMLPageScreen(WizardScreenDelegate* delegate,
                                const std::string& url)
     : ViewScreen<HTMLPageView>(delegate), url_(url) {
 }
+
+HTMLPageScreen::~HTMLPageScreen() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // HTMLPageScreen, ViewScreen implementation:

@@ -25,6 +25,7 @@ class GuestUserView : public ThrobberHostView,
                       public views::ButtonListener {
  public:
   explicit GuestUserView(UserController* uc);
+  virtual ~GuestUserView();
 
   void RecreateFields();
 

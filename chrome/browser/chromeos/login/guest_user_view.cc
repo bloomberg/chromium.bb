@@ -60,6 +60,8 @@ GuestUserView::GuestUserView(UserController* uc)
   AddAccelerator(accel_next_pod_by_arrow_);
 }
 
+GuestUserView::~GuestUserView() {}
+
 void GuestUserView::RecreateFields() {
   delete submit_button_;
   submit_button_ = new UserEntryButton(

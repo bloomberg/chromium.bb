@@ -261,6 +261,24 @@ void TpmInfoView::PullPassword() {
 namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
+// EULATabContentsDelegate, public:
+
+bool EULATabContentsDelegate::IsPopup(TabContents* source) {
+  return false;
+}
+
+bool EULATabContentsDelegate::ShouldAddNavigationToHistory(
+    const history::HistoryAddPageArgs& add_page_args,
+    NavigationType::Type navigation_type) {
+  return false;
+}
+
+bool EULATabContentsDelegate::HandleContextMenu(
+    const ContextMenuParams& params) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // EulaView, public:
 
 EulaView::EulaView(chromeos::ScreenObserver* observer)
@@ -552,12 +570,31 @@ void EulaView::LoadEulaView(DOMView* eula_view,
 ////////////////////////////////////////////////////////////////////////////////
 // EulaView, private, views::View implementation:
 
+bool EulaView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+  return true;
+}
+
 bool EulaView::OnKeyPressed(const views::KeyEvent&) {
   // Close message bubble if shown. bubble_ will be set to NULL in callback.
   if (bubble_) {
     bubble_->Close();
     return true;
   }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EulaView, private, views::BubbleDelegate implementation:
+
+void EulaView::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+  bubble_ = NULL;
+}
+
+bool EulaView::CloseOnEscape() {
+  return true;
+}
+
+bool EulaView::FadeInOnShow() {
   return false;
 }
 

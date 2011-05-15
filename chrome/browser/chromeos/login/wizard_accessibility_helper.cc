@@ -42,6 +42,8 @@ WizardAccessibilityHelper::WizardAccessibilityHelper() {
   registered_notifications_ = false;
 }
 
+WizardAccessibilityHelper::~WizardAccessibilityHelper() {}
+
 void WizardAccessibilityHelper::Init() {
   if (IsAccessibilityEnabled()) {
     if (!registered_notifications_)

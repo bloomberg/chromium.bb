@@ -320,6 +320,10 @@ void UserController::OnRemoveUser() {
   delegate_->RemoveUser(this);
 }
 
+bool UserController::IsUserSelected() const {
+  return is_user_selected_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // UserController, private:
 //

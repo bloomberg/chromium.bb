@@ -57,17 +57,13 @@ class EULATabContentsDelegate : public TabContentsDelegate {
   virtual void DeactivateContents(TabContents* contents) {}
   virtual void LoadingStateChanged(TabContents* source) {}
   virtual void CloseContents(TabContents* source) {}
-  virtual bool IsPopup(TabContents* source) { return false; }
+  virtual bool IsPopup(TabContents* source);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type) {
-    return false;
-  }
+      NavigationType::Type navigation_type);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  virtual bool HandleContextMenu(const ContextMenuParams& params) {
-    return true;
-  }
+  virtual bool HandleContextMenu(const ContextMenuParams& params);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EULATabContentsDelegate);
@@ -101,8 +97,7 @@ class EulaView
 
  private:
   // views::View implementation.
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-    return true; }
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
   virtual bool OnKeyPressed(const views::KeyEvent& e);
 
   // TabContentsDelegate implementation.
@@ -117,11 +112,9 @@ class EulaView
                     const GURL& eula_url);
 
   // Overridden from views::BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {
-    bubble_ = NULL;
-  }
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return false; }
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
+  virtual bool CloseOnEscape();
+  virtual bool FadeInOnShow();
   virtual void OnHelpLinkActivated() {}
 
   // Dialog controls.

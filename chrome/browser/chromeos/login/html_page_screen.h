@@ -36,7 +36,7 @@ class HTMLPageView : public WebPageView {
   HTMLPageView();
 
  protected:
-  virtual WebPageDomView* dom_view() { return dom_view_; }
+  virtual WebPageDomView* dom_view();
 
  private:
   // View that renders page.
@@ -52,6 +52,7 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
                        public WebPageDelegate {
  public:
   HTMLPageScreen(WizardScreenDelegate* delegate, const std::string& url);
+  virtual ~HTMLPageScreen();
 
   // WebPageDelegate implementation:
   virtual void OnPageLoaded();

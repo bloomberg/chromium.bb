@@ -27,7 +27,7 @@ class KeyboardSwitchMenu : public InputMethodMenu {
                         const std::wstring& name,
                         const std::wstring& tooltip,
                         size_t num_active_input_methods);
-  virtual bool ShouldSupportConfigUI() { return false; }
+  virtual bool ShouldSupportConfigUI();
   virtual void OpenConfigUI() {}
 
   // views::ViewMenuDelegate implementation which overrides the implementation
