@@ -87,6 +87,13 @@ void AccountCreationDomView::SetAccountCreationViewDelegate(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AccountCreationDomView, protected:
+
+WebPageDomView* AccountCreationDomView::dom_view() {
+  return dom_view_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AccountCreationDomView, DOMView implementation:
 
 TabContents* AccountCreationDomView::CreateTabContents(Profile* profile,

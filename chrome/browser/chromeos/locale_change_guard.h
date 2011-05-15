@@ -28,6 +28,7 @@ namespace chromeos {
 class LocaleChangeGuard : public NotificationObserver {
  public:
   explicit LocaleChangeGuard(Profile* profile);
+  ~LocaleChangeGuard();
 
   // Called just before changing locale.
   void PrepareChangingLocale(

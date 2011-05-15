@@ -50,6 +50,7 @@ class BackgroundView : public views::View,
   };
 
   BackgroundView();
+  virtual ~BackgroundView();
 
   // Initializes the background view. It backgroun_url is given (non empty),
   // it creates a DOMView background area that renders a webpage.
@@ -108,7 +109,7 @@ class BackgroundView : public views::View,
   virtual void OnLocaleChanged() OVERRIDE;
 
   // Overridden from StatusAreaHost:
-  virtual Profile* GetProfile() const OVERRIDE { return NULL; }
+  virtual Profile* GetProfile() const OVERRIDE;
   virtual void ExecuteBrowserCommand(int id) const OVERRIDE {}
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const OVERRIDE;

@@ -47,6 +47,8 @@ LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
                  NotificationService::AllSources());
 }
 
+LocaleChangeGuard::~LocaleChangeGuard() {}
+
 void LocaleChangeGuard::OnLogin() {
   registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                  NotificationService::AllSources());

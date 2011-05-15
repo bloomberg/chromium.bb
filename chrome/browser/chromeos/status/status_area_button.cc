@@ -117,6 +117,18 @@ void StatusAreaButton::OnThemeChanged() {
   UpdateTextStyle();
 }
 
+int StatusAreaButton::icon_height() {
+  return 24;
+}
+
+int StatusAreaButton::icon_width() {
+  return 23;
+}
+
+int StatusAreaButton::horizontal_padding() {
+  return 1;
+}
+
 void StatusAreaButton::UpdateTextStyle() {
   ClearEmbellishing();
   switch (host_->GetTextStyle()) {

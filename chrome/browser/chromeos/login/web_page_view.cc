@@ -99,6 +99,10 @@ void WebPageDomView::SetTabContentsDelegate(
 ///////////////////////////////////////////////////////////////////////////////
 // WebPageView, public:
 
+WebPageView::WebPageView() : throbber_(NULL), connecting_label_(NULL) {}
+
+WebPageView::~WebPageView() {}
+
 void WebPageView::Init() {
   views::Painter* painter = CreateWizardPainter(
       &BorderDefinition::kScreenBorder);

@@ -105,6 +105,8 @@ BackgroundView::BackgroundView()
       background_area_(NULL) {
 }
 
+BackgroundView::~BackgroundView() {}
+
 void BackgroundView::Init(const GURL& background_url) {
   views::Painter* painter = CreateBackgroundPainter();
   set_background(views::Background::CreateBackgroundPainter(true, painter));
@@ -281,6 +283,10 @@ void BackgroundView::Layout() {
 void BackgroundView::ChildPreferredSizeChanged(View* child) {
   Layout();
   SchedulePaint();
+}
+
+Profile* BackgroundView::GetProfile() const {
+  return NULL;
 }
 
 bool BackgroundView::ShouldOpenButtonOptions(

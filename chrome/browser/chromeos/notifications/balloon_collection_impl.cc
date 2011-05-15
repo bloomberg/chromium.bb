@@ -133,7 +133,8 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
     space_change_listener_->OnBalloonSpaceChanged();
 }
 
-const Balloons& BalloonCollectionImpl::GetActiveBalloons() {
+const BalloonCollectionImpl::Balloons&
+    BalloonCollectionImpl::GetActiveBalloons() {
   return base_.balloons();
 }
 

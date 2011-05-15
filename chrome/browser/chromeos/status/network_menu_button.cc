@@ -219,6 +219,18 @@ void NetworkMenuButton::OnLocaleChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // MessageBubbleDelegate implementation:
 
+void NetworkMenuButton::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+  mobile_data_bubble_ = NULL;
+}
+
+bool NetworkMenuButton::CloseOnEscape() {
+  return true;
+}
+
+bool NetworkMenuButton::FadeInOnShow() {
+  return false;
+}
+
 void NetworkMenuButton::OnHelpLinkActivated() {
   // mobile_data_bubble_ will be set to NULL in callback.
   if (mobile_data_bubble_)

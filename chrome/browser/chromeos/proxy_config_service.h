@@ -15,20 +15,14 @@ namespace chromeos {
 // instantiated in ProfileIOData::CreateProxyConfigService.
 class ProxyConfigService : public net::ProxyConfigService {
  public:
-  explicit ProxyConfigService(const scoped_refptr<ProxyConfigServiceImpl>& impl)
-      : impl_(impl) {}
-  virtual ~ProxyConfigService() {}
+  explicit ProxyConfigService(
+      const scoped_refptr<ProxyConfigServiceImpl>& impl);
+  virtual ~ProxyConfigService();
 
   // ProxyConfigService methods.  Called from IO thread.
-  virtual void AddObserver(Observer* observer) {
-    impl_->AddObserver(observer);
-  }
-  virtual void RemoveObserver(Observer* observer) {
-    impl_->RemoveObserver(observer);
-  }
-  virtual ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config) {
-    return impl_->IOGetProxyConfig(config);
-  }
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
+  virtual ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config);
 
  private:
   scoped_refptr<ProxyConfigServiceImpl> impl_;

@@ -88,7 +88,8 @@ class WebPageDomView : public DOMView {
 // page rendered in it. While page is loaded spinner overlay is shown.
 class WebPageView : public views::View {
  public:
-  WebPageView() : throbber_(NULL), connecting_label_(NULL) {}
+  WebPageView();
+  virtual ~WebPageView();
 
   // Initialize view layout.
   void Init();

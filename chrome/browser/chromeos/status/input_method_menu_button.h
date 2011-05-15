@@ -22,7 +22,7 @@ class InputMethodMenuButton : public StatusAreaButton,
                               public views::ViewMenuDelegate {
  public:
   explicit InputMethodMenuButton(StatusAreaHost* host);
-  virtual ~InputMethodMenuButton() {}
+  virtual ~InputMethodMenuButton();
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize();

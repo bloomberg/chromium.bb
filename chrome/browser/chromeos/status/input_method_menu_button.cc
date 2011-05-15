@@ -70,6 +70,8 @@ InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
   UpdateUIFromCurrentInputMethod();
 }
 
+InputMethodMenuButton::~InputMethodMenuButton() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::View implementation:
 

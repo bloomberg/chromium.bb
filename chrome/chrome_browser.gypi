@@ -658,6 +658,7 @@
         'browser/chromeos/plugin_selection_policy.h',
         'browser/chromeos/preferences.cc',
         'browser/chromeos/preferences.h',
+        'browser/chromeos/proxy_config_service.cc',
         'browser/chromeos/proxy_config_service.h',
         'browser/chromeos/proxy_config_service_impl.cc',
         'browser/chromeos/proxy_config_service_impl.h',

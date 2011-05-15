@@ -86,11 +86,9 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void OnLocaleChanged() OVERRIDE;
 
   // MessageBubbleDelegate implementation:
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {
-    mobile_data_bubble_ = NULL;
-  }
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return false; }
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
+  virtual bool CloseOnEscape();
+  virtual bool FadeInOnShow();
   virtual void OnHelpLinkActivated();
 
  private:

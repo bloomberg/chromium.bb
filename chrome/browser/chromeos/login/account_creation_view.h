@@ -55,7 +55,7 @@ class AccountCreationView : public WebPageView {
   void SetAccountCreationViewDelegate(AccountCreationViewDelegate* delegate);
 
  protected:
-  virtual WebPageDomView* dom_view() { return dom_view_; }
+  virtual WebPageDomView* dom_view();
 
  private:
   // View that renders page.
