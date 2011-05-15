@@ -41,6 +41,10 @@ PowerMenuButton::~PowerMenuButton() {
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton, ui::MenuModel implementation:
 
+bool PowerMenuButton::HasIcons() const {
+  return false;
+}
+
 int PowerMenuButton::GetItemCount() const {
   // We can't display charging information when no battery is installed.
   return battery_is_present_ ? 2 : 1;
@@ -48,6 +52,10 @@ int PowerMenuButton::GetItemCount() const {
 
 ui::MenuModel::ItemType PowerMenuButton::GetTypeAt(int index) const {
   return ui::MenuModel::TYPE_COMMAND;
+}
+
+int PowerMenuButton::GetCommandIdAt(int index) const {
+  return index;
 }
 
 string16 PowerMenuButton::GetLabelAt(int index) const {
@@ -93,6 +101,43 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
     NOTREACHED();
     return string16();
   }
+}
+
+bool PowerMenuButton::IsItemDynamicAt(int index) const {
+  return true;
+}
+
+bool PowerMenuButton::GetAcceleratorAt(
+    int index, ui::Accelerator* accelerator) const {
+  return false;
+}
+
+bool PowerMenuButton::IsItemCheckedAt(int index) const {
+  return false;
+}
+
+int PowerMenuButton::GetGroupIdAt(int index) const {
+  return 0;
+}
+
+bool PowerMenuButton::GetIconAt(int index, SkBitmap* icon) {
+  return false;
+}
+
+ui::ButtonMenuItemModel* PowerMenuButton::GetButtonMenuItemAt(int index) const {
+  return NULL;
+}
+
+bool PowerMenuButton::IsEnabledAt(int index) const {
+  return false;
+}
+
+ui::MenuModel* PowerMenuButton::GetSubmenuModelAt(int index) const {
+  return NULL;
+}
+
+int PowerMenuButton::icon_width() {
+  return 26;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

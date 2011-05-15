@@ -27,26 +27,24 @@ class PowerMenuButton : public StatusAreaButton,
                         public ui::MenuModel,
                         public PowerLibrary::Observer {
  public:
-  PowerMenuButton(StatusAreaHost* host);
+  explicit PowerMenuButton(StatusAreaHost* host);
   virtual ~PowerMenuButton();
 
   // ui::MenuModel implementation.
-  virtual bool HasIcons() const  { return false; }
+  virtual bool HasIcons() const;
   virtual int GetItemCount() const;
   virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
-  virtual int GetCommandIdAt(int index) const { return index; }
+  virtual int GetCommandIdAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
-  virtual bool IsItemDynamicAt(int index) const { return true; }
+  virtual bool IsItemDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-      ui::Accelerator* accelerator) const { return false; }
-  virtual bool IsItemCheckedAt(int index) const { return false; }
-  virtual int GetGroupIdAt(int index) const { return 0; }
-  virtual bool GetIconAt(int index, SkBitmap* icon) { return false; }
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
-    return NULL;
-  }
-  virtual bool IsEnabledAt(int index) const { return false; }
-  virtual ui::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
+      ui::Accelerator* accelerator) const;
+  virtual bool IsItemCheckedAt(int index) const;
+  virtual int GetGroupIdAt(int index) const;
+  virtual bool GetIconAt(int index, SkBitmap* icon);
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
+  virtual bool IsEnabledAt(int index) const;
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index) {}
   virtual void MenuWillShow() {}
@@ -59,7 +57,7 @@ class PowerMenuButton : public StatusAreaButton,
   int icon_id() const { return icon_id_; }
 
  protected:
-  virtual int icon_width() { return 26; }
+  virtual int icon_width();
 
  private:
   // views::View
