@@ -79,6 +79,10 @@ namespace chromeos {
 
 // CustomizationDocument implementation. ---------------------------------------
 
+CustomizationDocument::CustomizationDocument() {}
+
+CustomizationDocument::~CustomizationDocument() {}
+
 bool CustomizationDocument::LoadManifestFromFile(
     const FilePath& manifest_path) {
   std::string manifest;

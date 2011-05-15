@@ -216,7 +216,7 @@ ui::MenuModel::ItemType NetworkMenuModel::GetTypeAt(int index) const {
   return menu_items_[index].type;
 }
 
-int NetworkMenuModel::CommandIdAt(int index) const {
+int NetworkMenuModel::GetCommandIdAt(int index) const {
   return index;
 }
 

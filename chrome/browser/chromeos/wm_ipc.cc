@@ -200,6 +200,8 @@ WmIpc::WmIpc() {
   InitWmInfo();
 }
 
+WmIpc::~WmIpc() {}
+
 void WmIpc::InitWmInfo() {
   wm_ = XGetSelectionOwner(ui::GetXDisplay(), type_to_atom_[ATOM_WM_S0]);
 

@@ -33,6 +33,7 @@ class BootTimesLoader
       public NotificationObserver {
  public:
   BootTimesLoader();
+  ~BootTimesLoader();
 
   // All fields are 0.0 if they couldn't be found.
   typedef struct BootTimes {

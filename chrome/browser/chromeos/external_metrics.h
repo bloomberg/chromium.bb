@@ -42,7 +42,7 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // The max length of a message (name-value pair, plus header)
   static const int kMetricsMessageMaxLength = 1024;  // be generous
 
-  ~ExternalMetrics() {}
+  ~ExternalMetrics();
 
   // Passes an action event to the UMA service on the UI thread.
   void RecordActionUI(std::string action_string);

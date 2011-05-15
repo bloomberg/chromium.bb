@@ -122,6 +122,7 @@ class WmIpc {
   friend struct base::DefaultLazyInstanceTraits<WmIpc>;
 
   WmIpc();
+  ~WmIpc();
 
   // Initialize 'wm_' and send the window manager a message telling it the
   // version of the IPC protocol that we support.  This is called in our

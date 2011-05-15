@@ -103,7 +103,8 @@ class ProxyConfigServiceImpl
       net::ProxyServer  server;
     };
 
-    ProxyConfig() : mode(MODE_DIRECT) {}
+    ProxyConfig();
+    ~ProxyConfig();
 
     // Converts |this| to net::ProxyConfig.
     void ToNetProxyConfig(net::ProxyConfig* net_config);

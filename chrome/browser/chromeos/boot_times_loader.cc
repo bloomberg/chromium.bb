@@ -72,6 +72,8 @@ BootTimesLoader::BootTimesLoader()
   logout_time_markers_.reserve(30);
 }
 
+BootTimesLoader::~BootTimesLoader() {}
+
 // static
 BootTimesLoader* BootTimesLoader::Get() {
   return g_boot_times_loader.Pointer();

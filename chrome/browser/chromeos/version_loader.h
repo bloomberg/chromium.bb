@@ -34,6 +34,7 @@ namespace chromeos {
 class VersionLoader : public CancelableRequestProvider {
  public:
   VersionLoader();
+  ~VersionLoader();
 
   enum VersionFormat {
     VERSION_SHORT,

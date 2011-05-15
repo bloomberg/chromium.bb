@@ -33,13 +33,13 @@ class SystemAccess;
 // Base class for OEM customization document classes.
 class CustomizationDocument {
  public:
-  virtual ~CustomizationDocument() {}
+  virtual ~CustomizationDocument();
 
   // Return true if the document was successfully fetched and parsed.
   bool IsReady() const { return root_.get(); }
 
  protected:
-  CustomizationDocument() {}
+  CustomizationDocument();
 
   virtual bool LoadManifestFromFile(const FilePath& manifest_path);
   virtual bool LoadManifestFromString(const std::string& manifest);

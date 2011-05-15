@@ -24,8 +24,9 @@ static const char kPathVersion[] = "/etc/lsb-release";
 // File to look for firmware number in.
 static const char kPathFirmware[] = "/var/log/bios_info.txt";
 
-VersionLoader::VersionLoader() : backend_(new Backend()) {
-}
+VersionLoader::VersionLoader() : backend_(new Backend()) {}
+
+VersionLoader::~VersionLoader() {}
 
 // Beginning of line we look for that gives full version number.
 // Format: x.x.xx.x (Developer|Official build extra info) board info

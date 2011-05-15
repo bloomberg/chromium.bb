@@ -32,6 +32,8 @@ ExternalMetrics::ExternalMetrics()
     : test_recorder_(NULL) {
 }
 
+ExternalMetrics::~ExternalMetrics() {}
+
 void ExternalMetrics::Start() {
   // Register user actions external to the browser.
   // chrome/tools/extract_actions.py won't understand these lines, so all of
