@@ -38,6 +38,8 @@ ImageDownloader::ImageDownloader(ImageDecoder::Delegate* delegate,
   image_fetcher_->Start();
 }
 
+ImageDownloader::~ImageDownloader() {}
+
 void ImageDownloader::OnURLFetchComplete(const URLFetcher* source,
                                          const GURL& url,
                                          const net::URLRequestStatus& status,

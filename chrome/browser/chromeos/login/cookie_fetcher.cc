@@ -27,6 +27,16 @@ CookieFetcher::CookieFetcher(Profile* profile) : profile_(profile) {
       new IssueResponseHandler(profile_->GetRequestContext()));
 }
 
+CookieFetcher::CookieFetcher(Profile* profile,
+                             AuthResponseHandler* cl_handler,
+                             AuthResponseHandler* i_handler)
+    : profile_(profile),
+      client_login_handler_(cl_handler),
+      issue_handler_(i_handler) {
+}
+
+CookieFetcher::~CookieFetcher() {}
+
 void CookieFetcher::AttemptFetch(const std::string& credentials) {
   VLOG(1) << "Getting auth token...";
   fetcher_.reset(client_login_handler_->Handle(credentials, this));

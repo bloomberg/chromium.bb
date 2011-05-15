@@ -32,11 +32,7 @@ class CookieFetcher : public URLFetcher::Delegate {
   // Takes ownership of |cl_handler|, |i_handler|, and |launcher|.
   CookieFetcher(Profile* profile,
                 AuthResponseHandler* cl_handler,
-                AuthResponseHandler* i_handler)
-      : profile_(profile),
-        client_login_handler_(cl_handler),
-        issue_handler_(i_handler) {
-  }
+                AuthResponseHandler* i_handler);
 
   // Given a newline-delineated SID/LSID pair of Google cookies (like
   // those that come back from ClientLogin), try to use them to fetch
@@ -54,7 +50,7 @@ class CookieFetcher : public URLFetcher::Delegate {
                                   const std::string& data);
 
  private:
-  virtual ~CookieFetcher() {}
+  virtual ~CookieFetcher();
 
   scoped_ptr<URLFetcher> fetcher_;
   Profile* profile_;

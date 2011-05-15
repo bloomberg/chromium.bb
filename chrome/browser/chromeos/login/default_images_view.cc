@@ -83,6 +83,8 @@ DefaultImagesView::DefaultImagesView(Delegate* delegate)
       delegate_(delegate) {
 }
 
+DefaultImagesView::~DefaultImagesView() {}
+
 void DefaultImagesView::Init() {
   UserImageButton* capture_button = new UserImageButton(this);
   capture_button->SetID(kCaptureButtonId);

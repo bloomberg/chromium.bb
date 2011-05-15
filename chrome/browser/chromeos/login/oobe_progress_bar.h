@@ -23,6 +23,7 @@ class OobeProgressBar : public views::View {
   // Construct progress bar with given labels as steps.
   // |steps| is a vector of string IDs from resources.
   explicit OobeProgressBar(const std::vector<int>& steps);
+  virtual ~OobeProgressBar();
 
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas);

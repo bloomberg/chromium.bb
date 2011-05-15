@@ -25,7 +25,7 @@ class ImageDownloader : public URLFetcher::Delegate {
   ImageDownloader(ImageDecoder::Delegate* delegate,
                   const GURL& image_url,
                   const std::string& auth_token);
-  virtual ~ImageDownloader() {}
+  virtual ~ImageDownloader();
 
  private:
   // Overriden from URLFetcher::Delegate:

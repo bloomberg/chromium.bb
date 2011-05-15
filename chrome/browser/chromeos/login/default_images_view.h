@@ -33,6 +33,7 @@ class DefaultImagesView : public views::View,
   };
 
   explicit DefaultImagesView(Delegate* delegate);
+  virtual ~DefaultImagesView();
 
   // Initializes this view, its children and layout.
   void Init();

@@ -149,7 +149,7 @@ class BackgroundView : public views::View,
       BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times);
 
   // policy::CloudPolicySubsystem::Observer methods:
-  void OnPolicyStateChanged(
+  virtual void OnPolicyStateChanged(
       policy::CloudPolicySubsystem::PolicySubsystemState state,
       policy::CloudPolicySubsystem::ErrorDetails error_details);
 

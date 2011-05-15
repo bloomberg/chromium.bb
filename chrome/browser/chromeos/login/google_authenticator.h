@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -52,22 +53,22 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // call OnLoginFailure() with HOSTED_NOT_ALLOWED.
   //
   // Returns true if the attempt gets sent successfully and false if not.
-  bool AuthenticateToLogin(Profile* profile,
-                           const std::string& username,
-                           const std::string& password,
-                           const std::string& login_token,
-                           const std::string& login_captcha);
+  virtual bool AuthenticateToLogin(Profile* profile,
+                                   const std::string& username,
+                                   const std::string& password,
+                                   const std::string& login_token,
+                                   const std::string& login_captcha);
 
   // Given a |username| and |password|, this method attempts to
   // authenticate to the cached credentials. This will never contact
   // the server even if it's online. The auth result is sent to
   // LoginStatusConsumer in a same way as AuthenticateToLogin does.
-  bool AuthenticateToUnlock(const std::string& username,
-                            const std::string& password);
+  virtual bool AuthenticateToUnlock(const std::string& username,
+                                    const std::string& password);
 
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
-  void LoginOffTheRecord();
+  virtual void LoginOffTheRecord();
 
   // Public for testing.
   void set_system_salt(const chromeos::CryptohomeBlob& new_salt) {
@@ -85,23 +86,24 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials,
-                      bool request_pending);
+  virtual void OnLoginSuccess(
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool request_pending);
   void CheckOffline(const LoginFailure& error);
   void CheckLocalaccount(const LoginFailure& error);
-  void OnLoginFailure(const LoginFailure& error);
+  virtual void OnLoginFailure(const LoginFailure& error);
 
   // Call these methods on the UI thread.
-  void RecoverEncryptedData(
+  virtual void RecoverEncryptedData(
       const std::string& old_password,
       const GaiaAuthConsumer::ClientLoginResult& credentials);
-  void ResyncEncryptedData(
+  virtual void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
-  void RetryAuth(Profile* profile,
-                 const std::string& username,
-                 const std::string& password,
-                 const std::string& login_token,
-                 const std::string& login_captcha);
+  virtual void RetryAuth(Profile* profile,
+                         const std::string& username,
+                         const std::string& password,
+                         const std::string& login_token,
+                         const std::string& login_captcha);
 
   // Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(

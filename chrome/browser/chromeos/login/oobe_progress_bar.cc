@@ -34,6 +34,8 @@ OobeProgressBar::OobeProgressBar(const std::vector<int>& steps)
   InitClass();
 }
 
+OobeProgressBar::~OobeProgressBar() {}
+
 // static
 void OobeProgressBar::InitClass() {
   static bool initialized = false;
