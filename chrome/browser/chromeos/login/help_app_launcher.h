@@ -37,6 +37,7 @@ class HelpAppLauncher : public LoginHtmlDialog::Delegate,
 
   // Parent window is used to show dialog.
   explicit HelpAppLauncher(gfx::NativeWindow parent_window);
+  ~HelpAppLauncher();
 
   // Shows specified help topic.
   void ShowHelpTopic(HelpTopic help_topic_id);

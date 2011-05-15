@@ -34,6 +34,7 @@ class OwnershipStatusChecker {
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     explicit Core(Callback* callback);
+    ~Core();
 
     // Starts the check.
     void Check();

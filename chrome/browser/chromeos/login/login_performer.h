@@ -119,8 +119,8 @@ class LoginPerformer : public LoginStatusConsumer,
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
-  // ProfeleManager::Observer implementation:
-  void OnProfileCreated(Profile* profile);
+  // ProfileManager::Observer implementation:
+  virtual void OnProfileCreated(Profile* profile);
 
   // Requests screen lock and subscribes to screen lock notifications.
   void RequestScreenLock();

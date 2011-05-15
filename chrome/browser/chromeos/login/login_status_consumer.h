@@ -113,9 +113,7 @@ class LoginStatusConsumer {
   virtual void OnOffTheRecordLoginSuccess() {}
   // The same password didn't work both online and offline.
   virtual void OnPasswordChangeDetected(
-      const GaiaAuthConsumer::ClientLoginResult& credentials) {
-    NOTREACHED();
-  };
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
 };
 
 }  // namespace chromeos

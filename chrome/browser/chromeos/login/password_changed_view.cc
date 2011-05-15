@@ -60,6 +60,14 @@ views::View* PasswordChangedView::GetInitiallyFocusedView() {
   }
 }
 
+bool PasswordChangedView::IsModal() const {
+  return true;
+}
+
+views::View* PasswordChangedView::GetContentsView() {
+  return this;
+}
+
 std::wstring PasswordChangedView::GetWindowTitle() const {
   return UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE));
@@ -188,6 +196,11 @@ void PasswordChangedView::ButtonPressed(Button* sender,
     old_password_field_->SetEnabled(true);
     old_password_field_->RequestFocus();
   }
+}
+
+bool PasswordChangedView::HandleKeyEvent(views::Textfield* sender,
+                                         const views::KeyEvent& keystroke) {
+  return false;
 }
 
 }  // namespace chromeos

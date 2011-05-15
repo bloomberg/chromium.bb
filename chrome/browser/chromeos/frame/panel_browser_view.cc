@@ -27,7 +27,7 @@ PanelBrowserView::PanelBrowserView(Browser* browser)
       creator_xid_(0) {
 }
 
-PanelBrowserView::~PanelBrowserView(Browser* browser) {}
+PanelBrowserView::~PanelBrowserView() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PanelBrowserView functions

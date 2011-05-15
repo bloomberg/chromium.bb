@@ -30,6 +30,8 @@ HelpAppLauncher::HelpAppLauncher(gfx::NativeWindow parent_window)
     : parent_window_(parent_window) {
 }
 
+HelpAppLauncher::~HelpAppLauncher() {}
+
 void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
   Profile* profile = ProfileManager::GetDefaultProfile();
   ExtensionService* service = profile->GetExtensionService();

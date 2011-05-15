@@ -19,7 +19,10 @@ OwnershipStatusChecker::~OwnershipStatusChecker() {
 
 OwnershipStatusChecker::Core::Core(Callback* callback)
     : callback_(callback),
-      origin_loop_(base::MessageLoopProxy::CreateForCurrentThread()) {}
+      origin_loop_(base::MessageLoopProxy::CreateForCurrentThread()) {
+}
+
+OwnershipStatusChecker::Core::~Core() {}
 
 void OwnershipStatusChecker::Core::Check() {
   DCHECK(origin_loop_->BelongsToCurrentThread());

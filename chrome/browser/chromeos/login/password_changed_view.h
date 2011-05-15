@@ -51,8 +51,8 @@ class PasswordChangedView : public views::View,
 
   // views::WindowDelegate:
   virtual View* GetInitiallyFocusedView();
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView() { return this; }
+  virtual bool IsModal() const;
+  virtual views::View* GetContentsView();
 
   // views::View:
   virtual std::wstring GetWindowTitle() const;
@@ -63,9 +63,7 @@ class PasswordChangedView : public views::View,
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& keystroke) {
-    return false;
-  }
+                              const views::KeyEvent& keystroke);
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) {}
 
