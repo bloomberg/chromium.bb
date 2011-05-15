@@ -1273,6 +1273,8 @@
         'browser/chromeos/login/mock_auth_response_handler.cc',
         'browser/chromeos/login/mock_login_status_consumer.cc',
         'browser/chromeos/login/mock_login_status_consumer.h',
+        'browser/chromeos/login/mock_owner_key_utils.cc',
+        'browser/chromeos/login/mock_owner_key_utils.h',
         'browser/chromeos/login/mock_url_fetchers.cc',
         'browser/chromeos/login/mock_url_fetchers.h',
         'browser/chromeos/login/mock_user_manager.cc',

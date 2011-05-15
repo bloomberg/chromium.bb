@@ -39,26 +39,13 @@ class MockKeyLoadObserver : public NotificationObserver {
   }
 
   virtual ~MockKeyLoadObserver() {
-    EXPECT_TRUE(observed_);
+    DCHECK(observed_);
   }
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
-    LOG(INFO) << "Observed key fetch event";
-    if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
-      EXPECT_TRUE(success_expected_);
-      observed_ = true;
-      if (quit_on_observe_)
-        MessageLoop::current()->Quit();
-    } else if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED) {
-      EXPECT_FALSE(success_expected_);
-      observed_ = true;
-      if (quit_on_observe_)
-        MessageLoop::current()->Quit();
-    }
-  }
+                       const NotificationDetails& details);
 
   void ExpectKeyFetchSuccess(bool should_succeed) {
     success_expected_ = should_succeed;
@@ -87,12 +74,8 @@ class MockKeyUser : public OwnerManager::Delegate {
 
   virtual ~MockKeyUser() {}
 
-  void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                       const std::vector<uint8>& payload) {
-    EXPECT_EQ(expected_, return_code);
-    if (quit_on_callback_)
-      MessageLoop::current()->Quit();
-  }
+  virtual void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                       const std::vector<uint8>& payload);
 
   const OwnerManager::KeyOpCode expected_;
   const bool quit_on_callback_;

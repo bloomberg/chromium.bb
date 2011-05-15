@@ -28,6 +28,32 @@ using ::testing::_;
 
 namespace chromeos {
 
+
+void MockKeyLoadObserver::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
+  LOG(INFO) << "Observed key fetch event";
+  if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+    EXPECT_TRUE(success_expected_);
+    observed_ = true;
+    if (quit_on_observe_)
+      MessageLoop::current()->Quit();
+  } else if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED) {
+    EXPECT_FALSE(success_expected_);
+    observed_ = true;
+    if (quit_on_observe_)
+      MessageLoop::current()->Quit();
+  }
+}
+
+void MockKeyUser::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                                  const std::vector<uint8>& payload) {
+  EXPECT_EQ(expected_, return_code);
+  if (quit_on_callback_)
+    MessageLoop::current()->Quit();
+}
+
+
 class OwnerManagerTest : public ::testing::Test {
  public:
   OwnerManagerTest()
