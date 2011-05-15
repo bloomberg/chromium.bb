@@ -875,6 +875,8 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
       support_network_scan_(false) {
 }
 
+NetworkDevice::~NetworkDevice() {}
+
 bool NetworkDevice::ParseValue(int index, const Value* value) {
   switch (index) {
     case PROPERTY_INDEX_TYPE: {
@@ -1248,6 +1250,8 @@ VirtualNetwork::VirtualNetwork(const std::string& service_path)
       provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
 }
 
+VirtualNetwork::~VirtualNetwork() {}
+
 bool VirtualNetwork::ParseProviderValue(int index, const Value* value) {
   switch (index) {
     case PROPERTY_INDEX_HOST:
@@ -1409,7 +1413,7 @@ CellularDataPlan::CellularDataPlan()
       data_bytes_used(0) {
 }
 
-CellularDataPlan::(const CellularDataPlanInfo &plan)
+CellularDataPlan::CellularDataPlan(const CellularDataPlanInfo &plan)
     : plan_name(plan.plan_name ? plan.plan_name : ""),
       plan_type(plan.plan_type),
       update_time(base::Time::FromInternalValue(plan.update_time)),
@@ -1549,6 +1553,20 @@ string16 CellularDataPlan::GetPlanExpiration() const {
 CellTower::CellTower() {}
 
 WifiAccessPoint::WifiAccessPoint() {}
+
+NetworkIPConfig::NetworkIPConfig(
+    const std::string& device_path, IPConfigType type,
+    const std::string& address, const std::string& netmask,
+    const std::string& gateway, const std::string& name_servers)
+    : device_path(device_path),
+      type(type),
+      address(address),
+      netmask(netmask),
+      gateway(gateway),
+      name_servers(name_servers) {
+}
+
+NetworkIPConfig::~NetworkIPConfig() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork::Apn

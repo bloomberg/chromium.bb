@@ -194,6 +194,7 @@ static const int kCellularDataVeryLowBytes = 50 * 1024 * 1024;
 class NetworkDevice {
  public:
   explicit NetworkDevice(const std::string& device_path);
+  ~NetworkDevice();
 
   // Device info.
   const std::string& device_path() const { return device_path_; }
@@ -426,6 +427,7 @@ class VirtualNetwork : public Network {
   };
 
   explicit VirtualNetwork(const std::string& service_path);
+  ~VirtualNetwork();
 
   const std::string& server_hostname() const { return server_hostname_; }
   ProviderType provider_type() const { return provider_type_; }
@@ -814,6 +816,7 @@ struct NetworkIPConfig {
   NetworkIPConfig(const std::string& device_path, IPConfigType type,
                   const std::string& address, const std::string& netmask,
                   const std::string& gateway, const std::string& name_servers);
+  ~NetworkIPConfig();
 
   // NetworkIPConfigs are sorted by tyoe.
   bool operator< (const NetworkIPConfig& other) const {
