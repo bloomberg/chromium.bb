@@ -157,4 +157,11 @@ void MessageBubble::Close() {
   Bubble::Close();
 }
 
+gboolean MessageBubble::OnButtonPress(GtkWidget* widget,
+                                      GdkEventButton* event) {
+  WidgetGtk::OnButtonPress(widget, event);
+  // Never propagate event to parent.
+  return true;
+}
+
 }  // namespace chromeos

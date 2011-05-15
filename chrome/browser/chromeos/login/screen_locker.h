@@ -76,8 +76,8 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // Overridden from views::BubbleDelegate.
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return false; }
+  virtual bool CloseOnEscape();
+  virtual bool FadeInOnShow();
   virtual void OnHelpLinkActivated() {}
 
   // CaptchaView::Delegate implementation:

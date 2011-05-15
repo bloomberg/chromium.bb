@@ -58,11 +58,7 @@ class MessageBubble : public Bubble,
   // Overridden from WidgetGtk.
   virtual void Close() OVERRIDE;
 
-  virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
-    WidgetGtk::OnButtonPress(widget, event);
-    // Never propagate event to parent.
-    return true;
-  }
+  virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
 
  protected:
   // Overridden from views::ButtonListener:

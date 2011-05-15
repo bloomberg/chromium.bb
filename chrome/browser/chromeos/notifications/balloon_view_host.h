@@ -24,7 +24,7 @@ typedef Callback1<const ListValue*>::Type MessageCallback;
 
 class BalloonViewHost : public ::BalloonViewHost {
  public:
-  explicit BalloonViewHost(Balloon* balloon) : ::BalloonViewHost(balloon) {}
+  explicit BalloonViewHost(Balloon* balloon);
   virtual ~BalloonViewHost();
 
   // Adds a callback for WebUI message. Returns true if the callback

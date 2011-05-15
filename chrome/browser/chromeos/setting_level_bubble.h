@@ -47,15 +47,15 @@ class SettingLevelBubble : public BubbleDelegate,
   explicit SettingLevelBubble(SkBitmap* increase_icon,
                               SkBitmap* decrease_icon,
                               SkBitmap* zero_icon);
-  virtual ~SettingLevelBubble() {}
+  virtual ~SettingLevelBubble();
 
  private:
   void OnTimeout();
 
   // Overridden from BubbleDelegate.
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return false; }
+  virtual bool CloseOnEscape();
+  virtual bool FadeInOnShow();
 
   // Overridden from ui::AnimationDelegate.
   virtual void AnimationEnded(const ui::Animation* animation);

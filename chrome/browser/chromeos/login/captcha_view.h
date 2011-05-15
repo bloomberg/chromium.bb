@@ -46,8 +46,8 @@ class CaptchaView : public views::View,
 
   // views::DialogDelegate:
   virtual bool Accept();
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView() { return this; }
+  virtual bool IsModal() const;
+  virtual views::View* GetContentsView();
   virtual std::wstring GetWindowTitle() const;
 
   // views::TextfieldController:

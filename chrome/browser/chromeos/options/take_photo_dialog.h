@@ -36,7 +36,7 @@ class TakePhotoDialog : public views::View,
   virtual bool Accept();
 
   // views::WindowDelegate overrides.
-  virtual bool IsModal() const { return true; }
+  virtual bool IsModal() const;
   virtual views::View* GetContentsView();
 
   // views::View overrides.

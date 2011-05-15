@@ -88,6 +88,14 @@ bool CaptchaView::Accept() {
   return true;
 }
 
+bool CaptchaView::IsModal() const {
+  return true;
+}
+
+views::View* CaptchaView::GetContentsView() {
+  return this;
+}
+
 std::wstring CaptchaView::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_CAPTCHA_DIALOG_TITLE));
 }

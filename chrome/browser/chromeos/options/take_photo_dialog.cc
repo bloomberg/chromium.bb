@@ -68,6 +68,10 @@ bool TakePhotoDialog::Accept() {
   return true;
 }
 
+bool TakePhotoDialog::IsModal() const {
+  return true;
+}
+
 views::View* TakePhotoDialog::GetContentsView() {
   // Lazy initialization upon request.
   if (!take_photo_view_) {

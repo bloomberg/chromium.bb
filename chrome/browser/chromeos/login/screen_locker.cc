@@ -886,6 +886,14 @@ void ScreenLocker::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
   }
 }
 
+bool ScreenLocker::CloseOnEscape() {
+  return true;
+}
+
+bool ScreenLocker::FadeInOnShow() {
+  return false;
+}
+
 void ScreenLocker::OnCaptchaEntered(const std::string& captcha) {
   // Captcha dialog is only shown when LoginPerformer instance exists,
   // i.e. blocking UI after password change is in place.

@@ -86,6 +86,8 @@ SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
   animation_.SetTweenType(ui::Tween::LINEAR);
 }
 
+SettingLevelBubble::~SettingLevelBubble() {}
+
 void SettingLevelBubble::ShowBubble(int percent) {
   percent = LimitPercent(percent);
   if (previous_percent_ == -1)
@@ -163,6 +165,14 @@ void SettingLevelBubble::BubbleClosing(Bubble* bubble, bool) {
   animation_.Stop();
   bubble_ = NULL;
   view_ = NULL;
+}
+
+bool SettingLevelBubble::CloseOnEscape() {
+  return true;
+}
+
+bool SettingLevelBubble::FadeInOnShow() {
+  return false;
 }
 
 void SettingLevelBubble::AnimationEnded(const ui::Animation* animation) {

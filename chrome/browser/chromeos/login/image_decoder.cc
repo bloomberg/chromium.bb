@@ -16,6 +16,8 @@ ImageDecoder::ImageDecoder(Delegate* delegate,
       target_thread_id_(BrowserThread::UI) {
 }
 
+ImageDecoder::~ImageDecoder() {}
+
 void ImageDecoder::Start() {
   if (!BrowserThread::GetCurrentThreadIdentifier(&target_thread_id_)) {
     NOTREACHED();

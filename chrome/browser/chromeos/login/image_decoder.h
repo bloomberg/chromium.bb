@@ -40,7 +40,7 @@ class ImageDecoder : public UtilityProcessHost::Client {
 
  private:
   // It's a reference counted object, so destructor is private.
-  virtual ~ImageDecoder() {}
+  virtual ~ImageDecoder();
 
   // Overidden from UtilityProcessHost::Client:
   virtual void OnDecodeImageSucceeded(const SkBitmap& decoded_image);

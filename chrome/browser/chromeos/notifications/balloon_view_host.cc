@@ -13,6 +13,10 @@
 
 namespace chromeos {
 
+BalloonViewHost::BalloonViewHost(Balloon* balloon)
+    : ::BalloonViewHost(balloon) {
+}
+
 BalloonViewHost::~BalloonViewHost() {
   STLDeleteContainerPairSecondPointers(message_callbacks_.begin(),
                                        message_callbacks_.end());
