@@ -15,8 +15,9 @@ namespace chromeos {
 
 class MockConsumer : public LoginStatusConsumer {
  public:
-  MockConsumer() {}
-  ~MockConsumer() {}
+  MockConsumer();
+  virtual ~MockConsumer();
+
   MOCK_METHOD1(OnLoginFailure, void(const LoginFailure& error));
   MOCK_METHOD4(OnLoginSuccess, void(
       const std::string& username,

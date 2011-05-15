@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/mock_library_loader.h"
+#include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 
 namespace chromeos {
 
-MockLibraryLoader::MockLibraryLoader() {}
+MockConsumer::MockConsumer() {}
 
-MockLibraryLoader::~MockLibraryLoader() {}
+MockConsumer::~MockConsumer() {}
 
 }  // namespace chromeos

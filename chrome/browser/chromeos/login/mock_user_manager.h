@@ -16,8 +16,8 @@ namespace chromeos {
 
 class MockUserManager : public UserManager {
  public:
-  MockUserManager() {}
-  virtual ~MockUserManager() {}
+  MockUserManager();
+  virtual ~MockUserManager();
 
   MOCK_CONST_METHOD0(GetUsers, std::vector<User>());
   MOCK_METHOD0(OffTheRecordUserLoggedIn, void());

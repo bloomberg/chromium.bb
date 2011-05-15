@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_MOCK_SYSTEM_ACCESS_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "chrome/browser/chromeos/system_access.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
