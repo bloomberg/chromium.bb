@@ -70,8 +70,8 @@ class ImageBurnDownloader {
   void AddListener(Listener* listener, const GURL& url);
 
  private:
-  ImageBurnDownloader() {}
-  ~ImageBurnDownloader() {}
+  ImageBurnDownloader();
+  ~ImageBurnDownloader();
 
   // Let listeners know if download started successfully.
   void DownloadStarted(bool success, const GURL& url);

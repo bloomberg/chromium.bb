@@ -736,6 +736,10 @@ ImageBurnDownloader* ImageBurnDownloader::GetInstance() {
   return Singleton<ImageBurnDownloader>::get();
 }
 
+ImageBurnDownloader::ImageBurnDownloader() {}
+
+ImageBurnDownloader::~ImageBurnDownloader() {}
+
 void ImageBurnDownloader::DownloadFile(const GURL& url,
     const FilePath& file_path, TabContents* tab_contents) {
   // First we have to create file stream we will download file to.

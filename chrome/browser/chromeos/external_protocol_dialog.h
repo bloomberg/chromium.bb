@@ -36,8 +36,8 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   virtual views::View* GetContentsView();
 
   // views::WindowDelegate Methods:
-  virtual bool IsAlwaysOnTop() const { return false; }
-  virtual bool IsModal() const { return false; }
+  virtual bool IsAlwaysOnTop() const;
+  virtual bool IsModal() const;
 
  private:
   // The message box view whose commands we handle.

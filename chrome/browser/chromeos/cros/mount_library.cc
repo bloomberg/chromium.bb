@@ -47,7 +47,7 @@ MountLibrary::Disk::Disk(const std::string& device_path,
     mount_path_ = mount_path_.append("/");
 }
 
-MountLibrary::Disk::Disk() {}
+MountLibrary::Disk::~Disk() {}
 
 class MountLibraryImpl : public MountLibrary {
 
