@@ -229,6 +229,10 @@ void ScreenLockView::OnSignout() {
   screen_locker_->Signout();
 }
 
+bool ScreenLockView::IsUserSelected() const {
+  return true;
+}
+
 void ScreenLockView::ContentsChanged(views::Textfield* sender,
                                      const string16& new_contents) {
   if (!new_contents.empty())

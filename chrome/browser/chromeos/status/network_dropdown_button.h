@@ -36,10 +36,10 @@ class NetworkDropdownButton : public DropDownButton,
 
  protected:
   // NetworkMenu implementation:
-  virtual bool IsBrowserMode() const { return browser_mode_; }
-  virtual gfx::NativeWindow GetNativeWindow() const { return parent_window_; }
+  virtual bool IsBrowserMode() const;
+  virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void OpenButtonOptions() {}
-  virtual bool ShouldOpenButtonOptions() const { return false; }
+  virtual bool ShouldOpenButtonOptions() const;
 
  private:
   bool browser_mode_;

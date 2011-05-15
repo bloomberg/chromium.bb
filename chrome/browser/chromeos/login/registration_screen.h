@@ -34,11 +34,7 @@ class RegistrationDomView : public WebPageDomView {
  protected:
   // Overriden from DOMView:
   virtual TabContents* CreateTabContents(Profile* profile,
-                                         SiteInstance* instance) {
-    return new WizardWebPageViewTabContents(profile,
-                                            instance,
-                                            page_delegate_);
-  }
+                                         SiteInstance* instance);
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationDomView);
 };
@@ -49,7 +45,7 @@ class RegistrationView : public WebPageView {
   RegistrationView() : dom_view_(new RegistrationDomView()) {}
 
  protected:
-  virtual WebPageDomView* dom_view() { return dom_view_; }
+  virtual WebPageDomView* dom_view();
 
  private:
   // View that renders page.

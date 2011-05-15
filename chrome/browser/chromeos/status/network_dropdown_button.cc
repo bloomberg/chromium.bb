@@ -63,6 +63,21 @@ void NetworkDropdownButton::Refresh() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkDropdownButton, NetworkMenu implementation:
+
+bool NetworkDropdownButton::IsBrowserMode() const {
+  return browser_mode_;
+}
+
+gfx::NativeWindow NetworkDropdownButton::GetNativeWindow() const {
+  return parent_window_;
+}
+
+bool NetworkDropdownButton::ShouldOpenButtonOptions() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkDropdownButton, NetworkLibrary::NetworkManagerObserver implementation:
 
 void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {

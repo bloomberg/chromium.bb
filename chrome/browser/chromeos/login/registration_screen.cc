@@ -35,6 +35,23 @@ const char kRegistrationSkippedUrl[] = "cros://register/skipped";
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
+// RegistrationDomView, protected:
+
+TabContents* RegistrationDomView::CreateTabContents(
+    Profile* profile, SiteInstance* instance) {
+  return new WizardWebPageViewTabContents(profile,
+                                          instance,
+                                          page_delegate_);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// RegistrationView, protected:
+
+WebPageDomView* RegistrationView::dom_view() {
+  return dom_view_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, public:
 RegistrationScreen::RegistrationScreen(WizardScreenDelegate* delegate)
     : ViewScreen<RegistrationView>(delegate) {

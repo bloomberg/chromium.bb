@@ -20,7 +20,7 @@ namespace chromeos {
 // Label with customized paddings and long text fade out.
 class UsernameView : public views::Label {
  public:
-  virtual ~UsernameView() {}
+  virtual ~UsernameView();
 
   // Returns the shaped username view to be used on the login screen. If
   // |user_small_shape| is true, then one pixel margins are used. This is done
