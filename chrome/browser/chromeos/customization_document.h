@@ -83,6 +83,8 @@ class StartupCustomizationDocument : public CustomizationDocument {
   StartupCustomizationDocument(SystemAccess* system_access,
                                const std::string& manifest);
 
+  ~StartupCustomizationDocument();
+
   void Init(SystemAccess* system_access);
 
   // If |attr| exists in machine stat, assign it to |value|.
@@ -166,6 +168,8 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // C-tor for test construction.
   ServicesCustomizationDocument(const std::string& manifest,
                                 const std::string& initial_locale);
+
+  ~ServicesCustomizationDocument();
 
   // Save applied state in machine settings.
   static void SetApplied(bool val);

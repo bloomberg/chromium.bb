@@ -155,6 +155,8 @@ StartupCustomizationDocument::StartupCustomizationDocument(
   Init(system_access);
 }
 
+StartupCustomizationDocument::~StartupCustomizationDocument() {}
+
 StartupCustomizationDocument* StartupCustomizationDocument::GetInstance() {
   return Singleton<StartupCustomizationDocument,
       DefaultSingletonTraits<StartupCustomizationDocument> >::get();
@@ -259,6 +261,8 @@ ServicesCustomizationDocument::ServicesCustomizationDocument(
     : initial_locale_(initial_locale) {
   LoadManifestFromString(manifest);
 }
+
+ServicesCustomizationDocument::~ServicesCustomizationDocument() {}
 
 // static
 ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {

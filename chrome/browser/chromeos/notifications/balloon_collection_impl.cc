@@ -133,6 +133,10 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
     space_change_listener_->OnBalloonSpaceChanged();
 }
 
+const Balloons& BalloonCollectionImpl::GetActiveBalloons() {
+  return base_.balloons();
+}
+
 void BalloonCollectionImpl::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {

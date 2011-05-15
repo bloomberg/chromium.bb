@@ -26,9 +26,9 @@ class EnterpriseExtensionObserver
   explicit EnterpriseExtensionObserver(Profile* profile);
   virtual ~EnterpriseExtensionObserver() {}
 
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   static void CheckExtensionAndNotifyEntd(const FilePath& path);

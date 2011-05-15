@@ -48,6 +48,8 @@ class MountLibrary {
          bool is_read_only,
          bool has_media,
          bool on_boot_device);
+    ~Disk();
+
     // The path of the device, used by devicekit-disks.
     const std::string& device_path() const { return device_path_; }
     // The path to the mount point of this device. Will be empty if not mounted.
