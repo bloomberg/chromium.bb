@@ -1911,6 +1911,7 @@
         '../content/common/font_descriptor_mac_unittest.mm',
         '../content/common/gpu/gpu_feature_flags_unittest.cc',
         '../content/common/gpu/gpu_info_unittest.cc',
+        '../content/common/hi_res_timer_manager_unittest.cc',
         '../content/common/notification_service_unittest.cc',
         '../content/common/process_watcher_unittest.cc',
         '../content/common/property_bag_unittest.cc',

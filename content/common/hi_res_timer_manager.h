@@ -18,11 +18,14 @@ class HighResolutionTimerManager : public ui::SystemMonitor::PowerObserver {
   // ui::SystemMonitor::PowerObserver:
   virtual void OnPowerStateChange(bool on_battery_power);
 
+  // Returns true if the hi resolution clock could be used right now.
+  bool hi_res_clock_available() const { return hi_res_clock_available_; }
+
  private:
   // Enable or disable the faster multimedia timer.
   void UseHiResClock(bool use);
 
-  bool hi_res_clock_used_;
+  bool hi_res_clock_available_;
 
   DISALLOW_COPY_AND_ASSIGN(HighResolutionTimerManager);
 };

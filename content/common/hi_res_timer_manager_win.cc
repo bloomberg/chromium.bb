@@ -7,7 +7,7 @@
 #include "base/time.h"
 
 HighResolutionTimerManager::HighResolutionTimerManager()
-    : hi_res_clock_used_(false) {
+    : hi_res_clock_available_(false) {
   ui::SystemMonitor* system_monitor = ui::SystemMonitor::Get();
   system_monitor->AddObserver(this);
   UseHiResClock(!system_monitor->BatteryPower());
@@ -23,7 +23,8 @@ void HighResolutionTimerManager::OnPowerStateChange(bool on_battery_power) {
 }
 
 void HighResolutionTimerManager::UseHiResClock(bool use) {
-  if (use == hi_res_clock_used_)
+  if (use == hi_res_clock_available_)
     return;
+  hi_res_clock_available_ = use;
   base::Time::EnableHighResolutionTimer(use);
 }
