@@ -240,7 +240,7 @@ void FindBarGtk::InitWidgets() {
   gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
                                kCloseButtonPaddingLeft);
   g_signal_connect(close_button_->widget(), "clicked",
-                   G_CALLBACK(OnClicked), this);
+                   G_CALLBACK(OnClickedThunk), this);
   gtk_widget_set_tooltip_text(close_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP).c_str());
 
@@ -248,7 +248,7 @@ void FindBarGtk::InitWidgets() {
       IDR_FINDINPAGE_NEXT, IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_H,
       IDR_FINDINPAGE_NEXT_P, GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_MENU));
   g_signal_connect(find_next_button_->widget(), "clicked",
-                   G_CALLBACK(OnClicked), this);
+                   G_CALLBACK(OnClickedThunk), this);
   gtk_widget_set_tooltip_text(find_next_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_NEXT_TOOLTIP).c_str());
   gtk_box_pack_end(GTK_BOX(hbox), find_next_button_->widget(),
@@ -258,7 +258,7 @@ void FindBarGtk::InitWidgets() {
       IDR_FINDINPAGE_PREV, IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_H,
       IDR_FINDINPAGE_PREV_P, GTK_STOCK_GO_UP, GTK_ICON_SIZE_MENU));
   g_signal_connect(find_previous_button_->widget(), "clicked",
-                   G_CALLBACK(OnClicked), this);
+                   G_CALLBACK(OnClickedThunk), this);
   gtk_widget_set_tooltip_text(find_previous_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP).c_str());
   gtk_box_pack_end(GTK_BOX(hbox), find_previous_button_->widget(),
@@ -795,15 +795,12 @@ gboolean FindBarGtk::OnKeyReleaseEvent(GtkWidget* widget, GdkEventKey* event,
   return find_bar->MaybeForwardKeyEventToRenderer(event);
 }
 
-// static
-void FindBarGtk::OnClicked(GtkWidget* button, FindBarGtk* find_bar) {
-  if (button == find_bar->close_button_->widget()) {
-    find_bar->find_bar_controller_->EndFindSession(
-        FindBarController::kKeepSelection);
-  } else if (button == find_bar->find_previous_button_->widget() ||
-             button == find_bar->find_next_button_->widget()) {
-    find_bar->FindEntryTextInContents(
-        button == find_bar->find_next_button_->widget());
+void FindBarGtk::OnClicked(GtkWidget* button) {
+  if (button == close_button_->widget()) {
+    find_bar_controller_->EndFindSession(FindBarController::kKeepSelection);
+  } else if (button == find_previous_button_->widget() ||
+             button == find_next_button_->widget()) {
+    FindEntryTextInContents(button == find_next_button_->widget());
   } else {
     NOTREACHED();
   }

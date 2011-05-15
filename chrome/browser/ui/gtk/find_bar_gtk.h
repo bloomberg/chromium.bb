@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/point.h"
 
 class Browser;
@@ -127,7 +128,7 @@ class FindBarGtk : public FindBar,
                                     FindBarGtk* find_bar);
 
   // Callback for previous, next, and close button.
-  static void OnClicked(GtkWidget* button, FindBarGtk* find_bar);
+  CHROMEGTK_CALLBACK_0(FindBarGtk, void, OnClicked);
 
   // Handles shapping and drawing the find bar background.
   static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event,
