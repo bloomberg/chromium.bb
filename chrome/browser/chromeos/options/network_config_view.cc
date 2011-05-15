@@ -98,6 +98,14 @@ views::View* NetworkConfigView::GetExtraView() {
   return advanced_button_container_;
 }
 
+bool NetworkConfigView::IsModal() const {
+  return true;
+}
+
+views::View* NetworkConfigView::GetContentsView() {
+  return this;
+}
+
 std::wstring NetworkConfigView::GetWindowTitle() const {
   return UTF16ToWide(child_config_view_->GetTitle());
 }

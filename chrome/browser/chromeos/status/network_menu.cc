@@ -92,7 +92,20 @@ class MainMenuModel : public NetworkMenuModel {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuModel::NetworkInfo
+
+NetworkMenuModel::NetworkInfo::NetworkInfo()
+    : need_passphrase(false), remembered(true), auto_connect(true) {
+}
+
+NetworkMenuModel::NetworkInfo::~NetworkInfo() {}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, public methods:
+
+NetworkMenuModel::NetworkMenuModel(NetworkMenu* owner) : owner_(owner) {}
+
+NetworkMenuModel::~NetworkMenuModel() {}
 
 bool NetworkMenuModel::ConnectToNetworkAt(int index,
                                           const std::string& passphrase,
@@ -191,6 +204,10 @@ bool NetworkMenuModel::ConnectToNetworkAt(int index,
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, ui::MenuModel implementation:
 
+bool NetworkMenuModel::HasIcons() const {
+  return true;
+}
+
 int NetworkMenuModel::GetItemCount() const {
   return static_cast<int>(menu_items_.size());
 }
@@ -199,8 +216,16 @@ ui::MenuModel::ItemType NetworkMenuModel::GetTypeAt(int index) const {
   return menu_items_[index].type;
 }
 
+int NetworkMenuModel::CommandIdAt(int index) const {
+  return index;
+}
+
 string16 NetworkMenuModel::GetLabelAt(int index) const {
   return menu_items_[index].label;
+}
+
+bool NetworkMenuModel::IsItemDynamicAt(int index) const {
+  return true;
 }
 
 const gfx::Font* NetworkMenuModel::GetLabelFontAt(int index) const {
@@ -209,9 +234,18 @@ const gfx::Font* NetworkMenuModel::GetLabelFontAt(int index) const {
       NULL;
 }
 
+bool NetworkMenuModel::GetAcceleratorAt(
+    int index, ui::Accelerator* accelerator) const {
+  return false;
+}
+
 bool NetworkMenuModel::IsItemCheckedAt(int index) const {
   // All ui::MenuModel::TYPE_CHECK menu items are checked.
   return true;
+}
+
+int NetworkMenuModel::GetGroupIdAt(int index) const {
+  return 0;
 }
 
 bool NetworkMenuModel::GetIconAt(int index, SkBitmap* icon) {
@@ -222,6 +256,11 @@ bool NetworkMenuModel::GetIconAt(int index, SkBitmap* icon) {
   return false;
 }
 
+ui::ButtonMenuItemModel* NetworkMenuModel::GetButtonMenuItemAt(
+    int index) const {
+  return NULL;
+}
+
 bool NetworkMenuModel::IsEnabledAt(int index) const {
   return !(menu_items_[index].flags & FLAG_DISABLED);
 }
@@ -229,6 +268,8 @@ bool NetworkMenuModel::IsEnabledAt(int index) const {
 ui::MenuModel* NetworkMenuModel::GetSubmenuModelAt(int index) const {
   return menu_items_[index].sub_menu_model;
 }
+
+void NetworkMenuModel::HighlightChangedTo(int index) {}
 
 void NetworkMenuModel::ActivatedAt(int index) {
   // When we are refreshing the menu, ignore menu item activation.
@@ -277,6 +318,10 @@ void NetworkMenuModel::ActivatedAt(int index) {
       browser->ShowSingletonTab(GURL(top_up_url_));
   }
 }
+
+void NetworkMenuModel::MenuWillShow() {}
+
+void NetworkMenuModel::SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, private methods:

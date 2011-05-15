@@ -57,8 +57,8 @@ class NetworkConfigView : public views::View,
   virtual views::View* GetExtraView() OVERRIDE;
 
   // views::WindowDelegate method.
-  virtual bool IsModal() const OVERRIDE { return true; }
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;
 
   // views::View overrides.

@@ -99,8 +99,8 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   virtual void Fail(ReturnCode code) = 0;
 
   // Implementation of OwnerManager::Delegate
-  void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                       const std::vector<uint8>& payload) = 0;
+  virtual void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                               const std::vector<uint8>& payload) = 0;
 
  protected:
   static bool PolicyIsSane(const em::PolicyFetchResponse& value,

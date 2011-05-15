@@ -30,8 +30,9 @@ class NetworkMenu;
 class NetworkMenuModel : public ui::MenuModel {
  public:
   struct NetworkInfo {
-    NetworkInfo() :
-        need_passphrase(false), remembered(true), auto_connect(true) {}
+    NetworkInfo();
+    ~NetworkInfo();
+
     // "ethernet" | "wifi" | "cellular" | "other".
     std::string network_type;
     // "connected" | "connecting" | "disconnected" | "error".
@@ -50,8 +51,8 @@ class NetworkMenuModel : public ui::MenuModel {
     bool auto_connect;
   };
 
-  explicit NetworkMenuModel(NetworkMenu* owner) : owner_(owner) {}
-  virtual ~NetworkMenuModel() {}
+  explicit NetworkMenuModel(NetworkMenu* owner);
+  virtual ~NetworkMenuModel();
 
   // Connect or reconnect to the network at |index|.
   // If remember >= 0, set the favorite state of the network.
@@ -66,27 +67,24 @@ class NetworkMenuModel : public ui::MenuModel {
                              bool should_open_button_options) = 0;
 
   // ui::MenuModel implementation.
-  virtual bool HasIcons() const  { return true; }
+  virtual bool HasIcons() const;
   virtual int GetItemCount() const;
   virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
-  virtual int GetCommandIdAt(int index) const { return index; }
+  virtual int GetCommandIdAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
-  virtual bool IsItemDynamicAt(int index) const { return true; }
+  virtual bool IsItemDynamicAt(int index) const;
   virtual const gfx::Font* GetLabelFontAt(int index) const;
-  virtual bool GetAcceleratorAt(int index,
-      ui::Accelerator* accelerator) const { return false; }
+  virtual bool GetAcceleratorAt(int index, ui::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
-  virtual int GetGroupIdAt(int index) const { return 0; }
+  virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon);
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
-    return NULL;
-  }
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
   virtual ui::MenuModel* GetSubmenuModelAt(int index) const;
-  virtual void HighlightChangedTo(int index) {}
+  virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
-  virtual void MenuWillShow() {}
-  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {}
+  virtual void MenuWillShow();
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate);
 
  protected:
   enum MenuItemFlags {
