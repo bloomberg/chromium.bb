@@ -866,6 +866,14 @@ void WizardController::OnSetUserNamePassword(const std::string& username,
   password_ = password;
 }
 
+void WizardController::set_usage_statistics_reporting(bool val) {
+  usage_statistics_reporting_ = val;
+}
+
+bool WizardController::usage_statistics_reporting() const {
+  return usage_statistics_reporting_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, WizardScreen overrides:
 views::View* WizardController::GetWizardView() {

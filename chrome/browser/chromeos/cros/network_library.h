@@ -164,6 +164,9 @@ enum EAPPhase2Auth {
 
 // Simple wrapper for property Cellular.FoundNetworks.
 struct FoundCellularNetwork {
+  FoundCellularNetwork();
+  ~FoundCellularNetwork();
+
   std::string status;
   std::string network_id;
   std::string short_name;
@@ -269,7 +272,7 @@ class NetworkDevice {
 // Contains data common to all network service types.
 class Network {
  public:
-  virtual ~Network() {}
+  virtual ~Network();
 
   const std::string& service_path() const { return service_path_; }
   const std::string& name() const { return name_; }
@@ -323,19 +326,7 @@ class Network {
   }
 
  protected:
-  Network(const std::string& service_path, ConnectionType type)
-      : state_(STATE_UNKNOWN),
-        error_(ERROR_UNKNOWN),
-        connectable_(true),
-        is_active_(false),
-        favorite_(false),
-        auto_connect_(false),
-        connectivity_state_(CONN_STATE_UNKNOWN),
-        priority_order_(0),
-        added_(false),
-        notify_failure_(false),
-        service_path_(service_path),
-        type_(type) {}
+  Network(const std::string& service_path, ConnectionType type);
 
   // Parse name/value pairs from libcros.
   virtual bool ParseValue(int index, const Value* value);
@@ -434,10 +425,7 @@ class VirtualNetwork : public Network {
     PROVIDER_TYPE_MAX,
   };
 
-  explicit VirtualNetwork(const std::string& service_path) :
-      Network(service_path, TYPE_VPN),
-      provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
-  }
+  explicit VirtualNetwork(const std::string& service_path);
 
   const std::string& server_hostname() const { return server_hostname_; }
   ProviderType provider_type() const { return provider_type_; }
@@ -548,24 +536,16 @@ class CellularNetwork : public WirelessNetwork {
     std::string username;
     std::string password;
 
-    Apn() {}
+    Apn();
     Apn(const std::string& apn, const std::string& network_id,
-        const std::string& username, const std::string& password)
-        : apn(apn), network_id(network_id),
-          username(username), password(password) {
-    }
+        const std::string& username, const std::string& password);
+    ~Apn();
     void Set(const DictionaryValue& dict);
   };
 
+  explicit CellularNetwork(const std::string& service_path);
   virtual ~CellularNetwork();
 
-  explicit CellularNetwork(const std::string& service_path)
-      : WirelessNetwork(service_path, TYPE_CELLULAR),
-        activation_state_(ACTIVATION_STATE_UNKNOWN),
-        network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
-        roaming_state_(ROAMING_STATE_UNKNOWN),
-        data_left_(DATA_UNKNOWN) {
-  }
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
@@ -659,15 +639,8 @@ typedef std::vector<CellularNetwork*> CellularNetworkVector;
 // Class for networks of TYPE_WIFI.
 class WifiNetwork : public WirelessNetwork {
  public:
-  explicit WifiNetwork(const std::string& service_path)
-      : WirelessNetwork(service_path, TYPE_WIFI),
-        encryption_(SECURITY_NONE),
-        passphrase_required_(false),
-        eap_method_(EAP_METHOD_UNKNOWN),
-        eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
-        eap_use_system_cas_(true),
-        save_credentials_(false) {
-  }
+  explicit WifiNetwork(const std::string& service_path);
+  virtual ~WifiNetwork();
 
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
   ConnectionSecurity encryption() const { return encryption_; }
@@ -771,19 +744,10 @@ typedef std::vector<WifiNetwork*> WifiNetworkVector;
 // Cellular Data Plan management.
 class CellularDataPlan {
  public:
-  CellularDataPlan()
-      : plan_name("Unknown"),
-        plan_type(CELLULAR_DATA_PLAN_UNLIMITED),
-        plan_data_bytes(0),
-        data_bytes_used(0) { }
-  explicit CellularDataPlan(const CellularDataPlanInfo &plan)
-      : plan_name(plan.plan_name ? plan.plan_name : ""),
-        plan_type(plan.plan_type),
-        update_time(base::Time::FromInternalValue(plan.update_time)),
-        plan_start_time(base::Time::FromInternalValue(plan.plan_start_time)),
-        plan_end_time(base::Time::FromInternalValue(plan.plan_end_time)),
-        plan_data_bytes(plan.plan_data_bytes),
-        data_bytes_used(plan.data_bytes_used) { }
+  CellularDataPlan();
+  explicit CellularDataPlan(const CellularDataPlanInfo &plan);
+  ~CellularDataPlan();
+
   // Formats cellular plan description.
   string16 GetPlanDesciption() const;
   // Evaluates cellular plans status and returns warning string if it is near
@@ -814,6 +778,8 @@ typedef ScopedVector<CellularDataPlan> CellularDataPlanVector;
 
 // Geolocation data.
 struct CellTower {
+  CellTower();
+
   enum RadioType {
     RADIOTYPE_GSM,
     RADIOTYPE_CDMA,
@@ -830,6 +796,8 @@ struct CellTower {
 };
 
 struct WifiAccessPoint {
+  WifiAccessPoint();
+
   std::string mac_address;  // The mac address of the WiFi node.
   std::string name;         // The SSID of the WiFi node.
   base::Time timestamp;     // Timestamp when this AP was detected.
@@ -845,13 +813,7 @@ typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
 struct NetworkIPConfig {
   NetworkIPConfig(const std::string& device_path, IPConfigType type,
                   const std::string& address, const std::string& netmask,
-                  const std::string& gateway, const std::string& name_servers)
-      : device_path(device_path),
-        type(type),
-        address(address),
-        netmask(netmask),
-        gateway(gateway),
-        name_servers(name_servers) {}
+                  const std::string& gateway, const std::string& name_servers);
 
   // NetworkIPConfigs are sorted by tyoe.
   bool operator< (const NetworkIPConfig& other) const {

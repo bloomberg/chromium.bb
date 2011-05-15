@@ -172,12 +172,8 @@ class WizardController : public chromeos::ScreenObserver,
   virtual void OnExit(ExitCodes exit_code);
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password);
-  virtual void set_usage_statistics_reporting(bool val) {
-    usage_statistics_reporting_ = val;
-  }
-  virtual bool usage_statistics_reporting() const {
-    return usage_statistics_reporting_;
-  }
+  virtual void set_usage_statistics_reporting(bool val);
+  virtual bool usage_statistics_reporting() const;
 
   // Creates wizard screen window with the specified |bounds|.
   // If |initial_show| initial animation (window & background) is shown.

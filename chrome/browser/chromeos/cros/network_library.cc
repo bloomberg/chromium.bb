@@ -854,6 +854,12 @@ static bool EnsureCrosLoaded() {
 
 }  // namespace
 
+
+
+FoundCellularNetwork::FoundCellularNetwork() {}
+
+FoundCellularNetwork::~FoundCellularNetwork() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkDevice
 
@@ -992,6 +998,22 @@ void NetworkDevice::ParseInfo(const DictionaryValue* info) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Network
+
+Network::Network(const std::string& service_path, ConnectionType type)
+    : state_(STATE_UNKNOWN),
+      error_(ERROR_UNKNOWN),
+      connectable_(true),
+      is_active_(false),
+      favorite_(false),
+      auto_connect_(false),
+      connectivity_state_(CONN_STATE_UNKNOWN),
+      priority_order_(0),
+      added_(false),
+      notify_failure_(false),
+      service_path_(service_path),
+      type_(type) {}
+
+Network::~Network() {}
 
 void Network::SetState(ConnectionState new_state) {
   if (new_state == state_)
@@ -1221,6 +1243,11 @@ void Network::InitIPAddress() {
 ////////////////////////////////////////////////////////////////////////////////
 // VirtualNetwork
 
+VirtualNetwork::VirtualNetwork(const std::string& service_path)
+    : Network(service_path, TYPE_VPN),
+      provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
+}
+
 bool VirtualNetwork::ParseProviderValue(int index, const Value* value) {
   switch (index) {
     case PROPERTY_INDEX_HOST:
@@ -1374,6 +1401,26 @@ bool WirelessNetwork::ParseValue(int index, const Value* value) {
 ////////////////////////////////////////////////////////////////////////////////
 // CellularDataPlan
 
+
+CellularDataPlan::CellularDataPlan()
+    : plan_name("Unknown"),
+      plan_type(CELLULAR_DATA_PLAN_UNLIMITED),
+      plan_data_bytes(0),
+      data_bytes_used(0) {
+}
+
+CellularDataPlan::(const CellularDataPlanInfo &plan)
+    : plan_name(plan.plan_name ? plan.plan_name : ""),
+      plan_type(plan.plan_type),
+      update_time(base::Time::FromInternalValue(plan.update_time)),
+      plan_start_time(base::Time::FromInternalValue(plan.plan_start_time)),
+      plan_end_time(base::Time::FromInternalValue(plan.plan_end_time)),
+      plan_data_bytes(plan.plan_data_bytes),
+      data_bytes_used(plan.data_bytes_used) {
+}
+
+CellularDataPlan::~CellularDataPlan() {}
+
 string16 CellularDataPlan::GetPlanDesciption() const {
   switch (plan_type) {
     case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
@@ -1499,8 +1546,23 @@ string16 CellularDataPlan::GetPlanExpiration() const {
   return TimeFormat::TimeRemaining(remaining_time());
 }
 
+CellTower::CellTower() {}
+
+WifiAccessPoint::WifiAccessPoint() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork::Apn
+
+CellularNetwork::Apn::Apn() {}
+
+CellularNetwork::Apn::Apn(
+    const std::string& apn, const std::string& network_id,
+    const std::string& username, const std::string& password)
+    : apn(apn), network_id(network_id),
+      username(username), password(password) {
+}
+
+CellularNetwork::Apn::~Apn() {}
 
 void CellularNetwork::Apn::Set(const DictionaryValue& dict) {
   if (!dict.GetStringWithoutPathExpansion(kApnProperty, &apn))
@@ -1515,6 +1577,14 @@ void CellularNetwork::Apn::Set(const DictionaryValue& dict) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork
+
+CellularNetwork::CellularNetwork(const std::string& service_path)
+    : WirelessNetwork(service_path, TYPE_CELLULAR),
+      activation_state_(ACTIVATION_STATE_UNKNOWN),
+      network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
+      roaming_state_(ROAMING_STATE_UNKNOWN),
+      data_left_(DATA_UNKNOWN) {
+}
 
 CellularNetwork::~CellularNetwork() {
 }
@@ -1751,6 +1821,18 @@ std::string CellularNetwork::GetRoamingStateString() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WifiNetwork
+
+WifiNetwork::WifiNetwork(const std::string& service_path)
+    : WirelessNetwork(service_path, TYPE_WIFI),
+      encryption_(SECURITY_NONE),
+      passphrase_required_(false),
+      eap_method_(EAP_METHOD_UNKNOWN),
+      eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
+      eap_use_system_cas_(true),
+      save_credentials_(false) {
+}
+
+WifiNetwork::~WifiNetwork() {}
 
 // Called from ParseNetwork after calling ParseInfo.
 void WifiNetwork::CalculateUniqueId() {
