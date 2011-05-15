@@ -16,6 +16,9 @@ namespace chromeos {
 // Mock for libcros library loader.
 class  MockLibraryLoader : public LibraryLoader {
  public:
+  MockLibraryLoader();
+  virtual ~MockLibraryLoader();
+
   MOCK_METHOD1(Load, bool(std::string*));
 };
 

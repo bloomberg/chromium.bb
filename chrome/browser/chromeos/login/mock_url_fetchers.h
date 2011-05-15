@@ -27,7 +27,7 @@ class ExpectCanceledFetcher : public URLFetcher {
                         URLFetcher::Delegate* d);
   virtual ~ExpectCanceledFetcher();
 
-  void Start();
+  virtual void Start();
 
   void CompleteFetch();
 
@@ -45,7 +45,7 @@ class GotCanceledFetcher : public URLFetcher {
                      URLFetcher::Delegate* d);
   virtual ~GotCanceledFetcher();
 
-  void Start();
+  virtual void Start();
 
  private:
   GURL url_;
@@ -62,7 +62,7 @@ class SuccessFetcher : public URLFetcher {
                  URLFetcher::Delegate* d);
   virtual ~SuccessFetcher();
 
-  void Start();
+  virtual void Start();
 
  private:
   GURL url_;
@@ -79,7 +79,7 @@ class FailFetcher : public URLFetcher {
               URLFetcher::Delegate* d);
   virtual ~FailFetcher();
 
-  void Start();
+  virtual void Start();
 
  private:
   GURL url_;
@@ -100,7 +100,7 @@ class CaptchaFetcher : public URLFetcher {
   static std::string GetCaptchaUrl();
   static std::string GetUnlockUrl();
 
-  void Start();
+  virtual void Start();
 
  private:
   static const char kCaptchaToken[];
@@ -121,7 +121,7 @@ class HostedFetcher : public URLFetcher {
                 URLFetcher::Delegate* d);
   virtual ~HostedFetcher();
 
-  void Start();
+  virtual void Start();
 
  private:
   GURL url_;

@@ -13,7 +13,8 @@ namespace chromeos {
 
 class MockSystemAccess : public SystemAccess {
  public:
-  MockSystemAccess() {}
+  MockSystemAccess();
+  virtual ~MockSystemAccess();
 
   MOCK_METHOD0(GetTimezone, const icu::TimeZone&());
   MOCK_METHOD1(SetTimezone, void(const icu::TimeZone& timezone));

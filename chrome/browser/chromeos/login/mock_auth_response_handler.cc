@@ -33,6 +33,8 @@ MockAuthResponseHandler::MockAuthResponseHandler(
       .WillByDefault(Invoke(this, &MockAuthResponseHandler::MockNetwork));
 }
 
+MockAuthResponseHandler::~MockAuthResponseHandler() {}
+
 void MockAuthResponseHandler::CompleteFetch(URLFetcher::Delegate* delegate,
                                             const GURL remote,
                                             const net::URLRequestStatus status,

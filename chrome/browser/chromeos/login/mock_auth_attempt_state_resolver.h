@@ -13,8 +13,9 @@ namespace chromeos {
 
 class MockAuthAttemptStateResolver : public AuthAttemptStateResolver {
  public:
-  MockAuthAttemptStateResolver() {}
-  virtual ~MockAuthAttemptStateResolver() {}
+  MockAuthAttemptStateResolver();
+  virtual ~MockAuthAttemptStateResolver();
+
   MOCK_METHOD0(Resolve, void(void));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAuthAttemptStateResolver);
