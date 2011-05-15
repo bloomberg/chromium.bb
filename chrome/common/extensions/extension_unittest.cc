@@ -1014,8 +1014,6 @@ TEST(ExtensionTest, PermissionMessages) {
   // TODO(erikkay) add a string for this permission.
   skip.insert(Extension::kBackgroundPermission);
 
-  // TODO(dcheng): add a string for clipboardRead
-  skip.insert(Extension::kClipboardReadPermission);
   skip.insert(Extension::kClipboardWritePermission);
 
   // The cookie permission does nothing unless you have associated host

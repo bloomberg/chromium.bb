@@ -647,6 +647,24 @@ that trigger them.
     without prompting the user for permission.
   </td>
 </tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD-->
+    Data you copy and paste
+  </td>
+  <td>
+    "clipboardRead" permission
+  </td>
+  <td>
+    Allows the extension to use the following editing commands with
+    <code>document.execCommand()</code>:
+    <ul>
+      <li> <code>"copy"</code> </li>
+      <li> <code>"cut"</code> </li>
+    </ul>
+  </td>
+</tr>
 </tbody></table>
 <p></p>
 
@@ -659,6 +677,7 @@ The following permissions don't result in a warning:
 
 <ul>
   <li>"chrome://favicon/"</li>
+  <li>"clipboardWrite"</li>
   <li>"contextMenus"</li>
   <li>"cookies"</li>
   <li>"experimental"</li>

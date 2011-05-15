@@ -290,7 +290,7 @@ const Extension::Permission Extension::kPermissions[] = {
   { kBackgroundPermission,           PermissionMessage::ID_NONE },
   { kBookmarkPermission,             PermissionMessage::ID_BOOKMARKS },
   { kChromeosInfoPrivatePermissions, PermissionMessage::ID_NONE },
-  { kClipboardReadPermission,        PermissionMessage::ID_NONE },
+  { kClipboardReadPermission,        PermissionMessage::ID_CLIPBOARD },
   { kClipboardWritePermission,       PermissionMessage::ID_NONE },
   { kContentSettingsPermission,      PermissionMessage::ID_NONE },
   { kContextMenusPermission,         PermissionMessage::ID_NONE },
@@ -413,7 +413,8 @@ const int Extension::PermissionMessage::kMessageIds[] = {
   IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
   IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
   IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS,
-  IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS
+  IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
+  IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD
 };
 
 //

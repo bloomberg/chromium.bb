@@ -142,6 +142,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       ID_HOSTS_4_OR_MORE,
       ID_HOSTS_ALL,
       ID_FULL_ACCESS,
+      ID_CLIPBOARD,
       ID_ENUM_BOUNDARY
     };
 
