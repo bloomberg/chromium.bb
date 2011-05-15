@@ -142,6 +142,16 @@ void DatabaseTracker::DatabaseOpened(const string16& origin_identifier,
   CachedOriginInfo* info = GetCachedOriginInfo(origin_identifier);
   *database_size = (info ? info->GetDatabaseSize(database_name) : 0);
   *space_available = GetOriginSpaceAvailable(origin_identifier);
+
+  if (quota_manager_proxy_) {
+    // So we can compute deltas as modifications are made.
+    database_connections_.SetOpenDatabaseSize(
+        origin_identifier, database_name, *database_size);
+    quota_manager_proxy_->NotifyStorageAccessed(
+        quota::QuotaClient::kDatabase,
+        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        quota::kStorageTypeTemporary);
+  }
 }
 
 void DatabaseTracker::DatabaseModified(const string16& origin_identifier,
@@ -149,21 +159,24 @@ void DatabaseTracker::DatabaseModified(const string16& origin_identifier,
   if (!LazyInit())
     return;
 
-  int64 updated_db_size =
+  int64 new_size =
       UpdateCachedDatabaseFileSize(origin_identifier, database_name);
   int64 space_available = GetOriginSpaceAvailable(origin_identifier);
   FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseSizeChanged(
-      origin_identifier, database_name, updated_db_size, space_available));
+      origin_identifier, database_name, new_size, space_available));
 
   if (quota_manager_proxy_) {
-    // TODO(michaeln): notify the quota manager
-    // CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
-    // if (origin_info)
-    //   quota_manager_proxy_->NotifyStorageConsumed(
-    //       quota::QuotaClient::kDatabase,
-    //       DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
-    //       quota::kStorageTypeTemporary,
-    //       origin_info->TotalSize());
+    int64 old_size = database_connections_.GetOpenDatabaseSize(
+        origin_identifier, database_name);
+    if (old_size != new_size) {
+      database_connections_.SetOpenDatabaseSize(
+          origin_identifier, database_name, new_size);
+      quota_manager_proxy_->NotifyStorageModified(
+          quota::QuotaClient::kDatabase,
+          DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+          quota::kStorageTypeTemporary,
+          new_size - old_size);
+    }
   }
 }
 
@@ -183,6 +196,33 @@ void DatabaseTracker::CloseDatabases(const DatabaseConnections& connections) {
     DCHECK(!is_initialized_ || connections.IsEmpty());
     return;
   }
+
+  if (quota_manager_proxy_) {
+    // When being closed by this route, there's a chance that
+    // the tracker missed some DatabseModified calls. This method is used
+    // when a renderer crashes to cleanup it's open resources.
+    // We need to examine what we have in connections for the
+    // size of each open databases and notify any differences between the
+    // actual file sizes now.
+    std::vector<std::pair<string16, string16> > open_dbs;
+    connections.ListConnections(&open_dbs);
+    for (std::vector<std::pair<string16, string16> >::iterator it =
+             open_dbs.begin(); it != open_dbs.end(); ++it) {
+      int64 old_size = database_connections_.GetOpenDatabaseSize(
+          it->first, it->second);
+      int64 new_size = GetDBFileSize(it->first, it->second);
+      if (new_size != old_size) {
+        database_connections_.SetOpenDatabaseSize(
+            it->first, it->second, new_size);
+        quota_manager_proxy_->NotifyStorageModified(
+            quota::QuotaClient::kDatabase,
+            DatabaseUtil::GetOriginFromIdentifier(it->first),
+            quota::kStorageTypeTemporary,
+            new_size - old_size);
+      }
+    }
+  }
+
   std::vector<std::pair<string16, string16> > closed_dbs;
   database_connections_.RemoveConnections(connections, &closed_dbs);
   for (std::vector<std::pair<string16, string16> >::iterator it =
@@ -346,11 +386,25 @@ bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
   if (database_connections_.IsDatabaseOpened(origin_identifier, database_name))
     return false;
 
+  int64 db_file_size = quota_manager_proxy_ ?
+      GetDBFileSize(origin_identifier, database_name) : 0;
+
   // Try to delete the file on the hard drive.
-  // TODO(jochen): Delete journal files associated with this database.
   FilePath db_file = GetFullDBFilePath(origin_identifier, database_name);
   if (file_util::PathExists(db_file) && !file_util::Delete(db_file, false))
     return false;
+
+  // Also delete any orphaned journal file.
+  DCHECK(db_file.Extension().empty());
+  file_util::Delete(db_file.InsertBeforeExtensionASCII(
+      DatabaseUtil::kJournalFileSuffix), false);
+
+  if (quota_manager_proxy_ && db_file_size)
+    quota_manager_proxy_->NotifyStorageModified(
+        quota::QuotaClient::kDatabase,
+        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        quota::kStorageTypeTemporary,
+        -db_file_size);
 
   // Clean up the main database and invalidate the cached record.
   databases_table_->DeleteDatabaseDetails(origin_identifier, database_name);
@@ -361,15 +415,6 @@ bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
           origin_identifier, &details) && details.empty()) {
     // Try to delete the origin in case this was the last database.
     DeleteOrigin(origin_identifier);
-  } else if (quota_manager_proxy_) {
-    // TODO(michaeln): notify the quota manager
-    // CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
-    // if (origin_info)
-    //  quota_manager_proxy_->NotifyStorageConsumed(
-    //      quota::QuotaClient::kDatabase,
-    //      DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
-    //      quota::kStorageTypeTemporary,
-    //      origin_info->TotalSize());
   }
   return true;
 }
@@ -382,6 +427,13 @@ bool DatabaseTracker::DeleteOrigin(const string16& origin_identifier) {
   if (database_connections_.IsOriginUsed(origin_identifier))
     return false;
 
+  int64 deleted_size = 0;
+  if (quota_manager_proxy_) {
+    CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
+    if (origin_info)
+      deleted_size = origin_info->TotalSize();
+  }
+
   // We need to invalidate the cached record whether file_util::Delete()
   // succeeds or not, because even if it fails, it might still delete some
   // DB files on the hard drive.
@@ -393,13 +445,12 @@ bool DatabaseTracker::DeleteOrigin(const string16& origin_identifier) {
 
   databases_table_->DeleteOrigin(origin_identifier);
 
-  if (quota_manager_proxy_) {
-    // TODO(michaeln): notify the quota manager
-    // quota_manager_proxy_->NotifyStorageConsumed(
-    //    quota::QuotaClient::kDatabase,
-    //    DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
-    //    quota::kStorageTypeTemporary,
-    //    0);
+  if (quota_manager_proxy_ && deleted_size) {
+    quota_manager_proxy_->NotifyStorageModified(
+        quota::QuotaClient::kDatabase,
+        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        quota::kStorageTypeTemporary,
+        -deleted_size);
   }
 
   return true;

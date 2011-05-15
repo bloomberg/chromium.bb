@@ -12,6 +12,8 @@
 
 namespace webkit_database {
 
+const char DatabaseUtil::kJournalFileSuffix[] = "-journal";
+
 bool DatabaseUtil::CrackVfsFileName(const string16& vfs_file_name,
                                     string16* origin_identifier,
                                     string16* database_name,

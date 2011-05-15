@@ -16,6 +16,8 @@ class DatabaseTracker;
 
 class DatabaseUtil {
  public:
+  static const char kJournalFileSuffix[];
+
   // Extract various information from a database vfs_file_name.  All return
   // parameters are optional.
   static bool CrackVfsFileName(const string16& vfs_file_name,

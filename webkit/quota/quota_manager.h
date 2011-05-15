@@ -200,8 +200,9 @@ class QuotaManagerProxy
  protected:
   friend class QuotaManager;
   friend class base::RefCountedThreadSafe<QuotaManagerProxy>;
+
   QuotaManagerProxy(QuotaManager* manager, base::MessageLoopProxy* io_thread);
-  ~QuotaManagerProxy();
+  virtual ~QuotaManagerProxy();
 
   QuotaManager* manager_;  // only accessed on the io thread
   scoped_refptr<base::MessageLoopProxy> io_thread_;

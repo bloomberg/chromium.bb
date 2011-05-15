@@ -36,10 +36,22 @@ class DatabaseConnections {
       const DatabaseConnections& connections,
       std::vector<std::pair<string16, string16> >* closed_dbs);
 
+  // Database sizes can be kept only if IsDatabaseOpened returns true.
+  int64 GetOpenDatabaseSize(const string16& origin_identifier,
+                            const string16& database_name) const;
+  void SetOpenDatabaseSize(const string16& origin_identifier,
+                           const string16& database_name,
+                           int64 size);
+
+  // Returns a list of the connections, <origin_id, name>.
+  void ListConnections(
+      std::vector<std::pair<string16, string16> > *list) const;
+
  private:
-  typedef std::map<string16, int> DBConnections;
+  // Mapping from name to <openCount, size>
+  typedef std::map<string16, std::pair<int, int64> > DBConnections;
   typedef std::map<string16, DBConnections> OriginConnections;
-  OriginConnections connections_;
+  mutable OriginConnections connections_;  // mutable for GetOpenDatabaseSize
 
   void RemoveConnectionsHelper(const string16& origin_identifier,
                                const string16& database_name,

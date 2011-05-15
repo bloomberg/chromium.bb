@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
+#include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
 namespace {
@@ -87,6 +88,91 @@ void CheckNotificationReceived(TestObserver* observer,
             observer->GetNotificationDatabaseSize());
   EXPECT_EQ(expected_space_available,
             observer->GetNotificationSpaceAvailable());
+}
+
+class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
+ public:
+  TestQuotaManagerProxy()
+      : QuotaManagerProxy(NULL, NULL),
+        registered_client_(NULL) {
+  }
+
+  virtual ~TestQuotaManagerProxy() {
+    EXPECT_FALSE(registered_client_);
+  }
+
+  virtual void RegisterClient(quota::QuotaClient* client) {
+    EXPECT_FALSE(registered_client_);
+    registered_client_ = client;
+  }
+
+  virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
+                                     const GURL& origin,
+                                     quota::StorageType type) {
+    EXPECT_EQ(quota::QuotaClient::kDatabase, client_id);
+    EXPECT_EQ(quota::kStorageTypeTemporary, type);
+    accesses_[origin] += 1;
+  }
+
+  virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
+                                     const GURL& origin,
+                                     quota::StorageType type,
+                                     int64 delta) {
+    EXPECT_EQ(quota::QuotaClient::kDatabase, client_id);
+    EXPECT_EQ(quota::kStorageTypeTemporary, type);
+    modifications_[origin].first += 1;
+    modifications_[origin].second += delta;
+  }
+
+  // Not needed for our tests.
+  virtual void NotifyOriginInUse(const GURL& origin) {}
+  virtual void NotifyOriginNoLongerInUse(const GURL& origin) {}
+
+  void SimulateQuotaManagerDestroyed() {
+    if (registered_client_) {
+      registered_client_->OnQuotaManagerDestroyed();
+      registered_client_ = NULL;
+    }
+  }
+
+  bool WasAccessNotified(const GURL& origin) {
+    return accesses_[origin] != 0;
+  }
+
+  bool WasModificationNotified(const GURL& origin, int64 amount) {
+    return modifications_[origin].first != 0 &&
+           modifications_[origin].second == amount;
+  }
+
+  void reset() {
+    accesses_.clear();
+    modifications_.clear();
+  }
+
+  quota::QuotaClient* registered_client_;
+
+  // Map from origin to count of access notifications.
+  std::map<GURL, int> accesses_;
+
+  // Map from origin to <count, sum of deltas>
+  std::map<GURL, std::pair<int, int64> > modifications_;
+};
+
+
+bool EnsureFileOfSize(const FilePath& file_path, int64 length) {
+  base::PlatformFileError error_code(base::PLATFORM_FILE_ERROR_FAILED);
+  base::PlatformFile file =
+      base::CreatePlatformFile(
+          file_path,
+          base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE,
+          NULL,
+          &error_code);
+  if (error_code != base::PLATFORM_FILE_OK)
+    return false;
+  if (!base::TruncatePlatformFile(file, length))
+    error_code = base::PLATFORM_FILE_ERROR_FAILED;
+  base::ClosePlatformFile(file);
+  return error_code == base::PLATFORM_FILE_OK;
 }
 
 }  // namespace
@@ -406,6 +492,95 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_EQ(0, origin1_info->TotalSize());
     EXPECT_EQ(origin1_quota, tracker->GetOriginSpaceAvailable(kOrigin1));
   }
+
+  static void DatabaseTrackerQuotaIntegration() {
+    const GURL kOrigin(kOrigin1Url);
+    const string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const string16 kName = ASCIIToUTF16("name");
+    const string16 kDescription = ASCIIToUTF16("description");
+
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    // Initialize the tracker with a QuotaManagerProxy
+    scoped_refptr<TestQuotaManagerProxy> test_quota_proxy(
+        new TestQuotaManagerProxy);
+    scoped_refptr<DatabaseTracker> tracker(
+        new DatabaseTracker(temp_dir.path(), false /* incognito */,
+                            NULL, test_quota_proxy, NULL));
+    EXPECT_TRUE(test_quota_proxy->registered_client_);
+
+    // Create a database and modify it a couple of times, close it,
+    // then delete it. Observe the tracker notifies accordingly.
+
+    int64 database_size = 0;
+    int64 space_available = 0;
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+                            &database_size, &space_available);
+    EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
+    test_quota_proxy->reset();
+
+    FilePath db_file(tracker->GetFullDBFilePath(kOriginId, kName));
+    EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+    EXPECT_TRUE(EnsureFileOfSize(db_file, 10));
+    tracker->DatabaseModified(kOriginId, kName);
+    EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 10));
+    test_quota_proxy->reset();
+
+    EXPECT_TRUE(EnsureFileOfSize(db_file, 100));
+    tracker->DatabaseModified(kOriginId, kName);
+    EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 90));
+    test_quota_proxy->reset();
+
+    tracker->DatabaseClosed(kOriginId, kName);
+    EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kName, NULL));
+    EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
+
+    // Create a database and modify it, try to delete it while open,
+    // then close it (at which time deletion will actually occur).
+    // Observe the tracker notifies accordingly.
+
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+                            &database_size, &space_available);
+    EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
+    test_quota_proxy->reset();
+
+    db_file = tracker->GetFullDBFilePath(kOriginId, kName);
+    EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+    EXPECT_TRUE(EnsureFileOfSize(db_file, 100));
+    tracker->DatabaseModified(kOriginId, kName);
+    EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 100));
+    test_quota_proxy->reset();
+
+    EXPECT_EQ(net::ERR_IO_PENDING,
+              tracker->DeleteDatabase(kOriginId, kName, NULL));
+    EXPECT_FALSE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
+
+    tracker->DatabaseClosed(kOriginId, kName);
+    EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
+
+    // Create a database and up the file size without telling
+    // the tracker about the modification, than simulate a
+    // a renderer crash.
+    // Observe the tracker notifies accordingly.
+
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+                            &database_size, &space_available);
+    EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
+    test_quota_proxy->reset();
+    db_file = tracker->GetFullDBFilePath(kOriginId, kName);
+    EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+    EXPECT_TRUE(EnsureFileOfSize(db_file, 100));
+    DatabaseConnections crashed_renderer_connections;
+    crashed_renderer_connections.AddConnection(kOriginId, kName);
+    EXPECT_FALSE(test_quota_proxy->WasModificationNotified(kOrigin, 100));
+    tracker->CloseDatabases(crashed_renderer_connections);
+    EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 100));
+
+    // Cleanup.
+    crashed_renderer_connections.RemoveAllConnections();
+    test_quota_proxy->SimulateQuotaManagerDestroyed();
+  }
 };
 
 TEST(DatabaseTrackerTest, DeleteOpenDatabase) {
@@ -422,6 +597,11 @@ TEST(DatabaseTrackerTest, DatabaseTracker) {
 
 TEST(DatabaseTrackerTest, DatabaseTrackerIncognitoMode) {
   DatabaseTracker_TestHelper_Test::TestDatabaseTracker(true);
+}
+
+TEST(DatabaseTrackerTest, DatabaseTrackerQuotaIntegration) {
+  // There is no difference in behavior between incognito and not.
+  DatabaseTracker_TestHelper_Test::DatabaseTrackerQuotaIntegration();
 }
 
 }  // namespace webkit_database

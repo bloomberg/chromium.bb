@@ -33,9 +33,64 @@ void ScheduleRemoveConnectionTask(
 
 }  // anonymous namespace
 
+TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
+  const string16 kOriginId(ASCIIToUTF16("origin_id"));
+  const string16 kName(ASCIIToUTF16("database_name"));
+  const string16 kName2(ASCIIToUTF16("database_name2"));
+  const int64 kSize = 1000;
+
+  DatabaseConnections connections;
+
+  EXPECT_TRUE(connections.IsEmpty());
+  EXPECT_FALSE(connections.IsDatabaseOpened(kOriginId, kName));
+  EXPECT_FALSE(connections.IsOriginUsed(kOriginId));
+
+  connections.AddConnection(kOriginId, kName);
+  EXPECT_FALSE(connections.IsEmpty());
+  EXPECT_TRUE(connections.IsDatabaseOpened(kOriginId, kName));
+  EXPECT_TRUE(connections.IsOriginUsed(kOriginId));
+  EXPECT_EQ(0, connections.GetOpenDatabaseSize(kOriginId, kName));
+  connections.SetOpenDatabaseSize(kOriginId, kName, kSize);
+  EXPECT_EQ(kSize, connections.GetOpenDatabaseSize(kOriginId, kName));
+
+  connections.RemoveConnection(kOriginId, kName);
+  EXPECT_TRUE(connections.IsEmpty());
+  EXPECT_FALSE(connections.IsDatabaseOpened(kOriginId, kName));
+  EXPECT_FALSE(connections.IsOriginUsed(kOriginId));
+
+  connections.AddConnection(kOriginId, kName);
+  connections.SetOpenDatabaseSize(kOriginId, kName, kSize);
+  EXPECT_EQ(kSize, connections.GetOpenDatabaseSize(kOriginId, kName));
+  connections.AddConnection(kOriginId, kName);
+  EXPECT_EQ(kSize, connections.GetOpenDatabaseSize(kOriginId, kName));
+  EXPECT_FALSE(connections.IsEmpty());
+  EXPECT_TRUE(connections.IsDatabaseOpened(kOriginId, kName));
+  EXPECT_TRUE(connections.IsOriginUsed(kOriginId));
+  connections.AddConnection(kOriginId, kName2);
+  EXPECT_TRUE(connections.IsDatabaseOpened(kOriginId, kName2));
+
+  DatabaseConnections another;
+  another.AddConnection(kOriginId, kName);
+  another.AddConnection(kOriginId, kName2);
+
+  std::vector<std::pair<string16, string16> > closed_dbs;
+  connections.RemoveConnections(another, &closed_dbs);
+  EXPECT_EQ(1u, closed_dbs.size());
+  EXPECT_EQ(kOriginId, closed_dbs[0].first);
+  EXPECT_EQ(kName2, closed_dbs[0].second);
+  EXPECT_FALSE(connections.IsDatabaseOpened(kOriginId, kName2));
+  EXPECT_TRUE(connections.IsDatabaseOpened(kOriginId, kName));
+  EXPECT_EQ(kSize, connections.GetOpenDatabaseSize(kOriginId, kName));
+
+  connections.RemoveAllConnections();
+  EXPECT_TRUE(connections.IsEmpty());
+
+  another.RemoveAllConnections();
+}
+
 TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
-  string16 kOriginId(ASCIIToUTF16("origin_id"));
-  string16 kName(ASCIIToUTF16("database_name"));
+  const string16 kOriginId(ASCIIToUTF16("origin_id"));
+  const string16 kName(ASCIIToUTF16("database_name"));
 
   scoped_refptr<DatabaseConnectionsWrapper> obj(
       new DatabaseConnectionsWrapper);
