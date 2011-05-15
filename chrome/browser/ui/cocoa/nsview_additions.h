@@ -13,6 +13,9 @@
 // Returns the line width that will generate a 1 pixel wide line.
 - (CGFloat)cr_lineWidth;
 
+// Checks if the mouse is currently in this view.
+- (BOOL)cr_isMouseInView;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_NSVIEW_ADDITIONS_H_

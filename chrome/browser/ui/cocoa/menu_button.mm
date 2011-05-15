@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 
 @interface MenuButton (Private)
 - (void)showMenu:(BOOL)isDragging;
@@ -137,6 +138,15 @@
                             inView:self];
   [popUpCell_ performClickWithFrame:frame
                              inView:self];
+
+  // Once the menu is dismissed send a mouseExited event if necessary. If the
+  // menu action caused the super view to resize then we won't automatically
+  // get a mouseExited event so we need to do this manually.
+  // See http://crbug.com/82456
+  if (![self cr_isMouseInView]) {
+    if ([[self cell] respondsToSelector:@selector(mouseExited:)])
+      [[self cell] mouseExited:nil];
+  }
 }
 
 // Called when the button is clicked and released. (Shouldn't happen with

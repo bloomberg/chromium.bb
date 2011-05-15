@@ -10,4 +10,10 @@
   return 1.0 / [self convertSizeToBase:NSMakeSize(1, 1)].width;
 }
 
+- (BOOL)cr_isMouseInView {
+  NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
+  mouseLoc = [[self superview] convertPoint:mouseLoc fromView:nil];
+  return [self hitTest:mouseLoc] == self;
+}
+
 @end
