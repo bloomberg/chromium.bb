@@ -58,6 +58,10 @@
         'browser/autofill/data_driven_test.h',
         'browser/automation/mock_tab_event_observer.cc',
         'browser/automation/mock_tab_event_observer.h',
+        'browser/chromeos/cros/mock_cryptohome_library.cc',
+        'browser/chromeos/cros/mock_cryptohome_library.h',
+        'browser/chromeos/cros/mock_library_loader.cc',
+        'browser/chromeos/cros/mock_library_loader.h',
         # The only thing used from browser is Browser::Type.
         'browser/extensions/test_extension_prefs.cc',
         'browser/extensions/test_extension_prefs.h',
@@ -195,6 +199,11 @@
         '../ui/gfx/image_unittest_util.cc',
       ],
       'conditions': [
+        ['chromeos==0', {
+          'sources/': [
+            ['exclude', '^browser/chromeos'],
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -2226,12 +2235,8 @@
         'browser/chromeos/cros/cros_mock.cc',
         'browser/chromeos/cros/cros_mock.h',
         'browser/chromeos/cros/mock_cros_library.h',
-        'browser/chromeos/cros/mock_cryptohome_library.cc',
-        'browser/chromeos/cros/mock_cryptohome_library.h',
         'browser/chromeos/cros/mock_keyboard_library.h',
         'browser/chromeos/cros/mock_input_method_library.h',
-        'browser/chromeos/cros/mock_library_loader.cc',
-        'browser/chromeos/cros/mock_library_loader.h',
         'browser/chromeos/cros/mock_mount_library.cc',
         'browser/chromeos/cros/mock_mount_library.h',
         'browser/chromeos/cros/mock_network_library.h',
