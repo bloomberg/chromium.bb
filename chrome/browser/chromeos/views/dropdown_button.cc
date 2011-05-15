@@ -75,4 +75,8 @@ void DropDownButton::SetText(const std::wstring& text) {
   UpdateTextSize();
 }
 
+string16 DropDownButton::GetAccessibleValue() {
+  return text_;
+}
+
 }  // namespace chromeos

@@ -40,6 +40,8 @@ LanguageSwitchMenu::LanguageSwitchMenu()
       menu_alignment_(views::Menu2::ALIGN_TOPRIGHT) {
 }
 
+LanguageSwitchMenu::~LanguageSwitchMenu() {}
+
 void LanguageSwitchMenu::InitLanguageMenu() {
   // Update LanguageList to contain entries in current locale.
   language_list_.reset(new LanguageList);

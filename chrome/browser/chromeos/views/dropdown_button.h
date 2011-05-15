@@ -29,7 +29,7 @@ class DropDownButton : public views::MenuButton {
   // menu.
   virtual void SetText(const std::wstring& text);
 
-  virtual string16 GetAccessibleValue() { return text_; }
+  virtual string16 GetAccessibleValue();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DropDownButton);

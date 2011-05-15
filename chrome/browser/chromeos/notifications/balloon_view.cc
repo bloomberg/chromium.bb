@@ -281,6 +281,10 @@ void BalloonViewImpl::ViewHierarchyChanged(
     control_view_host_.release()->CloseNow();
 }
 
+gfx::Size BalloonViewImpl::GetPreferredSize() {
+  return gfx::Size(1000, 1000);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationObserver overrides.
 

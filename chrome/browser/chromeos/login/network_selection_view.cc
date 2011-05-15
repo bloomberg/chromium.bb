@@ -390,6 +390,11 @@ void NetworkSelectionView::OnLocaleChanged() {
   SchedulePaint();
 }
 
+bool NetworkSelectionView::SkipDefaultKeyEventProcessing(
+    const views::KeyEvent& e) {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSelectionView, public:
 

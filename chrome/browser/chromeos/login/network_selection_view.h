@@ -78,9 +78,7 @@ class NetworkSelectionView : public views::View,
   // Overridden from views::View.
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual void OnLocaleChanged();
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-    return true;
-  }
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
 
   // LoginHtmlDialog::Delegate implementation:
   virtual void OnDialogClosed() {}

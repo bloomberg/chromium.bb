@@ -16,10 +16,12 @@ ProxyConfigService::~ProxyConfigService() {}
 void ProxyConfigService::AddObserver(Observer* observer) {
   impl_->AddObserver(observer);
 }
+
 void ProxyConfigService::RemoveObserver(Observer* observer) {
   impl_->RemoveObserver(observer);
 }
-ConfigAvailability ProxyConfigService::GetLatestProxyConfig(
+
+ProxyConfigService::ConfigAvailability ProxyConfigService::GetLatestProxyConfig(
     net::ProxyConfig* config) {
   return impl_->IOGetProxyConfig(config);
 }

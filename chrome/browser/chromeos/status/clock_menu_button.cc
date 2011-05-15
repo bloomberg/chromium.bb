@@ -122,6 +122,10 @@ void ClockMenuButton::Observe(NotificationType type,
 ////////////////////////////////////////////////////////////////////////////////
 // ClockMenuButton, ui::MenuModel implementation:
 
+bool ClockMenuButton::HasIcons() const {
+  return false;
+}
+
 int ClockMenuButton::GetItemCount() const {
   // If options dialog is unavailable, don't count a separator and configure
   // menu item.
@@ -135,15 +139,48 @@ ui::MenuModel::ItemType ClockMenuButton::GetTypeAt(int index) const {
                       ui::MenuModel::TYPE_COMMAND;
 }
 
+int ClockMenuButton::GetCommandIdAt(int index) const {
+  return index;
+}
+
 string16 ClockMenuButton::GetLabelAt(int index) const {
   if (index == 0)
     return base::TimeFormatFriendlyDate(base::Time::Now());
   return l10n_util::GetStringUTF16(IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG);
 }
 
+bool ClockMenuButton::IsItemDynamicAt(int index) const {
+  return true;
+}
+
+bool ClockMenuButton::GetAcceleratorAt(int index,
+    ui::Accelerator* accelerator) const {
+  return false;
+}
+
+bool ClockMenuButton::IsItemCheckedAt(int index) const {
+  return false;
+}
+
+int ClockMenuButton::GetGroupIdAt(int index) const {
+  return 0;
+}
+
+bool ClockMenuButton::GetIconAt(int index, SkBitmap* icon) {
+  return false;
+}
+
+ui::ButtonMenuItemModel* ClockMenuButton::GetButtonMenuItemAt(int index) const {
+  return NULL;
+}
+
 bool ClockMenuButton::IsEnabledAt(int index) const {
   // The 1st item is the current date, which is disabled.
   return index != 0;
+}
+
+ui::MenuModel* ClockMenuButton::GetSubmenuModelAt(int index) const {
+  return NULL;
 }
 
 void ClockMenuButton::ActivatedAt(int index) {
@@ -162,6 +199,10 @@ void ClockMenuButton::SystemResumed() {
 
 void ClockMenuButton::TimezoneChanged(const icu::TimeZone& timezone) {
   UpdateText();
+}
+
+int ClockMenuButton::horizontal_padding() {
+  return 3;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

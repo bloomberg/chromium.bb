@@ -37,22 +37,20 @@ class ClockMenuButton : public StatusAreaButton,
   virtual ~ClockMenuButton();
 
   // ui::MenuModel implementation.
-  virtual bool HasIcons() const  { return false; }
+  virtual bool HasIcons() const;
   virtual int GetItemCount() const;
   virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
-  virtual int GetCommandIdAt(int index) const { return index; }
+  virtual int GetCommandIdAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
-  virtual bool IsItemDynamicAt(int index) const { return true; }
+  virtual bool IsItemDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-      ui::Accelerator* accelerator) const { return false; }
-  virtual bool IsItemCheckedAt(int index) const { return false; }
-  virtual int GetGroupIdAt(int index) const { return 0; }
-  virtual bool GetIconAt(int index, SkBitmap* icon) { return false; }
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
-    return NULL;
-  }
+      ui::Accelerator* accelerator) const;
+  virtual bool IsItemCheckedAt(int index) const;
+  virtual int GetGroupIdAt(int index) const;
+  virtual bool GetIconAt(int index, SkBitmap* icon);
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
-  virtual ui::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
@@ -78,7 +76,7 @@ class ClockMenuButton : public StatusAreaButton,
                        const NotificationDetails& details);
 
  protected:
-  virtual int horizontal_padding() { return 3; }
+  virtual int horizontal_padding();
 
  private:
   // views::ViewMenuDelegate implementation.

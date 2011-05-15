@@ -54,7 +54,7 @@ class BalloonViewImpl : public BalloonView,
   virtual void Update();
   virtual void Close(bool by_user);
   virtual void RepositionToBalloon();
-  gfx::Size GetSize() const;
+  virtual gfx::Size GetSize() const;
   virtual BalloonHost* GetHost() const;
 
   // True if the notification is stale. False if the notification is new.
@@ -82,9 +82,7 @@ class BalloonViewImpl : public BalloonView,
   friend class NotificationControlView;
 
   // views::View interface.
-  virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(1000, 1000);
-  }
+  virtual gfx::Size GetPreferredSize();
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
