@@ -293,6 +293,18 @@ void ViewsLoginDisplay::StartEnterpriseEnrollment() {
 // ViewsLoginDisplay, views::MessageBubbleDelegate implementation:
 //
 
+void ViewsLoginDisplay::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+  bubble_ = NULL;
+}
+
+bool ViewsLoginDisplay::CloseOnEscape() {
+  return true;
+}
+
+bool ViewsLoginDisplay::FadeInOnShow() {
+  return false;
+}
+
 void ViewsLoginDisplay::OnHelpLinkActivated() {
   ClearErrors();
   if (error_msg_id_ == IDS_LOGIN_ERROR_CAPTIVE_PORTAL) {

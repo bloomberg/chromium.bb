@@ -39,19 +39,14 @@ class TestAttemptState : public AuthAttemptState {
   void PresetCryptohomeStatus(bool cryptohome_outcome, int cryptohome_code);
 
   // To allow state to be queried on the main thread during tests.
-  virtual bool online_complete() { return online_complete_; }
-  virtual const LoginFailure& online_outcome() { return online_outcome_; }
-  virtual const GaiaAuthConsumer::ClientLoginResult& credentials() {
-    return credentials_;
-  }
-  virtual bool is_first_time_user() { return is_first_time_user_; }
-  virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy() {
-    return hosted_policy_;
-  }
-
-  virtual bool cryptohome_complete() { return cryptohome_complete_; }
-  virtual bool cryptohome_outcome() { return cryptohome_outcome_; }
-  virtual int cryptohome_code() { return cryptohome_code_; }
+  virtual bool online_complete();
+  virtual const LoginFailure& online_outcome();
+  virtual const GaiaAuthConsumer::ClientLoginResult& credentials();
+  virtual bool is_first_time_user();
+  virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy();
+  virtual bool cryptohome_complete();
+  virtual bool cryptohome_outcome();
+  virtual int cryptohome_code();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAttemptState);

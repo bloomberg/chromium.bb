@@ -64,6 +64,22 @@ void NetworkScreen::ClearErrors() {
     bubble_->Close();
 }
 
+bool NetworkScreen::is_error_shown() {
+  return bubble_ != NULL;
+}
+
+LanguageSwitchMenu* NetworkScreen::language_switch_menu() {
+  return &language_switch_menu_;
+}
+
+KeyboardSwitchMenu* NetworkScreen::keyboard_switch_menu() {
+  return &keyboard_switch_menu_;
+}
+
+gfx::Size NetworkScreen::size() const {
+  return GetScreenSize();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener implementation:
 
@@ -100,6 +116,18 @@ NetworkSelectionView* NetworkScreen::AllocateView() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, views::BubbleDelegate implementation:
+
+void NetworkScreen::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+  bubble_ = NULL;
+}
+
+bool NetworkScreen::CloseOnEscape() {
+  return true;
+}
+
+bool NetworkScreen::FadeInOnShow() {
+  return false;
+}
 
 void NetworkScreen::OnHelpLinkActivated() {
   ClearErrors();

@@ -93,7 +93,7 @@ class EulaView
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::LinkListener implementation.
-  void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   // views::View implementation.

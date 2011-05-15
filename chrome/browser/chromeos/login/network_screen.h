@@ -34,14 +34,10 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
 
   // NetworkScreenDelegate implementation:
   virtual void ClearErrors();
-  virtual bool is_error_shown() { return bubble_ != NULL; }
-  virtual LanguageSwitchMenu* language_switch_menu() {
-    return &language_switch_menu_;
-  }
-  virtual KeyboardSwitchMenu* keyboard_switch_menu() {
-    return &keyboard_switch_menu_;
-  }
-  virtual gfx::Size size() const { return GetScreenSize(); }
+  virtual bool is_error_shown();
+  virtual LanguageSwitchMenu* language_switch_menu();
+  virtual KeyboardSwitchMenu* keyboard_switch_menu();
+  virtual gfx::Size size() const;
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -52,7 +48,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
  protected:
   // Subscribes NetworkScreen to the network change notification,
   // forces refresh of current network state.
-  void Refresh();
+  virtual void Refresh();
 
  private:
   FRIEND_TEST(NetworkScreenTest, Timeout);
@@ -62,11 +58,9 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   virtual NetworkSelectionView* AllocateView();
 
   // Overridden from views::BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {
-    bubble_ = NULL;
-  }
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return false; }
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
+  virtual bool CloseOnEscape();
+  virtual bool FadeInOnShow();
   virtual void OnHelpLinkActivated();
 
   // Subscribes to network change notifications.

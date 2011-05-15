@@ -51,4 +51,36 @@ void TestAttemptState::PresetCryptohomeStatus(bool cryptohome_outcome,
   cryptohome_code_ = cryptohome_code;
 }
 
+bool TestAttemptState::online_complete() {
+  return online_complete_;
+}
+
+const LoginFailure& TestAttemptState::online_outcome() {
+  return online_outcome_;
+}
+
+const GaiaAuthConsumer::ClientLoginResult& TestAttemptState::credentials() {
+  return credentials_;
+}
+
+bool TestAttemptState::is_first_time_user() {
+  return is_first_time_user_;
+}
+
+GaiaAuthFetcher::HostedAccountsSetting TestAttemptState::hosted_policy() {
+  return hosted_policy_;
+}
+
+bool TestAttemptState::cryptohome_complete() {
+  return cryptohome_complete_;
+}
+
+bool TestAttemptState::cryptohome_outcome() {
+  return cryptohome_outcome_;
+}
+
+int TestAttemptState::cryptohome_code() {
+  return cryptohome_code_;
+}
+
 }  // namespace chromeos

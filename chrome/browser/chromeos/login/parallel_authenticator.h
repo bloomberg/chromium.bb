@@ -105,42 +105,43 @@ class ParallelAuthenticator : public Authenticator,
   // call OnLoginFailure() with HOSTED_NOT_ALLOWED.
   //
   // Returns true if the attempt gets sent successfully and false if not.
-  bool AuthenticateToLogin(Profile* profile,
-                           const std::string& username,
-                           const std::string& password,
-                           const std::string& login_token,
-                           const std::string& login_captcha);
+  virtual bool AuthenticateToLogin(Profile* profile,
+                                   const std::string& username,
+                                   const std::string& password,
+                                   const std::string& login_token,
+                                   const std::string& login_captcha);
 
   // Given a |username| and |password|, this method attempts to
   // authenticate to the cached credentials. This will never contact
   // the server even if it's online. The auth result is sent to
   // LoginStatusConsumer in a same way as AuthenticateToLogin does.
-  bool AuthenticateToUnlock(const std::string& username,
-                            const std::string& password);
+  virtual bool AuthenticateToUnlock(const std::string& username,
+                                    const std::string& password);
 
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
-  void LoginOffTheRecord();
+  virtual void LoginOffTheRecord();
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials,
-                      bool request_pending);
+  virtual void OnLoginSuccess(
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool request_pending);
   void OnOffTheRecordLoginSuccess();
   void OnPasswordChangeDetected(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
-  void OnLoginFailure(const LoginFailure& error);
+  virtual void OnLoginFailure(const LoginFailure& error);
 
-  void RecoverEncryptedData(
+  virtual void RecoverEncryptedData(
       const std::string& old_password,
       const GaiaAuthConsumer::ClientLoginResult& credentials);
-  void ResyncEncryptedData(
+  virtual void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
-  void RetryAuth(Profile* profile,
-                 const std::string& username,
-                 const std::string& password,
-                 const std::string& login_token,
-                 const std::string& login_captcha);
+  virtual void RetryAuth(Profile* profile,
+                         const std::string& username,
+                         const std::string& password,
+                         const std::string& login_token,
+                         const std::string& login_captcha);
 
   // Call this on the FILE thread.
   void CheckLocalaccount(const LoginFailure& error);
@@ -151,7 +152,7 @@ class ParallelAuthenticator : public Authenticator,
   // When a decision is made, will call back to |consumer_| on the UI thread.
   //
   // Must be called on the IO thread.
-  void Resolve();
+  virtual void Resolve();
 
  private:
   // Returns the AuthState we're in, given the status info we have at
