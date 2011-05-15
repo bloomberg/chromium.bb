@@ -35,6 +35,7 @@ class PluginSelectionPolicy
     : public base::RefCountedThreadSafe<PluginSelectionPolicy> {
  public:
   PluginSelectionPolicy();
+  ~PluginSelectionPolicy();
 
   // This should be called before any other method.  This starts the
   // process of initialization on the FILE thread.

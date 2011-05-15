@@ -55,16 +55,16 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
 
  protected:
   // HtmlDialogUIDelegate implementation.
-  virtual bool IsDialogModal() const { return true; }
-  virtual std::wstring GetDialogTitle() const { return title_; }
-  virtual GURL GetDialogContentURL() const { return url_; }
+  virtual bool IsDialogModal() const;
+  virtual std::wstring GetDialogTitle() const;
+  virtual GURL GetDialogContentURL() const;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const {}
+      std::vector<WebUIMessageHandler*>* handlers) const;
   virtual void GetDialogSize(gfx::Size* size) const;
-  virtual std::string GetDialogArgs() const { return std::string(); }
+  virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
-  virtual bool ShouldShowDialogTitle() const { return true; }
+  virtual bool ShouldShowDialogTitle() const;
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

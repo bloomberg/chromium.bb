@@ -37,6 +37,8 @@ PluginSelectionPolicy::PluginSelectionPolicy()
     : init_from_file_finished_(false) {
 }
 
+PluginSelectionPolicy::~PluginSelectionPolicy() {}
+
 void PluginSelectionPolicy::StartInit() {
   // Initialize the policy on the FILE thread, since it reads from a
   // policy file.

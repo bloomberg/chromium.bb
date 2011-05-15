@@ -75,6 +75,8 @@ OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
                  NotificationService::AllSources());
 }
 
+OfflineLoadPage::~OfflineLoadPage() {}
+
 std::string OfflineLoadPage::GetHTMLContents() {
   DictionaryValue strings;
   int64 time_to_wait = std::max(

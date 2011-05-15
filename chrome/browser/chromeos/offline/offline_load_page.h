@@ -46,7 +46,7 @@ class OfflineLoadPage : public ChromeInterstitialPage {
   // Create a offline load page for the |tab_contents|.
   OfflineLoadPage(TabContents* tab_contents, const GURL& url,
                   Delegate* delegate);
-  virtual ~OfflineLoadPage() {}
+  virtual ~OfflineLoadPage();
 
   // Only for testing.
   void EnableTest() {

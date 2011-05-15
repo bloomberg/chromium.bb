@@ -95,16 +95,32 @@ void LoginHtmlDialog::SetDialogSize(int width, int height) {
   height_ = height;
 }
 
-void LoginHtmlDialog::Observe(NotificationType type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::LOAD_COMPLETED_MAIN_FRAME);
-  if (bubble_frame_view_)
-    bubble_frame_view_->StopThrobber();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // LoginHtmlDialog, protected:
+
+bool LoginHtmlDialog::IsDialogModal() const {
+  return true;
+}
+
+std::wstring LoginHtmlDialog::GetDialogTitle() const {
+  return title_;
+}
+
+GURL LoginHtmlDialog::GetDialogContentURL() const {
+  return url_;
+}
+
+void LoginHtmlDialog::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
+}
+
+void LoginHtmlDialog::GetDialogSize(gfx::Size* size) const {
+  size->SetSize(width_, height_);
+}
+
+std::string LoginHtmlDialog::GetDialogArgs() const {
+  return std::string();
+}
 
 void LoginHtmlDialog::OnDialogClosed(const std::string& json_retval) {
   is_open_ = false;
@@ -119,8 +135,16 @@ void LoginHtmlDialog::OnCloseContents(TabContents* source,
     *out_close_dialog = true;
 }
 
-void LoginHtmlDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(width_, height_);
+bool LoginHtmlDialog::ShouldShowDialogTitle() const {
+  return true;
+}
+
+void LoginHtmlDialog::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  DCHECK(type.value == NotificationType::LOAD_COMPLETED_MAIN_FRAME);
+  if (bubble_frame_view_)
+    bubble_frame_view_->StopThrobber();
 }
 
 }  // namespace chromeos

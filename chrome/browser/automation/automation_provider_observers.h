@@ -731,15 +731,15 @@ class LoginObserver : public chromeos::LoginStatusConsumer,
 
   ~LoginObserver();
 
-  void OnLoginFailure(const chromeos::LoginFailure& error);
+  virtual void OnLoginFailure(const chromeos::LoginFailure& error);
 
-  void OnLoginSuccess(
+  virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests);
 
-  void Observe(NotificationType type,
+  virtual void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details);
 
