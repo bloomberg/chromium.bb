@@ -17,8 +17,8 @@ namespace chromeos {
 // Base class for wizard screen that holds web page.
 class WebPageScreen : public TabContentsDelegate {
  public:
-  explicit WebPageScreen() {}
-  virtual ~WebPageScreen() {}
+  explicit WebPageScreen();
+  virtual ~WebPageScreen();
 
   // Exits from the screen with the specified exit code.
   virtual void CloseScreen(ScreenObserver::ExitCodes code) = 0;
@@ -40,13 +40,11 @@ class WebPageScreen : public TabContentsDelegate {
   virtual void DeactivateContents(TabContents* contents) {}
   virtual void LoadingStateChanged(TabContents* source) = 0;
   virtual void CloseContents(TabContents* source) {}
-  virtual bool IsPopup(TabContents* source) { return false; }
+  virtual bool IsPopup(TabContents* source);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type) {
-    return false;
-  }
+      NavigationType::Type navigation_type);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual bool HandleContextMenu(const ContextMenuParams& params);
 

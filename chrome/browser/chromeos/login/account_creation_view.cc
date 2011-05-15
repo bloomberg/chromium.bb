@@ -87,13 +87,6 @@ void AccountCreationDomView::SetAccountCreationViewDelegate(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AccountCreationDomView, protected:
-
-WebPageDomView* AccountCreationDomView::dom_view() {
-  return dom_view_;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // AccountCreationDomView, DOMView implementation:
 
 TabContents* AccountCreationDomView::CreateTabContents(Profile* profile,
@@ -118,5 +111,13 @@ void AccountCreationView::SetAccountCreationViewDelegate(
     AccountCreationViewDelegate* delegate) {
   dom_view_->SetAccountCreationViewDelegate(delegate);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// AccountCreationView, protected:
+
+WebPageDomView* AccountCreationView::dom_view() {
+  return dom_view_;
+}
+
 
 }  // namespace chromeos
