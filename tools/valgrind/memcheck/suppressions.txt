@@ -4253,7 +4253,6 @@
 {
    bug_79651
    Memcheck:Leak
-   fun:_Znw*
    ...
    fun:_ZN8notifier14XmppConnectionC1ERKN4buzz18XmppClientSettingsERK13scoped_refptrIN3net23URLRequestContextGetterEEPNS0_8DelegateEPNS1_11PreXmppAuthE
    fun:_ZN8notifier18SingleLoginAttempt13OnNewSettingsERKNS_18ConnectionSettingsE
@@ -4580,6 +4579,44 @@
    fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
    fun:_ZN25RenderViewHostTestHarness5SetUpEv
    fun:_ZN19PasswordManagerTest5SetUpEv
+}
+{
+   bug_82716a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN3IPC12ChannelProxy7ContextC2EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
+   fun:_ZN3IPC11SyncChannel11SyncContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyEPNS5_13WaitableEventE
+   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyEbPNS8_13WaitableEventE
+}
+{
+   bug_82716b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueueC1Ev
+   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue10AddContextEv
+   fun:_ZN3IPC11SyncChannel11SyncContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyEPNS5_13WaitableEventE
+   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyEbPNS8_13WaitableEventE
+}
+{
+   bug_82717
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6chrome26ChromeContentBrowserClient31BrowserRenderProcessHostCreatedEP24BrowserRenderProcessHost
+   fun:_ZN24BrowserRenderProcessHost4InitEb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   ...
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+}
+{
+   bug_82719
+   Memcheck:Cond
+   fun:_ZN2v88internal22SafeStackFrameIterator18ExitFrameValidator9IsValidFPEPh
 }
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
