@@ -286,14 +286,20 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       break;
     }
     case WAITING_FOR_ENCRYPTION: {
-      // If the type whose encryption we are waiting for is now complete, there
-      // is nothing to do. Encryption can take multiple sync cycles, but we only
-      // exit out if we are fully synced or can't connect to the server.
       LogClientInfo("WAITING_FOR_ENCRYPTION", 1);
-      if (IsSynced() && IsTypeEncrypted(waiting_for_encryption_type_))
+      if (IsSynced() &&
+          IsTypeEncrypted(waiting_for_encryption_type_) &&
+          GetLastSessionSnapshot()->num_conflicting_updates == 0) {
+        // Encryption is now complete for the the type in which we were waiting.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
-      else if (!GetStatus().server_reachable)
+        break;
+      }
+      if (!GetStatus().server_reachable) {
+        // The client cannot reach the sync server because the network is
+        // disabled. There is no need to wait anymore.
         SignalStateCompleteWithNextState(SERVER_UNREACHABLE);
+        break;
+      }
       break;
     }
     case WAITING_FOR_SYNC_CONFIGURATION: {
@@ -761,7 +767,13 @@ bool ProfileSyncServiceHarness::EnableEncryptionForType(
 
 bool ProfileSyncServiceHarness::WaitForTypeEncryption(
     syncable::ModelType type) {
-  // Wait some time to let the enryption finish.
+  if (IsSynced() &&
+      IsTypeEncrypted(type) &&
+      GetLastSessionSnapshot()->num_conflicting_updates == 0) {
+    // Encryption is already complete for |type|; do not wait.
+    return true;
+  }
+
   std::string reason = "Waiting for encryption.";
   wait_state_ = WAITING_FOR_ENCRYPTION;
   waiting_for_encryption_type_ = type;
