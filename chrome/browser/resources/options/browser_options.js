@@ -194,10 +194,13 @@ cr.define('options', function() {
      * Updates the search engine popup with the given entries.
      * @param {Array} engines List of available search engines.
      * @param {number} defaultValue The value of the current default engine.
+     * @param {boolean} defaultManaged Whether the default search provider is
+     *     managed. If true, the default search provider can't be changed.
      */
-    updateSearchEngines_: function(engines, defaultValue) {
+    updateSearchEngines_: function(engines, defaultValue, defaultManaged) {
       this.clearSearchEngines_();
       engineSelect = $('defaultSearchEngine');
+      engineSelect.disabled = defaultManaged;
       engineCount = engines.length;
       var defaultIndex = -1;
       for (var i = 0; i < engineCount; i++) {
@@ -462,8 +465,10 @@ cr.define('options', function() {
     }
   };
 
-  BrowserOptions.updateSearchEngines = function(engines, defaultValue) {
-    BrowserOptions.getInstance().updateSearchEngines_(engines, defaultValue);
+  BrowserOptions.updateSearchEngines = function(engines, defaultValue,
+                                                defaultManaged) {
+    BrowserOptions.getInstance().updateSearchEngines_(engines, defaultValue,
+                                                      defaultManaged);
   };
 
   BrowserOptions.updateStartupPages = function(pages) {
