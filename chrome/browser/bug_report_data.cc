@@ -12,7 +12,10 @@ BugReportData::BugReportData()
     : profile_(NULL),
       problem_type_(0)
 #if defined(OS_CHROMEOS)
-    , sent_report_(false), send_sys_info_(false)
+    , sys_info_(NULL)
+    , zip_content_(NULL)
+    , sent_report_(false)
+    , send_sys_info_(false)
 #endif
 {
 }
