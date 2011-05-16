@@ -12,9 +12,8 @@
 
 class MockUpdateScreen : public chromeos::UpdateScreen {
  public:
-  explicit MockUpdateScreen(WizardScreenDelegate* d)
-      : chromeos::UpdateScreen(d) {
-  }
+  explicit MockUpdateScreen(WizardScreenDelegate* d);
+
   MOCK_METHOD0(StartUpdate, void());
 };
 

@@ -100,13 +100,9 @@ class MockLoginUtils : public LoginUtils {
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) {}
 
-  void SetBackgroundView(BackgroundView* background_view) {
-    background_view_ = background_view;
-  }
+  virtual void SetBackgroundView(BackgroundView* background_view);
 
-  BackgroundView* GetBackgroundView() {
-    return background_view_;
-  }
+  virtual BackgroundView* GetBackgroundView();
 
   virtual std::string GetOffTheRecordCommandLine(
       const GURL& start_url,

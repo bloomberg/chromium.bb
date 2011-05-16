@@ -14,8 +14,9 @@ namespace chromeos {
 
 class MockUpdateLibrary : public UpdateLibrary {
  public:
-  MockUpdateLibrary() {}
-  virtual ~MockUpdateLibrary() {}
+  MockUpdateLibrary();
+  virtual ~MockUpdateLibrary();
+
   MOCK_METHOD1(AddObserver, void(Observer*));  // NOLINT
   MOCK_METHOD1(RemoveObserver, void(Observer*));  // NOLINT
   MOCK_METHOD1(HasObserver, bool(Observer*));
