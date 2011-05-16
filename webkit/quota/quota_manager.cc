@@ -434,6 +434,54 @@ class QuotaManager::PersistentHostQuotaUpdateTask : public QuotaThreadTask {
   bool db_disabled_;
 };
 
+class QuotaManager::GetLRUOriginTask : public QuotaThreadTask {
+ public:
+  GetLRUOriginTask(
+      QuotaManager* manager,
+      QuotaDatabase* database,
+      scoped_refptr<base::MessageLoopProxy> db_message_loop,
+      StorageType type,
+      const std::map<GURL, int>& origins_in_use,
+      GetLRUOriginCallback *callback)
+      : QuotaThreadTask(manager, db_message_loop),
+        manager_(manager),
+        database_(database),
+        db_disabled_(false),
+        type_(type),
+        callback_(callback) {
+    DCHECK(database_);
+    for (std::map<GURL, int>::const_iterator p = origins_in_use.begin();
+         p != origins_in_use.end();
+         ++p) {
+      if (p->second > 0)
+        exceptions_.insert(p->first);
+    }
+  }
+
+ protected:
+  virtual void RunOnTargetThread() OVERRIDE {
+    if (!database_->GetLRUOrigin(type_, exceptions_, &url_))
+      db_disabled_ = true;
+  }
+
+  virtual void Completed() OVERRIDE {
+    DCHECK(manager_);
+    manager_->db_disabled_ = db_disabled_;
+    callback_->Run(url_);
+  }
+
+ private:
+  QuotaManager* manager_;
+  QuotaDatabase* database_;
+  bool db_disabled_;
+
+  StorageType type_;
+  std::set<GURL> exceptions_;
+
+  GetLRUOriginCallback* callback_;
+  GURL url_;
+};
+
 QuotaManager::QuotaManager(bool is_incognito,
                            const FilePath& profile_path,
                            base::MessageLoopProxy* io_thread,
@@ -619,6 +667,17 @@ void QuotaManager::NotifyOriginNoLongerInUse(const GURL& origin) {
   int& count = origins_in_use_[origin];
   if (--count == 0)
     origins_in_use_.erase(origin);
+}
+
+void QuotaManager::GetLRUOrigin(
+    StorageType type,
+    GetLRUOriginCallback* callback) {
+  LazyInitialize();
+  if (!db_disabled_) {
+    scoped_refptr<GetLRUOriginTask> task(new GetLRUOriginTask(
+        this, database_.get(), db_thread_, type, origins_in_use_, callback));
+    task->Start();
+  }
 }
 
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {

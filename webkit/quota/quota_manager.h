@@ -46,6 +46,7 @@ class QuotaManager : public QuotaTaskObserver,
                     int64 /* quota */>::Type GetUsageAndQuotaCallback;
   typedef Callback2<QuotaStatusCode,
                     int64 /* granted_quota */>::Type RequestQuotaCallback;
+  typedef Callback1<GURL>::Type GetLRUOriginCallback;
 
   QuotaManager(bool is_incognito,
                const FilePath& profile_path,
@@ -117,6 +118,7 @@ class QuotaManager : public QuotaTaskObserver,
   class TemporaryGlobalQuotaUpdateTask;
   class PersistentHostQuotaUpdateTask;
   class PersistentHostQuotaQueryTask;
+  class GetLRUOriginTask;
 
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
@@ -139,6 +141,11 @@ class QuotaManager : public QuotaTaskObserver,
   // Registers a quota client to the manager.
   // The client must remain valid until OnQuotaManagerDestored is called.
   void RegisterClient(QuotaClient* client);
+
+  // TODO(dmikurube): Add a test for this method.
+  virtual void GetLRUOrigin(
+      StorageType type,
+      GetLRUOriginCallback* callback);
 
   UsageTracker* GetUsageTracker(StorageType type) const;
 

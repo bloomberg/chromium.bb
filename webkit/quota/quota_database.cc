@@ -252,46 +252,32 @@ bool QuotaDatabase::SetGlobalQuota(StorageType type, int64 quota) {
   return meta_table_->SetValue(GetGlobalQuotaKey(type).c_str(), quota);
 }
 
-bool QuotaDatabase::GetLRUOrigins(
-    StorageType type, std::vector<GURL>* origins,
-    int max_used_count, int num_origins_limit) {
-  DCHECK(origins);
-  DCHECK(num_origins_limit > 0);
+bool QuotaDatabase::GetLRUOrigin(
+    StorageType type,
+    const std::set<GURL>& exceptions,
+    GURL* origin) {
+  DCHECK(origin);
   if (!LazyOpen(false))
     return false;
 
-  const char* kSqlBase =
-      "SELECT origin FROM OriginLastAccessTable"
-      " WHERE type = ?";
-
-  const char* kSqlSuffix =
-      " ORDER BY last_access_time ASC "
-      " LIMIT ?";
-
-  std::string sql(kSqlBase);
-  sql::StatementID id = SQL_FROM_HERE;
-  if (max_used_count >= 0) {
-    sql += " AND used_count <= ?";
-    id = SQL_FROM_HERE;
-  }
-  sql += kSqlSuffix;
+  const char* kSql = "SELECT origin FROM OriginLastAccessTable"
+                     " WHERE type = ?"
+                     " ORDER BY last_access_time ASC";
 
   sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), id, sql.c_str(), &statement))
+  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
     return false;
+  statement.BindInt(0, static_cast<int>(type));
 
-  int column = 0;
-  statement.BindInt(column++, static_cast<int>(type));
-  if (max_used_count >= 0)
-    statement.BindInt(column++, max_used_count);
-  statement.BindInt(column++, num_origins_limit);
+  while (statement.Step()) {
+    GURL url(statement.ColumnString(0));
+    if (exceptions.find(url) == exceptions.end()) {
+      *origin = url;
+      return true;
+    }
+  }
 
-  origins->clear();
-  while (statement.Step())
-    origins->push_back(GURL(statement.ColumnString(0)));
-
-  DCHECK(origins->size() <= static_cast<size_t>(num_origins_limit));
-
+  *origin = GURL();
   return statement.Succeeded();
 }
 

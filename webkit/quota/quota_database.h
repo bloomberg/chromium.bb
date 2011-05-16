@@ -5,7 +5,7 @@
 #ifndef WEBKIT_QUOTA_QUOTA_DATABASE_H_
 #define WEBKIT_QUOTA_QUOTA_DATABASE_H_
 
-#include <map>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -44,12 +44,12 @@ class QuotaDatabase {
   bool GetGlobalQuota(StorageType type, int64* quota);
   bool SetGlobalQuota(StorageType type, int64 quota);
 
-  // Return least recently used origins whose used_count is <=
-  // |max_used_count| up to |num_origins_limit|.  If |max_used_count| is -1,
-  // it just returns LRU storages regardless of the used_count value.
-  // |num_origins_limit| must be > 0.
-  bool GetLRUOrigins(StorageType type, std::vector<GURL>* origins,
-                     int max_used_count, int num_origins_limit);
+  // Sets |origin| the least recently used origin of origins not included in
+  // |exceptions|.  It returns false when it failed in accessing the database.
+  // |origin| is set to empty when there is no matching origin.
+  bool GetLRUOrigin(StorageType type,
+                    const std::set<GURL>& exceptions,
+                    GURL* origin);
 
  private:
   bool FindOriginUsedCount(const GURL& origin,

@@ -110,9 +110,10 @@ TEST(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   QuotaDatabase db(kDbFile);
   ASSERT_TRUE(db.LazyOpen(true));
 
-  std::vector<GURL> origins;
-  EXPECT_TRUE(db.GetLRUOrigins(kStorageTypeTemporary, &origins, -1, 10));
-  EXPECT_EQ(0U, origins.size());
+  std::set<GURL> exceptions;
+  GURL origin;
+  EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+  EXPECT_TRUE(origin.is_empty());
 
   const GURL kOrigin1("http://a/");
   const GURL kOrigin2("http://b/");
@@ -131,41 +132,36 @@ TEST(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   EXPECT_TRUE(db.SetOriginLastAccessTime(
       kOrigin4, kStorageTypePersistent, base::Time::FromInternalValue(40)));
 
-  EXPECT_TRUE(db.GetLRUOrigins(kStorageTypeTemporary, &origins, 0, 10));
+  EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+  EXPECT_EQ(kOrigin1.spec(), origin.spec());
 
-  ASSERT_EQ(3U, origins.size());
-  EXPECT_EQ(kOrigin1.spec(), origins[0].spec());
-  EXPECT_EQ(kOrigin2.spec(), origins[1].spec());
-  EXPECT_EQ(kOrigin3.spec(), origins[2].spec());
+  exceptions.insert(kOrigin1);
+  EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+  EXPECT_EQ(kOrigin2.spec(), origin.spec());
+
+  exceptions.insert(kOrigin2);
+  EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+  EXPECT_EQ(kOrigin3.spec(), origin.spec());
+
+  exceptions.insert(kOrigin3);
+  EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+  EXPECT_TRUE(origin.is_empty());
 
   EXPECT_TRUE(db.SetOriginLastAccessTime(
       kOrigin1, kStorageTypeTemporary, base::Time::Now()));
-
-  EXPECT_TRUE(db.GetLRUOrigins(kStorageTypeTemporary, &origins, 0, 10));
-
-  // Now kOrigin1 has used_count=1, so it should not be in the returned list.
-  ASSERT_EQ(2U, origins.size());
-  EXPECT_EQ(kOrigin2.spec(), origins[0].spec());
-  EXPECT_EQ(kOrigin3.spec(), origins[1].spec());
-
-  // Query again without used_count condition.
-  EXPECT_TRUE(db.GetLRUOrigins(kStorageTypeTemporary, &origins, -1, 10));
-
-  // Now kOrigin1 must be returned as the newest one.
-  ASSERT_EQ(3U, origins.size());
-  EXPECT_EQ(kOrigin2.spec(), origins[0].spec());
-  EXPECT_EQ(kOrigin3.spec(), origins[1].spec());
-  EXPECT_EQ(kOrigin1.spec(), origins[2].spec());
 
   // Delete origin/type last access time information.
   EXPECT_TRUE(db.DeleteOriginLastAccessTime(kOrigin3, kStorageTypeTemporary));
 
   // Querying again to see if the deletion has worked.
-  EXPECT_TRUE(db.GetLRUOrigins(kStorageTypeTemporary, &origins, -1, 10));
+  exceptions.clear();
+  EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+  EXPECT_EQ(kOrigin2.spec(), origin.spec());
 
-  ASSERT_EQ(2U, origins.size());
-  EXPECT_EQ(kOrigin2.spec(), origins[0].spec());
-  EXPECT_EQ(kOrigin1.spec(), origins[1].spec());
+  exceptions.insert(kOrigin1);
+  exceptions.insert(kOrigin2);
+  EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+  EXPECT_TRUE(origin.is_empty());
 }
 
 }  // namespace quota
