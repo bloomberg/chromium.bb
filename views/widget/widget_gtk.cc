@@ -328,6 +328,9 @@ WidgetGtk::~WidgetGtk() {
   DCHECK(delete_on_destroy_ || widget_ == NULL);
   if (delete_on_destroy_)
     delete delegate_;
+  // TODO(altimofeev): investigate why OnDestroy could not be called.
+  if (!child_)
+    ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 GtkWindow* WidgetGtk::GetTransientParent() const {
