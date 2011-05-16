@@ -87,6 +87,10 @@ class URLRow {
     }
   }
 
+  // The number of times this URL has been visited. This will often match the
+  // number of entries in the visit table for this URL, but won't always. It's
+  // really designed for autocomplete ranking, so some "useless" transitions
+  // from the visit table aren't counted in this tally.
   int visit_count() const {
     return visit_count_;
   }
@@ -94,7 +98,11 @@ class URLRow {
     visit_count_ = visit_count;
   }
 
-  // Number of times the URL was typed in the Omnibox.
+  // Number of times the URL was typed in the Omnibox. This "should" match
+  // the number of TYPED transitions in the visit table. It's used primarily
+  // for faster autocomplete ranking. If you need to know the actual number of
+  // TYPED transitions, you should query the visit table since there could be
+  // something out of sync.
   int typed_count() const {
     return typed_count_;
   }
