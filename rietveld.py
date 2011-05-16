@@ -65,7 +65,7 @@ class Rietveld(object):
   def get_pending_issues(self):
     """Returns an array of dict of all the pending issues on the server."""
     return json.loads(self.get(
-        '/search?format=json&commit=True&closed=False&keys_only=True')
+        '/search?format=json&commit=2&closed=3&keys_only=True&limit=1000')
         )['results']
 
   def close_issue(self, issue):
