@@ -22,7 +22,10 @@ import chromite.lib.cros_build_lib as cros_lib
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
-  def __init__(self, options, args):
+  def __init__(self, options=None, args=None):
+    # TODO(mtennant): Don't save options object, but instead grab option
+    # values that are needed now.  This makes mocking easier.
+    # For example: self._board = options.board
     self._options = options
     self._args = args
     self._stable_repo = os.path.join(self._options.srcroot,
@@ -219,20 +222,32 @@ class Upgrader(object):
         self._csv_file.close()
         self._csv_file = None
 
-  def _GetCurrentVersions(self):
-    """Returns a list of cpvs of the current package dependencies."""
+  def _GenParallelEmergeArgv(self):
+    """Creates an argv for parallel_emerge based on current options."""
     argv = ['--emptytree', '--pretend']
-    argv.append('--board=%s' % self._options.board)
+    if self._options.board:
+      argv.append('--board=%s' % self._options.board)
     if not self._options.verbose:
       argv.append('--quiet')
     if self._options.rdeps:
       argv.append('--root-deps=rdeps')
     argv.extend(self._args)
 
+    return argv
+
+  def _GetCurrentVersions(self):
+    """Returns a list of cpvs of the current package dependencies.
+
+    The returned list is ordered such that the dependencies of any mentioned
+    cpv occur later in the list."""
+    argv = self._GenParallelEmergeArgv()
+
     deps = parallel_emerge.DepGraphGenerator()
     deps.Initialize(argv)
+
     deps_tree, deps_info = deps.GenDependencyTree()
     deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
+
     return Upgrader._GetPreOrderDepGraph(deps_graph)
 
   def _GetInfoListWithOverlays(self, cpvlist):
@@ -243,7 +258,9 @@ class Upgrader(object):
       if cpv.startswith('chromeos-base/'): continue
       # TODO(petkov): Use internal portage utilities to find the overlay instead
       # of equery to improve performance, if possible.
-      equery = ['equery-%s' % self._options.board, 'which', cpv]
+      equery = ['equery', 'which', cpv]
+      if self._options.board:
+        equery[0] = 'equery-%s' % self._options.board
       ebuild_path = cros_lib.RunCommand(equery, print_cmd=self._options.verbose,
                                         redirect_stdout=True).output.strip()
       (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
@@ -287,6 +304,7 @@ def main():
 
   if (options.verbose): logging.basicConfig(level=logging.DEBUG)
 
+  # Only the unit tests are allowed to not have the board option set.
   if not options.board:
     parser.print_help()
     cros_lib.Die('board is required')
