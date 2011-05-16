@@ -83,7 +83,7 @@ Authenticator* MockLoginUtils::CreateAuthenticator(
       consumer, expected_username_, expected_password_);
 }
 
-void MockLoginUtils:;SetBackgroundView(BackgroundView* background_view) {
+void MockLoginUtils::SetBackgroundView(BackgroundView* background_view) {
   background_view_ = background_view;
 }
 

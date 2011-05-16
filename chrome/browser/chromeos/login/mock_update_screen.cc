@@ -7,3 +7,5 @@
 MockUpdateScreen::MockUpdateScreen(WizardScreenDelegate* d)
     : chromeos::UpdateScreen(d) {
 }
+
+MockUpdateScreen::~MockUpdateScreen() {}
