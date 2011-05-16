@@ -23,6 +23,7 @@ include_rules = [
 
   "+chrome/browser/defaults.h",
 
+  # http://crbug.com/82782
   "+chrome/browser/download/download_file_manager.h",
   "+chrome/browser/download/download_manager.h",
   "+chrome/browser/download/download_request_limiter.h",
