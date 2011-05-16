@@ -231,10 +231,6 @@ class PersonalDataManager
   // The loaded credit cards.
   ScopedVector<CreditCard> credit_cards_;
 
-  // The hash of the password used to store the credit card.  This is empty if
-  // no password exists.
-  string16 password_hash_;
-
   // When the manager makes a request from WebDataService, the database
   // is queried on another thread, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries

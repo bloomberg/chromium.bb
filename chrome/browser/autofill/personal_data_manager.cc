@@ -102,6 +102,29 @@ bool IsMinimumAddress(const AutofillProfile& profile) {
          !profile.GetInfo(ADDRESS_HOME_ZIP).empty();
 }
 
+// Return true if the |field_type| and |value| are valid within the context
+// of importing a form.
+bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
+                              AutofillFieldType field_type,
+                              const string16& value) {
+  // Abandon the import if two fields of the same type are encountered.
+  // This indicates ambiguous data or miscategorization of types.
+  // Make an exception for PHONE_HOME_NUMBER however as both prefix and
+  // suffix are stored against this type.
+  if (types_seen.count(field_type) &&
+      field_type != PHONE_HOME_NUMBER &&
+      field_type != PHONE_FAX_NUMBER) {
+    return false;
+  }
+
+  // Abandon the import if an email address value shows up in a field that is
+  // not an email address.
+  if (field_type != EMAIL_ADDRESS && IsValidEmail(value))
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
@@ -214,36 +237,30 @@ bool PersonalDataManager::ImportFormData(
     AutofillFieldType field_type = field->type();
     FieldTypeGroup group(AutofillType(field_type).group());
 
-    // Abandon the import if two fields of the same type are encountered.
-    // This indicates ambiguous data or miscategorization of types.
-    // Make an exception for PHONE_HOME_NUMBER however as both prefix and
-    // suffix are stored against this type.
-    if (types_seen.count(field_type) &&
-        field_type != PHONE_HOME_NUMBER  &&
-        field_type != PHONE_FAX_NUMBER) {
+    // If the |field_type| and |value| don't pass basic validity checks then
+    // abandon the import.
+    if (!IsValidFieldTypeAndValue(types_seen, field_type, value)) {
       imported_profile.reset();
       local_imported_credit_card.reset();
       break;
-    } else {
-      types_seen.insert(field_type);
     }
+
+    types_seen.insert(field_type);
 
     if (group == AutofillType::CREDIT_CARD) {
       // If the user has a password set, we have no way of setting credit
       // card numbers.
-      if (!HasPassword()) {
-        if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
-          DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
-          local_imported_credit_card->SetInfoForMonthInputType(value);
-        } else {
-          if (field_type == CREDIT_CARD_NUMBER) {
-            // Clean up any imported credit card numbers.
-            value = CreditCard::StripSeparators(value);
-          }
-          local_imported_credit_card->SetInfo(field_type, value);
+      if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
+        DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
+        local_imported_credit_card->SetInfoForMonthInputType(value);
+      } else {
+        if (field_type == CREDIT_CARD_NUMBER) {
+          // Clean up any imported credit card numbers.
+          value = CreditCard::StripSeparators(value);
         }
-        ++importable_credit_card_fields;
+        local_imported_credit_card->SetInfo(field_type, value);
       }
+      ++importable_credit_card_fields;
     } else {
       // In the case of a phone number, if the whole phone number was entered
       // into a single field, then parse it and set the sub components.
@@ -534,10 +551,6 @@ void PersonalDataManager::GetNonEmptyTypes(
        iter != credit_cards_.end(); ++iter) {
     (*iter)->GetNonEmptyTypes(non_empty_types);
   }
-}
-
-bool PersonalDataManager::HasPassword() {
-  return !password_hash_.empty();
 }
 
 bool PersonalDataManager::IsDataLoaded() const {
