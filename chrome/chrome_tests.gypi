@@ -62,8 +62,8 @@
         'browser/chromeos/cros/mock_cryptohome_library.h',
         'browser/chromeos/cros/mock_library_loader.cc',
         'browser/chromeos/cros/mock_library_loader.h',
-        'browser/chromeos/cros/mock_login_library.cc'.
-        'browser/chromeos/cros/mock_login_library.h'.
+        'browser/chromeos/cros/mock_login_library.cc',
+        'browser/chromeos/cros/mock_login_library.h',
         # The only thing used from browser is Browser::Type.
         'browser/extensions/test_extension_prefs.cc',
         'browser/extensions/test_extension_prefs.h',
