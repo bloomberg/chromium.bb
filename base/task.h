@@ -449,12 +449,6 @@ class RunnableFunction : public Task {
     COMPILE_ASSERT(
         (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
         badrunnablefunctionparams);
-#if defined(OS_WIN)
-    // TODO(apatrick): Remove this ASAP. I think somewhere in the code we're
-    // posting a task to call a function pointer with this value. Step 1 is
-    // to find the site it is posted from. http://crbug.com/81449.
-    CHECK(reinterpret_cast<int>(function) != 0x00000001);
-#endif
   }
 
   ~RunnableFunction() {
