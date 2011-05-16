@@ -77,7 +77,9 @@ BOT_ASSIGNMENT = {
     'spec-nacl':
       'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl',
     # Valgrind bots.
-    'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
+    'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
+    'lucid-64-newlib-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
+    'lucid-64-glibc-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh glibc',
     # Coverage.
     'mac10.6-newlib-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
     'lucid-64-32-newlib-coverage':
