@@ -332,11 +332,6 @@ add_config('x86-mario-pre-flight-queue', [internal, {
 #   --upload-board-prebuilt --ctest --unittests --bvt
 add_config('x86-mario-private-full', [internal, full, official, {
   'board' : 'x86-mario',
-
-  'master' : True,
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'private',
   # TODO(sosa): This is wrong but restores don's builder to build with mvp.
   'manifest_version' : MANIFEST_VERSIONS_INT_URL,
 }])
@@ -345,44 +340,24 @@ add_config('x86-mario-private-full', [internal, full, official, {
 #   --upload-board-prebuilt --ctest --unittests --bvt
 add_config('x86-zgb-private-full', [internal, full, official, {
   'board' : 'x86-zgb',
-
-  'master' : True,
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'private',
 }])
 
 # cbuild --board=x86-alex master --official --chromeos --clean
 #   --upload-board-prebuilt --unittests --bvt
 add_config('x86-alex-private-full', [internal, full, official, {
   'board' : 'x86-alex',
-
-  'master' : True,
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'private',
 }])
 
 # cbuild --board=tegra2_seaboard master --official --chromeos --clean
 #   --upload-board-prebuilt
 add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
   'board' : 'arm-tegra2_seaboard',
-
-  'master' : True,
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'private',
 }])
 
 # cbuild --board=tegra2_aebl  master --official --chromeos --clean
 #   --upload-board-prebuilt
 add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
   'board' : 'arm-tegra2_seaboard',
-
-  'master' : True,
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'private',
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {
