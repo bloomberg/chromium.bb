@@ -407,7 +407,7 @@ base::i18n::TextDirection InputMethodIBus::GetInputTextDirection() {
 }
 
 bool InputMethodIBus::IsActive() {
-  return enabled_;
+  return context_ != NULL;
 }
 
 void InputMethodIBus::FocusedViewWillChange() {
