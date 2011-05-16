@@ -36,7 +36,7 @@ static void AddDataSourceOnIOThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   static_cast<ChromeURLRequestContext*>(
       context_getter->GetURLRequestContext())->
-      GetChromeURLDataManagerBackend()->AddDataSource(data_source.get());
+      chrome_url_data_manager_backend()->AddDataSource(data_source.get());
 }
 
 ChromeURLDataManager::ChromeURLDataManager(Profile* profile)

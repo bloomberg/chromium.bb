@@ -282,6 +282,9 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(io_thread_globals->host_resolver.get()));
 
+  main_context->set_chrome_url_data_manager_backend(
+      chrome_url_data_manager_backend());
+
   main_context->set_job_factory(job_factory());
   media_request_context_->set_job_factory(job_factory());
   extensions_context->set_job_factory(job_factory());

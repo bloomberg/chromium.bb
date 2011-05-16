@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -27,14 +28,10 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "webkit/appcache/view_appcache_internals_job.h"
 
 namespace {
-
-ChromeURLDataManagerBackend* GetBackend(net::URLRequest* request) {
-  return static_cast<ChromeURLRequestContext*>(request->context())->
-      GetChromeURLDataManagerBackend();
-}
 
 // Parse a URL into the components used to resolve its request. |source_name|
 // is the hostname and |path| is the remaining portion of the URL.
@@ -62,12 +59,6 @@ void URLToRequest(const GURL& url, std::string* source_name,
     path->assign(spec.substr(offset));
 }
 
-bool IsViewAppCacheInternalsURL(const GURL& url) {
-  return StartsWithASCII(url.spec(),
-                         chrome::kAppCacheViewInternalsURL,
-                         true /*case_sensitive*/);
-}
-
 }  // namespace
 
 // URLRequestChromeJob is a net::URLRequestJob that manages running
@@ -76,7 +67,8 @@ bool IsViewAppCacheInternalsURL(const GURL& url) {
 // calls back once the data is available.
 class URLRequestChromeJob : public net::URLRequestJob {
  public:
-  explicit URLRequestChromeJob(net::URLRequest* request);
+  explicit URLRequestChromeJob(net::URLRequest* request,
+                               ChromeURLDataManagerBackend* backend);
 
   // net::URLRequestJob implementation.
   virtual void Start() OVERRIDE;
@@ -126,24 +118,160 @@ class URLRequestChromeJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestChromeJob);
 };
 
-// URLRequestChromeFileJob is a net::URLRequestJob that acts like a file:// URL
-class URLRequestChromeFileJob : public net::URLRequestFileJob {
+URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
+                                         ChromeURLDataManagerBackend* backend)
+    : net::URLRequestJob(request),
+      data_offset_(0),
+      pending_buf_size_(0),
+      backend_(backend),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  DCHECK(backend);
+}
+
+URLRequestChromeJob::~URLRequestChromeJob() {
+  CHECK(!backend_->HasPendingJob(this));
+}
+
+void URLRequestChromeJob::Start() {
+  // Start reading asynchronously so that all error reporting and data
+  // callbacks happen as they would for network requests.
+  MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
+      &URLRequestChromeJob::StartAsync));
+}
+
+void URLRequestChromeJob::Kill() {
+  backend_->RemoveRequest(this);
+}
+
+bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
+  *mime_type = mime_type_;
+  return !mime_type_.empty();
+}
+
+void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
+  DCHECK(!info->headers);
+  // Set the headers so that requests serviced by ChromeURLDataManager return a
+  // status code of 200. Without this they return a 0, which makes the status
+  // indistiguishable from other error types. Instant relies on getting a 200.
+  info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
+}
+
+void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
+  if (bytes) {
+    // The request completed, and we have all the data.
+    // Clear any IO pending status.
+    SetStatus(net::URLRequestStatus());
+
+    data_ = bytes;
+    int bytes_read;
+    if (pending_buf_.get()) {
+      CHECK(pending_buf_->data());
+      CompleteRead(pending_buf_, pending_buf_size_, &bytes_read);
+      pending_buf_ = NULL;
+      NotifyReadComplete(bytes_read);
+    }
+  } else {
+    // The request failed.
+    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                     net::ERR_FAILED));
+  }
+}
+
+bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size,
+                                      int* bytes_read) {
+  if (!data_.get()) {
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+    DCHECK(!pending_buf_.get());
+    CHECK(buf->data());
+    pending_buf_ = buf;
+    pending_buf_size_ = buf_size;
+    return false;  // Tell the caller we're still waiting for data.
+  }
+
+  // Otherwise, the data is available.
+  CompleteRead(buf, buf_size, bytes_read);
+  return true;
+}
+
+void URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size,
+                                       int* bytes_read) {
+  int remaining = static_cast<int>(data_->size()) - data_offset_;
+  if (buf_size > remaining)
+    buf_size = remaining;
+  if (buf_size > 0) {
+    memcpy(buf->data(), data_->front() + data_offset_, buf_size);
+    data_offset_ += buf_size;
+  }
+  *bytes_read = buf_size;
+}
+
+void URLRequestChromeJob::StartAsync() {
+  if (!request_)
+    return;
+
+  if (backend_->StartRequest(request_->url(), this)) {
+    NotifyHeadersComplete();
+  } else {
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           net::ERR_INVALID_URL));
+  }
+}
+
+namespace {
+
+bool IsViewAppCacheInternalsURL(const GURL& url) {
+  return StartsWithASCII(url.spec(),
+                         chrome::kAppCacheViewInternalsURL,
+                         true /*case_sensitive*/);
+}
+
+class ChromeProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  URLRequestChromeFileJob(net::URLRequest* request, const FilePath& path);
+  ChromeProtocolHandler(ChromeURLDataManagerBackend* backend,
+                        ChromeAppCacheService* appcache_service);
+  ~ChromeProtocolHandler();
+
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request) const OVERRIDE;
 
  private:
-  virtual ~URLRequestChromeFileJob();
+  // These members are owned by ProfileIOData, which owns this ProtocolHandler.
+  ChromeURLDataManagerBackend* const backend_;
+  ChromeAppCacheService* const appcache_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLRequestChromeFileJob);
+  DISALLOW_COPY_AND_ASSIGN(ChromeProtocolHandler);
 };
 
-class DevToolsJobFactory {
- public:
-  static bool ShouldLoadFromDisk();
-  static bool IsSupportedURL(const GURL& url, FilePath* path);
-  static net::URLRequestJob* CreateJobForRequest(net::URLRequest* request,
-                                          const FilePath& path);
-};
+ChromeProtocolHandler::ChromeProtocolHandler(
+    ChromeURLDataManagerBackend* backend,
+    ChromeAppCacheService* appcache_service)
+    : backend_(backend),
+      appcache_service_(appcache_service) {}
+
+ChromeProtocolHandler::~ChromeProtocolHandler() {}
+
+net::URLRequestJob* ChromeProtocolHandler::MaybeCreateJob(
+    net::URLRequest* request) const {
+  DCHECK(request);
+
+  // Next check for chrome://view-http-cache/*, which uses its own job type.
+  if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
+    return ViewHttpCacheJobFactory::CreateJobForRequest(request);
+
+  // Next check for chrome://appcache-internals/, which uses its own job type.
+  if (IsViewAppCacheInternalsURL(request->url()))
+    return new appcache::ViewAppCacheInternalsJob(request, appcache_service_);
+
+  // Next check for chrome://blob-internals/, which uses its own job type.
+  if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url()))
+    return ViewBlobInternalsJobFactory::CreateJobForRequest(request);
+
+  // Fall back to using a custom handler
+  return new URLRequestChromeJob(request, backend_);
+}
+
+}  // namespace
 
 ChromeURLDataManagerBackend::ChromeURLDataManagerBackend()
     : next_request_id_(0) {
@@ -159,13 +287,13 @@ ChromeURLDataManagerBackend::~ChromeURLDataManagerBackend() {
 }
 
 // static
-void ChromeURLDataManagerBackend::Register() {
-  net::URLRequest::RegisterProtocolFactory(
-      chrome::kChromeDevToolsScheme,
-      &ChromeURLDataManagerBackend::Factory);
-  net::URLRequest::RegisterProtocolFactory(
-      chrome::kChromeUIScheme,
-      &ChromeURLDataManagerBackend::Factory);
+net::URLRequestJobFactory::ProtocolHandler*
+ChromeURLDataManagerBackend::CreateProtocolHandler(
+    ChromeURLDataManagerBackend* backend,
+    ChromeAppCacheService* appcache_service) {
+  DCHECK(appcache_service);
+  DCHECK(backend);
+  return new ChromeProtocolHandler(backend, appcache_service);
 }
 
 void ChromeURLDataManagerBackend::AddDataSource(
@@ -260,143 +388,9 @@ void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
   }
 }
 
-// static
-net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
-    net::URLRequest* request,
-    const std::string& scheme) {
-  net::URLRequestContext* context = request->context();
-  ChromeURLRequestContext* chrome_request_context =
-      static_cast<ChromeURLRequestContext*>(context);
+namespace {
 
-  if (DevToolsJobFactory::ShouldLoadFromDisk()) {
-    // Try loading chrome-devtools:// files from disk.
-    FilePath path;
-    if (DevToolsJobFactory::IsSupportedURL(request->url(), &path))
-      return DevToolsJobFactory::CreateJobForRequest(request, path);
-  }
-
-  // Next check for chrome://view-http-cache/*, which uses its own job type.
-  if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
-    return ViewHttpCacheJobFactory::CreateJobForRequest(request);
-
-  // Next check for chrome://appcache-internals/, which uses its own job type.
-  if (IsViewAppCacheInternalsURL(request->url()))
-    return new appcache::ViewAppCacheInternalsJob(
-        request, chrome_request_context->appcache_service());
-
-  // Next check for chrome://blob-internals/, which uses its own job type.
-  if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url()))
-    return ViewBlobInternalsJobFactory::CreateJobForRequest(request);
-
-  // Fall back to using a custom handler
-  return new URLRequestChromeJob(request);
-}
-
-URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request)
-    : net::URLRequestJob(request),
-      data_offset_(0),
-      pending_buf_size_(0),
-      backend_(GetBackend(request)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-}
-
-URLRequestChromeJob::~URLRequestChromeJob() {
-  CHECK(!backend_->HasPendingJob(this));
-}
-
-void URLRequestChromeJob::Start() {
-  // Start reading asynchronously so that all error reporting and data
-  // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
-      &URLRequestChromeJob::StartAsync));
-}
-
-void URLRequestChromeJob::Kill() {
-  backend_->RemoveRequest(this);
-}
-
-bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
-  *mime_type = mime_type_;
-  return !mime_type_.empty();
-}
-
-void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
-  DCHECK(!info->headers);
-  // Set the headers so that requests serviced by ChromeURLDataManager return a
-  // status code of 200. Without this they return a 0, which makes the status
-  // indistiguishable from other error types. Instant relies on getting a 200.
-  info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
-}
-
-void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
-  if (bytes) {
-    // The request completed, and we have all the data.
-    // Clear any IO pending status.
-    SetStatus(net::URLRequestStatus());
-
-    data_ = bytes;
-    int bytes_read;
-    if (pending_buf_.get()) {
-      CHECK(pending_buf_->data());
-      CompleteRead(pending_buf_, pending_buf_size_, &bytes_read);
-      pending_buf_ = NULL;
-      NotifyReadComplete(bytes_read);
-    }
-  } else {
-    // The request failed.
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                     net::ERR_FAILED));
-  }
-}
-
-bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size,
-                                      int* bytes_read) {
-  if (!data_.get()) {
-    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-    DCHECK(!pending_buf_.get());
-    CHECK(buf->data());
-    pending_buf_ = buf;
-    pending_buf_size_ = buf_size;
-    return false;  // Tell the caller we're still waiting for data.
-  }
-
-  // Otherwise, the data is available.
-  CompleteRead(buf, buf_size, bytes_read);
-  return true;
-}
-
-void URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size,
-                                       int* bytes_read) {
-  int remaining = static_cast<int>(data_->size()) - data_offset_;
-  if (buf_size > remaining)
-    buf_size = remaining;
-  if (buf_size > 0) {
-    memcpy(buf->data(), data_->front() + data_offset_, buf_size);
-    data_offset_ += buf_size;
-  }
-  *bytes_read = buf_size;
-}
-
-void URLRequestChromeJob::StartAsync() {
-  if (!request_)
-    return;
-
-  if (backend_->StartRequest(request_->url(), this)) {
-    NotifyHeadersComplete();
-  } else {
-    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                           net::ERR_INVALID_URL));
-  }
-}
-
-URLRequestChromeFileJob::URLRequestChromeFileJob(net::URLRequest* request,
-                                                 const FilePath& path)
-    : net::URLRequestFileJob(request, path) {
-}
-
-URLRequestChromeFileJob::~URLRequestChromeFileJob() {}
-
-bool DevToolsJobFactory::ShouldLoadFromDisk() {
+bool ShouldLoadFromDisk() {
 #if defined(DEBUG_DEVTOOLS)
   return true;
 #else
@@ -405,7 +399,7 @@ bool DevToolsJobFactory::ShouldLoadFromDisk() {
 #endif
 }
 
-bool DevToolsJobFactory::IsSupportedURL(const GURL& url, FilePath* path) {
+bool IsSupportedURL(const GURL& url, FilePath* path) {
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme))
     return false;
 
@@ -452,7 +446,43 @@ bool DevToolsJobFactory::IsSupportedURL(const GURL& url, FilePath* path) {
   return true;
 }
 
-net::URLRequestJob* DevToolsJobFactory::CreateJobForRequest(
-    net::URLRequest* request, const FilePath& path) {
-  return new URLRequestChromeFileJob(request, path);
+class DevToolsJobFactory
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  explicit DevToolsJobFactory(ChromeURLDataManagerBackend* backend);
+  virtual ~DevToolsJobFactory();
+
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request) const OVERRIDE;
+
+ private:
+  // |backend_| is owned by ProfileIOData, which owns this ProtocolHandler.
+  ChromeURLDataManagerBackend* const backend_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsJobFactory);
+};
+
+DevToolsJobFactory::DevToolsJobFactory(ChromeURLDataManagerBackend* backend)
+    : backend_(backend) {
+  DCHECK(backend_);
+}
+
+DevToolsJobFactory::~DevToolsJobFactory() {}
+
+net::URLRequestJob*
+DevToolsJobFactory::MaybeCreateJob(net::URLRequest* request) const {
+  if (ShouldLoadFromDisk()) {
+    FilePath path;
+    if (IsSupportedURL(request->url(), &path))
+      return new net::URLRequestFileJob(request, path);
+  }
+
+  return new URLRequestChromeJob(request, backend_);
+}
+
+}  // namespace
+
+net::URLRequestJobFactory::ProtocolHandler*
+CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend) {
+  return new DevToolsJobFactory(backend);
 }

@@ -1690,7 +1690,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
-  ChromeURLDataManagerBackend::Register();
   RegisterMetadataURLRequestHandler();
   RegisterBlobURLRequestJobFactory();
   RegisterFileSystemURLRequestJobFactory();

@@ -7,14 +7,18 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "net/url_request/url_request_job_factory.h"
 
 #include <map>
 #include <string>
 #include <vector>
 
+class ChromeAppCacheService;
+class ChromeURLDataManagerBackend;
 class FilePath;
 class GURL;
 class URLRequestChromeJob;
@@ -35,8 +39,10 @@ class ChromeURLDataManagerBackend {
   ChromeURLDataManagerBackend();
   ~ChromeURLDataManagerBackend();
 
-  // Invoked to register the protocol factories.
-  static void Register();
+  // Invoked to create the protocol handler for chrome://.
+  static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
+      ChromeURLDataManagerBackend* backend,
+      ChromeAppCacheService* appcache_service);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(ChromeURLDataManager::DataSource* source);
@@ -79,5 +85,8 @@ class ChromeURLDataManagerBackend {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLDataManagerBackend);
 };
+
+net::URLRequestJobFactory::ProtocolHandler*
+CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend);
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_

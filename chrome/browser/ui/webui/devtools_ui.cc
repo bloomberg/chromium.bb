@@ -91,7 +91,7 @@ void DevToolsUI::RegisterDevToolsDataSource() {
     DevToolsDataSource* data_source = new DevToolsDataSource();
     ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
         Profile::GetDefaultRequestContext()->GetURLRequestContext());
-    context->GetChromeURLDataManagerBackend()->AddDataSource(data_source);
+    context->chrome_url_data_manager_backend()->AddDataSource(data_source);
     registered = true;
   }
 }

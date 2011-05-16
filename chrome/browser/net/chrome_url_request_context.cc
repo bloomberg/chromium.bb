@@ -383,10 +383,14 @@ void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
 }
 
 ChromeURLDataManagerBackend*
-    ChromeURLRequestContext::GetChromeURLDataManagerBackend() {
-  if (!chrome_url_data_manager_backend_.get())
-    chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend());
-  return chrome_url_data_manager_backend_.get();
+ChromeURLRequestContext::chrome_url_data_manager_backend() const {
+  return chrome_url_data_manager_backend_;
+}
+
+void ChromeURLRequestContext::set_chrome_url_data_manager_backend(
+    ChromeURLDataManagerBackend* backend) {
+  DCHECK(backend);
+  chrome_url_data_manager_backend_ = backend;
 }
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {

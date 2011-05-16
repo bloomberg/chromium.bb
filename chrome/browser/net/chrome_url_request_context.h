@@ -81,7 +81,9 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return extension_info_map_;
   }
 
-  ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend();
+  // TODO(willchan): Get rid of the need for this accessor. Really, this should
+  // move completely to ProfileIOData.
+  ChromeURLDataManagerBackend* chrome_url_data_manager_backend() const;
 
   // Setters to simplify initializing from factory objects.
   void set_user_script_dir_path(const FilePath& path) {
@@ -102,6 +104,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_extension_info_map(ExtensionInfoMap* map) {
     extension_info_map_ = map;
   }
+  void set_chrome_url_data_manager_backend(
+      ChromeURLDataManagerBackend* backend);
 
   // Callback for when the accept language changes.
   void OnAcceptLanguageChange(const std::string& accept_language);
@@ -127,8 +131,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
 
+  ChromeURLDataManagerBackend* chrome_url_data_manager_backend_;
   bool is_incognito_;
 
   // ---------------------------------------------------------------------------

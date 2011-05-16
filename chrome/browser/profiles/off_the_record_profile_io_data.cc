@@ -179,6 +179,9 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   main_context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(main_context->host_resolver()));
 
+  main_context->set_chrome_url_data_manager_backend(
+      chrome_url_data_manager_backend());
+
   main_context->set_job_factory(job_factory());
   extensions_context->set_job_factory(job_factory());
 }

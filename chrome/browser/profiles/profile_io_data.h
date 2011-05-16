@@ -158,6 +158,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     return &enable_referrers_;
   }
 
+  ChromeURLDataManagerBackend* chrome_url_data_manager_backend() const {
+    return chrome_url_data_manager_backend_.get();
+  }
+
   net::NetworkDelegate* network_delegate() const {
     return network_delegate_.get();
   }
@@ -228,6 +232,8 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable BooleanPrefMember enable_referrers_;
 
   // Pointed to by URLRequestContext.
+  mutable scoped_ptr<ChromeURLDataManagerBackend>
+      chrome_url_data_manager_backend_;
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;

@@ -27,6 +27,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -262,6 +263,8 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   static const char* const kProtocolList[] = {
     chrome::kExtensionScheme,
     chrome::kUserScriptScheme,
+    chrome::kChromeUIScheme,
+    chrome::kChromeDevToolsScheme
   };
   for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
     if (scheme == kProtocolList[i])
@@ -353,6 +356,8 @@ void ProfileIOData::LazyInitialize() const {
 
   profile_params_->appcache_service->set_request_context(main_request_context_);
 
+  chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend);
+
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
         profile_params_->profile_id,
@@ -386,6 +391,16 @@ void ProfileIOData::LazyInitialize() const {
       chrome::kUserScriptScheme,
       CreateUserScriptProtocolHandler(profile_params_->user_script_dir_path,
                                       profile_params_->extension_info_map));
+  DCHECK(set_protocol);
+  set_protocol = job_factory_->SetProtocolHandler(
+      chrome::kChromeUIScheme,
+      ChromeURLDataManagerBackend::CreateProtocolHandler(
+          chrome_url_data_manager_backend_.get(),
+          profile_params_->appcache_service));
+  DCHECK(set_protocol);
+  set_protocol = job_factory_->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
   DCHECK(set_protocol);
 
   // Take ownership over these parameters.
