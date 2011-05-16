@@ -167,8 +167,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableExtensions) {
 }
 
 // TCM ID - 3606290.
-// TODO(rsimha): Red on buildbots, green on trybots. http://crbug.com/82489.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, FAILS_DisableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 

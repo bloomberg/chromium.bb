@@ -1498,8 +1498,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, DisableBookmarks) {
 }
 
 // TCM ID - 7343544.
-// TODO(rsimha): Red on buildbots, green on trybots. http://crbug.com/82489.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, FAILS_DisableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 

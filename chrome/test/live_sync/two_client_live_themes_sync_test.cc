@@ -191,8 +191,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DisableThemes) {
 }
 
 // TCM ID - 3687288.
-// TODO(rsimha): Red on buildbots, green on trybots. http://crbug.com/82489.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_DisableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
