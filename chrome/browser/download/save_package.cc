@@ -34,7 +34,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -327,7 +326,7 @@ bool SavePackage::Init() {
   // to be alive as long as the Profile is alive.
   download_manager->SavePageAsDownloadStarted(download_);
 
-  wrapper_->download_tab_helper()->OnStartDownload(download_);
+  tab_contents()->OnStartDownload(download_);
 
   // Check save type and process the save page job.
   if (save_type_ == SAVE_AS_COMPLETE_HTML) {
