@@ -10,7 +10,7 @@
 #include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
-TEST(HiResTimerManagerTest, ToggleOnOff) {
+TEST(HiResTimerManagerTest, FLAKY_ToggleOnOff) {
   MessageLoop loop;
   scoped_ptr<ui::SystemMonitor> system_monitor(new ui::SystemMonitor());
   HighResolutionTimerManager manager;
