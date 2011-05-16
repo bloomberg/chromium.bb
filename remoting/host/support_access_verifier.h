@@ -30,9 +30,12 @@ class SupportAccessVerifier : public AccessVerifier {
       const std::string& client_jid,
       const std::string& encoded_client_token) OVERRIDE;
 
+  void OnMe2MomHostRegistered(bool successful, const std::string& support_id);
+
  private:
   bool initialized_;
   std::string host_secret_;
+  std::string support_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SupportAccessVerifier);
 };

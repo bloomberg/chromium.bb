@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <vector>
+#include <iostream>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -60,10 +61,26 @@ bool SupportAccessVerifier::VerifyPermissions(
     const std::string& client_jid,
     const std::string& encoded_access_token) {
   CHECK(initialized_);
+  if (support_id_.empty())
+    return false;
   // TODO(jamiewalch): This needs to compose the support id with the host
   // secret before verification.
+  std::string access_code = support_id_ + "-" + host_secret_;
   return protocol::VerifySupportAuthToken(
-      client_jid, host_secret_, encoded_access_token);
+      client_jid, access_code, encoded_access_token);
+}
+
+void SupportAccessVerifier::OnMe2MomHostRegistered(
+    bool successful, const std::string& support_id) {
+  if (successful) {
+    // TODO(jamiewalch): cout is only needed so that remoting_simple_host can
+    // report the support id to the user. Find a better way (issue 82651).
+    std::cout << "Support id: "
+              << support_id << std::endl;
+    support_id_ = support_id;
+  } else {
+    LOG(ERROR) << "Failed to register support host";
+  }
 }
 
 }  // namespace remoting

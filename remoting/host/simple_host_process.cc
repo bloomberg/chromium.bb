@@ -108,7 +108,12 @@ class SimpleHost {
     }
 
     // Initialize AccessVerifier.
+    // TODO(jamiewalch): For the Me2Mom case, the access verifier is passed to
+    // RegisterSupportHostRequest::Init, so transferring ownership of it to the
+    // ChromotingHost could cause a crash condition at shut-down. Fix this.
     scoped_ptr<remoting::AccessVerifier> access_verifier;
+    remoting::RegisterSupportHostRequest::RegisterCallback*
+        register_callback = NULL;
     if (me2mom_) {
       scoped_ptr<remoting::SupportAccessVerifier> support_access_verifier(
           new remoting::SupportAccessVerifier());
@@ -116,6 +121,9 @@ class SimpleHost {
         return 1;
       std::cout << "Host secret: "
                 << support_access_verifier->host_secret() << std::endl;
+      register_callback = NewCallback(
+          support_access_verifier.get(),
+          &remoting::SupportAccessVerifier::OnMe2MomHostRegistered);
       access_verifier.reset(support_access_verifier.release());
     } else {
       scoped_ptr<remoting::SelfAccessVerifier> self_access_verifier(
@@ -149,8 +157,7 @@ class SimpleHost {
     if (me2mom_) {
       scoped_refptr<remoting::RegisterSupportHostRequest> register_request =
           new remoting::RegisterSupportHostRequest();
-      if (!register_request->Init(
-              config, NewCallback(this, &SimpleHost::OnMe2MomHostRegistered))) {
+      if (!register_request->Init(config, register_callback)) {
         return 1;
       }
       host->AddStatusObserver(register_request);
@@ -195,15 +202,6 @@ class SimpleHost {
     string home_path = GetEnvironmentVar(base::env_vars::kHome);
 #endif
     return FilePath(home_path).Append(kDefaultConfigPath);
-  }
-
-  void OnMe2MomHostRegistered(bool successful, const std::string& support_id) {
-    if (successful) {
-      std::cout << "Support id: "
-                << support_id << std::endl;
-    } else {
-      LOG(ERROR) << "Failed to register support host";
-    }
   }
 
   FilePath config_path_;
