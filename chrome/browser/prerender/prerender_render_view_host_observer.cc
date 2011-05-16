@@ -41,8 +41,6 @@ bool PrerenderRenderViewHostObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunJavaScriptMessage,
                         OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnRenderViewGone)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelPrerenderForPrinting,
-                        OnCancelPrerenderForPrinting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -99,11 +97,7 @@ void PrerenderRenderViewHostObserver::OnUpdateFaviconURL(
 }
 
 void PrerenderRenderViewHostObserver::OnMaybeCancelPrerenderForHTML5Media() {
-  prerender_contents_->Destroy(FINAL_STATUS_HTML5_MEDIA);
-}
-
-void PrerenderRenderViewHostObserver::OnCancelPrerenderForPrinting() {
-  prerender_contents_->Destroy(FINAL_STATUS_WINDOW_PRINT);
+  prerender_contents_->OnMaybeCancelPrerenderForHTML5Media();
 }
 
 }

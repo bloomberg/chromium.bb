@@ -633,6 +633,10 @@ void PrerenderContents::OnUpdateFaviconURL(
   }
 }
 
+void PrerenderContents::OnMaybeCancelPrerenderForHTML5Media() {
+  Destroy(FINAL_STATUS_HTML5_MEDIA);
+}
+
 bool PrerenderContents::AddAliasURL(const GURL& url) {
   if (!url.SchemeIs("http")) {
     if (url.SchemeIs("https"))
