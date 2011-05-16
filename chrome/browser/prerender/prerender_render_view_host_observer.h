@@ -52,6 +52,7 @@ class PrerenderRenderViewHostObserver : public RenderViewHostObserver {
                                          const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
   void OnMaybeCancelPrerenderForHTML5Media();
+  void OnCancelPrerenderForPrinting();
 
   // The associated prerender contents.
   PrerenderContents* prerender_contents_;

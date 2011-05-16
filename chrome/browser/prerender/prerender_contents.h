@@ -271,7 +271,6 @@ class PrerenderContents : public RenderViewHostDelegate,
                                          bool main_frame,
                                          const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
-  void OnMaybeCancelPrerenderForHTML5Media();
 
   // Returns the RenderViewHost Delegate for this prerender.
   RenderViewHostDelegate* GetRenderViewHostDelegate();

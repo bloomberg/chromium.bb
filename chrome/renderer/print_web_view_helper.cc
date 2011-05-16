@@ -12,6 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
+#include "chrome/common/render_messages.h"
+#include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
@@ -131,6 +133,12 @@ PrintWebViewHelper::~PrintWebViewHelper() {}
 // Prints |frame| which called window.print().
 void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
   DCHECK(frame);
+
+  // Allow Prerendering to cancel this print request if necessary.
+  if (prerender::PrerenderHelper::IsPrerendering(render_view())) {
+    Send(new ViewHostMsg_CancelPrerenderForPrinting(routing_id()));
+    return;
+  }
 
   if (IsScriptInitiatedPrintTooFrequent(frame))
     return;
