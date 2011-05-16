@@ -22,8 +22,10 @@ TOOLCHAIN="$1"
 
 if [[ "$TOOLCHAIN" = glibc ]]; then
   GLIBCOPTS="--nacl_glibc"
+  SDKHDRINSTALL=""
 else
   GLIBCOPTS=""
+  SDKHDRINSTALL="install_libpthread"
 fi
 
 echo @@@BUILD_STEP gclient_runhooks@@@
@@ -36,7 +38,7 @@ rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
 
 echo @@@BUILD_STEP partial_sdk@@@
 ./scons --verbose --mode=nacl_extra_sdk platform=x86-64 --download \
-${GLIBCOPTS} extra_sdk_update_header install_libpthread extra_sdk_update
+${GLIBCOPTS} extra_sdk_update_header ${SDKHDRINSTALL} extra_sdk_update
 
 echo @@@BUILD_STEP gyp_compile@@@
 make -C .. -k -j12 V=1 BUILDTYPE=Debug
