@@ -8,7 +8,6 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/time.h"
 #include "crypto/hmac.h"
 
 namespace net {
@@ -51,11 +50,13 @@ HttpMacSignature::~HttpMacSignature() {
 }
 
 bool HttpMacSignature::AddStateInfo(const std::string& id,
+                                    const base::Time& creation_date,
                                     const std::string& mac_key,
                                     const std::string& mac_algorithm) {
   DCHECK(id_.empty());
 
   if (!IsPlainString(id) || id.empty() ||
+      creation_date.is_null() ||
       mac_key.empty() ||
       mac_algorithm.empty()) {
     return false;
@@ -69,6 +70,7 @@ bool HttpMacSignature::AddStateInfo(const std::string& id,
     return false;
 
   id_ = id;
+  creation_date_ = creation_date;
   mac_key_ = mac_key;
   return true;
 }
@@ -97,33 +99,32 @@ std::string HttpMacSignature::GenerateAuthorizationHeader() {
   DCHECK(!id_.empty()) << "Call AddStateInfo first.";
   DCHECK(!method_.empty()) << "Call AddHttpInfo first.";
 
-  std::string timestamp = base::Int64ToString((base::Time::Now() -
-      base::Time::UnixEpoch()).InSeconds());
+  std::string age = base::Int64ToString(
+      (base::Time::Now() - creation_date_).InSeconds());
   std::string nonce = GenerateNonce();
 
-  return GenerateHeaderString(timestamp, nonce);
+  return GenerateHeaderString(age, nonce);
 }
 
-std::string HttpMacSignature::GenerateHeaderString(
-    const std::string& timestamp,
-    const std::string& nonce) {
-  std::string mac = GenerateMAC(timestamp, nonce);
+std::string HttpMacSignature::GenerateHeaderString(const std::string& age,
+                                                   const std::string& nonce) {
+  std::string mac = GenerateMAC(age, nonce);
 
-  DCHECK(IsPlainString(timestamp));
+  DCHECK(IsPlainString(age));
   DCHECK(IsPlainString(nonce));
   DCHECK(IsPlainString(mac));
 
   return "MAC id=\"" + id_ +
-      "\", nonce=\"" + timestamp + ":" + nonce +
+      "\", nonce=\"" + age + ":" + nonce +
       "\", mac=\"" + mac + "\"";
 }
 
 std::string HttpMacSignature::GenerateNormalizedRequest(
-    const std::string& timestamp,
+    const std::string& age,
     const std::string& nonce) {
   static const std::string kNewLine = "\n";
 
-  std::string normalized_request = timestamp + ":" + nonce + kNewLine;
+  std::string normalized_request = age + ":" + nonce + kNewLine;
   normalized_request += method_ + kNewLine;
   normalized_request += request_uri_ + kNewLine;
   normalized_request += host_ + kNewLine;
@@ -134,9 +135,9 @@ std::string HttpMacSignature::GenerateNormalizedRequest(
   return normalized_request;
 }
 
-std::string HttpMacSignature::GenerateMAC(const std::string& timestamp,
+std::string HttpMacSignature::GenerateMAC(const std::string& age,
                                           const std::string& nonce) {
-  std::string request = GenerateNormalizedRequest(timestamp, nonce);
+  std::string request = GenerateNormalizedRequest(age, nonce);
 
   crypto::HMAC hmac(mac_algorithm_);
   hmac.Init(mac_key_);

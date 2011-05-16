@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/time.h"
 #include "crypto/hmac.h"
 
 namespace net {
@@ -27,6 +28,7 @@ class HttpMacSignature {
 
   // Returns whether this information is valid.
   bool AddStateInfo(const std::string& id,
+                    const base::Time& creation_date,
                     const std::string& mac_key,
                     const std::string& mac_algorithm);
 
@@ -44,14 +46,15 @@ class HttpMacSignature {
   FRIEND_TEST_ALL_PREFIXES(HttpMacSignatureTest, GenerateNormalizedRequest);
   FRIEND_TEST_ALL_PREFIXES(HttpMacSignatureTest, GenerateMAC);
 
-  std::string GenerateHeaderString(const std::string& timestamp,
+  std::string GenerateHeaderString(const std::string& age,
                                    const std::string& nonce);
-  std::string GenerateNormalizedRequest(const std::string& timestamp,
+  std::string GenerateNormalizedRequest(const std::string& age,
                                         const std::string& nonce);
-  std::string GenerateMAC(const std::string& timestamp,
+  std::string GenerateMAC(const std::string& age,
                           const std::string& nonce);
 
   std::string id_;
+  base::Time creation_date_;
   std::string mac_key_;
   crypto::HMAC::HashAlgorithm mac_algorithm_;
 

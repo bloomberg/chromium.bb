@@ -37,12 +37,12 @@ class CookieStore : public base::RefCountedThreadSafe<CookieStore> {
     std::string name;
     // TODO(abarth): Add value if any clients need it.
 
+    // The time at which the cookie was created.
+    base::Time creation_date;
+
     // The value of the MAC-Key and MAC-Algorithm attributes, if present.
     std::string mac_key;
     std::string mac_algorithm;
-
-    // The URL from which we received the cookie.
-    std::string source;
   };
 
   // Sets a single cookie.  Expects a cookie line, like "a=1; domain=b.com".

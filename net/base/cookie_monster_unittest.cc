@@ -748,12 +748,10 @@ TEST(CookieMonsterTest, GetCookiesWithInfo) {
   EXPECT_EQ("A", cookie_infos[0].name);
   EXPECT_EQ("", cookie_infos[0].mac_key);
   EXPECT_EQ("", cookie_infos[0].mac_algorithm);
-  EXPECT_EQ(url_google.spec(), cookie_infos[0].source);
 
   EXPECT_EQ("C", cookie_infos[1].name);
   EXPECT_EQ("390jfn0awf3", cookie_infos[1].mac_key);
   EXPECT_EQ("hmac-sha-1", cookie_infos[1].mac_algorithm);
-  EXPECT_EQ(url_google.spec(), cookie_infos[1].source);
 }
 
 namespace {

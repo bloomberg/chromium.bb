@@ -405,9 +405,9 @@ void BuildCookieInfoList(const CanonicalCookieVector& cookies,
     CookieStore::CookieInfo cookie_info;
 
     cookie_info.name = cookie->Name();
+    cookie_info.creation_date = cookie->CreationDate();
     cookie_info.mac_key = cookie->MACKey();
     cookie_info.mac_algorithm = cookie->MACAlgorithm();
-    cookie_info.source = cookie->Source();
 
     cookie_infos->push_back(cookie_info);
   }

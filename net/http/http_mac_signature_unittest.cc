@@ -10,15 +10,23 @@ namespace net {
 TEST(HttpMacSignatureTest, BogusAddStateInfo) {
   HttpMacSignature signature;
   EXPECT_FALSE(signature.AddStateInfo("exciting-id",
+                                      base::Time::Now(),
                                       "the-mac-key",
                                       "bogus-hmac-algorithm"));
   EXPECT_FALSE(signature.AddStateInfo("",
+                                      base::Time::Now(),
                                       "the-mac-key",
                                       "hmac-sha-1"));
   EXPECT_FALSE(signature.AddStateInfo("exciting-id",
+                                      base::Time(),
+                                      "the-mac-key",
+                                      "hmac-sha-1"));
+  EXPECT_FALSE(signature.AddStateInfo("exciting-id",
+                                      base::Time::Now(),
                                       "",
                                       "hmac-sha-1"));
   EXPECT_FALSE(signature.AddStateInfo("exciting-id",
+                                      base::Time::Now(),
                                       "the-mac-key",
                                       ""));
 }
@@ -36,6 +44,7 @@ TEST(HttpMacSignatureTest, BogusAddHttpInfo) {
 TEST(HttpMacSignatureTest, GenerateHeaderString) {
   HttpMacSignature signature;
   EXPECT_TRUE(signature.AddStateInfo("dfoi30j0qnf",
+                                     base::Time::Now(),
                                      "adiMf03j0f3nOenc003r",
                                      "hmac-sha-1"));
   EXPECT_TRUE(signature.AddHttpInfo("GeT",
@@ -43,19 +52,20 @@ TEST(HttpMacSignatureTest, GenerateHeaderString) {
                                     "eXaMple.com",
                                     80));
 
-  std::string timestamp = "239034";
+  std::string age = "239034";
   std::string nonce = "mn4302j0n+32r2/f3r=";
 
   EXPECT_EQ("MAC id=\"dfoi30j0qnf\", "
             "nonce=\"239034:mn4302j0n+32r2/f3r=\", "
             "mac=\"GrkHtPKzB1m1dCHfa7OCWOw6EQ==\"",
-            signature.GenerateHeaderString(timestamp, nonce));
+            signature.GenerateHeaderString(age, nonce));
 }
 
 
 TEST(HttpMacSignatureTest, GenerateNormalizedRequest) {
   HttpMacSignature signature;
   EXPECT_TRUE(signature.AddStateInfo("dfoi30j0qnf",
+                                     base::Time::Now(),
                                      "adiMf03j0f3nOenc003r",
                                      "hmac-sha-1"));
   EXPECT_TRUE(signature.AddHttpInfo("GeT",
@@ -63,7 +73,7 @@ TEST(HttpMacSignatureTest, GenerateNormalizedRequest) {
                                     "eXaMple.com",
                                     80));
 
-  std::string timestamp = "239034";
+  std::string age = "239034";
   std::string nonce = "mn4302j0n+32r2/f3r=";
 
   EXPECT_EQ("239034:mn4302j0n+32r2/f3r=\n"
@@ -73,12 +83,13 @@ TEST(HttpMacSignatureTest, GenerateNormalizedRequest) {
             "80\n"
             "\n"
             "\n",
-            signature.GenerateNormalizedRequest(timestamp, nonce));
+            signature.GenerateNormalizedRequest(age, nonce));
 }
 
 TEST(HttpMacSignatureTest, GenerateMAC) {
   HttpMacSignature signature;
   EXPECT_TRUE(signature.AddStateInfo("dfoi30j0qnf",
+                                     base::Time::Now(),
                                      "adiMf03j0f3nOenc003r",
                                      "hmac-sha-1"));
   EXPECT_TRUE(signature.AddHttpInfo("GeT",
@@ -86,10 +97,10 @@ TEST(HttpMacSignatureTest, GenerateMAC) {
                                      "eXaMple.com",
                                      80));
 
-  std::string timestamp = "239034";
+  std::string age = "239034";
   std::string nonce = "mn4302j0n+32r2/f3r=";
 
   EXPECT_EQ("GrkHtPKzB1m1dCHfa7OCWOw6EQ==",
-            signature.GenerateMAC(timestamp, nonce));
+            signature.GenerateMAC(age, nonce));
 }
 }
