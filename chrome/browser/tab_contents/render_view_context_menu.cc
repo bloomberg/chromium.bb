@@ -906,9 +906,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsDevCommandEnabled(id);
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
-      TranslateTabHelper* helper =
+      TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              source_tab_contents_)->translate_tab_helper();
+              source_tab_contents_);
+      if (!tab_contents_wrapper)
+        return false;
+      TranslateTabHelper* helper = tab_contents_wrapper->translate_tab_helper();
       std::string original_lang =
           helper->language_state().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
@@ -1335,10 +1338,12 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
 
     case IDC_SAVE_PAGE: {
-      TabContentsWrapper* wrapper =
+      TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
               source_tab_contents_);
-      wrapper->download_tab_helper()->OnSavePage();
+      if (!tab_contents_wrapper)
+        break;
+      tab_contents_wrapper->download_tab_helper()->OnSavePage();
       break;
     }
 
@@ -1354,10 +1359,12 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
           printing::PrintPreviewTabController::PrintPreview(
               source_tab_contents_);
         } else {
-          TabContentsWrapper* wrapper =
+          TabContentsWrapper* tab_contents_wrapper =
               TabContentsWrapper::GetCurrentWrapperForContents(
                   source_tab_contents_);
-          wrapper->print_view_manager()->PrintNow();
+          if (!tab_contents_wrapper)
+            break;
+          tab_contents_wrapper->print_view_manager()->PrintNow();
         }
       } else {
         RenderViewHost* rvh = source_tab_contents_->render_view_host();
@@ -1384,9 +1391,12 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       // A translation might have been triggered by the time the menu got
       // selected, do nothing in that case.
-      TranslateTabHelper* helper =
+      TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              source_tab_contents_)->translate_tab_helper();
+              source_tab_contents_);
+      if (!tab_contents_wrapper)
+        return;
+      TranslateTabHelper* helper = tab_contents_wrapper->translate_tab_helper();
       if (helper->language_state().IsPageTranslated() ||
           helper->language_state().translation_pending()) {
         return;
