@@ -64,7 +64,12 @@ int32_t Open(PP_Resource loader_id,
 
   // Set up the response.
   URLResponseInfo* response = new URLResponseInfo(request->instance_id());
-  response->set_url(g_nacl_ppapi_url_path + "/" + request->url());
+  if (request->url().find(g_nacl_ppapi_url_path) == 0) {
+    // It was already an absolute URL.
+    response->set_url(request->url());
+  } else {
+    response->set_url(g_nacl_ppapi_url_path + request->url());
+  }
   response->set_status_code(NACL_HTTP_STATUS_OK);
   loader->set_response(response);
   PP_Resource response_id = TrackResource(response);
@@ -150,7 +155,9 @@ int32_t FinishStreamingToFile(PP_Resource loader_id,
   // TODO(polina): generalize this to work with full urls as well?
   if (g_nacl_ppapi_local_path == NACL_NO_FILE_PATH)
     return PP_ERROR_FAILED;
-  std::string local_file = g_nacl_ppapi_local_path + "/" + request->url();
+  std::string local_file =
+      g_nacl_ppapi_local_path + "/" +
+      request->url().substr(g_nacl_ppapi_url_path.size() + 1);
 
   // Set up the the file object corresponding to the response body.
   FileRef* file_ref = new FileRef(local_file);

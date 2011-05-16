@@ -35,7 +35,6 @@ class Plugin : public PortableHandle {
 
   // Check that full_url meets the origin requirements for loading a nexe.
   bool IsValidNexeOrigin(nacl::string full_url,
-                         nacl::string local_path,
                          nacl::string* error_string);
 
   // Load support.
@@ -89,15 +88,9 @@ class Plugin : public PortableHandle {
   // Origin of the page with the <embed> tag that created this plugin instance.
   nacl::string origin() const { return origin_; }
 
-  // The full path of the locally-cached copy of the downloaded NaCl
-  // module, if any. May be unset, e.g. in Chrome. Set by LoadNaclModule().
-  nacl::string nacl_module_path() const { return nacl_module_path_; }
-  void set_nacl_module_path(nacl::string path) { nacl_module_path_ = path; }
-
-  // The full URL of the NaCl module as defined by the "src" or (indirectly) by
-  // the "nacl" attribute (and thus seen by the user). Set by LoadNaclModule().
-  nacl::string nacl_module_url() const { return nacl_module_url_; }
-  void set_nacl_module_url(nacl::string url) { nacl_module_url_ = url; }
+  // The URL used as the base for resolving relative urls in src="...", etc.
+  nacl::string base_url() const { return base_url_; }
+  void set_base_url(nacl::string url) { base_url_ = url; }
 
   // The origin of the NaCl module.
   nacl::string nacl_module_origin() const { return nacl_module_origin_; }
@@ -105,11 +98,11 @@ class Plugin : public PortableHandle {
     nacl_module_origin_ = origin;
   }
 
-  // The full URL of the manifest file as set by the "nacl" attribute.  This is
-  // a read-only property.
-  const nacl::string& nacl_manifest_url() const { return nacl_manifest_url_; }
-  void set_nacl_manifest_url(const nacl::string& manifest_url) {
-    nacl_manifest_url_ = manifest_url;
+  // The full URL of the manifest file as set by the "src" attribute.  This is
+  // a read-only property, set by RequestNaClManifest.
+  const nacl::string& manifest_url() const { return manifest_url_; }
+  void set_manifest_url(const nacl::string& manifest_url) {
+    manifest_url_ = manifest_url;
   }
 
   // Set when connection and proxy are available.
@@ -198,9 +191,8 @@ class Plugin : public PortableHandle {
   nacl::string origin_;
   bool origin_valid_;
 
-  nacl::string nacl_manifest_url_;
-  nacl::string nacl_module_path_;
-  nacl::string nacl_module_url_;
+  nacl::string base_url_;
+  nacl::string manifest_url_;
   nacl::string nacl_module_origin_;
   bool nacl_module_ready_;
 

@@ -42,6 +42,7 @@
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/dev/selection_dev.h"
+#include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/dev/widget_client_dev.h"
 #include "ppapi/cpp/dev/zoom_dev.h"
 #include "ppapi/cpp/image_data.h"
@@ -495,6 +496,12 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   set_scriptable_handle(handle);
   PLUGIN_PRINTF(("PluginPpapi::Init (scriptable_handle=%p)\n",
                  static_cast<void*>(scriptable_handle())));
+  url_util_ = pp::URLUtil_Dev::Get();
+  if (url_util_ == NULL) {
+    return false;
+  }
+  PLUGIN_PRINTF(("PluginPpapi::Init (url_util_=%p)\n",
+                 static_cast<const void*>(url_util_)));
 
   bool status = Plugin::Init(
       browser_interface,
@@ -515,9 +522,34 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     const char* manifest_url = LookupArgument(kSrcManifestAttribute);
     if (!mime_type_.empty() && mime_type_ != kNaClMIMEType)
         manifest_url = LookupArgument(kNaClManifestAttribute);
-
-    PLUGIN_PRINTF(("PluginPpapi::Init (manifest_url=%s)\n", manifest_url));
-    if (manifest_url != NULL) {
+    if (manifest_url == NULL) {
+      // If the src attribute isn't set, then we fall back to using the
+      // document URL as the base for resolving relative URLs.  This isn't
+      // strictly correct, as it ignores the settings of <base> tags that
+      // should affect the resolution.
+      // TODO(sehr,elijahtaylor): Get a better base URL.
+      CHECK(url_util_ != NULL);
+      pp::Var base_var =
+          url_util_->GetDocumentURL(
+              *InstanceIdentifierToPPInstance(instance_id()));
+      if (!base_var.is_string()) {
+        PLUGIN_PRINTF(("PluginPpapi::Init (unable to find document url)\n"));
+        return false;
+      }
+      set_base_url(base_var.AsString());
+    } else {
+      // If the src attribute is set, then we use the full URL given by
+      // GetPluginInstanceURL.
+      PLUGIN_PRINTF(("PluginPpapi::Init (manifest_url=%s)\n", manifest_url));
+      CHECK(url_util_ != NULL);
+      pp::Var base_var =
+          url_util_->GetPluginInstanceURL(
+              *InstanceIdentifierToPPInstance(instance_id()));
+      if (!base_var.is_string()) {
+        PLUGIN_PRINTF(("PluginPpapi::Init (unable to find instance url)\n"));
+        return false;
+      }
+      set_base_url(base_var.AsString());
       // Issue a GET for the manifest_url.  The manifest file will be parsed to
       // determine the nexe URL.
       // TODO(sehr,elijahtaylor): implement data URI support.
@@ -666,9 +698,7 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
     return;
   }
   nacl::string error_string;
-  if (!IsValidNexeOrigin(nexe_downloader_.url(),
-                         NACL_NO_FILE_PATH,
-                         &error_string)) {
+  if (!IsValidNexeOrigin(nexe_downloader_.url(), &error_string)) {
     ReportLoadError(error_string);
     return;
   }
@@ -818,7 +848,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                      nexe_downloader_.TimeSinceOpenMilliseconds());
   // The manifest file was successfully opened.  Set the src property on the
   // plugin now, so that the full url is available to error handlers.
-  set_nacl_manifest_url(nexe_downloader_.url());
+  set_manifest_url(nexe_downloader_.url());
   int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"
                  NACL_PRId32")\n", file_desc));
@@ -911,6 +941,18 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
 
 void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
+  PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (base url='%s')\n",
+                 base_url().c_str()));
+  // The full URL of the manifest file is relative to the base url.
+  CHECK(url_util_ != NULL);
+  pp::Var nmf_resolved_url =
+      url_util_->ResolveRelativeToURL(base_url(), pp::Var(url));
+  if (!nmf_resolved_url.is_string()) {
+    ReportLoadError(nacl::string("could not resolve URL \"") + url.c_str() +
+                    "\" relative to \"" + base_url().c_str() + "\".");
+    return;
+  }
+  set_manifest_url(nmf_resolved_url.AsString());
   // Inform JavaScript that a load is starting.
   DispatchProgressEvent("loadstart",
                         false,  // length_computable
@@ -919,7 +961,7 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
   // Will always call the callback on success or failure.
-  nexe_downloader_.Open(url, open_callback);
+  nexe_downloader_.Open(nmf_resolved_url.AsString(), open_callback);
 }
 
 
@@ -934,13 +976,13 @@ bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
   pp::Var exception;
   pp::Var json_parser = GetWindowObject().GetProperty("JSON", &exception);
   if (!exception.is_undefined()) {
-    *error_string = "could not get window.JSON object";
+    *error_string = "could not get window.JSON object.";
     return false;
   }
   pp::Var manifest_candidate =
       json_parser.Call("parse", manifest_json, &exception);
   if (!exception.is_undefined()) {
-    *error_string = "manifest JSON parsing failed";
+    *error_string = "manifest JSON parsing failed.";
     return false;
   }
   // Parse has ensured the string was valid JSON.  Check also that it has
@@ -984,7 +1026,18 @@ bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
     *error_string = "isa \"" + sandbox_isa + "\" in manifest is not a string.";
     return false;
   }
-  *result = nexe_url.AsString();
+  // The contents of the manifest are resolved relative to the manifest URL.
+  CHECK(url_util_ != NULL);
+  pp::Var resolved_url =
+      url_util_->ResolveRelativeToURL(pp::Var(manifest_url()), nexe_url);
+  if (!resolved_url.is_string()) {
+    *error_string =
+        "could not resolve url \"" + nexe_url.AsString() +
+        "\" relative to manifest.";
+    return false;
+  }
+  *result = resolved_url.AsString();
+
 
   NaClOSArch os_arch = kNaClOSArchMax;
 #if NACL_LINUX
@@ -1087,6 +1140,17 @@ void PluginPpapi::UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback) {
       callback_factory_.NewCallback(&PluginPpapi::UrlDidOpenForUrlAsNaClDesc,
                                     downloader,
                                     js_callback);
+  // Untrusted loads are always relative to the page's origin.
+  CHECK(url_util_ != NULL);
+  pp::Var resolved_url =
+      url_util_->ResolveRelativeToURL(pp::Var(base_url()), url);
+  if (!resolved_url.is_string()) {
+    PLUGIN_PRINTF(("PluginPpapi::UrlAsNaClDesc: "
+                   "could not resolve url \"%s\" relative to page \"%s\".",
+                   url.c_str(),
+                   origin().c_str()));
+    return;
+  }
   // Will always call the callback on success or failure.
   downloader->Open(url, open_callback);
 }
@@ -1102,6 +1166,17 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
       callback_factory_.NewCallback(&PluginPpapi::UrlDidOpenForStreamAsFile,
                                     downloader,
                                     callback);
+  // Untrusted loads are always relative to the page's origin.
+  CHECK(url_util_ != NULL);
+  pp::Var resolved_url =
+      url_util_->ResolveRelativeToURL(pp::Var(base_url()), url);
+  if (!resolved_url.is_string()) {
+    PLUGIN_PRINTF(("PluginPpapi::StreamAsFile: "
+                   "could not resolve url \"%s\" relative to page \"%s\".",
+                   url.c_str(),
+                   origin().c_str()));
+    return false;
+  }
   // Will always call the callback on success or failure.
   return downloader->Open(url, open_callback);
 }

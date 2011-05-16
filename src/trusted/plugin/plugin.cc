@@ -113,9 +113,9 @@ bool SetModuleReadyProperty(void* obj, SrpcParams* params) {
 
 bool GetSrcProperty(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  const char* url = plugin->nacl_manifest_url().c_str();
+  const char* url = plugin->manifest_url().c_str();
   PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", url));
-  if (NACL_NO_URL != plugin->nacl_manifest_url()) {
+  if (NACL_NO_URL != plugin->manifest_url()) {
     params->outs()[0]->arrays.str = strdup(url);
     return true;
   } else {
@@ -478,14 +478,12 @@ Plugin::~Plugin() {
 }
 
 bool Plugin::IsValidNexeOrigin(nacl::string full_url,
-                               nacl::string local_path,
                                nacl::string* error_string) {
   PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin (full_url='%s')\n",
                  full_url.c_str()));
   CHECK(NACL_NO_URL != full_url);
   set_nacl_module_origin(nacl::UrlToOrigin(full_url));
-  set_nacl_module_url(full_url);
-  set_nacl_module_path(local_path);
+  set_manifest_url(full_url);
 
   bool module_origin_valid = nacl::OriginIsInWhitelist(nacl_module_origin_);
   PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin "
@@ -501,7 +499,7 @@ bool Plugin::IsValidNexeOrigin(nacl::string full_url,
   // does Chrome; why don't we?
   if (!origin_valid_ || !module_origin_valid) {
     *error_string = nacl::string("module URL ") +
-        nacl_module_url_ + " uses an unsupported protocol. "
+        manifest_url() + " uses an unsupported protocol. "
         "Only http, https, and chrome-extension are currently supported.";
     return false;
   }

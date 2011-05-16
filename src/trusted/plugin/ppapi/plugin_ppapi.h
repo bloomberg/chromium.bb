@@ -34,6 +34,7 @@ class Printing_Dev;
 class Selection_Dev;
 class URLLoader;
 class WidgetClient_Dev;
+class URLUtil_Dev;
 class Zoom_Dev;
 }
 
@@ -199,6 +200,8 @@ class PluginPpapi : public pp::Instance, public Plugin {
 
   // The manifest dictionary.  Used for looking up resources to be loaded.
   pp::Var manifest_object_;
+  // URL processing interface for use in looking up resources in manifests.
+  const pp::URLUtil_Dev* url_util_;
 
   // A string containing the text description of the last error produced by
   // this plugin.
