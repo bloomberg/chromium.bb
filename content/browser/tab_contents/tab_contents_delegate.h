@@ -26,7 +26,6 @@ class HistoryAddPageArgs;
 }
 
 struct ContextMenuParams;
-class DownloadItem;
 class GURL;
 class HtmlDialogUIDelegate;
 struct NativeWebKeyboardEvent;
@@ -201,10 +200,6 @@ class TabContentsDelegate {
   // render view widget during various animations (e.g. infobar closing).
   // This is used to make painting look smoother.
   virtual int GetExtraRenderViewHeight() const;
-
-  virtual bool CanDownload(int request_id);
-
-  virtual void OnStartDownload(DownloadItem* download, TabContents* tab);
 
   // Returns true if the context menu operation was handled by the delegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params);

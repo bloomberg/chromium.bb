@@ -4,9 +4,14 @@
 
 #include "chrome/browser/ui/download/download_tab_helper.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
+#include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -14,7 +19,8 @@
 
 DownloadTabHelper::DownloadTabHelper(TabContentsWrapper* tab_contents)
     : TabContentsObserver(tab_contents->tab_contents()),
-      tab_contents_wrapper_(tab_contents) {
+      tab_contents_wrapper_(tab_contents),
+      delegate_(NULL) {
   DCHECK(tab_contents);
 }
 
@@ -62,6 +68,31 @@ bool DownloadTabHelper::SavePage(const FilePath& main_file,
   return save_package_->Init();
 }
 
+bool DownloadTabHelper::CanDownload(int request_id) {
+  if (delegate_)
+    return delegate_->CanDownload(request_id);
+  return true;
+}
+
+void DownloadTabHelper::OnStartDownload(DownloadItem* download) {
+  DCHECK(download);
+
+  BlockedContentTabHelperDelegate* blocked_content_delegate =
+      tab_contents_wrapper_->blocked_content_tab_helper()->delegate();
+  if (!blocked_content_delegate)
+    return;
+
+  // Download in a constrained popup is shown in the tab that opened it.
+  TabContentsWrapper* tab_contents =
+      blocked_content_delegate->GetConstrainingContentsWrapper(
+          tab_contents_wrapper_);
+
+  if (tab_contents && tab_contents->download_tab_helper()->delegate()) {
+    tab_contents->download_tab_helper()->delegate()->OnStartDownload(
+        download, tab_contents_wrapper_);
+  }
+}
+
 bool DownloadTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DownloadTabHelper, message)
@@ -72,3 +103,9 @@ bool DownloadTabHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void DownloadTabHelper::DidGetUserGesture() {
+  DownloadRequestLimiter* limiter =
+      g_browser_process->download_request_limiter();
+  if (limiter)
+    limiter->OnUserGesture(tab_contents());
+}

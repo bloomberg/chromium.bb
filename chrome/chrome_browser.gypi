@@ -2561,6 +2561,8 @@
         'browser/ui/crypto_module_password_dialog_openssl.cc',
         'browser/ui/download/download_tab_helper.cc',
         'browser/ui/download/download_tab_helper.h',
+        'browser/ui/download/download_tab_helper_delegate.cc',
+        'browser/ui/download/download_tab_helper_delegate.h',
         'browser/ui/find_bar/find_bar.h',
         'browser/ui/find_bar/find_bar_controller.cc',
         'browser/ui/find_bar/find_bar_controller.h',

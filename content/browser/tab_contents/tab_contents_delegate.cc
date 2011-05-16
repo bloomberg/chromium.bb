@@ -93,14 +93,6 @@ int TabContentsDelegate::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-bool TabContentsDelegate::CanDownload(int request_id) {
-  return true;
-}
-
-void TabContentsDelegate::OnStartDownload(DownloadItem* download,
-                                          TabContents* tab) {
-}
-
 bool TabContentsDelegate::HandleContextMenu(const ContextMenuParams& params) {
   return false;
 }
