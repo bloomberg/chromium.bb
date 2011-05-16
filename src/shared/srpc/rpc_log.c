@@ -195,6 +195,11 @@ void NaClSrpcFormatArg(int detail_level,
   if (detail_level > getVerbosity()) {
     return;
   }
+  /* Reserve space for trailing zero. */
+  if (buffer_size == 0) {
+    return;
+  }
+  buffer_size--;
   formatChar(arg->tag, &buffer, &buffer_size);
   formatString("(", &buffer, &buffer_size);
   switch (arg->tag) {
