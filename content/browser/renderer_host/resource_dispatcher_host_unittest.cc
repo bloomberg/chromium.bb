@@ -13,6 +13,8 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/mock_resource_context.h"
+#include "content/browser/renderer_host/global_request_id.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
@@ -170,6 +172,83 @@ class ForwardingFilter : public ResourceMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ForwardingFilter);
 };
 
+// This class is a variation on URLRequestTestJob in that it does
+// not complete start upon entry, only when specifically told to.
+class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
+ public:
+  URLRequestTestDelayedStartJob(net::URLRequest* request)
+      : net::URLRequestTestJob(request) {
+    Init();
+  }
+  URLRequestTestDelayedStartJob(net::URLRequest* request, bool auto_advance)
+      : net::URLRequestTestJob(request, auto_advance) {
+    Init();
+  }
+  URLRequestTestDelayedStartJob(net::URLRequest* request,
+                                const std::string& response_headers,
+                                const std::string& response_data,
+                                bool auto_advance)
+      : net::URLRequestTestJob(
+          request, response_headers, response_data, auto_advance) {
+    Init();
+  }
+
+  // Do nothing until you're told to.
+  virtual void Start() {}
+
+  // Finish starting a URL request whose job is an instance of
+  // URLRequestTestDelayedStartJob.  It is illegal to call this routine
+  // with a URLRequest that does not use URLRequestTestDelayedStartJob.
+  static void CompleteStart(net::URLRequest* request) {
+    for (URLRequestTestDelayedStartJob* job = list_head_;
+         job;
+         job = job->next_) {
+      if (job->request() == request) {
+        job->net::URLRequestTestJob::Start();
+        return;
+      }
+    }
+    NOTREACHED();
+  }
+
+  static bool DelayedStartQueueEmpty() {
+    return !list_head_;
+  }
+
+  static void ClearQueue() {
+    if (list_head_) {
+      LOG(ERROR)
+          << "Unreleased entries on URLRequestTestDelayedStartJob delay queue"
+          << "; may result in leaks.";
+      list_head_ = NULL;
+    }
+  }
+
+ protected:
+  virtual ~URLRequestTestDelayedStartJob() {
+    for (URLRequestTestDelayedStartJob** job = &list_head_; *job;
+         job = &(*job)->next_) {
+      if (*job == this) {
+        *job = (*job)->next_;
+        return;
+      }
+    }
+    NOTREACHED();
+  }
+
+ private:
+  void Init() {
+    next_ = list_head_;
+    list_head_ = this;
+  }
+
+  static URLRequestTestDelayedStartJob* list_head_;
+  URLRequestTestDelayedStartJob* next_;
+};
+
+URLRequestTestDelayedStartJob*
+URLRequestTestDelayedStartJob::list_head_ = NULL;
+
 class ResourceDispatcherHostTest : public testing::Test,
                                    public IPC::Message::Sender {
  public:
@@ -198,12 +277,16 @@ class ResourceDispatcherHostTest : public testing::Test,
         "test",
         &ResourceDispatcherHostTest::Factory);
     EnsureTestSchemeIsAllowed();
+    delay_start_ = false;
   }
 
   virtual void TearDown() {
     net::URLRequest::RegisterProtocolFactory("test", NULL);
     if (!scheme_.empty())
       net::URLRequest::RegisterProtocolFactory(scheme_, old_factory_);
+
+    EXPECT_TRUE(URLRequestTestDelayedStartJob::DelayedStartQueueEmpty());
+    URLRequestTestDelayedStartJob::ClearQueue();
 
     DCHECK(test_fixture_ == this);
     test_fixture_ = NULL;
@@ -228,7 +311,13 @@ class ResourceDispatcherHostTest : public testing::Test,
                        int request_id,
                        const GURL& url);
 
-  void MakeCancelRequest(int request_id);
+  void CancelRequest(int request_id);
+
+  void PauseRequest(int request_id);
+
+  void ResumeRequest(int request_id);
+
+  void CompleteStartRequest(int request_id);
 
   void EnsureTestSchemeIsAllowed() {
     static bool have_white_listed_test_scheme = false;
@@ -265,13 +354,27 @@ class ResourceDispatcherHostTest : public testing::Test,
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      const std::string& scheme) {
     if (test_fixture_->response_headers_.empty()) {
-      return new net::URLRequestTestJob(request);
+      if (delay_start_) {
+        return new URLRequestTestDelayedStartJob(request);
+      } else {
+        return new net::URLRequestTestJob(request);
+      }
     } else {
-      return new net::URLRequestTestJob(request,
-                                        test_fixture_->response_headers_,
-                                        test_fixture_->response_data_,
-                                        false);
+      if (delay_start_) {
+        return new URLRequestTestDelayedStartJob(
+            request, test_fixture_->response_headers_,
+            test_fixture_->response_data_, false);
+      } else {
+        return new net::URLRequestTestJob(request,
+                                          test_fixture_->response_headers_,
+                                          test_fixture_->response_data_,
+                                          false);
+      }
     }
+  }
+
+  void SetDelayedStartJobGeneration(bool delay_job_start) {
+    delay_start_ = delay_job_start;
   }
 
   MessageLoopForIO message_loop_;
@@ -286,9 +389,11 @@ class ResourceDispatcherHostTest : public testing::Test,
   net::URLRequest::ProtocolFactory* old_factory_;
   ResourceType::Type resource_type_;
   static ResourceDispatcherHostTest* test_fixture_;
+  static bool delay_start_;
 };
 // Static.
 ResourceDispatcherHostTest* ResourceDispatcherHostTest::test_fixture_ = NULL;
+bool ResourceDispatcherHostTest::delay_start_ = false;
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
                                                  int request_id,
@@ -309,8 +414,24 @@ void ResourceDispatcherHostTest::MakeTestRequest(
   KickOffRequest();
 }
 
-void ResourceDispatcherHostTest::MakeCancelRequest(int request_id) {
+void ResourceDispatcherHostTest::CancelRequest(int request_id) {
   host_.CancelRequest(filter_->child_id(), request_id, false);
+}
+
+void ResourceDispatcherHostTest::PauseRequest(int request_id) {
+  host_.PauseRequest(filter_->child_id(), request_id, true);
+}
+
+void ResourceDispatcherHostTest::ResumeRequest(int request_id) {
+  host_.PauseRequest(filter_->child_id(), request_id, false);
+}
+
+void ResourceDispatcherHostTest::CompleteStartRequest(int request_id) {
+  GlobalRequestID gid(filter_->child_id(), request_id);
+  net::URLRequest* req = host_.GetURLRequest(gid);
+  EXPECT_TRUE(req);
+  if (req)
+    URLRequestTestDelayedStartJob::CompleteStart(req);
 }
 
 void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
@@ -386,7 +507,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
   MakeTestRequest(0, 2, net::URLRequestTestJob::test_url_2());
   MakeTestRequest(0, 3, net::URLRequestTestJob::test_url_3());
-  MakeCancelRequest(2);
+  CancelRequest(2);
 
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -414,6 +535,55 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   void* iter = NULL;
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &request_id));
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &status));
+
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
+}
+
+TEST_F(ResourceDispatcherHostTest, PausedStartError) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  SetDelayedStartJobGeneration(true);
+  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_error());
+  PauseRequest(1);
+  CompleteStartRequest(1);
+
+  // flush all the pending requests
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(0, host_.pending_requests());
+}
+
+TEST_F(ResourceDispatcherHostTest, PausedCancel) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  // Test cancel when paused after request start.
+  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_2());
+  PauseRequest(1);
+  CancelRequest(1);
+
+  // flush all the pending requests
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  ASSERT_EQ(1U, msgs.size());
+
+  // Check that request 1 got canceled.
+  ASSERT_EQ(2U, msgs[0].size());
+  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
+  ASSERT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][1].type());
+
+  int request_id;
+  net::URLRequestStatus status;
+
+  void* iter = NULL;
+  ASSERT_TRUE(IPC::ReadParam(&msgs[0][1], &iter, &request_id));
+  ASSERT_TRUE(IPC::ReadParam(&msgs[0][1], &iter, &status));
 
   EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
 }

@@ -1220,12 +1220,13 @@ bool ResourceDispatcherHost::CanSetCookie(net::URLRequest* request,
 void ResourceDispatcherHost::OnResponseStarted(net::URLRequest* request) {
   VLOG(1) << "OnResponseStarted: " << request->url().spec();
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
-  if (PauseRequestIfNeeded(info)) {
-    VLOG(1) << "OnResponseStarted pausing: " << request->url().spec();
-    return;
-  }
 
   if (request->status().is_success()) {
+    if (PauseRequestIfNeeded(info)) {
+      VLOG(1) << "OnResponseStarted pausing: " << request->url().spec();
+      return;
+    }
+
     // We want to send a final upload progress message prior to sending
     // the response complete message even if we're waiting for an ack to
     // to a previous upload progress message.
@@ -1526,6 +1527,15 @@ void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
   DCHECK(request);
   VLOG(1) << "OnReadCompleted: " << request->url().spec();
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+
+  // bytes_read == -1 always implies an error, so we want to skip the
+  // pause checks and just call OnResponseCompleted.
+  if (bytes_read == -1) {
+    DCHECK(!request->status().is_success());
+
+    OnResponseCompleted(request);
+    return;
+  }
 
   // OnReadCompleted can be called without Read (e.g., for chrome:// URLs).
   // Make sure we know that a read has begun.
