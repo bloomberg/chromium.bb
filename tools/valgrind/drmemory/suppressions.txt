@@ -313,6 +313,11 @@ GDI32.dll!CreateICW
 UNINITIALIZED READ
 USER32.dll!UnregisterClass*
 
+# http://code.google.com/p/drmemory/issues/detail?id=382
+LEAK
+...
+ntdll.dll!CsrNewThread
+
 # http://code.google.com/p/drmemory/issues/detail?id=395
 UNINITIALIZED READ
 ...
