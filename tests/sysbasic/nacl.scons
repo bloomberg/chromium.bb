@@ -5,16 +5,9 @@
 
 Import('env')
 
-# Don't use -lnosys on pnacl - it's automagically included and will spoil
-# things if included before -lc
-if env.Bit('bitcode'):
-  extra_libs = ['pthread']
-else:
-  extra_libs = ['pthread', 'nosys']
-
 env.ComponentProgram('sysbasic.nexe',
                      'sysbasic.c',
-                     EXTRA_LIBS=extra_libs)
+                     EXTRA_LIBS=['pthread'])
 
 node = env.CommandSelLdrTestNacl(
     'sysbasic_test.out',

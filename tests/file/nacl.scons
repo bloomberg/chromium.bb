@@ -5,11 +5,9 @@
 
 Import('env')
 
-# NOTE: this tests pulls in a dependency to unlink which gets
-#       resolved by nossys
 env.ComponentProgram('file.nexe',
                      'file.cc',
-                     EXTRA_LIBS=['pthread', 'nosys'])
+                     EXTRA_LIBS=['pthread'])
 
 # TODO: add tests back in
 # NOTE: this smoke tests currently fails in "test17"
