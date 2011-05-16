@@ -17,6 +17,9 @@ RenderViewHostObserver::~RenderViewHostObserver() {
     render_view_host_->RemoveObserver(this);
 }
 
+void RenderViewHostObserver::RenderViewHostInitialized() {
+}
+
 void RenderViewHostObserver::RenderViewHostDestroyed() {
   delete this;
 }

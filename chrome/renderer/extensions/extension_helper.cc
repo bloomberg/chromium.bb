@@ -109,8 +109,10 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GetApplicationInfo, OnGetApplicationInfo)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserWindowId, OnUpdateBrowserWindowId)
-    IPC_MESSAGE_HANDLER(ViewMsg_NotifyRenderViewType, OnNotifyRendererViewType)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
+                        OnUpdateBrowserWindowId)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
+                        OnNotifyRendererViewType)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

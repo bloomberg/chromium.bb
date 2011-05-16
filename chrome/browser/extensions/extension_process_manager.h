@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/view_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/view_types.h"
 
 class Browser;
 class BrowsingInstance;

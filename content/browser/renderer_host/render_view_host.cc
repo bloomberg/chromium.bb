@@ -18,7 +18,6 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -180,11 +179,11 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
   Send(new ViewMsg_AllowBindings(routing_id(), enabled_bindings_));
-  UpdateBrowserWindowId(delegate_->GetBrowserWindowID());
-  Send(new ViewMsg_NotifyRenderViewType(routing_id(),
-                                        delegate_->GetRenderViewType()));
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
+
+  FOR_EACH_OBSERVER(
+      RenderViewHostObserver, observers_, RenderViewHostInitialized());
 
   return true;
 }
@@ -754,8 +753,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnMsgDidContentsPreferredSizeChange)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardMessageToExternalHost,
-                        OnMsgForwardMessageToExternalHost)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
                                     OnMsgRunJavaScriptMessage)
@@ -1061,12 +1058,6 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
   view->UpdatePreferredSize(new_size);
 }
 
-void RenderViewHost::OnMsgForwardMessageToExternalHost(
-    const std::string& message, const std::string& origin,
-    const std::string& target) {
-  delegate_->ProcessExternalHostMessage(message, origin, target);
-}
-
 void RenderViewHost::DisassociateFromPopupCount() {
   Send(new ViewMsg_DisassociateFromPopupCount(routing_id()));
 }
@@ -1316,10 +1307,6 @@ void RenderViewHost::ForwardEditCommand(const std::string& name,
 void RenderViewHost::ForwardEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
   Send(new ViewMsg_SetEditCommandsForNextKeyEvent(routing_id(), edit_commands));
-}
-
-void RenderViewHost::UpdateBrowserWindowId(int window_id) {
-  Send(new ViewMsg_UpdateBrowserWindowId(routing_id(), window_id));
 }
 
 void RenderViewHost::PerformCustomContextMenuAction(

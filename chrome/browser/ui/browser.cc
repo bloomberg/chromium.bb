@@ -102,6 +102,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
@@ -2825,10 +2826,11 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
   SetAsDelegate(contents, this);
   contents->controller().SetWindowID(session_id());
 
-  // Each renderer holds the ID of the window that hosts it. Notify the
-  // renderer that the window ID changed.
-  contents->render_view_host()->UpdateBrowserWindowId(
-      contents->controller().window_id().id());
+  // Extension code in the renderer holds the ID of the window that hosts it.
+  // Notify it that the window ID changed.
+  contents->render_view_host()->Send(new ExtensionMsg_UpdateBrowserWindowId(
+      contents->render_view_host()->routing_id(),
+      contents->controller().window_id().id()));
 
   SyncHistoryWithTabs(index);
 

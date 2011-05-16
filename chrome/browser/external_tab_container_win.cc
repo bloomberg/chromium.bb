@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -90,6 +91,7 @@ ExternalTabContainer::ExternalTabContainer(
     : views::WidgetWin(new views::Widget),
       automation_(automation),
       tab_contents_container_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_registrar_(this)),
       tab_handle_(0),
       ignore_next_load_notification_(false),
       automation_resource_message_filter_(filter),
@@ -185,6 +187,8 @@ bool ExternalTabContainer::Init(Profile* profile,
       NotificationType::EXTERNAL_TAB_CREATED,
       Source<NavigationController>(controller),
       NotificationService::NoDetails());
+
+  tab_contents_registrar_.Observe(tab_contents_->tab_contents());
 
   // Start loading initial URL
   if (!initial_url.is_empty()) {
@@ -513,15 +517,6 @@ void ExternalTabContainer::UpdateTargetURL(TabContents* source,
 void ExternalTabContainer::ContentsZoomChange(bool zoom_in) {
 }
 
-void ExternalTabContainer::ForwardMessageToExternalHost(
-    const std::string& message, const std::string& origin,
-    const std::string& target) {
-  if (automation_) {
-    automation_->Send(new AutomationMsg_ForwardMessageToExternalHost(
-        tab_handle_, message, origin, target));
-  }
-}
-
 bool ExternalTabContainer::IsExternalTabContainer() const {
   return true;
 }
@@ -701,6 +696,26 @@ void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
 void ExternalTabContainer::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
   browser::ShowRepostFormWarningDialog(GetNativeView(), tab_contents);
+}
+
+bool ExternalTabContainer::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ExternalTabContainer, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardMessageToExternalHost,
+                        OnForwardMessageToExternalHost)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void ExternalTabContainer::OnForwardMessageToExternalHost(
+    const std::string& message,
+    const std::string& origin,
+    const std::string& target) {
+  if (automation_) {
+    automation_->Send(new AutomationMsg_ForwardMessageToExternalHost(
+        tab_handle_, message, origin, target));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 
 ExtensionMessageHandler::ExtensionMessageHandler(
     RenderViewHost* render_view_host)
@@ -27,6 +28,13 @@ bool ExtensionMessageHandler::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ExtensionMessageHandler::RenderViewHostInitialized() {
+  Send(new ExtensionMsg_NotifyRenderViewType(
+      routing_id(), render_view_host()->delegate()->GetRenderViewType()));
+  Send(new ExtensionMsg_UpdateBrowserWindowId(
+      routing_id(), render_view_host()->delegate()->GetBrowserWindowID()));
 }
 
 void ExtensionMessageHandler::OnPostMessage(int port_id,

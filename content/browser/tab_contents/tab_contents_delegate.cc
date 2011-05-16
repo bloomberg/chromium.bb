@@ -59,12 +59,6 @@ void TabContentsDelegate::BeforeUnloadFired(TabContents* tab,
   *proceed_to_fire_unload = true;
 }
 
-void TabContentsDelegate::ForwardMessageToExternalHost(
-    const std::string& message,
-    const std::string& origin,
-    const std::string& target) {
-}
-
 bool TabContentsDelegate::IsExternalTabContainer() const { return false; }
 
 void TabContentsDelegate::SetFocusToLocationBar(bool select_all) {}

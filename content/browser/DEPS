@@ -123,8 +123,6 @@ include_rules = [
 
   "+chrome/common/security_style.h",
 
-  "+chrome/common/view_types.h",
-
   # ONLY USED BY TESTS
   "+chrome/browser/chromeos/cros/mock_network_library.h",
   "+chrome/browser/net/url_request_failed_dns_job.h",

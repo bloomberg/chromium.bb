@@ -158,11 +158,6 @@ class TabContentsDelegate {
                                  bool proceed,
                                  bool* proceed_to_fire_unload);
 
-  // Send IPC to external host. Default implementation is do nothing.
-  virtual void ForwardMessageToExternalHost(const std::string& message,
-                                            const std::string& origin,
-                                            const std::string& target);
-
   // If the delegate is hosting tabs externally.
   virtual bool IsExternalTabContainer() const;
 

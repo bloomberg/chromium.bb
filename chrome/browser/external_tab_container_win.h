@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -41,6 +42,7 @@ class ViewProp;
 // external process. This class provides the FocusManger needed by the
 // TabContents as well as an implementation of TabContentsDelegate.
 class ExternalTabContainer : public TabContentsDelegate,
+                             public TabContentsObserver,
                              public NotificationObserver,
                              public views::WidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
@@ -130,9 +132,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual bool IsPopup(const TabContents* source) const;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual void ContentsZoomChange(bool zoom_in);
-  virtual void ForwardMessageToExternalHost(const std::string& message,
-                                            const std::string& origin,
-                                            const std::string& target);
   virtual bool IsExternalTabContainer() const;
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
@@ -167,6 +166,15 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(RenderViewHost* render_view_host);
+
+  // Overridden from TabContentsObserver:
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // Message handlers
+  void OnForwardMessageToExternalHost(const std::string& message,
+                                      const std::string& origin,
+                                      const std::string& target);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -262,6 +270,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   scoped_refptr<AutomationProvider> automation_;
 
   NotificationRegistrar registrar_;
+
+  TabContentsObserver::Registrar tab_contents_registrar_;
 
   // A view to handle focus cycling
   TabContentsContainer* tab_contents_container_;

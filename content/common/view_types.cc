@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/view_types.h"
+#include "content/common/view_types.h"
 
 const char* ViewType::kTabContents = "TAB";
 const char* ViewType::kBackgroundPage = "BACKGROUND";

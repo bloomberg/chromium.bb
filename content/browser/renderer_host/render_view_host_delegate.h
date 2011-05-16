@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "chrome/common/view_types.h"
+#include "content/common/view_types.h"
 #include "content/common/window_container_type.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
@@ -404,13 +404,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual void RequestOpenURL(const GURL& url,
                               const GURL& referrer,
                               WindowOpenDisposition disposition) {}
-
-  // A message for external host. By default we ignore such messages.
-  // |receiver| can be a receiving script and |message| is any
-  // arbitrary string that makes sense to the receiver.
-  virtual void ProcessExternalHostMessage(const std::string& message,
-                                          const std::string& origin,
-                                          const std::string& target) {}
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,

@@ -20,6 +20,10 @@ class RenderViewHostObserver : public IPC::Channel::Listener,
 
   virtual ~RenderViewHostObserver();
 
+  // Invoked after the RenderViewHost is created in the renderer process.  After
+  // this point, messages can be sent to it (or to observers in the renderer).
+  virtual void RenderViewHostInitialized();
+
   // Invoked when the RenderViewHost is being destroyed. Gives subclasses a
   // chance to cleanup.  The base implementation will delete the object.
   virtual void RenderViewHostDestroyed();

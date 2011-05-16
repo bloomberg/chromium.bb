@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"

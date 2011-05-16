@@ -1857,13 +1857,6 @@ void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
   }
 }
 
-void TabContents::ProcessExternalHostMessage(const std::string& message,
-                                             const std::string& origin,
-                                             const std::string& target) {
-  if (delegate())
-    delegate()->ForwardMessageToExternalHost(message, origin, target);
-}
-
 void TabContents::RunJavaScriptMessage(
     const RenderViewHost* rvh,
     const std::wstring& message,

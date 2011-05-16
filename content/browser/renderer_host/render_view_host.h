@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "base/process_util.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/page_zoom.h"
 #include "content/common/window_container_type.h"
@@ -411,9 +410,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int route_id);
 
-  // Tells the renderer which browser window it is being attached to.
-  void UpdateBrowserWindowId(int window_id);
-
   // Tells the render view that a custom context action has been selected.
   void PerformCustomContextMenuAction(
       const webkit_glue::CustomContextMenuContext& custom_context,
@@ -497,9 +493,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgOpenURL(const GURL& url, const GURL& referrer,
                     WindowOpenDisposition disposition);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
-  void OnMsgForwardMessageToExternalHost(const std::string& message,
-                                         const std::string& origin,
-                                         const std::string& target);
   void OnMsgSetTooltipText(const std::wstring& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgSelectionChanged(const std::string& text, const ui::Range& range);

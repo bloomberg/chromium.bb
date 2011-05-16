@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "chrome/common/view_types.h"
+#include "content/common/view_types.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_observer_tracker.h"

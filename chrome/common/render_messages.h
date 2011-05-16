@@ -24,7 +24,6 @@
 #include "chrome/common/search_provider.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
-#include "chrome/common/view_types.h"
 #include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
@@ -94,7 +93,6 @@ IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
-IPC_ENUM_TRAITS(ViewType::Type)
 IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
 
 IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
@@ -239,14 +237,6 @@ IPC_MESSAGE_ROUTED4(ViewMsg_DetermineIfPageSupportsInstant,
                     bool /* verbatim */,
                     int /* selection_start */,
                     int /* selection_end */)
-
-// Tell the renderer which browser window it's being attached to.
-IPC_MESSAGE_ROUTED1(ViewMsg_UpdateBrowserWindowId,
-                    int /* id of browser window */)
-
-// Tell the renderer which type this view is.
-IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
-                    ViewType::Type /* view_type */)
 
 // Tells the renderer to translate the page contents from one language to
 // another.

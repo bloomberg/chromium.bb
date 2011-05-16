@@ -242,8 +242,6 @@
         'common/url_constants.cc',
         'common/url_constants.h',
         'common/utility_messages.h',
-        'common/view_types.cc',
-        'common/view_types.h',
         'common/visitedlink_common.cc',
         'common/visitedlink_common.h',
         'common/web_apps.cc',

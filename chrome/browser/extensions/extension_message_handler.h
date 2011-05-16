@@ -27,6 +27,7 @@ class ExtensionMessageHandler : public RenderViewHostObserver {
   virtual ~ExtensionMessageHandler();
 
   // RenderViewHostObserver overrides.
+  virtual void RenderViewHostInitialized();
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:

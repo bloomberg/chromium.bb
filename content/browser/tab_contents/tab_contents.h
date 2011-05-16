@@ -748,9 +748,6 @@ class TabContents : public PageNavigator,
       int32 page_id);
   virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition);
-  virtual void ProcessExternalHostMessage(const std::string& message,
-                                          const std::string& origin,
-                                          const std::string& target);
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
                                     const std::wstring& message,
                                     const std::wstring& default_prompt,

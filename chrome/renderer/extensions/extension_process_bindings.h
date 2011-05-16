@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/common/view_types.h"
 #include "v8/include/v8.h"
 
 class ExtensionDispatcher;
