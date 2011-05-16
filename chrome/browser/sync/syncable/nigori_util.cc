@@ -19,13 +19,17 @@ ModelTypeSet GetEncryptedDataTypes(BaseTransaction* const trans) {
   Entry entry(trans, GET_BY_SERVER_TAG, nigori_tag);
   if (!entry.good()) {
     VLOG(1) << "Nigori node not found, assuming no encrypted datatypes.";
-    return ModelTypeSet();
+    ModelTypeSet encrypted_types;
+    encrypted_types.insert(syncable::PASSWORDS);
+    return encrypted_types;
   }
   if (NIGORI != entry.GetModelType()) {
     // Can happen if we fail to apply the nigori node due to a conflict.
     VLOG(1) << "Nigori node does not have nigori extension. Assuming no"
             << " encrypted datatypes.";
-    return ModelTypeSet();
+    ModelTypeSet encrypted_types;
+    encrypted_types.insert(syncable::PASSWORDS);
+    return encrypted_types;
   }
   const sync_pb::EntitySpecifics& specifics = entry.Get(SPECIFICS);
   return GetEncryptedDataTypesFromNigori(
@@ -54,6 +58,7 @@ ModelTypeSet GetEncryptedDataTypesFromNigori(
     encrypted_types.insert(SESSIONS);
   if (nigori.encrypt_apps())
     encrypted_types.insert(APPS);
+  encrypted_types.insert(PASSWORDS);  // Always encrypted.
   return encrypted_types;
 }
 

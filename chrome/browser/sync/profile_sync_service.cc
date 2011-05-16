@@ -351,7 +351,14 @@ void ProfileSyncService::CreateBackend() {
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
-  return !encrypted_types_.empty();
+  syncable::ModelTypeSet preferred_types;
+  GetPreferredDataTypes(&preferred_types);
+  syncable::ModelTypeBitSet preferred_types_bitset =
+      syncable::ModelTypeBitSetFromSet(preferred_types);
+  syncable::ModelTypeBitSet encrypted_types_bitset =
+      syncable::ModelTypeBitSetFromSet(encrypted_types_.current);
+  DCHECK(encrypted_types_.current.count(syncable::PASSWORDS));
+  return (preferred_types_bitset & encrypted_types_bitset).any();
 }
 
 void ProfileSyncService::StartUp() {
@@ -684,8 +691,8 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
 void ProfileSyncService::OnEncryptionComplete(
     const syncable::ModelTypeSet& encrypted_types) {
-  if (encrypted_types_ != encrypted_types) {
-    encrypted_types_ = encrypted_types;
+  if (encrypted_types_.current != encrypted_types) {
+    encrypted_types_.current = encrypted_types;
     NotifyObservers();
   }
 }
@@ -1009,14 +1016,6 @@ void ProfileSyncService::ConfigureDataTypeManager() {
 
   syncable::ModelTypeSet types;
   GetPreferredDataTypes(&types);
-  // We set this special case here since it's the only datatype whose encryption
-  // status we already know. All others are set after the initial sync
-  // completes (for now).
-  // TODO(zea): Implement a better way that uses preferences for which types
-  // need encryption.
-  encrypted_types_.clear();
-  if (types.count(syncable::PASSWORDS) > 0)
-    encrypted_types_.insert(syncable::PASSWORDS);
   if (IsPassphraseRequiredForDecryption()) {
     if (IsEncryptedDatatypeEnabled()) {
       // We need a passphrase still. Prompt the user for a passphrase, and
@@ -1156,12 +1155,18 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
 
 void ProfileSyncService::EncryptDataTypes(
     const syncable::ModelTypeSet& encrypted_types) {
-  backend_->EncryptDataTypes(encrypted_types);
+  if (HasSyncSetupCompleted()) {
+    backend_->EncryptDataTypes(encrypted_types);
+    encrypted_types_.pending.clear();
+  } else {
+    encrypted_types_.pending = encrypted_types;
+  }
 }
 
 void ProfileSyncService::GetEncryptedDataTypes(
     syncable::ModelTypeSet* encrypted_types) const {
-  *encrypted_types = encrypted_types_;
+  *encrypted_types = encrypted_types_.current;
+  DCHECK(encrypted_types->count(syncable::PASSWORDS));
 }
 
 void ProfileSyncService::Observe(NotificationType type,
@@ -1219,6 +1224,9 @@ void ProfileSyncService::Observe(NotificationType type,
       // this is the point where it is safe to switch from config-mode to
       // normal operation.
       backend_->StartSyncingWithServer();
+
+      if (!encrypted_types_.pending.empty())
+        EncryptDataTypes(encrypted_types_.pending);
       break;
     }
     case NotificationType::PREF_CHANGED: {
@@ -1322,3 +1330,9 @@ bool ProfileSyncService::ShouldPushChanges() {
 
   return data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
+
+ProfileSyncService::EncryptedTypes::EncryptedTypes() {
+  current.insert(syncable::PASSWORDS);
+}
+
+ProfileSyncService::EncryptedTypes::~EncryptedTypes() {}

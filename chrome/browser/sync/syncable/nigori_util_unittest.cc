@@ -12,6 +12,7 @@ typedef testing::Test NigoriUtilTest;
 TEST_F(NigoriUtilTest, NigoriEncryptionTypes) {
   sync_pb::NigoriSpecifics nigori;
   ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::PASSWORDS);
   FillNigoriEncryptedTypes(encrypted_types, &nigori);
   ModelTypeSet test_types = GetEncryptedDataTypesFromNigori(nigori);
   EXPECT_EQ(encrypted_types, test_types);
@@ -22,7 +23,6 @@ TEST_F(NigoriUtilTest, NigoriEncryptionTypes) {
   FillNigoriEncryptedTypes(encrypted_types, &nigori);
   test_types = GetEncryptedDataTypesFromNigori(nigori);
   encrypted_types.erase(syncable::NIGORI);     // Should not get set.
-  encrypted_types.erase(syncable::PASSWORDS);  // Should not get set.
   EXPECT_EQ(encrypted_types, test_types);
 
   encrypted_types.erase(syncable::BOOKMARKS);

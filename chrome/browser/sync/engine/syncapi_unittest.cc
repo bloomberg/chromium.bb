@@ -1059,7 +1059,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   sync_manager_.EncryptDataTypes(encrypted_types);
   {
     ReadTransaction trans(sync_manager_.GetUserShare());
-    EXPECT_EQ(encrypted_types,
+    EXPECT_EQ(expected_types,
               GetEncryptedDataTypes(trans.GetWrappedTrans()));
   }
 }
@@ -1114,7 +1114,6 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   {
     ReadTransaction trans(sync_manager_.GetUserShare());
-    encrypted_types.erase(syncable::PASSWORDS);  // Not stored in nigori node.
     EXPECT_EQ(encrypted_types,
               GetEncryptedDataTypes(trans.GetWrappedTrans()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),

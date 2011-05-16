@@ -338,6 +338,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   // know it's safe.
   Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::PASSWORDS);
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
@@ -382,6 +383,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   // know it's safe.
   Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::PASSWORDS);
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
@@ -390,7 +392,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     cryptographer =
         session()->context()->directory_manager()->GetCryptographer(&trans);
 
-    // With empty encrypted_types, this should be true.
+    // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -478,6 +480,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   // know it's safe.
   Cryptographer* cryptographer;
   syncable::ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::PASSWORDS);
   {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
@@ -486,7 +489,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     cryptographer =
         session()->context()->directory_manager()->GetCryptographer(&trans);
 
-    // With empty encrypted_types, this should be true.
+    // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -566,6 +569,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     // changes.
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
     encrypted_types.clear();
+    encrypted_types.insert(syncable::PASSWORDS);
     EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
 
     Syncer::UnsyncedMetaHandles handles;

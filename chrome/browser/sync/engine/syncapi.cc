@@ -2205,7 +2205,6 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
 
   if (routes.count(syncable::PASSWORDS) > 0) {
     // Passwords are encrypted with their own legacy scheme.
-    encrypted_types.insert(syncable::PASSWORDS);
     ReadNode passwords_root(trans);
     std::string passwords_tag =
         syncable::ModelTypeToRootTag(syncable::PASSWORDS);
@@ -2548,9 +2547,6 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
       syncable::ModelTypeSet encrypted_types =
           syncable::GetEncryptedDataTypesFromNigori(nigori);
-      // If passwords are enabled, they're automatically considered encrypted.
-      if (enabled_types.count(syncable::PASSWORDS) > 0)
-        encrypted_types.insert(syncable::PASSWORDS);
       if (!encrypted_types.empty()) {
         Cryptographer* cryptographer = trans.GetCryptographer();
         if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
