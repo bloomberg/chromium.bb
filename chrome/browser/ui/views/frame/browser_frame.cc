@@ -77,10 +77,8 @@ bool BrowserFrame::AlwaysUseNativeFrame() const {
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() &&
-      views::Window::ShouldUseNativeFrame()) {
+  if (!browser_view_->IsBrowserTypeNormal() && ShouldUseNativeFrame())
     return true;
-  }
 
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
@@ -155,9 +153,5 @@ void BrowserFrame::OnNativeWindowActivationChanged(bool active) {
     BrowserList::SetLastActive(browser_view_->browser());
   }
   Window::OnNativeWindowActivationChanged(active);
-}
-
-bool BrowserFrame::ShouldUseNativeFrame() const {
-  return AlwaysUseNativeFrame();
 }
 
