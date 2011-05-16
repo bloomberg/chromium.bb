@@ -15,6 +15,9 @@ namespace chromeos {
 
 class MockOwnershipService : public OwnershipService {
  public:
+  MockOwnershipService();
+  virtual ~MockOwnershipService();
+
   MOCK_METHOD1(set_cached_policy, void(const em::PolicyData&));
   MOCK_METHOD0(has_cached_policy, bool(void));
   MOCK_METHOD0(cached_policy, const em::PolicyData&(void));

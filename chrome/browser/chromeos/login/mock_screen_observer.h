@@ -17,8 +17,9 @@ namespace chromeos {
 // screens.
 class MockScreenObserver : public ScreenObserver {
  public:
-  MockScreenObserver() {}
-  virtual ~MockScreenObserver() {}
+  MockScreenObserver();
+  virtual ~MockScreenObserver();
+
   MOCK_METHOD1(OnExit, void(ExitCodes));
   MOCK_METHOD2(OnSetUserNamePassword,
                void(const std::string&, const std::string&));

@@ -37,6 +37,7 @@ typedef LoggingNotificationDelegate<DesktopNotificationsTest>
 class MockBalloonCollection : public BalloonCollectionImpl {
  public:
   MockBalloonCollection();
+  virtual ~MockBalloonCollection();
 
   // BalloonCollectionImpl overrides
   virtual void Add(const Notification& notification,

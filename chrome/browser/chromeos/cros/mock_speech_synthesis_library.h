@@ -13,8 +13,9 @@ namespace chromeos {
 
 class MockSpeechSynthesisLibrary : public SpeechSynthesisLibrary {
  public:
-  MockSpeechSynthesisLibrary() {}
-  virtual ~MockSpeechSynthesisLibrary() {}
+  MockSpeechSynthesisLibrary();
+  virtual ~MockSpeechSynthesisLibrary();
+
   MOCK_METHOD1(Speak, bool(const char*));
   MOCK_METHOD1(SetSpeakProperties, bool(const char*));
   MOCK_METHOD0(StopSpeaking, bool(void));

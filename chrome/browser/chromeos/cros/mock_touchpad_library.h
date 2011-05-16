@@ -13,8 +13,9 @@ namespace chromeos {
 
 class MockTouchpadLibrary : public TouchpadLibrary {
  public:
-  MockTouchpadLibrary() {}
-  virtual ~MockTouchpadLibrary() {}
+  MockTouchpadLibrary();
+  virtual ~MockTouchpadLibrary();
+
   MOCK_METHOD1(SetSensitivity, void(int));
   MOCK_METHOD1(SetTapToClick, void(bool));
 };

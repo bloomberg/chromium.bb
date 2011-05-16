@@ -15,8 +15,8 @@ namespace chromeos {
 
 class MockInputMethodLibrary : public InputMethodLibrary {
  public:
-  MockInputMethodLibrary() {}
-  virtual ~MockInputMethodLibrary() {}
+  MockInputMethodLibrary();
+  virtual ~MockInputMethodLibrary();
 
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));

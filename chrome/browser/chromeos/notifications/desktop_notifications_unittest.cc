@@ -30,6 +30,8 @@ MockBalloonCollection::MockBalloonCollection() {
   set_notification_ui(new MockNotificationUI());
 }
 
+MockBalloonCollection::~MockBalloonCollection() {}
+
 void MockBalloonCollection::Add(const Notification& notification,
                                 Profile* profile) {
   // Swap in a logging proxy for the purpose of logging calls that

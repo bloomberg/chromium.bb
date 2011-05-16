@@ -13,8 +13,9 @@ namespace chromeos {
 
 class MockScreenLockLibrary : public ScreenLockLibrary {
  public:
-  MockScreenLockLibrary() {}
-  virtual ~MockScreenLockLibrary() {}
+  MockScreenLockLibrary();
+  virtual ~MockScreenLockLibrary();
+
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
