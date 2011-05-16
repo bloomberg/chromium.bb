@@ -8,6 +8,8 @@
 
 #include <stddef.h>  // For size_t
 
+#include "chrome/browser/prefs/pref_service.h"
+
 // This file defines types and declare variables used in "Languages and
 // Input" settings in Chromium OS.
 namespace chromeos {
@@ -27,6 +29,7 @@ struct LanguageMultipleChoicePreference {
     int item_message_id;  // Resource grd ID for the combobox item.
   } values_and_ids[kMaxItems];
   int label_message_id;  // Resource grd ID for the label.
+  PrefService::PrefSyncStatus sync_status;
 };
 
 // The struct is used for preferences of boolean values, like switches to
@@ -36,6 +39,7 @@ struct LanguageBooleanPrefs {
   bool default_pref_value;
   const char* ibus_config_name;
   int message_id;
+  PrefService::PrefSyncStatus sync_status;
 };
 
 // The struct is used for preferences of integer range values, like the
@@ -47,6 +51,7 @@ struct LanguageIntegerRangePreference {
   int max_pref_value;
   const char* ibus_config_name;
   int message_id;
+  PrefService::PrefSyncStatus sync_status;
 };
 
 // ---------------------------------------------------------------------------
@@ -61,7 +66,7 @@ extern const char kHotkeyNextEngineInMenu[];
 extern const char kHotkeyPreviousEngine[];
 
 // ---------------------------------------------------------------------------
-// For Traditional Chinese input method (ibus-chewing)
+// For Traditional Chinese input method (ibus-mozc-chewing)
 // ---------------------------------------------------------------------------
 extern const char kChewingSectionName[];
 
@@ -116,6 +121,7 @@ struct PinyinIntegerPref {
   const char* pref_name;  // Chrome preference name.
   int default_pref_value;
   const char* ibus_config_name;
+  PrefService::PrefSyncStatus sync_status;
   // TODO(yusukes): Add message_id if needed.
 };
 
@@ -143,17 +149,6 @@ const size_t kNumMozcIntegerPrefs = 1;
 // ---------------------------------------------------------------------------
 // For keyboard stuff
 // ---------------------------------------------------------------------------
-// TODO(yusukes): Temporary solution for View version of modifier key remapper.
-// Remove RemapType and kXkbModifierMultipleChoicePrefs when we finish to
-// migrate to WebUI.
-enum RemapType {
-  kNoRemap = 0,
-  kSwapCtrlAndAlt = 1,
-  kSwapSearchAndCtrl = 2,
-};
-extern const LanguageMultipleChoicePreference<int>
-    kXkbModifierMultipleChoicePrefs;
-
 // A delay between the first and the start of the rest.
 extern const int kXkbAutoRepeatDelayInMs;
 // An interval between the repeated keys.

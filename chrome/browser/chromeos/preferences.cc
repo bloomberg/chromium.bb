@@ -104,18 +104,19 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
       PrefService::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageHangulHanjaKeys,
                             language_prefs::kHangulHanjaKeys,
+                            // Don't sync the pref as it's not user-configurable
                             PrefService::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kPinyinBooleanPrefs[i].pref_name,
         language_prefs::kPinyinBooleanPrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kPinyinBooleanPrefs[i].sync_status);
   }
   for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(
         language_prefs::kPinyinIntegerPrefs[i].pref_name,
         language_prefs::kPinyinIntegerPrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kPinyinIntegerPrefs[i].sync_status);
   }
   prefs->RegisterIntegerPref(
       language_prefs::kPinyinDoublePinyinSchema.pref_name,
@@ -126,19 +127,19 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     prefs->RegisterBooleanPref(
         language_prefs::kMozcBooleanPrefs[i].pref_name,
         language_prefs::kMozcBooleanPrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kMozcBooleanPrefs[i].sync_status);
   }
   for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         language_prefs::kMozcMultipleChoicePrefs[i].pref_name,
         language_prefs::kMozcMultipleChoicePrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kMozcMultipleChoicePrefs[i].sync_status);
   }
   for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(
         language_prefs::kMozcIntegerPrefs[i].pref_name,
         language_prefs::kMozcIntegerPrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kMozcIntegerPrefs[i].sync_status);
   }
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapSearchKeyTo,
                              input_method::kSearchKey,

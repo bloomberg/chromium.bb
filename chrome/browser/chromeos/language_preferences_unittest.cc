@@ -102,8 +102,6 @@ TEST(LanguagePreferencesTest, TestDefaultValuesOfMultipleChoicePrefs) {
   EXPECT_TRUE(CheckDefaultValueOfMultipleChoicePrefs(
       kChewingMultipleChoicePrefs, kNumChewingMultipleChoicePrefs));
   EXPECT_TRUE(CheckDefaultValueOfMultipleChoicePrefs(
-      &kXkbModifierMultipleChoicePrefs, 1));
-  EXPECT_TRUE(CheckDefaultValueOfMultipleChoicePrefs(
       &kChewingHsuSelKeyType, 1));
   EXPECT_TRUE(CheckDefaultValueOfMultipleChoicePrefs(
       &kPinyinDoublePinyinSchema, 1));
@@ -116,8 +114,6 @@ TEST(LanguagePreferencesTest, TestDefaultValuesOfMultipleChoicePrefs) {
 TEST(LanguagePreferencesTest, TestDuplicationOfMultipleChoicePrefs) {
   EXPECT_TRUE(CheckDuplicationOfMultipleChoicePrefs(
       kChewingMultipleChoicePrefs, kNumChewingMultipleChoicePrefs));
-  EXPECT_TRUE(CheckDuplicationOfMultipleChoicePrefs(
-      &kXkbModifierMultipleChoicePrefs, 1));
   EXPECT_TRUE(CheckDuplicationOfMultipleChoicePrefs(
       &kChewingHsuSelKeyType, 1));
   EXPECT_TRUE(CheckDuplicationOfMultipleChoicePrefs(
