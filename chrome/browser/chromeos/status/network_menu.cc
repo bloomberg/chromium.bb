@@ -651,8 +651,13 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         id = IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
       label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
+      SkBitmap icon;
+      if (is_locked) {
+        icon = NetworkMenu::IconForDisplay(
+            rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE), NULL);
+      }
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), std::string(), FLAG_TOGGLE_CELLULAR));
+          icon, std::string(), FLAG_TOGGLE_CELLULAR));
     }
   }
 
