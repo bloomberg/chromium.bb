@@ -4,7 +4,7 @@
 <!-- TODO(jungshik): remove this line once we fix bug 14691 -->
 <translation id="IDS_WEB_FONT_FAMILY">Chrome Droid Sans, Song ASC, sans-serif</translation>
 <translation id="IDS_STANDARD_FONT_FAMILY">Droid Sans Fallback</translation>
-<translation id="IDS_FIXED_FONT_FAMILY">Monospace</translation>
+<translation id="IDS_FIXED_FONT_FAMILY">N Song ASC</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">Song ASC</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Droid Sans Fallback</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">12</translation>
