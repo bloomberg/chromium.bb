@@ -197,6 +197,22 @@ def _SetEnvForX86Sdk(env, sdk_path):
               ASFLAGS=[],
               )
 
+  # NaClSdk environment seems to be inherited from the host environment.
+  # On Linux host, this probably makes sense. On Windows and Mac, this
+  # introduces nothing except problems.
+  # For now, simply override the environment settings as in
+  # <scons>/engine/SCons/Platform/posix.py
+  env.Replace(LIBPREFIX='lib',
+              LIBSUFFIX='.a',
+              SHLIBPREFIX='$LIBPREFIX',
+              SHLIBSUFFIX='.so',
+              LIBPREFIXES=['$LIBPREFIX'],
+              LIBSUFFIXES=['$LIBSUFFIX', '$SHLIBSUFFIX'],
+              )
+  # Force -fPIC when compiling for shared libraries.
+  env.AppendUnique(SHCCFLAGS=['-fPIC'],
+                   )
+
 def _SetEnvForPnacl(env, root):
   arch = env['TARGET_FULLARCH']
   assert arch in ['arm', 'x86-32', 'x86-64']
