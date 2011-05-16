@@ -163,7 +163,7 @@ class Window : public Widget,
   gfx::NativeWindow GetNativeWindow() const;
 
   // Whether we should be using a native frame.
-  bool ShouldUseNativeFrame() const;
+  virtual bool ShouldUseNativeFrame() const;
 
   // Tell the window that something caused the frame type to change.
   void FrameTypeChanged();
