@@ -70,6 +70,9 @@ void TabContentsObserver::DocumentLoadedInFrame(int64 frame_id) {
 void TabContentsObserver::DidFinishLoad(int64 frame_id) {
 }
 
+void TabContentsObserver::DidGetUserGesture() {
+}
+
 void TabContentsObserver::DidStartLoading() {
 }
 

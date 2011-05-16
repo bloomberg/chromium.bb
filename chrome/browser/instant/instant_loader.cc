@@ -21,6 +21,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/download/download_tab_helper.h"
+#include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -142,7 +144,8 @@ void InstantLoader::FrameLoadObserver::Observe(
 class InstantLoader::TabContentsDelegateImpl
     : public TabContentsDelegate,
       public NotificationObserver,
-      public TabContentsObserver {
+      public TabContentsObserver,
+      public DownloadTabHelperDelegate {
  public:
   explicit TabContentsDelegateImpl(InstantLoader* loader);
 
@@ -208,7 +211,6 @@ class InstantLoader::TabContentsDelegateImpl
   // instant result when the drag ends, so that during the drag the page won't
   // move around.
   virtual void DragEnded() OVERRIDE;
-  virtual bool CanDownload(int request_id) OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
@@ -219,6 +221,11 @@ class InstantLoader::TabContentsDelegateImpl
 
   // TabContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // DownloadTabHelperDelegate:
+  virtual bool CanDownload(int request_id) OVERRIDE;
+  virtual void OnStartDownload(DownloadItem* download,
+                               TabContentsWrapper* tab) OVERRIDE;
 
  private:
   typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
@@ -511,11 +518,6 @@ void InstantLoader::TabContentsDelegateImpl::DragEnded() {
   CommitFromMouseReleaseIfNecessary();
 }
 
-bool InstantLoader::TabContentsDelegateImpl::CanDownload(int request_id) {
-  // Downloads are disabled.
-  return false;
-}
-
 void InstantLoader::TabContentsDelegateImpl::HandleMouseUp() {
   CommitFromMouseReleaseIfNecessary();
 }
@@ -558,6 +560,16 @@ bool InstantLoader::TabContentsDelegateImpl::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+bool InstantLoader::TabContentsDelegateImpl::CanDownload(int request_id) {
+  // Downloads are disabled.
+  return false;
+}
+
+void InstantLoader::TabContentsDelegateImpl::OnStartDownload(
+    DownloadItem* download, TabContentsWrapper* tab) {
+  // Downloads are disabled.
 }
 
 void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
@@ -810,6 +822,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
 #endif
     }
     preview_contents_->tab_contents()->set_delegate(NULL);
+    preview_contents_->download_tab_helper()->set_delegate(NULL);
     ready_ = false;
   }
   update_bounds_timer_.Stop();
@@ -972,7 +985,7 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
   if (preview_contents_.get() && is_showing_instant() &&
       (force_if_waiting || !is_waiting_for_load())) {
     last_omnibox_bounds_ = omnibox_bounds_;
-    RenderViewHost*host = preview_contents_->render_view_host();
+    RenderViewHost* host = preview_contents_->render_view_host();
     host->Send(new ViewMsg_SearchBoxResize(
         host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
   }
@@ -993,6 +1006,8 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
 
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->set_delegate(preview_tab_contents_delegate_.get());
+  preview_contents_->download_tab_helper()->set_delegate(
+      preview_tab_contents_delegate_.get());
 
   gfx::Rect tab_bounds;
   tab_contents->view()->GetContainerBounds(&tab_bounds);

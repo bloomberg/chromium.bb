@@ -13,11 +13,9 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
@@ -854,26 +852,6 @@ bool TabContents::ShouldShowBookmarkBar() {
     return render_manager_.pending_web_ui()->force_bookmark_bar_visible();
   return (render_manager_.web_ui() == NULL) ?
       false : render_manager_.web_ui()->force_bookmark_bar_visible();
-}
-
-bool TabContents::CanDownload(int request_id) {
-  TabContentsDelegate* d = delegate();
-  if (d)
-    return d->CanDownload(request_id);
-  return true;
-}
-
-void TabContents::OnStartDownload(DownloadItem* download) {
-  DCHECK(download);
-
-  if (!delegate())
-    return;
-
-  // Download in a constrained popup is shown in the tab that opened it.
-  TabContents* tab_contents = delegate()->GetConstrainingContents(this);
-
-  if (tab_contents && tab_contents->delegate())
-    tab_contents->delegate()->OnStartDownload(download, this);
 }
 
 void TabContents::WillClose(ConstrainedWindow* window) {
@@ -1954,11 +1932,8 @@ WebPreferences TabContents::GetWebkitPrefs() {
 }
 
 void TabContents::OnUserGesture() {
-  // See comment in RenderViewHostDelegate::OnUserGesture as to why we do this.
-  DownloadRequestLimiter* limiter =
-      g_browser_process->download_request_limiter();
-  if (limiter)
-    limiter->OnUserGesture(this);
+  // Notify observers.
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidGetUserGesture());
   ExternalProtocolHandler::PermitLaunchUrl();
 }
 
