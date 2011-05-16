@@ -5,6 +5,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <time.h>
 #include <sys/types.h>
@@ -30,23 +32,59 @@
 #define MICROS_PER_UNIT   (1000 * 1000)
 
 /*
+ * We don't convert to floating point, so a precondition is that
+ * tv_usec is within range, i.e., the timeval has been normalized.
+ */
+void PrintTimeval(FILE *iob, struct timeval const *tv) {
+  fprintf(iob, "%"NACL_PRIdNACL_TIME".%06ld", tv->tv_sec, tv->tv_usec);
+}
+
+/* timespec fields should have been ts_nsec etc */
+void PrintTimespec(FILE *iob, struct timespec const *ts) {
+  fprintf(iob, "%"NACL_PRIdNACL_TIME".%09ld", ts->tv_sec, ts->tv_nsec);
+}
+
+void NormalizeTimeval(struct timeval *tv) {
+  int first = 1;
+  while (tv->tv_usec < 0) {
+    tv->tv_usec += MICROS_PER_UNIT;
+    tv->tv_sec -= 1;
+    if (!first) {
+      fprintf(stderr, "NormalizedTimeval: usec too small, 2x normalize!\n");
+      PrintTimeval(stderr, tv); putc('\n', stderr);
+    }
+    first = 0;
+  }
+  first = 1;
+  while (tv->tv_usec >= MICROS_PER_UNIT) {
+    tv->tv_usec -= MICROS_PER_UNIT;
+    tv->tv_sec += 1;
+    if (!first) {
+      fprintf(stderr, "NormalizedTimeval: usec too large, 2x normalize!\n");
+      PrintTimeval(stderr, tv); putc('\n', stderr);
+    }
+    first = 0;
+  }
+}
+
+/*
  * Returns failure count.  t_suspend should not be shorter than 1us,
  * since elapsed time measurement cannot possibly be any finer in
  * granularity.  In practice, 1ms is probably the best we can hope for
  * in timer resolution, so even if nanosleep suspends for 1us, the
  * gettimeofday resolution may cause a false failure report.
  */
-int TestNanoSleep(struct timespec *t_suspend) {
+int TestNanoSleep(struct timespec *t_suspend,
+                  uint64_t        slop_ms) {
   struct timespec t_remain;
   struct timeval  t_start;
   int             rv;
   struct timeval  t_end;
   struct timeval  t_elapsed;
 
-  printf("%40s: %"NACL_PRIdNACL_TIME".%09ld seconds\n",
-         "Requesting nanosleep duration",
-         t_suspend->tv_sec,
-         t_suspend->tv_nsec);
+  printf("%40s: ", "Requesting nanosleep duration");
+  PrintTimespec(stdout, t_suspend);
+  printf(" seconds\n");
   t_remain = *t_suspend;
   /*
    * BUG: ntp or other time adjustments can mess up timing.
@@ -80,29 +118,25 @@ int TestNanoSleep(struct timespec *t_suspend) {
   t_elapsed.tv_sec = t_end.tv_sec - t_start.tv_sec;
   t_elapsed.tv_usec = t_end.tv_usec - t_start.tv_usec + 1;
 
-#if defined(EARLY_WAKEUP_SLOP_MS)
+  NormalizeTimeval(&t_elapsed);
+  printf("%40s: ", "Actual nanosleep duration");
+  PrintTimeval(stdout, &t_elapsed);
+  printf(" seconds\n");
+
   /*
    * On WinXP, Sleep(num_ms) sometimes -- though rarely -- return
-   * earlier than it is supposed to.  We add in some slop here to the
-   * elapsed time so that we can ignore the approximately 1/1000
-   * random test failures that would occur.
+   * earlier than it is supposed to.  This may be due to gettimeofday
+   * issues when running on VMs, rather than actual insomnia.  In any
+   * case, We permit adding in some slop here to the elapsed time so
+   * that we can ignore the sporadic random test failures that would
+   * occur.
    */
-  t_elapsed.tv_usec += EARLY_WAKEUP_SLOP_MS * MICROS_PER_MILLI;
-#endif
+  t_elapsed.tv_usec += slop_ms * MICROS_PER_MILLI;
+  NormalizeTimeval(&t_elapsed);
+  printf("%40s: ", "Slop adjusted duration");
+  PrintTimeval(stdout, &t_elapsed);
+  printf(" seconds\n");
 
-  if (t_elapsed.tv_usec < 0) {
-    t_elapsed.tv_usec += MICROS_PER_UNIT;
-    t_elapsed.tv_sec -= 1;
-  }
-  if (t_elapsed.tv_usec >= MICROS_PER_UNIT) {
-    t_elapsed.tv_usec -= MICROS_PER_UNIT;
-    t_elapsed.tv_sec += 1;
-  }
-
-  printf("%40s: %"NACL_PRIdNACL_TIME".%06ld seconds\n",
-         "Actual nanosleep duration",
-         t_elapsed.tv_sec,
-         t_elapsed.tv_usec);
   if (t_elapsed.tv_sec < t_suspend->tv_sec ||
       (t_elapsed.tv_sec == t_suspend->tv_sec &&
        (NANOS_PER_MICRO * t_elapsed.tv_usec < t_suspend->tv_nsec))) {
@@ -115,9 +149,11 @@ int TestNanoSleep(struct timespec *t_suspend) {
   }
 }
 
-int main(void) {
+int main(int argc, char **argv) {
   int                     num_errors = 0;
   int                     ix;
+  int                     opt;
+  uint64_t                slop_ms = 0;
 
   static struct timespec  t_suspend[] = {
     { 0,   1 * NANOS_PER_MILLI, },
@@ -133,8 +169,20 @@ int main(void) {
     { 1, 500 * NANOS_PER_MILLI, },
   };
 
+  while (EOF != (opt = getopt(argc, argv, "s:"))) {
+    switch (opt) {
+      case 's':
+        slop_ms = strtoull(optarg, (char **) NULL, 0);
+        break;
+      default:
+        fprintf(stderr,
+                "Usage: nanosleep_test [-s slop_for_time_compare_in_ms]\n");
+        return 1;
+    }
+  }
+
   for (ix = 0; ix < sizeof t_suspend/sizeof t_suspend[0]; ++ix) {
-    num_errors += TestNanoSleep(&t_suspend[ix]);
+    num_errors += TestNanoSleep(&t_suspend[ix], slop_ms);
   }
 
   if (0 != num_errors) {

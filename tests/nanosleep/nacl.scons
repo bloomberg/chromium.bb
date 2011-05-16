@@ -6,15 +6,14 @@
 
 Import('env')
 
+slop_args = []
 
 if 'TRUSTED_ENV' in env and (env['TRUSTED_ENV'].Bit('windows') or
                              env['TRUSTED_ENV'].Bit('mac')):
-  env.Append(CPPDEFINES=[
-      # Number of milliseconds by which a thread is allowed to wake up
-      # early, after invoking nanosleep (on Windows, implemnted via
-      # Sleep()).  On WinXP, Sleep sometimes return early.
-      ['EARLY_WAKEUP_SLOP_MS', 10]
-  ])
+  slop_args += ['-s', '10']
+  # Number of milliseconds by which a thread is allowed to wake up
+  # early, after invoking nanosleep (on Windows, implemnted via
+  # Sleep()).  On WinXP, Sleep sometimes return early.
 
 env.ComponentProgram('nanosleep_test.nexe',
                      'nanosleep_test.c',
@@ -25,6 +24,6 @@ is_broken = env.Bit('running_on_vm')
 
 node = env.CommandSelLdrTestNacl(
     'nanosleep_test.out',
-    command=[env.File('nanosleep_test.nexe')])
+    command=[env.File('nanosleep_test.nexe')] + slop_args)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nanosleep_test',
     is_broken=is_broken)
