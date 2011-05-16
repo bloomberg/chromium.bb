@@ -1487,12 +1487,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, DisableBookmarks) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  GetClient(1)->DisableSyncForDatatype(syncable::BOOKMARKS);
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::BOOKMARKS));
   ASSERT_TRUE(AddFolder(1, kGenericFolderName) != NULL);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_FALSE(AllModelsMatch());
 
-  GetClient(1)->EnableSyncForDatatype(syncable::BOOKMARKS);
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::BOOKMARKS));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
 }
@@ -1503,7 +1503,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  GetClient(1)->DisableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(AddFolder(0, IndexedFolderName(0)) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Added a folder."));
   ASSERT_FALSE(AllModelsMatch());
@@ -1511,7 +1511,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(AddFolder(1, IndexedFolderName(1)) != NULL);
   ASSERT_FALSE(AllModelsMatch());
 
-  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
 }

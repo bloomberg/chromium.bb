@@ -152,14 +152,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
-  GetClient(1)->DisableSyncForDatatype(syncable::APPS);
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::APPS));
   InstallApp(GetProfile(0), 0);
   InstallApp(verifier(), 0);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(HasSameAppsAsVerifier(0));
   ASSERT_FALSE(HasSameAppsAsVerifier(1));
 
-  GetClient(1)->EnableSyncForDatatype(syncable::APPS);
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::APPS));
   ASSERT_TRUE(AwaitQuiescence());
 
   InstallAppsPendingForSync(GetProfile(0));
@@ -173,14 +173,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
-  GetClient(1)->DisableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   InstallApp(GetProfile(0), 0);
   InstallApp(verifier(), 0);
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Installed an app."));
   ASSERT_TRUE(HasSameAppsAsVerifier(0));
   ASSERT_FALSE(HasSameAppsAsVerifier(1));
 
-  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
 
   InstallAppsPendingForSync(GetProfile(0));

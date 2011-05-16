@@ -273,14 +273,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DisableAutofill) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  GetClient(0)->DisableSyncForDatatype(syncable::AUTOFILL);
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncable::AUTOFILL));
   AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_FRASIER));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_FALSE(ProfilesMatch(0, 1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());
   ASSERT_EQ(1U, GetAllProfiles(1).size());
 
-  GetClient(0)->EnableSyncForDatatype(syncable::AUTOFILL);
+  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncable::AUTOFILL));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());
@@ -296,14 +296,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  GetClient(1)->DisableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_FRASIER));
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Added a profile."));
   ASSERT_FALSE(ProfilesMatch(0, 1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());
   ASSERT_EQ(1U, GetAllProfiles(1).size());
 
-  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());

@@ -117,17 +117,17 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // See ProfileSyncService::ShouldPushChanges().
   bool ServiceIsPushingChanges() { return service_->ShouldPushChanges(); }
 
-  // Enables sync for a particular sync datatype.
-  void EnableSyncForDatatype(syncable::ModelType datatype);
+  // Enables sync for a particular sync datatype. Returns true on success.
+  bool EnableSyncForDatatype(syncable::ModelType datatype);
 
-  // Disables sync for a particular sync datatype.
-  void DisableSyncForDatatype(syncable::ModelType datatype);
+  // Disables sync for a particular sync datatype. Returns true on success.
+  bool DisableSyncForDatatype(syncable::ModelType datatype);
 
-  // Enables sync for all sync datatypes.
-  void EnableSyncForAllDatatypes();
+  // Enables sync for all sync datatypes. Returns true on success.
+  bool EnableSyncForAllDatatypes();
 
-  // Disables sync for all sync datatypes.
-  void DisableSyncForAllDatatypes();
+  // Disables sync for all sync datatypes. Returns true on success.
+  bool DisableSyncForAllDatatypes();
 
   // Returns a snapshot of the current sync session.
   const browser_sync::sessions::SyncSessionSnapshot*

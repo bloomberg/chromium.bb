@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisablePasswords) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
-  GetClient(1)->DisableSyncForDatatype(syncable::PASSWORDS);
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::PASSWORDS));
   PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form);
   ASSERT_EQ(1, GetVerifierPasswordCount());
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisablePasswords) {
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
-  GetClient(1)->EnableSyncForDatatype(syncable::PASSWORDS);
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::PASSWORDS));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
   ASSERT_EQ(1, GetPasswordCount(1));
@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
-  GetClient(1)->DisableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form);
   ASSERT_EQ(1, GetVerifierPasswordCount());
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
-  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
   ASSERT_EQ(1, GetPasswordCount(1));

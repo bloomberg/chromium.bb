@@ -185,8 +185,8 @@ bool ProfileSyncServiceHarness::SetupSync(
   }
 
   if (wait_state_ == SET_PASSPHRASE_FAILED) {
-    // A passphrase is required for decryption. Sync cannot proceed until
-    // SetPassphrase is called.
+    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
+                  " until SetPassphrase is called.";
     return false;
   }
 
@@ -591,82 +591,117 @@ const SyncSessionSnapshot*
   return NULL;
 }
 
-void ProfileSyncServiceHarness::EnableSyncForDatatype(
+bool ProfileSyncServiceHarness::EnableSyncForDatatype(
     syncable::ModelType datatype) {
   LogClientInfo("EnableSyncForDatatype", 1);
+
   syncable::ModelTypeSet synced_datatypes;
   if (wait_state_ == SYNC_DISABLED) {
-    wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
     synced_datatypes.insert(datatype);
-    DCHECK(SetupSync(synced_datatypes)) << "Reinitialization of Client " << id_
-                                        << " failed.";
-  } else {
-    DCHECK(service() != NULL) << "EnableSyncForDatatype(): service() is null.";
-    service()->GetPreferredDataTypes(&synced_datatypes);
-    syncable::ModelTypeSet::iterator it = synced_datatypes.find(
-        syncable::ModelTypeFromInt(datatype));
-    if (it == synced_datatypes.end()) {
-      synced_datatypes.insert(syncable::ModelTypeFromInt(datatype));
-      service()->OnUserChoseDatatypes(false, synced_datatypes);
-      wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
-      AwaitSyncCycleCompletion("Waiting for datatype configuration.");
-      VLOG(1) << "EnableSyncForDatatype(): Enabled sync for datatype "
-              << syncable::ModelTypeToString(datatype) << " on Client " << id_;
-    } else {
-      VLOG(1) << "EnableSyncForDatatype(): Sync already enabled for datatype "
-              << syncable::ModelTypeToString(datatype) << " on Client " << id_;
-    }
+    return SetupSync(synced_datatypes);
   }
-}
 
-void ProfileSyncServiceHarness::DisableSyncForDatatype(
-    syncable::ModelType datatype) {
-  LogClientInfo("DisableSyncForDatatype", 1);
-  syncable::ModelTypeSet synced_datatypes;
-  DCHECK(service() != NULL) << "DisableSyncForDatatype(): service() is null.";
+  if (service() == NULL) {
+    LOG(ERROR) << "EnableSyncForDatatype(): service() is null.";
+    return false;
+  }
+
   service()->GetPreferredDataTypes(&synced_datatypes);
   syncable::ModelTypeSet::iterator it = synced_datatypes.find(datatype);
   if (it != synced_datatypes.end()) {
-    synced_datatypes.erase(it);
-    service()->OnUserChoseDatatypes(false, synced_datatypes);
-    AwaitSyncCycleCompletion("Waiting for datatype configuration.");
-    VLOG(1) << "DisableSyncForDatatype(): Disabled sync for datatype "
-            << syncable::ModelTypeToString(datatype) << " on Client " << id_;
-  } else {
+    VLOG(1) << "EnableSyncForDatatype(): Sync already enabled for datatype "
+            << syncable::ModelTypeToString(datatype)
+            << " on Client " << id_ << ".";
+    return true;
+  }
+
+  synced_datatypes.insert(syncable::ModelTypeFromInt(datatype));
+  service()->OnUserChoseDatatypes(false, synced_datatypes);
+  if (AwaitSyncCycleCompletion("Datatype configuration.")) {
+    VLOG(1) << "EnableSyncForDatatype(): Enabled sync for datatype "
+            << syncable::ModelTypeToString(datatype)
+            << " on Client " << id_ << ".";
+    return true;
+  }
+
+  LogClientInfo("EnableSyncForDatatype failed", 0);
+  return false;
+}
+
+bool ProfileSyncServiceHarness::DisableSyncForDatatype(
+    syncable::ModelType datatype) {
+  LogClientInfo("DisableSyncForDatatype", 1);
+
+  syncable::ModelTypeSet synced_datatypes;
+  if (service() == NULL) {
+    LOG(ERROR) << "DisableSyncForDatatype(): service() is null.";
+    return false;
+  }
+
+  service()->GetPreferredDataTypes(&synced_datatypes);
+  syncable::ModelTypeSet::iterator it = synced_datatypes.find(datatype);
+  if (it == synced_datatypes.end()) {
     VLOG(1) << "DisableSyncForDatatype(): Sync already disabled for datatype "
-            << syncable::ModelTypeToString(datatype) << " on Client " << id_;
+            << syncable::ModelTypeToString(datatype)
+            << " on Client " << id_ << ".";
+    return true;
   }
+
+  synced_datatypes.erase(it);
+  service()->OnUserChoseDatatypes(false, synced_datatypes);
+  if (AwaitSyncCycleCompletion("Datatype reconfiguration.")) {
+    VLOG(1) << "DisableSyncForDatatype(): Disabled sync for datatype "
+            << syncable::ModelTypeToString(datatype)
+            << " on Client " << id_ << ".";
+    return true;
+  }
+
+  LogClientInfo("DisableSyncForDatatype failed", 0);
+  return false;
 }
 
-void ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
+bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
   LogClientInfo("EnableSyncForAllDatatypes", 1);
+
   if (wait_state_ == SYNC_DISABLED) {
-    wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
-    DCHECK(SetupSync()) << "Reinitialization of Client " << id_ << " failed.";
-  } else {
-    syncable::ModelTypeSet synced_datatypes;
-    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-        i < syncable::MODEL_TYPE_COUNT; ++i) {
-      synced_datatypes.insert(syncable::ModelTypeFromInt(i));
-    }
-    DCHECK(service() != NULL) << "EnableSyncForAllDatatypes(): service() is "
-                                 " null.";
-    service()->OnUserChoseDatatypes(true, synced_datatypes);
-    wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
-    AwaitSyncCycleCompletion("Waiting for datatype configuration.");
-    VLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes on "
-               "Client " << id_;
+    return SetupSync();
   }
+
+  if (service() == NULL) {
+    LOG(ERROR) << "EnableSyncForAllDatatypes(): service() is null.";
+    return false;
+  }
+
+  syncable::ModelTypeSet synced_datatypes;
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT;
+       ++i) {
+    synced_datatypes.insert(syncable::ModelTypeFromInt(i));
+  }
+  service()->OnUserChoseDatatypes(true, synced_datatypes);
+  if (AwaitSyncCycleCompletion("Datatype reconfiguration.")) {
+    VLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes on "
+               "Client " << id_ << ".";
+    return true;
+  }
+
+  LogClientInfo("EnableSyncForAllDatatypes failed", 0);
+  return false;
 }
 
-void ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
+bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
   LogClientInfo("DisableSyncForAllDatatypes", 1);
-  DCHECK(service() != NULL) << "EnableSyncForAllDatatypes(): service() is "
-                               "null.";
+
+  if (service() == NULL) {
+    LOG(ERROR) << "DisableSyncForAllDatatypes(): service() is null.";
+    return false;
+  }
+
   service()->DisableForUser();
   wait_state_ = SYNC_DISABLED;
   VLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all datatypes on "
              "Client " << id_;
+  return true;
 }
 
 std::string ProfileSyncServiceHarness::GetUpdatedTimestamp(
@@ -701,17 +736,13 @@ void ProfileSyncServiceHarness::LogClientInfo(const std::string& message,
                       << ServiceIsPushingChanges()
                       << ", has_pending_backend_migration: "
                       << service()->HasPendingBackendMigration();
-
-    if (service()->HasUnsyncedItems()) {
-         service()->LogUnsyncedItems(log_level);
-      }
     } else {
       VLOG(log_level) << "Client " << id_ << ": " << message
-              << ": Sync session snapshot not available.";
+                      << ": Sync session snapshot not available.";
     }
   } else {
     VLOG(log_level) << "Client " << id_ << ": " << message
-            << ": Sync service not available.";
+                    << ": Sync service not available.";
   }
 }
 

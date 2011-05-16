@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DisableThemes) {
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
   ASSERT_FALSE(UsingCustomTheme(verifier()));
 
-  GetClient(1)->DisableSyncForDatatype(syncable::THEMES);
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::THEMES));
   UseCustomTheme(GetProfile(0), 0);
   UseCustomTheme(verifier(), 0);
   ASSERT_TRUE(AwaitQuiescence());
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DisableThemes) {
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 
-  GetClient(1)->EnableSyncForDatatype(syncable::THEMES);
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::THEMES));
   ASSERT_TRUE(AwaitQuiescence());
 
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_DisableSync) {
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
   ASSERT_FALSE(UsingCustomTheme(verifier()));
 
-  GetClient(1)->DisableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   UseCustomTheme(GetProfile(0), 0);
   UseCustomTheme(verifier(), 0);
   ASSERT_TRUE(
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_DisableSync) {
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 
-  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
 
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));

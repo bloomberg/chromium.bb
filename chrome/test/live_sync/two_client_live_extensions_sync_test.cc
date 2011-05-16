@@ -152,13 +152,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableExtensions) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
-  GetClient(1)->DisableSyncForDatatype(syncable::EXTENSIONS);
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::EXTENSIONS));
   InstallExtension(GetProfile(0), 1);
   InstallExtension(verifier(), 1);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_FALSE(AllProfilesHaveSameExtensionsAsVerifier());
 
-  GetClient(1)->EnableSyncForDatatype(syncable::EXTENSIONS);
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::EXTENSIONS));
   ASSERT_TRUE(AwaitQuiescence());
   InstallExtensionsPendingForSync(GetProfile(0));
   InstallExtensionsPendingForSync(GetProfile(1));
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
-  GetClient(1)->DisableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   InstallExtension(GetProfile(0), 0);
   InstallExtension(verifier(), 0);
   ASSERT_TRUE(
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
   ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
 
-  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
   InstallExtensionsPendingForSync(GetProfile(0));
   InstallExtensionsPendingForSync(GetProfile(1));
