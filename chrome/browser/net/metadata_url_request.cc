@@ -16,15 +16,13 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory.h"
 
 namespace {
 
 class MetadataRequestHandler : public net::URLRequestJob {
  public:
   explicit MetadataRequestHandler(net::URLRequest* request);
-
-  static net::URLRequestJob* Factory(net::URLRequest* request,
-                                     const std::string& scheme);
 
   // net::URLRequestJob implementation.
   virtual void Start();
@@ -51,11 +49,6 @@ MetadataRequestHandler::MetadataRequestHandler(net::URLRequest* request)
 }
 
 MetadataRequestHandler::~MetadataRequestHandler() {
-}
-
-net::URLRequestJob* MetadataRequestHandler::Factory(net::URLRequest* request,
-                                               const std::string& scheme) {
-  return new MetadataRequestHandler(request);
 }
 
 void MetadataRequestHandler::Start() {
@@ -127,11 +120,30 @@ void MetadataRequestHandler::StartAsync() {
   NotifyHeadersComplete();
 }
 
+class MetadataProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  MetadataProtocolHandler();
+  virtual ~MetadataProtocolHandler();
+
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MetadataProtocolHandler);
+};
+
+MetadataProtocolHandler::MetadataProtocolHandler() {}
+
+MetadataProtocolHandler::~MetadataProtocolHandler() {}
+
+net::URLRequestJob* MetadataProtocolHandler::MaybeCreateJob(
+    net::URLRequest* request) const {
+  return new MetadataRequestHandler(request);
+}
+
 }  // namespace
 
-void RegisterMetadataURLRequestHandler() {
-#if defined(OS_CHROMEOS)
-  net::URLRequest::RegisterProtocolFactory(chrome::kMetadataScheme,
-                                           &MetadataRequestHandler::Factory);
-#endif
+net::URLRequestJobFactory::ProtocolHandler* CreateMetadataProtocolHandler() {
+  return new MetadataProtocolHandler;
 }

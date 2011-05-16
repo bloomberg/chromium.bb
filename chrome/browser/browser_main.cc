@@ -49,11 +49,8 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "chrome/browser/net/blob_url_request_job_factory.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
-#include "chrome/browser/net/file_system_url_request_job_factory.h"
-#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
@@ -1689,10 +1686,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-
-  RegisterMetadataURLRequestHandler();
-  RegisterBlobURLRequestJobFactory();
-  RegisterFileSystemURLRequestJobFactory();
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global GoogleURLTracker and IntranetRedirectDetector instances, which

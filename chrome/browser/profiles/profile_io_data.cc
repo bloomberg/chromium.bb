@@ -18,10 +18,13 @@
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/blob_url_request_job_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/file_system_url_request_job_factory.h"
+#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -264,7 +267,12 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     chrome::kExtensionScheme,
     chrome::kUserScriptScheme,
     chrome::kChromeUIScheme,
-    chrome::kChromeDevToolsScheme
+    chrome::kChromeDevToolsScheme,
+#if defined(OS_CHROMEOS)
+    chrome::kMetadataScheme,
+#endif  // defined(OS_CHROMEOS)
+    chrome::kBlobScheme,
+    chrome::kFileSystemScheme,
   };
   for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
     if (scheme == kProtocolList[i])
@@ -401,6 +409,21 @@ void ProfileIOData::LazyInitialize() const {
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,
       CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
+#if defined(OS_CHROMEOS)
+  set_protocol = job_factory_->SetProtocolHandler(
+      chrome::kMetadataScheme,
+      CreateMetadataProtocolHandler());
+#endif  // defined(OS_CHROMEOS)
+  DCHECK(set_protocol);
+  set_protocol = job_factory_->SetProtocolHandler(
+      chrome::kBlobScheme,
+      CreateBlobProtocolHandler(
+          profile_params_->blob_storage_context->controller()));
+  DCHECK(set_protocol);
+  set_protocol = job_factory_->SetProtocolHandler(
+      chrome::kFileSystemScheme,
+      CreateFileSystemProtocolHandler(
+          profile_params_->file_system_context));
   DCHECK(set_protocol);
 
   // Take ownership over these parameters.

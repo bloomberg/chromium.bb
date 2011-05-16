@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_NET_METADATA_URL_REQUEST_H_
 #pragma once
 
-void RegisterMetadataURLRequestHandler();
+#include "net/url_request/url_request_job_factory.h"
+
+net::URLRequestJobFactory::ProtocolHandler* CreateMetadataProtocolHandler();
 
 #endif  // CHROME_BROWSER_NET_METADATA_URL_REQUEST_H_
