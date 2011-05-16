@@ -66,6 +66,12 @@ class IOThread : public BrowserProcessSubThread {
     scoped_ptr<net::FtpTransactionFactory>
         proxy_script_fetcher_ftp_transaction_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
+    // We use a separate URLRequestContext for PAC fetches, in order to break
+    // the reference cycle:
+    // URLRequestContext=>PAC fetch=>URLRequest=>URLRequestContext.
+    // The first URLRequestContext is |system_url_request_context|. We introduce
+    // |proxy_script_fetcher_context| for the second context. It has a direct
+    // ProxyService, since we always directly connect to fetch the PAC script.
     scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context;
     scoped_ptr<net::ProxyService> system_proxy_service;
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;

@@ -45,13 +45,14 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
-#if defined(USE_NSS)
-#include "net/ocsp/nss_ocsp.h"
-#endif  // defined(USE_NSS)
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(USE_NSS)
+#include "net/ocsp/nss_ocsp.h"
+#endif  // defined(USE_NSS)
 
 namespace {
 
@@ -63,6 +64,25 @@ class URLRequestContextWithUserAgent : public net::URLRequestContext {
   virtual const std::string& GetUserAgent(
       const GURL& url) const OVERRIDE {
     return webkit_glue::GetUserAgent(url);
+  }
+};
+
+// Used for the "system" URLRequestContext. If this grows more complicated, then
+// consider inheriting directly from URLRequestContext rather than using
+// implementation inheritance.
+class SystemURLRequestContext : public URLRequestContextWithUserAgent {
+ public:
+  SystemURLRequestContext() {
+#if defined(USE_NSS)
+    net::SetURLRequestContextForOCSP(this);
+#endif  // defined(USE_NSS)
+  }
+
+ private:
+  virtual ~SystemURLRequestContext() {
+#if defined(USE_NSS)
+    net::SetURLRequestContextForOCSP(NULL);
+#endif  // defined(USE_NSS)
   }
 };
 
@@ -180,6 +200,8 @@ class LoggingNetworkChangeObserver
   DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
 };
 
+// Create a separate request context for PAC fetches to avoid reference cycles.
+// See IOThread::Globals for details.
 scoped_refptr<net::URLRequestContext>
 ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
                                    net::NetLog* net_log) {
@@ -206,7 +228,7 @@ scoped_refptr<net::URLRequestContext>
 ConstructSystemRequestContext(IOThread::Globals* globals,
                               net::NetLog* net_log) {
   scoped_refptr<net::URLRequestContext> context(
-      new URLRequestContextWithUserAgent);
+      new SystemURLRequestContext);
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());

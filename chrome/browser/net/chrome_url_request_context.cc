@@ -21,10 +21,6 @@
 #include "net/http/http_util.h"
 #include "webkit/glue/webkit_glue.h"
 
-#if defined(USE_NSS)
-#include "net/ocsp/nss_ocsp.h"
-#endif
-
 class ChromeURLRequestContextFactory {
  public:
   ChromeURLRequestContextFactory() {}
@@ -150,15 +146,6 @@ net::URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_) {
     DCHECK(factory_.get());
     url_request_context_ = factory_->Create();
-    if (is_main()) {
-      url_request_context_->set_is_main(true);
-#if defined(USE_NSS)
-      // TODO(ukai): find a better way to set the net::URLRequestContext for
-      // OCSP.
-      net::SetURLRequestContextForOCSP(url_request_context_);
-#endif
-    }
-
     factory_.reset();
     io_thread_->RegisterURLRequestContextGetter(this);
   }
@@ -398,17 +385,6 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
   if (appcache_service_.get() && appcache_service_->request_context() == this)
     appcache_service_->set_request_context(NULL);
-
-#if defined(USE_NSS)
-  if (is_main()) {
-    net::URLRequestContext* ocsp_context = net::GetURLRequestContextForOCSP();
-    if (ocsp_context) {
-      DCHECK_EQ(this, ocsp_context);
-      // We are releasing the net::URLRequestContext used by OCSP handlers.
-      net::SetURLRequestContextForOCSP(NULL);
-    }
-  }
-#endif
 
   NotificationService::current()->Notify(
       NotificationType::URL_REQUEST_CONTEXT_RELEASED,

@@ -871,7 +871,6 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   // created first.
   if (!default_request_context_) {
     default_request_context_ = request_context;
-    request_context->set_is_main(true);
     // TODO(eroman): this isn't terribly useful anymore now that the
     // net::URLRequestContext is constructed by the IO thread...
     NotificationService::current()->Notify(
