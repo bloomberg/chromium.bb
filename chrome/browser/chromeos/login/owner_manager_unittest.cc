@@ -34,12 +34,12 @@ void MockKeyLoadObserver::Observe(NotificationType type,
                                   const NotificationDetails& details) {
   LOG(INFO) << "Observed key fetch event";
   if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
-    EXPECT_TRUE(success_expected_);
+    DCHECK(success_expected_);
     observed_ = true;
     if (quit_on_observe_)
       MessageLoop::current()->Quit();
   } else if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED) {
-    EXPECT_FALSE(success_expected_);
+    DCHECK(!success_expected_);
     observed_ = true;
     if (quit_on_observe_)
       MessageLoop::current()->Quit();
@@ -48,9 +48,31 @@ void MockKeyLoadObserver::Observe(NotificationType type,
 
 void MockKeyUser::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                                   const std::vector<uint8>& payload) {
-  EXPECT_EQ(expected_, return_code);
+  DCHECK_EQ(expected_, return_code);
   if (quit_on_callback_)
     MessageLoop::current()->Quit();
+}
+
+
+void MockKeyUpdateUser::OnKeyUpdated() {
+  MessageLoop::current()->Quit();
+}
+
+
+MockSigner::MockSigner(const OwnerManager::KeyOpCode expected,
+                       const std::vector<uint8>& sig)
+    : expected_code_(expected),
+      expected_sig_(sig) {
+}
+
+MockSigner::~MockSigner() {}
+
+void MockSigner::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                                 const std::vector<uint8>& payload) {
+  DCHECK_EQ(expected_code_, return_code);
+  for (uint32 i = 0; i < payload.size(); ++i)
+    DCHECK_EQ(expected_sig_[i], payload[i]);
+  MessageLoop::current()->Quit();
 }
 
 

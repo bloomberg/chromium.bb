@@ -88,9 +88,7 @@ class MockKeyUpdateUser : public OwnerManager::KeyUpdateDelegate {
   MockKeyUpdateUser() {}
   virtual ~MockKeyUpdateUser() {}
 
-  virtual void OnKeyUpdated() {
-    MessageLoop::current()->Quit();
-  }
+  virtual void OnKeyUpdated();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockKeyUpdateUser);
@@ -100,20 +98,11 @@ class MockKeyUpdateUser : public OwnerManager::KeyUpdateDelegate {
 class MockSigner : public OwnerManager::Delegate {
  public:
   MockSigner(const OwnerManager::KeyOpCode expected,
-             const std::vector<uint8>& sig)
-      : expected_code_(expected),
-        expected_sig_(sig) {
-  }
+             const std::vector<uint8>& sig);
+  virtual ~MockSigner();
 
-  virtual ~MockSigner() {}
-
-  void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                       const std::vector<uint8>& payload) {
-    EXPECT_EQ(expected_code_, return_code);
-    for (uint32 i = 0; i < payload.size(); ++i)
-      EXPECT_EQ(expected_sig_[i], payload[i]);
-    MessageLoop::current()->Quit();
-  }
+  virtual void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                       const std::vector<uint8>& payload);
 
   const OwnerManager::KeyOpCode expected_code_;
   const std::vector<uint8> expected_sig_;

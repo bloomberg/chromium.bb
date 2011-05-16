@@ -6,4 +6,15 @@
 
 namespace chromeos {
 
+MockKeyUtils::MockKeyUtils() {}
+
+MockKeyUtils::~MockKeyUtils() {}
+
+MockInjector::MockInjector(MockKeyUtils* mock) : transient_(mock) {}
+
+MockInjector::~MockInjector() {}
+
+OwnerKeyUtils* MockInjector::CreateOwnerKeyUtils() {
+  return transient_.get();
+}
 }  // namespace chromeos

@@ -21,7 +21,9 @@ namespace chromeos {
 
 class MockKeyUtils : public OwnerKeyUtils {
  public:
-  MockKeyUtils() {}
+  MockKeyUtils();
+  virtual ~MockKeyUtils();
+
   MOCK_METHOD2(ImportPublicKey, bool(const FilePath& key_file,
                                      std::vector<uint8>* output));
   MOCK_METHOD3(Verify, bool(const std::string& data,
@@ -45,16 +47,12 @@ class MockKeyUtils : public OwnerKeyUtils {
 class MockInjector : public OwnerKeyUtils::Factory {
  public:
   // Takes ownership of |mock|.
-  explicit MockInjector(MockKeyUtils* mock) : transient_(mock) {
-  }
-
-  virtual ~MockInjector() {}
+  explicit MockInjector(MockKeyUtils* mock);
+  virtual ~MockInjector();
 
   // If this is called, its caller takes ownership of |transient_|.
   // If it's never called, |transient_| remains our problem.
-  OwnerKeyUtils* CreateOwnerKeyUtils() {
-    return transient_.get();
-  }
+  virtual OwnerKeyUtils* CreateOwnerKeyUtils();
 
  private:
   scoped_refptr<MockKeyUtils> transient_;
