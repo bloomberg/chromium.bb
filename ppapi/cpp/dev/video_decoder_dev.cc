@@ -4,9 +4,6 @@
 
 #include "ppapi/cpp/dev/video_decoder_dev.h"
 
-#include <algorithm>
-#include <iterator>
-
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -27,54 +24,63 @@ template <> const char* interface_name<PPB_VideoDecoder_Dev>() {
 
 }  // namespace
 
-VideoDecoder::VideoDecoder(
-    const Instance* /* instance */,
-    VideoDecoderClient* /* picture_interface */) {
+VideoDecoder::VideoDecoder(const Instance* /* instance */,
+                           const std::vector<uint32_t>& /* config */,
+                           Client* client)
+    : client_(client) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return;
+  // TODO(vmr): Implement.
 }
 
 VideoDecoder::~VideoDecoder() {}
 
-vector<uint32_t> VideoDecoder::GetConfig(
+vector<uint32_t> VideoDecoder::GetConfigs(
     Instance* /* instance */,
     const vector<uint32_t>& /* prototype_config */) {
+  // TODO(vmr): Implement.
   vector<uint32_t> matching_configs;
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return matching_configs;
   return matching_configs;
 }
 
-bool VideoDecoder::Initialize(const std::vector<uint32_t>& /* config */) {
-  if (!has_interface<PPB_VideoDecoder_Dev>())
-    return false;
-  return false;
+void VideoDecoder::AssignGLESBuffers(uint32_t /* no_of_buffers */,
+                                     const PP_GLESBuffer_Dev& /* buffers */) {
+  // TODO(vmr): Implement.
+}
+
+void VideoDecoder::AssignSysmemBuffers(
+    uint32_t /* no_of_buffers */,
+    const PP_SysmemBuffer_Dev& /* buffers */) {
+  // TODO(vmr): Implement.
 }
 
 bool VideoDecoder::Decode(
     const PP_VideoBitstreamBuffer_Dev& /* bitstream_buffer */,
-    PP_CompletionCallback /* callback */) {
+    CompletionCallback /* callback */) {
+  // TODO(vmr): Implement.
   if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
     return false;
   return false;
 }
 
-int32_t VideoDecoder::Flush(PP_CompletionCallback /* callback */) {
-  if (!has_interface<PPB_VideoDecoder_Dev>())
-    return PP_ERROR_NOINTERFACE;
-  return PP_ERROR_ABORTED;
+void VideoDecoder::ReusePictureBuffer(int32_t /* picture_buffer_id */) {
+  // TODO(vmr): Implement.
 }
 
-int32_t VideoDecoder::Abort(PP_CompletionCallback /* callback */) {
+bool VideoDecoder::Flush(CompletionCallback /* callback */) {
+  // TODO(vmr): Implement.
   if (!has_interface<PPB_VideoDecoder_Dev>())
-    return PP_ERROR_NOINTERFACE;
-  return PP_ERROR_ABORTED;
+    return false;
+  return true;
 }
 
-void VideoDecoder::EventPicture(struct PP_Picture_Dev* /* picture */) {}
-
-void VideoDecoder::EventEndOfStream() {}
-
-void VideoDecoder::EventError(PP_VideoDecodeError_Dev /* error */) {}
+bool VideoDecoder::Abort(CompletionCallback /* callback */) {
+  // TODO(vmr): Implement.
+  if (!has_interface<PPB_VideoDecoder_Dev>())
+    return false;
+  return true;
+}
 
 }  // namespace pp

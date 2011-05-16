@@ -41,6 +41,52 @@
 //   2. Output picture format.
 //   3. Output picture buffer storage type.
 //
+// Diagram below shows typical session which ends in decoder facing end of
+// stream marker in the stream. Calls from left to right are functions that are
+// in PPB_VideoDecoder_Dev and calls from right to left are functions that are
+// in PPP_VideoDecoder_Dev interface.
+//
+//        Plugin                   VideoDecoder
+//          |###########################|
+//          |       Configuration       |
+//          |###########################|
+//          | GetConfigs                |
+//          |-------------------------->|
+//          | Create                    |
+//          |-------------------------->|  Decoder will ask for certain number
+//          | (Decode)                  |  of PictureBuffers. This may happen
+//          |- - - - - - - - - - - - - >|  either directly after constructor or
+//          |     ProvidePictureBuffers |  after Decode has decoded some of the
+//          |<--------------------------|  bitstream. Once resources have been
+//          | AssignPictureBuffer       |  acquired decoder calls
+//          |-------------------------->|  NotifyResourcesAcquired.
+//          |   NotifyResourcesAcquired |
+//          |<--------------------------|
+//          |                           |
+//          |###########################|
+//          |        Streaming          |  Once configuration is done session
+//          |###########################|  can continue onto streaming state.
+//          | Decode                    |
+//          |-------------------------->|
+//          |          callback(Decode) |  Decoder issues callback when input
+//          |<--------------------------|  bitstream buffer can be reused.
+//          |              PictureReady |  NOTE: Decode and PictureReady calls
+//          |<--------------------------|        happen interleaved during
+//          | ReusePictureBuffer        |        streaming.
+//          |-------------------------->|
+//          |                           |
+//          |###########################|
+//          |       End of stream       |
+//          |###########################|
+//          |         NotifyEndOfStream |
+//          |<--------------------------|
+//          | Abort                     |
+//          |-------------------------->|
+//          |           callback(Abort) |  Decoder issues callback when decoder
+//          |<--------------------------|  has finished processing on all given
+//          |                           |  resources and they can be considered
+//          |                           |  dismissed.
+//
 struct PPB_VideoDecoder_Dev {
   // Queries capability of the decoder implementation for a specific codec.
   //
