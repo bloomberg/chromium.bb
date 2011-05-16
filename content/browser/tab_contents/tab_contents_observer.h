@@ -68,7 +68,6 @@ class TabContentsObserver : public IPC::Channel::Listener,
                                       int error_code);
   virtual void DocumentLoadedInFrame(int64 frame_id);
   virtual void DidFinishLoad(int64 frame_id);
-  virtual void DidGetUserGesture();
 
   virtual void DidStartLoading();
   virtual void DidStopLoading();
