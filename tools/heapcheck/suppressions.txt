@@ -119,6 +119,11 @@
    fun:PL_ArenaAllocate
    fun:net::TestRootCerts::*
 }
+{
+   bug_todo_getdelim_lucid
+   Heapcheck:Leak
+   fun:_IO_getdelim
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -180,6 +185,13 @@
    ...
    fun:basic_string
    fun:disk_cache::Stats::Init
+}
+{
+   Intentional LeakyLazyInstanceTraits leaks
+   Heapcheck:Leak
+   ...
+   fun:base::LeakyLazyInstanceTraits::New
+   fun:base::LazyInstance::Pointer
 }
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
