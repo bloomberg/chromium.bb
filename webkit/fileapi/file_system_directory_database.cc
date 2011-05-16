@@ -18,14 +18,17 @@ bool PickleFromFileInfo(
     Pickle* pickle) {
   DCHECK(pickle);
   std::string data_path;
+  std::string name;
 #if defined(OS_POSIX)
   data_path = info.data_path.value();
+  name = info.name;
 #elif defined(OS_WIN)
   data_path = base::SysWideToUTF8(info.data_path.value());
+  name = base::SysWideToUTF8(info.name);
 #endif
   if (pickle->WriteInt64(info.parent_id) &&
       pickle->WriteString(data_path) &&
-      pickle->WriteString(info.name) &&
+      pickle->WriteString(name) &&
       pickle->WriteInt64(info.modification_time.ToInternalValue()))
     return true;
 
@@ -38,16 +41,19 @@ bool FileInfoFromPickle(
     fileapi::FileSystemDirectoryDatabase::FileInfo* info) {
   void* iter = NULL;
   std::string data_path;
+  std::string name;
   int64 internal_time;
 
   if (pickle.ReadInt64(&iter, &info->parent_id) &&
       pickle.ReadString(&iter, &data_path) &&
-      pickle.ReadString(&iter, &info->name) &&
+      pickle.ReadString(&iter, &name) &&
       pickle.ReadInt64(&iter, &internal_time)) {
 #if defined(OS_POSIX)
     info->data_path = FilePath(data_path);
+    info->name = name;
 #elif defined(OS_WIN)
     info->data_path = FilePath(base::SysUTF8ToWide(data_path));
+    info->name = base::SysUTF8ToWide(name);
 #endif
     info->modification_time = base::Time::FromInternalValue(internal_time);
     return true;
@@ -63,11 +69,17 @@ const char kLastIntegerKey[] = "LAST_INTEGER";
 
 std::string GetChildLookupKey(
     fileapi::FileSystemDirectoryDatabase::FileId parent_id,
-    const std::string& child_name) {
+    const FilePath::StringType& child_name) {
   // TODO(ericu): child_name may need to be case-folded, pending discussion on
   // public-webapps.
+  std::string name;
+#if defined(OS_POSIX)
+  name = child_name;
+#elif defined(OS_WIN)
+  name = base::SysWideToUTF8(child_name);
+#endif
   return std::string(kChildLookupPrefix) + base::Int64ToString(parent_id) +
-      std::string(kChildLookupSeparator) + child_name;
+      std::string(kChildLookupSeparator) + name;
 }
 
 std::string GetChildListingKeyPrefix(
@@ -111,7 +123,7 @@ FileSystemDirectoryDatabase::~FileSystemDirectoryDatabase() {
 }
 
 bool FileSystemDirectoryDatabase::GetChildWithName(
-    FileId parent_id, const std::string& name, FileId* child_id) {
+    FileId parent_id, const FilePath::StringType& name, FileId* child_id) {
   if (!Init())
     return false;
   DCHECK(child_id);
@@ -139,13 +151,9 @@ bool FileSystemDirectoryDatabase::GetFileWithPath(
   FileId local_id = 0;
   std::vector<FilePath::StringType>::iterator iter;
   for (iter = components.begin(); iter != components.end(); ++iter) {
-    std::string name;
-#if defined(OS_POSIX)
+    FilePath::StringType name;
     name = *iter;
-#elif defined(OS_WIN)
-    name = base::SysWideToUTF8(*iter);
-#endif
-    if (name == "/")
+    if (name == FILE_PATH_LITERAL("/"))
       continue;
     if (!GetChildWithName(local_id, name, &local_id))
       return false;
@@ -317,6 +325,8 @@ bool FileSystemDirectoryDatabase::OverwritingMoveFile(
   if (!GetFileInfo(src_file_id, &src_file_info))
     return false;
   if (!GetFileInfo(dest_file_id, &dest_file_info))
+    return false;
+  if (src_file_info.is_directory() || dest_file_info.is_directory())
     return false;
   leveldb::WriteBatch batch;
   // This is the only field that really gets moved over; if you add fields to

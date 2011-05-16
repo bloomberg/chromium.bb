@@ -37,11 +37,7 @@ void InitFileInfo(
   DCHECK(file_info);
   file_info->parent_id = parent_id;
   file_info->data_path = data_path;
-#if defined(OS_POSIX)
   file_info->name = file_name;
-#elif defined(OS_WIN)
-  file_info->name = base::SysWideToUTF8(file_name);
-#endif
 }
 
 }  // namespace
@@ -217,11 +213,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::ReadDirectory(
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
     base::FileUtilProxy::Entry entry;
-#if defined(OS_POSIX)
     entry.name = file_info.name;
-#elif defined(OS_WIN)
-    entry.name = base::SysUTF8ToWide(file_info.name);
-#endif
     entry.is_directory = file_info.is_directory();
     entries->push_back(entry);
   }
@@ -256,13 +248,8 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateDirectory(
   FileId parent_id = 0;
   size_t index;
   for (index = 0; index < components.size(); ++index) {
-    std::string name;
-#if defined(OS_POSIX)
-    name = components[index];
-#elif defined(OS_WIN)
-    name = base::SysWideToUTF8(components[index]);
-#endif
-    if (name == "/")
+    FilePath::StringType name = components[index];
+    if (name == FILE_PATH_LITERAL("/"))
       continue;
     if (!db->GetChildWithName(parent_id, name, &parent_id))
       break;
@@ -271,12 +258,8 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateDirectory(
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   for (; index < components.size(); ++index) {
     FileInfo file_info;
-#if defined(OS_POSIX)
     file_info.name = components[index];
-#elif defined(OS_WIN)
-    file_info.name = base::SysWideToUTF8(components[index]);
-#endif
-    if (file_info.name == "/")
+    if (file_info.name == FILE_PATH_LITERAL("/"))
       continue;
     file_info.modification_time = base::Time::Now();
     file_info.parent_id = parent_id;
@@ -365,12 +348,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
         return base::PLATFORM_FILE_ERROR_FAILED;
       }
       src_file_info.parent_id = dest_parent_id;
-#if defined(OS_POSIX)
       src_file_info.name = dest_file_path.BaseName().value();
-#elif defined(OS_WIN)
-      src_file_info.name = base::SysWideToUTF8(
-          dest_file_path.BaseName().value());
-#endif
       if (!db->UpdateFileInfo(src_file_id, src_file_info))
         return base::PLATFORM_FILE_ERROR_FAILED;
       return base::PLATFORM_FILE_OK;
@@ -595,13 +573,7 @@ class ObfuscatedFileSystemFileEnumerator
         child.file_id = *iter;
         if (!db_->GetFileInfo(child.file_id, &child.file_info))
           return;
-        FilePath::StringType name;
-#if defined(OS_POSIX)
-        name = child.file_info.name;
-#elif defined(OS_WIN)
-        name = base::SysUTF8ToWide(child.file_info.name);
-#endif
-        child.file_path = directory.file_path.Append(name);
+        child.file_path = directory.file_path.Append(child.file_info.name);
         display_queue_.push(child);
       }
     }

@@ -32,7 +32,7 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
     db_.reset(new FileSystemDirectoryDatabase(path));
   }
 
-  bool AddFileInfo(FileId parent_id, const std::string& name) {
+  bool AddFileInfo(FileId parent_id, const FilePath::StringType& name) {
     FileId file_id;
     FileInfo info;
     info.parent_id = parent_id;
@@ -56,37 +56,37 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMissingFileGetInfo) {
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestMissingParentAddFileInfo) {
   FileId parent_id = 7;
-  EXPECT_FALSE(AddFileInfo(parent_id, "foo"));
+  EXPECT_FALSE(AddFileInfo(parent_id, FILE_PATH_LITERAL("foo")));
 }
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestAddNameClash) {
   FileInfo info;
   FileId file_id;
   info.parent_id = 0;
-  info.name = "dir 0";
+  info.name = FILE_PATH_LITERAL("dir 0");
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id));
 
   // Check for name clash in the root directory.
-  std::string name = info.name;
+  FilePath::StringType name = info.name;
   EXPECT_FALSE(AddFileInfo(0, name));
-  name = "dir 1";
+  name = FILE_PATH_LITERAL("dir 1");
   EXPECT_TRUE(AddFileInfo(0, name));
 
-  name = "subdir 0";
+  name = FILE_PATH_LITERAL("subdir 0");
   EXPECT_TRUE(AddFileInfo(file_id, name));
 
   // Check for name clash in a subdirectory.
   EXPECT_FALSE(AddFileInfo(file_id, name));
-  name = "subdir 1";
+  name = FILE_PATH_LITERAL("subdir 1");
   EXPECT_TRUE(AddFileInfo(file_id, name));
 }
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestRenameNoMoveNameClash) {
   FileInfo info;
   FileId file_id0;
-  std::string name0 = "foo";
-  std::string name1 = "bar";
-  std::string name2 = "bas";
+  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -101,8 +101,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMoveSameNameNameClash) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
-  std::string name0 = "foo";
-  std::string name1 = "bar";
+  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -114,15 +114,13 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMoveSameNameNameClash) {
   EXPECT_TRUE(db()->UpdateFileInfo(file_id1, info));
 }
 
-// TODO: Test UpdateFileInfo without move or rename.
-
 TEST_F(FileSystemDirectoryDatabaseTest, TestMoveRenameNameClash) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
-  std::string name0 = "foo";
-  std::string name1 = "bar";
-  std::string name2 = "bas";
+  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -145,7 +143,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestRemoveWithChildren) {
   FileId file_id0;
   FileId file_id1;
   info.parent_id = 0;
-  info.name = "foo";
+  info.name = FILE_PATH_LITERAL("foo");
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
   info.parent_id = file_id0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id1));
@@ -158,8 +156,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetChildWithName) {
   FileInfo info;
   FileId file_id0;
   FileId file_id1;
-  std::string name0 = "foo";
-  std::string name1 = "bar";
+  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
   info.parent_id = 0;
   info.name = name0;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
@@ -177,7 +175,41 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetChildWithName) {
   EXPECT_EQ(file_id1, check_file_id);
 }
 
-// TODO(ericu): Test GetFileWithPath.
+TEST_F(FileSystemDirectoryDatabaseTest, TestGetFileWithPath) {
+  FileInfo info;
+  FileId file_id0;
+  FileId file_id1;
+  FileId file_id2;
+  FilePath::StringType name0 = FILE_PATH_LITERAL("foo");
+  FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
+  FilePath::StringType name2 = FILE_PATH_LITERAL("dog");
+
+  info.parent_id = 0;
+  info.name = name0;
+  EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
+  info.parent_id = file_id0;
+  info.name = name1;
+  EXPECT_TRUE(db()->AddFileInfo(info, &file_id1));
+  EXPECT_NE(file_id0, file_id1);
+  info.parent_id = file_id1;
+  info.name = name2;
+  EXPECT_TRUE(db()->AddFileInfo(info, &file_id2));
+  EXPECT_NE(file_id0, file_id2);
+  EXPECT_NE(file_id1, file_id2);
+
+  FileId check_file_id;
+  FilePath path = FilePath(name0);
+  EXPECT_TRUE(db()->GetFileWithPath(path, &check_file_id));
+  EXPECT_EQ(file_id0, check_file_id);
+
+  path = path.Append(name1);
+  EXPECT_TRUE(db()->GetFileWithPath(path, &check_file_id));
+  EXPECT_EQ(file_id1, check_file_id);
+
+  path = path.Append(name2);
+  EXPECT_TRUE(db()->GetFileWithPath(path, &check_file_id));
+  EXPECT_EQ(file_id2, check_file_id);
+}
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
   // No children in the root.
@@ -189,7 +221,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
   FileId file_id0;
   FileInfo info;
   info.parent_id = 0;
-  info.name = "foo";
+  info.name = FILE_PATH_LITERAL("foo");
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id0));
   EXPECT_TRUE(db()->ListChildren(0, &children));
   EXPECT_EQ(children.size(), 1UL);
@@ -197,7 +229,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
 
   // Two children in the root.
   FileId file_id1;
-  info.name = "bar";
+  info.name = FILE_PATH_LITERAL("bar");
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id1));
   EXPECT_TRUE(db()->ListChildren(0, &children));
   EXPECT_EQ(2UL, children.size());
@@ -214,7 +246,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
 
   // One child in a subdirectory.
   info.parent_id = file_id0;
-  info.name = "foo";
+  info.name = FILE_PATH_LITERAL("foo");
   FileId file_id2;
   FileId file_id3;
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id2));
@@ -223,7 +255,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
   EXPECT_EQ(children[0], file_id2);
 
   // Two children in a subdirectory.
-  info.name = "bar";
+  info.name = FILE_PATH_LITERAL("bar");
   EXPECT_TRUE(db()->AddFileInfo(info, &file_id3));
   EXPECT_TRUE(db()->ListChildren(file_id0, &children));
   EXPECT_EQ(2UL, children.size());
@@ -239,8 +271,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestUpdateModificationTime) {
   FileInfo info0;
   FileId file_id;
   info0.parent_id = 0;
-  info0.name = "name";
-  info0.data_path = FilePath().AppendASCII("fake path");
+  info0.name = FILE_PATH_LITERAL("name");
+  info0.data_path = FilePath(FILE_PATH_LITERAL("fake path"));
   info0.modification_time = base::Time::Now();
   EXPECT_TRUE(db()->AddFileInfo(info0, &file_id));
   FileInfo info1;
@@ -266,8 +298,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
   FileInfo info0;
   EXPECT_FALSE(db()->GetFileInfo(file_id, &info0));
   info0.parent_id = 0;
-  info0.data_path = FilePath().AppendASCII("foo");
-  info0.name = "file name";
+  info0.data_path = FilePath(FILE_PATH_LITERAL("foo"));
+  info0.name = FILE_PATH_LITERAL("file name");
   info0.modification_time = base::Time::Now();
   EXPECT_TRUE(db()->AddFileInfo(info0, &file_id));
   FileInfo info1;
@@ -278,7 +310,79 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
   EXPECT_EQ(info0.modification_time, info1.modification_time);
 }
 
-// TODO: Test for OverwritingMoveFile.
+TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {
+  FileId directory_id;
+  FileInfo info0;
+  info0.parent_id = 0;
+  info0.name = FILE_PATH_LITERAL("directory");
+  info0.modification_time = base::Time::Now();
+  EXPECT_TRUE(db()->AddFileInfo(info0, &directory_id));
+
+  FileId file_id;
+  FileInfo info1;
+  info1.parent_id = 0;
+  info1.data_path = FilePath(FILE_PATH_LITERAL("bar"));
+  info1.name = FILE_PATH_LITERAL("file");
+  info1.modification_time = base::Time::UnixEpoch();
+  EXPECT_TRUE(db()->AddFileInfo(info1, &file_id));
+
+  EXPECT_FALSE(db()->OverwritingMoveFile(directory_id, file_id));
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileDestDirectory) {
+  FileId file_id;
+  FileInfo info0;
+  info0.parent_id = 0;
+  info0.name = FILE_PATH_LITERAL("file");
+  info0.data_path = FilePath(FILE_PATH_LITERAL("bar"));
+  info0.modification_time = base::Time::Now();
+  EXPECT_TRUE(db()->AddFileInfo(info0, &file_id));
+
+  FileId directory_id;
+  FileInfo info1;
+  info1.parent_id = 0;
+  info1.name = FILE_PATH_LITERAL("directory");
+  info1.modification_time = base::Time::UnixEpoch();
+  EXPECT_TRUE(db()->AddFileInfo(info1, &directory_id));
+
+  EXPECT_FALSE(db()->OverwritingMoveFile(file_id, directory_id));
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
+  FileId file_id0;
+  FileInfo info0;
+  info0.parent_id = 0;
+  info0.data_path = FilePath(FILE_PATH_LITERAL("foo"));
+  info0.name = FILE_PATH_LITERAL("file name 0");
+  info0.modification_time = base::Time::Now();
+  EXPECT_TRUE(db()->AddFileInfo(info0, &file_id0));
+
+  FileInfo dir_info;
+  FileId dir_id;
+  dir_info.parent_id = 0;
+  dir_info.name = FILE_PATH_LITERAL("directory name");
+  EXPECT_TRUE(db()->AddFileInfo(dir_info, &dir_id));
+
+  FileId file_id1;
+  FileInfo info1;
+  info1.parent_id = dir_id;
+  info1.data_path = FilePath(FILE_PATH_LITERAL("bar"));
+  info1.name = FILE_PATH_LITERAL("file name 1");
+  info1.modification_time = base::Time::UnixEpoch();
+  EXPECT_TRUE(db()->AddFileInfo(info1, &file_id1));
+
+  EXPECT_TRUE(db()->OverwritingMoveFile(file_id0, file_id1));
+
+  FileInfo check_info;
+  FileId check_id;
+
+  EXPECT_FALSE(db()->GetFileWithPath(FilePath(info0.name), &check_id));
+  EXPECT_TRUE(db()->GetFileWithPath(
+      FilePath(dir_info.name).Append(info1.name), &check_id));
+  EXPECT_TRUE(db()->GetFileInfo(check_id, &check_info));
+
+  EXPECT_EQ(info0.data_path, check_info.data_path);
+}
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestGetNextInteger) {
   int64 next;

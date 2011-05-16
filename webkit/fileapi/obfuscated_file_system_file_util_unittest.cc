@@ -168,30 +168,30 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
   void ValidateTestDirectory(
       const FilePath& root_path,
-      const std::set<std::string>& files,
-      const std::set<std::string>& directories) {
+      const std::set<FilePath::StringType>& files,
+      const std::set<FilePath::StringType>& directories) {
     scoped_ptr<FileSystemOperationContext> context;
-    std::set<std::string>::const_iterator iter;
+    std::set<FilePath::StringType>::const_iterator iter;
     for (iter = files.begin(); iter != files.end(); ++iter) {
       bool created = true;
       context.reset(NewContext());
       ASSERT_EQ(base::PLATFORM_FILE_OK,
           ofsfu()->EnsureFileExists(
-              context.get(), root_path.AppendASCII(*iter),
+              context.get(), root_path.Append(*iter),
               &created));
       ASSERT_FALSE(created);
     }
     for (iter = directories.begin(); iter != directories.end(); ++iter) {
       context.reset(NewContext());
       EXPECT_TRUE(ofsfu()->DirectoryExists(context.get(),
-          root_path.AppendASCII(*iter)));
+          root_path.Append(*iter)));
     }
   }
 
   void FillTestDirectory(
       const FilePath& root_path,
-      std::set<std::string>* files,
-      std::set<std::string>* directories) {
+      std::set<FilePath::StringType>* files,
+      std::set<FilePath::StringType>* directories) {
     scoped_ptr<FileSystemOperationContext> context;
     context.reset(NewContext());
     std::vector<base::FileUtilProxy::Entry> entries;
@@ -200,21 +200,20 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     EXPECT_EQ(0UL, entries.size());
 
     files->clear();
-    files->insert("first");
-    files->insert("second");
-    files->insert("third");
+    files->insert(FILE_PATH_LITERAL("first"));
+    files->insert(FILE_PATH_LITERAL("second"));
+    files->insert(FILE_PATH_LITERAL("third"));
     directories->clear();
-    directories->insert("fourth");
-    directories->insert("fifth");
-    directories->insert("sixth");
-    std::set<std::string>::iterator iter;
+    directories->insert(FILE_PATH_LITERAL("fourth"));
+    directories->insert(FILE_PATH_LITERAL("fifth"));
+    directories->insert(FILE_PATH_LITERAL("sixth"));
+    std::set<FilePath::StringType>::iterator iter;
     for (iter = files->begin(); iter != files->end(); ++iter) {
       bool created = false;
       context.reset(NewContext());
       ASSERT_EQ(base::PLATFORM_FILE_OK,
           ofsfu()->EnsureFileExists(
-              context.get(), root_path.AppendASCII(*iter),
-              &created));
+              context.get(), root_path.Append(*iter), &created));
       ASSERT_TRUE(created);
     }
     for (iter = directories->begin(); iter != directories->end(); ++iter) {
@@ -223,15 +222,14 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
       context.reset(NewContext());
       EXPECT_EQ(base::PLATFORM_FILE_OK,
           ofsfu()->CreateDirectory(
-              context.get(), root_path.AppendASCII(*iter),
-              exclusive, recursive));
+              context.get(), root_path.Append(*iter), exclusive, recursive));
     }
     ValidateTestDirectory(root_path, *files, *directories);
   }
 
   void TestReadDirectoryHelper(const FilePath& root_path) {
-    std::set<std::string> files;
-    std::set<std::string> directories;
+    std::set<FilePath::StringType> files;
+    std::set<FilePath::StringType> directories;
     FillTestDirectory(root_path, &files, &directories);
 
     scoped_ptr<FileSystemOperationContext> context;
@@ -244,19 +242,13 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     for (entry_iter = entries.begin(); entry_iter != entries.end();
         ++entry_iter) {
       const base::FileUtilProxy::Entry& entry = *entry_iter;
-      std::string name;
-  #if defined(OS_POSIX)
-      name = entry.name;
-  #elif defined(OS_WIN)
-      name = base::SysWideToUTF8(entry.name);
-  #endif
-      std::set<std::string>::iterator iter = files.find(name);
+      std::set<FilePath::StringType>::iterator iter = files.find(entry.name);
       if (iter != files.end()) {
         EXPECT_FALSE(entry.is_directory);
         files.erase(iter);
         continue;
       }
-      iter = directories.find(name);
+      iter = directories.find(entry.name);
       EXPECT_FALSE(directories.end() == iter);
       EXPECT_TRUE(entry.is_directory);
       directories.erase(iter);
@@ -737,8 +729,8 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestEnumerator) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofsfu()->CreateDirectory(
       context.get(), src_path, exclusive, recursive));
 
-  std::set<std::string> files;
-  std::set<std::string> directories;
+  std::set<FilePath::StringType> files;
+  std::set<FilePath::StringType> directories;
   FillTestDirectory(src_path, &files, &directories);
 
   FilePath dest_path = UTF8ToFilePath("destination dir");

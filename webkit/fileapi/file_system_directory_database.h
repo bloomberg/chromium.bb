@@ -44,8 +44,7 @@ class FileSystemDirectoryDatabase {
 
     FileId parent_id;
     FilePath data_path;
-    // TODO: Switch name to be FilePath::StringType to cut down on conversions.
-    std::string name;
+    FilePath::StringType name;
     // This modification time is valid only for directories, not files, as
     // FileWriter will get the files out of sync.
     // For files, look at the modification time of the underlying data_path.
@@ -56,7 +55,7 @@ class FileSystemDirectoryDatabase {
   ~FileSystemDirectoryDatabase();
 
   bool GetChildWithName(
-      FileId parent_id, const std::string& name, FileId* child_id);
+      FileId parent_id, const FilePath::StringType& name, FileId* child_id);
   bool GetFileWithPath(const FilePath& path, FileId* file_id);
   // ListChildren will succeed, returning 0 children, if parent_id doesn't
   // exist.
