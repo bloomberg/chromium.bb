@@ -28,6 +28,8 @@ using ::testing::_;
 
 namespace chromeos {
 
+////////////////////////////////////////////////////////////////////////////////
+// MockKeyLoadObserver
 
 void MockKeyLoadObserver::Observe(NotificationType type,
                                   const NotificationSource& source,
@@ -46,6 +48,9 @@ void MockKeyLoadObserver::Observe(NotificationType type,
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MockKeyUser
+
 void MockKeyUser::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                                   const std::vector<uint8>& payload) {
   DCHECK_EQ(expected_, return_code);
@@ -53,11 +58,15 @@ void MockKeyUser::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
     MessageLoop::current()->Quit();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MockKeyUpdateUser
 
 void MockKeyUpdateUser::OnKeyUpdated() {
   MessageLoop::current()->Quit();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MockSigner
 
 MockSigner::MockSigner(const OwnerManager::KeyOpCode expected,
                        const std::vector<uint8>& sig)
@@ -75,6 +84,8 @@ void MockSigner::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   MessageLoop::current()->Quit();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// OwnerManagerTest
 
 class OwnerManagerTest : public ::testing::Test {
  public:
@@ -125,7 +136,6 @@ class OwnerManagerTest : public ::testing::Test {
 
   MockKeyUtils* mock_;
   MockInjector injector_;
-
 };
 
 TEST_F(OwnerManagerTest, UpdateOwnerKey) {

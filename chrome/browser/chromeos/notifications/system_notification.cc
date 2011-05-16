@@ -89,4 +89,15 @@ void SystemNotification::Hide() {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// SystemNotification::Delegate
+
+SystemNotification::Delegate::Delegate(const std::string& id)
+    : id_(id) {
+}
+
+std::string SystemNotification::Delegate::id() const {
+  return id_;
+}
+
 }  // namespace chromeos

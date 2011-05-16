@@ -53,6 +53,9 @@ void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {
         BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MockLoginUtils
+
 MockLoginUtils::MockLoginUtils(const std::string& expected_username,
                                const std::string& expected_password)
     : expected_username_(expected_username),

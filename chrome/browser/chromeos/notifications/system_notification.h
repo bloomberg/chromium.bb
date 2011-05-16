@@ -64,12 +64,12 @@ class SystemNotification {
  private:
   class Delegate : public NotificationDelegate {
    public:
-    explicit Delegate(const std::string& id) : id_(id) {}
+    explicit Delegate(const std::string& id);
     virtual void Display() {}
     virtual void Error() {}
     virtual void Close(bool by_user) {}
     virtual void Click() {}
-    virtual std::string id() const { return id_; }
+    virtual std::string id() const;
 
    private:
     std::string id_;

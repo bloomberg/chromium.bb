@@ -89,9 +89,10 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   virtual void OnLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool request_pending);
+  virtual void OnLoginFailure(const LoginFailure& error);
+
   void CheckOffline(const LoginFailure& error);
   void CheckLocalaccount(const LoginFailure& error);
-  virtual void OnLoginFailure(const LoginFailure& error);
 
   // Call these methods on the UI thread.
   virtual void RecoverEncryptedData(

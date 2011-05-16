@@ -854,7 +854,8 @@ static bool EnsureCrosLoaded() {
 
 }  // namespace
 
-
+////////////////////////////////////////////////////////////////////////////////
+// FoundCellularNetwork
 
 FoundCellularNetwork::FoundCellularNetwork() {}
 
@@ -1405,7 +1406,6 @@ bool WirelessNetwork::ParseValue(int index, const Value* value) {
 ////////////////////////////////////////////////////////////////////////////////
 // CellularDataPlan
 
-
 CellularDataPlan::CellularDataPlan()
     : plan_name("Unknown"),
       plan_type(CELLULAR_DATA_PLAN_UNLIMITED),
@@ -1550,9 +1550,18 @@ string16 CellularDataPlan::GetPlanExpiration() const {
   return TimeFormat::TimeRemaining(remaining_time());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// CellTower
+
 CellTower::CellTower() {}
 
+////////////////////////////////////////////////////////////////////////////////
+// WifiAccessPoint
+
 WifiAccessPoint::WifiAccessPoint() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkIPConfig
 
 NetworkIPConfig::NetworkIPConfig(
     const std::string& device_path, IPConfigType type,
