@@ -11,19 +11,29 @@ function expect(expected, message) {
   });
 }
 
+var config = {
+  mode: "direct",
+};
+
 chrome.test.runTests([
+  // Verify that execution has started to make sure flaky timeouts are not
+  // caused by us.
+  function verifyTestsHaveStarted() {
+    chrome.test.succeed();
+  },
   function setAutoSettings() {
-    var config = {
-      mode: "direct",
-    };
     chrome.experimental.proxy.settings.set(
         {'value': config},
         chrome.test.callbackPass());
+  },
+  function verifyRegular() {
     chrome.experimental.proxy.settings.get(
         {'incognito': false},
         expect({ 'value': config,
                  'levelOfControl': "ControlledByThisExtension" },
                "invalid proxy settings"));
+  },
+  function verifyIncognito() {
     chrome.experimental.proxy.settings.get(
         {'incognito': true},
         expect({ 'value': config,

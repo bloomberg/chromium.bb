@@ -6,6 +6,11 @@
 // browser_tests.exe --gtest_filter=ProxySettingsApiTest.ProxyPacScript
 
 chrome.test.runTests([
+  // Verify that execution has started to make sure flaky timeouts are not
+  // caused by us.
+  function verifyTestsHaveStarted() {
+    chrome.test.succeed();
+  },
   function setAutoSettings() {
     var pacScriptObject = {
       url: "http://wpad/windows.pac"

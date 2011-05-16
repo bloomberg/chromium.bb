@@ -11,23 +11,31 @@ function expect(expected, message) {
   });
 }
 
+var pacScriptObject = {
+  data: "function FindProxyForURL(url, host) {\n" +
+        "  if (host == 'foobar.com')\n" +
+        "    return 'PROXY blackhole:80';\n" +
+        "  return 'DIRECT';\n" +
+        "}",
+  mandatory: false
+};
+var config = {
+  mode: "pac_script",
+  pacScript: pacScriptObject
+};
+
 chrome.test.runTests([
+  // Verify that execution has started to make sure flaky timeouts are not
+  // caused by us.
+  function verifyTestsHaveStarted() {
+    chrome.test.succeed();
+  },
   function setAutoSettings() {
-    var pacScriptObject = {
-      data: "function FindProxyForURL(url, host) {\n" +
-            "  if (host == 'foobar.com')\n" +
-            "    return 'PROXY blackhole:80';\n" +
-            "  return 'DIRECT';\n" +
-            "}",
-      mandatory: false
-    };
-    var config = {
-      mode: "pac_script",
-      pacScript: pacScriptObject
-    };
     chrome.experimental.proxy.settings.set(
         {'value': config},
         chrome.test.callbackPass());
+  },
+  function verifySettings() {
     chrome.experimental.proxy.settings.get(
         {'incognito': false},
         expect({ 'value': config,
