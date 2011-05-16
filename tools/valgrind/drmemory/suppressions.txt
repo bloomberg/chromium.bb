@@ -322,6 +322,11 @@ UNINITIALIZED READ
 *!gfx::PlatformFont::CreateDefault
 *!gfx::Font::Font
 
+# http://code.google.com/p/drmemory/issues/detail?id=397
+UNINITIALIZED READ
+system call NtDeviceIoControlFile InputBuffer
+ADVAPI32.dll!ImpersonateAnonymousToken
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
