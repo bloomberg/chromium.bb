@@ -189,11 +189,6 @@ void Bubble::InitBubble(views::Widget* parent,
   DCHECK(!border_);
   border_ = new BorderWidgetWin();
 
-  if (fade_in) {
-    border_->SetOpacity(0);
-    GetWidget()->SetOpacity(0);
-  }
-
   border_->InitBorderWidgetWin(CreateBorderContents(), parent->GetNativeView());
   border_->border_contents()->SetBackgroundColor(kBackgroundColor);
 
@@ -204,6 +199,10 @@ void Bubble::InitBubble(views::Widget* parent,
   params.native_widget = this;
   GetWidget()->Init(params);
 
+  if (fade_in) {
+    border_->SetOpacity(0);
+    GetWidget()->SetOpacity(0);
+  }
   SetWindowText(GetNativeView(), delegate_->accessible_name().c_str());
 #elif defined(TOOLKIT_USES_GTK)
   views::Widget::InitParams params(type_);
