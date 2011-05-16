@@ -169,7 +169,7 @@ mode-buildbot-x8632() {
   # First build everything
   scons-tests "x86-32" "--mode=opt-host,nacl -j8" ""
   # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-32" "--mode=opt-host,nacl -j8" "smoke_tests"
+  scons-tests "x86-32" "--mode=opt-host,nacl" "smoke_tests"
   # this really tests arm and x86-32
   ad-hoc-shared-lib-tests
 }
@@ -181,7 +181,7 @@ mode-buildbot-x8664() {
   # First build everything
   scons-tests "x86-64" "--mode=opt-host,nacl -j8" ""
   # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-64" "--mode=opt-host,nacl -j8" "smoke_tests"
+  scons-tests "x86-64" "--mode=opt-host,nacl" "smoke_tests"
 }
 
 # These names were originally botnames
@@ -199,24 +199,24 @@ mode-buildbot-arm() {
 
   gyp-arm-build Release
 
-  scons-tests "arm" "${mode}" ""
+  scons-tests "arm" "${mode} -j8" ""
   scons-tests "arm" "${mode}" "small_tests"
   scons-tests "arm" "${mode}" "medium_tests"
   scons-tests "arm" "${mode}" "large_tests"
 }
 
 mode-buildbot-arm-dbg() {
-  mode-buildbot-arm "--mode=dbg-host,nacl -j8"
+  mode-buildbot-arm "--mode=dbg-host,nacl"
   archive-for-hw-bots between_builders/${NAME_ARM_DBG}/build.tgz
 }
 
 mode-buildbot-arm-opt() {
-  mode-buildbot-arm "--mode=opt-host,nacl -j8"
+  mode-buildbot-arm "--mode=opt-host,nacl"
   archive-for-hw-bots between_builders/${NAME_ARM_OPT}/build.tgz
 }
 
 mode-buildbot-arm-try() {
-  mode-buildbot-arm "--mode=opt-host,nacl -j8"
+  mode-buildbot-arm "--mode=opt-host,nacl"
   archive-for-hw-bots between_builders/${NAME_ARM_TRY}/build.tgz
 }
 
@@ -248,7 +248,7 @@ mode-buildbot-arm-hw-try() {
 mode-utman() {
   # turn verbose mode off
   set +o xtrace
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8" "smoke_tests"
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" "smoke_tests"
   ad-hoc-shared-lib-tests
 }
 ######################################################################
