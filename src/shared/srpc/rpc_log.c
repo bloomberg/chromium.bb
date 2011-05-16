@@ -63,7 +63,6 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
    */
   if (detail_level <= getVerbosity()) {
     int pid = GETPID();
-    char timestamp[128];
     va_list ap;
 #ifdef __native_client__
     const char* host_or_nacl = "NACL";
@@ -73,10 +72,9 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
     va_start(ap, fmt);
     /* NaClXMutexLock(&log_mu); */
     fprintf(stderr,
-            "[SRPC:%s:%d:%s] ",
+            "[SRPC:%s:%d] ",
             host_or_nacl,
-            pid,
-            NaClTimeStampString(timestamp, sizeof timestamp));
+            pid);
     vfprintf(stderr, fmt, ap);
     /* NaClXMutexUnlock(&log_mu); */
     va_end(ap);
