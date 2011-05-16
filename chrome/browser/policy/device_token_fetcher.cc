@@ -176,7 +176,7 @@ void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
 
 void DeviceTokenFetcher::SetState(FetcherState state) {
   state_ = state;
-  if (state_ != STATE_ERROR)
+  if (state_ != STATE_TEMPORARY_ERROR)
     effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms_;
 
   base::Time delayed_work_at;
