@@ -1472,11 +1472,17 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_SPELLCHECK_SUGGESTION_1:
     case IDC_SPELLCHECK_SUGGESTION_2:
     case IDC_SPELLCHECK_SUGGESTION_3:
-    case IDC_SPELLCHECK_SUGGESTION_4:
+    case IDC_SPELLCHECK_SUGGESTION_4: {
       source_tab_contents_->render_view_host()->Replace(
           params_.dictionary_suggestions[id - IDC_SPELLCHECK_SUGGESTION_0]);
+      SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
+      if (!spellcheck_host) {
+        NOTREACHED();
+        break;
+      }
+      spellcheck_host->RecordReplacedWordStats(1);
       break;
-
+    }
     case IDC_CHECK_SPELLING_OF_THIS_FIELD: {
       RenderViewHost* view = source_tab_contents_->render_view_host();
       view->Send(new SpellCheckMsg_ToggleSpellCheck(view->routing_id()));

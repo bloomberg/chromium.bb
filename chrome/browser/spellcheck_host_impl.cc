@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_split.h"
 #include "base/threading/thread_restrictions.h"
@@ -87,7 +88,10 @@ SpellCheckHostImpl::SpellCheckHostImpl(
       file_(base::kInvalidPlatformFileValue),
       tried_to_download_(false),
       use_platform_spellchecker_(false),
-      request_context_getter_(request_context_getter) {
+      request_context_getter_(request_context_getter),
+      misspelled_word_count_(0),
+      spellchecked_word_count_(0),
+      replaced_word_count_(0) {
   DCHECK(observer_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -168,6 +172,7 @@ void SpellCheckHostImpl::AddWord(const std::string& word) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   custom_words_.push_back(word);
+  SpellCheckHost::RecordCustomWordCountStats(custom_words_.size());
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &SpellCheckHostImpl::WriteWordToCustomDictionary, word));
@@ -235,6 +240,7 @@ void SpellCheckHostImpl::InitializeInternal() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
           &SpellCheckHostImpl::InformObserverOfInitialization));
+  SpellCheckHost::RecordCustomWordCountStats(custom_words_.size());
 }
 
 void SpellCheckHostImpl::InitializeOnFileThread() {
@@ -292,6 +298,33 @@ void SpellCheckHostImpl::WriteWordToCustomDictionary(const std::string& word) {
   if (f)
     fputs(word_to_add.c_str(), f);
   file_util::CloseFile(f);
+}
+
+void SpellCheckHostImpl::RecordCheckedWordStats(bool misspell) {
+  spellchecked_word_count_++;
+  if (misspell) {
+    misspelled_word_count_++;
+    // If an user misspelled, that user should be counted as a part of
+    // the population.  So we ensure to instantiate the histogram
+    // entries here at the first time.
+    if (misspelled_word_count_ == 1)
+      RecordReplacedWordStats(0);
+  }
+
+  int percentage = (100 * misspelled_word_count_) / spellchecked_word_count_;
+  UMA_HISTOGRAM_PERCENTAGE("SpellCheck.MisspellRatio", percentage);
+}
+
+void SpellCheckHostImpl::RecordReplacedWordStats(int delta) {
+  replaced_word_count_ += delta;
+  if (!misspelled_word_count_) {
+    // This is possible when an extension gives the misspelling,
+    // which is not recorded as a part of this metrics.
+    return;
+  }
+
+  int percentage = (100 * replaced_word_count_) / misspelled_word_count_;
+  UMA_HISTOGRAM_PERCENTAGE("SpellCheck.ReplaceRatio", percentage);
 }
 
 void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source,

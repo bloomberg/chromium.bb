@@ -54,6 +54,14 @@ class SpellCheckHost
       const std::string& language,
       net::URLRequestContextGetter* request_context_getter);
 
+  // Collects the number of words in the custom dictionary, which is
+  // to be uploaded via UMA
+  static void RecordCustomWordCountStats(size_t count);
+
+  // Collects status of spellchecking enabling state, which is
+  // to be uploaded via UMA
+  static void RecordEnabledStats(bool enabled);
+
   // Clears an observer which is set on creation.
   // Used to prevent calling back to a deleted object.
   virtual void UnsetObserver() = 0;
@@ -75,6 +83,14 @@ class SpellCheckHost
   virtual const std::string& GetLanguage() const = 0;
 
   virtual bool IsUsingPlatformChecker() const = 0;
+
+  // Collects status of spellchecking enabling state, which is
+  // to be uploaded via UMA
+  virtual void RecordCheckedWordStats(bool misspell) = 0;
+
+  // Collects a histogram for misspelled word replacement
+  // to be uploaded via UMA
+  virtual void RecordReplacedWordStats(int delta) = 0;
 
   // This function computes a vector of strings which are to be displayed in
   // the context menu over a text area for changing spell check languages. It

@@ -33,6 +33,7 @@ class SpellCheckMessageFilter : public BrowserMessageFilter {
                                   int document_tag,
                                   const string16& text);
   void OnSpellCheckerRequestDictionary();
+  void OnNotifyChecked(bool misspelled);
 
   int render_process_id_;
 };

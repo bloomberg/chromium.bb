@@ -379,6 +379,12 @@ void ProfileImpl::DoFinalInit() {
 
   InstantController::RecordMetrics(this);
 
+  // Logs the spell-check enabled status.
+  // For simplicity, we check if spell-check is enabled only at start up
+  // time and don't track preferences change.
+  SpellCheckHost::RecordEnabledStats(
+      GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+
   FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
   FilePath cache_path = base_cache_path_;

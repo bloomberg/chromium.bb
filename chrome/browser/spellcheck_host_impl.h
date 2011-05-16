@@ -87,6 +87,14 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // Write a custom dictionary addition to disk.
   void WriteWordToCustomDictionary(const std::string& word);
 
+  // Collects status of spellchecking enabling state, which is
+  // to be uploaded via UMA
+  virtual void RecordCheckedWordStats(bool misspell);
+
+  // Collects a histogram for misspelled word replacement
+  // to be uploaded via UMA
+  virtual void RecordReplacedWordStats(int delta);
+
   // URLFetcher::Delegate implementation.  Called when we finish downloading the
   // spellcheck dictionary; saves the dictionary to |data_|.
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -140,6 +148,13 @@ class SpellCheckHostImpl : public SpellCheckHost,
   scoped_ptr<URLFetcher> fetcher_;
 
   NotificationRegistrar registrar_;
+
+  // Number of corrected words of checked words.
+  int misspelled_word_count_;
+  // Number of checked words.
+  int spellchecked_word_count_;
+  // Number of misspelled words replaced by a user.
+  int replaced_word_count_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECK_HOST_IMPL_H_

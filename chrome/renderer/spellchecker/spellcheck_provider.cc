@@ -110,6 +110,11 @@ void SpellCheckProvider::spellCheck(
         &offset, &length, optional_suggestions ? & suggestions : NULL);
     if (optional_suggestions)
       *optional_suggestions = suggestions;
+    if (!optional_suggestions) {
+      // If optional_suggestions is not requested, the API is called
+      // for marking.  So we use this for counting markable words.
+      Send(new SpellCheckHostMsg_NotifyChecked(routing_id(), 0 < length));
+    }
   }
 }
 

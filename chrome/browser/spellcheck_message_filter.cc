@@ -20,7 +20,8 @@ SpellCheckMessageFilter::~SpellCheckMessageFilter() {
 
 void SpellCheckMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
-  if (message.type() == SpellCheckHostMsg_RequestDictionary::ID)
+  if (message.type() == SpellCheckHostMsg_RequestDictionary::ID ||
+      message.type() == SpellCheckHostMsg_NotifyChecked::ID)
     *thread = BrowserThread::UI;
 }
 
@@ -43,6 +44,8 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnPlatformRequestTextCheck)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestDictionary,
                         OnSpellCheckerRequestDictionary)
+    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_NotifyChecked,
+                        OnNotifyChecked)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -105,4 +108,14 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
     // false.
     profile->ReinitializeSpellCheckHost(false);
   }
+}
+
+void SpellCheckMessageFilter::OnNotifyChecked(bool misspelled) {
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
+  if (!host)
+    return;  // Teardown.
+  // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
+  Profile* profile = host->profile();
+  if (profile->GetSpellCheckHost())
+    profile->GetSpellCheckHost()->RecordCheckedWordStats(misspelled);
 }

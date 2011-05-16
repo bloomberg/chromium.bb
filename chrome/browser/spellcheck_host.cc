@@ -4,6 +4,7 @@
 
 #include "chrome/browser/spellcheck_host.h"
 
+#include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,4 +69,19 @@ int SpellCheckHost::GetSpellCheckLanguages(
       return i;
   }
   return -1;
+}
+
+// static
+void SpellCheckHost::RecordCustomWordCountStats(size_t count) {
+  UMA_HISTOGRAM_COUNTS("SpellCheck.CustomWords", count);
+}
+
+// static
+void SpellCheckHost::RecordEnabledStats(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN("SpellCheck.Enabled", enabled);
+  // Because SpellCheckHost is instantiated lazily, the size of
+  // custom dictionary is unknown at this time. We mark it as -1 and
+  // record actual value later. See SpellCheckHost for more detail.
+  if (enabled)
+    RecordCustomWordCountStats(-1);
 }
