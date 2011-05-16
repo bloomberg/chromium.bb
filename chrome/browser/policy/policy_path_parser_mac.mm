@@ -8,6 +8,8 @@
 #include "base/sys_string_conversions.h"
 
 #import <Cocoa/Cocoa.h>
+#import <SystemConfiguration/SCDynamicStore.h>
+#import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 
 #include <string>
 
@@ -62,13 +64,19 @@ FilePath::StringType ExpandPathVariables(
   }
   position = result.find(kMachineNamePolicyVarName);
   if (position != std::string::npos) {
-    NSString* machinename = [[NSHost currentHost] name];
+    SCDynamicStoreContext context = { 0, NULL, NULL, NULL };
+    SCDynamicStoreRef store = SCDynamicStoreCreate(kCFAllocatorDefault,
+                                                   CFSTR("policy_subsystem"),
+                                                   NULL, &context);
+    CFStringRef machinename = SCDynamicStoreCopyLocalHostName(store);
     if (machinename) {
       result.replace(position, strlen(kMachineNamePolicyVarName),
-                     base::SysNSStringToUTF8(machinename));
+                     base::SysCFStringRefToUTF8(machinename));
+      CFRelease(machinename);
     } else {
       LOG(ERROR) << "Machine name variable can not be resolved.";
     }
+    CFRelease(store);
   }
   return result;
 }
