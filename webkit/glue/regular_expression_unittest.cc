@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 
-using namespace WebKit;
+using WebKit::WebRegularExpression;
+using WebKit::WebString;
+using WebKit::WebTextCaseInsensitive;
+using WebKit::WebTextCaseSensitive;
+using WebKit::WebUChar;
 
 namespace {
 
