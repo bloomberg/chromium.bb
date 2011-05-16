@@ -42,7 +42,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   FilePath appcache_path = temp_dir_.path().Append(chrome::kAppCacheDirname);
   scoped_refptr<ChromeAppCacheService> appcache_service =
-      new ChromeAppCacheService;
+      new ChromeAppCacheService(NULL);
   const content::ResourceContext* resource_context = NULL;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -74,7 +74,7 @@ TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   FilePath appcache_path = temp_dir_.path().Append(chrome::kAppCacheDirname);
   scoped_refptr<ChromeAppCacheService> appcache_service =
-      new ChromeAppCacheService;
+      new ChromeAppCacheService(NULL);
   const content::ResourceContext* resource_context = NULL;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

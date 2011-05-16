@@ -28,6 +28,7 @@ class MessageLoopProxy;
 }
 
 namespace quota {
+class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
@@ -50,7 +51,8 @@ struct AppCacheInfoCollection
 // exclusive access to it's cache_directory on disk.
 class AppCacheService {
  public:
-  AppCacheService();
+  // If not using quota management, the proxy may be NULL.
+  explicit AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy);
   virtual ~AppCacheService();
 
   void Initialize(const FilePath& cache_directory,
@@ -104,6 +106,10 @@ class AppCacheService {
   }
   void set_special_storage_policy(quota::SpecialStoragePolicy* policy);
 
+  quota::QuotaManagerProxy* quota_manager_proxy() const {
+    return quota_manager_proxy_.get();
+  }
+
   // Each child process in chrome uses a distinct backend instance.
   // See chrome/browser/AppCacheDispatcherHost.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
@@ -127,6 +133,7 @@ class AppCacheService {
   AppCachePolicy* appcache_policy_;
   scoped_ptr<AppCacheStorage> storage_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   PendingAsyncHelpers pending_helpers_;
   BackendMap backends_;  // One 'backend' per child process.
   // Context for use during cache updates.

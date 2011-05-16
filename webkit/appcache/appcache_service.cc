@@ -10,6 +10,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_storage_impl.h"
+#include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
 namespace appcache {
@@ -175,13 +176,14 @@ void AppCacheService::GetInfoHelper::OnAllInfo(
 
 // AppCacheService -------
 
-AppCacheService::AppCacheService()
-    : appcache_policy_(NULL), request_context_(NULL) {
+AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
+    : appcache_policy_(NULL), quota_manager_proxy_(quota_manager_proxy),
+      request_context_(NULL)  {
+  // TODO(michaeln): Create and register our QuotaClient.
 }
 
 AppCacheService::~AppCacheService() {
   DCHECK(backends_.empty());
-
   std::for_each(pending_helpers_.begin(),
                 pending_helpers_.end(),
                 std::mem_fun(&AsyncHelper::Cancel));
@@ -221,6 +223,7 @@ void AppCacheService::set_special_storage_policy(
     quota::SpecialStoragePolicy* policy) {
   special_storage_policy_ = policy;
 }
+
 void AppCacheService::RegisterBackend(
     AppCacheBackendImpl* backend_impl) {
   DCHECK(backends_.find(backend_impl->process_id()) == backends_.end());

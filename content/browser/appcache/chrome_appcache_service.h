@@ -35,7 +35,7 @@ class ChromeAppCacheService
       public appcache::AppCachePolicy,
       public NotificationObserver {
  public:
-  ChromeAppCacheService();
+  explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);
 
   void InitializeOnIOThread(
       const FilePath& cache_path,  // may be empty to use in-memory structures

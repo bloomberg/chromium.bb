@@ -11,6 +11,7 @@
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/mock_appcache_service.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace appcache {
 
@@ -76,6 +77,40 @@ class AppCacheHostTest : public testing::Test {
     appcache::EventID last_event_id_;
   };
 
+  class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
+   public:
+    MockQuotaManagerProxy() : QuotaManagerProxy(NULL, NULL) {}
+
+    // Not needed for our tests.
+    virtual void RegisterClient(quota::QuotaClient* client) {}
+    virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
+                                       const GURL& origin,
+                                       quota::StorageType type) {}
+    virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
+                                       const GURL& origin,
+                                       quota::StorageType type,
+                                       int64 delta) {}
+
+    virtual void NotifyOriginInUse(const GURL& origin) {
+      inuse_[origin] += 1;
+    }
+
+    virtual void NotifyOriginNoLongerInUse(const GURL& origin) {
+      inuse_[origin] -= 1;
+    }
+
+    int GetInUseCount(const GURL& origin) {
+      return inuse_[origin];
+    }
+
+    void reset() {
+      inuse_.clear();
+    }
+
+    // Map from origin to count of inuse notifications.
+    std::map<GURL, int> inuse_;
+  };
+
   void GetStatusCallback(Status status, void* param) {
     last_status_result_ = status;
     last_callback_param_ = param;
@@ -137,26 +172,36 @@ TEST_F(AppCacheHostTest, Basic) {
 }
 
 TEST_F(AppCacheHostTest, SelectNoCache) {
+  scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
+      new MockQuotaManagerProxy);
+  service_.set_quota_manager_proxy(mock_quota_proxy);
+
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
   mock_frontend_.last_status_ = OBSOLETE;
 
-  AppCacheHost host(1, &mock_frontend_, &service_);
-  host.SelectCache(GURL("http://whatever/"), kNoCacheId, GURL());
+  const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+  {
+    AppCacheHost host(1, &mock_frontend_, &service_);
+    host.SelectCache(kDocAndOriginUrl, kNoCacheId, GURL());
+    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
 
-  // We should have received an OnCacheSelected msg
-  EXPECT_EQ(1, mock_frontend_.last_host_id_);
-  EXPECT_EQ(kNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(UNCACHED, mock_frontend_.last_status_);
+    // We should have received an OnCacheSelected msg
+    EXPECT_EQ(1, mock_frontend_.last_host_id_);
+    EXPECT_EQ(kNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(UNCACHED, mock_frontend_.last_status_);
 
-  // Otherwise, see that it respond as if there is no cache selected.
-  EXPECT_EQ(1, host.host_id());
-  EXPECT_EQ(&service_, host.service());
-  EXPECT_EQ(&mock_frontend_, host.frontend());
-  EXPECT_EQ(NULL, host.associated_cache());
-  EXPECT_FALSE(host.is_selection_pending());
-  EXPECT_TRUE(host.preferred_manifest_url().is_empty());
+    // Otherwise, see that it respond as if there is no cache selected.
+    EXPECT_EQ(1, host.host_id());
+    EXPECT_EQ(&service_, host.service());
+    EXPECT_EQ(&mock_frontend_, host.frontend());
+    EXPECT_EQ(NULL, host.associated_cache());
+    EXPECT_FALSE(host.is_selection_pending());
+    EXPECT_TRUE(host.preferred_manifest_url().is_empty());
+  }
+  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+  service_.set_quota_manager_proxy(NULL);
 }
 
 TEST_F(AppCacheHostTest, ForeignEntry) {

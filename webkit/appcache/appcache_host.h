@@ -242,6 +242,9 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // List of objects observing us.
   ObserverList<Observer> observers_;
 
+  // Used to inform the QuotaManager of what origins are currently in use.
+  GURL origin_in_use_;
+
   friend class AppCacheRequestHandlerTest;
   friend class AppCacheUpdateJobTest;
   FRIEND_TEST_ALL_PREFIXES(AppCacheTest, CleanupUnusedCache);

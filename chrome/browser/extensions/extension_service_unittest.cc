@@ -345,7 +345,7 @@ class ExtensionTestingProfile : public TestingProfile {
 
   virtual ChromeAppCacheService* GetAppCacheService() {
     if (!appcache_service_) {
-      appcache_service_ = new ChromeAppCacheService;
+      appcache_service_ = new ChromeAppCacheService(NULL);
       if (!BrowserThread::PostTask(
               BrowserThread::IO, FROM_HERE,
               NewRunnableMethod(

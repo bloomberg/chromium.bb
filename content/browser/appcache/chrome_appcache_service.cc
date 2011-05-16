@@ -10,6 +10,7 @@
 #include "content/common/notification_service.h"
 #include "net/base/net_errors.h"
 #include "webkit/appcache/appcache_thread.h"
+#include "webkit/quota/quota_manager.h"
 
 static bool has_initialized_thread_ids;
 
@@ -29,8 +30,10 @@ void DeleteLocalStateOnIOThread(FilePath cache_path) {
 
 // ----------------------------------------------------------------------------
 
-ChromeAppCacheService::ChromeAppCacheService()
-    : resource_context_(NULL), clear_local_state_on_exit_(false) {
+ChromeAppCacheService::ChromeAppCacheService(
+    quota::QuotaManagerProxy* quota_manager_proxy)
+    : AppCacheService(quota_manager_proxy),
+      resource_context_(NULL), clear_local_state_on_exit_(false) {
 }
 
 void ChromeAppCacheService::InitializeOnIOThread(

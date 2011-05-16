@@ -721,19 +721,7 @@ Profile* ProfileImpl::GetOriginalProfile() {
 }
 
 ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
-  if (!appcache_service_) {
-    appcache_service_ = new ChromeAppCacheService;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            appcache_service_.get(),
-            &ChromeAppCacheService::InitializeOnIOThread,
-            IsOffTheRecord()
-                ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-            &GetResourceContext(),
-            make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
-            clear_local_state_on_exit_));
-  }
+  CreateQuotaManagerAndClients();
   return appcache_service_;
 }
 
@@ -1303,6 +1291,17 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
       GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy(),
       quota_manager_->proxy(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          appcache_service_.get(),
+          &ChromeAppCacheService::InitializeOnIOThread,
+          IsOffTheRecord()
+              ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
+          &GetResourceContext(),
+          make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
+          clear_local_state_on_exit_));
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {

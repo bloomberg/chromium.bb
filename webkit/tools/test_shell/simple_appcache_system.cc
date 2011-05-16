@@ -410,7 +410,7 @@ void SimpleAppCacheSystem::InitOnIOThread(
     db_thread_.Start();
 
   // Recreate and initialize per each IO thread.
-  service_ = new appcache::AppCacheService();
+  service_ = new appcache::AppCacheService(NULL);
   backend_impl_ = new appcache::AppCacheBackendImpl();
   service_->Initialize(cache_directory_,
                        SimpleResourceLoaderBridge::GetCacheThread());

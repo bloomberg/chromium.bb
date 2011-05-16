@@ -8,14 +8,19 @@
 #include "base/compiler_specific.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/mock_appcache_storage.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace appcache {
 
 // For use by unit tests.
 class MockAppCacheService : public AppCacheService {
  public:
-  MockAppCacheService() {
+  MockAppCacheService() : AppCacheService(NULL) {
     storage_.reset(new MockAppCacheStorage(this));
+  }
+
+  void set_quota_manager_proxy(quota::QuotaManagerProxy* proxy) {
+    quota_manager_proxy_ = proxy;
   }
 };
 

@@ -10,6 +10,7 @@
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_request_handler.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace appcache {
 
@@ -52,6 +53,8 @@ AppCacheHost::~AppCacheHost() {
   if (group_being_updated_.get())
     group_being_updated_->RemoveUpdateObserver(this);
   service_->storage()->CancelDelegateCallbacks(this);
+  if (service()->quota_manager_proxy() && !origin_in_use_.is_empty())
+    service()->quota_manager_proxy()->NotifyOriginNoLongerInUse(origin_in_use_);
 }
 
 void AppCacheHost::AddObserver(Observer* observer) {
@@ -69,6 +72,10 @@ void AppCacheHost::SelectCache(const GURL& document_url,
          !pending_swap_cache_callback_ &&
          !pending_get_status_callback_ &&
          !is_selection_pending());
+
+  origin_in_use_ = document_url.GetOrigin();
+  if (service()->quota_manager_proxy() && !origin_in_use_.is_empty())
+    service()->quota_manager_proxy()->NotifyOriginInUse(origin_in_use_);
 
   if (main_resource_blocked_)
     frontend_->OnContentBlocked(host_id_,
