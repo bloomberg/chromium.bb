@@ -24,6 +24,9 @@
 #define TRACE_END0(x0, x1) { }
 #define TRACE_END1(x0, x1, x2, x3) { }
 #define TRACE_END2(x0, x1, x2, x3, x4, x5) { }
+#define TRACE_EVENT_IF_LONGER_THAN0(x0, x1, x2) { }
+#define TRACE_EVENT_IF_LONGER_THAN1(x0, x1, x2, x3, x4) { }
+#define TRACE_EVENT_IF_LONGER_THAN2(x0, x1, x2, x3, x4, x5, x6) { }
 
 #endif  // __native_client__
 
