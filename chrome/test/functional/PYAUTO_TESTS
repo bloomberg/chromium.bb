@@ -79,6 +79,11 @@
     ],
 
     'win': [
+      # Causes browser crash - crbug.com/82698
+      '-databases.DatabasesTest.testIncognitoCannotReadRegularDatabase',
+      '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
+      '-databases.DatabasesTest.testIncognitoDatabaseNotPersistent',
+      '-databases.DatabasesTest.testRegularCannotReadIncognitoDatabase',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/50481, crbug.com/54942
