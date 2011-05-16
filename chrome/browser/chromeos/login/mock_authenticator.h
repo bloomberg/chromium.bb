@@ -37,47 +37,18 @@ class MockAuthenticator : public Authenticator {
                                    const std::string& username,
                                    const std::string& password,
                                    const std::string& login_token,
-                                   const std::string& login_captcha) {
-    if (expected_username_ == username && expected_password_ == password) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &MockAuthenticator::OnLoginSuccess,
-                            GaiaAuthConsumer::ClientLoginResult(), false));
-      return true;
-    }
-    GoogleServiceAuthError error(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &MockAuthenticator::OnLoginFailure,
-                          LoginFailure::FromNetworkAuthFailure(error)));
-    return false;
-  }
+                                   const std::string& login_captcha);
 
   virtual bool AuthenticateToUnlock(const std::string& username,
-                                    const std::string& password) {
-    return AuthenticateToLogin(NULL /* not used */, username, password,
-                               std::string(), std::string());
-  }
+                                    const std::string& password);
 
-  virtual void LoginOffTheRecord() {
-    consumer_->OnOffTheRecordLoginSuccess();
-  }
+  virtual void LoginOffTheRecord();
 
-  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials,
-                      bool request_pending) {
-    // If we want to be more like the real thing, we could save username
-    // in AuthenticateToLogin, but there's not much of a point.
-    consumer_->OnLoginSuccess(expected_username_,
-                              expected_password_,
-                              credentials,
-                              request_pending);
-  }
+  virtual void OnLoginSuccess(
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool request_pending);
 
-  void OnLoginFailure(const LoginFailure& failure) {
-      consumer_->OnLoginFailure(failure);
-      VLOG(1) << "Posting a QuitTask to UI thread";
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
-  }
+  virtual void OnLoginFailure(const LoginFailure& failure);
 
   virtual void RecoverEncryptedData(
       const std::string& old_password,
@@ -102,49 +73,32 @@ class MockAuthenticator : public Authenticator {
 class MockLoginUtils : public LoginUtils {
  public:
   explicit MockLoginUtils(const std::string& expected_username,
-                          const std::string& expected_password)
-      : expected_username_(expected_username),
-        expected_password_(expected_password) {
-  }
+                          const std::string& expected_password);
+  virtual ~MockLoginUtils();
 
-  virtual bool ShouldWaitForWifi() {
-    return false;
-  }
+  virtual bool ShouldWaitForWifi();
 
   virtual void PrepareProfile(const std::string& username,
                               const std::string& password,
                               const GaiaAuthConsumer::ClientLoginResult& res,
                               bool pending_requests,
-                              Delegate* delegate) {
-    EXPECT_EQ(expected_username_, username);
-    EXPECT_EQ(expected_password_, password);
-    // Profile hasn't been loaded.
-    delegate->OnProfilePrepared(NULL);
-  }
+                              Delegate* delegate);
 
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url) {
-  }
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) {}
 
-  virtual void SetFirstLoginPrefs(PrefService* prefs) {
-  }
+  virtual void SetFirstLoginPrefs(PrefService* prefs) {}
 
-  virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {
-    return new MockAuthenticator(
-        consumer, expected_username_, expected_password_);
-  }
+  virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
 
-  virtual void PrewarmAuthentication() {
-  }
+  virtual void PrewarmAuthentication() {}
 
   virtual void FetchCookies(
       Profile* profile,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  }
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {}
 
   virtual void FetchTokens(
       Profile* profile,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  }
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {}
 
   void SetBackgroundView(BackgroundView* background_view) {
     background_view_ = background_view;
@@ -157,9 +111,7 @@ class MockLoginUtils : public LoginUtils {
   virtual std::string GetOffTheRecordCommandLine(
       const GURL& start_url,
       const CommandLine& base_command_line,
-      CommandLine* command_line) {
-    return std::string();
-  }
+      CommandLine* command_line);
 
  private:
   std::string expected_username_;

@@ -13,8 +13,9 @@ namespace chromeos {
 
 class MockPowerLibrary : public PowerLibrary {
  public:
-  MockPowerLibrary() {}
-  virtual ~MockPowerLibrary() {}
+  MockPowerLibrary();
+  virtual ~MockPowerLibrary();
+
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
