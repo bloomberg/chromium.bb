@@ -49,7 +49,7 @@ namespace speech_input {
 
 const int SpeechRecognizer::kAudioSampleRate = 16000;
 const int SpeechRecognizer::kAudioPacketIntervalMs = 100;
-const int SpeechRecognizer::kNumAudioChannels = 1;
+const ChannelLayout SpeechRecognizer::kChannelLayout = CHANNEL_LAYOUT_MONO;
 const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
 const int SpeechRecognizer::kNoSpeechTimeoutSec = 8;
 const int SpeechRecognizer::kEndpointerEstimationTimeMs = 300;
@@ -102,7 +102,7 @@ bool SpeechRecognizer::StartRecording() {
   encoder_.reset(AudioEncoder::Create(codec_, kAudioSampleRate,
                                       kNumBitsPerAudioSample));
   int samples_per_packet = (kAudioSampleRate * kAudioPacketIntervalMs) / 1000;
-  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kNumAudioChannels,
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
                          kAudioSampleRate, kNumBitsPerAudioSample,
                          samples_per_packet);
   audio_controller_ = AudioInputController::Create(this, params);

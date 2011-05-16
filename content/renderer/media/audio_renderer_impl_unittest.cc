@@ -33,7 +33,9 @@ class AudioRendererImplTest : public ::testing::Test {
     decoder_ = new media::MockAudioDecoder();
 
     ON_CALL(*decoder_, config())
-        .WillByDefault(Return(media::AudioDecoderConfig(16, 1, 44100)));
+        .WillByDefault(Return(media::AudioDecoderConfig(16,
+                                                        CHANNEL_LAYOUT_MONO,
+                                                        44100)));
 
     // Create and initialize audio renderer.
     renderer_ = new AudioRendererImpl(filter_);

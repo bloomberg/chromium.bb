@@ -105,7 +105,7 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   // Initialize our algorithm with media properties, initial playback rate,
   // and a callback to request more reads from the data source.
   AudioDecoderConfig config = decoder_->config();
-  algorithm_->Initialize(config.channels_per_sample,
+  algorithm_->Initialize(ChannelLayoutToChannelCount(config.channel_layout),
                          config.sample_rate,
                          config.bits_per_channel,
                          0.0f,

@@ -58,7 +58,8 @@ class AudioRendererBaseTest : public ::testing::Test {
 
     // Set up audio properties.
     ON_CALL(*decoder_, config())
-        .WillByDefault(Return(AudioDecoderConfig(16, 1, 44100)));
+        .WillByDefault(Return(AudioDecoderConfig(16, CHANNEL_LAYOUT_MONO,
+                                                 44100)));
   }
 
   virtual ~AudioRendererBaseTest() {

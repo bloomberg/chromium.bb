@@ -36,7 +36,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
     int audio_packet_length_bytes =
         (SpeechRecognizer::kAudioSampleRate *
          SpeechRecognizer::kAudioPacketIntervalMs *
-         SpeechRecognizer::kNumAudioChannels *
+         ChannelLayoutToChannelCount(SpeechRecognizer::kChannelLayout) *
          SpeechRecognizer::kNumBitsPerAudioSample) / (8 * 1000);
     audio_packet_.resize(audio_packet_length_bytes);
   }

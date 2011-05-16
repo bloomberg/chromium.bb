@@ -113,7 +113,7 @@ class SpeechRecognizer
 
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
-  static const int kNumAudioChannels;
+  static const ChannelLayout kChannelLayout;
   static const int kNumBitsPerAudioSample;
   static const int kNoSpeechTimeoutSec;
   static const int kEndpointerEstimationTimeMs;
