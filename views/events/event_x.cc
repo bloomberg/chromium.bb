@@ -84,7 +84,7 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
 
 ui::EventType GetTouchEventType(XEvent* xev) {
   XGenericEventCookie* cookie = &xev->xcookie;
-  DCHECK_EQ(cookie->evtype, ui::ET_TOUCH_MOVED);
+  DCHECK_EQ(cookie->evtype, XI_Motion);
 
   // Note: We will not generate a _STATIONARY event here. It will be created,
   // when necessary, by a RWHVV.
