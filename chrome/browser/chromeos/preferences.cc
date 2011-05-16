@@ -57,24 +57,30 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUse24HourClock,
                              base::GetHourClockType() == base::k24HourClock,
                              PrefService::SYNCABLE_PREF);
+  // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod
+  // because they're just used to track the logout state of the device.
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod,
                             "",
                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod,
                             "",
                             PrefService::UNSYNCABLE_PREF);
+  // We don't sync input method hotkeys since they're not configurable.
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
                             language_prefs::kHotkeyNextEngineInMenu,
                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
                             language_prefs::kHotkeyPreviousEngine,
                             PrefService::UNSYNCABLE_PREF);
+  // We don't sync the list of input methods and preferred languages since a
+  // user might use two or more devices with different hardware keyboards.
+  // crosbug.com/15181
   prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages,
                             kFallbackInputMethodLocale,
-                            PrefService::SYNCABLE_PREF);
+                            PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             input_method::GetHardwareInputMethodId(),
-                            PrefService::SYNCABLE_PREF);
+                            PrefService::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,
@@ -150,6 +156,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapAltKeyTo,
                              input_method::kLeftAltKey,
                              PrefService::SYNCABLE_PREF);
+  // We don't sync the following keyboard prefs since they are not user-
+  // configurable.
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled,
                              true,
                              PrefService::UNSYNCABLE_PREF);
