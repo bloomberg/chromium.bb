@@ -80,7 +80,8 @@ void TitlePrefixMatcher::CalculatePrefixLengths(
     // titles that are from the same hostname.
     string16 hostname = ASCIIToUTF16(title_info.url.host());
     // We only create prefixes at word boundaries.
-    base::BreakIterator iter(title, base::BreakIterator::BREAK_WORD);
+    base::i18n::BreakIterator iter(title,
+                                   base::i18n::BreakIterator::BREAK_WORD);
     // We ignore this title if we can't break it into words, or if it only
     // contains a single word.
     if (!iter.Init() || !iter.Advance())

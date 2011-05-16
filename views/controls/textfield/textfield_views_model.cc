@@ -431,7 +431,7 @@ void TextfieldViewsModel::MoveCursorToPreviousWord(bool select) {
   // This is probably fast enough for our usage, but we may
   // want to modify WordIterator so that it can start from the
   // middle of string and advance backwards.
-  base::BreakIterator iter(&text_, base::BreakIterator::BREAK_WORD);
+  base::i18n::BreakIterator iter(&text_, base::i18n::BreakIterator::BREAK_WORD);
   bool success = iter.Init();
   DCHECK(success);
   if (!success)
@@ -463,7 +463,7 @@ void TextfieldViewsModel::MoveCursorToPreviousWord(bool select) {
 void TextfieldViewsModel::MoveCursorToNextWord(bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  base::BreakIterator iter(&text_, base::BreakIterator::BREAK_WORD);
+  base::i18n::BreakIterator iter(&text_, base::i18n::BreakIterator::BREAK_WORD);
   bool success = iter.Init();
   DCHECK(success);
   if (!success)

@@ -486,8 +486,10 @@ InMemoryURLIndex::String16Set InMemoryURLIndex::WordSetFromString16(
 InMemoryURLIndex::String16Vector InMemoryURLIndex::WordVectorFromString16(
     const string16& uni_string,
     bool break_on_space) {
-  base::BreakIterator iter(&uni_string, break_on_space ?
-      base::BreakIterator::BREAK_SPACE : base::BreakIterator::BREAK_WORD);
+  base::i18n::BreakIterator iter(
+      &uni_string,
+      break_on_space ? base::i18n::BreakIterator::BREAK_SPACE
+                     : base::i18n::BreakIterator::BREAK_WORD);
   String16Vector words;
   if (!iter.Init())
     return words;
