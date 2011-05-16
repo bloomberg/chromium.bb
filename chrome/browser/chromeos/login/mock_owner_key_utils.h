@@ -22,7 +22,6 @@ namespace chromeos {
 class MockKeyUtils : public OwnerKeyUtils {
  public:
   MockKeyUtils();
-  virtual ~MockKeyUtils();
 
   MOCK_METHOD2(ImportPublicKey, bool(const FilePath& key_file,
                                      std::vector<uint8>* output));
@@ -38,7 +37,7 @@ class MockKeyUtils : public OwnerKeyUtils {
   MOCK_METHOD2(ExportPublicKeyToFile, bool(crypto::RSAPrivateKey* pair,
                                            const FilePath& key_file));
  protected:
-  virtual ~MockKeyUtils() {}
+  virtual ~MockKeyUtils();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockKeyUtils);
