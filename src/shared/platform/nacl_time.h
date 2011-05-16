@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -24,6 +24,9 @@ void NaClTimeFini(void);
 uint64_t NaClTimerResolutionNanoseconds(void);
 
 int NaClGetTimeOfDay(struct nacl_abi_timeval *tv);
+
+/* Convenience function */
+int64_t NaClGetTimeOfDayMicroseconds();
 
 int NaClNanosleep(struct nacl_abi_timespec const  *req,
                   struct nacl_abi_timespec        *rem);

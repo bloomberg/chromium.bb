@@ -9,6 +9,7 @@
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "ppapi/c/pp_errors.h"
@@ -51,6 +52,7 @@ void FileDownloader::Initialize(PluginPpapi* instance) {
 bool FileDownloader::Open(const nacl::string& url,
                           const pp::CompletionCallback& callback) {
   CHECK(instance_ != NULL);
+  open_time_ = NaClGetTimeOfDayMicroseconds();
   url_to_open_ = url;
   url_ = url;
   file_open_notify_callback_ = callback;
@@ -121,6 +123,15 @@ int32_t FileDownloader::GetPOSIXFileDescriptor() {
 #endif
 
   return file_desc;
+}
+
+int64_t FileDownloader::TimeSinceOpenMilliseconds() const {
+  int64_t now = NaClGetTimeOfDayMicroseconds();
+  // If Open() wasn't called or we somehow return an earlier time now, just
+  // return the 0 rather than worse nonsense values.
+  if (open_time_ < 0 || now < open_time_)
+    return 0;
+  return (now - open_time_) / NACL_MICROS_PER_MILLI;
 }
 
 void FileDownloader::URLLoadStartNotify(int32_t pp_error) {

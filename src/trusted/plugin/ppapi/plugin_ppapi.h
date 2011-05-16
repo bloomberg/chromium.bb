@@ -231,6 +231,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
   nacl::scoped_ptr<pp::Selection_Dev> selection_adapter_;
   nacl::scoped_ptr<pp::WidgetClient_Dev> widget_client_adapter_;
   nacl::scoped_ptr<pp::Zoom_Dev> zoom_adapter_;
+
+  int64_t init_time_;
+  size_t nexe_size_;
 };
 
 }  // namespace plugin

@@ -30,6 +30,7 @@
       'nacl_sync_checked.h',
       'nacl_threads.h',
       'nacl_time.h',
+      'nacl_time_common.c',
       'nacl_timestamp.h',
       'platform_init.c',
       'refcount_base.cc',

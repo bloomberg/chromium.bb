@@ -17,6 +17,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
@@ -35,6 +36,8 @@
 #include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/cpp/dev/find_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
@@ -42,7 +45,6 @@
 #include "ppapi/cpp/dev/widget_client_dev.h"
 #include "ppapi/cpp/dev/zoom_dev.h"
 #include "ppapi/cpp/image_data.h"
-#include "ppapi/c/ppp_instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 
@@ -98,6 +100,54 @@ bool GetLastError(void* obj, SrpcParams* params) {
       static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
   outs[0]->arrays.str = strdup(plugin->last_error_string().c_str());
   return true;
+}
+
+const int64_t kTimeSmallMin = 1;         // in ms
+const int64_t kTimeSmallMax = 20000;     // in ms
+const uint32_t kTimeSmallBuckets = 100;
+
+const int64_t kSizeKBMin = 1;
+const int64_t kSizeKBMax = 512*1024;     // very large .nexe
+const uint32_t kSizeKBBuckets = 100;
+
+static const PPB_UMA_Private* GetUMAInterface() {
+  pp::Module *module = pp::Module::Get();
+  CHECK(module);
+  return reinterpret_cast<const PPB_UMA_Private*>(
+      module->GetBrowserInterface(PPB_UMA_PRIVATE_INTERFACE));
+}
+
+static void HistogramTimeSmall(const std::string& name, int64_t ms) {
+  if (ms < 0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomTimes(pp::Var(name).pp_var(),
+                            ms,
+                            kTimeSmallMin, kTimeSmallMax,
+                            kTimeSmallBuckets);
+}
+
+static void HistogramSizeKB(const std::string& name, int32_t sample) {
+  if (sample < 0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomCounts(pp::Var(name).pp_var(),
+                             sample,
+                             kSizeKBMin, kSizeKBMax,
+                             kSizeKBBuckets);
+}
+
+static void HistogramEnumeration(const std::string& name,
+                                 int32_t sample,
+                                 int32_t boundary) {
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramEnumeration(pp::Var(name).pp_var(), sample, boundary);
 }
 
 // Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
@@ -431,6 +481,8 @@ PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
 // failure. Note that module loading functions will log their own errors.
 bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("PluginPpapi::Init (argc=%"NACL_PRIu32")\n", argc));
+  init_time_ = NaClGetTimeOfDayMicroseconds();
+
   BrowserInterface* browser_interface =
       static_cast<BrowserInterface*>(new(std::nothrow) BrowserInterfacePpapi);
   if (browser_interface == NULL) {
@@ -491,7 +543,8 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
       last_error_string_(""),
       ppapi_proxy_(NULL),
-      replayDidChangeView(false) {
+      replayDidChangeView(false),
+      nexe_size_(0) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
@@ -631,6 +684,12 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
     return;
   }
   size_t nexe_bytes_read = static_cast<size_t>(stat_buf.st_size);
+
+  nexe_size_ = nexe_bytes_read;
+  HistogramSizeKB("NaCl.NexeSize", static_cast<int32_t>(nexe_size_ / 1024));
+  HistogramTimeSmall("NaCl.NexeDownloadTime",
+                     nexe_downloader_.TimeSinceOpenMilliseconds());
+
   // Inform JavaScript that we successfully loaded the manifest file.
   DispatchProgressEvent("progress",
                         true,  // length_computable
@@ -653,6 +712,20 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
                                         nacl::string* error_string) {
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (srpc_channel=%p)\n",
                  reinterpret_cast<void*>(srpc_channel)));
+
+  // TODO(elijahtaylor) nexe_size_ should never be less than zero, revisit when
+  // dynamic loading is more mature.
+  // http://code.google.com/p/nativeclient/issues/detail?id=1534
+  if (init_time_ > 0 && nexe_size_ > 0) {
+    float dt = static_cast<float>(
+        (NaClGetTimeOfDayMicroseconds() - init_time_) / NACL_MICROS_PER_MILLI);
+    float size_in_MB = static_cast<float>(nexe_size_) / 1024.f / 1024.f;
+    HistogramTimeSmall("NaCl.NexeStartupTimePerMB",
+                       static_cast<int64_t>(dt / size_in_MB));
+    HistogramTimeSmall("NaCl.NexeStartupTime",
+                       static_cast<int64_t>(dt));
+  }
+
   // Check that the .nexe exports the PPAPI intialization method.
   NaClSrpcService* client_service = srpc_channel->client;
   if (NaClSrpcServiceMethodIndex(client_service,
@@ -741,6 +814,8 @@ void PluginPpapi::ShutdownProxy() {
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  HistogramTimeSmall("NaCl.ManifestDownloadTime",
+                     nexe_downloader_.TimeSinceOpenMilliseconds());
   // The manifest file was successfully opened.  Set the src property on the
   // plugin now, so that the full url is available to error handlers.
   set_nacl_manifest_url(nexe_downloader_.url());
@@ -877,6 +952,19 @@ bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
   return true;
 }
 
+enum NaClOSArch {
+  kNaClLinux32 = 0,
+  kNaClLinux64,
+  kNaClLinuxArm,
+  kNaClMac32,
+  kNaClMac64,
+  kNaClMacArm,
+  kNaClWin32,
+  kNaClWin64,
+  kNaClWinArm,
+  kNaClOSArchMax
+};
+
 bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
                                             nacl::string* error_string) {
   const nacl::string sandbox_isa(GetSandboxISA());
@@ -897,6 +985,22 @@ bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
     return false;
   }
   *result = nexe_url.AsString();
+
+  NaClOSArch os_arch = kNaClOSArchMax;
+#if NACL_LINUX
+  os_arch = kNaClLinux32;
+#elif NACL_OSX
+  os_arch = kNaClMac32;
+#elif NACL_WINDOWS
+  os_arch = kNaClWin32;
+#endif
+
+  if (sandbox_isa == "x86-64") os_arch = static_cast<NaClOSArch>(os_arch + 1);
+  if (sandbox_isa == "arm") os_arch = static_cast<NaClOSArch>(os_arch + 2);
+
+  if (os_arch < kNaClOSArchMax)
+    HistogramEnumeration("NaCl.OSArch", os_arch, kNaClOSArchMax);
+
   return true;
 }
 

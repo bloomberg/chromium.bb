@@ -80,6 +80,7 @@ platform_inputs += [
     'nacl_log.c',
     'nacl_secure_random_common.c',
     'nacl_sync_checked.c',
+    'nacl_time_common.c',
     'platform_init.c',
     'refcount_base.cc',
     ]

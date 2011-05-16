@@ -33,6 +33,7 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/private/ppb_uma_private.h"
 
 using fake_browser_ppapi::DebugPrintf;
 using fake_browser_ppapi::Host;
@@ -67,6 +68,9 @@ const void* FakeGetBrowserInterface(const char* interface_name) {
   } else if (std::strcmp(interface_name,
                          PPB_NACL_PRIVATE_INTERFACE) == 0) {
     ppb = fake_browser_ppapi::NaClPrivate::GetInterface();
+  } else if (std::strcmp(interface_name,
+                         PPB_UMA_PRIVATE_INTERFACE) == 0) {
+    ppb = NULL;
   } else {
     NACL_UNIMPLEMENTED();
   }

@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
@@ -26,7 +26,8 @@ class FileDownloader {
   FileDownloader()
       : instance_(NULL),
         file_open_notify_callback_(pp::CompletionCallback::Block()),
-        file_io_trusted_interface_(NULL) {}
+        file_io_trusted_interface_(NULL),
+        open_time_(-1) {}
   ~FileDownloader() {}
 
   // Initialize() can only be called once during the lifetime of this instance.
@@ -48,6 +49,9 @@ class FileDownloader {
   // descriptor.  The file descriptor is owned by this instance, so the
   // delegate does not have to close it.
   int32_t GetPOSIXFileDescriptor();
+
+  // Returns the time delta between the call to Open() and this function.
+  int64_t TimeSinceOpenMilliseconds() const;
 
   // The value of |url_| changes over the life of this instance.  When the file
   // is first opened, |url_| is a copy of the URL used to open the file, which
@@ -79,6 +83,7 @@ class FileDownloader {
   const PPB_FileIOTrusted_Dev* file_io_trusted_interface_;
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
+  int64_t open_time_;
 };
 }  // namespace plugin;
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
