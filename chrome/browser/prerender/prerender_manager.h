@@ -13,6 +13,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -203,10 +204,16 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Stops scheduling periodic cleanups if they're no longer needed.
   void MaybeStopSchedulingPeriodicCleanups();
 
-  // Deletes stale prerendered PrerenderContents.
+  // Deletes stale and cancelled prerendered PrerenderContents, as well as
+  // TabContents that have been replaced by prerendered TabContents.
   // Also identifies and kills PrerenderContents that use too much
   // resources.
   void PeriodicCleanup();
+
+  // Posts a task to call PeriodicCleanup.  Results in quicker destruction of
+  // objects.  If |this| is deleted before the task is run, the task will
+  // automatically be cancelled.
+  void PostCleanupTask();
 
   bool IsPrerenderElementFresh(const base::Time start) const;
   void DeleteOldEntries();
@@ -299,6 +306,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   base::TimeTicks last_prerender_start_time_;
 
   std::list<TabContentsWrapper*> old_tab_contents_list_;
+
+  // Cancels pending tasks on deletion.
+  ScopedRunnableMethodFactory<PrerenderManager> runnable_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

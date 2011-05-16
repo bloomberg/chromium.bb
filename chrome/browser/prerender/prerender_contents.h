@@ -232,10 +232,6 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   TabContentsWrapper* ReleasePrerenderContents();
 
-  // Called when we add the PrerenderContents to the pending delete list. Allows
-  // derived classes to clean up.
-  virtual void OnDestroy() {}
-
   // Sets the final status, calls OnDestroy and adds |this| to the
   // PrerenderManager's pending deletes list.
   void Destroy(FinalStatus reason);

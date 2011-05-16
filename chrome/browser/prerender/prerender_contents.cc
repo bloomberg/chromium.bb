@@ -686,8 +686,6 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   if (prerender_manager_->IsPendingDelete(this))
     return;
 
-  OnDestroy();
-
   prerender_manager_->MoveEntryToPendingDelete(this);
   set_final_status(final_status);
   // We may destroy the PrerenderContents before we have initialized the

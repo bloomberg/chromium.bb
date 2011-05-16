@@ -89,10 +89,14 @@ class TestPrerenderContents : public PrerenderContents {
     if (final_status() == FINAL_STATUS_USED) {
       EXPECT_TRUE(new_render_view_host_);
       EXPECT_TRUE(was_shown_);
-      MessageLoopForUI::current()->Quit();
     } else {
       EXPECT_FALSE(was_shown_);
     }
+
+    // When the PrerenderContents is destroyed, quit the UI message loop.
+    // This happens on navigation to used prerendered pages, and soon
+    // after cancellation of unused prerendered pages.
+    MessageLoopForUI::current()->Quit();
   }
 
   virtual void OnRenderViewGone(int status, int exit_code) OVERRIDE {
@@ -119,12 +123,6 @@ class TestPrerenderContents : public PrerenderContents {
       // about:crash can't be navigated to by a normal webpage.
       render_view_host_mutable()->NavigateToURL(GURL("about:crash"));
     }
-  }
-
-  virtual void OnDestroy() OVERRIDE {
-    // In the event we are destroyed, say if the prerender was canceled, quit
-    // the UI message loop.
-    MessageLoopForUI::current()->Quit();
   }
 
  private:
