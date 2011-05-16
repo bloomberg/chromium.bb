@@ -168,7 +168,7 @@ def _RetrieveBuildResult(builder, max_builds, oldest_revision_to_check):
   return _BuildResult(builder, 0, last_run_revision, failing_tests)
 
 
-def _PrintPassingRevisions(results):
+def _PrintPassingRevisions(results, unused_verbose):
   """Prints passing revisions and the range of such revisions.
 
   Args:
@@ -192,12 +192,13 @@ def _PrintPassingRevisions(results):
           min_passing_revision, max_passing_revision)
 
 
-def _PrintFailingRevisions(results):
+def _PrintFailingRevisions(results, verbose):
   """Prints failing revisions and the failing tests.
 
   Args:
       results: A list of build results.
   """
+  failing_test_to_builders = {}
   print "**** Failing revisions *****"
   for result in results:
     if result.last_run_revision and result.failing_tests:
@@ -206,6 +207,45 @@ def _PrintFailingRevisions(results):
                           len(result.failing_tests)))
       for test in result.failing_tests:
         print "  " + test
+        failing_test_to_builders.setdefault(test, set()).add(result.builder)
+  if verbose:
+    _PrintFailingTestsForBuilderSubsets(failing_test_to_builders)
+
+
+class _FailingTestsForBuilderSubset(object):
+  def __init__(self, subset_size):
+    self._subset_size = subset_size
+    self._tests = []
+
+  def SubsetSize(self):
+    return self._subset_size
+
+  def Tests(self):
+    return self._tests
+
+
+def _PrintFailingTestsForBuilderSubsets(failing_test_to_builders):
+  """Prints failing test for builder subsets.
+
+  Prints failing tests for each subset of builders, in descending order of the
+  set size.
+  """
+  print "**** Failing tests ****"
+  builders_to_tests = {}
+  for test in failing_test_to_builders:
+    builders = sorted(failing_test_to_builders[test])
+    subset_name = ", ".join(builders)
+    tests = builders_to_tests.setdefault(
+        subset_name, _FailingTestsForBuilderSubset(len(builders))).Tests()
+    tests.append(test)
+  # Sort subsets in descending order of size and then name.
+  builder_subsets = [(builders_to_tests[subset_name].SubsetSize(), subset_name)
+                     for subset_name in builders_to_tests]
+  for subset_size, subset_name in reversed(sorted(builder_subsets)):
+    print "** Tests failing for %d builders: %s **" % (subset_size,
+                                                       subset_name)
+    for test in sorted(builders_to_tests[subset_name].Tests()):
+      print test
 
 
 def _ParseOptions():
@@ -219,6 +259,8 @@ def _ParseOptions():
                          " number is reached, the remaining builds are older"
                          " than the DEPS WebKit revision, or a passing"
                          " revision is found.")
+  parser.add_option("-v", "--verbose", action="store_true", default=False,
+                    dest="verbose")
   return parser.parse_args()
 
 
@@ -241,8 +283,8 @@ def _Main():
     sys.stdout.flush()
     results.append(_RetrieveBuildResult(
         builder, options.max_builds, oldest_revision_to_check))
-  _PrintFailingRevisions(results)
-  _PrintPassingRevisions(results)
+  _PrintFailingRevisions(results, options.verbose)
+  _PrintPassingRevisions(results, options.verbose)
 
 
 if __name__ == "__main__":
