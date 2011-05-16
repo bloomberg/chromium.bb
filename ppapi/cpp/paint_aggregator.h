@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef PPAPI_CPP_PAINT_AGGREGATOR_H_
 #define PPAPI_CPP_PAINT_AGGREGATOR_H_
 
+#include <stddef.h>
 #include <vector>
 
 #include "ppapi/cpp/point.h"

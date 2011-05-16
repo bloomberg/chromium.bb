@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class PossibleURLModel : public ui::TableModel {
   ui::TableModelObserver* observer_;
 
   // Our consumer for favicon requests.
-  CancelableRequestConsumerT<size_t, NULL> consumer_;
+  CancelableRequestConsumerT<size_t, 0> consumer_;
 
   // The results we're showing.
   struct Result;
