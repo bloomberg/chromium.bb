@@ -72,6 +72,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -2214,10 +2215,14 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::SendOSLevelKeyEventToTab;
   handler_map["ActivateTab"] =
       &TestingAutomationProvider::ActivateTabJSON;
-  handler_map["UpdateExtensionsNow"] =
-      &TestingAutomationProvider::UpdateExtensionsNow;
+  handler_map["GetAppModalDialogMessage"] =
+      &TestingAutomationProvider::GetAppModalDialogMessage;
+  handler_map["AcceptOrDismissAppModalDialog"] =
+      &TestingAutomationProvider::AcceptOrDismissAppModalDialog;
   handler_map["GetChromeDriverAutomationVersion"] =
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
+  handler_map["UpdateExtensionsNow"] =
+      &TestingAutomationProvider::UpdateExtensionsNow;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -5071,6 +5076,65 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
 
 void TestingAutomationProvider::SendSuccessReply(IPC::Message* reply_message) {
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+}
+
+namespace {
+
+// Gets the active JavaScript modal dialog, or NULL if none.
+JavaScriptAppModalDialog* GetActiveJavaScriptModalDialog(
+    std::string* error_msg) {
+  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
+  if (!dialog_queue->HasActiveDialog()) {
+    *error_msg = "No modal dialog is showing";
+    return NULL;
+  }
+  if (!dialog_queue->active_dialog()->IsJavaScriptModalDialog()) {
+    *error_msg = "No JavaScript modal dialog is showing";
+    return NULL;
+  }
+  return static_cast<JavaScriptAppModalDialog*>(dialog_queue->active_dialog());
+}
+
+}  // namespace
+
+void TestingAutomationProvider::GetAppModalDialogMessage(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string error_msg;
+  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&error_msg);
+  if (!dialog) {
+    reply.SendError(error_msg);
+    return;
+  }
+  DictionaryValue result_dict;
+  result_dict.SetString("message", WideToUTF8(dialog->message_text()));
+  reply.SendSuccess(&result_dict);
+}
+
+void TestingAutomationProvider::AcceptOrDismissAppModalDialog(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  bool accept;
+  if (!args->GetBoolean("accept", &accept)) {
+    reply.SendError("Missing or invalid 'accept'");
+    return;
+  }
+
+  std::string error_msg;
+  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&error_msg);
+  if (!dialog) {
+    reply.SendError(error_msg);
+    return;
+  }
+  if (accept) {
+    std::string prompt_text;
+    if (args->GetString("prompt_text", &prompt_text))
+      dialog->SetOverridePromptText(UTF8ToUTF16(prompt_text));
+    dialog->native_dialog()->AcceptAppModalDialog();
+  } else {
+    dialog->native_dialog()->CancelAppModalDialog();
+  }
+  reply.SendSuccess(NULL);
 }
 
 // Sample JSON input: { "command": "GetNTPThumbnailMode" }

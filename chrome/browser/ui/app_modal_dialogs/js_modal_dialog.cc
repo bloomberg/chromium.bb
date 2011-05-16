@@ -63,7 +63,8 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       dialog_flags_(dialog_flags),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
-      reply_msg_(reply_msg) {
+      reply_msg_(reply_msg),
+      use_override_prompt_text_(false) {
   string16 elided_text;
   EnforceMaxTextSize(WideToUTF16(message_text), &elided_text);
   message_text_ = UTF16ToWide(elided_text);
@@ -83,6 +84,10 @@ NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
       extension_host_->GetMessageBoxRootWindow();
   return NativeAppModalDialog::CreateNativeJavaScriptPrompt(this,
                                                             parent_window);
+}
+
+bool JavaScriptAppModalDialog::IsJavaScriptModalDialog() {
+  return true;
 }
 
 void JavaScriptAppModalDialog::Observe(NotificationType type,
@@ -142,12 +147,23 @@ void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
 
 void JavaScriptAppModalDialog::OnAccept(const std::wstring& prompt_text,
                                         bool suppress_js_messages) {
+  std::wstring prompt_text_to_use = prompt_text;
+  // This is only for testing.
+  if (use_override_prompt_text_)
+    prompt_text_to_use = UTF16ToWideHack(override_prompt_text_);
+
   CompleteDialog();
-  NotifyDelegate(true, prompt_text, suppress_js_messages);
+  NotifyDelegate(true, prompt_text_to_use, suppress_js_messages);
 }
 
 void JavaScriptAppModalDialog::OnClose() {
   NotifyDelegate(false, L"", false);
+}
+
+void JavaScriptAppModalDialog::SetOverridePromptText(
+    const string16& override_prompt_text) {
+  override_prompt_text_ = override_prompt_text;
+  use_override_prompt_text_ = true;
 }
 
 void JavaScriptAppModalDialog::NotifyDelegate(bool success,

@@ -267,6 +267,24 @@ bool SendNativeKeyEventJSONRequest(
     ui::KeyboardCode key_code,
     int modifiers) WARN_UNUSED_RESULT;
 
+// Requests to get the active JavaScript modal dialog's message. Returns true
+// on success.
+bool SendGetAppModalDialogMessageJSONRequest(
+    AutomationMessageSender* sender,
+    std::string* message) WARN_UNUSED_RESULT;
+
+// Requests to accept or dismiss the active JavaScript modal dialog.
+// Returns true on success.
+bool SendAcceptOrDismissAppModalDialogJSONRequest(
+    AutomationMessageSender* sender,
+    bool accept) WARN_UNUSED_RESULT;
+
+// Requests to accept the active JavaScript modal dialog with the given prompt
+// text. Returns true on success.
+bool SendAcceptPromptAppModalDialogJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& prompt_text) WARN_UNUSED_RESULT;
+
 // Requests to wait for all tabs to stop loading. Returns true on success.
 bool SendWaitForAllTabsToStopLoadingJSONRequest(
     AutomationMessageSender* sender) WARN_UNUSED_RESULT;

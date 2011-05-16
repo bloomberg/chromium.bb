@@ -516,6 +516,38 @@ bool SendNativeKeyEventJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict);
 }
 
+bool SendGetAppModalDialogMessageJSONRequest(
+    AutomationMessageSender* sender,
+    std::string* message) {
+  DictionaryValue dict;
+  dict.SetString("command", "GetAppModalDialogMessage");
+  DictionaryValue reply_dict;
+  if (!SendAutomationJSONRequest(sender, dict, &reply_dict))
+    return false;
+  return reply_dict.GetString("message", message);
+}
+
+bool SendAcceptOrDismissAppModalDialogJSONRequest(
+    AutomationMessageSender* sender,
+    bool accept) {
+  DictionaryValue dict;
+  dict.SetString("command", "AcceptOrDismissAppModalDialog");
+  dict.SetBoolean("accept", accept);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
+bool SendAcceptPromptAppModalDialogJSONRequest(
+    AutomationMessageSender* sender,
+    const std::string& prompt_text) {
+  DictionaryValue dict;
+  dict.SetString("command", "AcceptOrDismissAppModalDialog");
+  dict.SetBoolean("accept", true);
+  dict.SetString("prompt_text", prompt_text);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
 bool SendWaitForAllTabsToStopLoadingJSONRequest(
     AutomationMessageSender* sender) {
   DictionaryValue dict;

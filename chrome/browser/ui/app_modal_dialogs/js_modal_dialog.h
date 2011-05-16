@@ -64,6 +64,7 @@ class JavaScriptAppModalDialog : public AppModalDialog,
 
   // Overridden from AppModalDialog:
   virtual NativeAppModalDialog* CreateNativeDialog();
+  virtual bool IsJavaScriptModalDialog();
 
   JavaScriptAppModalDialogDelegate* delegate() const { return delegate_; }
 
@@ -74,6 +75,10 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   // NOTE: This is only called under Views, and should be removed. Any critical
   // work should be done in OnCancel or OnAccept. See crbug.com/63732 for more.
   void OnClose();
+
+  // Used only for testing. The dialog will use the given text when notifying
+  // its delegate instead of whatever the UI reports.
+  void SetOverridePromptText(const string16& prompt_text);
 
   // Accessors
   int dialog_flags() const { return dialog_flags_; }
@@ -116,6 +121,11 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   bool display_suppress_checkbox_;
   bool is_before_unload_dialog_;
   IPC::Message* reply_msg_;
+
+  // Used only for testing. Specifies alternative prompt text that should be
+  // used when notifying the delegate, if |use_override_prompt_text_| is true.
+  string16 override_prompt_text_;
+  bool use_override_prompt_text_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialog);
 };

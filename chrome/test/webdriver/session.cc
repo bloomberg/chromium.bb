@@ -61,7 +61,8 @@ Session::Session()
       async_script_timeout_(0),
       implicit_wait_(0),
       screenshot_on_error_(false),
-      use_native_events_(false) {
+      use_native_events_(false),
+      has_alert_prompt_text_(false) {
   SessionManager::GetInstance()->Add(this);
 }
 
@@ -641,6 +642,46 @@ bool Session::CloseWindow() {
     }
   }
   return success;
+}
+
+ErrorCode Session::GetAlertMessage(std::string* text) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetAppModalDialogMessage,
+      text,
+      &success));
+  return success ? kSuccess : kUnknownError;
+}
+
+ErrorCode Session::SetAlertPromptText(const std::string& alert_prompt_text) {
+  std::string message_text;
+  // Only set the alert prompt text if an alert is actually active.
+  ErrorCode code = GetAlertMessage(&message_text);
+  if (code == kSuccess) {
+    has_alert_prompt_text_ = true;
+    alert_prompt_text_ = alert_prompt_text;
+  }
+  return code;
+}
+
+ErrorCode Session::AcceptOrDismissAlert(bool accept) {
+  bool success = false;
+  if (accept && has_alert_prompt_text_) {
+    RunSessionTask(NewRunnableMethod(
+        automation_.get(),
+        &Automation::AcceptPromptAppModalDialog,
+        alert_prompt_text_,
+        &success));
+  } else {
+    RunSessionTask(NewRunnableMethod(
+        automation_.get(),
+        &Automation::AcceptOrDismissAppModalDialog,
+        accept,
+        &success));
+  }
+  has_alert_prompt_text_ = false;
+  return success ? kSuccess : kUnknownError;
 }
 
 std::string Session::GetBrowserVersion() {

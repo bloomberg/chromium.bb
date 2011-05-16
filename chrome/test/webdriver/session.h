@@ -158,6 +158,17 @@ class Session {
   // session.
   bool CloseWindow();
 
+  // Gets the message of the currently active JavaScript modal dialog.
+  ErrorCode GetAlertMessage(std::string* text);
+
+  // Sets the prompt text to use when accepting or dismissing a JavaScript
+  // modal dialog.
+  ErrorCode SetAlertPromptText(const std::string& alert_prompt_text);
+
+  // Accept or dismiss the currently active JavaScript modal dialog with the
+  // previously set alert prompt text. Then clears the saved alert prompt text.
+  ErrorCode AcceptOrDismissAlert(bool accept);
+
   // Gets the version of the running browser.
   std::string GetBrowserVersion();
 
@@ -305,6 +316,14 @@ class Session {
 
   // Last mouse position. Advanced APIs need this value.
   gfx::Point mouse_position_;
+
+  // Chrome does not have an individual method for setting the prompt text
+  // of an alert. Instead, when the WebDriver client wants to set the text,
+  // we store it here and pass the text when the alert is accepted or
+  // dismissed. This text should only be used if |has_alert_prompt_text_|
+  // is true, so that the default prompt text is not overridden.
+  std::string alert_prompt_text_;
+  bool has_alert_prompt_text_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

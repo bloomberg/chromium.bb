@@ -1097,6 +1097,23 @@ class TestingAutomationProvider : public AutomationProvider,
   // Method used as a Task that sends a success AutomationJSONReply.
   void SendSuccessReply(IPC::Message* reply_message);
 
+  // Gets the active JavaScript modal dialog's message.
+  // Example:
+  //   input: none
+  //   output: { "message": "This is an alert!" }
+  void GetAppModalDialogMessage(
+      DictionaryValue* args, IPC::Message* reply_message);
+
+  // Accepts or dismisses the active JavaScript modal dialog. If optional
+  // prompt text is given, it will be used as the result of the prompt dialog.
+  // Example:
+  //   input: { "accept": true,
+  //            "prompt_text": "hello"  // optional
+  //          }
+  //   output: none
+  void AcceptOrDismissAppModalDialog(
+      DictionaryValue* args, IPC::Message* reply_message);
+
   // Activates the given tab.
   // Example:
   //   input: { "windex": 1,
@@ -1105,16 +1122,16 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void ActivateTabJSON(DictionaryValue* args, IPC::Message* message);
 
-  // Auto-updates installed extensions.
-  // Uses the JSON interface for input/output.
-  void UpdateExtensionsNow(DictionaryValue* args, IPC::Message* reply_message);
-
   // Gets the version of ChromeDriver automation supported by this server.
   // Example:
   //   input: none
   //   output: { "version": 1 }
   void GetChromeDriverAutomationVersion(DictionaryValue* args,
                                         IPC::Message* message);
+
+  // Auto-updates installed extensions.
+  // Uses the JSON interface for input/output.
+  void UpdateExtensionsNow(DictionaryValue* args, IPC::Message* reply_message);
 
 #if defined(OS_CHROMEOS)
   void GetLoginInfo(DictionaryValue* args, IPC::Message* reply_message);

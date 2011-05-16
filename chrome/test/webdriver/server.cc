@@ -31,6 +31,7 @@
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/commands/alert_commands.h"
 #include "chrome/test/webdriver/commands/cookie_commands.h"
 #include "chrome/test/webdriver/commands/create_session.h"
 #include "chrome/test/webdriver/commands/execute_async_script_command.h"
@@ -126,7 +127,10 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   // fetch the page title. If mapped first, this would overwrite the handler
   // for /session/*/element/*/attribute/title, which should fetch the title
   // attribute of the element.
+  dispatcher->Add<AcceptAlertCommand>(  "/session/*/accept_alert");
+  dispatcher->Add<AlertTextCommand>(    "/session/*/alert_text");
   dispatcher->Add<BackCommand>(         "/session/*/back");
+  dispatcher->Add<DismissAlertCommand>( "/session/*/dismiss_alert");
   dispatcher->Add<ExecuteCommand>(      "/session/*/execute");
   dispatcher->Add<ExecuteAsyncScriptCommand>(
                                         "/session/*/execute_async");

@@ -42,6 +42,10 @@ bool AppModalDialog::IsValid() {
   return !skip_this_dialog_;
 }
 
+bool AppModalDialog::IsJavaScriptModalDialog() {
+  return false;
+}
+
 void AppModalDialog::ActivateModalDialog() {
   DCHECK(native_dialog_);
   native_dialog_->ActivateAppModalDialog();

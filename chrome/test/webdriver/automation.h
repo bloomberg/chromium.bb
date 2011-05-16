@@ -120,6 +120,17 @@ class Automation {
 
   void CloseTab(int tab_id, bool* success);
 
+  // Gets the active JavaScript modal dialog's message.
+  void GetAppModalDialogMessage(std::string* message, bool* success);
+
+  // Accepts or dismisses the active JavaScript modal dialog.
+  void AcceptOrDismissAppModalDialog(bool accept, bool* success);
+
+  // Accepts an active prompt JavaScript modal dialog, using the given
+  // prompt text as the result of the prompt.
+  void AcceptPromptAppModalDialog(const std::string& prompt_text,
+                                  bool* success);
+
   // Gets the version of the runing browser.
   void GetBrowserVersion(std::string* version);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,10 @@ class AppModalDialog {
   // and it's time to show the next dialog in the queue IsValid is invoked.
   // If IsValid returns false the dialog is deleted and not shown.
   virtual bool IsValid();
+
+  // Used only for testing. Returns whether the dialog is a JavaScript modal
+  // dialog.
+  virtual bool IsJavaScriptModalDialog();
 
  protected:
   // Overridden by subclasses to create the feature-specific native dialog box.

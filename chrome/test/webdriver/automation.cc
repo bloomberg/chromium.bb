@@ -440,6 +440,21 @@ void Automation::CloseTab(int tab_id, bool* success) {
   *success = SendCloseTabJSONRequest(automation(), windex, tab_index);
 }
 
+void Automation::GetAppModalDialogMessage(std::string* message, bool* success) {
+  *success = SendGetAppModalDialogMessageJSONRequest(automation(), message);
+}
+
+void Automation::AcceptOrDismissAppModalDialog(bool accept, bool* success) {
+  *success = SendAcceptOrDismissAppModalDialogJSONRequest(
+      automation(), accept);
+}
+
+void Automation::AcceptPromptAppModalDialog(const std::string& prompt_text,
+                                            bool* success) {
+  *success = SendAcceptPromptAppModalDialogJSONRequest(
+      automation(), prompt_text);
+}
+
 void Automation::GetBrowserVersion(std::string* version) {
   *version = automation()->server_version();
 }

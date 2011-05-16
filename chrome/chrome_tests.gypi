@@ -822,6 +822,8 @@
         'test/webdriver/webdriver_key_converter.cc',
         'test/webdriver/web_element_id.h',
         'test/webdriver/web_element_id.cc',
+        'test/webdriver/commands/alert_commands.h',
+        'test/webdriver/commands/alert_commands.cc',
         'test/webdriver/commands/command.h',
         'test/webdriver/commands/command.cc',
         'test/webdriver/commands/cookie_commands.h',
