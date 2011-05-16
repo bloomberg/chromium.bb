@@ -30,7 +30,7 @@ export CHROMEOS_VERSION_BRANCH=507
 # Patch number.
 # Increment by 1 each release on a branch.
 # Reset to 0 when increasing branch number.
-export CHROMEOS_VERSION_PATCH=53
+export CHROMEOS_VERSION_PATCH=54
 
 # Official builds must set CHROMEOS_OFFICIAL=1.
 if [ ${CHROMEOS_OFFICIAL:-0} -ne 1 ] && [ "${USER}" != "chrome-bot" ]; then
