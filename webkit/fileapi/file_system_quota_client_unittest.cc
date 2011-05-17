@@ -12,11 +12,11 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_quota_client.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/sandbox_quota_client.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {
@@ -40,9 +40,9 @@ class MockFileSystemPathManager : public FileSystemPathManager {
 
 }  // namespace
 
-class SandboxQuotaClientTest : public testing::Test {
+class FileSystemQuotaClientTest : public testing::Test {
  public:
-  SandboxQuotaClientTest()
+  FileSystemQuotaClientTest()
       : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         additional_callback_count_(0),
         deletion_status_(quota::kQuotaStatusUnknown) {
@@ -69,21 +69,21 @@ class SandboxQuotaClientTest : public testing::Test {
   };
 
  protected:
-  SandboxQuotaClient* NewQuotaClient(bool is_incognito) {
-    return new SandboxQuotaClient(
+  FileSystemQuotaClient* NewQuotaClient(bool is_incognito) {
+    return new FileSystemQuotaClient(
         base::MessageLoopProxy::CreateForCurrentThread(),
         file_system_context_, is_incognito);
   }
 
-  void GetOriginUsageAsync(SandboxQuotaClient* quota_client,
+  void GetOriginUsageAsync(FileSystemQuotaClient* quota_client,
                            const char* origin_url,
                            quota::StorageType type) {
     quota_client->GetOriginUsage(GURL(origin_url), type,
         callback_factory_.NewCallback(
-            &SandboxQuotaClientTest::OnGetUsage));
+            &FileSystemQuotaClientTest::OnGetUsage));
   }
 
-  int64 GetOriginUsage(SandboxQuotaClient* quota_client,
+  int64 GetOriginUsage(FileSystemQuotaClient* quota_client,
                        const char* origin_url,
                        quota::StorageType type) {
     GetOriginUsageAsync(quota_client, origin_url, type);
@@ -91,37 +91,39 @@ class SandboxQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<GURL>& GetOriginsForType(SandboxQuotaClient* quota_client,
+  const std::set<GURL>& GetOriginsForType(FileSystemQuotaClient* quota_client,
                                           quota::StorageType type) {
     origins_.clear();
     quota_client->GetOriginsForType(type,
         callback_factory_.NewCallback(
-            &SandboxQuotaClientTest::OnGetOrigins));
+            &FileSystemQuotaClientTest::OnGetOrigins));
     MessageLoop::current()->RunAllPending();
     return origins_;
   }
 
-  const std::set<GURL>& GetOriginsForHost(SandboxQuotaClient* quota_client,
+  const std::set<GURL>& GetOriginsForHost(FileSystemQuotaClient* quota_client,
                                           quota::StorageType type,
                                           const char* host) {
     origins_.clear();
     quota_client->GetOriginsForHost(type, host,
         callback_factory_.NewCallback(
-            &SandboxQuotaClientTest::OnGetOrigins));
+            &FileSystemQuotaClientTest::OnGetOrigins));
     MessageLoop::current()->RunAllPending();
     return origins_;
   }
 
-  void RunAdditionalOriginUsageTask(SandboxQuotaClient* quota_client,
+  void RunAdditionalOriginUsageTask(FileSystemQuotaClient* quota_client,
                                     const char* origin_url,
                                     quota::StorageType type) {
     quota_client->GetOriginUsage(GURL(origin_url), type,
         callback_factory_.NewCallback(
-            &SandboxQuotaClientTest::OnGetAdditionalUsage));
+            &FileSystemQuotaClientTest::OnGetAdditionalUsage));
   }
 
   FilePath GetOriginBasePath(const char* origin_url,
                              quota::StorageType type) {
+    // Note: this test assumes sandbox_provider impl is used for
+    // temporary and persistent filesystem.
     return file_system_context_->path_manager()->sandbox_provider()->
         GetBaseDirectoryForOriginAndType(
             GURL(origin_url), QuotaStorageTypeToFileSystemType(type));
@@ -178,14 +180,14 @@ class SandboxQuotaClientTest : public testing::Test {
     }
   }
 
-  void DeleteOriginData(SandboxQuotaClient* quota_client,
+  void DeleteOriginData(FileSystemQuotaClient* quota_client,
                         const char* origin,
                         quota::StorageType type) {
     deletion_status_ = quota::kQuotaStatusUnknown;
     quota_client->DeleteOriginData(
         GURL(origin), type,
         callback_factory_.NewCallback(
-            &SandboxQuotaClientTest::OnDeleteOrigin));
+            &FileSystemQuotaClientTest::OnDeleteOrigin));
   }
 
   int64 usage() const { return usage_; }
@@ -214,23 +216,23 @@ class SandboxQuotaClientTest : public testing::Test {
 
   ScopedTempDir data_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  base::ScopedCallbackFactory<SandboxQuotaClientTest> callback_factory_;
+  base::ScopedCallbackFactory<FileSystemQuotaClientTest> callback_factory_;
   int64 usage_;
   int additional_callback_count_;
   std::set<GURL> origins_;
   quota::QuotaStatusCode deletion_status_;
 
-  DISALLOW_COPY_AND_ASSIGN(SandboxQuotaClientTest);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClientTest);
 };
 
-TEST_F(SandboxQuotaClientTest, NoFileSystemTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, NoFileSystemTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
 
   EXPECT_EQ(0, GetOriginUsage(quota_client.get(), kDummyURL1, kTemporary));
 }
 
-TEST_F(SandboxQuotaClientTest, NoFileTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, NoFileTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
   };
@@ -242,8 +244,8 @@ TEST_F(SandboxQuotaClientTest, NoFileTest) {
   }
 }
 
-TEST_F(SandboxQuotaClientTest, OneFileTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, OneFileTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {false, "foo", 4921, kDummyURL1, kTemporary},
@@ -256,8 +258,8 @@ TEST_F(SandboxQuotaClientTest, OneFileTest) {
   }
 }
 
-TEST_F(SandboxQuotaClientTest, TwoFilesTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, TwoFilesTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {false, "foo", 10310, kDummyURL1, kTemporary},
@@ -271,8 +273,8 @@ TEST_F(SandboxQuotaClientTest, TwoFilesTest) {
   }
 }
 
-TEST_F(SandboxQuotaClientTest, EmptyFilesTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, EmptyFilesTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {false, "foo", 0, kDummyURL1, kTemporary},
@@ -287,8 +289,8 @@ TEST_F(SandboxQuotaClientTest, EmptyFilesTest) {
   }
 }
 
-TEST_F(SandboxQuotaClientTest, SubDirectoryTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, SubDirectoryTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {true, "dirtest", 0, kDummyURL1, kTemporary},
@@ -303,8 +305,8 @@ TEST_F(SandboxQuotaClientTest, SubDirectoryTest) {
   }
 }
 
-TEST_F(SandboxQuotaClientTest, MultiTypeTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, MultiTypeTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {true, "dirtest", 0, kDummyURL1, kTemporary},
@@ -325,8 +327,8 @@ TEST_F(SandboxQuotaClientTest, MultiTypeTest) {
   }
 }
 
-TEST_F(SandboxQuotaClientTest, MultiDomainTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, MultiDomainTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {true, "dir1", 0, kDummyURL1, kTemporary},
@@ -359,8 +361,8 @@ TEST_F(SandboxQuotaClientTest, MultiDomainTest) {
   }
 }
 
-TEST_F(SandboxQuotaClientTest, GetUsage_MultipleTasks) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, GetUsage_MultipleTasks) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {false, "foo",   11, kDummyURL1, kTemporary},
@@ -387,8 +389,8 @@ TEST_F(SandboxQuotaClientTest, GetUsage_MultipleTasks) {
   EXPECT_EQ(2, additional_callback_count());
 }
 
-TEST_F(SandboxQuotaClientTest, GetOriginsForType) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, GetOriginsForType) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {true, NULL, 0, kDummyURL2, kTemporary},
@@ -403,8 +405,8 @@ TEST_F(SandboxQuotaClientTest, GetOriginsForType) {
   EXPECT_TRUE(origins.find(GURL(kDummyURL3)) == origins.end());
 }
 
-TEST_F(SandboxQuotaClientTest, GetOriginsForHost) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, GetOriginsForHost) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const char* kURL1 = "http://foo.com/";
   const char* kURL2 = "https://foo.com/";
   const char* kURL3 = "http://foo.com:1/";
@@ -429,8 +431,8 @@ TEST_F(SandboxQuotaClientTest, GetOriginsForHost) {
   EXPECT_TRUE(origins.find(GURL(kURL5)) == origins.end());  // Different type.
 }
 
-TEST_F(SandboxQuotaClientTest, IncognitoTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(true));
+TEST_F(FileSystemQuotaClientTest, IncognitoTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(true));
   const TestFile kFiles[] = {
     {true, NULL, 0, kDummyURL1, kTemporary},
     {false, "foo", 10, kDummyURL1, kTemporary},
@@ -448,8 +450,8 @@ TEST_F(SandboxQuotaClientTest, IncognitoTest) {
   EXPECT_EQ(0U, origins.size());
 }
 
-TEST_F(SandboxQuotaClientTest, DeleteOriginTest) {
-  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+TEST_F(FileSystemQuotaClientTest, DeleteOriginTest) {
+  scoped_ptr<FileSystemQuotaClient> quota_client(NewQuotaClient(false));
   const TestFile kFiles[] = {
     {true, NULL,  0, "http://foo.com/",  kTemporary},
     {false, "a",  1, "http://foo.com/",  kTemporary},

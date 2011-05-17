@@ -26,6 +26,7 @@ namespace fileapi {
 
 class FileSystemContext;
 class FileSystemPathManager;
+class FileSystemQuotaUtil;
 class FileSystemUsageTracker;
 class SandboxMountPointProvider;
 
@@ -59,6 +60,11 @@ class FileSystemContext
   quota::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
   }
+
+  // Returns a quota util for a given filesystem type.  This may
+  // return NULL if the type does not support the usage tracking or
+  // it is not a quota-managed storage.
+  FileSystemQuotaUtil* GetQuotaUtil(FileSystemType type) const;
 
  private:
   friend struct DefaultContextDeleter;

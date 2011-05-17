@@ -14,13 +14,18 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/quota/quota_manager.h"
+
+using quota::QuotaManagerProxy;
 
 namespace {
 
@@ -328,6 +333,132 @@ FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
   return GetBaseDirectoryForOrigin(origin_url).AppendASCII(type_string);
 }
 
+bool SandboxMountPointProvider::DeleteOriginDataOnFileThread(
+    QuotaManagerProxy* proxy, const GURL& origin_url,
+    fileapi::FileSystemType type) {
+  FilePath path_for_origin = GetBaseDirectoryForOriginAndType(origin_url,
+                                                              type);
+  if (!file_util::PathExists(path_for_origin))
+    return true;
+
+  int64 usage = GetOriginUsageOnFileThread(origin_url, type);
+  bool result = file_util::Delete(path_for_origin, true /* recursive */);
+  if (result && proxy) {
+    proxy->NotifyStorageModified(
+        quota::QuotaClient::kFileSystem,
+        origin_url,
+        FileSystemTypeToQuotaStorageType(type),
+        -usage);
+  }
+  return result;
+}
+
+void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(
+    fileapi::FileSystemType type, std::set<GURL>* origins) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  DCHECK(origins);
+  scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
+  GURL origin;
+  while (!(origin = enumerator->Next()).is_empty()) {
+    if (enumerator->HasFileSystemType(type))
+      origins->insert(origin);
+  }
+}
+
+void SandboxMountPointProvider::GetOriginsForHostOnFileThread(
+    fileapi::FileSystemType type, const std::string& host,
+    std::set<GURL>* origins) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  DCHECK(origins);
+  scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
+  GURL origin;
+  while (!(origin = enumerator->Next()).is_empty()) {
+    if (host == net::GetHostOrSpecFromURL(origin) &&
+        enumerator->HasFileSystemType(type))
+      origins->insert(origin);
+  }
+}
+
+int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
+    const GURL& origin_url, fileapi::FileSystemType type) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  FilePath base_path = GetBaseDirectoryForOriginAndType(origin_url, type);
+  if (!file_util::DirectoryExists(base_path))
+    return 0;
+
+  FilePath usage_file_path = base_path.AppendASCII(
+      FileSystemUsageCache::kUsageFileName);
+  int32 dirty_status = FileSystemUsageCache::GetDirty(usage_file_path);
+  bool visited = (visited_origins_.find(origin_url) != visited_origins_.end());
+  visited_origins_.insert(origin_url);
+  if (dirty_status == 0 || (dirty_status > 0 && visited)) {
+    // The usage cache is clean (dirty == 0) or the origin is already
+    // initialized and running.  Read the cache file to get the usage.
+    return FileSystemUsageCache::GetUsage(usage_file_path);
+  }
+  // The usage cache has not been initialized or the cache is dirty.
+  // Get the directory size now and update the cache.
+  if (FileSystemUsageCache::Exists(usage_file_path))
+    FileSystemUsageCache::Delete(usage_file_path);
+  int64 usage = file_util::ComputeDirectorySize(base_path);
+  // The result of ComputeDirectorySize does not include .usage file size.
+  usage += FileSystemUsageCache::kUsageFileSize;
+  // This clears the dirty flag too.
+  FileSystemUsageCache::UpdateUsage(usage_file_path, usage);
+  return usage;
+}
+
+void SandboxMountPointProvider::NotifyOriginWasAccessedOnIOThread(
+    QuotaManagerProxy* proxy, const GURL& origin_url,
+    fileapi::FileSystemType type) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  if (proxy) {
+    proxy->NotifyStorageAccessed(
+        quota::QuotaClient::kFileSystem,
+        origin_url,
+        FileSystemTypeToQuotaStorageType(type));
+  }
+}
+
+void SandboxMountPointProvider::UpdateOriginUsageOnFileThread(
+    QuotaManagerProxy* proxy, const GURL& origin_url,
+    fileapi::FileSystemType type, int64 delta) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  FilePath usage_file_path = GetUsageCachePathForOriginAndType(
+      origin_url, type);
+  FileSystemUsageCache::AtomicUpdateUsageByDelta(usage_file_path, delta);
+  if (proxy) {
+    proxy->NotifyStorageModified(
+        quota::QuotaClient::kFileSystem,
+        origin_url,
+        FileSystemTypeToQuotaStorageType(type),
+        delta);
+  }
+}
+
+void SandboxMountPointProvider::StartUpdateOriginOnFileThread(
+    const GURL& origin_url, fileapi::FileSystemType type) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  FilePath usage_file_path = GetUsageCachePathForOriginAndType(
+      origin_url, type);
+  FileSystemUsageCache::IncrementDirty(usage_file_path);
+}
+
+void SandboxMountPointProvider::EndUpdateOriginOnFileThread(
+    const GURL& origin_url, fileapi::FileSystemType type) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  FilePath usage_file_path = GetUsageCachePathForOriginAndType(
+      origin_url, type);
+  FileSystemUsageCache::DecrementDirty(usage_file_path);
+}
+
 bool SandboxMountPointProvider::GetOriginBasePathAndName(
     const GURL& origin_url,
     FilePath* origin_base_path,
@@ -352,6 +483,12 @@ bool SandboxMountPointProvider::GetOriginBasePathAndName(
   if (name)
     *name = origin_identifier + ":" + type_string;
   return true;
+}
+
+FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
+    const GURL& origin_url, fileapi::FileSystemType type) const {
+  FilePath base_path = GetBaseDirectoryForOriginAndType(origin_url, type);
+  return base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
 }
 
 }  // namespace fileapi

@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_SANDBOX_MOUNT_POINT_PROVIDER_H_
 #define WEBKIT_FILEAPI_SANDBOX_MOUNT_POINT_PROVIDER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -12,15 +13,26 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 namespace base {
 class MessageLoopProxy;
 }
 
+namespace quota {
+class QuotaManagerProxy;
+}
+
 namespace fileapi {
 
-class SandboxMountPointProvider : public FileSystemMountPointProvider {
+// An interface to construct or crack sandboxed filesystem paths.
+// Currently each sandboxed filesystem path looks like (soon will be changed):
+//   <profile_dir>/FileSystem/<origin_identifier>/<type>/chrome-<unique>/...
+// <type> is either one of "Temporary" or "Persistent".
+class SandboxMountPointProvider
+    : public FileSystemMountPointProvider,
+      public FileSystemQuotaUtil {
  public:
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.
@@ -100,12 +112,53 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
     return sandbox_file_util_.get();
   }
 
+  // Deletes the data on the origin and reports the amount of deleted data
+  // to the quota manager via |proxy|.
+  bool DeleteOriginDataOnFileThread(
+      quota::QuotaManagerProxy* proxy,
+      const GURL& origin_url,
+      fileapi::FileSystemType type);
+
+  // Quota util methods.
+  virtual void GetOriginsForTypeOnFileThread(
+      fileapi::FileSystemType type,
+      std::set<GURL>* origins) OVERRIDE;
+  virtual void GetOriginsForHostOnFileThread(
+      fileapi::FileSystemType type,
+      const std::string& host,
+      std::set<GURL>* origins) OVERRIDE;
+  virtual int64 GetOriginUsageOnFileThread(
+      const GURL& origin_url,
+      fileapi::FileSystemType type) OVERRIDE;
+  virtual void NotifyOriginWasAccessedOnIOThread(
+      quota::QuotaManagerProxy* proxy,
+      const GURL& origin_url,
+      fileapi::FileSystemType type) OVERRIDE;
+  virtual void UpdateOriginUsageOnFileThread(
+      quota::QuotaManagerProxy* proxy,
+      const GURL& origin_url,
+      fileapi::FileSystemType type,
+      int64 delta) OVERRIDE;
+  virtual void StartUpdateOriginOnFileThread(
+      const GURL& origin_url,
+      fileapi::FileSystemType type) OVERRIDE;
+  virtual void EndUpdateOriginOnFileThread(
+      const GURL& origin_url,
+      fileapi::FileSystemType type) OVERRIDE;
+
+  FileSystemQuotaUtil* quota_util() { return this; }
+
  private:
   bool GetOriginBasePathAndName(
       const GURL& origin_url,
       FilePath* base_path,
       FileSystemType type,
       std::string* name);
+
+  // Returns a path to the usage cache file.
+  FilePath GetUsageCachePathForOriginAndType(
+      const GURL& origin_url,
+      fileapi::FileSystemType type) const;
 
   class GetFileSystemRootPathTask;
 
@@ -118,6 +171,9 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
   const FilePath base_path_;
 
   scoped_ptr<ObfuscatedFileSystemFileUtil> sandbox_file_util_;
+
+  // Acccessed only on the file thread.
+  std::set<GURL> visited_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxMountPointProvider);
 };

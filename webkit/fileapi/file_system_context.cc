@@ -8,8 +8,9 @@
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/sandbox_quota_client.h"
+#include "webkit/fileapi/file_system_quota_client.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaClient;
@@ -21,11 +22,7 @@ QuotaClient* CreateQuotaClient(
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
     FileSystemContext* context,
     bool is_incognito) {
-  // TODO(kinuko): For now we assume only sandbox filesystem uses
-  // the quota feature.  If we want to support multiple filesystem types
-  // that require different quota we'll need to add more QuotaClientID
-  // and more factory-like code around QuotaClient.
-  return new SandboxQuotaClient(file_message_loop, context, is_incognito);
+  return new FileSystemQuotaClient(file_message_loop, context, is_incognito);
 }
 }  // anonymous namespace
 
@@ -73,8 +70,15 @@ bool FileSystemContext::IsStorageUnlimited(const GURL& origin) {
 bool FileSystemContext::DeleteDataForOriginOnFileThread(
     const GURL& origin_url) {
   DCHECK(file_message_loop_->BelongsToCurrentThread());
-  // TODO(tzik): Report the amount of deleted data to QuotaManager.
+  DCHECK(sandbox_provider());
 
+  // Delete temporary and persistent data.
+  sandbox_provider()->DeleteOriginDataOnFileThread(
+      quota_manager_proxy(), origin_url, kFileSystemTypeTemporary);
+  sandbox_provider()->DeleteOriginDataOnFileThread(
+      quota_manager_proxy(), origin_url, kFileSystemTypePersistent);
+
+  // Delete the upper level directory.
   FilePath path_for_origin =
       sandbox_provider()->GetBaseDirectoryForOrigin(origin_url);
   if (!file_util::PathExists(path_for_origin))
@@ -85,13 +89,23 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
 bool FileSystemContext::DeleteDataForOriginAndTypeOnFileThread(
     const GURL& origin_url, FileSystemType type) {
   DCHECK(file_message_loop_->BelongsToCurrentThread());
-  // TODO(tzik): ditto. Report the amount of deleted data to QuotaManager.
+  if (type == fileapi::kFileSystemTypeTemporary ||
+      type == fileapi::kFileSystemTypePersistent) {
+    DCHECK(sandbox_provider());
+    return sandbox_provider()->DeleteOriginDataOnFileThread(
+        quota_manager_proxy(), origin_url, type);
+  }
+  return false;
+}
 
-  FilePath path_for_origin =
-      sandbox_provider()->GetBaseDirectoryForOriginAndType(origin_url, type);
-  if (!file_util::PathExists(path_for_origin))
-    return true;
-  return file_util::Delete(path_for_origin, true /* recursive */);
+FileSystemQuotaUtil*
+FileSystemContext::GetQuotaUtil(FileSystemType type) const {
+  if (type == fileapi::kFileSystemTypeTemporary ||
+      type == fileapi::kFileSystemTypePersistent) {
+    DCHECK(sandbox_provider());
+    return sandbox_provider()->quota_util();
+  }
+  return NULL;
 }
 
 void FileSystemContext::DeleteOnCorrectThread() const {

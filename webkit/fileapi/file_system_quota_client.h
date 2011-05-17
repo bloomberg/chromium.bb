@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_SANDBOX_QUOTA_CLIENT_H_
-#define WEBKIT_FILEAPI_SANDBOX_QUOTA_CLIENT_H_
+#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
+#define WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
 
 #include <deque>
 #include <list>
@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
@@ -26,14 +27,16 @@ class FileSystemContext;
 // An instance of this class is created per-profile.  This class
 // is self-destructed and will delete itself when OnQuotaManagerDestroyed
 // is called.
-class SandboxQuotaClient : public quota::QuotaClient,
-                           public quota::QuotaTaskObserver {
+// All of the public methods of this class are called by the quota manager
+// (except for the constructor/destructor).
+class FileSystemQuotaClient : public quota::QuotaClient,
+                              public quota::QuotaTaskObserver {
  public:
-  SandboxQuotaClient(
+  FileSystemQuotaClient(
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       FileSystemContext* file_system_context,
       bool is_incognito);
-  virtual ~SandboxQuotaClient();
+  virtual ~FileSystemQuotaClient();
 
   // QuotaClient methods.
   virtual quota::QuotaClient::ID id() const OVERRIDE;
@@ -83,16 +86,14 @@ class SandboxQuotaClient : public quota::QuotaClient,
 
   bool is_incognito_;
 
-  std::set<GURL> visited_origins_;
-
   // Pending callbacks.
   UsageCallbackMap pending_usage_callbacks_;
   OriginsForTypeCallbackMap pending_origins_for_type_callbacks_;
   OriginsForHostCallbackMap pending_origins_for_host_callbacks_;
 
-  DISALLOW_COPY_AND_ASSIGN(SandboxQuotaClient);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClient);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_SANDBOX_QUOTA_CLIENT_H_
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_

@@ -23,15 +23,6 @@ namespace fileapi {
 class ExternalFileSystemMountPointProvider;
 class SandboxMountPointProvider;
 
-// TODO(kinuko): Probably this module must be called FileSystemPathUtil
-// or something similar.
-
-// An interface to construct or crack sandboxed filesystem paths.
-// Currently each sandboxed filesystem path looks like:
-//
-//   <profile_dir>/FileSystem/<origin_identifier>/<type>/chrome-<unique>/...
-//
-// <type> is either one of "Temporary" or "Persistent".
 class FileSystemPathManager {
  public:
   FileSystemPathManager(
