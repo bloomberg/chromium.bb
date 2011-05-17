@@ -93,6 +93,13 @@ Specify proxy autoconfiguration URL.  Overrides any environment variables
 or settings picked via the options dialog.
 
 .TP
+\fB\-\-password-store\fR=<\fIbasic\fR|\fIgnome\fR|\fIkwallet\fR>
+Set the password store to use.  The default is to automatically detect based
+on the desktop environment.  \fIbasic\fR selects the built in, unencrypted
+password store.  \fIgnome\fR selects Gnome keyring.  \fIkwallet\fR selects
+(KDE) KWallet.  (Note that KWallet may not work reliably outside KDE.)
+
+.TP
 \fB\-\-version\fR
 Show version information.
 
