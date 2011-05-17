@@ -71,6 +71,9 @@ if [[ "$ret" = "0" ]]; then
   # Expected to fail, but passed.  It is a soft failure.
   echo "$@" XPASS 1>&2
   exit 120
+elif [[ "$ret" = "115" ]]; then
+  # The test was excluded.
+  exit 0
 else
   if [[ "$must_pass" = "0" ]]; then
     # Expected to fail and failed.  Good.
