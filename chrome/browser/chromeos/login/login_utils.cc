@@ -582,10 +582,6 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
                                  LoginDisplayHost* login_host) {
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
-  // Update command line in case loose values were added.
-  CommandLine::ForCurrentProcess()->InitFromArgv(
-      CommandLine::ForCurrentProcess()->argv());
-
   VLOG(1) << "Launching browser...";
   BrowserInit browser_init;
   int return_code;
