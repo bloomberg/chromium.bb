@@ -217,6 +217,7 @@ void FileSystemOperationWriteTest::SetUp() {
 void FileSystemOperationWriteTest::TearDown() {
   net::URLRequest::RegisterProtocolFactory("blob", NULL);
   quota_manager_ = NULL;
+  MessageLoop::current()->RunAllPending();
 }
 
 FileSystemOperation* FileSystemOperationWriteTest::operation() {
