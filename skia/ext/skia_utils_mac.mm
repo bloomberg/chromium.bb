@@ -7,10 +7,12 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/bitmap_platform_device_mac.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -282,6 +284,63 @@ NSImage* SkBitmapsToNSImage(const std::vector<const SkBitmap*>& bitmaps) {
 SkBitmap AppplicationIconAtSize(int size) {
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
   return NSImageToSkBitmap(image, NSMakeSize(size, size), /* is_opaque=*/true);
+}
+
+
+SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas)
+    : canvas_(canvas),
+      cgContext_(0) {
+}
+
+SkiaBitLocker::~SkiaBitLocker() {
+  releaseIfNeeded();
+}
+
+void SkiaBitLocker::releaseIfNeeded() {
+  if (!cgContext_)
+    return;
+  canvas_->getDevice()->accessBitmap(true).unlockPixels();
+  CGContextRelease(cgContext_);
+  cgContext_ = 0;
+}
+
+CGContextRef SkiaBitLocker::cgContext() {
+  SkDevice* device = canvas_->getDevice();
+  DCHECK(device);
+  if (!device)
+    return 0;
+  releaseIfNeeded();
+  const SkBitmap& bitmap = device->accessBitmap(true);
+  bitmap.lockPixels();
+  void* pixels = bitmap.getPixels();
+  cgContext_ = CGBitmapContextCreate(pixels, device->width(),
+    device->height(), 8, bitmap.rowBytes(), CGColorSpaceCreateDeviceRGB(), 
+    kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
+
+  // Apply device matrix.
+  CGAffineTransform contentsTransform = CGAffineTransformMakeScale(1, -1);
+  contentsTransform = CGAffineTransformTranslate(contentsTransform, 0,
+      -device->height());
+  CGContextConcatCTM(cgContext_, contentsTransform);
+
+  // Apply clip in device coordinates.
+  CGMutablePathRef clipPath = CGPathCreateMutable();
+  SkRegion::Iterator iter(canvas_->getTotalClip());
+  for (; !iter.done(); iter.next()) {
+    const SkIRect& skRect = iter.rect();
+    CGRect cgRect = SkIRectToCGRect(skRect);
+    CGPathAddRect(clipPath, 0, cgRect);
+  }
+  CGContextAddPath(cgContext_, clipPath);
+  CGContextClip(cgContext_);
+  CGPathRelease(clipPath);
+
+  // Apply content matrix.
+  const SkMatrix& skMatrix = canvas_->getTotalMatrix();
+  CGAffineTransform affine = SkMatrixToCGAffineTransform(skMatrix);
+  CGContextConcatCTM(cgContext_, affine);
+  
+  return cgContext_;
 }
 
 }  // namespace gfx

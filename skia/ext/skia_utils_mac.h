@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ struct SkIRect;
 struct SkPoint;
 struct SkRect;
 class SkBitmap;
+class SkCanvas;
 class SkMatrix;
 #ifdef __LP64__
 typedef CGSize NSSize;
@@ -85,6 +86,20 @@ NSImage* SkBitmapsToNSImage(const std::vector<const SkBitmap*>& bitmaps);
 
 // Returns |[NSImage imageNamed:@"NSApplicationIcon"]| as SkBitmap.
 SkBitmap AppplicationIconAtSize(int size);
+
+// Converts a SkCanvas temporarily to a CGContext
+class SkiaBitLocker {
+ public:
+  explicit SkiaBitLocker(SkCanvas* canvas);
+  ~SkiaBitLocker();
+  CGContextRef cgContext();
+
+ private:
+  void releaseIfNeeded();
+  SkCanvas* canvas_;
+  CGContextRef cgContext_;
+};
+
 
 }  // namespace gfx
 
