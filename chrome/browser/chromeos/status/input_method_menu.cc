@@ -644,6 +644,10 @@ std::wstring InputMethodMenu::GetTextForMenu(
 }
 
 void InputMethodMenu::RegisterPrefs(PrefService* local_state) {
+  // We use an empty string here rather than a hardware keyboard layout name
+  // since input_method::GetHardwareInputMethodId() might return a fallback
+  // layout name if local_state->RegisterStringPref(kHardwareKeyboardLayout)
+  // is not called yet.
   local_state->RegisterStringPref(language_prefs::kPreferredKeyboardLayout,
                                   "",
                                   PrefService::UNSYNCABLE_PREF);

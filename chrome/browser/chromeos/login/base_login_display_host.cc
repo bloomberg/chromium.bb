@@ -188,9 +188,14 @@ void ShowLoginWizard(const std::string& first_screen_name,
   if (g_browser_process && g_browser_process->local_state()) {
     const std::string locale = g_browser_process->GetApplicationLocale();
     // If the preferred keyboard for the login screen has been saved, use it.
-    const std::string initial_input_method_id =
+    std::string initial_input_method_id =
         g_browser_process->local_state()->GetString(
             chromeos::language_prefs::kPreferredKeyboardLayout);
+    if (initial_input_method_id.empty()) {
+      // If kPreferredKeyboardLayout is not specified, use the hardware layout.
+      initial_input_method_id =
+          chromeos::input_method::GetHardwareInputMethodId();
+    }
     chromeos::input_method::EnableInputMethods(
         locale, chromeos::input_method::kKeyboardLayoutsOnly,
         initial_input_method_id);
