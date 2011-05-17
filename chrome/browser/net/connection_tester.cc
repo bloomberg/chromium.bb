@@ -26,6 +26,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
@@ -182,10 +183,17 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
       return net::ERR_NOT_IMPLEMENTED;
     }
 
+    net::DhcpProxyScriptFetcherFactory dhcp_factory;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableDhcpWpad)) {
+      dhcp_factory.set_enabled(true);
+    }
+
     proxy_service->reset(net::ProxyService::CreateUsingV8ProxyResolver(
         config_service.release(),
         0u,
         new net::ProxyScriptFetcherImpl(proxy_request_context_),
+        dhcp_factory.Create(proxy_request_context_),
         host_resolver(),
         NULL,
         NULL));

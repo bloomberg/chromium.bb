@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/net_log.h"
+#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
@@ -84,10 +85,16 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 
   net::ProxyService* proxy_service;
   if (use_v8) {
+    net::DhcpProxyScriptFetcherFactory dhcp_factory;
+    if (command_line.HasSwitch(switches::kEnableDhcpWpad)) {
+      dhcp_factory.set_enabled(true);
+    }
+
     proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
         proxy_config_service,
         num_pac_threads,
         new net::ProxyScriptFetcherImpl(context),
+        dhcp_factory.Create(context),
         context->host_resolver(),
         net_log,
         context->network_delegate());

@@ -122,6 +122,7 @@ extern const char kEnableCompactNavigation[];
 extern const char kEnableCompositeToTexture[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableCrxlessWebApps[];
+extern const char kEnableDhcpWpad[];
 extern const char kEnableDNSCertProvenanceChecking[];
 extern const char kEnableDNSSECCerts[];
 extern const char kEnableExperimentalAppManifests[];
