@@ -54,7 +54,7 @@ bool RunningOnXP() {
 // TODO(asargent) - for some reason this test occasionally fails on XP,
 // but not other versions of windows. http://crbug.com/55642
 #if defined (OS_WIN)
-#define MAYBE_InstallAndUninstall FLAKY_InstallAndUninstall
+#define MAYBE_InstallAndUninstall DISABLED_InstallAndUninstall
 #else
 #define MAYBE_InstallAndUninstall InstallAndUninstall
 #endif
