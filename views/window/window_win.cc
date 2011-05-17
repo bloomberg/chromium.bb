@@ -515,6 +515,11 @@ LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
     SetMouseCapture();
   }
 
+  /*
+  TODO(beng): This fixes some situations where the windows-classic appearance
+              non-client area is rendered over our custom frame, however it
+              causes mouse-releases to the non-client area to be eaten, so it
+              can't be enabled.
   if (message == WM_NCLBUTTONDOWN) {
     // WindowWin::OnNCLButtonDown set the message as unhandled. This normally
     // means WidgetWin::ProcessWindowMessage will pass it to
@@ -526,6 +531,7 @@ LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
     DefWindowProc(GetNativeView(), WM_NCLBUTTONDOWN, w_param, l_param);
     SetMsgHandled(TRUE);
   }
+  */
 
   WidgetWin::OnMouseRange(message, w_param, l_param);
   return 0;
