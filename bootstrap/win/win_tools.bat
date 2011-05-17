@@ -1,5 +1,5 @@
 @echo off
-:: Copyright (c) 2009 The Chromium Authors. All rights reserved.
+:: Copyright (c) 2011 The Chromium Authors. All rights reserved.
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
@@ -20,6 +20,44 @@ if "%1" == "force" (
   set WIN_TOOLS_FORCE=1
   shift /1
 )
+
+
+:GIT_CHECK
+:: If the batch file exists, skip the git check.
+if exist "%WIN_TOOLS_ROOT_DIR%\git.bat" goto :SVN_CHECK
+if "%GIT_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
+:: The normal initialization will happen here when we're ready to deploy.
+goto :SVN_CHECK
+
+
+:GIT_INSTALL
+echo Installing git (avg 1-2 min download) ...
+:: git is not accessible; check it out and create 'proxy' files.
+if exist "%~dp0git.zip" del "%~dp0git.zip"
+cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/git_bin.zip "%~dp0git.zip"
+if errorlevel 1 goto :GIT_FAIL
+:: Cleanup svn directory if it was existing.
+if exist "%WIN_TOOLS_ROOT_DIR%\git_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\git_bin"
+:: Will create git_bin\...
+cscript //nologo //e:jscript "%~dp0unzip.js" "%~dp0git.zip" "%WIN_TOOLS_ROOT_DIR%"
+if errorlevel 1 goto :GIT_FAIL
+if not exist "%WIN_TOOLS_ROOT_DIR%\git_bin\." goto :GIT_FAIL
+del "%~dp0git.zip"
+:: Create the batch files.
+call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\git.bat" "%WIN_TOOLS_ROOT_DIR%\git.bat" 1>nul
+call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
+call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
+goto :SVN_CHECK
+
+
+:GIT_FAIL
+echo ... Failed to checkout git automatically.
+echo Please visit http://code.google.com/p/msysgit to download the latest git
+echo client before continuing.
+echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/
+set ERRORLEVEL=1
+goto :END
+
 
 :SVN_CHECK
 :: If the batch file exists, skip the svn check.
