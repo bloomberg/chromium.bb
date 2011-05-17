@@ -226,6 +226,7 @@ function RPCWrapper() {
 
   // Create a place in the page to output test results
   this.localOutput = document.createElement('div');
+  this.localOutput.id = 'testresults';
   this.localOutput.style.border = '2px solid #0000FF';
   this.localOutput.style.padding = '10px';
   document.body.appendChild(this.localOutput);
