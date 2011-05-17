@@ -150,6 +150,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->module_may_start = 0;  /* only when secure_service != NULL */
 
   nap->ignore_validator_result = 0;
+  nap->skip_validator = 0;
   nap->validator_stub_out_mode = 0;
 
   /*
