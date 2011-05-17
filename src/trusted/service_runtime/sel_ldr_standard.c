@@ -310,7 +310,12 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   }
 
   NaClLog(2, "Allocating address space\n");
+  NaClPerfCounterMark(&time_load_file, "PreAllocAddrSpace");
+  NaClPerfCounterIntervalLast(&time_load_file);
   subret = NaClAllocAddrSpace(nap);
+  NaClPerfCounterMark(&time_load_file,
+                      NACL_PERF_IMPORTANT_PREFIX "AllocAddrSpace");
+  NaClPerfCounterIntervalLast(&time_load_file);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
