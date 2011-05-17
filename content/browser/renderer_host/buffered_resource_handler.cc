@@ -62,7 +62,6 @@ BufferedResourceHandler::BufferedResourceHandler(ResourceHandler* handler,
       read_buffer_size_(0),
       bytes_read_(0),
       sniff_content_(false),
-      should_buffer_(false),
       wait_for_plugins_(false),
       buffering_(false),
       finished_(false) {
@@ -134,7 +133,7 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 }
 
 bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
-  if (sniff_content_ || should_buffer_) {
+  if (sniff_content_) {
     if (KeepBuffering(*bytes_read))
       return true;
 
@@ -202,35 +201,12 @@ bool BufferedResourceHandler::DelayResponse() {
     response_->response_head.mime_type.assign(mime_type);
   }
 
-  if (ShouldBuffer(request_->url(), mime_type)) {
-    // This is a temporary fix for the fact that webkit expects to have
-    // enough data to decode the doctype in order to select the rendering
-    // mode.
-    should_buffer_ = true;
-    return true;
-  }
-
   if (!not_modified_status && ShouldWaitForPlugins()) {
     wait_for_plugins_ = true;
     return true;
   }
 
   return false;
-}
-
-bool BufferedResourceHandler::ShouldBuffer(const GURL& url,
-                                           const std::string& mime_type) {
-  // We are willing to buffer for HTTP and HTTPS.
-  bool sniffable_scheme = url.is_empty() ||
-                          url.SchemeIs(chrome::kHttpScheme) ||
-                          url.SchemeIs(chrome::kHttpsScheme);
-  if (!sniffable_scheme)
-    return false;
-
-  // Today, the only reason to buffer the request is to fix the doctype decoding
-  // performed by webkit: if there is not enough data it will go to quirks mode.
-  // We only expect the doctype check to apply to html documents.
-  return mime_type == "text/html";
 }
 
 bool BufferedResourceHandler::DidBufferEnough(int bytes_read) {
@@ -272,20 +248,6 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
     response_->response_head.mime_type.assign(new_type);
 
     // We just sniffed the mime type, maybe there is a doctype to process.
-    if (ShouldBuffer(request_->url(), new_type)) {
-      should_buffer_ = true;
-    } else if (ShouldWaitForPlugins()) {
-      wait_for_plugins_ = true;
-    }
-  }
-
-  if (should_buffer_) {
-    if (!finished_ && !DidBufferEnough(bytes_read_)) {
-      buffering_ = true;
-      return true;
-    }
-
-    should_buffer_ = false;
     if (ShouldWaitForPlugins())
       wait_for_plugins_ = true;
   }

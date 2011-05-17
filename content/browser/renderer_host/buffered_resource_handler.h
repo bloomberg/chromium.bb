@@ -44,10 +44,6 @@ class BufferedResourceHandler : public ResourceHandler {
   // Returns true if we should delay OnResponseStarted forwarding.
   bool DelayResponse();
 
-  // Returns true if there will be a need to parse the DocType of the document
-  // to determine the right way to handle it.
-  bool ShouldBuffer(const GURL& url, const std::string& mime_type);
-
   // Returns true if there is enough information to process the DocType.
   bool DidBufferEnough(int bytes_read);
 
@@ -88,7 +84,6 @@ class BufferedResourceHandler : public ResourceHandler {
   int read_buffer_size_;
   int bytes_read_;
   bool sniff_content_;
-  bool should_buffer_;
   bool wait_for_plugins_;
   bool buffering_;
   bool finished_;
