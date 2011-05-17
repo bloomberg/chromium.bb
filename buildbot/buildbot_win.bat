@@ -28,7 +28,7 @@ rd /s /q scons-out ^
  & rd /s /q build\Debug-Win32 build\Release-Win32 ^
  & rd /s /q build\Debug-x64 build\Release-x64
 
-:: Skip over hooks, clobber, and partial_sdk when run inside the toolchain
+:: Skip over hooks and partial_sdk when run inside the toolchain
 :: build as the toolchain takes care or the clobber, hooks aren't needed, and
 :: partial_sdk really shouldn't be needed.
 if "%INSIDE_TOOLCHAIN%" equ "" goto NonToolchain
