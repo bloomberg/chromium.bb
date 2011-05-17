@@ -3899,6 +3899,8 @@ void Browser::UpdateCommandsForTabState() {
       current_tab->controller().CanViewSource());
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
       current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
+  if (is_devtools())
+      command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, false);
 
   // Changing the encoding is not possible on Chrome-internal webpages.
   // Instead of using GetURL here, we use url() (which is the "real" url of the
