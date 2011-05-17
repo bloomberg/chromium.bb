@@ -346,6 +346,17 @@ UNINITIALIZED READ
 system call NtDeviceIoControlFile InputBuffer
 ADVAPI32.dll!ImpersonateAnonymousToken
 
+# http://code.google.com/p/drmemory/issues/detail?id=407
+UNINITIALIZED READ
+system call NtRequestWaitReplyPort
+RPCRT4.dll!I_RpcSendReceive
+RPCRT4.dll!NdrSendReceive
+
+UNINITIALIZED READ
+IMM32.dll!*
+ntdll.dll!LdrInitializeThunk
+ntdll.dll!LdrShutdownThread
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
