@@ -17,6 +17,7 @@
 #include "base/task.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/cocoa/authorization_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -344,17 +345,33 @@ NSString* const kBrandKey = @"KSBrandID";
 
   if (brandFileType_ == kBrandFileTypeNotDetermined) {
 
+    NSFileManager* fm = [NSFileManager defaultManager];
+    NSString* userBrandFile = UserBrandFilePath();
+    NSString* systemBrandFile = SystemBrandFilePath();
+
     // Default to none.
     brandFileType_ = kBrandFileTypeNone;
 
-    // Having a channel means Dev/Beta, so there is no brand code to go with
-    // those.
-    if ([channel_ length] == 0) {
+    // Only the stable channel has a brand code.
+    platform_util::Channel channel = platform_util::GetChannel();
 
-      NSString* userBrandFile = UserBrandFilePath();
-      NSString* systemBrandFile = SystemBrandFilePath();
+    if (channel == platform_util::CHANNEL_DEV ||
+        channel == platform_util::CHANNEL_BETA) {
 
-      NSFileManager* fm = [NSFileManager defaultManager];
+      // If on the dev or beta channel, this installation may have replaced
+      // an older system-level installation. Check for a user brand file and
+      // nuke it if present. Don't try to remove the system brand file, there
+      // wouldn't be any permission to do so.
+      //
+      // Don't do this on the canary channel. The canary can run side-by-side
+      // with another Google Chrome installation whose brand code, if any,
+      // should remain intact.
+
+      if ([fm fileExistsAtPath:userBrandFile]) {
+        [fm removeItemAtPath:userBrandFile error:NULL];
+      }
+
+    } else if (channel == platform_util::CHANNEL_STABLE) {
 
       // If there is a system brand file, use it.
       if ([fm fileExistsAtPath:systemBrandFile]) {

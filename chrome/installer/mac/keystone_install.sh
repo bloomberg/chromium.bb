@@ -987,39 +987,60 @@ main() {
   note "brand_plist = ${brand_plist}"
   note "brand_plist_path = ${brand_plist_path}"
 
-  # If the user manually updated their copy of Chrome, there might be new
-  # brand information in the app bundle, and that needs to be copied out into
-  # the file Keystone looks at.
-  if [[ -n "${old_brand}" ]]; then
-    local brand_dir
-    brand_dir="$(dirname "${brand_plist_path}")"
-    note "brand_dir = ${brand_dir}"
-    if ! mkdir -p "${brand_dir}"; then
-      err "couldn't mkdir brand_dir, continuing"
-    else
-      if ! defaults write "${brand_plist}" "${KS_BRAND_KEY}" \
-                          -string "${old_brand}"; then
-        err "couldn't write brand_plist, continuing"
-      elif [[ -n "${set_brand_file_access}" ]]; then
-        if ! chown "root:wheel" "${brand_plist_path}"; then
-          err "couldn't chown brand_plist_path, continuing"
-        else
-          if ! chmod 644 "${brand_plist_path}"; then
-            err "couldn't chmod brand_plist_path, continuing"
+  local ksadmin_brand_plist_path
+  local ksadmin_brand_key
+
+  # Only the stable channel, identified by an empty channel string, has a
+  # brand code. On the beta and dev channels, remove the brand plist if
+  # present. Its presence means that the ticket used to manage a
+  # stable-channel Chrome but the user has since replaced it with a beta or
+  # dev channel version. Since the canary channel can run side-by-side with
+  # another Chrome installation, don't remove the brand plist on that channel,
+  # but skip the rest of the brand logic.
+  if [[ "${channel}" = "beta" ]] || [[ "${channel}" = "dev" ]]; then
+    note "defeating brand code on channel ${channel}"
+    rm -f "${brand_plist_path}" 2>/dev/null || true
+  elif [[ -n "${channel}" ]]; then
+    # Canary channel.
+    note "skipping brand code on channel ${channel}"
+  else
+    # Stable channel.
+    # If the user manually updated their copy of Chrome, there might be new
+    # brand information in the app bundle, and that needs to be copied out
+    # into the file Keystone looks at.
+    if [[ -n "${old_brand}" ]]; then
+      local brand_dir
+      brand_dir="$(dirname "${brand_plist_path}")"
+      note "brand_dir = ${brand_dir}"
+      if ! mkdir -p "${brand_dir}"; then
+        err "couldn't mkdir brand_dir, continuing"
+      else
+        if ! defaults write "${brand_plist}" "${KS_BRAND_KEY}" \
+                            -string "${old_brand}"; then
+          err "couldn't write brand_plist, continuing"
+        elif [[ -n "${set_brand_file_access}" ]]; then
+          if ! chown "root:wheel" "${brand_plist_path}"; then
+            err "couldn't chown brand_plist_path, continuing"
+          else
+            if ! chmod 644 "${brand_plist_path}"; then
+              err "couldn't chmod brand_plist_path, continuing"
+            fi
           fi
         fi
       fi
     fi
+
+    # Confirm that the brand file exists.  It's optional.
+    ksadmin_brand_plist_path="${brand_plist_path}"
+    ksadmin_brand_key="${KS_BRAND_KEY}"
+
+    if [[ ! -f "${ksadmin_brand_plist_path}" ]]; then
+      # Clear any branding information.
+      ksadmin_brand_plist_path=
+      ksadmin_brand_key=
+    fi
   fi
 
-  # Confirm that the brand file exists.  It's optional.
-  local ksadmin_brand_plist_path="${brand_plist_path}"
-  local ksadmin_brand_key="${KS_BRAND_KEY}"
-  if [[ ! -f "${ksadmin_brand_plist_path}" ]]; then
-    # Clear any branding information.
-    ksadmin_brand_plist_path=
-    ksadmin_brand_key=
-  fi
   note "ksadmin_brand_plist_path = ${ksadmin_brand_plist_path}"
   note "ksadmin_brand_key = ${ksadmin_brand_key}"
 
