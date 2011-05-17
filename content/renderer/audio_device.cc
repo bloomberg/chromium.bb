@@ -207,7 +207,6 @@ void AudioDevice::OnLowLatencyCreated(
   // Allow the client to pre-populate the buffer.
   FireRenderCallback();
 
-  // TODO(crogers): we could optionally set the thread to high-priority
   audio_thread_.reset(
       new base::DelegateSimpleThread(this, "renderer_audio_thread"));
   audio_thread_->Start();
@@ -224,6 +223,8 @@ void AudioDevice::OnVolume(double volume) {
 
 // Our audio thread runs here.
 void AudioDevice::Run() {
+    audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
+
   int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
