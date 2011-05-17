@@ -710,7 +710,7 @@ class SyncManager {
 
     // Notifications counters updated by the actions in synapi.
     int notifications_received;
-    int notifications_sent;
+    int notifiable_commits;
 
     // The max number of consecutive errors from any component.
     int max_consecutive_errors;

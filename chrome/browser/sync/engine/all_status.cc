@@ -144,9 +144,9 @@ void AllStatus::SetNotificationsEnabled(bool notifications_enabled) {
   status_.notifications_enabled = notifications_enabled;
 }
 
-void AllStatus::IncrementNotificationsSent() {
+void AllStatus::IncrementNotifiableCommits() {
   ScopedStatusLock lock(this);
-  ++status_.notifications_sent;
+  ++status_.notifiable_commits;
 }
 
 void AllStatus::IncrementNotificationsReceived() {

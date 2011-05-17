@@ -364,8 +364,8 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    "Notifications Received",
                                    full_status.notifications_received);
     sync_ui_util::AddIntSyncDetail(details,
-                                   "Notifications Sent",
-                                   full_status.notifications_sent);
+                                   "Notifiable Commits",
+                                   full_status.notifiable_commits);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Unsynced Count",
                                    full_status.unsynced_count);

@@ -42,7 +42,7 @@ class AllStatus : public SyncEngineEventListener {
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
-  void IncrementNotificationsSent();
+  void IncrementNotifiableCommits();
 
   void IncrementNotificationsReceived();
 

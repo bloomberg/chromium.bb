@@ -1886,7 +1886,6 @@ void SyncManager::SyncInternal::SendNotification() {
     VLOG(1) << "Not sending notification: sync_notifier_ is NULL";
     return;
   }
-  allstatus_.IncrementNotificationsSent();
   sync_notifier_->SendNotification();
 }
 
@@ -2591,9 +2590,10 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     // notifications.
     // TODO(chron): Consider changing this back to track has_more_to_sync
     // only notify peers if a successful commit has occurred.
-    bool new_notification =
+    bool is_notifiable_commit =
         (event.snapshot->syncer_status.num_successful_commits > 0);
-    if (new_notification) {
+    if (is_notifiable_commit) {
+      allstatus_.IncrementNotifiableCommits();
       core_message_loop_->PostTask(
           FROM_HERE,
           NewRunnableMethod(
