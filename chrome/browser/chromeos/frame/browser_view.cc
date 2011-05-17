@@ -29,12 +29,14 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_delegate.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/window/hit_test.h"
@@ -50,6 +52,58 @@ const int kStatusAreaVerticalAdjustment = -1;
 // If a popup window is larger than this fraction of the screen, create a tab.
 const float kPopupMaxWidthFactor = 0.5;
 const float kPopupMaxHeightFactor = 0.6;
+
+// This MenuItemView delegate class forwards to the
+// SimpleMenuModel::Delegate() implementation.
+class SimpleMenuModelDelegateAdapter : public views::MenuDelegate {
+ public:
+  explicit SimpleMenuModelDelegateAdapter(
+      ui::SimpleMenuModel::Delegate* simple_menu_model_delegate);
+
+  // views::MenuDelegate implementation.
+  virtual bool GetAccelerator(int id,
+                              views::Accelerator* accelerator) OVERRIDE;
+  virtual std::wstring GetLabel(int id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual bool IsItemChecked(int id) const OVERRIDE;
+  virtual void ExecuteCommand(int id) OVERRIDE;
+
+ private:
+  ui::SimpleMenuModel::Delegate* simple_menu_model_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleMenuModelDelegateAdapter);
+};
+
+// SimpleMenuModelDelegateAdapter:
+SimpleMenuModelDelegateAdapter::SimpleMenuModelDelegateAdapter(
+    ui::SimpleMenuModel::Delegate* simple_menu_model_delegate)
+    : simple_menu_model_delegate_(simple_menu_model_delegate) {
+}
+
+// SimpleMenuModelDelegateAdapter, views::MenuDelegate implementation.
+
+bool SimpleMenuModelDelegateAdapter::GetAccelerator(
+    int id,
+    views::Accelerator* accelerator) {
+  return simple_menu_model_delegate_->GetAcceleratorForCommandId(
+      id, accelerator);
+}
+
+std::wstring SimpleMenuModelDelegateAdapter::GetLabel(int id) const {
+  return UTF16ToWide(simple_menu_model_delegate_->GetLabelForCommandId(id));
+}
+
+bool SimpleMenuModelDelegateAdapter::IsCommandEnabled(int id) const {
+  return simple_menu_model_delegate_->IsCommandIdEnabled(id);
+}
+
+bool SimpleMenuModelDelegateAdapter::IsItemChecked(int id) const {
+  return simple_menu_model_delegate_->IsCommandIdChecked(id);
+}
+
+void SimpleMenuModelDelegateAdapter::ExecuteCommand(int id) {
+  simple_menu_model_delegate_->ExecuteCommand(id);
+}
 
 }  // namespace
 
@@ -218,10 +272,13 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayout);
 };
 
+// BrowserView
+
 BrowserView::BrowserView(Browser* browser)
     : ::BrowserView(browser),
       status_area_(NULL),
       saved_focused_widget_(NULL) {
+  system_menu_delegate_.reset(new SimpleMenuModelDelegateAdapter(this));
 }
 
 BrowserView::~BrowserView() {
@@ -229,7 +286,6 @@ BrowserView::~BrowserView() {
     toolbar()->RemoveMenuListener(this);
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // BrowserView, ::BrowserView overrides:
 
 void BrowserView::Init() {
@@ -238,7 +294,6 @@ void BrowserView::Init() {
   status_area_->SetID(VIEW_ID_STATUS_AREA);
   AddChildView(status_area_);
   status_area_->Init();
-  InitSystemMenu();
 
   frame()->non_client_view()->SetContextMenuController(this);
 
@@ -338,7 +393,7 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
   return NEW_POPUP;
 }
 
-// views::ContextMenuController overrides.
+// views::ContextMenuController implementation.
 void BrowserView::ShowContextMenuForView(views::View* source,
                                          const gfx::Point& p,
                                          bool is_mouse_gesture) {
@@ -349,16 +404,24 @@ void BrowserView::ShowContextMenuForView(views::View* source,
   gfx::Point point_in_parent_coords(p);
   views::View::ConvertPointToView(NULL, parent(), &point_in_parent_coords);
   int hit_test = NonClientHitTest(point_in_parent_coords);
-  if (hit_test == HTCAPTION || hit_test == HTNOWHERE)
-    system_menu_menu_->RunMenuAt(p, views::Menu2::ALIGN_TOPLEFT);
+  if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
+    // rebuild menu so it reflects current application state
+    InitSystemMenu();
+    system_menu_->RunMenuAt(source->GetWindow()->GetNativeWindow(), NULL,
+                            gfx::Rect(p, gfx::Size(0,0)),
+                            views::MenuItemView::TOPLEFT,
+                            true);
+  }
 }
 
+// BrowserView, views::MenuListener implementation.
 void BrowserView::OnMenuOpened() {
   // Save the focused widget before wrench menu opens.
   saved_focused_widget_ = gtk_window_get_focus(GetNativeHandle());
 }
 
-// StatusAreaHost overrides.
+// BrowserView, StatusAreaHost implementation.
+
 Profile* BrowserView::GetProfile() const {
   return browser()->profile();
 }
@@ -397,7 +460,6 @@ StatusAreaHost::TextStyle BrowserView::GetTextStyle() const {
           StatusAreaHost::kWhitePlain : StatusAreaHost::kGrayEmbossed);
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // BrowserView protected:
 
 void BrowserView::GetAccessiblePanes(
@@ -406,18 +468,19 @@ void BrowserView::GetAccessiblePanes(
   panes->push_back(status_area_);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BrowserView private:
+// BrowserView private.
 
 void BrowserView::InitSystemMenu() {
-  system_menu_contents_.reset(new ui::SimpleMenuModel(this));
-  system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB,
-                                               IDS_RESTORE_TAB);
-  system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                               IDS_TASK_MANAGER);
-  system_menu_menu_.reset(new views::Menu2(system_menu_contents_.get()));
+  system_menu_.reset(new views::MenuItemView(system_menu_delegate_.get()));
+  system_menu_->AppendDelegateMenuItem(IDC_RESTORE_TAB);
+
+  system_menu_->AppendMenuItemWithLabel(
+      IDC_NEW_TAB,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_TAB)));
+  system_menu_->AppendSeparator();
+  system_menu_->AppendMenuItemWithLabel(
+      IDC_TASK_MANAGER,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER)));
 }
 
 }  // namespace chromeos
