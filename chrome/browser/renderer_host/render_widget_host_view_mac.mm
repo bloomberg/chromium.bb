@@ -1823,6 +1823,28 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
+- (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility {
+  // Performs a right click copying WebKit's
+  // accessibilityPerformShowMenuAction.
+  NSPoint location = [self accessibilityPointInScreen:accessibility];
+  location = [[self window] convertScreenToBase:location];
+  location.x += [accessibility size].width/2;
+  location.y += [accessibility size].height/2;
+
+  NSEvent* fakeRightClick = [NSEvent
+                           mouseEventWithType:NSRightMouseDown
+                                     location:location
+                                modifierFlags:nil
+                                    timestamp:0
+                                 windowNumber:[[self window] windowNumber]
+                                      context:[NSGraphicsContext currentContext]
+                                  eventNumber:0
+                                   clickCount:1
+                                     pressure:0];
+
+  [self mouseEvent:fakeRightClick];
+}
+
 // Spellchecking methods
 // The next three methods are implemented here since this class is the first
 // responder for anything in the browser.

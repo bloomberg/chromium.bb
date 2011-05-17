@@ -511,11 +511,10 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // that backs this object.
 - (void)accessibilityPerformAction:(NSString*)action {
   // TODO(feldstein): Support more actions.
-  if ([action isEqualToString:NSAccessibilityPressAction]) {
+  if ([action isEqualToString:NSAccessibilityPressAction])
     [delegate_ doDefaultAction:browserAccessibility_->renderer_id()];
-  } else if ([action isEqualToString:NSAccessibilityShowMenuAction]) {
-    // TODO(dtseng): implement.
-  }
+  else if ([action isEqualToString:NSAccessibilityShowMenuAction])
+    [delegate_ performShowMenuAction:self];
 }
 
 // Returns the description of the given action.

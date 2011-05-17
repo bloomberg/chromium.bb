@@ -18,6 +18,7 @@
 
 - (NSPoint)accessibilityPointInScreen:(BrowserAccessibilityCocoa*)accessibility;
 - (void)doDefaultAction:(int32)accessibilityObjectId;
+- (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility;
 - (void)setAccessibilityFocus:(BOOL)focus
               accessibilityId:(int32)accessibilityObjectId;
 - (NSWindow*)window;
@@ -31,6 +32,8 @@
   return NSZeroPoint;
 }
 - (void)doDefaultAction:(int32)accessibilityObjectId {
+}
+- (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility {
 }
 - (void)setAccessibilityFocus:(BOOL)focus
               accessibilityId:(int32)accessibilityObjectId {
