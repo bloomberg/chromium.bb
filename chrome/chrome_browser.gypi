@@ -654,8 +654,6 @@
         'browser/chromeos/panels/panel_scroller_container.h',
         'browser/chromeos/panels/panel_scroller_header.cc',
         'browser/chromeos/panels/panel_scroller_header.h',
-        'browser/chromeos/plugin_selection_policy.cc',
-        'browser/chromeos/plugin_selection_policy.h',
         'browser/chromeos/preferences.cc',
         'browser/chromeos/preferences.h',
         'browser/chromeos/proxy_config_service.cc',

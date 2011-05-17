@@ -1315,7 +1315,6 @@
         'browser/chromeos/network_message_observer_unittest.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',
-        'browser/chromeos/plugin_selection_policy_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
         'browser/chromeos/status/input_method_menu_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',

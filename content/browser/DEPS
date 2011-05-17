@@ -16,7 +16,6 @@ include_rules = [
 
   "+chrome/browser/chromeos/cros/cros_library.h",
   "+chrome/browser/chromeos/cros/network_library.h",
-  "+chrome/browser/chromeos/plugin_selection_policy.h",
 
   "+chrome/browser/debugger/devtools_manager.h",
   "+chrome/browser/debugger/devtools_netlog_observer.h",

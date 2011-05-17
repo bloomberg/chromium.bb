@@ -309,8 +309,8 @@ void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
 #endif
     // Can't load plugins on IO thread.
     case ViewHostMsg_GetPlugins::ID:
-    // The PluginService::GetFirstAllowedPluginInfo may need to load the
-    // plugins.  Don't do it on the IO thread.
+    // The PluginService::GetPluginInfo may need to load the plugins.  Don't do
+    // it on the IO thread.
     case ViewHostMsg_GetPluginInfo::ID:
       *thread = BrowserThread::FILE;
       break;
@@ -584,7 +584,7 @@ void RenderMessageFilter::OnGetPluginInfo(
     bool* found,
     webkit::npapi::WebPluginInfo* info,
     std::string* actual_mime_type) {
-  *found = plugin_service_->GetFirstAllowedPluginInfo(
+  *found = plugin_service_->GetPluginInfo(
       render_process_id_, routing_id, url, mime_type, info, actual_mime_type);
 
   if (*found) {

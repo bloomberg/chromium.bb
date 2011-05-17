@@ -18,8 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
-#include "chrome/common/logging_chrome.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -32,10 +30,6 @@
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/plugin_selection_policy.h"
-#endif
 
 #if defined(OS_LINUX)
 using ::base::files::FilePathWatcher;
@@ -90,17 +84,12 @@ PluginService::PluginService()
 
   chrome::RegisterInternalDefaultPlugin();
 
-  // Register the internal Flash and PDF, if available.
+  // Register the internal Flash if available.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInternalFlash) &&
       PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
     webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
   }
-
-#if defined(OS_CHROMEOS)
-  plugin_selection_policy_ = new chromeos::PluginSelectionPolicy;
-  plugin_selection_policy_->StartInit();
-#endif
 
   // Start watching for changes in the plugin list. This means watching
   // for changes in the Windows registry keys and on both Windows and POSIX
@@ -313,8 +302,8 @@ void PluginService::OpenChannelToNpapiPlugin(
     const GURL& url,
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
-  // The PluginList::GetFirstAllowedPluginInfo may need to load the
-  // plugins.  Don't do it on the IO thread.
+  // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it on
+  // the IO thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
@@ -350,7 +339,7 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   webkit::npapi::WebPluginInfo info;
-  bool found = GetFirstAllowedPluginInfo(
+  bool found = GetPluginInfo(
       render_process_id, render_view_id, url, mime_type, &info, NULL);
   FilePath plugin_path;
   if (found && webkit::npapi::IsPluginEnabled(info))
@@ -376,34 +365,16 @@ void PluginService::FinishOpenChannelToPlugin(
     client->OnError();
 }
 
-bool PluginService::GetFirstAllowedPluginInfo(
-    int render_process_id,
-    int render_view_id,
-    const GURL& url,
-    const std::string& mime_type,
-    webkit::npapi::WebPluginInfo* info,
-    std::string* actual_mime_type) {
+bool PluginService::GetPluginInfo(int render_process_id,
+                                  int render_view_id,
+                                  const GURL& url,
+                                  const std::string& mime_type,
+                                  webkit::npapi::WebPluginInfo* info,
+                                  std::string* actual_mime_type) {
   // GetPluginInfoArray may need to load the plugins, so we need to be
   // on the FILE thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool allow_wildcard = true;
-#if defined(OS_CHROMEOS)
-  std::vector<webkit::npapi::WebPluginInfo> info_array;
-  std::vector<std::string> actual_mime_types;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, &info_array, &actual_mime_types);
-
-  // Now we filter by the plugin selection policy.
-  int allowed_index = plugin_selection_policy_->FindFirstAllowed(url,
-                                                                 info_array);
-  if (!info_array.empty() && allowed_index >= 0) {
-    *info = info_array[allowed_index];
-    if (actual_mime_type)
-      *actual_mime_type = actual_mime_types[allowed_index];
-    return true;
-  }
-  return false;
-#else
   {
     base::AutoLock auto_lock(overridden_plugins_lock_);
     for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
@@ -419,7 +390,6 @@ bool PluginService::GetFirstAllowedPluginInfo(
   }
   return webkit::npapi::PluginList::Singleton()->GetPluginInfo(
       url, mime_type, allow_wildcard, info, actual_mime_type);
-#endif
 }
 
 void PluginService::OnWaitableEventSignaled(
