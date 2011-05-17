@@ -466,6 +466,11 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
 // the renderer is prerendering.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_MaybeCancelPrerenderForHTML5Media)
 
+// Message sent from the renderer to the browser to notify it of a
+// window.print() call which should cancel the prerender. The message is sent
+// only when the renderer is prerendering.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_CancelPrerenderForPrinting)
+
 // Sent by the renderer to check if a URL has permission to trigger a clipboard
 // read/write operation from the DOM.
 IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CanTriggerClipboardRead,

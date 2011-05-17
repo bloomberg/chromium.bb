@@ -4,22 +4,17 @@
 
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_
-#pragma once
 
-#include <list>
-#include <vector>
-
-#include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "googleurl/src/gurl.h"
 
-class PrerenderContents;
-class Profile;
+#include "base/time.h"
+
 class TabContents;
+class GURL;
 
 namespace prerender {
 
+class PrerenderContents;
 class PrerenderManager;
 
 // PrerenderObserver is responsible for recording perceived pageload times
