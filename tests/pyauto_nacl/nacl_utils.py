@@ -17,16 +17,19 @@ def AssertTrueOrLogTab(browser, ok, msg, tab_index=0):
     # Hence \\n to get \n into the JavaScript source.
     js = """\
 var results = document.getElementById('testresults');
+var text;
 if (results == null) {
-  window.domAutomationController.send('*** FAILED TO FIND id="testresults"\\n');
+  text = ('*** FAILED TO FIND id="testresults", dumping whole tab:\\n' +
+          document.documentElement.innerHTML +
+          '\\n*** END OF RAW TAB CONTENTS ***\\n');
 } else {
   var lines = results.childNodes;
-  var text = '*** ' + lines.length + ' lines:\\n';
+  text = '*** ' + lines.length + ' lines:\\n';
   for (var i = 0; i < lines.length; ++i) {
     text = text + '*** ' + lines[i].innerHTML + '\\n';
   }
-  window.domAutomationController.send(text);
 }
+window.domAutomationController.send(text);
 """
     print ('*** FAILED TEST ON TAB %u (%s)!  Log follows. ***' %
            (tab_index, msg))
