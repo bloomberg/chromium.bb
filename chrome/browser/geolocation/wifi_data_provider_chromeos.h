@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
-#define CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
+#define CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
 #pragma once
 
 #include "content/browser/geolocation/wifi_data_provider_common.h"
@@ -70,4 +70,4 @@ class WifiDataProviderChromeOs : public WifiDataProviderImplBase {
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderChromeOs);
 };
 
-#endif  // CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_

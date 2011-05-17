@@ -4,7 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "content/browser/geolocation/wifi_data_provider_chromeos.h"
+#include "chrome/browser/geolocation/wifi_data_provider_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::DoAll;

@@ -4,7 +4,7 @@
 
 // Provides wifi scan API binding for chromeos, using proprietary APIs.
 
-#include "content/browser/geolocation/wifi_data_provider_chromeos.h"
+#include "chrome/browser/geolocation/wifi_data_provider_chromeos.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
