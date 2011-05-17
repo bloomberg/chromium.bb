@@ -15,15 +15,18 @@ def AssertTrueOrLogTab(browser, ok, msg, tab_index=0):
   except AssertionError:
     # NOTE!  A \n inside """ is a newline, not the text \n!
     # Hence \\n to get \n into the JavaScript source.
-    # TODO(mcgrathr): Use getElementById after making the
-    # tests emit a DIV tag with an id attribute, diagnose failure to find it.
     js = """\
-var lines = document.getElementById('testresults').childNodes;
-var text = '*** ' + lines.length + ' lines:\\n';
-for (var i = 0; i < lines.length; ++i) {
-  text = text + '*** ' + lines[i].innerHTML + '\\n';
+var results = document.getElementById('testresults');
+if (results == null) {
+  window.domAutomationController.send('*** FAILED TO FIND id="testresults"\\n');
+} else {
+  var lines = results.childNodes;
+  var text = '*** ' + lines.length + ' lines:\\n';
+  for (var i = 0; i < lines.length; ++i) {
+    text = text + '*** ' + lines[i].innerHTML + '\\n';
+  }
+  window.domAutomationController.send(text);
 }
-window.domAutomationController.send(text);
 """
     print ('*** FAILED TEST ON TAB %u (%s)!  Log follows. ***' %
            (tab_index, msg))
