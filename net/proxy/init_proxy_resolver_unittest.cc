@@ -11,7 +11,6 @@
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/init_proxy_resolver.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_script_fetcher.h"
@@ -108,7 +107,7 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
 
   virtual void Cancel() {}
 
-  virtual URLRequestContext* GetRequestContext() const { return NULL; }
+  virtual URLRequestContext* GetRequestContext() { return NULL; }
 
  private:
   const Rules* rules_;
@@ -175,7 +174,6 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_pac_url(GURL("http://custom/proxy.pac"));
@@ -184,10 +182,8 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
 
   TestCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
-  ProxyConfig effective_config;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(OK, init.Init(
-      config, base::TimeDelta(), &effective_config, &callback));
+  InitProxyResolver init(&resolver, &fetcher, &log);
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
 
   // Check the NetLog was filled correctly.
@@ -207,9 +203,6 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
       entries, 4, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
       entries, 5, NetLog::TYPE_INIT_PROXY_RESOLVER));
-
-  EXPECT_TRUE(effective_config.has_pac_url());
-  EXPECT_EQ(config.pac_url(), effective_config.pac_url());
 }
 
 // Fail downloading the custom PAC script.
@@ -217,7 +210,6 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_pac_url(GURL("http://custom/proxy.pac"));
@@ -226,10 +218,9 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
 
   TestCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
-  ProxyConfig effective_config;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
+  InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(kFailedDownloading,
-            init.Init(config, base::TimeDelta(), &effective_config, &callback));
+            init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 
   // Check the NetLog was filled correctly.
@@ -245,8 +236,6 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
       entries, 2, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
       entries, 3, NetLog::TYPE_INIT_PROXY_RESOLVER));
-
-  EXPECT_FALSE(effective_config.has_pac_url());
 }
 
 // Fail parsing the custom PAC script.
@@ -254,7 +243,6 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_pac_url(GURL("http://custom/proxy.pac"));
@@ -262,7 +250,7 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
   rules.AddFailParsingRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
+  InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(kFailedParsing,
             init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
@@ -272,24 +260,22 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
 TEST(InitProxyResolverTest, HasNullProxyScriptFetcher) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, NULL, &dhcp_fetcher, NULL);
+  InitProxyResolver init(&resolver, NULL, NULL);
   EXPECT_EQ(ERR_UNEXPECTED,
             init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
 }
 
-// Succeeds in choosing autodetect (WPAD DNS).
+// Succeeds in choosing autodetect (wpad).
 TEST(InitProxyResolverTest, AutodetectSuccess) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -297,14 +283,9 @@ TEST(InitProxyResolverTest, AutodetectSuccess) {
   Rules::Rule rule = rules.AddSuccessRule("http://wpad/wpad.dat");
 
   TestCompletionCallback callback;
-  ProxyConfig effective_config;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(OK, init.Init(
-      config, base::TimeDelta(), &effective_config, &callback));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
-
-  EXPECT_TRUE(effective_config.has_pac_url());
-  EXPECT_EQ(rule.url, effective_config.pac_url());
 }
 
 // Fails at WPAD (downloading), but succeeds in choosing the custom PAC.
@@ -312,7 +293,6 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -322,23 +302,16 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  ProxyConfig effective_config;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(OK, init.Init(
-      config, base::TimeDelta(), &effective_config, &callback));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
-
-  EXPECT_TRUE(effective_config.has_pac_url());
-  EXPECT_EQ(rule.url, effective_config.pac_url());
 }
 
-// Fails at WPAD (no DHCP config, DNS PAC fails parsing), but succeeds in
-// choosing the custom PAC.
+// Fails at WPAD (parsing), but succeeds in choosing the custom PAC.
 TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -352,7 +325,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   CapturingNetLog log(CapturingNetLog::kUnbounded);
 
   ProxyConfig effective_config;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
+  InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(OK, init.Init(config, base::TimeDelta(),
                           &effective_config, &callback));
   EXPECT_EQ(rule.text(), resolver.script_data()->utf16());
@@ -363,48 +336,36 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
       ProxyConfig::CreateFromCustomPacURL(GURL("http://custom/proxy.pac"))));
 
   // Check the NetLog was filled correctly.
-  // (Note that various states are repeated since both WPAD and custom
+  // (Note that the Fetch and Set states are repeated since both WPAD and custom
   // PAC scripts are tried).
   CapturingNetLog::EntryList entries;
   log.GetEntries(&entries);
 
-  EXPECT_EQ(14u, entries.size());
+  EXPECT_EQ(11u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_INIT_PROXY_RESOLVER));
-  // This is the DHCP phase, which fails fetching rather than parsing, so
-  // there is no pair of SET_PAC_SCRIPT events.
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 1, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
       entries, 2, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      entries, 3, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      entries, 4, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEvent(
-      entries, 3,
-      NetLog::TYPE_INIT_PROXY_RESOLVER_FALLING_BACK_TO_NEXT_PAC_SOURCE,
+      entries, 5,
+      NetLog::TYPE_INIT_PROXY_RESOLVER_FALLING_BACK_TO_NEXT_PAC_URL,
       NetLog::PHASE_NONE));
-  // This is the DNS phase, which attempts a fetch but fails.
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 4, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      entries, 6, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 5, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      entries, 7, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 6, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+      entries, 8, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 7, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEvent(
-      entries, 8,
-      NetLog::TYPE_INIT_PROXY_RESOLVER_FALLING_BACK_TO_NEXT_PAC_SOURCE,
-      NetLog::PHASE_NONE));
-  // Finally, the custom PAC URL phase.
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 9, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      entries, 9, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 10, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 11, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 12, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 13, NetLog::TYPE_INIT_PROXY_RESOLVER));
+      entries, 10, NetLog::TYPE_INIT_PROXY_RESOLVER));
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (downloading).
@@ -412,7 +373,6 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -422,7 +382,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
+  InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(kFailedDownloading,
             init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
@@ -433,7 +393,6 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -443,7 +402,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
   rules.AddFailParsingRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
+  InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(kFailedParsing,
             init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(NULL, resolver.script_data());
@@ -456,7 +415,6 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2_NoFetch) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, false /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -466,7 +424,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2_NoFetch) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
+  InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.url, resolver.script_data()->url());
 }
@@ -478,7 +436,6 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithPositiveDelay) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_pac_url(GURL("http://custom/proxy.pac"));
@@ -487,7 +444,7 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithPositiveDelay) {
 
   TestCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
+  InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(ERR_IO_PENDING,
             init.Init(config, base::TimeDelta::FromMilliseconds(1),
                       NULL, &callback));
@@ -521,7 +478,6 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithNegativeDelay) {
   Rules rules;
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
   RuleBasedProxyScriptFetcher fetcher(&rules);
-  DoNothingDhcpProxyScriptFetcher dhcp_fetcher;
 
   ProxyConfig config;
   config.set_pac_url(GURL("http://custom/proxy.pac"));
@@ -530,7 +486,7 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithNegativeDelay) {
 
   TestCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
+  InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(kFailedDownloading,
             init.Init(config, base::TimeDelta::FromSeconds(-5),
                       NULL, &callback));
@@ -549,88 +505,6 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithNegativeDelay) {
       entries, 2, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
       entries, 3, NetLog::TYPE_INIT_PROXY_RESOLVER));
-}
-
-class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
- public:
-  explicit SynchronousSuccessDhcpFetcher(const string16& expected_text)
-      : gurl_("http://dhcppac/"), expected_text_(expected_text) {
-  }
-
-  int Fetch(string16* utf16_text, CompletionCallback* callback) OVERRIDE {
-    *utf16_text = expected_text_;
-    return OK;
-  }
-
-  void Cancel() OVERRIDE {
-  }
-
-  const GURL& GetPacURL() const OVERRIDE {
-    return gurl_;
-  }
-
-  const string16& expected_text() const {
-    return expected_text_;
-  }
-
- private:
-  GURL gurl_;
-  string16 expected_text_;
-};
-
-// All of the tests above that use InitProxyResolver have tested
-// failure to fetch a PAC file via DHCP configuration, so we now test
-// success at downloading and parsing, and then success at downloading,
-// failure at parsing.
-
-TEST(InitProxyResolverTest, AutodetectDhcpSuccess) {
-  Rules rules;
-  RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
-  RuleBasedProxyScriptFetcher fetcher(&rules);
-  SynchronousSuccessDhcpFetcher dhcp_fetcher(
-      WideToUTF16(L"http://bingo/!valid-script"));
-
-  ProxyConfig config;
-  config.set_auto_detect(true);
-
-  rules.AddSuccessRule("http://bingo/");
-  rules.AddFailDownloadRule("http://wpad/wpad.dat");
-
-  TestCompletionCallback callback;
-  ProxyConfig effective_config;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(OK, init.Init(
-      config, base::TimeDelta(), &effective_config, &callback));
-  EXPECT_EQ(dhcp_fetcher.expected_text(),
-            resolver.script_data()->utf16());
-
-  EXPECT_TRUE(effective_config.has_pac_url());
-  EXPECT_EQ(GURL("http://dhcppac/"), effective_config.pac_url());
-}
-
-TEST(InitProxyResolverTest, AutodetectDhcpFailParse) {
-  Rules rules;
-  RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
-  RuleBasedProxyScriptFetcher fetcher(&rules);
-  SynchronousSuccessDhcpFetcher dhcp_fetcher(
-      WideToUTF16(L"http://bingo/!invalid-script"));
-
-  ProxyConfig config;
-  config.set_auto_detect(true);
-
-  rules.AddFailParsingRule("http://bingo/");
-  rules.AddFailDownloadRule("http://wpad/wpad.dat");
-
-  TestCompletionCallback callback;
-  ProxyConfig effective_config;
-  InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
-  // Since there is fallback to DNS-based WPAD, the final error will be that
-  // it failed downloading, not that it failed parsing.
-  EXPECT_EQ(kFailedDownloading,
-      init.Init(config, base::TimeDelta(), &effective_config, &callback));
-  EXPECT_EQ(NULL, resolver.script_data());
-
-  EXPECT_FALSE(effective_config.has_pac_url());
 }
 
 }  // namespace

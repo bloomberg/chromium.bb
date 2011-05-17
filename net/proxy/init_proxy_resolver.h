@@ -11,19 +11,15 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log.h"
 
 namespace net {
 
-class DhcpProxyScriptFetcher;
-class NetLogParameter;
 class ProxyConfig;
 class ProxyResolver;
 class ProxyScriptFetcher;
-class URLRequestContext;
 
 // InitProxyResolver is a helper class used by ProxyService to
 // initialize a ProxyResolver with the PAC script data specified
@@ -43,11 +39,10 @@ class URLRequestContext;
 //
 class InitProxyResolver {
  public:
-  // |resolver|, |proxy_script_fetcher|, |dhcp_proxy_script_fetcher| and
-  // |net_log| must remain valid for the lifespan of InitProxyResolver.
+  // |resolver|, |proxy_script_fetcher| and |net_log| must remain valid for
+  // the lifespan of InitProxyResolver.
   InitProxyResolver(ProxyResolver* resolver,
                     ProxyScriptFetcher* proxy_script_fetcher,
-                    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
                     NetLog* net_log);
 
   // Aborts any in-progress request.
@@ -68,23 +63,14 @@ class InitProxyResolver {
            CompletionCallback* callback);
 
  private:
-  // Represents the sources from which we can get PAC files; two types of
-  // auto-detect or a custom URL.
-  struct PacSource {
-    enum Type {
-      WPAD_DHCP,
-      WPAD_DNS,
-      CUSTOM
-    };
-
-    PacSource(Type type, const GURL& url)
-        : type(type), url(url) {}
-
-    Type type;
-    GURL url;  // Empty unless |type == PAC_SOURCE_CUSTOM|.
+  struct PacURL {
+    PacURL(bool auto_detect, const GURL& url)
+        : auto_detect(auto_detect), url(url) {}
+    bool auto_detect;
+    GURL url;
   };
 
-  typedef std::vector<PacSource> PacSourceList;
+  typedef std::vector<PacURL> UrlList;
 
   enum State {
     STATE_NONE,
@@ -97,7 +83,7 @@ class InitProxyResolver {
   };
 
   // Returns ordered list of PAC urls to try for |config|.
-  PacSourceList BuildPacSourcesFallbackList(const ProxyConfig& config) const;
+  UrlList BuildPacUrlsFallbackList(const ProxyConfig& config) const;
 
   void OnIOCompletion(int result);
   int DoLoop(int result);
@@ -113,20 +99,17 @@ class InitProxyResolver {
   int DoSetPacScriptComplete(int result);
 
   // Tries restarting using the next fallback PAC URL:
-  // |pac_sources_[++current_pac_source_index]|.
+  // |pac_urls_[++current_pac_url_index]|.
   // Returns OK and rewinds the state machine when there
   // is something to try, otherwise returns |error|.
-  int TryToFallbackPacSource(int error);
+  int TryToFallbackPacUrl(int error);
 
   // Gets the initial state (we skip fetching when the
   // ProxyResolver doesn't |expect_pac_bytes()|.
   State GetStartState() const;
 
-  NetLogStringParameter* CreateNetLogParameterAndDetermineURL(
-      const PacSource& pac_source, GURL* effective_pac_url);
-
   // Returns the current PAC URL we are fetching/testing.
-  const PacSource& current_pac_source() const;
+  const PacURL& current_pac_url() const;
 
   void OnWaitTimerFired();
   void DidCompleteInit();
@@ -134,12 +117,11 @@ class InitProxyResolver {
 
   ProxyResolver* resolver_;
   ProxyScriptFetcher* proxy_script_fetcher_;
-  DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher_;
 
   CompletionCallbackImpl<InitProxyResolver> io_callback_;
   CompletionCallback* user_callback_;
 
-  size_t current_pac_source_index_;
+  size_t current_pac_url_index_;
 
   // Filled when the PAC script fetch completes.
   string16 pac_script_;
@@ -148,7 +130,7 @@ class InitProxyResolver {
   // (i.e. fallback to direct connections are prohibited).
   bool pac_mandatory_;
 
-  PacSourceList pac_sources_;
+  UrlList pac_urls_;
   State next_state_;
 
   BoundNetLog net_log_;

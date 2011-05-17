@@ -402,11 +402,6 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
-// Enables retrieval of PAC URLs from DHCP as per the WPAD standard. Note
-// that this feature is not supported on all platforms, and using the flag
-// is a no-op on such platforms.
-const char kEnableDhcpWpad[]                = "enable-dhcp-wpad";
-
 // Enable DNS side checking of certificates. Still experimental, should only
 // be used by developers at the current time.
 const char kEnableDNSCertProvenanceChecking[] =

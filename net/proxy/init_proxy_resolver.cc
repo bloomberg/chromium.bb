@@ -10,8 +10,6 @@
 #include "base/string_util.h"
 #include "net/base/net_log.h"
 #include "net/base/net_errors.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
-#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_script_fetcher.h"
@@ -32,18 +30,15 @@ namespace net {
 // http://code.google.com/p/chromium/issues/detail?id=18575#c20
 static const char kWpadUrl[] = "http://wpad/wpad.dat";
 
-InitProxyResolver::InitProxyResolver(
-    ProxyResolver* resolver,
-    ProxyScriptFetcher* proxy_script_fetcher,
-    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
-    NetLog* net_log)
+InitProxyResolver::InitProxyResolver(ProxyResolver* resolver,
+                                     ProxyScriptFetcher* proxy_script_fetcher,
+                                     NetLog* net_log)
     : resolver_(resolver),
       proxy_script_fetcher_(proxy_script_fetcher),
-      dhcp_proxy_script_fetcher_(dhcp_proxy_script_fetcher),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_callback_(
           this, &InitProxyResolver::OnIOCompletion)),
       user_callback_(NULL),
-      current_pac_source_index_(0u),
+      current_pac_url_index_(0u),
       pac_mandatory_(false),
       next_state_(STATE_NONE),
       net_log_(BoundNetLog::Make(
@@ -75,8 +70,8 @@ int InitProxyResolver::Init(const ProxyConfig& config,
 
   pac_mandatory_ = config.pac_mandatory();
 
-  pac_sources_ = BuildPacSourcesFallbackList(config);
-  DCHECK(!pac_sources_.empty());
+  pac_urls_ = BuildPacUrlsFallbackList(config);
+  DCHECK(!pac_urls_.empty());
 
   next_state_ = STATE_WAIT;
 
@@ -90,19 +85,16 @@ int InitProxyResolver::Init(const ProxyConfig& config,
 }
 
 // Initialize the fallback rules.
-// (1) WPAD (DHCP).
-// (2) WPAD (DNS).
-// (3) Custom PAC URL.
-InitProxyResolver::PacSourceList InitProxyResolver::BuildPacSourcesFallbackList(
+// (1) WPAD (DNS).
+// (2) Custom PAC URL.
+InitProxyResolver::UrlList InitProxyResolver::BuildPacUrlsFallbackList(
     const ProxyConfig& config) const {
-  PacSourceList pac_sources;
-  if (config.auto_detect()) {
-    pac_sources.push_back(PacSource(PacSource::WPAD_DHCP, GURL()));
-    pac_sources.push_back(PacSource(PacSource::WPAD_DNS, GURL()));
-  }
+  UrlList pac_urls;
+  if (config.auto_detect())
+    pac_urls.push_back(PacURL(true, GURL()));
   if (config.has_pac_url())
-    pac_sources.push_back(PacSource(PacSource::CUSTOM, config.pac_url()));
-  return pac_sources;
+    pac_urls.push_back(PacURL(false, config.pac_url()));
+  return pac_urls;
 }
 
 void InitProxyResolver::OnIOCompletion(int result) {
@@ -185,32 +177,24 @@ int InitProxyResolver::DoFetchPacScript() {
 
   next_state_ = STATE_FETCH_PAC_SCRIPT_COMPLETE;
 
-  const PacSource& pac_source = current_pac_source();
+  const PacURL& pac_url = current_pac_url();
 
-  GURL effective_pac_url;
-  NetLogStringParameter* log_parameter =
-      CreateNetLogParameterAndDetermineURL(pac_source, &effective_pac_url);
+  const GURL effective_pac_url =
+      pac_url.auto_detect ? GURL(kWpadUrl) : pac_url.url;
 
   net_log_.BeginEvent(
       NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-      make_scoped_refptr(log_parameter));
-
-  if (pac_source.type == PacSource::WPAD_DHCP) {
-    if (!dhcp_proxy_script_fetcher_) {
-      net_log_.AddEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_HAS_NO_FETCHER, NULL);
-      return ERR_UNEXPECTED;
-    }
-
-    return dhcp_proxy_script_fetcher_->Fetch(&pac_script_, &io_callback_);
-  }
+      make_scoped_refptr(new NetLogStringParameter(
+          "url", effective_pac_url.possibly_invalid_spec())));
 
   if (!proxy_script_fetcher_) {
     net_log_.AddEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_HAS_NO_FETCHER, NULL);
     return ERR_UNEXPECTED;
   }
 
-  return proxy_script_fetcher_->Fetch(
-      effective_pac_url, &pac_script_, &io_callback_);
+  return proxy_script_fetcher_->Fetch(effective_pac_url,
+                                      &pac_script_,
+                                      &io_callback_);
 }
 
 int InitProxyResolver::DoFetchPacScriptComplete(int result) {
@@ -219,7 +203,7 @@ int InitProxyResolver::DoFetchPacScriptComplete(int result) {
   net_log_.EndEventWithNetErrorCode(
       NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT, result);
   if (result != OK)
-    return TryToFallbackPacSource(result);
+    return TryToFallbackPacUrl(result);
 
   next_state_ = STATE_SET_PAC_SCRIPT;
   return result;
@@ -228,7 +212,7 @@ int InitProxyResolver::DoFetchPacScriptComplete(int result) {
 int InitProxyResolver::DoSetPacScript() {
   net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, NULL);
 
-  const PacSource& pac_source = current_pac_source();
+  const PacURL& pac_url = current_pac_url();
 
   next_state_ = STATE_SET_PAC_SCRIPT_COMPLETE;
 
@@ -237,9 +221,9 @@ int InitProxyResolver::DoSetPacScript() {
   if (resolver_->expects_pac_bytes()) {
     script_data = ProxyResolverScriptData::FromUTF16(pac_script_);
   } else {
-    script_data = pac_source.type == PacSource::CUSTOM ?
-        ProxyResolverScriptData::FromURL(pac_source.url) :
-        ProxyResolverScriptData::ForAutoDetect();
+    script_data = pac_url.auto_detect ?
+        ProxyResolverScriptData::ForAutoDetect() :
+        ProxyResolverScriptData::FromURL(pac_url.url);
   }
 
   return resolver_->SetPacScript(script_data, &io_callback_);
@@ -249,59 +233,39 @@ int InitProxyResolver::DoSetPacScriptComplete(int result) {
   net_log_.EndEventWithNetErrorCode(
       NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, result);
   if (result != OK)
-    return TryToFallbackPacSource(result);
+    return TryToFallbackPacUrl(result);
 
   // Let the caller know which automatic setting we ended up initializing the
   // resolver for (there may have been multiple fallbacks to choose from.)
   if (effective_config_) {
-    if (current_pac_source().type == PacSource::CUSTOM) {
+    if (current_pac_url().auto_detect && resolver_->expects_pac_bytes()) {
       *effective_config_ =
-          ProxyConfig::CreateFromCustomPacURL(current_pac_source().url);
-      effective_config_->set_pac_mandatory(pac_mandatory_);
+          ProxyConfig::CreateFromCustomPacURL(GURL(kWpadUrl));
+    } else if (current_pac_url().auto_detect) {
+      *effective_config_ = ProxyConfig::CreateAutoDetect();
     } else {
-      if (resolver_->expects_pac_bytes()) {
-        GURL auto_detected_url;
-
-        switch (current_pac_source().type) {
-          case PacSource::WPAD_DHCP:
-            auto_detected_url = dhcp_proxy_script_fetcher_->GetPacURL();
-            break;
-
-          case PacSource::WPAD_DNS:
-            auto_detected_url = GURL(kWpadUrl);
-            break;
-
-          default:
-            NOTREACHED();
-        }
-
-        *effective_config_ =
-            ProxyConfig::CreateFromCustomPacURL(auto_detected_url);
-      } else {
-        // The resolver does its own resolution so we cannot know the
-        // URL. Just do the best we can and state that the configuration
-        // is to auto-detect proxy settings.
-        *effective_config_ = ProxyConfig::CreateAutoDetect();
-      }
+      *effective_config_ =
+          ProxyConfig::CreateFromCustomPacURL(current_pac_url().url);
+      effective_config_->set_pac_mandatory(pac_mandatory_);
     }
   }
 
   return result;
 }
 
-int InitProxyResolver::TryToFallbackPacSource(int error) {
+int InitProxyResolver::TryToFallbackPacUrl(int error) {
   DCHECK_LT(error, 0);
 
-  if (current_pac_source_index_ + 1 >= pac_sources_.size()) {
+  if (current_pac_url_index_ + 1 >= pac_urls_.size()) {
     // Nothing left to fall back to.
     return error;
   }
 
   // Advance to next URL in our list.
-  ++current_pac_source_index_;
+  ++current_pac_url_index_;
 
   net_log_.AddEvent(
-      NetLog::TYPE_INIT_PROXY_RESOLVER_FALLING_BACK_TO_NEXT_PAC_SOURCE, NULL);
+      NetLog::TYPE_INIT_PROXY_RESOLVER_FALLING_BACK_TO_NEXT_PAC_URL, NULL);
 
   next_state_ = GetStartState();
 
@@ -313,34 +277,9 @@ InitProxyResolver::State InitProxyResolver::GetStartState() const {
       STATE_FETCH_PAC_SCRIPT : STATE_SET_PAC_SCRIPT;
 }
 
-NetLogStringParameter* InitProxyResolver::CreateNetLogParameterAndDetermineURL(
-    const PacSource& pac_source,
-    GURL* effective_pac_url) {
-  DCHECK(effective_pac_url);
-
-  std::string source_field;
-  switch (pac_source.type) {
-    case PacSource::WPAD_DHCP:
-      source_field = "WPAD DHCP";
-      break;
-    case PacSource::WPAD_DNS:
-      *effective_pac_url = GURL(kWpadUrl);
-      source_field = "WPAD DNS: ";
-      source_field += effective_pac_url->possibly_invalid_spec();
-      break;
-    case PacSource::CUSTOM:
-      *effective_pac_url = pac_source.url;
-      source_field = "Custom PAC URL: ";
-      source_field += effective_pac_url->possibly_invalid_spec();
-      break;
-  }
-  return new NetLogStringParameter("source", source_field);
-}
-
-const InitProxyResolver::PacSource&
-    InitProxyResolver::current_pac_source() const {
-  DCHECK_LT(current_pac_source_index_, pac_sources_.size());
-  return pac_sources_[current_pac_source_index_];
+const InitProxyResolver::PacURL& InitProxyResolver::current_pac_url() const {
+  DCHECK_LT(current_pac_url_index_, pac_urls_.size());
+  return pac_urls_[current_pac_url_index_];
 }
 
 void InitProxyResolver::OnWaitTimerFired() {
