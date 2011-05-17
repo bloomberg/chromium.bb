@@ -100,8 +100,10 @@ class FileSystemOperation {
   FileSystemOperationContext* file_system_operation_context() {
     return &file_system_operation_context_;
   }
+
   friend class FileSystemOperationTest;
   friend class FileSystemOperationWriteTest;
+  friend class FileWriterDelegateTest;
 
   bool GetUsageAndQuotaThenCallback(
       const GURL& origin_url,

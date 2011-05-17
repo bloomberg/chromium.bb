@@ -728,8 +728,7 @@ void FileSystemOperation::OnFileOpenedForWrite(
     delete this;
     return;
   }
-  file_writer_delegate_->Start(file.ReleaseValue(), blob_request_.get(),
-      file_system_operation_context_);
+  file_writer_delegate_->Start(file.ReleaseValue(), blob_request_.get());
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForRead(

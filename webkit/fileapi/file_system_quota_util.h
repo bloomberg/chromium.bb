@@ -9,8 +9,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace quota {
 class QuotaManagerProxy;
@@ -25,6 +30,30 @@ namespace fileapi {
 // the thread that the method name implies.
 class FileSystemQuotaUtil {
  public:
+  // Methods of this class can be called on any thread.
+  class Proxy : public base::RefCountedThreadSafe<Proxy> {
+   public:
+    void UpdateOriginUsage(quota::QuotaManagerProxy* proxy,
+                           const GURL& origin_url,
+                           fileapi::FileSystemType type,
+                           int64 delta);
+    void StartUpdateOrigin(const GURL& origin_url,
+                           fileapi::FileSystemType type);
+    void EndUpdateOrigin(const GURL& origin_url,
+                         fileapi::FileSystemType type);
+
+   private:
+    friend class FileSystemQuotaUtil;
+    friend class base::RefCountedThreadSafe<Proxy>;
+    Proxy(FileSystemQuotaUtil* quota_handler,
+          base::MessageLoopProxy* file_thread);
+    ~Proxy();
+
+    FileSystemQuotaUtil* quota_util_;  // Accessed only on the FILE thread.
+    scoped_refptr<base::MessageLoopProxy> file_thread_;
+    DISALLOW_COPY_AND_ASSIGN(Proxy);
+  };
+
   // Called by quota client.
   virtual void GetOriginsForTypeOnFileThread(fileapi::FileSystemType type,
                                              std::set<GURL>* origins) = 0;
@@ -63,8 +92,14 @@ class FileSystemQuotaUtil {
   virtual void EndUpdateOriginOnFileThread(const GURL& origin_url,
                                            fileapi::FileSystemType type) = 0;
 
+  Proxy* proxy() { return proxy_.get(); }
+
  protected:
-  virtual ~FileSystemQuotaUtil() {}
+  explicit FileSystemQuotaUtil(base::MessageLoopProxy* file_thread);
+  virtual ~FileSystemQuotaUtil();
+
+ private:
+  scoped_refptr<Proxy> proxy_;
 };
 
 }  // namespace fileapi

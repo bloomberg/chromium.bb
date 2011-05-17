@@ -22,6 +22,7 @@ namespace fileapi {
 
 class FileSystemOperation;
 class FileSystemOperationContext;
+class FileSystemQuotaUtil;
 
 class FileWriterDelegate : public net::URLRequest::Delegate {
  public:
@@ -32,8 +33,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   virtual ~FileWriterDelegate();
 
   void Start(base::PlatformFile file,
-             net::URLRequest* request,
-             const FileSystemOperationContext& context);
+             net::URLRequest* request);
   base::PlatformFile file() {
     return file_;
   }
@@ -50,16 +50,18 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
-  void OnGetFileInfoAndPrepareUsageFile(
+  void OnGetFileInfoAndCallStartUpdate(
       base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info,
-      const FilePath& usage_file_path);
+      const base::PlatformFileInfo& file_info);
   void Read();
   void OnDataReceived(int bytes_read);
   void Write();
   void OnDataWritten(int write_response);
   void OnError(base::PlatformFileError error);
   void OnProgress(int bytes_read, bool done);
+
+  FileSystemOperationContext* file_system_operation_context() const;
+  FileSystemQuotaUtil* quota_util() const;
 
   FileSystemOperation* file_system_operation_;
   base::PlatformFile file_;
@@ -70,7 +72,6 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   int bytes_read_backlog_;
   int bytes_written_;
   int bytes_read_;
-  FilePath usage_file_path_;
   int64 total_bytes_written_;
   int64 allowed_bytes_growth_;
   int64 allowed_bytes_to_write_;

@@ -14,7 +14,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_quota_util.h"
-#include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -25,6 +24,8 @@ class QuotaManagerProxy;
 }
 
 namespace fileapi {
+
+class ObfuscatedFileSystemFileUtil;
 
 // An interface to construct or crack sandboxed filesystem paths.
 // Currently each sandboxed filesystem path looks like (soon will be changed):
@@ -161,6 +162,8 @@ class SandboxMountPointProvider
       fileapi::FileSystemType type) const;
 
   class GetFileSystemRootPathTask;
+
+  friend class FileWriterDelegateTest;
 
   // The path_manager_ isn't owned by this instance; this instance is owned by
   // the path_manager_, and they have the same lifetime.

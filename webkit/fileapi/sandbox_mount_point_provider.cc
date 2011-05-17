@@ -21,6 +21,7 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/obfuscated_file_system_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/quota_manager.h"
@@ -173,7 +174,8 @@ SandboxMountPointProvider::SandboxMountPointProvider(
     FileSystemPathManager* path_manager,
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
     const FilePath& profile_path)
-    : path_manager_(path_manager),
+    : FileSystemQuotaUtil(file_message_loop),
+      path_manager_(path_manager),
       file_message_loop_(file_message_loop),
       base_path_(profile_path.Append(kFileSystemDirectory)),
       sandbox_file_util_(new ObfuscatedFileSystemFileUtil(base_path_)) {

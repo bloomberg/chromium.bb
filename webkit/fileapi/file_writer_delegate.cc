@@ -10,8 +10,9 @@
 #include "net/base/net_errors.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/quota_file_util.h"
 
 namespace fileapi {
@@ -20,16 +21,15 @@ static const int kReadBufSize = 32768;
 
 namespace {
 
-typedef Callback3<base::PlatformFileError /* error code */,
-                  const base::PlatformFileInfo& /* file_info */,
-                  const FilePath& /* usage_file_path */
+typedef Callback2<base::PlatformFileError /* error code */,
+                  const base::PlatformFileInfo& /* file_info */
                   >::Type InitializeTaskCallback;
 
 class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
  public:
   InitializeTask(
       base::PlatformFile file,
-      const FileSystemOperationContext& context,
+      FileSystemOperationContext* context,
       InitializeTaskCallback* callback)
       : origin_message_loop_proxy_(
             base::MessageLoopProxy::CreateForCurrentThread()),
@@ -50,24 +50,21 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   friend class base::RefCountedThreadSafe<InitializeTask>;
 
   void RunCallback() {
-    callback_->Run(error_code_, file_info_, usage_file_path_);
+    callback_->Run(error_code_, file_info_);
     delete callback_;
   }
 
   void ProcessOnTargetThread() {
-    FilePath base_path = context_.file_system_context()->path_manager()->
-        ValidateFileSystemRootAndGetPathOnFileThread(
-            context_.src_origin_url(), context_.src_type(), FilePath(), false);
-    usage_file_path_ = base_path.AppendASCII(
-        FileSystemUsageCache::kUsageFileName);
-    if (!usage_file_path_.empty()) {
-      // Increment the dirty when the Write operation starts.
-      FileSystemUsageCache::IncrementDirty(usage_file_path_);
+    DCHECK(context_->file_system_context());
+    FileSystemQuotaUtil* quota_util = context_->file_system_context()->
+        GetQuotaUtil(context_->src_type());
+    if (quota_util) {
+      DCHECK(quota_util->proxy());
+      quota_util->proxy()->StartUpdateOrigin(
+          context_->src_origin_url(), context_->src_type());
     }
-
     if (!base::GetPlatformFileInfo(file_, &file_info_))
       error_code_ = base::PLATFORM_FILE_ERROR_FAILED;
-
     origin_message_loop_proxy_->PostTask(FROM_HERE, NewRunnableMethod(this,
         &InitializeTask::RunCallback));
   }
@@ -76,11 +73,10 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   base::PlatformFileError error_code_;
 
   base::PlatformFile file_;
-  FileSystemOperationContext context_;
+  FileSystemOperationContext* context_;
   InitializeTaskCallback* callback_;
 
   base::PlatformFileInfo file_info_;
-  FilePath usage_file_path_;
 };
 
 }  // namespace (anonymous)
@@ -107,31 +103,34 @@ FileWriterDelegate::FileWriterDelegate(
 FileWriterDelegate::~FileWriterDelegate() {
 }
 
-void FileWriterDelegate::OnGetFileInfoAndPrepareUsageFile(
+void FileWriterDelegate::OnGetFileInfoAndCallStartUpdate(
     base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info,
-    const FilePath& usage_file_path) {
+    const base::PlatformFileInfo& file_info) {
+  if (error) {
+    OnError(error);
+    return;
+  }
   if (allowed_bytes_growth_ != QuotaFileUtil::kNoLimit)
     allowed_bytes_to_write_ = file_info.size - offset_ + allowed_bytes_growth_;
   else
     allowed_bytes_to_write_ = QuotaFileUtil::kNoLimit;
   file_stream_.reset(new net::FileStream(file_,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
-          base::PLATFORM_FILE_ASYNC));
-  usage_file_path_ = usage_file_path;
+      base::PLATFORM_FILE_ASYNC));
   request_->Start();
 }
 
 void FileWriterDelegate::Start(base::PlatformFile file,
-                               net::URLRequest* request,
-                               const FileSystemOperationContext& context) {
+                               net::URLRequest* request) {
   file_ = file;
   request_ = request;
-  allowed_bytes_growth_ = context.allowed_bytes_growth();
+  allowed_bytes_growth_ =
+      file_system_operation_context()->allowed_bytes_growth();
 
-  scoped_refptr<InitializeTask> relay = new InitializeTask(file_, context,
+  scoped_refptr<InitializeTask> relay = new InitializeTask(
+      file_, file_system_operation_context(),
       callback_factory_.NewCallback(
-          &FileWriterDelegate::OnGetFileInfoAndPrepareUsageFile));
+          &FileWriterDelegate::OnGetFileInfoAndCallStartUpdate));
   relay->Start(proxy_, FROM_HERE);
 }
 
@@ -252,20 +251,23 @@ void FileWriterDelegate::OnError(base::PlatformFileError error) {
   request_->set_delegate(NULL);
   request_->Cancel();
 
-  if (!usage_file_path_.empty()) {
-    // Decrement the dirty when the Write operation finishes.
-    proxy_->PostTask(FROM_HERE, NewRunnableFunction(
-        &FileSystemUsageCache::DecrementDirty, usage_file_path_));
+  if (quota_util()) {
+    quota_util()->proxy()->EndUpdateOrigin(
+        file_system_operation_context()->src_origin_url(),
+        file_system_operation_context()->src_type());
   }
+
   file_system_operation_->DidWrite(error, 0, true);
 }
 
 void FileWriterDelegate::OnProgress(int bytes_read, bool done) {
   DCHECK(bytes_read + bytes_read_backlog_ >= bytes_read_backlog_);
-  if (bytes_read > 0 && !usage_file_path_.empty()) {
-    proxy_->PostTask(FROM_HERE, NewRunnableFunction(
-        &FileSystemUsageCache::AtomicUpdateUsageByDelta,
-        usage_file_path_, bytes_read));
+  if (bytes_read > 0 && quota_util()) {
+    quota_util()->proxy()->UpdateOriginUsage(
+        file_system_operation_->file_system_context()->quota_manager_proxy(),
+        file_system_operation_context()->src_origin_url(),
+        file_system_operation_context()->src_type(),
+        bytes_read);
   }
   static const int kMinProgressDelayMS = 200;
   base::Time currentTime = base::Time::Now();
@@ -275,16 +277,32 @@ void FileWriterDelegate::OnProgress(int bytes_read, bool done) {
     bytes_read += bytes_read_backlog_;
     last_progress_event_time_ = currentTime;
     bytes_read_backlog_ = 0;
-    if (done && !usage_file_path_.empty()) {
-      // Decrement the dirty when the Write operation finishes.
-      proxy_->PostTask(FROM_HERE, NewRunnableFunction(
-          &FileSystemUsageCache::DecrementDirty, usage_file_path_));
+    if (done && quota_util()) {
+      if (quota_util()) {
+        quota_util()->proxy()->EndUpdateOrigin(
+            file_system_operation_context()->src_origin_url(),
+            file_system_operation_context()->src_type());
+      }
     }
-    file_system_operation_->DidWrite(
-        base::PLATFORM_FILE_OK, bytes_read, done);
+    file_system_operation_->DidWrite(base::PLATFORM_FILE_OK, bytes_read, done);
     return;
   }
   bytes_read_backlog_ += bytes_read;
+}
+
+FileSystemOperationContext*
+FileWriterDelegate::file_system_operation_context() const {
+  DCHECK(file_system_operation_);
+  DCHECK(file_system_operation_->file_system_operation_context());
+  return file_system_operation_->file_system_operation_context();
+}
+
+FileSystemQuotaUtil* FileWriterDelegate::quota_util() const {
+  DCHECK(file_system_operation_);
+  DCHECK(file_system_operation_->file_system_context());
+  DCHECK(file_system_operation_->file_system_operation_context());
+  return file_system_operation_->file_system_context()->GetQuotaUtil(
+      file_system_operation_context()->src_type());
 }
 
 }  // namespace fileapi
