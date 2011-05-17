@@ -515,19 +515,17 @@ LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
     SetMouseCapture();
   }
 
-  /* TODO(beng): Fix the standard non-client over-painting bug. This code
-                 doesn't work but identifies the problem.
-  if (message == WM_NCLBUTTONDOWN && !IsMsgHandled()) {
+  if (message == WM_NCLBUTTONDOWN) {
     // WindowWin::OnNCLButtonDown set the message as unhandled. This normally
     // means WidgetWin::ProcessWindowMessage will pass it to
     // DefWindowProc. Sadly, DefWindowProc for WM_NCLBUTTONDOWN does weird
     // non-client painting, so we need to call it directly here inside a
     // scoped update lock.
     ScopedRedrawLock lock(this);
+    WidgetWin::OnMouseRange(message, w_param, l_param);
     DefWindowProc(GetNativeView(), WM_NCLBUTTONDOWN, w_param, l_param);
     SetMsgHandled(TRUE);
   }
-  */
 
   WidgetWin::OnMouseRange(message, w_param, l_param);
   return 0;
@@ -703,6 +701,14 @@ LRESULT WindowWin::OnNCUAHDrawFrame(UINT msg, WPARAM w_param,
   // an explanation about why we need to handle this message.
   SetMsgHandled(!delegate_->IsUsingNativeFrame());
   return 0;
+}
+
+LRESULT WindowWin::OnSetCursor(UINT msg,
+                               WPARAM w_param,
+                               LPARAM l_param) {
+  // This shouldn't hurt even if we're using the native frame.
+  ScopedRedrawLock lock(this);
+  return DefWindowProc(GetNativeView(), msg, w_param, l_param);
 }
 
 LRESULT WindowWin::OnSetIcon(UINT size_type, HICON new_icon) {

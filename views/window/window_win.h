@@ -120,6 +120,9 @@ class WindowWin : public WidgetWin,
   virtual LRESULT OnNCUAHDrawFrame(UINT msg,
                                    WPARAM w_param,
                                    LPARAM l_param) OVERRIDE;
+  virtual LRESULT OnSetCursor(UINT message,
+                              WPARAM w_param,
+                              LPARAM l_param) OVERRIDE;
   virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon) OVERRIDE;
   virtual LRESULT OnSetText(const wchar_t* text) OVERRIDE;
   virtual void OnSettingChange(UINT flags, const wchar_t* section) OVERRIDE;

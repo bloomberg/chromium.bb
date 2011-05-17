@@ -873,6 +873,11 @@ LRESULT WidgetWin::OnReflectedMessage(UINT msg,
   return 0;
 }
 
+LRESULT WidgetWin::OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
 void WidgetWin::OnSetFocus(HWND focused_window) {
   delegate_->OnNativeFocus(focused_window);
   if (input_method_.get())

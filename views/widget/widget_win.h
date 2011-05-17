@@ -244,6 +244,7 @@ class WidgetWin : public ui::WindowImpl,
     MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseRange)
     MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnMouseRange)
+    MESSAGE_HANDLER_EX(WM_SETCURSOR, OnSetCursor);
 
     // Key events.
     MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
@@ -358,6 +359,7 @@ class WidgetWin : public ui::WindowImpl,
   virtual void OnPaint(HDC dc);
   virtual LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
   virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param);
+  virtual LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnSetFocus(HWND focused_window);
   virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon);
   virtual LRESULT OnSetText(const wchar_t* text);
