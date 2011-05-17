@@ -71,6 +71,10 @@ sources = ['access.c',
            'waitpid.c',
            ]
 
+if env.Bit('bitcode'):
+  sources.append('misc_pnacl.c')
+
+# TODO(robertm): this is likely not necessary anymore, double check
 if env.Bit('target_arm'):
   sources.append('raise.c')
 
