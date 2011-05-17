@@ -313,15 +313,20 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
   if (is_disabled_)
     return false;
 
-  if (!create_if_needed && !file_util::PathExists(db_file_path_))
+  bool in_memory_only = db_file_path_.empty();
+  if (!create_if_needed &&
+      (in_memory_only || !file_util::PathExists(db_file_path_))) {
     return false;
+  }
 
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
 
   bool opened = false;
-  if (!file_util::CreateDirectory(db_file_path_.DirName())) {
-    LOG(ERROR) << "Failed to create quota database directory.";
+  if (in_memory_only) {
+    opened = db_->OpenInMemory();
+  } else if (!file_util::CreateDirectory(db_file_path_.DirName())) {
+      LOG(ERROR) << "Failed to create quota database directory.";
   } else {
     opened = db_->Open(db_file_path_);
     if (opened)

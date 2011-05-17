@@ -27,6 +27,7 @@ namespace quota {
 // All the methods of this class must run on the DB thread.
 class QuotaDatabase {
  public:
+  // If 'path' is empty, an in memory database will be used.
   explicit QuotaDatabase(const FilePath& path);
   ~QuotaDatabase();
 
@@ -68,11 +69,7 @@ class QuotaDatabase {
   bool is_recreating_;
   bool is_disabled_;
 
-  FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, LazyOpen);
-  FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, HostQuota);
-  FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, GlobalQuota);
-  FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, OriginLastAccessTimeLRU);
-
+  friend class QuotaDatabaseTest;
   DISALLOW_COPY_AND_ASSIGN(QuotaDatabase);
 };
 

@@ -26,23 +26,28 @@ namespace {
 // Returns the initial size of the temporary storage quota.
 // (This just gives a default initial size; once its initial size is determined
 // it won't automatically be adjusted.)
-int64 GetInitialTemporaryStorageQuotaSize(const FilePath& path) {
+int64 GetInitialTemporaryStorageQuotaSize(const FilePath& path,
+                                          bool is_incognito) {
   int64 free_space = base::SysInfo::AmountOfFreeDiskSpace(path);
+
   // Returns 0 (disables the temporary storage) if the available space is
   // less than the twice of the default quota size.
-  if (free_space < QuotaManager::kTemporaryStorageQuotaDefaultSize * 2) {
+  if (free_space < QuotaManager::kTemporaryStorageQuotaDefaultSize * 2)
     return 0;
-  }
+
+  if (is_incognito)
+    return QuotaManager::kIncognitoDefaultTemporaryQuota;
+
   // Returns the default quota size while it is more than 5% of the
   // available space.
-  if (free_space < QuotaManager::kTemporaryStorageQuotaDefaultSize * 20) {
+  if (free_space < QuotaManager::kTemporaryStorageQuotaDefaultSize * 20)
     return QuotaManager::kTemporaryStorageQuotaDefaultSize;
-  }
+
   // Returns the 5% of the available space while it does not exceed the
   // maximum quota size (1GB).
-  if (free_space < QuotaManager::kTemporaryStorageQuotaMaxSize * 20) {
+  if (free_space < QuotaManager::kTemporaryStorageQuotaMaxSize * 20)
     return free_space / 20;
-  }
+
   return QuotaManager::kTemporaryStorageQuotaMaxSize;
 }
 
@@ -55,7 +60,7 @@ const int64 QuotaManager::kTemporaryStorageQuotaDefaultSize = 50 * MBytes;
 const int64 QuotaManager::kTemporaryStorageQuotaMaxSize = 1 * 1024 * MBytes;
 const char QuotaManager::kDatabaseName[] = "QuotaManager";
 
-const int64 QuotaManager::kIncognitoDefaultTemporaryQuota = 5 * MBytes;
+const int64 QuotaManager::kIncognitoDefaultTemporaryQuota = 50 * MBytes;
 
 // This class is for posting GetUsage/GetQuota tasks, gathering
 // results and dispatching GetAndQuota callbacks.
@@ -309,9 +314,11 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
       QuotaManager* manager,
       QuotaDatabase* database,
       scoped_refptr<base::MessageLoopProxy> db_message_loop,
-      const FilePath& profile_path)
+      const FilePath& profile_path,
+      bool is_incognito)
       : DatabaseTaskBase(manager, database, db_message_loop),
         profile_path_(profile_path),
+        is_incognito_(is_incognito),
         temporary_storage_quota_(-1) {
   }
 
@@ -323,7 +330,7 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
       // If the temporary storage quota size has not been initialized,
       // make up one and store it in the database.
       temporary_storage_quota_ = GetInitialTemporaryStorageQuotaSize(
-          profile_path_);
+          profile_path_, is_incognito_);
       if (!database()->SetGlobalQuota(
               kStorageTypeTemporary, temporary_storage_quota_)) {
         set_db_disabled(true);
@@ -338,6 +345,7 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
 
  private:
   FilePath profile_path_;
+  bool is_incognito_;
   int64 temporary_storage_quota_;
 };
 
@@ -532,14 +540,6 @@ void QuotaManager::GetUsageAndQuota(
     GetUsageAndQuotaCallback* callback_ptr) {
   scoped_ptr<GetUsageAndQuotaCallback> callback(callback_ptr);
   LazyInitialize();
-  if (is_incognito_) {
-    int64 quota = 0;
-    if (type == kStorageTypeTemporary)
-      quota = clients_.size() * kIncognitoDefaultTemporaryQuota;
-    // TODO(kinuko): This does not return useful usage value for now.
-    callback->Run(kQuotaStatusOk, 0, quota);
-    return;
-  }
 
   if (type == kStorageTypeUnknown) {
     // Quota only supports temporary/persistent types.
@@ -641,10 +641,9 @@ void QuotaManager::LazyInitialize() {
     return;
   }
 
-  if (is_incognito_)
-    return;
-
-  database_.reset(new QuotaDatabase(profile_path_.AppendASCII(kDatabaseName)));
+  // Use an empty path to open an in-memory only databse for incognito.
+  database_.reset(new QuotaDatabase(is_incognito_ ? FilePath() :
+      profile_path_.AppendASCII(kDatabaseName)));
 
   temporary_usage_tracker_.reset(
       new UsageTracker(clients_, kStorageTypeTemporary));
@@ -652,7 +651,8 @@ void QuotaManager::LazyInitialize() {
       new UsageTracker(clients_, kStorageTypePersistent));
 
   scoped_refptr<InitializeTask> task(
-      new InitializeTask(this, database_.get(), db_thread_, profile_path_));
+      new InitializeTask(this, database_.get(), db_thread_,
+                         profile_path_, is_incognito_));
   task->Start();
 }
 
@@ -672,9 +672,7 @@ void QuotaManager::NotifyStorageModified(
     QuotaClient::ID client_id,
     const GURL& origin, StorageType type, int64 delta) {
   LazyInitialize();
-  UsageTracker* tracker = GetUsageTracker(type);
-  DCHECK(tracker);
-  tracker->UpdateUsageCache(client_id, origin, delta);
+  GetUsageTracker(type)->UpdateUsageCache(client_id, origin, delta);
 }
 
 void QuotaManager::NotifyOriginInUse(const GURL& origin) {
