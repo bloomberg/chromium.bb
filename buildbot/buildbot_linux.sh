@@ -50,6 +50,10 @@ echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 
+echo @@@BUILD_STEP cleanup_temp@@@
+ls -al /tmp/
+rm -rf /tmp/* /tmp/.[!.]* || true
+
 # Skip over hooks and partial_sdk when run inside the toolchain build
 # as the toolchain takes care or the clobber, hooks aren't needed, and
 # partial_sdk really shouldn't be needed.

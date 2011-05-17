@@ -19,11 +19,15 @@ set -e
 set -u
 
 
-echo @@@BUILD_STEP gclient_runhooks@@@
-gclient runhooks --force
-
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out toolchain compiler hg ../xcodebuild
+
+echo @@@BUILD_STEP cleanup_temp@@@
+ls -al /tmp/
+rm -rf /tmp/* /tmp/.[!.]* || true
+
+echo @@@BUILD_STEP gclient_runhooks@@@
+gclient runhooks --force
 
 echo @@@BUILD_STEP partial_sdk@@@
 ./scons --verbose --mode=nacl_extra_sdk platform=x86-32 --download \

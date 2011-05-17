@@ -7,11 +7,11 @@ echo on
 set BITS=32
 set VCBITS=x86
 
-call buildbot\msvs_env.bat %BITS%
+:: Picking out drive letter on which the build is happening so we can use it
+:: for the temp directory.
+set BUILD_DRIVE=%PATH:~0,1%
 
-echo @@@BUILD_STEP gclient_runhooks@@@
-cmd /c gclient runhooks
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+call buildbot\msvs_env.bat %BITS%
 
 echo @@@BUILD_STEP clobber@@@
 rd /s /q scons-out ^
@@ -19,6 +19,26 @@ rd /s /q scons-out ^
  & rd /s /q build\Debug build\Release ^
  & rd /s /q build\Debug-Win32 build\Release-Win32 ^
  & rd /s /q build\Debug-x64 build\Release-x64
+
+echo @@@BUILD_STEP cleanup_temp@@@
+:: Selecting a temp directory on the same drive as the build.
+:: Many of our bots have tightly packed C: drives, but plentiful E: drives.
+set OLD_TEMP=%TEMP%
+set TEMP=%BUILD_DRIVE%:\temp
+set TMP=%TEMP%
+mkdir %TEMP%
+:: Safety check.
+if "%OLD_TEMP%" equ "" goto SkipClean
+:: Cleaning old temp directory to clear up all the nearly full bots out there.
+del /S /Q "%OLD_TEMP%\*"
+for /D %%I in ("%OLD_TEMP%\*") do rmdir /S /Q %%I
+:: Cleaning new temp directory so we don't overflow in the future.
+del /S /Q "%TEMP%\*"
+for /D %%I in ("%TEMP%\*") do rmdir /S /Q %%I
+
+echo @@@BUILD_STEP gclient_runhooks@@@
+cmd /c gclient runhooks
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo @@@BUILD_STEP partial_sdk@@@
 call scons.bat --verbose --mode=nacl_extra_sdk platform=x86-%BITS% ^
