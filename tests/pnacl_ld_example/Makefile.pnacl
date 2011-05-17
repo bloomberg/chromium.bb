@@ -48,10 +48,7 @@ fortytwo2.bc:  fortytwo2.c
 	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
 
 ######################################################################
-LD_X86_ARGS= --pnacl-driver-set-WHICH_LD=GOLD
-# http://code.google.com/p/nativeclient/issues/detail?id=1531
-# uncomment this for BFD linking
-# LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_X8632=ld_script_x86_32_shared
+LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_X8632=ld_script_x86_32_shared
 LLC_X86_ARGS= --add-llc-option -sfi-x86-jmp-mask=-1 
 X86_FLAGS= $(DEBUG_FLAGS) $(LD_X86_ARGS) $(LLC_X86_ARGS)
 
@@ -85,10 +82,10 @@ run2.x86-32: main2.x86-32
 	echo "success"
 
 ######################################################################
-LD_ARM_ARGS= --pnacl-driver-set-WHICH_LD=GOLD
+LD_ARM_ARGS= --pnacl-driver-set-WHICH_LD=GOLD  --pnacl-driver-set-MC_DIRECT=0
 # http://code.google.com/p/nativeclient/issues/detail?id=1531
 # uncomment this for BFD linking
-# LD_ARM_ARGS= --pnacl-driver-set-LD_SCRIPT_ARM=ld_script_arm_shared
+#LD_ARM_ARGS= --pnacl-driver-set-LD_SCRIPT_ARM=ld_script_arm_shared --pnacl-driver-set-MC_DIRECT=0
 LLC_ARM_ARGS= --add-llc-option -sfi-zero-mask
 ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 

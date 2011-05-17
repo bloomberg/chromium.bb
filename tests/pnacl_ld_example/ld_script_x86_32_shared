@@ -1,3 +1,5 @@
+/* NOTE: this file was adapted from: */
+/* toolchain/linux_x86/nacl64/lib/32/ldscripts/elf_nacl.xs */
 /* Script for ld --shared: link shared library */
 OUTPUT_FORMAT("elf32-nacl", "elf32-nacl",
 	      "elf32-nacl")
@@ -15,7 +17,9 @@ PHDRS
 SECTIONS
 {
   /* ELF headers are not included in any PT_LOAD segment */
-  . = SEGMENT_START("text", 0);
+  /* @LOCALMOD: this does not work in adhoc mode */
+  /* . = SEGMENT_START("text", 0); */
+  . = 256; 
   _begin = .;
   /* The ALIGN(32) instructions below are workarounds.
      TODO(mseaborn): Get the object files to include the correct
@@ -44,7 +48,9 @@ SECTIONS
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
 
-  . = SEGMENT_START("text", 0) + 0x10000000;
+  /* @LOCALMOD: this does not work in adhoc mode */
+  /* . = SEGMENT_START("text", 0) + 0x10000000; */
+  . = ALIGN(65536);
   .note.gnu.build-id : { *(.note.gnu.build-id) } :seg_rodata
   .hash           : { *(.hash) }
   .gnu.hash       : { *(.gnu.hash) }
