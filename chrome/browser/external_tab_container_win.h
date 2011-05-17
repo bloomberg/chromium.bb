@@ -187,7 +187,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   static scoped_refptr<ExternalTabContainer> RemovePendingTab(uintptr_t cookie);
 
   // Overridden from views::WidgetWin:
-  virtual views::Window* GetWindow();
+  virtual views::Window* GetContainingWindow() OVERRIDE;
+  virtual const views::Window* GetContainingWindow() const OVERRIDE;
 
   // Handles the specified |accelerator| being pressed.
   bool AcceleratorPressed(const views::Accelerator& accelerator);

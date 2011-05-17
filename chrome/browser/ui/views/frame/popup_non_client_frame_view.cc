@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
 
+#include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -12,16 +13,12 @@
 #include "views/window/hit_test.h"
 #endif
 
+PopupNonClientFrameView::PopupNonClientFrameView(BrowserFrame* frame) {
+  frame->set_frame_type(views::Window::FRAME_TYPE_FORCE_NATIVE);
+}
+
 gfx::Rect PopupNonClientFrameView::GetBoundsForClientView() const {
   return gfx::Rect(0, 0, width(), height());
-}
-
-bool PopupNonClientFrameView::AlwaysUseCustomFrame() const {
-  return false;
-}
-
-bool PopupNonClientFrameView::AlwaysUseNativeFrame() const {
-  return true;
 }
 
 gfx::Rect PopupNonClientFrameView::GetWindowBoundsForClientBounds(

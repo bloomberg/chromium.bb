@@ -65,6 +65,8 @@ AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
   DCHECK(browser_view->ShouldShowWindowIcon());
   DCHECK(browser_view->ShouldShowWindowTitle());
 
+  frame_->set_frame_type(views::Window::FRAME_TYPE_FORCE_CUSTOM);
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR));
@@ -122,14 +124,6 @@ gfx::Size AppPanelBrowserFrameView::GetMinimumSize() {
 
 gfx::Rect AppPanelBrowserFrameView::GetBoundsForClientView() const {
   return client_view_bounds_;
-}
-
-bool AppPanelBrowserFrameView::AlwaysUseCustomFrame() const {
-  return true;
-}
-
-bool AppPanelBrowserFrameView::AlwaysUseNativeFrame() const {
-  return frame_->AlwaysUseNativeFrame();
 }
 
 gfx::Rect AppPanelBrowserFrameView::GetWindowBoundsForClientBounds(

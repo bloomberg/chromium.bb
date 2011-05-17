@@ -66,21 +66,6 @@ void NonClientView::UpdateFrame() {
   frame_->UpdateFrameAfterFrameChange();
 }
 
-bool NonClientView::UseNativeFrame() const {
-  if (frame_view_.get()) {
-    // The frame view may always require a native frame, e.g. popups on Vista+
-    // when themes are active.
-    if (frame_view_->AlwaysUseNativeFrame())
-      return true;
-
-    // The frame view may always require a custom frame, e.g. Constrained
-    // Windows.
-    if (frame_view_->AlwaysUseCustomFrame())
-      return false;
-  }
-  return frame_->ShouldUseNativeFrame();
-}
-
 void NonClientView::DisableInactiveRendering(bool disable) {
   frame_view_->DisableInactiveRendering(disable);
 }
@@ -191,14 +176,6 @@ views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, View overrides:
-
-bool NonClientFrameView::AlwaysUseCustomFrame() const {
-  return false;
-}
-
-bool NonClientFrameView::AlwaysUseNativeFrame() const {
-  return false;
-}
 
 bool NonClientFrameView::HitTest(const gfx::Point& l) const {
   // For the default case, we assume the non-client frame view never overlaps

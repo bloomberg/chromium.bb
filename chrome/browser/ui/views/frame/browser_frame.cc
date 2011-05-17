@@ -69,22 +69,6 @@ void BrowserFrame::UpdateThrobber(bool running) {
   browser_frame_view_->UpdateThrobber(running);
 }
 
-bool BrowserFrame::AlwaysUseNativeFrame() const {
-  // App panel windows draw their own frame.
-  if (browser_view_->IsBrowserTypePanel())
-    return false;
-
-  // We don't theme popup or app windows, so regardless of whether or not a
-  // theme is active for normal browser windows, we don't want to use the custom
-  // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() && ShouldUseNativeFrame())
-    return true;
-
-  // Otherwise, we use the native frame when we're told we should by the theme
-  // provider (e.g. no custom theme is active).
-  return GetThemeProvider()->ShouldUseNativeFrame();
-}
-
 views::View* BrowserFrame::GetFrameView() const {
   return browser_frame_view_;
 }
@@ -120,7 +104,7 @@ views::RootView* BrowserFrame::CreateRootView() {
 
 views::NonClientFrameView* BrowserFrame::CreateFrameViewForWindow() {
 #if defined(OS_WIN)
-  if (AlwaysUseNativeFrame()) {
+  if (ShouldUseNativeFrame()) {
     browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);
   } else {
 #endif

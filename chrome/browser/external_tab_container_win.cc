@@ -932,7 +932,11 @@ bool ExternalTabContainer::DrawInfoBarArrows(int* x) const {
 }
 
 // ExternalTabContainer instances do not have a window.
-views::Window* ExternalTabContainer::GetWindow() {
+views::Window* ExternalTabContainer::GetContainingWindow() {
+  return NULL;
+}
+
+const views::Window* ExternalTabContainer::GetContainingWindow() const {
   return NULL;
 }
 

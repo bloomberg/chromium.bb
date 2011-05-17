@@ -61,11 +61,6 @@ class BrowserFrame : public views::Window {
   // Tells the frame to update the throbber.
   void UpdateThrobber(bool running);
 
-  // Returns true if the window should use the native frame view. This is true
-  // if there are no themes applied on Vista, or if there are themes applied and
-  // this browser window is an app or popup.
-  bool AlwaysUseNativeFrame() const;
-
   // Returns the NonClientFrameView of this frame.
   views::View* GetFrameView() const;
 

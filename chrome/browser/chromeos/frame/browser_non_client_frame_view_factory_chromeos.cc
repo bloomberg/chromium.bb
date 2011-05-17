@@ -13,7 +13,7 @@ namespace browser {
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
   if (browser_view->IsBrowserTypePopup() || browser_view->IsBrowserTypePanel())
-    return new PopupNonClientFrameView();
+    return new PopupNonClientFrameView(frame);
   else
     return new chromeos::BrowserFrameViewChromeos(frame, browser_view);
 }
