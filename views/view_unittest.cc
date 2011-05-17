@@ -1875,4 +1875,26 @@ TEST_F(ViewTest, SetBoundsPaint) {
   EXPECT_EQ(gfx::Rect(10, 10, 40, 40), paint_rect);
 }
 
+TEST_F(ViewTest, Contains) {
+  TestView v1;
+  TestView* v2 = new TestView();
+  TestView* v3 = new TestView();
+
+  v1.AddChildView(v2);
+  v2->AddChildView(v3);
+
+  EXPECT_FALSE(v1.Contains(NULL));
+  EXPECT_TRUE(v1.Contains(&v1));
+  EXPECT_TRUE(v1.Contains(v2));
+  EXPECT_TRUE(v1.Contains(v3));
+  EXPECT_FALSE(v2->Contains(NULL));
+  EXPECT_TRUE(v2->Contains(v2));
+  EXPECT_FALSE(v2->Contains(&v1));
+  EXPECT_TRUE(v2->Contains(v3));
+  EXPECT_FALSE(v3->Contains(NULL));
+  EXPECT_TRUE(v3->Contains(v3));
+  EXPECT_FALSE(v3->Contains(&v1));
+  EXPECT_FALSE(v3->Contains(v2));
+}
+
 }  // namespace views

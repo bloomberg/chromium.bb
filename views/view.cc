@@ -199,11 +199,9 @@ View* View::GetChildViewAt(int index) {
 }
 
 bool View::Contains(const View* view) const {
-  const View* child = view;
-  while (child) {
-    if (child == this)
+  for (const View* v = view; v; v = v->parent_) {
+    if (v == this)
       return true;
-    child = child->parent();
   }
   return false;
 }
