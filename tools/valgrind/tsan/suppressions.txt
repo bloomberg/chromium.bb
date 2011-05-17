@@ -387,18 +387,22 @@
 }
 
 {
-  Missing libsqlite3 symbol
+  bug_82894 Missing libsqlite3 symbol
   ThreadSanitizer:Race
   ...
   obj:*libsqlite3.so*
   obj:*libsqlite3.so*
   obj:*libsqlite3.so*
   obj:*libsqlite3.so*
-  obj:*libsqlite3.so*
-  fun:sdb_GetMetaData
-  fun:sftkdb_HasPasswordSet
+  ...
+  fun:sdb_*
+  ...
+  fun:NSC_*
+  ...
+  fun:PK11_*
   ...
   fun:crypto::::NSSInitSingleton::OpenUserDB
+  fun:crypto::::NSSInitSingleton::OpenTestNSSDB
 }
 
 ############################
