@@ -53,18 +53,6 @@ std::string CreateServerRedirect(const std::string& dest_url) {
   return kServerRedirectBase + dest_url;
 }
 
-// Returns true iff the final status is one in which the prerendered
-// page should prerender correctly. The page still may not be used.
-bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
-  switch (status) {
-    case FINAL_STATUS_USED:
-    case FINAL_STATUS_WINDOW_OPENER:
-      return true;
-    default:
-      return false;
-  }
-}
-
 // PrerenderContents that stops the UI message loop on DidStopLoading().
 class TestPrerenderContents : public PrerenderContents {
  public:
@@ -108,7 +96,6 @@ class TestPrerenderContents : public PrerenderContents {
     // When the PrerenderContents is destroyed, quit the UI message loop.
     // This happens on navigation to used prerendered pages, and soon
     // after cancellation of unused prerendered pages.
-    MessageLoopForUI::current()->RunAllPending();
     MessageLoopForUI::current()->Quit();
   }
 
@@ -126,7 +113,7 @@ class TestPrerenderContents : public PrerenderContents {
   virtual void DidStopLoading() OVERRIDE {
     PrerenderContents::DidStopLoading();
     ++number_of_loads_;
-    if (ShouldRenderPrerenderedPageCorrectly(expected_final_status_) &&
+    if (expected_final_status_ == FINAL_STATUS_USED &&
         number_of_loads_ >= expected_number_of_loads_) {
       MessageLoopForUI::current()->Quit();
     } else if (expected_final_status_ == FINAL_STATUS_RENDERER_CRASHED) {
@@ -297,30 +284,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     NavigateToURLImpl(dest_url_);
   }
 
-  void OpenDestUrlInNewWindowViaJs() const {
-    // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
-
-    bool open_window_result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(JsOpenLinkInNewWindow())",
-        &open_window_result));
-    EXPECT_TRUE(open_window_result);
-  }
-
-  void OpenDestUrlInNewWindowViaClick() const {
-    // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
-
-    bool click_prerendered_link_result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(ClickOpenLinkInNewWindow())",
-        &click_prerendered_link_result));
-    EXPECT_TRUE(click_prerendered_link_result);
-  }
-
   // Should be const but test_server()->GetURL(...) is not const.
   void NavigateToURL(const std::string& dest_html_file) {
     GURL dest_url = test_server()->GetURL(dest_html_file);
@@ -411,23 +374,26 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         static_cast<TestPrerenderContents*>(
             prerender_manager()->FindEntry(dest_url_));
 
-    if (ShouldRenderPrerenderedPageCorrectly(expected_final_status)) {
-      ASSERT_TRUE(prerender_contents != NULL);
-      EXPECT_EQ(FINAL_STATUS_MAX, prerender_contents->final_status());
+    switch (expected_final_status) {
+      case FINAL_STATUS_USED: {
+        ASSERT_TRUE(prerender_contents != NULL);
 
-      if (call_javascript_) {
-        // Check if page behaves as expected while in prerendered state.
-        bool prerender_test_result = false;
-        ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-            prerender_contents->render_view_host_mutable(), L"",
-            L"window.domAutomationController.send(DidPrerenderPass())",
-            &prerender_test_result));
-        EXPECT_TRUE(prerender_test_result);
+        if (call_javascript_) {
+          // Check if page behaves as expected while in prerendered state.
+          bool prerender_test_result = false;
+          ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+              prerender_contents->render_view_host_mutable(), L"",
+              L"window.domAutomationController.send(DidPrerenderPass())",
+              &prerender_test_result));
+          EXPECT_TRUE(prerender_test_result);
+        }
+        break;
       }
-    } else {
-      // In the failure case, we should have removed dest_url_ from the
-      // prerender_manager.
-      EXPECT_TRUE(prerender_contents == NULL);
+      default:
+        // In the failure case, we should have removed dest_url_ from the
+        // prerender_manager.
+        EXPECT_TRUE(prerender_contents == NULL);
+        break;
     }
   }
 
@@ -1114,28 +1080,5 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
                    FINAL_STATUS_WINDOW_PRINT,
                    1);
 }
-
-// Checks that if a page is opened in a new window by javascript the
-// prerendered page is not used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderWindowOpenerJsOpenInNewPageTest) {
-  PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_WINDOW_OPENER,
-                   1);
-  OpenDestUrlInNewWindowViaJs();
-}
-
-// Checks that if a page is opened due to click on a href with target="_blank"
-// the prerendered page is not used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderWindowOpenerClickOpenInNewPageTest) {
-  PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_WINDOW_OPENER,
-                   1);
-  OpenDestUrlInNewWindowViaClick();
-}
-
-// TODO(shishir): Add a test for the case when the page having the
-// prerendering link already has an opener set.
 
 }  // namespace prerender

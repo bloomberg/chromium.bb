@@ -86,11 +86,9 @@ void PrerenderRenderViewHostObserver::OnRenderViewGone(int status,
 void PrerenderRenderViewHostObserver::OnDidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
-    bool has_opener_set,
     const GURL& url) {
   prerender_contents_->OnDidStartProvisionalLoadForFrame(frame_id,
                                                          is_main_frame,
-                                                         has_opener_set,
                                                          url);
 }
 

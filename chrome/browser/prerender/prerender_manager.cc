@@ -413,19 +413,11 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
 }
 
 bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
-                                                const GURL& url,
-                                                bool has_opener_set) {
+                                                const GURL& url) {
   DCHECK(CalledOnValidThread());
   scoped_ptr<PrerenderContents> prerender_contents(GetEntry(url));
   if (prerender_contents.get() == NULL)
     return false;
-
-  // Do not use the prerendered version if the opener window.property was
-  // supposed to be set.
-  if (has_opener_set) {
-    prerender_contents.release()->Destroy(FINAL_STATUS_WINDOW_OPENER);
-    return false;
-  }
 
   // If we are just in the control group (which can be detected by noticing
   // that prerendering hasn't even started yet), record that |tab_contents| now
@@ -507,12 +499,10 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
 }
 
 bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
-                                             const GURL& url,
-                                             bool has_opener_set) {
+                                             const GURL& url) {
   if (!PrerenderContents::UseTabContents()) {
     VLOG(1) << "Checking for prerender with LEGACY code";
-    return PrerenderManager::MaybeUsePreloadedPageOld(tab_contents, url,
-                                                      has_opener_set);
+    return PrerenderManager::MaybeUsePreloadedPageOld(tab_contents, url);
   }
   VLOG(1) << "Checking for prerender with NEW code";
   DCHECK(CalledOnValidThread());
@@ -520,13 +510,6 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
       GetEntryButNotSpecifiedTC(url, tab_contents));
   if (prerender_contents.get() == NULL)
     return false;
-
-  // Do not use the prerendered version if the opener window.property was
-  // supposed to be set.
-  if (has_opener_set) {
-    prerender_contents.release()->Destroy(FINAL_STATUS_WINDOW_OPENER);
-    return false;
-  }
 
   // If we are just in the control group (which can be detected by noticing
   // that prerendering hasn't even started yet), record that |tab_contents| now

@@ -268,7 +268,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   // Message handlers.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
-                                         bool has_opener_set,
                                          const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
 

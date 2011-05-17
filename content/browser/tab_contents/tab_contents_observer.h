@@ -56,8 +56,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
       const GURL& validated_url,
       bool is_error_page,
       RenderViewHost* render_view_host);
-  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url,
-                                               bool has_opener_set);
+  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url);
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

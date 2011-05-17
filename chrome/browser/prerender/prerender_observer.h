@@ -25,15 +25,13 @@ class PrerenderObserver : public TabContentsObserver {
   virtual ~PrerenderObserver();
 
   // TabContentsObserver implementation.
-  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url,
-                                               bool has_opener_set) OVERRIDE;
+  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
 
   // Message handler.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
-                                         bool has_opener_set,
                                          const GURL& url);
 
  private:
@@ -43,7 +41,7 @@ class PrerenderObserver : public TabContentsObserver {
   // Checks with the PrerenderManager if the specified URL has been preloaded,
   // and if so, swap the RenderViewHost with the preload into this TabContents
   // object.
-  bool MaybeUsePreloadedPage(const GURL& url, bool has_opener_set);
+  bool MaybeUsePreloadedPage(const GURL& url);
 
   // Returns whether the TabContents being observed is currently prerendering.
   bool IsPrerendering();
