@@ -13,18 +13,21 @@
 #error("This file is not meant for use in the TCB")
 #endif
 
+#include "native_client/src/trusted/validator_x86/ncval_driver.h"
+
 #include <errno.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/timeb.h>
 #include <time.h>
-
-#include "native_client/src/trusted/validator_x86/ncval_driver.h"
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
 #include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
+#include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
@@ -165,6 +168,7 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   if (NACL_FLAGS_stubout_memory) {
     NaClValidatorStateSetDoStubOut(state, TRUE);
   }
+  NaClValidatorStateSetErrorReporter(state, &kNaClVerboseErrorReporter);
   NaClValidateSegment(data->bytes, data->base, data->num_bytes, state);
   return_value = NaClValidatesOk(state);
   NaClValidatorStateDestroy(state);
@@ -184,3 +188,28 @@ Bool NaClRunValidatorBytes(int argc,
                           (NaClValidateLoad) NaClValidateNoLoad,
                           (NaClValidateAnalyze) NaClValidateAnalyzeBytes);
 }
+
+static void NaClValidatorPrintf(NaClErrorReporter* self,
+                                const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  gvprintf(NaClLogGetGio(), format, ap);
+  va_end(ap);
+}
+
+static void NaClValidatorPrintfV(NaClErrorReporter* self,
+                                 const char* format,
+                                 va_list ap) {
+  gvprintf(NaClLogGetGio(), format, ap);
+}
+
+static void NaClValidatorPrintInst(NaClErrorReporter* self,
+                                   NaClInstState* inst) {
+  NaClInstStateInstPrint(NaClLogGetGio(), inst);
+}
+
+NaClErrorReporter kNaClVerboseErrorReporter = {
+  (NaClPrintfMessage) NaClValidatorPrintf,
+  (NaClPrintfVMessage) NaClValidatorPrintfV,
+  (NaClPrintInst) NaClValidatorPrintInst
+};

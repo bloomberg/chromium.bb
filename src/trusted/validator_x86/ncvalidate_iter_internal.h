@@ -60,6 +60,8 @@ struct NaClValidatorState {
    * reports all errors.
    */
   int quit_after_error_count;
+  /* Holds the error reporting object to use. */
+  NaClErrorReporter* error_reporter;
   /* Holds the set of validators to apply. */
   NaClValidatorDefinition validators[NACL_MAX_NCVALIDATORS];
   /* Holds the local memory associated with validators to be applied to this

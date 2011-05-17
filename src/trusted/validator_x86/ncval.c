@@ -255,6 +255,7 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
     NaClValidatorMessage(LOG_ERROR, vstate, "Unable to create validator state");
     return FALSE;
   }
+  NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
   if (NACL_FLAGS_analyze_segments) {
     AnalyzeSfiSegments(ncf, vstate);
   } else {

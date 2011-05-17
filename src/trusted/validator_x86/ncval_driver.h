@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -18,6 +18,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_kind.h"
+#include "native_client/src/trusted/validator_x86/error_reporter.h"
 
 /* Flag holding the (default) block alignment to use. */
 extern int NACL_FLAGS_block_alignment;
@@ -35,6 +36,12 @@ extern Bool NACL_FLAGS_fatal;
 
 /* Command line flag to turn on reporting of time used by validator. */
 extern Bool NACL_FLAGS_print_timing;
+
+/* Default verbose error reporter for the validator. Uses the log
+ * file defined by NaClLogGetGio().
+ * Warning: this global is not thread safe.
+ */
+extern NaClErrorReporter kNaClVerboseErrorReporter;
 
 /* The model of data to be passed to the load/analyze steps. */
 typedef void* NaClRunValidatorData;

@@ -9,15 +9,19 @@ Import('env')
 if env.Bit('target_arm'):
   Return()
 
+# Create environment for command-line tools and testing.
+cl_env = env.Clone();
+cl_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
 # This is needed for #including "gen/..." files, which the header
 # files for the x86-64 validator use.
-env.Append(CPPPATH=['${TARGET_ROOT}'])
+cl_env.Append(CPPPATH=['${TARGET_ROOT}'])
 
 if env.Bit('target_x86_64'):
-  validator_libs = ['ncvalidate_sfi', 'ncvalidate']
+  validator_libs = ['ncvalidate_sfi', 'ncdis_util', 'ncvalidate', 'utils']
 else:
   validator_libs = ['ncvalidate']
 
-env.ComponentProgram('ncval_stubout',
-                     'ncstubout.c',
-                     EXTRA_LIBS=validator_libs + ['platform', 'gio'])
+cl_env.ComponentProgram('ncval_stubout',
+                        'ncstubout.c',
+                        EXTRA_LIBS=validator_libs + ['platform', 'gio'])

@@ -72,6 +72,11 @@ void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState *state,
   state->quit = NaClValidatorQuit(state);
 }
 
+void NaClValidatorStateSetErrorReporter(NaClValidatorState *state,
+                                        NaClErrorReporter *reporter) {
+  state->error_reporter = reporter;
+}
+
 Bool NaClValidatorStateGetPrintOpcodeHistogram(NaClValidatorState *state) {
   return state->print_opcode_histogram;
 }
@@ -182,9 +187,10 @@ static void NaClRecordErrorReported(NaClValidatorState *state, int level) {
     --(state->quit_after_error_count);
     state->quit = NaClValidatorQuit(state);
     if (state->quit_after_error_count == 0) {
-      NaClLog(LOG_INFO,
-              "%sError limit reached. Validator quitting!\n",
-              NaClLogLevelLabel(LOG_INFO));
+      state->error_reporter->printf(
+          state->error_reporter,
+          "%sError limit reached. Validator quitting!\n",
+          NaClLogLevelLabel(LOG_INFO));
     }
   }
 }
@@ -219,12 +225,11 @@ void NaClValidatorMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    NaClLogLock();
-    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
-    NaClLogV_mu(level, format, ap);
+    state->error_reporter->printf_v(state->error_reporter, format, ap);
     va_end(ap);
-    NaClLogUnlock();
     NaClRecordErrorReported(state, level);
   }
 }
@@ -235,10 +240,9 @@ void NaClValidatorVarargMessage(int level,
                                 va_list ap) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
-    NaClLogLock();
-    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
-    NaClLogV_mu(level, format, ap);
-    NaClLogUnlock();
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
+    state->error_reporter->printf_v(state->error_reporter, format, ap);
     NaClRecordErrorReported(state, level);
   }
 }
@@ -251,16 +255,14 @@ void NaClValidatorPcAddressMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-
-    NaClLogLock();
-    NaClLog_mu(level, "VALIDATOR: At address %"NACL_PRIxNaClPcAddress":\n",
-               addr);
-    NaClLogTagNext_mu();
-    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
+    state->error_reporter->printf(
+        state->error_reporter,
+        "VALIDATOR: At address %"NACL_PRIxNaClPcAddress":\n", addr);
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
-    NaClLogV_mu(level, format, ap);
+    state->error_reporter->printf(state->error_reporter, format, ap);
     va_end(ap);
-    NaClLogUnlock();
     NaClRecordErrorReported(state, level);
   }
 }
@@ -273,19 +275,15 @@ void NaClValidatorInstMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    struct Gio *g = NaClLogGetGio();
-
-    NaClLogLock();
-    /* TODO(karl): empty fmt strings not allowed */
-    NaClLog_mu(level, "VALIDATOR: %s", "");
-    /* TODO(karl) - Make printing of instruction state possible via format. */
-    NaClInstStateInstPrint(g, inst);
-
+    /* TODO(karl): empty (%) fmt strings not allowed for NaClLog */
+    state->error_reporter->printf(state->error_reporter,
+                                  "VALIDATOR: %s", "");
+    state->error_reporter->print_inst(state->error_reporter, inst);
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
-    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
-    NaClLogV_mu(level, format, ap);
+    state->error_reporter->printf_v(state->error_reporter, format, ap);
     va_end(ap);
-    NaClLogUnlock();
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
@@ -302,23 +300,17 @@ void NaClValidatorTwoInstMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    struct Gio *g = NaClLogGetGio();
-
-    NaClLogLock();
-    /* TODO(karl) - Make printing of instruction state possible via format. */
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
-    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
-    NaClLogV_mu(level, format, ap);
+    state->error_reporter->printf_v(state->error_reporter, format, ap);
     va_end(ap);
-
-    /* TODO(karl): empty fmt strings not allowed */
-    NaClLog_mu(level, "\n%45s ", "VALIDATOR:");
-    NaClInstStateInstPrint(g, inst1);
-    /* TODO(karl): empty fmt strings not allowed */
-    NaClLog_mu(level, "%45s ", "VALIDATOR:");
-    NaClInstStateInstPrint(g, inst2);
-
-    NaClLogUnlock();
+    state->error_reporter->printf(
+        state->error_reporter, "\n%45s ", "VALIDATOR:");
+    state->error_reporter->print_inst(state->error_reporter, inst1);
+    state->error_reporter->printf(
+        state->error_reporter, "%45s ", "VALIDATOR:");
+    state->error_reporter->print_inst(state->error_reporter, inst2);
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
@@ -353,6 +345,21 @@ void NaClRegisterValidator(
   defn->destroy_memory = destroy_memory;
 }
 
+static void NaClNullErrorPrintf(NaClErrorReporter* self,
+                                const char* format, ...) {}
+static void NaClNullErrorPrintfV(NaClErrorReporter* self,
+                                 const char* format,
+                                 va_list ap) {}
+static void NaClNullErrorPrintInst(NaClErrorReporter* self,
+                                   struct NaClInstState* inst) {}
+
+static NaClErrorReporter nacl_null_reporter = {
+  NaClNullErrorPrintf,
+  NaClNullErrorPrintfV,
+  NaClNullErrorPrintInst
+};
+
+
 NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize sz,
                                              const uint8_t alignment,
@@ -385,6 +392,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     state->validates_ok = TRUE;
     state->number_validators = 0;
     state->quit_after_error_count = NACL_FLAGS_max_reported_errors;
+    state->error_reporter = &nacl_null_reporter;
     state->print_opcode_histogram = NACL_FLAGS_opcode_histogram;
     state->trace_instructions = NACL_FLAGS_validator_trace_instructions;
     state->trace_inst_internals = NACL_FLAGS_validator_trace_inst_internals;

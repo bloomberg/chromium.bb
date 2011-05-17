@@ -30,9 +30,12 @@
  */
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator_x86/error_reporter.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
+
+EXTERN_C_BEGIN
 
 /* Control flag that when set to FALSE, turns of the printing of validator
  * messages.
@@ -118,6 +121,16 @@ void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState* state,
 /* Changes the set of cpu features to use to the given featers. */
 void NaClValidatorStateSetCPUFeatures(NaClValidatorState* state,
                                      const CPUFeatures* features);
+
+/* Changes the report error reported for the validator. By default, no
+ * error messages are printed. To print error messages, use an appropriate
+ * error printer, such as  kNaClVerboseErrorReporter in ncval_driver.h.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment. If not set, the validator will not print
+ * error messages.
+ */
+void NaClValidatorStateSetErrorReporter(NaClValidatorState* state,
+                                        NaClErrorReporter* reporter);
 
 /* Returns true if an opcode histogram should be printed by the validator.
  * Note: Defaults to NACL_FLAGS_opcode_histogram.
@@ -405,5 +418,7 @@ void NaClValidatorTwoInstMessage(int level,
 
 /* Returns true if the validator should quit due to previous errors. */
 Bool NaClValidatorQuit(NaClValidatorState* state);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_ITER_H__ */

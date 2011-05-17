@@ -74,6 +74,7 @@ static Bool FixUpSection(uintptr_t load_address,
 #else
 
 # include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+# include "native_client/src/trusted/validator_x86/ncval_driver.h"
 
 static Bool FixUpSection(uintptr_t load_address,
                          unsigned char *code,
@@ -98,6 +99,7 @@ static Bool FixUpSection(uintptr_t load_address,
    */
   NaClSetAllCPUFeatures(&features);
   NaClValidatorStateSetCPUFeatures(vstate, &features);
+  NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
   NaClValidateSegment(code, load_address, code_size, vstate);
   return_code = NaClValidatesOk(vstate);
   NaClValidatorStateDestroy(vstate);
