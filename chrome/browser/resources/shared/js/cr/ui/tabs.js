@@ -2,6 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/**
+ * @fileoverview This implements a tabbox and related element.
+ *
+ * Usage:
+ *  <tabbox>
+ *    <tabs>
+ *      <tab>Hello</tab>
+ *      <tab>World</tab>
+ *    </tabs>
+ *    <tabpanels>
+ *      <tabpanel>Hi</tabpanel>
+ *      <tabpanel>Tellus</tabpanel>
+ *    </tabpanels>
+ *  </tabbox>
+ *
+ *  <script>
+ *  cr.ui.decorate('tabbox', cr.ui.TabBox);
+ *  </script>
+ *
+ *  The tab and tabpanel elements have a selected property and the tabbox have a
+ *  selectedIndex property reflecting the selected tab.
+ */
 cr.define('cr.ui', function() {
 
   /**
