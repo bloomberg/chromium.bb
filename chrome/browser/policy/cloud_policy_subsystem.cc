@@ -92,14 +92,12 @@ void CloudPolicySubsystem::OnIPAddressChanged() {
   }
 }
 
-void CloudPolicySubsystem::Initialize(
-    PrefService* prefs,
-    net::URLRequestContextGetter* request_context) {
+void CloudPolicySubsystem::Initialize(PrefService* prefs) {
   DCHECK(!prefs_);
   prefs_ = prefs;
 
   if (device_management_service_.get())
-    device_management_service_->Initialize(request_context);
+    device_management_service_->Initialize();
 
   policy_refresh_rate_.Init(prefs::kPolicyRefreshRate, prefs_, this);
   UpdatePolicyRefreshRate();

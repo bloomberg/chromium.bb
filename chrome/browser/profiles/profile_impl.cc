@@ -409,8 +409,6 @@ void ProfileImpl::DoFinalInit() {
                 media_cache_path, media_cache_max_size, extensions_cookie_path,
                 app_path);
 
-  // Initialize the ProfilePolicyConnector after |io_data_| since it requires
-  // the URLRequestContextGetter to be initialized.
   policy::ProfilePolicyConnector* policy_connector =
       policy::ProfilePolicyConnectorFactory::GetForProfile(this);
   policy_connector->Initialize();

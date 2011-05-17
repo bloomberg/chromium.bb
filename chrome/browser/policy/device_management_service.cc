@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/device_management_service.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
@@ -116,11 +117,10 @@ DeviceManagementBackend* DeviceManagementService::CreateBackend() {
   return new DeviceManagementBackendImpl(this);
 }
 
-void DeviceManagementService::Initialize(
-    net::URLRequestContextGetter* request_context_getter) {
+void DeviceManagementService::Initialize() {
   DCHECK(!request_context_getter_);
-  request_context_getter_ =
-      new DeviceManagementRequestContextGetter(request_context_getter);
+  request_context_getter_ = new DeviceManagementRequestContextGetter(
+      g_browser_process->system_request_context());
   while (!queued_jobs_.empty()) {
     StartJob(queued_jobs_.front());
     queued_jobs_.pop_front();

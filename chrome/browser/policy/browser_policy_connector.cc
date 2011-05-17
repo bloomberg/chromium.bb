@@ -191,11 +191,8 @@ void BrowserPolicyConnector::FetchPolicy() {
 
 void BrowserPolicyConnector::Initialize() {
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
-  if (cloud_policy_subsystem_.get()) {
-    cloud_policy_subsystem_->Initialize(
-        g_browser_process->local_state(),
-        g_browser_process->system_request_context());
-  }
+  if (cloud_policy_subsystem_.get())
+    cloud_policy_subsystem_->Initialize(g_browser_process->local_state());
 }
 
 }  // namespace

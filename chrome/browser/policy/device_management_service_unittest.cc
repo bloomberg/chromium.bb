@@ -11,7 +11,6 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
-#include "chrome/test/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
@@ -44,10 +43,9 @@ template<typename TESTBASE>
 class DeviceManagementServiceTestBase : public TESTBASE {
  protected:
   DeviceManagementServiceTestBase()
-      : request_context_(new TestURLRequestContextGetter()),
-        io_thread_(BrowserThread::IO, &loop_) {
+      : io_thread_(BrowserThread::IO, &loop_) {
     ResetService();
-    service_->Initialize(request_context_.get());
+    service_->Initialize();
   }
 
   virtual void SetUp() {
@@ -58,7 +56,6 @@ class DeviceManagementServiceTestBase : public TESTBASE {
     URLFetcher::set_factory(NULL);
     backend_.reset();
     service_.reset();
-    request_context_ = NULL;
     loop_.RunAllPending();
   }
 
@@ -69,7 +66,6 @@ class DeviceManagementServiceTestBase : public TESTBASE {
   }
 
   TestURLFetcherFactory factory_;
-  scoped_refptr<TestURLRequestContextGetter> request_context_;
   scoped_ptr<DeviceManagementService> service_;
   scoped_ptr<DeviceManagementBackend> backend_;
 
@@ -418,7 +414,7 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
   ASSERT_FALSE(fetcher);
 
   // Now initialize the service. That should start the job.
-  service_->Initialize(request_context_.get());
+  service_->Initialize();
   fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   factory_.RemoveFetcherFromMap(0);

@@ -17,7 +17,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -64,10 +63,8 @@ ProfilePolicyConnector::~ProfilePolicyConnector() {
 
 void ProfilePolicyConnector::Initialize() {
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
-  if (cloud_policy_subsystem_.get()) {
-    cloud_policy_subsystem_->Initialize(profile_->GetPrefs(),
-                                        profile_->GetRequestContext());
-  }
+  if (cloud_policy_subsystem_.get())
+    cloud_policy_subsystem_->Initialize(profile_->GetPrefs());
 }
 
 void ProfilePolicyConnector::Shutdown() {

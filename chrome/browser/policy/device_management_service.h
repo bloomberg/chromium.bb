@@ -57,9 +57,9 @@ class DeviceManagementService : public URLFetcher::Delegate {
   // Marked virtual for the benefit of tests.
   virtual DeviceManagementBackend* CreateBackend();
 
-  // Provides the backend with a request context so it can make actual network
-  // requests. This will also fire any requests queued earlier.
-  void Initialize(net::URLRequestContextGetter* request_context_getter);
+  // Initializes the request context based on the system request context.
+  // This will also fire any requests queued earlier.
+  void Initialize();
 
   // Makes the service stop all requests and drop the reference to the request
   // context.
