@@ -2119,7 +2119,7 @@ static void NaClInstOpCompress(NaClInst* inst) {
     /* Note: Be sure to not overflow compressed array by stopping when
      * there is no more room for the operands of the given instruction.
      */
-    for (i = 0; i < nacl_ops_compressed_size - inst->num_operands; ++i) {
+    for (i = 0; i <= nacl_ops_compressed_size - inst->num_operands; ++i) {
       size_t j;
       Bool matches = TRUE;  /* until proven otherwise */
       for (j = 0; j < inst->num_operands; ++j) {
