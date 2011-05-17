@@ -32,6 +32,7 @@ ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
       response_time_histogram_(NULL),
       unresponsive_time_histogram_(NULL),
       unresponsive_count_(0),
+      hung_processing_complete_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Initialize();
 }
@@ -232,6 +233,7 @@ void ThreadWatcher::OnPingMessage(const BrowserThread::ID& thread_id,
 void ThreadWatcher::GotGoodResponse() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   unresponsive_count_ = 0;
+  hung_processing_complete_ = false;
 }
 
 void ThreadWatcher::GotNoResponse() {
@@ -246,6 +248,10 @@ void ThreadWatcher::GotNoResponse() {
   base::TimeDelta unresponse_time = base::TimeTicks::Now() - pong_time_;
   unresponsive_time_histogram_->AddTime(unresponse_time);
 
+  // We have already collected stats for the non-responding watched thread.
+  if (hung_processing_complete_)
+    return;
+
   int no_of_responding_threads = 0;
   int no_of_unresponding_threads = 0;
   ThreadWatcherList::GetStatusOfThreads(&no_of_responding_threads,
@@ -256,6 +262,16 @@ void ThreadWatcher::GotNoResponse() {
 
   // Record how many watched threads are not responding.
   unresponsive_count_histogram_->Add(no_of_unresponding_threads);
+
+  // Crash the browser if IO thread hasn't responded atleast 3 times and if the
+  // number of other threads is equal to 1. We picked 1 to reduce the number of
+  // crashes and to get some sample data.
+  if (thread_id_ == BrowserThread::IO && no_of_responding_threads == 1) {
+    int* crash = NULL;
+    CHECK(crash++);
+  }
+
+  hung_processing_complete_ = true;
 }
 
 // ThreadWatcherList methods and members.

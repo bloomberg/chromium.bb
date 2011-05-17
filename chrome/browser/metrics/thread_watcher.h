@@ -218,6 +218,11 @@ class ThreadWatcher {
   // thread.
   int unresponsive_count_;
 
+  // This is set to true when we would have crashed the browser because the
+  // watched thread hasn't responded atleast 3 times. It is reset to false when
+  // watched thread responds with a pong message.
+  bool hung_processing_complete_;
+
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched
   // thread.
