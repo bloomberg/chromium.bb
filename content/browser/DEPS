@@ -101,8 +101,6 @@ include_rules = [
 
   "+chrome/browser/utility_process_host.h",
 
-  "+chrome/browser/ui/browser_list.h",
-
   "+chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h",
   "+chrome/browser/ui/app_modal_dialogs/message_box_handler.h",
   "+chrome/browser/ui/browser_dialogs.h",
