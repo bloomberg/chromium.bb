@@ -127,6 +127,9 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     [self setCell:cell];
     [cell setTabId:tabId];
     [cell setExtensionAction:extension->browser_action()];
+    [cell
+        accessibilitySetOverrideValue:base::SysUTF8ToNSString(extension->name())
+        forAttribute:NSAccessibilityDescriptionAttribute];
 
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
