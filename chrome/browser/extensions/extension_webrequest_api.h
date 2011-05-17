@@ -20,6 +20,7 @@
 #include "net/base/completion_callback.h"
 #include "webkit/glue/resource_type.h"
 
+class ChromeRenderMessageFilter;
 class DictionaryValue;
 class ExtensionEventRouterForwarder;
 class GURL;
@@ -105,6 +106,12 @@ class ExtensionWebRequestEventRouter {
 
   static ExtensionWebRequestEventRouter* GetInstance();
 
+  void SetListenerMap(
+      ProfileId profile_id,
+      const std::string& extension_id,
+      const std::string& event_name,
+      ChromeRenderMessageFilter* filter);
+
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
   // the given request. Returns net::ERR_IO_PENDING if an extension is
   // intercepting the request, OK otherwise.
@@ -167,6 +174,10 @@ class ExtensionWebRequestEventRouter {
       const std::string& sub_event_name,
       uint64 request_id,
       EventResponse* response);
+
+  bool OnEventHandled(
+      ProfileId profile_id,
+      const ExtensionHostMsg_Request_Params& params);
 
   // Adds a listener to the given event. |event_name| specifies the event being
   // listened to. |sub_event_name| is an internal event uniquely generated in

@@ -12,6 +12,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -39,12 +40,23 @@
 using WebKit::WebCache;
 using WebKit::WebSecurityOrigin;
 
+// TODO(mpcomplete): This is temporary. Will go away soon.
+static void AddListenerOnIOThread(
+    ProfileId profile_id,
+    const std::string& extension_id,
+    const std::string& event_name,
+    ChromeRenderMessageFilter* filter) {
+  ExtensionWebRequestEventRouter::GetInstance()->SetListenerMap(
+      profile_id, extension_id, event_name, filter);
+}
+
 ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
     Profile* profile,
     net::URLRequestContextGetter* request_context)
     : render_process_id_(render_process_id),
       profile_(profile),
+      profile_id_(profile->GetRuntimeId()),
       request_context_(request_context) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile_->GetPrefs(), NULL);
@@ -75,6 +87,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
                         OnExtensionRemoveListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
@@ -92,6 +105,9 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCanTriggerClipboardWrite)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if (message.type() == ExtensionHostMsg_Request::ID)
+    handled = false;
 
   if ((message.type() == ViewHostMsg_GetCookies::ID ||
        message.type() == ViewHostMsg_SetCookie::ID) &&
@@ -274,6 +290,16 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
   Send(reply_msg);
 }
 
+void ChromeRenderMessageFilter::OnExtensionRequest(
+    const ExtensionHostMsg_Request_Params& params) {
+  if (params.name != WebRequestEventHandled::function_name())
+    return;
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
+      profile_id_, params);
+}
+
 void ChromeRenderMessageFilter::OnExtensionAddListener(
     const std::string& extension_id,
     const std::string& event_name) {
@@ -281,6 +307,12 @@ void ChromeRenderMessageFilter::OnExtensionAddListener(
   if (!process || !profile_->GetExtensionEventRouter())
     return;
 
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          &AddListenerOnIOThread,
+          profile_->GetRuntimeId(), extension_id, event_name,
+          make_scoped_refptr(this)));
   profile_->GetExtensionEventRouter()->AddEventListener(
       event_name, process, extension_id);
 }
