@@ -686,7 +686,13 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
 
   if (NaClDynamicRegionCreate(nap, dest_addr, size) == 1) {
     /* target memory region is free */
-    validator_result = NaClValidateCode(nap, dest, code_copy, size);
+    if (!nap->skip_validator) {
+      validator_result = NaClValidateCode(nap, dest, code_copy, size);
+    } else {
+      NaClLog(LOG_ERROR, "VALIDATION SKIPPED.\n");
+      validator_result = LOAD_OK;
+    }
+
     NaClPerfCounterMark(&time_dyncode_create,
                         NACL_PERF_IMPORTANT_PREFIX "DynRegionValidate");
     NaClPerfCounterIntervalLast(&time_dyncode_create);

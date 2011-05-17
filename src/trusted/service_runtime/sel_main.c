@@ -137,7 +137,8 @@ static void PrintUsage() {
           "\n"
           " (testing flags)\n"
           " -a allow file access! dangerous!\n"
-          " -c ignore validator! dangerous!\n"
+          " -c ignore validator! dangerous! Repeating this option twice skips\n"
+          "    validation completely.\n"
           " -F fuzz testing; quit after loading NaCl app\n"
           " -S enable signal handling.\n"
           " -g enable gdb debug stub.\n"
@@ -145,6 +146,7 @@ static void PrintUsage() {
           " -l <file>  write log output to the given file\n"
           " -s safely stub out non-validating instructions\n"
           " -Q disable platform qualification (dangerous!)\n"
+          " -E <name=value>|<name> set an environment variable\n"
           );  /* easier to add new flags/lines */
 }
 
@@ -261,8 +263,7 @@ int main(int  argc,
                        "aB:cE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
     switch (opt) {
       case 'c':
-        fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
-        debug_mode_ignore_validator = 1;
+        ++debug_mode_ignore_validator;
         break;
       case 'a':
         fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
@@ -368,6 +369,11 @@ int main(int  argc,
         exit(-1);
     }
   }
+
+  if (debug_mode_ignore_validator == 1)
+    fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
+  else if (debug_mode_ignore_validator > 1)
+    fprintf(stderr, "DEBUG MODE ENABLED (skip validator)\n");
 
   if (verbosity) {
     int         ix;
@@ -475,7 +481,8 @@ int main(int  argc,
     goto done_file_dtor;
   }
 
-  state.ignore_validator_result = debug_mode_ignore_validator;
+  state.ignore_validator_result = (debug_mode_ignore_validator > 0);
+  state.skip_validator = (debug_mode_ignore_validator > 1);
   state.validator_stub_out_mode = stub_out_mode;
   state.enable_debug_stub = enable_debug_stub;
 

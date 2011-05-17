@@ -276,6 +276,7 @@ struct NaClApp {
   int                       exit_status;
 
   int                       ignore_validator_result;
+  int                       skip_validator;
   int                       validator_stub_out_mode;
   /* all threads enqueue the "special" syscalls to the work queue */
   struct NaClSyncQueue      work_queue;

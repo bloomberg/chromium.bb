@@ -263,19 +263,24 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
     return LOAD_NO_MEMORY;
   }
 
-  rcode = NaClValidateCode(nap, NACL_TRAMPOLINE_END,
-                           (uint8_t *) memp, regionsize);
-  if (LOAD_OK != rcode) {
-    if (nap->ignore_validator_result) {
-      NaClLog(LOG_ERROR, "VALIDATION FAILED: continuing anyway...\n");
-      rcode = LOAD_OK;
-    } else {
-      NaClLog(LOG_ERROR, "VALIDATION FAILED.\n");
-      NaClLog(LOG_ERROR,
-              "Run sel_ldr in debug mode to ignore validation failure.\n");
-      NaClLog(LOG_ERROR,
-              "Run ncval <module-name> for validation error details.\n");
-      rcode = LOAD_VALIDATION_FAILED;
+  if (nap->skip_validator) {
+    NaClLog(LOG_ERROR, "VALIDATION SKIPPED.\n");
+    return LOAD_OK;
+  } else {
+    rcode = NaClValidateCode(nap, NACL_TRAMPOLINE_END,
+                             (uint8_t *) memp, regionsize);
+    if (LOAD_OK != rcode) {
+      if (nap->ignore_validator_result) {
+        NaClLog(LOG_ERROR, "VALIDATION FAILED: continuing anyway...\n");
+        rcode = LOAD_OK;
+      } else {
+        NaClLog(LOG_ERROR, "VALIDATION FAILED.\n");
+        NaClLog(LOG_ERROR,
+                "Run sel_ldr in debug mode to ignore validation failure.\n");
+        NaClLog(LOG_ERROR,
+                "Run ncval <module-name> for validation error details.\n");
+        rcode = LOAD_VALIDATION_FAILED;
+      }
     }
   }
   return rcode;
