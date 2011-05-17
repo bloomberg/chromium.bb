@@ -384,7 +384,7 @@ function NaClWaiter(body_element) {
         return true;
       }
     }
-    return embed.__moduleReady == 1;
+    return (embed.readyState == 4) && !this_.has_errored(embed);
   }
 
   this.has_errored = function(embed) {
@@ -544,7 +544,9 @@ function Tester(body_element) {
             return embed_name(waiting[j]);
           });
           var ready = getCarefully(function(){
-            return toString(waiting[j].__moduleReady);
+            var readyStateString =
+                ['UNSENT', 'OPENED', 'HEADERS_RECEIVED', 'LOADING', 'DONE'];
+            return readyStateString[waiting[j].readyState];
           });
           var last = getCarefully(function(){
             return toString(waiting[j].lastError);

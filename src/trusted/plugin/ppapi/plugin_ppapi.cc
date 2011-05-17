@@ -730,8 +730,6 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   bool was_successful = LoadNaClModule(wrapper.get(), &error_string);
   if (was_successful) {
     ReportLoadSuccess(true, nexe_bytes_read, nexe_bytes_read);
-    // Set the __moduleReady attribute to indicate ready to start.
-    set_nacl_module_ready(true);
   } else {
     ReportLoadError(error_string);
   }
@@ -923,19 +921,19 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
     ReportLoadError(error_string);
     return;
   }
-  if (SelectNexeURLFromManifest(&nexe_url, &error_string)) {
-    // Inform JavaScript that we found a nexe URL to load.
-    DispatchProgressEvent("progress",
-                          false,  // length_computable
-                          kUnknownBytes,
-                          kUnknownBytes);
-    pp::CompletionCallback open_callback =
-        callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
-    // Will always call the callback on success or failure.
-    nexe_downloader_.Open(nexe_url, open_callback);
-    return;
+  if (!SelectNexeURLFromManifest(&nexe_url, &error_string)) {
+    ReportLoadError("could not select from manifest file.");
   }
-  ReportLoadError("could not select from manifest file.");
+  set_nacl_ready_state(LOADING);
+  // Inform JavaScript that we found a nexe URL to load.
+  DispatchProgressEvent("progress",
+                        false,  // length_computable
+                        kUnknownBytes,
+                        kUnknownBytes);
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
+  // Will always call the callback on success or failure.
+  nexe_downloader_.Open(nexe_url, open_callback);
 }
 
 
@@ -954,6 +952,7 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   }
   set_manifest_url(nmf_resolved_url.AsString());
   // Inform JavaScript that a load is starting.
+  set_nacl_ready_state(OPENED);
   DispatchProgressEvent("loadstart",
                         false,  // length_computable
                         kUnknownBytes,
@@ -1185,6 +1184,8 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
 void PluginPpapi::ReportLoadSuccess(bool length_computable,
                                     uint64_t loaded_bytes,
                                     uint64_t total_bytes) {
+  // Set the readyState attribute to indicate loaded.
+  set_nacl_ready_state(DONE);
   // Inform JavaScript that loading was successful and is complete.
   // Note that these events will be dispatched, as will failure events, when
   // this code is reached from __launchExecutableFromFd also.
@@ -1200,6 +1201,9 @@ void PluginPpapi::ReportLoadSuccess(bool length_computable,
 void PluginPpapi::ReportLoadError(const nacl::string& error) {
   PLUGIN_PRINTF(("PluginPpapi::ReportLoadError (error='%s')\n",
                  error.c_str()));
+  // Set the readyState attribute to indicate we need to start over.
+  set_nacl_ready_state(DONE);
+  // Report an error in lastError and on the JavaScript console.
   nacl::string prefix("NaCl module load failed: ");
   set_last_error_string(prefix + error);
   browser_interface()->AddToConsole(instance_id(), prefix + error);
@@ -1218,6 +1222,9 @@ void PluginPpapi::ReportLoadError(const nacl::string& error) {
 
 void PluginPpapi::ReportLoadAbort() {
   PLUGIN_PRINTF(("PluginPpapi::ReportLoadAbort\n"));
+  // Set the readyState attribute to indicate we need to start over.
+  set_nacl_ready_state(DONE);
+  // Report an error in lastError and on the JavaScript console.
   nacl::string error_string("NaCl module load failed: user aborted");
   set_last_error_string(error_string);
   browser_interface()->AddToConsole(instance_id(), error_string);

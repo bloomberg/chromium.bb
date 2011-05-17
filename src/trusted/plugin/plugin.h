@@ -105,10 +105,23 @@ class Plugin : public PortableHandle {
     manifest_url_ = manifest_url;
   }
 
-  // Set when connection and proxy are available.
-  bool nacl_module_ready() const { return nacl_module_ready_; }
-  void set_nacl_module_ready(bool nacl_module_ready) {
-    nacl_module_ready_ = nacl_module_ready;
+  // The state of readiness of the plugin.
+  enum ReadyState {
+    // The trusted plugin begins in this ready state.
+    UNSENT = 0,
+    // The manifest file has been requested, but not yet received.
+    OPENED = 1,
+    // This state is unused.
+    HEADERS_RECEIVED = 2,
+    // The manifest file has been received and the nexe successfully requested.
+    LOADING = 3,
+    // The nexe has been loaded and the proxy started, so it is ready for
+    // interaction with the page.
+    DONE = 4
+  };
+  ReadyState nacl_ready_state() const { return nacl_ready_state_; }
+  void set_nacl_ready_state(ReadyState nacl_ready_state) {
+    nacl_ready_state_ = nacl_ready_state;
   }
 
   // Each nexe has a canonical socket address that it will respond to
@@ -194,7 +207,7 @@ class Plugin : public PortableHandle {
   nacl::string base_url_;
   nacl::string manifest_url_;
   nacl::string nacl_module_origin_;
-  bool nacl_module_ready_;
+  ReadyState nacl_ready_state_;
 
   int32_t height_;
   int32_t width_;

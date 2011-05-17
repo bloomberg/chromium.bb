@@ -34,7 +34,8 @@ namespace {
 std::map<ObjectCapability, PP_Var*>* capability_proxy_map = NULL;
 
 const char* kDispatchEventName = "dispatchEvent";
-const char* kModuleReadyName = "__moduleReady";
+const char* kReadyStateName = "readyState";
+const int kReadyStateLoaded = 4;
 
 bool NameMatches(PP_Var name, const char* name_to_match) {
   if (name.type != PP_VARTYPE_STRING) {
@@ -52,8 +53,8 @@ bool ObjectProxy::HasProperty(PP_Var name,
                               PP_Var* exception) {
   DebugPrintf("ObjectProxy::HasProperty\n");
   if (is_instance_object_) {
-    if (NameMatches(name, kModuleReadyName)) {
-      // If the proxy is already running, then __moduleReady is defined.
+    if (NameMatches(name, kReadyStateName)) {
+      // If the proxy is already running, then readyState is defined.
       return true;
     } else if (NameMatches(name, kDispatchEventName)) {
       // Defer handling of dispatchEvent to the embed tag's DOM element.
@@ -103,8 +104,8 @@ bool ObjectProxy::HasMethod(PP_Var name,
                             PP_Var* exception) {
   DebugPrintf("ObjectProxy::HasMethod\n");
   if (is_instance_object_) {
-    if (NameMatches(name, kModuleReadyName)) {
-      // __moduleReady cannot be a method implemented by plugins.
+    if (NameMatches(name, kReadyStateName)) {
+      // readyState cannot be a method implemented by plugins.
       return false;
     } else if (NameMatches(name, kDispatchEventName)) {
       // Defer handling of dispatchEvent to the embed tag's DOM element.
@@ -154,9 +155,9 @@ PP_Var ObjectProxy::GetProperty(PP_Var name,
                                 PP_Var* exception) {
   DebugPrintf("ObjectProxy::GetProperty\n");
   if (is_instance_object_) {
-    if (NameMatches(name, kModuleReadyName)) {
-      // The proxy is running, so __moduleReady is 1.
-      return PP_MakeInt32(1);
+    if (NameMatches(name, kReadyStateName)) {
+      // The proxy is running, so readyState is Plugin::ReadyState::LOADED.
+      return PP_MakeInt32(kReadyStateLoaded);
     } else if (NameMatches(name, kDispatchEventName)) {
       // HasProperty returned false.  We should not be able to get here.
       NACL_NOTREACHED();
@@ -223,7 +224,7 @@ void ObjectProxy::SetProperty(PP_Var name,
                               PP_Var* exception) {
   DebugPrintf("ObjectProxy::SetProperty\n");
   if (is_instance_object_) {
-    if (NameMatches(name, kModuleReadyName) ||
+    if (NameMatches(name, kReadyStateName) ||
         NameMatches(name, kDispatchEventName)) {
       if (exception != NULL) {
         uint32_t string_length;
@@ -287,7 +288,7 @@ void ObjectProxy::RemoveProperty(PP_Var name,
                                  PP_Var* exception) {
   DebugPrintf("ObjectProxy::RemoveProperty\n");
   if (is_instance_object_) {
-    if (NameMatches(name, kModuleReadyName) ||
+    if (NameMatches(name, kReadyStateName) ||
         NameMatches(name, kDispatchEventName)) {
       // HasProperty returned false.  We should not be able to get here.
       NACL_NOTREACHED();
@@ -335,7 +336,7 @@ PP_Var ObjectProxy::Call(PP_Var method_name,
                          PP_Var* exception) {
   DebugPrintf("ObjectProxy::Call\n");
   if (is_instance_object_) {
-    if (NameMatches(method_name, kModuleReadyName) ||
+    if (NameMatches(method_name, kReadyStateName) ||
         NameMatches(method_name, kDispatchEventName)) {
       // HasMethod returned false.  We should not be able to get here.
       NACL_NOTREACHED();

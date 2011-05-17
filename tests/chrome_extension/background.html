@@ -27,7 +27,7 @@
      * @return {bool} whether the module is loaded.
      */
     function isLoaded(embed) {
-      return embed.__moduleReady == 1;
+      return embed.readyState == 4;
     }
 
     /**

@@ -95,20 +95,10 @@ bool NullPluginMethod(void* obj, SrpcParams* params) {
   return true;
 }
 
-bool GetModuleReadyProperty(void* obj, SrpcParams* params) {
+bool GetReadyStateProperty(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  if (plugin->nacl_module_ready()) {
-    params->outs()[0]->u.ival = 1;
-  } else {
-    params->outs()[0]->u.ival = 0;
-  }
+  params->outs()[0]->u.ival = plugin->nacl_ready_state();
   return true;
-}
-
-bool SetModuleReadyProperty(void* obj, SrpcParams* params) {
-  UNREFERENCED_PARAMETER(obj);
-  params->set_exception_string("__moduleReady is a read-only property");
-  return false;
 }
 
 bool GetSrcProperty(void* obj, SrpcParams* params) {
@@ -137,7 +127,7 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   NaClDescRef(params->ins()[0]->u.hval);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
-  plugin->set_nacl_module_ready(false);
+  plugin->set_nacl_ready_state(Plugin::LOADING);
   // Generate the event stream for loading a module.
   plugin->DispatchProgressEvent("loadstart",
                                 false,  // length_computable
@@ -145,8 +135,7 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
                                 Plugin::kUnknownBytes);
   nacl::string error_string;
   bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_string);
-  // Set the __moduleReady attribute to indicate ready to start.
-  plugin->set_nacl_module_ready(was_successful);
+  // Set the readyState attribute to indicate ready to start.
   if (was_successful) {
     plugin->ReportLoadSuccess(false,  // length_computable
                               Plugin::kUnknownBytes,
@@ -262,8 +251,7 @@ static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 void Plugin::LoadMethods() {
   PLUGIN_PRINTF(("Plugin::LoadMethods ()\n"));
   // Properties implemented by Plugin.
-  AddPropertyGet(GetModuleReadyProperty, "__moduleReady", "i");
-  AddPropertySet(SetModuleReadyProperty, "__moduleReady", "i");
+  AddPropertyGet(GetReadyStateProperty, "readyState", "i");
 
   AddPropertyGet(GetSrcProperty, "src", "s");
   AddPropertySet(SetSrcProperty, "src", "s");
@@ -409,7 +397,7 @@ Plugin::Plugin()
     socket_address_(NULL),
     socket_(NULL),
     origin_valid_(false),
-    nacl_module_ready_(false),
+    nacl_ready_state_(UNSENT),
     height_(0),
     width_(0),
     wrapper_factory_(NULL) {
