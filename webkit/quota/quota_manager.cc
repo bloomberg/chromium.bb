@@ -690,20 +690,6 @@ void QuotaManager::NotifyOriginNoLongerInUse(const GURL& origin) {
     origins_in_use_.erase(origin);
 }
 
-void QuotaManager::GetLRUOrigin(
-    StorageType type,
-    GetLRUOriginCallback* callback) {
-  LazyInitialize();
-  if (db_disabled_) {
-    callback->Run(GURL());
-    delete callback;
-    return;
-  }
-  scoped_refptr<GetLRUOriginTask> task(new GetLRUOriginTask(
-      this, database_.get(), db_thread_, type, origins_in_use_, callback));
-  task->Start();
-}
-
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
   switch (type) {
     case kStorageTypeTemporary:
@@ -733,6 +719,32 @@ void QuotaManager::DeleteOriginFromDatabase(
       new OriginDeletionDatabaseTask(
           this, database_.get(), db_thread_, origin, type);
   task->Start();
+}
+
+void QuotaManager::GetLRUOrigin(
+    StorageType type,
+    GetLRUOriginCallback* callback) {
+  LazyInitialize();
+  if (db_disabled_) {
+    callback->Run(GURL());
+    delete callback;
+    return;
+  }
+  scoped_refptr<GetLRUOriginTask> task(new GetLRUOriginTask(
+      this, database_.get(), db_thread_, type, origins_in_use_, callback));
+  task->Start();
+}
+
+void QuotaManager::EvictOriginData(
+    const GURL& origin,
+    StorageType type,
+    EvictOriginDataCallback* callback) {
+  // TODO(dmikurube): Implement it.
+}
+
+void QuotaManager::GetUsageAndQuotaForEviction(
+    GetUsageAndQuotaForEvictionCallback* callback) {
+  // TODO(dmikurube): Implement it.
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {

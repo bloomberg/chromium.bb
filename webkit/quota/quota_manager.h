@@ -34,10 +34,35 @@ class UsageTracker;
 struct QuotaManagerDeleter;
 class QuotaManagerProxy;
 
+// An interface called by QuotaTemporaryStorageEvictor.
+class QuotaEvictionHandler {
+ public:
+  typedef Callback1<GURL>::Type GetLRUOriginCallback;
+  typedef Callback1<QuotaStatusCode>::Type EvictOriginDataCallback;
+  typedef Callback4<QuotaStatusCode,
+                    int64 /* usage */,
+                    int64 /* quota */,
+                    int64 /* physical_available */ >::Type
+      GetUsageAndQuotaForEvictionCallback;
+
+  virtual void GetLRUOrigin(
+      StorageType type,
+      GetLRUOriginCallback* callback) = 0;
+
+  virtual void EvictOriginData(
+      const GURL& origin,
+      StorageType type,
+      EvictOriginDataCallback* callback) = 0;
+
+  virtual void GetUsageAndQuotaForEviction(
+      GetUsageAndQuotaForEvictionCallback* callback) = 0;
+};
+
 // The quota manager class.  This class is instantiated per profile and
 // held by the profile.  With the exception of the constructor and the
 // proxy() method, all methods should only be called on the IO thread.
 class QuotaManager : public QuotaTaskObserver,
+                     public QuotaEvictionHandler,
                      public base::RefCountedThreadSafe<
                          QuotaManager, QuotaManagerDeleter> {
  public:
@@ -46,7 +71,6 @@ class QuotaManager : public QuotaTaskObserver,
                     int64 /* quota */>::Type GetUsageAndQuotaCallback;
   typedef Callback2<QuotaStatusCode,
                     int64 /* granted_quota */>::Type RequestQuotaCallback;
-  typedef Callback1<GURL>::Type GetLRUOriginCallback;
 
   QuotaManager(bool is_incognito,
                const FilePath& profile_path,
@@ -150,7 +174,16 @@ class QuotaManager : public QuotaTaskObserver,
 
   // Methods for eviction logic.
   void DeleteOriginFromDatabase(const GURL& origin, StorageType type);
-  void GetLRUOrigin(StorageType type, GetLRUOriginCallback* callback);
+
+  virtual void GetLRUOrigin(
+      StorageType type,
+      GetLRUOriginCallback* callback) OVERRIDE;
+  virtual void EvictOriginData(
+      const GURL& origin,
+      StorageType type,
+      EvictOriginDataCallback* callback) OVERRIDE;
+  virtual void GetUsageAndQuotaForEviction(
+      GetUsageAndQuotaForEvictionCallback* callback) OVERRIDE;
 
   void DeleteOnCorrectThread() const;
 
