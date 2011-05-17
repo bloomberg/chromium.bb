@@ -13,14 +13,19 @@
         function TestPostMessageAndOnMessage(messageToSend) {
           onMessageEventReceived = false;
           messageReceived = null;
-          plugin.onmessage = function(message) {
+
+          var listener = function(message) {
             onMessageEventReceived = true;
             messageReceived = message;
           }
+
+          plugin.addEventListener("message", listener, false);
+
           function waitForAndVerifyOnMessageEvent() {
             if (!onMessageEventReceived) {
-              halt_and_callback(1, waitForAndVerifyOnMessageEvent);
+              halt_and_callback(5, waitForAndVerifyOnMessageEvent);
             } else {
+              plugin.removeEventListener("message", listener, false);
               tester.log('Received onmessage event: ' + messageReceived.data);
               // Verify the message received against the message sent.
               halt_and_callback(0, function() {
