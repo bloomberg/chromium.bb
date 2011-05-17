@@ -6,3 +6,12 @@ RendererMainTest.CreateDestroy
 # times out the subsequent fork() calls.
 # http://crbug.com/79320
 *Json*
+
+# Failing after Lucid migration. http://crbug.com/82715
+MultiProcessLockTest.BasicCreationTest
+MultiProcessLockTest.LockScope
+MultiProcessLockTest.RecursiveLock
+MultiProcessLockTest.SimpleLock
+ServiceProcessStateTest.ForceShutdown
+ServiceProcessStateTest.ReadyState
+ServiceProcessStateTest.Singleton
