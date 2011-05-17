@@ -282,16 +282,6 @@ void ImageBurnHandler::ModelChanged() {
   }
 }
 
-void ImageBurnHandler::OnImageDirCreated(bool success,
-                                         ImageBurnTaskProxy* task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // Transfer to UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task, &ImageBurnTaskProxy::OnImageDirCreated,
-                        success));
-}
-
 void ImageBurnHandler::OnDownloadStarted(bool success) {
   if (success)
     resource_manager_->set_download_started(true);
@@ -329,6 +319,10 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
                                   info_value, results_value);
 }
 
+void ImageBurnHandler::HandleCancelBurnImage(const ListValue* args) {
+  image_target_.clear();
+}
+
 void ImageBurnHandler::HandleDownloadImage(const ListValue* args) {
   ExtractTargetedDeviceSystemPath(args);
   if (resource_manager_->GetImageDir().empty()) {
@@ -340,6 +334,58 @@ void ImageBurnHandler::HandleDownloadImage(const ListValue* args) {
         NewRunnableMethod(task.get(), &ImageBurnTaskProxy::CreateImageDir));
   } else {
     OnImageDirCreatedOnUIThread(true);
+  }
+}
+
+void ImageBurnHandler::CreateImageDirOnFileThread(ImageBurnTaskProxy* task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  resource_manager_->CreateImageDir(this, task);
+}
+
+void ImageBurnHandler::OnImageDirCreated(bool success,
+                                         ImageBurnTaskProxy* task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Transfer to UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(task, &ImageBurnTaskProxy::OnImageDirCreated,
+                        success));
+}
+
+void ImageBurnHandler::OnImageDirCreatedOnUIThread(bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (success) {
+    zip_image_file_path_ =
+        resource_manager_->GetImageDir().Append(kImageFileName);
+    resource_manager_->CreateImageUrl(tab_contents_, this);
+  } else {
+    DownloadCompleted(success);
+  }
+}
+
+void ImageBurnHandler::OnImageUrlCreated(GURL* image_url, bool success) {
+  if (!success) {
+    DownloadCompleted(false);
+    return;
+  }
+  image_download_url_ = image_url;
+
+  download_manager_ = tab_contents_->profile()->GetDownloadManager();
+  download_manager_->AddObserver(this);
+
+  if (!resource_manager_->download_started()) {
+    resource_manager_->set_download_started(true);
+    if (!resource_manager_->image_download_requested()) {
+      resource_manager_->set_image_download_requested(true);
+      ImageBurnDownloader::GetInstance()->AddListener(this,
+          *image_download_url_);
+      ImageBurnDownloader::GetInstance()->DownloadFile(*image_download_url_,
+                                                       zip_image_file_path_,
+                                                       tab_contents_);
+    }
+  } else if (resource_manager_->download_finished()) {
+    DownloadCompleted(true);
   }
 }
 
@@ -358,6 +404,24 @@ void ImageBurnHandler::DownloadCompleted(bool success) {
   } else {
     UnzipComplete(success);
   }
+}
+
+void ImageBurnHandler::UnzipImage() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_refptr<ImageBurnTaskProxy> task = new ImageBurnTaskProxy(AsWeakPtr());
+  BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(task.get(), &ImageBurnTaskProxy::UnzipImage));
+}
+
+void ImageBurnHandler::UnzipImageOnFileThread(ImageBurnTaskProxy* task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  bool success = UnzipImageImpl();
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(task, &ImageBurnTaskProxy::UnzipComplete, success));
 }
 
 void ImageBurnHandler::UnzipComplete(bool success) {
@@ -380,27 +444,6 @@ void ImageBurnHandler::HandleBurnImage(const ListValue* args) {
   BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(task.get(), &ImageBurnTaskProxy::BurnImage));
-}
-
-void ImageBurnHandler::HandleCancelBurnImage(const ListValue* args) {
-  image_target_.clear();
-}
-
-void ImageBurnHandler::CreateImageDirOnFileThread(ImageBurnTaskProxy* task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  resource_manager_->CreateImageDir(this, task);
-}
-
-void ImageBurnHandler::OnImageDirCreatedOnUIThread(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (success) {
-    zip_image_file_path_ =
-        resource_manager_->GetImageDir().Append(kImageFileName);
-    resource_manager_->CreateImageUrl(tab_contents_, this);
-  } else {
-    DownloadCompleted(success);
-  }
 }
 
 void ImageBurnHandler::BurnImageOnFileThread() {
@@ -469,31 +512,6 @@ string16 ImageBurnHandler::GetBurnProgressText(int64 total_burnt,
   }
 }
 
-void ImageBurnHandler::OnImageUrlCreated(GURL* image_url, bool success) {
-  if (!success) {
-    DownloadCompleted(false);
-    return;
-  }
-  image_download_url_ = image_url;
-
-  download_manager_ = tab_contents_->profile()->GetDownloadManager();
-  download_manager_->AddObserver(this);
-
-  if (!resource_manager_->download_started()) {
-    resource_manager_->set_download_started(true);
-    if (!resource_manager_->image_download_requested()) {
-      resource_manager_->set_image_download_requested(true);
-      ImageBurnDownloader::GetInstance()->AddListener(this,
-          *image_download_url_);
-      ImageBurnDownloader::GetInstance()->DownloadFile(*image_download_url_,
-                                                       zip_image_file_path_,
-                                                       tab_contents_);
-    }
-  } else if (resource_manager_->download_finished()) {
-    DownloadCompleted(true);
-  }
-}
-
 void ImageBurnHandler::ExtractTargetedDeviceSystemPath(
     const ListValue* list_value) {
   Value* list_member;
@@ -507,24 +525,6 @@ void ImageBurnHandler::ExtractTargetedDeviceSystemPath(
   } else {
     LOG(ERROR) << "Unable to get path string";
   }
-}
-
-void ImageBurnHandler::UnzipImage() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  scoped_refptr<ImageBurnTaskProxy> task = new ImageBurnTaskProxy(AsWeakPtr());
-  BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(task.get(), &ImageBurnTaskProxy::UnzipImage));
-}
-
-void ImageBurnHandler::UnzipImageOnFileThread(ImageBurnTaskProxy* task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  bool success = UnzipImageImpl();
-  BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(task, &ImageBurnTaskProxy::UnzipComplete, success));
 }
 
 bool ImageBurnHandler::UnzipImageImpl() {
