@@ -33,7 +33,7 @@ _DEFAULT_BUILDERS = [
   "Webkit Mac10.5 (dbg)(2)",
   "Webkit Mac10.6 (dbg)",
   "Webkit Linux",
-  "Webkit Linux 64",
+  "Webkit Linux 32",
   "Webkit Linux (dbg)(1)",
   "Webkit Linux (dbg)(2)",
 ]
