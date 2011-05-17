@@ -399,12 +399,16 @@ void BackgroundModeManager::ExecuteCommand(int item) {
       if (BrowserList::size() == 0) {
         // There are no windows open - unchecking this will exit Chrome. Warn
         // the user.
+        string16 tab_title = l10n_util::GetStringFUTF16(IDS_OPTIONS_TAB_TITLE,
+            l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
+            l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
+
         if (!platform_util::SimpleYesNoBox(
                 NULL,
                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
                 l10n_util::GetStringFUTF16(
                     IDS_CONFIRM_EXIT_BACKGROUND_MODE_BODY,
-                    GetPreferencesMenuLabel()))) {
+                    tab_title))) {
           return;
         }
       }
