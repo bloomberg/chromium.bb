@@ -1542,3 +1542,17 @@
    fun:ChannelProxy
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
 }
+{
+   bug_82974
+   Heapcheck:Leak
+   fun:sqlite3_bind_parameter_index
+   fun:net::X509Certificate::CreateOSCertHandleFromBytes
+   fun:net::X509Certificate::CreateFromBytes
+   fun:remoting::protocol::JingleSessionTest::DoCreateServerPair
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:::TaskClosureAdapter::Run
+   fun:base::internal::Invoker1::DoInvoke
+   fun:base::Callback::Run
+   fun:MessageLoop::RunTask
+}
