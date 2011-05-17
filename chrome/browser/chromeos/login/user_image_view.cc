@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -91,6 +92,12 @@ void UserImageView::Init() {
 
   default_images_view_->Init();
   take_photo_view_->Init();
+
+  UserManager* user_manager = UserManager::Get();
+  const std::string& logged_in_user = user_manager->logged_in_user().email();
+  int image_index = user_manager->GetUserDefaultImageIndex(logged_in_user);
+
+  default_images_view_->SetDefaultImageIndex(image_index);
 }
 
 void UserImageView::InitLayout() {

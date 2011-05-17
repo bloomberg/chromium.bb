@@ -42,6 +42,9 @@ class DefaultImagesView : public views::View,
   // selected image.
   int GetDefaultImageIndex() const;
 
+  // Allows to specify the selected image index specifically.
+  void SetDefaultImageIndex(int index);
+
   // Unselects the selected image if there's one.
   void ClearSelection();
 

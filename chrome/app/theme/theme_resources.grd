@@ -463,6 +463,8 @@
         <include name="IDR_LOGIN_DEFAULT_USER_14" file="avatar_robot_body.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_15" file="avatar_robot_head.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_16" file="avatar_toolbox.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_17" file="avatar_user_color.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_18" file="avatar_user_enterprise.png" type="BINDATA" />
         <include name="IDR_LOGIN_GUEST" file="login_guest.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER" file="login_add_user.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER_HOVER" file="login_add_user_hover.png" type="BINDATA" />

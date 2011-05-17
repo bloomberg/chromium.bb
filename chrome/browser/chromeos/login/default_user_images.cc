@@ -112,6 +112,8 @@ const int kDefaultImageResources[] = {
   IDR_LOGIN_DEFAULT_USER_14,
   IDR_LOGIN_DEFAULT_USER_15,
   IDR_LOGIN_DEFAULT_USER_16,
+  IDR_LOGIN_DEFAULT_USER_17,
+  IDR_LOGIN_DEFAULT_USER_18,
 };
 
 const int kDefaultImagesCount = arraysize(kDefaultImageResources);

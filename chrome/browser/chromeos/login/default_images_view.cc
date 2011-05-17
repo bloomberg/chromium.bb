@@ -46,6 +46,9 @@ const SkColor kImageBackgroundColor = SK_ColorWHITE;
 const int kImageStartId = 100;
 // ID for image control for video capture.
 const int kCaptureButtonId = 1000;
+// A number of the first buttons that don't correspond to any default image
+// (i.e. button to take a photo).
+const int kNonDefaultImageButtonsCount = 1;
 
 }  // namespace
 
@@ -105,7 +108,13 @@ int DefaultImagesView::GetDefaultImageIndex() const {
   if (selected_image_index_ == -1)
     return -1;
   else
-    return selected_image_index_ - 1;
+    return selected_image_index_ - kNonDefaultImageButtonsCount;
+}
+
+void DefaultImagesView::SetDefaultImageIndex(int image_index) {
+  selected_image_index_ = image_index + kNonDefaultImageButtonsCount;
+  if (delegate_)
+    delegate_->OnImageSelected(image_index % kDefaultImagesCount);
 }
 
 void DefaultImagesView::ClearSelection() {
@@ -141,9 +150,7 @@ void DefaultImagesView::ButtonPressed(views::Button* sender,
       NOTREACHED() << "Got ButtonPressed event from a view with wrong id.";
       return;
     }
-    selected_image_index_ = image_index + 1;
-    if (delegate_)
-      delegate_->OnImageSelected(image_index % kDefaultImagesCount);
+    SetDefaultImageIndex(image_index);
   }
 }
 
