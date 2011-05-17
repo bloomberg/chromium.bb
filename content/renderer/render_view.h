@@ -33,6 +33,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
@@ -122,6 +123,7 @@ class WebDragData;
 class WebFrame;
 class WebGeolocationClient;
 class WebGeolocationServiceInterface;
+class WebIconURL;
 class WebImage;
 class WebInputElement;
 class WebKeyboardEvent;
@@ -496,7 +498,8 @@ class RenderView : public RenderWidget,
   virtual void didReceiveTitle(WebKit::WebFrame* frame,
                                const WebKit::WebString& title,
                                WebKit::WebTextDirection direction);
-  virtual void didChangeIcons(WebKit::WebFrame*);
+  virtual void didChangeIcon(WebKit::WebFrame*,
+                             WebKit::WebIconURL::Type) OVERRIDE;
   virtual void didFinishDocumentLoad(WebKit::WebFrame* frame);
   virtual void didHandleOnloadEvents(WebKit::WebFrame* frame);
   virtual void didFailLoad(WebKit::WebFrame* frame,

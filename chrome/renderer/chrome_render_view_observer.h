@@ -53,7 +53,8 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
-  virtual void DidChangeIcons(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidChangeIcon(WebKit::WebFrame* frame,
+                             WebKit::WebIconURL::Type icon_type) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;

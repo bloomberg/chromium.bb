@@ -133,6 +133,8 @@ const char* const kUnknownLanguageCode = "und";
 
 const int kJavascriptMessageExpectedDelay = 1000;
 
+const bool kEnableTouchIcon = false;
+
 }  // namespace chrome
 
 #undef FPL

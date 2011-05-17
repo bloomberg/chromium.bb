@@ -4,10 +4,10 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/icon_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
@@ -17,7 +17,7 @@ FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
     : TabContentsObserver(tab_contents) {
   favicon_handler_.reset(new FaviconHandler(tab_contents,
                                             FaviconHandler::FAVICON));
-  if (browser_defaults::kEnableTouchIcon)
+  if (chrome::kEnableTouchIcon)
     touch_icon_handler_.reset(new FaviconHandler(tab_contents,
                                                  FaviconHandler::TOUCH));
 }

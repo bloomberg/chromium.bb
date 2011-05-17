@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "ipc/ipc_channel.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 
 class RenderView;
 
@@ -35,7 +36,8 @@ class RenderViewObserver : public IPC::Channel::Listener,
   // These match the WebKit API notifications
   virtual void DidStartLoading() {}
   virtual void DidStopLoading() {}
-  virtual void DidChangeIcons(WebKit::WebFrame* frame) {}
+  virtual void DidChangeIcon(WebKit::WebFrame* frame,
+                             WebKit::WebIconURL::Type) {}
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) {}
   virtual void DidFailLoad(WebKit::WebFrame* frame,
                            const WebKit::WebURLError& error) {}

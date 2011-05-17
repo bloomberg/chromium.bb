@@ -183,6 +183,7 @@ using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
+using WebKit::WebIconURL;
 using WebKit::WebImage;
 using WebKit::WebInputElement;
 using WebKit::WebMediaPlayer;
@@ -2470,8 +2471,9 @@ void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title,
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
-void RenderView::didChangeIcons(WebFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidChangeIcons(frame));
+void RenderView::didChangeIcon(WebFrame* frame, WebIconURL::Type type) {
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidChangeIcon(frame, type));
 }
 
 void RenderView::didFinishDocumentLoad(WebFrame* frame) {

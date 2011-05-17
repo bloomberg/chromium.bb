@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
@@ -50,6 +51,7 @@
 using WebKit::WebCString;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
+using WebKit::WebIconURL;
 using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
 using WebKit::WebRect;
@@ -111,6 +113,20 @@ static double CalculateBoringScore(SkBitmap* bitmap) {
   int color_count = *std::max_element(histogram, histogram + 256);
   int pixel_count = bitmap->width() * bitmap->height();
   return static_cast<double>(color_count) / pixel_count;
+}
+
+static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
+  switch (type) {
+    case WebIconURL::TypeFavicon:
+      return FaviconURL::FAVICON;
+    case WebIconURL::TypeTouch:
+      return FaviconURL::TOUCH_ICON;
+    case WebIconURL::TypeTouchPrecomposed:
+      return FaviconURL::TOUCH_PRECOMPOSED_ICON;
+    case WebIconURL::TypeInvalid:
+      return FaviconURL::INVALID_ICON;
+  }
+  return FaviconURL::INVALID_ICON;
 }
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
@@ -390,22 +406,39 @@ void ChromeRenderViewObserver::DidStopLoading() {
         search_provider::AUTODETECTED_PROVIDER));
   }
 
-  // TODO : Get both favicon and touch icon url, and send them to the browser.
-  GURL favicon_url(render_view()->webview()->mainFrame()->favIconURL());
-  if (!favicon_url.is_empty()) {
-    std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(favicon_url, FaviconURL::FAVICON));
+  int icon_types = WebIconURL::TypeFavicon;
+  if (chrome::kEnableTouchIcon)
+    icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
+
+  WebVector<WebIconURL> icon_urls =
+      render_view()->webview()->mainFrame()->iconURLs(icon_types);
+  std::vector<FaviconURL> urls;
+  for (size_t i = 0; i < icon_urls.size(); i++) {
+    WebURL url = icon_urls[i].iconURL();
+    if (!url.isEmpty())
+      urls.push_back(FaviconURL(url, ToFaviconType(icon_urls[i].iconType())));
+  }
+  if (!urls.empty()) {
     Send(new IconHostMsg_UpdateFaviconURL(
         routing_id(), render_view()->page_id(), urls));
   }
 }
 
-void ChromeRenderViewObserver::DidChangeIcons(WebFrame* frame) {
+void ChromeRenderViewObserver::DidChangeIcon(WebFrame* frame,
+                                             WebIconURL::Type icon_type) {
   if (frame->parent())
     return;
 
+  if (!chrome::kEnableTouchIcon &&
+      icon_type != WebIconURL::TypeFavicon)
+    return;
+
+  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
   std::vector<FaviconURL> urls;
-  urls.push_back(FaviconURL(frame->favIconURL(), FaviconURL::FAVICON));
+  for (size_t i = 0; i < icon_urls.size(); i++) {
+    urls.push_back(FaviconURL(icon_urls[i].iconURL(),
+                              ToFaviconType(icon_urls[i].iconType())));
+  }
   Send(new IconHostMsg_UpdateFaviconURL(
       routing_id(), render_view()->page_id(), urls));
 }

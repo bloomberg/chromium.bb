@@ -94,6 +94,9 @@ extern const char* const kUnknownLanguageCode;
 // contents.
 extern const int kJavascriptMessageExpectedDelay;
 
+// Are touch icons enabled? False by default.
+extern const bool kEnableTouchIcon;
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_
