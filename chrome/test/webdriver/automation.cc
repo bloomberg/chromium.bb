@@ -36,9 +36,8 @@
 
 namespace {
 
-// Gets the path to the default Chrome executable directory. Returns true on
-// success.
-bool GetDefaultChromeExeDir(FilePath* browser_directory) {
+// Gets the path to the default Chrome executable. Returns true on success.
+bool GetDefaultChromeExe(FilePath* browser_exe) {
   std::vector<FilePath> locations;
   // Add the directory which this module resides in.
   FilePath module_dir;
@@ -102,9 +101,9 @@ bool GetDefaultChromeExeDir(FilePath* browser_directory) {
 
   // Determine the default directory.
   for (size_t i = 0; i < locations.size(); ++i) {
-    if (file_util::PathExists(
-            locations[i].Append(chrome::kBrowserProcessExecutablePath))) {
-      *browser_directory = locations[i];
+    FilePath path = locations[i].Append(chrome::kBrowserProcessExecutablePath);
+    if (file_util::PathExists(path)) {
+      *browser_exe = path;
       return true;
     }
   }
@@ -119,41 +118,52 @@ Automation::Automation() {}
 
 Automation::~Automation() {}
 
-void Automation::Init(const FilePath& browser_exe,
-                      const CommandLine& options, ErrorCode* code) {
-  FilePath browser = browser_exe;
-  if (browser.empty() && !GetDefaultChromeExeDir(&browser)) {
+void Automation::Init(const CommandLine& options,
+                      ErrorCode* code) {
+  FilePath browser_exe;
+  if (!GetDefaultChromeExe(&browser_exe)) {
     *code = kBrowserCouldNotBeFound;
     return;
   }
 
-  CommandLine args(CommandLine::NO_PROGRAM);
-  args.AppendSwitch(switches::kDisableHangMonitor);
-  args.AppendSwitch(switches::kDisablePromptOnRepost);
-  args.AppendSwitch(switches::kDomAutomationController);
-  args.AppendSwitch(switches::kFullMemoryCrashReport);
-  args.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
-  args.AppendSwitch(switches::kNoDefaultBrowserCheck);
-  args.AppendSwitch(switches::kNoFirstRun);
-  args.AppendSwitchASCII(switches::kTestType, "webdriver");
+  InitWithBrowserPath(browser_exe, options, code);
+}
 
-  args.AppendArguments(options, false);
+void Automation::InitWithBrowserPath(const FilePath& browser_exe,
+                                     const CommandLine& options,
+                                     ErrorCode* code) {
+  if (!file_util::PathExists(browser_exe)) {
+    *code = kBrowserCouldNotBeFound;
+    return;
+  }
+
+  CommandLine command(browser_exe);
+  command.AppendSwitch(switches::kDisableHangMonitor);
+  command.AppendSwitch(switches::kDisablePromptOnRepost);
+  command.AppendSwitch(switches::kDomAutomationController);
+  command.AppendSwitch(switches::kFullMemoryCrashReport);
+  command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
+  command.AppendSwitch(switches::kNoDefaultBrowserCheck);
+  command.AppendSwitch(switches::kNoFirstRun);
+  command.AppendSwitchASCII(switches::kTestType, "webdriver");
+
+  command.AppendArguments(options, false);
 
   launcher_.reset(new AnonymousProxyLauncher(false));
   ProxyLauncher::LaunchState launch_props = {
       false,  // clear_profile
       FilePath(),  // template_user_data
       ProxyLauncher::DEFAULT_THEME,
-      browser,
-      args,
+      command,
       true,  // include_testing_id
       true   // show_window
   };
-  launcher_->LaunchBrowserAndServer(launch_props, true);
-  if (!launcher_->IsBrowserRunning()) {
+
+  if (!launcher_->LaunchBrowserAndServer(launch_props, true)) {
     *code = kBrowserFailedToStart;
     return;
   }
+
   int version = 0;
   if (!SendGetChromeDriverAutomationVersion(automation(), &version) ||
       version > automation::kChromeDriverAutomationVersion) {
@@ -164,7 +174,9 @@ void Automation::Init(const FilePath& browser_exe,
 }
 
 void Automation::Terminate() {
-  launcher_->QuitBrowser();
+  if (launcher_.get() && launcher_->process() != base::kNullProcessHandle) {
+    launcher_->QuitBrowser();
+  }
 }
 
 void Automation::ExecuteScript(int tab_id,

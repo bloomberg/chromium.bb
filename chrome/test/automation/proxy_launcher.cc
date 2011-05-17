@@ -119,25 +119,35 @@ ProxyLauncher::ProxyLauncher()
 
 ProxyLauncher::~ProxyLauncher() {}
 
-void ProxyLauncher::WaitForBrowserLaunch(bool wait_for_initial_loads) {
-  ASSERT_EQ(AUTOMATION_SUCCESS, automation_proxy_->WaitForAppLaunch())
+bool ProxyLauncher::WaitForBrowserLaunch(bool wait_for_initial_loads) {
+  AutomationLaunchResult app_launched = automation_proxy_->WaitForAppLaunch();
+  EXPECT_EQ(AUTOMATION_SUCCESS, app_launched)
       << "Error while awaiting automation ping from browser process";
-  if (wait_for_initial_loads)
-    ASSERT_TRUE(automation_proxy_->WaitForInitialLoads());
-  else
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+  if (app_launched != AUTOMATION_SUCCESS)
+    return false;
 
-  EXPECT_TRUE(automation()->SetFilteredInet(ShouldFilterInet()));
+  if (wait_for_initial_loads) {
+    bool waited = automation_proxy_->WaitForInitialLoads();
+    EXPECT_TRUE(waited);
+    if (!waited)
+      return false;
+  } else {
+    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+  }
+
+  bool set_inet_filter = automation()->SetFilteredInet(ShouldFilterInet());
+  EXPECT_TRUE(set_inet_filter);
+  return set_inet_filter;
 }
 
-void ProxyLauncher::LaunchBrowserAndServer(const LaunchState& state,
+bool ProxyLauncher::LaunchBrowserAndServer(const LaunchState& state,
                                            bool wait_for_initial_loads) {
   // Set up IPC testing interface as a server.
   automation_proxy_.reset(CreateAutomationProxy(
                               TestTimeouts::action_max_timeout_ms()));
 
   LaunchBrowser(state);
-  WaitForBrowserLaunch(wait_for_initial_loads);
+  return WaitForBrowserLaunch(wait_for_initial_loads);
 }
 
 void ProxyLauncher::ConnectToRunningBrowser(bool wait_for_initial_loads) {
@@ -389,8 +399,11 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
   // This is a UI test.
   command_line->AppendSwitchASCII(switches::kTestType, kUITestType);
 
-  // Tell the browser to use a temporary directory just for this test.
-  command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir());
+  // Tell the browser to use a temporary directory just for this test
+  // if it is not already set.
+  if (command_line->GetSwitchValuePath(switches::kUserDataDir).empty()) {
+    command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir());
+  }
 
   if (include_testing_id)
     command_line->AppendSwitchASCII(switches::kTestingChannelID,
@@ -449,16 +462,12 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
 
 bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
                                         base::ProcessHandle* process) {
-  FilePath command = state.browser_directory.Append(
-      chrome::kBrowserProcessExecutablePath);
-
-  CommandLine command_line(command);
+  CommandLine command_line(state.command);
 
   // Add command line arguments that should be applied to all UI tests.
   PrepareTestCommandline(&command_line, state.include_testing_id);
   DebugFlags::ProcessDebugFlags(
       &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
-  command_line.AppendArguments(state.arguments, false);
 
   // TODO(phajdan.jr): Only run it for "main" browser launch.
   browser_launch_time_ = base::TimeTicks::Now();

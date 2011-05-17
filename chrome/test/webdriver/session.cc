@@ -70,7 +70,7 @@ Session::~Session() {
   SessionManager::GetInstance()->Remove(id_);
 }
 
-ErrorCode Session::Init(const FilePath& browser_dir,
+ErrorCode Session::Init(const FilePath& browser_exe,
                         const CommandLine& options) {
   if (!thread_.Start()) {
     LOG(ERROR) << "Cannot start session thread";
@@ -82,7 +82,7 @@ ErrorCode Session::Init(const FilePath& browser_dir,
   RunSessionTask(NewRunnableMethod(
       this,
       &Session::InitOnSessionThread,
-      browser_dir,
+      browser_exe,
       options,
       &code));
   if (code != kSuccess)
@@ -976,11 +976,14 @@ void Session::RunSessionTaskOnSessionThread(Task* task,
   done_event->Signal();
 }
 
-void Session::InitOnSessionThread(const FilePath& browser_dir,
+void Session::InitOnSessionThread(const FilePath& browser_exe,
                                   const CommandLine& options,
                                   ErrorCode* code) {
   automation_.reset(new Automation());
-  automation_->Init(browser_dir, options, code);
+  if (browser_exe.empty())
+    automation_->Init(options, code);
+  else
+    automation_->InitWithBrowserPath(browser_exe, options, code);
   if (*code != kSuccess)
     return;
 

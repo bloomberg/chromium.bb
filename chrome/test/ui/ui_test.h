@@ -268,13 +268,7 @@ class UITestBase {
     return launcher_->automation();
   }
 
-  ProxyLauncher::LaunchState DefaultLaunchState() {
-    ProxyLauncher::LaunchState state =
-        { clear_profile_, template_user_data_, profile_type_,
-          browser_directory_, launch_arguments_,
-          include_testing_id_, show_window_ };
-    return state;
-  }
+  ProxyLauncher::LaunchState DefaultLaunchState();
 
   virtual bool ShouldFilterInet();
 

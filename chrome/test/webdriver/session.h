@@ -60,11 +60,11 @@ class Session {
   // Removes this |Session| from the |SessionManager|.
   ~Session();
 
-  // Starts the session thread and a new browser, using the exe found in
-  // |browser_dir|. If |browser_dir| is empty, it will search in all the default
+  // Starts the session thread and a new browser, using the exe found at
+  // |browser_exe|. If |browser_exe| is empty, it will search in all the default
   // locations. Returns true on success. On failure, the session will delete
   // itself and return an error code.
-  ErrorCode Init(const FilePath& browser_dir,
+  ErrorCode Init(const FilePath& browser_exe,
                  const CommandLine& options);
 
   // Terminates this session and deletes itself.
@@ -259,7 +259,7 @@ class Session {
   void RunSessionTaskOnSessionThread(
       Task* task,
       base::WaitableEvent* done_event);
-  void InitOnSessionThread(const FilePath& browser_dir,
+  void InitOnSessionThread(const FilePath& browser_exe,
                            const CommandLine& options,
                            ErrorCode* code);
   void TerminateOnSessionThread();

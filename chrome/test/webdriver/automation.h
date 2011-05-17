@@ -42,10 +42,13 @@ class Automation {
   Automation();
   virtual ~Automation();
 
-  // Creates a browser, using the exe found in |browser_exe|. If |browser_exe|
-  // is empty, it will search in all the default locations. |options| contains
-  // extra parameters to be used on the command line when lauching the browser.
-  void Init(const FilePath& browser_exe, const CommandLine& options,
+  // Creates a browser, using the specified |browser_exe|.
+  void InitWithBrowserPath(const FilePath& browser_exe,
+                           const CommandLine& options,
+                           ErrorCode* code);
+
+  // Start the system's default Chrome binary.
+  void Init(const CommandLine& options,
             ErrorCode* code);
 
   // Terminates this session and disconnects its automation proxy. After

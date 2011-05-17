@@ -173,6 +173,17 @@ ProxyLauncher* UITestBase::CreateProxyLauncher() {
   return new AnonymousProxyLauncher(false);
 }
 
+ProxyLauncher::LaunchState UITestBase::DefaultLaunchState() {
+  FilePath browser_executable = browser_directory_.Append(
+      chrome::kBrowserProcessExecutablePath);
+  CommandLine command(browser_executable);
+  command.AppendArguments(launch_arguments_, false);
+  ProxyLauncher::LaunchState state =
+      { clear_profile_, template_user_data_, profile_type_,
+        command, include_testing_id_, show_window_ };
+  return state;
+}
+
 bool UITestBase::ShouldFilterInet() {
   return true;
 }
@@ -221,7 +232,7 @@ void UITestBase::LaunchBrowser(const CommandLine& arguments,
 bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
     const CommandLine& cmdline) {
   ProxyLauncher::LaunchState state = DefaultLaunchState();
-  state.arguments = cmdline;
+  state.command.AppendArguments(cmdline, false);
   return launcher_->LaunchAnotherBrowserBlockUntilClosed(state);
 }
 #endif

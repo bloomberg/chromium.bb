@@ -56,11 +56,8 @@ class ProxyLauncher {
     // Profile theme type.
     ProfileType profile_type;
 
-    // Path to the browser executable.
-    FilePath browser_directory;
-
-    // Command line arguments passed to the browser.
-    CommandLine arguments;
+    // Command line to launch the browser.
+    CommandLine command;
 
     // Should we supply the testing channel id on the command line?
     bool include_testing_id;
@@ -82,7 +79,8 @@ class ProxyLauncher {
   virtual void TerminateConnection() = 0;
 
   // Launches the browser and IPC testing connection in server mode.
-  void LaunchBrowserAndServer(const LaunchState& state,
+  // Returns true on success.
+  bool LaunchBrowserAndServer(const LaunchState& state,
                               bool wait_for_initial_loads);
 
   // Launches the IPC testing connection in client mode,
@@ -233,7 +231,7 @@ class ProxyLauncher {
   }
 
  private:
-  void WaitForBrowserLaunch(bool wait_for_initial_loads);
+  bool WaitForBrowserLaunch(bool wait_for_initial_loads);
 
   // Prepare command line that will be used to launch the child browser process.
   void PrepareTestCommandline(CommandLine* command_line,

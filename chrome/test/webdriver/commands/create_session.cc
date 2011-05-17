@@ -31,9 +31,9 @@ CreateSession::~CreateSession() {}
 bool CreateSession::DoesPost() { return true; }
 
 void CreateSession::ExecutePost(Response* const response) {
-  SessionManager* session_manager = SessionManager::GetInstance();
   DictionaryValue *added_options = NULL, *desiredCapabilities = NULL;
   CommandLine options(CommandLine::NO_PROGRAM);
+  FilePath user_browser_exe;
 
   if (!GetDictionaryParameter("desiredCapabilities", &desiredCapabilities)) {
     desiredCapabilities = NULL;
@@ -59,12 +59,14 @@ void CreateSession::ExecutePost(Response* const response) {
       }
      ++i;
     }
+    FilePath::StringType path;
+    desiredCapabilities->GetString("chrome.binary", &path);
+    user_browser_exe = FilePath(path);
   }
 
   // Session manages its own liftime, so do not call delete.
   Session* session = new Session();
-  ErrorCode code = session->Init(session_manager->chrome_dir(),
-                                 options);
+  ErrorCode code = session->Init(user_browser_exe, options);
 
   if (code == kBrowserCouldNotBeFound) {
     SET_WEBDRIVER_ERROR(response,
@@ -110,6 +112,7 @@ void CreateSession::ExecutePost(Response* const response) {
 
   VLOG(1) << "Created session " << session->id();
   std::ostringstream stream;
+  SessionManager* session_manager = SessionManager::GetInstance();
   stream << "http://" << session_manager->GetAddress() << "/session/"
          << session->id();
   response->SetStatus(kSeeOther);
