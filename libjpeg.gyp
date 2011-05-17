@@ -32,7 +32,7 @@
             '.',
           ],
           'defines': [
-            'WITH_SIMD',
+            'WITH_SIMD', 'MOTION_JPEG_SUPPORTED',
           ],
           'sources': [
             'jconfig.h',
