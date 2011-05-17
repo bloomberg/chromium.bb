@@ -77,6 +77,8 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
 
   FilePath path_for_origin =
       sandbox_provider()->GetBaseDirectoryForOrigin(origin_url);
+  if (!file_util::PathExists(path_for_origin))
+    return true;
   return file_util::Delete(path_for_origin, true /* recursive */);
 }
 
@@ -87,6 +89,8 @@ bool FileSystemContext::DeleteDataForOriginAndTypeOnFileThread(
 
   FilePath path_for_origin =
       sandbox_provider()->GetBaseDirectoryForOriginAndType(origin_url, type);
+  if (!file_util::PathExists(path_for_origin))
+    return true;
   return file_util::Delete(path_for_origin, true /* recursive */);
 }
 
