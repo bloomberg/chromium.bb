@@ -329,6 +329,12 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SelectFileFunction>();
   RegisterFunction<SelectFilesFunction>();
   RegisterFunction<ViewFilesFunction>();
+
+#if defined(TOUCH_UI)
+  // Input
+  RegisterFunction<SendHandwritingStrokeFunction>();
+  RegisterFunction<CancelHandwritingStrokesFunction>();
+#endif
 #endif
 
   // Debugger

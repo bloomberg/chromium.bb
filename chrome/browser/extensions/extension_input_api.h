@@ -33,4 +33,25 @@ class SendKeyboardEventInputFunction : public InputFunction {
   views::Widget* GetTopLevelWidget();
 };
 
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+// Note that this experimental APIs are currently only available for
+// TOUCH_UI version of Chrome OS. Please also note that the version of Chrome
+// OS is always built with TOOLKIT_VIEWS.
+//
+// We may eventually support other platforms, especially non TOUCH_UI version
+// of Chrome OS.
+class SendHandwritingStrokeFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendHandwritingStroke");
+};
+
+class CancelHandwritingStrokesFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.input.cancelHandwritingStrokes");
+};
+#endif
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_

@@ -276,10 +276,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     chromeos::SendHandwritingStroke(input_method_status_connection_, stroke);
   }
 
-  virtual void CancelHandwriting(int n_strokes) {
+  virtual void CancelHandwritingStrokes(int stroke_count) {
     if (!initialized_successfully_)
       return;
-    chromeos::CancelHandwriting(input_method_status_connection_, n_strokes);
+    // TODO(yusukes): Rename the libcros function to CancelHandwritingStrokes.
+    chromeos::CancelHandwriting(input_method_status_connection_, stroke_count);
   }
 
  private:
@@ -936,7 +937,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
   }
 
   virtual void SendHandwritingStroke(const HandwritingStroke& stroke) {}
-  virtual void CancelHandwriting(int n_strokes) {}
+  virtual void CancelHandwritingStrokes(int stroke_count) {}
 
  private:
   typedef std::map<std::string, std::string> KeyboardOverlayMap;

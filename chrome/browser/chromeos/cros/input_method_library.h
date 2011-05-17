@@ -127,7 +127,7 @@ class InputMethodLibrary {
 
   // Clears last N handwriting strokes in libcros. See
   // chromeos::CancelHandwriting for details.
-  virtual void CancelHandwriting(int n_strokes) = 0;
+  virtual void CancelHandwritingStrokes(int stroke_count) = 0;
 
   virtual InputMethodDescriptor previous_input_method() const = 0;
   virtual InputMethodDescriptor current_input_method() const = 0;

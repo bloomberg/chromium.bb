@@ -2418,6 +2418,38 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "sendHandwritingStroke",
+        "type": "function",
+        "description": "Send a handwriting event to Chrome.",
+        "parameters": [
+          {
+            "name": "stroke",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {"type": "number", "minimum": 0, "maximum": 1},
+                "y": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "cancelHandwritingStrokes",
+        "type": "function",
+        "description": "Clear last N handwriting strokes.",
+        "parameters": [
+          {
+            "name": "strokeCount",
+            "optional": true,
+	    "description": "The number of strokes to be removed. Pass 0 to remove all strokes. If omitted, removes all.",
+            "type": "integer",
+            "minimum": 0
+          }
+        ]
       }
     ],
     "events": []

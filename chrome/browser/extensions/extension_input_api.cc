@@ -16,6 +16,11 @@
 #include "views/ime/input_method.h"
 #include "views/widget/widget.h"
 
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
+#endif
+
 namespace {
 
 // Keys.
@@ -35,6 +40,9 @@ const char kUnknownOrUnsupportedKeyIdentiferError[] = "Unknown or unsupported "
 const char kUnsupportedModifier[] = "Unsupported modifier.";
 const char kNoValidRecipientError[] = "No valid recipient for event.";
 const char kKeyEventUnprocessedError[] = "Event was not handled.";
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+const char kCrosLibraryNotLoadedError[] = "Cros shared library not loaded.";
+#endif
 
 ui::EventType GetTypeFromString(const std::string& type) {
   if (type == kKeyDown) {
@@ -116,3 +124,48 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   return true;
 }
+
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+// TODO(yusukes): This part should be moved to extension_input_api_chromeos.cc.
+bool SendHandwritingStrokeFunction::RunImpl() {
+  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
+  if (!cros_library->EnsureLoaded()) {
+    error_ = kCrosLibraryNotLoadedError;
+    return false;
+  }
+
+  // TODO(yusukes): Add a parameter for an input context ID.
+  ListValue* value = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &value));
+
+  chromeos::HandwritingStroke stroke;
+  for (size_t i = 0; i < value->GetSize(); ++i) {
+    DictionaryValue* dict;
+    double x = 0.0;
+    double y = 0.0;
+    EXTENSION_FUNCTION_VALIDATE(value->GetDictionary(i, &dict));
+    EXTENSION_FUNCTION_VALIDATE(dict->GetDouble("x", &x));
+    EXTENSION_FUNCTION_VALIDATE(dict->GetDouble("y", &y));
+    stroke.push_back(std::make_pair(x, y));
+  }
+  cros_library->GetInputMethodLibrary()->SendHandwritingStroke(stroke);
+  return true;
+}
+
+bool CancelHandwritingStrokesFunction::RunImpl() {
+  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
+  if (!cros_library->EnsureLoaded()) {
+    error_ = kCrosLibraryNotLoadedError;
+    return false;
+  }
+
+  // TODO(yusukes): Add a parameter for an input context ID.
+  int stroke_count = 0;  // zero means 'clear all strokes'.
+  if (HasOptionalArgument(0)) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &stroke_count));
+    EXTENSION_FUNCTION_VALIDATE(stroke_count >= 0);
+  }
+  cros_library->GetInputMethodLibrary()->CancelHandwritingStrokes(stroke_count);
+  return true;
+}
+#endif

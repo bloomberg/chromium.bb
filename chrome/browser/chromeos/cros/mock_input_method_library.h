@@ -38,7 +38,7 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   MOCK_METHOD1(SetDeferImeStartup, void(bool));
   MOCK_METHOD1(SetEnableAutoImeShutdown, void(bool));
   MOCK_METHOD1(SendHandwritingStroke, void(const HandwritingStroke&));
-  MOCK_METHOD1(CancelHandwriting, void(int));
+  MOCK_METHOD1(CancelHandwritingStrokes, void(int));
 };
 
 }  // namespace chromeos
