@@ -92,7 +92,9 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetString("name", extension->name());
   value->SetString("description", extension->description());
   value->SetString("launch_url", extension->GetFullLaunchURL().spec());
-  value->SetString("options_url", extension->options_url().spec());
+  if (enabled) {
+    value->SetString("options_url", extension->options_url().spec());
+  }
   value->SetBoolean("can_uninstall",
                     Extension::UserMayDisable(extension->location()));
   value->SetString("icon_big", icon_big.spec());
