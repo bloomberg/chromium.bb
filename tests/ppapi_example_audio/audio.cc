@@ -86,6 +86,27 @@ class MyInstance : public pp::Instance {
         obtained_sample_frame_count_(0),
         callback_count_(0) {}
 
+  virtual void HandleMessage(const pp::Var& message) {
+    NaClLog(1, "example: received HandleMessage\n");
+    if (message.is_string()) {
+      if (message.AsString() == "StartPlayback") {
+        StartOutput();
+      }
+    }
+  }
+
+  void StartOutput() {
+    bool audio_start_playback = audio_.StartPlayback();
+    CHECK(true == audio_start_playback);
+    NaClLog(1, "example: frequencies are %f %f\n", frequency_l_, frequency_r_);
+    NaClLog(1, "example: amplitudes are %f %f\n", amplitude_l_, amplitude_r_);
+    NaClLog(1, "example: Scheduling StopOutput on main thread in %"
+            NACL_PRIu32"msec\n", duration_msec_);
+    // Schedule a callback in duration_msec_ to stop audio output
+    pp::CompletionCallback cc(StopOutput, this);
+    pp::Module::Get()->core()->CallOnMainThread(duration_msec_, cc, PP_OK);
+  }
+
   static void StopOutput(void* user_data, int32_t err) {
     MyInstance* instance = static_cast<MyInstance*>(user_data);
 
@@ -179,16 +200,6 @@ class MyInstance : public pp::Instance {
 
     // Run through test suite before attempting real playback.
     TestSuite();
-
-    bool audio_start_playback = audio_.StartPlayback();
-    CHECK(true == audio_start_playback);
-    // Schedule a callback in 10 seconds to stop audio output
-    pp::CompletionCallback cc(StopOutput, this);
-    NaClLog(1, "example: frequencies are %f %f\n", frequency_l_, frequency_r_);
-    NaClLog(1, "example: amplitudes are %f %f\n", amplitude_l_, amplitude_r_);
-    NaClLog(1, "example: Scheduling StopOutput on main thread in %"
-            NACL_PRIu32"msec\n", duration_msec_);
-    pp::Module::Get()->core()->CallOnMainThread(duration_msec_, cc, PP_OK);
     return true;
   }
 

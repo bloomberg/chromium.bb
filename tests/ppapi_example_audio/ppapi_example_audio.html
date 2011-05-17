@@ -1,24 +1,80 @@
+<!--
+  Copyright 2010 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
   <head>
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
+  <script type="text/javascript" src="nacltest.js"></script>
+  <title>PPAPI Audio</title>
   </head>
+
   <h1>Native Client PPAPI Audio</h1>
   <body>
-    <embed id="naclModule"
-      name="naclModule"
-      width=0 height=0
-      src="ppapi_example_audio.nmf"
-      basic_tests="1"
-      stress_tests="1"
-      style="background-color:gray"
-      type="application/x-nacl" />
+    <div id="attach"></div>
     <br>Verify that a 400Hz tone is emitted on the left channel.<br>
     <br>Verify that a 1000Hz tone is emitted on the right channel.<br>
     <br>Note: This example depends on your system supporting audio output.<br>
-
   </body>
+  <script type="text/javascript">
+    //<![CDATA[
+function setupTests(tester, plugin) {
+
+  tester.addTest('TestPlayback', function() {
+    var gotCallback = false;
+    var gotValue;
+
+    // Deliberately global - this what the nexe expects.
+    window['StopPlaybackCompleted'] = function(value) {
+      tester.log('Received callback: ' + value);
+      if (!gotCallback) {
+        gotCallback = true;
+        gotValue = value;
+      }
+    }
+
+    // Tell the nexe to start playing audio.
+    plugin.postMessage('StartPlayback');
+
+    function wait() {
+      if (!gotCallback) {
+        halt_and_callback(10, wait);
+      } else {
+        assertEqual(gotValue, 'pass');
+      }
+    }
+
+    wait();
+  });
+}
+
+var playback;
+if (location.hash == "#mute") {
+  playback = 'amplitude_l="0" amplitude_r="0" duration_msec="1000"';
+} else {
+  playback = 'amplitude_l="1" amplitude_r="1" duration_msec="10000"';
+}
+var node = document.createElement('div');
+node.innerHTML = '<embed id="naclModule" ' +
+                 'name="naclModule" ' +
+                 'width=0 height=0 ' +
+                 'src="ppapi_example_audio.nmf" ' +
+                 'basic_tests="1" ' +
+                 'stress_tests="0" ' +
+                 'style="background-color:gray" ' +
+                 'type="application/x-nacl" ' +
+                 playback + ' />';
+document.getElementById('attach').appendChild(node);
+
+var tester = new Tester();
+setupTests(tester, $('naclModule'));
+tester.waitFor($('naclModule'));
+tester.run();
+    //]]>
+  </script>
 </html>

@@ -1335,6 +1335,13 @@ def PyAutoTesterIsBroken(env):
 pre_base_env.AddMethod(PyAutoTesterIsBroken)
 
 
+# Disable async surfaway pyauto test suite until issues it raises on bots
+# are fixed.  TODO(nfullagar): re-enable when this suite won't break the bots.
+def PyAutoTesterSurfawayAsyncIsBroken(env):
+  return True
+
+pre_base_env.AddMethod(PyAutoTesterSurfawayAsyncIsBroken)
+
 # ----------------------------------------------------------
 def DemoSelLdrNacl(env,
                    target,

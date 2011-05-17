@@ -149,7 +149,8 @@ def RunFromCommandLine():
   url = options.url
   if url is None:
     parser.error('Must specify a URL')
-  if not (url.endswith('.html') or url.endswith('.htm')):
+  url_split = url.split('#')[0]
+  if not (url_split.endswith('.html') or url_split.endswith('.htm')):
     parser.error('URL must be a HTML file.')
 
   # Look for files in the browserdata directory as a last resort

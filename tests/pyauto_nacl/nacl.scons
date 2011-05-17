@@ -5,6 +5,27 @@
 
 Import('env')
 
+platform = env.get('TARGET_FULLARCH')
+cat_nexe_name = 'cat_%s.nexe' % platform
+earth_c_nexe_name = 'earth_c_%s.nexe' % platform
+earth_cc_nexe_name = 'earth_cc_%s.nexe' % platform
+ppapi_basic_object_nexe_name = 'ppapi_basic_object_%s.nexe' % platform
+ppapi_core_nexe_name = 'ppapi_core_%s.nexe' % platform
+ppapi_example_2d_nexe_name = 'ppapi_example_2d_%s.nexe' % platform
+ppapi_example_audio_nexe_name = 'ppapi_example_audio_%s.nexe' % platform
+ppapi_event_example_nexe_name = 'ppapi_event_example_%s.nexe' % platform
+ppapi_file_system_nexe_name = 'ppapi_file_system_%s.nexe' % platform
+ppapi_geturl_nexe_name = 'ppapi_geturl_%s.nexe' % platform
+ppapi_ppb_graphics2d_nexe_name = 'ppapi_ppb_graphics2d_%s.nexe' % platform
+ppapi_progress_events_nexe_name = 'ppapi_progress_events_%s.nexe' % platform
+ppapi_test_example_nexe_name = 'ppapi_test_example_%s.nexe' % platform
+ppapi_user_main_nexe_name = 'ppapi_user_main_%s.nexe' % platform
+srpc_test_nexe_name = 'srpc_test_%s.nexe' % platform
+srpc_hw_nexe_name = 'srpc_hw_%s.nexe' % platform
+srpc_nrd_client_nexe_name = 'srpc_nrd_client_%s.nexe' % platform
+srpc_nrd_server_nexe_name = 'srpc_nrd_server_%s.nexe' % platform
+srpc_shm_nexe_name = 'srpc_shm_%s.nexe' % platform
+
 # sanity.py
 node = env.PyAutoTester('pyauto_sanity.out', env.File('sanity.py'))
 env.AddNodeToTestSuite(node,
@@ -13,28 +34,88 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PyAutoTesterIsBroken())
 
 # surfaway.py
-ppapi_geturl_nexe_name = 'ppapi_geturl_%s.nexe' % env.get('TARGET_FULLARCH')
-node = env.PyAutoTester('pyauto_surfaway.out',
-                        env.File('surfaway.py'),
-                        files=[env.File('${STAGING_DIR}/nacltest.js'),
-                               env.File('${STAGING_DIR}/' +
-                                        ppapi_geturl_nexe_name),
-                               env.File('${STAGING_DIR}/ppapi_geturl.nmf'),
-                               env.File('${STAGING_DIR}/ppapi_geturl.html')])
+node = env.PyAutoTester(
+    'pyauto_surfaway.out',
+    env.File('surfaway.py'),
+    files=[env.File('${STAGING_DIR}/nacltest.js'),
+           env.File('${STAGING_DIR}/' + ppapi_geturl_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_geturl.nmf'),
+           env.File('${STAGING_DIR}/ppapi_geturl.html')])
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_surfaway_test',
                        is_broken=env.PyAutoTesterIsBroken())
 
+# surfaway_async.py
+node = env.PyAutoTester(
+    'pyauto_surfaway_async.out',
+    env.File('surfaway_async.py'),
+    files=[env.File('${STAGING_DIR}/basic_object.html'),
+           env.File('${STAGING_DIR}/basic_object.nmf'),
+           env.File('${STAGING_DIR}/cat.nmf'),
+           env.File('${STAGING_DIR}/' + cat_nexe_name),
+           env.File('${STAGING_DIR}/' + earth_c_nexe_name),
+           env.File('${STAGING_DIR}/earth_c.html'),
+           env.File('${STAGING_DIR}/earth_c.nmf'),
+           env.File('${STAGING_DIR}/' + earth_cc_nexe_name),
+           env.File('${STAGING_DIR}/earth_cc.html'),
+           env.File('${STAGING_DIR}/earth_cc.nmf'),
+           env.File('${STAGING_DIR}/' + ppapi_event_example_nexe_name),
+           env.File('${STAGING_DIR}/event_example.html'),
+           env.File('${STAGING_DIR}/event_example.nmf'),
+           env.File('${STAGING_DIR}/nacltest.js'),
+           env.File('${STAGING_DIR}/' + ppapi_basic_object_nexe_name),
+           env.File('${STAGING_DIR}/' + ppapi_core_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_core.nmf'),
+           env.File('${STAGING_DIR}/ppapi_core.html'),
+           env.File('${STAGING_DIR}/' + ppapi_file_system_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_file_system.html'),
+           env.File('${STAGING_DIR}/ppapi_file_system.nmf'),
+           env.File('${STAGING_DIR}/' + ppapi_geturl_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_geturl.nmf'),
+           env.File('${STAGING_DIR}/ppapi_geturl.html'),
+           env.File('${STAGING_DIR}/' + ppapi_example_2d_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_example_2d.nmf'),
+           env.File('${STAGING_DIR}/ppapi_example_2d.html'),
+           env.File('${STAGING_DIR}/' + ppapi_example_audio_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_example_audio.nmf'),
+           env.File('${STAGING_DIR}/ppapi_example_audio.html'),
+           env.File('${STAGING_DIR}/' + ppapi_ppb_graphics2d_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_ppb_graphics2d.html'),
+           env.File('${STAGING_DIR}/ppapi_ppb_graphics2d.nmf'),
+           env.File('${STAGING_DIR}/' + ppapi_progress_events_nexe_name),
+           env.File('${STAGING_DIR}/ppapi_progress_events.html'),
+           env.File('${STAGING_DIR}/ppapi_progress_events.nmf'),
+           env.File('${STAGING_DIR}/' + ppapi_user_main_nexe_name),
+           env.File('${STAGING_DIR}/' + srpc_hw_nexe_name),
+           env.File('${STAGING_DIR}/srpc_hw.nmf'),
+           env.File('${STAGING_DIR}/srpc_hw.html'),
+           env.File('${STAGING_DIR}/' + srpc_test_nexe_name),
+           env.File('${STAGING_DIR}/srpc_basic.html'),
+           env.File('${STAGING_DIR}/srpc_test.nmf'),
+           env.File('${STAGING_DIR}/srpc_plugin.html'),
+           env.File('${STAGING_DIR}/srpc_sockaddr.html'),
+           env.File('${STAGING_DIR}/srpc_nrd_server.nmf'),
+           env.File('${STAGING_DIR}/' + srpc_nrd_server_nexe_name),
+           env.File('${STAGING_DIR}/srpc_shm.html'),
+           env.File('${STAGING_DIR}/srpc_shm.nmf'),
+           env.File('${STAGING_DIR}/' + srpc_shm_nexe_name),
+           env.File('${STAGING_DIR}/srpc_nrd_xfer.html'),
+           env.File('${STAGING_DIR}/srpc_nrd_client.nmf'),
+           env.File('${STAGING_DIR}/srpc_nrd_server.nmf'),
+           env.File('${STAGING_DIR}/' + srpc_nrd_client_nexe_name),
+           env.File('${STAGING_DIR}/' + srpc_nrd_server_nexe_name),
+           env.File('${STAGING_DIR}/srpc_hw_fd.html'),
+           env.File('${STAGING_DIR}/srpc_url_as_nacl_desc.html'),
+           env.File('${STAGING_DIR}/user_main.nmf'),
+])
+env.AddNodeToTestSuite(node,
+                       ['pyauto_tests'],
+                       'run_pyauto_surfaway_async_test',
+                       is_broken=env.PyAutoTesterIsBroken() or
+                                 env.PyAutoTesterSurfawayAsyncIsBroken())
+
 # multiple_nexes.py
-platform = env.get('TARGET_FULLARCH')
-ppapi_basic_object_nexe_name = 'ppapi_basic_object_%s.nexe' % platform
-ppapi_user_main_nexe_name = 'ppapi_user_main_%s.nexe' % platform
-ppapi_core_nexe_name = 'ppapi_core_%s.nexe' % platform
-ppapi_file_system_nexe_name = 'ppapi_file_system_%s.nexe' % platform
-ppapi_geturl_nexe_name = 'ppapi_geturl_%s.nexe' % platform
-ppapi_progress_events_nexe_name = 'ppapi_progress_events_%s.nexe' % platform
-ppapi_test_example_nexe_name = 'ppapi_test_example_%s.nexe' % platform
 node = env.PyAutoTester(
     'pyauto_multiple_nexes.out',
     env.File('multiple_nexes.py'),
