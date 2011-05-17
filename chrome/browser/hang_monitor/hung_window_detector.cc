@@ -101,7 +101,6 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
       HungWindowNotification::ActionOnHungWindow action =
           HungWindowNotification::HUNG_WINDOW_IGNORE;
 #pragma warning(disable:4312)
-      // TODO: this leaks.
       SetProp(child_window, kHungChildWindowTimeout,
               reinterpret_cast<HANDLE>(child_window_message_timeout));
 #pragma warning(default:4312)
@@ -115,6 +114,7 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
 
       switch (action) {
         case HungWindowNotification::HUNG_WINDOW_TERMINATE_THREAD: {
+          RemoveProp(child_window, kHungChildWindowTimeout);
           CHandle child_thread(OpenThread(THREAD_TERMINATE,
                                           FALSE,
                                           child_window_thread_id));
@@ -133,6 +133,7 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
           break;
         }
         case HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS: {
+          RemoveProp(child_window, kHungChildWindowTimeout);
           CHandle child_process(OpenProcess(PROCESS_TERMINATE,
                                             FALSE,
                                             child_window_process_id));

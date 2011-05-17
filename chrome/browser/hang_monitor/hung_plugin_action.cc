@@ -79,7 +79,6 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
         if (child_window_message_timeout) {
           child_window_message_timeout *= 2;
 #pragma warning(disable:4312)
-          // TODO: this leaks.
           SetProp(hung_window, HungWindowDetector::kHungChildWindowTimeout,
                   reinterpret_cast<HANDLE>(child_window_message_timeout));
 #pragma warning(default:4312)
