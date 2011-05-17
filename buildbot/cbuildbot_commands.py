@@ -124,6 +124,7 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
   manifest = os.path.join('buildspecs',
                           next_version_subdir[0] + '.' + next_version_subdir[1],
                           next_version + '.xml')
+
   repository.RepoRepository(url, buildroot, branch=branch, manifest=manifest,
                             local_mirror=mirror, clobber=True).Sync()
 

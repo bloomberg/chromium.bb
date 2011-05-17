@@ -87,6 +87,9 @@ class HelperMethodsTest(unittest.TestCase):
         ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
          ' http://git.chromium.org').split(), cwd=git_dir)
 
+
+    manifest_version._PrepForChanges(git_dir, use_repo=True)
+
     # Change something.
     cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
                         input='TEST USER <test_user@chromium.org>')
@@ -128,7 +131,11 @@ class VersionInfoTest(mox.MoxTestBase):
   def testIncrementVersionPatch(self):
     """Tests whether we can increment a version file."""
     message = 'Incrementing cuz I sed so'
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
+
+    manifest_version._PrepForChanges(self.tmpdir, use_repo=True)
+
     version_file = self.CreateFakeVersionFile(self.tmpdir)
 
     manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False,
@@ -233,12 +240,18 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     Tests without pre-existing version file in manifest dir.
     """
     self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
+
     info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
                                          incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
                                               'buildspecs', '1.2')
     manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    manifest_version._PrepForChanges(mox.IsA(str))
     manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
+
     self.mox.ReplayAll()
     self.manager.all = []
     version = self.manager._CreateNewBuildSpec(info)
@@ -250,6 +263,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
     self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
@@ -261,7 +276,10 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
                           FAKE_VERSION_STRING, dry_run=True).AndReturn(
                               FAKE_VERSION_STRING_NEXT)
     repository.RepoRepository.Sync()
+    manifest_version._PrepForChanges(mox.IsA(str))
     manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
+
     self.mox.ReplayAll()
     # Add to existing so we are forced to increment.
     self.manager.all = [FAKE_VERSION_STRING]

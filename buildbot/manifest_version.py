@@ -25,6 +25,7 @@ logging.basicConfig(level=logging.INFO, format=logging_format,
 
 # Pattern for matching build name format. E.g, 12.3.4.5,1.0.25.3
 VER_PATTERN = '(\d+).(\d+).(\d+).(\d+)'
+_PUSH_BRANCH = 'temp_auto_checkin_branch'
 
 class VersionUpdateException(Exception):
   """Exception gets thrown for failing to update the version file"""
@@ -56,31 +57,35 @@ def _CloneGitRepo(working_dir, repo_url):
   cros_lib.RunCommand(['git', 'clone', repo_url, working_dir])
 
 
-def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
-  """Do the final commit into the git repo
-  Args:
-    git_repo: git repo to push
-    message: Commit message
-    use_repo: use repo tool for pushing changes. Default: False
-    dry_run: If true, don't actually push changes to the server
-  raises: GitCommandException
-  """
-  def CleanGitDirectory():
+def _GitCleanDirectory(directory):
     """"Clean git repo chanages.
 
     raises: GitCommandException: when fails to clean.
     """
     try:
-      cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=git_repo)
-      cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=git_repo)
+      cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=directory)
+      cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=directory)
     except cros_lib.RunCommandError, e:
-      err_msg = 'Failed to clean git repo %s' % e.message
+      err_msg = 'Failed to clean git "%s" %s' % (directory, e.message)
       logging.error(err_msg)
       raise GitCommandException(err_msg)
 
-  branch = 'temp_auto_checkin_branch'
+
+def _PrepForChanges(git_repo, use_repo=False):
+  """Prepare a git/repo repository for making changes. It should
+     have no files modified when you call this.
+  Args:
+    git_repo: git repo to push
+    use_repo: use repo tool for pushing changes. Default: False
+  raises: GitCommandException
+  """
+
+  _GitCleanDirectory(git_repo)
+
   try:
     if use_repo:
+      cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH, '.'],
+                          cwd=git_repo, error_ok=True)
       cros_lib.RunCommand(['repo', 'start', branch, '.'], cwd=git_repo)
       cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
       cros_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
@@ -92,6 +97,26 @@ def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
                          'config',
                          'url.ssh://gerrit.chromium.org:29418.insteadof',
                          'http://git.chromium.org'], cwd=git_repo)
+  except cros_lib.RunCommandError, e:
+    err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
+    logging.error(err_msg)
+    git_status = cros_lib.RunCommand(['git', 'status'], cwd=git_repo)
+    logging.error('Current repo %s status: %s', git_repo, git_status)
+    _GitCleanDirectory(git_repo)
+    raise GitCommandException(err_msg)
+
+
+def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
+  """Do the final commit into the git repo
+  Args:
+    git_repo: git repo to push
+    message: Commit message
+    use_repo: use repo tool for pushing changes. Default: False
+    dry_run: If true, don't actually push changes to the server
+  raises: GitCommandException
+  """
+
+  try:
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
 
@@ -102,12 +127,13 @@ def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
     err_msg = 'Failed to commit to %s' % e.message
     logging.error(err_msg)
     git_status = cros_lib.RunCommand(['git', 'status'], cwd=git_repo)
-    logging.error('Current repo %s status: %s', git_repo, git_status)
-    CleanGitDirectory()
+    logging.error('Current repo %s status:\n%s', git_repo, git_status)
+    _GitCleanDirectory(git_repo)
     raise GitCommandException(err_msg)
   finally:
     if use_repo:
-      cros_lib.RunCommand(['repo', 'abandon', branch], cwd=git_repo)
+      cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH], cwd=git_repo,
+                          error_ok=True)
 
 
 def _ExportManifest(source_dir, output_file):
@@ -292,10 +318,16 @@ class VersionInfo(object):
           temp_fh.write(line)
         temp_fh.close()
       source_version_fh.close()
+
+    repo_dir = os.path.dirname(self.version_file)
+
+    _PrepForChanges(repo_dir, use_repo=True)
+
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
-    _PushGitChanges(os.path.dirname(self.version_file), message, use_repo=True,
-                    dry_run=dry_run)
+
+    _PushGitChanges(repo_dir, message, use_repo=True, dry_run=dry_run)
+
     return self.VersionString()
 
   def VersionString(self):
@@ -474,7 +506,10 @@ class BuildSpecsManager(object):
     if not os.path.exists(os.path.dirname(spec_file)):
       os.makedirs(os.path.dirname(spec_file))
 
+    self._PrepSpecChanges()
     _ExportManifest(self.source_dir, spec_file)
+    self._PushSpecChanges('Automatic: Creating new manifest file: %s.xml' %
+                          version)
     logging.debug('Created New Build Spec %s', version)
     return version
 
@@ -526,6 +561,7 @@ class BuildSpecsManager(object):
     dest_file = '%s.xml' % os.path.join(self.inflight_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
     logging.debug('Setting build in flight  %s: %s', src_file, dest_file)
+    self._PrepSpecChanges()
     _CreateSymlink(src_file, dest_file)
     self._PushSpecChanges(message)
 
@@ -539,6 +575,7 @@ class BuildSpecsManager(object):
     remove_file = '%s.xml' % os.path.join(self.inflight_dir,
                                           self.current_version)
     logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
+    self._PrepSpecChanges()
     _CreateSymlink(src_file, dest_file, remove_file)
     self._PushSpecChanges(message)
 
@@ -552,8 +589,12 @@ class BuildSpecsManager(object):
     remove_file = '%s.xml' % os.path.join(self.inflight_dir,
                                           self.current_version)
     logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
+    self._PrepSpecChanges()
     _CreateSymlink(src_file, dest_file, remove_file)
     self._PushSpecChanges(message)
+
+  def _PrepSpecChanges(self):
+    _PrepForChanges(self.manifests_dir)
 
   def _PushSpecChanges(self, commit_message):
     _PushGitChanges(self.manifests_dir, commit_message, dry_run=self.dry_run)

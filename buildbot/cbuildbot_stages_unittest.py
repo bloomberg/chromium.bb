@@ -48,19 +48,16 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.options.resume = True
 
-    self.mox.StubOutWithMock(stages.BuilderStage.Results,
-                             'RestoreCompletedStages')
+    self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(cbuildbot, 'RunBuildStages')
-    self.mox.StubOutWithMock(stages.BuilderStage.Results,
-                             'SaveCompletedStages')
 
-    stages.BuilderStage.Results.RestoreCompletedStages(mox.IsA(file))
+    os.path.exists(mox.IsA(str)).AndReturn(False)
 
     cbuildbot.RunBuildStages(self.bot_id,
                              self.options,
                              self.build_config)
 
-    stages.BuilderStage.Results.SaveCompletedStages(mox.IsA(file))
+    os.path.exists(mox.IsA(str)).AndReturn(False)
 
     self.mox.ReplayAll()
 
@@ -76,18 +73,15 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.options.resume = False
 
-    self.mox.StubOutWithMock(stages.BuilderStage.Results,
-                             'RestoreCompletedStages')
+    self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(cbuildbot, 'RunBuildStages')
-    self.mox.StubOutWithMock(stages.BuilderStage.Results,
-                             'SaveCompletedStages')
+
+    os.path.exists(mox.IsA(str)).AndReturn(False)
 
     cbuildbot.RunBuildStages(self.bot_id,
                              self.options,
                              self.build_config).AndRaise(
                                  Exception('Test Error'))
-
-    stages.BuilderStage.Results.SaveCompletedStages(mox.IsA(file))
 
     self.mox.ReplayAll()
 
