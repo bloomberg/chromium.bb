@@ -26,6 +26,12 @@ function filtersForPage(pageName, isRTL) {
       // Filters for RTL UI
       "RTL" : [
       ]
+    },
+    "chrome://settings/autofill" : {
+      "LTR" : [
+        // BUG: http://code.google.com/p/chromium/issues/detail?id=82267
+        bidichecker.FilterFactory.atText("משה ב כהן, דרך מנחם בגין")
+      ]
     }
   };
 
