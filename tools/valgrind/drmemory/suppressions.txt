@@ -5,6 +5,10 @@ UNINITIALIZED READ
 *!deflate_*
 *!MOZ_Z_deflate
 
+LEAK
+ADVAPI32.dll!WmiOpenBlock
+ADVAPI32.dll!WmiOpenBlock
+
 ############################
 # Suppress some false reports due to bugs in Dr.Memory like wrong analysis
 # assumptions or unhandled syscalls
@@ -38,6 +42,10 @@ UNINITIALIZED READ
 SHELL32.dll!SHFileOperation*
 
 UNINITIALIZED READ
+...
+SHELL32.dll!SHGetFolderPath*
+
+LEAK
 ...
 SHELL32.dll!SHGetFolderPath*
 
@@ -281,7 +289,13 @@ GDI32.dll!CreateDCW
 # http://code.google.com/p/drmemory/issues/detail?id=275
 LEAK
 *!_getptd_noexit
-*!_getptd
+
+# http://code.google.com/p/drmemory/issues/detail?id=276
+UNINITIALIZED READ
+...
+ntdll.dll!RtlConvertUlongToLargeInteger
+ntdll.dll!RtlConvertUlongToLargeInteger
+ntdll.dll!KiUserExceptionDispatcher
 
 # http://code.google.com/p/drmemory/issues/detail?id=304
 UNINITIALIZED READ
