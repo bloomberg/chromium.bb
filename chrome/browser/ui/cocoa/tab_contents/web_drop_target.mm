@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,12 @@
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/url_constants.h"
+#include "net/base/mime_util.h"
+#include "net/base/net_util.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -65,7 +70,39 @@ using WebKit::WebDragOperationsMask;
   return tabContents_->showing_interstitial_page();
 }
 
-// Messages to send during the tracking of a drag, ususally upon recieving
+// Determines whether the given drag and drop operation can be performed
+// on the web view.
+- (BOOL)shouldDisallowDrop:(id<NSDraggingInfo>)info {
+  if ([[info draggingPasteboard] containsURLData]) {
+    GURL url;
+    [self populateURL:&url
+        andTitle:NULL
+        fromPasteboard:[info draggingPasteboard]
+        convertingFilenames:YES];
+
+    // If dragging a file, only allow dropping supported file types (that the
+    // web view can display).
+    if (url.SchemeIs(chrome::kFileScheme)) {
+      FilePath full_path;
+      net::FileURLToFilePath(url, &full_path);
+
+      std::string mime_type;
+      net::GetMimeTypeFromFile(full_path, &mime_type);
+
+      if (!net::IsSupportedMimeType(mime_type))
+        return YES;
+    }
+  }
+
+  return NO;
+}
+
+- (void)setNoDropCursor {
+  WebKit::WebCursorInfo cursorInfo(WebKit::WebCursorInfo::TypeNoDrop);
+  [WebCursor(cursorInfo).GetCursor() set];
+}
+
+// Messages to send during the tracking of a drag, usually upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info
@@ -74,13 +111,18 @@ using WebKit::WebDragOperationsMask;
   // we need to send a new enter message in draggingUpdated:.
   currentRVH_ = tabContents_->render_view_host();
 
+  if ([self shouldDisallowDrop:info]) {
+    [self setNoDropCursor];
+    return NSDragOperationNone;
+  }
+
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
       return NSDragOperationCopy;
     return NSDragOperationNone;
   }
 
-  // If the tab is showing the boomark manager, send BookmarkDrag events
+  // If the tab is showing the bookmark manager, send BookmarkDrag events
   RenderViewHostDelegate::BookmarkDrag* dragDelegate =
       tabContents_->GetBookmarkDragDelegate();
   BookmarkNodeData dragData;
@@ -113,6 +155,9 @@ using WebKit::WebDragOperationsMask;
   if (currentRVH_ != tabContents_->render_view_host())
     return;
 
+  if ([self shouldDisallowDrop:info])
+    return;
+
   // Nothing to do in the interstitial case.
 
   tabContents_->render_view_host()->DragTargetDragLeave();
@@ -123,6 +168,11 @@ using WebKit::WebDragOperationsMask;
   DCHECK(currentRVH_);
   if (currentRVH_ != tabContents_->render_view_host())
     [self draggingEntered:info view:view];
+
+  if ([self shouldDisallowDrop:info]) {
+    [self setNoDropCursor];
+    return NSDragOperationNone;
+  }
 
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
@@ -141,7 +191,7 @@ using WebKit::WebDragOperationsMask;
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
 
-  // If the tab is showing the boomark manager, send BookmarkDrag events
+  // If the tab is showing the bookmark manager, send BookmarkDrag events
   RenderViewHostDelegate::BookmarkDrag* dragDelegate =
       tabContents_->GetBookmarkDragDelegate();
   BookmarkNodeData dragData;
@@ -171,7 +221,7 @@ using WebKit::WebDragOperationsMask;
     return NO;
   }
 
-  // If the tab is showing the boomark manager, send BookmarkDrag events
+  // If the tab is showing the bookmark manager, send BookmarkDrag events
   RenderViewHostDelegate::BookmarkDrag* dragDelegate =
       tabContents_->GetBookmarkDragDelegate();
   BookmarkNodeData dragData;
@@ -202,7 +252,6 @@ using WebKit::WebDragOperationsMask;
     fromPasteboard:(NSPasteboard*)pboard
     convertingFilenames:(BOOL)convertFilenames {
   DCHECK(url);
-  DCHECK(title);
 
   // Bail out early if there's no URL data.
   if (![pboard containsURLData])
