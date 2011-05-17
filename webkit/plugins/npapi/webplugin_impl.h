@@ -129,15 +129,6 @@ class WebPluginImpl : public WebPlugin,
   // Given a (maybe partial) url, completes using the base url.
   GURL CompleteURL(const char* url);
 
-  // Executes the script passed in. The notify_needed and notify_data arguments
-  // are passed in by the plugin process. These indicate whether the plugin
-  // expects a notification on script execution. We pass them back to the
-  // plugin as is. This avoids having to track the notification arguments in
-  // the plugin process.
-  bool ExecuteScript(const std::string& url, const std::wstring& script,
-                     bool notify_needed, intptr_t notify_data,
-                     bool popups_allowed);
-
   enum RoutingStatus {
     ROUTED,
     NOT_ROUTED,
