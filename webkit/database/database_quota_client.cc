@@ -4,6 +4,8 @@
 
 #include "webkit/database/database_quota_client.h"
 
+#include <vector>
+
 #include "base/message_loop_proxy.h"
 #include "net/base/net_util.h"
 #include "webkit/database/database_tracker.h"
@@ -196,6 +198,14 @@ void DatabaseQuotaClient::GetOriginsForHost(
         new GetOriginsForHostTask(this, db_tracker_thread_, host));
     task->Start();
   }
+}
+
+void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
+                                           quota::StorageType type,
+                                           DeletionCallback* callback) {
+  // TODO(tzik): implement me
+  callback->Run(quota::kQuotaErrorNotSupported);
+  delete callback;
 }
 
 void DatabaseQuotaClient::DidGetOriginUsage(

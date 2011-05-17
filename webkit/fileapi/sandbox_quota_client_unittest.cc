@@ -33,7 +33,7 @@ const int kUsageFileSize = FileSystemUsageCache::kUsageFileSize;
 
 class MockFileSystemPathManager : public FileSystemPathManager {
  public:
-  MockFileSystemPathManager(const FilePath& filesystem_path)
+  explicit MockFileSystemPathManager(const FilePath& filesystem_path)
       : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
                               filesystem_path, NULL, false, true) {}
 };
@@ -44,7 +44,8 @@ class SandboxQuotaClientTest : public testing::Test {
  public:
   SandboxQuotaClientTest()
       : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        additional_callback_count_(0) {
+        additional_callback_count_(0),
+        deletion_status_(quota::kQuotaStatusUnknown) {
   }
 
   void SetUp() {
@@ -177,7 +178,18 @@ class SandboxQuotaClientTest : public testing::Test {
     }
   }
 
+  void DeleteOriginData(SandboxQuotaClient* quota_client,
+                        const char* origin,
+                        quota::StorageType type) {
+    deletion_status_ = quota::kQuotaStatusUnknown;
+    quota_client->DeleteOriginData(
+        GURL(origin), type,
+        callback_factory_.NewCallback(
+            &SandboxQuotaClientTest::OnDeleteOrigin));
+  }
+
   int64 usage() const { return usage_; }
+  quota::QuotaStatusCode status() { return deletion_status_; }
   int additional_callback_count() const { return additional_callback_count_; }
   void set_additional_callback_count(int count) {
     additional_callback_count_ = count;
@@ -192,8 +204,12 @@ class SandboxQuotaClientTest : public testing::Test {
     origins_ = origins;
   }
 
-  void OnGetAdditionalUsage(int64) {
+  void OnGetAdditionalUsage(int64 usage_unused) {
     ++additional_callback_count_;
+  }
+
+  void OnDeleteOrigin(quota::QuotaStatusCode status) {
+    deletion_status_ = status;
   }
 
   ScopedTempDir data_dir_;
@@ -202,6 +218,7 @@ class SandboxQuotaClientTest : public testing::Test {
   int64 usage_;
   int additional_callback_count_;
   std::set<GURL> origins_;
+  quota::QuotaStatusCode deletion_status_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxQuotaClientTest);
 };
@@ -429,6 +446,67 @@ TEST_F(SandboxQuotaClientTest, IncognitoTest) {
   EXPECT_EQ(0U, origins.size());
   origins = GetOriginsForHost(quota_client.get(), kTemporary, "www.dummy.org");
   EXPECT_EQ(0U, origins.size());
+}
+
+TEST_F(SandboxQuotaClientTest, DeleteOriginTest) {
+  scoped_ptr<SandboxQuotaClient> quota_client(NewQuotaClient(false));
+  const TestFile kFiles[] = {
+    {true, NULL,  0, "http://foo.com/",  kTemporary},
+    {false, "a",  1, "http://foo.com/",  kTemporary},
+    {true, NULL,  0, "https://foo.com/", kTemporary},
+    {false, "b",  2, "https://foo.com/", kTemporary},
+    {true, NULL,  0, "http://foo.com/",  kPersistent},
+    {false, "c",  4, "http://foo.com/",  kPersistent},
+    {true, NULL,  0, "http://bar.com/",  kTemporary},
+    {false, "d",  8, "http://bar.com/",  kTemporary},
+    {true, NULL,  0, "http://bar.com/",  kPersistent},
+    {false, "e", 16, "http://bar.com/",  kPersistent},
+    {true, NULL,  0, "https://bar.com/", kPersistent},
+    {false, "f", 32, "https://bar.com/", kPersistent},
+    {true, NULL,  0, "https://bar.com/", kTemporary},
+    {false, "g", 64, "https://bar.com/", kTemporary},
+  };
+  CreateFiles(kFiles, ARRAYSIZE_UNSAFE(kFiles));
+
+  DeleteOriginData(quota_client.get(), "http://foo.com/", kTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(quota::kQuotaStatusOk, status());
+
+  DeleteOriginData(quota_client.get(), "http://bar.com/", kPersistent);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(quota::kQuotaStatusOk, status());
+
+  DeleteOriginData(quota_client.get(), "http://buz.com/", kTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(quota::kQuotaStatusOk, status());
+
+  EXPECT_EQ(0, GetOriginUsage(
+      quota_client.get(), "http://foo.com/", kTemporary));
+  EXPECT_EQ(0, GetOriginUsage(
+      quota_client.get(), "http://bar.com/", kPersistent));
+  EXPECT_EQ(0, GetOriginUsage(
+      quota_client.get(), "http://buz.com/", kTemporary));
+
+  EXPECT_EQ(2 + kUsageFileSize,
+            GetOriginUsage(quota_client.get(),
+                           "https://foo.com/",
+                           kTemporary));
+  EXPECT_EQ(4 + kUsageFileSize,
+            GetOriginUsage(quota_client.get(),
+                           "http://foo.com/",
+                           kPersistent));
+  EXPECT_EQ(8 + kUsageFileSize,
+            GetOriginUsage(quota_client.get(),
+                           "http://bar.com/",
+                           kTemporary));
+  EXPECT_EQ(32 + kUsageFileSize,
+            GetOriginUsage(quota_client.get(),
+                           "https://bar.com/",
+                           kPersistent));
+  EXPECT_EQ(64 + kUsageFileSize,
+            GetOriginUsage(quota_client.get(),
+                           "https://bar.com/",
+                           kTemporary));
 }
 
 }  // namespace fileapi

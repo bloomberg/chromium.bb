@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/special_storage_policy.h"
 
 class FilePath;
@@ -50,7 +51,9 @@ class FileSystemContext
   // This method can be called on any thread.
   bool IsStorageUnlimited(const GURL& origin);
 
-  void DeleteDataForOriginOnFileThread(const GURL& origin_url);
+  bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
+  bool DeleteDataForOriginAndTypeOnFileThread(const GURL& origin_url,
+                                              FileSystemType type);
 
   FileSystemPathManager* path_manager() const { return path_manager_.get(); }
   quota::QuotaManagerProxy* quota_manager_proxy() const {

@@ -8,6 +8,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -45,12 +46,16 @@ class SandboxQuotaClient : public quota::QuotaClient,
   virtual void GetOriginsForHost(quota::StorageType type,
                                  const std::string& host,
                                  GetOriginsCallback* callback) OVERRIDE;
+  virtual void DeleteOriginData(const GURL& origin,
+                                quota::StorageType type,
+                                DeletionCallback* callback) OVERRIDE;
 
  private:
   class GetOriginUsageTask;
   class GetOriginsTaskBase;
   class GetOriginsForTypeTask;
   class GetOriginsForHostTask;
+  class DeleteOriginTask;
 
   typedef std::pair<fileapi::FileSystemType, std::string> TypeAndHostOrOrigin;
   typedef quota::CallbackQueueMap1<GetUsageCallback*,

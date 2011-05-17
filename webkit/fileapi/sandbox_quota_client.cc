@@ -184,6 +184,44 @@ class SandboxQuotaClient::GetOriginsForHostTask
   std::string host_;
 };
 
+class SandboxQuotaClient::DeleteOriginTask
+    : public QuotaThreadTask {
+ public:
+  DeleteOriginTask(
+      SandboxQuotaClient* quota_client,
+      scoped_refptr<MessageLoopProxy> file_message_loop,
+      const GURL& origin,
+      FileSystemType type,
+      DeletionCallback* callback)
+      : QuotaThreadTask(quota_client, file_message_loop),
+        file_system_context_(quota_client->file_system_context_),
+        origin_(origin),
+        type_(type),
+        status_(quota::kQuotaStatusUnknown),
+        callback_(callback) {
+  }
+
+  virtual ~DeleteOriginTask() {}
+
+  virtual void RunOnTargetThread() OVERRIDE {
+    if (file_system_context_->
+            DeleteDataForOriginAndTypeOnFileThread(origin_, type_))
+      status_ = quota::kQuotaStatusOk;
+    else
+      status_ = quota::kQuotaErrorInvalidModification;
+  }
+
+  virtual void Completed() OVERRIDE {
+    callback_->Run(status_);
+  }
+ private:
+  FileSystemContext* file_system_context_;
+  GURL origin_;
+  FileSystemType type_;
+  quota::QuotaStatusCode status_;
+  scoped_ptr<DeletionCallback> callback_;
+};
+
 SandboxQuotaClient::SandboxQuotaClient(
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
     FileSystemContext* file_system_context,
@@ -264,6 +302,17 @@ void SandboxQuotaClient::GetOriginsForHost(
                                   type, host));
     task->Start();
   }
+}
+
+void SandboxQuotaClient::DeleteOriginData(const GURL& origin,
+                                          StorageType type,
+                                          DeletionCallback* callback) {
+  FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
+  DCHECK(fs_type != kFileSystemTypeUnknown);
+  scoped_refptr<DeleteOriginTask> task(
+      new DeleteOriginTask(this, file_message_loop_,
+                           origin, fs_type, callback));
+  task->Start();
 }
 
 void SandboxQuotaClient::DidGetOriginUsage(

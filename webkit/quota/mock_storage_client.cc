@@ -52,6 +52,8 @@ MockStorageClient::~MockStorageClient() {
   STLDeleteContainerPointers(usage_callbacks_.begin(), usage_callbacks_.end());
   STLDeleteContainerPointers(
       origins_callbacks_.begin(), origins_callbacks_.end());
+  STLDeleteContainerPointers(
+      deletion_callbacks_.begin(), deletion_callbacks_.end());
 }
 
 void MockStorageClient::AddMockOriginData(
@@ -111,6 +113,16 @@ void MockStorageClient::GetOriginsForHost(
           type, host, callback));
 }
 
+void MockStorageClient::DeleteOriginData(
+    const GURL& origin, StorageType type,
+    DeletionCallback* callback) {
+  deletion_callbacks_.insert(callback);
+  base::MessageLoopProxy::CreateForCurrentThread()->PostTask(
+      FROM_HERE, runnable_factory_.NewRunnableMethod(
+          &MockStorageClient::RunDeleteOriginData,
+          origin, type, callback));
+}
+
 void MockStorageClient::RunGetOriginUsage(
     const GURL& origin_url, StorageType type, GetUsageCallback* callback_ptr) {
   usage_callbacks_.erase(callback_ptr);
@@ -149,6 +161,24 @@ void MockStorageClient::RunGetOriginsForHost(
       origins.insert(iter->first.first);
   }
   callback->Run(origins);
+}
+
+void MockStorageClient::RunDeleteOriginData(
+    const GURL& origin_url,
+    StorageType type,
+    DeletionCallback* callback_ptr) {
+  OriginDataMap::iterator itr
+      = origin_data_.find(make_pair(origin_url, type));
+  if (itr != origin_data_.end()) {
+    int64 delta = itr->second;
+    quota_manager_proxy_->
+        NotifyStorageModified(id(), origin_url, type, -delta);
+    origin_data_.erase(itr);
+  }
+
+  scoped_ptr<DeletionCallback> callback(callback_ptr);
+  deletion_callbacks_.erase(callback_ptr);
+  callback->Run(kQuotaStatusOk);
 }
 
 }  // namespace quota

@@ -39,6 +39,9 @@ class MockStorageClient : public QuotaClient {
                                  GetOriginsCallback* callback) OVERRIDE;
   virtual void GetOriginsForHost(StorageType type, const std::string& host,
                                  GetOriginsCallback* callback) OVERRIDE;
+  virtual void DeleteOriginData(const GURL& origin,
+                                StorageType type,
+                                DeletionCallback* callback) OVERRIDE;
 
  private:
   void RunGetOriginUsage(const GURL& origin_url,
@@ -49,6 +52,9 @@ class MockStorageClient : public QuotaClient {
   void RunGetOriginsForHost(StorageType type,
                             const std::string& host,
                             GetOriginsCallback* callback);
+  void RunDeleteOriginData(const GURL& origin_url,
+                           StorageType type,
+                           DeletionCallback* callback);
 
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;
@@ -58,6 +64,7 @@ class MockStorageClient : public QuotaClient {
 
   std::set<GetUsageCallback*> usage_callbacks_;
   std::set<GetOriginsCallback*> origins_callbacks_;
+  std::set<DeletionCallback*> deletion_callbacks_;
 
   ScopedRunnableMethodFactory<MockStorageClient> runnable_factory_;
 

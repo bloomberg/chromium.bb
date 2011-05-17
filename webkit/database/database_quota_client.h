@@ -40,6 +40,9 @@ class DatabaseQuotaClient : public quota::QuotaClient,
   virtual void GetOriginsForHost(quota::StorageType type,
                                  const std::string& host,
                                  GetOriginsCallback* callback)  OVERRIDE;
+  virtual void DeleteOriginData(const GURL& origin,
+                                quota::StorageType type,
+                                DeletionCallback* callback) OVERRIDE;
  private:
   class HelperTask;
   class GetOriginUsageTask;

@@ -70,14 +70,24 @@ bool FileSystemContext::IsStorageUnlimited(const GURL& origin) {
           special_storage_policy_->IsStorageUnlimited(origin));
 }
 
-void FileSystemContext::DeleteDataForOriginOnFileThread(
+bool FileSystemContext::DeleteDataForOriginOnFileThread(
     const GURL& origin_url) {
-  DCHECK(path_manager_.get());
   DCHECK(file_message_loop_->BelongsToCurrentThread());
+  // TODO(tzik): Report the amount of deleted data to QuotaManager.
 
   FilePath path_for_origin =
       sandbox_provider()->GetBaseDirectoryForOrigin(origin_url);
-  file_util::Delete(path_for_origin, true /* recursive */);
+  return file_util::Delete(path_for_origin, true /* recursive */);
+}
+
+bool FileSystemContext::DeleteDataForOriginAndTypeOnFileThread(
+    const GURL& origin_url, FileSystemType type) {
+  DCHECK(file_message_loop_->BelongsToCurrentThread());
+  // TODO(tzik): ditto. Report the amount of deleted data to QuotaManager.
+
+  FilePath path_for_origin =
+      sandbox_provider()->GetBaseDirectoryForOriginAndType(origin_url, type);
+  return file_util::Delete(path_for_origin, true /* recursive */);
 }
 
 void FileSystemContext::DeleteOnCorrectThread() const {

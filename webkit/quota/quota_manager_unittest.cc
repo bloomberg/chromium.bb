@@ -4,8 +4,6 @@
 
 #include <vector>
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/file_util.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util-inl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
 #include "webkit/quota/mock_storage_client.h"
@@ -132,6 +131,15 @@ class QuotaManagerTest : public testing::Test {
             &QuotaManagerTest::DidGetUsageAndQuotaAdditional));
   }
 
+  void DeleteOriginData(QuotaClient* client,
+                        const GURL& origin,
+                        StorageType type) {
+    quota_status_ = kQuotaStatusUnknown;
+    client->DeleteOriginData(origin, type,
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::DidDelete));
+  }
+
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
     quota_status_ = status;
     usage_ = usage;
@@ -156,6 +164,10 @@ class QuotaManagerTest : public testing::Test {
 
   void DidGetHostUsage(const std::string&, int64 usage) {
     usage_ = usage;
+  }
+
+  void DidDelete(QuotaStatusCode status) {
+    quota_status_ = status;
   }
 
   void set_additional_callback_count(int c) { additional_callback_count_ = c; }
@@ -665,6 +677,45 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
   GetHostUsage("buz.com", kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 4000 + 50000 + 900000000);
+}
+
+TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
+  static const MockOriginData kData[] = {
+    { "http://foo.com/",   kStorageTypeTemporary,        1 },
+    { "http://foo.com:1/", kStorageTypeTemporary,       20 },
+    { "http://foo.com/",   kStorageTypePersistent,     300 },
+    { "http://bar.com/",   kStorageTypeTemporary,     4000 },
+  };
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  GetGlobalUsage(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_global_tmp = usage();
+
+  GetHostUsage("foo.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_tmp = usage();
+
+  GetHostUsage("foo.com", kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_pers = usage();
+
+  DeleteOriginData(client, GURL("http://foo.com/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+
+  GetGlobalUsage(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_global_tmp - 1, usage());
+
+  GetHostUsage("foo.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_tmp - 1, usage());
+
+  GetHostUsage("foo.com", kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_pers, usage());
 }
 
 }  // namespace quota
