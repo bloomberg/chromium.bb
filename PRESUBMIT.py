@@ -12,6 +12,13 @@ import sys
 TOP_DIR = 'native_client'
 MAIN_DEPS = os.path.join(TOP_DIR, 'DEPS')
 
+# List of directories to not apply presubmit project checks, relative
+# to the NaCl top directory
+EXCLUDE_PROJECT_CHECKS_DIRS = [
+    'src/trusted/validator_x86/testdata/32',
+    'src/trusted/validator_x86/testdata/64',
+    ]
+
 def NaclTopDir():
   cwd = os.getcwd()
   pos = cwd.rfind(TOP_DIR)
@@ -19,14 +26,20 @@ def NaclTopDir():
     print 'ERROR: expected to be called from with %s' % TOP_DIR
   return cwd[:pos + len(TOP_DIR)]
 
-
 def _CommonChecks(input_api, output_api):
   """Checks for both upload and commit."""
   results = []
   results.extend(input_api.canned_checks.PanProjectChecks(
-      input_api, output_api, project_name='Native Client'))
+      input_api, output_api, project_name='Native Client',
+      excluded_paths=tuple(EXCLUDE_PROJECT_CHECKS_DIRS)))
   return results
 
+def IsFileInDirectories(f, dirs):
+  """ Returns true if f is in list of directories"""
+  for d in dirs:
+    if d is os.path.commonprefix([f , d]):
+      return True
+  return False
 
 def CheckChangeOnUpload(input_api, output_api):
   """Verifies all changes in all files.
@@ -51,13 +64,16 @@ def CheckChangeOnUpload(input_api, output_api):
     del old_sys_path
 
   affected_files = input_api.AffectedFiles(include_deletes=False)
+  exclude_dirs = [ NaclTopDir() + '/' + x + '/'
+                   for x in EXCLUDE_PROJECT_CHECKS_DIRS ]
   for filename in affected_files:
     filename = filename.AbsoluteLocalPath()
-    errors, warnings = code_hygiene.CheckFile(filename, False)
-    for e in errors:
-      report.append(output_api.PresubmitError(e, items=errors[e]))
-    for w in warnings:
-      report.append(output_api.PresubmitPromptWarning(w, items=warnings[w]))
+    if not IsFileInDirectories(filename, exclude_dirs):
+      errors, warnings = code_hygiene.CheckFile(filename, False)
+      for e in errors:
+        report.append(output_api.PresubmitError(e, items=errors[e]))
+      for w in warnings:
+        report.append(output_api.PresubmitPromptWarning(w, items=warnings[w]))
     if filename.endswith(MAIN_DEPS):
       try:
         e = validate_chrome_revision.ValidateChromeRevision(filename)
