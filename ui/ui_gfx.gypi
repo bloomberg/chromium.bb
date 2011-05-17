@@ -111,8 +111,7 @@
         'gfx/skia_utils_gtk.cc',
         'gfx/skia_utils_gtk.h',
         'gfx/transform.h',
-        'gfx/transform_skia.cc',
-        'gfx/transform_skia.h',
+        'gfx/transform.cc',
       ],
       'conditions': [
         ['OS=="win"', {

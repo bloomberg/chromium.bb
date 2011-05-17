@@ -20,6 +20,7 @@
 #include "content/common/notification_type.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/transform.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
@@ -278,8 +279,10 @@ void TouchBrowserFrameView::Observe(NotificationType type,
 ///////////////////////////////////////////////////////////////////////////////
 // ui::AnimationDelegate implementation
 void TouchBrowserFrameView::AnimationProgressed(const ui::Animation* anim) {
-  keyboard_->SetTranslateY(
+  ui::Transform transform;
+  transform.SetTranslateY(
       ui::Tween::ValueBetween(anim->GetCurrentValue(), kKeyboardHeight, 0));
+  keyboard_->SetTransform(transform);
   browser_view()->set_clip_y(
       ui::Tween::ValueBetween(anim->GetCurrentValue(), 0, kKeyboardHeight));
   SchedulePaint();

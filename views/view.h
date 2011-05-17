@@ -348,24 +348,8 @@ class View : public AcceleratorTarget {
   void set_clip_y(float y) { clip_y_ = y; }
   void set_clip(float x, float y) { clip_x_ = x; clip_y_ = y; }
 
-  void SetRotation(float degree);
-
-  void SetScaleX(float x);
-  void SetScaleY(float y);
-  void SetScale(float x, float y);
-
-  void SetTranslateX(float x);
-  void SetTranslateY(float y);
-  void SetTranslate(float x, float y);
-
-  // The following functions apply the transformations on top of the existing
-  // transform.
-  void ConcatRotation(float degree);
-  void ConcatScale(float x, float y);
-  void ConcatTranslate(float x, float y);
-
-  // Reset the transformation matrix.
-  void ResetTransform();
+  // Sets the transform to the supplied transform.
+  void SetTransform(const ui::Transform& transform);
 
   // RTL positioning -----------------------------------------------------------
 
@@ -1234,12 +1218,11 @@ class View : public AcceleratorTarget {
 
   // Transformations -----------------------------------------------------------
 
-  // Initialize the transform matrix when necessary.
-  void InitTransform();
-
-  // Returns in |transform| the transform to get from root view coordinates to
-  // this views coordinates.
-  void GetTransformRelativeToRoot(ui::Transform* transform);
+  // Returns in |transform| the transform to get from coordinates of |ancestor|
+  // to this. Returns true if |ancestor| is found. If |ancestor| is not found,
+  // or NULL, |transform| is set to convert from root view coordinates to this.
+  bool GetTransformRelativeTo(const View* ancestor,
+                              ui::Transform* transform) const;
 
   // Coordinate conversion -----------------------------------------------------
 

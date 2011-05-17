@@ -6,6 +6,10 @@
 #define UI_GFX_TRANSFORM_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "third_party/skia/include/core/SkMatrix.h"
+
 namespace gfx {
 class Point;
 class Rect;
@@ -13,16 +17,13 @@ class Rect;
 
 namespace ui {
 
-// Transformation interface.
-// Classes implement this interface to apply transformations (e.g. rotation,
-// scaling etc.) on UI components.
+// 3x3 transformation matrix. Transform is cheap and explicitly allows
+// copy/assign.
+// TODO: make this a 4x4.
 class Transform {
  public:
-  virtual ~Transform() {}
-
-  // Creates an object that implements this interface (e.g. using skia
-  // transformation matrices).
-  static Transform* Create();
+  Transform();
+  ~Transform();
 
   // NOTE: The 'Set' functions overwrite the previously set transformation
   // parameters. The 'Concat' functions apply a transformation (e.g. rotation,
@@ -34,49 +35,59 @@ class Transform {
   // with the 'Set' functions.
 
   // Sets the rotation of the transformation.
-  virtual void SetRotate(float degree) = 0;
+  void SetRotate(float degree);
 
   // Sets the scaling parameters.
-  virtual void SetScaleX(float x) = 0;
-  virtual void SetScaleY(float y) = 0;
-  virtual void SetScale(float x, float y) = 0;
+  void SetScaleX(float x);
+  void SetScaleY(float y);
+  void SetScale(float x, float y);
 
   // Sets the translation parameters.
-  virtual void SetTranslateX(float x) = 0;
-  virtual void SetTranslateY(float y) = 0;
-  virtual void SetTranslate(float x, float y) = 0;
+  void SetTranslateX(float x);
+  void SetTranslateY(float y);
+  void SetTranslate(float x, float y);
 
   // Applies rotation on the current transformation.
-  virtual void ConcatRotate(float degree) = 0;
+  void ConcatRotate(float degree);
 
   // Applies scaling on current transform.
-  virtual void ConcatScale(float x, float y) = 0;
+  void ConcatScale(float x, float y);
 
   // Applies translation on current transform.
-  virtual void ConcatTranslate(float x, float y) = 0;
+  void ConcatTranslate(float x, float y);
+
+  // Applies a transformation on the current transformation
+  // (i.e. 'this = transform * this;'). Returns true if the result can be
+  // represented.
+  bool PreconcatTransform(const Transform& transform);
 
   // Applies a transformation on the current transformation
   // (i.e. 'this = this * transform;'). Returns true if the result can be
   // represented.
-  virtual bool ConcatTransform(const Transform& transform) = 0;
+  bool ConcatTransform(const Transform& transform);
 
   // Does the transformation change anything?
-  virtual bool HasChange() const = 0;
+  bool HasChange() const;
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully.
-  virtual bool TransformPoint(gfx::Point* point) = 0;
+  bool TransformPoint(gfx::Point* point);
 
   // Applies the reverse transformation on the point. Returns true if the point
   // is transformed successfully.
-  virtual bool TransformPointReverse(gfx::Point* point) = 0;
+  bool TransformPointReverse(gfx::Point* point);
 
   // Applies transformation on the rectangle. Returns true of the rectangle is
   // transformed successfully.
-  virtual bool TransformRect(gfx::Rect* rect) = 0;
+  bool TransformRect(gfx::Rect* rect);
 
-  // operator=.
-  virtual void Copy(const Transform& transform) = 0;
+  // Returns the underlying matrix.
+  const SkMatrix& matrix() const { return matrix_; }
+
+ private:
+  SkMatrix matrix_;
+
+  // copy/assign are allowed.
 };
 
 }  // namespace ui

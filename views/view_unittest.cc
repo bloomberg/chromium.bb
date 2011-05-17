@@ -12,6 +12,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/transform.h"
 #include "views/background.h"
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/button/checkbox.h"
@@ -1638,8 +1639,10 @@ TEST_F(ViewTest, TransformPaint) {
   EXPECT_EQ(gfx::Rect(100, 100, 200, 100), v1->scheduled_paint_rect());
 
   // Rotate |v1| counter-clockwise.
-  v1->SetRotation(-90.0);
-  v1->SetTranslateY(500);
+  ui::Transform transform;
+  transform.SetRotate(-90.0f);
+  transform.SetTranslateY(500.0f);
+  v1->SetTransform(transform);
 
   // |v2| now occupies (100, 200) to (200, 400) in |root|.
 
@@ -1670,8 +1673,10 @@ TEST_F(ViewTest, TransformEvent) {
   // At this moment, |v2| occupies (100, 100) to (300, 200) in |root|.
 
   // Rotate |v1| counter-clockwise.
-  v1->SetRotation(-90.0);
-  v1->SetTranslateY(500);
+  ui::Transform transform(v1->GetTransform());
+  transform.SetRotate(-90.0f);
+  transform.SetTranslateY(500.0f);
+  v1->SetTransform(transform);
 
   // |v2| now occupies (100, 200) to (200, 400) in |root|.
   v1->Reset();
@@ -1690,8 +1695,10 @@ TEST_F(ViewTest, TransformEvent) {
   root->OnMouseReleased(released);
 
   // Now rotate |v2| inside |v1| clockwise.
-  v2->SetRotation(90.0);
-  v2->SetTranslateX(100);
+  transform = v2->GetTransform();
+  transform.SetRotate(90.0f);
+  transform.SetTranslateX(100.0f);
+  v2->SetTransform(transform);
 
   // Now, |v2| occupies (100, 100) to (200, 300) in |v1|, and (100, 300) to
   // (300, 400) in |root|.
@@ -1710,19 +1717,23 @@ TEST_F(ViewTest, TransformEvent) {
 
   root->OnMouseReleased(released);
 
-  v1->ResetTransform();
-  v2->ResetTransform();
+  v1->SetTransform(ui::Transform());
+  v2->SetTransform(ui::Transform());
 
   TestView* v3 = new TestView();
   v3->SetBounds(10, 10, 20, 30);
   v2->AddChildView(v3);
 
   // Rotate |v3| clockwise with respect to |v2|.
-  v3->SetRotation(90.0);
-  v3->SetTranslateX(30);
+  transform = v1->GetTransform();
+  transform.SetRotate(90.0f);
+  transform.SetTranslateX(30.0f);
+  v3->SetTransform(transform);
 
   // Scale |v2| with respect to |v1| along both axis.
-  v2->SetScale(0.8f, 0.5f);
+  transform = v2->GetTransform();
+  transform.SetScale(0.8f, 0.5f);
+  v2->SetTransform(transform);
 
   // |v3| occupies (108, 105) to (132, 115) in |root|.
 
@@ -1741,24 +1752,28 @@ TEST_F(ViewTest, TransformEvent) {
 
   root->OnMouseReleased(released);
 
-  v1->ResetTransform();
-  v2->ResetTransform();
-  v3->ResetTransform();
+  v1->SetTransform(ui::Transform());
+  v2->SetTransform(ui::Transform());
+  v3->SetTransform(ui::Transform());
 
   v1->Reset();
   v2->Reset();
   v3->Reset();
 
   // Rotate |v3| clockwise with respect to |v2|, and scale it along both axis.
-  v3->SetRotation(90.0);
-  v3->SetTranslateX(30);
+  transform = v3->GetTransform();
+  transform.SetRotate(90.0f);
+  transform.SetTranslateX(30.0f);
   // Rotation sets some scaling transformation. Using SetScale would overwrite
   // that and pollute the rotation. So combine the scaling with the existing
   // transforamtion.
-  v3->ConcatScale(0.8f, 0.5f);
+  transform.ConcatScale(0.8f, 0.5f);
+  v3->SetTransform(transform);
 
   // Translate |v2| with respect to |v1|.
-  v2->SetTranslate(10, 10);
+  transform = v2->GetTransform();
+  transform.SetTranslate(10, 10);
+  v2->SetTransform(transform);
 
   // |v3| now occupies (120, 120) to (144, 130) in |root|.
 
@@ -1873,6 +1888,67 @@ TEST_F(ViewTest, SetBoundsPaint) {
       top_view->scheduled_paint_rects_[0].Union(
           top_view->scheduled_paint_rects_[1]);
   EXPECT_EQ(gfx::Rect(10, 10, 40, 40), paint_rect);
+}
+
+// Tests conversion methods with a transform.
+TEST_F(ViewTest, ConvertPointToViewWithTransform) {
+  TestView top_view;
+  TestView* child = new TestView;
+  TestView* child_child = new TestView;
+
+  top_view.AddChildView(child);
+  child->AddChildView(child_child);
+
+  top_view.SetBounds(0, 0, 1000, 1000);
+
+  child->SetBounds(10, 10, 500, 500);
+  ui::Transform transform;
+  transform.SetScale(5.0f, 5.0f);
+  child->SetTransform(transform);
+
+  child_child->SetBounds(10, 10, 100, 100);
+  transform = ui::Transform();
+  transform.SetScale(2.0f, 2.0f);
+  child_child->SetTransform(transform);
+
+  // Conversions from child->top and top->child.
+  {
+    gfx::Point point(5, 5);
+    View::ConvertPointToView(child, &top_view, &point);
+    EXPECT_EQ(35, point.x());
+    EXPECT_EQ(35, point.y());
+
+    point.SetPoint(35, 35);
+    View::ConvertPointToView(&top_view, child, &point);
+    EXPECT_EQ(5, point.x());
+    EXPECT_EQ(5, point.y());
+  }
+
+  // Conversions from child_child->top and top->child_child.
+  {
+    gfx::Point point(5, 5);
+    View::ConvertPointToView(child_child, &top_view, &point);
+    EXPECT_EQ(110, point.x());
+    EXPECT_EQ(110, point.y());
+
+    point.SetPoint(110, 110);
+    View::ConvertPointToView(&top_view, child_child, &point);
+    EXPECT_EQ(5, point.x());
+    EXPECT_EQ(5, point.y());
+  }
+
+  // Conversions from child_child->child and child->child_child
+  {
+    gfx::Point point(5, 5);
+    View::ConvertPointToView(child_child, child, &point);
+    EXPECT_EQ(20, point.x());
+    EXPECT_EQ(20, point.y());
+
+    point.SetPoint(20, 20);
+    View::ConvertPointToView(child, child_child, &point);
+    EXPECT_EQ(5, point.x());
+    EXPECT_EQ(5, point.y());
+  }
 }
 
 TEST_F(ViewTest, Contains) {

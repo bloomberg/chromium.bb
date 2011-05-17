@@ -179,10 +179,12 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   touch_device_list_.clear();
   XDeviceInfo* devlist = XListInputDevices(display, &count);
   for (int i = 0; i < count; i++) {
-    const char* devtype = XGetAtomName(display, devlist[i].type);
-    if (devtype && !strcmp(devtype, XI_TOUCHSCREEN)) {
-      touch_device_lookup_[devlist[i].id] = true;
-      touch_device_list_.push_back(devlist[i].id);
+    if (devlist[i].type) {
+      const char* devtype = XGetAtomName(display, devlist[i].type);
+      if (devtype && !strcmp(devtype, XI_TOUCHSCREEN)) {
+        touch_device_lookup_[devlist[i].id] = true;
+        touch_device_list_.push_back(devlist[i].id);
+      }
     }
   }
   if (devlist)

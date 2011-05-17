@@ -400,72 +400,29 @@ bool View::IsEnabled() const {
 // Transformations -------------------------------------------------------------
 
 const ui::Transform& View::GetTransform() const {
-  static const ui::Transform* no_op = ui::Transform::Create();
+  static const ui::Transform* no_op = new ui::Transform;
   if (transform_.get())
     return *transform_.get();
   return *no_op;
 }
 
-void View::SetRotation(float degree) {
-  InitTransform();
-  transform_->SetRotate(degree);
-}
-
-void View::SetScaleX(float x) {
-  InitTransform();
-  transform_->SetScaleX(x);
-}
-
-void View::SetScaleY(float y) {
-  InitTransform();
-  transform_->SetScaleY(y);
-}
-
-void View::SetScale(float x, float y) {
-  InitTransform();
-  transform_->SetScale(x, y);
-}
-
-void View::SetTranslateX(float x) {
-  InitTransform();
-  transform_->SetTranslateX(x);
-}
-
-void View::SetTranslateY(float y) {
-  InitTransform();
-  transform_->SetTranslateY(y);
-}
-
-void View::SetTranslate(float x, float y) {
-  InitTransform();
-  transform_->SetTranslate(x, y);
-}
-
-void View::ConcatRotation(float degree) {
-  InitTransform();
-  transform_->ConcatRotate(degree);
-}
-
-void View::ConcatScale(float x, float y) {
-  InitTransform();
-  transform_->ConcatScale(x, y);
-}
-
-void View::ConcatTranslate(float x, float y) {
-  InitTransform();
-  transform_->ConcatTranslate(x, y);
-}
-
-void View::ResetTransform() {
-  transform_.reset(NULL);
-  clip_x_ = clip_y_ = 0.0;
+void View::SetTransform(const ui::Transform& transform) {
+  if (!transform.HasChange()) {
+    if (!transform_.get())
+      return;
+    transform_.reset(NULL);
 #if !defined(COMPOSITOR_2)
-  canvas_.reset();
+    canvas_.reset();
 #else
-  texture_.reset();
+    texture_.reset();
 #endif
+    SchedulePaint();
+  } else {
+    transform_.reset(new ui::Transform(transform));
+    // TODO: this needs to trigger a paint on the widget. It shouldn't use
+    // SchedulePaint as we don't want to mark the views dirty.
+  }
 }
-
 
 // RTL positioning -------------------------------------------------------------
 
@@ -711,6 +668,8 @@ void View::Paint(gfx::Canvas* canvas) {
 
     texture_canvas.reset(gfx::Canvas::CreateCanvas(dirty_rect.width(),
         dirty_rect.height(), false));
+    texture_canvas->AsCanvasSkia()->drawColor(
+        SK_ColorBLACK, SkXfermode::kClear_Mode);
     texture_canvas->TranslateInt(-dirty_rect.x(), -dirty_rect.y());
     canvas = texture_canvas.get();
     // TODO: set texture_needs_updating_ to false.
@@ -1201,9 +1160,9 @@ void View::PaintComposite() {
 
   if (texture_.get()) {
     // TODO: if dirty_region doesn't itersect bounds, return.
-    scoped_ptr<ui::Transform> transform(ui::Transform::Create());
-    GetTransformRelativeToRoot(transform.get());
-    texture_->Draw(*transform);
+    ui::Transform transform;
+    GetTransformRelativeTo(NULL, &transform);
+    texture_->Draw(transform);
   }
 
   for (int i = 0, count = child_count(); i < count; ++i)
@@ -1556,22 +1515,21 @@ void View::RemoveDescendantToNotify(View* view) {
 
 // Transformations -------------------------------------------------------------
 
-void View::InitTransform() {
-  if (!transform_.get())
-    transform_.reset(ui::Transform::Create());
-}
-
-void View::GetTransformRelativeToRoot(ui::Transform* transform) {
-  // TODO: the direction of transformation is likely wrong here.
+bool View::GetTransformRelativeTo(const View* ancestor,
+                                  ui::Transform* transform) const {
+  if (this == ancestor)
+    return true;
+  bool ret_value = false;
   if (parent_) {
-    parent_->GetTransformRelativeToRoot(transform);
+    ret_value = parent_->GetTransformRelativeTo(ancestor, transform);
   } else if (transform_.get()) {
-    transform->Copy(*transform_);
+    *transform = *transform_;
   }
   transform->ConcatTranslate(static_cast<float>(GetMirroredX()),
                              static_cast<float>(y()));
   if (transform_.get())
     transform->ConcatTransform(*transform_);
+  return ret_value;
 }
 
 // Coordinate conversion -------------------------------------------------------
@@ -1606,46 +1564,19 @@ void View::ConvertPointToView(const View* src,
 
 bool View::ConvertPointForAncestor(const View* ancestor,
                                    gfx::Point* point) const {
-  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
-
+  ui::Transform trans;
   // TODO(sad): Have some way of caching the transformation results.
-
-  const View* v = this;
-  for (; v && v != ancestor; v = v->parent()) {
-    if (v->GetTransform().HasChange()) {
-      if (!trans->ConcatTransform(v->GetTransform()))
-        return false;
-    }
-    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
-                           static_cast<float>(v->y()));
-  }
-
-  if (trans->HasChange()) {
-    trans->TransformPoint(point);
-  }
-
-  return v == ancestor;
+  bool result = GetTransformRelativeTo(ancestor, &trans);
+  trans.TransformPoint(point);
+  return result;
 }
 
 bool View::ConvertPointFromAncestor(const View* ancestor,
                                     gfx::Point* point) const {
-  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
-
-  const View* v = this;
-  for (; v && v != ancestor; v = v->parent()) {
-    if (v->GetTransform().HasChange()) {
-      if (!trans->ConcatTransform(v->GetTransform()))
-        return false;
-    }
-    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
-                           static_cast<float>(v->y()));
-  }
-
-  if (trans->HasChange()) {
-    trans->TransformPointReverse(point);
-  }
-
-  return v == ancestor;
+  ui::Transform trans;
+  bool result = GetTransformRelativeTo(ancestor, &trans);
+  trans.TransformPointReverse(point);
+  return result;
 }
 
 // Accelerated painting --------------------------------------------------------

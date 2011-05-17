@@ -12,7 +12,7 @@
 #include "ui/gfx/brush.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/transform_skia.h"
+#include "ui/gfx/transform.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/canvas_skia_paint.h"
@@ -332,7 +332,7 @@ void CanvasSkia::EndPlatformPaint() {
 }
 
 void CanvasSkia::Transform(const ui::Transform& transform) {
-  concat(*reinterpret_cast<const ui::TransformSkia&>(transform).matrix_.get());
+  concat(transform.matrix());
 }
 
 CanvasSkia* CanvasSkia::AsCanvasSkia() {
