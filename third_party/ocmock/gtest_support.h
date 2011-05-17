@@ -12,7 +12,7 @@
 namespace testing {
 namespace internal {
 bool VerifyOCMock(OCMockObject* mock, const char* file, int line);
-}  // namespace mac
+}  // namespace internal
 }  // namespace testing
 
 // Calls -verify of the mock and traps the Objective-C exception that is
