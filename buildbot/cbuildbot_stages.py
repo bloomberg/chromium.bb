@@ -328,8 +328,7 @@ class ManifestVersionedSyncStage(BuilderStage):
     commands.ManifestCheckout(self._build_root,
                               self._options.tracking_branch,
                               next_version,
-                              url=self._build_config['manifest_version'],
-                              mirror=manifest_manager.GetMirror())
+                              url=self._build_config['manifest_version'])
 
     # Check that all overlays can be found.
     self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
