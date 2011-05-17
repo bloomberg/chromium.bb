@@ -47,6 +47,7 @@ del "%~dp0git.zip"
 call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\git.bat" "%WIN_TOOLS_ROOT_DIR%\git.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
+call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\ssh-keygen.bat" "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat" 1>nul
 goto :SVN_CHECK
 
 
