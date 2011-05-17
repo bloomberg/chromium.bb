@@ -717,13 +717,14 @@ void BugReportHandler::CancelFeedbackCollection() {
 }
 
 void BugReportHandler::CloseFeedbackTab() {
+  ClobberScreenshotsSource();
+
   Browser* browser = BrowserList::GetLastActive();
   if (browser) {
     browser->CloseTabContents(tab_);
   } else {
     LOG(FATAL) << "Failed to get last active browser.";
   }
-  ClobberScreenshotsSource();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
