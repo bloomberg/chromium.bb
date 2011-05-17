@@ -58,9 +58,12 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
     if os.path.exists(output_file):
       file_handle = open(output_file)
       lines = file_handle.readlines()
+      file_handle.close()
+      # Convert the file to a full data structure.
       for line in lines:
         values = line.strip().split(',')
         file_data.append(values)
+      for values in file_data:
         found_existing_time = False
         if values[0] == router_name and values[1] == file_size:
           values.append('%2.2f' % dl_time)
@@ -69,7 +72,6 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
       if not found_existing_time:
         new_line = [router_name, file_size, ('%2.2f' % dl_time)]
         file_data.append(new_line)
-      file_handle.close()
     else:
       file_data = [[router_name, file_size, ('%2.2f' % dl_time)]]
     # Write the data back out
