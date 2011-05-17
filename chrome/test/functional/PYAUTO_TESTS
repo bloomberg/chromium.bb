@@ -49,9 +49,8 @@
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       'execute_javascript',
       'history',
-      'https',
-      # crbug.com/77777
-      '-imports',
+      'https',      
+      'imports',
       'infobars',
       'instant',
       'navigation',
