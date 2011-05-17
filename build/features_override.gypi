@@ -58,6 +58,7 @@
       'ENABLE_SVG_FOREIGN_OBJECT=<(enable_svg)',
       'ENABLE_SVG_USE=<(enable_svg)',
       'ENABLE_TOUCH_EVENTS=<(enable_touch_events)',
+      'ENABLE_TOUCH_ICON_LOADING=0',
       'ENABLE_V8_SCRIPT_DEBUG_SERVER=1',
       'ENABLE_VIDEO=1',
       'ENABLE_WEB_SOCKETS=1',
