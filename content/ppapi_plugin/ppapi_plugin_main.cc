@@ -41,7 +41,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
       ChildProcess::WaitForDebugger("Ppapi");
   }
 
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+  MessageLoop main_message_loop(MessageLoop::TYPE_IO);
   base::PlatformThread::SetName("CrPPAPIMain");
 
   ChildProcess ppapi_process;
