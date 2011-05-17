@@ -50,23 +50,51 @@ namespace errors = extension_manifest_errors;
 
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 
-// Forward declare static helper functions defined below.
+namespace {
 
 // |error_message| can optionally be passed in a will be set with an appropriate
 // message if the window cannot be found by id.
-static Browser* GetBrowserInProfileWithId(Profile* profile,
-                                          const int window_id,
-                                          bool include_incognito,
-                                          std::string* error_message);
+Browser* GetBrowserInProfileWithId(Profile* profile,
+                                   const int window_id,
+                                   bool include_incognito,
+                                   std::string* error_message) {
+  Profile* incognito_profile =
+      include_incognito && profile->HasOffTheRecordProfile() ?
+          profile->GetOffTheRecordProfile() : NULL;
+  for (BrowserList::const_iterator browser = BrowserList::begin();
+       browser != BrowserList::end(); ++browser) {
+    if (((*browser)->profile() == profile ||
+         (*browser)->profile() == incognito_profile) &&
+        ExtensionTabUtil::GetWindowId(*browser) == window_id)
+      return *browser;
+  }
+
+  if (error_message)
+    *error_message = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kWindowNotFoundError, base::IntToString(window_id));
+
+  return NULL;
+}
 
 // |error_message| can optionally be passed in and will be set with an
 // appropriate message if the tab cannot be found by id.
-static bool GetTabById(int tab_id, Profile* profile,
-                       bool include_incognito,
-                       Browser** browser,
-                       TabStripModel** tab_strip,
-                       TabContentsWrapper** contents,
-                       int* tab_index, std::string* error_message);
+bool GetTabById(int tab_id, Profile* profile,
+                bool include_incognito,
+                Browser** browser,
+                TabStripModel** tab_strip,
+                TabContentsWrapper** contents,
+                int* tab_index,
+                std::string* error_message) {
+  if (ExtensionTabUtil::GetTabById(tab_id, profile, include_incognito,
+                                   browser, tab_strip, contents, tab_index))
+    return true;
+
+  if (error_message)
+    *error_message = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kTabNotFoundError, base::IntToString(tab_id));
+
+  return false;
+}
 
 // Takes |url_string| and returns a GURL which is either valid and absolute
 // or invalid. If |url_string| is not directly interpretable as a valid (it is
@@ -75,11 +103,27 @@ static bool GetTabById(int tab_id, Profile* profile,
 // (chrome-extension://<id>/). Using the source frame url would be more correct,
 // but because the api shipped with urls resolved relative to their extension
 // base, we decided it wasn't worth breaking existing extensions to fix.
-static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
-                                       const Extension* extension);
+GURL ResolvePossiblyRelativeURL(const std::string& url_string,
+                                const Extension* extension) {
+  GURL url = GURL(url_string);
+  if (!url.is_valid())
+    url = extension->GetResourceURL(url_string);
+
+  return url;
+}
 
 // Return the type name for a browser window type.
-static std::string GetWindowTypeText(const Browser* browser);
+std::string GetWindowTypeText(const Browser* browser) {
+  if (browser->is_type_popup())
+    return keys::kWindowTypeValuePopup;
+  if (browser->is_type_panel())
+    return keys::kWindowTypeValuePanel;
+  if (browser->is_app())
+    return keys::kWindowTypeValueApp;
+  return keys::kWindowTypeValueNormal;
+}
+
+}  // namespace
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
@@ -1309,66 +1353,4 @@ void DetectTabLanguageFunction::GotLanguage(const std::string& language) {
   SendResponse(true);
 
   Release();  // Balanced in Run()
-}
-
-// static helpers
-// TODO(jhawkins): Move these to unnamed namespace and remove static modifier.
-
-static Browser* GetBrowserInProfileWithId(Profile* profile,
-                                          const int window_id,
-                                          bool include_incognito,
-                                          std::string* error_message) {
-  Profile* incognito_profile =
-      include_incognito && profile->HasOffTheRecordProfile() ?
-          profile->GetOffTheRecordProfile() : NULL;
-  for (BrowserList::const_iterator browser = BrowserList::begin();
-       browser != BrowserList::end(); ++browser) {
-    if (((*browser)->profile() == profile ||
-         (*browser)->profile() == incognito_profile) &&
-        ExtensionTabUtil::GetWindowId(*browser) == window_id)
-      return *browser;
-  }
-
-  if (error_message)
-    *error_message = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id));
-
-  return NULL;
-}
-
-static bool GetTabById(int tab_id, Profile* profile,
-                       bool include_incognito,
-                       Browser** browser,
-                       TabStripModel** tab_strip,
-                       TabContentsWrapper** contents,
-                       int* tab_index,
-                       std::string* error_message) {
-  if (ExtensionTabUtil::GetTabById(tab_id, profile, include_incognito,
-                                   browser, tab_strip, contents, tab_index))
-    return true;
-
-  if (error_message)
-    *error_message = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, base::IntToString(tab_id));
-
-  return false;
-}
-
-static std::string GetWindowTypeText(const Browser* browser) {
-  if (browser->is_type_popup())
-    return keys::kWindowTypeValuePopup;
-  if (browser->is_type_panel())
-    return keys::kWindowTypeValuePanel;
-  if (browser->is_app())
-    return keys::kWindowTypeValueApp;
-  return keys::kWindowTypeValueNormal;
-}
-
-static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
-                                       const Extension* extension) {
-  GURL url = GURL(url_string);
-  if (!url.is_valid())
-    url = extension->GetResourceURL(url_string);
-
-  return url;
 }
