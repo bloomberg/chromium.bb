@@ -63,6 +63,8 @@ ProfilePolicyConnector::~ProfilePolicyConnector() {
 
 void ProfilePolicyConnector::Initialize() {
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
+  if (identity_strategy_.get())
+    identity_strategy_->LoadTokenCache();
   if (cloud_policy_subsystem_.get())
     cloud_policy_subsystem_->Initialize(profile_->GetPrefs());
 }

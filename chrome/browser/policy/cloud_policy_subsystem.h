@@ -116,6 +116,9 @@ class CloudPolicySubsystem
   // Tracks the pref value for the policy refresh rate.
   IntegerPrefMember policy_refresh_rate_;
 
+  // Weak reference to pass on to |cloud_policy_controller_| on creation.
+  CloudPolicyIdentityStrategy* identity_strategy_;
+
   // Cloud policy infrastructure stuff.
   scoped_ptr<PolicyNotifier> notifier_;
   scoped_ptr<DeviceManagementService> device_management_service_;

@@ -30,6 +30,9 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
                              const FilePath& token_cache_file);
   virtual ~UserPolicyIdentityStrategy();
 
+  // Start loading the token cache.
+  void LoadTokenCache();
+
   // CloudPolicyIdentityStrategy implementation:
   virtual std::string GetDeviceToken() OVERRIDE;
   virtual std::string GetDeviceID() OVERRIDE;

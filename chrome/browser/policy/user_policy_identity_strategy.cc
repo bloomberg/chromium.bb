@@ -157,11 +157,13 @@ UserPolicyIdentityStrategy::UserPolicyIdentityStrategy(
                  NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
                  Source<Profile>(profile_));
 #endif
-
-  cache_->Load();
 }
 
 UserPolicyIdentityStrategy::~UserPolicyIdentityStrategy() {}
+
+void UserPolicyIdentityStrategy::LoadTokenCache() {
+  cache_->Load();
+}
 
 std::string UserPolicyIdentityStrategy::GetDeviceToken() {
   return device_token_;

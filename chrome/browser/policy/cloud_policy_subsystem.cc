@@ -51,7 +51,8 @@ CloudPolicySubsystem::ObserverRegistrar::~ObserverRegistrar() {
 CloudPolicySubsystem::CloudPolicySubsystem(
     CloudPolicyIdentityStrategy* identity_strategy,
     CloudPolicyCacheBase* policy_cache)
-    : prefs_(NULL) {
+    : prefs_(NULL),
+      identity_strategy_(identity_strategy) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   notifier_.reset(new PolicyNotifier());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -66,13 +67,6 @@ CloudPolicySubsystem::CloudPolicySubsystem(
         new DeviceTokenFetcher(device_management_service_.get(),
                                cloud_policy_cache_.get(),
                                notifier_.get()));
-
-    cloud_policy_controller_.reset(
-        new CloudPolicyController(device_management_service_.get(),
-                                  cloud_policy_cache_.get(),
-                                  device_token_fetcher_.get(),
-                                  identity_strategy,
-                                  notifier_.get()));
   }
 }
 
@@ -95,6 +89,17 @@ void CloudPolicySubsystem::OnIPAddressChanged() {
 void CloudPolicySubsystem::Initialize(PrefService* prefs) {
   DCHECK(!prefs_);
   prefs_ = prefs;
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
+    DCHECK(!cloud_policy_controller_.get());
+    cloud_policy_controller_.reset(
+        new CloudPolicyController(device_management_service_.get(),
+                                  cloud_policy_cache_.get(),
+                                  device_token_fetcher_.get(),
+                                  identity_strategy_,
+                                  notifier_.get()));
+  }
 
   if (device_management_service_.get())
     device_management_service_->Initialize();
