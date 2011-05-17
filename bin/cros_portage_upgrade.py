@@ -22,6 +22,23 @@ import chromite.lib.cros_build_lib as cros_lib
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
+  # These constants serve two roles:
+  # 1) Restrict which column names are valid.
+  # 2) Specify the order of those columns.
+  COL_OVERLAY = 'Overlay'
+  COL_CURRENT_PKG = 'Current Package'
+  COL_UPSTREAM_PKG = 'Stable Upstream Package'
+  COL_STATE = 'State'
+  COL_DEPENDS_ON = 'Depends On'
+  COL_ACTION_TAKEN = 'Action Taken'
+  CSV_COLUMNS = [COL_OVERLAY,
+                 COL_CURRENT_PKG,
+                 COL_UPSTREAM_PKG,
+                 COL_STATE,
+                 COL_DEPENDS_ON,
+                 COL_ACTION_TAKEN,
+                 ]
+
   def __init__(self, options=None, args=None):
     # TODO(mtennant): Don't save options object, but instead grab option
     # values that are needed now.  This makes mocking easier.
@@ -168,34 +185,65 @@ class Upgrader(object):
     if info['upgraded']: upgraded = ' (UPGRADED)'
     print '[%s] %s%s%s' % (info['overlay'], info['cpv'], upgrade, upgraded)
 
-    if self._csv_file:
-      # Translate to csv column values:
-      overlay = info['overlay']
-      current_package = info['cpv']
-      upstream_package = info['latest_cpv'] if info['latest_cpv'] else 'N/A'
-      state = csv_state
+    if self._CSVIsOpen():
+      # Recreate list of packages that this cpv depends on.
+      needslist = self._deps_graph[cpv]['needs'].keys()
+      upstream_pkg = info['latest_cpv'] if info['latest_cpv'] else 'N/A'
       action_taken = 'upgraded' if upgraded else ''
-      self._csv_file.write('%s,%s,%s,%s,%s\n' %
-                           (overlay, current_package, upstream_package,
-                            state, action_taken))
+
+      # Translate to csv column values:
+      self._WriteCSVLine({self.COL_OVERLAY: info['overlay'],
+                          self.COL_CURRENT_PKG: info['cpv'],
+                          self.COL_UPSTREAM_PKG: upstream_pkg,
+                          self.COL_STATE: csv_state,
+                          self.COL_DEPENDS_ON: ' '.join(needslist),
+                          self.COL_ACTION_TAKEN: action_taken,
+                          })
+
+  def _OpenCSV(self, csv_file):
+    """If |csv_file| not None, open for writing csv contents."""
+    try:
+      if csv_file:
+        self._csv_file = open(csv_file, 'w')
+        # Column headers
+        self._csv_file.write(','.join(self.CSV_COLUMNS) + '\n')
+    except IOError as ex:
+      print("Unable to open %s for write: %s" %
+            (csv_file, str(ex)))
+      self._csv_file = None
+
+  def _CSVIsOpen(self):
+    """Return true if a csv output file is currently open."""
+    return bool(self._csv_file)
+
+  def _WriteCSVLine(self, values):
+    """Write one csv line out, with the given column |values|.
+
+    The |values| dict is expected to have keywords that match known
+    column names.  Each value will be written to the column specified
+    by its keyword."""
+    # Internal check.  Make sure only known column names are used.
+    for col in values:
+      if not col in self.CSV_COLUMNS:
+        raise LookupError("Tried writing to unknown csv column '%s'" % col)
+
+    if self._csv_file:
+      vals = [values.get(col, "") for col in self.CSV_COLUMNS]
+      self._csv_file.write(','.join(vals) + '\n')
+
+  def _CloseCSV(self):
+    """Close the csv output file, if it is open."""
+    if self._csv_file:
+      self._csv_file.close()
+      self._csv_file = None
 
   def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the latest_cpv to the infos."""
     dash_q = ''
     if not self._options.verbose: dash_q = '-q'
     try:
-      try:
-        if self._options.csv_file:
-          self._csv_file = open(self._options.csv_file, 'w')
-          # Column headers
-          self._csv_file.write('%s,%s,%s,%s,%s\n' %
-                               ('Overlay', 'Current Package',
-                                'Stable Upstream Package',
-                                'State', 'Action Taken'))
-      except IOError as ex:
-        print("Unable to open %s for write: %s" %
-              (self._options.csv_file, str(ex)))
-        self._csv_file = None
+      if self._options.csv_file:
+        self._OpenCSV(self._options.csv_file)
 
       # TODO(petkov): Currently portage's master branch is stale so we need to
       # checkout latest upstream. At some point portage's master branch will be
@@ -218,9 +266,7 @@ class Upgrader(object):
     finally:
       if not self._options.upstream:
         self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
-      if self._csv_file:
-        self._csv_file.close()
-        self._csv_file = None
+      self._CloseCSV()
 
   def _GenParallelEmergeArgv(self):
     """Creates an argv for parallel_emerge based on current options."""
@@ -246,9 +292,9 @@ class Upgrader(object):
     deps.Initialize(argv)
 
     deps_tree, deps_info = deps.GenDependencyTree()
-    deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
+    self._deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
 
-    return Upgrader._GetPreOrderDepGraph(deps_graph)
+    return Upgrader._GetPreOrderDepGraph(self._deps_graph)
 
   def _GetInfoListWithOverlays(self, cpvlist):
     """Returns a list of cpv/overlay info maps corresponding to |cpvlist|."""
