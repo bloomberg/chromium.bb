@@ -244,15 +244,15 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
 Version* PluginGroup::CreateVersionFromString(const string16& version_string) {
   // Remove spaces and ')' from the version string,
   // Replace any instances of 'r', ',' or '(' with a dot.
-  std::wstring version = UTF16ToWide(version_string);
-  RemoveChars(version, L") ", &version);
+  std::string version = UTF16ToASCII(version_string);
+  RemoveChars(version, ") ", &version);
   std::replace(version.begin(), version.end(), 'd', '.');
   std::replace(version.begin(), version.end(), 'r', '.');
   std::replace(version.begin(), version.end(), ',', '.');
   std::replace(version.begin(), version.end(), '(', '.');
   std::replace(version.begin(), version.end(), '_', '.');
 
-  return Version::GetVersionFromString(WideToASCII(version));
+  return Version::GetVersionFromString(version);
 }
 
 void PluginGroup::UpdateActivePlugin(const WebPluginInfo& plugin) {
