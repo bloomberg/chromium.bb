@@ -386,6 +386,21 @@
   fun:openDatabase
 }
 
+{
+  Missing libsqlite3 symbol
+  ThreadSanitizer:Race
+  ...
+  obj:*libsqlite3.so*
+  obj:*libsqlite3.so*
+  obj:*libsqlite3.so*
+  obj:*libsqlite3.so*
+  obj:*libsqlite3.so*
+  fun:sdb_GetMetaData
+  fun:sftkdb_HasPasswordSet
+  ...
+  fun:crypto::::NSSInitSingleton::OpenUserDB
+}
+
 ############################
 # Races in V8
 
@@ -487,31 +502,4 @@
   tsanbug_62b
   ThreadSanitizer:Race
   fun:__GI_memcpy
-}
-
-{
-  bug_70085a
-  ThreadSanitizer:Race
-  fun:WebCore::ResourceResponseBase::~ResourceResponseBase*
-  fun:WebCore::ResourceResponse::~ResourceResponse*
-  ...
-  fun:WebCore::DocumentLoader::~DocumentLoader*
-  fun:WebKit::WebDataSourceImpl::~WebDataSourceImpl*
-}
-
-{
-  bug_70085b
-  ThreadSanitizer:Race
-  ...
-  fun:WTF::ThreadSafeRefCounted*::deref*
-}
-
-{
-  bug_70085c
-  ThreadSanitizer:Race
-  fun:WebCore::WorkerScriptController::forbidExecution*
-  fun:WebCore::WorkerThread::stop*
-  fun:WebKit::WebWorkerBase::stopWorkerThread*
-  fun:WebKit::WebWorkerImpl::terminateWorkerContext*
-  fun:WebWorkerStub::OnTerminateWorkerContext*
 }
