@@ -233,6 +233,8 @@ void FileWriterDelegateTest::TearDown() {
   net::URLRequest::RegisterProtocolFactory("blob", NULL);
   result_.reset();
   base::ClosePlatformFile(file_);
+  file_system_context_ = NULL;
+  MessageLoop::current()->RunAllPending();
 }
 
 FileSystemOperation* FileWriterDelegateTest::CreateNewOperation(
