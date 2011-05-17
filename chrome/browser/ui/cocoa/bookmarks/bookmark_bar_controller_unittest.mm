@@ -29,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/theme_provider.h"
 
@@ -1569,7 +1570,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
 
   // Restore, then confirm cancelTracking was called.
   [bar_ setButtonContextMenu:origMenu];
-  [fakeMenu verify];
+  EXPECT_OCMOCK_VERIFY(fakeMenu);
 }
 
 TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {

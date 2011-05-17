@@ -19,6 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -295,7 +296,7 @@ TEST_F(AutocompleteTextFieldCellTest, UpdateToolTips) {
 
   [cell updateToolTipsInRect:bounds ofView:controlView];
 
-  [controlView verify];
+  EXPECT_OCMOCK_VERIFY(controlView);
 }
 
 }  // namespace

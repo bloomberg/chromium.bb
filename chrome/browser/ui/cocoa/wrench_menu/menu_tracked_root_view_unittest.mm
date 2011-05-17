@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 class MenuTrackedRootViewTest : public CocoaTest {
@@ -40,6 +41,6 @@ TEST_F(MenuTrackedRootViewTest, MouseUp) {
                                       pressure:1.0];
   [view_ mouseUp:event];
 
-  [menu verify];
-  [menuItem verify];
+  EXPECT_OCMOCK_VERIFY(menu);
+  EXPECT_OCMOCK_VERIFY(menuItem);
 }

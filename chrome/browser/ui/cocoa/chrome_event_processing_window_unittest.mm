@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_frame_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 namespace {
@@ -83,7 +84,7 @@ TEST_F(ChromeEventProcessingWindowTest,
 
   // Don't wish to mock all the way down...
   [window_ setDelegate:nil];
-  [delegate verify];
+  EXPECT_OCMOCK_VERIFY(delegate);
 }
 
 // Verify that an unhandled shortcut does not get forwarded via
@@ -100,7 +101,7 @@ TEST_F(ChromeEventProcessingWindowTest, PerformKeyEquivalentNoForward) {
 
   // Don't wish to mock all the way down...
   [window_ setDelegate:nil];
-  [delegate verify];
+  EXPECT_OCMOCK_VERIFY(delegate);
 }
 
 }  // namespace

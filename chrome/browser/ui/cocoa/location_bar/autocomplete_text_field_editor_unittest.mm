@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 using ::testing::Return;
@@ -124,7 +125,7 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
     [[[delegate expect] andReturn:menu.get()] decorationMenuForEvent:event];
     [editor_ setDelegate:delegate];
     NSMenu* contextMenu = [editor_ menuForEvent:event];
-    [delegate verify];
+    EXPECT_OCMOCK_VERIFY(delegate);
     [editor_ setDelegate:nil];
 
     EXPECT_EQ(contextMenu, menu.get());
@@ -139,7 +140,7 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
     [[[delegate expect] andReturn:nil] decorationMenuForEvent:event];
     [editor_ setDelegate:delegate];
     NSMenu* contextMenu = [editor_ menuForEvent:event];
-    [delegate verify];
+    EXPECT_OCMOCK_VERIFY(delegate);
     [editor_ setDelegate:nil];
 
     EXPECT_NE(contextMenu, menu.get());

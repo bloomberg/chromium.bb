@@ -11,7 +11,6 @@
 #import "chrome/browser/ui/cocoa/styled_text_field_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 namespace {
 

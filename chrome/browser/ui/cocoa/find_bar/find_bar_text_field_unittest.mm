@@ -11,16 +11,6 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
-
-// OCMock wants to mock a concrete class or protocol.  This should
-// provide a correct protocol for newer versions of the SDK, while
-// providing something mockable for older versions.
-
-@protocol MockTextEditingDelegate<NSControlTextEditingDelegate>
-- (void)controlTextDidBeginEditing:(NSNotification*)aNotification;
-- (BOOL)control:(NSControl*)control textShouldEndEditing:(NSText*)fieldEditor;
-@end
 
 namespace {
 
