@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,12 +102,12 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
         const WifiNetwork* wifi =
             static_cast<const WifiNetwork*>(active_network);
         SetIcon(*IconForNetworkStrength(wifi, true));
-        SetText(ASCIIToWide(wifi->name()));
+        SetText(UTF8ToWide(wifi->name()));
       } else if (active_network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(active_network);
         SetIcon(*IconForNetworkStrength(cellular, true));
-        SetText(ASCIIToWide(cellular->name()));
+        SetText(UTF8ToWide(cellular->name()));
       } else {
         NOTREACHED();
       }
@@ -118,9 +118,9 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
         SetIcon(*IconForNetworkConnecting(0, true));
       }
       if (cros->wifi_connecting())
-        SetText(ASCIIToWide(cros->wifi_network()->name()));
+        SetText(UTF8ToWide(cros->wifi_network()->name()));
       else if (cros->cellular_connecting())
-        SetText(ASCIIToWide(cros->cellular_network()->name()));
+        SetText(UTF8ToWide(cros->cellular_network()->name()));
     }
 
     if (!cros->Connected() && !cros->Connecting()) {

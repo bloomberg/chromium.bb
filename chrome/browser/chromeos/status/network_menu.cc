@@ -425,10 +425,10 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       if (wifi_networks[i]->connecting()) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            ASCIIToUTF16(wifi_name),
+            UTF8ToUTF16(wifi_name),
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
       } else {
-        label = ASCIIToUTF16(wifi_name);
+        label = UTF8ToUTF16(wifi_name);
       }
 
       // First add a separator if necessary.
@@ -489,19 +489,19 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
           activation_state == ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
-            ASCIIToUTF16(network_name));
+            UTF8ToUTF16(network_name));
       } else if (activation_state == ACTIVATION_STATE_ACTIVATING) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            ASCIIToUTF16(network_name),
+            UTF8ToUTF16(network_name),
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATING));
       } else if (cell_networks[i]->connecting()) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            ASCIIToUTF16(network_name),
+            UTF8ToUTF16(network_name),
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
       } else {
-        label = ASCIIToUTF16(network_name);
+        label = UTF8ToUTF16(network_name);
       }
 
       // First add a separator if necessary.
@@ -722,10 +722,10 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
     if (vpn->connecting()) {
       label = l10n_util::GetStringFUTF16(
           IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-          ASCIIToUTF16(vpn->name()),
+          UTF8ToUTF16(vpn->name()),
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
     } else {
-      label = ASCIIToUTF16(vpn->name());
+      label = UTF8ToUTF16(vpn->name());
     }
 
     // First add a separator if necessary.

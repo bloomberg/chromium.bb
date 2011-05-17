@@ -204,15 +204,15 @@ string16 GetCurrentNetworkName(NetworkLibrary* network_library) {
   if (network_library->ethernet_connected()) {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
   } else if (network_library->wifi_connected()) {
-    return ASCIIToUTF16(network_library->wifi_network()->name());
+    return UTF8ToUTF16(network_library->wifi_network()->name());
   } else if (network_library->cellular_connected()) {
-    return ASCIIToUTF16(network_library->cellular_network()->name());
+    return UTF8ToUTF16(network_library->cellular_network()->name());
   } else if (network_library->ethernet_connecting()) {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
   } else if (network_library->wifi_connecting()) {
-    return ASCIIToUTF16(network_library->wifi_network()->name());
+    return UTF8ToUTF16(network_library->wifi_network()->name());
   } else if (network_library->cellular_connecting()) {
-    return ASCIIToUTF16(network_library->cellular_network()->name());
+    return UTF8ToUTF16(network_library->cellular_network()->name());
   } else {
     return string16();
   }

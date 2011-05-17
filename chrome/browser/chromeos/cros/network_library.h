@@ -314,6 +314,9 @@ class Network {
   // that.  See ForgetWifiNetwork().
   void SetAutoConnect(bool auto_connect);
 
+  // Sets network name.
+  void SetName(const std::string& name);
+
   // Return a string representation of the state code.
   std::string GetStateString() const;
 
@@ -666,6 +669,8 @@ class WifiNetwork : public WirelessNetwork {
 
   const std::string& GetPassphrase() const;
 
+  bool SetSsid(const std::string& ssid);
+  bool SetHexSsid(const std::string& ssid_hex);
   void SetPassphrase(const std::string& passphrase);
   void SetIdentity(const std::string& identity);
   void SetCertPath(const std::string& cert_path);

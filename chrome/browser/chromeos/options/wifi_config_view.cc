@@ -640,7 +640,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
     layout->AddView(ssid_textfield_);
   } else {
-    views::Label* label = new views::Label(ASCIIToWide(wifi->name()));
+    views::Label* label = new views::Label(UTF8ToWide(wifi->name()));
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(label);
   }

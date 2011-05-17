@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <map>
 
+#include "base/i18n/icu_encoding_detection.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
@@ -14,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/utf_string_conversion_utils.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -140,6 +143,10 @@ const char* kPaymentURLProperty = "Cellular.OlpUrl";
 const char* kUsageURLProperty = "Cellular.UsageUrl";
 const char* kCellularApnProperty = "Cellular.APN";
 const char* kCellularLastGoodApnProperty = "Cellular.LastGoodAPN";
+const char* kWifiHexSsid = "WiFi.HexSSID";
+const char* kWifiFrequency = "WiFi.Frequency";
+const char* kWifiHiddenSsid = "WiFi.HiddenSSID";
+const char* kWifiPhyMode = "WiFi.PhyMode";
 const char* kFavoriteProperty = "Favorite";
 const char* kConnectableProperty = "Connectable";
 const char* kAutoConnectProperty = "AutoConnect";
@@ -504,6 +511,10 @@ enum PropertyIndex {
   PROPERTY_INDEX_TYPE,
   PROPERTY_INDEX_UNKNOWN,
   PROPERTY_INDEX_USAGE_URL,
+  PROPERTY_INDEX_WIFI_FREQUENCY,
+  PROPERTY_INDEX_WIFI_HEX_SSID,
+  PROPERTY_INDEX_WIFI_HIDDEN_SSID,
+  PROPERTY_INDEX_WIFI_PHY_MODE,
 };
 
 StringToEnum<PropertyIndex>::Pair property_index_table[] = {
@@ -590,6 +601,10 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kSupportNetworkScanProperty, PROPERTY_INDEX_SUPPORT_NETWORK_SCAN },
   { kTypeProperty, PROPERTY_INDEX_TYPE },
   { kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
+  { kWifiFrequency, PROPERTY_INDEX_WIFI_FREQUENCY },
+  { kWifiHexSsid, PROPERTY_INDEX_WIFI_HEX_SSID },
+  { kWifiHiddenSsid, PROPERTY_INDEX_WIFI_HIDDEN_SSID },
+  { kWifiPhyMode, PROPERTY_INDEX_WIFI_PHY_MODE },
 };
 
 StringToEnum<PropertyIndex>& property_index_parser() {
@@ -852,6 +867,21 @@ static bool EnsureCrosLoaded() {
   }
 }
 
+static void ValidateUTF8(const std::string& str, std::string* output) {
+  output->clear();
+
+  for (int32 index = 0; index < static_cast<int32>(str.size()); ++index) {
+    uint32 code_point_out;
+    bool is_unicode_char = base::ReadUnicodeCharacter(str.c_str(), str.size(),
+                                                      &index, &code_point_out);
+    if (is_unicode_char && (code_point_out >= 0x20))
+      base::WriteUnicodeCharacter(code_point_out, output);
+    else
+      // Puts REPLACEMENT CHARACTER (U+FFFD) if character is not readable UTF-8
+      base::WriteUnicodeCharacter(0xFFFD, output);
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1033,6 +1063,12 @@ void Network::SetState(ConnectionState new_state) {
   VLOG(1) << " " << name() << ".State = " << GetStateString();
 }
 
+void Network::SetName(const std::string& name) {
+  std::string name_utf8;
+  ValidateUTF8(name, &name_utf8);
+  set_name(name_utf8);
+}
+
 bool Network::ParseValue(int index, const Value* value) {
   switch (index) {
     case PROPERTY_INDEX_TYPE: {
@@ -1048,8 +1084,14 @@ bool Network::ParseValue(int index, const Value* value) {
     }
     case PROPERTY_INDEX_DEVICE:
       return value->GetAsString(&device_path_);
-    case PROPERTY_INDEX_NAME:
-      return value->GetAsString(&name_);
+    case PROPERTY_INDEX_NAME: {
+      std::string name;
+      if (value->GetAsString(&name)) {
+        SetName(name);
+        return true;
+      }
+      break;
+    }
     case PROPERTY_INDEX_STATE: {
       std::string state_string;
       if (value->GetAsString(&state_string)) {
@@ -1872,8 +1914,55 @@ void WifiNetwork::CalculateUniqueId() {
   unique_id_ = security + "|" + name_;
 }
 
+bool WifiNetwork::SetSsid(const std::string& ssid) {
+  // Detects encoding and convert to UTF-8.
+  std::string ssid_utf8;
+  if (!IsStringUTF8(ssid)) {
+    std::string encoding;
+    if (base::DetectEncoding(ssid, &encoding)) {
+      if (!base::ConvertToUtf8AndNormalize(ssid, encoding, &ssid_utf8)) {
+        ssid_utf8.clear();
+      }
+    }
+  }
+
+  if (ssid_utf8.empty())
+    SetName(ssid);
+  else
+    SetName(ssid_utf8);
+
+  return true;
+}
+
+bool WifiNetwork::SetHexSsid(const std::string& ssid_hex) {
+  // Converts ascii hex dump (eg. "49656c6c6f") to string (eg. "Hello").
+  std::vector<uint8> ssid_raw;
+  if (!base::HexStringToBytes(ssid_hex, &ssid_raw)) {
+    LOG(ERROR) << "Iligal hex char is found in WiFi.HexSSID.";
+    ssid_raw.clear();
+    return false;
+  }
+
+  return SetSsid(std::string(ssid_raw.begin(), ssid_raw.end()));
+}
+
 bool WifiNetwork::ParseValue(int index, const Value* value) {
   switch (index) {
+    case PROPERTY_INDEX_WIFI_HEX_SSID: {
+      std::string ssid_hex;
+      if (!value->GetAsString(&ssid_hex))
+        return false;
+
+      SetHexSsid(ssid_hex);
+      return true;
+    }
+    case PROPERTY_INDEX_NAME: {
+      // Does not change network name when it was already set by WiFi.HexSSID.
+      if (!name().empty())
+        return true;
+      else
+        return WirelessNetwork::ParseValue(index, value);
+    }
     case PROPERTY_INDEX_SECURITY: {
       std::string security_string;
       if (value->GetAsString(&security_string)) {
@@ -4170,6 +4259,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     wifi4->set_identity("nobody@google.com");
     wifi4->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
     AddNetwork(wifi4);
+
+    WifiNetwork* wifi5 = new WifiNetwork("fw5");
+    wifi5->set_name("Fake Wifi UTF-8 SSID ");
+    wifi5->SetSsid("Fake Wifi UTF-8 SSID \u3042\u3044\u3046");
+    wifi5->set_strength(25);
+    wifi5->set_connected(false);
+    AddNetwork(wifi5);
+
+    WifiNetwork* wifi6 = new WifiNetwork("fw6");
+    wifi6->set_name("Fake Wifi latin-1 SSID ");
+    wifi6->SetSsid("Fake Wifi latin-1 SSID \xc0\xcb\xcc\xd6\xfb");
+    wifi6->set_strength(20);
+    wifi6->set_connected(false);
+    AddNetwork(wifi6);
 
     active_wifi_ = wifi1;
 

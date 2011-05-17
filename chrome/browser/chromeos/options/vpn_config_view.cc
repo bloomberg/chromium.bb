@@ -383,7 +383,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     server_text_ = NULL;
   } else {
     server_hostname_ = vpn->server_hostname();
-    server_text_ = new views::Label(ASCIIToWide(server_hostname_));
+    server_text_ = new views::Label(UTF8ToWide(server_hostname_));
     server_text_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(server_text_);
     server_textfield_ = NULL;
