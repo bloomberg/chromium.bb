@@ -41,9 +41,8 @@ RegisterSupportHostRequest::~RegisterSupportHostRequest() {
 }
 
 bool RegisterSupportHostRequest::Init(HostConfig* config,
-                                      RegisterCallback* callback) {
-  DCHECK(!callback_.get());
-  callback_.reset(callback);
+                                      const RegisterCallback& callback) {
+  callback_ = callback;
 
   if (!key_pair_.Load(config)) {
     return false;
@@ -54,7 +53,7 @@ bool RegisterSupportHostRequest::Init(HostConfig* config,
 void RegisterSupportHostRequest::OnSignallingConnected(
     SignalStrategy* signal_strategy,
     const std::string& jid) {
-  DCHECK(callback_.get()); // Expect that the object has been initialized.
+  DCHECK(!callback_.is_null());
 
   message_loop_ = MessageLoop::current();
 
@@ -140,8 +139,7 @@ void RegisterSupportHostRequest::ProcessResponse(const XmlElement* response) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   std::string support_id;
   bool result = ParseResponse(response, &support_id);
-  callback_->Run(result, support_id);
-  callback_.reset();
+  callback_.Run(result, support_id);
 }
 
 }  // namespace remoting

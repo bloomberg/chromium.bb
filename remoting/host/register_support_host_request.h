@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/host_key_pair.h"
@@ -34,7 +34,7 @@ class RegisterSupportHostRequest : public HostStatusObserver {
  public:
   // First parameter is set to true on success. Second parameter is
   // the new SessionID received from the bot.
-  typedef Callback2<bool, const std::string&>::Type RegisterCallback;
+  typedef base::Callback<void(bool, const std::string&)> RegisterCallback;
 
   RegisterSupportHostRequest();
   virtual ~RegisterSupportHostRequest();
@@ -47,7 +47,7 @@ class RegisterSupportHostRequest : public HostStatusObserver {
   // while signalling connection exists. Returns false on falure
   // (e.g. config is invalid). Callback is never called if the bot
   // malfunctions and doesn't respond to the request.
-  bool Init(HostConfig* config, RegisterCallback* callback);
+  bool Init(HostConfig* config, const RegisterCallback& callback);
 
   // HostStatusObserver implementation.
   virtual void OnSignallingConnected(SignalStrategy* signal_strategy,
@@ -67,7 +67,7 @@ class RegisterSupportHostRequest : public HostStatusObserver {
   void InvokeCallback(bool result, const std::string& support_id);
 
   MessageLoop* message_loop_;
-  scoped_ptr<RegisterCallback> callback_;
+  RegisterCallback callback_;
   scoped_ptr<IqRequest> request_;
   HostKeyPair key_pair_;
 

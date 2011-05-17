@@ -12,13 +12,15 @@
 // 3. Receive mouse / keyboard events through libjingle.
 // 4. Sends screen capture through libjingle.
 
+#include <stdlib.h>
+
 #include <iostream>
 #include <string>
-#include <stdlib.h>
 
 #include "build/build_config.h"
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -80,6 +82,16 @@ const char kVideoSwitchValueZip[] = "zip";
 const char kVideoSwitchValueVp8[] = "vp8";
 const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 
+// Glue class to print out the access code for Me2Mom.
+void SetMe2MomAccessCode(remoting::SupportAccessVerifier* access_verifier,
+                         bool successful, const std::string& support_id) {
+  if (successful) {
+    std::cout << "Support id: " << support_id << "-"
+              << access_verifier->host_secret() << std::endl;
+  }
+  access_verifier->OnMe2MomHostRegistered(successful, support_id);
+}
+
 class SimpleHost {
  public:
   SimpleHost()
@@ -110,20 +122,22 @@ class SimpleHost {
     // Initialize AccessVerifier.
     // TODO(jamiewalch): For the Me2Mom case, the access verifier is passed to
     // RegisterSupportHostRequest::Init, so transferring ownership of it to the
-    // ChromotingHost could cause a crash condition at shut-down. Fix this.
+    // ChromotingHost could cause a crash condition if SetMe2MomAccessCode is
+    // called after the ChromotingHost is destroyed (for example, at shutdown).
+    // Fix this.
     scoped_ptr<remoting::AccessVerifier> access_verifier;
-    remoting::RegisterSupportHostRequest::RegisterCallback*
-        register_callback = NULL;
+    scoped_refptr<remoting::RegisterSupportHostRequest> register_request;
     if (me2mom_) {
       scoped_ptr<remoting::SupportAccessVerifier> support_access_verifier(
           new remoting::SupportAccessVerifier());
       if (!support_access_verifier->Init())
         return 1;
-      std::cout << "Host secret: "
-                << support_access_verifier->host_secret() << std::endl;
-      register_callback = NewCallback(
-          support_access_verifier.get(),
-          &remoting::SupportAccessVerifier::OnMe2MomHostRegistered);
+      register_request = new remoting::RegisterSupportHostRequest();
+      if (!register_request->Init(
+              config, base::Bind(&SetMe2MomAccessCode,
+                                 support_access_verifier.get()))) {
+        return 1;
+      }
       access_verifier.reset(support_access_verifier.release());
     } else {
       scoped_ptr<remoting::SelfAccessVerifier> self_access_verifier(
@@ -155,11 +169,6 @@ class SimpleHost {
     }
 
     if (me2mom_) {
-      scoped_refptr<remoting::RegisterSupportHostRequest> register_request =
-          new remoting::RegisterSupportHostRequest();
-      if (!register_request->Init(config, register_callback)) {
-        return 1;
-      }
       host->AddStatusObserver(register_request);
     } else {
       // Initialize HeartbeatSender.

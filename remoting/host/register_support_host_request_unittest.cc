@@ -4,6 +4,7 @@
 
 #include "remoting/host/register_support_host_request.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -63,7 +64,8 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   scoped_refptr<RegisterSupportHostRequest> request(
       new RegisterSupportHostRequest());
   ASSERT_TRUE(request->Init(
-      config_, NewCallback(&callback_, &MockCallback::OnResponse)));
+      config_, base::Bind(&MockCallback::OnResponse,
+                          base::Unretained(&callback_))));
 
   MockIqRequest* iq_request = new MockIqRequest();
   iq_request->Init();
