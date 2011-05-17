@@ -3848,6 +3848,11 @@
    fun:_ZN2v88internal18StackFrameIterator12SingletonForENS0_10StackFrame4TypeE
 }
 {
+   bug_73722e
+   Memcheck:Addr4
+   fun:_ZNK2v88internal13StandardFrame13GetExpressionEi
+}
+{
    bug_73828
    Memcheck:Leak
    ...
