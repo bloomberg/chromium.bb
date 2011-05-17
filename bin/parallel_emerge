@@ -111,6 +111,9 @@ def Usage():
 # Global start time
 GLOBAL_START = time.time()
 
+# Whether process has been killed by a signal.
+KILLED = multiprocessing.Event()
+
 
 class EmergeData(object):
   """This simple struct holds various emerge variables.
@@ -821,14 +824,18 @@ class EmergeJobState(object):
     self.start_timestamp = start_timestamp
 
 
+def KillHandler(signum, frame):
+  # Kill self and all subprocesses.
+  os.killpg(0, signal.SIGKILL)
+
 def SetupWorkerSignals():
   def ExitHandler(signum, frame):
-    # Remove our signal handlers so we don't get called recursively.
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    # Set KILLED flag.
+    KILLED.set()
 
-    # Try to exit cleanly
-    sys.exit(1)
+    # Remove our signal handlers so we don't get called recursively.
+    signal.signal(signal.SIGINT, KillHandler)
+    signal.signal(signal.SIGTERM, KillHandler)
 
   # Ensure that we exit quietly and cleanly, if possible, when we receive
   # SIGTERM or SIGINT signals. By default, when the user hits CTRL-C, all
@@ -877,6 +884,9 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
       # to the queue so they'll get it too.
       task_queue.put(target)
       return
+    if KILLED.is_set():
+      return
+
     db_pkg = package_db[target]
     db_pkg.root_config = emerge.root_config
     install_list = [db_pkg]
@@ -906,6 +916,9 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
         output.close()
       if retcode is None:
         retcode = 0
+
+    if KILLED.is_set():
+      return
 
     job = EmergeJobState(target, pkgname, True, output.name, start_timestamp,
                          retcode)
@@ -984,9 +997,12 @@ def PrintWorker(queue):
   """A worker that prints stuff to the screen as requested."""
 
   def ExitHandler(signum, frame):
+    # Set KILLED flag.
+    KILLED.set()
+
     # Switch to default signal handlers so that we'll die after two signals.
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    signal.signal(signal.SIGINT, KillHandler)
+    signal.signal(signal.SIGTERM, KillHandler)
 
   # Don't exit on the first SIGINT / SIGTERM, because the parent worker will
   # handle it and tell us when we need to exit.
@@ -1010,7 +1026,6 @@ def PrintWorker(queue):
         continue
       raise
 
-
 class EmergeQueue(object):
   """Class to schedule emerge jobs according to a dependency graph."""
 
@@ -1027,6 +1042,9 @@ class EmergeQueue(object):
     if "--pretend" in emerge.opts:
       print "Skipping merge because of --pretend mode."
       sys.exit(0)
+
+    # Set a process group so we can easily terminate all children.
+    os.setpgrp()
 
     # Setup scheduler graph object. This is used by the child processes
     # to help schedule jobs.
@@ -1066,10 +1084,12 @@ class EmergeQueue(object):
   def _SetupExitHandler(self):
 
     def ExitHandler(signum, frame):
+      # Set KILLED flag.
+      KILLED.set()
 
       # Kill our signal handlers so we don't get called recursively
-      signal.signal(signal.SIGINT, signal.SIG_DFL)
-      signal.signal(signal.SIGTERM, signal.SIG_DFL)
+      signal.signal(signal.SIGINT, KillHandler)
+      signal.signal(signal.SIGTERM, KillHandler)
 
       # Print our current job status
       for target, job in self._jobs.iteritems():
@@ -1078,9 +1098,11 @@ class EmergeQueue(object):
 
       # Notify the user that we are exiting
       self._Print("Exiting on signal %s" % signum)
+      self._print_queue.put(None)
+      self._print_worker.join()
 
       # Kill child threads, then exit.
-      self._Exit()
+      os.killpg(0, signal.SIGKILL)
       sys.exit(1)
 
     # Print out job status when we are killed
