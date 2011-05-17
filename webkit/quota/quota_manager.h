@@ -71,14 +71,14 @@ class QuotaManager : public QuotaTaskObserver,
                     RequestQuotaCallback* callback);
 
   // Called by clients via proxy.
-  // QuotaClients should call this method when storage is accessed.
+  // Client storage should call this method when storage is accessed.
   // Used to maintain LRU ordering.
   void NotifyStorageAccessed(QuotaClient::ID client_id,
                              const GURL& origin,
                              StorageType typea);
 
   // Called by clients via proxy.
-  // QuotaClients must call this method whenever they have made any
+  // Client storage must call this method whenever they have made any
   // modifications that change the amount of data stored in their storage.
   void NotifyStorageModified(QuotaClient::ID client_id,
                              const GURL& origin,
@@ -114,11 +114,13 @@ class QuotaManager : public QuotaTaskObserver,
   static const int64 kIncognitoDefaultTemporaryQuota;
 
  private:
+  class DatabaseTaskBase;
   class InitializeTask;
   class TemporaryGlobalQuotaUpdateTask;
   class PersistentHostQuotaUpdateTask;
   class PersistentHostQuotaQueryTask;
   class GetLRUOriginTask;
+  class OriginDeletionDatabaseTask;
 
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
@@ -142,14 +144,13 @@ class QuotaManager : public QuotaTaskObserver,
   // The client must remain valid until OnQuotaManagerDestored is called.
   void RegisterClient(QuotaClient* client);
 
-  // TODO(dmikurube): Add a test for this method.
-  virtual void GetLRUOrigin(
-      StorageType type,
-      GetLRUOriginCallback* callback);
-
   UsageTracker* GetUsageTracker(StorageType type) const;
 
   void DidGetTemporaryGlobalQuota(int64 quota);
+
+  // Methods for eviction logic.
+  void DeleteOriginFromDatabase(const GURL& origin, StorageType type);
+  void GetLRUOrigin(StorageType type, GetLRUOriginCallback* callback);
 
   void DeleteOnCorrectThread() const;
 
@@ -157,7 +158,6 @@ class QuotaManager : public QuotaTaskObserver,
   const FilePath profile_path_;
 
   scoped_refptr<QuotaManagerProxy> proxy_;
-  bool db_initialized_;
   bool db_disabled_;
   scoped_refptr<base::MessageLoopProxy> io_thread_;
   scoped_refptr<base::MessageLoopProxy> db_thread_;
@@ -191,12 +191,12 @@ class QuotaManagerProxy
  public:
   virtual void RegisterClient(QuotaClient* client);
   virtual void NotifyStorageAccessed(QuotaClient::ID client_id,
-                             const GURL& origin,
-                             StorageType type);
+                                     const GURL& origin,
+                                     StorageType type);
   virtual void NotifyStorageModified(QuotaClient::ID client_id,
-                             const GURL& origin,
-                             StorageType type,
-                             int64 delta);
+                                     const GURL& origin,
+                                     StorageType type,
+                                     int64 delta);
   virtual void NotifyOriginInUse(const GURL& origin);
   virtual void NotifyOriginNoLongerInUse(const GURL& origin);
 
