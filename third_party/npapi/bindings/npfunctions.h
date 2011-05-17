@@ -48,8 +48,6 @@
 #include "npapi.h"
 #include "npruntime.h"
 
-typedef void         (* NP_LOADDS NPP_InitializeProcPtr)(void);
-typedef void         (* NP_LOADDS NPP_ShutdownProcPtr)(void);
 typedef NPError      (* NP_LOADDS NPP_NewProcPtr)(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, char* argn[], char* argv[], NPSavedData* saved);
 typedef NPError      (* NP_LOADDS NPP_DestroyProcPtr)(NPP instance, NPSavedData** save);
 typedef NPError      (* NP_LOADDS NPP_SetWindowProcPtr)(NPP instance, NPWindow* window);

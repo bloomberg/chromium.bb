@@ -390,7 +390,9 @@ typedef enum {
   /* Checks to see if the plug-in would like the browser to load the "src" attribute. */
   NPPVpluginCancelSrcStream = 20,
 
-  NPPVSupportsAdvancedKeyHandling = 21
+  NPPVsupportsAdvancedKeyHandling = 21,
+
+  NPPVpluginUsesDOMForCursorBool = 22
 
 #if defined(XP_MACOSX)
   /* Used for negotiating drawing models */
@@ -815,11 +817,9 @@ extern "C" {
 /* NPP_* functions are provided by the plugin and called by the navigator. */
 
 #if defined(XP_UNIX)
-char* NPP_GetMIMEDescription(void);
+const char* NPP_GetMIMEDescription(void);
 #endif
 
-NPError NP_LOADDS NPP_Initialize(void);
-void    NP_LOADDS NPP_Shutdown(void);
 NPError NP_LOADDS NPP_New(NPMIMEType pluginType, NPP instance,
                           uint16_t mode, int16_t argc, char* argn[],
                           char* argv[], NPSavedData* saved);

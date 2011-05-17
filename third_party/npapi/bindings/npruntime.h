@@ -41,6 +41,8 @@
 extern "C" {
 #endif
 
+#include "nptypes.h"
+
 /*
     This API is used to facilitate binding code written in C to script
     objects.  The API in this header does not assume the presence of a
@@ -379,32 +381,6 @@ bool NPN_Enumerate(NPP npp, NPObject *npobj, NPIdentifier **identifier,
                    uint32_t *count);
 bool NPN_Construct(NPP npp, NPObject *npobj, const NPVariant *args,
                    uint32_t argCount, NPVariant *result);
-
-// Helper function for evaluating a script in the scope of the NPObject passed in.
-// Parameters
-// npp
-//  The plugin's opaque instance handle (Can be NULL)
-// popups_allowed
-//  Indicates if popups created in the context of the script being executed are
-//  blocked or not.
-// npobj
-//  The NPObject.
-// npscript
-//  The script being executed.
-// result
-//  On return contains the value returned by the script.
-// Returns true on success.
-bool NPN_EvaluateHelper(NPP npp, bool popups_allowed, NPObject* npobj, 
-                        NPString* npscript, NPVariant *result);
-
-// BEGIN GOOGLE MODIFICATIONS
-
-void* NPP_GetJavaClass(void);
-void* NPN_GetJavaEnv(void);
-void* NPN_GetJavaPeer(NPP instance);
-void NPN_PluginThreadAsyncCall(NPP id, void (*func)(void *), void *userData);
-
-// END GOOGLE MODIFICATIONS
 
 /*
     NPN_SetException may be called to trigger a script exception upon
