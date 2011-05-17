@@ -1543,16 +1543,38 @@
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
 }
 {
-   bug_82974
+   bug_82974a
    Heapcheck:Leak
    fun:sqlite3_bind_parameter_index
    fun:net::X509Certificate::CreateOSCertHandleFromBytes
-   fun:net::X509Certificate::CreateFromBytes
-   fun:remoting::protocol::JingleSessionTest::DoCreateServerPair
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:::TaskClosureAdapter::Run
-   fun:base::internal::Invoker1::DoInvoke
-   fun:base::Callback::Run
-   fun:MessageLoop::RunTask
+}
+{
+   bug_82974b
+   Heapcheck:Leak
+   fun:sqlite3_bind_parameter_index
+   fun:net::::PKIXVerifyCert
+   fun:net::X509Certificate::Verify
+}
+{
+   bug_82974c
+   Heapcheck:Leak
+   fun:sqlite3_bind_parameter_index
+   fun:net::::ListCertsInSlot
+   ...
+   fun:net::CertDatabaseNSSTest::TearDown
+}
+{
+   bug_82974d
+   Heapcheck:Leak
+   fun:sqlite3_bind_parameter_index
+   fun:net::CertDatabase::ListCerts
+   fun:net::CertDatabaseNSSTest_ListCerts_Test::TestBody
+}
+{
+   bug_82974e
+   Heapcheck:Leak
+   fun:sqlite3_bind_parameter_index
+   fun:net::CertDatabase::DeleteCertAndKey
+   fun:net::::CleanupSlotContents
+   fun:net::CertDatabaseNSSTest::TearDown
 }
