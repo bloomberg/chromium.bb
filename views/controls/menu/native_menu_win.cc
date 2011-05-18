@@ -18,8 +18,13 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/native_theme.h"
+#include "ui/gfx/rect.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_config.h"
+
+using gfx::NativeTheme;
 
 namespace views {
 
@@ -233,10 +238,15 @@ class NativeMenuWin::MenuHostWindow {
                    format | DT_RIGHT, NULL);
       SelectObject(dc, old_font);
 
+      ui::MenuModel::ItemType type =
+          data->native_menu_win->model_->GetTypeAt(data->model_index);
+
       // Draw the icon after the label, otherwise it would be covered
       // by the label.
       SkBitmap icon;
       if (data->native_menu_win->model_->GetIconAt(data->model_index, &icon)) {
+        // We currently don't support items with both icons and checkboxes.
+        DCHECK(type != ui::MenuModel::TYPE_CHECK);
         gfx::CanvasSkia canvas(icon.width(), icon.height(), false);
         canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
         canvas.DrawBitmapInt(icon, 0, 0);
@@ -244,6 +254,39 @@ class NativeMenuWin::MenuHostWindow {
             draw_item_struct->rcItem.left + kItemLeftMargin,
             draw_item_struct->rcItem.top + (draw_item_struct->rcItem.bottom -
                 draw_item_struct->rcItem.top - icon.height()) / 2, NULL);
+      } else if (type == ui::MenuModel::TYPE_CHECK &&
+                 data->native_menu_win->model_->IsItemCheckedAt(
+                     data->model_index)) {
+        // Manually render a checkbox.
+        const MenuConfig& config = MenuConfig::instance();
+        NativeTheme::State state;
+        if (draw_item_struct->itemState & ODS_DISABLED) {
+          state = NativeTheme::kDisabled;
+        } else {
+          state = draw_item_struct->itemState & ODS_SELECTED ?
+              NativeTheme::kHovered : NativeTheme::kNormal;
+        }
+        int height =
+            draw_item_struct->rcItem.bottom - draw_item_struct->rcItem.top;
+        int icon_y = kItemTopMargin +
+            (height - kItemTopMargin - kItemBottomMargin -
+             config.check_height) / 2;
+        gfx::CanvasSkia canvas(config.check_width, config.check_height, false);
+        NativeTheme::ExtraParams extra;
+        extra.menu_check.is_radio = false;
+        gfx::Rect bounds(0, 0, config.check_width, config.check_height);
+
+        // Draw the background and the check.
+        NativeTheme::instance()->Paint(
+            &canvas, NativeTheme::kMenuCheckBackground, state, bounds, extra);
+        NativeTheme::instance()->Paint(
+            &canvas, NativeTheme::kMenuCheck, state, bounds, extra);
+
+        // Draw checkbox to menu.
+        canvas.getTopPlatformDevice().drawToHDC(dc,
+            draw_item_struct->rcItem.left + kItemLeftMargin,
+            draw_item_struct->rcItem.top + (draw_item_struct->rcItem.bottom -
+                draw_item_struct->rcItem.top - config.check_height) / 2, NULL);
       }
 
     } else {
