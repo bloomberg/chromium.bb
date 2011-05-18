@@ -37,6 +37,10 @@ const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 // useful for automation testing of the gallery.
 const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 
+// Specifies comma separated list of extension ids to grant access to local
+// websocket proxy.
+const char kAllowWebSocketProxy[]           = "allow-websocket-proxy";
+
 // This prevents Chrome from requiring authorization to run certain widely
 // installed but less commonly used plug-ins.
 const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";

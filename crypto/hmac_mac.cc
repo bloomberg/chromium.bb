@@ -41,7 +41,7 @@ HMAC::~HMAC() {
 
 bool HMAC::Sign(const std::string& data,
                 unsigned char* digest,
-                int digest_length) {
+                int digest_length) const {
   CCHmacAlgorithm algorithm;
   int algorithm_digest_length;
   switch (hash_alg_) {

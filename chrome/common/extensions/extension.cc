@@ -268,7 +268,7 @@ const char Extension::kClipboardWritePermission[] = "clipboardWrite";
 const char Extension::kContextMenusPermission[] = "contextMenus";
 const char Extension::kContentSettingsPermission[] = "contentSettings";
 const char Extension::kCookiePermission[] = "cookies";
-const char Extension::kChromeosInfoPrivatePermissions[] = "chromeosInfoPrivate";
+const char Extension::kChromeosInfoPrivatePermission[] = "chromeosInfoPrivate";
 const char Extension::kDebuggerPermission[] = "debugger";
 const char Extension::kExperimentalPermission[] = "experimental";
 const char Extension::kFileBrowserHandlerPermission[] = "fileBrowserHandler";
@@ -282,35 +282,37 @@ const char Extension::kProxyPermission[] = "proxy";
 const char Extension::kTabPermission[] = "tabs";
 const char Extension::kUnlimitedStoragePermission[] = "unlimitedStorage";
 const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
+const char Extension::kWebSocketProxyPrivatePermission[] =
+    "webSocketProxyPrivate";
 
 // In general, all permissions should have an install message.
 // See ExtensionsTest.PermissionMessages for an explanation of each
 // exception.
 const Extension::Permission Extension::kPermissions[] = {
-  { kBackgroundPermission,           PermissionMessage::ID_NONE },
-  { kBookmarkPermission,             PermissionMessage::ID_BOOKMARKS },
-  { kChromeosInfoPrivatePermissions, PermissionMessage::ID_NONE },
-  { kClipboardReadPermission,        PermissionMessage::ID_CLIPBOARD },
-  { kClipboardWritePermission,       PermissionMessage::ID_NONE },
-  { kContentSettingsPermission,      PermissionMessage::ID_NONE },
-  { kContextMenusPermission,         PermissionMessage::ID_NONE },
-  { kCookiePermission,               PermissionMessage::ID_NONE },
-  { kDebuggerPermission,             PermissionMessage::ID_DEBUGGER },
-  { kExperimentalPermission,         PermissionMessage::ID_NONE },
-  { kFileBrowserHandlerPermission,   PermissionMessage::ID_NONE },
-  { kFileBrowserPrivatePermission,   PermissionMessage::ID_NONE },
-  { kGeolocationPermission,          PermissionMessage::ID_GEOLOCATION },
-  { kIdlePermission,                 PermissionMessage::ID_NONE },
-  { kHistoryPermission,              PermissionMessage::ID_BROWSING_HISTORY },
-  { kManagementPermission,           PermissionMessage::ID_MANAGEMENT },
-  { kNotificationPermission,         PermissionMessage::ID_NONE },
-  { kProxyPermission,                PermissionMessage::ID_NONE },
-  { kTabPermission,                  PermissionMessage::ID_TABS },
-  { kUnlimitedStoragePermission,     PermissionMessage::ID_NONE },
-  { kWebstorePrivatePermission,      PermissionMessage::ID_NONE }
+  { kBackgroundPermission,            PermissionMessage::ID_NONE },
+  { kBookmarkPermission,              PermissionMessage::ID_BOOKMARKS },
+  { kChromeosInfoPrivatePermission,   PermissionMessage::ID_NONE },
+  { kClipboardReadPermission,         PermissionMessage::ID_CLIPBOARD },
+  { kClipboardWritePermission,        PermissionMessage::ID_NONE },
+  { kContentSettingsPermission,       PermissionMessage::ID_NONE },
+  { kContextMenusPermission,          PermissionMessage::ID_NONE },
+  { kCookiePermission,                PermissionMessage::ID_NONE },
+  { kDebuggerPermission,              PermissionMessage::ID_DEBUGGER },
+  { kExperimentalPermission,          PermissionMessage::ID_NONE },
+  { kFileBrowserHandlerPermission,    PermissionMessage::ID_NONE },
+  { kFileBrowserPrivatePermission,    PermissionMessage::ID_NONE },
+  { kGeolocationPermission,           PermissionMessage::ID_GEOLOCATION },
+  { kIdlePermission,                  PermissionMessage::ID_NONE },
+  { kHistoryPermission,               PermissionMessage::ID_BROWSING_HISTORY },
+  { kManagementPermission,            PermissionMessage::ID_MANAGEMENT },
+  { kNotificationPermission,          PermissionMessage::ID_NONE },
+  { kProxyPermission,                 PermissionMessage::ID_NONE },
+  { kTabPermission,                   PermissionMessage::ID_TABS },
+  { kUnlimitedStoragePermission,      PermissionMessage::ID_NONE },
+  { kWebSocketProxyPrivatePermission, PermissionMessage::ID_NONE },
+  { kWebstorePrivatePermission,       PermissionMessage::ID_NONE },
 };
-const size_t Extension::kNumPermissions =
-    arraysize(Extension::kPermissions);
+const size_t Extension::kNumPermissions = arraysize(Extension::kPermissions);
 
 const char* const Extension::kHostedAppPermissionNames[] = {
   Extension::kBackgroundPermission,
@@ -325,7 +327,7 @@ const size_t Extension::kNumHostedAppPermissions =
 const char* const Extension::kComponentPrivatePermissionNames[] = {
     Extension::kFileBrowserPrivatePermission,
     Extension::kWebstorePrivatePermission,
-    Extension::kChromeosInfoPrivatePermissions,
+    Extension::kChromeosInfoPrivatePermission,
 };
 const size_t Extension::kNumComponentPrivatePermissions =
     arraysize(Extension::kComponentPrivatePermissionNames);
@@ -2765,8 +2767,7 @@ void Extension::InitEffectiveHostPermissions() {
   }
 }
 
-bool Extension::IsComponentOnlyPermission
-    (const std::string& permission) const {
+bool Extension::IsComponentOnlyPermission(const std::string& permission) const {
   if (location() == Extension::COMPONENT)
     return true;
 

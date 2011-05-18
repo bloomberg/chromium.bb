@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
+#include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
@@ -336,6 +337,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<CancelHandwritingStrokesFunction>();
 #endif
 #endif
+
+  // Websocket to TCP proxy. Currently noop on anything other than ChromeOS.
+  RegisterFunction<WebSocketProxyPrivateGetPassportForTCPFunction>();
 
   // Debugger
   RegisterFunction<AttachDebuggerFunction>();

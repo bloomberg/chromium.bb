@@ -32,7 +32,7 @@ CSSM_KEY_TYPE CheckKeyParams(crypto::SymmetricKey::Algorithm algorithm,
   }
 }
 
-void* CreateRandomBytes(size_t size) {
+uint8_t* CreateRandomBytes(size_t size) {
   CSSM_RETURN err;
   CSSM_CC_HANDLE ctx;
   err = CSSM_CSP_CreateRandomGenContext(crypto::GetSharedCSPHandle(),
@@ -50,7 +50,7 @@ void* CreateRandomBytes(size_t size) {
     random_data.Data = NULL;
   }
   CSSM_DeleteContext(ctx);
-  return random_data.Data;  // Caller responsible for freeing this
+  return random_data.Data;  // Caller responsible for freeing this.
 }
 
 inline CSSM_DATA StringToData(const std::string& str) {
@@ -65,16 +65,20 @@ inline CSSM_DATA StringToData(const std::string& str) {
 
 namespace crypto {
 
-SymmetricKey::~SymmetricKey() {}
+SymmetricKey::~SymmetricKey() {
+  std::fill(key_.begin(), key_.end(), 0);
+}
 
 // static
 SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
                                               size_t key_size_in_bits) {
   CheckKeyParams(algorithm, key_size_in_bits);
-  void* random_bytes = CreateRandomBytes((key_size_in_bits + 7) / 8);
+  size_t key_size_in_bytes = (key_size_in_bits + 7) / 8;
+  uint8_t* random_bytes = CreateRandomBytes(key_size_in_bytes);
   if (!random_bytes)
     return NULL;
   SymmetricKey *key = new SymmetricKey(random_bytes, key_size_in_bits);
+  std::fill(random_bytes, random_bytes + key_size_in_bytes, 0);
   free(random_bytes);
   return key;
 }
@@ -139,9 +143,9 @@ SymmetricKey* SymmetricKey::Import(Algorithm algorithm,
   return new SymmetricKey(raw_key.data(), raw_key.size() * 8);
 }
 
-SymmetricKey::SymmetricKey(const void *key_data, size_t key_size_in_bits)
-  : key_(reinterpret_cast<const char*>(key_data),
-         key_size_in_bits / 8) {}
+SymmetricKey::SymmetricKey(const void* key_data, size_t key_size_in_bits)
+    : key_(reinterpret_cast<const char*>(key_data), key_size_in_bits / 8) {
+}
 
 bool SymmetricKey::GetRawKey(std::string* raw_key) {
   *raw_key = key_;

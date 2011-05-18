@@ -5240,6 +5240,44 @@
     ]
   },
   {
+    "namespace": "webSocketProxyPrivate",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "getPassportForTCP",
+        "description": "requests authorization token for websocket to TCP proxy.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "hostname",
+            "minLength": 1,
+            "description": "hostname to which TCP connection is requested."
+          },
+          {
+            "type": "integer",
+            "name": "port",
+            "minimum": 1,
+            "maximum": 65535,
+            "description": "TCP port number."
+          },
+          { 
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              { 
+                "type": "string",
+                "name": "passport",
+                "description": "Passport for passing to proxy."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": []
+  },
+  {
     "namespace": "experimental.extension",
     "types": [
       {

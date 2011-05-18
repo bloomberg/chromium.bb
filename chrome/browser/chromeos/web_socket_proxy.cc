@@ -30,13 +30,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "chrome/browser/internal_auth.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
-// TODO(dilmah): enable this once webSocketProxyPrivate.getToken is wired.
-#if 0
-#include "chrome/browser/internal_auth.h"
-#endif
+#include "content/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/libevent/evdns.h"
 #include "third_party/libevent/event.h"
 
@@ -105,10 +104,10 @@ bool FetchDecimalDigits(const std::string& s, uint32* result) {
   return got_something;
 }
 
-// Parses "token:hostname:port:" string.  Returns true on success.
-bool FetchTokenNamePort(
+// Parses "passport:hostname:port:" string.  Returns true on success.
+bool FetchPassportNamePort(
     uint8* begin, uint8* end,
-    std::string* token, std::string* name, uint32* port) {
+    std::string* passport, std::string* name, uint32* port) {
   std::string input(begin, end);
   if (input[input.size() - 1] != ':')
     return false;
@@ -134,14 +133,17 @@ bool FetchTokenNamePort(
   pos = input.find_first_of(':');
   if (pos == std::string::npos)
     return false;
-  token->assign(input, 0, pos);
+  passport->assign(input, 0, pos);
   name->assign(input, pos + 1, std::string::npos);
   return !name->empty();
 }
 
-std::string FetchExtensionIdFromOrigin(const std::string origin) {
-  // Origin of extension looks like "chrome-extension://EXTENSION_ID".
-  return origin.substr(origin.find_last_of('/'));
+std::string FetchExtensionIdFromOrigin(const std::string &origin) {
+  GURL url(origin);
+  if (url.SchemeIs(chrome::kExtensionScheme))
+    return url.host();
+  else
+    return std::string();
 }
 
 inline size_t strlen(const uint8* s) {
@@ -733,16 +735,22 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
     return STATUS_ABORT;
   }
 
-  if (!master_->IsOriginAllowed(header_fields_["origin"]))
+  // Normalize origin (e.g. leading slash).
+  GURL origin = GURL(header_fields_["origin"]).GetOrigin();
+  if (!origin.is_valid())
+    return STATUS_ABORT;
+  // Here we check origin.  This check may seem redundant because we verify
+  // passport token later.  However the earlier we can reject connection the
+  // better.  We receive origin field in websocket header way before receiving
+  // passport string.
+  if (!master_->IsOriginAllowed(origin.spec()))
     return STATUS_ABORT;
 
   static const std::string kSecKey1 = "sec-websocket-key1";
   static const std::string kSecKey2 = "sec-websocket-key2";
   uint32 key_number1, key_number2;
-  if (!FetchDecimalDigits(header_fields_[kSecKey1],
-                          &key_number1) ||
-      !FetchDecimalDigits(header_fields_[kSecKey2],
-                          &key_number2)) {
+  if (!FetchDecimalDigits(header_fields_[kSecKey1], &key_number1) ||
+      !FetchDecimalDigits(header_fields_[kSecKey2], &key_number2)) {
     return STATUS_ABORT;
   }
 
@@ -828,20 +836,19 @@ Conn::Status Conn::ConsumeDestframe(struct evbuffer* evb) {
     return STATUS_INCOMPLETE;
   }
 
-  std::string token;
-  if (!FetchTokenNamePort(buf + 1, term_pos, &token, &destname_, &destport_))
+  std::string passport;
+  if (!FetchPassportNamePort(
+      buf + 1, term_pos, &passport, &destname_, &destport_)) {
     return STATUS_ABORT;
-  // TODO(dilmah): enable this once webSocketProxyPrivate.getToken is wired.
-#if 0
+  }
   std::map<std::string, std::string> map;
   map["hostname"] = destname_;
   map["port"] = base::IntToString(destport_);
   map["extension_id"] = FetchExtensionIdFromOrigin(header_fields_["origin"]);
-  if (!browser::InternalAuthVerification::VerifyToken(
-      "web_socket_proxy", token, map)) {
+  if (!browser::InternalAuthVerification::VerifyPassport(
+      passport, "web_socket_proxy", map)) {
     return STATUS_ABORT;
   }
-#endif
 
   evbuffer_drain(evb, term_pos - buf + 1);
   return STATUS_OK;

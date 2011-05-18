@@ -1,0 +1,32 @@
+<script>
+  var hostname = '127.0.0.1';
+  var port = 20202;
+  var proxy = "ws://127.0.0.1:10101/tcpproxy";
+
+  function gotMessage(msg) {
+    chrome.test.assertEq(msg.data, window.btoa("aloha\n"));
+  }
+
+  function gotPassport(passport) {
+    ws = new WebSocket(proxy);
+
+    /* TODO(dilmah): envelope gotMessage into chrome.test.callbackPass after
+       setting up testserver */
+    ws.onmessage = gotMessage;
+
+    ws.onopen = function() {
+      var request = passport + ':' + hostname + ':' + port + ':';
+      ws.send(request);
+
+      /* Further on we can send base64-encoded data */
+      ws.send(window.btoa("HELO localhost\n"));
+    };
+  }
+
+  function test_connect() {
+    chrome.webSocketProxyPrivate.getPassportForTCP(
+        hostname, port, chrome.test.callbackPass(gotPassport));
+  }
+
+  chrome.test.runTests([test_connect]);
+</script>

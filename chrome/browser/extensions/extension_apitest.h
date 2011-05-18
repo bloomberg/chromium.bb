@@ -118,7 +118,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
  private:
   bool RunExtensionTestImpl(const char* extension_name,
                             const std::string& test_page,
-                            bool enable_incogntio,
+                            bool enable_incognito,
                             bool enable_fileaccess,
                             bool load_as_component);
 

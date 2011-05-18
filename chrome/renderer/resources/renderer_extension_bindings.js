@@ -6,8 +6,7 @@
 // extensions.  It is loaded by any extension-related context, such as content
 // scripts or toolstrips.
 // See user_script_slave.cc for script that is loaded by content scripts only.
-// TODO(mpcomplete): we also load this in regular web pages, but don't need
-// to.
+// TODO(mpcomplete): we also load this in regular web pages, but don't need to.
 
 var chrome = chrome || {};
 (function () {
@@ -328,6 +327,7 @@ var chrome = chrome || {};
       "tabs",
       "test",
       "toolstrip",
+      "webSocketProxyPrivate",
       "webstorePrivate",
       "windows",
 

@@ -16,14 +16,15 @@ namespace chromeos {
 
 class WebSocketProxy {
  public:
-  static const size_t kReadBufferLimit = 6 * 1024 * 1024;
+  static const size_t kReadBufferLimit = 12 * 1024 * 1024;
 
   // Limits incoming websocket headers in initial stage of connection.
   static const size_t kHeaderLimit = 32 * 1024;
 
   // Limits number of simultaneously open connections.
-  static const size_t kConnPoolLimit = 1000;
+  static const size_t kConnPoolLimit = 40;
 
+  // Empty |allowed_origins| vector disables check for origin.
   WebSocketProxy(
       const std::vector<std::string>& allowed_origins,
       struct sockaddr* addr, int addr_len);

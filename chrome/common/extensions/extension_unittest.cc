@@ -1031,10 +1031,11 @@ TEST(ExtensionTest, PermissionMessages) {
   // to warn you further.
   skip.insert(Extension::kExperimentalPermission);
 
-  // These are only usable by component extensions.
+  // These are private.
   skip.insert(Extension::kWebstorePrivatePermission);
   skip.insert(Extension::kFileBrowserPrivatePermission);
-  skip.insert(Extension::kChromeosInfoPrivatePermissions);
+  skip.insert(Extension::kChromeosInfoPrivatePermission);
+  skip.insert(Extension::kWebSocketProxyPrivatePermission);
 
   const Extension::PermissionMessage::MessageId ID_NONE =
       Extension::PermissionMessage::ID_NONE;
