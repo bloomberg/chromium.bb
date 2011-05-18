@@ -41,8 +41,14 @@ def _GetOutput(args):
 
 
 def _GetOutputNoError(args):
-  """Behaves identically to _GetOutput() but ignores stderr."""
-  proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  """Similar to _GetOutput() but ignores stderr. If there's an error launching
+  the child (like file not found), the exception will be caught and (None, 1)
+  will be returned to mimic quiet failure."""
+  try:
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+  except OSError:
+    return (None, 1)
   (stdout, stderr) = proc.communicate()
   return (stdout, proc.returncode)
 
@@ -121,6 +127,10 @@ def _GetSCMInfo():
       # contain a useful path regardless of the Subversion server, mirror, and
       # authentication scheme in use.
       scm_path = svn_url[len(svn_repo_root):]
+
+  # If the desired information was found via SVN, return it now.
+  if scm_revision != None and scm_path != None:
+    return (scm_path, scm_revision)
 
   # If a SVN revision number couldn't be found, try getting it through git.
   (stdout, retval) = _GetOutputNoError(['git', 'log', '-1',
