@@ -25,6 +25,34 @@ class OptionsUITest : public UITest {
     dom_automation_enabled_ = true;
   }
 
+  bool WaitForOptionsUI(TabProxy* tab) {
+    return WaitUntilJavaScriptCondition(tab, L"",
+        L"domAutomationController.send("
+        L"    location.protocol == 'chrome:' && "
+        L"    document.readyState == 'complete')",
+        TestTimeouts::huge_test_timeout_ms());
+  }
+
+  scoped_refptr<TabProxy> GetOptionsUITab() {
+    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+    EXPECT_TRUE(browser.get());
+    if (!browser.get())
+      return NULL;
+    scoped_refptr<TabProxy> tab = browser->GetActiveTab();
+    EXPECT_TRUE(tab.get());
+    if (!tab.get())
+      return NULL;
+    bool success = tab->NavigateToURL(GURL(chrome::kChromeUISettingsURL));
+    EXPECT_TRUE(success);
+    if (!success)
+      return NULL;
+    success = WaitForOptionsUI(tab);
+    EXPECT_TRUE(success);
+    if (!success)
+      return NULL;
+    return tab;
+  }
+
   void AssertIsOptionsPage(TabProxy* tab) {
     std::wstring title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
@@ -35,16 +63,9 @@ class OptionsUITest : public UITest {
   }
 };
 
-// Flaky: http://crbug.com/77375
-TEST_F(OptionsUITest, FLAKY_LoadOptionsByURL) {
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-
-  scoped_refptr<TabProxy> tab = browser->GetActiveTab();
+TEST_F(OptionsUITest, LoadOptionsByURL) {
+  scoped_refptr<TabProxy> tab = GetOptionsUITab();
   ASSERT_TRUE(tab.get());
-
-  // Go to the options tab via URL.
-  NavigateToURL(GURL(chrome::kChromeUISettingsURL));
   AssertIsOptionsPage(tab);
 }
 
@@ -111,6 +132,36 @@ TEST_F(OptionsUITest, DISABLED_TwoCommandsOneTab) {
   ASSERT_TRUE(browser->RunCommand(IDC_OPTIONS));
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
   ASSERT_EQ(2, tab_count);
+}
+
+// Navigates to settings page and do sanity check on settings sections.
+TEST_F(OptionsUITest, NavBarCheck) {
+  scoped_refptr<TabProxy> tab = GetOptionsUITab();
+  ASSERT_TRUE(tab.get());
+  AssertIsOptionsPage(tab);
+
+  // Check navbar's existence.
+  bool navbar_exist = false;
+  ASSERT_TRUE(tab->ExecuteAndExtractBool(L"",
+      L"domAutomationController.send("
+      L"!!document.getElementById('navbar'))", &navbar_exist));
+  ASSERT_EQ(true, navbar_exist);
+
+  // Check section headers in navbar.
+  // For ChromeOS, there should be 1 + 6:
+  //   search, basics, personal, systerm, internet, under the hood and users
+  // For other platforms, there should 1 + 3:
+  //   search, basics, personal and under the hood.
+#if defined(OS_CHROMEOS)
+  const int kExpectedSections = 1 + 6;
+#else
+  const int kExpectedSections = 1 + 3;
+#endif
+  int num_of_sections = 0;
+  ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
+      L"domAutomationController.send("
+      L"document.getElementById('navbar').children.length)", &num_of_sections));
+  ASSERT_EQ(kExpectedSections, num_of_sections);
 }
 
 }  // namespace
