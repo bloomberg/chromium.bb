@@ -66,6 +66,14 @@ void RegisterSupportHostRequest::OnSignallingConnected(
 }
 
 void RegisterSupportHostRequest::OnSignallingDisconnected() {
+  if (!message_loop_) {
+    // We will reach here with |message_loop_| NULL if the Host's
+    // XMPP connection attempt fails.
+    CHECK(!callback_.is_null());
+    DCHECK(!request_.get());
+    callback_.Run(false, std::string());
+    return;
+  }
   DCHECK_EQ(message_loop_, MessageLoop::current());
   request_.reset();
 }
