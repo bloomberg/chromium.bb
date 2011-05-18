@@ -48,6 +48,17 @@ cr.define('gpu', function() {
     return w;
   }
 
+  function addTrack(thisTrack, slices) {
+    var track = new TimelineSliceTrack();
+
+    track.heading = '';
+    track.slices = slices;
+    track.viewport = thisTrack.viewport_;
+
+    thisTrack.tracks_.push(track);
+    thisTrack.appendChild(track);
+  }
+
   /**
    * Generic base class for timeline tracks
    */
@@ -96,19 +107,15 @@ cr.define('gpu', function() {
       this.textContent = '';
       this.tracks_ = [];
       if (this.thread_) {
+        for (var srI = 0; srI < this.thread_.nonNestedSubRows.length; ++srI) {
+          addTrack(this, this.thread_.nonNestedSubRows[srI]);
+        }
         for (var srI = 0; srI < this.thread_.subRows.length; ++srI) {
-          var track = new TimelineSliceTrack();
-
-          if (srI == 0)
-            track.heading = this.thread_.parent.pid + ': ' +
-                this.thread_.tid + ': ';
-          else
-            track.heading = '';
-          track.slices = this.thread_.subRows[srI];
-          track.viewport = this.viewport_;
-
-          this.tracks_.push(track);
-          this.appendChild(track);
+          addTrack(this, this.thread_.subRows[srI]);
+        }
+        if (this.tracks_.length > 0) {
+          this.tracks_[0].heading = this.thread_.parent.pid + ': ' +
+              this.thread_.tid + ': ';
         }
       }
     },
