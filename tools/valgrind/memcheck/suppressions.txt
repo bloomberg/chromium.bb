@@ -4136,14 +4136,6 @@
    fun:CERT_DestroyCertificate
 }
 {
-   bug_78197
-   Memcheck:Cond
-   fun:_ZN7WebCore8Document11updateTitleERKNS_19StringWithDirectionE
-   fun:_ZN7WebCore8Document15setTitleElementERKNS_19StringWithDirectionEPNS_7ElementE
-   fun:_ZN7WebCore16HTMLTitleElement20insertedIntoDocumentEv
-   fun:_ZN7WebCore13ContainerNode14parserAddChildEN3WTF10PassRefPtrINS_4NodeEEE
-}
-{
    bug_78201
    Memcheck:Leak
    fun:_Znw*
