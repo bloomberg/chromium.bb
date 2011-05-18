@@ -726,6 +726,8 @@ void WidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
     if (parent)
       SetBounds(params.bounds);
   } else {
+    gtk_widget_add_events(widget_,
+                          GDK_STRUCTURE_MASK);
     if (params.bounds.width() > 0 && params.bounds.height() > 0)
       gtk_window_resize(GTK_WINDOW(widget_), params.bounds.width(),
                         params.bounds.height());

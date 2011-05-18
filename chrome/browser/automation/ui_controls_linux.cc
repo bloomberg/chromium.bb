@@ -17,6 +17,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #endif
 
@@ -165,7 +166,6 @@ bool SendMouseMove(long x, long y) {
   // the move, even though it succesfully moves the server cursor. We fake it in
   // order to get drags to work.
   FakeAMouseMotionEvent(x, y);
-
   return true;
 }
 
@@ -194,6 +194,7 @@ bool SendMouseEvents(MouseButton type, int state) {
     gdk_window_get_pointer(event->button.window, &x, &y, NULL);
   } else {
     event->button.window = gdk_window_at_pointer(&x, &y);
+    CHECK(event->button.window);
   }
 
   g_object_ref(event->button.window);
@@ -250,8 +251,41 @@ bool SendMouseClick(MouseButton type) {
 }
 
 #if defined(TOOLKIT_VIEWS)
+
+#if defined(OS_LINUX)
+void OnConfigure(GtkWidget* gtk_widget, GdkEvent* event, gpointer data) {
+  views::Widget* widget = static_cast<views::Widget*>(data);
+  gfx::Rect actual = widget->GetWindowScreenBounds();
+  gfx::Rect desired = widget->GetRootView()->bounds();
+  if (actual.size() == desired.size())
+    MessageLoop::current()->Quit();
+}
+
+void SynchronizeWidgetSize(views::Widget* widget) {
+  // If the actual window size and desired window size
+  // are different, wait until the window is resized
+  // to desired size.
+  gfx::Rect actual = widget->GetWindowScreenBounds();
+  gfx::Rect desired = widget->GetRootView()->bounds();
+  if (actual.size() != desired.size()) {
+    // Listen to configure-event that is emitted when an window gets
+    // resized.
+    GtkWidget* gtk_widget = widget->GetNativeView();
+    g_signal_connect(gtk_widget, "configure-event",
+                     G_CALLBACK(&OnConfigure), widget);
+    MessageLoop::current()->Run();
+  }
+}
+#endif
+
 void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
                                int state, Task* task) {
+#if defined(OS_LINUX)
+  // X is asynchronous and we need to wait until the window gets
+  // resized to desired size.
+  SynchronizeWidgetSize(view->GetWidget());
+#endif
+
   gfx::Point view_center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &view_center);
   SendMouseMoveNotifyWhenDone(view_center.x(), view_center.y(),

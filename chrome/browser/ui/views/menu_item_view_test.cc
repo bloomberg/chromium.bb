@@ -73,7 +73,7 @@ class MenuItemViewTestBase : public ViewEventTestBase,
         bounds,
         views::MenuItemView::TOPLEFT,
         true);
- }
+  }
 
  protected:
   // Generate a mouse click on the specified view and post a new task.
@@ -87,21 +87,6 @@ class MenuItemViewTestBase : public ViewEventTestBase,
 
   virtual void BuildMenu(views::MenuItemView* menu) {
   }
-
-#if defined(TOOLKIT_USES_GTK)
-  // GTK processes widget size changes with an idle task so RootView
-  // sizes are not updated reliably before an automation mouse click.
-  // This can result in the event being marked outside the menu
-  // bounds.  To work around this issue for testing, this code short
-  // circuits the RootView size update by setting it directly.
-  void WorkaroundGTKRace() {
-    views::Widget* widget = menu_->GetSubmenu()->GetWidget();
-    if (widget) {
-      widget->GetRootView()->SetSize(
-          widget->GetClientAreaScreenBounds().size());
-    }
-  }
-#endif
 
   views::MenuButton* button_;
   scoped_ptr<views::MenuItemView> menu_;
@@ -214,9 +199,6 @@ class MenuItemViewTestInsert : public MenuItemViewTestBase {
                                           views::MenuItemView::NORMAL);
     ASSERT_TRUE(inserted_item_);
     menu_->ChildrenChanged();
-#if defined(TOOLKIT_USES_GTK)
-    WorkaroundGTKRace();
-#endif
 
     // click an item and pass control to the next step
     views::MenuItemView* item = submenu->GetMenuItemAt(SELECT_INDEX);
@@ -310,9 +292,6 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
                                           views::MenuItemView::NORMAL);
     ASSERT_TRUE(inserted_item_);
     menu_->ChildrenChanged();
-#if defined(TOOLKIT_USES_GTK)
-    WorkaroundGTKRace();
-#endif
 
     Click(inserted_item_,
           CreateEventTask(this, &MenuItemViewTestInsertWithSubmenu::Step3));
@@ -375,9 +354,6 @@ class MenuItemViewTestRemove : public MenuItemViewTestBase {
     // remove
     menu_->RemoveMenuItemAt(REMOVE_INDEX);
     menu_->ChildrenChanged();
-#if defined(TOOLKIT_USES_GTK)
-    WorkaroundGTKRace();
-#endif
 
     // click
     views::MenuItemView* item = submenu->GetMenuItemAt(SELECT_INDEX);
@@ -474,9 +450,6 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
     // remove
     menu_->RemoveMenuItemAt(REMOVE_INDEX);
     menu_->ChildrenChanged();
-#if defined(TOOLKIT_USES_GTK)
-    WorkaroundGTKRace();
-#endif
 
     // click
     Click(button_,
