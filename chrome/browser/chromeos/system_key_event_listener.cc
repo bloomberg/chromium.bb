@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,10 @@
 #include "chrome/browser/chromeos/volume_bubble.h"
 #include "content/browser/user_metrics.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+
+#if defined(TOUCH_UI)
+#include "base/message_pump_glib_x_dispatch.h"
+#endif
 
 namespace chromeos {
 
@@ -47,7 +51,12 @@ SystemKeyEventListener::SystemKeyEventListener()
   GrabKey(key_f8_, 0);
   GrabKey(key_f9_, 0);
   GrabKey(key_f10_, 0);
+
+#if defined(TOUCH_UI)
+  MessageLoopForUI::current()->AddObserver(this);
+#else
   gdk_window_add_filter(NULL, GdkEventFilter, this);
+#endif
 }
 
 SystemKeyEventListener::~SystemKeyEventListener() {
@@ -58,7 +67,11 @@ void SystemKeyEventListener::Stop() {
   if (stopped_)
     return;
   WmMessageListener::GetInstance()->RemoveObserver(this);
+#if defined(TOUCH_UI)
+  MessageLoopForUI::current()->RemoveObserver(this);
+#else
   gdk_window_remove_filter(NULL, GdkEventFilter, this);
+#endif
   audio_handler_->Disconnect();
   stopped_ = true;
 }
@@ -93,34 +106,8 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
   SystemKeyEventListener* listener = static_cast<SystemKeyEventListener*>(data);
   XEvent* xevent = static_cast<XEvent*>(gxevent);
 
-  if (xevent->type == KeyPress) {
-    int32 keycode = xevent->xkey.keycode;
-    if (keycode) {
-      // Only doing non-Alt/Shift/Ctrl modified keys
-      if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
-        if ((keycode == listener->key_f8_) ||
-            (keycode == listener->key_volume_mute_)) {
-          if (keycode == listener->key_f8_)
-            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
-          listener->OnVolumeMute();
-          return GDK_FILTER_REMOVE;
-        } else if ((keycode == listener->key_f9_) ||
-                    keycode == listener->key_volume_down_) {
-          if (keycode == listener->key_f9_)
-            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
-          listener->OnVolumeDown();
-          return GDK_FILTER_REMOVE;
-        } else if ((keycode == listener->key_f10_) ||
-                   (keycode == listener->key_volume_up_)) {
-          if (keycode == listener->key_f10_)
-            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
-          listener->OnVolumeUp();
-          return GDK_FILTER_REMOVE;
-        }
-      }
-    }
-  }
-  return GDK_FILTER_CONTINUE;
+  return listener->WillProcessXEvent(xevent) ? GDK_FILTER_REMOVE
+                                             : GDK_FILTER_CONTINUE;
 }
 
 void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
@@ -171,6 +158,37 @@ void SystemKeyEventListener::OnVolumeUp() {
   VolumeBubble::GetInstance()->ShowBubble(
       audio_handler_->GetVolumePercent());
   BrightnessBubble::GetInstance()->HideBubble();
+}
+
+bool SystemKeyEventListener::WillProcessXEvent(XEvent* xevent) {
+  if (xevent->type == KeyPress) {
+    int32 keycode = xevent->xkey.keycode;
+    if (keycode) {
+      // Only doing non-Alt/Shift/Ctrl modified keys
+      if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
+        if ((keycode == key_f8_) ||
+            (keycode == key_volume_mute_)) {
+          if (keycode == key_f8_)
+            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
+          OnVolumeMute();
+          return true;
+        } else if ((keycode == key_f9_) ||
+                    keycode == key_volume_down_) {
+          if (keycode == key_f9_)
+            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
+          OnVolumeDown();
+          return true;
+        } else if ((keycode == key_f10_) ||
+                   (keycode == key_volume_up_)) {
+          if (keycode == key_f10_)
+            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
+          OnVolumeUp();
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 }  // namespace chromeos

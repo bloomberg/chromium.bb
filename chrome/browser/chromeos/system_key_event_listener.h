@@ -9,7 +9,10 @@
 #include <gdk/gdk.h>
 
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
+
+typedef union _XEvent XEvent;
 
 namespace chromeos {
 
@@ -22,7 +25,8 @@ class AudioHandler;
 // TODO(davej): Remove WmMessageListener::Observer once volume key handling has
 // been removed from the window manager since those keys take precedence.
 
-class SystemKeyEventListener : public WmMessageListener::Observer {
+class SystemKeyEventListener : public WmMessageListener::Observer,
+                               public MessageLoopForUI::Observer {
  public:
   static SystemKeyEventListener* GetInstance();
 
@@ -54,6 +58,15 @@ class SystemKeyEventListener : public WmMessageListener::Observer {
   void OnVolumeMute();
   void OnVolumeDown();
   void OnVolumeUp();
+
+  // MessageLoopForUI::Observer overrides.
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {}
+  virtual bool WillProcessXEvent(XEvent* xevent)
+#if defined(TOUCH_UI)
+    OVERRIDE
+#endif
+    ;
 
   int32 key_volume_mute_;
   int32 key_volume_down_;
