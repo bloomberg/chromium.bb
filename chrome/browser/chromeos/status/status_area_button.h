@@ -36,6 +36,7 @@ class StatusAreaButton : public views::MenuButton {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
+  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
 
   // Controls whether or not this status area button is able to be pressed.
   void set_active(bool active) { active_ = active; }
