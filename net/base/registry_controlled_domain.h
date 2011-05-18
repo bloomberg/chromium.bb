@@ -114,6 +114,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "net/base/net_api.h"
 
 class GURL;
 
@@ -126,7 +127,7 @@ namespace net {
 struct RegistryControlledDomainServiceSingletonTraits;
 
 // This class is a singleton.
-class RegistryControlledDomainService {
+class NET_API RegistryControlledDomainService {
  public:
    ~RegistryControlledDomainService() { }
 

@@ -25,7 +25,9 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/net_api.h"
 
 #if defined(OS_POSIX)
 struct event;  // From libevent
@@ -33,13 +35,12 @@ typedef int SOCKET;
 #endif
 
 // Implements a raw socket interface
-class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
+class NET_API ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
 #if defined(OS_WIN)
-                     public base::win::ObjectWatcher::Delegate
+                             public base::win::ObjectWatcher::Delegate {
 #elif defined(OS_POSIX)
-                     public MessageLoopForIO::Watcher
+                             public MessageLoopForIO::Watcher {
 #endif
-{
  public:
   // TODO(erikkay): this delegate should really be split into two parts
   // to split up the listener from the connected socket.  Perhaps this class

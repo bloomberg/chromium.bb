@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define NET_BASE_SSL_FALSE_START_BLACKLIST_H_
 
 #include "base/basictypes.h"
+#include "net/base/net_api.h"
 
 namespace net {
 
@@ -13,7 +14,7 @@ namespace net {
 // to TLS False Start. Because this set is several hundred long, it's
 // precompiled by the code in ssl_false_start_blacklist_process.cc into a hash
 // table for fast lookups.
-class SSLFalseStartBlacklist {
+class NET_TEST SSLFalseStartBlacklist {
  public:
   // IsMember returns true if the given host is in the blacklist.
   //   host: a DNS name in dotted form (i.e. "www.example.com")

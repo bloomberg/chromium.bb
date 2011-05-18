@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/string_piece.h"
+#include "net/base/net_api.h"
 
 namespace net {
 
@@ -18,7 +19,7 @@ namespace net {
 // name. For example, if the fingerprint of a certificate was stored in a CERT
 // record for a given domain, then a chain could prove the validity of that
 // fingerprint.
-class DNSSECChainVerifier {
+class NET_TEST DNSSECChainVerifier {
  public:
   enum Error {
     OK = 0,
