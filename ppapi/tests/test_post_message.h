@@ -49,6 +49,10 @@ class TestPostMessage : public TestCase {
   // Test sending a message when no handler exists, make sure nothing happens.
   std::string TestNoHandler();
 
+  // Test sending from JavaScript to the plugin with extra parameters, make sure
+  // nothing happens.
+  std::string TestExtraParam();
+
   typedef std::vector<pp::Var> VarVector;
 
   // This is used to store pp::Var objects we receive via a call to

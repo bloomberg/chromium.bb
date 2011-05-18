@@ -34,6 +34,7 @@ void TestPostMessage::RunTest() {
   RUN_TEST(SendingData);
   RUN_TEST(MessageEvent);
   RUN_TEST(NoHandler);
+  RUN_TEST(ExtraParam);
 }
 
 void TestPostMessage::HandleMessage(const pp::Var& message_data) {
@@ -203,6 +204,28 @@ std::string TestPostMessage::TestMessageEvent() {
 std::string TestPostMessage::TestNoHandler() {
   // Delete any lingering event listeners.
   ASSERT_TRUE(ClearListeners());
+
+  // Now send a message.  We shouldn't get a response.
+  message_data_.clear();
+  instance_->PostMessage(pp::Var());
+  // Note that at this point, if we call RunMessageLoop, we should hang, because
+  // there should be no call to our HandleMessage function to quit the loop.
+  // Therefore, we will do CallOnMainThread to yield control.  That event should
+  // fire, but we should see no messages when we return.
+  TestCompletionCallback callback(instance_->pp_instance());
+  pp::Module::Get()->core()->CallOnMainThread(0, callback);
+  callback.WaitForResult();
+  ASSERT_TRUE(message_data_.empty());
+
+  PASS();
+}
+
+std::string TestPostMessage::TestExtraParam() {
+  // Delete any lingering event listeners.
+  ASSERT_TRUE(ClearListeners());
+  // Add a listener that will respond with 1 and an empty array (where the
+  // message port array would appear if it was Worker postMessage).
+  ASSERT_TRUE(AddEchoingListener("1, []"));
 
   // Now send a message.  We shouldn't get a response.
   message_data_.clear();
