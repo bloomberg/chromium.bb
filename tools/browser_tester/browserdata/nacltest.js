@@ -469,6 +469,38 @@ function NaClWaiter(body_element) {
 
 }
 
+function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
+  for (var i = 0; i < loaded.length; i++) {
+    rpc.log(embed_name(loaded[i]) + ' loaded');
+  }
+  // Be careful when interacting with horked nexes.
+  var getCarefully = function (callback) {
+    try {
+      return callback();
+    } catch (err) {
+      return '<exception>';
+    }
+  }
+  for (var j = 0; j < waiting.length; j++) {
+    var name = getCarefully(function(){
+        return embed_name(waiting[j]);
+      });
+    var ready = getCarefully(function(){
+        var readyStateString =
+        ['UNSENT', 'OPENED', 'HEADERS_RECEIVED', 'LOADING', 'DONE'];
+        return readyStateString[waiting[j].readyState];
+      });
+    var last = getCarefully(function(){
+        return toString(waiting[j].lastError);
+      });
+    var msg = (name + ' did not load. Status: ' + ready + ' / ' + last);
+    if(load_errors_are_test_errors) {
+      rpc.client_error(msg);
+    } else {
+      rpc.log(msg);
+    }
+  }
+}
 
 function Tester(body_element) {
   // Workaround how JS binds 'this'
@@ -529,36 +561,7 @@ function Tester(body_element) {
 
     this.waiter.run(
       function(loaded, waiting) {
-        for (var i = 0; i < loaded.length; i++) {
-          this_.rpc.log(embed_name(loaded[i]) + ' loaded');
-        }
-        // Be careful when interacting with horked nexes.
-        var getCarefully = function (callback) {
-          try {
-            return callback();
-          } catch (err) {
-            return '<exception>';
-          }
-        }
-        for (var j = 0; j < waiting.length; j++) {
-          var name = getCarefully(function(){
-            return embed_name(waiting[j]);
-          });
-          var ready = getCarefully(function(){
-            var readyStateString =
-                ['UNSENT', 'OPENED', 'HEADERS_RECEIVED', 'LOADING', 'DONE'];
-            return readyStateString[waiting[j].readyState];
-          });
-          var last = getCarefully(function(){
-            return toString(waiting[j].lastError);
-          });
-          var msg = (name + ' did not load. Status: ' + ready + ' / ' + last);
-          if(load_errors_are_test_errors) {
-            this_.rpc.client_error(msg);
-          } else {
-            this_.rpc.log(msg);
-          }
-        }
+        logLoadStatus(this_.rpc, load_errors_are_test_errors, loaded, waiting);
         this_.startTesting();
       },
       function() {
