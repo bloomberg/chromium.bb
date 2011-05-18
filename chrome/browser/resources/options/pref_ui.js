@@ -136,11 +136,7 @@ cr.define('options', function() {
           });
 
       // Listen to user events.
-      // Use the 'click' event instead of 'change', because of a bug in WebKit
-      // which prevents 'change' from being sent when the user changes selection
-      // using the keyboard.
-      // https://bugs.webkit.org/show_bug.cgi?id=32013
-      this.addEventListener('click',
+      this.addEventListener('change',
           function(e) {
             if(self.value == 'true' || self.value == 'false') {
               Preferences.setBooleanPref(self.pref,
