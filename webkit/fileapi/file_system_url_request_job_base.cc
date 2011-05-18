@@ -15,11 +15,9 @@ namespace fileapi {
 
 class LocalPathCallbackDispatcher : public FileSystemCallbackDispatcher {
  public:
-  explicit LocalPathCallbackDispatcher(
-      FileSystemURLRequestJobBase* request)
-      : request_(request),
-        io_loop_(base::MessageLoopProxy::CreateForCurrentThread()) {
-    DCHECK(request_);
+  explicit LocalPathCallbackDispatcher(FileSystemURLRequestJobBase* job)
+      : job_(job) {
+    DCHECK(job_);
   }
 
   // fileapi::FileSystemCallbackDispatcher overrides.
@@ -28,10 +26,7 @@ class LocalPathCallbackDispatcher : public FileSystemCallbackDispatcher {
   }
 
   virtual void DidGetLocalPath(const FilePath& local_path) {
-    io_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(request_,
-            &FileSystemURLRequestJobBase::OnGetLocalPath,
-            local_path));
+    job_->OnGetLocalPath(local_path);
   }
 
   virtual void DidReadMetadata(const base::PlatformFileInfo& info,
@@ -55,15 +50,14 @@ class LocalPathCallbackDispatcher : public FileSystemCallbackDispatcher {
   }
 
   virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
-    io_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(request_,
-            &FileSystemURLRequestJobBase::RespondFailedOnIOThread,
-            error_code));
+    int rv = net::ERR_FILE_NOT_FOUND;
+    if (error_code == base::PLATFORM_FILE_ERROR_INVALID_URL)
+      rv = net::ERR_INVALID_URL;
+    job_->NotifyFailed(rv);
   }
 
  private:
-  FileSystemURLRequestJobBase* request_;
-  scoped_refptr<base::MessageLoopProxy> io_loop_;
+  FileSystemURLRequestJobBase* job_;
   DISALLOW_COPY_AND_ASSIGN(LocalPathCallbackDispatcher);
 };
 
@@ -91,13 +85,6 @@ FileSystemOperation* FileSystemURLRequestJobBase::GetNewOperation() {
 
 void FileSystemURLRequestJobBase::StartAsync() {
   GetNewOperation()->GetLocalPath(request_->url());
-}
-
-void FileSystemURLRequestJobBase::RespondFailedOnIOThread(int error_code) {
-  int rv = net::ERR_FILE_NOT_FOUND;
-  if (error_code == base::PLATFORM_FILE_ERROR_INVALID_URL)
-    rv = net::ERR_INVALID_URL;
-  NotifyFailed(rv);
 }
 
 void FileSystemURLRequestJobBase::NotifyFailed(int rv) {

@@ -31,7 +31,6 @@ class FileSystemURLRequestJobBase : public net::URLRequestJob {
   virtual void DidGetLocalPath(const FilePath& local_path) = 0 ;
 
   void NotifyFailed(int rv);
-  void RespondFailedOnIOThread(int error_code);
   FileSystemOperation* GetNewOperation();
 
   FilePath relative_file_path_;
