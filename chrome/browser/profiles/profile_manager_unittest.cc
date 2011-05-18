@@ -8,7 +8,6 @@
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +22,7 @@
 #include "content/common/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 namespace {
 // This global variable is used to check that value returned to different
@@ -61,7 +61,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
 
-  base::SystemMonitor system_monitor_dummy_;
+  ui::SystemMonitor system_monitor_dummy_;
 
   // Also will test profile deletion.
   scoped_ptr<ProfileManager> profile_manager_;

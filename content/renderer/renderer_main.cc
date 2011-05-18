@@ -19,7 +19,6 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "content/common/content_counters.h"
@@ -30,6 +29,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
+#include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_MACOSX)
@@ -176,7 +176,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrRendererMain");
 
-  base::SystemMonitor system_monitor;
+  ui::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
   platform.PlatformInitialize();

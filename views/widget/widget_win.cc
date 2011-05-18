@@ -7,7 +7,6 @@
 #include <dwmapi.h>
 
 #include "base/string_util.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/win/windows_version.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source.h"
@@ -15,6 +14,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
@@ -859,7 +859,7 @@ void WidgetWin::OnPaint(HDC dc) {
 }
 
 LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  ui::SystemMonitor* monitor = ui::SystemMonitor::Get();
   if (monitor)
     monitor->ProcessWmPowerBroadcastMessage(power_event);
   SetMsgHandled(FALSE);

@@ -41,6 +41,7 @@
         '../ui/base/models/tree_node_model_unittest.cc',
         '../ui/base/resource/data_pack_unittest.cc',
         '../ui/base/resource/resource_bundle_unittest.cc',
+        '../ui/base/system_monitor/system_monitor_unittest.cc',
         '../ui/base/test/data/resource.h',
         '../ui/base/text/text_elider_unittest.cc',
         '../ui/base/view_prop_unittest.cc',

@@ -19,7 +19,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_comptr.h"
@@ -209,7 +208,7 @@ FakeExternalTab::~FakeExternalTab() {
 
 void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process == NULL);
-  base::SystemMonitor system_monitor;
+  ui::SystemMonitor system_monitor;
 
   icu_util::Initialize();
 

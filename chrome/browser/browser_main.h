@@ -20,12 +20,12 @@ class MessageLoop;
 class MetricsService;
 class PrefService;
 
-namespace base {
-class SystemMonitor;
-}
-
 namespace net {
 class NetworkChangeNotifier;
+}
+
+namespace ui {
+class SystemMonitor;
 }
 
 // BrowserMainParts:
@@ -166,7 +166,7 @@ class BrowserMainParts {
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<MessageLoop> main_message_loop_;
-  scoped_ptr<base::SystemMonitor> system_monitor_;
+  scoped_ptr<ui::SystemMonitor> system_monitor_;
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<BrowserThread> main_thread_;
