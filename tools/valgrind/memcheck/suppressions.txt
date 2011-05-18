@@ -2952,15 +2952,6 @@
    fun:_ZN54_GLOBAL__N_base_worker_pool_linux.cc_00000000_*12WorkerThread10ThreadMainEv
 }
 {
-   bug_58874
-   Memcheck:Addr4
-   fun:PL_HashTableLookupConst
-   fun:SECOID_FindOID_Util
-   fun:SECOID_FindOIDTag_Util
-   fun:SECOID_FindOIDTag
-   fun:_ZN3net61_GLOBAL__N_net_base_x509_certificate_nss.cc_00000000_*16GetCertChainInfoEP15CERTCertListStrPNS_16CertVerifyResultE
-}
-{
    bug_59670
    Memcheck:Leak
    fun:_Znw*
