@@ -40,7 +40,10 @@ class Logger {
                           const char* file, int line,
                           const char* x_name,
                           const char* check_name) {
-    return Logger(!!x, FATAL)
+    if (!!x)
+        return Logger(true, FATAL);
+
+    return Logger(false, FATAL)
         << file << "(" << line << "): " << check_name
         << "(" << x_name << " (" << x << ")) failed. ";
   }
@@ -50,7 +53,10 @@ class Logger {
                            const char* file, int line,
                            const char* x_name, const char* y_name,
                            const char* check_name) {
-    return Logger(x == y, FATAL)
+    if (x == y)
+        return Logger(true, FATAL);
+
+    return Logger(false, FATAL)
         << file << "(" << line << "): " << check_name
         << "(" << x_name << " (" << x << "), "
         << y_name << "(" << y << ")) failed. ";
@@ -61,7 +67,10 @@ class Logger {
                               const char* file, int line,
                               const char* x_name, const char* y_name,
                               const char* check_name) {
-    return Logger(x != y, FATAL)
+    if (x != y)
+        return Logger(true, FATAL);
+
+    return Logger(false, FATAL)
         << file << "(" << line << "): " << check_name
         << "(" << x_name << " (" << x << "), "
         << y_name << "(" << y << ")) failed. ";
@@ -72,7 +81,10 @@ class Logger {
                               const char* file, int line,
                               const char* x_name, const char* y_name,
                               const char* check_name) {
-    return Logger(x < y, FATAL)
+    if (x < y)
+        return Logger(true, FATAL);
+
+    return Logger(false, FATAL)
         << file << "(" << line << "): " << check_name
         << "(" << x_name << " (" << x << "), "
         << y_name << "(" << y << ")) failed. ";
@@ -83,7 +95,10 @@ class Logger {
                                  const char* file, int line,
                                  const char* x_name, const char* y_name,
                                  const char* check_name) {
-    return Logger(x > y, FATAL)
+    if (x > y)
+        return Logger(true, FATAL);
+
+    return Logger(false, FATAL)
         << file << "(" << line << "): " << check_name
         << "(" << x_name << " (" << x << "), "
         << y_name << "(" << y << ")) failed. ";
@@ -94,7 +109,10 @@ class Logger {
                                const char* file, int line,
                                const char* x_name, const char* y_name,
                                const char* check_name) {
-    return Logger(x <= y, FATAL)
+    if (x <= y)
+        return Logger(true, FATAL);
+
+    return Logger(false, FATAL)
         << file << "(" << line << "): " << check_name
         << "(" << x_name << " (" << x << "), "
         << y_name << "(" << y << ")) failed. ";
@@ -105,7 +123,10 @@ class Logger {
                                   const char* file, int line,
                                   const char* x_name, const char* y_name,
                                   const char* check_name) {
-    return Logger(x >= y, FATAL)
+    if (x >= y)
+        return Logger(true, FATAL);
+
+    return Logger(false, FATAL)
         << file << "(" << line << "): " << check_name
         << "(" << x_name << " (" << x << "), "
         << y_name << "(" << y << ")) failed. ";
@@ -133,8 +154,17 @@ class Logger {
         level_(logger.level_) {
   }
 
-  bool condition_;
-  LogLevel level_;
+  const bool condition_;
+  const LogLevel level_;
+};
+
+// This is a logger that does not do anything for release builds.
+class NoLogger {
+ public:
+  template <typename T>
+  NoLogger& operator<<(const T& value) {
+    return *this;
+  }
 };
 
 }  // namespace gpu
@@ -157,21 +187,14 @@ class Logger {
 
 #if defined(NDEBUG)
 
-#define GPU_DCHECK(X) ::gpu::Logger::CheckTrue( \
-    true, __FILE__, __LINE__, #X, "GPU_DCHECK")
-#define GPU_DCHECK_EQ(X, Y) ::gpu::Logger::CheckEqual( \
-    false, false, __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_EQ")
-#define GPU_DCHECK_NE(X, Y) ::gpu::Logger::CheckEqual( \
-    false, false, __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_NE")
-#define GPU_DCHECK_GT(X, Y) ::gpu::Logger::CheckEqual( \
-    false, false, __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_GT")
-#define GPU_DCHECK_LT(X, Y) ::gpu::Logger::CheckEqual( \
-    false, false, __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_LT")
-#define GPU_DCHECK_GE(X, Y) ::gpu::Logger::CheckEqual( \
-    false, false, __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_GE")
-#define GPU_DCHECK_LE(X, Y) ::gpu::Logger::CheckEqual( \
-    false, false, __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_LE")
-#define GPU_DLOG(LEVEL) ::gpu::Logger(false, LEVEL)
+#define GPU_DCHECK(X) ::gpu::NoLogger()
+#define GPU_DCHECK_EQ(X, Y) ::gpu::NoLogger()
+#define GPU_DCHECK_NE(X, Y) ::gpu::NoLogger()
+#define GPU_DCHECK_GT(X, Y) ::gpu::NoLogger()
+#define GPU_DCHECK_LT(X, Y) ::gpu::NoLogger()
+#define GPU_DCHECK_GE(X, Y) ::gpu::NoLogger()
+#define GPU_DCHECK_LE(X, Y) ::gpu::NoLogger()
+#define GPU_DLOG(LEVEL) ::gpu::NoLogger()
 
 #else  // NDEBUG
 
