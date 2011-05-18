@@ -84,6 +84,8 @@
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
       '-prefs.PrefsTest.testDownloadDirPref',
+      # crbug.com/66072
+      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
