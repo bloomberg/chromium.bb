@@ -18,12 +18,10 @@
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/blob_url_request_job_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/file_system_url_request_job_factory.h"
 #include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
@@ -36,6 +34,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/host_zoom_map.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/resource_context.h"
 #include "content/common/notification_service.h"
 #include "net/http/http_util.h"
@@ -43,6 +43,9 @@
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
+#include "webkit/blob/blob_data.h"
+#include "webkit/blob/blob_url_request_job_factory.h"
+#include "webkit/fileapi/file_system_url_request_job_factory.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -166,6 +169,29 @@ class ProtocolHandlerRegistryInterceptor
   const scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryInterceptor);
+};
+
+class ChromeBlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
+ public:
+  ChromeBlobProtocolHandler(
+      webkit_blob::BlobStorageController* blob_storage_controller,
+      base::MessageLoopProxy* loop_proxy)
+      : webkit_blob::BlobProtocolHandler(blob_storage_controller,
+                                         loop_proxy) {}
+
+  virtual ~ChromeBlobProtocolHandler() {}
+
+ private:
+  virtual scoped_refptr<webkit_blob::BlobData>
+      LookupBlobData(net::URLRequest* request) const {
+    ResourceDispatcherHostRequestInfo* info =
+        ResourceDispatcherHost::InfoForRequest(request);
+    if (!info)
+      return NULL;
+    return info->requested_blob_data();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeBlobProtocolHandler);
 };
 
 }  // namespace
@@ -417,13 +443,15 @@ void ProfileIOData::LazyInitialize() const {
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kBlobScheme,
-      CreateBlobProtocolHandler(
-          profile_params_->blob_storage_context->controller()));
+      new ChromeBlobProtocolHandler(
+          profile_params_->blob_storage_context->controller(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kFileSystemScheme,
       CreateFileSystemProtocolHandler(
-          profile_params_->file_system_context));
+          profile_params_->file_system_context,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
 
   // Take ownership over these parameters.

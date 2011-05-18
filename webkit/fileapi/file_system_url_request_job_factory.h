@@ -2,19 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_FILE_SYSTEM_URL_REQUEST_JOB_FACTORY_H_
-#define CHROME_BROWSER_NET_FILE_SYSTEM_URL_REQUEST_JOB_FACTORY_H_
+#ifndef WEBKIT_FILE_SYSTEM_FILE_SYSTEM_URL_REQUEST_JOB_FACTORY_H_
+#define WEBKIT_FILE_SYSTEM_FILE_SYSTEM_URL_REQUEST_JOB_FACTORY_H_
 
 #include "net/url_request/url_request_job_factory.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace fileapi {
+
 class FileSystemContext;
-}  // namespace fileapi
 
 // |context|'s lifetime should exceed the lifetime of the ProtocolHandler.
 // Currently, this is only used by ProfileIOData which owns |context| and the
 // ProtocolHandler.
 net::URLRequestJobFactory::ProtocolHandler*
-CreateFileSystemProtocolHandler(fileapi::FileSystemContext* context);
+CreateFileSystemProtocolHandler(FileSystemContext* context,
+                                base::MessageLoopProxy* file_loop_proxy);
 
-#endif  // CHROME_BROWSER_NET_FILE_SYSTEM_URL_REQUEST_JOB_FACTORY_H_
+}  // namespace fileapi
+
+#endif  // WEBKIT_FILE_SYSTEM_FILE_SYSTEM_URL_REQUEST_JOB_FACTORY_H_

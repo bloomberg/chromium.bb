@@ -17,10 +17,13 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "webkit/blob/blob_storage_controller.h"
+#include "webkit/blob/blob_url_request_job_factory.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_url_request_job_factory.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -95,6 +98,19 @@ void TestShellRequestContext::Init(
   blob_storage_controller_.reset(new webkit_blob::BlobStorageController());
   file_system_context_ = static_cast<SimpleFileSystem*>(
       WebKit::webKitClient()->fileSystem())->file_system_context();
+
+  net::URLRequestJobFactory* job_factory = new net::URLRequestJobFactory;
+  job_factory->SetProtocolHandler(
+      "blob",
+      new webkit_blob::BlobProtocolHandler(
+          blob_storage_controller_.get(),
+          SimpleResourceLoaderBridge::GetIoThread()));
+  job_factory->SetProtocolHandler(
+      "filesystem",
+      fileapi::CreateFileSystemProtocolHandler(
+          file_system_context_.get(),
+          SimpleResourceLoaderBridge::GetIoThread()));
+  storage_.set_job_factory(job_factory);
 }
 
 TestShellRequestContext::~TestShellRequestContext() {

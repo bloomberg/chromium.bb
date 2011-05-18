@@ -20,6 +20,8 @@
         'blob_storage_controller.h',
         'blob_url_request_job.cc',
         'blob_url_request_job.h',
+        'blob_url_request_job_factory.cc',
+        'blob_url_request_job_factory.h',
         'deletable_file_reference.cc',
         'deletable_file_reference.h',
         'view_blob_internals_job.cc',

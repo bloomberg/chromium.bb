@@ -46,6 +46,8 @@
         'file_system_url_request_job.h',
         'file_system_url_request_job_base.cc',
         'file_system_url_request_job_base.h',
+        'file_system_url_request_job_factory.cc',
+        'file_system_url_request_job_factory.h',
         'file_system_usage_cache.cc',
         'file_system_usage_cache.h',
         'file_system_util.cc',

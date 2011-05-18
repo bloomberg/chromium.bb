@@ -96,44 +96,6 @@ struct TestShellRequestContextParams {
   bool no_proxy;
 };
 
-net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
-                                             const std::string& scheme) {
-  webkit_blob::BlobStorageController* blob_storage_controller =
-      static_cast<TestShellRequestContext*>(request->context())->
-          blob_storage_controller();
-  return new webkit_blob::BlobURLRequestJob(
-      request,
-      blob_storage_controller->GetBlobDataFromUrl(request->url()),
-      SimpleResourceLoaderBridge::GetIoThread());
-}
-
-
-net::URLRequestJob* FileSystemURLRequestJobFactory(net::URLRequest* request,
-                                                   const std::string& scheme) {
-  fileapi::FileSystemContext* fs_context =
-      static_cast<TestShellRequestContext*>(request->context())
-          ->file_system_context();
-  if (!fs_context) {
-    LOG(WARNING) << "No FileSystemContext found, ignoring filesystem: URL";
-    return NULL;
-  }
-
-  // If the path ends with a /, we know it's a directory. If the path refers
-  // to a directory and gets dispatched to FileSystemURLRequestJob, that class
-  // redirects back here, by adding a / to the URL.
-  const std::string path = request->url().path();
-  if (!path.empty() && path[path.size() - 1] == '/') {
-    return new fileapi::FileSystemDirURLRequestJob(
-        request,
-        fs_context,
-        SimpleResourceLoaderBridge::GetIoThread());
-  }
-  return new fileapi::FileSystemURLRequestJob(
-      request,
-      fs_context,
-      SimpleResourceLoaderBridge::GetIoThread());
-}
-
 TestShellRequestContextParams* g_request_context_params = NULL;
 TestShellRequestContext* g_request_context = NULL;
 base::Thread* g_cache_thread = NULL;
@@ -171,10 +133,6 @@ class IOThread : public base::Thread {
     SimpleFileWriter::InitializeOnIOThread(g_request_context);
     TestShellWebBlobRegistryImpl::InitializeOnIOThread(
         g_request_context->blob_storage_controller());
-
-    net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
-    net::URLRequest::RegisterProtocolFactory("filesystem",
-                                             &FileSystemURLRequestJobFactory);
   }
 
   virtual void CleanUp() {
