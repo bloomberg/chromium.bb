@@ -31,6 +31,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -84,6 +85,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   safebrowsing_detection_host_.reset(
       safe_browsing::ClientSideDetectionHost::Create(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
+  ssl_helper_.reset(new TabContentsSSLHelper(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   print_view_manager_.reset(new printing::PrintViewManager(contents));

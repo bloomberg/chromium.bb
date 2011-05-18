@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
@@ -366,12 +365,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
 // Returns true if contains content rendered by an extension.
 bool TabContents::HostsExtension() const {
   return GetURL().SchemeIs(chrome::kExtensionScheme);
-}
-
-TabContentsSSLHelper* TabContents::GetSSLHelper() {
-  if (ssl_helper_.get() == NULL)
-    ssl_helper_.reset(new TabContentsSSLHelper(this));
-  return ssl_helper_.get();
 }
 
 RenderProcessHost* TabContents::GetRenderProcessHost() const {
@@ -1357,10 +1350,6 @@ RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
 RenderViewHostDelegate::RendererManagement*
 TabContents::GetRendererManagementDelegate() {
   return &render_manager_;
-}
-
-RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {
-  return GetSSLHelper();
 }
 
 RenderViewHostDelegate::BookmarkDrag* TabContents::GetBookmarkDragDelegate() {

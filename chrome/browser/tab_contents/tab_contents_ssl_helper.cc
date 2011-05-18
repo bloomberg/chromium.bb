@@ -100,7 +100,7 @@ bool SSLCertAddedInfoBarDelegate::Accept() {
 
 class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
  public:
-  explicit SSLAddCertData(TabContents* tab_contents);
+  explicit SSLAddCertData(TabContentsWrapper* tab_contents);
   virtual ~SSLAddCertData();
 
   // Displays |delegate| as an infobar in |tab_|, replacing our current one if
@@ -117,17 +117,18 @@ class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
   InfoBarDelegate* infobar_delegate_;
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertData);
 };
 
-TabContentsSSLHelper::SSLAddCertData::SSLAddCertData(TabContents* tab_contents)
+TabContentsSSLHelper::SSLAddCertData::SSLAddCertData(
+    TabContentsWrapper* tab_contents)
     : tab_contents_(tab_contents),
       infobar_delegate_(NULL) {
-  Source<TabContents> source(tab_contents_);
+  Source<TabContents> source(tab_contents_->tab_contents());
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED, source);
 }
@@ -137,19 +138,17 @@ TabContentsSSLHelper::SSLAddCertData::~SSLAddCertData() {
 
 void TabContentsSSLHelper::SSLAddCertData::ShowInfoBar(
     InfoBarDelegate* delegate) {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
   if (infobar_delegate_)
-    wrapper->ReplaceInfoBar(infobar_delegate_, delegate);
+    tab_contents_->ReplaceInfoBar(infobar_delegate_, delegate);
   else
-    wrapper->AddInfoBar(delegate);
+    tab_contents_->AddInfoBar(delegate);
   infobar_delegate_ = delegate;
 }
 
 void TabContentsSSLHelper::SSLAddCertData::ShowErrorInfoBar(
     const string16& message) {
-  ShowInfoBar(new SimpleAlertInfoBarDelegate(tab_contents_, GetCertIcon(),
-                                             message, true));
+  ShowInfoBar(new SimpleAlertInfoBarDelegate(
+      tab_contents_->tab_contents(), GetCertIcon(), message, true));
 }
 
 void TabContentsSSLHelper::SSLAddCertData::Observe(
@@ -167,7 +166,7 @@ void TabContentsSSLHelper::SSLAddCertData::Observe(
 
 // TabContentsSSLHelper -------------------------------------------------------
 
-TabContentsSSLHelper::TabContentsSSLHelper(TabContents* tab_contents)
+TabContentsSSLHelper::TabContentsSSLHelper(TabContentsWrapper* tab_contents)
     : tab_contents_(tab_contents) {
 }
 
@@ -177,7 +176,7 @@ TabContentsSSLHelper::~TabContentsSSLHelper() {
 void TabContentsSSLHelper::ShowClientCertificateRequestDialog(
     scoped_refptr<SSLClientAuthHandler> handler) {
   browser::ShowSSLClientCertificateSelector(
-      tab_contents_, handler->cert_request_info(), handler);
+      tab_contents_->tab_contents(), handler->cert_request_info(), handler);
 }
 
 void TabContentsSSLHelper::OnVerifyClientCertificateError(
@@ -200,8 +199,8 @@ void TabContentsSSLHelper::OnAddClientCertificateSuccess(
     scoped_refptr<SSLAddCertHandler> handler) {
   SSLAddCertData* add_cert_data = GetAddCertData(handler);
   // Display an infobar to inform the user.
-  add_cert_data->ShowInfoBar(
-      new SSLCertAddedInfoBarDelegate(tab_contents_, handler->cert()));
+  add_cert_data->ShowInfoBar(new SSLCertAddedInfoBarDelegate(
+      tab_contents_->tab_contents(), handler->cert()));
 }
 
 void TabContentsSSLHelper::OnAddClientCertificateError(

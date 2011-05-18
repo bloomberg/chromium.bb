@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 
+#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
+#include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/cert_database.h"
@@ -41,10 +42,11 @@ void SSLAddCertHandler::Run() {
     cert_error = db.CheckUserCert(cert_);
   }
   if (cert_error != net::OK) {
-    CallRenderViewHostSSLDelegate(
-        render_process_host_id_, render_view_id_,
-        &RenderViewHostDelegate::SSL::OnVerifyClientCertificateError,
-        scoped_refptr<SSLAddCertHandler>(this), cert_error);
+    BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &SSLAddCertHandler::CallVerifyClientCertificateError,
+          cert_error));
     Finished(false);
     return;
   }
@@ -64,26 +66,47 @@ void SSLAddCertHandler::AskToAddCert() {
 #endif
 
 void SSLAddCertHandler::Finished(bool add_cert) {
+  int cert_error = net::OK;
   if (add_cert) {
     net::CertDatabase db;
-    int cert_error = db.AddUserCert(cert_);
-    if (cert_error != net::OK) {
-      CallRenderViewHostSSLDelegate(
-          render_process_host_id_, render_view_id_,
-          &RenderViewHostDelegate::SSL::OnAddClientCertificateError,
-          scoped_refptr<SSLAddCertHandler>(this), cert_error);
-    } else {
-      CallRenderViewHostSSLDelegate(
-          render_process_host_id_, render_view_id_,
-          &RenderViewHostDelegate::SSL::OnAddClientCertificateSuccess,
-          scoped_refptr<SSLAddCertHandler>(this));
-    }
+    cert_error = db.AddUserCert(cert_);
   }
-  // Inform the RVH that we're finished
-  CallRenderViewHostSSLDelegate(
-      render_process_host_id_, render_view_id_,
-      &RenderViewHostDelegate::SSL::OnAddClientCertificateFinished,
-      scoped_refptr<SSLAddCertHandler>(this));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &SSLAddCertHandler::CallAddClientCertificate, add_cert,
+          cert_error));
 
   Release();
+}
+
+void SSLAddCertHandler::CallVerifyClientCertificateError(int cert_error) {
+  TabContents* tab = tab_util::GetTabContentsByID(
+      render_process_host_id_, render_view_id_);
+  if (!tab)
+    return;
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  wrapper->ssl_helper()->OnVerifyClientCertificateError(this, cert_error);
+}
+
+void SSLAddCertHandler::CallAddClientCertificate(bool add_cert,
+                                                 int cert_error) {
+  TabContents* tab = tab_util::GetTabContentsByID(
+      render_process_host_id_, render_view_id_);
+  if (!tab)
+    return;
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  if (add_cert) {
+    if (cert_error == net::OK) {
+      wrapper->ssl_helper()->OnAddClientCertificateSuccess(this);
+    } else {
+      wrapper->ssl_helper()->OnAddClientCertificateError(this, cert_error);
+    }
+  }
+  wrapper->ssl_helper()->OnAddClientCertificateFinished(this);
 }

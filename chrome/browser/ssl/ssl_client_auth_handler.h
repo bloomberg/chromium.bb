@@ -61,6 +61,10 @@ class SSLClientAuthHandler
   // Called on the IO thread.
   void DoCertificateSelected(net::X509Certificate* cert);
 
+  // Calls the SSL helper on the UI thread.
+  void ShowClientCertificateRequestDialog(int render_process_host_id,
+                                          int render_view_host_id);
+
   // The net::URLRequest that triggered this client auth.
   net::URLRequest* request_;
 

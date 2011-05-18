@@ -42,6 +42,10 @@ class SSLAddCertHandler : public base::RefCountedThreadSafe<SSLAddCertHandler> {
   // Called on the UI thread.
   void AskToAddCert();
 
+  // Methods called on the UI thread to call the SSL helper.
+  void CallVerifyClientCertificateError(int cert_error);
+  void CallAddClientCertificate(bool add_cert, int cert_error);
+
   // The cert to add.
   scoped_refptr<net::X509Certificate> cert_;
 

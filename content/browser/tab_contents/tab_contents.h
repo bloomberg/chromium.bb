@@ -53,7 +53,6 @@ class SiteInstance;
 class SkBitmap;
 class TabContentsDelegate;
 class TabContentsObserver;
-class TabContentsSSLHelper;
 class TabContentsView;
 struct ThumbnailScore;
 class URLPattern;
@@ -118,9 +117,6 @@ class TabContents : public PageNavigator,
 
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
-
-  // Returns the TabContentsSSLHelper, creating it if necessary.
-  TabContentsSSLHelper* GetSSLHelper();
 
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.
@@ -677,7 +673,6 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate();
-  virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
   virtual TabContents* GetAsTabContents();
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
@@ -810,9 +805,6 @@ class TabContents : public PageNavigator,
 
   // Registers and unregisters for pref notifications.
   PrefChangeRegistrar pref_change_registrar_;
-
-  // TabContentsSSLHelper, lazily created.
-  scoped_ptr<TabContentsSSLHelper> ssl_helper_;
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;

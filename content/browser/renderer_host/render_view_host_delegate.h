@@ -37,8 +37,6 @@ class RenderViewHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SkBitmap;
-class SSLClientAuthHandler;
-class SSLAddCertHandler;
 class TabContents;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -251,47 +249,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual ~BookmarkDrag() {}
   };
 
-  // SSL -----------------------------------------------------------------------
-  // Interface for UI and other RenderViewHost-specific interactions with SSL.
-
-  class SSL {
-   public:
-    // Displays a dialog to select client certificates from |request_info|,
-    // returning them to |handler|.
-    virtual void ShowClientCertificateRequestDialog(
-        scoped_refptr<SSLClientAuthHandler> handler) = 0;
-
-    // Called when |handler| encounters an error in verifying a
-    // received client certificate. Note that, because CAs often will
-    // not send us intermediate certificates, the verification we can
-    // do is minimal: we verify the certificate is parseable, that we
-    // have the corresponding private key, and that the certificate
-    // has not expired.
-    virtual void OnVerifyClientCertificateError(
-        scoped_refptr<SSLAddCertHandler> handler, int error_code) = 0;
-
-    // Called when |handler| requests the user's confirmation in adding a
-    // client certificate.
-    virtual void AskToAddClientCertificate(
-        scoped_refptr<SSLAddCertHandler> handler) = 0;
-
-    // Called when |handler| successfully adds a client certificate.
-    virtual void OnAddClientCertificateSuccess(
-        scoped_refptr<SSLAddCertHandler> handler) = 0;
-
-    // Called when |handler| encounters an error adding a client certificate.
-    virtual void OnAddClientCertificateError(
-        scoped_refptr<SSLAddCertHandler> handler, int error_code) = 0;
-
-    // Called when |handler| has completed, so the delegate may release any
-    // state accumulated.
-    virtual void OnAddClientCertificateFinished(
-        scoped_refptr<SSLAddCertHandler> handler) = 0;
-
-   protected:
-    virtual ~SSL() {}
-  };
-
   // ---------------------------------------------------------------------------
 
   // Returns the current delegate associated with a feature. May return NULL if
@@ -300,7 +257,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual RendererManagement* GetRendererManagementDelegate();
 
   virtual BookmarkDrag* GetBookmarkDragDelegate();
-  virtual SSL* GetSSLDelegate();
 
   // IPC::Channel::Listener implementation.
   // This is used to give the delegate a chance to filter IPC messages.

@@ -25,11 +25,6 @@ RenderViewHostDelegate::GetBookmarkDragDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::SSL*
-RenderViewHostDelegate::GetSSLDelegate() {
-  return NULL;
-}
-
 bool RenderViewHostDelegate::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
