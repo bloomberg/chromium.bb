@@ -142,6 +142,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
+#include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/oom_priority_manager.h"
@@ -529,8 +530,15 @@ void BrowserMainParts::MainMessageLoopStart() {
   // TODO(viettrungluu): should these really go before setting the thread name?
   system_monitor_.reset(new base::SystemMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
+#if defined(OS_CHROMEOS)
+  // TODO(zelidrag): We need to move cros library glue code outside of
+  // chrome/browser directory to avoid check_deps issues and then migrate
+  // NetworkChangeNotifierCros class to net/base where other OS implementations
+  // live.
+  network_change_notifier_.reset(new chromeos::NetworkChangeNotifierChromeos());
+#else
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
-
+#endif
   InitializeMainThread();
 
   PostMainMessageLoopStart();

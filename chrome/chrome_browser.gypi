@@ -620,6 +620,8 @@
         'browser/chromeos/name_value_pairs_parser.h',
         'browser/chromeos/native_dialog_window.cc',
         'browser/chromeos/native_dialog_window.h',
+        'browser/chromeos/net/network_change_notifier_chromeos.cc',
+        'browser/chromeos/net/network_change_notifier_chromeos.h',
         'browser/chromeos/network_login_observer.cc',
         'browser/chromeos/network_login_observer.h',
         'browser/chromeos/network_message_observer.cc',
