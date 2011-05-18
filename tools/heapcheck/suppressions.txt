@@ -1538,8 +1538,8 @@
    bug_81796
    Heapcheck:Leak
    fun:base::MessageLoopProxy::CreateForCurrentThread
-   fun:Context
-   fun:ChannelProxy
+   fun:IPC::ChannelProxy::Context::Context
+   fun:IPC::ChannelProxy::ChannelProxy
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
 }
 {
