@@ -7,46 +7,15 @@
 #include <utility>
 
 #include "chrome/browser/browser_url_handler.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
 #include "content/common/page_transition_types.h"
 
 TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
     : TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL),
       transition_cross_site(false) {
-  // Listen for infobar events so we can call InfoBarClosed() on the infobar
-  // delegates and give them an opportunity to delete themselves.  (Since we
-  // have no InfobarContainer in TestTabContents, InfoBarClosed() is not called
-  // most likely leading to the infobar delegates being leaked.)
-  Source<TabContents> source(this);
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-                 source);
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
-                 source);
-}
-
-void TestTabContents::Observe(NotificationType type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
-  // TabContents does not handle TAB_CONTENTS_INFOBAR_* so we don't pass it
-  // these notifications.
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED:
-      Details<InfoBarDelegate>(details).ptr()->InfoBarClosed();
-      break;
-    case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED:
-      Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details).ptr()->
-          first->InfoBarClosed();
-      break;
-    default:
-      TabContents::Observe(type, source, details);
-      break;
-  }
 }
 
 TestRenderViewHost* TestTabContents::pending_rvh() const {

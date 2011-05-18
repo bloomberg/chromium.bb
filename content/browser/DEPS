@@ -117,7 +117,6 @@ include_rules = [
   "+chrome/browser/sessions/session_service.h",
   "+chrome/browser/sessions/session_service_factory.h",
   "+chrome/browser/sessions/session_service_test_helper.h",
-  "+chrome/browser/tab_contents/infobar_delegate.h",
   "+chrome/browser/ui/browser.h",
   "+chrome/browser/ui/cocoa/find_pasteboard.h",
   "+chrome/browser/ui/tab_contents/tab_contents_wrapper.h",

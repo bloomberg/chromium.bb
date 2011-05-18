@@ -7,7 +7,6 @@
 #pragma once
 
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_registrar.h"
 #include "webkit/glue/webpreferences.h"
 
 class Profile;
@@ -30,13 +29,6 @@ class TestTabContents : public TabContents {
   // Overrides TabContents::ShouldTransitionCrossSite so that we can test both
   // alternatives without using command-line switches.
   bool ShouldTransitionCrossSite() { return transition_cross_site; }
-
-  // Overrides TabContents::Observe.  We are listening to infobar related
-  // notifications so we can call InfoBarClosed() on the infobar delegates to
-  // prevent them from leaking.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
   // Promote DidNavigate to public.
   void TestDidNavigate(RenderViewHost* render_view_host,
@@ -74,8 +66,6 @@ class TestTabContents : public TabContents {
 
   // Set by individual tests.
   bool transition_cross_site;
-
-  NotificationRegistrar registrar_;
 };
 
 #endif  // CONTENT_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
