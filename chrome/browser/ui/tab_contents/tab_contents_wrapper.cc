@@ -317,12 +317,6 @@ void TabContentsWrapper::Observe(NotificationType type,
       NavigationController::LoadCommittedDetails& committed_details =
           *(Details<NavigationController::LoadCommittedDetails>(details).ptr());
 
-      // Only hide InfoBars when the user has done something that makes the main
-      // frame load. We don't want various automatic or subframe navigations
-      // making it disappear.
-      if (!committed_details.is_user_initiated_main_frame_load())
-        return;
-
       // NOTE: It is not safe to change the following code to count upwards or
       // use iterators, as the RemoveInfoBar() call synchronously modifies our
       // delegate list.

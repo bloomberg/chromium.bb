@@ -722,13 +722,6 @@ TEST_F(TranslateManagerTest, TranslateInPageNavigation) {
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
 
-  // Navigate in page, the same infobar should still be shown.
-  ClearRemovedInfoBars();
-  SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr",
-                     true);
-  EXPECT_FALSE(InfoBarRemoved());
-  EXPECT_EQ(infobar, GetTranslateInfoBar());
-
   // Navigate out of page, a new infobar should show.
   // See note in TranslateCloseInfoBarInPageNavigation test on why it is
   // important to navigate to a page in a different language for this test.

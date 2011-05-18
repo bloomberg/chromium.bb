@@ -100,7 +100,7 @@ HintInfoBar::~HintInfoBar() {
 
 bool HintInfoBar::ShouldExpire(
     const NavigationController::LoadCommittedDetails& details) const {
-  return should_expire_;
+  return details.is_user_initiated_main_frame_load() && should_expire_;
 }
 
 void HintInfoBar::InfoBarDismissed() {

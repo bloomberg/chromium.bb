@@ -353,6 +353,16 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
   }
 }
 
+bool TranslateInfoBarDelegate::ShouldExpire(
+    const NavigationController::LoadCommittedDetails& details) const {
+  // Note: we allow closing this infobar even if the main frame navigation
+  // was programmatic and not initiated by the user - crbug.com/70261 .
+  if (!details.is_user_initiated_main_frame_load() && !details.is_main_frame)
+    return false;
+
+  return InfoBarDelegate::ShouldExpireInternal(details);
+}
+
 void TranslateInfoBarDelegate::InfoBarDismissed() {
   if (type_ != BEFORE_TRANSLATE)
     return;

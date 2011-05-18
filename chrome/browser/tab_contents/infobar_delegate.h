@@ -52,8 +52,8 @@ class InfoBarDelegate {
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
   // Returns true if the InfoBar should be closed automatically after the page
-  // is navigated. The default behavior is to return true if the page is
-  // navigated somewhere else or reloaded.
+  // is navigated. The default behavior is to return true if the user initiated
+  // navigation somewhere else or reloaded.
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const;
 
@@ -90,6 +90,10 @@ class InfoBarDelegate {
   // be used later upon navigation to determine if this InfoBarDelegate should
   // be expired from |contents_|.
   void StoreActiveEntryUniqueID(TabContents* contents);
+
+  // Returns true if the navigation is to a new URL or a reload occured.
+  bool ShouldExpireInternal(
+      const NavigationController::LoadCommittedDetails& details) const;
 
  private:
   // The unique id of the active NavigationEntry of the TabContents that we were

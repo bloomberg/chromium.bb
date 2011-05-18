@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/translate_errors.h"
 
@@ -163,6 +163,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
+   virtual bool ShouldExpire(
+       const NavigationController::LoadCommittedDetails& details) const;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 
   // Gets the host of the page being translated, or an empty string if no URL is
