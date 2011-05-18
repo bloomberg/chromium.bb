@@ -424,6 +424,8 @@ class RenderWidget : public IPC::Channel::Listener,
   bool animation_task_posted_;
   bool invalidation_task_posted_;
 
+  base::TimeTicks last_do_deferred_update_time_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
 

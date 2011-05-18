@@ -666,6 +666,8 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
+  // Tracking of frame rate jitter
+  base::TimeTicks frame_begin_ticks = base::TimeTicks::Now();
   AnimateIfNeeded();
 
   // Layout may generate more invalidation.  It may also enable the
@@ -679,6 +681,23 @@ void RenderWidget::DoDeferredUpdate() {
     TRACE_EVENT0("renderer", "EarlyOut_NoPendingUpdate");
     return;
   }
+
+  if(!last_do_deferred_update_time_.is_null()) {
+    base::TimeDelta delay = frame_begin_ticks - last_do_deferred_update_time_;
+    if(is_accelerated_compositing_active_)
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.AccelDoDeferredUpdateDelay",
+                                 delay,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromMilliseconds(60),
+                                 30);
+    else
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.SoftwareDoDeferredUpdateDelay",
+                                 delay,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromMilliseconds(60),
+                                 30);
+  }
+  last_do_deferred_update_time_ = frame_begin_ticks;
 
   // OK, save the pending update to a local since painting may cause more
   // invalidation.  Some WebCore rendering objects only layout when painted.
