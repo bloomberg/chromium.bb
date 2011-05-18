@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -24,12 +25,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 FontSettingsHandler::FontSettingsHandler() {
-  fonts_list_loader_ = new FontSettingsFontsListLoader(this);
 }
 
 FontSettingsHandler::~FontSettingsHandler() {
-  if (fonts_list_loader_)
-    fonts_list_loader_->SetObserver(NULL);
 }
 
 void FontSettingsHandler::GetLocalizedValues(
@@ -104,12 +102,12 @@ void FontSettingsHandler::RegisterMessages() {
 }
 
 void FontSettingsHandler::HandleFetchFontsData(const ListValue* args) {
-  fonts_list_loader_->StartLoadFontsList();
+  content::GetFontListAsync(
+      base::Bind(&FontSettingsHandler::FontsListHasLoaded, AsWeakPtr()));
 }
 
-void FontSettingsHandler::FontsListHasLoaded() {
-  ListValue* fonts_list = fonts_list_loader_->GetFontsList();
-
+void FontSettingsHandler::FontsListHasLoaded(
+    scoped_refptr<content::FontListResult> list) {
   ListValue encoding_list;
   const std::vector<CharacterEncoding::EncodingInfo>* encodings;
   PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
@@ -147,7 +145,8 @@ void FontSettingsHandler::FontsListHasLoaded() {
   selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
 
   web_ui_->CallJavascriptFunction("FontSettings.setFontsData",
-                                  *fonts_list, encoding_list, selected_values);
+                                  *list->list.get(), encoding_list,
+                                  selected_values);
 }
 
 void FontSettingsHandler::Observe(NotificationType type,

@@ -95,7 +95,6 @@ bool HostDispatcher::InitHostWithChannel(
     bool is_client) {
   if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
     return false;
-  SetDelegate(delegate);
   return true;
 }
 

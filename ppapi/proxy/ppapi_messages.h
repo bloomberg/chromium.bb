@@ -518,6 +518,10 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress,
                     pp::proxy::HostResource /* connector */,
                     std::string /* net_address_as_string */)
 
+// PPB_Font.
+IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
+                            std::string /* result */)
+
 // PPB_Fullscreen.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFullscreen_SetFullscreen,
                            PP_Instance /* instance */,

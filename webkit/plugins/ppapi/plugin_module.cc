@@ -284,7 +284,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_FLASH_MENU_INTERFACE) == 0)
     return PPB_Flash_Menu_Impl::GetInterface();
   if (strcmp(name, PPB_FONT_DEV_INTERFACE) == 0)
-    return PPB_Font_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Font_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
     return PluginInstance::GetFullscreenInterface();
   if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE) == 0)

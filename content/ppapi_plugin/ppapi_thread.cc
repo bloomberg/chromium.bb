@@ -96,6 +96,10 @@ void PpapiThread::PostToWebKitThread(const tracked_objects::Location& from_here,
   webkit_thread_->PostTask(from_here, task);
 }
 
+bool PpapiThread::SendToBrowser(IPC::Message* msg) {
+  return Send(msg);
+}
+
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
   base::ScopedNativeLibrary library(base::LoadNativeLibrary(path, NULL));
 
@@ -187,11 +191,12 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   bool init_result = false;
   if (is_broker_) {
     BrokerProcessDispatcher* broker_dispatcher =
-      new BrokerProcessDispatcher(host_process_handle, connect_instance_func_);
-      init_result = broker_dispatcher->InitBrokerWithChannel(this,
-                                                             plugin_handle,
-                                                             false);
-      dispatcher = broker_dispatcher;
+        new BrokerProcessDispatcher(host_process_handle,
+                                    connect_instance_func_);
+    init_result = broker_dispatcher->InitBrokerWithChannel(this,
+                                                           plugin_handle,
+                                                           false);
+    dispatcher = broker_dispatcher;
   } else {
     PluginProcessDispatcher* plugin_dispatcher =
         new PluginProcessDispatcher(host_process_handle, get_plugin_interface_);

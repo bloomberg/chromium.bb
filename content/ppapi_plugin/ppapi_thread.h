@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/proxy/dispatcher.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/c/trusted/ppp_broker.h"
 
 class FilePath;
@@ -24,7 +24,7 @@ struct ChannelHandle;
 }
 
 class PpapiThread : public ChildThread,
-                    public pp::proxy::Dispatcher::Delegate {
+                    public pp::proxy::PluginDispatcher::PluginDelegate {
  public:
   explicit PpapiThread(bool is_broker);
   ~PpapiThread();
@@ -40,6 +40,7 @@ class PpapiThread : public ChildThread,
   virtual ppapi::WebKitForwarding* GetWebKitForwarding();
   virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
                                   const base::Closure& task);
+  virtual bool SendToBrowser(IPC::Message* msg);
 
   // Message handlers.
   void OnMsgLoadPlugin(const FilePath& path);

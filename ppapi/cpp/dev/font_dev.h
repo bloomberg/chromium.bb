@@ -111,6 +111,7 @@ class Font_Dev : public Resource {
   Font_Dev& operator=(const Font_Dev& other);
 
   // PPB_Font methods:
+  static Var GetFontFamilies(Instance* instance);
   bool Describe(FontDescription_Dev* description,
                 PP_FontMetrics_Dev* metrics) const;
   bool DrawTextAt(ImageData* dest,

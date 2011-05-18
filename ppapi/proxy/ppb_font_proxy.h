@@ -18,17 +18,25 @@ struct PPB_Font_Dev;
 namespace pp {
 namespace proxy {
 
-class SerializedVarReceiveInput;
+class SerializedVarReturnValue;
 
-class PPB_Font_Proxy : public InterfaceProxy {
+class PPB_Font_Proxy : public ::ppapi::FunctionGroupBase,
+                       public ::ppapi::thunk::PPB_Font_FunctionAPI,
+                       public InterfaceProxy {
  public:
   PPB_Font_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Font_Proxy();
 
   static const Info* GetInfo();
 
+  // FunctionGroupBase overrides.
+  virtual ::ppapi::thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI() OVERRIDE;
+
+  // PPB_Font_FunctionAPI implementation.
+  virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;
+
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_Proxy);

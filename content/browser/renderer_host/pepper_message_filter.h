@@ -12,6 +12,7 @@
 #include "base/process.h"
 #include "base/time.h"
 #include "content/browser/browser_message_filter.h"
+#include "content/browser/font_list_async.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 
 namespace content {
@@ -20,19 +21,26 @@ class ResourceContext;
 
 namespace net {
 class AddressList;
+class HostResolver;
 }
 
+// This class is used in two contexts, both supporting PPAPI plugins. The first
+// is on the renderer->browser channel, to handle requests from in-process
+// PPAPI plugins and any requests that the PPAPI implementation code in the
+// renderer needs to make. The second is on the plugin->browser channel to
+// handle requests that out-of-process plugins send directly to the browser.
 class PepperMessageFilter : public BrowserMessageFilter {
  public:
   explicit PepperMessageFilter(
-      const content::ResourceContext* resource_context);
+     const content::ResourceContext* resource_context);
+  explicit PepperMessageFilter(net::HostResolver* host_resolver);
   virtual ~PepperMessageFilter();
 
- private:
   // BrowserMessageFilter methods.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
+ private:
 #if defined(ENABLE_FLAPPER_HACKS)
   // Message handlers.
   void OnConnectTcp(int routing_id,
@@ -66,8 +74,24 @@ class PepperMessageFilter : public BrowserMessageFilter {
 #endif  // ENABLE_FLAPPER_HACKS
 
   void OnGetLocalTimeZoneOffset(base::Time t, double* result);
+  void OnGetFontFamilies(IPC::Message* reply);
 
+  // Callback when the font list has been retrieved on a background thread.
+  void GetFontFamiliesComplete(IPC::Message* reply_msg,
+                               scoped_refptr<content::FontListResult> result);
+
+  // Returns the host resolver (it may come from the resource context or the
+  // host_resolver_ member).
+  net::HostResolver* GetHostResolver();
+
+  // When non-NULL, this should be used instead of the host_resolver_.
   const content::ResourceContext* const resource_context_;
+
+  // When non-NULL, this should be used instead of the resource_context_. Use
+  // GetHostResolver instead of accessing directly.
+  net::HostResolver* host_resolver_;
+
+  DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_MESSAGE_FILTER_H_

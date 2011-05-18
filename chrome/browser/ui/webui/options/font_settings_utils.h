@@ -14,8 +14,6 @@ class PrefService;
 // Chrome advanced options utility methods.
 class FontSettingsUtilities {
  public:
-  static ListValue* GetFontsList();
-
   static void ValidateSavedFonts(PrefService* prefs);
 
  private:

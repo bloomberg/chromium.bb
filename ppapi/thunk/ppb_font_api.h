@@ -6,10 +6,21 @@
 #define PPAPI_THUNK_PPB_FONT_API_H_
 
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/proxy/interface_id.h"
 
 namespace ppapi {
 namespace thunk {
 
+// API for static font functions.
+class PPB_Font_FunctionAPI {
+ public:
+  static const ::pp::proxy::InterfaceID interface_id =
+      ::pp::proxy::INTERFACE_ID_PPB_FONT;
+
+  virtual PP_Var GetFontFamilies(PP_Instance instance) = 0;
+};
+
+// API for font resources.
 class PPB_Font_API {
  public:
   virtual PP_Bool Describe(PP_FontDescription_Dev* description,

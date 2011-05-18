@@ -50,11 +50,6 @@ PPB_Font_Impl::PPB_Font_Impl(PluginInstance* instance,
 PPB_Font_Impl::~PPB_Font_Impl() {
 }
 
-// static
-const PPB_Font_Dev* PPB_Font_Impl::GetInterface() {
-  return ::ppapi::thunk::GetPPB_Font_Thunk();
-}
-
 ::ppapi::thunk::PPB_Font_API* PPB_Font_Impl::AsFont_API() {
   return this;
 }
@@ -128,6 +123,21 @@ int32_t PPB_Font_Impl::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
     font_forwarding_->PixelOffsetForCharacter(NULL, run, char_offset, &result);
   }
   return result;
+}
+
+PPB_Font_FunctionImpl::PPB_Font_FunctionImpl() {
+}
+
+PPB_Font_FunctionImpl::~PPB_Font_FunctionImpl() {
+}
+
+::ppapi::thunk::PPB_Font_FunctionAPI*
+PPB_Font_FunctionImpl::AsFont_FunctionAPI() {
+  return this;
+}
+
+PP_Var PPB_Font_FunctionImpl::GetFontFamilies(PP_Instance instance) {
+  return PP_MakeUndefined();
 }
 
 }  // namespace ppapi

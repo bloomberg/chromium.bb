@@ -72,6 +72,8 @@
         'browser/file_system/browser_file_system_helper.h',
         'browser/file_system/file_system_dispatcher_host.cc',
         'browser/file_system/file_system_dispatcher_host.h',
+        'browser/font_list_async.cc',
+        'browser/font_list_asnyc.h',
         'browser/geolocation/access_token_store.h',
         'browser/geolocation/arbitrator_dependency_factory.cc',
         'browser/geolocation/arbitrator_dependency_factory.h',

@@ -118,6 +118,15 @@ Font_Dev& Font_Dev::operator=(const Font_Dev& other) {
   return *this;
 }
 
+// static
+Var Font_Dev::GetFontFamilies(Instance* instance) {
+  if (!has_interface<PPB_Font_Dev>())
+    return Var();
+  return Var(Var::PassRef(),
+             get_interface<PPB_Font_Dev>()->GetFontFamilies(
+                 instance->pp_instance()));
+}
+
 bool Font_Dev::Describe(FontDescription_Dev* description,
                         PP_FontMetrics_Dev* metrics) const {
   if (!has_interface<PPB_Font_Dev>())

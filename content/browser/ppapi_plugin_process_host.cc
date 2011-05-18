@@ -16,8 +16,10 @@
 #include "ipc/ipc_switches.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-PpapiPluginProcessHost::PpapiPluginProcessHost()
-    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS) {
+PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
+    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS),
+      filter_(new PepperMessageFilter(host_resolver)) {
+  AddFilter(filter_.get());
 }
 
 PpapiPluginProcessHost::~PpapiPluginProcessHost() {

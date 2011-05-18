@@ -166,8 +166,10 @@ class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
                                          public PpapiPluginProcessHost::Client {
  public:
   OpenChannelToPpapiPluginCallback(RenderMessageFilter* filter,
+                                   const content::ResourceContext* context,
                                    IPC::Message* reply_msg)
-      : RenderMessageCompletionCallback(filter, reply_msg) {
+      : RenderMessageCompletionCallback(filter, reply_msg),
+        context_(context) {
   }
 
   virtual void GetChannelInfo(base::ProcessHandle* renderer_handle,
@@ -182,6 +184,13 @@ class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
         reply_msg(), plugin_process_handle, channel_handle);
     SendReplyAndDeleteThis();
   }
+
+  virtual const content::ResourceContext* GetResourceContext() {
+    return context_;
+  }
+
+ private:
+  const content::ResourceContext* context_;
 };
 
 class OpenChannelToPpapiBrokerCallback : public PpapiBrokerProcessHost::Client {
@@ -606,7 +615,9 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
     const FilePath& path,
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
-      path, new OpenChannelToPpapiPluginCallback(this, reply_msg));
+      path,
+      new OpenChannelToPpapiPluginCallback(
+          this, &resource_context_, reply_msg));
 }
 
 void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,

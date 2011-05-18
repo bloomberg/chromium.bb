@@ -12,6 +12,13 @@ namespace thunk {
 
 namespace {
 
+PP_Var GetFontFamilies(PP_Instance instance) {
+  EnterFunction<PPB_Font_FunctionAPI> enter(instance, true);
+  if (enter.failed())
+    return PP_MakeUndefined();
+  return enter.functions()->GetFontFamilies(instance);
+}
+
 PP_Resource Create(PP_Instance instance,
                    const PP_FontDescription_Dev* description) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
@@ -74,6 +81,7 @@ int32_t PixelOffsetForCharacter(PP_Resource font_id,
 }
 
 const PPB_Font_Dev g_ppb_font_thunk = {
+  &GetFontFamilies,
   &Create,
   &IsFont,
   &Describe,

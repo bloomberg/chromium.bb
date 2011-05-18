@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/ui/webui/options/font_settings_fonts_list_loader.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "content/browser/font_list_async.h"
 
 // Font settings overlay page UI handler.
-class FontSettingsHandler : public OptionsPageUIHandler,
-                            public FontSettingsFontsListLoader::Observer {
+class FontSettingsHandler : public base::SupportsWeakPtr<FontSettingsHandler>,
+                            public OptionsPageUIHandler {
  public:
   FontSettingsHandler();
   virtual ~FontSettingsHandler();
@@ -30,11 +31,10 @@ class FontSettingsHandler : public OptionsPageUIHandler,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // FontSettingsFontsListLoader::Observer implementation.
-  virtual void FontsListHasLoaded();
-
  private:
   void HandleFetchFontsData(const ListValue* args);
+
+  void FontsListHasLoaded(scoped_refptr<content::FontListResult> list);
 
   void SetUpStandardFontSample();
   void SetUpSerifFontSample();
@@ -50,8 +50,6 @@ class FontSettingsHandler : public OptionsPageUIHandler,
   IntegerPrefMember default_font_size_;
   IntegerPrefMember default_fixed_font_size_;
   IntegerPrefMember minimum_font_size_;
-
-  scoped_refptr<FontSettingsFontsListLoader> fonts_list_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(FontSettingsHandler);
 };

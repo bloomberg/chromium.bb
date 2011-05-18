@@ -73,7 +73,8 @@ class PluginService
   PluginProcessHost* FindOrStartNpapiPluginProcess(
       const FilePath& plugin_path);
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
-      const FilePath& plugin_path);
+      const FilePath& plugin_path,
+      PpapiPluginProcessHost::Client* client);
   PpapiBrokerProcessHost* FindOrStartPpapiBrokerProcess(
       const FilePath& plugin_path);
 

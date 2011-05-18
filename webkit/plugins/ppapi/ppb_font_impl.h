@@ -27,10 +27,6 @@ class PPB_Font_Impl : public Resource,
   PPB_Font_Impl(PluginInstance* instance, const PP_FontDescription_Dev& desc);
   virtual ~PPB_Font_Impl();
 
-  // Returns a pointer to the interface implementing PPB_Font that is exposed to
-  // the plugin.
-  static const PPB_Font_Dev* GetInterface();
-
   // ResourceObjectBase.
   virtual ::ppapi::thunk::PPB_Font_API* AsFont_API() OVERRIDE;
 
@@ -56,6 +52,22 @@ class PPB_Font_Impl : public Resource,
   scoped_ptr< ::ppapi::WebKitForwarding::Font> font_forwarding_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_Impl);
+};
+
+class PPB_Font_FunctionImpl : public ::ppapi::FunctionGroupBase,
+                              public ::ppapi::thunk::PPB_Font_FunctionAPI {
+ public:
+  PPB_Font_FunctionImpl();
+  ~PPB_Font_FunctionImpl();
+
+  // FunctionGroupBase overrides.
+  virtual ::ppapi::thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI();
+
+  // PPB_Font_FunctionAPI implementation.
+  virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PPB_Font_FunctionImpl);
 };
 
 }  // namespace ppapi

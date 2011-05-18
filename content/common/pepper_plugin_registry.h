@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "ppapi/proxy/dispatcher.h"
+#include "ppapi/proxy/proxy_channel.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -53,7 +53,7 @@ struct PepperPluginInfo {
 // not preloaded).
 class PepperPluginRegistry
     : public webkit::ppapi::PluginDelegate::ModuleLifetime,
-      public pp::proxy::Dispatcher::Delegate {
+      public pp::proxy::ProxyChannel::Delegate {
  public:
   ~PepperPluginRegistry();
 
@@ -96,13 +96,9 @@ class PepperPluginRegistry
  private:
   PepperPluginRegistry();
 
-  // Dispatcher::Delegate implementation.
+  // ProxyChannel::Delegate implementation.
   virtual base::MessageLoopProxy* GetIPCMessageLoop();
   virtual base::WaitableEvent* GetShutdownEvent();
-  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
-  virtual ppapi::WebKitForwarding* GetWebKitForwarding();
-  virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
-                                  const base::Closure& task);
 
   // All known pepper plugins.
   std::vector<PepperPluginInfo> plugin_list_;

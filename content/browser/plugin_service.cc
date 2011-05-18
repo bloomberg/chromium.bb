@@ -21,6 +21,7 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/resource_context.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -239,7 +240,8 @@ PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
 }
 
 PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
-    const FilePath& plugin_path) {
+    const FilePath& plugin_path,
+    PpapiPluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   PpapiPluginProcessHost* plugin_host = FindPpapiPluginProcess(plugin_path);
@@ -252,7 +254,8 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
     return NULL;
 
   // This plugin isn't loaded by any plugin process, so create a new process.
-  scoped_ptr<PpapiPluginProcessHost> new_host(new PpapiPluginProcessHost);
+  scoped_ptr<PpapiPluginProcessHost> new_host(new PpapiPluginProcessHost(
+      client->GetResourceContext()->host_resolver()));
   if (!new_host->Init(*info)) {
     NOTREACHED();  // Init is not expected to fail.
     return NULL;
@@ -304,7 +307,8 @@ void PluginService::OpenChannelToNpapiPlugin(
 void PluginService::OpenChannelToPpapiPlugin(
     const FilePath& path,
     PpapiPluginProcessHost::Client* client) {
-  PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(path);
+  PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
+      path, client);
   if (plugin_host)
     plugin_host->OpenChannelToPlugin(client);
   else  // Send error.

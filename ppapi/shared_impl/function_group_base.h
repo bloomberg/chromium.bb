@@ -8,6 +8,7 @@
 namespace ppapi {
 
 namespace thunk {
+class PPB_Font_FunctionAPI;
 class ResourceCreationAPI;
 }
 
@@ -15,11 +16,16 @@ class FunctionGroupBase {
  public:
   // Dynamic casting for this object. Returns the pointer to the given type if
   // it's supported.
+  virtual thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI() { return NULL; }
   virtual thunk::ResourceCreationAPI* AsResourceCreation() { return NULL; }
 
   template <typename T> T* GetAs() { return NULL; }
 };
 
+template<>
+inline thunk::PPB_Font_FunctionAPI* FunctionGroupBase::GetAs() {
+  return AsFont_FunctionAPI();
+}
 template<>
 inline ppapi::thunk::ResourceCreationAPI* FunctionGroupBase::GetAs() {
   return AsResourceCreation();

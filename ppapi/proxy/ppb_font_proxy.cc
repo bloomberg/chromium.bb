@@ -9,7 +9,9 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -59,6 +61,28 @@ const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
     &CreateFontProxy,
   };
   return &info;
+}
+
+::ppapi::thunk::PPB_Font_FunctionAPI* PPB_Font_Proxy::AsFont_FunctionAPI() {
+  return this;
+}
+
+PP_Var PPB_Font_Proxy::GetFontFamilies(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
+  // Assume the font families don't change, so we can cache the result globally.
+  static std::string families;
+  if (families.empty()) {
+    dispatcher->SendToBrowser(
+        new PpapiHostMsg_PPBFont_GetFontFamilies(&families));
+  }
+
+  PP_Var result;
+  result.type = PP_VARTYPE_STRING;
+  result.value.as_id = PluginVarTracker::GetInstance()->MakeString(families);
+  return result;
 }
 
 bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {

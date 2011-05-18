@@ -48,27 +48,6 @@ class Dispatcher : public ProxyChannel {
   typedef const void* (*GetInterfaceFunc)(const char*);
   typedef int32_t (*InitModuleFunc)(PP_Module, GetInterfaceFunc);
 
-  class Delegate : public ProxyChannel::Delegate {
-   public:
-    // Returns the set used for globally uniquifying PP_Instances. This same
-    // set must be returned for all channels. This is required only for the
-    // plugin side, for the host side, the return value may be NULL.
-    //
-    // DEREFERENCE ONLY ON THE I/O THREAD.
-    virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() = 0;
-
-    // Returns the WebKit forwarding object used to make calls into WebKit.
-    // Necessary only on the plugin side. The host side can return NULL.
-    virtual ppapi::WebKitForwarding* GetWebKitForwarding() = 0;
-
-    // Posts the given task to the WebKit thread associated with this plugin
-    // process. For host processes, this will not be called and can do
-    // nothing. The WebKit thread should be lazily created if it does not
-    // exist yet.
-    virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
-                                    const base::Closure& task) = 0;
-  };
-
   virtual ~Dispatcher();
 
   // Returns true if the dispatcher is on the plugin side, or false if it's the
@@ -121,8 +100,6 @@ class Dispatcher : public ProxyChannel {
   Dispatcher(base::ProcessHandle remote_process_handle,
              GetInterfaceFunc local_get_interface);
 
-  void SetDelegate(Delegate* delegate);
-
   // Setter for the derived classes to set the appropriate var serialization.
   // Takes ownership of the given pointer, which must be on the heap.
   void SetSerializationRules(VarSerializationRules* var_serialization_rules);
@@ -130,8 +107,6 @@ class Dispatcher : public ProxyChannel {
   bool disallow_trusted_interfaces() const {
     return disallow_trusted_interfaces_;
   }
-
-  Delegate* dispatcher_delegate_;
 
  private:
   bool disallow_trusted_interfaces_;

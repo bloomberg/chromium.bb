@@ -10,9 +10,19 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/browser/renderer_host/pepper_message_filter.h"
 
 struct PepperPluginInfo;
+
+namespace content {
+class ResourceContext;
+}
+
+namespace net {
+class HostResolver;
+}
 
 class PpapiPluginProcessHost : public BrowserChildProcessHost {
  public:
@@ -28,10 +38,13 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
     //   IPC::ChannelHandle()
     virtual void OnChannelOpened(base::ProcessHandle plugin_process_handle,
                                  const IPC::ChannelHandle& channel_handle) = 0;
+
+    // Returns the resource context for the renderer requesting the channel.
+    virtual const content::ResourceContext* GetResourceContext() = 0;
   };
 
   // You must call Init before doing anything else.
-  PpapiPluginProcessHost();
+  PpapiPluginProcessHost(net::HostResolver* host_resolver);
   virtual ~PpapiPluginProcessHost();
 
   // Actually launches the process with the given plugin info. Returns true
@@ -47,7 +60,6 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   // The client pointer must remain valid until its callback is issued.
 
  private:
-
   void RequestPluginChannel(Client* client);
 
   virtual bool CanShutdown();
@@ -61,6 +73,9 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
 
   // IPC message handlers.
   void OnRendererPluginChannelCreated(const IPC::ChannelHandle& handle);
+
+  // Handles most requests from the plugin.
+  scoped_refptr<PepperMessageFilter> filter_;
 
   // Channel requests that we are waiting to send to the plugin process once
   // the channel is opened.

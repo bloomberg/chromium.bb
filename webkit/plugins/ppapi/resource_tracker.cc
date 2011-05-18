@@ -14,6 +14,7 @@
 #include "ppapi/shared_impl/tracker_base.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -254,8 +255,11 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
   if (function_proxies_[id].get())
     return function_proxies_[id].get();
 
+  // TODO(brettw) we need a better system for doing this.
   if (id == ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION)
     function_proxies_[id].reset(new ResourceCreationImpl());
+  else if (id == ::pp::proxy::INTERFACE_ID_PPB_FONT)
+    function_proxies_[id].reset(new PPB_Font_FunctionImpl);
 
   return function_proxies_[id].get();
 }

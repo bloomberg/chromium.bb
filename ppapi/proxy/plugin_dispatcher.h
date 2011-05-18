@@ -34,6 +34,29 @@ struct InstanceData {
 
 class PluginDispatcher : public Dispatcher {
  public:
+  class PluginDelegate : public ProxyChannel::Delegate {
+   public:
+    // Returns the set used for globally uniquifying PP_Instances. This same
+    // set must be returned for all channels.
+    //
+    // DEREFERENCE ONLY ON THE I/O THREAD.
+    virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() = 0;
+
+    // Returns the WebKit forwarding object used to make calls into WebKit.
+    // Necessary only on the plugin side.
+    virtual ppapi::WebKitForwarding* GetWebKitForwarding() = 0;
+
+    // Posts the given task to the WebKit thread associated with this plugin
+    // process. The WebKit thread should be lazily created if it does not
+    // exist yet.
+    virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
+                                    const base::Closure& task) = 0;
+
+    // Sends the given message to the browser. Identical semantics to
+    // IPC::Message::Sender interface.
+    virtual bool SendToBrowser(IPC::Message* msg) = 0;
+  };
+
   // Constructor for the plugin side. The init and shutdown functions will be
   // will be automatically called when requested by the renderer side. The
   // module ID will be set upon receipt of the InitializeModule message.
@@ -54,9 +77,9 @@ class PluginDispatcher : public Dispatcher {
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not
   // transferred.
-  virtual bool InitPluginWithChannel(Dispatcher::Delegate* delegate,
-                                     const IPC::ChannelHandle& channel_handle,
-                                     bool is_client);
+  bool InitPluginWithChannel(PluginDelegate* delegate,
+                             const IPC::ChannelHandle& channel_handle,
+                             bool is_client);
 
   // Dispatcher overrides.
   virtual bool IsPlugin() const;
@@ -79,6 +102,9 @@ class PluginDispatcher : public Dispatcher {
   void PostToWebKitThread(const tracked_objects::Location& from_here,
                           const base::Closure& task);
 
+  // Calls the PluginDelegate.SendToBrowser function.
+  bool SendToBrowser(IPC::Message* msg);
+
   // Returns the WebKitForwarding object used to forward events to WebKit.
   ppapi::WebKitForwarding* GetWebKitForwarding();
 
@@ -98,6 +124,8 @@ class PluginDispatcher : public Dispatcher {
 
   // IPC message handlers.
   void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
+
+  PluginDelegate* plugin_delegate_;
 
   // All target proxies currently created. These are ones that receive
   // messages.

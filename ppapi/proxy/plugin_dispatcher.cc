@@ -17,6 +17,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_serialization_rules.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 #include "ppapi/shared_impl/tracker_base.h"
@@ -38,7 +39,8 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
                                    GetInterfaceFunc get_interface)
-    : Dispatcher(remote_process_handle, get_interface) {
+    : Dispatcher(remote_process_handle, get_interface),
+      plugin_delegate_(NULL) {
   SetSerializationRules(new PluginVarSerializationRules);
 
   // As a plugin, we always support the PPP_Class interface. There's no
@@ -74,12 +76,12 @@ const void* PluginDispatcher::GetInterfaceFromDispatcher(
 }
 
 bool PluginDispatcher::InitPluginWithChannel(
-    PluginDispatcher::Delegate* delegate,
+    PluginDelegate* delegate,
     const IPC::ChannelHandle& channel_handle,
     bool is_client) {
   if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
     return false;
-  SetDelegate(delegate);
+  plugin_delegate_ = delegate;
 
   // The message filter will intercept and process certain messages directly
   // on the I/O thread.
@@ -205,11 +207,15 @@ InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
 void PluginDispatcher::PostToWebKitThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  return dispatcher_delegate_->PostToWebKitThread(from_here, task);
+  return plugin_delegate_->PostToWebKitThread(from_here, task);
+}
+
+bool PluginDispatcher::SendToBrowser(IPC::Message* msg) {
+  return plugin_delegate_->SendToBrowser(msg);
 }
 
 ppapi::WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
-  return dispatcher_delegate_->GetWebKitForwarding();
+  return plugin_delegate_->GetWebKitForwarding();
 }
 
 ::ppapi::FunctionGroupBase* PluginDispatcher::GetFunctionAPI(
@@ -219,6 +225,8 @@ ppapi::WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
 
   if (id == INTERFACE_ID_RESOURCE_CREATION)
     function_proxies_[id].reset(new ResourceCreationProxy(this));
+  if (id == INTERFACE_ID_PPB_FONT)
+    function_proxies_[id].reset(new PPB_Font_Proxy(this, NULL));
 
   return function_proxies_[id].get();
 }

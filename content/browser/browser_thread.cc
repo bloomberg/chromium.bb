@@ -139,6 +139,38 @@ bool BrowserThread::IsMessageLoopValid(ID identifier) {
 // static
 bool BrowserThread::PostTask(ID identifier,
                             const tracked_objects::Location& from_here,
+                            const base::Closure& task) {
+  return PostTaskHelper(identifier, from_here, task, 0, true);
+}
+
+// static
+bool BrowserThread::PostDelayedTask(ID identifier,
+                                   const tracked_objects::Location& from_here,
+                                   const base::Closure& task,
+                                   int64 delay_ms) {
+  return PostTaskHelper(identifier, from_here, task, delay_ms, true);
+}
+
+// static
+bool BrowserThread::PostNonNestableTask(
+    ID identifier,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  return PostTaskHelper(identifier, from_here, task, 0, false);
+}
+
+// static
+bool BrowserThread::PostNonNestableDelayedTask(
+    ID identifier,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    int64 delay_ms) {
+  return PostTaskHelper(identifier, from_here, task, delay_ms, false);
+}
+
+// static
+bool BrowserThread::PostTask(ID identifier,
+                            const tracked_objects::Location& from_here,
                             Task* task) {
   return PostTaskHelper(identifier, from_here, task, 0, true);
 }
@@ -233,6 +265,44 @@ bool BrowserThread::PostTaskHelper(
 
   if (!message_loop)
     delete task;
+
+  return !!message_loop;
+}
+
+// static
+bool BrowserThread::PostTaskHelper(
+    ID identifier,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    int64 delay_ms,
+    bool nestable) {
+  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  // Optimization: to avoid unnecessary locks, we listed the ID enumeration in
+  // order of lifetime.  So no need to lock if we know that the other thread
+  // outlives this one.
+  // Note: since the array is so small, ok to loop instead of creating a map,
+  // which would require a lock because std::map isn't thread safe, defeating
+  // the whole purpose of this optimization.
+  ID current_thread;
+  bool guaranteed_to_outlive_target_thread =
+      GetCurrentThreadIdentifier(&current_thread) &&
+      current_thread >= identifier;
+
+  if (!guaranteed_to_outlive_target_thread)
+    lock_.Acquire();
+
+  MessageLoop* message_loop = browser_threads_[identifier] ?
+      browser_threads_[identifier]->message_loop() : NULL;
+  if (message_loop) {
+    if (nestable) {
+      message_loop->PostDelayedTask(from_here, task, delay_ms);
+    } else {
+      message_loop->PostNonNestableDelayedTask(from_here, task, delay_ms);
+    }
+  }
+
+  if (!guaranteed_to_outlive_target_thread)
+    lock_.Release();
 
   return !!message_loop;
 }

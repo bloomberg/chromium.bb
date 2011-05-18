@@ -5,9 +5,12 @@
 #include "content/browser/renderer_host/pepper_message_filter.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/process_util.h"
 #include "base/threading/worker_pool.h"
+#include "base/values.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/font_list_async.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/resource_context.h"
 #include "content/common/pepper_messages.h"
@@ -17,6 +20,7 @@
 #include "net/base/host_resolver.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 
 #if defined(ENABLE_FLAPPER_HACKS)
@@ -36,8 +40,15 @@ const PP_Flash_NetAddress kInvalidNetAddress = { 0 };
 
 PepperMessageFilter::PepperMessageFilter(
     const content::ResourceContext* resource_context)
-    : resource_context_(resource_context) {
+    : resource_context_(resource_context),
+      host_resolver_(NULL) {
   DCHECK(resource_context_);
+}
+
+PepperMessageFilter::PepperMessageFilter(net::HostResolver* host_resolver)
+    : resource_context_(NULL),
+      host_resolver_(host_resolver) {
+  DCHECK(host_resolver);
 }
 
 PepperMessageFilter::~PepperMessageFilter() {}
@@ -52,6 +63,8 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 #endif  // ENABLE_FLAPPER_HACKS
     IPC_MESSAGE_HANDLER(PepperMsg_GetLocalTimeZoneOffset,
                         OnGetLocalTimeZoneOffset)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiHostMsg_PPBFont_GetFontFamilies,
+                                    OnGetFontFamilies)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -178,7 +191,7 @@ void PepperMessageFilter::OnConnectTcp(int routing_id,
 
   // The lookup request will delete itself on completion.
   LookupRequest* lookup_request =
-      new LookupRequest(this, resource_context_->host_resolver(),
+      new LookupRequest(this, GetHostResolver(),
                         routing_id, request_id, request_info);
   lookup_request->Start();
 }
@@ -294,4 +307,44 @@ void PepperMessageFilter::OnGetLocalTimeZoneOffset(base::Time t,
   t.UTCExplode(&exploded);
   base::Time cur = base::Time::FromUTCExploded(exploded);
   *result = (adj_time - cur).InSecondsF();
+}
+
+void PepperMessageFilter::OnGetFontFamilies(IPC::Message* reply_msg) {
+  content::GetFontListAsync(
+      base::Bind(&PepperMessageFilter::GetFontFamiliesComplete,
+                 this, reply_msg));
+}
+
+void PepperMessageFilter::GetFontFamiliesComplete(
+    IPC::Message* reply_msg,
+    scoped_refptr<content::FontListResult> result) {
+  ListValue* input = result->list.get();
+
+  std::string output;
+  for (size_t i = 0; i < input->GetSize(); i++) {
+    ListValue* cur_font;
+    if (!input->GetList(i, &cur_font))
+      continue;
+
+    // Each entry in the list is actually a list of (font name, localized name).
+    // We only care about the regular name.
+    std::string font_name;
+    if (!cur_font->GetString(0, &font_name))
+      continue;
+
+    // Font names are separated with nulls. We also want an explicit null at
+    // the end of the string (Pepper strings aren't null terminated so since
+    // we specify there will be a null, it should actually be in the string).
+    output.append(font_name);
+    output.push_back(0);
+  }
+
+  PpapiHostMsg_PPBFont_GetFontFamilies::WriteReplyParams(reply_msg, output);
+  Send(reply_msg);
+}
+
+net::HostResolver* PepperMessageFilter::GetHostResolver() {
+  if (resource_context_)
+    return resource_context_->host_resolver();
+  return host_resolver_;
 }
