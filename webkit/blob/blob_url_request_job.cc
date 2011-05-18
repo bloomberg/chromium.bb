@@ -467,9 +467,9 @@ void BlobURLRequestJob::HeadersCompleted(int status_code,
   response_info_->headers = headers;
 
   set_expected_content_size(remaining_bytes_);
-  NotifyHeadersComplete();
-
   headers_set_ = true;
+
+  NotifyHeadersComplete();
 }
 
 void BlobURLRequestJob::NotifySuccess() {
