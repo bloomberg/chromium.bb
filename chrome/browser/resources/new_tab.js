@@ -913,7 +913,7 @@ function updateAttributionDisplay(contentBottom) {
   var contentRect = main.getBoundingClientRect();
   var attributionRect = attribution.getBoundingClientRect();
 
-  // Hack. See comments for '.haslayout' in new_new_tab.css.
+  // Hack. See comments for '.haslayout' in new_tab.css.
   if (attributionRect.width == 0)
     return;
   else

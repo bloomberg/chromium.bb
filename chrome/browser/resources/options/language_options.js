@@ -701,7 +701,7 @@ cr.define('options', function() {
       return filteredPreloadEngines;
     },
 
-    // TODO(kochi): This is an adapted copy from new_new_tab.js.
+    // TODO(kochi): This is an adapted copy from new_tab.js.
     // If this will go as final UI, refactor this to share the component with
     // new new tab page.
     /**

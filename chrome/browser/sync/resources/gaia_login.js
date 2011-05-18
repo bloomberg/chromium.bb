@@ -10,7 +10,7 @@
 // account" link.
 var g_is_captcha_challenge_active = false;
 
-// Taken from new_new_tab.js.
+// Taken from new_tab.js.
 // TODO(tim): Can this be unified?
 function url(s) {
   // http://www.w3.org/TR/css3-values/#uris

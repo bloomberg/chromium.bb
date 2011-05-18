@@ -46,8 +46,8 @@
       <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list.json" type="BINDATA" />
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <if expr="not pp_ifdef('touchui')">
-        <include name="IDR_NEW_TAB_HTML" file="resources\new_new_tab.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_NEW_TAB_THEME_CSS" file="resources\new_new_tab_theme.css" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_NEW_TAB_HTML" file="resources\new_tab.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_NEW_TAB_THEME_CSS" file="resources\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('touchui')">
         <include name="IDR_NEW_TAB_HTML" file="resources\touch_ntp\newtab.html" flattenhtml="true" type="BINDATA" />
