@@ -4129,6 +4129,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_COMPOSITE_TO_TEXTURE_DESCRIPTION" desc="Description of the 'Offscreen Compositing' lab.">
         Enables compositing to offscreen texture instead of directly to display.
       </message>
+      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_NAME" desc="Name of the 'Force compositing mode' lab.">
+        GPU compositing on all pages
+      </message>
+      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION" desc="Description of the 'Force compositing mode' lab.">
+        Uses GPU accelerated compositing on all pages, not just those that include GPU-accelerated layers.
+      </message>
+      <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME" desc="Name of the 'Ignore GPU blacklist' lab.">
+        Override software rendering list
+      </message>
+      <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION" desc="Description of the 'Ignore GPU blacklist' lab.">
+        Overrides the built-in software rendering list and enables GPU-acceleration on unsupported system configurations.
+      </message>
       <message name="IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME" desc="Name of the 'GPU Accelerated Canvas 2D' lab.">
         GPU Accelerated Canvas 2D
       </message>

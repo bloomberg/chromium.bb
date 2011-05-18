@@ -130,6 +130,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCrxlessWebApps)
   },
   {
+    "ignore-gpu-blacklist",
+    IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,
+    IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)
+  },
+  {
+    "force-compositing-mode",
+    IDS_FLAGS_FORCE_COMPOSITING_MODE_NAME,
+    IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kForceCompositingMode)
+  },
+  {
     "composited-layer-borders",
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS,
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION,
