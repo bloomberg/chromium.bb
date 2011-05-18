@@ -428,7 +428,8 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
     EXPECT_CALL(win_observer_mock, OnWindowClose(_))
         .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 5000));
 
-    LaunchIEAndNavigate(GetTestUrl(L"save_as_context_menu.html"));
+    LaunchIENavigateAndLoop(GetTestUrl(L"save_as_context_menu.html"),
+                            kChromeFrameVeryLongNavigationTimeoutInSeconds);
     ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
   }
 
@@ -551,7 +552,8 @@ TEST_F(ContextMenuTest, CFInspector) {
                           kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
-TEST_F(ContextMenuTest, CFSavePageAs) {
+// http://code.google.com/p/chromium/issues/detail?id=83114
+TEST_F(ContextMenuTest, FLAKY_CFSavePageAs) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
@@ -562,7 +564,8 @@ TEST_F(ContextMenuTest, CFSavePageAs) {
   ASSERT_NO_FATAL_FAILURE(DoSaveAsTest(L"", L"Save as...", L".html"));
 }
 
-TEST_F(ContextMenuTest, CFSaveLinkAs) {
+// http://code.google.com/p/chromium/issues/detail?id=83114
+TEST_F(ContextMenuTest, FLAKY_CFSaveLinkAs) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
