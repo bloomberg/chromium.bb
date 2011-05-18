@@ -90,6 +90,7 @@ uplow \x009F\x00FF 145678,2568     y tréma
 
 uplow \x00B4\x00B8 135678,13568     z avec caron
 uplow \x008C\x009C 2467,2468     oe liés
+uplow \x0152\x0153 2467,2468     oe liés
 uplow \x00C1\x00E1 1235678,123568     a accent aigu
 uplow \x00CD\x00ED 347,3478     i accent aigu
 uplow \x00D3\x00F3 3467,346     o accent aigu

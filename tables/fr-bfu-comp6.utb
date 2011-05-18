@@ -86,6 +86,7 @@ uplow Ïï 12456		i tréma
 uplow Üü 1256			u tréma
 
 uplow \X008C\X009C 246    oe liés
+uplow \X0152\X0153 246    oe liés
 uplow \x00B4\x00B8 1356     z avec caron
 uplow \x00C1\x00E1 12356     a accent aigu
 uplow \x00CD\x00ED 34     i accent aigu

@@ -1,5 +1,16 @@
 liblouis NEWS -- history of user-visible changes.
 
+* Noteworthy changes in release 2.4.0 (???-??-??)
+
+** New features
+
+** Improved the documentation
+
+** Bug fixes
+
+** Braille Table Improvements
+   - Improvements to the French comp6 and comp8 braille tables
+
 * Noteworthy changes in release 2.3.0 (2011-05-09)
 
 This release contains support for many more languages than before
@@ -19,30 +30,30 @@ usual assortment of bug fixes.
     A new table for Swedish braille has been provided by Samuel
     Thibault.
 *** New table for Sorani (Kurdish)
-     A new table for Sorani (Kurdish) Braille has been donated by
-     Peter Engström from Index Braille
+    A new table for Sorani (Kurdish) Braille has been donated by Peter
+    Engström from Index Braille
 *** New table for Ethiopic
-     A new table for Ethiopic Braille has been donated by Peter
-     Engström from Index Braille
+    A new table for Ethiopic Braille has been donated by Tamru E.
+    Belay PH.D from Adaptive Technology Center for the Blind (ATCB)
 *** New table for Serbian
-     A new table for Serbian Braille has been donated by Peter
-     Engström from Index Braille
+    A new table for Serbian Braille has been donated by Peter Engström
+    from Index Braille
 
 ** Improved the documentation
    The deprecated opcodes have been moved to a separate section
 
 ** Bug fixes
-    - Fixed a long standing bug with an infinite loop in the table
-      compiler
+   - Fixed a long standing bug with an infinite loop in the table
+     compiler
 
 ** Braille Table Improvements
-    - Improvements to the Chinese braille table
-    - Improvements to the Flemish Braille Math Code tables
-    - Improvements to the Dutch	Braille tables
-    - Improvements to the Spanish Braille tables.
-    - Fixes for the uncontracted French 6 and 8 dot tables
-    - Improved support for Italian 8 dot
-    - Improvements to the Generic Arabic Grade 1 table
+   - Improvements to the Chinese braille table
+   - Improvements to the Flemish Braille Math Code tables
+   - Improvements to the Dutch	Braille tables
+   - Improvements to the Spanish Braille tables.
+   - Fixes for the uncontracted French 6 and 8 dot tables
+   - Improved support for Italian 8 dot
+   - Improvements to the Generic Arabic Grade 1 table
 
 * Noteworthy changes in release 2.2.0 (????-??-??)
 
