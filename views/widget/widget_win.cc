@@ -434,7 +434,7 @@ void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
   if (use_layered_buffer_) {
     // We must update the back-buffer immediately, since Windows' handling of
     // invalid rects is somewhat mysterious.
-    layered_window_invalid_rect_ = layered_window_invalid_rect_.Union(rect);
+    invalid_rect_ = invalid_rect_.Union(rect);
 
     // In some situations, such as drag and drop, when Windows itself runs a
     // nested message loop our message loop appears to be starved and we don't
@@ -1080,15 +1080,15 @@ void WidgetWin::RedrawInvalidRect() {
 }
 
 void WidgetWin::RedrawLayeredWindowContents() {
-  if (layered_window_invalid_rect_.IsEmpty())
+  if (invalid_rect_.IsEmpty())
     return;
 
   // We need to clip to the dirty rect ourselves.
   layered_window_contents_->save(SkCanvas::kClip_SaveFlag);
-  layered_window_contents_->ClipRectInt(layered_window_invalid_rect_.x(),
-                                        layered_window_invalid_rect_.y(),
-                                        layered_window_invalid_rect_.width(),
-                                        layered_window_invalid_rect_.height());
+  layered_window_contents_->ClipRectInt(invalid_rect_.x(),
+                                        invalid_rect_.y(),
+                                        invalid_rect_.width(),
+                                        invalid_rect_.height());
   GetWidget()->GetRootView()->Paint(layered_window_contents_.get());
   layered_window_contents_->restore();
 
@@ -1101,7 +1101,7 @@ void WidgetWin::RedrawLayeredWindowContents() {
   BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
   UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
                       RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-  layered_window_invalid_rect_.SetRect(0, 0, 0, 0);
+  invalid_rect_.SetRect(0, 0, 0, 0);
   layered_window_contents_->endPlatformPaint();
 }
 

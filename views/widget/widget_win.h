@@ -397,6 +397,8 @@ class WidgetWin : public ui::WindowImpl,
   // Are a subclass of WindowWin?
   bool is_window_;
 
+  const gfx::Rect& invalid_rect() const { return invalid_rect_; }
+
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
 
@@ -460,10 +462,14 @@ class WidgetWin : public ui::WindowImpl,
   // window.
   scoped_ptr<gfx::CanvasSkia> layered_window_contents_;
 
-  // We must track the invalid rect for a layered window ourselves, since
-  // Windows will not do this properly with InvalidateRect()/GetUpdateRect().
-  // (In fact, it'll return misleading information from GetUpdateRect()).
-  gfx::Rect layered_window_invalid_rect_;
+  // We must track the invalid rect ourselves, for two reasons:
+  // For layered windows, Windows will not do this properly with
+  // InvalidateRect()/GetUpdateRect(). (In fact, it'll return misleading
+  // information from GetUpdateRect()).
+  // We also need to keep track of the invalid rectangle for the RootView should
+  // we need to paint the non-client area. The data supplied to WM_NCPAINT seems
+  // to be insufficient.
+  gfx::Rect invalid_rect_;
 
   // A factory that allows us to schedule a redraw for layered windows.
   ScopedRunnableMethodFactory<WidgetWin> paint_layered_window_factory_;

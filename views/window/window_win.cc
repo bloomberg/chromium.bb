@@ -246,8 +246,7 @@ WindowWin::WindowWin(internal::NativeWindowDelegate* delegate)
       ignore_pos_changes_factory_(this),
       force_hidden_count_(0),
       is_right_mouse_pressed_on_caption_(false),
-      last_monitor_(NULL),
-      is_in_size_move_(false) {
+      last_monitor_(NULL) {
   is_window_ = true;
   // Initialize these values to 0 so that subclasses can override the default
   // behavior before calling Init.
@@ -404,23 +403,13 @@ LRESULT WindowWin::OnDwmCompositionChanged(UINT msg, WPARAM w_param,
 }
 
 void WindowWin::OnEnterSizeMove() {
-  is_in_size_move_ = true;
   WidgetWin::OnEnterSizeMove();
   delegate_->OnNativeWindowBeginUserBoundsChange();
 }
 
 void WindowWin::OnExitSizeMove() {
-  is_in_size_move_ = false;
   WidgetWin::OnExitSizeMove();
   delegate_->OnNativeWindowEndUserBoundsChange();
-
-  if (!GetWindow()->ShouldUseNativeFrame()) {
-    // Sending SWP_FRAMECHANGED forces a non-client repaint, which fixes the
-    // glitch in rendering the bottom pixel of the window caused by us
-    // offsetting the client rect there (See comment in GetClientAreaInsets()).
-    SetWindowPos(NULL, 0, 0, 0, 0,
-                 SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER);
-  }
 }
 
 void WindowWin::OnFinalMessage(HWND window) {
@@ -687,11 +676,116 @@ LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
   return WidgetWin::OnNCHitTest(point);
 }
 
+namespace {
+struct ClipState {
+  // The window being painted.
+  HWND parent;
+
+  // DC painting to.
+  HDC dc;
+
+  // Origin of the window in terms of the screen.
+  int x;
+  int y;
+};
+
+// See comments in OnNCPaint for details of this function.
+static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
+  ClipState* clip_state = reinterpret_cast<ClipState*>(param);
+  if (GetParent(window) == clip_state->parent && IsWindowVisible(window)) {
+    RECT bounds;
+    GetWindowRect(window, &bounds);
+    ExcludeClipRect(clip_state->dc,
+                    bounds.left - clip_state->x,
+                    bounds.top - clip_state->y,
+                    bounds.right - clip_state->x,
+                    bounds.bottom - clip_state->y);
+  }
+  return TRUE;
+}
+}  // namespace
+
 void WindowWin::OnNCPaint(HRGN rgn) {
+  // We only do non-client painting if we're not using the native frame.
+  // It's required to avoid some native painting artifacts from appearing when
+  // the window is resized.
+  if (GetWindow()->ShouldUseNativeFrame()) {
+    WidgetWin::OnNCPaint(rgn);
+    return;
+  }
+
+  // We have an NC region and need to paint it. We expand the NC region to
+  // include the dirty region of the root view. This is done to minimize
+  // paints.
+  CRect window_rect;
+  GetWindowRect(&window_rect);
+
+  if (window_rect.Width() != GetWidget()->GetRootView()->width() ||
+      window_rect.Height() != GetWidget()->GetRootView()->height()) {
+    // If the size of the window differs from the size of the root view it
+    // means we're being asked to paint before we've gotten a WM_SIZE. This can
+    // happen when the user is interactively resizing the window. To avoid
+    // mass flickering we don't do anything here. Once we get the WM_SIZE we'll
+    // reset the region of the window which triggers another WM_NCPAINT and
+    // all is well.
+    return;
+  }
+
+  CRect dirty_region;
+  // A value of 1 indicates paint all.
+  if (!rgn || rgn == reinterpret_cast<HRGN>(1)) {
+    dirty_region = CRect(0, 0, window_rect.Width(), window_rect.Height());
+  } else {
+    RECT rgn_bounding_box;
+    GetRgnBox(rgn, &rgn_bounding_box);
+    if (!IntersectRect(&dirty_region, &rgn_bounding_box, &window_rect))
+      return;  // Dirty region doesn't intersect window bounds, bale.
+
+    // rgn_bounding_box is in screen coordinates. Map it to window coordinates.
+    OffsetRect(&dirty_region, -window_rect.left, -window_rect.top);
+  }
+
+  // In theory GetDCEx should do what we want, but I couldn't get it to work.
+  // In particular the docs mentiond DCX_CLIPCHILDREN, but as far as I can tell
+  // it doesn't work at all. So, instead we get the DC for the window then
+  // manually clip out the children.
+  HDC dc = GetWindowDC(GetNativeView());
+  ClipState clip_state;
+  clip_state.x = window_rect.left;
+  clip_state.y = window_rect.top;
+  clip_state.parent = GetNativeView();
+  clip_state.dc = dc;
+  EnumChildWindows(GetNativeView(), &ClipDCToChild,
+                   reinterpret_cast<LPARAM>(&clip_state));
+
+  RootView* root_view = GetWidget()->GetRootView();
+  gfx::Rect old_paint_region = invalid_rect();
+
+  if (!old_paint_region.IsEmpty()) {
+    // The root view has a region that needs to be painted. Include it in the
+    // region we're going to paint.
+
+    CRect old_paint_region_crect = old_paint_region.ToRECT();
+    CRect tmp = dirty_region;
+    UnionRect(&dirty_region, &tmp, &old_paint_region_crect);
+  }
+
+  GetWidget()->GetRootView()->SchedulePaintInRect(gfx::Rect(dirty_region));
+
+  // gfx::CanvasSkiaPaint's destructor does the actual painting. As such, wrap
+  // the following in a block to force paint to occur so that we can release
+  // the dc.
+  {
+    gfx::CanvasSkiaPaint canvas(dc, true, dirty_region.left,
+                                dirty_region.top, dirty_region.Width(),
+                                dirty_region.Height());
+    delegate_->AsNativeWidgetDelegate()->OnNativeWidgetPaint(&canvas);
+  }
+
+  ReleaseDC(GetNativeView(), dc);
   // When using a custom frame, we want to avoid calling DefWindowProc() since
   // that may render artifacts.
-  SetMsgHandled((!IsActive() || is_in_size_move_) &&
-                !GetWindow()->ShouldUseNativeFrame());
+  SetMsgHandled(!GetWindow()->ShouldUseNativeFrame());
 }
 
 LRESULT WindowWin::OnNCUAHDrawCaption(UINT msg, WPARAM w_param,

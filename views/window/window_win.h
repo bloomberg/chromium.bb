@@ -268,9 +268,6 @@ class WindowWin : public WidgetWin,
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
 
-  // True when the window is being moved/sized.
-  bool is_in_size_move_;
-
   DISALLOW_COPY_AND_ASSIGN(WindowWin);
 };
 
