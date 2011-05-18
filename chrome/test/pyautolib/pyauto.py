@@ -196,6 +196,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # Pass extra chrome flags for testing
     for flag in self.ExtraChromeFlagsOnChromeOS():
       args.append('--extra-chrome-flags=%s' % flag)
+    assert self.WaitUntil(lambda: self._IsSessionManagerReady(0))
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)
     automation_channel_path = proc.communicate()[0].strip()
     assert len(automation_channel_path), 'Could not enable testing interface'
@@ -234,7 +235,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     ]
 
   @staticmethod
-  def IsSessionManagerReady(old_pid):
+  def _IsSessionManagerReady(old_pid):
     """Is the ChromeOS session_manager running and ready to accept DBus calls?
 
     Called after session_manager is killed to know when it has restarted.
@@ -2686,6 +2687,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'GetLoginInfo' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def _WaitForSessionManagerRestart(self, function):
+    """Call a function and wait for the ChromeOS session_manager to restart.
+
+    Args:
+      function: The function to call.
+    """
+    assert callable(function)
+    pgrep_process = subprocess.Popen(['pgrep', 'session_manager'],
+                                     stdout=subprocess.PIPE)
+    old_pid = pgrep_process.communicate()[0].strip()
+    function()
+    return self.WaitUntil(lambda: self._IsSessionManagerReady(old_pid))
+
+  def _WaitForInodeChange(self, path, function):
+    """Call a function and wait for the specified file path to change.
+
+    Args:
+      path: The file path to check for changes.
+      function: The function to call.
+    """
+    assert callable(function)
+    old_inode = os.stat(path).st_ino
+    function()
+    return self.WaitUntil(lambda: self._IsInodeNew(path, old_inode))
+
   def ShowCreateAccountUI(self):
     """Go to the account creation page.
 
@@ -2697,11 +2723,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'ShowCreateAccountUI' }
-    old_inode = os.stat(self._named_channel_id).st_ino
-    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
-    # See note below under LoginAsGuest(). ShowCreateAccountUI() essentially
-    # logs the user in as guest in order to access the account creation page.
-    self.WaitUntil(lambda: self._IsInodeNew(self._named_channel_id, old_inode))
+    # See note below under LoginAsGuest(). ShowCreateAccountUI() logs
+    # the user in as guest in order to access the account creation page.
+    assert self._WaitForInodeChange(
+        self._named_channel_id,
+        lambda: self._GetResultFromJSONRequest(cmd_dict, windex=-1)), \
+        'Chrome did not reopen the testing channel after login as guest.'
     self.SetUp()
 
   def LoginAsGuest(self):
@@ -2714,12 +2741,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'LoginAsGuest' }
-    old_inode = os.stat(self._named_channel_id).st_ino
-    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
     # Currently, logging in as guest causes session_manager to
     # restart Chrome, which will close the testing channel.
     # We need to call SetUp() again to reconnect to the new channel.
-    self.WaitUntil(lambda: self._IsInodeNew(self._named_channel_id, old_inode))
+    assert self._WaitForInodeChange(
+        self._named_channel_id,
+        lambda: self._GetResultFromJSONRequest(cmd_dict, windex=-1)), \
+        'Chrome did not reopen the testing channel after login as guest.'
     self.SetUp()
 
   def Login(self, username, password):
@@ -2752,11 +2780,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     assert self.GetLoginInfo()['is_logged_in'], \
         'Trying to log out when already logged out.'
-    pgrep_process = subprocess.Popen(['pgrep', 'session_manager'],
-                                     stdout=subprocess.PIPE)
-    old_pid = pgrep_process.communicate()[0].strip()
-    self.ApplyAccelerator(IDC_EXIT)
-    self.WaitUntil(lambda: self.IsSessionManagerReady(old_pid))
+    assert self._WaitForSessionManagerRestart(
+        lambda: self.ApplyAccelerator(IDC_EXIT)), \
+        'Session manager did not restart after logout.'
+
     self.setUp()
 
   def LockScreen(self):
@@ -2796,7 +2823,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'SignoutInScreenLocker' }
-    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    assert self._WaitForSessionManagerRestart(
+        lambda: self._GetResultFromJSONRequest(cmd_dict, windex=-1)), \
+        'Session manager did not restart after logout.'
+    self.setUp()
 
   def GetBatteryInfo(self):
     """Get details about battery state.
