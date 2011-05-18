@@ -163,7 +163,7 @@
    ...
    fun:std::string::*
    ...
-   fun:ClientSocketPoolHistograms
+   fun:net::ClientSocketPoolHistograms::ClientSocketPoolHistograms
 }
 {
    String name pushed into leaked CookieMonsterHistograms
@@ -1328,9 +1328,9 @@
    fun:std::string::reserve
    fun:std::operator+
    fun:ThreadWatcher::Initialize
-   fun:ThreadWatcher
-   fun:CustomThreadWatcher
-   fun:ThreadWatcherTest
+   fun:ThreadWatcher::ThreadWatcher
+   fun:CustomThreadWatcher::CustomThreadWatcher
+   fun:ThreadWatcherTest::ThreadWatcherTest
 }
 {
    bug_79322d
