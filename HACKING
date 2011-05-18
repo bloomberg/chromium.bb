@@ -87,6 +87,9 @@ are not needed for ordinary patch submission.
 Update the version number in NEWS (with version, date, and release
 type), ChangeLog and configure.ac.
 
+Don't forget to update the libtool versioning info in configure.ac,
+i.e. LIBLOUIS_REVISION and possibly LIBLOUIS_CURRENT and LIBLOUIS_AGE.
+
 ** Commit and tag
 Commit the changes and tag this version
 
