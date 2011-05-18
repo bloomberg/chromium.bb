@@ -41,6 +41,8 @@ void CloseBalloon(const std::string id) {
 }
 
 void ScheduleCloseBalloon(const std::string& extension_id) {
+  if (!MessageLoop::current())  // For unit_tests
+    return;
   MessageLoop::current()->PostTask(FROM_HERE,
       NewRunnableFunction(&CloseBalloon,
           kNotificationPrefix + extension_id));
@@ -65,8 +67,13 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
   void Click() {
     if (is_hosted_app_) {
-      BackgroundContentsServiceFactory::GetForProfile(profile_)->
-          LoadBackgroundContentsForExtension(profile_, extension_id_);
+      // There can be a race here: user clicks the balloon, and simultaneously
+      // reloads the sad tab for the app. So we check here to be safe before
+      // loading the background page.
+      BackgroundContentsService* service =
+          BackgroundContentsServiceFactory::GetForProfile(profile_);
+      if (!service->GetAppBackgroundContents(ASCIIToUTF16(extension_id_)))
+        service->LoadBackgroundContentsForExtension(profile_, extension_id_);
     } else {
       profile_->GetExtensionService()->ReloadExtension(extension_id_);
     }
@@ -229,7 +236,7 @@ void BackgroundContentsService::Observe(NotificationType type,
         if (extension && extension->background_url().is_valid())
           break;
       }
-      RegisterBackgroundContents(Details<BackgroundContents>(details).ptr());
+      RegisterBackgroundContents(bgcontents);
       break;
     }
     case NotificationType::EXTENSION_LOADED: {
@@ -387,9 +394,10 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
   DCHECK(extensions_service);
 
   DictionaryValue* dict;
-  contents->GetDictionaryWithoutPathExpansion(extension_id, &dict);
-  if (dict == NULL)
+  if (!contents->GetDictionaryWithoutPathExpansion(extension_id, &dict) ||
+      dict == NULL)
     return;
+
   string16 frame_name;
   std::string url;
   dict->GetString(kUrlKey, &url);
@@ -518,6 +526,8 @@ void BackgroundContentsService::BackgroundContentsOpened(
   DCHECK(!details->application_id.empty());
   contents_map_[details->application_id].contents = details->contents;
   contents_map_[details->application_id].frame_name = details->frame_name;
+
+  ScheduleCloseBalloon(UTF16ToASCII(details->application_id));
 }
 
 // Used by test code and debug checks to verify whether a given
