@@ -160,6 +160,7 @@ class QuotaManager : public QuotaTaskObserver,
 
   friend struct QuotaManagerDeleter;
   friend class QuotaManagerProxy;
+  friend class QuotaManagerTest;
 
   // This initialization method is lazily called on the IO thread
   // when the first quota manager API is called.
@@ -178,6 +179,8 @@ class QuotaManager : public QuotaTaskObserver,
 
   // Methods for eviction logic.
   void DeleteOriginFromDatabase(const GURL& origin, StorageType type);
+
+  void DidOriginDataEvicted(QuotaStatusCode status);
 
   virtual void GetLRUOrigin(
       StorageType type,
@@ -207,11 +210,17 @@ class QuotaManager : public QuotaTaskObserver,
 
   UsageAndQuotaDispatcherTaskMap usage_and_quota_dispatchers_;
 
+  scoped_ptr<EvictOriginDataCallback> evict_origin_data_callback_;
+  int num_eviction_requested_clients_;
+  int num_evicted_clients_;
+
   int64 temporary_global_quota_;
   QuotaCallbackQueue temporary_global_quota_callbacks_;
 
   // Map from origin to count.
   std::map<GURL, int> origins_in_use_;
+
+  base::ScopedCallbackFactory<QuotaManager> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
 };

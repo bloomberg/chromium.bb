@@ -132,13 +132,21 @@ class QuotaManagerTest : public testing::Test {
             &QuotaManagerTest::DidGetUsageAndQuotaAdditional));
   }
 
-  void DeleteOriginData(QuotaClient* client,
+  void DeleteClientOriginData(QuotaClient* client,
                         const GURL& origin,
                         StorageType type) {
     quota_status_ = kQuotaStatusUnknown;
     client->DeleteOriginData(origin, type,
         callback_factory_.NewCallback(
-            &QuotaManagerTest::DidDelete));
+            &QuotaManagerTest::DidDeleteClientOriginData));
+  }
+
+  void EvictOriginData(const GURL& origin,
+                       StorageType type) {
+    quota_status_ = kQuotaStatusUnknown;
+    quota_manager_->EvictOriginData(origin, type,
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::DidEvictOriginData));
   }
 
   void GetAvailableSpace() {
@@ -175,7 +183,11 @@ class QuotaManagerTest : public testing::Test {
     usage_ = usage;
   }
 
-  void DidDelete(QuotaStatusCode status) {
+  void DidDeleteClientOriginData(QuotaStatusCode status) {
+    quota_status_ = status;
+  }
+
+  void DidEvictOriginData(QuotaStatusCode status) {
     quota_status_ = status;
   }
 
@@ -711,7 +723,8 @@ TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
   MessageLoop::current()->RunAllPending();
   int64 predelete_host_pers = usage();
 
-  DeleteOriginData(client, GURL("http://foo.com/"), kStorageTypeTemporary);
+  DeleteClientOriginData(client, GURL("http://foo.com/"),
+                         kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
 
@@ -736,4 +749,52 @@ TEST_F(QuotaManagerTest, GetAvailableSpaceTest) {
   int64 direct_called = base::SysInfo::AmountOfFreeDiskSpace(profile_path());
   EXPECT_EQ(direct_called, quota());
 }
+
+TEST_F(QuotaManagerTest, EvictOriginData) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com/",   kStorageTypeTemporary,        1 },
+    { "http://foo.com:1/", kStorageTypeTemporary,       20 },
+    { "http://foo.com/",   kStorageTypePersistent,     300 },
+    { "http://bar.com/",   kStorageTypeTemporary,     4000 },
+  };
+  static const MockOriginData kData2[] = {
+    { "http://foo.com/",   kStorageTypeTemporary,    50000 },
+    { "http://foo.com:1/", kStorageTypeTemporary,     6000 },
+    { "http://foo.com/",   kStorageTypePersistent,     700 },
+    { "https://foo.com/",  kStorageTypeTemporary,       80 },
+    { "http://bar.com/",   kStorageTypeTemporary,        9 },
+  };
+  MockStorageClient* client1 = CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1));
+  MockStorageClient* client2 = CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2));
+  RegisterClient(client1);
+  RegisterClient(client2);
+
+  GetGlobalUsage(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_global_tmp = usage();
+
+  GetHostUsage("foo.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_tmp = usage();
+
+  GetHostUsage("foo.com", kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_pers = usage();
+
+  EvictOriginData(GURL("http://foo.com/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+
+  GetGlobalUsage(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_global_tmp - (1 + 50000), usage());
+
+  GetHostUsage("foo.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_tmp - (1 + 50000), usage());
+
+  GetHostUsage("foo.com", kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_pers, usage());
+}
+
 }  // namespace quota
