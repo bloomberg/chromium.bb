@@ -440,6 +440,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
             ]
 
   # Give the right args to archive_build.
+  if buildconfig.get('chromeos_official'): cmd.append('--official_build')
   if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
   if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')
   if not buildconfig.get('test_mod'): cmd.append('--notest_mod')
