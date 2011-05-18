@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -473,9 +473,6 @@ cr.define('bmm', function() {
         labelInput.value = title;
 
         if (!isFolder) {
-          // To use :invalid we need to put the input inside a form
-          // https://bugs.webkit.org/show_bug.cgi?id=34733
-          var form = doc.createElement('form');
           urlInput = doc.createElement('input');
           urlInput.type = 'url';
           urlInput.required = true;
@@ -484,8 +481,7 @@ cr.define('bmm', function() {
 
           // We also need a name for the input for the CSS to work.
           urlInput.name = '-url-input-' + cr.createUid();
-          form.appendChild(urlInput);
-          replaceAllChildren(urlEl, form);
+          replaceAllChildren(urlEl, urlInput);
           urlInput.value = url;
         }
 
