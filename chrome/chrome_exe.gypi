@@ -384,12 +384,14 @@
               # Keystone keys from this plist and not the framework's, and
               # the ticket will reference this Info.plist to determine the tag
               # of the installed product.  Use -s1 to include Subversion
-              # information.
+              # information.  The -p flag controls whether to insert PDF as a
+              # supported type identifier that can be opened.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
                          '-b0',
                          '-k<(mac_keystone)',
                          '-s1',
+                         '-p<(internal_pdf)',
                          '<(branding)',
                          '<(mac_bundle_id)'],
             },

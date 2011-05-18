@@ -169,6 +169,54 @@ def _DoSVNKeys(plist, add_keys):
     _RemoveKeys(plist, 'SVNPath')
 
 
+def _DoPDFKeys(plist, add_keys):
+  """Adds PDF support to the document types list. If add_keys is True, it will
+  add the type information dictionary. If it is False, it will remove it if
+  present."""
+
+  PDF_FILE_EXTENSION = 'pdf'
+
+  def __AddPDFKeys(sub_plist):
+    """Writes the keys into a sub-dictionary of the plist."""
+    sub_plist['CFBundleTypeExtensions'] = [PDF_FILE_EXTENSION]
+    sub_plist['CFBundleTypeIconFile'] = 'document.icns'
+    sub_plist['CFBundleTypeMIMETypes'] = 'application/pdf'
+    sub_plist['CFBundleTypeName'] = 'PDF Document'
+    sub_plist['CFBundleTypeRole'] = 'Viewer'
+
+  DOCUMENT_TYPES_KEY = 'CFBundleDocumentTypes'
+
+  # First get the list of document types, creating it if necessary.
+  try:
+    extensions = plist[DOCUMENT_TYPES_KEY]
+  except KeyError:
+    # If this plist doesn't have a type dictionary, create one if set to add the
+    # keys. If not, bail.
+    if not add_keys:
+      return
+    extensions = plist[DOCUMENT_TYPES_KEY] = []
+
+  # Loop over each entry in the list, looking for one that handles PDF types.
+  for i, ext in enumerate(extensions):
+    # If an entry for .pdf files is found...
+    if 'CFBundleTypeExtensions' not in ext:
+      continue
+    if PDF_FILE_EXTENSION in ext['CFBundleTypeExtensions']:
+      if add_keys:
+        # Overwrite the existing keys with new ones.
+        __AddPDFKeys(ext)
+      else:
+        # Otherwise, delete the entry entirely.
+        del extensions[i]
+      return
+
+  # No PDF entry exists. If one needs to be added, do so now.
+  if add_keys:
+    pdf_entry = {}
+    __AddPDFKeys(pdf_entry)
+    extensions.append(pdf_entry)
+
+
 def _AddBreakpadKeys(plist, branding):
   """Adds the Breakpad keys. This must be called AFTER _AddVersionKeys() and
   also requires the |branding| argument."""
@@ -218,6 +266,8 @@ def Main(argv):
       default=False, help='Enable Keystone [1 or 0]')
   parser.add_option('-s', dest='add_svn_info', action='store', type='int',
       default=True, help='Add SVN metadata [1 or 0]')
+  parser.add_option('-p', dest='add_pdf_support', action='store', type='int',
+      default=False, help='Add PDF file handler support [1 or 0]')
   (options, args) = parser.parse_args(argv)
 
   if len(args) < 2:
@@ -250,6 +300,9 @@ def Main(argv):
 
   # Adds or removes any SVN keys.
   _DoSVNKeys(plist, options.add_svn_info)
+
+  # Adds or removes the PDF file handler entry.
+  _DoPDFKeys(plist, options.add_pdf_support)
 
   # Now that all keys have been mutated, rewrite the file.
   temp_info_plist = tempfile.NamedTemporaryFile()
