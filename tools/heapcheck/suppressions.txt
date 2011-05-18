@@ -1484,7 +1484,6 @@
    bug_80663
    Heapcheck:Leak
    ...
-   fun:TestURLRequestContextGetter::GetURLRequestContext
    fun:URLFetcher::Core::StartURLRequest
    fun:URLFetcher::Core::StartURLRequestWhenAppropriate
    fun:void DispatchToMethod
