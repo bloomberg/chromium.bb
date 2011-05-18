@@ -79,7 +79,45 @@ def CleanStalePackages(board, package_atoms):
   RunCommand(['sudo', 'eclean', '-d', 'packages'], redirect_stderr=True)
 
 
-def _FindUprevCandidates(files):
+class _BlackListManager(object):
+  """Small wrapper class to manage black lists for marking all packages."""
+  BLACK_LIST_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                 'cros_mark_as_stable_blacklist')
+
+  def __init__(self):
+    """Initializes the black list manager."""
+    self.black_list_re_array = None
+    self._Initialize()
+
+  def _Initialize(self):
+    """Initializes the black list manager from a black list file."""
+    self.black_list_re_array = []
+    with open(self.BLACK_LIST_FILE) as file_handle:
+      for line in file_handle.readlines():
+        line = line.strip()
+        # Ignore comment lines.
+        if line and not line.startswith('#'):
+          line = line.rstrip()
+          package_array = line.split('/')
+          assert len(package_array) == 2, \
+              'Line %s does not match package format.' % line
+          category, package_name = package_array
+          self.black_list_re_array.append(
+              re.compile('.*/%s/%s/%s-.*\.ebuild' % (category, package_name,
+                                                     package_name)))
+
+  def IsPackageBlackListed(self, path_to_ebuild):
+    """Returns True if the package given by the path is blacklisted."""
+    assert self.black_list_re_array != None, 'Black list not initialized.'
+
+    for re in self.black_list_re_array:
+      if re.match(path_to_ebuild):
+        return True
+
+    return False
+
+
+def _FindUprevCandidates(files, blacklist):
   """Return a list of uprev candidates from specified list of files.
 
   Usually an uprev candidate is a the stable ebuild in a cros_workon directory.
@@ -95,7 +133,7 @@ def _FindUprevCandidates(files):
   for path in files:
     if path.endswith('.ebuild') and not os.path.islink(path):
       ebuild = EBuild(path)
-      if ebuild.is_workon:
+      if ebuild.is_workon and not blacklist.IsPackageBlackListed(path):
         workon_dir = True
         if ebuild.is_stable:
           stable_ebuilds.append(ebuild)
@@ -112,11 +150,7 @@ def _FindUprevCandidates(files):
       # Print a warning if multiple stable ebuilds are found in the same
       # directory. Storing multiple stable ebuilds is error-prone because
       # the older ebuilds will not get rev'd.
-      #
-      # We make a special exception for x11-drivers/xf86-video-msm for legacy
-      # reasons.
-      if stable_ebuilds[0].package != 'x11-drivers/xf86-video-msm':
-        Warning('Found multiple stable ebuilds in %s' % os.path.dirname(path))
+      Warning('Found multiple stable ebuilds in %s' % os.path.dirname(path))
 
     if not unstable_ebuilds:
       Die('Missing 9999 ebuild in %s' % os.path.dirname(path))
@@ -130,7 +164,7 @@ def _FindUprevCandidates(files):
     return None
 
 
-def _BuildEBuildDictionary(overlays, all, packages):
+def _BuildEBuildDictionary(overlays, all, packages, blacklist):
   """Build a dictionary of the ebuilds in the specified overlays.
 
   overlays: A map which maps overlay directories to arrays of stable EBuilds
@@ -141,10 +175,10 @@ def _BuildEBuildDictionary(overlays, all, packages):
   packages: A set of the packages we want to gather.
   """
   for overlay in overlays:
-    for package_dir, dirs, files in os.walk(overlay):
+    for package_dir, unused_dirs, files in os.walk(overlay):
       # Add stable ebuilds to overlays[overlay].
       paths = [os.path.join(package_dir, path) for path in files]
-      ebuild = _FindUprevCandidates(paths)
+      ebuild = _FindUprevCandidates(paths, blacklist)
 
       # If the --all option isn't used, we only want to update packages that
       # are in packages.
@@ -553,7 +587,8 @@ def main(argv):
     }
 
   if command == 'commit':
-    _BuildEBuildDictionary(overlays, options.all, package_list)
+    blacklist = _BlackListManager()
+    _BuildEBuildDictionary(overlays, options.all, package_list, blacklist)
 
   for overlay, ebuilds in overlays.items():
     if not os.path.isdir(overlay):

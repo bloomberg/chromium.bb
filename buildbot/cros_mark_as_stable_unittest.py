@@ -10,7 +10,9 @@ import filecmp
 import fileinput
 import mox
 import os
+import re
 import sys
+import tempfile
 import unittest
 
 import constants
@@ -291,9 +293,10 @@ class BuildEBuildDictionaryTest(mox.MoxTestBase):
   def testWantedPackage(self):
     overlays = {"/overlay": []}
     package = _Package(self.package)
-    cros_mark_as_stable._FindUprevCandidates([]).AndReturn(package)
+    cros_mark_as_stable._FindUprevCandidates([], None).AndReturn(package)
     self.mox.ReplayAll()
-    cros_mark_as_stable._BuildEBuildDictionary(overlays, False, [self.package])
+    cros_mark_as_stable._BuildEBuildDictionary(overlays, False, [self.package],
+                                               None)
     self.mox.VerifyAll()
     self.assertEquals(len(overlays), 1)
     self.assertEquals(overlays["/overlay"], [package])
@@ -301,11 +304,56 @@ class BuildEBuildDictionaryTest(mox.MoxTestBase):
   def testUnwantedPackage(self):
     overlays = {"/overlay": []}
     package = _Package(self.package)
-    cros_mark_as_stable._FindUprevCandidates([]).AndReturn(package)
+    cros_mark_as_stable._FindUprevCandidates([], None).AndReturn(package)
     self.mox.ReplayAll()
-    cros_mark_as_stable._BuildEBuildDictionary(overlays, False, [])
+    cros_mark_as_stable._BuildEBuildDictionary(overlays, False, [], None)
     self.assertEquals(len(overlays), 1)
     self.assertEquals(overlays["/overlay"], [])
+    self.mox.VerifyAll()
+
+
+class BlacklistManagerTest(mox.MoxTestBase):
+  """Class that tests the blacklist manager."""
+  FAKE_BLACKLIST = """
+    # A Fake blacklist file.
+
+    chromeos-base/fake-package
+  """
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  def testInitializeFromFile(self):
+    """Tests whether we can correctly initialize from a fake blacklist file."""
+    file_path = tempfile.mktemp()
+    with open(file_path, 'w+') as fh:
+      fh.write(self.FAKE_BLACKLIST)
+    try:
+      cros_mark_as_stable._BlackListManager.BLACK_LIST_FILE = file_path
+      black_list_manager = cros_mark_as_stable._BlackListManager()
+      self.assertTrue(black_list_manager.IsPackageBlackListed(
+          '/some/crazy/path/'
+          'chromeos-base/fake-package/fake-package-0.0.5.ebuild'))
+      self.assertEqual(len(black_list_manager.black_list_re_array), 1)
+    finally:
+      os.remove(file_path)
+
+  def testIsPackageBlackListed(self):
+    """Tests if we can correctly check if a package is blacklisted."""
+    self.mox.StubOutWithMock(cros_mark_as_stable._BlackListManager,
+                             '_Initialize')
+    cros_mark_as_stable._BlackListManager._Initialize()
+
+    self.mox.ReplayAll()
+    black_list_manager = cros_mark_as_stable._BlackListManager()
+    black_list_manager.black_list_re_array = [
+        re.compile('.*/fake/pkg/pkg-.*\.ebuild') ]
+    self.assertTrue(black_list_manager.IsPackageBlackListed(
+        '/some/crazy/path/'
+        'fake/pkg/pkg-version.ebuild'))
+    self.assertFalse(black_list_manager.IsPackageBlackListed(
+        '/some/crazy/path/'
+        'fake/diff-pkg/diff-pkg-version.ebuild'))
     self.mox.VerifyAll()
 
 

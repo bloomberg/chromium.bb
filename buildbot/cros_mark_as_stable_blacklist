@@ -1,0 +1,10 @@
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file lists packages that should not to be revved by running
+# cros_mark_as_stable --all.  These packages should be stored in alphabetical
+# order.
+
+chromeos-base/libchrome
+chromeos-base/libchrome_crypto
