@@ -85,9 +85,6 @@ include_rules = [
   "+chrome/browser/ssl/ssl_client_auth_handler.h",
   "+chrome/browser/ssl/ssl_manager.h",
 
-  # http://crbug.com/76792
-  "+chrome/browser/tab_contents/infobar_delegate.h",
-
   "+chrome/browser/tab_contents/render_view_host_delegate_helper.h",
 
   "+chrome/browser/utility_process_host.h",
