@@ -6,22 +6,7 @@
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
     <script type="text/javascript" src="nacltest.js"></script>
-    <script type="application/x-javascript">
-//<![CDATA[
-function setupTests(tester, plugin) {
-  <!-- TODO(tester): replace with your tests -->
-  tester.addTest('Example::Foo', function() {
-    assert(plugin.testFoo());
-  });
-  tester.addTest('Example::PostMessage', function() {
-    // TODO(polina): use postMessage instead when proxy support is available.
-    //plugin.postMessage("dummy");
-    assert(plugin.testHandleMessage());
-    tester.waitForCallback('MessageHandled', 1);
-  });
-}
-      //]]>
-    </script>
+    <script type="text/javascript" src="ppapi_test_example.js"></script>
     <title>PPAPI Test Example</title> <!-- TODO(tester): change title -->
   </head>
   <body>

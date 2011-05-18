@@ -11,6 +11,7 @@
 #
 # ppapi_test_example.cc - sample implementation test_interface.h.
 # ppapi_test_example.html - sample test driver that uses scripting.
+# ppapi_test_example.js   - setup for sample test driver.
 # ppapi_test_example.nmf - sample manifest for platform-specific nexes.
 
 Import('env')
@@ -30,19 +31,14 @@ ppapi_test_example_nexe = env.ComponentProgram(
                  'gio',
                  ])
 
-dest_copy = env.Replicate('$STAGING_DIR',
-                          [ 'ppapi_test_example.html',
-                            'ppapi_test_example.nmf',
-                            env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
-                                     'browserdata/nacltest.js') ]
-                          )
-env.Depends(nexe, dest_copy)
+env.Publish(nexe, 'run',
+            ['ppapi_test_example.html',
+             'ppapi_test_example.nmf',
+             'ppapi_test_example.js'])
 
 node = env.PPAPIBrowserTester('ppapi_test_example_browser_test.out',
                               url='ppapi_test_example.html',
-                              files=[ ppapi_test_example_nexe,
-                                      env.File('ppapi_test_example.nmf'),
-                                      env.File('ppapi_test_example.html')],
+                              files=env.ExtractPublishedFiles(nexe),
                               args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
