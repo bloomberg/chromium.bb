@@ -1477,7 +1477,7 @@
    Heapcheck:Leak
    ...
    fun:TestURLRequestContextGetter::GetURLRequestContext
-   fun:SingleLoginAttempt
+   fun:notifier::SingleLoginAttempt::SingleLoginAttempt
    fun:notifier::Login::StartConnection
    fun:sync_notifier::InvalidationNotifier::UpdateCredentials
    fun:sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
