@@ -243,5 +243,10 @@ std::string MockPluginDelegate::GetFlashCommandLineArgs() {
   return std::string();
 }
 
+base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
+    uint32_t size) {
+  return NULL;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

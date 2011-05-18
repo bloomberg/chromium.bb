@@ -104,6 +104,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual webkit_glue::P2PTransport* CreateP2PTransport();
   virtual double GetLocalTimeZoneOffset(base::Time t);
   virtual std::string GetFlashCommandLineArgs();
+  virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
 };
 
 }  // namespace ppapi

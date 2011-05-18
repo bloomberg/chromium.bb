@@ -71,8 +71,7 @@ const PPB_Buffer_Dev ppb_buffer = {
 }  // namespace
 
 PPB_Buffer_Impl::PPB_Buffer_Impl(PluginInstance* instance)
-    : Resource(instance),
-      size_(0) {
+    : Resource(instance), size_(0) {
 }
 
 PPB_Buffer_Impl::~PPB_Buffer_Impl() {
@@ -88,11 +87,11 @@ PPB_Buffer_Impl* PPB_Buffer_Impl::AsPPB_Buffer_Impl() {
 }
 
 bool PPB_Buffer_Impl::Init(uint32_t size) {
-  if (size == 0)
+  if (size == 0 || !instance())
     return false;
-  Unmap();
-  size_ = size;
-  return true;
+  shared_memory_.reset(
+      instance()->delegate()->CreateAnonymousSharedMemory(size));
+  return shared_memory_.get() != NULL;
 }
 
 void PPB_Buffer_Impl::Describe(uint32_t* size_in_bytes) const {
@@ -100,20 +99,14 @@ void PPB_Buffer_Impl::Describe(uint32_t* size_in_bytes) const {
 }
 
 void* PPB_Buffer_Impl::Map() {
-  if (size_ == 0)
+  if (!shared_memory_.get() || !shared_memory_->Map(size_))
     return NULL;
-
-  if (!is_mapped()) {
-    mem_buffer_.reset(new unsigned char[size_]);
-    memset(mem_buffer_.get(), 0, size_);
-  }
-  return mem_buffer_.get();
+  return shared_memory_->memory();
 }
 
 void PPB_Buffer_Impl::Unmap() {
-  mem_buffer_.reset();
+  shared_memory_->Unmap();
 }
 
 }  // namespace ppapi
 }  // namespace webkit
-
