@@ -336,9 +336,16 @@ be available for now. -->
           Please sign out of Chromium OS and sign in again for this change to take effect.
         </message>
       </if>
-      <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
-        Let Chromium Run In The Background
-      </message>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="In Title Case: The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
+          Let Chromium Run In The Background
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
+          Let Chromium run in the background
+        </message>
+      </if>
       <message name="IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE" desc="The label of the check-box that enables background mode">
         Continue running background apps when Chromium is closed
       </message>
