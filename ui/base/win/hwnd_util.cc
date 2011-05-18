@@ -82,6 +82,11 @@ void* SetWindowUserData(HWND hwnd, void* user_data) {
 }
 
 void* GetWindowUserData(HWND hwnd) {
+  DWORD process_id = 0;
+  DWORD thread_id = GetWindowThreadProcessId(hwnd, &process_id);
+  // A window outside the current process needs to be ignored.
+  if (process_id != ::GetCurrentProcessId())
+    return NULL;
   return reinterpret_cast<void*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 }
 
