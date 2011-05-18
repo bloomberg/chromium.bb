@@ -23,6 +23,40 @@
 namespace ppapi_proxy {
 
 namespace {
+bool StringIsUtf8(const char* data, uint32_t len) {
+  for (uint32_t i = 0; i < len; i++) {
+    if ((data[i] & 0x80) == 0) {
+      // Single-byte symbol.
+      continue;
+    } else if ((data[i] & 0xc0) == 0x80) {
+      // Invalid first byte.
+      DebugPrintf("Invalid first byte %02x\n", data[i]);
+      return false;
+    }
+    // This is a multi-byte symbol.
+    DebugPrintf("Multi-byte %02x\n", data[i]);
+    // Discard the uppermost bit.  The remaining high-order bits are the
+    // unary count of continuation bytes (up to 5 of them).
+    char first = data[i] << 1;
+    uint32_t continuation_bytes = 0;
+    const uint32_t kMaxContinuationBytes = 5;
+    while (first & 0x80) {
+      if (++i >= len) {
+        DebugPrintf("String ended before enough continuation bytes"
+                    "were found.\n");
+        return false;
+      } else if (++continuation_bytes > kMaxContinuationBytes) {
+        DebugPrintf("Too many continuation bytes were requested.\n");
+        return false;
+      } else if ((data[i] & 0xc0) != 0x80) {
+        DebugPrintf("Invalid continuation byte.\n");
+        return false;
+      }
+      first <<= 1;
+    }
+  }
+  return true;
+}
 
 // The PP_Var interface contains two subtypes that require more complicated
 // handling: objects and strings.  Both of these subtypes are implemented
@@ -160,7 +194,13 @@ void Release(PP_Var var) {
 
 PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
   UNREFERENCED_PARAMETER(module_id);
-  std::string* str= new std::string(data, len);
+  if (!StringIsUtf8(data, len)) {
+    DebugPrintf("PPB_Var::VarFromUtf8: string '%.*s' is not UTF8\n",
+                len, data);
+    return PP_MakeNull();
+  }
+  // TODO(sehr,polina): string vars should have a unique StrImpl.
+  std::string* str = new std::string(data, len);
   // StrImpl takes ownership of string.
   StrImpl* impl = StrImpl::New(*str);
   PP_Var result;
@@ -187,6 +227,10 @@ bool HasProperty(PP_Var object,
                  PP_Var* exception) {
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception =
+          PluginVar::StringToPPVar(0, "HasProperty called on non-object");
+    }
     return false;
   }
   DebugPrintf("PPB_Var::HasProperty: id=%"NACL_PRIu64"\n", impl->id());
@@ -205,6 +249,10 @@ bool HasMethod(PP_Var object,
   DebugPrintf("PPB_Var::HasMethod: \n");
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception =
+          PluginVar::StringToPPVar(0, "HasMethod called on non-object");
+    }
     return false;
   }
   DebugPrintf("PPB_Var::HasMethod: id=%"NACL_PRIu64"\n", impl->id());
@@ -220,6 +268,10 @@ PP_Var GetProperty(PP_Var object,
                    PP_Var* exception) {
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception =
+          PluginVar::StringToPPVar(0, "GetProperty called on non-object");
+    }
     return PP_MakeUndefined();
   }
   DebugPrintf("PPB_Var::GetProperty: id=%"NACL_PRIu64"\n", impl->id());
@@ -236,6 +288,13 @@ void GetAllPropertyNames(PP_Var object,
                          PP_Var* exception) {
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception =
+          PluginVar::StringToPPVar(0,
+              "GetAllPropertyNames called on non-object");
+    }
+    *property_count = 0;
+    *properties = NULL;
     return;
   }
   DebugPrintf("PPB_Var::GetAllPropertyNames: id=%"NACL_PRIu64"\n",
@@ -256,6 +315,10 @@ void SetProperty(PP_Var object,
                  PP_Var* exception) {
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception =
+          PluginVar::StringToPPVar(0, "SetProperty called on non-object");
+    }
     return;
   }
   DebugPrintf("PPB_Var::SetProperty: id=%"NACL_PRIu64"\n", impl->id());
@@ -271,6 +334,10 @@ void RemoveProperty(PP_Var object,
                     PP_Var* exception) {
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception =
+          PluginVar::StringToPPVar(0, "RemoveProperty called on non-object");
+    }
     return;
   }
   DebugPrintf("PPB_Var::RemoveProperty: id=%"NACL_PRIu64"\n",
@@ -289,6 +356,9 @@ PP_Var Call(PP_Var object,
             PP_Var* exception) {
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception = PluginVar::StringToPPVar(0, "Call called on non-object");
+    }
     return PP_MakeUndefined();
   }
   DebugPrintf("PPB_Var::Call: id=%"NACL_PRIu64"\n", impl->id());
@@ -309,6 +379,10 @@ PP_Var Construct(PP_Var object,
                  PP_Var* exception) {
   ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
+    if (exception != NULL) {
+      *exception =
+          PluginVar::StringToPPVar(0, "Construct called on non-object");
+    }
     return PP_MakeUndefined();
   }
   DebugPrintf("PPB_Var::Construct: %"NACL_PRIu64"\n", impl->id());
