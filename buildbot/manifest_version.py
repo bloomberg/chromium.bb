@@ -86,7 +86,7 @@ def _PrepForChanges(git_repo, use_repo=False):
     if use_repo:
       cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH, '.'],
                           cwd=git_repo, error_ok=True)
-      cros_lib.RunCommand(['repo', 'start', branch, '.'], cwd=git_repo)
+      cros_lib.RunCommand(['repo', 'start', _PUSH_BRANCH, '.'], cwd=git_repo)
       cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
       cros_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
                           cwd=git_repo)
