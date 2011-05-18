@@ -210,7 +210,8 @@ void TouchFactory::UpdateDeviceList(Display* display) {
       pointer_device_lookup_[devinfo->deviceid] = true;
     }
   }
-  XIFreeDeviceInfo(devices);
+  if (devices)
+    XIFreeDeviceInfo(devices);
 
   SetupValuator();
 }
