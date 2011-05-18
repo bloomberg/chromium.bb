@@ -123,7 +123,7 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
  */
 int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   NaClSrpcLog(1,
-              "NaClSrpcServerCtor(channel=%p, handle=%p)\n",
+              "NaClSrpcClientCtor(channel=%p, handle=%p)\n",
               (void*) channel,
               (void*) handle);
   channel->message_channel = NaClSrpcMessageChannelNew(handle);
