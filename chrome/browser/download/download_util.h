@@ -64,7 +64,11 @@ void GenerateExtension(const FilePath& file_name,
 void GenerateFileNameFromInfo(DownloadCreateInfo* info,
                               FilePath* generated_name);
 
-// Create a file name based on the response from the server.
+void GenerateFileNameFromSuggestedName(const GURL& url,
+                                       const std::string& suggested_name,
+                                       const std::string& mime_type,
+                                       FilePath* generated_name);
+
 void GenerateFileName(const GURL& url,
                       const std::string& content_disposition,
                       const std::string& referrer_charset,

@@ -196,14 +196,12 @@ void TabContentsDragWin::PrepareDragForDownload(
     return;
 
   // Generate the download filename.
-  std::string content_disposition =
-      "attachment; filename=" + UTF16ToUTF8(file_name.value());
   FilePath generated_file_name;
-  download_util::GenerateFileName(download_url,
-                                  content_disposition,
-                                  std::string(),
-                                  UTF16ToUTF8(mime_type),
-                                  &generated_file_name);
+  download_util::GenerateFileNameFromSuggestedName(
+      download_url,
+      UTF16ToUTF8(file_name.value()),
+      UTF16ToUTF8(mime_type),
+      &generated_file_name);
 
   // Provide the data as file (CF_HDROP). A temporary download file with the
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.
@@ -232,7 +230,7 @@ void TabContentsDragWin::PrepareDragForFileContents(
   if (file_name.value().empty()) {
     // Retrieve the name from the URL.
     file_name = FilePath(
-        net::GetSuggestedFilename(drop_data.url, "", "", string16()));
+        net::GetSuggestedFilename(drop_data.url, "", "", "", string16()));
     if (file_name.value().size() + drop_data.file_extension.size() + 1 >
         MAX_PATH) {
       file_name = FilePath(file_name.value().substr(

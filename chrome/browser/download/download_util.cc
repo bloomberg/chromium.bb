@@ -167,6 +167,38 @@ bool IsReservedName(const string16& filename) {
 }
 #endif  // OS_WIN
 
+void GenerateFileNameInternal(const GURL& url,
+                              const std::string& content_disposition,
+                              const std::string& referrer_charset,
+                              const std::string& suggested_name,
+                              const std::string& mime_type,
+                              FilePath* generated_name) {
+
+  string16 default_file_name(
+      l10n_util::GetStringUTF16(IDS_DEFAULT_DOWNLOAD_FILENAME));
+
+  string16 new_name = net::GetSuggestedFilename(GURL(url),
+                                                content_disposition,
+                                                referrer_charset,
+                                                suggested_name,
+                                                default_file_name);
+
+  // TODO(evan): this code is totally wrong -- we should just generate
+  // Unicode filenames and do all this encoding switching at the end.
+  // However, I'm just shuffling wrong code around, at least not adding
+  // to it.
+#if defined(OS_WIN)
+  *generated_name = FilePath(new_name);
+#else
+  *generated_name = FilePath(
+      base::SysWideToNativeMB(UTF16ToWide(new_name)));
+#endif
+
+  DCHECK(!generated_name->empty());
+
+  GenerateSafeFileName(mime_type, generated_name);
+}
+
 }  // namespace
 
 // Download temporary file creation --------------------------------------------
@@ -251,11 +283,17 @@ void GenerateExtension(const FilePath& file_name,
 
 void GenerateFileNameFromInfo(DownloadCreateInfo* info,
                               FilePath* generated_name) {
-  GenerateFileName(GURL(info->url()),
-                   info->content_disposition,
-                   info->referrer_charset,
-                   info->mime_type,
-                   generated_name);
+  GenerateFileNameInternal(GURL(info->url()), info->content_disposition,
+                           info->referrer_charset, std::string(),
+                           info->mime_type, generated_name);
+}
+
+void GenerateFileNameFromSuggestedName(const GURL& url,
+                                       const std::string& suggested_name,
+                                       const std::string& mime_type,
+                                       FilePath* generated_name) {
+  GenerateFileNameInternal(url, std::string(), std::string(),
+                           suggested_name, mime_type, generated_name);
 }
 
 void GenerateFileName(const GURL& url,
@@ -263,28 +301,8 @@ void GenerateFileName(const GURL& url,
                       const std::string& referrer_charset,
                       const std::string& mime_type,
                       FilePath* generated_name) {
-  string16 default_file_name(
-      l10n_util::GetStringUTF16(IDS_DEFAULT_DOWNLOAD_FILENAME));
-
-  string16 new_name = net::GetSuggestedFilename(GURL(url),
-                                                content_disposition,
-                                                referrer_charset,
-                                                default_file_name);
-
-  // TODO(evan): this code is totally wrong -- we should just generate
-  // Unicode filenames and do all this encoding switching at the end.
-  // However, I'm just shuffling wrong code around, at least not adding
-  // to it.
-#if defined(OS_WIN)
-  *generated_name = FilePath(new_name);
-#else
-  *generated_name = FilePath(
-      base::SysWideToNativeMB(UTF16ToWide(new_name)));
-#endif
-
-  DCHECK(!generated_name->empty());
-
-  GenerateSafeFileName(mime_type, generated_name);
+  GenerateFileNameInternal(url, content_disposition, referrer_charset,
+                           std::string(), mime_type, generated_name);
 }
 
 void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {

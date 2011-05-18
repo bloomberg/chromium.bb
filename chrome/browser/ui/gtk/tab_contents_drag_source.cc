@@ -291,15 +291,12 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
                                         GdkDragContext* drag_context) {
   if (!download_url_.is_empty()) {
     // Generate the file name based on both mime type and proposed file name.
-    std::string download_mime_type = UTF16ToUTF8(wide_download_mime_type_);
-    std::string content_disposition("attachment; filename=");
-    content_disposition += download_file_name_.value();
     FilePath generated_download_file_name;
-    download_util::GenerateFileName(download_url_,
-                                    content_disposition,
-                                    std::string(),
-                                    download_mime_type,
-                                    &generated_download_file_name);
+    download_util::GenerateFileNameFromSuggestedName(
+        download_url_,
+        download_file_name_.value(),
+        UTF16ToUTF8(wide_download_mime_type_),
+        &generated_download_file_name);
 
     // Pass the file name to the drop target by setting the source window's
     // XdndDirectSave0 property.

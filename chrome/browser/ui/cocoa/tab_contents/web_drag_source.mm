@@ -69,7 +69,7 @@ FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
   if (file_name.empty()) {
     // Retrieve the name from the URL.
     string16 suggested_filename =
-        net::GetSuggestedFilename(drop_data.url, "", "", string16());
+        net::GetSuggestedFilename(drop_data.url, "", "", "", string16());
     file_name = FilePathFromFilename(suggested_filename);
   }
 
@@ -402,13 +402,11 @@ void PromiseWriterTask::Run() {
               &mimeType,
               &fileName,
               &downloadURL_)) {
-        std::string contentDisposition =
-            "attachment; filename=" + fileName.value();
-        download_util::GenerateFileName(downloadURL_,
-                                        contentDisposition,
-                                        std::string(),
-                                        UTF16ToUTF8(mimeType),
-                                        &downloadFileName_);
+        download_util::GenerateFileNameFromSuggestedName(
+            downloadURL_,
+            fileName.value(),
+            UTF16ToUTF8(mimeType),
+            &downloadFileName_);
         fileExtension = SysUTF8ToNSString(downloadFileName_.Extension());
       }
     }

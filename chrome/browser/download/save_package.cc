@@ -419,7 +419,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
   // TODO(jungshik): Figure out the referrer charset when having one
   // makes sense and pass it to GetSuggestedFilename.
   string16 suggested_name =
-      net::GetSuggestedFilename(url, disposition, "",
+      net::GetSuggestedFilename(url, disposition, "", "",
                                 ASCIIToUTF16(kDefaultSaveName));
 
   // TODO(evan): this code is totally wrong -- we should just generate
