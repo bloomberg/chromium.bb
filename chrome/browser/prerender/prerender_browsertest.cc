@@ -740,9 +740,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
 
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
-// Flaky, http://crbug.com/77323.
+// Flaky, http://crbug.com/77323, but failing in a CHECK so disabled.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FLAKY_PrerenderInfiniteLoopMultiple) {
+                       DISABLED_PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =
       "files/prerender/prerender_infinite_a_multiple.html";
   const char* const kHtmlFileB =
