@@ -1,3 +1,9 @@
+2011-05-18  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/braille-patterns.cti: Fix a problem with the definition
+	of Unicode character U+2800. This issue was brought up on the list
+	by James Teh.
+
 2011-05-18  Michel Such  <michel.such@free.fr>
 
 	* tables/fr-bfu-comp8.utb: Some fixes for french tables.
