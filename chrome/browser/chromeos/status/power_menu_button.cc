@@ -13,6 +13,20 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/submenu_view.h"
+#include "views/window/window.h"
+
+namespace {
+
+// Menu item ids.
+enum {
+  POWER_BATTERY_PERCENTAGE_ITEM = 1000,
+  POWER_BATTERY_IS_CHARGED_ITEM,
+  POWER_NO_BATTERY,
+};
+
+}  // namespace
 
 namespace chromeos {
 
@@ -28,8 +42,7 @@ PowerMenuButton::PowerMenuButton(StatusAreaHost* host)
       line_power_on_(false),
       battery_fully_charged_(false),
       battery_percentage_(0.0),
-      icon_id_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)) {
+      icon_id_(-1) {
   UpdateIconAndLabelInfo();
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 }
@@ -38,102 +51,65 @@ PowerMenuButton::~PowerMenuButton() {
   CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// PowerMenuButton, ui::MenuModel implementation:
+// PowerMenuButton, views::MenuDelegate implementation:
 
-bool PowerMenuButton::HasIcons() const {
-  return false;
-}
-
-int PowerMenuButton::GetItemCount() const {
-  // We can't display charging information when no battery is installed.
-  return battery_is_present_ ? 2 : 1;
-}
-
-ui::MenuModel::ItemType PowerMenuButton::GetTypeAt(int index) const {
-  return ui::MenuModel::TYPE_COMMAND;
-}
-
-int PowerMenuButton::GetCommandIdAt(int index) const {
-  return index;
-}
-
-string16 PowerMenuButton::GetLabelAt(int index) const {
-  if (!battery_is_present_)
-    return l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_BATTERY);
-
-  // The first item shows the percentage of battery left.
-  if (index == 0) {
-    return l10n_util::GetStringFUTF16(IDS_STATUSBAR_BATTERY_PERCENTAGE,
-        base::IntToString16(static_cast<int>(battery_percentage_)));
-  } else if (index == 1) {
-    // The second item shows the battery is charged if it is.
-    if (battery_fully_charged_)
-      return l10n_util::GetStringUTF16(IDS_STATUSBAR_BATTERY_IS_CHARGED);
-
-    // If battery is in an intermediate charge state, show how much time left.
-    base::TimeDelta time = line_power_on_ ? battery_time_to_full_ :
-        battery_time_to_empty_;
-    if (time.InSeconds() == 0) {
-      // If time is 0, then that means we are still calculating how much time.
-      // Depending if line power is on, we either show a message saying that we
-      // are calculating time until full or calculating remaining time.
-      int msg = line_power_on_ ?
-          IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_FULL :
-          IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_EMPTY;
-      return l10n_util::GetStringUTF16(msg);
-    } else {
-      // Depending if line power is on, we either show a message saying XX:YY
-      // until full or XX:YY remaining where XX is number of hours and YY is
-      // number of minutes.
-      int msg = line_power_on_ ? IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL :
-          IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY;
-      int hour = time.InHours();
-      int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-      string16 hour_str = base::IntToString16(hour);
-      string16 min_str = base::IntToString16(min);
-      // Append a "0" before the minute if it's only a single digit.
-      if (min < 10)
-        min_str = ASCIIToUTF16("0") + min_str;
-      return l10n_util::GetStringFUTF16(msg, hour_str, min_str);
-    }
-  } else {
-    NOTREACHED();
-    return string16();
+std::wstring PowerMenuButton::GetLabel(int id) const {
+  string16 label;
+  switch (id) {
+    case POWER_BATTERY_PERCENTAGE_ITEM:
+      label = GetBatteryPercentageText();
+      break;
+    case POWER_BATTERY_IS_CHARGED_ITEM:
+      label = GetBatteryIsChargedText();
+      break;
+    default:
+      NOTREACHED();
   }
+
+  return UTF16ToWide(label);
 }
 
-bool PowerMenuButton::IsItemDynamicAt(int index) const {
-  return true;
-}
-
-bool PowerMenuButton::GetAcceleratorAt(
-    int index, ui::Accelerator* accelerator) const {
+bool PowerMenuButton::IsCommandEnabled(int id) const {
   return false;
 }
 
-bool PowerMenuButton::IsItemCheckedAt(int index) const {
-  return false;
+string16 PowerMenuButton::GetBatteryPercentageText() const {
+  return l10n_util::GetStringFUTF16(
+      IDS_STATUSBAR_BATTERY_PERCENTAGE,
+      base::IntToString16(static_cast<int>(battery_percentage_)));
 }
 
-int PowerMenuButton::GetGroupIdAt(int index) const {
-  return 0;
-}
+string16 PowerMenuButton::GetBatteryIsChargedText() const {
+  // The second item shows the battery is charged if it is.
+  if (battery_fully_charged_)
+    return l10n_util::GetStringUTF16(IDS_STATUSBAR_BATTERY_IS_CHARGED);
 
-bool PowerMenuButton::GetIconAt(int index, SkBitmap* icon) {
-  return false;
-}
-
-ui::ButtonMenuItemModel* PowerMenuButton::GetButtonMenuItemAt(int index) const {
-  return NULL;
-}
-
-bool PowerMenuButton::IsEnabledAt(int index) const {
-  return false;
-}
-
-ui::MenuModel* PowerMenuButton::GetSubmenuModelAt(int index) const {
-  return NULL;
+  // If battery is in an intermediate charge state, show how much time left.
+  base::TimeDelta time = line_power_on_ ? battery_time_to_full_ :
+      battery_time_to_empty_;
+  if (time.InSeconds() == 0) {
+    // If time is 0, then that means we are still calculating how much time.
+    // Depending if line power is on, we either show a message saying that we
+    // are calculating time until full or calculating remaining time.
+    int msg = line_power_on_ ?
+        IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_FULL :
+        IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_EMPTY;
+    return l10n_util::GetStringUTF16(msg);
+  } else {
+    // Depending if line power is on, we either show a message saying XX:YY
+    // until full or XX:YY remaining where XX is number of hours and YY is
+    // number of minutes.
+    int msg = line_power_on_ ? IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL :
+        IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY;
+    int hour = time.InHours();
+    int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
+    string16 hour_str = base::IntToString16(hour);
+    string16 min_str = base::IntToString16(min);
+    // Append a "0" before the minute if it's only a single digit.
+    if (min < 10)
+      min_str = ASCIIToUTF16("0") + min_str;
+    return l10n_util::GetStringFUTF16(msg, hour_str, min_str);
+  }
 }
 
 int PowerMenuButton::icon_width() {
@@ -150,8 +126,26 @@ void PowerMenuButton::OnLocaleChanged() {
 // PowerMenuButton, views::ViewMenuDelegate implementation:
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  power_menu_.Rebuild();
-  power_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+  UpdateMenu();
+
+  // TODO(rhashimoto): Remove this workaround when WebUI provides a
+  // top-level widget on the ChromeOS login screen that is a window.
+  // The current BackgroundView class for the ChromeOS login screen
+  // creates a owning Widget that has a native GtkWindow but is not a
+  // Window.  This makes it impossible to get the NativeWindow via
+  // the views API.  This workaround casts the top-level NativeWidget
+  // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
+  gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
+
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(source, &screen_loc);
+  gfx::Rect bounds(screen_loc, source->size());
+  menu_->RunMenuAt(
+      window,
+      this,
+      bounds,
+      views::MenuItemView::TOPRIGHT,
+      true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,9 +239,30 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
   }
 
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id_));
-  SetTooltipText(UTF16ToWide(GetLabelAt(0)));
-  power_menu_.Rebuild();
+  SetTooltipText(GetLabel(POWER_BATTERY_PERCENTAGE_ITEM));
+  UpdateMenu();
   SchedulePaint();
+}
+
+void PowerMenuButton::UpdateMenu() {
+  if (!menu_.get())
+    menu_.reset(new views::MenuItemView(this));
+
+  // Remove existing items.
+  const int old_count = menu_->CreateSubmenu()->child_count();
+  for (int i = 0; i < old_count; ++i)
+    menu_->RemoveMenuItemAt(0);
+
+  if (battery_is_present_) {
+    // Create menu items whose text will be supplied by GetLabel().
+    menu_->AppendDelegateMenuItem(POWER_BATTERY_PERCENTAGE_ITEM);
+    menu_->AppendDelegateMenuItem(POWER_BATTERY_IS_CHARGED_ITEM);
+  } else {
+    menu_->AppendMenuItemWithLabel(
+        POWER_NO_BATTERY,
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_BATTERY)));
+  }
+  menu_->ChildrenChanged();
 }
 
 }  // namespace chromeos
