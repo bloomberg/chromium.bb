@@ -65,17 +65,17 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PPAPIBrowserTesterIsBroken())
 
 # A test that manifests can be coded by data URIs.
-# TODO(sehr,elijahtaylor): enable this test when data URIs are supported.
 node = env.PPAPIBrowserTester(
     'srpc_hw_data_browser_test.out',
     url='srpc_hw_data.html',
     files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
-    args=['--debug', '--enable_experimental_js'])
+    # have to hardcode the port so the data URI can encode an absolute path
+    args=['--debug', '--enable_experimental_js', '--port', '50000'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_hw_data_chrome_browser_test',
-                       is_broken=True)
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
 
 node = env.PPAPIBrowserTester(
     'srpc_hw_fd_browser_test.out',

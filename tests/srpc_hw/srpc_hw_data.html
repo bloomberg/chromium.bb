@@ -24,9 +24,19 @@ function testMethods(tester, server) {
     <h1>Native Client SRPC Simple Plug-in</h1>
     NOTE: Set NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1 to run this test.
 
+    <!-- data URI below is (please update this comment when URI changes,
+         see nacl.scons for port number):
+{
+  "nexes": {
+    "x86-32": "http://127.0.0.1:50000/srpc_hw_x86-32.nexe",
+    "x86-64": "http://127.0.0.1:50000/srpc_hw_x86-64.nexe",
+    "arm": "http://127.0.0.1:50000/srpc_hw_arm.nexe"
+  }
+}
+    -->
     <embed type="application/x-nacl" id="nacl_server"
            name="nacl_module" width="0" height="0"
-           src="data:%7B%0A%20%20%22nexes%22%3A%20%7B%0A%20%20%20%20%22x86-32%22%3A%20%22srpc_hw_x86-32.nexe%22%2C%0A%20%20%20%20%22x86-64%22%3A%20%22srpc_hw_x86-64.nexe%22%2C%0A%20%20%20%20%22arm%22%3A%20%22srpc_hw_arm.nexe%22%0A%20%20%7D%0A%7D">
+           src="data:,%7B%20%20%20%22nexes%22%3A%20%7B%20%20%20%20%20%22x86-32%22%3A%20%22http%3A%2F%2F127.0.0.1%3A50000%2Fsrpc_hw_x86-32.nexe%22%2C%20%20%20%20%20%22x86-64%22%3A%20%22http%3A%2F%2F127.0.0.1%3A50000%2Fsrpc_hw_x86-64.nexe%22%2C%20%20%20%20%20%22arm%22%3A%20%22http%3A%2F%2F127.0.0.1%3A50000%2Fsrpc_hw_arm.nexe%22%20%20%20%7D%20%7D%20">
 
     <script type="text/javascript">
       //<![CDATA[

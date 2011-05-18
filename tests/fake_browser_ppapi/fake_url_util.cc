@@ -23,9 +23,30 @@ namespace {
 
 struct PP_Var Canonicalize(struct PP_Var url,
                            struct PP_URLComponents_Dev* components) {
-  UNREFERENCED_PARAMETER(components);
-  NACL_UNIMPLEMENTED();
-  return url;
+  // Return values as if none of these components exist, the ppapi plugin
+  // doesn't require any of these normally, but needs valid values.
+  if (components) {
+    components->scheme.begin = 0;
+    components->scheme.len = -1;
+    components->username.begin = 0;
+    components->username.len = -1;
+    components->password.begin = 0;
+    components->password.len = -1;
+    components->host.begin = 0;
+    components->host.len = -1;
+    components->port.begin = 0;
+    components->port.len = -1;
+    components->path.begin = 0;
+    components->path.len = -1;
+    components->query.begin = 0;
+    components->query.len = -1;
+    components->ref.begin = 0;
+    components->ref.len = -1;
+  }
+  // TODO(sehr,polina) This could easily be 'return url;' but refcounting
+  // in fake_browser_ppapi is broken.
+  std::string url_str = PluginVar::PPVarToString(url);
+  return PluginVar::StringToPPVar(0, url_str);
 }
 
 

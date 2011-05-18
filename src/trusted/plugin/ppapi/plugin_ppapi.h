@@ -116,6 +116,10 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
   int32_t GetPOSIXFileDesc(const nacl::string& url);
 
+  // A helper function that tests to see if |url| is of a particular
+  // |test_scheme|.  Uses URLUtil_Dev interface which this class has a member.
+  bool IsUrlOfScheme(const std::string& url, const std::string& test_scheme);
+
   // Get the text description of the last error reported by the plugin.
   const nacl::string& last_error_string() const { return last_error_string_; }
   void set_last_error_string(const nacl::string& error) {
@@ -160,7 +164,10 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // chosen for the sandbox ISA, any current service runtime is shut down, the
   // .nexe is loaded and run.
 
-  // Callback used when getting the URL for the NaCl manifest file.
+  // Callback used when getting the manifest file as a buffer (e.g., data URIs)
+  void NaClManifestBufferReady(int32_t pp_error);
+
+  // Callback used when getting the manifest file as a local file descriptor.
   void NaClManifestFileDidOpen(int32_t pp_error);
 
   // Parses the JSON in |manifest_json| and retains a scriptable object in

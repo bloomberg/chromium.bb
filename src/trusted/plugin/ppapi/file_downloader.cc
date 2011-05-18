@@ -20,17 +20,10 @@
 #include "ppapi/cpp/url_response_info.h"
 
 namespace {
-
-const char* const kChromeExtensionScheme = "chrome-extension:";
+const char* const kChromeExtensionScheme = "chrome-extension";
 const int32_t kExtensionRequestStatusOk = 200;
-
-// A helper function that tests to see if |url| is in the chrome-extension
-// scheme.  Note that this routine assumes that the scheme part of |url| is
-// all lower-case UTF8.
-bool IsChromeExtensionUrl(const std::string& url) {
-  // The scheme has to exist and be at the start of |url|.
-  return url.find(kChromeExtensionScheme) == 0;
-}
+const char* const kDataURIScheme = "data";
+const int32_t kDataURIRequestStatusOk = 0;
 }
 
 namespace plugin {
@@ -50,50 +43,97 @@ void FileDownloader::Initialize(PluginPpapi* instance) {
 
 
 bool FileDownloader::Open(const nacl::string& url,
+                          DownloadFlags flags,
                           const pp::CompletionCallback& callback) {
   CHECK(instance_ != NULL);
   open_time_ = NaClGetTimeOfDayMicroseconds();
   url_to_open_ = url;
   url_ = url;
   file_open_notify_callback_ = callback;
-  // Reset the url loader and file reader.
-  // Note that we have the only refernce to the underlying objects, so
-  // this will implicitly close any pending IO and destroy them.
-  url_loader_ = pp::URLLoader(instance_);
-
-  if (!instance_->mime_type().empty() &&
-      instance_->mime_type() != PluginPpapi::kNaClMIMEType &&
-      IsChromeExtensionUrl(url)) {
-    // This NEXE is being used as a content type handler rather than directly
-    // by an HTML document. In that case, the NEXE runs in the security context
-    // of the content it is rendering and the NEXE itself appears to be a
-    // cross-origin resource stored in a Chrome extension. We request universal
-    // access during this load so that we can read the NEXE.
-    const PPB_URLLoaderTrusted* url_loaded_trusted =
-        static_cast<const PPB_URLLoaderTrusted*>(
-        pp::Module::Get()->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
-    if (url_loaded_trusted)
-      url_loaded_trusted->GrantUniversalAccess(url_loader_.pp_resource());
-  }
-
-  file_reader_ = pp::FileIO_Dev(instance_);
-  file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
-  if (file_io_trusted_interface_ == NULL)
-    return false;  // Interface not supported by our browser
-
-  // Prepare the url request.
+  flags_ = flags;
+  buffer_.clear();
+  pp::Module* module = pp::Module::Get();
   pp::URLRequestInfo url_request(instance_);
-  url_request.SetURL(url_);
-  url_request.SetStreamToFile(true);
+  int32_t pp_error = PP_OK;
+
+
+  do {
+    if (instance_->IsUrlOfScheme(url, kChromeExtensionScheme)) {
+      scheme_ = SCHEME_CHROME_EXT;
+    } else if (instance_->IsUrlOfScheme(url, kDataURIScheme)) {
+      scheme_ = SCHEME_DATA;
+    } else {
+      scheme_ = SCHEME_NORMAL;
+    }
+
+    // Reset the url loader and file reader.
+    // Note that we have the only reference to the underlying objects, so
+    // this will implicitly close any pending IO and destroy them.
+    url_loader_ = pp::URLLoader(instance_);
+
+    bool grant_universal_access = false;
+
+    if (!instance_->mime_type().empty() &&
+        instance_->mime_type() != PluginPpapi::kNaClMIMEType &&
+        scheme_ == SCHEME_CHROME_EXT) {
+      // This NEXE is being used as a content type handler rather than directly
+      // by an HTML document. In that case, the NEXE runs in the security
+      // context of the content it is rendering and the NEXE itself appears to
+      // be a cross-origin resource stored in a Chrome extension. We request
+      // universal access during this load so that we can read the NEXE.
+      grant_universal_access = true;
+    }
+
+    // TODO(elijahtaylor) Remove this when data URIs can be read without
+    // universal access.
+    if (streaming_to_buffer() && scheme_ == SCHEME_DATA) {
+      grant_universal_access = true;
+    }
+    if (!streaming_to_buffer() && scheme_ == SCHEME_DATA) {
+      pp_error = PP_ERROR_BADARGUMENT;
+      break;
+    }
+
+    if (grant_universal_access) {
+      const PPB_URLLoaderTrusted* url_loaded_trusted =
+          static_cast<const PPB_URLLoaderTrusted*>(
+          module->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
+      if (url_loaded_trusted)
+        url_loaded_trusted->GrantUniversalAccess(url_loader_.pp_resource());
+    }
+
+    // Prepare the url request.
+    url_request.SetURL(url_);
+
+    if (streaming_to_file()) {
+      file_reader_ = pp::FileIO_Dev(instance_);
+      file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
+        module->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
+      if (file_io_trusted_interface_ == NULL) {
+        // Interface not supported by our browser
+        pp_error = PP_ERROR_NOINTERFACE;
+        break;
+      }
+      url_request.SetStreamToFile(true);
+    }
+  } while (0);
+
+  void (FileDownloader::*start_notify)(int32_t);
+  if (streaming_to_file())
+    start_notify = &FileDownloader::URLLoadStartNotify;
+  else
+    start_notify = &FileDownloader::URLBufferStartNotify;
 
   // Request asynchronous download of the url providing an on-load callback.
   pp::CompletionCallback onload_callback =
-      callback_factory_.NewCallback(&FileDownloader::URLLoadStartNotify);
-  int32_t pp_error = url_loader_.Open(url_request, onload_callback);
-  bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
-  PLUGIN_PRINTF(("FileDownloader::Open (async_notify_ok=%d)\n",
-                 async_notify_ok));
+      callback_factory_.NewCallback(start_notify);
+  bool async_notify_ok = false;
+  if (pp_error == PP_OK) {
+    pp_error = url_loader_.Open(url_request, onload_callback);
+    async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
+    PLUGIN_PRINTF(("FileDownloader::Open (async_notify_ok=%d)\n",
+                   async_notify_ok));
+  }
   if (!async_notify_ok) {
     // Call manually to free allocated memory and report errors.  This calls
     // |file_open_notify_callback_| with |pp_error| as the parameter.
@@ -103,6 +143,9 @@ bool FileDownloader::Open(const nacl::string& url,
 }
 
 int32_t FileDownloader::GetPOSIXFileDescriptor() {
+  if (!streaming_to_file()) {
+    return NACL_NO_FILE_DESC;
+  }
   // Use the trusted interface to get the file descriptor.
   if (file_io_trusted_interface_ == NULL) {
     return NACL_NO_FILE_DESC;
@@ -134,21 +177,19 @@ int64_t FileDownloader::TimeSinceOpenMilliseconds() const {
   return (now - open_time_) / NACL_MICROS_PER_MILLI;
 }
 
-void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
-  PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
+bool FileDownloader::InitialResponseIsValid(int32_t pp_error) {
   if (pp_error != PP_OK) {  // Url loading failed.
     file_open_notify_callback_.Run(pp_error);
-    return;
+    return false;
   }
 
   // Process the response, validating the headers to confirm successful loading.
   pp::URLResponseInfo url_response(url_loader_.GetResponseInfo());
   if (url_response.is_null()) {
     PLUGIN_PRINTF((
-        "FileDownloader::URLLoadStartNotify (url_response=NULL)\n"));
+        "FileDownloader::InitialResponseIsValid (url_response=NULL)\n"));
     file_open_notify_callback_.Run(PP_ERROR_FAILED);
-    return;
+    return false;
   }
   // Note that URLs in the chrome-extension scheme produce different error
   // codes than other schemes.  This is because chrome-extension URLs are
@@ -157,27 +198,40 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   pp::Var full_url = url_response.GetURL();
   if (!full_url.is_string()) {
     PLUGIN_PRINTF((
-        "FileDownloader::URLLoadStartNotify (url is not a string)\n"));
+        "FileDownloader::InitialResponseIsValid (url is not a string)\n"));
     file_open_notify_callback_.Run(PP_ERROR_FAILED);
-    return;
+    return false;
   }
   bool status_ok = false;
   int32_t status_code = url_response.GetStatusCode();
-  if (IsChromeExtensionUrl(full_url.AsString())) {
-    PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (chrome-extension "
+  if (scheme_ == SCHEME_CHROME_EXT) {
+    PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (chrome-extension "
                    "response status_code=%"NACL_PRId32")\n", status_code));
     status_ok = (status_code == kExtensionRequestStatusOk);
+  } else if (scheme_ == SCHEME_DATA) {
+    PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (data URI "
+                   "response status_code=%"NACL_PRId32")\n", status_code));
+    status_ok = (status_code == kDataURIRequestStatusOk);
   } else {
-    PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (HTTP response "
+    PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (HTTP response "
                    "status_code=%"NACL_PRId32")\n", status_code));
     status_ok = (status_code == NACL_HTTP_STATUS_OK);
   }
 
   if (!status_ok) {
     file_open_notify_callback_.Run(PP_ERROR_FAILED);
-    return;
+    return false;
   }
 
+  return true;
+}
+
+void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
+  PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+
+  if (!InitialResponseIsValid(pp_error))
+    return;
   // Finish streaming the body asynchronously providing a callback.
   pp::CompletionCallback onload_callback =
       callback_factory_.NewCallback(&FileDownloader::URLLoadFinishNotify);
@@ -191,7 +245,6 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
     onload_callback.Run(pp_error);
   }
 }
-
 
 void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   PLUGIN_PRINTF(("FileDownloader::URLLoadFinishNotify (pp_error=%"
@@ -238,11 +291,60 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   }
 }
 
+void FileDownloader::URLBufferStartNotify(int32_t pp_error) {
+  PLUGIN_PRINTF(("FileDownloader::URLBufferStartNotify (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+
+  if (!InitialResponseIsValid(pp_error))
+    return;
+  // Finish streaming the body asynchronously providing a callback.
+  pp::CompletionCallback onread_callback =
+      callback_factory_.NewCallback(&FileDownloader::URLReadBodyNotify);
+  pp_error = url_loader_.ReadResponseBody(temp_buffer_,
+                                          kTempBufferSize,
+                                          onread_callback);
+  bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
+  PLUGIN_PRINTF(("FileDownloader::URLBufferStartNotify (async_notify_ok=%d)\n",
+                 async_notify_ok));
+  if (!async_notify_ok) {
+    onread_callback.Run(pp_error);
+  }
+}
+
+void FileDownloader::URLReadBodyNotify(int32_t pp_error) {
+  PLUGIN_PRINTF(("FileDownloader::URLReadBodyNotify (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  if (pp_error < PP_OK) {
+    file_open_notify_callback_.Run(pp_error);
+  } else if (pp_error == PP_OK) {
+    FileOpenNotify(PP_OK);
+  } else {
+    buffer_.insert(buffer_.end(), temp_buffer_, temp_buffer_ + pp_error);
+    pp::CompletionCallback onread_callback =
+        callback_factory_.NewCallback(&FileDownloader::URLReadBodyNotify);
+    pp_error = url_loader_.ReadResponseBody(temp_buffer_,
+                                            kTempBufferSize,
+                                            onread_callback);
+    bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
+    if (!async_notify_ok) {
+      onread_callback.Run(pp_error);
+    }
+  }
+}
+
 
 void FileDownloader::FileOpenNotify(int32_t pp_error) {
   PLUGIN_PRINTF(("FileDownloader::FileOpenNotify (pp_error=%"NACL_PRId32")\n",
                  pp_error));
   file_open_notify_callback_.Run(pp_error);
+}
+
+bool FileDownloader::streaming_to_file() const {
+  return (flags_ & DOWNLOAD_TO_BUFFER) == 0;
+}
+
+bool FileDownloader::streaming_to_buffer() const {
+  return (flags_ & DOWNLOAD_TO_BUFFER) == 1;
 }
 
 }  // namespace plugin

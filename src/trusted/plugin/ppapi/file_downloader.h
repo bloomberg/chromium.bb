@@ -5,6 +5,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
 
+#include <deque>
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
@@ -16,6 +18,17 @@
 namespace plugin {
 
 class PluginPpapi;
+
+typedef enum {
+  DOWNLOAD_TO_FILE = 0 << 0,
+  DOWNLOAD_TO_BUFFER = 1 << 0
+} DownloadFlags;
+
+typedef enum {
+  SCHEME_NORMAL,
+  SCHEME_CHROME_EXT,
+  SCHEME_DATA
+} DownloadScheme;
 
 // A class that wraps PPAPI URLLoader and FileIO functionality for downloading
 // the url into a file and providing an open file descriptor.
@@ -42,7 +55,9 @@ class FileDownloader {
   // NOTE: If you call Open() before Initialize() has been called or if the
   // FileIOTrustedInterface is not available, then |callback| will not be called
   // and you get a false return value.
-  bool Open(const nacl::string& url, const pp::CompletionCallback& callback);
+  bool Open(const nacl::string& url,
+            DownloadFlags flags,
+            const pp::CompletionCallback& callback);
 
   // If downloading and opening succeeded, this returns a valid read-only
   // POSIX file descriptor.  On failure, the return value is an invalid
@@ -63,16 +78,29 @@ class FileDownloader {
   // Returns the url passed to Open().
   const nacl::string& url_to_open() const { return url_to_open_; }
 
+  // Returns the buffer used for DOWNLOAD_TO_BUFFER mode.
+  const std::deque<char>& buffer() const { return buffer_; }
+
+  bool streaming_to_file() const;
+  bool streaming_to_buffer() const;
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FileDownloader);
-  // This class loads and opens the file in three steps:
+  // This class loads and opens the file in three steps for DOWNLOAD_TO_FILE:
   //   1) Ask the browser to start streaming |url_| as a file.
   //   2) Ask the browser to finish streaming if headers indicate success.
   //   3) Ask the browser to open the file, so we can get the file descriptor.
+  // For DOWNLOAD_TO_BUFFER, the process is very similar:
+  //   1) Ask the browser to start streaming |url_| to an internal buffer.
+  //   2) Ask the browser to finish streaming to |temp_buffer_| on success.
+  //   3) Wait for streaming to finish, filling |buffer_| incrementally.
   // Each step is done asynchronously using callbacks.  We create callbacks
   // through a factory to take advantage of ref-counting.
+  bool InitialResponseIsValid(int32_t pp_error);
   void URLLoadStartNotify(int32_t pp_error);
   void URLLoadFinishNotify(int32_t pp_error);
+  void URLBufferStartNotify(int32_t pp_error);
+  void URLReadBodyNotify(int32_t pp_error);
   void FileOpenNotify(int32_t pp_error);
 
   PluginPpapi* instance_;
@@ -84,6 +112,11 @@ class FileDownloader {
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
   int64_t open_time_;
+  DownloadFlags flags_;
+  static const uint32_t kTempBufferSize = 1024;
+  char temp_buffer_[kTempBufferSize];
+  std::deque<char> buffer_;
+  DownloadScheme scheme_;
 };
 }  // namespace plugin;
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_

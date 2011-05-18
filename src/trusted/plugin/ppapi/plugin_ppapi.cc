@@ -4,10 +4,16 @@
  * found in the LICENSE file.
  */
 
+#ifdef _MSC_VER
+// Do not warn about use of std::copy with raw pointers.
+#pragma warning(disable : 4996)
+#endif
+
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 
 #include <stdio.h>
 #include <algorithm>
+#include <deque>
 #include <vector>
 
 #include "native_client/src/include/nacl_base.h"
@@ -59,7 +65,6 @@ const char* const kTypeAttribute = "type";
 // The "src" attribute of the <embed> tag.  The value is expected to be either
 // a URL or URI pointing to the manifest file (which is expected to contain
 // JSON matching ISAs with .nexe URLs).
-// TODO(sehr,elijahtaylor): implement data URI support.
 const char* const kSrcManifestAttribute = "src";
 // The "nacl" attribute of the <embed> tag.  We use the value of this attribute
 // to find the manifest file when NaCl is registered as a plug-in for another
@@ -537,7 +542,6 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     if (manifest_url != NULL) {
       // Issue a GET for the manifest_url.  The manifest file will be parsed to
       // determine the nexe URL.
-      // TODO(sehr,elijahtaylor): implement data URI support.
       // Sets src property to full manifest URL.
       RequestNaClManifest(manifest_url);
     }
@@ -823,6 +827,54 @@ void PluginPpapi::ShutdownProxy() {
   }
 }
 
+void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
+  PLUGIN_PRINTF(("PluginPpapi::NaClManifestBufferReady (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  set_manifest_url(nexe_downloader_.url());
+  if (pp_error != PP_OK) {
+    if (pp_error == PP_ERROR_ABORTED) {
+      ReportLoadAbort();
+    } else {
+      ReportLoadError("could not load manifest url.");
+    }
+    return;
+  }
+
+  const std::deque<char>& buffer = nexe_downloader_.buffer();
+  size_t buffer_size = buffer.size();
+  if (buffer_size > kNaClManifestMaxFileBytes) {
+    ReportLoadError("manifest file too large.");
+    return;
+  }
+  nacl::scoped_array<char> json_buffer(new char[buffer_size + 1]);
+  if (json_buffer == NULL) {
+    ReportLoadError("could not allocate manifest memory.");
+    return;
+  }
+  std::copy(buffer.begin(), buffer.begin() + buffer_size, &json_buffer[0]);
+  json_buffer[buffer_size] = '\0';
+
+  nacl::string nexe_url;
+  nacl::string error_string;
+  if (!SetManifestObject(json_buffer.get(), &error_string)) {
+    ReportLoadError(error_string);
+    return;
+  }
+  if (!SelectNexeURLFromManifest(&nexe_url, &error_string)) {
+    ReportLoadError(error_string);
+    return;
+  }
+  set_nacl_ready_state(LOADING);
+  // Inform JavaScript that we found a nexe URL to load.
+  DispatchProgressEvent("progress",
+                        false,  // length_computable
+                        kUnknownBytes,
+                        kUnknownBytes);
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
+  // Will always call the callback on success or failure.
+  nexe_downloader_.Open(nexe_url, DOWNLOAD_TO_FILE, open_callback);
+}
 
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
@@ -907,7 +959,8 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
     return;
   }
   if (!SelectNexeURLFromManifest(&nexe_url, &error_string)) {
-    ReportLoadError("could not select from manifest file.");
+    ReportLoadError(error_string);
+    return;
   }
   set_nacl_ready_state(LOADING);
   // Inform JavaScript that we found a nexe URL to load.
@@ -918,7 +971,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
   // Will always call the callback on success or failure.
-  nexe_downloader_.Open(nexe_url, open_callback);
+  nexe_downloader_.Open(nexe_url, DOWNLOAD_TO_FILE, open_callback);
 }
 
 
@@ -943,10 +996,21 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
                         false,  // length_computable
                         kUnknownBytes,
                         kUnknownBytes);
-  pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
-  // Will always call the callback on success or failure.
-  nexe_downloader_.Open(nmf_resolved_url.AsString(), open_callback);
+  if (IsUrlOfScheme(nmf_resolved_url.AsString(), "data")) {
+    pp::CompletionCallback open_callback =
+        callback_factory_.NewCallback(&PluginPpapi::NaClManifestBufferReady);
+    // Will always call the callback on success or failure.
+    nexe_downloader_.Open(nmf_resolved_url.AsString(),
+                          DOWNLOAD_TO_BUFFER,
+                          open_callback);
+  } else {
+    pp::CompletionCallback open_callback =
+        callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
+    // Will always call the callback on success or failure.
+    nexe_downloader_.Open(nmf_resolved_url.AsString(),
+                          DOWNLOAD_TO_FILE,
+                          open_callback);
+  }
 }
 
 
@@ -1138,7 +1202,7 @@ void PluginPpapi::UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback) {
     return;
   }
   // Will always call the callback on success or failure.
-  downloader->Open(url, open_callback);
+  downloader->Open(url, DOWNLOAD_TO_FILE, open_callback);
 }
 
 
@@ -1164,7 +1228,7 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
     return false;
   }
   // Will always call the callback on success or failure.
-  return downloader->Open(url, open_callback);
+  return downloader->Open(url, DOWNLOAD_TO_FILE, open_callback);
 }
 
 
@@ -1285,6 +1349,29 @@ void PluginPpapi::DispatchProgressEvent(const char* event_type,
   if (!exception.is_undefined()) {
     PLUGIN_PRINTF(("Event dispatch failed.\n"));
   }
+}
+
+bool PluginPpapi::IsUrlOfScheme(const std::string& url,
+                                const std::string& test_scheme) {
+  CHECK(url_util_ != NULL);
+  PP_URLComponents_Dev comps;
+  pp::Var canonicalized =
+      url_util_->Canonicalize(pp::Var(url), &comps);
+
+  if (canonicalized.is_null() ||
+      (comps.scheme.begin == 0 && comps.scheme.len == -1)) {
+    // |url| was an invalid URL or has no scheme.
+    return false;
+  }
+
+  CHECK(comps.scheme.begin <
+            static_cast<int>(canonicalized.AsString().size()));
+  CHECK(comps.scheme.begin + comps.scheme.len <
+            static_cast<int>(canonicalized.AsString().size()));
+
+  std::string scheme = canonicalized.AsString().substr(comps.scheme.begin,
+                                                       comps.scheme.len);
+  return scheme == test_scheme;
 }
 
 }  // namespace plugin
