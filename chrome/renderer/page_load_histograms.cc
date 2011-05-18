@@ -513,58 +513,47 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  // Histograms to determine if cache size has an impact on PLT.
-  static const bool use_cache_histogram1 =
-      base::FieldTrialList::TrialExists("CacheSize");
-  if (use_cache_histogram1 && NavigationState::LINK_LOAD_NORMAL <= load_type &&
-      NavigationState::LINK_LOAD_CACHE_ONLY >= load_type) {
-    // TODO(mbelshe): Do we really want BeginToFinishDoc here?  It seems like
-    //                StartToFinish or BeginToFinish would be better.
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinishDoc_LinkLoad", "CacheSize"), begin_to_finish_doc);
-  }
-
-  // Histograms to determine if cache throttling has an impact on PLT.
-  static const bool use_cache_histogram2 =
-      base::FieldTrialList::TrialExists("CacheThrottle");
-  if (use_cache_histogram2) {
+  // Histograms to determine the PLT impact of the cache's deleted list size.
+  static const bool use_cache_histogram =
+      base::FieldTrialList::TrialExists("CacheListSize");
+  if (use_cache_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.Abandoned", "CacheThrottle"),
+        base::FieldTrial::MakeName("PLT.Abandoned", "CacheListSize"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case NavigationState::RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_Reload", "CacheThrottle"),
+            "PLT.BeginToFinish_Reload", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::HISTORY_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_HistoryLoad", "CacheThrottle"),
+            "PLT.BeginToFinish_HistoryLoad", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "CacheThrottle"),
+            "PLT.BeginToFinish_NormalLoad", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal", "CacheThrottle"),
+            "PLT.BeginToFinish_LinkLoadNormal", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadReload", "CacheThrottle"),
+            "PLT.BeginToFinish_LinkLoadReload", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadStaleOk", "CacheThrottle"),
+            "PLT.BeginToFinish_LinkLoadStaleOk", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_ONLY:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadCacheOnly", "CacheThrottle"),
+            "PLT.BeginToFinish_LinkLoadCacheOnly", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
       default:
@@ -573,7 +562,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     if (NavigationState::RELOAD <= load_type &&
         NavigationState::LINK_LOAD_CACHE_ONLY >= load_type) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish", "CacheThrottle"),
+          "PLT.BeginToFinish", "CacheListSize"),
            begin_to_finish_all_loads);
     }
   }
