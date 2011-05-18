@@ -17,9 +17,10 @@ PHDRS
 SECTIONS
 {
   /* ELF headers are not included in any PT_LOAD segment */
-  /* @LOCALMOD: this does not work in adhoc mode */
+  /* @LOCALMOD: this does not work in adhoc mode. */
+  /* For ARM validation add even more alignment*/
   /* . = SEGMENT_START("text", 0); */
-  . = 256; 
+  . = 65536; 
   _begin = .;
   /* The ALIGN(32) instructions below are workarounds.
      TODO(mseaborn): Get the object files to include the correct
