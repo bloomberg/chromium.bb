@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_bubble_host.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
@@ -43,6 +44,7 @@ class ViewProp;
 // TabContents as well as an implementation of TabContentsDelegate.
 class ExternalTabContainer : public TabContentsDelegate,
                              public TabContentsObserver,
+                             public DownloadTabHelperDelegate,
                              public NotificationObserver,
                              public views::WidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
@@ -141,8 +143,6 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   virtual bool TakeFocus(bool reverse);
 
-  virtual bool CanDownload(int request_id);
-
   virtual bool OnGoToEntryOffset(int offset);
 
   virtual void ShowPageInfo(Profile* profile,
@@ -180,6 +180,11 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Overridden from DownloadTabHelperDelegate:
+  virtual bool CanDownload(int request_id) OVERRIDE;
+  virtual void OnStartDownload(DownloadItem* download,
+                               TabContentsWrapper* tab) OVERRIDE;
 
   // Returns the ExternalTabContainer instance associated with the cookie
   // passed in. It also erases the corresponding reference from the map.

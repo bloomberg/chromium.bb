@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -162,6 +163,7 @@ bool ExternalTabContainer::Init(Profile* profile,
     tab_contents_->set_infobars_enabled(false);
 
   tab_contents_->tab_contents()->set_delegate(this);
+  tab_contents_->download_tab_helper()->set_delegate(this);
 
   tab_contents_->tab_contents()->
       GetMutableRendererPrefs()->browser_handles_top_level_requests =
@@ -531,26 +533,6 @@ bool ExternalTabContainer::TakeFocus(bool reverse) {
   return true;
 }
 
-bool ExternalTabContainer::CanDownload(int request_id) {
-  if (load_requests_via_automation_) {
-    if (automation_) {
-      // In case the host needs to show UI that needs to take the focus.
-      ::AllowSetForegroundWindow(ASFW_ANY);
-
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(automation_resource_message_filter_.get(),
-              &AutomationResourceMessageFilter::SendDownloadRequestToHost,
-              0, tab_handle_, request_id));
-    }
-  } else {
-    DLOG(WARNING) << "Downloads are only supported with host browser network "
-                     "stack enabled.";
-  }
-
-  // Never allow downloads.
-  return false;
-}
-
 void ExternalTabContainer::ShowPageInfo(Profile* profile,
                                         const GURL& url,
                                         const NavigationEntry::SSLStatus& ssl,
@@ -794,6 +776,35 @@ void ExternalTabContainer::Observe(NotificationType type,
       NOTREACHED();
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ExternalTabContainer, DownloadTabHelperDelegate overrides:
+
+bool ExternalTabContainer::CanDownload(int request_id) {
+  if (load_requests_via_automation_) {
+    if (automation_) {
+      // In case the host needs to show UI that needs to take the focus.
+      ::AllowSetForegroundWindow(ASFW_ANY);
+
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(automation_resource_message_filter_.get(),
+              &AutomationResourceMessageFilter::SendDownloadRequestToHost,
+              0, tab_handle_, request_id));
+    }
+  } else {
+    DLOG(WARNING) << "Downloads are only supported with host browser network "
+                     "stack enabled.";
+  }
+
+  // Never allow downloads.
+  return false;
+}
+
+void ExternalTabContainer::OnStartDownload(DownloadItem* download,
+                                           TabContentsWrapper* tab) {
+  // Downloads are handled by Automation.
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, views::WidgetWin overrides:

@@ -43,12 +43,11 @@ namespace history {
 class HistoryAddPageArgs;
 }
 
-class WebUI;
-class DownloadItem;
 class Extension;
 class LoadNotificationDetails;
 class PluginObserver;
 class Profile;
+struct RendererPreferences;
 class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -57,11 +56,11 @@ class TabContentsDelegate;
 class TabContentsObserver;
 class TabContentsSSLHelper;
 class TabContentsView;
-class URLPattern;
-struct RendererPreferences;
 struct ThumbnailScore;
+class URLPattern;
 struct ViewHostMsg_FrameNavigate_Params;
 struct WebPreferences;
+class WebUI;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -367,13 +366,6 @@ class TabContents : public PageNavigator,
 
   // Returns true if a Bookmark Bar should be shown for this tab.
   virtual bool ShouldShowBookmarkBar();
-
-  // Notifies the delegate that a download is about to be started.
-  // This notification is fired before a local temporary file has been created.
-  bool CanDownload(int request_id);
-
-  // Notifies the delegate that a download started.
-  void OnStartDownload(DownloadItem* download);
 
   // Called when a ConstrainedWindow we own is about to be closed.
   void WillClose(ConstrainedWindow* window);
