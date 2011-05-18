@@ -18,6 +18,9 @@ void ContentBrowserClient::BrowserRenderProcessHostCreated(
     BrowserRenderProcessHost* host) {
 }
 
+void ContentBrowserClient::PluginProcessHostCreated(PluginProcessHost* host) {
+}
+
 void ContentBrowserClient::WorkerProcessHostCreated(WorkerProcessHost* host) {
 }
 

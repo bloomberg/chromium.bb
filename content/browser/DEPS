@@ -46,7 +46,6 @@ include_rules = [
 
   "+chrome/browser/net/load_timing_observer.h",
   "+chrome/browser/net/predictor_api.h",
-  "+chrome/browser/net/resolve_proxy_msg_helper.h",
   "+chrome/browser/net/url_request_tracking.h",
 
   "+chrome/browser/notifications/desktop_notification_service.h",
@@ -55,7 +54,6 @@ include_rules = [
 
   "+chrome/browser/platform_util.h",
 
-  "+chrome/browser/plugin_download_helper.h",
   "+chrome/browser/plugin_observer.h",
   "+chrome/common/default_plugin.h",
 

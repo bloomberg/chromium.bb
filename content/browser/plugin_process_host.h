@@ -16,8 +16,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_child_process_host.h"
-#include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Rect;
@@ -99,12 +99,9 @@ class PluginProcessHost : public BrowserChildProcessHost {
 
   // Message handlers.
   void OnChannelCreated(const IPC::ChannelHandle& channel_handle);
-  void OnGetPluginFinderUrl(std::string* plugin_finder_url);
 
 #if defined(OS_WIN)
   void OnPluginWindowDestroyed(HWND window, HWND parent);
-  void OnDownloadUrl(const std::string& url, int source_child_unique_id,
-                     gfx::NativeWindow caller_window);
 #endif
 
 #if defined(USE_X11)

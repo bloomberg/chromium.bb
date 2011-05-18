@@ -272,6 +272,8 @@
         'browser/renderer_host/sync_resource_handler.h',
         'browser/renderer_host/x509_user_cert_resource_handler.cc',
         'browser/renderer_host/x509_user_cert_resource_handler.h',
+        'browser/resolve_proxy_msg_helper.cc',
+        'browser/resolve_proxy_msg_helper.h',
         'browser/resource_context.cc',
         'browser/resource_context.h',
         'browser/site_instance.cc',

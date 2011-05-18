@@ -8,6 +8,7 @@
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/chrome_plugin_message_filter.h"
 #include "chrome/browser/chrome_worker_message_filter.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -33,6 +34,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
@@ -133,6 +135,11 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
 #if defined(OS_MACOSX)
   host->channel()->AddFilter(new TextInputClientMessageFilter(host->id()));
 #endif
+}
+
+void ChromeContentBrowserClient::PluginProcessHostCreated(
+    PluginProcessHost* host) {
+  host->AddFilter(new ChromePluginMessageFilter(host));
 }
 
 void ChromeContentBrowserClient::WorkerProcessHostCreated(

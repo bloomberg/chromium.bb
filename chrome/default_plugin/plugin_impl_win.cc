@@ -22,30 +22,6 @@
 
 static const int TOOLTIP_MAX_WIDTH = 500;
 
-namespace {
-
-bool GetPluginFinderURL(std::string* plugin_finder_url) {
-  if (!plugin_finder_url) {
-    NOTREACHED();
-    return false;
-  }
-
-  ChildThread::current()->Send(
-      new PluginProcessHostMsg_GetPluginFinderUrl(plugin_finder_url));
-  // If we get an empty string back this means the plugin finder has been
-  // disabled.
-  return true;
-}
-
-bool DownloadUrl(const std::string& url, HWND caller_window) {
-  return ChildThread::current()->Send(
-      new PluginProcessHostMsg_DownloadUrl(MSG_ROUTING_NONE, url,
-                                           ::GetCurrentProcessId(),
-                                           caller_window));
-}
-
-}
-
 PluginInstallerImpl::PluginInstallerImpl(int16 mode)
     : instance_(NULL),
       mode_(mode),
@@ -94,11 +70,8 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
   instance_ = instance;
   mime_type_ = mime_type;
 
-  if (!GetPluginFinderURL(&plugin_finder_url_)) {
-    NOTREACHED() << __FUNCTION__ << " Failed to get the plugin finder URL";
-    return false;
-  }
-
+  ChildThread::current()->Send(
+      new PluginProcessHostMsg_GetPluginFinderUrl(&plugin_finder_url_));
   if (plugin_finder_url_.empty())
     disable_plugin_finder_ = true;
 
@@ -368,7 +341,8 @@ void PluginInstallerImpl::DownloadPlugin() {
   DisplayStatus(IDS_DEFAULT_PLUGIN_DOWNLOADING_PLUGIN_MSG);
 
   if (!plugin_download_url_for_display_) {
-    DownloadUrl(plugin_download_url_, hwnd());
+    ChildThread::current()->Send(new PluginProcessHostMsg_DownloadUrl(
+        plugin_download_url_, ::GetCurrentProcessId(), hwnd()));
   } else {
     default_plugin::g_browser->geturl(instance(),
                                       plugin_download_url_.c_str(),

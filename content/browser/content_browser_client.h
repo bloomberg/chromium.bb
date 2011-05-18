@@ -13,6 +13,7 @@
 class BrowserRenderProcessHost;
 class CommandLine;
 class GURL;
+class PluginProcessHost;
 class Profile;
 class RenderViewHost;
 class TabContents;
@@ -38,6 +39,11 @@ class ContentBrowserClient {
   // before the content layer adds its own BrowserMessageFilters, so that the
   // embedder's IPC filters have priority.
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
+
+  // Notifies that a PluginProcessHost has been created. This is called
+  // before the content layer adds its own message filters, so that the
+  // embedder's IPC filters have priority.
+  virtual void PluginProcessHostCreated(PluginProcessHost* host);
 
   // Notifies that a WorkerProcessHost has been created. This is called
   // before the content layer adds its own message filters, so that the

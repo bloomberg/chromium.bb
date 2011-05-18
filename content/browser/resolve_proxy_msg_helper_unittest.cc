@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/resolve_proxy_msg_helper.h"
+#include "content/browser/resolve_proxy_msg_helper.h"
 
 #include "content/common/child_process_messages.h"
 #include "ipc/ipc_test_sink.h"

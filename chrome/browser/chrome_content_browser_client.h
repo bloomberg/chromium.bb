@@ -14,6 +14,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host);
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
+  virtual void PluginProcessHostCreated(PluginProcessHost* host);
   virtual void WorkerProcessHostCreated(WorkerProcessHost* host);
   virtual content::WebUIFactory* GetWebUIFactory();
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
