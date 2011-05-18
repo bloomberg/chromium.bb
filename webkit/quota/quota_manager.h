@@ -118,6 +118,8 @@ class QuotaManager : public QuotaTaskObserver,
     return origins_in_use_.find(origin) != origins_in_use_.end();
   }
 
+  void GetAvailableSpace(AvailableSpaceCallback* callback);
+
   // Called by UI and internal modules.
   void GetTemporaryGlobalQuota(QuotaCallback* callback);
   void SetTemporaryGlobalQuota(int64 new_quota, QuotaCallback* callback);
@@ -149,6 +151,8 @@ class QuotaManager : public QuotaTaskObserver,
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
   class UsageAndQuotaDispatcherTaskForPersistent;
+
+  class AvailableSpaceQueryTask;
 
   typedef std::pair<std::string, StorageType> HostAndType;
   typedef std::map<HostAndType, UsageAndQuotaDispatcherTask*>

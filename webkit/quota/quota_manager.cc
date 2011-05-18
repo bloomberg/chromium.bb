@@ -4,8 +4,9 @@
 
 #include "webkit/quota/quota_manager.h"
 
-#include <deque>
 #include <algorithm>
+#include <deque>
+#include <set>
 
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -568,6 +569,45 @@ void QuotaManager::RequestQuota(
   // TODO(kinuko): implement me.
   callback->Run(kQuotaErrorNotSupported, 0);
   delete callback;
+}
+
+class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
+ public:
+  AvailableSpaceQueryTask(
+      QuotaManager* manager,
+      scoped_refptr<base::MessageLoopProxy> db_message_loop,
+      const FilePath& profile_path,
+      AvailableSpaceCallback* callback)
+      : QuotaThreadTask(manager, db_message_loop),
+        profile_path_(profile_path),
+        space_(-1),
+        callback_(callback) {}
+  virtual ~AvailableSpaceQueryTask() {}
+
+ protected:
+  virtual void RunOnTargetThread() OVERRIDE {
+    space_ = base::SysInfo::AmountOfFreeDiskSpace(profile_path_);
+  }
+
+  virtual void Aborted() OVERRIDE {
+    callback_->Run(kQuotaErrorAbort, space_);
+  }
+
+  virtual void Completed() OVERRIDE {
+    callback_->Run(kQuotaStatusOk, space_);
+  }
+
+ private:
+  FilePath profile_path_;
+  int64 space_;
+  scoped_ptr<AvailableSpaceCallback> callback_;
+};
+
+
+void QuotaManager::GetAvailableSpace(AvailableSpaceCallback* callback) {
+  scoped_refptr<AvailableSpaceQueryTask> task(
+      new AvailableSpaceQueryTask(this, db_thread_, profile_path_, callback));
+  task->Start();
 }
 
 void QuotaManager::GetTemporaryGlobalQuota(QuotaCallback* callback) {

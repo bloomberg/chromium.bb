@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util-inl.h"
+#include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
@@ -140,6 +141,14 @@ class QuotaManagerTest : public testing::Test {
             &QuotaManagerTest::DidDelete));
   }
 
+  void GetAvailableSpace() {
+    quota_status_ = kQuotaStatusUnknown;
+    quota_ = -1;
+    quota_manager_->GetAvailableSpace(
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::DidGetQuota));
+  }
+
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
     quota_status_ = status;
     usage_ = usage;
@@ -185,6 +194,7 @@ class QuotaManagerTest : public testing::Test {
   QuotaStatusCode status() const { return quota_status_; }
   int64 usage() const { return usage_; }
   int64 quota() const { return quota_; }
+  FilePath profile_path() const { return data_dir_.path(); }
 
  private:
   ScopedTempDir data_dir_;
@@ -718,4 +728,12 @@ TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
   EXPECT_EQ(predelete_host_pers, usage());
 }
 
+TEST_F(QuotaManagerTest, GetAvailableSpaceTest) {
+  GetAvailableSpace();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_LE(0, quota());
+  int64 direct_called = base::SysInfo::AmountOfFreeDiskSpace(profile_path());
+  EXPECT_EQ(direct_called, quota());
+}
 }  // namespace quota

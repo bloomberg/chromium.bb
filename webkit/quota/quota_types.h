@@ -43,6 +43,8 @@ typedef Callback2<const std::string& /* host */,
 typedef Callback3<QuotaStatusCode,
                   const std::string& /* host */,
                   int64>::Type HostQuotaCallback;
+typedef Callback2<QuotaStatusCode,
+                  int64>::Type AvailableSpaceCallback;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType>
