@@ -111,7 +111,7 @@ Profile* ProfileManager::GetDefaultProfile() {
 }
 
 ProfileManager::ProfileManager() : logged_in_(false) {
-  ui::SystemMonitor::Get()->AddObserver(this);
+  base::SystemMonitor::Get()->AddObserver(this);
   BrowserList::AddObserver(this);
 #if defined(OS_CHROMEOS)
   registrar_.Add(
@@ -122,7 +122,7 @@ ProfileManager::ProfileManager() : logged_in_(false) {
 }
 
 ProfileManager::~ProfileManager() {
-  ui::SystemMonitor* system_monitor = ui::SystemMonitor::Get();
+  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveObserver(this);
   BrowserList::RemoveObserver(this);

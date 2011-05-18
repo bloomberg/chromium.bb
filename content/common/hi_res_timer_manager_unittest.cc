@@ -1,18 +1,18 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "content/common/hi_res_timer_manager.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/time.h"
-#include "content/common/hi_res_timer_manager.h"
-#include "ui/base/system_monitor/system_monitor.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
 TEST(HiResTimerManagerTest, FLAKY_ToggleOnOff) {
   MessageLoop loop;
-  scoped_ptr<ui::SystemMonitor> system_monitor(new ui::SystemMonitor());
+  scoped_ptr<base::SystemMonitor> system_monitor(new base::SystemMonitor());
   HighResolutionTimerManager manager;
 
   // At this point, we don't know if the high resolution timers are on or off,

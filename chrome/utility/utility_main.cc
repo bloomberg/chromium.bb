@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -11,7 +12,6 @@
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
-#include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
@@ -28,7 +28,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrUtilityMain");
 
-  ui::SystemMonitor system_monitor;
+  base::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
   ChildProcess utility_process;

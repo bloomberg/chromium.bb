@@ -8,13 +8,13 @@
 
 HighResolutionTimerManager::HighResolutionTimerManager()
     : hi_res_clock_available_(false) {
-  ui::SystemMonitor* system_monitor = ui::SystemMonitor::Get();
+  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
   system_monitor->AddObserver(this);
   UseHiResClock(!system_monitor->BatteryPower());
 }
 
 HighResolutionTimerManager::~HighResolutionTimerManager() {
-  ui::SystemMonitor::Get()->RemoveObserver(this);
+  base::SystemMonitor::Get()->RemoveObserver(this);
   UseHiResClock(false);
 }
 

@@ -5,7 +5,7 @@
 #include "ui/views/widget/native_widget_win.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/system_monitor/system_monitor.h"
+#include "base/system_monitor/system_monitor.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia.h"

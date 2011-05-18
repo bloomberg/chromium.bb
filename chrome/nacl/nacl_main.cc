@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/system_monitor/system_monitor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -21,7 +22,6 @@
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "content/common/result_codes.h"
-#include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
 #include "chrome/nacl/broker_thread.h"
@@ -37,7 +37,7 @@ int NaClBrokerMain(const MainFunctionParams& parameters) {
   MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
-  ui::SystemMonitor system_monitor;
+  base::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
   const CommandLine& parsed_command_line = parameters.command_line_;
@@ -101,7 +101,7 @@ int NaClMain(const MainFunctionParams& parameters) {
   MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClMain");
 
-  ui::SystemMonitor system_monitor;
+  base::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
