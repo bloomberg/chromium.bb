@@ -13,7 +13,7 @@
 #include "content/common/notification_registrar.h"
 
 class Profile;
-class TabContents;
+class TabContentsWrapper;
 
 // This class is responsible for showing an info-bar that tells the user she
 // can type her search query directly in the omnibox.
@@ -22,7 +22,7 @@ class TabContents;
 // info-bar.
 class OmniboxSearchHint : public NotificationObserver {
  public:
-  explicit OmniboxSearchHint(TabContents* tab);
+  explicit OmniboxSearchHint(TabContentsWrapper* tab);
   ~OmniboxSearchHint();
 
   // NotificationObserver method:
@@ -34,7 +34,7 @@ class OmniboxSearchHint : public NotificationObserver {
   // queries can be typed directly in there.
   void ShowEnteringQuery();
 
-  TabContents* tab() { return tab_; }
+  TabContentsWrapper* tab() { return tab_; }
 
   // Disables the hint infobar permanently, so that it does not show ever again.
   void DisableHint();
@@ -49,7 +49,7 @@ class OmniboxSearchHint : public NotificationObserver {
   NotificationRegistrar notification_registrar_;
 
   // The tab we are associated with.
-  TabContents* tab_;
+  TabContentsWrapper* tab_;
 
   // A map containing the URLs of the search engine for which we want to
   // trigger the hint.

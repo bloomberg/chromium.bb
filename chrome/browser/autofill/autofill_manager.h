@@ -30,7 +30,7 @@ class CreditCard;
 class PersonalDataManager;
 class PrefService;
 class RenderViewHost;
-class TabContents;
+class TabContentsWrapper;
 
 struct ViewHostMsg_FrameNavigate_Params;
 
@@ -48,7 +48,7 @@ struct FormField;
 class AutofillManager : public TabContentsObserver,
                         public AutofillDownloadManager::Observer {
  public:
-  explicit AutofillManager(TabContents* tab_contents);
+  explicit AutofillManager(TabContentsWrapper* tab_contents);
   virtual ~AutofillManager();
 
   // Registers our browser prefs.
@@ -91,7 +91,7 @@ class AutofillManager : public TabContentsObserver,
   // (where applicable).
   typedef std::pair<std::string, size_t> GUIDPair;
 
-  AutofillManager(TabContents* tab_contents,
+  AutofillManager(TabContentsWrapper* tab_contents,
                   PersonalDataManager* personal_data);
 
   void set_personal_data_manager(PersonalDataManager* personal_data) {
@@ -195,6 +195,9 @@ class AutofillManager : public TabContentsObserver,
   // Uses existing personal data to determine possible field types for the
   // |submitted_form|.
   void DeterminePossibleFieldTypesForUpload(FormStructure* submitted_form);
+
+  // The owning TabContentsWrapper.
+  TabContentsWrapper* tab_contents_wrapper_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.

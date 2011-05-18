@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -79,7 +80,7 @@ void ExtensionDisabledDialogDelegate::InstallUIAbort() {
 class ExtensionDisabledInfobarDelegate : public ConfirmInfoBarDelegate,
                                          public NotificationObserver {
  public:
-  ExtensionDisabledInfobarDelegate(TabContents* tab_contents,
+  ExtensionDisabledInfobarDelegate(TabContentsWrapper* tab_contents,
                                    ExtensionService* service,
                                    const Extension* extension);
 
@@ -98,16 +99,16 @@ class ExtensionDisabledInfobarDelegate : public ConfirmInfoBarDelegate,
                        const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar registrar_;
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
   ExtensionService* service_;
   const Extension* extension_;
 };
 
 ExtensionDisabledInfobarDelegate::ExtensionDisabledInfobarDelegate(
-    TabContents* tab_contents,
+    TabContentsWrapper* tab_contents,
     ExtensionService* service,
     const Extension* extension)
-    : ConfirmInfoBarDelegate(tab_contents),
+    : ConfirmInfoBarDelegate(tab_contents->tab_contents()),
       tab_contents_(tab_contents),
       service_(service),
       extension_(extension) {
@@ -173,7 +174,7 @@ void ShowExtensionDisabledUI(ExtensionService* service, Profile* profile,
   if (!browser)
     return;
 
-  TabContents* tab_contents = browser->GetSelectedTabContents();
+  TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
   if (!tab_contents)
     return;
 

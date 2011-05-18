@@ -9,7 +9,6 @@
 #include <deque>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -47,7 +46,6 @@ class HistoryAddPageArgs;
 class WebUI;
 class DownloadItem;
 class Extension;
-class InfoBarDelegate;
 class LoadNotificationDetails;
 class PluginObserver;
 class Profile;
@@ -365,25 +363,6 @@ class TabContents : public PageNavigator,
   // Creates a view and sets the size for the specified RVH.
   virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh);
 
-  // Infobars ------------------------------------------------------------------
-
-  // Adds an InfoBar for the specified |delegate|.
-  void AddInfoBar(InfoBarDelegate* delegate);
-
-  // Removes the InfoBar for the specified |delegate|.
-  void RemoveInfoBar(InfoBarDelegate* delegate);
-
-  // Replaces one infobar with another, without any animation in between.
-  void ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                      InfoBarDelegate* new_delegate);
-
-  // Enumeration and access functions.
-  size_t infobar_count() const { return infobar_delegates_.size(); }
-  // WARNING: This does not sanity-check |index|!
-  InfoBarDelegate* GetInfoBarDelegateAt(size_t index) {
-    return infobar_delegates_[index];
-  }
-
   // Toolbars and such ---------------------------------------------------------
 
   // Returns true if a Bookmark Bar should be shown for this tab.
@@ -635,12 +614,6 @@ class TabContents : public PageNavigator,
   void SetNotWaitingForResponse() { waiting_for_response_ = false; }
 
   ConstrainedWindowList child_windows_;
-
-  // Expires InfoBars that need to be expired, according to the state carried
-  // in |details|, in response to a new NavigationEntry being committed (the
-  // user navigated to another page).
-  void ExpireInfoBars(
-      const NavigationController::LoadCommittedDetails& details);
 
   // Navigation helpers --------------------------------------------------------
   //
@@ -902,11 +875,6 @@ class TabContents : public PageNavigator,
 
   // True if this is a secure page which displayed insecure content.
   bool displayed_insecure_content_;
-
-  // Data for shelves and stuff ------------------------------------------------
-
-  // Delegates for InfoBars associated with this TabContents.
-  std::vector<InfoBarDelegate*> infobar_delegates_;
 
   // Data for misc internal state ----------------------------------------------
 

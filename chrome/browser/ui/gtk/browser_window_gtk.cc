@@ -1181,7 +1181,7 @@ void BrowserWindowGtk::TabSelectedAt(TabContentsWrapper* old_contents,
 
   // Update various elements that are interested in knowing the current
   // TabContents.
-  infobar_container_->ChangeTabContents(new_contents->tab_contents());
+  infobar_container_->ChangeTabContents(new_contents);
   contents_container_->SetTab(new_contents);
   UpdateDevToolsForContents(new_contents->tab_contents());
 

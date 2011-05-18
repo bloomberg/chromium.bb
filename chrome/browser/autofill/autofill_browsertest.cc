@@ -457,8 +457,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
   // Get translation bar.
   render_view_host()->OnMessageReceived(ViewHostMsg_TranslateLanguageDetermined(
       0, "ja", true));
-  TranslateInfoBarDelegate* infobar = browser()->GetSelectedTabContents()->
-      GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+  TranslateInfoBarDelegate* infobar =
+      browser()->GetSelectedTabContentsWrapper()->
+        GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
 
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());

@@ -332,7 +332,7 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
 
   virtual ~ContentSettingCookiesBubbleModel() {
     if (settings_changed()) {
-      tab_contents()->tab_contents()->AddInfoBar(
+      tab_contents()->AddInfoBar(
           new CollectedCookiesInfoBarDelegate(tab_contents()->tab_contents()));
     }
   }

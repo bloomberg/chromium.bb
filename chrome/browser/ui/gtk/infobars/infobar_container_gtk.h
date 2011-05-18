@@ -14,7 +14,7 @@
 class InfoBar;
 class InfoBarDelegate;
 class Profile;
-class TabContents;
+class TabContentsWrapper;
 
 typedef struct _GtkWidget GtkWidget;
 
@@ -29,7 +29,7 @@ class InfoBarContainerGtk : public NotificationObserver {
   // Changes the TabContents for which this container is showing InfoBars. Can
   // be NULL, in which case we will simply detach ourselves from the old tab
   // contents.
-  void ChangeTabContents(TabContents* contents);
+  void ChangeTabContents(TabContentsWrapper* contents);
 
   // Remove the specified InfoBarDelegate from the selected TabContents. This
   // will notify us back and cause us to close the View. This is called from
@@ -74,7 +74,7 @@ class InfoBarContainerGtk : public NotificationObserver {
   Profile* profile_;
 
   // The TabContents for which we are currently showing InfoBars.
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
 
   // VBox that holds the info bars.
   OwnedWidgetGtk container_;

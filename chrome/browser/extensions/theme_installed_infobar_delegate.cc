@@ -11,8 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -105,7 +105,8 @@ void ThemeInstalledInfoBarDelegate::Observe(
   // with, close this info bar since it is no longer relevant.
   if (theme_id_ != theme_service_->GetThemeID()) {
     if (tab_contents_ && !tab_contents_->is_being_destroyed()) {
-      tab_contents_->RemoveInfoBar(this);
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+          RemoveInfoBar(this);
       // The infobar is gone so there is no reason for this delegate to keep
       // a pointer to the TabContents (the TabContents has deleted its
       // reference to this delegate and a new delegate will be created if

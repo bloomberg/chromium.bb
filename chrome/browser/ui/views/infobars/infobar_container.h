@@ -16,6 +16,7 @@
 class InfoBar;
 class InfoBarDelegate;
 class TabContents;
+class TabContentsWrapper;
 
 // InfoBarContainer is a cross-platform base class to handle the visibility-
 // related aspects of InfoBars.  While InfoBars own themselves, the
@@ -49,7 +50,7 @@ class InfoBarContainer : public NotificationObserver {
   // Changes the TabContents for which this container is showing infobars.  This
   // will remove all current infobars from the container, add the infobars from
   // |contents|, and show them all.  |contents| may be NULL.
-  void ChangeTabContents(TabContents* contents);
+  void ChangeTabContents(TabContentsWrapper* contents);
 
   // Returns the amount by which to overlap the toolbar above, and, when
   // |total_height| is non-NULL, set it to the height of the InfoBarContainer
@@ -123,7 +124,7 @@ class InfoBarContainer : public NotificationObserver {
 
   NotificationRegistrar registrar_;
   Delegate* delegate_;
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
   InfoBars infobars_;
 
   // Calculated in SetMaxTopArrowHeight().

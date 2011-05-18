@@ -1385,7 +1385,9 @@ void InfoBarCountObserver::Observe(NotificationType type,
 }
 
 void InfoBarCountObserver::CheckCount() {
-  if (tab_contents_->infobar_count() != target_count_)
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+  if (wrapper->infobar_count() != target_count_)
     return;
 
   if (automation_) {

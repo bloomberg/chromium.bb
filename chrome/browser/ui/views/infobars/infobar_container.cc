@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/infobars/infobar.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "ui/base/animation/slide_animation.h"
@@ -25,7 +25,7 @@ InfoBarContainer::~InfoBarContainer() {
   DCHECK(infobars_.empty());
 }
 
-void InfoBarContainer::ChangeTabContents(TabContents* contents) {
+void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
   registrar_.RemoveAll();
 
   while (!infobars_.empty()) {
@@ -41,7 +41,7 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
 
   tab_contents_ = contents;
   if (tab_contents_) {
-    Source<TabContents> tc_source(tab_contents_);
+    Source<TabContents> tc_source(tab_contents_->tab_contents());
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
                    tc_source);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
@@ -49,7 +49,7 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
                    tc_source);
 
-    for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
+    for (size_t i = 0; i < contents->infobar_count(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarAnimated() for each infobar.
       AddInfoBar(tab_contents_->GetInfoBarDelegateAt(i)->CreateInfoBar(), false,

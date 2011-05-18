@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -71,18 +71,20 @@ ExtensionInfoBarDelegate*
 void ExtensionInfoBarDelegate::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
   switch (type.value) {
     case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
       const ExtensionHost* result = Details<ExtensionHost>(details).ptr();
       if (extension_host_.get() == result)
-        tab_contents_->RemoveInfoBar(this);
+        wrapper->RemoveInfoBar(this);
       break;
     }
     case NotificationType::EXTENSION_UNLOADED: {
       const Extension* extension =
           Details<UnloadedExtensionInfo>(details)->extension;
       if (extension_ == extension)
-        tab_contents_->RemoveInfoBar(this);
+        wrapper->RemoveInfoBar(this);
       break;
     }
     default: {

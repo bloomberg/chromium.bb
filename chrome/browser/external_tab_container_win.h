@@ -211,8 +211,6 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   virtual void TabContentsCreated(TabContents* new_contents);
 
-  virtual bool infobars_enabled();
-
   void RunUnloadHandlers(IPC::Message* reply_message);
 
  protected:
@@ -320,9 +318,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Set to true if the ExternalTabContainer instance is waiting for an ack
   // from the host.
   bool pending_;
-
-  // Set to true if the ExternalTabContainer if infobars should be enabled.
-  bool infobars_enabled_;
 
   views::FocusManager* focus_manager_;
 

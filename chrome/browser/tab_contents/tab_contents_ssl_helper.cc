@@ -13,7 +13,7 @@
 #include "chrome/browser/ssl_client_certificate_selector.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -137,10 +137,12 @@ TabContentsSSLHelper::SSLAddCertData::~SSLAddCertData() {
 
 void TabContentsSSLHelper::SSLAddCertData::ShowInfoBar(
     InfoBarDelegate* delegate) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
   if (infobar_delegate_)
-    tab_contents_->ReplaceInfoBar(infobar_delegate_, delegate);
+    wrapper->ReplaceInfoBar(infobar_delegate_, delegate);
   else
-    tab_contents_->AddInfoBar(delegate);
+    wrapper->AddInfoBar(delegate);
   infobar_delegate_ = delegate;
 }
 

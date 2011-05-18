@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -120,7 +120,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
   [self positionInfoBarsAndRedraw];
 }
 
-- (void)changeTabContents:(TabContents*)contents {
+- (void)changeTabContents:(TabContentsWrapper*)contents {
   registrar_.RemoveAll();
   [self removeAllInfoBars];
 
@@ -131,7 +131,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
                animate:NO];
     }
 
-    Source<TabContents> source(currentTabContents_);
+    Source<TabContents> source(currentTabContents_->tab_contents());
     registrar_.Add(infoBarObserver_.get(),
                    NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(infoBarObserver_.get(),
@@ -143,7 +143,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
   [self positionInfoBarsAndRedraw];
 }
 
-- (void)tabDetachedWithContents:(TabContents*)contents {
+- (void)tabDetachedWithContents:(TabContentsWrapper*)contents {
   if (currentTabContents_ == contents)
     [self changeTabContents:NULL];
 }

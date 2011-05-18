@@ -307,7 +307,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   }
 
   void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
-    TabContents* tab_contents = current_browser_->GetSelectedTabContents();
     TabContentsWrapper* tab_contents_wrapper =
         current_browser_->GetSelectedTabContentsWrapper();
     TabSpecificContentSettings* content_settings =
@@ -322,7 +321,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     else
       infobar_->AsConfirmInfoBarDelegate()->Cancel();
     WaitForNavigation();
-    tab_contents->RemoveInfoBar(infobar_);
+    tab_contents_wrapper->RemoveInfoBar(infobar_);
     LOG(WARNING) << "infobar response set";
     infobar_ = NULL;
     EXPECT_GT(settings_state.state_map().size(), state_map_size);
@@ -556,11 +555,11 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   AddGeolocationWatch(true);
 
   size_t num_infobars_before_cancel =
-      current_browser_->GetSelectedTabContents()->infobar_count();
+      current_browser_->GetSelectedTabContentsWrapper()->infobar_count();
   // Change the iframe, and ensure the infobar is gone.
   IFrameLoader change_iframe_1(current_browser_, 1, current_url_);
   size_t num_infobars_after_cancel =
-      current_browser_->GetSelectedTabContents()->infobar_count();
+      current_browser_->GetSelectedTabContentsWrapper()->infobar_count();
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }
 

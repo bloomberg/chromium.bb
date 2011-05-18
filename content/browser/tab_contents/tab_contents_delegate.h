@@ -265,9 +265,6 @@ class TabContentsDelegate {
   // typically happens when popups are created.
   virtual void TabContentsCreated(TabContents* new_contents);
 
-  // Returns whether infobars are enabled. Overrideable by child classes.
-  virtual bool infobars_enabled();
-
   // Whether the renderer should report its preferred size when it changes by
   // calling UpdatePreferredSize().
   // Note that this is set when the RenderViewHost is created and cannot be

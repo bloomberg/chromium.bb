@@ -28,6 +28,7 @@
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -58,6 +59,7 @@ static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     : TabContentsObserver(contents),
       delegate_(NULL),
+      infobars_enabled_(true),
       tab_contents_(contents) {
   DCHECK(contents);
   DCHECK(!GetCurrentWrapperForContents(contents));
@@ -67,7 +69,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Create the tab helpers.
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
-  autofill_manager_.reset(new AutofillManager(contents));
+  autofill_manager_.reset(new AutofillManager(this));
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
@@ -75,7 +77,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
-  password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
+  password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
   safebrowsing_detection_host_.reset(
@@ -100,10 +102,20 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(contents->profile()))
-    omnibox_search_hint_.reset(new OmniboxSearchHint(contents));
+    omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
+  // Notify any lasting InfobarDelegates that have not yet been removed that
+  // whatever infobar they were handling in this TabContents has closed,
+  // because the TabContents is going away entirely.
+  // This must happen after the TAB_CONTENTS_DESTROYED notification as the
+  // notification may trigger infobars calls that access their delegate. (and
+  // some implementations of InfoBarDelegate do delete themselves on
+  // InfoBarClosed()).
+  for (size_t i = 0; i < infobar_count(); ++i)
+    infobar_delegates_[i]->InfoBarClosed();
+  infobar_delegates_.clear();
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
@@ -270,7 +282,13 @@ TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsWrapper, TabContentsObserver implementation:
+// TabContentsWrapper implementation:
+
+void TabContentsWrapper::RenderViewGone() {
+  // Remove all infobars.
+  while (!infobar_delegates_.empty())
+    RemoveInfoBar(GetInfoBarDelegateAt(infobar_count() - 1));
+}
 
 bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -286,6 +304,123 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void TabContentsWrapper::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::NAV_ENTRY_COMMITTED: {
+      DCHECK(&tab_contents_->controller() ==
+             Source<NavigationController>(source).ptr());
+
+      NavigationController::LoadCommittedDetails& committed_details =
+          *(Details<NavigationController::LoadCommittedDetails>(details).ptr());
+
+      // Only hide InfoBars when the user has done something that makes the main
+      // frame load. We don't want various automatic or subframe navigations
+      // making it disappear.
+      if (!committed_details.is_user_initiated_main_frame_load())
+        return;
+
+      // NOTE: It is not safe to change the following code to count upwards or
+      // use iterators, as the RemoveInfoBar() call synchronously modifies our
+      // delegate list.
+      for (size_t i = infobar_delegates_.size(); i > 0; --i) {
+        InfoBarDelegate* delegate = infobar_delegates_[i - 1];
+        if (delegate->ShouldExpire(committed_details))
+          RemoveInfoBar(delegate);
+      }
+
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
+  if (!infobars_enabled_) {
+    delegate->InfoBarClosed();
+    return;
+  }
+
+  // Look through the existing InfoBarDelegates we have for a match. If we've
+  // already got one that matches, then we don't add the new one.
+  for (size_t i = 0; i < infobar_delegates_.size(); ++i) {
+    if (infobar_delegates_[i]->EqualsDelegate(delegate)) {
+      // Tell the new infobar to close so that it can clean itself up.
+      delegate->InfoBarClosed();
+      return;
+    }
+  }
+
+  infobar_delegates_.push_back(delegate);
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
+      Source<TabContents>(tab_contents_.get()),
+      Details<InfoBarDelegate>(delegate));
+
+  // Add ourselves as an observer for navigations the first time a delegate is
+  // added. We use this notification to expire InfoBars that need to expire on
+  // page transitions.
+  if (infobar_delegates_.size() == 1) {
+    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                   Source<NavigationController>(&tab_contents_->controller()));
+  }
+}
+
+void TabContentsWrapper::RemoveInfoBar(InfoBarDelegate* delegate) {
+  if (!infobars_enabled_)
+    return;
+
+  std::vector<InfoBarDelegate*>::iterator it =
+      find(infobar_delegates_.begin(), infobar_delegates_.end(), delegate);
+  if (it != infobar_delegates_.end()) {
+    InfoBarDelegate* delegate = *it;
+    NotificationService::current()->Notify(
+        NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+        Source<TabContents>(tab_contents_.get()),
+        Details<InfoBarDelegate>(delegate));
+
+    infobar_delegates_.erase(it);
+    // Remove ourselves as an observer if we are tracking no more InfoBars.
+    if (infobar_delegates_.empty()) {
+      registrar_.Remove(
+          this, NotificationType::NAV_ENTRY_COMMITTED,
+          Source<NavigationController>(&tab_contents_->controller()));
+    }
+  }
+}
+
+void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                                        InfoBarDelegate* new_delegate) {
+  if (!infobars_enabled_) {
+    new_delegate->InfoBarClosed();
+    return;
+  }
+
+  std::vector<InfoBarDelegate*>::iterator it =
+      find(infobar_delegates_.begin(), infobar_delegates_.end(), old_delegate);
+  DCHECK(it != infobar_delegates_.end());
+
+  // Notify the container about the change of plans.
+  scoped_ptr<std::pair<InfoBarDelegate*, InfoBarDelegate*> > details(
+    new std::pair<InfoBarDelegate*, InfoBarDelegate*>(
+        old_delegate, new_delegate));
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
+      Source<TabContents>(tab_contents_.get()),
+      Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details.get()));
+
+  // Remove the old one.
+  infobar_delegates_.erase(it);
+
+  // Add the new one.
+  DCHECK(find(infobar_delegates_.begin(),
+              infobar_delegates_.end(), new_delegate) ==
+         infobar_delegates_.end());
+  infobar_delegates_.push_back(new_delegate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -315,7 +450,7 @@ void TabContentsWrapper::OnPageContents(const GURL& url,
 }
 
 void TabContentsWrapper::OnJSOutOfMemory() {
-  tab_contents()->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
+  AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
       NULL, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true));
 }
 
@@ -330,11 +465,11 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
   if (!handler.IsEmpty() &&
       registry->CanSchemeBeOverridden(handler.protocol())) {
-    tab_contents()->AddInfoBar(registry->IsRegistered(handler) ?
-      static_cast<InfoBarDelegate*>(new SimpleAlertInfoBarDelegate(
-          tab_contents(), NULL, l10n_util::GetStringFUTF16(
-              IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED,
-              handler.title(), UTF8ToUTF16(handler.protocol())), true)) :
+    AddInfoBar(registry->IsRegistered(handler) ?
+        static_cast<InfoBarDelegate*>(new SimpleAlertInfoBarDelegate(
+            tab_contents(), NULL, l10n_util::GetStringFUTF16(
+                IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED,
+                handler.title(), UTF8ToUTF16(handler.protocol())), true)) :
       new RegisterProtocolHandlerInfoBarDelegate(tab_contents(), registry,
                                                  handler));
   }
@@ -360,5 +495,5 @@ void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
 }
 
 void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
-  PDFHasUnsupportedFeature(tab_contents());
+  PDFHasUnsupportedFeature(this);
 }

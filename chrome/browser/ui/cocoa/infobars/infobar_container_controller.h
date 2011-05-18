@@ -16,7 +16,7 @@
 @class InfoBarController;
 class InfoBarDelegate;
 class InfoBarNotificationObserver;
-class TabContents;
+class TabContentsWrapper;
 class TabStripModel;
 
 // Protocol for basic container methods, as needed by an InfoBarController.
@@ -48,7 +48,7 @@ const CGFloat kBaseHeight = 36.0;
   id<ViewResizer> resizeDelegate_;  // weak
 
   // The TabContents we are currently showing infobars for.
-  TabContents* currentTabContents_;  // weak
+  TabContentsWrapper* currentTabContents_;  // weak
 
   // Holds the InfoBarControllers currently owned by this container.
   scoped_nsobject<NSMutableArray> infobarControllers_;
@@ -88,12 +88,12 @@ const CGFloat kBaseHeight = 36.0;
 // infobars, removes them first and deregisters for any
 // notifications.  |contents| can be NULL, in which case no infobars
 // are shown and no notifications are registered for.
-- (void)changeTabContents:(TabContents*)contents;
+- (void)changeTabContents:(TabContentsWrapper*)contents;
 
 // Stripped down version of TabStripModelObserverBridge:tabDetachedWithContents.
 // Forwarded by BWC. Removes all infobars and deregisters for any notifications
 // if |contents| is the current tab contents.
-- (void)tabDetachedWithContents:(TabContents*)contents;
+- (void)tabDetachedWithContents:(TabContentsWrapper*)contents;
 
 // Returns the number of active infobars. This is
 // |infobarControllers_ - closingInfoBars_|.

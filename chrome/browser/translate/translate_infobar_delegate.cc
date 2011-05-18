@@ -14,7 +14,6 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -111,7 +110,8 @@ void TranslateInfoBarDelegate::Translate() {
 
 void TranslateInfoBarDelegate::RevertTranslation() {
   TranslateManager::GetInstance()->RevertTranslation(tab_contents_);
-  tab_contents_->RemoveInfoBar(this);
+  TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+      RemoveInfoBar(this);
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
@@ -145,7 +145,8 @@ void TranslateInfoBarDelegate::ToggleLanguageBlacklist() {
     prefs_.RemoveLanguageFromBlacklist(original_lang);
   } else {
     prefs_.BlacklistLanguage(original_lang);
-    tab_contents_->RemoveInfoBar(this);
+    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+        RemoveInfoBar(this);
   }
 }
 
@@ -163,7 +164,8 @@ void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
     prefs_.RemoveSiteFromBlacklist(host);
   } else {
     prefs_.BlacklistSite(host);
-    tab_contents_->RemoveInfoBar(this);
+    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+        RemoveInfoBar(this);
   }
 }
 
@@ -193,7 +195,8 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   std::string original_lang = GetOriginalLanguageCode();
   DCHECK(!prefs_.IsLanguageBlacklisted(original_lang));
   prefs_.BlacklistLanguage(original_lang);
-  tab_contents_->RemoveInfoBar(this);
+  TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+      RemoveInfoBar(this);
 }
 
 string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {

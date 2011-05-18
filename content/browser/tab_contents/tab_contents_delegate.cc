@@ -180,10 +180,6 @@ gfx::NativeWindow TabContentsDelegate::GetFrameNativeWindow() {
 void TabContentsDelegate::TabContentsCreated(TabContents* new_contents) {
 }
 
-bool TabContentsDelegate::infobars_enabled() {
-  return true;
-}
-
 bool TabContentsDelegate::ShouldEnablePreferredSizeNotifications() {
   return false;
 }

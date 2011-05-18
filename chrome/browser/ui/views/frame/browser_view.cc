@@ -2528,7 +2528,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
   // avoid an unnecessary resize and re-layout of a TabContents.
   if (change_tab_contents)
     contents_container_->ChangeTabContents(NULL);
-  infobar_container_->ChangeTabContents(new_contents->tab_contents());
+  infobar_container_->ChangeTabContents(new_contents);
   UpdateUIForContents(new_contents);
   if (change_tab_contents)
     contents_container_->ChangeTabContents(new_contents->tab_contents());

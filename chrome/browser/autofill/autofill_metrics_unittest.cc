@@ -117,7 +117,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(TabContents* tab_contents,
+  TestAutofillManager(TabContentsWrapper* tab_contents,
                       TestPersonalDataManager* personal_manager)
       : AutofillManager(tab_contents, personal_manager),
         autofill_enabled_(true) {
@@ -193,7 +193,7 @@ class AutofillMetricsTest : public TabContentsWrapperTestHarness {
   virtual void SetUp() {
     TabContentsWrapperTestHarness::SetUp();
     test_personal_data_ = new TestPersonalDataManager();
-    autofill_manager_.reset(new TestAutofillManager(contents(),
+    autofill_manager_.reset(new TestAutofillManager(contents_wrapper(),
                                                     test_personal_data_.get()));
   }
 

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/common/notification_registrar.h"
 
 namespace prerender {
 class PrerenderObserver;
@@ -35,6 +37,7 @@ class ExtensionWebNavigationTabObserver;
 class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
+class InfoBarDelegate;
 class NavigationController;
 class OmniboxSearchHint;
 class PasswordManager;
@@ -55,7 +58,8 @@ class ClientSideDetectionHost;
 // TODO(pinkerton): Eventually, this class will become TabContents as far as
 // the browser front-end is concerned, and the current TabContents will be
 // renamed to something like WebPage or WebView (ben's suggestions).
-class TabContentsWrapper : public TabContentsObserver {
+class TabContentsWrapper : public TabContentsObserver,
+                           public NotificationObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
@@ -161,7 +165,33 @@ class TabContentsWrapper : public TabContentsObserver {
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
+  virtual void RenderViewGone() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // NotificationObserver overrides:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
+  // Infobars ------------------------------------------------------------------
+
+  // Adds an InfoBar for the specified |delegate|.
+  void AddInfoBar(InfoBarDelegate* delegate);
+
+  // Removes the InfoBar for the specified |delegate|.
+  void RemoveInfoBar(InfoBarDelegate* delegate);
+
+  // Replaces one infobar with another, without any animation in between.
+  void ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                      InfoBarDelegate* new_delegate);
+
+  // Enumeration and access functions.
+  size_t infobar_count() const { return infobar_delegates_.size(); }
+  void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
+  // WARNING: This does not sanity-check |index|!
+  InfoBarDelegate* GetInfoBarDelegateAt(size_t index) {
+    return infobar_delegates_[index];
+  }
 
  private:
   // Internal helpers ----------------------------------------------------------
@@ -184,6 +214,12 @@ class TabContentsWrapper : public TabContentsObserver {
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   TabContentsWrapperDelegate* delegate_;
+
+  // Delegates for InfoBars associated with this TabContentsWrapper.
+  std::vector<InfoBarDelegate*> infobar_delegates_;
+  bool infobars_enabled_;
+
+  NotificationRegistrar registrar_;
 
   // Data for current page -----------------------------------------------------
 

@@ -418,8 +418,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
-  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab)->translate_tab_helper();
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  TranslateTabHelper* helper = wrapper->translate_tab_helper();
   std::string auto_translate_to = helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
@@ -428,7 +429,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   }
 
   // Prompts the user if he/she wants the page translated.
-  tab->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
+  wrapper->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
       TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, page_lang, target_lang));
 }
 
@@ -642,11 +643,13 @@ void TranslateManager::ShowInfoBar(TabContents* tab,
                                    TranslateInfoBarDelegate* infobar) {
   TranslateInfoBarDelegate* old_infobar = GetTranslateInfoBarDelegate(tab);
   infobar->UpdateBackgroundAnimation(old_infobar);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (old_infobar) {
     // There already is a translate infobar, simply replace it.
-    tab->ReplaceInfoBar(old_infobar, infobar);
+    wrapper->ReplaceInfoBar(old_infobar, infobar);
   } else {
-    tab->AddInfoBar(infobar);
+    wrapper->AddInfoBar(infobar);
   }
 }
 
@@ -660,9 +663,11 @@ std::string TranslateManager::GetTargetLanguage() {
 // static
 TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
     TabContents* tab) {
-  for (size_t i = 0; i < tab->infobar_count(); ++i) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  for (size_t i = 0; i < wrapper->infobar_count(); ++i) {
     TranslateInfoBarDelegate* delegate =
-        tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
+        wrapper->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
     if (delegate)
       return delegate;
   }

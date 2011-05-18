@@ -30,7 +30,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -298,19 +297,6 @@ TabContents::~TabContents() {
       NotificationType::TAB_CONTENTS_DESTROYED,
       Source<TabContents>(this),
       NotificationService::NoDetails());
-
-  // Notify any lasting InfobarDelegates that have not yet been removed that
-  // whatever infobar they were handling in this TabContents has closed,
-  // because the TabContents is going away entirely.
-  // This must happen after the TAB_CONTENTS_DESTROYED notification as the
-  // notification may trigger infobars calls that access their delegate. (and
-  // some implementations of InfoBarDelegate do delete themselves on
-  // InfoBarClosed()).
-  for (size_t i = 0; i < infobar_count(); ++i) {
-    InfoBarDelegate* delegate = GetInfoBarDelegateAt(i);
-    delegate->InfoBarClosed();
-  }
-  infobar_delegates_.clear();
 
   // TODO(brettw) this should be moved to the view.
 #if defined(OS_WIN)
@@ -744,89 +730,6 @@ void TabContents::SetFocusToLocationBar(bool select_all) {
     delegate()->SetFocusToLocationBar(select_all);
 }
 
-void TabContents::AddInfoBar(InfoBarDelegate* delegate) {
-  if (delegate_ && !delegate_->infobars_enabled()) {
-    delegate->InfoBarClosed();
-    return;
-  }
-
-  // Look through the existing InfoBarDelegates we have for a match. If we've
-  // already got one that matches, then we don't add the new one.
-  for (size_t i = 0; i < infobar_count(); ++i) {
-    if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate)) {
-      // Tell the new infobar to close so that it can clean itself up.
-      delegate->InfoBarClosed();
-      return;
-    }
-  }
-
-  infobar_delegates_.push_back(delegate);
-  NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_INFOBAR_ADDED, Source<TabContents>(this),
-      Details<InfoBarDelegate>(delegate));
-
-  // Add ourselves as an observer for navigations the first time a delegate is
-  // added. We use this notification to expire InfoBars that need to expire on
-  // page transitions.
-  if (infobar_delegates_.size() == 1) {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                   Source<NavigationController>(&controller_));
-  }
-}
-
-void TabContents::RemoveInfoBar(InfoBarDelegate* delegate) {
-  if (delegate_ && !delegate_->infobars_enabled()) {
-    return;
-  }
-
-  std::vector<InfoBarDelegate*>::iterator it =
-      find(infobar_delegates_.begin(), infobar_delegates_.end(), delegate);
-  if (it != infobar_delegates_.end()) {
-    InfoBarDelegate* delegate = *it;
-    NotificationService::current()->Notify(
-        NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<TabContents>(this),
-        Details<InfoBarDelegate>(delegate));
-
-    infobar_delegates_.erase(it);
-    // Remove ourselves as an observer if we are tracking no more InfoBars.
-    if (infobar_delegates_.empty()) {
-      registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
-                        Source<NavigationController>(&controller_));
-    }
-  }
-}
-
-void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                                 InfoBarDelegate* new_delegate) {
-  if (delegate_ && !delegate_->infobars_enabled()) {
-    new_delegate->InfoBarClosed();
-    return;
-  }
-
-  std::vector<InfoBarDelegate*>::iterator it =
-      find(infobar_delegates_.begin(), infobar_delegates_.end(), old_delegate);
-  DCHECK(it != infobar_delegates_.end());
-
-  // Notify the container about the change of plans.
-  scoped_ptr<std::pair<InfoBarDelegate*, InfoBarDelegate*> > details(
-    new std::pair<InfoBarDelegate*, InfoBarDelegate*>(
-        old_delegate, new_delegate));
-  NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
-      Source<TabContents>(this),
-      Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details.get()));
-
-  // Remove the old one.
-  infobar_delegates_.erase(it);
-
-  // Add the new one.
-  DCHECK(find(infobar_delegates_.begin(),
-              infobar_delegates_.end(), new_delegate) ==
-         infobar_delegates_.end());
-  infobar_delegates_.push_back(new_delegate);
-}
-
 bool TabContents::ShouldShowBookmarkBar() {
   if (showing_interstitial_page())
     return false;
@@ -1205,24 +1108,6 @@ void TabContents::SetIsLoading(bool is_loading,
       det);
 }
 
-void TabContents::ExpireInfoBars(
-    const NavigationController::LoadCommittedDetails& details) {
-  // Only hide InfoBars when the user has done something that makes the main
-  // frame load. We don't want various automatic or subframe navigations making
-  // it disappear.
-  if (!details.is_user_initiated_main_frame_load())
-    return;
-
-  // NOTE: It is not safe to change the following code to count upwards or use
-  // iterators, as the RemoveInfoBar() call synchronously modifies our delegate
-  // list.
-  for (size_t i = infobar_count(); i > 0; --i) {
-    InfoBarDelegate* delegate = GetInfoBarDelegateAt(i - 1);
-    if (delegate->ShouldExpire(details))
-      RemoveInfoBar(delegate);
-  }
-}
-
 WebUI* TabContents::GetWebUIForCurrentState() {
   // When there is a pending navigation entry, we want to use the pending WebUI
   // that goes along with it to control the basic flags. For example, we want to
@@ -1583,10 +1468,6 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   SetIsLoading(false, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
-
-  // Remove all infobars.
-  while (!infobar_delegates_.empty())
-    RemoveInfoBar(GetInfoBarDelegateAt(infobar_count() - 1));
 
   // Tell the view that we've crashed so it can prepare the sad tab page.
   // Only do this if we're not in browser shutdown, so that TabContents
@@ -2145,15 +2026,6 @@ void TabContents::Observe(NotificationType type,
     case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
       view_->RenderWidgetHostDestroyed(Source<RenderWidgetHost>(source).ptr());
       break;
-
-    case NotificationType::NAV_ENTRY_COMMITTED: {
-      DCHECK(&controller_ == Source<NavigationController>(source).ptr());
-
-      NavigationController::LoadCommittedDetails& committed_details =
-          *(Details<NavigationController::LoadCommittedDetails>(details).ptr());
-      ExpireInfoBars(committed_details);
-      break;
-    }
 
 #if defined(OS_LINUX)
     case NotificationType::BROWSER_THEME_CHANGED: {

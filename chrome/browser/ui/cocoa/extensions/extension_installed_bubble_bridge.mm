@@ -29,8 +29,8 @@ static void ShowGenericExtensionInstalledInfoBar(
   if (!browser)
     return;
 
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  if (!tab_contents)
+  TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
+  if (!wrapper)
     return;
 
   string16 extension_name = UTF8ToUTF16(new_extension->name());
@@ -40,9 +40,9 @@ static void ShowGenericExtensionInstalledInfoBar(
                                  extension_name) +
       UTF8ToUTF16(" ") +
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
-  InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(tab_contents,
-      new gfx::Image(new SkBitmap(icon)), msg, true);
-  tab_contents->AddInfoBar(delegate);
+  InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
+      wrapper->tab_contents(), new gfx::Image(new SkBitmap(icon)), msg, true);
+  wrapper->AddInfoBar(delegate);
 }
 
 namespace browser {

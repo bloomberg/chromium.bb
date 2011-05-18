@@ -8,11 +8,11 @@
 #include "base/basictypes.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 
-class TabContents;
+class TabContentsWrapper;
 
 class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
  public:
-  explicit PasswordManagerDelegateImpl(TabContents* contents)
+  explicit PasswordManagerDelegateImpl(TabContentsWrapper* contents)
       : tab_contents_(contents) { }
 
   // PasswordManagerDelegate implementation.
@@ -22,7 +22,7 @@ class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
   virtual Profile* GetProfileForPasswordManager();
   virtual bool DidLastPageLoadEncounterSSLErrors();
  private:
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDelegateImpl);
 };
 

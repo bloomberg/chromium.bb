@@ -52,7 +52,7 @@ bool ShowInfoBarFunction::RunImpl() {
     return false;
   }
 
-  tab_contents->tab_contents()->AddInfoBar(
+  tab_contents->AddInfoBar(
       new ExtensionInfoBarDelegate(browser, tab_contents->tab_contents(),
                                    GetExtension(), url));
 

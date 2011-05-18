@@ -27,6 +27,11 @@ void TabContentsWrapperTestHarness::SetContents(TestTabContents* contents) {
   contents_wrapper_.reset(new TabContentsWrapper(contents));
 }
 
+void TabContentsWrapperTestHarness::SetContentsWrapper(
+    TabContentsWrapper* contents) {
+  contents_wrapper_.reset(contents);
+}
+
 void TabContentsWrapperTestHarness::SetUp() {
   SetContents(CreateTestTabContents());
 }

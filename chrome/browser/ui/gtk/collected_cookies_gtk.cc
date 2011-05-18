@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -430,7 +429,7 @@ void CollectedCookiesGtk::Observe(NotificationType type,
 
 void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
   if (status_changed_) {
-    tab_contents_->AddInfoBar(
+    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->AddInfoBar(
         new CollectedCookiesInfoBarDelegate(tab_contents_));
   }
   window_->CloseConstrainedWindow();

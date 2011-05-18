@@ -215,8 +215,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (void)windowWillClose:(NSNotification*)notif {
   if (contentSettingsChanged_) {
-    tabContents_->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(tabContents_));
+    TabContentsWrapper::GetCurrentWrapperForContents(tabContents_)->
+        AddInfoBar(new CollectedCookiesInfoBarDelegate(tabContents_));
   }
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];

@@ -113,7 +113,6 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
@@ -3404,10 +3403,11 @@ void Browser::ContentRestrictionsChanged(TabContents* source) {
 }
 
 void Browser::WorkerCrashed() {
-  TabContents* tab_contents = GetSelectedTabContents();
+  TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
   if (!tab_contents)
     return;
-  tab_contents->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents, NULL,
+  tab_contents->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      tab_contents->tab_contents(), NULL,
       l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
 }
 

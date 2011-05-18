@@ -9,9 +9,9 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -115,8 +115,8 @@ void PasswordManagerDelegateImpl::FillPasswordForm(
 
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBar(
     PasswordFormManager* form_to_save) {
-  tab_contents_->AddInfoBar(
-      new SavePasswordInfoBarDelegate(tab_contents_, form_to_save));
+  tab_contents_->AddInfoBar(new SavePasswordInfoBarDelegate(
+      tab_contents_->tab_contents(), form_to_save));
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfileForPasswordManager() {

@@ -11,13 +11,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -125,14 +125,14 @@ void OpenReaderUpdateURL(TabContents* tab) {
 }
 
 // Opens the PDF using Adobe Reader.
-void OpenUsingReader(TabContents* tab,
+void OpenUsingReader(TabContentsWrapper* tab,
                      const WebPluginInfo& reader_plugin,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
   PluginService::OverriddenPlugin plugin;
-  plugin.render_process_id = tab->GetRenderProcessHost()->id();
+  plugin.render_process_id = tab->render_view_host()->process()->id();
   plugin.render_view_id = tab->render_view_host()->routing_id();
-  plugin.url = tab->GetURL();
+  plugin.url = tab->tab_contents()->GetURL();
   plugin.plugin = reader_plugin;
   // The plugin is disabled, so enable it to get around the renderer check.
   // Also give it a new version so that the renderer doesn't show the blocked
@@ -158,9 +158,11 @@ void OpenUsingReader(TabContents* tab,
 class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
  public:
   PDFUnsupportedFeatureInterstitial(
-      TabContents* tab,
+      TabContentsWrapper* tab,
       const WebPluginInfo& reader_webplugininfo)
-      : ChromeInterstitialPage(tab, false, tab->GetURL()),
+      : ChromeInterstitialPage(
+            tab->tab_contents(), false, tab->tab_contents()->GetURL()),
+        tab_contents_(tab),
         reader_webplugininfo_(reader_webplugininfo) {
     UserMetrics::RecordAction(UserMetricsAction("PDF_ReaderInterstitialShown"));
   }
@@ -210,7 +212,7 @@ class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
     } else if (command == "2") {
       UserMetrics::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialIgnore"));
-      OpenUsingReader(tab(), reader_webplugininfo_, NULL, NULL);
+      OpenUsingReader(tab_contents_, reader_webplugininfo_, NULL, NULL);
     } else {
       NOTREACHED();
     }
@@ -218,6 +220,7 @@ class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
   }
 
  private:
+  TabContentsWrapper* tab_contents_;
   WebPluginInfo reader_webplugininfo_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFUnsupportedFeatureInterstitial);
@@ -229,7 +232,7 @@ class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
 class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // |reader_group| is NULL if Adobe Reader isn't installed.
-  PDFUnsupportedFeatureInfoBarDelegate(TabContents* tab_contents,
+  PDFUnsupportedFeatureInfoBarDelegate(TabContentsWrapper* tab_contents,
                                        PluginGroup* reader_group);
   virtual ~PDFUnsupportedFeatureInfoBarDelegate();
 
@@ -245,7 +248,7 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool OnYes();
   void OnNo();
 
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
   bool reader_installed_;
   bool reader_vulnerable_;
   WebPluginInfo reader_webplugininfo_;
@@ -254,9 +257,9 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
-    TabContents* tab_contents,
+    TabContentsWrapper* tab_contents,
     PluginGroup* reader_group)
-    : ConfirmInfoBarDelegate(tab_contents),
+    : ConfirmInfoBarDelegate(tab_contents->tab_contents()),
       tab_contents_(tab_contents),
       reader_installed_(!!reader_group),
       reader_vulnerable_(false) {
@@ -317,7 +320,7 @@ string16 PDFUnsupportedFeatureInfoBarDelegate::GetMessageText() const {
 bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
   if (!reader_installed_) {
     UserMetrics::RecordAction(UserMetricsAction("PDF_InstallReaderInfoBarOK"));
-    OpenReaderUpdateURL(tab_contents_);
+    OpenReaderUpdateURL(tab_contents_->tab_contents());
     return true;
   }
 
@@ -334,7 +337,7 @@ bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
   if (tab_contents_->profile()->GetPrefs()->GetBoolean(
       prefs::kPluginsShowSetReaderDefaultInfobar)) {
     InfoBarDelegate* bar =
-        new PDFEnableAdobeReaderInfoBarDelegate(tab_contents_);
+        new PDFEnableAdobeReaderInfoBarDelegate(tab_contents_->tab_contents());
     OpenUsingReader(tab_contents_, reader_webplugininfo_, this, bar);
     return false;
   }
@@ -350,7 +353,7 @@ void PDFUnsupportedFeatureInfoBarDelegate::OnNo() {
 
 }  // namespace
 
-void PDFHasUnsupportedFeature(TabContents* tab) {
+void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
 #if !defined(OS_WIN)
   // Only works for Windows for now.  For Mac, we'll have to launch the file
   // externally since Adobe Reader doesn't work inside Chrome.

@@ -23,12 +23,12 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -230,7 +230,7 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
   if (!browser)
     return;
 
-  TabContents* tab_contents = browser->GetSelectedTabContents();
+  TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
   if (!tab_contents)
     return;
 
@@ -253,7 +253,8 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
 
   // Then either replace that old one or add a new one.
   InfoBarDelegate* new_delegate = GetNewThemeInstalledInfoBarDelegate(
-      tab_contents, new_theme, previous_theme_id, previous_using_native_theme);
+      tab_contents->tab_contents(), new_theme, previous_theme_id,
+      previous_using_native_theme);
 
   if (old_delegate)
     tab_contents->ReplaceInfoBar(old_delegate, new_delegate);

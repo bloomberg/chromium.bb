@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -81,7 +81,7 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
 };
 
 HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint)
-    : ConfirmInfoBarDelegate(omnibox_hint->tab()),
+    : ConfirmInfoBarDelegate(omnibox_hint->tab()->tab_contents()),
       omnibox_hint_(omnibox_hint),
       action_taken_(false),
       should_expire_(false),
@@ -144,7 +144,7 @@ bool HintInfoBar::Accept() {
 
 // OmniboxSearchHint ----------------------------------------------------------
 
-OmniboxSearchHint::OmniboxSearchHint(TabContents* tab) : tab_(tab) {
+OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
   NavigationController* controller = &(tab->controller());
   notification_registrar_.Add(this,
                               NotificationType::NAV_ENTRY_COMMITTED,

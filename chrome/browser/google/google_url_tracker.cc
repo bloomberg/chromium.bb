@@ -13,10 +13,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
@@ -31,7 +31,9 @@ InfoBarDelegate* CreateInfobar(TabContents* tab_contents,
                                const GURL& new_google_url) {
   InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(tab_contents,
       google_url_tracker, new_google_url);
-  tab_contents->AddInfoBar(infobar);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  wrapper->AddInfoBar(infobar);
   return infobar;
 }
 

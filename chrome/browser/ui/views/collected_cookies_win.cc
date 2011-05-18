@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -379,7 +378,7 @@ void CollectedCookiesWin::DeleteDelegate() {
 
 bool CollectedCookiesWin::Cancel() {
   if (status_changed_) {
-    tab_contents_->AddInfoBar(
+    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->AddInfoBar(
         new CollectedCookiesInfoBarDelegate(tab_contents_));
   }
 

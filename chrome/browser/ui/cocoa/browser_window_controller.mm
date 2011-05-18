@@ -1495,7 +1495,10 @@ enum {
   // applicable)?
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 
-  [infoBarContainerController_ changeTabContents:contents];
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  // Without the .get(), xcode fails.
+  [infoBarContainerController_.get() changeTabContents:wrapper];
 
   // Update devTools and sidebar contents after size for all views is set.
   [sidebarController_ ensureContentsVisible];
@@ -1526,7 +1529,9 @@ enum {
 }
 
 - (void)onTabDetachedWithContents:(TabContents*)contents {
-  [infoBarContainerController_ tabDetachedWithContents:contents];
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  [infoBarContainerController_ tabDetachedWithContents:wrapper];
 }
 
 - (void)userChangedTheme {

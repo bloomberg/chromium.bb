@@ -62,7 +62,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/result_codes.h"
 #include "grit/chromium_strings.h"
@@ -253,10 +252,10 @@ void NotifyNotDefaultBrowserTask::Run() {
   // Don't show the info-bar if there are already info-bars showing.
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
-  TabContents* tab = browser->GetSelectedTabContents();
+  TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
   if (!tab || tab->infobar_count() > 0)
     return;
-  tab->AddInfoBar(new DefaultBrowserInfoBarDelegate(tab));
+  tab->AddInfoBar(new DefaultBrowserInfoBarDelegate(tab->tab_contents()));
 }
 
 
@@ -1024,14 +1023,14 @@ void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(Browser* browser) {
   if (!browser || !profile_ || browser->tab_count() == 0)
     return;
 
-  TabContents* tab_contents = browser->GetSelectedTabContents();
+  TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
   AddCrashedInfoBarIfNecessary(tab_contents);
   AddBadFlagsInfoBarIfNecessary(tab_contents);
   AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(tab_contents);
 }
 
 void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
-    TabContents* tab) {
+    TabContentsWrapper* tab) {
   // Assume that if the user is launching incognito they were previously
   // running incognito so that we have nothing to restore from.
   if (!profile_->DidLastSessionExitCleanly() &&
@@ -1039,12 +1038,12 @@ void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     // The last session didn't exit cleanly. Show an infobar to the user
     // so that they can restore if they want. The delegate deletes itself when
     // it is closed.
-    tab->AddInfoBar(new SessionCrashedInfoBarDelegate(tab));
+    tab->AddInfoBar(new SessionCrashedInfoBarDelegate(tab->tab_contents()));
   }
 }
 
 void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
-    TabContents* tab) {
+    TabContentsWrapper* tab) {
   // Unsupported flags for which to display a warning that "stability and
   // security will suffer".
   static const char* kBadFlags[] = {
@@ -1068,7 +1067,7 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   }
 
   if (bad_flag) {
-    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab, NULL,
+    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab->tab_contents(), NULL,
         l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
                                    UTF8ToUTF16(std::string("--") + bad_flag)),
         false));
@@ -1127,11 +1126,12 @@ const char DNSCertProvenanceCheckingInfoBar::kLearnMoreURL[] =
     "http://dev.chromium.org/dnscertprovenancechecking";
 
 void BrowserInit::LaunchWithProfile::
-    AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(TabContents* tab) {
+    AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(
+        TabContentsWrapper* tab) {
   if (!command_line_.HasSwitch(switches::kEnableDNSCertProvenanceChecking))
     return;
 
-  tab->AddInfoBar(new DNSCertProvenanceCheckingInfoBar(tab));
+  tab->AddInfoBar(new DNSCertProvenanceCheckingInfoBar(tab->tab_contents()));
 }
 
 void BrowserInit::LaunchWithProfile::AddStartupURLs(

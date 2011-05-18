@@ -36,7 +36,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -223,8 +222,9 @@ bool FormIsHTTPS(FormStructure* form) {
 
 }  // namespace
 
-AutofillManager::AutofillManager(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
+    : TabContentsObserver(tab_contents->tab_contents()),
+      tab_contents_wrapper_(tab_contents),
       personal_data_(NULL),
       download_manager_(tab_contents->profile()),
       disable_download_manager_requests_(false),
@@ -299,9 +299,7 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
 
 void AutofillManager::OnFormSubmitted(const FormData& form) {
   // Let AutoComplete know as well.
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
-  wrapper->autocomplete_history_manager()->OnFormSubmitted(form);
+  tab_contents_wrapper_->autocomplete_history_manager()->OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
     return;
@@ -435,10 +433,9 @@ void AutofillManager::OnQueryFormFieldAutofill(
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
-  wrapper->autocomplete_history_manager()->OnGetAutocompleteSuggestions(
-      query_id, field.name, field.value, values, labels, icons, unique_ids);
+  tab_contents_wrapper_->autocomplete_history_manager()->
+      OnGetAutocompleteSuggestions(
+          query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
 
 void AutofillManager::OnFillAutofillFormData(int query_id,
@@ -649,7 +646,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // it.
   scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
   if (imported_credit_card && tab_contents()) {
-    tab_contents()->AddInfoBar(
+    tab_contents_wrapper_->AddInfoBar(
         new AutofillCCInfoBarDelegate(tab_contents(),
                                       scoped_credit_card.release(),
                                       personal_data_,
@@ -684,9 +681,10 @@ void AutofillManager::Reset() {
   has_logged_address_suggestions_count_ = false;
 }
 
-AutofillManager::AutofillManager(TabContents* tab_contents,
+AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
                                  PersonalDataManager* personal_data)
-    : TabContentsObserver(tab_contents),
+    : TabContentsObserver(tab_contents->tab_contents()),
+      tab_contents_wrapper_(tab_contents),
       personal_data_(personal_data),
       download_manager_(NULL),
       disable_download_manager_requests_(true),

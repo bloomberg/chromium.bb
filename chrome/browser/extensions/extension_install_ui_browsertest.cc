@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -21,14 +22,14 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   // Checks that a theme info bar is currently visible and issues an undo to
   // revert to the previous theme.
   void VerifyThemeInfoBarAndUndoInstall() {
-    TabContents* tab_contents = browser()->GetSelectedTabContents();
-    ASSERT_TRUE(tab_contents);
-    ASSERT_EQ(1U, tab_contents->infobar_count());
+    TabContentsWrapper* tab = browser()->GetSelectedTabContentsWrapper();
+    ASSERT_TRUE(tab);
+    ASSERT_EQ(1U, tab->infobar_count());
     ConfirmInfoBarDelegate* delegate =
-        tab_contents->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+        tab->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
-    ASSERT_EQ(0U, tab_contents->infobar_count());
+    ASSERT_EQ(0U, tab->infobar_count());
   }
 
   const Extension* GetTheme() const {

@@ -99,7 +99,6 @@ ExternalTabContainer::ExternalTabContainer(
       handle_top_level_requests_(false),
       external_method_factory_(this),
       pending_(false),
-      infobars_enabled_(true),
       focus_manager_(NULL),
       external_tab_view_(NULL),
       unload_reply_message_(NULL),
@@ -133,7 +132,6 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   load_requests_via_automation_ = load_requests_via_automation;
   handle_top_level_requests_ = handle_top_level_requests;
-  infobars_enabled_ = infobars_enabled;
   route_all_top_level_navigations_ = route_all_top_level_navigations;
 
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
@@ -159,6 +157,9 @@ bool ExternalTabContainer::Init(Profile* profile,
                                                 NULL, NULL);
     tab_contents_.reset(new TabContentsWrapper(new_contents));
   }
+
+  if (!infobars_enabled)
+    tab_contents_->set_infobars_enabled(false);
 
   tab_contents_->tab_contents()->set_delegate(this);
 
@@ -466,10 +467,6 @@ void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
   // requests initiated by this render view would be serviced when the
   // external host connects to the new external tab instance.
   RegisterRenderViewHostForAutomation(rvh, true);
-}
-
-bool ExternalTabContainer::infobars_enabled() {
-  return infobars_enabled_;
 }
 
 void ExternalTabContainer::ActivateContents(TabContents* contents) {
@@ -1076,7 +1073,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   external_tab_view_ = new views::View();
 
   InfoBarContainerView* info_bar_container = new InfoBarContainerView(this);
-  info_bar_container->ChangeTabContents(tab_contents());
+  info_bar_container->ChangeTabContents(tab_contents_.get());
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);
   // Give this column an identifier of 0.
