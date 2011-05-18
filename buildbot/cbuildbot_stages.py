@@ -155,9 +155,9 @@ class BuilderStage():
 
   def _ExtractVariables(self):
     """Extracts common variables from build config and options into class."""
-    # TODO(sosa): Create more general method of passing around configuration.
     self._build_root = os.path.abspath(self._options.buildroot)
-    if self._options.prebuilts and not self._options.debug:
+    if (self._options.prebuilts and self._build_config['prebuilts'] and not
+        self._options.debug):
       self._prebuilt_type = self._build_config['build_type']
 
   def _ExtractOverlays(self):

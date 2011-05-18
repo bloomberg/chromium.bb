@@ -53,6 +53,8 @@ gs_path -- Google Storage path to offload files to.
            value - Upload to explicit path
 
 build_type -- Type of builder [binary | full | chrome].
+prebuilts -- Upload prebuilts for this build.
+
 test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
@@ -121,6 +123,7 @@ default = {
 
   'git_url' : MANIFEST_URL,
   'manifest_version' : None,
+  'prebuilts' : True,
 }
 
 arm = {
@@ -334,55 +337,66 @@ add_config('x86-mario-private-full', [internal, full, official, {
   'board' : 'x86-mario',
   # TODO(sosa): This is wrong but restores don's builder to build with mvp.
   'manifest_version' : MANIFEST_VERSIONS_INT_URL,
+  'prebuilts' : False,
 }])
 
 # cbuild --board=x86-zgb  master --official --chromeos --clean
 #   --upload-board-prebuilt --ctest --unittests --bvt
 add_config('x86-zgb-private-full', [internal, full, official, {
   'board' : 'x86-zgb',
+  'prebuilts' : False,
 }])
 
 # cbuild --board=x86-alex master --official --chromeos --clean
 #   --upload-board-prebuilt --unittests --bvt
 add_config('x86-alex-private-full', [internal, full, official, {
   'board' : 'x86-alex',
+  'prebuilts' : False,
 }])
 
 # cbuild --board=tegra2_seaboard master --official --chromeos --clean
 #   --upload-board-prebuilt
 add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
   'board' : 'arm-tegra2_seaboard',
+  'prebuilts' : False,
 }])
 
 # cbuild --board=tegra2_aebl  master --official --chromeos --clean
 #   --upload-board-prebuilt
 add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
   'board' : 'arm-tegra2_seaboard',
+  'prebuilts' : False,
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {
   'board' : 'x86-mario',
+  'prebuilts' : False,
 }])
 
 add_config('x86-alex-release', [internal, full, official, release, {
   'board' : 'x86-alex',
+  'prebuilts' : False,
 }])
 
 add_config('x86-zgb-release', [internal, full, official, release, {
   'board' : 'x86-zgb',
+  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_seaboard-release', [
     internal, full, official, release, arm, {
   'board' : 'tegra2_seaboard',
+  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_aebl-release', [
     internal, full, official, release, arm, {
   'board' : 'tegra2_aebl',
+  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_kaen-release', [
     internal, full, official, release, arm, {
   'board' : 'tegra2_kaen',
+  'prebuilts' : False,
 }])

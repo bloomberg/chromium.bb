@@ -411,7 +411,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
 
 
 def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
-                        test_tarball, debug=False):
+                       test_tarball, debug=False):
   """Archives build artifacts and returns URL to archived location."""
 
   # Fixed properties
