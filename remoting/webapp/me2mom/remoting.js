@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var remoting = {};
+XMPP_LOGIN_NAME = 'xmpp_login';
 XMPP_TOKEN_NAME = 'xmpp_token';
 OAUTH2_TOKEN_NAME = 'oauth2_token';
 HOST_PLUGIN_ID = 'host_plugin_id';
@@ -95,6 +96,7 @@ function authorizeXmpp(form) {
         return;
       }
       remoting.setItem(XMPP_TOKEN_NAME, auth_line[0].substr(5));
+      remoting.setItem(XMPP_LOGIN_NAME, form['xmpp_username'].value);
       updateAuthStatus_();
     } else if (xhr.status == 403) {
       var error_line = xhr.responseText.match('Error=.*');
@@ -190,7 +192,8 @@ function tryShare() {
   plugin.setAttribute('id', HOST_PLUGIN_ID);
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
-  plugin.connect('uid', 'authtoken');
+  plugin.connect(remoting.getItem(XMPP_LOGIN_NAME),
+                 remoting.getItem(XMPP_TOKEN_NAME));
 }
 
 function onStateChanged_() {
