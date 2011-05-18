@@ -51,6 +51,9 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
   Window* window = new Window;
   Window::InitParams params(window_delegate);
   params.parent_window = parent;
+#if defined(OS_WIN)
+  params.widget_init_params.parent = parent;
+#endif
   params.widget_init_params.bounds = bounds;
   window->InitWindow(params);
   return window;
