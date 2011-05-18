@@ -45,16 +45,6 @@ class NonClientFrameView : public View {
   // view should be laid out within.
   virtual gfx::Rect GetBoundsForClientView() const = 0;
 
-  // Returns true if this FrameView should always use the custom frame,
-  // regardless of the system settings. An example is the Constrained Window,
-  // which is a child window and must always provide its own frame.
-  virtual bool AlwaysUseCustomFrame() const;
-
-  // Like AlwaysUseCustomFrame, returns true if this FrameView should always use
-  // the native frame, regardless of theme settings. An example is popup/app
-  // windows, which we do not ever want to show themed.
-  virtual bool AlwaysUseNativeFrame() const;
-
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const = 0;
 
@@ -160,10 +150,6 @@ class NonClientView : public View {
   // Changes the frame from native to custom depending on the value of
   // |use_native_frame|.
   void UpdateFrame();
-
-  // Returns true if the native window frame should be used, false if the
-  // NonClientView provides its own frame implementation.
-  bool UseNativeFrame() const;
 
   // Prevents the window from being rendered as deactivated when |disable| is
   // true, until called with |disable| false. Used when a sub-window is to be

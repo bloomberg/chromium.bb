@@ -43,6 +43,7 @@ class BrowserFrameWin : public views::WindowWin,
                                BOOL is_system_menu) OVERRIDE;
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
   virtual void OnScreenReaderDetected() OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWindow* AsNativeWindow() OVERRIDE;

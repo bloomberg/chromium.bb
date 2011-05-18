@@ -141,6 +141,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       title_icon_(NULL),
       title_label_(NULL) {
   EnsureResourcesInitialized();
+  frame_->set_frame_type(views::Window::FRAME_TYPE_FORCE_CUSTOM);
 
   options_button_ = new views::MenuButton(NULL, std::wstring(), this, false);
   options_button_->SetIcon(*(options_button_resources.normal_image));
@@ -201,10 +202,6 @@ gfx::Rect PanelBrowserFrameView::GetBoundsForClientView() const {
   return client_view_bounds_;
 }
 
-bool PanelBrowserFrameView::AlwaysUseCustomFrame() const {
-  return true;
-}
-
 gfx::Rect PanelBrowserFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   int top_height = NonClientTopBorderHeight();
@@ -213,10 +210,6 @@ gfx::Rect PanelBrowserFrameView::GetWindowBoundsForClientBounds(
                    std::max(0, client_bounds.y() - top_height),
                    client_bounds.width() + (2 * border_thickness),
                    client_bounds.height() + top_height + border_thickness);
-}
-
-bool PanelBrowserFrameView::AlwaysUseNativeFrame() const {
-  return frame_->AlwaysUseNativeFrame();
 }
 
 int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {

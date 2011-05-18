@@ -58,6 +58,7 @@ extern const char kCloudPrintServiceURL[];
 extern const char kConflictingModulesCheck[];
 extern const char kCountry[];
 extern const char kDebugDevToolsFrontend[];
+extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPrint[];
 extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];

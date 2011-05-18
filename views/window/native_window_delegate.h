@@ -35,10 +35,6 @@ class NativeWindowDelegate {
   // Returns true if the window is a dialog box.
   virtual bool IsDialogBox() const = 0;
 
-  // Returns true if the window is using a system native frame. Returns false if
-  // it is rendering its own title bar, borders and controls.
-  virtual bool IsUsingNativeFrame() const = 0;
-
   // Returns the smallest size the window can be resized to by the user.
   virtual gfx::Size GetMinimumSize() const = 0;
 

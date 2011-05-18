@@ -1554,7 +1554,10 @@ bool BrowserView::ShouldShowWindowIcon() const {
 
 bool BrowserView::ExecuteWindowsCommand(int command_id) {
   // This function handles WM_SYSCOMMAND, WM_APPCOMMAND, and WM_COMMAND.
-
+#if defined(OS_WIN)
+  if (command_id == IDC_DEBUG_FRAME_TOGGLE)
+    GetWindow()->DebugToggleFrameType();
+#endif
   // Translate WM_APPCOMMAND command ids into a command id that the browser
   // knows how to handle.
   int command_id_from_app_command = GetCommandIDForAppCommandID(command_id);
@@ -1801,7 +1804,7 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
-  return (IsTabStripVisible() || !frame_->non_client_view()->UseNativeFrame()) ?
+  return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?
       ResourceBundle::toolbar_separator_color : SK_ColorBLACK;
 }
 
@@ -2356,6 +2359,7 @@ void BrowserView::BuildSystemMenuForBrowserWindow() {
   system_menu_contents_->AddSeparator();
   system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
   system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
+  AddFrameToggleItems();
   // If it's a regular browser window with tabs, we don't add any more items,
   // since it already has menus (Page, Chrome).
 }
@@ -2396,6 +2400,16 @@ void BrowserView::BuildSystemMenuForAppOrPopupWindow() {
                                              IDS_CONTENT_CONTEXT_FORWARD);
   system_menu_contents_->AddItemWithStringId(IDC_BACK,
                                              IDS_CONTENT_CONTEXT_BACK);
+  AddFrameToggleItems();
+}
+
+void BrowserView::AddFrameToggleItems() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDebugEnableFrameToggle)) {
+    system_menu_contents_->AddSeparator();
+    system_menu_contents_->AddItem(IDC_DEBUG_FRAME_TOGGLE,
+                                   L"Toggle Frame Type");
+  }
 }
 #endif
 

@@ -52,6 +52,12 @@ class Window : public Widget,
     Widget::InitParams widget_init_params;
   };
 
+  enum FrameType {
+    FRAME_TYPE_DEFAULT,         // Use whatever the default would be.
+    FRAME_TYPE_FORCE_CUSTOM,    // Force the custom frame.
+    FRAME_TYPE_FORCE_NATIVE     // Force the native frame.
+  };
+
   Window();
   virtual ~Window();
 
@@ -162,8 +168,15 @@ class Window : public Widget,
   // Retrieves the Window's native window handle.
   gfx::NativeWindow GetNativeWindow() const;
 
+  void set_frame_type(FrameType frame_type) { frame_type_ = frame_type; }
+  FrameType frame_type() const { return frame_type_; }
+
   // Whether we should be using a native frame.
   bool ShouldUseNativeFrame() const;
+
+  // Forces the frame into the alternate frame type (custom or native) depending
+  // on its current state.
+  void DebugToggleFrameType();
 
   // Tell the window that something caused the frame type to change.
   void FrameTypeChanged();
@@ -201,7 +214,6 @@ class Window : public Widget,
   virtual void EnableInactiveRendering() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual bool IsDialogBox() const OVERRIDE;
-  virtual bool IsUsingNativeFrame() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ExecuteCommand(int command_id) OVERRIDE;
@@ -247,6 +259,10 @@ class Window : public Widget,
 
   // Set to true if the window is in the process of closing .
   bool window_closed_;
+
+  // The current frame type in use by this window. Defaults to
+  // FRAME_TYPE_DEFAULT.
+  FrameType frame_type_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };
