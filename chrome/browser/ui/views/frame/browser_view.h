@@ -523,9 +523,6 @@ class BrowserView : public BrowserBubbleHost,
   // Builds the correct menu for when we have minimal chrome.
   void BuildSystemMenuForBrowserWindow();
   void BuildSystemMenuForAppOrPopupWindow();
-
-  // Adds optional debug items for frame type toggling.
-  void AddFrameToggleItems();
 #endif
 
   // Retrieves the command id for the specified Windows app command.

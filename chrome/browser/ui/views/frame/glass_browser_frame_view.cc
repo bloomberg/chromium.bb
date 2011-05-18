@@ -171,6 +171,10 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForClientView() const {
   return client_view_bounds_;
 }
 
+bool GlassBrowserFrameView::AlwaysUseNativeFrame() const {
+  return frame_->AlwaysUseNativeFrame();
+}
+
 gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   HWND hwnd = frame_->GetNativeWindow();

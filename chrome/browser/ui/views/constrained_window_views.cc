@@ -155,6 +155,7 @@ class ConstrainedWindowFrameView
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
+  virtual bool AlwaysUseCustomFrame() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
@@ -272,10 +273,6 @@ ConstrainedWindowFrameView::ConstrainedWindowFrameView(
   InitClass();
   InitWindowResources();
 
-  // Constrained windows always use the custom frame - they just have a
-  // different set of bitmaps.
-  container->set_frame_type(views::Window::FRAME_TYPE_FORCE_CUSTOM);
-
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_CLOSE_SA));
@@ -300,6 +297,12 @@ void ConstrainedWindowFrameView::UpdateWindowTitle() {
 
 gfx::Rect ConstrainedWindowFrameView::GetBoundsForClientView() const {
   return client_view_bounds_;
+}
+
+bool ConstrainedWindowFrameView::AlwaysUseCustomFrame() const {
+  // Constrained windows always use the custom frame - they just have a
+  // different set of bitmaps.
+  return true;
 }
 
 gfx::Rect ConstrainedWindowFrameView::GetWindowBoundsForClientBounds(

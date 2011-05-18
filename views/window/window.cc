@@ -37,8 +37,7 @@ Window::Window()
       saved_maximized_state_(false),
       minimum_size_(100, 100),
       disable_inactive_rendering_(false),
-      window_closed_(false),
-      frame_type_(FRAME_TYPE_DEFAULT) {
+      window_closed_(false) {
 }
 
 Window::~Window() {
@@ -239,20 +238,7 @@ gfx::NativeWindow Window::GetNativeWindow() const {
 }
 
 bool Window::ShouldUseNativeFrame() const {
-  if (frame_type_ != FRAME_TYPE_DEFAULT)
-    return frame_type_ == FRAME_TYPE_FORCE_NATIVE;
   return native_window_->ShouldUseNativeFrame();
-}
-
-void Window::DebugToggleFrameType() {
-  if (frame_type_ == FRAME_TYPE_DEFAULT) {
-    frame_type_ = ShouldUseNativeFrame() ? FRAME_TYPE_FORCE_CUSTOM :
-        FRAME_TYPE_FORCE_NATIVE;
-  } else {
-    frame_type_ = frame_type_ == FRAME_TYPE_FORCE_CUSTOM ?
-        FRAME_TYPE_FORCE_NATIVE : FRAME_TYPE_FORCE_CUSTOM;
-  }
-  FrameTypeChanged();
 }
 
 void Window::FrameTypeChanged() {
@@ -281,6 +267,10 @@ bool Window::IsModal() const {
 
 bool Window::IsDialogBox() const {
   return !!window_delegate_->AsDialogDelegate();
+}
+
+bool Window::IsUsingNativeFrame() const {
+  return non_client_view_->UseNativeFrame();
 }
 
 gfx::Size Window::GetMinimumSize() const {

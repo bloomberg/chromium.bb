@@ -42,6 +42,8 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
+  virtual bool AlwaysUseCustomFrame() const OVERRIDE;
+  virtual bool AlwaysUseNativeFrame() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;

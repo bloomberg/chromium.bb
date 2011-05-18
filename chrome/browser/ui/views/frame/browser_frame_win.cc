@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/theme_resources.h"
-#include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
 #include "views/screen.h"
 #include "views/window/non_client_view.h"
@@ -65,7 +64,7 @@ int BrowserFrameWin::GetShowState() const {
 gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
   // Use the default client insets for an opaque frame or a glass popup/app
   // frame.
-  if (!GetWindow()->ShouldUseNativeFrame() ||
+  if (!GetWindow()->non_client_view()->UseNativeFrame() ||
       !browser_view_->IsBrowserTypeNormal()) {
     return WindowWin::GetClientAreaInsets();
   }
@@ -120,24 +119,6 @@ void BrowserFrameWin::OnScreenReaderDetected() {
   WindowWin::OnScreenReaderDetected();
 }
 
-bool BrowserFrameWin::ShouldUseNativeFrame() const {
-  // App panel windows draw their own frame.
-  if (browser_view_->IsBrowserTypePanel())
-    return false;
-
-  // We don't theme popup or app windows, so regardless of whether or not a
-  // theme is active for normal browser windows, we don't want to use the custom
-  // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() &&
-      WindowWin::ShouldUseNativeFrame()) {
-    return true;
-  }
-
-  // Otherwise, we use the native frame when we're told we should by the theme
-  // provider (e.g. no custom theme is active).
-  return GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, NativeBrowserFrame implementation:
 
@@ -170,7 +151,7 @@ void BrowserFrameWin::TabStripDisplayModeChanged() {
 
 void BrowserFrameWin::UpdateDWMFrame() {
   // Nothing to do yet, or we're not showing a DWM frame.
-  if (!GetWindow()->client_view() || !browser_frame_->ShouldUseNativeFrame())
+  if (!GetWindow()->client_view() || !browser_frame_->AlwaysUseNativeFrame())
     return;
 
   MARGINS margins = { 0 };

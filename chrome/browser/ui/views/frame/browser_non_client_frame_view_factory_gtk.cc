@@ -13,7 +13,7 @@ namespace browser {
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
   if (browser_view->IsBrowserTypePopup() || browser_view->IsBrowserTypePanel())
-    return new PopupNonClientFrameView(frame);
+    return new PopupNonClientFrameView();
   else
     return new OpaqueBrowserFrameView(frame, browser_view);
 }

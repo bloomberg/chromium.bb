@@ -466,7 +466,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
   }
 
   int vertical_spacing = PopupTopSpacing() +
-      (GetWindow()->ShouldUseNativeFrame() ?
+      (GetWindow()->non_client_view()->UseNativeFrame() ?
           kPopupBottomSpacingGlass : kPopupBottomSpacingNonGlass);
   return gfx::Size(0, location_bar_->GetPreferredSize().height() +
       vertical_spacing);
@@ -566,7 +566,7 @@ void ToolbarView::OnPaint(gfx::Canvas* canvas) {
   // it from the content area.  For non-glass, the NonClientView draws the
   // toolbar background below the location bar for us.
   // NOTE: Keep this in sync with BrowserView::GetInfoBarSeparatorColor()!
-  if (GetWindow()->ShouldUseNativeFrame())
+  if (GetWindow()->non_client_view()->UseNativeFrame())
     canvas->FillRectInt(SK_ColorBLACK, 0, height() - 1, width(), 1);
 }
 
@@ -646,7 +646,7 @@ int ToolbarView::PopupTopSpacing() const {
   //             it's possible the crash may just show up somewhere else.
   const views::Window* window = GetWindow();
   DCHECK(window) << "If you hit this please talk to beng";
-  return window && window->ShouldUseNativeFrame() ?
+  return window && window->non_client_view()->UseNativeFrame() ?
       0 : kPopupTopSpacingNonGlass;
 }
 

@@ -310,7 +310,7 @@ gfx::Font WindowWin::GetWindowTitleFont() {
 gfx::Insets WindowWin::GetClientAreaInsets() const {
   // Returning an empty Insets object causes the default handling in
   // WidgetWin::OnNCCalcSize() to be invoked.
-  if (GetWindow()->ShouldUseNativeFrame())
+  if (delegate_->IsUsingNativeFrame())
     return gfx::Insets();
 
   if (IsMaximized()) {
@@ -331,7 +331,7 @@ gfx::Insets WindowWin::GetClientAreaInsets() const {
   // rect when using the opaque frame.
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
-  return gfx::Insets(0, 0, 0, 0);
+  return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
 }
 
 int WindowWin::GetShowState() const {
@@ -414,7 +414,7 @@ void WindowWin::OnExitSizeMove() {
   WidgetWin::OnExitSizeMove();
   delegate_->OnNativeWindowEndUserBoundsChange();
 
-  if (!GetWindow()->ShouldUseNativeFrame()) {
+  if (!ShouldUseNativeFrame()) {
     // Sending SWP_FRAMECHANGED forces a non-client repaint, which fixes the
     // glitch in rendering the bottom pixel of the window caused by us
     // offsetting the client rect there (See comment in GetClientAreaInsets()).
@@ -438,7 +438,7 @@ void WindowWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
 void WindowWin::OnInitMenu(HMENU menu) {
   // We only need to manually enable the system menu if we're not using a native
   // frame.
-  if (GetWindow()->ShouldUseNativeFrame())
+  if (delegate_->IsUsingNativeFrame())
     WidgetWin::OnInitMenu(menu);
 
   bool is_fullscreen = IsFullscreen();
@@ -484,8 +484,7 @@ LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
       ExecuteSystemMenuCommand(id);
       return 0;
     }
-  } else if (message == WM_NCLBUTTONDOWN &&
-             !GetWindow()->ShouldUseNativeFrame()) {
+  } else if (message == WM_NCLBUTTONDOWN && !delegate_->IsUsingNativeFrame()) {
     switch (w_param) {
       case HTCLOSE:
       case HTMINBUTTON:
@@ -563,7 +562,7 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
   if (IsVisible())
     GetWindow()->non_client_view()->SchedulePaint();
 
-  if (!GetWindow()->ShouldUseNativeFrame()) {
+  if (!ShouldUseNativeFrame()) {
     // TODO(beng, et al): Hack to redraw this window and child windows
     //     synchronously upon activation. Not all child windows are redrawing
     //     themselves leading to issues like http://crbug.com/74604
@@ -584,7 +583,6 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
 }
 
 LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
-  //return 0;
   // We only override the default handling if we need to specify a custom
   // non-client edge width. Note that in most cases "no insets" means no
   // custom width, but in fullscreen mode we want a custom width of 0.
@@ -626,7 +624,7 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
     if (EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
       client_rect->left += kAutoHideTaskbarThicknessPx;
     if (EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
-      if (GetWindow()->ShouldUseNativeFrame()) {
+      if (delegate_->IsUsingNativeFrame()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
         // caption buttons to draw onscreen but not respond to mouse
@@ -667,7 +665,7 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
   // If the DWM is rendering the window controls, we need to give the DWM's
   // default window procedure first chance to handle hit testing.
-  if (GetWindow()->ShouldUseNativeFrame()) {
+  if (ShouldUseNativeFrame()) {
     LRESULT result;
     if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
                          MAKELPARAM(point.x, point.y), &result)) {
@@ -692,14 +690,14 @@ void WindowWin::OnNCPaint(HRGN rgn) {
   // When using a custom frame, we want to avoid calling DefWindowProc() since
   // that may render artifacts.
   SetMsgHandled((!IsActive() || is_in_size_move_) &&
-                !GetWindow()->ShouldUseNativeFrame());
+                !delegate_->IsUsingNativeFrame());
 }
 
 LRESULT WindowWin::OnNCUAHDrawCaption(UINT msg, WPARAM w_param,
                                       LPARAM l_param) {
   // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
   // an explanation about why we need to handle this message.
-  SetMsgHandled(!GetWindow()->ShouldUseNativeFrame());
+  SetMsgHandled(!delegate_->IsUsingNativeFrame());
   return 0;
 }
 
@@ -707,7 +705,7 @@ LRESULT WindowWin::OnNCUAHDrawFrame(UINT msg, WPARAM w_param,
                                     LPARAM l_param) {
   // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
   // an explanation about why we need to handle this message.
-  SetMsgHandled(!GetWindow()->ShouldUseNativeFrame());
+  SetMsgHandled(!delegate_->IsUsingNativeFrame());
   return 0;
 }
 
@@ -764,7 +762,7 @@ void WindowWin::OnSysCommand(UINT notification_code, CPoint click) {
        ((notification_code & sc_mask) == SC_MOVE) ||
        ((notification_code & sc_mask) == SC_MAXIMIZE)))
     return;
-  if (!GetWindow()->ShouldUseNativeFrame()) {
+  if (!delegate_->IsUsingNativeFrame()) {
     if ((notification_code & sc_mask) == SC_MINIMIZE ||
         (notification_code & sc_mask) == SC_MAXIMIZE ||
         (notification_code & sc_mask) == SC_RESTORE) {
@@ -1207,7 +1205,7 @@ void WindowWin::SetUseDragFrame(bool use_drag_frame) {
 }
 
 NonClientFrameView* WindowWin::CreateFrameViewForWindow() {
-  if (GetWindow()->ShouldUseNativeFrame())
+  if (ShouldUseNativeFrame())
     return new NativeFrameView(GetWindow());
   return new CustomFrameView(GetWindow());
 }
@@ -1234,8 +1232,8 @@ void WindowWin::FrameTypeChanged() {
     // the DWM's glass non-client rendering is enabled, which is why
     // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
     // DWM doesn't render glass, and so is used in the custom frame case.
-    DWMNCRENDERINGPOLICY policy = GetWindow()->ShouldUseNativeFrame() ?
-        DWMNCRP_ENABLED : DWMNCRP_DISABLED;
+    DWMNCRENDERINGPOLICY policy =
+        delegate_->IsUsingNativeFrame() ? DWMNCRP_ENABLED : DWMNCRP_DISABLED;
     DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
                           &policy, sizeof(DWMNCRENDERINGPOLICY));
   }
@@ -1309,7 +1307,7 @@ void WindowWin::UnlockUpdates() {
 void WindowWin::ResetWindowRegion(bool force) {
   // A native frame uses the native window region, and we don't want to mess
   // with it.
-  if (GetWindow()->ShouldUseNativeFrame()) {
+  if (delegate_->IsUsingNativeFrame()) {
     if (force)
       SetWindowRgn(NULL, TRUE);
     return;
