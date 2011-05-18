@@ -1151,6 +1151,13 @@ void BrowserAccessibilityWin::Initialize() {
   // announce the name.
   if (name_.empty() && HasAttribute(WebAccessibility::ATTR_DESCRIPTION))
     GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &name_);
+
+  // If this doesn't have a value and is linked then set its value to the url
+  // attribute. This allows screen readers to read an empty link's destination.
+  if (value_.empty() && (ia_state_ & STATE_SYSTEM_LINKED) &&
+      HasAttribute(WebAccessibility::ATTR_URL)) {
+    GetAttribute(WebAccessibility::ATTR_URL, &value_);
+  }
 }
 
 void BrowserAccessibilityWin::NativeAddReference() {
