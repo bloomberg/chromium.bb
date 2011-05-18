@@ -124,7 +124,8 @@ TEST_P(FullTabNavigationTest, Refresh) {
 }
 
 // Test that multiple back and forward requests work.
-TEST_P(FullTabNavigationTest, MultipleBackForward) {
+// TODO(tsepez): http://crbug.com/83133
+TEST_P(FullTabNavigationTest, FLAKY_MultipleBackForward) {
   std::wstring page1 = GetSimplePageUrl();
   std::wstring page2 = GetLinkPageUrl();
   std::wstring page3 = GetAnchorPageUrl(0);
