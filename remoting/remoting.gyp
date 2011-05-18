@@ -147,6 +147,7 @@
       'dependencies': [
         'remoting_base',
         'remoting_host',
+        'remoting_jingle_glue',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [

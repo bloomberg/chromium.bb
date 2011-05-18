@@ -10,6 +10,7 @@
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
@@ -17,6 +18,13 @@
 #include "base/task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "remoting/host/chromoting_host.h"
+#include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/host_config.h"
+#include "remoting/host/host_key_pair.h"
+#include "remoting/host/in_memory_host_config.h"
+#include "remoting/host/register_support_host_request.h"
+#include "remoting/host/support_access_verifier.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -34,8 +42,8 @@
 
  state: {
      DISCONNECTED,
-     REQUESTED_SUPPORT_ID,
-     RECEIVED_SUPPORT_ID,
+     REQUESTED_ACCESS_CODE,
+     RECEIVED_ACCESS_CODE,
      CONNECTED,
      AFFIRMING_CONNECTION,
      ERROR,
@@ -104,13 +112,13 @@ class HostNPScriptObject {
         parent_(parent),
         state_(kDisconnected),
         on_state_changed_func_(NULL),
-        worker_thread_("remoting_host_plugin"),
         np_thread_id_(base::PlatformThread::CurrentId()) {
     LOG(INFO) << "HostNPScriptObject";
   }
 
   ~HostNPScriptObject() {
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+    host_context_.Stop();
     if (on_state_changed_func_) {
       g_npnetscape_funcs->releaseobject(on_state_changed_func_);
     }
@@ -118,11 +126,13 @@ class HostNPScriptObject {
 
   bool Init() {
     LOG(INFO) << "Init";
-    return worker_thread_.Start();
+    // TODO(wez): This starts a bunch of threads, which might fail.
+    host_context_.Start();
+    return true;
   }
 
-  bool HasMethod(std::string method_name) {
-    LOG(INFO) << "HasMethod" << method_name;
+  bool HasMethod(const std::string& method_name) {
+    LOG(INFO) << "HasMethod " << method_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return (method_name == kFuncNameConnect ||
             method_name == kFuncNameDisconnect);
@@ -137,7 +147,7 @@ class HostNPScriptObject {
     return false;
   }
 
-  bool Invoke(std::string method_name,
+  bool Invoke(const std::string& method_name,
               const NPVariant* args,
               uint32_t argCount,
               NPVariant* result) {
@@ -153,21 +163,21 @@ class HostNPScriptObject {
     }
   }
 
-  bool HasProperty(std::string property_name) {
+  bool HasProperty(const std::string& property_name) {
     LOG(INFO) << "HasProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
-    return (property_name == kAttrNameSupportID ||
+    return (property_name == kAttrNameAccessCode ||
             property_name == kAttrNameState ||
             property_name == kAttrNameOnStateChanged ||
             property_name == kAttrNameDisconnected ||
-            property_name == kAttrNameRequestedSupportID ||
-            property_name == kAttrNameReceivedSupportID ||
+            property_name == kAttrNameRequestedAccessCode ||
+            property_name == kAttrNameReceivedAccessCode ||
             property_name == kAttrNameConnected ||
             property_name == kAttrNameAffirmingConnection ||
             property_name == kAttrNameError);
   }
 
-  bool GetProperty(std::string property_name, NPVariant* result) {
+  bool GetProperty(const std::string& property_name, NPVariant* result) {
     LOG(INFO) << "GetProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     if (!result) {
@@ -181,17 +191,17 @@ class HostNPScriptObject {
     } else if (property_name == kAttrNameState) {
       INT32_TO_NPVARIANT(state_, *result);
       return true;
-    } else if (property_name == kAttrNameSupportID) {
-      *result = NPVariantFromString(support_id_);
+    } else if (property_name == kAttrNameAccessCode) {
+      *result = NPVariantFromString(access_code_);
       return true;
     } else if (property_name == kAttrNameDisconnected) {
       INT32_TO_NPVARIANT(kDisconnected, *result);
       return true;
-    } else if (property_name == kAttrNameRequestedSupportID) {
-      INT32_TO_NPVARIANT(kRequestedSupportID, *result);
+    } else if (property_name == kAttrNameRequestedAccessCode) {
+      INT32_TO_NPVARIANT(kRequestedAccessCode, *result);
       return true;
-    } else if (property_name == kAttrNameReceivedSupportID) {
-      INT32_TO_NPVARIANT(kReceivedSupportID, *result);
+    } else if (property_name == kAttrNameReceivedAccessCode) {
+      INT32_TO_NPVARIANT(kReceivedAccessCode, *result);
       return true;
     } else if (property_name == kAttrNameConnected) {
       INT32_TO_NPVARIANT(kConnected, *result);
@@ -208,14 +218,9 @@ class HostNPScriptObject {
     }
   }
 
-  bool SetProperty(std::string property_name, const NPVariant* value) {
+  bool SetProperty(const std::string& property_name, const NPVariant* value) {
     LOG(INFO) << "SetProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
-
-    // The support-ID and state are read-only.
-    if (property_name == kAttrNameSupportID ||
-        property_name == kAttrNameState)
-      return false;
 
     if (property_name == kAttrNameOnStateChanged) {
       if (on_state_changed_func_) {
@@ -233,10 +238,11 @@ class HostNPScriptObject {
                      property_name);
       }
     }
+
     return false;
   }
 
-  bool RemoveProperty(std::string property_name) {
+  bool RemoveProperty(const std::string& property_name) {
     LOG(INFO) << "RemoveProperty " << property_name;
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return false;
@@ -246,14 +252,14 @@ class HostNPScriptObject {
     LOG(INFO) << "Enumerate";
     CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     const char* entries[] = {
-      kAttrNameSupportID,
+      kAttrNameAccessCode,
       kAttrNameState,
       kAttrNameOnStateChanged,
       kFuncNameConnect,
       kFuncNameDisconnect,
       kAttrNameDisconnected,
-      kAttrNameRequestedSupportID,
-      kAttrNameReceivedSupportID,
+      kAttrNameRequestedAccessCode,
+      kAttrNameReceivedAccessCode,
       kAttrNameConnected,
       kAttrNameAffirmingConnection,
       kAttrNameError
@@ -266,28 +272,28 @@ class HostNPScriptObject {
 
  private:
   // JS string
-  static const char* kAttrNameSupportID;
+  static const char* kAttrNameAccessCode;
   // JS int
   static const char* kAttrNameState;
   // JS func onStateChanged()
   static const char* kAttrNameOnStateChanged;
-  // void connect(string uid, string auth_token, function done);
+  // void connect(string uid, string auth_token);
   static const char* kFuncNameConnect;
   // void disconnect();
   static const char* kFuncNameDisconnect;
 
   // States
   static const char* kAttrNameDisconnected;
-  static const char* kAttrNameRequestedSupportID;
-  static const char* kAttrNameReceivedSupportID;
+  static const char* kAttrNameRequestedAccessCode;
+  static const char* kAttrNameReceivedAccessCode;
   static const char* kAttrNameConnected;
   static const char* kAttrNameAffirmingConnection;
   static const char* kAttrNameError;
 
   enum State {
     kDisconnected,
-    kRequestedSupportID,
-    kReceivedSupportID,
+    kRequestedAccessCode,
+    kReceivedAccessCode,
     kConnected,
     kAffirmingConnection,
     kError
@@ -296,11 +302,16 @@ class HostNPScriptObject {
   NPP plugin_;
   NPObject* parent_;
   int state_;
-  std::string support_id_;
+  std::string access_code_;
   NPObject* on_state_changed_func_;
   base::AtExitManager exit_manager_;
-  base::Thread worker_thread_;
   base::PlatformThreadId np_thread_id_;
+
+  scoped_refptr<remoting::RegisterSupportHostRequest> register_request_;
+  scoped_refptr<remoting::ChromotingHost> host_;
+  scoped_refptr<remoting::MutableHostConfig> host_config_;
+  remoting::ChromotingHostContext host_context_;
+  std::string host_secret_;
 
   // Start connection. args are:
   //   string uid, string auth_token
@@ -314,8 +325,9 @@ class HostNPScriptObject {
   void OnStateChanged(State state);
 
   // Currently just mock methods to verify that everything is working
-  void OnReceivedSupportID(const std::string& support_id);
+  void OnReceivedSupportID(bool success, const std::string& support_id);
   void OnConnected();
+  void OnHostShutdown();
 
   // Call a JavaScript function wrapped as an NPObject.
   // If result is non-null, the result of the call will be stored in it.
@@ -332,10 +344,10 @@ class HostNPScriptObject {
   static void NPTaskSpringboard(void* task);
 
   // Set an exception for the current call.
-  void SetException(std::string exception_string);
+  void SetException(const std::string& exception_string);
 };
 
-const char* HostNPScriptObject::kAttrNameSupportID = "accessCode";
+const char* HostNPScriptObject::kAttrNameAccessCode = "accessCode";
 const char* HostNPScriptObject::kAttrNameState = "state";
 const char* HostNPScriptObject::kAttrNameOnStateChanged = "onStateChanged";
 const char* HostNPScriptObject::kFuncNameConnect = "connect";
@@ -343,16 +355,16 @@ const char* HostNPScriptObject::kFuncNameDisconnect = "disconnect";
 
 // States
 const char* HostNPScriptObject::kAttrNameDisconnected = "DISCONNECTED";
-const char* HostNPScriptObject::kAttrNameRequestedSupportID =
-    "REQUESTED_SUPPORT_ID";
-const char* HostNPScriptObject::kAttrNameReceivedSupportID =
-    "RECEIVED_SUPPORT_ID";
+const char* HostNPScriptObject::kAttrNameRequestedAccessCode =
+    "REQUESTED_ACCESS_CODE";
+const char* HostNPScriptObject::kAttrNameReceivedAccessCode =
+    "RECEIVED_ACCESS_CODE";
 const char* HostNPScriptObject::kAttrNameConnected = "CONNECTED";
 const char* HostNPScriptObject::kAttrNameAffirmingConnection =
     "AFFIRMING_CONNECTION";
 const char* HostNPScriptObject::kAttrNameError = "ERROR";
 
-// string uid, string auth_token, function done
+// string uid, string auth_token
 bool HostNPScriptObject::Connect(const NPVariant* args,
                                  uint32_t arg_count,
                                  NPVariant* result) {
@@ -374,26 +386,50 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
-  // TODO: implement. Stuff below is just some mock stuff to test JS side of
-  // things.
+  // Store the supplied user ID and token to the Host configuration.
+  scoped_refptr<remoting::MutableHostConfig> host_config =
+      new remoting::InMemoryHostConfig;
+  host_config->SetString(remoting::kXmppLoginConfigPath, uid);
+  host_config->SetString(remoting::kXmppAuthTokenConfigPath, auth_token);
 
-  static const char* some_ids[] = {
-    "ABCD-1234-WXYZ",
-    "LOVE-0000-HATE",
-    "COOL-9999-TOYZ",
-    "GOOD-7666-EVIL"
-  };
+  // Create an access verifier and fetch the host secret.
+  scoped_ptr<remoting::SupportAccessVerifier> access_verifier;
+  access_verifier.reset(new remoting::SupportAccessVerifier);
+  if (!access_verifier->Init()) {
+    SetException("connect: SupportAccessVerifier::Init failed");
+    return false;
+  }
+  host_secret_ = access_verifier->host_secret();
 
-  std::string support_id = some_ids[base::RandInt(1, arraysize(some_ids)) - 1];
-  worker_thread_.message_loop()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &HostNPScriptObject::OnReceivedSupportID,
-                        support_id),
-      1000);
+  // Generate a key pair for the Host to use.
+  // TODO(wez): Move this to the worker thread.
+  remoting::HostKeyPair host_key_pair;
+  host_key_pair.Generate();
+  host_key_pair.Save(host_config);
 
+  // Create the Host.
+  scoped_refptr<remoting::ChromotingHost> host =
+      remoting::ChromotingHost::Create(&host_context_, host_config,
+                                       access_verifier.release());
 
-  OnStateChanged(kRequestedSupportID);
+  // Request registration of the host for support.
+  scoped_refptr<remoting::RegisterSupportHostRequest> register_request =
+      new remoting::RegisterSupportHostRequest();
+  if (!register_request->Init(
+          host_config.get(),
+          base::Bind(&HostNPScriptObject::OnReceivedSupportID,
+                     base::Unretained(this)))) {
+    SetException("connect: RegisterSupportHostRequest::Init failed");
+    return false;
+  }
+  host->AddStatusObserver(register_request);
+
+  // Nothing went wrong, so lets save the host, config and request.
+  host_ = host;
+  host_config_ = host_config;
+  register_request_ = register_request;
+
+  OnStateChanged(kRequestedAccessCode);
   return true;
 }
 
@@ -406,25 +442,51 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
     return false;
   }
 
-  // TODO: implement
+  if (host_.get()) {
+    host_->Shutdown();
+    host_ = NULL;
+  }
+  register_request_ = NULL;
+  host_config_ = NULL;
+  host_secret_.clear();
 
   OnStateChanged(kDisconnected);
   return true;
 }
 
-void HostNPScriptObject::OnReceivedSupportID(const std::string& support_id) {
+void HostNPScriptObject::OnReceivedSupportID(bool success,
+                                             const std::string& support_id) {
   CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
-  support_id_ = support_id;
-  OnStateChanged(kReceivedSupportID);
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &HostNPScriptObject::OnConnected),
-      3000);
+
+  if (!success) {
+    // TODO(wez): Replace the success/fail flag with full error reporting.
+    OnHostShutdown();
+    return;
+  }
+
+  // Combine the Support Id with the Host Id to make the Access Code
+  // TODO(wez): Locking, anyone?
+  access_code_ = support_id + "-" + host_secret_;
+  host_secret_ = std::string();
+
+  // TODO(wez): Attach to the Host for notifications of state changes.
+  // It currently has no interface for that, though.
+
+  // Start the Host.
+  host_->Start(NewRunnableMethod(this, &HostNPScriptObject::OnHostShutdown));
+
+  // Let the caller know that life is good.
+  OnStateChanged(kReceivedAccessCode);
 }
 
 void HostNPScriptObject::OnConnected() {
   CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
   OnStateChanged(kConnected);
+}
+
+void HostNPScriptObject::OnHostShutdown() {
+  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
+  OnStateChanged(kDisconnected);
 }
 
 void HostNPScriptObject::OnStateChanged(State state) {
@@ -442,7 +504,7 @@ void HostNPScriptObject::OnStateChanged(State state) {
   }
 }
 
-void HostNPScriptObject::SetException(std::string exception_string) {
+void HostNPScriptObject::SetException(const std::string& exception_string) {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
 }

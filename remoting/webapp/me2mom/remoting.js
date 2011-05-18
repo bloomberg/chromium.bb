@@ -200,9 +200,9 @@ function tryShare() {
 function onStateChanged_() {
   var plugin = document.getElementById(HOST_PLUGIN_ID);
   var state = plugin.state;
-  if (state == plugin.REQUESTED_SUPPORT_ID) {
+  if (state == plugin.REQUESTED_ACCESS_CODE) {
     setHostMode('preparing_to_share');
-  } else if (state == plugin.RECEIVED_SUPPORT_ID) {
+  } else if (state == plugin.RECEIVED_ACCESS_CODE) {
     var access_code = plugin.accessCode;
     var access_code_display = document.getElementById('access_code_display');
     access_code_display.innerText = access_code;
