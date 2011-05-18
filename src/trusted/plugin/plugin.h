@@ -88,9 +88,15 @@ class Plugin : public PortableHandle {
   // Origin of the page with the <embed> tag that created this plugin instance.
   nacl::string origin() const { return origin_; }
 
-  // The URL used as the base for resolving relative urls in src="...", etc.
-  nacl::string base_url() const { return base_url_; }
-  void set_base_url(nacl::string url) { base_url_ = url; }
+  // URL resolution support.
+  // plugin_base_url is the URL used for resolving relative URLs used in
+  // src="...".
+  nacl::string plugin_base_url() const { return plugin_base_url_; }
+  void set_plugin_base_url(nacl::string url) { plugin_base_url_ = url; }
+  // manifest_base_url is the URL used for resolving relative URLs mentioned
+  // in manifest files.  If the manifest is a data URI, this is an empty string.
+  nacl::string manifest_base_url() const { return manifest_base_url_; }
+  void set_manifest_base_url(nacl::string url) { manifest_base_url_ = url; }
 
   // The origin of the NaCl module.
   nacl::string nacl_module_origin() const { return nacl_module_origin_; }
@@ -98,8 +104,8 @@ class Plugin : public PortableHandle {
     nacl_module_origin_ = origin;
   }
 
-  // The full URL of the manifest file as set by the "src" attribute.  This is
-  // a read-only property, set by RequestNaClManifest.
+  // The URL of the manifest file as set by the "src" attribute.
+  // It is not the fully resolved URL if it was set as relative.
   const nacl::string& manifest_url() const { return manifest_url_; }
   void set_manifest_url(const nacl::string& manifest_url) {
     manifest_url_ = manifest_url;
@@ -204,7 +210,8 @@ class Plugin : public PortableHandle {
   nacl::string origin_;
   bool origin_valid_;
 
-  nacl::string base_url_;
+  nacl::string plugin_base_url_;
+  nacl::string manifest_base_url_;
   nacl::string manifest_url_;
   nacl::string nacl_module_origin_;
   ReadyState nacl_ready_state_;
