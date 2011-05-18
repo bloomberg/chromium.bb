@@ -128,8 +128,6 @@ class InputMethodIBus : public InputMethodBase {
                      IBusInputContext*, IBusText*, guint, gboolean);
   CHROMEG_CALLBACK_0(InputMethodIBus, void, OnHidePreeditText,
                      IBusInputContext*);
-  CHROMEG_CALLBACK_0(InputMethodIBus, void, OnEnable, IBusInputContext*);
-  CHROMEG_CALLBACK_0(InputMethodIBus, void, OnDisable, IBusInputContext*);
   CHROMEG_CALLBACK_0(InputMethodIBus, void, OnDestroy, IBusInputContext*);
   CHROMEG_CALLBACK_0(InputMethodIBus, void, OnFakeDestroy, IBusInputContext*);
 
@@ -192,9 +190,6 @@ class InputMethodIBus : public InputMethodBase {
   // If it's true then all input method result received before the next key
   // event will be discarded.
   bool suppress_next_result_;
-
-  // Indicates if |context_| is enabled.
-  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodIBus);
 };

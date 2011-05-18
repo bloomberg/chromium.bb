@@ -260,8 +260,7 @@ InputMethodIBus::InputMethodIBus(internal::InputMethodDelegate* delegate)
       context_focused_(false),
       composing_text_(false),
       composition_changed_(false),
-      suppress_next_result_(false),
-      enabled_(false) {
+      suppress_next_result_(false) {
   set_delegate(delegate);
 }
 
@@ -478,10 +477,6 @@ void InputMethodIBus::SetContext(IBusInputContext* ic, bool fake) {
                    G_CALLBACK(OnShowPreeditTextThunk), this);
   g_signal_connect(ic, "hide-preedit-text",
                    G_CALLBACK(OnHidePreeditTextThunk), this);
-  g_signal_connect(ic, "enabled",
-                   G_CALLBACK(OnEnableThunk), this);
-  g_signal_connect(ic, "disabled",
-                   G_CALLBACK(OnDisableThunk), this);
   g_signal_connect(ic, "destroy",
                    G_CALLBACK(OnDestroyThunk), this);
 
@@ -489,9 +484,6 @@ void InputMethodIBus::SetContext(IBusInputContext* ic, bool fake) {
   guint32 caps = IBUS_CAP_PREEDIT_TEXT | IBUS_CAP_FOCUS;
   ibus_input_context_set_capabilities(ic, caps);
 
-  // Sadly, we will not receive "enabled" signal at all. So just assume the
-  // input context is enabled by default.
-  enabled_ = true;
   UpdateContextFocusState();
   OnInputMethodChanged();
 }
@@ -900,18 +892,6 @@ void InputMethodIBus::OnHidePreeditText(IBusInputContext* context) {
   }
 }
 
-void InputMethodIBus::OnEnable(IBusInputContext* context) {
-  DCHECK_EQ(context_, context);
-  enabled_ = true;
-  OnInputMethodChanged();
-}
-
-void InputMethodIBus::OnDisable(IBusInputContext* context) {
-  DCHECK_EQ(context_, context);
-  enabled_ = false;
-  OnInputMethodChanged();
-}
-
 void InputMethodIBus::OnDestroy(IBusInputContext* context) {
   DCHECK_EQ(context_, context);
   g_object_unref(context_);
@@ -923,7 +903,6 @@ void InputMethodIBus::OnDestroy(IBusInputContext* context) {
   // We are dead, so we need to ask the client to stop relying on us.
   // We cannot do it in DestroyContext(), because OnDestroy() may be called
   // automatically.
-  enabled_ = false;
   OnInputMethodChanged();
 }
 
