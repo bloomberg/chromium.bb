@@ -1200,7 +1200,7 @@
 {
    bug_75224
    Heapcheck:Leak
-   fun:AutofillDownloadTestHelper
+   fun:AutofillDownloadTestHelper::AutofillDownloadTestHelper
    fun:AutofillDownloadTest_*Test_Test::TestBody
 }
 {
@@ -1216,8 +1216,8 @@
 {
    bug_76354
    Heapcheck:Leak
-   fun:MessageWithReply
-   fun:ChildProcessHostMsg_ResolveProxy
+   fun:IPC::MessageWithReply::MessageWithReply
+   fun:ChildProcessHostMsg_ResolveProxy::ChildProcessHostMsg_ResolveProxy
    fun:ResolveProxyMsgHelperTest::GenerateReply
    fun:ResolveProxyMsgHelperTest_*_Test::TestBody
 }
