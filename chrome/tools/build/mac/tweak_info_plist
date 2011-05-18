@@ -1,48 +1,8 @@
-#!/bin/bash
+#!/usr/bin/python2.6
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-set -e
-
-# Pull off the optional args
-USE_BREAKPAD=0
-USE_KEYSTONE=0
-USE_SVN=1
-OPTERR=0
-while getopts ":b:k:s:" an_opt ; do
-  case $an_opt in
-    b)
-      USE_BREAKPAD=$OPTARG
-      ;;
-    k)
-      USE_KEYSTONE=$OPTARG
-      ;;
-    s)
-      USE_SVN=$OPTARG
-      ;;
-    \?)
-      echo "Unknown option $OPTARG"
-      exit 1
-      ;;
-    :)
-      echo "Option $OPTARG missing it's value"
-      exit 1
-      ;;
-    *)
-      echo "Not recognized argument $an_opt"
-      exit 1
-      ;;
-  esac
-done
-shift $(($OPTIND - 1))
-
-# Make sure the branding argument was supplied.
-if [ $# -ne 2 ]; then
-  echo "usage: $0 [-b 1] [-k 1] [-s 1] BRANDING IDENTIFIER" >&2
-  exit 1
-fi
 
 #
 # Xcode supports build variable substitutions and CPP; sadly, that doesn't work
@@ -60,131 +20,238 @@ fi
 # by the time the app target is done, the info.plist is correct.
 #
 
-TOP="${SRCROOT}/.."
-BUILD_BRANDING=$1
-IDENTIFIER=$2
+import optparse
+import os
+from os import environ as env
+import plistlib
+import re
+import subprocess
+import sys
+import tempfile
 
-if [ "${USE_SVN}" = "1" ] ; then
-  # Visible in the about:version page.
-  SVN_INFO=$(svn info "${TOP}" 2>/dev/null || true)
-  SVN_REVISION=$(echo "${SVN_INFO}" | sed -Ene 's/^Revision: (.*)$/\1/p')
-  if [ -z "${SVN_REVISION}" ] ; then
-    GIT_INFO=$(git log -1 --grep=git-svn-id --format=%b 2>/dev/null || true)
-    SVN_REVISION=$(echo "${GIT_INFO}" | \
-                   sed -Ene 's/^git-svn-id: .*@([0-9]+).*$/\1/p')
-    # Finding the revision for git and svn has failed.
-    if [ -z "${SVN_REVISION}" ] ; then
-      echo "Could not determine svn revision.  This may be OK." >&2
-    else
-      SVN_PATH=$(echo "${GIT_INFO}" | \
-                 sed -Ene 's%^git-svn-id: .*/chrome/(.*)@.*$%/\1%p')
-    fi
-  else
-    # Grab the path to the source root in the Subversion repository by taking
-    # the URL to the source root directory and the repository root, and
-    # removing the latter from the former.  This ensures that SVN_PATH will
-    # contain a useful path regardless of the Subversion server, mirror, and
-    # authentication scheme in use.
-    SVN_URL=$(echo "${SVN_INFO}" | sed -Ene 's/^URL: (.*)$/\1/p')
-    SVN_ROOT=$(echo "${SVN_INFO}" | sed -Ene 's/^Repository Root: (.*)$/\1/p')
-    if [ -n "${SVN_ROOT}" ] && \
-       [ "${SVN_URL:0:${#SVN_ROOT}}" = "${SVN_ROOT}" ] ; then
-      SVN_PATH="${SVN_URL:${#SVN_ROOT}}"
-    fi
-  fi
-fi
+TOP = os.path.join(env['SRCROOT'], '..')
 
-# Pull in the Chrome version number.
-VERSION_TOOL="${TOP}/chrome/tools/build/version.py"
-VERSION_FILE="${TOP}/chrome/VERSION"
-FULL_VERSION=$("${VERSION_TOOL}" -f "${VERSION_FILE}" \
-    -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")
-BUNDLE_VERSION=$("${VERSION_TOOL}" -f "${VERSION_FILE}" -t "@BUILD@.@PATCH@")
 
-# I really hate how "defaults" doesn't take a real pathname but instead insists
-# on appending ".plist" to everything.
-TMP_INFO_PLIST_DEFAULTS="${TEMP_DIR}/Info"
-TMP_INFO_PLIST="${TMP_INFO_PLIST_DEFAULTS}.plist"
-cp "${TARGET_BUILD_DIR}/${INFOPLIST_PATH}" "${TMP_INFO_PLIST}"
+def _GetOutput(args):
+  """Runs a subprocess and waits for termination. Returns (stdout, returncode)
+  of the process. stderr is attached to the parent."""
+  proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+  (stdout, stderr) = proc.communicate()
+  return (stdout, proc.returncode)
 
-# Save off the Subversion revision number and source root path in case they're
-# needed.
-if [ ! -z "${SVN_REVISION}" ] ; then
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-      SVNRevision -string "${SVN_REVISION}"
-else
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNRevision 2> /dev/null || true
-fi
-if [ ! -z "${SVN_PATH}" ] ; then
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" SVNPath -string "${SVN_PATH}"
-else
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNPath 2> /dev/null || true
-fi
 
-# Add public version info so "Get Info" works
-defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-    CFBundleShortVersionString -string "${FULL_VERSION}"
-# Honor the 429496.72.95 limit.  The maximum comes from splitting 2^32 - 1 into
-# 6, 2, 2 digits.  The limitation was present in Tiger, but it could have been
-# fixed in later OS release, but hasn't been tested (it's easy enough to find
-# out with "lsregister -dump).
-# http://lists.apple.com/archives/carbon-dev/2006/Jun/msg00139.html
-# BUILD will always be an increasing value, so BUILD_PATH gives us something
-# unique that meetings what LS wants.
-defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-    CFBundleVersion -string "${BUNDLE_VERSION}"
+def _GetOutputNoError(args):
+  """Behaves identically to _GetOutput() but ignores stderr."""
+  proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = proc.communicate()
+  return (stdout, proc.returncode)
 
-# Add or remove the Breakpad keys.
-if [ "${USE_BREAKPAD}" = "1" ] ; then
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-      BreakpadURL "https://clients2.google.com/cr/report"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" BreakpadReportInterval "3600"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-      BreakpadProduct "${BUILD_BRANDING}_Mac"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-      BreakpadProductDisplay "${BUILD_BRANDING}"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-      BreakpadVersion -string "${FULL_VERSION}"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSendAndExit "YES"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSkipConfirm "YES"
-else
-  # Make sure the keys aren't there, || true to avoid errors if they aren't.
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadURL \
-      2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadReportInterval \
-      2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadProduct \
-      2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadProductDisplay \
-      2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadVersion \
-      2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSendAndExit \
-      2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSkipConfirm \
-      2> /dev/null || true
-fi
 
-# Add or remove the Keystone keys (only supported in release builds).
-if [ "${USE_KEYSTONE}" = "1" ] && [ "${CONFIGURATION}" = "Release" ] ; then
-  KEYSTONE_URL="https://tools.google.com/service/update2"
-  KEYSTONE_APP_ID="${IDENTIFIER}"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-      KSVersion -string "${FULL_VERSION}"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" KSProductID "${KEYSTONE_APP_ID}"
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" KSUpdateURL "${KEYSTONE_URL}"
-else
-  # Make sure the keys aren't there, || true to avoid errors if they aren't.
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSVersion 2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSProductID 2> /dev/null || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSUpdateURL 2> /dev/null || true
-fi
+def _RemoveKeys(plist, *keys):
+  """Removes a varargs of keys from the plist."""
+  for key in keys:
+    try:
+      del plist[key]
+    except KeyError:
+      pass
 
-# Info.plist will work perfectly well in any plist format, but traditionally
-# applications use xml1 for this, so convert it back after whatever defaults
-# might have done.
-plutil -convert xml1 "${TMP_INFO_PLIST}"
-cp "${TMP_INFO_PLIST}" "${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
 
-# Clean up.
-rm -f "${TMP_INFO_PLIST}"
+def _AddVersionKeys(plist):
+  """Adds the product version number into the plist. Returns True on success and
+  False on error. The error will be printed to stderr."""
+  # Pull in the Chrome version number.
+  VERSION_TOOL = os.path.join(TOP, 'chrome/tools/build/version.py')
+  VERSION_FILE = os.path.join(TOP, 'chrome/VERSION')
+
+  (stdout, retval1) = _GetOutput([VERSION_TOOL, '-f', VERSION_FILE, '-t',
+                                  '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'])
+  full_version = stdout.rstrip()
+
+  (stdout, retval2) = _GetOutput([VERSION_TOOL, '-f', VERSION_FILE, '-t',
+                                  '@BUILD@.@PATCH@'])
+  bundle_version = stdout.rstrip()
+
+  # If either of the two version commands finished with non-zero returncode,
+  # report the error up.
+  if retval1 or retval2:
+    return False
+
+  # Add public version info so "Get Info" works.
+  plist['CFBundleShortVersionString'] = full_version
+
+  # Honor the 429496.72.95 limit.  The maximum comes from splitting 2^32 - 1
+  # into  6, 2, 2 digits.  The limitation was present in Tiger, but it could
+  # have been fixed in later OS release, but hasn't been tested (it's easy
+  # enough to find out with "lsregister -dump).
+  # http://lists.apple.com/archives/carbon-dev/2006/Jun/msg00139.html
+  # BUILD will always be an increasing value, so BUILD_PATH gives us something
+  # unique that meetings what LS wants.
+  plist['CFBundleVersion'] = bundle_version
+
+  # Return with no error.
+  return True
+
+
+def _GetSCMInfo():
+  """Returns a 2-Tuple of (scm_path, scm_revision) for the SVN information."""
+  # Attempt to get both the SVN revision number and the branch (or trunk).
+  scm_revision = None
+  scm_path = None
+
+  # First attempt to get the SVN revision number and path.
+  (stdout, retval) = _GetOutputNoError(['svn', 'info', TOP])
+  if not retval:
+    match = re.search('^Revision: ([0-9]+)$', stdout, re.MULTILINE)
+    if match:
+      scm_revision = match.group(1)
+
+    match = re.search('^Repository Root: (.+)$', stdout, re.MULTILINE)
+    if match:
+      svn_repo_root = match.group(1)
+
+    match = re.search('^URL: (.+)$', stdout, re.MULTILINE)
+    if match:
+      svn_url = match.group(1)
+
+    # If there's both a repo root and a URL, find the branch path.
+    if svn_repo_root and svn_url and svn_url.startswith(svn_repo_root):
+      # Grab the path to the source root in the Subversion repository by taking
+      # the URL to the source root directory and the repository root, and
+      # removing the latter from the former.  This ensures that scm_path will
+      # contain a useful path regardless of the Subversion server, mirror, and
+      # authentication scheme in use.
+      scm_path = svn_url[len(svn_repo_root):]
+
+  # If a SVN revision number couldn't be found, try getting it through git.
+  (stdout, retval) = _GetOutputNoError(['git', 'log', '-1',
+                                        '--grep=git-svn-id', '--format=%b'])
+  # Extract both the last changed SVN revision and the branch path (see block
+  # comment above).
+  # git-svn-id: svn://svn.chromium.org/chrome/trunk/src@85528 0039d316-1c4b...
+  if not retval:
+    match = re.search(r'git-svn-id: .*/(chrome|svn)(/.*)@([0-9]+)', stdout,
+                      re.MULTILINE)
+    if match:
+      scm_path = match.group(2)
+      scm_revision = match.group(3)
+
+  # Finally, return the results (which could be None on error).
+  return (scm_path, scm_revision)
+
+
+def _DoSVNKeys(plist, add_keys):
+  """Adds the SVN information, visible in about:version, to property list. If
+  |add_keys| is True, it will insert the keys, otherwise it will remove them."""
+  (scm_path, scm_revision) = None, None
+  if add_keys:
+    (scm_path, scm_revision) = _GetSCMInfo()
+
+  # See if the operation failed.
+  _RemoveKeys(plist, 'SVNRevision')
+  if scm_revision != None:
+    plist['SVNRevision'] = scm_revision
+  elif add_keys:
+    print >>sys.stderr, 'Could not determine svn revision.  This may be OK.'
+
+  if scm_path != None:
+    plist['SVNPath'] = scm_path
+  else:
+    _RemoveKeys(plist, 'SVNPath')
+
+
+def _AddBreakpadKeys(plist, branding):
+  """Adds the Breakpad keys. This must be called AFTER _AddVersionKeys() and
+  also requires the |branding| argument."""
+  plist['BreakpadURL'] = 'https://clients2.google.com/cr/report'
+  plist['BreakpadReportInterval'] = '3600'  # Deliberately a string.
+  plist['BreakpadProduct'] = '%s_Mac' % branding
+  plist['BreakpadProductDisplay'] = branding
+  plist['BreakpadVersion'] = plist['CFBundleShortVersionString']
+  # These are both deliberately strings and not boolean.
+  plist['BreakpadSendAndExit'] = 'YES'
+  plist['BreakpadSkipConfirm'] = 'YES'
+
+
+def _RemoveBreakpadKeys(plist):
+  """Removes any set Breakpad keys."""
+  _RemoveKeys(plist,
+      'BreakpadURL',
+      'BreakpadReportInterval',
+      'BreakpadProduct',
+      'BreakpadProductDisplay',
+      'BreakpadVersion',
+      'BreakpadSendAndExit',
+      'BreakpadSkipConfirm')
+
+
+def _AddKeystoneKeys(plist, bundle_identifier):
+  """Adds the Keystone keys. This must be called AFTER _AddVersionKeys() and
+  also requires the |bundle_identifier| argument (com.example.product)."""
+  plist['KSVersion'] = plist['CFBundleShortVersionString']
+  plist['KSProductID'] = bundle_identifier
+  plist['KSUpdateURL'] = 'https://tools.google.com/service/update2'
+
+
+def _RemoveKeystoneKeys(plist):
+  """Removes any set Keystone keys."""
+  _RemoveKeys(plist,
+      'KSVersion',
+      'KSProductID',
+      'KSUpdateURL')
+
+
+def Main(argv):
+  parser = optparse.OptionParser('%prog [options] branding bundle-id')
+  parser.add_option('-b', dest='use_breakpad', action='store', type='int',
+      default=False, help='Enable Breakpad [1 or 0]')
+  parser.add_option('-k', dest='use_keystone', action='store', type='int',
+      default=False, help='Enable Keystone [1 or 0]')
+  parser.add_option('-s', dest='add_svn_info', action='store', type='int',
+      default=True, help='Add SVN metadata [1 or 0]')
+  (options, args) = parser.parse_args(argv)
+
+  if len(args) < 2:
+    print >>sys.stderr, parser.get_usage()
+    return 1
+
+  # Extract remaining arguments.
+  branding = args[0]
+  bundle_identifier = args[1]
+
+  # Read the plist into its parsed format.
+  DEST_INFO_PLIST = os.path.join(env['TARGET_BUILD_DIR'], env['INFOPLIST_PATH'])
+  plist = plistlib.readPlist(DEST_INFO_PLIST)
+
+  # Insert the product version.
+  if not _AddVersionKeys(plist):
+    return 2
+
+  # Add Breakpad if configured to do so.
+  if options.use_breakpad:
+    _AddBreakpadKeys(plist, branding)
+  else:
+    _RemoveBreakpadKeys(plist)
+
+  # Only add Keystone in Release builds.
+  if options.use_keystone and env['CONFIGURATION'] == 'Release':
+    _AddKeystoneKeys(plist, bundle_identifier)
+  else:
+    _RemoveKeystoneKeys(plist)
+
+  # Adds or removes any SVN keys.
+  _DoSVNKeys(plist, options.add_svn_info)
+
+  # Now that all keys have been mutated, rewrite the file.
+  temp_info_plist = tempfile.NamedTemporaryFile()
+  plistlib.writePlist(plist, temp_info_plist.name)
+
+  # Info.plist will work perfectly well in any plist format, but traditionally
+  # applications use xml1 for this, so convert it to ensure that it's valid.
+  proc = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', DEST_INFO_PLIST,
+                           temp_info_plist.name])
+  proc.wait()
+  return proc.returncode
+
+
+if __name__ == '__main__':
+  sys.exit(Main(sys.argv[1:]))
