@@ -107,6 +107,7 @@ class GpuScheduler : public CommandBufferEngine {
   // is also predicated on a flow control mechanism between the
   // renderer and GPU processes.
   uint64 swap_buffers_count() const;
+  uint64 acknowledged_swap_buffers_count() const;
   void set_acknowledged_swap_buffers_count(
       uint64 acknowledged_swap_buffers_count);
 

@@ -119,6 +119,10 @@ uint64 GpuScheduler::swap_buffers_count() const {
   return swap_buffers_count_;
 }
 
+uint64 GpuScheduler::acknowledged_swap_buffers_count() const {
+  return acknowledged_swap_buffers_count_;
+}
+
 void GpuScheduler::set_acknowledged_swap_buffers_count(
     uint64 acknowledged_swap_buffers_count) {
   acknowledged_swap_buffers_count_ = acknowledged_swap_buffers_count;

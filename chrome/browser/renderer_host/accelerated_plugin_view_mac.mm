@@ -5,6 +5,7 @@
 #import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/common/chrome_switches.h"
@@ -105,6 +106,8 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)drawView {
+  TRACE_EVENT1("browser", "AcceleratedPluginViewMac::drawView",
+      "frameNum", swapBuffersCount_);
   // Called on a background thread. Synchronized via the CGL context lock.
   CGLLockContext(cglContext_);
 
@@ -288,6 +291,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)setFrame:(NSRect)frameRect {
+  TRACE_EVENT0("browser", "AcceleratedPluginViewMac::setFrame");
   [self setCachedSize:frameRect.size];
   [super setFrame:frameRect];
 }

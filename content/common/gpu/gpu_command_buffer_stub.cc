@@ -353,7 +353,6 @@ void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
 
 void GpuCommandBufferStub::SwapBuffersCallback() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::SwapBuffersCallback");
-  OnSwapBuffers();
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.renderer_id = renderer_id_;
@@ -372,7 +371,17 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     uint64 swap_buffers_count) {
   TRACE_EVENT0("gpu",
                "GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped");
+
+  // Multiple swapbuffers may get consolidated together into a single
+  // AcceleratedSurfaceBuffersSwapped call. Since OnSwapBuffers expects to be
+  // called one time for every swap, make up the difference here.
+  uint64 delta = swap_buffers_count -
+      scheduler_->acknowledged_swap_buffers_count();
+
   scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
+
+  for(uint64 i = 0; i < delta; i++)
+    OnSwapBuffers();
 
   // Wake up the GpuScheduler to start doing work again.
   scheduler_->SetScheduled(true);

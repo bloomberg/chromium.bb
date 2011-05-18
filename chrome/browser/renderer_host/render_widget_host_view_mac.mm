@@ -378,6 +378,7 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
 
 void RenderWidgetHostViewMac::MovePluginWindows(
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewMac::MovePluginWindows");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Handle movement of accelerated plugins, which are the only "windowed"
   // plugins that exist on the Mac.
@@ -804,6 +805,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     int32 route_id,
     int gpu_host_id,
     uint64 swap_buffers_count) {
+  TRACE_EVENT0("browser",
+      "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AcceleratedPluginView* view = ViewForPluginWindowHandle(window);
   DCHECK(view);
@@ -918,6 +921,8 @@ void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
       CGLContextObj context,
       gfx::PluginWindowHandle plugin_handle,
       NSSize size) {
+  TRACE_EVENT0("browser",
+      "RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance");
   // Called on the display link thread.
   CGLSetCurrentContext(context);
 
