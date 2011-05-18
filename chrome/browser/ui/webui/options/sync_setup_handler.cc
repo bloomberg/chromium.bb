@@ -321,8 +321,10 @@ void SyncSetupHandler::OnDidShowPage(const ListValue* args) {
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
-  flow_->OnDialogClosed(std::string());
-  flow_ = NULL;
+  if (flow_) {
+    flow_->OnDialogClosed(std::string());
+    flow_ = NULL;
+  }
 }
 
 void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
