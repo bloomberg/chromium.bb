@@ -154,7 +154,7 @@
    String name pushed into deliberately leaked histograms
    Heapcheck:Leak
    ...
-   fun:basic_string*
+   fun:*basic_string*
    fun:base:*:HistogramTest_*_Test::TestBody
 }
 {
@@ -169,21 +169,21 @@
    String name pushed into leaked CookieMonsterHistograms
    Heapcheck:Leak
    ...
-   fun:basic_string*
+   fun:*basic_string*
    fun:net::CookieMonster::InitializeHistograms
 }
 {
    String name pushed into deliberately leaked StatsHistogram
    Heapcheck:Leak
    ...
-   fun:basic_string*
+   fun:*basic_string*
    fun:DiskCacheBackendTest_Histograms_Test::TestBody
 }
 {
    Histogram name pushed in deliberately leaked StatsHistogram
    Heapcheck:Leak
    ...
-   fun:basic_string*
+   fun:*basic_string*
    fun:disk_cache::Stats::Init
 }
 {
@@ -950,7 +950,7 @@
    fun:std::string::_S_construct
    fun:std::string::_S_construct_aux
    fun:std::string::_S_construct
-   fun:basic_string*
+   fun:*basic_string*
    fun:file_util::FileEnumerator::ReadDirectory
    fun:file_util::FileEnumerator::Next
    fun:::RelayReadDirectory::RunWork
@@ -1011,7 +1011,7 @@
    fun:std::string::_S_construct
    fun:std::string::_S_construct_aux
    fun:std::string::_S_construct
-   fun:basic_string*
+   fun:*basic_string*
    fun:std::basic_stringbuf::str
    fun:std::basic_ostringstream::str
    fun:talk_base::SocketAddress::IPToString
@@ -1292,7 +1292,7 @@
    fun:std::string::_S_construct
    fun:std::string::_S_construct_aux
    fun:std::string::_S_construct
-   fun:basic_string*
+   fun:*basic_string*
    fun:RendererMessageLoopObserver
    fun:RendererMain
    fun:SimpleRenderer
@@ -1305,7 +1305,7 @@
    fun:std::string::_S_construct
    fun:std::string::_S_construct_aux
    fun:std::string::_S_construct
-   fun:basic_string*
+   fun:*basic_string*
    fun:AutofillMetrics::Log
 }
 {
@@ -1402,7 +1402,7 @@
    bug_79651_b
    Heapcheck:Leak
    ...
-   fun:basic_string*
+   fun:*basic_string*
    fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
 }
 {
@@ -1519,7 +1519,7 @@
    bug_80666
    Heapcheck:Leak
    ...
-   fun:basic_string*
+   fun:*basic_string*
    fun:GURL::ComponentString
    fun:GURL::HostNoBrackets
    fun:net::::InitSocketPoolHelper
