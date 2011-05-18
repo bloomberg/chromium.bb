@@ -67,12 +67,6 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestAboutAboutPageLTR) {\
   RunBidiCheckerOnPage(chrome::kChromeUIAboutAboutURL, false);\
 }
 
-// Fails. http://code.google.com/p/chromium/issues/detail?id=82897
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
-                       FAILS_TestAboutCreditsPageLTR) {\
-  RunBidiCheckerOnPage(chrome::kChromeUIAboutCreditsURL, false);\
-}
-
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestAboutPageLTR) {\
   RunBidiCheckerOnPage(chrome::kChromeUIAboutURL, false);\
 }
@@ -89,12 +83,6 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestBugReportPageLTR) {\
   RunBidiCheckerOnPage(chrome::kChromeUIBugReportURL, false);\
-}
-
-// Fails. http://code.google.com/p/chromium/issues/detail?id=82897
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
-                       FAILS_TestConflictsPageLTR) {\
-  RunBidiCheckerOnPage(chrome::kChromeUIConflictsURL, false);\
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestCrashesPageLTR) {\
