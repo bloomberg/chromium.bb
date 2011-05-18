@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/types.h"
 #include "remoting/host/capturer_helper.h"
+#include "remoting/host/differ.h"
 #include "remoting/host/x_server_pixel_buffer.h"
 
 namespace remoting {
@@ -145,6 +146,9 @@ class CapturerLinux : public Capturer {
   // Last capture buffer used.
   uint8* last_buffer_;
 
+  // |Differ| for use when polling for changes.
+  scoped_ptr<Differ> differ_;
+
   DISALLOW_COPY_AND_ASSIGN(CapturerLinux);
 };
 
@@ -254,7 +258,16 @@ void CapturerLinux::CaptureInvalidRects(
   // TODO(lambroslambrou): In the non-DAMAGE case, there should be no need
   // for any X event processing in this class.
   ProcessPendingXEvents();
-  buffers_[current_buffer_].Update(display_, root_window_);
+
+  // Resize the current buffer if there was a recent change of
+  // screen-resolution.
+  VideoFrameBuffer &current = buffers_[current_buffer_];
+  current.Update(display_, root_window_);
+  // Also refresh the Differ helper used by CaptureFrame(), if needed.
+  if (!use_damage_ && !last_buffer_) {
+    differ_.reset(new Differ(current.size().width(), current.size().height(),
+                             kBytesPerPixel, current.bytes_per_row()));
+  }
 
   scoped_refptr<CaptureData> capture_data(CaptureFrame());
 
@@ -308,8 +321,8 @@ CaptureData* CapturerLinux::CaptureFrame() {
 
   // In the DAMAGE case, ensure the frame is up-to-date with the previous frame
   // if any.  If there isn't a previous frame, that means a screen-resolution
-  // change occurred, and the current invalid rects should then include the
-  // whole screen.
+  // change occurred, and |invalid_rects| will be updated to include the whole
+  // screen.
   if (use_damage_ && last_buffer_)
     SynchronizeFrame();
 
@@ -326,13 +339,23 @@ CaptureData* CapturerLinux::CaptureFrame() {
     // TODO(ajwong): We should only repair the rects that were copied!
     XDamageSubtract(display_, damage_handle_, None, None);
   } else {
+    // Doing full-screen polling, or this is the first capture after a
+    // screen-resolution change.  In either case, need a full-screen capture.
     gfx::Rect screen_rect(buffer.size());
     CaptureRect(screen_rect, capture_data);
 
-    // TODO(lambroslambrou): Compute the invalid rectangles based on comparing
-    // this CaptureData with the previous one, instead of just using a single
-    // full-screen rectangle.
-    invalid_rects.insert(screen_rect);
+    if (last_buffer_) {
+      // Full-screen polling, so calculate the invalid rects here, based on the
+      // changed pixels between current and previous buffers.
+      DCHECK(differ_ != NULL);
+      differ_->CalcDirtyRects(last_buffer_, buffer.ptr(), &invalid_rects);
+    } else {
+      // No previous buffer, so always invalidate the whole screen, whether
+      // or not DAMAGE is being used.  DAMAGE doesn't necessarily send a
+      // full-screen notification after a screen-resolution change, so
+      // this is done here.
+      invalid_rects.insert(screen_rect);
+    }
   }
 
   capture_data->mutable_dirty_rects() = invalid_rects;
