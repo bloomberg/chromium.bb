@@ -23,7 +23,7 @@ namespace {
 // A class to generate events on Windows.
 class EventExecutorWin : public EventExecutor {
  public:
-  EventExecutorWin(MessageLoopForUI* message_loop, Capturer* capturer);
+  EventExecutorWin(MessageLoop* message_loop, Capturer* capturer);
   virtual ~EventExecutorWin() {}
 
   virtual void InjectKeyEvent(const KeyEvent* event, Task* done) OVERRIDE;
@@ -33,13 +33,13 @@ class EventExecutorWin : public EventExecutor {
   void HandleKey(const KeyEvent* event);
   void HandleMouse(const MouseEvent* event);
 
-  MessageLoopForUI* message_loop_;
+  MessageLoop* message_loop_;
   Capturer* capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
 };
 
-EventExecutorWin::EventExecutorWin(MessageLoopForUI* message_loop,
+EventExecutorWin::EventExecutorWin(MessageLoop* message_loop,
                                    Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer) {
@@ -171,7 +171,7 @@ void EventExecutorWin::HandleMouse(const MouseEvent* event) {
 
 }  // namespace
 
-EventExecutor* EventExecutor::Create(MessageLoopForUI* message_loop,
+EventExecutor* EventExecutor::Create(MessageLoop* message_loop,
                                      Capturer* capturer) {
   return new EventExecutorWin(message_loop, capturer);
 }

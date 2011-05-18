@@ -7,7 +7,7 @@
 
 #include "remoting/protocol/input_stub.h"
 
-class MessageLoopForUI;
+class MessageLoop;
 
 namespace remoting {
 
@@ -16,7 +16,7 @@ class Capturer;
 class EventExecutor : public protocol::InputStub {
  public:
   // Creates default event executor for the current platform.
-  static EventExecutor* Create(MessageLoopForUI* message_loop,
+  static EventExecutor* Create(MessageLoop* message_loop,
                                Capturer* capturer);
 };
 

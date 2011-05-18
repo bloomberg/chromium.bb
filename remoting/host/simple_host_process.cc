@@ -100,9 +100,11 @@ class SimpleHost {
   }
 
   int Run() {
-    MessageLoopForUI message_loop;
+    // |message_loop| is declared early so that any code we call into which
+    // requires a current message-loop won't complain.
+    MessageLoop message_loop;
 
-    remoting::ChromotingHostContext context(&message_loop);
+    remoting::ChromotingHostContext context;
     context.Start();
 
     base::Thread file_io_thread("FileIO");

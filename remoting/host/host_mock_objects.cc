@@ -22,8 +22,7 @@ Curtain* Curtain::Create() {
   return new MockCurtain();
 }
 
-MockChromotingHostContext::MockChromotingHostContext()
-    : ChromotingHostContext(NULL) {}
+MockChromotingHostContext::MockChromotingHostContext() {}
 
 MockChromotingHostContext::~MockChromotingHostContext() {}
 

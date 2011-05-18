@@ -27,7 +27,7 @@ namespace {
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
  public:
-  EventExecutorLinux(MessageLoopForUI* message_loop, Capturer* capturer);
+  EventExecutorLinux(MessageLoop* message_loop, Capturer* capturer);
   virtual ~EventExecutorLinux() {};
 
   virtual void InjectKeyEvent(const KeyEvent* event, Task* done) OVERRIDE;
@@ -35,7 +35,7 @@ class EventExecutorLinux : public EventExecutor {
 
  private:
   bool Init();
-  MessageLoopForUI* message_loop_;
+  MessageLoop* message_loop_;
   Capturer* capturer_;
 
   // X11 graphics context.
@@ -235,10 +235,10 @@ int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
 }
 
 EventExecutorLinux::EventExecutorLinux(
-    MessageLoopForUI* message_loop, Capturer* capturer)
+    MessageLoop* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer),
-      display_(message_loop->GetDisplay()),
+      display_(XOpenDisplay(NULL)),
       root_window_(BadValue),
       width_(0),
       height_(0) {
@@ -360,7 +360,7 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
 
 }  // namespace
 
-EventExecutor* EventExecutor::Create(MessageLoopForUI* message_loop,
+EventExecutor* EventExecutor::Create(MessageLoop* message_loop,
                                      Capturer* capturer) {
   return new EventExecutorLinux(message_loop, capturer);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,10 @@
 
 namespace remoting {
 
-ChromotingHostContext::ChromotingHostContext(MessageLoopForUI* ui_message_loop)
+ChromotingHostContext::ChromotingHostContext()
     : main_thread_("ChromotingMainThread"),
       encode_thread_("ChromotingEncodeThread"),
-      ui_message_loop_(ui_message_loop) {
+      ui_thread_("ChromotingUiThread") {
 }
 
 ChromotingHostContext::~ChromotingHostContext() {
@@ -25,6 +25,7 @@ void ChromotingHostContext::Start() {
   main_thread_.Start();
   encode_thread_.Start();
   jingle_thread_.Start();
+  ui_thread_.Start();
 }
 
 void ChromotingHostContext::Stop() {
@@ -32,6 +33,7 @@ void ChromotingHostContext::Stop() {
   jingle_thread_.Stop();
   encode_thread_.Stop();
   main_thread_.Stop();
+  ui_thread_.Stop();
 }
 
 JingleThread* ChromotingHostContext::jingle_thread() {
@@ -50,8 +52,8 @@ MessageLoop* ChromotingHostContext::network_message_loop() {
   return jingle_thread_.message_loop();
 }
 
-MessageLoopForUI* ChromotingHostContext::ui_message_loop() {
-  return ui_message_loop_;
+MessageLoop* ChromotingHostContext::ui_message_loop() {
+  return ui_thread_.message_loop();
 }
 
 }  // namespace remoting

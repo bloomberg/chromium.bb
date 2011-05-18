@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,11 @@
 namespace remoting {
 
 // A class that manages threads and running context for the chromoting host
-// process.
+// process.  This class is virtual only for testing purposes (see below).
 class ChromotingHostContext {
  public:
-  // Create a context attached to the specified ui message loop. Since there
-  // can only be one such loop on UNIX platforms, it has to be passed into
-  // this object rather than being owned by it.
-  explicit ChromotingHostContext(MessageLoopForUI* ui_message_loop);
+  // Create a context.
+  ChromotingHostContext();
   virtual ~ChromotingHostContext();
 
   // TODO(ajwong): Move the Start/Stop methods out of this class. Then
@@ -35,7 +33,7 @@ class ChromotingHostContext {
   virtual MessageLoop* main_message_loop();
   virtual MessageLoop* encode_message_loop();
   virtual MessageLoop* network_message_loop();
-  MessageLoopForUI* ui_message_loop();
+  virtual MessageLoop* ui_message_loop();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
@@ -49,8 +47,9 @@ class ChromotingHostContext {
   // A thread that hosts all encode operations.
   base::Thread encode_thread_;
 
-  // The main message loop.
-  MessageLoopForUI* ui_message_loop_;
+  // A thread that hosts UI integration (capture, input injection, etc)
+  // This is NOT a Chrome-style UI thread.
+  base::Thread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);
 };
