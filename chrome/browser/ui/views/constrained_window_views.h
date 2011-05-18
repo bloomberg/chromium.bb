@@ -71,8 +71,6 @@ class ConstrainedWindowViews : public views::Window,
   // Returns the TabContents that constrains this Constrained Window.
   TabContents* owner() const { return owner_; }
 
-  views::Window* GetWindow();
-
   // Overridden from ConstrainedWindow:
   virtual void ShowConstrainedWindow() OVERRIDE;
   virtual void CloseConstrainedWindow() OVERRIDE;

@@ -317,7 +317,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   int frame_component =
-      container_->GetWindow()->client_view()->NonClientHitTest(point);
+      container_->client_view()->NonClientHitTest(point);
 
   // See if we're in the sysmenu region.  (We check the ClientView first to be
   // consistent with OpaqueBrowserFrameView; it's not really necessary here.)
@@ -335,7 +335,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
   int window_component = GetHTComponentForFrame(point, kFrameBorderThickness,
       NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
-      container_->GetWindow()->window_delegate()->CanResize());
+      container_->window_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -490,7 +490,7 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
 void ConstrainedWindowFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   canvas->DrawStringInt(
-      container_->GetWindow()->window_delegate()->GetWindowTitle(),
+      container_->window_delegate()->GetWindowTitle(),
       *title_font_, GetTitleColor(), GetMirroredXForRect(title_bounds_),
       title_bounds_.y(), title_bounds_.width(), title_bounds_.height());
 }
@@ -571,21 +571,17 @@ ConstrainedWindowViews::ConstrainedWindowViews(
     : owner_(owner),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
-  GetWindow()->non_client_view()->SetFrameView(CreateFrameViewForWindow());
+  non_client_view()->SetFrameView(CreateFrameViewForWindow());
   views::Window::InitParams params(window_delegate);
   params.native_window = native_constrained_window_->AsNativeWindow();
   params.widget_init_params.child = true;
   params.widget_init_params.parent = owner->GetNativeView();
   params.widget_init_params.native_widget =
       native_constrained_window_->AsNativeWindow()->AsNativeWidget();
-  GetWindow()->InitWindow(params);
+  InitWindow(params);
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
-}
-
-views::Window* ConstrainedWindowViews::GetWindow() {
-  return native_constrained_window_->AsNativeWindow()->GetWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -594,10 +590,10 @@ views::Window* ConstrainedWindowViews::GetWindow() {
 void ConstrainedWindowViews::ShowConstrainedWindow() {
   // We marked the view as hidden during construction.  Mark it as
   // visible now so FocusManager will let us receive focus.
-  GetWindow()->non_client_view()->SetVisible(true);
+  non_client_view()->SetVisible(true);
   if (owner_->delegate())
     owner_->delegate()->WillShowConstrainedWindow(owner_);
-  GetWindow()->Activate();
+  Activate();
   FocusConstrainedWindow();
 }
 
@@ -608,15 +604,15 @@ void ConstrainedWindowViews::CloseConstrainedWindow() {
   NotificationService::current()->Notify(NotificationType::CWINDOW_CLOSED,
                                          Source<ConstrainedWindow>(this),
                                          NotificationService::NoDetails());
-  GetWindow()->Close();
+  Close();
 }
 
 void ConstrainedWindowViews::FocusConstrainedWindow() {
   if ((!owner_->delegate() ||
        owner_->delegate()->ShouldFocusConstrainedWindow()) &&
-      GetWindow()->window_delegate() &&
-      GetWindow()->window_delegate()->GetInitiallyFocusedView()) {
-    GetWindow()->window_delegate()->GetInitiallyFocusedView()->RequestFocus();
+      window_delegate() &&
+      window_delegate()->GetInitiallyFocusedView()) {
+    window_delegate()->GetInitiallyFocusedView()->RequestFocus();
   }
 }
 
@@ -637,7 +633,7 @@ void ConstrainedWindowViews::OnNativeConstrainedWindowDestroyed() {
 }
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {
-  GetWindow()->Activate();
+  Activate();
 }
 
 views::internal::NativeWindowDelegate*

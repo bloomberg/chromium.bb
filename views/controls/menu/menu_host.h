@@ -63,9 +63,6 @@ class MenuHost : public Widget,
   // Returns the native window of the MenuHost.
   gfx::NativeWindow GetMenuHostWindow();
 
-  Widget* GetWidget();
-  NativeWidget* GetNativeWidget();
-
  private:
   // Overridden from Widget:
   virtual RootView* CreateRootView() OVERRIDE;

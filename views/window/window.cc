@@ -96,8 +96,7 @@ void Window::InitWindow(const InitParams& params) {
 }
 
 gfx::Rect Window::GetBounds() const {
-  // TODO(beng): Clean this up once Window subclasses Widget.
-  return native_window_->AsNativeWidget()->GetWidget()->GetWindowScreenBounds();
+  return GetWindowScreenBounds();
 }
 
 gfx::Rect Window::GetNormalBounds() const {
@@ -302,9 +301,7 @@ void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
   // Create the ClientView, add it to the NonClientView and add the
   // NonClientView to the RootView. This will cause everything to be parented.
   non_client_view_->set_client_view(window_delegate_->CreateClientView(this));
-  // TODO(beng): make simpler once Window subclasses Widget.
-  native_window_->AsNativeWidget()->GetWidget()->SetContentsView(
-      non_client_view_);
+  SetContentsView(non_client_view_);
 
   UpdateWindowTitle();
   native_window_->SetAccessibleRole(
@@ -387,9 +384,7 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
 
     // Widget's SetBounds method does not further modify the bounds that are
     // passed to it.
-    // TODO(beng): Should be able to call Widget::SetBounds() directly once
-    //             Window subclasses Widget.
-    native_window_->AsNativeWidget()->GetWidget()->SetBounds(saved_bounds);
+    SetBounds(saved_bounds);
   } else {
     if (bounds.IsEmpty()) {
       // No initial bounds supplied, so size the window to its content and
