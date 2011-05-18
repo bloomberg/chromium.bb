@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/system_monitor/system_monitor.h"
+#include "base/system_monitor/system_monitor.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 
-namespace ui {
+namespace base {
 
 static SystemMonitor* g_system_monitor = NULL;
 
@@ -105,4 +105,4 @@ void SystemMonitor::BatteryCheck() {
   ProcessPowerMessage(SystemMonitor::POWER_STATE_EVENT);
 }
 
-}  // namespace ui
+}  // namespace base

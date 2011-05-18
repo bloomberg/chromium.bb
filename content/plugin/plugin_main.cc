@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,13 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "content/plugin/plugin_thread.h"
-#include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
 #include "content/common/injection_test_dll.h"
@@ -86,7 +86,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrPluginMain");
 
-  ui::SystemMonitor system_monitor;
+  base::SystemMonitor system_monitor;
   HighResolutionTimerManager high_resolution_timer_manager;
 
   const CommandLine& parsed_command_line = parameters.command_line_;

@@ -13,6 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -37,7 +38,6 @@
 #include "content/common/notification_source.h"
 #include "content/common/property_bag.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/system_monitor/system_monitor.h"
 
 using testing::_;
 
@@ -262,8 +262,8 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   std::wstring profile_path_;
   std::map<TabContents*, int> foo_;
 
-  // ProfileManager requires a ui::SystemMonitor.
-  ui::SystemMonitor system_monitor;
+  // ProfileManager requires a base::SystemMonitor.
+  base::SystemMonitor system_monitor;
 
   ProfileManager pm_;
 };

@@ -17,12 +17,12 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "ui/base/system_monitor/system_monitor.h"
 
 class FilePath;
 class NewProfileLauncher;
@@ -39,7 +39,7 @@ class ProfileManagerObserver {
 };
 
 class ProfileManager : public base::NonThreadSafe,
-                       public ui::SystemMonitor::PowerObserver,
+                       public base::SystemMonitor::PowerObserver,
                        public BrowserList::Observer,
                        public NotificationObserver,
                        public Profile::Delegate {

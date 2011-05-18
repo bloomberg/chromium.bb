@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 
 #include "base/message_loop.h"
+#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
@@ -13,7 +14,6 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/system_monitor/system_monitor.h"
 
 namespace {
 
@@ -66,7 +66,7 @@ class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
-  ui::SystemMonitor dummy;
+  base::SystemMonitor dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;
   TestingProfile* profile2_;

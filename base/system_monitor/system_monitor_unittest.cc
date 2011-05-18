@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/system_monitor/system_monitor.h"
+#include "base/system_monitor/system_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
+namespace base {
 
 class PowerTest : public SystemMonitor::PowerObserver {
  public:
@@ -88,4 +88,4 @@ TEST(SystemMonitor, PowerNotifications) {
   EXPECT_EQ(test[0].resumes(), 1);
 }
 
-}  // namespace ui
+}  // namespace base

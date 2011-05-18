@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
-#define UI_BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
+#ifndef BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
+#define BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "build/build_config.h"
 
 // Windows HiRes timers drain the battery faster so we need to know the battery
@@ -22,14 +23,11 @@
 #endif  // defined(ENABLE_BATTERY_MONITORING)
 
 #if defined(OS_MACOSX)
-#ifdef __OBJC__
-@class SystemMonitorBridge;
-#else
-class SystemMonitorBridge;
-#endif
-#endif
+#include <IOKit/pwr_mgt/IOPMLib.h>
+#include <IOKit/IOMessage.h>
+#endif  // OS_MACOSX
 
-namespace ui {
+namespace base {
 
 // Class for monitoring various system-related subsystems
 // such as power management, network status, etc.
@@ -132,12 +130,13 @@ class SystemMonitor {
 #endif
 
 #if defined(OS_MACOSX)
-  SystemMonitorBridge* system_monitor_bridge_;
+  IONotificationPortRef notification_port_ref_;
+  io_object_t notifier_object_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
 };
 
-}  // namespace ui
+}  // namespace base
 
-#endif  // UI_BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
+#endif  // BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
