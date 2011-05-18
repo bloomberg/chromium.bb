@@ -143,7 +143,8 @@ void TouchBrowserFrameView::InitVirtualKeyboard() {
   Profile* keyboard_profile = browser_view()->browser()->profile();
   DCHECK(keyboard_profile) << "Profile required for virtual keyboard.";
 
-  keyboard_ = new KeyboardContainerView(keyboard_profile);
+  keyboard_ = new KeyboardContainerView(keyboard_profile,
+      browser_view()->browser());
   keyboard_->SetVisible(false);
   AddChildView(keyboard_);
 }
