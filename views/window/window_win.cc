@@ -331,7 +331,7 @@ gfx::Insets WindowWin::GetClientAreaInsets() const {
   // rect when using the opaque frame.
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
-  return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
+  return gfx::Insets(0, 0, 0, 0);
 }
 
 int WindowWin::GetShowState() const {
@@ -584,6 +584,7 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
 }
 
 LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
+  //return 0;
   // We only override the default handling if we need to specify a custom
   // non-client edge width. Note that in most cases "no insets" means no
   // custom width, but in fullscreen mode we want a custom width of 0.
