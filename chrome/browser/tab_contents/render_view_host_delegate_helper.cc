@@ -299,6 +299,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.experimental_webgl_enabled =
         gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisable3DAPIs) &&
+        !prefs->GetBoolean(prefs::kDisable3DAPIs) &&
         !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
     web_prefs.gl_multisampling_enabled =
         !command_line.HasSwitch(switches::kDisableGLMultisampling);
