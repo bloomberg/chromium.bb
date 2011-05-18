@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var remoting = {};
+var remoting = chrome.extension.getBackgroundPage().remoting;
 XMPP_LOGIN_NAME = 'xmpp_login';
 XMPP_TOKEN_NAME = 'xmpp_token';
 OAUTH2_TOKEN_NAME = 'oauth2_token';
@@ -18,11 +18,12 @@ function updateAuthStatus_() {
     oauth1_status.style.color = 'red';
   }
   var xmpp_status = document.getElementById('xmpp_status');
-  if (remoting.getItem(XMPP_TOKEN_NAME)) {
+  if (remoting.getItem(XMPP_TOKEN_NAME) && remoting.getItem(XMPP_LOGIN_NAME)) {
     document.getElementById('xmpp_clear').style.display = 'inline';
     document.getElementById('xmpp_form').style.display = 'none';
     xmpp_status.innerText = 'OK';
     xmpp_status.style.color = 'green';
+    remoting.xmppAuthToken = remoting.getItem(XMPP_TOKEN_NAME);
   } else {
     document.getElementById('xmpp_clear').style.display = 'none';
     document.getElementById('xmpp_form').style.display = 'inline';
@@ -165,7 +166,7 @@ function init() {
 }
 
 function setGlobalMode(mode) {
-  setMode_(mode, ['host', 'client', 'session']);
+  setMode_(mode, ['host', 'client']);
 }
 
 function setGlobalModePersistent(mode) {
@@ -222,13 +223,8 @@ function cancelShare() {
 }
 
 function startSession_() {
-  var div = document.getElementById('plugin_container');
-  var plugin = document.createElement('embed');
-  plugin.setAttribute('type', 'pepper-application/x-chromoting');
-  plugin.setAttribute('id', 'chromoting_client_plugin');
-  div.appendChild(plugin);
-  remoting.plugin = plugin;
-  setGlobalMode('session');
+  remoting.username = remoting.getItem(XMPP_LOGIN_NAME);
+  document.location = 'remoting_session.html';
 }
 
 function showConnectError_(responseCode, responseString) {
@@ -251,9 +247,7 @@ function parseServerResponse_(reply, xhr) {
   if (xhr.status == 200) {
     var host = JSON.parse(xhr.responseText);
     if (host.data && host.data.jabberId) {
-      remoting.jid = host.data.jabberId;
-      var proof = document.getElementById('host_jid_debug');
-      proof.innerText = remoting.jid;
+      remoting.hostjid = host.data.jabberId;
       startSession_();
       return;
     }

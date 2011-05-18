@@ -7,12 +7,17 @@ body {
   font-family: Helvetica, sans-serif;
   cursor: default;
   font-size: 13px;
-  min-width:200px;
-  min-height:100px;
 }
 
 p {
   color: black;
+}
+
+h1 {
+  font-family: sans-serif;
+  font-size: 2em;
+  font-weight: bold;
+  margin: 2px 5px 5px 5px
 }
 
 .message {
@@ -33,6 +38,106 @@ p {
   border-style: solid;
   background-color: lightgray;
   display: inline-block;
+}
+
+.hostlist {
+  margin: 0;
+  border: #D9D9D9 1px solid;
+  border-radius: 2px;
+}
+
+.status_msg {
+  margin: 5px;
+}
+
+.debug_log {
+  -webkit-user-select: text;
+  padding: 0px;
+  margin: 0px;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  height: 150px;
+  overflow: auto;
+  font-family: monospace;
+  font-weight: bold;
+  line-height: 0.5em;
+  border: 2px solid #ffffff;
+  display: none;
+  opacity: 0.9;
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.debug_log_toggle {
+  line-height: 0.8em;
+  float: right;
+}
+
+.scale_to_fit_toggle {
+  line-height: 0.8em;
+  float: right;
+ }
+
+.local_login_panel {
+  -webkit-user-select: none;
+  font-family: arial,sans-serif;
+  position: absolute;
+  display: none;
+  z-index: 1;
+  top: 50%;
+  left: 45%;
+  border: 2px solid #e8eefa;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.plugin-scroll-panel {
+  -webkit-user-select: none;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.gaia_font {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.page h1 {
+  -webkit-padding-end: 24px;
+  -webkit-user-select: none;
+  border-bottom: 1px solid #eeeeee;
+  color: #53637d;
+  font-size: 200%;
+  font-weight: normal;
+  margin: 0;
+  padding-bottom: 4px;
+  padding-top: 13px;
+  text-shadow: white 0 1px 2px;
+}
+
+section {
+  -webkit-box-orient: horizontal;
+  border-bottom: 1px solid #eeeeee;
+  display: -webkit-box;
+  margin-top: 17px;
+  padding-bottom: 20px;
+}
+
+section > h3 {
+  font-size: 105%;
+  font-weight: bold;
+  margin: 0;
+  vertical-align: middle;
+  width: 160px;
+}
+
+section > div:only-of-type {
+  -webkit-box-flex: 1;
+}
+
+div.page section:last-child {
+  border-bottom: none;
 }
 
 button {

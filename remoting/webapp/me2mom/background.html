@@ -7,28 +7,5 @@ found in the LICENSE file.
 <html>
   <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
   <script type="text/javascript" src="chrome_ex_oauth.js"></script>
-  <script type="text/javascript">
-    function setItem(key, value) {
-      window.localStorage.setItem(key, value);
-    }
-    function getItem(key, defaultValue) {
-      var result = window.localStorage.getItem(key);
-      return (result != null) ? result : defaultValue;
-    }
-    function removeItem(key) {
-      window.localStorage.removeItem(key);
-    }
-    function clearAll() {
-      window.localStorage.clear();
-    }
-    var oauth = ChromeExOAuth.initBackgroundPage({
-        'request_url': 'https://www.google.com/accounts/OAuthGetRequestToken',
-        'authorize_url': 'https://www.google.com/accounts/OAuthAuthorizeToken',
-        'access_url': 'https://www.google.com/accounts/OAuthGetAccessToken',
-        'consumer_key': 'anonymous',
-        'consumer_secret': 'anonymous',
-        'scope': 'https://www.googleapis.com/auth/chromoting',
-        'app_name': 'Remoting WebApp'
-        });
-  </script>
+  <script type="text/javascript" src="background.js"></script>
 </html>
