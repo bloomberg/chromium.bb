@@ -15,6 +15,14 @@
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #endif
 
+WebSocketProxyPrivateGetPassportForTCPFunction::
+    WebSocketProxyPrivateGetPassportForTCPFunction() {
+}
+
+WebSocketProxyPrivateGetPassportForTCPFunction::
+    ~WebSocketProxyPrivateGetPassportForTCPFunction() {
+}
+
 bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
   bool delay_response = false;
   result_.reset(Value::CreateStringValue(""));

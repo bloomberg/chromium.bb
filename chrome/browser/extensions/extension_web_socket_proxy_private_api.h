@@ -13,6 +13,11 @@
 
 class WebSocketProxyPrivateGetPassportForTCPFunction
     : public AsyncExtensionFunction, public NotificationObserver {
+ public:
+  WebSocketProxyPrivateGetPassportForTCPFunction();
+
+  virtual ~WebSocketProxyPrivateGetPassportForTCPFunction();
+
  private:
   // ExtensionFunction implementation.
   virtual bool RunImpl() OVERRIDE;
