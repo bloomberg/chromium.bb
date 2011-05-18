@@ -8,22 +8,17 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/file_version_info_win.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string16.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
+#include "grit/virtual_driver_setup_resources.h"
 
 namespace {
-
-bool IsSystem64Bit() {
-  base::win::OSInfo::WindowsArchitecture arch =
-      base::win::OSInfo::GetInstance()->architecture();
-  return (arch == base::win::OSInfo::X64_ARCHITECTURE) ||
-         (arch == base::win::OSInfo::IA64_ARCHITECTURE);
-}
 
 HRESULT GetGpdPath(FilePath* path) {
   if (!PathService::Get(base::DIR_EXE, path)) {
@@ -34,25 +29,17 @@ HRESULT GetGpdPath(FilePath* path) {
   return S_OK;
 }
 
-const wchar_t *GetPortMonitorDllName() {
-  if (IsSystem64Bit()) {
-    return cloud_print::kPortMonitorDllName64;
-  } else {
-    return cloud_print::kPortMonitorDllName32;
-  }
-}
-
 HRESULT GetPortMonitorDllPath(FilePath* path) {
   if (!PathService::Get(base::DIR_EXE, path)) {
     LOG(ERROR) << "Unable to get install path.";
     return ERROR_PATH_NOT_FOUND;
   }
-  *path = path->Append(GetPortMonitorDllName());
+  *path = path->Append(cloud_print::GetPortMonitorDllName());
   return S_OK;
 }
 
 HRESULT GetPortMonitorInstallPath(FilePath* path) {
-  if (IsSystem64Bit()) {
+  if (cloud_print::IsSystem64Bit()) {
     if (!PathService::Get(base::DIR_WINDOWS, path)) {
       return ERROR_PATH_NOT_FOUND;
     }
@@ -65,7 +52,7 @@ HRESULT GetPortMonitorInstallPath(FilePath* path) {
       return ERROR_PATH_NOT_FOUND;
     }
   }
-  *path = path->Append(GetPortMonitorDllName());
+  *path = path->Append(cloud_print::GetPortMonitorDllName());
   return S_OK;
 }
 
@@ -139,33 +126,55 @@ HRESULT RegisterPortMonitor(bool install) {
   return S_OK;
 }
 
-HRESULT InstallGpd() {
-  HRESULT result = S_OK;
-  FilePath source_path;
-  result = GetGpdPath(&source_path);
-  if (!SUCCEEDED(result)) {
-    return result;
+DWORDLONG GetVersionNumber() {
+  DWORDLONG retval = 0;
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  if (version_info.get()) {
+    FileVersionInfoWin* version_info_win =
+        static_cast<FileVersionInfoWin*>(version_info.get());
+    VS_FIXEDFILEINFO* fixed_file_info = version_info_win->fixed_file_info();
+    retval = fixed_file_info->dwFileVersionMS;
+    retval <<= 32;
+    retval |= fixed_file_info->dwFileVersionMS;
   }
+  return retval;
+}
+
+HRESULT InstallGpd() {
+  DRIVER_INFO_6 driver_info = {0};
+  HRESULT result = S_OK;
+
+  // Set up paths for the files we depend on.
+  FilePath source_path;
   FilePath driver_dir;
   cloud_print::GetPrinterDriverDir(&driver_dir);
   FilePath xps_path = driver_dir.Append(L"mxdwdrv.dll");
   FilePath ui_path = driver_dir.Append(L"unidrvui.dll");
   FilePath ui_help_path = driver_dir.Append(L"unidrv.hlp");
-  DRIVER_INFO_6 driver_info = {0};
-  driver_info.cVersion = 3;
+  result = GetGpdPath(&source_path);
+  if (!SUCCEEDED(result)) {
+    return result;
+  }
   // None of the print API structures likes constant strings even though they
   // don't modify the string.  const_casting is the cleanest option.
-  driver_info.pName = const_cast<LPWSTR>(cloud_print::kVirtualDriverName);
-  driver_info.pDriverPath = const_cast<LPWSTR>(xps_path.value().c_str());
-  driver_info.pConfigFile = const_cast<LPWSTR>(ui_path.value().c_str());
   driver_info.pDataFile = const_cast<LPWSTR>(source_path.value().c_str());
   driver_info.pHelpFile = const_cast<LPWSTR>(ui_help_path.value().c_str());
-  // TODO(abodenha@chromium.org) Pull these strings from resources.
-  driver_info.pszMfgName = L"Google";
-  driver_info.pszProvider = driver_info.pszMfgName;
+  driver_info.pDriverPath = const_cast<LPWSTR>(xps_path.value().c_str());
+  driver_info.pConfigFile = const_cast<LPWSTR>(ui_path.value().c_str());
+
+  // Set up user visible strings.
+  string16 manufacturer = cloud_print::LoadLocalString(IDS_GOOGLE);
+  driver_info.pszMfgName = const_cast<LPWSTR>(manufacturer.c_str());
+  driver_info.pszProvider = const_cast<LPWSTR>(manufacturer.c_str());
   driver_info.pszOEMUrl = L"http://www.google.com/cloudprint";
-  driver_info.dwlDriverVersion = 1;
-  driver_info.pDefaultDataType = L"RAW";
+  driver_info.dwlDriverVersion = GetVersionNumber();
+  string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
+  driver_info.pName = const_cast<LPWSTR>(driver_name.c_str());
+
+  // Set up supported print system version.  Must be 3.
+  driver_info.cVersion = 3;
+
   // TODO(abodenha@chromium.org) Properly handle dependencies.
   // GPD files are often dependent on various Windows core drivers.
   // I haven't found a reliable way to express those dependencies
@@ -183,12 +192,16 @@ HRESULT InstallGpd() {
 
 HRESULT UninstallGpd() {
   int tries = 10;
+  string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
   while (!DeletePrinterDriverEx(NULL,
                                 NULL,
-                                const_cast<LPWSTR>
-                                    (cloud_print::kVirtualDriverName),
+                                const_cast<LPWSTR>(driver_name.c_str()),
                                 DPD_DELETE_UNUSED_FILES,
                                 0) && tries > 0) {
+    if (GetLastError() == ERROR_UNKNOWN_PRINTER_DRIVER) {
+      LOG(WARNING) << "Print driver is already uninstalled.";
+      return S_OK;
+    }
     // After deleting the printer it can take a few seconds before
     // the driver is free for deletion.  Retry a few times before giving up.
     LOG(WARNING) << "Attempt to delete printer driver failed.  Retrying.";
@@ -205,17 +218,17 @@ HRESULT UninstallGpd() {
 
 HRESULT InstallPrinter(void) {
   PRINTER_INFO_2 printer_info = {0};
-  printer_info.pPrinterName =
-      const_cast<LPWSTR>(cloud_print::kVirtualDriverName);
+
+  // None of the print API structures likes constant strings even though they
+  // don't modify the string.  const_casting is the cleanest option.
+  string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
+  printer_info.pDriverName = const_cast<LPWSTR>(driver_name.c_str());
+  printer_info.pPrinterName = const_cast<LPWSTR>(driver_name.c_str());
+  printer_info.pComment =  const_cast<LPWSTR>(driver_name.c_str());
+  string16 port_name;
   printer_info.pPortName = const_cast<LPWSTR>(cloud_print::kPortName);
-  printer_info.pDriverName =
-      const_cast<LPWSTR>(cloud_print::kVirtualDriverName);
-  printer_info.pPrinterName = printer_info.pDriverName;
-  // TODO(abodenha@chromium.org) pComment should be localized.
-  printer_info.pComment = const_cast<LPWSTR>(cloud_print::kVirtualDriverName);
   printer_info.Attributes = PRINTER_ATTRIBUTE_DIRECT|PRINTER_ATTRIBUTE_LOCAL;
   printer_info.pPrintProcessor = L"winprint";
-  printer_info.pDatatype = L"RAW";
   HANDLE handle = AddPrinter(NULL, 2, reinterpret_cast<BYTE*>(&printer_info));
   if (handle == NULL) {
     HRESULT result = cloud_print::GetLastHResult();
@@ -230,7 +243,8 @@ HRESULT UninstallPrinter(void) {
   HANDLE handle = NULL;
   PRINTER_DEFAULTS printer_defaults = {0};
   printer_defaults.DesiredAccess = PRINTER_ALL_ACCESS;
-  if (!OpenPrinter(const_cast<LPWSTR>(cloud_print::kVirtualDriverName),
+  string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
+  if (!OpenPrinter(const_cast<LPWSTR>(driver_name.c_str()),
                    &handle,
                    &printer_defaults)) {
     // If we can't open the printer, it was probably already removed.
@@ -302,7 +316,8 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
     retval = InstallVirtualDriver();
   }
   if (!CommandLine::ForCurrentProcess()->HasSwitch("silent")) {
-    cloud_print::DisplayWindowsMessage(NULL, retval);
+    cloud_print::DisplayWindowsMessage(NULL, retval,
+        cloud_print::LoadLocalString(IDS_DRIVER_NAME));
   }
   return retval;
 }

@@ -59,12 +59,6 @@ const wchar_t kChromePathRegValue[] = L"PathToChromeExe";
 const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
 
 namespace {
-#ifdef _WIN64
-const wchar_t *kPortMonitorDllName = kPortMonitorDllName64;
-#else
-const wchar_t *kPortMonitorDllName = kPortMonitorDllName32;
-#endif
-
 const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
 const size_t kMaxCommandLineLen = 0x7FFF;
@@ -195,7 +189,7 @@ bool GetJobTitle(HANDLE printer_handle,
 // configuration.
 void HandlePortUi(HWND hwnd, const string16& caption) {
   if (hwnd != NULL && IsWindow(hwnd)) {
-    DisplayWindowsMessage(hwnd, CO_E_NOT_SUPPORTED);
+    DisplayWindowsMessage(hwnd, CO_E_NOT_SUPPORTED, cloud_print::kPortName);
   }
 }
 
@@ -313,7 +307,7 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
     SetLastError(ERROR_INVALID_LEVEL);
     return FALSE;
   }
-  *needed_bytes += static_cast<DWORD>(kPortNameSize);
+  *needed_bytes += static_cast<DWORD>(cloud_print::kPortNameSize);
   if (ports_size < *needed_bytes) {
     LOG(WARNING) << *needed_bytes << " bytes are required.  Only "
                  << ports_size << " were allocated.";
@@ -337,15 +331,20 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
   // EnumPorts to fail until the spooler is restarted.
   // This is NOT mentioned in the documentation.
   wchar_t* string_target =
-      reinterpret_cast<wchar_t*>(ports + ports_size - kPortNameSize);
+      reinterpret_cast<wchar_t*>(ports + ports_size -
+      cloud_print::kPortNameSize);
   if (level == 1) {
     PORT_INFO_1* port_info = reinterpret_cast<PORT_INFO_1*>(ports);
     port_info->pName = string_target;
-    StringCbCopy(port_info->pName, kPortNameSize, kPortName);
+    StringCbCopy(port_info->pName,
+                 cloud_print::kPortNameSize,
+                 cloud_print::kPortName);
   } else {
     PORT_INFO_2* port_info = reinterpret_cast<PORT_INFO_2*>(ports);
     port_info->pPortName = string_target;
-    StringCbCopy(port_info->pPortName, kPortNameSize, kPortName);
+    StringCbCopy(port_info->pPortName,
+                 cloud_print::kPortNameSize,
+                 cloud_print::kPortName);
     port_info->pMonitorName = NULL;
     port_info->pDescription = NULL;
     port_info->fPortType = PORT_TYPE_WRITE;
@@ -554,15 +553,18 @@ DWORD WINAPI Monitor2XcvDataPort(HANDLE xcv_handle,
   // We don't handle AddPort or DeletePort since we don't support
   // dynamic creation of ports.
   if (lstrcmp(L"MonitorUI", data_name) == 0) {
+    DWORD dll_path_len = 0;
+    FilePath dll_path(GetPortMonitorDllName());
+    dll_path_len = static_cast<DWORD>(dll_path.value().length());
     if (output_data_bytes_needed != NULL) {
-      *output_data_bytes_needed = sizeof(kPortMonitorDllName);
+      *output_data_bytes_needed = dll_path_len;
     }
-    if (output_data_bytes < sizeof(kPortMonitorDllName)) {
+    if (output_data_bytes < dll_path_len) {
         return ERROR_INSUFFICIENT_BUFFER;
     } else {
         ret_val = StringCbCopy(reinterpret_cast<wchar_t*>(output_data),
                                output_data_bytes,
-                               kPortMonitorDllName);
+                               dll_path.value().c_str());
     }
   } else {
     return ERROR_INVALID_PARAMETER;
@@ -627,8 +629,9 @@ HRESULT WINAPI DllRegisterServer(void) {
   MONITOR_INFO_2 monitor_info = {0};
   // YUCK!!!  I can either copy the constant, const_cast, or define my own
   // MONITOR_INFO_2 that will take const strings.
-  monitor_info.pDLLName = const_cast<LPWSTR>(cloud_print::kPortMonitorDllName);
-  monitor_info.pName = const_cast<LPWSTR>(cloud_print::kPortMonitorDllName);
+  FilePath dll_path(cloud_print::GetPortMonitorDllName());
+  monitor_info.pDLLName = const_cast<LPWSTR>(dll_path.value().c_str());
+  monitor_info.pName = const_cast<LPWSTR>(dll_path.value().c_str());
   if (AddMonitor(NULL, 2, reinterpret_cast<BYTE*>(&monitor_info))) {
     return S_OK;
   }
@@ -640,9 +643,10 @@ HRESULT WINAPI DllUnregisterServer(void) {
   if (!cloud_print::CanRegister()) {
     return E_ACCESSDENIED;
   }
+  FilePath dll_path(cloud_print::GetPortMonitorDllName());
   if (DeleteMonitor(NULL,
                     NULL,
-                    const_cast<LPWSTR>(cloud_print::kPortMonitorDllName))) {
+                    const_cast<LPWSTR>(dll_path.value().c_str()))) {
     return S_OK;
   }
   return cloud_print::GetLastHResult();
