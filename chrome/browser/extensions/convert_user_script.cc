@@ -24,6 +24,7 @@
 #include "googleurl/src/gurl.h"
 
 namespace keys = extension_manifest_keys;
+namespace values = extension_manifest_values;
 
 scoped_refptr<Extension> ConvertUserScriptToExtension(
     const FilePath& user_script_path, const GURL& original_url,
@@ -125,6 +126,14 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   content_script->Set(keys::kIncludeGlobs, includes);
   content_script->Set(keys::kExcludeGlobs, excludes);
   content_script->Set(keys::kJs, js_files);
+
+  if (script.run_location() == UserScript::DOCUMENT_START)
+    content_script->SetString(keys::kRunAt, values::kRunAtDocumentStart);
+  else if (script.run_location() == UserScript::DOCUMENT_END)
+    content_script->SetString(keys::kRunAt, values::kRunAtDocumentEnd);
+  else if (script.run_location() == UserScript::DOCUMENT_IDLE)
+    // This is the default, but store it just in case we change that.
+    content_script->SetString(keys::kRunAt, values::kRunAtDocumentIdle);
 
   ListValue* content_scripts = new ListValue();
   content_scripts->Append(content_script);

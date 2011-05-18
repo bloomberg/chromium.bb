@@ -70,6 +70,7 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
   static const base::StringPiece kRunAtDeclaration("// @run-at");
   static const base::StringPiece kRunAtDocumentStartValue("document-start");
   static const base::StringPiece kRunAtDocumentEndValue("document-end");
+  static const base::StringPiece kRunAtDocumentIdleValue("document-idle");
 
   while (line_start < script_text.length()) {
     line_end = script_text.find('\n', line_start);
@@ -116,7 +117,11 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       } else if (GetDeclarationValue(line, kRunAtDeclaration, &value)) {
         if (value == kRunAtDocumentStartValue)
           script->set_run_location(UserScript::DOCUMENT_START);
-        else if (value != kRunAtDocumentEndValue)
+        else if (value == kRunAtDocumentEndValue)
+          script->set_run_location(UserScript::DOCUMENT_END);
+        else if (value == kRunAtDocumentIdleValue)
+          script->set_run_location(UserScript::DOCUMENT_IDLE);
+        else
           return false;
       }
 

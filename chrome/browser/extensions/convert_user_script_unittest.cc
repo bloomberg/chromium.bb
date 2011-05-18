@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/common/chrome_paths.h"
@@ -27,6 +28,10 @@ TEST(ExtensionFromUserScript, Basic) {
   ASSERT_TRUE(extension.get());
   EXPECT_EQ("", error);
 
+  // Use a temp dir so that the extensions dir will clean itself up.
+  ScopedTempDir ext_dir;
+  EXPECT_TRUE(ext_dir.Set(extension->path()));
+
   // Validate generated extension metadata.
   EXPECT_EQ("My user script", extension->name());
   EXPECT_EQ("2.2.2", extension->VersionString());
@@ -36,6 +41,7 @@ TEST(ExtensionFromUserScript, Basic) {
 
   ASSERT_EQ(1u, extension->content_scripts().size());
   const UserScript& script = extension->content_scripts()[0];
+  EXPECT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
   ASSERT_EQ(2u, script.globs().size());
   EXPECT_EQ("http://www.google.com/*", script.globs().at(0));
   EXPECT_EQ("http://www.yahoo.com/*", script.globs().at(1));
@@ -49,9 +55,6 @@ TEST(ExtensionFromUserScript, Basic) {
       extension->path().Append(script.js_scripts()[0].relative_path())));
   EXPECT_TRUE(file_util::PathExists(
       extension->path().Append(Extension::kManifestFilename)));
-
-  // Cleanup
-  file_util::Delete(extension->path(), true);
 }
 
 TEST(ExtensionFromUserScript, NoMetdata) {
@@ -66,6 +69,10 @@ TEST(ExtensionFromUserScript, NoMetdata) {
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ("", error);
+
+  // Use a temp dir so that the extensions dir will clean itself up.
+  ScopedTempDir ext_dir;
+  EXPECT_TRUE(ext_dir.Set(extension->path()));
 
   // Validate generated extension metadata.
   EXPECT_EQ("bar.user.js", extension->name());
@@ -88,9 +95,6 @@ TEST(ExtensionFromUserScript, NoMetdata) {
       extension->path().Append(script.js_scripts()[0].relative_path())));
   EXPECT_TRUE(file_util::PathExists(
       extension->path().Append(Extension::kManifestFilename)));
-
-  // Cleanup
-  file_util::Delete(extension->path(), true);
 }
 
 TEST(ExtensionFromUserScript, NotUTF8) {
@@ -106,4 +110,92 @@ TEST(ExtensionFromUserScript, NotUTF8) {
 
   ASSERT_FALSE(extension.get());
   EXPECT_EQ("User script must be UTF8 encoded.", error);
+}
+
+TEST(ExtensionFromUserScript, RunAtDocumentStart) {
+  FilePath test_file;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  test_file = test_file.AppendASCII("extensions")
+                       .AppendASCII("user_script_run_at_start.user.js");
+
+  std::string error;
+  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
+      test_file, GURL("http://www.google.com/foo"), &error));
+
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("", error);
+
+  // Use a temp dir so that the extensions dir will clean itself up.
+  ScopedTempDir ext_dir;
+  EXPECT_TRUE(ext_dir.Set(extension->path()));
+
+  // Validate generated extension metadata.
+  EXPECT_EQ("Document Start Test", extension->name());
+  EXPECT_EQ("This script tests document-start", extension->description());
+  EXPECT_EQ("RjmyI7+Gp/YHcW1qnu4xDxkJcL4cV4kTzdCA4BajCbk=",
+            extension->public_key());
+
+  // Validate run location.
+  ASSERT_EQ(1u, extension->content_scripts().size());
+  const UserScript& script = extension->content_scripts()[0];
+  EXPECT_EQ(UserScript::DOCUMENT_START, script.run_location());
+}
+
+TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
+  FilePath test_file;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  test_file = test_file.AppendASCII("extensions")
+                       .AppendASCII("user_script_run_at_end.user.js");
+
+  std::string error;
+  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
+      test_file, GURL("http://www.google.com/foo"), &error));
+
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("", error);
+
+  // Use a temp dir so that the extensions dir will clean itself up.
+  ScopedTempDir ext_dir;
+  EXPECT_TRUE(ext_dir.Set(extension->path()));
+
+  // Validate generated extension metadata.
+  EXPECT_EQ("Document End Test", extension->name());
+  EXPECT_EQ("This script tests document-end", extension->description());
+  EXPECT_EQ("cpr5i8Mi24FzECV8UJe6tanwlU8SWesZosJ915YISvQ=",
+            extension->public_key());
+
+  // Validate run location.
+  ASSERT_EQ(1u, extension->content_scripts().size());
+  const UserScript& script = extension->content_scripts()[0];
+  EXPECT_EQ(UserScript::DOCUMENT_END, script.run_location());
+}
+
+TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
+  FilePath test_file;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  test_file = test_file.AppendASCII("extensions")
+                       .AppendASCII("user_script_run_at_idle.user.js");
+  ASSERT_TRUE(file_util::PathExists(test_file)) << test_file.value();
+
+  std::string error;
+  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
+      test_file, GURL("http://www.google.com/foo"), &error));
+
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("", error);
+
+  // Use a temp dir so that the extensions dir will clean itself up.
+  ScopedTempDir ext_dir;
+  EXPECT_TRUE(ext_dir.Set(extension->path()));
+
+  // Validate generated extension metadata.
+  EXPECT_EQ("Document Idle Test", extension->name());
+  EXPECT_EQ("This script tests document-idle", extension->description());
+  EXPECT_EQ("kHnHKec3O/RKKo5/Iu1hKqe4wQERthL0639isNtsfiY=",
+            extension->public_key());
+
+  // Validate run location.
+  ASSERT_EQ(1u, extension->content_scripts().size());
+  const UserScript& script = extension->content_scripts()[0];
+  EXPECT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
 }
