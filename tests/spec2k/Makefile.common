@@ -82,7 +82,7 @@ endif
 ######################################################################
 
 clean:
-	rm -f -- *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
+	rm -f -- *.pexe *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
               $(IT) $(IT).* *.out src/*bc $(EXTRA_CLEAN)
 
 
@@ -209,73 +209,45 @@ PNACL_TRANSLATOR_SB=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate --pnacl-sb
 PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator
 BC_GCC=$(PNACL_BIN)/pnacl-gcc
 BC_GPP=$(PNACL_BIN)/pnacl-g++
-BC_OPT=$(PNACL_BIN)/pnacl-opt
-BC_MERGE=$(PNACL_BIN)/pnacl-bclink
-BC_PRELINK=$(PNACL_BIN)/pnacl-ld
 BC_STRIP=$(PNACL_BIN)/pnacl-strip
-
 PNACL_FLAGS=--pnacl-driver-verbose
 
-# -fno-fast-math may become necessary once we switch to more recent version
-# of llvm, c.f.: http://code.google.com/p/nativeclient/issues/detail?id=821
-PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS) -D__native_client__=1
+PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS)
 
 %.bc: %.c
-	$(BC_GCC) $(PNACL_FLAGS_COMMON) $< -c -o $@
+	$(BC_GCC) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
 %.bc: %.cc
-	$(BC_GPP) $(PNACL_FLAGS_COMMON) $< -c -o $@
+	$(BC_GPP) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
 
-%.o.bc: %.c
-	$(BC_GCC) $(PNACL_FLAGS_COMMON) -O3 $< -c -o $@
-%.o.bc: %.cc
-	$(BC_GPP) $(PNACL_FLAGS_COMMON) -O3 $< -c -o $@
+%.o3.bc: %.c
+	$(BC_GCC) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
+%.o3.bc: %.cc
+	$(BC_GPP) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
 
-# llvm bit code combined
-$(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
-	$(BC_LINK) $^  -o $@
+# TODO(jvoung): fold --pnacl-skip-lto into the -O number?
+$(IT).unopt.pexe: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
+	$(BC_GPP) -O0 --pnacl-skip-lto $(PNACL_FLAGS_COMMON) $^ \
+	-static -lm -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-# optimized llvm bit code combined
-# NOTE: this is just a merged bitcode file and does not include the libraries
-#       we add this step so we can perform interprocedural optimization, c.f.
-#       $(IT).opt.bc, without the libs
-$(IT).preopt.bc: $(SRC:%.c=%.o.bc) $(CPPSRC:%.cc=%.o.bc)
-	$(BC_MERGE) $^  -o $@
-	@$(call LOG_ZIP_SIZE,$@,$(IT))
-
-# llvm bit code pre-linked
-$(IT).preopt.pexe: $(IT).preopt.bc
-	$(BC_PRELINK) $^ -lm -lnosys -o $@
-	@$(call LOG_ZIP_SIZE,$@,$(IT))
-
-# llvm bit code pre-linked and stripped
-$(IT).preopt.stripped.pexe: $(IT).preopt.pexe
+$(IT).unopt.stripped.pexe: $(IT).unopt.pexe
 	$(BC_STRIP) $^ -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-# optimized llvm bit code combined and interprocedurally re-optimized
-$(IT).opt.bc: $(IT).preopt.bc
-	$(BC_OPT) $^ -o $@
+$(IT).opt.pexe: $(SRC:%.c=%.o3.bc) $(CPPSRC:%.cc=%.o3.bc)
+	$(BC_GPP) -O3 $(PNACL_FLAGS_COMMON) $^ -static -lm \
+	-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-# doubly-optimized llvm bit code pre-linked
-$(IT).opt.pexe: $(IT).opt.bc
-	$(BC_PRELINK) $^ -lm  -lnosys -o $@
-	@$(call LOG_ZIP_SIZE,$@,$(IT))
-
-# doubly-optimized llvm bit code pre-linked and stripped
 $(IT).opt.stripped.pexe: $(IT).opt.pexe
 	$(BC_STRIP) $^ -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-
-# TODO(robertm): consider droping the merged files and generating pexe's
-#                right away
 ######################################################################
 # BITCODE - BACKEND - ARM  (sandboxed and non-sandboxed translators)
 # TODO: sandboxed arm translators are not ready yet
 
-$(IT).pnacl.arm: $(IT).preopt.stripped.pexe
+$(IT).pnacl.arm: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
@@ -283,7 +255,7 @@ $(IT).pnacl.opt.arm: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
-$(IT).pnacl_translator.arm: $(IT).preopt.stripped.pexe
+$(IT).pnacl_translator.arm: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB_EMU) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
@@ -291,7 +263,7 @@ $(IT).pnacl_translator.opt.arm: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB_EMU) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
-$(IT).pnacl_translator.hw.arm: $(IT).preopt.stripped.pexe
+$(IT).pnacl_translator.hw.arm: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
@@ -302,7 +274,7 @@ $(IT).pnacl_translator.opt.hw.arm: $(IT).opt.stripped.pexe
 ######################################################################
 # BITCODE - BACKEND - X8632 (sandboxed and non-sandboxed translators)
 
-$(IT).pnacl.x8632: $(IT).preopt.stripped.pexe
+$(IT).pnacl.x8632: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
@@ -310,7 +282,7 @@ $(IT).pnacl.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
-$(IT).pnacl_translator.x8632: $(IT).preopt.stripped.pexe
+$(IT).pnacl_translator.x8632: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
@@ -321,7 +293,7 @@ $(IT).pnacl_translator.opt.x8632: $(IT).opt.stripped.pexe
 ######################################################################
 # BITCODE - BACKEND - X8664 (sandboxed and non-sandboxed translators)
 
-$(IT).pnacl.x8664: $(IT).preopt.stripped.pexe
+$(IT).pnacl.x8664: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
@@ -329,7 +301,7 @@ $(IT).pnacl.opt.x8664: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
-$(IT).pnacl_translator.x8664: $(IT).preopt.stripped.pexe
+$(IT).pnacl_translator.x8664: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
