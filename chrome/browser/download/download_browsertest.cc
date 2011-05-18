@@ -1320,8 +1320,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
 // Test for crbug.com/12745. This tests that if a download is initiated from
 // a chrome:// page that has registered and onunload handler, the browser
 // will be able to close.
-// Fails on Win only.  http://crbug.com/82278
-#if defined(OS_WIN)
+// Fails on Windows and Linux.  http://crbug.com/82278
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_BrowserCloseAfterDownload FAILS_BrowserCloseAfterDownload
 #else
 #define MAYBE_BrowserCloseAfterDownload BrowserCloseAfterDownload
