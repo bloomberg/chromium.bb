@@ -520,4 +520,4 @@ def PushImages(buildroot, board, branch_name, archive_dir):
 
   # It may be necessary to set "--nolatest" for some builds in the
   # future.
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_lib.RunCommand(cmd, cwd=cwd)

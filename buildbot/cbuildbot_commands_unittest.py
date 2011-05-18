@@ -335,8 +335,7 @@ class CBuildBotTest(mox.MoxTestBase):
                          '--board=board_name',
                          '--branch=branch_name',
                          '/archive/dir'],
-                        cwd='/bob/src/scripts',
-                        enter_chroot=True)
+                        cwd='/bob/src/scripts')
 
     self.mox.ReplayAll()
     commands.PushImages(buildroot, board, branch_name, archive_dir)
