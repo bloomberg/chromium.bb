@@ -11,13 +11,11 @@
 #include "content/browser/browser_message_filter.h"
 #include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
-#include "chrome/browser/profiles/profile.h"
 
 class FilePath;
 class GURL;
 class HostContentSettingsMap;
 class Profile;
-struct ExtensionHostMsg_Request_Params;
 
 namespace net {
 class URLRequestContextGetter;
@@ -76,7 +74,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
       const std::string& extension_id,
       const std::string& default_locale,
       IPC::Message* reply_msg);
-  void OnExtensionRequest(const ExtensionHostMsg_Request_Params& params);
   void OnExtensionAddListener(const std::string& extension_id,
                               const std::string& event_name);
   void OnExtensionRemoveListener(const std::string& extension_id,
@@ -119,7 +116,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
   Profile* profile_;
-  ProfileId profile_id_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   // Used to look up permissions at database creation time.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

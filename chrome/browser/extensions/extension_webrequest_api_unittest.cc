@@ -88,8 +88,7 @@ protected:
 // Tests that we handle disagreements among extensions about responses to
 // blocking events by choosing the response from the most-recently-installed
 // extension.
-// TODO(mpcomplete): temporarily disabled for hacky CL to test perf.
-TEST_F(ExtensionWebRequestTest, DISABLED_BlockingEventPrecedence) {
+TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
   std::string extension1_id("1");
   std::string extension2_id("2");
   ExtensionWebRequestEventRouter::RequestFilter filter;

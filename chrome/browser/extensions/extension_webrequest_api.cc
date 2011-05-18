@@ -15,11 +15,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
-#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -33,20 +31,6 @@
 namespace keys = extension_webrequest_api_constants;
 
 namespace {
-
-const char kDispatchEvent[] = "Event.dispatchJSON";
-
-static void DispatchEvent(ChromeRenderMessageFilter* sender,
-                          const std::string& extension_id,
-                          const std::string& event_name,
-                          const std::string& event_args,
-                          const GURL& event_url) {
-  ListValue args;
-  args.Set(0, Value::CreateStringValue(event_name));
-  args.Set(1, Value::CreateStringValue(event_args));
-  sender->Send(new ExtensionMsg_MessageInvoke(MSG_ROUTING_CONTROL,
-      extension_id, kDispatchEvent, args, event_url));
-}
 
 // List of all the webRequest events.
 static const char* const kWebRequestEvents[] = {
@@ -201,7 +185,6 @@ struct ExtensionWebRequestEventRouter::EventListener {
   RequestFilter filter;
   int extra_info_spec;
   mutable std::set<uint64> blocked_requests;
-  ChromeRenderMessageFilter* sender;
 
   // Comparator to work with std::set.
   bool operator<(const EventListener& that) const {
@@ -213,7 +196,7 @@ struct ExtensionWebRequestEventRouter::EventListener {
     return false;
   }
 
-  EventListener() : extra_info_spec(0), sender(NULL) {}
+  EventListener() : extra_info_spec(0) {}
 };
 
 // Contains info about requests that are blocked waiting for a response from
@@ -707,8 +690,9 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
       dict->Remove(keys::kStatusLineKey, NULL);
 
     base::JSONWriter::Write(args_filtered.get(), false, &json_args);
-    ::DispatchEvent((*it)->sender, (*it)->extension_id,
-                    (*it)->sub_event_name, json_args, GURL());
+    event_router->DispatchEventToExtension(
+        (*it)->extension_id, (*it)->sub_event_name, json_args,
+        profile_id, true, GURL());
     if ((*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
       (*it)->blocked_requests.insert(request->identifier());
       ++num_handlers_blocking;
@@ -764,14 +748,6 @@ void ExtensionWebRequestEventRouter::AddEventListener(
   listener.sub_event_name = sub_event_name;
   listener.filter = filter;
   listener.extra_info_spec = extra_info_spec;
-
-  // We don't know whether SetListenerMap was called before this.
-  std::set<EventListener>::iterator found =
-      listeners_[profile_id][event_name].find(listener);
-  if (found != listeners_[profile_id][event_name].end()) {
-    listener.sender = found->sender;
-    listeners_[profile_id][event_name].erase(found);
-  }
 
   CHECK_EQ(listeners_[profile_id][event_name].count(listener), 0u) <<
       "extension=" << extension_id << " event=" << event_name;
@@ -990,8 +966,6 @@ bool WebRequestAddEventListener::RunImpl() {
 }
 
 bool WebRequestEventHandled::RunImpl() {
-  return true;
-#if 0
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
@@ -1069,115 +1043,5 @@ bool WebRequestEventHandled::RunImpl() {
           profile()->GetRuntimeId(), extension_id(),
           event_name, sub_event_name, request_id, response.release()));
 
-  return true;
-#endif
-}
-
-void ExtensionWebRequestEventRouter::SetListenerMap(
-    ProfileId profile_id,
-    const std::string& extension_id,
-    const std::string& sub_event_name,
-    ChromeRenderMessageFilter* filter) {
-  size_t slash_sep = sub_event_name.find('/');
-  std::string event_name = sub_event_name.substr(0, slash_sep);
-  if (!IsWebRequestEvent(event_name))
-    return;
-
-  EventListener listener;
-  listener.extension_id = extension_id;
-  listener.sub_event_name = sub_event_name;
-
-  // We don't know whether AddEventListener was called before this.
-  std::set<EventListener>::iterator found =
-      listeners_[profile_id][event_name].find(listener);
-  if (found != listeners_[profile_id][event_name].end()) {
-    listener = *found;
-    listeners_[profile_id][event_name].erase(found);
-  }
-
-  listener.sender = filter;
-  listeners_[profile_id][event_name].insert(listener);
-}
-
-bool ExtensionWebRequestEventRouter::OnEventHandled(
-    ProfileId profile_id,
-    const ExtensionHostMsg_Request_Params& params) {
-  bool bad_message_;
-  std::string error_;
-  const ListValue* args_ = &params.arguments;
-  std::string extension_id(params.source_url.host());
-  std::string event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
-
-  std::string sub_event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &sub_event_name));
-
-  std::string request_id_str;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &request_id_str));
-  // TODO(mpcomplete): string-to-uint64?
-  int64 request_id;
-  EXTENSION_FUNCTION_VALIDATE(base::StringToInt64(request_id_str, &request_id));
-
-  scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
-  Value* tmp = NULL;
-  if (args_->Get(3, &tmp) && !tmp->IsType(Value::TYPE_NULL)) {
-    DictionaryValue* value = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(3, &value));
-
-    if (!value->empty()) {
-      base::Time install_time = base::Time::Now();
-      response.reset(new ExtensionWebRequestEventRouter::EventResponse(
-          extension_id, install_time));
-    }
-
-    if (value->HasKey("cancel")) {
-      bool cancel = false;
-      EXTENSION_FUNCTION_VALIDATE(value->GetBoolean("cancel", &cancel));
-      response->cancel = cancel;
-    }
-
-    // Don't allow cancel mixed with other keys.
-    if (response->cancel &&
-        (value->HasKey("redirectUrl") || value->HasKey("requestHeaders"))) {
-      error_ = keys::kInvalidBlockingResponse;
-      return false;
-    }
-
-    if (value->HasKey("redirectUrl")) {
-      std::string new_url_str;
-      EXTENSION_FUNCTION_VALIDATE(value->GetString("redirectUrl",
-                                                   &new_url_str));
-      response->new_url = GURL(new_url_str);
-      if (!response->new_url.is_valid()) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(
-            keys::kInvalidRedirectUrl, new_url_str);
-        return false;
-      }
-    }
-
-    if (value->HasKey("requestHeaders")) {
-      ListValue* request_headers_value = NULL;
-      response->request_headers.reset(new net::HttpRequestHeaders());
-      EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kRequestHeadersKey,
-                                                 &request_headers_value));
-      for (size_t i = 0; i < request_headers_value->GetSize(); ++i) {
-        DictionaryValue* header_value = NULL;
-        std::string name;
-        std::string value;
-        EXTENSION_FUNCTION_VALIDATE(
-            request_headers_value->GetDictionary(i, &header_value));
-        EXTENSION_FUNCTION_VALIDATE(
-            header_value->GetString(keys::kHeaderNameKey, &name));
-        EXTENSION_FUNCTION_VALIDATE(
-            header_value->GetString(keys::kHeaderValueKey, &value));
-
-        response->request_headers->SetHeader(name, value);
-      }
-    }
-  }
-
-  EventHandledOnIOThread(
-      profile_id, extension_id,
-      event_name, sub_event_name, request_id, response.release());
   return true;
 }
