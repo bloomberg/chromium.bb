@@ -54,8 +54,6 @@ include_rules = [
 
   "+chrome/browser/platform_util.h",
 
-  "+chrome/browser/plugin_observer.h",
-  "+chrome/common/default_plugin.h",
 
   "+chrome/browser/prefs/pref_change_registrar.h",
   "+chrome/browser/prefs/pref_service.h",
@@ -86,7 +84,6 @@ include_rules = [
   "+chrome/browser/ssl/ssl_add_cert_handler.h",
   "+chrome/browser/ssl/ssl_client_auth_handler.h",
   "+chrome/browser/ssl/ssl_manager.h",
-  "+chrome/browser/tab_contents/tab_contents_ssl_helper.h",
 
   # http://crbug.com/76792
   "+chrome/browser/tab_contents/infobar_delegate.h",

@@ -14,11 +14,10 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/default_plugin.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -69,8 +68,8 @@ PluginService* PluginService::GetInstance() {
 }
 
 PluginService::PluginService()
-    : main_message_loop_(MessageLoop::current()),
-      ui_locale_(g_browser_process->GetApplicationLocale()) {
+    : ui_locale_(
+          content::GetContentClient()->browser()->GetApplicationLocale()) {
   RegisterPepperPlugins();
 
   // Load any specified on the command line as well.
@@ -81,15 +80,6 @@ PluginService::PluginService()
   path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
   if (!path.empty())
     webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(path);
-
-  chrome::RegisterInternalDefaultPlugin();
-
-  // Register the internal Flash if available.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableInternalFlash) &&
-      PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
-  }
 
   // Start watching for changes in the plugin list. This means watching
   // for changes in the Windows registry keys and on both Windows and POSIX

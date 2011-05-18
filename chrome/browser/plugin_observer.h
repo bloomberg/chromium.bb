@@ -12,11 +12,11 @@ class FilePath;
 class GURL;
 class InfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
-class TabContents;
+class TabContentsWrapper;
 
 class PluginObserver : public TabContentsObserver {
  public:
-  explicit PluginObserver(TabContents* tab_contents);
+  explicit PluginObserver(TabContentsWrapper* tab_contents);
   ~PluginObserver();
 
   // IPC::Channel::Listener implementation.
@@ -30,6 +30,7 @@ class PluginObserver : public TabContentsObserver {
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
 
+  TabContentsWrapper* tab_contents_;
   scoped_ptr<InfoBarDelegate> plugin_installer_;  // Lazily created.
 
   DISALLOW_COPY_AND_ASSIGN(PluginObserver);

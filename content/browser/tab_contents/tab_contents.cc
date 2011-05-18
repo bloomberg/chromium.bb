@@ -23,7 +23,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
@@ -319,7 +318,6 @@ TabContents::~TabContents() {
 }
 
 void TabContents::AddObservers() {
-  plugin_observer_.reset(new PluginObserver(this));
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 

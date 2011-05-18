@@ -23,6 +23,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/pdf_unsupported_feature.h"
+#include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
@@ -89,6 +90,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Create the per-tab observers.
   file_select_observer_.reset(new FileSelectObserver(contents));
+  plugin_observer_.reset(new PluginObserver(this));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   webnavigation_observer_.reset(

@@ -45,7 +45,6 @@ class HistoryAddPageArgs;
 
 class Extension;
 class LoadNotificationDetails;
-class PluginObserver;
 class Profile;
 struct RendererPreferences;
 class RenderViewHost;
@@ -811,9 +810,6 @@ class TabContents : public PageNavigator,
 
   // Registers and unregisters for pref notifications.
   PrefChangeRegistrar pref_change_registrar_;
-
-  // Handles plugin messages.
-  scoped_ptr<PluginObserver> plugin_observer_;
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;

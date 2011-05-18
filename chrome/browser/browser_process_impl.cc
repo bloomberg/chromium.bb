@@ -57,6 +57,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/default_plugin.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_pref_store.h"
@@ -77,6 +78,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_WIN)
 #include "views/focus/view_storage.h"
@@ -744,6 +746,17 @@ void BrowserProcessImpl::CreateIOThread() {
   // on the main thread. The service ctor is inexpensive and does not
   // invoke the io_thread() accessor.
   PluginService::GetInstance();
+
+  // Add the Chrome specific plugins.
+  chrome::RegisterInternalDefaultPlugin();
+
+  // Register the internal Flash if available.
+  FilePath path;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInternalFlash) &&
+      PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
+    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
+  }
 
 #if defined(USE_X11)
   // The lifetime of the BACKGROUND_X11 thread is a subset of the IO thread so

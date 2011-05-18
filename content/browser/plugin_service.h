@@ -37,14 +37,8 @@
 #include "base/files/file_path_watcher.h"
 #endif
 
-class MessageLoop;
 struct PepperPluginInfo;
 class PluginDirWatcherDelegate;
-class ResourceDispatcherHost;
-
-namespace net {
-class URLRequestContext;
-}  // namespace net
 
 // This must be created on the main thread but it's only called on the IO/file
 // thread.
@@ -123,9 +117,6 @@ class PluginService
   // NOTE: can only be called on the UI thread.
   static void PurgePluginListCache(bool reload_pages);
 
-  // The UI thread's message loop
-  MessageLoop* main_message_loop() { return main_message_loop_; }
-
  private:
   friend struct DefaultSingletonTraits<PluginService>;
 
@@ -166,9 +157,6 @@ class PluginService
       const FilePath& path,
       base::files::FilePathWatcher::Delegate* delegate);
 #endif
-
-  // The main thread's message loop.
-  MessageLoop* main_message_loop_;
 
   // The browser's UI locale.
   const std::string ui_locale_;

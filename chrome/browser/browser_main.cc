@@ -1419,6 +1419,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif
 
+  // Override the default ContentBrowserClient to let Chrome participate in
+  // content logic.  Must be done before any tabs or profiles are created.
+  chrome::ChromeContentBrowserClient browser_client;
+  content::GetContentClient()->set_browser(&browser_client);
+
   CreateChildThreads(browser_process.get());
 
 #if defined(OS_CHROMEOS)
@@ -1513,11 +1518,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(USE_X11)
   SetBrowserX11ErrorHandlers();
 #endif
-
-  // Override the default ContentBrowserClient to let Chrome participate in
-  // content logic.  Must be done before any tabs or profiles are created.
-  chrome::ChromeContentBrowserClient browser_client;
-  content::GetContentClient()->set_browser(&browser_client);
 
   // Profile creation ----------------------------------------------------------
 

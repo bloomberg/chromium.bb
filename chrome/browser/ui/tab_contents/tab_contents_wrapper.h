@@ -42,6 +42,7 @@ class NavigationController;
 class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
+class PluginObserver;
 class SearchEngineTabHelper;
 class TabContentsWrapperDelegate;
 class TabSpecificContentSettings;
@@ -266,6 +267,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // and silently do their thing live here.)
 
   scoped_ptr<FileSelectObserver> file_select_observer_;
+  scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<ExtensionWebNavigationTabObserver> webnavigation_observer_;
