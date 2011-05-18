@@ -13,6 +13,9 @@
 #include "ui/base/theme_provider.h"
 
 namespace {
+// Width of area to the left of first tab for which mouse events should be
+// forwarded to the first tab.
+const int kLeftPad = 15;
 // Additional pixels of pad above the tabs.
 const int kTopPad = 4;
 // To align theme bitmaps correctly we return this offset.
@@ -21,7 +24,8 @@ const int kThemeOffset = -5;
 
 namespace chromeos {
 
-// BrowserFrameViewChromeos adds a few pixels of pad to the top of the tabstrip.
+// BrowserFrameViewChromeos adds a few pixels of pad to the top of the
+// tabstrip and clicks left of first tab should be forwarded to the first tab.
 // To enable this we have to grab mouse events in that area and forward them on
 // to the NonClientView. We do this by overriding HitTest(), NonClientHitTest()
 // and GetEventHandlerForPoint().
@@ -34,21 +38,22 @@ BrowserFrameViewChromeos::~BrowserFrameViewChromeos() {
 }
 
 int BrowserFrameViewChromeos::NonClientHitTest(const gfx::Point& point) {
-  if (point.y() < kTopPad)
+  if (point.x() < kLeftPad || point.y() < kTopPad)
     return HTNOWHERE;
   return OpaqueBrowserFrameView::NonClientHitTest(point);
 }
 
 bool BrowserFrameViewChromeos::HitTest(const gfx::Point& l) const {
-  if (l.y() < kTopPad)
+  if (l.x() < kLeftPad || l.y() < kTopPad)
     return true;
   return OpaqueBrowserFrameView::HitTest(l);
 }
 
 views::View* BrowserFrameViewChromeos::GetEventHandlerForPoint(
     const gfx::Point& point) {
-  if (point.y() < kTopPad) {
-    gfx::Point nc_point(point.x(), kTopPad);
+  if (point.x() < kLeftPad || point.y() < kTopPad) {
+    gfx::Point nc_point(std::max(kLeftPad, point.x()),
+                        std::max(kTopPad, point.y()));
     views::NonClientView* nc_view = frame()->non_client_view();
     View::ConvertPointToView(this, nc_view, &nc_point);
     return nc_view->GetEventHandlerForPoint(nc_point);
