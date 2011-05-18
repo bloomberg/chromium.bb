@@ -290,6 +290,7 @@ void MetricsLog::WritePluginList(
 #endif
     WriteAttribute("filename", CreateBase64Hash(filename_bytes));
     WriteAttribute("version", UTF16ToUTF8(iter->version));
+    WriteIntAttribute("disabled", !webkit::npapi::IsPluginEnabled(*iter));
   }
 }
 
