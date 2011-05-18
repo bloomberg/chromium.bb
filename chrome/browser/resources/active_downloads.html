@@ -5,26 +5,6 @@
 <title i18n-content="title"></title>
 <link rel="icon" href="../../app/theme/downloads_favicon.png">
 <style type="text/css">
-div.header {
-  border-bottom: 1px solid #7289E2;
-  padding: 8px;
-  margin: 0;
-  width: 100%;
-  left: 0;
-  top: 0;
-  height: 32px;
-  position: absolute;
-  box-sizing: border-box;
-  background-image: -webkit-linear-gradient(#D0DAF8, #A6BAF7);
-  border-bottom-color: #999;
-  border-bottom-width: 1px;
-  border-left-color: #999;
-  border-left-width: 1px;
-  border-right-color: #999;
-  border-right-width: 1px;
-  color: black;
-}
-
 *:-khtml-drag {
   background-color: rgba(238,238,238, 0.5);
 }
@@ -215,10 +195,6 @@ div.iconmedia {
   background: url('chrome://resources/images/icon_media.png');
 }
 
-div.iconfolder {
-  background: url('chrome://resources/images/icon_folder.png');
-}
-
 div.iconfile {
   background: url('chrome://resources/images/icon_file.png');
 }
@@ -243,8 +219,6 @@ var downloadRowList = null;
 function init() {
   localStrings = new LocalStrings();
   initTestHarness();
-
-  $('header').style.display = 'none';
 
   $('showalldownloadstext').textContent =
       localStrings.getString('showalldownloads');
@@ -282,7 +256,8 @@ function initTestHarness() {
           (name == 'openNewFullWindow' &&
           ary[0] == 'chrome://downloads'))
         sendTestResults();
-    }
+    };
+    document.body.oncontextmenu = '';
   }
 }
 
@@ -818,11 +793,8 @@ DownloadRowList.prototype = {
 };
 
 </script>
-<body onload="init();" onclick="menu.clear()" onselectstart="return false"
-  i18n-values=".style.fontFamily:fontfamily">
-<div id="header">
-  <div id="currenttitle"></div>
-</div><br>
+<body onload="init();" onclick="menu.clear();" onselectstart="return false;"
+  i18n-values=".style.fontFamily:fontfamily" oncontextmenu="return false;">
 <div id="main" class="columnlist"></div>
 <div id="showalldownloads" class="showalldownloads">
   <span id="showalldownloadstext" class="showalldownloadstext"
