@@ -292,7 +292,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   // AXWebArea attributes.
   if ([attribute isEqualToString:@"AXLoaded"])
     return [NSNumber numberWithBool:YES];
-  if ([attribute isEqualToString:@"AXURL"]) {
+  if ([attribute isEqualToString:NSAccessibilityURLAttribute]) {
     WebAccessibility::Attribute urlAttribute =
         [[self role] isEqualToString:@"AXWebArea"] ?
             WebAccessibility::ATTR_DOC_URL :
@@ -450,7 +450,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       NSAccessibilityTopLevelUIElementAttribute,
       NSAccessibilityValueAttribute,
       NSAccessibilityWindowAttribute,
-      @"AXURL",
+      NSAccessibilityURLAttribute,
       @"AXVisited",
       nil]];
 
