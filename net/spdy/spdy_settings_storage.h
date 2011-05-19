@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,14 @@
 #include <map>
 #include "base/basictypes.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_api.h"
 #include "net/spdy/spdy_framer.h"
 
 namespace net {
 
 // SpdySettingsStorage stores SpdySettings which have been transmitted between
 // endpoints for the SPDY SETTINGS frame.
-class SpdySettingsStorage {
+class NET_TEST SpdySettingsStorage {
  public:
   SpdySettingsStorage();
   ~SpdySettingsStorage();
