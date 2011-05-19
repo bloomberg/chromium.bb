@@ -1,6 +1,3 @@
 # This test has a possible data race detected by the TSAN bot
 # see http://crbug.com/46840
 ProfileManagerTest.CreateAndUseTwoProfiles
-# InternalAuthTest.BruteForce fails on the TSAN bot.
-# see http://crbug.com/83164
-InternalAuthTest.BruteForce

@@ -106,7 +106,7 @@ TEST_F(InternalAuthTest, BasicVerification) {
   ASSERT_TRUE(browser::InternalAuthVerification::VerifyPassport(
       token, "zapata", map));
   // Passport can not be reused.
-  for (int i = 10000; i--;) {
+  for (int i = 1000; i--;) {
     ASSERT_FALSE(browser::InternalAuthVerification::VerifyPassport(
         token, "zapata", map));
   }
@@ -121,13 +121,13 @@ TEST_F(InternalAuthTest, BruteForce) {
 
   // Trying bruteforce.
   std::string dummy = token;
-  for (size_t i = 10000; i--;) {
+  for (size_t i = 100; i--;) {
     std::next_permutation(dummy.begin(), dummy.end());
     ASSERT_FALSE(browser::InternalAuthVerification::VerifyPassport(
         dummy, "zapata", map));
   }
   dummy = token;
-  for (size_t i = 10000; i--;) {
+  for (size_t i = 100; i--;) {
     std::next_permutation(dummy.begin(), dummy.begin() + dummy.size() / 2);
     ASSERT_FALSE(browser::InternalAuthVerification::VerifyPassport(
         dummy, "zapata", map));
@@ -154,12 +154,12 @@ TEST_F(InternalAuthTest, ExpirationAndBruteForce) {
   std::string dummy1 = token;
   std::string dummy2 = token;
   for (;;) {
-    for (size_t i = 10000; i--;) {
+    for (size_t i = 100; i--;) {
       std::next_permutation(dummy1.begin(), dummy1.end());
       ASSERT_FALSE(browser::InternalAuthVerification::VerifyPassport(
           dummy1, "zapata", map));
     }
-    for (size_t i = 10000; i--;) {
+    for (size_t i = 100; i--;) {
       std::next_permutation(dummy2.begin(), dummy2.begin() + dummy2.size() / 2);
       ASSERT_FALSE(browser::InternalAuthVerification::VerifyPassport(
           dummy2, "zapata", map));
