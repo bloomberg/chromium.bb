@@ -312,8 +312,8 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
                                          BrowserDistribution::CHROME_BROWSER);
       if (chrome_state != NULL) {
         // Chrome Frame may not yet be installed if this is a first install, so
-        // use InstallationState's GetNonVersionedProductState() which will lets
-        // us access the ap value from the partially constructed product state.
+        // use InstallationState's GetNonVersionedProductState() which lets us
+        // access the ap value from the partially constructed product state.
         // There will be no value if we're not being managed by Google Update.
         const ProductState* cf_non_versioned_state =
             original_state.GetNonVersionedProductState(
@@ -328,8 +328,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
           LOG(ERROR) << "Cannot install Chrome Frame because existing Chrome "
                         "install is on a different update channel.";
           *status = installer::CONFLICTING_CHANNEL_EXISTS;
-          InstallUtil::WriteInstallerResult(system_level,
-              installer_state->state_key(), *status,
+          installer_state->WriteInstallerResult(*status,
               IDS_INSTALL_CONFLICTING_CHANNEL_EXISTS_BASE, NULL);
           return false;
         }
@@ -348,8 +347,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         LOG(ERROR) << "Cannot install Chrome Frame in ready mode without "
                       "Chrome.";
         *status = installer::READY_MODE_REQUIRES_CHROME;
-        InstallUtil::WriteInstallerResult(system_level,
-            installer_state->state_key(), *status,
+        installer_state->WriteInstallerResult(*status,
             IDS_INSTALL_READY_MODE_REQUIRES_CHROME_BASE, NULL);
         return false;
       }
@@ -364,8 +362,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
       LOG(ERROR) << "Cannot migrate existing Chrome Frame installation to "
                     "multi-install.";
       *status = installer::NON_MULTI_INSTALLATION_EXISTS;
-      InstallUtil::WriteInstallerResult(system_level,
-          installer_state->state_key(), *status,
+      installer_state->WriteInstallerResult(*status,
           IDS_INSTALL_NON_MULTI_INSTALLATION_EXISTS_BASE, NULL);
       return false;
     }
@@ -415,8 +412,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
         LOG(ERROR) << "Multi-install " << browser_dist->GetApplicationName()
                    << " exists; aborting single install.";
         *status = installer::MULTI_INSTALLATION_EXISTS;
-        InstallUtil::WriteInstallerResult(system_level,
-            installer_state->state_key(), *status,
+        installer_state->WriteInstallerResult(*status,
             IDS_INSTALL_MULTI_INSTALLATION_EXISTS_BASE, NULL);
         return false;
       }
@@ -439,18 +435,14 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
         if (chrome_exe.empty()) {
           // If we failed to construct install path. Give up.
           *status = installer::OS_ERROR;
-          InstallUtil::WriteInstallerResult(system_level,
-                                            installer_state->state_key(),
-                                            *status,
-                                            IDS_INSTALL_OS_ERROR_BASE,
-                                            NULL);
+          installer_state->WriteInstallerResult(*status,
+              IDS_INSTALL_OS_ERROR_BASE, NULL);
         } else {
           *status = installer::EXISTING_VERSION_LAUNCHED;
           chrome_exe = chrome_exe.Append(installer::kChromeExe);
           CommandLine cmd(chrome_exe);
           cmd.AppendSwitch(switches::kFirstRun);
-          InstallUtil::WriteInstallerResult(system_level,
-              installer_state->state_key(), *status, 0, NULL);
+          installer_state->WriteInstallerResult(*status, 0, NULL);
           VLOG(1) << "Launching existing system-level chrome instead.";
           base::LaunchApp(cmd, false, false, NULL);
         }
@@ -460,11 +452,8 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
       // This is an update, not an install. Omaha should know the difference
       // and not show a dialog.
       *status = installer::SYSTEM_LEVEL_INSTALL_EXISTS;
-      InstallUtil::WriteInstallerResult(system_level,
-                                        installer_state->state_key(),
-                                        *status,
-                                        IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE,
-                                        NULL);
+      installer_state->WriteInstallerResult(*status,
+          IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE, NULL);
       return false;
     }
   }
@@ -484,8 +473,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
                  << " exists and can not be deleted.";
       *status = installer::INSTALL_DIR_IN_USE;
       int str_id = IDS_INSTALL_DIR_IN_USE_BASE;
-      InstallUtil::WriteInstallerResult(system_level,
-          installer_state->state_key(), *status, str_id, NULL);
+      installer_state->WriteInstallerResult(*status, str_id, NULL);
       return false;
     }
   }
@@ -522,8 +510,7 @@ installer::InstallStatus InstallProductsHelper(
   if (!temp_path.Initialize(installer_state.target_path().DirName(),
                             installer::kInstallTempDir)) {
     PLOG(ERROR) << "Could not create temporary path.";
-    InstallUtil::WriteInstallerResult(system_install,
-        installer_state.state_key(), installer::TEMP_DIR_FAILED,
+    installer_state.WriteInstallerResult(installer::TEMP_DIR_FAILED,
         IDS_INSTALL_TEMP_DIR_FAILED_BASE, NULL);
     return installer::TEMP_DIR_FAILED;
   }
@@ -534,8 +521,7 @@ installer::InstallStatus InstallProductsHelper(
                     archive_type)) {
     install_status = (*archive_type) == installer::INCREMENTAL_ARCHIVE_TYPE ?
         installer::APPLY_DIFF_PATCH_FAILED : installer::UNCOMPRESSION_FAILED;
-    InstallUtil::WriteInstallerResult(system_install,
-        installer_state.state_key(), install_status,
+    installer_state.WriteInstallerResult(install_status,
         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, NULL);
   } else {
     VLOG(1) << "unpacked to " << unpack_path.value();
@@ -545,8 +531,7 @@ installer::InstallStatus InstallProductsHelper(
     if (!installer_version.get()) {
       LOG(ERROR) << "Did not find any valid version in installer.";
       install_status = installer::INVALID_ARCHIVE;
-      InstallUtil::WriteInstallerResult(system_install,
-          installer_state.state_key(), install_status,
+      installer_state.WriteInstallerResult(install_status,
           IDS_INSTALL_INVALID_ARCHIVE_BASE, NULL);
     } else {
       // TODO(tommi): Move towards having only a single version that is common
@@ -570,12 +555,10 @@ installer::InstallStatus InstallProductsHelper(
           if (product->is_chrome()) {
             // TODO(robertshield): We should take the installer result text
             // strings from the Product.
-            InstallUtil::WriteInstallerResult(system_install,
-                installer_state.state_key(), install_status,
+            installer_state.WriteInstallerResult(install_status,
                 IDS_INSTALL_HIGHER_VERSION_BASE, NULL);
           } else {
-            InstallUtil::WriteInstallerResult(system_install,
-                installer_state.state_key(), install_status,
+            installer_state.WriteInstallerResult(install_status,
                 IDS_INSTALL_HIGHER_VERSION_CF_BASE, NULL);
           }
         }
@@ -633,8 +616,7 @@ installer::InstallStatus InstallProductsHelper(
         bool write_chrome_launch_string = (!value) &&
             (install_status != installer::IN_USE_UPDATED);
 
-        InstallUtil::WriteInstallerResult(system_install,
-            installer_state.state_key(), install_status, install_msg_base,
+        installer_state.WriteInstallerResult(install_status, install_msg_base,
             write_chrome_launch_string ? &chrome_exe : NULL);
 
         if (install_status == installer::FIRST_INSTALL_SUCCESS) {
@@ -837,8 +819,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     *exit_code = InstallUtil::GetInstallReturnCode(status);
     if (*exit_code) {
       LOG(WARNING) << "setup.exe patching failed.";
-      InstallUtil::WriteInstallerResult(installer_state->system_install(),
-          installer_state->state_key(), status, IDS_SETUP_PATCH_FAILED_BASE,
+      installer_state->WriteInstallerResult(status, IDS_SETUP_PATCH_FAILED_BASE,
           NULL);
     }
   } else if (cmd_line.HasSwitch(installer::switches::kShowEula)) {
@@ -1111,8 +1092,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // error message and get out.
   if (!InstallUtil::IsOSSupported()) {
     LOG(ERROR) << "Chrome only supports Windows XP or later.";
-    InstallUtil::WriteInstallerResult(system_install,
-        installer_state.state_key(), installer::OS_NOT_SUPPORTED,
+    installer_state.WriteInstallerResult(installer::OS_NOT_SUPPORTED,
         IDS_INSTALL_OS_NOT_SUPPORTED_BASE, NULL);
     return installer::OS_NOT_SUPPORTED;
   }
@@ -1120,8 +1100,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // Initialize COM for use later.
   AutoCom auto_com;
   if (!auto_com.Init(system_install)) {
-    InstallUtil::WriteInstallerResult(system_install,
-        installer_state.state_key(), installer::OS_ERROR,
+    installer_state.WriteInstallerResult(installer::OS_ERROR,
         IDS_INSTALL_OS_ERROR_BASE, NULL);
     return installer::OS_ERROR;
   }
@@ -1160,8 +1139,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
       return exit_code;
     } else {
       LOG(ERROR) << "Non admin user can not install system level Chrome.";
-      InstallUtil::WriteInstallerResult(system_install,
-          installer_state.state_key(), installer::INSUFFICIENT_RIGHTS,
+      installer_state.WriteInstallerResult(installer::INSUFFICIENT_RIGHTS,
           IDS_INSTALL_INSUFFICIENT_RIGHTS_BASE, NULL);
       return installer::INSUFFICIENT_RIGHTS;
     }

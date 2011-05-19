@@ -168,6 +168,17 @@ class InstallerState {
   // "ap" values for all products being operated on.
   void UpdateChannels() const;
 
+  // Sets installer result information in the registry for consumption by Google
+  // Update.  The InstallerResult value is set to 0 (SUCCESS) or 1
+  // (FAILED_CUSTOM_ERROR) depending on whether |status| maps to success or not.
+  // |status| itself is written to the InstallerError value.
+  // |string_resource_id|, if non-zero, identifies a localized string written to
+  // the InstallerResultUIString value.  |launch_cmd|, if non-NULL and
+  // non-empty, is written to the InstallerSuccessLaunchCmdLine value.
+  void WriteInstallerResult(InstallStatus status,
+                            int string_resource_id,
+                            const std::wstring* launch_cmd) const;
+
  protected:
   FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;
   bool CanAddProduct(const Product& product, const FilePath* product_dir) const;

@@ -26,12 +26,19 @@
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "installer_util_strings.h"  // NOLINT
+
+using base::win::RegKey;
+using installer::InstallationState;
+using installer::InstallerState;
+using installer::MasterPreferences;
+
 class InstallerStateTest : public TestWithTempDirAndDeleteTempOverrideKeys {
  protected:
 };
 
 // An installer state on which we can tweak the target path.
-class MockInstallerState : public installer::InstallerState {
+class MockInstallerState : public InstallerState {
  public:
   MockInstallerState() : InstallerState() { }
   void set_target_path(const FilePath& target_path) {
@@ -52,8 +59,8 @@ void CreateTextFile(const std::wstring& filename,
 void BuildSingleChromeState(const FilePath& target_dir,
                             MockInstallerState* installer_state) {
   CommandLine cmd_line = CommandLine::FromString(L"setup.exe");
-  installer::MasterPreferences prefs(cmd_line);
-  installer::InstallationState machine_state;
+  MasterPreferences prefs(cmd_line);
+  InstallationState machine_state;
   machine_state.Initialize();
   installer_state->Initialize(cmd_line, prefs, machine_state);
   installer_state->set_target_path(target_dir);
@@ -232,8 +239,8 @@ TEST_F(InstallerStateTest, Basic) {
       std::wstring(L"setup.exe") +
       (multi_install ? L" --multi-install --chrome" : L"") +
       (system_level ? L" --system-level" : L""));
-  installer::MasterPreferences prefs(cmd_line);
-  installer::InstallationState machine_state;
+  MasterPreferences prefs(cmd_line);
+  InstallationState machine_state;
   machine_state.Initialize();
   MockInstallerState installer_state;
   installer_state.Initialize(cmd_line, prefs, machine_state);
@@ -315,8 +322,8 @@ TEST_F(InstallerStateTest, WithProduct) {
       std::wstring(L"setup.exe") +
       (multi_install ? L" --multi-install --chrome" : L"") +
       (system_level ? L" --system-level" : L""));
-  installer::MasterPreferences prefs(cmd_line);
-  installer::InstallationState machine_state;
+  MasterPreferences prefs(cmd_line);
+  InstallationState machine_state;
   machine_state.Initialize();
   MockInstallerState installer_state;
   installer_state.Initialize(cmd_line, prefs, machine_state);
@@ -334,8 +341,7 @@ TEST_F(InstallerStateTest, WithProduct) {
     TempRegKeyOverride override(root, L"root_pit");
     BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BROWSER);
-    base::win::RegKey chrome_key(root, dist->GetVersionKey().c_str(),
-                                 KEY_ALL_ACCESS);
+    RegKey chrome_key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
       chrome_key.WriteValue(google_update::kRegVersionField,
@@ -350,4 +356,78 @@ TEST_F(InstallerStateTest, WithProduct) {
       }
     }
   }
+}
+
+TEST_F(InstallerStateTest, InstallerResult) {
+  const bool system_level = true;
+  bool multi_install = false;
+  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  RegKey key;
+  std::wstring launch_cmd = L"hey diddle diddle";
+  std::wstring value;
+  DWORD dw_value;
+
+  // check results for a fresh install of single Chrome
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    CommandLine cmd_line = CommandLine::FromString(L"setup.exe --system-level");
+    const MasterPreferences prefs(cmd_line);
+    InstallationState machine_state;
+    machine_state.Initialize();
+    InstallerState state;
+    state.Initialize(cmd_line, prefs, machine_state);
+    state.WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS,
+                               IDS_INSTALL_OS_ERROR_BASE, &launch_cmd);
+    BrowserDistribution* distribution =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BROWSER);
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValueDW(installer::kInstallerResult, &dw_value));
+    EXPECT_EQ(static_cast<DWORD>(0), dw_value);
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValueDW(installer::kInstallerError, &dw_value));
+    EXPECT_EQ(static_cast<DWORD>(installer::FIRST_INSTALL_SUCCESS), dw_value);
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValue(installer::kInstallerResultUIString, &value));
+    EXPECT_FALSE(value.empty());
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
+    EXPECT_EQ(launch_cmd, value);
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  // check results for a fresh install of multi Chrome
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    CommandLine cmd_line = CommandLine::FromString(
+        L"setup.exe --system-level --multi-install --chrome");
+    const MasterPreferences prefs(cmd_line);
+    InstallationState machine_state;
+    machine_state.Initialize();
+    InstallerState state;
+    state.Initialize(cmd_line, prefs, machine_state);
+    state.WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS, 0,
+                               &launch_cmd);
+    BrowserDistribution* distribution =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BROWSER);
+    BrowserDistribution* binaries =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BINARIES);
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
+    EXPECT_EQ(launch_cmd, value);
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.Open(root, binaries->GetStateKey().c_str(), KEY_READ));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
+    EXPECT_EQ(launch_cmd, value);
+    key.Close();
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
 }

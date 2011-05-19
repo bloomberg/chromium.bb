@@ -146,14 +146,15 @@ bool InstallUtil::IsOSSupported() {
        (base::win::OSInfo::GetInstance()->service_pack().major >= 2));
 }
 
-void InstallUtil::WriteInstallerResult(bool system_install,
-                                       const std::wstring& state_key,
-                                       installer::InstallStatus status,
-                                       int string_resource_id,
-                                       const std::wstring* const launch_cmd) {
+void InstallUtil::AddInstallerResultItems(bool system_install,
+                                          const std::wstring& state_key,
+                                          installer::InstallStatus status,
+                                          int string_resource_id,
+                                          const std::wstring* const launch_cmd,
+                                          WorkItemList* install_list) {
+  DCHECK(install_list);
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   DWORD installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
-  scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   install_list->AddCreateRegKeyWorkItem(root, state_key);
   install_list->AddSetRegValueWorkItem(root, state_key,
                                        installer::kInstallerResult,
@@ -170,8 +171,6 @@ void InstallUtil::WriteInstallerResult(bool system_install,
     install_list->AddSetRegValueWorkItem(root, state_key,
         installer::kInstallerSuccessLaunchCmdLine, *launch_cmd, true);
   }
-  if (!install_list->Do())
-    LOG(ERROR) << "Failed to record installer error information in registry.";
 }
 
 void InstallUtil::UpdateInstallerStage(bool system_install,

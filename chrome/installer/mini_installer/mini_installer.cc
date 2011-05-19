@@ -305,6 +305,42 @@ bool RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline,
   return ret;
 }
 
+// Append any command line params passed to mini_installer to the given buffer
+// so that they can be passed on to setup.exe. We do not return any error from
+// this method and simply skip making any changes in case of error.
+void AppendCommandLineFlags(CommandString* buffer) {
+  PathString full_exe_path;
+  size_t len = ::GetModuleFileName(NULL, full_exe_path.get(),
+                                   full_exe_path.capacity());
+  if (!len || len >= full_exe_path.capacity())
+    return;
+
+  const wchar_t* exe_name = GetNameFromPathExt(full_exe_path.get(), len);
+  if (exe_name == NULL)
+    return;
+
+  int args_num;
+  wchar_t* cmd_line = ::GetCommandLine();
+  wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
+  if (args_num <= 0)
+    return;
+
+  const wchar_t* cmd_to_append = L"";
+  if (!StrEndsWith(args[0], exe_name)) {
+    // Current executable name not in the command line so just append
+    // the whole command line.
+    cmd_to_append = cmd_line;
+  } else if (args_num > 1) {
+    const wchar_t* tmp = SearchStringI(cmd_line, exe_name);
+    tmp = SearchStringI(tmp, L" ");
+    cmd_to_append = tmp;
+  }
+
+  buffer->append(cmd_to_append);
+
+  LocalFree(args);
+}
+
 
 // Windows defined callback used in the EnumResourceNames call. For each
 // matching resource found, the callback is invoked and at this point we write
@@ -395,6 +431,12 @@ bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
       success = false;
     }
 
+    // Get any command line option specified for mini_installer and pass them
+    // on to setup.exe.  This is important since switches such as
+    // --multi-install and --chrome-frame affect where setup.exe will write
+    // installer results for consumption by Google Update.
+    AppendCommandLineFlags(&cmd_line);
+
     int exit_code = 0;
     if (success &&
         (!RunProcessAndWait(NULL, cmd_line.get(), &exit_code) ||
@@ -453,42 +495,6 @@ bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
   }
 
   return setup_path->length() > 0;
-}
-
-// Append any command line params passed to mini_installer to the given buffer
-// so that they can be passed on to setup.exe. We do not return any error from
-// this method and simply skip making any changes in case of error.
-void AppendCommandLineFlags(CommandString* buffer) {
-  PathString full_exe_path;
-  size_t len = ::GetModuleFileName(NULL, full_exe_path.get(),
-                                   full_exe_path.capacity());
-  if (!len || len >= full_exe_path.capacity())
-    return;
-
-  const wchar_t* exe_name = GetNameFromPathExt(full_exe_path.get(), len);
-  if (exe_name == NULL)
-    return;
-
-  int args_num;
-  wchar_t* cmd_line = ::GetCommandLine();
-  wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
-  if (args_num <= 0)
-    return;
-
-  const wchar_t* cmd_to_append = L"";
-  if (!StrEndsWith(args[0], exe_name)) {
-    // Current executable name not in the command line so just append
-    // the whole command line.
-    cmd_to_append = cmd_line;
-  } else if (args_num > 1) {
-    const wchar_t* tmp = SearchStringI(cmd_line, exe_name);
-    tmp = SearchStringI(tmp, L" ");
-    cmd_to_append = tmp;
-  }
-
-  buffer->append(cmd_to_append);
-
-  LocalFree(args);
 }
 
 // Executes setup.exe, waits for it to finish and returns the exit code.

@@ -23,6 +23,7 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/work_item.h"
+#include "chrome/installer/util/work_item_list.h"
 
 namespace installer {
 
@@ -530,6 +531,34 @@ void InstallerState::UpdateChannels() const {
     LOG(ERROR) << "Failed opening key " << state_key_
                << " to update app channels; result: " << result;
   }
+}
+
+void InstallerState::WriteInstallerResult(
+    InstallStatus status,
+    int string_resource_id,
+    const std::wstring* const launch_cmd) const {
+  DWORD installer_result =
+      (InstallUtil::GetInstallReturnCode(status) == 0) ? 0 : 1;
+  // Use a no-rollback list since this is a best-effort deal.
+  scoped_ptr<WorkItemList> install_list(
+      WorkItem::CreateNoRollbackWorkItemList());
+  const bool system_install = this->system_install();
+  // Write the value for all products upon which we're operating.
+  Products::const_iterator end = products().end();
+  for (Products::const_iterator scan = products().begin(); scan != end;
+       ++scan) {
+    InstallUtil::AddInstallerResultItems(
+        system_install, (*scan)->distribution()->GetStateKey(), status,
+        string_resource_id, launch_cmd, install_list.get());
+  }
+  // And for the binaries if this is a multi-install.
+  if (is_multi_install()) {
+    InstallUtil::AddInstallerResultItems(
+        system_install, multi_package_binaries_distribution()->GetStateKey(),
+        status, string_resource_id, launch_cmd, install_list.get());
+  }
+  if (!install_list->Do())
+    LOG(ERROR) << "Failed to record installer error information in registry.";
 }
 
 }  // namespace installer
