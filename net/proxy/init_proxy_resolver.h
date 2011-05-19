@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
+#include "net/base/net_api.h"
 #include "net/base/net_log.h"
 
 namespace net {
@@ -41,7 +42,7 @@ class URLRequestContext;
 // Deleting InitProxyResolver while Init() is in progress, will
 // cancel the request.
 //
-class InitProxyResolver {
+class NET_TEST InitProxyResolver {
  public:
   // |resolver|, |proxy_script_fetcher|, |dhcp_proxy_script_fetcher| and
   // |net_log| must remain valid for the lifespan of InitProxyResolver.
