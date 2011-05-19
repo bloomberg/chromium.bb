@@ -34,6 +34,10 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   TestBorderContents border_contents;
   border_contents.Init();
 
+  gfx::Insets insets;
+  border_contents.bubble_border()->GetInsets(&insets);
+  int xposition = 95 - insets.width();
+
   // Test that the info bubble displays normally when it fits.
   gfx::Rect contents_bounds;
   gfx::Rect window_bounds;
@@ -50,7 +54,7 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
-  EXPECT_GT(window_bounds.x(), 100);
+  EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
 
@@ -66,7 +70,7 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
-  EXPECT_GT(window_bounds.x(), 100);
+  EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
 
@@ -82,7 +86,7 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
-  EXPECT_GT(window_bounds.x(), 100);
+  EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
 
@@ -98,7 +102,7 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
-  EXPECT_GT(window_bounds.x(), 100);
+  EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
 
