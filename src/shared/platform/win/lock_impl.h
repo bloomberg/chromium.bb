@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -37,6 +37,10 @@ class LockImpl {
 
  private:
   HANDLE mutex_;
+
+  // On Windows a mutex is abandoned if the thread holding the lock exits,
+  // in which case we should fail or block to simulate POSIX deadlock.
+  bool abandoned_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };
