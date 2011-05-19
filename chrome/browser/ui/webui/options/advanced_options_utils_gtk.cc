@@ -7,18 +7,22 @@
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
 
 #include "base/environment.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/process_watcher.h"
 
-// Command used to configure GNOME proxy settings. The command was renamed
-// in January 2009, so both are used to work on both old and new systems.
-// As on April 2011, many systems do not have the old command anymore.
-// TODO(thestig) Remove the old command in the future.
-const char* kOldGNOMEProxyConfigCommand[] = {"gnome-network-preferences", NULL};
-const char* kGNOMEProxyConfigCommand[] = {"gnome-network-properties", NULL};
+// Command used to configure GNOME 2 proxy settings.
+const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};
+// In GNOME 3, we might need to run gnome-control-center instead. We try this
+// only after gnome-network-properties is not found, because older GNOME also
+// has this but it doesn't do the same thing. See below where we use it.
+const char* kGNOME3ProxyConfigCommand[] = {"gnome-control-center", "network",
+                                           NULL};
 // KDE3 and KDE4 are only slightly different, but incompatible. Go figure.
 const char* kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", NULL};
 const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
@@ -43,6 +47,30 @@ void ShowLinuxProxyConfigUrl(TabContents* tab_contents) {
 // Start the given proxy configuration utility.
 bool StartProxyConfigUtil(TabContents* tab_contents, const char* command[]) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // base::LaunchApp() returns true ("success") if the fork() succeeds, but not
+  // necessarily the exec(). We'd like to be able to use StartProxyConfigUtil()
+  // to search possible options and stop on success, so we search $PATH first to
+  // predict whether the exec is expected to succeed.
+  // TODO(mdm): this is a useful check, and is very similar to some code in
+  // proxy_config_service_linux.cc. It should probably be in base:: somewhere.
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string path;
+  if (!env->GetVar("PATH", &path)) {
+    LOG(ERROR) << "No $PATH variable. Assuming no " << command[0] << ".";
+    return false;
+  }
+  std::vector<std::string> paths;
+  Tokenize(path, ":", &paths);
+  bool found = false;
+  for (size_t i = 0; i < paths.size(); ++i) {
+    FilePath file(paths[i]);
+    if (file_util::PathExists(file.Append(command[0]))) {
+      found = true;
+      break;
+    }
+  }
+  if (!found)
+    return false;
   std::vector<std::string> argv;
   for (size_t i = 0; command[i]; ++i)
     argv.push_back(command[i]);
@@ -65,10 +93,16 @@ void DetectAndStartProxyConfigUtil(TabContents* tab_contents) {
   bool launched = false;
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME: {
-      launched = StartProxyConfigUtil(tab_contents, kGNOMEProxyConfigCommand);
+      launched = StartProxyConfigUtil(tab_contents, kGNOME2ProxyConfigCommand);
       if (!launched) {
+        // We try this second, even though it's the newer way, because this
+        // command existed in older versions of GNOME, but it didn't do the
+        // same thing. The older command is gone though, so this should do
+        // the right thing. (Also some distributions have blurred the lines
+        // between GNOME 2 and 3, so we can't necessarily detect what the
+        // right thing is based on indications of which version we have.)
         launched = StartProxyConfigUtil(tab_contents,
-                                        kOldGNOMEProxyConfigCommand);
+                                        kGNOME3ProxyConfigCommand);
       }
       break;
     }
