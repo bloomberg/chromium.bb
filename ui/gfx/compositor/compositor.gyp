@@ -37,6 +37,11 @@
           'sources!': [
             'compositor.cc',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lGL',
+            ],
+          },
         }],
       ],
     },

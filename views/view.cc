@@ -672,6 +672,7 @@ void View::Paint(gfx::Canvas* canvas) {
         SK_ColorBLACK, SkXfermode::kClear_Mode);
     texture_canvas->TranslateInt(-dirty_rect.x(), -dirty_rect.y());
     canvas = texture_canvas.get();
+    texture_rect = dirty_rect;
     // TODO: set texture_needs_updating_ to false.
 #endif
   } else {
@@ -1831,7 +1832,11 @@ std::string View::PrintViewGraph(bool first) {
   result.append("\"");
   if (!parent())
     result.append(", shape=box");
+#if defined(COMPOSITOR_2)
+  if (texture_.get())
+#else
   if (canvas_.get())
+#endif
     result.append(", color=green");
   result.append("]\n");
 
