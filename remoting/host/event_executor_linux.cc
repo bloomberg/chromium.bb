@@ -308,6 +308,7 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
   XTestFakeKeyEvent(display_, keycode, event->pressed(), CurrentTime);
+  XFlush(display_);
 }
 
 void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
@@ -336,6 +337,7 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
     XTestFakeMotionEvent(display_, DefaultScreen(display_),
                          event->x(), event->y(),
                          CurrentTime);
+    XFlush(display_);
   }
 
   if (event->has_button() && event->has_button_down()) {
@@ -351,6 +353,7 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
             << " received, sending down " << button_number;
     XTestFakeButtonEvent(display_, button_number, event->button_down(),
                          CurrentTime);
+    XFlush(display_);
   }
 
   if (event->has_wheel_offset_x() && event->has_wheel_offset_y()) {
