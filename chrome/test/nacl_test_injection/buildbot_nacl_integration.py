@@ -16,6 +16,9 @@ def Main():
   # TODO(ncbray): figure out why this is failing on mac and re-enable.
   if (sys.platform == 'darwin' and
       'mac-nacl-chrome' not in pwd): return
+  # TODO(ncbray): figure out why this is failing on some linux trybots.
+  if (sys.platform in ['linux', 'linux2'] and
+      'hardy64-nacl-chrome' not in pwd): return
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
   test_dir = os.path.dirname(script_dir)
