@@ -10,7 +10,6 @@
 #include "ui/gfx/color_utils.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/menu/view_menu_delegate.h"
 
 // Menu should display below the profile button tag image on the frame. This
 // offset size depends on whether the frame is in glass or opaque mode.
@@ -28,11 +27,8 @@ const int kProfileButtonBorderSpacing = 10;
 // Maximum width for name string in pixels.
 const int kMaxTextWidth = 200;
 
-ProfileMenuButton::ProfileMenuButton(views::ButtonListener* listener,
-                                     const std::wstring& text,
-                                     views::ViewMenuDelegate* menu_delegate,
-                                     Profile* profile)
-    : MenuButton(listener, text, menu_delegate, true) {
+ProfileMenuButton::ProfileMenuButton(const std::wstring& text, Profile* profile)
+    : MenuButton(NULL, text, this, true) {
   // Turn off hover highlighting and position button in the center of the
   // underlying profile tag image.
   set_border(views::Border::CreateEmptyBorder(
@@ -50,12 +46,6 @@ ProfileMenuButton::~ProfileMenuButton() {}
 void ProfileMenuButton::SetText(const std::wstring& text) {
   MenuButton::SetText(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(text),
                       font(), kMaxTextWidth, false)));
-}
-
-void ProfileMenuButton::RunMenuAt(const gfx::Point& pt) {
-  gfx::Point menu_point(pt.x(),
-                        pt.y() + kMenuDisplayOffset);
-  menu_->RunMenuAt(menu_point, views::Menu2::ALIGN_TOPRIGHT);
 }
 
 // ui::SimpleMenuModel::Delegate implementation
@@ -81,4 +71,10 @@ void ProfileMenuButton::ExecuteCommand(int command_id) {
       NOTREACHED();
       break;
   }
+}
+
+// views::ViewMenuDelegate implementation
+void ProfileMenuButton::RunMenu(views::View* source, const gfx::Point &pt) {
+  gfx::Point menu_point(pt.x(), pt.y() + kMenuDisplayOffset);
+  menu_->RunMenuAt(menu_point, views::Menu2::ALIGN_TOPRIGHT);
 }

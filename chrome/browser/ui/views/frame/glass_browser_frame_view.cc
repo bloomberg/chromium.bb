@@ -91,8 +91,8 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   if (browser_command_line.HasSwitch(switches::kMultiProfiles) &&
       !browser_view->ShouldShowOffTheRecordAvatar()) {
     RegisterLoginNotifications();
-    profile_button_.reset(new ProfileMenuButton(NULL, std::wstring(),
-        this, browser_view_->browser()->profile()));
+    profile_button_.reset(new ProfileMenuButton(std::wstring(),
+        browser_view_->browser()->profile()));
     profile_button_->SetVisible(false);
     profile_tag_.reset(new ProfileTagView(frame_, profile_button_.get()));
     profile_tag_->SetVisible(false);
@@ -222,12 +222,6 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       frame_->window_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// GlassBrowserFrameView, views::ViewMenuDelegate implementation:
-void GlassBrowserFrameView::RunMenu(views::View *source, const gfx::Point &pt) {
-  profile_button_->RunMenuAt(pt);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

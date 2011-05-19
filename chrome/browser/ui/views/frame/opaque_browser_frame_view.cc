@@ -207,8 +207,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   if (browser_command_line.HasSwitch(switches::kMultiProfiles) &&
       !browser_view_->ShouldShowOffTheRecordAvatar()) {
     RegisterLoginNotifications();
-    profile_button_.reset(new ProfileMenuButton(NULL, std::wstring(),
-        this, browser_view_->browser()->profile()));
+    profile_button_.reset(new ProfileMenuButton(std::wstring(),
+        browser_view_->browser()->profile()));
     profile_button_->SetVisible(false);
     profile_tag_.reset(new ProfileTagView(frame_, profile_button_.get()));
     profile_tag_->SetVisible(false);
@@ -417,13 +417,6 @@ void OpaqueBrowserFrameView::ResetWindowControls() {
 
 void OpaqueBrowserFrameView::UpdateWindowIcon() {
   window_icon_->SchedulePaint();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// OpaqueBrowserFrameView, views::ViewMenuDelegate overrides:
-void OpaqueBrowserFrameView::RunMenu(views::View* source,
-                                     const gfx::Point &pt) {
-  profile_button_->RunMenuAt(pt);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

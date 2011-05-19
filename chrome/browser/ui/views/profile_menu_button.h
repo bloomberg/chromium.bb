@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/menu/view_menu_delegate.h"
 
 class Profile;
 class ProfileMenuModel;
@@ -33,6 +34,7 @@ class Menu2;
 // underneath that displays the profile tag.
 
 class ProfileMenuButton : public views::MenuButton,
+                          public views::ViewMenuDelegate,
                           public ui::SimpleMenuModel::Delegate {
  public:
   // DefaultActiveTextShadow is a darkened blue color that works with Windows
@@ -45,10 +47,7 @@ class ProfileMenuButton : public views::MenuButton,
   // Space between window controls and end of profile tag.
   static const int kProfileTagHorizontalSpacing = 5;
 
-  ProfileMenuButton(views::ButtonListener* listener,
-                    const std::wstring& text,
-                    views::ViewMenuDelegate* menu_delegate,
-                    Profile* profile);
+  ProfileMenuButton(const std::wstring& text, Profile* profile);
 
   virtual ~ProfileMenuButton();
 
@@ -62,9 +61,10 @@ class ProfileMenuButton : public views::MenuButton,
       int command_id, ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
-  void RunMenuAt(const gfx::Point& point);
-
  private:
+  // Overridden from views::ViewMenuDelegate:
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+
   scoped_ptr<views::Menu2> menu_;
   scoped_ptr<ProfileMenuModel> profile_menu_model_;
 

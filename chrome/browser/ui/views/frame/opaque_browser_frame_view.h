@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "views/controls/button/button.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "views/window/non_client_view.h"
 
 class BrowserView;
@@ -31,7 +30,6 @@ class ImageView;
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                public NotificationObserver,
                                public views::ButtonListener,
-                               public views::ViewMenuDelegate,
                                public TabIconView::TabIconViewModel {
  public:
   // Constructs a non-client view for an BrowserFrame.
@@ -87,9 +85,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
-
-  // Overridden from views::ViewMenuDelegate:
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

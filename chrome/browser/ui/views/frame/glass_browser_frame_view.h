@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame_win.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "views/controls/button/button.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "views/window/non_client_view.h"
 
 class BrowserView;
@@ -21,8 +20,7 @@ class ProfileTagView;
 class SkBitmap;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
-                              public NotificationObserver,
-                              public views::ViewMenuDelegate {
+                              public NotificationObserver {
  public:
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
@@ -43,9 +41,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE { }
   virtual void ResetWindowControls() OVERRIDE { }
   virtual void UpdateWindowIcon() OVERRIDE { }
-
-  // views::ViewMenuDelegate implementation:
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
  protected:
   // Overridden from views::View:
