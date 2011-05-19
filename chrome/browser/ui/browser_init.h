@@ -186,6 +186,11 @@ class BrowserInit {
     void AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(
         TabContentsWrapper* tab);
 
+    // If the user is using an operating system that we have deprecated
+    // support for and will no longer provide updates, warn the user
+    // about it.
+    void AddObsoleteSystemInfoBarIfNecessary(TabContentsWrapper* tab);
+
     // Adds additional startup URLs to the specified vector.
     void AddStartupURLs(std::vector<GURL>* startup_urls) const;
 

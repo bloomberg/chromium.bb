@@ -4401,8 +4401,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Monoscope warning info bar -->
-      <message name="IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE" desc="Message shown when the user has DNS certificate provenance checking enabled. This message is followed by a 'Learn more' button.">
+      <message name="IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE" desc="Message shown when the user has DNS certificate provenance checking enabled. This message is followed by a 'Learn more' link.">
         You have DNS certificate provenance checking enabled. This may result in private information being sent to Google.
+      </message>
+
+      <!-- Obsolete System info bar -->
+      <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This messages is followed by a 'Learn more' link.">
+         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is no longer updating because your operating system is obsolete.
       </message>
 
       <if expr="pp_ifdef('chromeos')">
