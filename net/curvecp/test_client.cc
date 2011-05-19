@@ -52,7 +52,7 @@ bool TestClient::Start(const HostPortPair& server_host_port_pair,
   bytes_to_read_ = bytes_to_send_ = bytes_to_send;
 
   scoped_ptr<HostResolver> system_host_resolver(
-      CreateSystemHostResolver(1, NULL));
+      CreateSystemHostResolver(1, 0, NULL));
   SingleRequestHostResolver host_resolver(system_host_resolver.get());
   HostResolver::RequestInfo request(server_host_port_pair);
   AddressList addresses;

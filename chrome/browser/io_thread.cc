@@ -142,8 +142,23 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
       parallelism = 20;
   }
 
+  size_t retry_attempts = net::HostResolver::kDefaultRetryAttempts;
+
+  // Use the retry attempts override from the command-line, if any.
+  if (command_line.HasSwitch(switches::kHostResolverRetryAttempts)) {
+    std::string s =
+        command_line.GetSwitchValueASCII(switches::kHostResolverRetryAttempts);
+    // Parse the switch (it should be a non-negative integer).
+    int n;
+    if (base::StringToInt(s, &n) && n >= 0) {
+      retry_attempts = static_cast<size_t>(n);
+    } else {
+      LOG(ERROR) << "Invalid switch for host resolver retry attempts: " << s;
+    }
+  }
+
   net::HostResolver* global_host_resolver =
-      net::CreateSystemHostResolver(parallelism, net_log);
+      net::CreateSystemHostResolver(parallelism, retry_attempts, net_log);
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {

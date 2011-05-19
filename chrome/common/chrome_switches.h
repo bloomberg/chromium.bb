@@ -177,6 +177,7 @@ extern const char kHideIcons[];
 extern const char kHomePage[];
 extern const char kHostRules[];
 extern const char kHostResolverParallelism[];
+extern const char kHostResolverRetryAttempts[];
 extern const char kHostResolverRules[];
 extern const char kHstsHosts[];
 extern const char kIgnoreGpuBlacklist[];
