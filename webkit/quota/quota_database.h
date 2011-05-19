@@ -40,6 +40,12 @@ class QuotaDatabase {
   bool SetOriginLastAccessTime(const GURL& origin, StorageType type,
                                base::Time last_access_time);
 
+  // Register |origins| to Database with |used_count| = 0 and
+  // specified |last_access_time|.
+  bool RegisterOrigins(const std::set<GURL>& origins,
+                       StorageType type,
+                       base::Time last_access_time);
+
   bool DeleteHostQuota(const std::string& host, StorageType type);
   bool DeleteOriginLastAccessTime(const GURL& origin, StorageType type);
 
@@ -77,6 +83,7 @@ class QuotaDatabase {
   bool is_disabled_;
 
   friend class QuotaDatabaseTest;
+
   DISALLOW_COPY_AND_ASSIGN(QuotaDatabase);
 };
 

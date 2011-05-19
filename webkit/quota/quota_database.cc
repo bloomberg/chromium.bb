@@ -4,6 +4,8 @@
 
 #include "webkit/quota/quota_database.h"
 
+#include <string>
+
 #include "app/sql/connection.h"
 #include "app/sql/diagnostic_error_delegate.h"
 #include "app/sql/meta_table.h"
@@ -33,12 +35,14 @@ const struct {
   { kHostQuotaTable,
     "(host TEXT NOT NULL,"
     " type INTEGER NOT NULL,"
-    " quota INTEGER)" },
+    " quota INTEGER,"
+    " UNIQUE(host, type))" },
   { kOriginLastAccessTable,
     "(origin TEXT NOT NULL,"
     " type INTEGER NOT NULL,"
     " used_count INTEGER,"
-    " last_access_time INTEGER)" },
+    " last_access_time INTEGER,"
+    " UNIQUE(origin, type))" },
 };
 
 const struct {
@@ -205,6 +209,39 @@ bool QuotaDatabase::SetOriginLastAccessTime(
   return transaction.Commit();
 }
 
+bool QuotaDatabase::RegisterOrigins(const std::set<GURL>& origins,
+                                    StorageType type,
+                                    base::Time last_access_time) {
+  if (!LazyOpen(true))
+    return false;
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
+
+  sql::Statement statement;
+
+  typedef std::set<GURL>::const_iterator itr_type;
+  for (itr_type itr = origins.begin(), end = origins.end();
+       itr != end; ++itr) {
+    const char* kSql =
+        "INSERT OR IGNORE INTO OriginLastAccessTable"
+        " (used_count, last_access_time, origin, type)"
+        " VALUES (?, ?, ?, ?)";
+    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
+      return false;
+
+    statement.BindInt(0, 0);  // used_count
+    statement.BindInt64(1, last_access_time.ToInternalValue());
+    statement.BindString(2, itr->spec());
+    statement.BindInt(3, static_cast<int>(type));
+    if (!statement.Run())
+      return false;
+  }
+
+  return transaction.Commit();
+}
+
 bool QuotaDatabase::DeleteHostQuota(
     const std::string& host, StorageType type) {
   if (!LazyOpen(false))
@@ -316,7 +353,7 @@ bool QuotaDatabase::FindOriginUsedCount(
   if (!statement.Step() || !statement.Succeeded())
     return false;
 
-  *used_count = statement.ColumnInt(3);
+  *used_count = statement.ColumnInt(0);
   return true;
 }
 

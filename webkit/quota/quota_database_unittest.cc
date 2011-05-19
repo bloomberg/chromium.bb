@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include <algorithm>
+#include <iterator>
+#include <set>
 
 #include "app/sql/connection.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/quota_database.h"
 
 namespace {
@@ -150,6 +153,45 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
     EXPECT_TRUE(origin.is_empty());
   }
+
+  void RegisterOrigins(const FilePath& kDbFile) {
+    QuotaDatabase db(kDbFile);
+
+    const GURL kOrigins[] = {
+      GURL("http://a/"),
+      GURL("http://b/"),
+      GURL("http://c/") };
+    std::set<GURL> origins(kOrigins, kOrigins + ARRAYSIZE_UNSAFE(kOrigins));
+
+    EXPECT_TRUE(db.RegisterOrigins(origins,
+                                   kStorageTypeTemporary,
+                                   base::Time()));
+
+    int used_count = -1;
+    EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
+                                       kStorageTypeTemporary,
+                                       &used_count));
+    EXPECT_EQ(0, used_count);
+
+    EXPECT_TRUE(db.SetOriginLastAccessTime(
+        GURL("http://a/"), kStorageTypeTemporary,
+        base::Time::FromDoubleT(1.0)));
+    used_count = -1;
+    EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
+                                       kStorageTypeTemporary,
+                                       &used_count));
+    EXPECT_EQ(1, used_count);
+
+    EXPECT_TRUE(db.RegisterOrigins(origins,
+                                   kStorageTypeTemporary,
+                                   base::Time()));
+
+    used_count = -1;
+    EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
+                                       kStorageTypeTemporary,
+                                       &used_count));
+    EXPECT_EQ(1, used_count);
+  }
 };
 
 TEST_F(QuotaDatabaseTest, LazyOpen) {
@@ -198,5 +240,11 @@ TEST_F(QuotaDatabaseTest, BootstrapFlag) {
   EXPECT_FALSE(db.IsOriginDatabaseBootstrapped());
 }
 
-
+TEST_F(QuotaDatabaseTest, RegisterOrigins) {
+  ScopedTempDir data_dir;
+  ASSERT_TRUE(data_dir.CreateUniqueTempDir());
+  const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
+  RegisterOrigins(kDbFile);
+  RegisterOrigins(FilePath());
+}
 }  // namespace quota
