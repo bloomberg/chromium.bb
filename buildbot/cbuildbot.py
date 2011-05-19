@@ -14,7 +14,6 @@ import errno
 import optparse
 import os
 import pprint
-import re
 import sys
 import traceback
 
@@ -26,56 +25,6 @@ import chromite.buildbot.cbuildbot_comm as cbuildbot_comm
 import chromite.buildbot.cbuildbot_config as cbuildbot_config
 import chromite.buildbot.cbuildbot_stages as stages
 import chromite.lib.cros_build_lib as cros_lib
-
-
-class BranchError(Exception):
-  pass
-
-
-def _GetManifestBranch():
-  """Returns the manifest branch"""
-  cmd = ['git', 'branch', '-r']
-  branches = cros_lib.RunCommand(cmd, redirect_stdout=True).output
-  m = re.search(r'^\s*m/(\S+)', branches, re.M)
-  return m.group(1)
-
-
-def _GetTrackingBranch():
-  """Returns the tracking branch to build and test.
-
-  Looks at the current branch of chromite that the user has checked out.  If
-  the repo is on detached head, it assumes (and checks that) the user is using
-  the manifest branch.
-
-  Raises:
-    BranchError if 1) the detached HEAD is not the tip of the manifest branch,
-    or 2) the current branch is not tracking a remote branch.
-  """
-  ERROR_MSG = ('Current branch needs to either track an upstream branch, or\n'
-              'be a detached head checkout of manifest branch cros/%s.')
-
-
-  try:
-    cmd = ['git', 'symbolic-ref', 'HEAD']
-    current_branch = cros_lib.RunCommand(cmd, redirect_stdout=True).output
-    current_branch = current_branch.replace('refs/heads/', '').strip()
-  except cros_lib.RunCommandError:
-    # Check if detached head is of manifest branch.
-    manifest_branch = _GetManifestBranch()
-    cmd = ['git', 'log', '%s..' % ('m/' + manifest_branch), '--format=%H']
-    if cros_lib.RunCommand(cmd, redirect_stdout=True).output.strip():
-      raise BranchError(ERROR_MSG % manifest_branch)
-    return manifest_branch
-
-  cfg_option = 'branch.' + current_branch + '.%s'
-  cmd = ['git', 'config', cfg_option % 'merge']
-
-  try:
-    upstream = cros_lib.RunCommand(cmd, redirect_stdout=True).output.strip()
-  except cros_lib.RunCommandError:
-    raise BranchError(ERROR_MSG % _GetManifestBranch())
-
-  return upstream.replace('refs/heads/', '')
 
 
 def _GetConfig(config_name, options):
@@ -107,8 +56,6 @@ def RunBuildStages(bot_id, options, build_config):
     os.environ['CHROMEOS_OFFICIAL'] = '1'
 
   try:
-    stages.BuilderStage.SetTrackingBranch(_GetTrackingBranch())
-
     if options.sync:
       if build_config['manifest_version']:
         stages.ManifestVersionedSyncStage(bot_id, options, build_config).Run()
@@ -245,7 +192,7 @@ def main():
                     help='Skip stages already successfully completed.')
   parser.add_option('-f', '--revisionfile',
                     help='file where new revisions are stored')
-  parser.add_option('-t', '--tracking-branch', dest='tracking_branch_old',
+  parser.add_option('-t', '--tracking-branch', dest='tracking_branch',
                     default='cros/master', help='Run the buildbot on a branch')
   parser.add_option('--nouprev', action='store_false', dest='uprev',
                     default=True,
