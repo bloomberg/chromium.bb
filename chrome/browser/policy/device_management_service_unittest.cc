@@ -176,6 +176,12 @@ INSTANTIATE_TEST_CASE_P(
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceDeviceNotFound,
             net::URLRequestStatus::SUCCESS,
+            410,
+            PROTO_STRING(kResponseEmpty)),
+        // TODO(pastarmovj): Remove once DM server is deployed.
+        FailedRequestParams(
+            DeviceManagementBackend::kErrorServiceDeviceNotFound,
+            net::URLRequestStatus::SUCCESS,
             901,
             PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
@@ -193,6 +199,12 @@ INSTANTIATE_TEST_CASE_P(
             net::URLRequestStatus::SUCCESS,
             404,
             PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DeviceManagementBackend::kErrorServiceActivationPending,
+            net::URLRequestStatus::SUCCESS,
+            412,
+            PROTO_STRING(kResponseEmpty)),
+        // TODO(pastarmovj): Remove once DM server is deployed.
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceActivationPending,
             net::URLRequestStatus::SUCCESS,

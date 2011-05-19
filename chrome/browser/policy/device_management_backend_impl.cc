@@ -57,11 +57,17 @@ const int kInvalidArgument = 400;
 const int kInvalidAuthCookieOrDMToken = 401;
 const int kDeviceManagementNotAllowed = 403;
 const int kInvalidURL = 404; // This error is not coming from the GFE.
-const int kPendingApproval = 491;
+const int kDeviceNotFound = 410;
+const int kPendingApproval = 412;
 const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
-const int kDeviceNotFound = 901;
 const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
+
+// TODO(pastarmovj): Legacy error codes are here for comaptibility only. They
+// should be removed once the DM Server has been updated.
+const int kPendingApprovalLegacy = 491;
+const int kDeviceNotFoundLegacy = 901;
+
 
 #if defined(OS_CHROMEOS)
 // Machine info keys.
@@ -223,6 +229,7 @@ void DeviceManagementJobBase::HandleResponse(
       OnError(DeviceManagementBackend::kErrorServiceManagementNotSupported);
       return;
     }
+    case kPendingApprovalLegacy:
     case kPendingApproval: {
       OnError(DeviceManagementBackend::kErrorServiceActivationPending);
       return;
@@ -233,6 +240,7 @@ void DeviceManagementJobBase::HandleResponse(
       OnError(DeviceManagementBackend::kErrorTemporaryUnavailable);
       return;
     }
+    case kDeviceNotFoundLegacy:
     case kDeviceNotFound: {
       OnError(DeviceManagementBackend::kErrorServiceDeviceNotFound);
       return;
