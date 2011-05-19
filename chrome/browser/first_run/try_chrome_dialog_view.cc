@@ -17,6 +17,7 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/image_view.h"
@@ -62,7 +63,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   views::ImageView* icon = new views::ImageView();
-  icon->SetImage(*rb.GetBitmapNamed(IDR_PRODUCT_ICON_32));
+  icon->SetImage(*rb.GetNativeImageNamed(IDR_PRODUCT_ICON_32));
   gfx::Size icon_size = icon->GetPreferredSize();
 
   // An approximate window size. After Layout() we'll get better bounds.
@@ -153,11 +154,11 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   // The close button is custom.
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
-                        rb.GetBitmapNamed(IDR_CLOSE_BAR));
+                         rb.GetNativeImageNamed(IDR_CLOSE_BAR));
   close_button->SetImage(views::CustomButton::BS_HOT,
-                        rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+                         rb.GetNativeImageNamed(IDR_CLOSE_BAR_H));
   close_button->SetImage(views::CustomButton::BS_PUSHED,
-                        rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+                         rb.GetNativeImageNamed(IDR_CLOSE_BAR_P));
   close_button->set_tag(BT_CLOSE_BUTTON);
   layout->AddView(close_button);
 
