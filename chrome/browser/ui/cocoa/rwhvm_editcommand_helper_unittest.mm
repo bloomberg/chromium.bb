@@ -76,7 +76,7 @@ class MockRenderWidgetHostEditCommandCounter : public RenderWidgetHost {
       const std::string&));
 };
 
-
+/*
 // Tests that editing commands make it through the pipeline all the way to
 // RenderWidgetHost.
 TEST_F(RWHVMEditCommandHelperTest, TestEditingCommandDelivery) {
@@ -124,6 +124,7 @@ TEST_F(RWHVMEditCommandHelperTest, TestEditingCommandDelivery) {
     [rwhwvm_owner performSelector:NSSelectorFromString(sel_str) withObject:nil];
   }
 }
+*/
 
 // Test RWHVMEditCommandHelper::AddEditingSelectorsToClass
 TEST_F(RWHVMEditCommandHelperTest, TestAddEditingSelectorsToClass) {
