@@ -33,6 +33,13 @@ class BuilderStage():
   push_overlays = None
   archive_url = None
 
+  # Class variable that stores the branch to build and test
+  _tracking_branch = None
+
+  @staticmethod
+  def SetTrackingBranch(tracking_branch):
+    BuilderStage._tracking_branch = tracking_branch
+
   class Results:
     """Static class that collects the results of our BuildStages as they run."""
 
@@ -269,12 +276,12 @@ class SyncStage(BuilderStage):
   def _PerformStage(self):
     if self._options.clobber or not os.path.isdir(os.path.join(self._build_root,
                                                                '.repo')):
-      commands.FullCheckout(self._build_root, self._options.tracking_branch,
+      commands.FullCheckout(self._build_root,
+                            self._tracking_branch,
                             url=self._build_config['git_url'])
     else:
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                              self._options.tracking_branch,
-                              BuilderStage.rev_overlays)
+                              self._tracking_branch, BuilderStage.rev_overlays)
       BuilderStage.old_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
       commands.IncrementalCheckout(self._build_root)
 
@@ -290,21 +297,13 @@ class ManifestVersionedSyncStage(BuilderStage):
   manifest_manager = None
 
   def _PerformStage(self):
-    # Need to determine branch and set a local value here
-    branch_parts = self._options.tracking_branch.split('/')
-
-    if len(branch_parts) >= 2:
-      branch = branch_parts[1]
-      increment = 'patch'
-    else:
-      branch = 'master'
-      increment = 'branch'
+    increment = 'branch' if self._tracking_branch == 'master' else 'patch'
 
     manifest_manager = manifest_version.BuildSpecsManager(
        tmp_dir=os.path.join('/b', 'git.root'),
        source_repo=self._build_config['git_url'],
        manifest_repo=self._build_config['manifest_version'],
-       branch=branch,
+       branch=self._tracking_branch,
        build_name=self._build_config['board'],
        incr_type=increment,
        dry_run=self._options.debug)
@@ -321,12 +320,12 @@ class ManifestVersionedSyncStage(BuilderStage):
     repo_directory = os.path.join(self._build_root, '.repo')
     if os.path.exists(repo_directory):
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                              self._options.tracking_branch,
+                              self._tracking_branch,
                               BuilderStage.rev_overlays)
       shutil.rmtree(repo_directory)
 
     commands.ManifestCheckout(self._build_root,
-                              self._options.tracking_branch,
+                              self._tracking_branch,
                               next_version,
                               url=self._build_config['manifest_version'])
 
@@ -371,12 +370,13 @@ class UprevStage(BuilderStage):
     chrome_atom_to_build = None
     if self._options.chrome_rev:
       chrome_atom_to_build = commands.MarkChromeAsStable(
-          self._build_root, self._options.tracking_branch,
+          self._build_root, self._tracking_branch,
           self._options.chrome_rev, self._build_config['board'])
 
     # Perform other uprevs.
     if self._build_config['uprev']:
-      commands.UprevPackages(self._build_root, self._options.tracking_branch,
+      commands.UprevPackages(self._build_root,
+                             self._tracking_branch,
                              self._build_config['board'],
                              BuilderStage.rev_overlays)
     elif self._options.chrome_rev and not chrome_atom_to_build:
@@ -484,6 +484,6 @@ class PushChangesStage(BuilderStage):
           self._build_config['rev_overlays'], [BuilderStage.new_binhost],
           self._prebuilt_type, self._options.chrome_rev)
 
-    commands.UprevPush(self._build_root, self._options.tracking_branch,
+    commands.UprevPush(self._build_root, self._tracking_branch,
                        self._build_config['board'], BuilderStage.push_overlays,
                        self._options.debug)
