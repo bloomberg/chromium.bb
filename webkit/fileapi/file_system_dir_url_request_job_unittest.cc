@@ -99,7 +99,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     root_path_ = root_path;
   }
 
-  void TestRequest(const GURL& url) {
+  void TestRequestHelper(const GURL& url, bool run_to_completion) {
     delegate_.reset(new TestDelegate());
     delegate_->set_quit_on_redirect(true);
     request_.reset(new net::URLRequest(url, delegate_.get()));
@@ -109,7 +109,16 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
-    MessageLoop::current()->Run();
+    if (run_to_completion)
+      MessageLoop::current()->Run();
+  }
+
+  void TestRequest(const GURL& url) {
+    TestRequestHelper(url, true);
+  }
+
+  void TestRequestNoRun(const GURL& url) {
+    TestRequestHelper(url, false);
   }
 
   void CreateDirectory(const base::StringPiece dir_name) {
@@ -182,6 +191,25 @@ TEST_F(FileSystemDirURLRequestJobTest, NoSuchDirectory) {
   ASSERT_FALSE(request_->is_pending());
   ASSERT_FALSE(request_->status().is_success());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, request_->status().os_error());
+}
+
+class QuitNowTask : public Task {
+ public:
+  virtual void Run() {
+    MessageLoop::current()->QuitNow();
+  }
+};
+
+TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
+  CreateDirectory("foo");
+  TestRequestNoRun(CreateFileSystemURL("foo/"));
+  // Run StartAsync() and only StartAsync().
+  MessageLoop::current()->PostTask(FROM_HERE, new QuitNowTask);
+  MessageLoop::current()->Run();
+
+  request_.reset();
+  MessageLoop::current()->RunAllPending();
+  // If we get here, success! we didn't crash!
 }
 
 }  // namespace (anonymous)

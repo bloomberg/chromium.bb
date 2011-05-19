@@ -57,7 +57,9 @@ class LocalPathCallbackDispatcher : public FileSystemCallbackDispatcher {
   }
 
  private:
-  FileSystemURLRequestJobBase* job_;
+  // TODO(adamk): Get rid of the need for refcounting here by
+  // allowing FileSystemOperations to be cancelled.
+  scoped_refptr<FileSystemURLRequestJobBase> job_;
   DISALLOW_COPY_AND_ASSIGN(LocalPathCallbackDispatcher);
 };
 
