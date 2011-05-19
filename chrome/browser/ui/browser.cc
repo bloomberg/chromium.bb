@@ -2218,7 +2218,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
                              true,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
-                             false,
+                             true,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitAllowDisplayingInsecureContent,
                              true,
