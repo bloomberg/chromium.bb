@@ -19,41 +19,10 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
-namespace {
-
-class MockFileSystemPathManager : public FileSystemPathManager {
- public:
-  MockFileSystemPathManager(const FilePath& filesystem_path)
-      : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
-                              filesystem_path, NULL, false, true),
-        test_filesystem_path_(filesystem_path) {}
-
-  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      const FilePath& virtual_path,
-      bool create) {
-    return test_filesystem_path_;
-  }
-
- private:
-  FilePath test_filesystem_path_;
-};
-
-FilePath UTF8ToFilePath(const std::string& str) {
-  FilePath::StringType result;
-#if defined(OS_POSIX)
-  result = base::SysWideToNativeMB(UTF8ToWide(str));
-#elif defined(OS_WIN)
-  result = UTF8ToUTF16(str);
-#endif
-  return FilePath(result);
-}
-
-}  // namespace (anonymous)
 
 // TODO(dmikurube): Cover all public methods in LocalFileSystemFileUtil.
 class LocalFileSystemFileUtilTest : public testing::Test {
@@ -64,21 +33,16 @@ class LocalFileSystemFileUtilTest : public testing::Test {
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    filesystem_dir_ = data_dir_.path().AppendASCII("filesystem");
-    file_util::CreateDirectory(filesystem_dir_);
-    ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_,
-                                                    &file_path_));
+    test_helper_.SetUp(data_dir_.path(), FileUtil());
+  }
+
+  void TearDown() {
+    test_helper_.TearDown();
   }
 
  protected:
   FileSystemOperationContext* NewContext() {
-    FileSystemOperationContext* context = new FileSystemOperationContext(
-        new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
-                              base::MessageLoopProxy::CreateForCurrentThread(),
-                              NULL, NULL, FilePath(), false /* is_incognito */,
-                              true, true,
-                              new MockFileSystemPathManager(filesystem_dir_)),
-        FileUtil());
+    FileSystemOperationContext* context = test_helper_.NewOperationContext();
     context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
     return context;
   }
@@ -87,22 +51,26 @@ class LocalFileSystemFileUtilTest : public testing::Test {
     return LocalFileSystemFileUtil::GetInstance();
   }
 
-  FilePath Path(const char *file_name) {
-    return UTF8ToFilePath(file_name);
+  static FilePath Path(const std::string& file_name) {
+    return FilePath().AppendASCII(file_name);
+  }
+
+  FilePath LocalPath(const char *file_name) {
+    return test_helper_.GetLocalPathFromASCII(file_name);
   }
 
   bool FileExists(const char *file_name) {
-    return file_util::PathExists(filesystem_dir_.AppendASCII(file_name)) &&
-        !file_util::DirectoryExists(filesystem_dir_.AppendASCII(file_name));
+    return file_util::PathExists(LocalPath(file_name)) &&
+        !file_util::DirectoryExists(LocalPath(file_name));
   }
 
   bool DirectoryExists(const char *file_name) {
-    return file_util::DirectoryExists(filesystem_dir_.AppendASCII(file_name));
+    return file_util::DirectoryExists(LocalPath(file_name));
   }
 
   int64 GetSize(const char *file_name) {
     base::PlatformFileInfo info;
-    file_util::GetFileInfo(filesystem_dir_.AppendASCII(file_name), &info);
+    file_util::GetFileInfo(LocalPath(file_name), &info);
     return info.size;
   }
 
@@ -114,7 +82,7 @@ class LocalFileSystemFileUtilTest : public testing::Test {
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     return FileUtil()->CreateOrOpen(
         context.get(),
-        UTF8ToFilePath(file_name),
+        Path(file_name),
         file_flags, file_handle, created);
   }
 
@@ -123,13 +91,12 @@ class LocalFileSystemFileUtilTest : public testing::Test {
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     return FileUtil()->EnsureFileExists(
         context.get(),
-        UTF8ToFilePath(file_name), created);
+        Path(file_name), created);
   }
 
  private:
   ScopedTempDir data_dir_;
-  FilePath filesystem_dir_;
-  FilePath file_path_;
+  FileSystemTestOriginHelper test_helper_;
 
   base::ScopedCallbackFactory<LocalFileSystemFileUtilTest> callback_factory_;
 

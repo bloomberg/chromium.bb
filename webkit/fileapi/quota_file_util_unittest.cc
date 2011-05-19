@@ -16,28 +16,10 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 
 namespace fileapi {
-namespace {
-class MockFileSystemPathManager : public FileSystemPathManager {
- public:
-  MockFileSystemPathManager(const FilePath& filesystem_path)
-      : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
-                              filesystem_path, NULL, false, true),
-        test_filesystem_path_(filesystem_path) {}
-
-  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      const FilePath& virtual_path,
-      bool create) {
-    return test_filesystem_path_;
-  }
-
- private:
-  FilePath test_filesystem_path_;
-};
-}  // namespace
 
 class QuotaFileUtilTest : public testing::Test {
  public:
@@ -47,32 +29,27 @@ class QuotaFileUtilTest : public testing::Test {
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    filesystem_dir_ = data_dir_.path().AppendASCII("filesystem");
-    file_util::CreateDirectory(filesystem_dir_);
+    FilePath base_dir = data_dir_.path().AppendASCII("filesystem");
 
-    usage_file_path_ = Path(FileSystemUsageCache::kUsageFileName);
-    FileSystemUsageCache::UpdateUsage(usage_file_path_, 0);
+    // For path translation we rely on LocalFileSystemFileUtil::GetLocalPath().
+    test_helper_.SetUp(base_dir, LocalFileSystemFileUtil::GetInstance());
+  }
+
+  void TearDown() {
+    test_helper_.TearDown();
   }
 
  protected:
   FileSystemOperationContext* NewContext() {
-    FileSystemOperationContext *context = new FileSystemOperationContext(
-        new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
-                              base::MessageLoopProxy::CreateForCurrentThread(),
-                              NULL, NULL, FilePath(), false,
-                              true, true,
-                              new MockFileSystemPathManager(filesystem_dir_)),
-        QuotaFileUtil::GetInstance());
-    context->set_src_type(fileapi::kFileSystemTypeTemporary);
-    return context;
+    return test_helper_.NewOperationContext();
   }
 
   QuotaFileUtil* FileUtil() {
     return QuotaFileUtil::GetInstance();
   }
 
-  FilePath Path(const char *file_name) {
-    return filesystem_dir_.AppendASCII(file_name);
+  FilePath Path(const std::string& file_name) {
+    return test_helper_.GetLocalPathFromASCII(file_name);
   }
 
   base::PlatformFileError CreateFile(const char* file_name,
@@ -93,13 +70,16 @@ class QuotaFileUtilTest : public testing::Test {
   }
 
   int64 GetCachedUsage() {
-    return FileSystemUsageCache::GetUsage(usage_file_path_);
+    return FileSystemUsageCache::GetUsage(test_helper_.GetUsageCachePath());
+  }
+
+  FileSystemContext* file_system_context() const {
+    return test_helper_.file_system_context();
   }
 
  private:
   ScopedTempDir data_dir_;
-  FilePath filesystem_dir_;
-  FilePath usage_file_path_;
+  FileSystemTestOriginHelper test_helper_;
   base::ScopedCallbackFactory<QuotaFileUtilTest> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtilTest);

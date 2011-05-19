@@ -28,21 +28,22 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
+
+using quota::QuotaManager;
 
 namespace fileapi {
 
 namespace {
 
-class MockQuotaManager : public quota::QuotaManager {
+class MockQuotaManager : public QuotaManager {
  public:
-  MockQuotaManager(const FilePath& filesystem_path, int64 usage, int64 quota)
-      : quota::QuotaManager(false /* is_incognito */,
-                            filesystem_path,
-                            base::MessageLoopProxy::CreateForCurrentThread(),
-                            base::MessageLoopProxy::CreateForCurrentThread()),
-        test_filesystem_path_(filesystem_path),
-        usage_(usage),
+  MockQuotaManager(const FilePath& base_dir, int64 quota)
+      : QuotaManager(false /* is_incognito */, base_dir,
+                     base::MessageLoopProxy::CreateForCurrentThread(),
+                     base::MessageLoopProxy::CreateForCurrentThread()),
+        usage_(0),
         quota_(quota) {}
 
   virtual void GetUsageAndQuota(const GURL& origin, quota::StorageType type,
@@ -55,7 +56,6 @@ class MockQuotaManager : public quota::QuotaManager {
   void set_quota(int64 quota) { quota_ = quota; }
 
  private:
-  FilePath test_filesystem_path_;
   int64 usage_;
   int64 quota_;
 };
@@ -93,12 +93,11 @@ class FileSystemOperationWriteTest : public testing::Test {
 
  protected:
   GURL URLForPath(const FilePath& path) const {
-    // Only the path will actually get used.
-    return GURL(GetFileSystemRootURI(GURL("http://www.example.com/"),
-        kFileSystemTypeTemporary).spec() + path.MaybeAsASCII());
+    return test_helper_.GetURLForPath(path);
   }
 
   scoped_refptr<MockQuotaManager> quota_manager_;
+  FileSystemTestOriginHelper test_helper_;
 
   MessageLoop loop_;
 
@@ -116,25 +115,6 @@ class FileSystemOperationWriteTest : public testing::Test {
 };
 
 namespace {
-
-class MockFileSystemPathManager : public FileSystemPathManager {
- public:
-  MockFileSystemPathManager(const FilePath& filesystem_path)
-      : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
-                              filesystem_path, NULL, false, true),
-        test_filesystem_path_(filesystem_path) {}
-
-  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
-      const GURL& origin_url,
-      FileSystemType type,
-      const FilePath& virtual_path,
-      bool create) {
-    return test_filesystem_path_;
-  }
-
- private:
-  FilePath test_filesystem_path_;
-};
 
 class TestURLRequestContext : public net::URLRequestContext {
  public:
@@ -204,12 +184,18 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
 
 void FileSystemOperationWriteTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
-  filesystem_dir_ = dir_.path().AppendASCII("filesystem");
-  file_util::CreateDirectory(filesystem_dir_);
+  FilePath base_dir = dir_.path().AppendASCII("filesystem");
+
+  quota_manager_ = new MockQuotaManager(base_dir, 1024);
+  test_helper_.SetUp(base_dir,
+                     false /* incognito */,
+                     false /* unlimited quota */,
+                     quota_manager_->proxy(),
+                     LocalFileSystemFileUtil::GetInstance());
+  filesystem_dir_ = test_helper_.GetOriginRootPath();
+
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_, &file_));
   virtual_path_ = file_.BaseName();
-
-  quota_manager_ = new MockQuotaManager(filesystem_dir_, 0, 1024);
 
   net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
 }
@@ -217,24 +203,11 @@ void FileSystemOperationWriteTest::SetUp() {
 void FileSystemOperationWriteTest::TearDown() {
   net::URLRequest::RegisterProtocolFactory("blob", NULL);
   quota_manager_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  test_helper_.TearDown();
 }
 
 FileSystemOperation* FileSystemOperationWriteTest::operation() {
-  FileSystemOperation* operation = new FileSystemOperation(
-      new MockDispatcher(this),
-      base::MessageLoopProxy::CreateForCurrentThread(),
-      new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
-                            base::MessageLoopProxy::CreateForCurrentThread(),
-                            NULL, quota_manager_->proxy(), FilePath(),
-                            false /* is_incognito */, true, false,
-                            new MockFileSystemPathManager(filesystem_dir_)),
-      LocalFileSystemFileUtil::GetInstance());
-  operation->file_system_operation_context()->set_src_type(
-      kFileSystemTypeTemporary);
-  operation->file_system_operation_context()->set_dest_type(
-      kFileSystemTypeTemporary);
-  return operation;
+  return test_helper_.NewOperation(new MockDispatcher(this));
 }
 
 TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {

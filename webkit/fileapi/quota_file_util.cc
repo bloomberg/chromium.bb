@@ -9,7 +9,10 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/quota/quota_manager.h"
+
+using quota::QuotaManagerProxy;
 
 namespace fileapi {
 
@@ -19,7 +22,7 @@ namespace {
 
 // Checks if copying in the same filesystem can be performed.
 // This method is not called for moving within a single filesystem.
-static bool CanCopy(
+bool CanCopy(
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
     int64 allowed_bytes_growth,
@@ -41,27 +44,41 @@ static bool CanCopy(
   return true;
 }
 
-static FilePath InitUsageFile(FileSystemOperationContext* fs_context) {
-  FilePath base_path = fs_context->file_system_context()->path_manager()->
-      ValidateFileSystemRootAndGetPathOnFileThread(fs_context->src_origin_url(),
-          fs_context->src_type(), FilePath(), false);
-  FilePath usage_file_path =
-      base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
+// A helper class to hook quota_util() methods before and after modifications.
+class ScopedOriginUpdateHelper {
+ public:
+  explicit ScopedOriginUpdateHelper(
+      FileSystemContext* context,
+      const GURL& origin_url,
+      FileSystemType type)
+      : origin_url_(origin_url),
+        type_(type) {
+    DCHECK(context);
+    DCHECK(type != kFileSystemTypeUnknown);
+    quota_util_ = context->GetQuotaUtil(type_);
+    quota_manager_proxy_ = context->quota_manager_proxy();
+    if (quota_util_)
+      quota_util_->StartUpdateOriginOnFileThread(origin_url_, type_);
+  }
 
-  if (FileSystemUsageCache::Exists(usage_file_path))
-    FileSystemUsageCache::IncrementDirty(usage_file_path);
+  ~ScopedOriginUpdateHelper() {
+    if (quota_util_)
+      quota_util_->EndUpdateOriginOnFileThread(origin_url_, type_);
+  }
 
-  return usage_file_path;
-}
+  void NotifyUpdate(int64 growth) {
+    if (quota_util_)
+      quota_util_->UpdateOriginUsageOnFileThread(
+          quota_manager_proxy_, origin_url_, type_, growth);
+  }
 
-static void UpdateUsageFile(const FilePath& usage_file_path, int64 growth) {
-  if (FileSystemUsageCache::Exists(usage_file_path))
-    FileSystemUsageCache::DecrementDirty(usage_file_path);
-
-  int64 usage = FileSystemUsageCache::GetUsage(usage_file_path);
-  if (usage >= 0)
-    FileSystemUsageCache::UpdateUsage(usage_file_path, usage + growth);
-}
+ private:
+  FileSystemQuotaUtil* quota_util_;
+  QuotaManagerProxy* quota_manager_proxy_;
+  const GURL& origin_url_;
+  FileSystemType type_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedOriginUpdateHelper);
+};
 
 }  // namespace (anonymous)
 
@@ -75,7 +92,14 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
     bool copy) {
-  FilePath usage_file_path = InitUsageFile(fs_context);
+  DCHECK(fs_context);
+
+  // TODO(kinuko): For cross-filesystem move case we need 2 helpers, one for
+  // src and one for dest.
+  ScopedOriginUpdateHelper helper(
+      fs_context->file_system_context(),
+      fs_context->dest_origin_url(),
+      fs_context->dest_type());
 
   int64 growth = 0;
 
@@ -85,10 +109,8 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
     int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
     // The third argument (growth) is not used for now.
     if (!CanCopy(src_file_path, dest_file_path, allowed_bytes_growth,
-                 &growth)) {
-      FileSystemUsageCache::DecrementDirty(usage_file_path);
+                 &growth))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
-    }
   } else {
     base::PlatformFileInfo dest_file_info;
     if (!file_util::GetFileInfo(dest_file_path, &dest_file_info))
@@ -99,7 +121,11 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
   base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
       CopyOrMoveFile(fs_context, src_file_path, dest_file_path, copy);
 
-  UpdateUsageFile(usage_file_path, growth);
+  if (error == base::PLATFORM_FILE_OK) {
+    // TODO(kinuko): For cross-filesystem move case, call this with -growth
+    // for source and growth for dest.
+    helper.NotifyUpdate(growth);
+  }
 
   return error;
 }
@@ -107,7 +133,11 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
 base::PlatformFileError QuotaFileUtil::DeleteFile(
     FileSystemOperationContext* fs_context,
     const FilePath& file_path) {
-  FilePath usage_file_path = InitUsageFile(fs_context);
+  DCHECK(fs_context);
+  ScopedOriginUpdateHelper helper(
+      fs_context->file_system_context(),
+      fs_context->src_origin_url(),
+      fs_context->src_type());
 
   int64 growth = 0;
   base::PlatformFileInfo file_info;
@@ -118,7 +148,8 @@ base::PlatformFileError QuotaFileUtil::DeleteFile(
   base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
       DeleteFile(fs_context, file_path);
 
-  UpdateUsageFile(usage_file_path, growth);
+  if (error == base::PLATFORM_FILE_OK)
+    helper.NotifyUpdate(growth);
 
   return error;
 }
@@ -128,27 +159,25 @@ base::PlatformFileError QuotaFileUtil::Truncate(
     const FilePath& path,
     int64 length) {
   int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
-  FilePath usage_file_path = InitUsageFile(fs_context);
+  ScopedOriginUpdateHelper helper(
+      fs_context->file_system_context(),
+      fs_context->src_origin_url(),
+      fs_context->src_type());
 
   int64 growth = 0;
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(path, &file_info)) {
-    FileSystemUsageCache::DecrementDirty(usage_file_path);
+  if (!file_util::GetFileInfo(path, &file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-  growth = length - file_info.size;
 
-  if (allowed_bytes_growth != kNoLimit) {
-    if (growth > allowed_bytes_growth) {
-      FileSystemUsageCache::DecrementDirty(usage_file_path);
-      return base::PLATFORM_FILE_ERROR_NO_SPACE;
-    }
-  }
+  growth = length - file_info.size;
+  if (allowed_bytes_growth != kNoLimit && growth > allowed_bytes_growth)
+    return base::PLATFORM_FILE_ERROR_NO_SPACE;
 
   base::PlatformFileError error = FileSystemFileUtil::GetInstance()->Truncate(
       fs_context, path, length);
 
-  UpdateUsageFile(usage_file_path, growth);
+  if (error == base::PLATFORM_FILE_OK)
+    helper.NotifyUpdate(growth);
 
   return error;
 }

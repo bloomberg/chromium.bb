@@ -27,8 +27,9 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/quota_file_util.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 
 namespace fileapi {
 
@@ -69,37 +70,30 @@ class Result {
 class FileWriterDelegateTest : public PlatformTest {
  public:
   FileWriterDelegateTest()
-      : loop_(MessageLoop::TYPE_IO),
-        origin_url_("http://foo") {}
+      : loop_(MessageLoop::TYPE_IO) {}
 
  protected:
   virtual void SetUp();
   virtual void TearDown();
 
   int64 GetCachedUsage() {
-    return FileSystemUsageCache::GetUsage(usage_file_path_);
+    return FileSystemUsageCache::GetUsage(test_helper_.GetUsageCachePath());
   }
 
   FileSystemOperation* CreateNewOperation(Result* result, int64 quota);
-
-  FileSystemContext* file_system_context() {
-    return file_system_context_.get();
-  }
 
   static net::URLRequest::ProtocolFactory Factory;
 
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<Result> result_;
-  scoped_refptr<FileSystemContext> file_system_context_;
+  FileSystemTestOriginHelper test_helper_;
 
   MessageLoop loop_;
 
   ScopedTempDir dir_;
-  FilePath usage_file_path_;
   FilePath file_path_;
   PlatformFile file_;
-  const GURL origin_url_;
 
   static const char* content_;
 };
@@ -195,26 +189,12 @@ net::URLRequestJob* FileWriterDelegateTest::Factory(
 void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
   FilePath base_dir = dir_.path().AppendASCII("filesystem");
-  file_system_context_ = new FileSystemContext(
-      base::MessageLoopProxy::CreateForCurrentThread(),
-      base::MessageLoopProxy::CreateForCurrentThread(),
-      NULL, NULL, base_dir, false,
-      true, true, NULL);
+  test_helper_.SetUp(base_dir, QuotaFileUtil::GetInstance());
 
-  // NOTE: this test assumes the filesystem implementation uses
-  // sandbox provider for temporary filesystem.
-  SandboxMountPointProvider* sandbox_provider =
-      file_system_context_->path_manager()->sandbox_provider();
-  FilePath filesystem_dir = sandbox_provider->GetBaseDirectoryForOriginAndType(
-      origin_url_, kFileSystemTypeTemporary);
-  ASSERT_TRUE(file_util::CreateDirectory(filesystem_dir));
+  FilePath filesystem_dir = test_helper_.GetOriginRootPath();
+
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(
       filesystem_dir, &file_path_));
-
-  usage_file_path_ = sandbox_provider->GetUsageCachePathForOriginAndType(
-      origin_url_, kFileSystemTypeTemporary);
-  FileSystemUsageCache::UpdateUsage(usage_file_path_, 0);
-
   bool created;
   base::PlatformFileError error_code;
   file_ = base::CreatePlatformFile(
@@ -233,22 +213,15 @@ void FileWriterDelegateTest::TearDown() {
   net::URLRequest::RegisterProtocolFactory("blob", NULL);
   result_.reset();
   base::ClosePlatformFile(file_);
-  file_system_context_ = NULL;
-  MessageLoop::current()->RunAllPending();
+  test_helper_.TearDown();
 }
 
 FileSystemOperation* FileWriterDelegateTest::CreateNewOperation(
     Result* result, int64 quota) {
-  FileSystemOperation* operation =
-    new FileSystemOperation(new MockDispatcher(result), NULL,
-                            file_system_context_.get(),
-                            QuotaFileUtil::GetInstance());
+  FileSystemOperation* operation = test_helper_.NewOperation(
+      new MockDispatcher(result));
   FileSystemOperationContext* context =
       operation->file_system_operation_context();
-  context->set_src_origin_url(origin_url_);
-  context->set_src_type(kFileSystemTypeTemporary);
-  context->set_dest_origin_url(origin_url_);
-  context->set_dest_type(kFileSystemTypeTemporary);
   context->set_allowed_bytes_growth(quota);
   return operation;
 }

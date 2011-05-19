@@ -1963,6 +1963,8 @@
         '../webkit/fileapi/file_system_operation_write_unittest.cc',
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
         '../webkit/fileapi/file_writer_delegate_unittest.cc',
+        '../webkit/fileapi/file_system_test_helper.cc',
+        '../webkit/fileapi/file_system_test_helper.h',
       ],
       'conditions': [
         ['p2p_apis==1', {

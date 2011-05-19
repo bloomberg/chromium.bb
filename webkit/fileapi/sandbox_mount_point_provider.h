@@ -166,7 +166,7 @@ class SandboxMountPointProvider
 
   class GetFileSystemRootPathTask;
 
-  friend class FileWriterDelegateTest;
+  friend class FileSystemTestOriginHelper;
 
   // The path_manager_ isn't owned by this instance; this instance is owned by
   // the path_manager_, and they have the same lifetime.

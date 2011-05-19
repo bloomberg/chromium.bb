@@ -389,6 +389,8 @@
         '../../fileapi/obfuscated_file_system_file_util_unittest.cc',
         '../../fileapi/quota_file_util_unittest.cc',
         '../../fileapi/sandbox_mount_point_provider_unittest.cc',
+        '../../fileapi/file_system_test_helper.cc',
+        '../../fileapi/file_system_test_helper.h',
         '../../fileapi/webfilewriter_base_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
         '../../glue/context_menu_unittest.cc',
