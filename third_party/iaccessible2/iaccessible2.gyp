@@ -16,7 +16,7 @@
   'targets': [
     {
       'target_name': 'iaccessible2',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': 'C974E070-3787-490A-87B0-E333B06CA1E2',
       'sources': [
         'ia2_api_all.idl',

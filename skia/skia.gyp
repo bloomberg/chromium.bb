@@ -879,7 +879,7 @@
     # separately as well.
     {
       'target_name': 'skia_opts',
-      'type': '<(library)',
+      'type': 'static_library',
       'include_dirs': [
         '..',
         'config',

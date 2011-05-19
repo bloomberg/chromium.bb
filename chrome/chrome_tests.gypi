@@ -21,7 +21,7 @@
       # This target contains mocks and test utilities that don't belong in
       # production libraries but are used by more than one test executable.
       'target_name': 'test_support_common',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         'browser',
         'common',
@@ -223,7 +223,7 @@
     },
     {
       'target_name': 'test_support_ui',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         'test_support_common',
         'chrome_resources',
@@ -272,7 +272,7 @@
     },
     {
       'target_name': 'test_support_sync',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
@@ -297,7 +297,7 @@
     },
     {
       'target_name': 'test_support_syncapi',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         'syncapi',
@@ -318,7 +318,7 @@
     },
     {
       'target_name': 'test_support_sync_notifier',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../testing/gmock.gyp:gmock',
         'sync_notifier',
@@ -333,7 +333,7 @@
     },
     {
       'target_name': 'test_support_unit',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         'test_support_common',
         'chrome_resources',
@@ -770,7 +770,7 @@
       # The documention of the protocol implemented is at:
       # http://code.google.com/p/selenium/wiki/JsonWireProtocol
       'target_name': 'chromedriver_lib',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         'browser',
         'chrome',

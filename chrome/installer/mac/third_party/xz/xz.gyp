@@ -260,7 +260,7 @@
   'targets': [
     {
       'target_name': 'lzma',
-      'type': '<(library)',
+      'type': 'static_library',
       'defines': [
         '<@(lzma_common_defines)',
         '<@(lzma_decompress_defines)',

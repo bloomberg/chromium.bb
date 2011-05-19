@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'database',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': '1DA00DDD-44E5-4C56-B2CC-414FB0164492',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',

@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'browser',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': '5BF908A7-68FB-4A4B-99E3-8C749F1FE4EA',
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
@@ -4549,7 +4549,7 @@
     },
     {
       'target_name': 'in_memory_url_index_cache_proto_cpp',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.cc',
         '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.h',

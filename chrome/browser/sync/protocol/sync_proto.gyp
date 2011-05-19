@@ -56,7 +56,7 @@
     },
     {
       'target_name': 'sync_proto_cpp',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',

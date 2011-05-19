@@ -59,7 +59,7 @@
   'targets': [
     {
       'target_name': 'views',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': '6F9258E5-294F-47B2-919D-17FFE7A8B751',
       'dependencies': [
         '../app/app.gyp:app_base',

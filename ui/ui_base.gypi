@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'ui_base',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',

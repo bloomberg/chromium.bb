@@ -44,7 +44,7 @@
   'targets': [
     {
       'target_name': 'courgette_lib',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../third_party/lzma_sdk/lzma_sdk.gyp:lzma_sdk',
@@ -149,7 +149,7 @@
       'targets': [
         {
           'target_name': 'courgette_lib64',
-          'type': '<(library)',
+          'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
             '../third_party/lzma_sdk/lzma_sdk.gyp:lzma_sdk64',

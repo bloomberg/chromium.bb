@@ -36,7 +36,7 @@
       'targets': [
         {
           'target_name': 'breakpad_handler',
-          'type': '<(library)',
+          'type': 'static_library',
           'variables': {
             'breakpad_handler_target': 1,
           },
@@ -58,7 +58,7 @@
           # BREAKPAD_NO_TERMINATE_THREAD as that define makes breakpad crash
           # when created and destroyed in DllMain.
           'target_name': 'breakpad_handler_dll',
-          'type': '<(library)',
+          'type': 'static_library',
           'variables': {
             'breakpad_handler_target': 1,
           },
@@ -72,7 +72,7 @@
         },
         {
           'target_name': 'breakpad_handler_win64',
-          'type': '<(library)',
+          'type': 'static_library',
           'variables': {
             'breakpad_handler_target': 1,
           },

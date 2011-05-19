@@ -25,7 +25,7 @@
       'targets': [
         {
           'target_name': 'breakpad_utilities',
-          'type': '<(library)',
+          'type': 'static_library',
           'sources': [
             'src/common/convert_UTF.c',
             'src/client/mac/handler/breakpad_nlist_64.cc',
@@ -174,7 +174,7 @@
         },
         {
           'target_name': 'breakpad',
-          'type': '<(library)',
+          'type': 'static_library',
           'dependencies': [
             'breakpad_utilities',
             'crash_inspector',
@@ -283,7 +283,7 @@
       'targets': [
         {
           'target_name': 'breakpad_client',
-          'type': '<(library)',
+          'type': 'static_library',
 
           'sources': [
             'src/client/linux/crash_generation/crash_generation_client.cc',
@@ -338,7 +338,7 @@
         {
           # Breakpad r693 uses some files from src/processor in unit tests.
           'target_name': 'breakpad_processor_support',
-          'type': '<(library)',
+          'type': 'static_library',
 
           'sources': [
             'src/processor/basic_code_modules.cc',

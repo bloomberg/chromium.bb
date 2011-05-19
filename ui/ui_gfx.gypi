@@ -38,7 +38,7 @@
     },
     {
       'target_name': 'ui_gfx',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': '13A8D36C-0467-4B4E-BAA3-FD69C45F076A',
       'dependencies': [
         '../base/base.gyp:base',

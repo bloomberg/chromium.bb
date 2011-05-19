@@ -76,7 +76,7 @@
     },
     {
       'target_name': 'test_support_ipc',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         'ipc',
         '../base/base.gyp:base',

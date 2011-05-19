@@ -33,7 +33,7 @@
       'targets': [
         {
           'target_name': 'expat',
-          'type': '<(library)',
+          'type': 'static_library',
           'sources': [
             'files/lib/expat.h',
             'files/lib/xmlparse.c',

@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'default_plugin',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         ':default_plugin_resources',
         '<(DEPTH)/base/base.gyp:base',

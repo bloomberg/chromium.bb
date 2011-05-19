@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'content_common',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',

@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'content_worker',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': 'C78D02D0-A366-4EC6-A248-AA8E64C4BA18',
       'dependencies': [
         'content_common',

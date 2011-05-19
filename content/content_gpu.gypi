@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'content_gpu',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': 'F10F1ECD-D84D-4C33-8468-9DDFE19F4D8A',
       'dependencies': [
         'content_common',

@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'content_browser',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         'content_common',
         '../app/app.gyp:app_resources',

@@ -8,7 +8,7 @@
       'targets': [
         {
           'target_name': 'harfbuzz',
-          'type': '<(library)',
+          'type': 'static_library',
           'sources': [
             'contrib/harfbuzz-freetype.c',
             'contrib/harfbuzz-unicode.c',

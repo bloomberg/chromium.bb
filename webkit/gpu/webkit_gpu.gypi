@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'webkit_gpu',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_common',

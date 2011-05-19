@@ -61,7 +61,7 @@
     # The C++ files generated from the cache invalidation protocol buffers.
     {
       'target_name': 'cacheinvalidation_proto_cpp',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         '<(protoc_out_dir)/<(proto_dir_relpath)/internal.pb.h',
         '<(protoc_out_dir)/<(proto_dir_relpath)/internal.pb.cc',
@@ -93,7 +93,7 @@
     # only on this.
     {
       'target_name': 'cacheinvalidation',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'overrides/google/cacheinvalidation/callback.h',
         'overrides/google/cacheinvalidation/compiler-specific.h',

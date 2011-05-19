@@ -47,7 +47,7 @@
   'targets': [
     {
       'target_name': 'app_base',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': '4631946D-7D5F-44BD-A5A8-504C0A7033BE',
       'variables': {
         'app_base_target': 1,
@@ -324,7 +324,7 @@
       'targets': [
         {
           'target_name': 'app_base_nacl_win64',
-          'type': '<(library)',
+          'type': 'static_library',
           'msvs_guid': '4987C6F9-B230-48E5-BF91-418EAE69AD90',
           'dependencies': [
             # app resources and ui_strings should be shared with the 32-bit

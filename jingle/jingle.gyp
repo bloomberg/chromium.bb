@@ -10,7 +10,7 @@
     # A library of various utils for integration with libjingle.
     {
       'target_name': 'jingle_glue',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'glue/channel_socket_adapter.cc',
         'glue/channel_socket_adapter.h',
@@ -37,7 +37,7 @@
     # its own library.
     {
       'target_name': 'notifier',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'notifier/base/chrome_async_socket.cc',
         'notifier/base/chrome_async_socket.h',
@@ -119,7 +119,7 @@
     },
     {
       'target_name': 'notifier_test_util',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'notifier/base/fake_base_task.cc',
         'notifier/base/fake_base_task.h',
@@ -132,7 +132,7 @@
     },
     {
       'target_name': 'jingle_glue_test_util',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'glue/fake_network_manager.cc',
         'glue/fake_network_manager.h',

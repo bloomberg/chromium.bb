@@ -30,7 +30,7 @@
   },
   'targets': [{
     'target_name': 'libphonenumber',
-    'type': '<(library)',
+    'type': 'static_library',
     'dependencies': [
       '../icu/icu.gyp:icui18n',
       '../icu/icu.gyp:icuuc',

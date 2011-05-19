@@ -55,7 +55,7 @@
   'targets': [
     {
       'target_name': 'ipc',
-      'type': '<(library)',
+      'type': 'static_library',
       'variables': {
         'ipc_target': 1,
       },
@@ -77,7 +77,7 @@
       'targets': [
         {
           'target_name': 'ipc_win64',
-          'type': '<(library)',
+          'type': 'static_library',
           'variables': {
             'ipc_target': 1,
           },

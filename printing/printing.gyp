@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'printing',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../app/app.gyp:app_base',  # Only required for Font support
         '../base/base.gyp:base',

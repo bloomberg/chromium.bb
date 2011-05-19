@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'bspatch',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': 'D7ED06E8-6138-4CE3-A906-5EF1D9C804E0',
       'dependencies': [
         '../lzma_sdk/lzma_sdk.gyp:lzma_sdk',

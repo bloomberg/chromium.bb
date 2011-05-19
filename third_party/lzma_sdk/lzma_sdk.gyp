@@ -37,7 +37,7 @@
   'targets': [
     {
       'target_name': 'lzma_sdk',
-      'type': '<(library)',
+      'type': 'static_library',
       'defines': [
         '_LZMA_PROB32',
         '_LZMA_IN_CB',
@@ -65,7 +65,7 @@
       'targets': [
         {
           'target_name': 'lzma_sdk64',
-          'type': '<(library)',
+          'type': 'static_library',
           'defines': [
             '_LZMA_PROB32',
             '_LZMA_IN_CB',

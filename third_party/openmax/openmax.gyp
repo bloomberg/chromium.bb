@@ -32,7 +32,7 @@
       },
       'conditions': [
         ['OS!="linux"', {
-          'type': '<(library)',
+          'type': 'static_library',
           'dependencies': [
             '../../base/base.gyp:base',
           ],
@@ -59,7 +59,7 @@
             'intermediate_dir': '<(INTERMEDIATE_DIR)',
             'output_root': '<(SHARED_INTERMEDIATE_DIR)/openmax',
            },
-          'type': '<(library)',
+          'type': 'static_library',
           'dependencies': [
             '../../base/base.gyp:base',
           ],

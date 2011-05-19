@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'cld',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
       	'../icu/icu.gyp:icuuc',
       ],

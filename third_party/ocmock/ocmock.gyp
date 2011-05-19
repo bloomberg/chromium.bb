@@ -10,7 +10,7 @@
       'targets' : [
         {
           'target_name' : 'ocmock',
-          'type': '<(library)',
+          'type': 'static_library',
           'include_dirs': [ '.', '../..', ],
           'direct_dependent_settings': {
             'include_dirs': [ '.', ],

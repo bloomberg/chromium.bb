@@ -23,7 +23,7 @@
   'targets': [
     {
       'target_name': 'test_shell_common',
-      'type': '<(library)',
+      'type': 'static_library',
       'variables': {
         'chromium_code': 1,
       },

@@ -55,7 +55,7 @@
   'targets': [
     {
       'target_name': 'common_constants',
-      'type': '<(library)',
+      'type': 'static_library',
       'variables': {
         'common_constants_target': 1,
       },
@@ -74,7 +74,7 @@
       'targets': [
         {
           'target_name': 'common_constants_win64',
-          'type': '<(library)',
+          'type': 'static_library',
           'variables': {
             'common_constants_target': 1,
           },

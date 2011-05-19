@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'undoview',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'undo_manager.h',
         'undo_manager.c',

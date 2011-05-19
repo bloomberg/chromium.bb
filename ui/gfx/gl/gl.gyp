@@ -34,7 +34,7 @@
   'targets': [
     {
       'target_name': 'gl',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',

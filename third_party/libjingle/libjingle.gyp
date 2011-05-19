@@ -131,7 +131,7 @@
   'targets': [
     {
       'target_name': 'libjingle',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'overrides/talk/base/basictypes.h',
         'overrides/talk/base/constructormagic.h',
@@ -354,7 +354,7 @@
     # properly.
     {
       'target_name': 'libjingle_p2p',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'source/talk/p2p/base/candidate.h',
         'source/talk/p2p/base/common.h',

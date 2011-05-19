@@ -18,7 +18,7 @@
       'targets': [
         {
           'target_name': 'bzip2',
-          'type': '<(library)',
+          'type': 'static_library',
           'defines': ['BZ_NO_STDIO'],
           'msvs_guid': '2A70CBF0-847E-4E3A-B926-542A656DC7FE',
           'sources': [

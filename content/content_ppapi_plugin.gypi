@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'content_ppapi_plugin',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',

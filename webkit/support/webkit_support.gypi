@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'webkit_support',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/ui/ui.gyp:ui_gfx',
@@ -72,7 +72,7 @@
 
     {
       'target_name': 'webkit_support_common',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/crypto/crypto.gyp:crypto',

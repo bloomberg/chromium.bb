@@ -18,7 +18,7 @@
   'targets': [
     {
       'target_name': 'snappy',
-      'type': '<(library)',
+      'type': 'static_library',
       'include_dirs': [
         '<(os_include)',
         'src',

@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'appcache',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': '0B945915-31A7-4A07-A5B5-568D737A39B1',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',

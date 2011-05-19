@@ -58,7 +58,7 @@
     },
     {
       'target_name': 'webkit_user_agent',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': 'DB162DE1-7D56-4C4A-8A9F-80D396CD7AA8',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
@@ -102,7 +102,7 @@
     },
     {
       'target_name': 'glue',
-      'type': '<(library)',
+      'type': 'static_library',
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',

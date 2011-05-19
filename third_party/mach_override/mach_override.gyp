@@ -10,7 +10,7 @@
       'targets' : [
         {
           'target_name' : 'mach_override',
-          'type': '<(library)',
+          'type': 'static_library',
           'sources': [
             'mach_override.c',
             'mach_override.h',

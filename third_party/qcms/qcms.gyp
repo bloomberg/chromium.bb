@@ -7,7 +7,7 @@
     {
       'target_name': 'qcms',
       'product_name': 'qcms',
-      'type': '<(library)',
+      'type': 'static_library',
       'sources': [
         'qcms.h',
         'qcmsint.h',

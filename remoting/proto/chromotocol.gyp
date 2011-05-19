@@ -54,7 +54,7 @@
 
     {
       'target_name': 'chromotocol_proto_lib',
-      'type': '<(library)',
+      'type': 'static_library',
       'export_dependent_settings': [
         '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
         'chromotocol_proto',

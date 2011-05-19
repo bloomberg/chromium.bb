@@ -137,7 +137,7 @@
     },
     {
       'target_name': 'policy',
-      'type': '<(library)',
+      'type': 'static_library',
       'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
@@ -174,7 +174,7 @@
       'targets': [
         {
           'target_name': 'policy_win64',
-          'type': '<(library)',
+          'type': 'static_library',
           'hard_dependency': 1,
           'sources': [
             '<(policy_constant_header_path)',
