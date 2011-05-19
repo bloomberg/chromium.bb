@@ -330,6 +330,12 @@ void PanelBrowserFrameView::OnMouseReleased(const views::MouseEvent& event) {
   BrowserNonClientFrameView::OnMouseReleased(event);
 }
 
+void PanelBrowserFrameView::OnMouseCaptureLost() {
+  if (browser_view_->OnTitleBarMouseCaptureLost())
+    return;
+  BrowserNonClientFrameView::OnMouseCaptureLost();
+}
+
 void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == close_button_)

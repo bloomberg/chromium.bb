@@ -14,11 +14,8 @@
 #include "views/window/window.h"
 
 BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
-  BrowserView* view = new PanelBrowserView(browser, panel);
+  PanelBrowserView* view = new PanelBrowserView(browser, panel);
   (new BrowserFrame(view))->InitBrowserFrame();
-  view->GetWidget()->SetAlwaysOnTop(true);
-  view->GetWindow()->non_client_view()->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   return view;
 }
 
@@ -30,6 +27,14 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel)
 }
 
 PanelBrowserView::~PanelBrowserView() {
+}
+
+void PanelBrowserView::Init() {
+  BrowserView::Init();
+
+  GetWidget()->SetAlwaysOnTop(true);
+  GetWindow()->non_client_view()->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
 void PanelBrowserView::Close() {
@@ -61,6 +66,15 @@ void PanelBrowserView::OnWindowActivationChanged(bool active) {
   GetFrameView()->OnActivationChanged(active);
 }
 
+bool PanelBrowserView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  if (mouse_pressed_ && accelerator.GetKeyCode() == ui::VKEY_ESCAPE) {
+    OnTitleBarMouseCaptureLost();
+    return true;
+  }
+  return BrowserView::AcceleratorPressed(accelerator);
+}
+
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }
@@ -89,16 +103,20 @@ bool PanelBrowserView::OnTitleBarMouseDragged(const views::MouseEvent& event) {
 }
 
 bool PanelBrowserView::OnTitleBarMouseReleased(const views::MouseEvent& event) {
+  return EndDragging(false);
+}
+
+bool PanelBrowserView::OnTitleBarMouseCaptureLost() {
+  return EndDragging(true);
+}
+
+bool PanelBrowserView::EndDragging(bool cancelled) {
   // Only handle clicks that started in our window.
   if (!mouse_pressed_)
     return false;
   mouse_pressed_ = false;
 
-  if (mouse_dragging_) {
-    mouse_dragging_ = false;
-    panel_->manager()->EndDragging(false);
-  } else {
-    panel_->manager()->EndDragging(true);
-  }
+  panel_->manager()->EndDragging(cancelled || !mouse_dragging_);
+  mouse_dragging_ = false;
   return true;
 }

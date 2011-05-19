@@ -84,8 +84,8 @@ class PanelManager {
   bool ComputeBoundsForNextPanel(gfx::Rect* bounds, bool allow_size_change);
 
   // Help functions to drag the given panel.
-  void DragNegative(int delta_x);
-  void DragPositive(int delta_x);
+  void DragLeft();
+  void DragRight();
 
   // Stores the active panels.
   ActivePanels active_panels_;

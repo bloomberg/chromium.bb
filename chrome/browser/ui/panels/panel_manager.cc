@@ -153,102 +153,100 @@ void PanelManager::Drag(int delta_x) {
     return;
 
   // Moves this panel to the dragging position.
-  gfx::Rect new_bounds(
-      active_panels_[dragging_panel_index_]->GetRestoredBounds());
+  Panel* dragging_panel = active_panels_[dragging_panel_index_];
+  gfx::Rect new_bounds(dragging_panel->GetRestoredBounds());
   new_bounds.set_x(new_bounds.x() + delta_x);
-  active_panels_[dragging_panel_index_]->SetPanelBounds(new_bounds);
+  dragging_panel->SetPanelBounds(new_bounds);
 
   // Checks and processes other affected panels.
   if (delta_x > 0)
-    DragPositive(delta_x);
+    DragRight();
   else
-    DragNegative(delta_x);
+    DragLeft();
 }
 
-void PanelManager::DragNegative(int delta_x) {
-  DCHECK(delta_x < 0);
-
+void PanelManager::DragLeft() {
   Panel* dragging_panel = active_panels_[dragging_panel_index_];
 
   // This is the left corner of the dragging panel. We use it to check against
   // all the panels on its left.
-  int dragging_panel_x = dragging_panel->GetRestoredBounds().x() + delta_x;
+  int dragging_panel_left_boundary = dragging_panel->GetRestoredBounds().x();
 
   // This is the right corner which a panel will be moved to.
-  int right_x_to_move_to =
+  int current_panel_right_boundary =
       dragging_panel_bounds_.x() + dragging_panel_bounds_.width();
 
   // Checks the panels to the left of the dragging panel.
-  size_t i = dragging_panel_index_;
-  size_t j = i + 1;
-  for (; j < active_panels_.size(); ++j, ++i) {
+  size_t current_panel_index = dragging_panel_index_ + 1;
+  for (; current_panel_index < active_panels_.size(); ++current_panel_index) {
+    Panel* current_panel = active_panels_[current_panel_index];
+
     // Current panel will only be affected if the left corner of dragging
     // panel goes beyond the middle position of the current panel.
-    if (dragging_panel_x > active_panels_[j]->GetRestoredBounds().x() +
-                           active_panels_[j]->GetRestoredBounds().width() / 2)
+    if (dragging_panel_left_boundary > current_panel->GetRestoredBounds().x() +
+            current_panel->GetRestoredBounds().width() / 2)
       break;
 
     // Moves current panel to the new position.
-    gfx::Rect bounds(active_panels_[j]->GetRestoredBounds());
-    bounds.set_x(right_x_to_move_to - bounds.width());
-    right_x_to_move_to -= bounds.width() + kPanelsHorizontalSpacing;
-    active_panels_[j]->SetPanelBounds(bounds);
+    gfx::Rect bounds(current_panel->GetRestoredBounds());
+    bounds.set_x(current_panel_right_boundary - bounds.width());
+    current_panel_right_boundary -= bounds.width() + kPanelsHorizontalSpacing;
+    current_panel->SetPanelBounds(bounds);
 
-    // Adjusts the index of current panel.
-    active_panels_[i] = active_panels_[j];
+    // Updates the index of current panel since it has been moved to the
+    // position of previous panel.
+    active_panels_[current_panel_index - 1] = current_panel;
   }
 
-  // Adjusts the position and index of dragging panel as the result of moving
+  // Updates the position and index of dragging panel as the result of moving
   // other affected panels.
-  if (j != dragging_panel_index_ + 1) {
-    j--;
-    dragging_panel_bounds_.set_x(right_x_to_move_to -
+  if (current_panel_index != dragging_panel_index_ + 1) {
+    dragging_panel_bounds_.set_x(current_panel_right_boundary -
                                  dragging_panel_bounds_.width());
-    active_panels_[j] = dragging_panel;
-    dragging_panel_index_ = j;
+    dragging_panel_index_ = current_panel_index - 1;
+    active_panels_[dragging_panel_index_] = dragging_panel;
   }
 }
 
-void PanelManager::DragPositive(int delta_x) {
-  DCHECK(delta_x > 0);
-
+void PanelManager::DragRight() {
   Panel* dragging_panel = active_panels_[dragging_panel_index_];
 
   // This is the right corner of the dragging panel. We use it to check against
   // all the panels on its right.
-  int dragging_panel_x = dragging_panel->GetRestoredBounds().x() +
-      dragging_panel->GetRestoredBounds().width() - 1 + delta_x;
+  int dragging_panel_right_boundary = dragging_panel->GetRestoredBounds().x() +
+      dragging_panel->GetRestoredBounds().width() - 1;
 
   // This is the left corner which a panel will be moved to.
-  int left_x_to_move_to = dragging_panel_bounds_.x();
+  int current_panel_left_boundary = dragging_panel_bounds_.x();
 
   // Checks the panels to the right of the dragging panel.
-  int i = static_cast<int>(dragging_panel_index_);
-  int j = i - 1;
-  for (; j >= 0; --j, --i) {
+  int current_panel_index = static_cast<int>(dragging_panel_index_) - 1;
+  for (; current_panel_index >= 0; --current_panel_index) {
+    Panel* current_panel = active_panels_[current_panel_index];
+
     // Current panel will only be affected if the right corner of dragging
     // panel goes beyond the middle position of the current panel.
-    if (dragging_panel_x < active_panels_[j]->GetRestoredBounds().x() +
-                           active_panels_[j]->GetRestoredBounds().width() / 2)
+    if (dragging_panel_right_boundary < current_panel->GetRestoredBounds().x() +
+            current_panel->GetRestoredBounds().width() / 2)
       break;
 
     // Moves current panel to the new position.
-    gfx::Rect bounds(active_panels_[j]->GetRestoredBounds());
-    bounds.set_x(left_x_to_move_to);
-    left_x_to_move_to += bounds.width() + kPanelsHorizontalSpacing;
-    active_panels_[j]->SetPanelBounds(bounds);
+    gfx::Rect bounds(current_panel->GetRestoredBounds());
+    bounds.set_x(current_panel_left_boundary);
+    current_panel_left_boundary += bounds.width() + kPanelsHorizontalSpacing;
+    current_panel->SetPanelBounds(bounds);
 
-    // Adjusts the index of current panel.
-    active_panels_[i] = active_panels_[j];
+    // Updates the index of current panel since it has been moved to the
+    // position of previous panel.
+    active_panels_[current_panel_index + 1] = current_panel;
   }
 
-  // Adjusts the position and index of dragging panel as the result of moving
+  // Updates the position and index of dragging panel as the result of moving
   // other affected panels.
-  if (j != static_cast<int>(dragging_panel_index_) - 1) {
-    j++;
-    dragging_panel_bounds_.set_x(left_x_to_move_to);
-    active_panels_[j] = dragging_panel;
-    dragging_panel_index_ = j;
+  if (current_panel_index != static_cast<int>(dragging_panel_index_) - 1) {
+    dragging_panel_bounds_.set_x(current_panel_left_boundary);
+    dragging_panel_index_ = current_panel_index + 1;
+    active_panels_[dragging_panel_index_] = dragging_panel;
   }
 }
 

@@ -51,42 +51,91 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     }
   }
 
-  void ValidateDragging(PanelBrowserView* browser_view,
+  void ValidateDragging(PanelBrowserView** browser_views,
+                        size_t num_browser_views,
+                        size_t index_to_drag,
                         int delta_x,
                         int delta_y,
-                        int expected_delta_x_after_release) {
-    gfx::Rect bounds_before_press = browser_view->panel()->GetRestoredBounds();
+                        int* expected_delta_x_after_drag,
+                        int* expected_delta_x_after_release,
+                        bool cancel_dragging) {
+    // Keep track of the initial bounds for comparison.
+    scoped_array<gfx::Rect> initial_bounds(new gfx::Rect[num_browser_views]);
+    for (size_t i = 0; i < num_browser_views; ++i)
+      initial_bounds[i] = browser_views[i]->panel()->GetRestoredBounds();
 
+    // Trigger the mouse-pressed event.
+    // All panels should remain in their original positions.
     views::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
-                              bounds_before_press.x(),
-                              bounds_before_press.y(),
+                              initial_bounds[index_to_drag].x(),
+                              initial_bounds[index_to_drag].y(),
                               ui::EF_LEFT_BUTTON_DOWN);
-    browser_view->OnTitleBarMousePressed(pressed);
-    gfx::Rect bounds_after_press = browser_view->panel()->GetRestoredBounds();
-    EXPECT_EQ(bounds_before_press, bounds_after_press);
-
-    // If both delta_x and delta_y are 0, we perform no dragging.
-    if (delta_x || delta_y) {
-      views::MouseEvent dragged(ui::ET_MOUSE_DRAGGED,
-                                bounds_before_press.x() + delta_x,
-                                bounds_before_press.y() + delta_y,
-                                ui::EF_LEFT_BUTTON_DOWN);
-      browser_view->OnTitleBarMouseDragged(dragged);
-      gfx::Rect bounds_after_drag = browser_view->panel()->GetRestoredBounds();
-      EXPECT_EQ(bounds_before_press.x() + delta_x, bounds_after_drag.x());
-      EXPECT_EQ(bounds_before_press.y(), bounds_after_drag.y());
-      EXPECT_EQ(bounds_before_press.width(), bounds_after_drag.width());
-      EXPECT_EQ(bounds_before_press.height(), bounds_after_drag.height());
+    browser_views[index_to_drag]->OnTitleBarMousePressed(pressed);
+    gfx::Rect bounds_after_press =
+        browser_views[index_to_drag]->panel()->GetRestoredBounds();
+    for (size_t i = 0; i < num_browser_views; ++i) {
+      EXPECT_EQ(initial_bounds[i],
+                browser_views[i]->panel()->GetRestoredBounds());
     }
 
+    // Trigger the mouse_dragged event if delta_x or delta_y is not 0.
+    views::MouseEvent dragged(ui::ET_MOUSE_DRAGGED,
+                              initial_bounds[index_to_drag].x() + delta_x,
+                              initial_bounds[index_to_drag].y() + delta_y,
+                              ui::EF_LEFT_BUTTON_DOWN);
+    if (delta_x || delta_y) {
+      browser_views[index_to_drag]->OnTitleBarMouseDragged(dragged);
+      for (size_t i = 0; i < num_browser_views; ++i) {
+        gfx::Rect expected_bounds = initial_bounds[i];
+        expected_bounds.Offset(expected_delta_x_after_drag[i], 0);
+        EXPECT_EQ(expected_bounds,
+                  browser_views[i]->panel()->GetRestoredBounds());
+      }
+    }
+
+    // Cancel the dragging if asked.
+    // All panels should stay in their original positions.
+    if (cancel_dragging) {
+      browser_views[index_to_drag]->OnTitleBarMouseCaptureLost();
+      for (size_t i = 0; i < num_browser_views; ++i) {
+        EXPECT_EQ(initial_bounds[i],
+                  browser_views[i]->panel()->GetRestoredBounds());
+      }
+      return;
+    }
+
+    // Otherwise, trigger the mouse-released event.
     views::MouseEvent released(ui::ET_MOUSE_RELEASED, 0, 0, 0);
-    browser_view->OnTitleBarMouseReleased(released);
-    gfx::Rect bounds_after_release = browser_view->panel()->GetRestoredBounds();
-    EXPECT_EQ(bounds_before_press.x() + expected_delta_x_after_release,
-              bounds_after_release.x());
-    EXPECT_EQ(bounds_before_press.y(), bounds_after_release.y());
-    EXPECT_EQ(bounds_before_press.width(), bounds_after_release.width());
-    EXPECT_EQ(bounds_before_press.height(), bounds_after_release.height());
+    browser_views[index_to_drag]->OnTitleBarMouseReleased(released);
+    for (size_t i = 0; i < num_browser_views; ++i) {
+      gfx::Rect expected_bounds = initial_bounds[i];
+       expected_bounds.Offset(expected_delta_x_after_release[i], 0);
+      EXPECT_EQ(expected_bounds,
+                browser_views[i]->panel()->GetRestoredBounds());
+    }
+
+    // If releasing the drag causes the panels to swap, move these panels back
+    // so that the next test will not be affected.
+    if (initial_bounds[index_to_drag] !=
+        browser_views[index_to_drag]->panel()->GetRestoredBounds()) {
+      // Find the index of the panel to swap with the dragging panel.
+      size_t swapped_index = 0;
+      for (; swapped_index < num_browser_views; ++swapped_index) {
+        if (initial_bounds[index_to_drag] ==
+            browser_views[swapped_index]->panel()->GetRestoredBounds())
+          break;
+      }
+      ASSERT_NE(swapped_index, index_to_drag);
+
+      // Repeat the mouse events to this panel.
+      browser_views[swapped_index]->OnTitleBarMousePressed(pressed);
+      browser_views[swapped_index]->OnTitleBarMouseDragged(dragged);
+      browser_views[swapped_index]->OnTitleBarMouseReleased(released);
+      for (size_t i = 0; i < num_browser_views; ++i) {
+        EXPECT_EQ(initial_bounds[i],
+                  browser_views[i]->panel()->GetRestoredBounds());
+      }
+    }
   }
 };
 
@@ -220,32 +269,177 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateOrUpdateOptionsMenu) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
+  // TODO(jianli): Move the test to platform-independent PanelManager unittest.
+
+  // Creates the 1st panel.
+  PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1");
+
+  // The delta is from the pressed location which is the left-top corner of the
+  // panel to drag.
+  int small_negative_delta = -5;
+  int small_positive_delta = 5;
+  int big_negative_delta =
+      -(browser_view1->panel()->GetRestoredBounds().width() * 0.5 + 5);
+  int big_positive_delta =
+      browser_view1->panel()->GetRestoredBounds().width() * 1.5 + 5;
+
   // Tests dragging a panel in single-panel environment.
   // We should get back to the original position after the dragging is ended.
-  PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1");
-  ValidateDragging(browser_view1, -500, -5, 0);
+  int expected_single_delta_x_after_drag[] = { big_negative_delta };
+  int expected_single_delta_x_after_release[] = { 0 };
+  ValidateDragging(&browser_view1,
+                   1,
+                   0,
+                   big_negative_delta,
+                   big_negative_delta,
+                   expected_single_delta_x_after_drag,
+                   expected_single_delta_x_after_release,
+                   false);
 
-  // Tests dragging a panel with small delta in two-panel environment.
-  // We should get back to the original position after the dragging is ended.
+  expected_single_delta_x_after_drag[0] = big_positive_delta;
+  ValidateDragging(&browser_view1,
+                   1,
+                   0,
+                   big_positive_delta,
+                   big_positive_delta,
+                   expected_single_delta_x_after_drag,
+                   expected_single_delta_x_after_release,
+                   false);
+
+  // Creates 2 more panels to test dragging a panel in multi-panel environment.
   PanelBrowserView* browser_view2 = CreatePanelBrowserView("PanelTest2");
-  ValidateDragging(browser_view1, -5, -5, 0);
+  PanelBrowserView* browser_view3 = CreatePanelBrowserView("PanelTest3");
+  PanelBrowserView* browser_views[] =
+    { browser_view1, browser_view2, browser_view3 };
+  size_t browser_view_count = arraysize(browser_views);
+  int expected_delta_x_without_change[] = { 0, 0, 0 };
 
-  // Tests dragging a panel with big delta in two-panel environment.
+  // Tests dragging a panel with small delta.
+  // We should get back to the original position after the dragging is ended.
+  for (size_t i = 0; i < browser_view_count; ++i) {
+    int expected_delta_x_after_drag[] = { 0, 0, 0 };
+
+    expected_delta_x_after_drag[i] = small_negative_delta;
+    ValidateDragging(browser_views,
+                     browser_view_count,
+                     i,
+                     small_negative_delta,
+                     small_negative_delta,
+                     expected_delta_x_after_drag,
+                     expected_delta_x_without_change,
+                     false);
+
+    expected_delta_x_after_drag[i] = small_positive_delta;
+    ValidateDragging(browser_views,
+                     browser_view_count,
+                     i,
+                     small_positive_delta,
+                     small_positive_delta,
+                     expected_delta_x_after_drag,
+                     expected_delta_x_without_change,
+                     false);
+  }
+
+  // Tests dragging a panel with big delta and then cancelling it.
+  // We should get back to the original position.
+  for (size_t i = 0; i < browser_view_count; ++i) {
+    int expected_delta_x_after_drag[] = { 0, 0, 0 };
+    expected_delta_x_after_drag[i] = big_negative_delta;
+    if (i + 1 < browser_view_count) {
+      expected_delta_x_after_drag[i + 1] =
+          browser_views[i]->panel()->GetRestoredBounds().x() -
+          browser_views[i + 1]->panel()->GetRestoredBounds().x();
+    }
+    ValidateDragging(browser_views,
+                     browser_view_count,
+                     i,
+                     big_negative_delta,
+                     big_negative_delta,
+                     expected_delta_x_after_drag,
+                     expected_delta_x_without_change,
+                     true);
+
+    int expected_delta_x_after_drag2[] = { 0, 0, 0 };
+    expected_delta_x_after_drag2[i] = big_positive_delta;
+    if (static_cast<int>(i) - 1 >= 0) {
+      expected_delta_x_after_drag2[i - 1] =
+          browser_views[i]->panel()->GetRestoredBounds().x() -
+          browser_views[i - 1]->panel()->GetRestoredBounds().x();
+    }
+    ValidateDragging(browser_views,
+                     browser_view_count,
+                     i,
+                     big_positive_delta,
+                     big_positive_delta,
+                     expected_delta_x_after_drag2,
+                     expected_delta_x_without_change,
+                     true);
+  }
+
+  // Tests dragging a panel with big delta.
   // We should move to the new position after the dragging is ended.
-  ValidateDragging(
-      browser_view1,
-      -(browser_view2->panel()->GetRestoredBounds().width() / 2 + 5),
-      -5,
-      browser_view2->panel()->GetRestoredBounds().x() -
-          browser_view1->panel()->GetRestoredBounds().x());
+  for (size_t i = 0; i < browser_view_count; ++i) {
+    int expected_delta_x_after_drag[] = { 0, 0, 0 };
+    int expected_delta_x_after_release[] = { 0, 0, 0 };
+    expected_delta_x_after_drag[i] = big_negative_delta;
+    if (i + 1 < browser_view_count) {
+      expected_delta_x_after_drag[i + 1] =
+          browser_views[i]->panel()->GetRestoredBounds().x() -
+          browser_views[i + 1]->panel()->GetRestoredBounds().x();
+      expected_delta_x_after_release[i + 1] =
+          expected_delta_x_after_drag[i + 1];
+      expected_delta_x_after_release[i] =
+          browser_views[i + 1]->panel()->GetRestoredBounds().x() -
+          browser_views[i]->panel()->GetRestoredBounds().x();
+    }
+    ValidateDragging(browser_views,
+                     browser_view_count,
+                     i,
+                     big_negative_delta,
+                     big_negative_delta,
+                     expected_delta_x_after_drag,
+                     expected_delta_x_after_release,
+                     false);
+
+    int expected_delta_x_after_drag2[] = { 0, 0, 0 };
+    int expected_delta_x_after_release2[] = { 0, 0, 0 };
+    expected_delta_x_after_drag2[i] = big_positive_delta;
+    if (static_cast<int>(i) - 1 >= 0) {
+      expected_delta_x_after_drag2[i - 1] =
+          browser_views[i]->panel()->GetRestoredBounds().x() -
+          browser_views[i - 1]->panel()->GetRestoredBounds().x();
+      expected_delta_x_after_release2[i - 1] =
+          expected_delta_x_after_drag2[i - 1];
+      expected_delta_x_after_release2[i] =
+          browser_views[i - 1]->panel()->GetRestoredBounds().x() -
+          browser_views[i]->panel()->GetRestoredBounds().x();
+    }
+    ValidateDragging(browser_views,
+                     browser_view_count,
+                     i,
+                     big_positive_delta,
+                     big_positive_delta,
+                     expected_delta_x_after_drag2,
+                     expected_delta_x_after_release2,
+                     false);
+  }
 
   // Tests that no dragging is involved.
-  ValidateDragging(browser_view1, 0, 0, 0);
+  for (size_t i = 0; i < browser_view_count; ++i) {
+    ValidateDragging(browser_views,
+                     browser_view_count,
+                     i,
+                     0,
+                     0,
+                     expected_delta_x_without_change,
+                     expected_delta_x_without_change,
+                     false);
+  }
 
-  browser_view1->panel()->Close();
-  EXPECT_FALSE(browser_view1->panel());
-
-  browser_view2->panel()->Close();
-  EXPECT_FALSE(browser_view2->panel());
+  // Closes all panels.
+  for (size_t i = 0; i < browser_view_count; ++i) {
+    browser_views[i]->panel()->Close();
+    EXPECT_FALSE(browser_views[i]->panel());
+  }
 }
 #endif

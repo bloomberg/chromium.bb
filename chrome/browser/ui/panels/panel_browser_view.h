@@ -26,11 +26,7 @@ class PanelBrowserView : public ::BrowserView {
   bool OnTitleBarMousePressed(const views::MouseEvent& event);
   bool OnTitleBarMouseDragged(const views::MouseEvent& event);
   bool OnTitleBarMouseReleased(const views::MouseEvent& event);
-
-  // Overridden from BrowserView:
-  virtual void UpdateTitleBar() OVERRIDE;
-  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
-  virtual void OnWindowActivationChanged(bool active) OVERRIDE;
+  bool OnTitleBarMouseCaptureLost();
 
  private:
   friend class PanelBrowserViewTest;
@@ -38,9 +34,16 @@ class PanelBrowserView : public ::BrowserView {
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreateOrUpdateOptionsMenu);
 
   // Overridden from BrowserView:
+  virtual void Init() OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void UpdateTitleBar() OVERRIDE;
+  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
+  virtual void OnWindowActivationChanged(bool active) OVERRIDE;
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
+      OVERRIDE;
 
   PanelBrowserFrameView* GetFrameView() const;
+  bool EndDragging(bool cancelled);
 
   Panel* panel_;
 
