@@ -96,7 +96,8 @@ class SandboxMountPointProvider
   // specified by |origin_url|.
   // (The path is similar to the origin's root path but doesn't contain
   // the 'unique' and 'type' part.)
-  // This method is portable and can be called on any threads.
+  // This method is portable and can be called on any thread.
+  // TODO(ericu) obfuscated version for quota integration.
   FilePath GetBaseDirectoryForOrigin(const GURL& origin_url) const;
 
   // Gets a base directory path of the sandboxed filesystem that is
@@ -104,14 +105,13 @@ class SandboxMountPointProvider
   // (The path is similar to the origin's root path but doesn't contain
   // the 'unique' part.)
   // Returns an empty path if the given type is invalid.
-  // This method is portable and can be called on any threads.
+  // This method is portable and can be called on any thread.
+  // TODO(ericu) obfuscated version for quota integration.
   FilePath GetBaseDirectoryForOriginAndType(
       const GURL& origin_url,
       fileapi::FileSystemType type) const;
 
-  ObfuscatedFileSystemFileUtil* sandbox_file_util() {
-    return sandbox_file_util_.get();
-  }
+  FileSystemFileUtil* GetFileSystemFileUtil();
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.
@@ -161,6 +161,9 @@ class SandboxMountPointProvider
       const GURL& origin_url,
       fileapi::FileSystemType type) const;
 
+  FilePath GetFileSystemRootPathOnFileThread(
+      const GURL& origin_url, FileSystemType type, bool create);
+
   class GetFileSystemRootPathTask;
 
   friend class FileWriterDelegateTest;
@@ -173,7 +176,7 @@ class SandboxMountPointProvider
 
   const FilePath base_path_;
 
-  scoped_ptr<ObfuscatedFileSystemFileUtil> sandbox_file_util_;
+  scoped_refptr<ObfuscatedFileSystemFileUtil> sandbox_file_util_;
 
   // Acccessed only on the file thread.
   std::set<GURL> visited_origins_;

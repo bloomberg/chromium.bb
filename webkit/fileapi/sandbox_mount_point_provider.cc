@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,8 +20,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
@@ -29,6 +32,8 @@
 using quota::QuotaManagerProxy;
 
 namespace {
+
+static const char kObfuscationFlag[] = "use-obfuscated-file-system";
 
 static const FilePath::CharType kFileSystemUniqueNamePrefix[] =
     FILE_PATH_LITERAL("chrome-");
@@ -117,7 +122,7 @@ bool ReadOriginDirectory(const FilePath& base_path,
 }
 
 FilePath GetFileSystemRootPathOnFileThreadHelper(
-    const GURL& origin_url, const FilePath &origin_base_path, bool create) {
+    const GURL& origin_url, const FilePath& origin_base_path, bool create) {
   FilePath root;
   if (ReadOriginDirectory(origin_base_path, origin_url, &root))
     return root;
@@ -183,7 +188,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {
   if (!file_message_loop_->BelongsToCurrentThread())
-    file_message_loop_->DeleteSoon(FROM_HERE, sandbox_file_util_.release());
+    file_message_loop_->ReleaseSoon(FROM_HERE, sandbox_file_util_.release());
 }
 
 bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,
@@ -201,31 +206,38 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
  public:
   GetFileSystemRootPathTask(
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
-      const std::string& name,
+      const GURL& origin_url,
+      const FilePath& origin_base_path,
+      FileSystemType type,
+      ObfuscatedFileSystemFileUtil* file_util,
       FileSystemPathManager::GetRootPathCallback* callback)
       : file_message_loop_(file_message_loop),
         origin_message_loop_proxy_(
             base::MessageLoopProxy::CreateForCurrentThread()),
-        name_(name),
+        origin_url_(origin_url),
+        origin_base_path_(origin_base_path),
+        type_(type),
+        file_util_(file_util),
         callback_(callback) {
   }
 
-  void Start(const GURL& origin_url,
-             const FilePath& origin_base_path,
-             bool create) {
+  void Start(bool create) {
     file_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &GetFileSystemRootPathTask::GetFileSystemRootPathOnFileThread,
-        origin_url, origin_base_path, create));
+        &GetFileSystemRootPathTask::GetFileSystemRootPathOnFileThread, create));
   }
 
  private:
   void GetFileSystemRootPathOnFileThread(
-      const GURL& origin_url,
-      const FilePath& origin_base_path,
       bool create) {
-    DispatchCallbackOnCallerThread(
-        GetFileSystemRootPathOnFileThreadHelper(
-            origin_url, origin_base_path, create));
+    if (file_util_.get())
+      DispatchCallbackOnCallerThread(
+          file_util_->GetDirectoryForOriginAndType(origin_url_, type_, create));
+    else
+      DispatchCallbackOnCallerThread(
+          GetFileSystemRootPathOnFileThreadHelper(
+              origin_url_, origin_base_path_, create));
+    // We must clear the reference on the file thread.
+    file_util_ = NULL;
   }
 
   void DispatchCallbackOnCallerThread(const FilePath& root_path) {
@@ -235,15 +247,38 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   }
 
   void DispatchCallback(const FilePath& root_path) {
-    callback_->Run(!root_path.empty(), root_path, name_);
+    std::string origin_identifier = GetOriginIdentifierFromURL(origin_url_);
+    std::string type_string =
+        FileSystemPathManager::GetFileSystemTypeString(type_);
+    DCHECK(!type_string.empty());
+    std::string name = origin_identifier + ":" + type_string;
+    callback_->Run(!root_path.empty(), root_path, name);
     callback_.reset();
   }
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
   scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
-  std::string name_;
+  GURL origin_url_;
+  FilePath origin_base_path_;
+  FileSystemType type_;
+  scoped_refptr<ObfuscatedFileSystemFileUtil> file_util_;
   scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback_;
 };
+
+FilePath SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
+    const GURL& origin_url, FileSystemType type, bool create) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
+    return sandbox_file_util_->GetDirectoryForOriginAndType(
+        origin_url, type, create);
+
+  std::string name;
+  FilePath origin_base_path;
+  if (!GetOriginBasePathAndName(origin_url, &origin_base_path, type, &name))
+    return FilePath();
+
+  return GetFileSystemRootPathOnFileThreadHelper(
+      origin_url, origin_base_path, create);
+}
 
 bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
     const {
@@ -292,31 +327,33 @@ void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url, fileapi::FileSystemType type,
     bool create, FileSystemPathManager::GetRootPathCallback* callback_ptr) {
   scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback(callback_ptr);
-  std::string name;
+  ObfuscatedFileSystemFileUtil* file_util = NULL;
   FilePath origin_base_path;
-
-  if (!GetOriginBasePathAndName(origin_url, &origin_base_path, type, &name)) {
-    callback->Run(false, FilePath(), std::string());
-    return;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag)) {
+    file_util = sandbox_file_util_.get();
+  } else {
+    std::string name;
+    if (!GetOriginBasePathAndName(origin_url, &origin_base_path, type, &name)) {
+      callback->Run(false, FilePath(), std::string());
+      return;
+    }
   }
 
   scoped_refptr<GetFileSystemRootPathTask> task(
       new GetFileSystemRootPathTask(file_message_loop_,
-                                    name,
+                                    origin_url,
+                                    origin_base_path,
+                                    type,
+                                    file_util,
                                     callback.release()));
-  task->Start(origin_url, origin_base_path, create);
+  task->Start(create);
 };
 
 FilePath
 SandboxMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
     const GURL& origin_url, FileSystemType type, const FilePath& unused,
     bool create) {
-  FilePath origin_base_path;
-  if (!GetOriginBasePathAndName(origin_url, &origin_base_path, type, NULL)) {
-    return FilePath();
-  }
-  return GetFileSystemRootPathOnFileThreadHelper(
-      origin_url, origin_base_path, create);
+  return GetFileSystemRootPathOnFileThread(origin_url, type, create);
 }
 
 FilePath SandboxMountPointProvider::GetBaseDirectoryForOrigin(
@@ -324,6 +361,7 @@ FilePath SandboxMountPointProvider::GetBaseDirectoryForOrigin(
   return base_path_.AppendASCII(GetOriginIdentifierFromURL(origin_url));
 }
 
+// Needed for the old way of doing things.
 FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type) const {
   std::string type_string =
@@ -461,12 +499,21 @@ void SandboxMountPointProvider::EndUpdateOriginOnFileThread(
   FileSystemUsageCache::DecrementDirty(usage_file_path);
 }
 
+FileSystemFileUtil* SandboxMountPointProvider::GetFileSystemFileUtil() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
+    return sandbox_file_util_.get();
+  return LocalFileSystemFileUtil::GetInstance();
+}
+
+// Needed for the old way of doing things.
 bool SandboxMountPointProvider::GetOriginBasePathAndName(
     const GURL& origin_url,
     FilePath* origin_base_path,
     FileSystemType type,
     std::string* name) {
 
+//  TODO(ericu): Put the incognito and allowed scheme checks somewhere in the
+//  obfuscated code as well.
   if (path_manager_->is_incognito())
     // TODO(kinuko): return an isolated temporary directory.
     return false;

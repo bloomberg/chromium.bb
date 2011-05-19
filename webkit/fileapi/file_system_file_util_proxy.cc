@@ -53,7 +53,8 @@ class MessageLoopRelay
   }
 
   fileapi::FileSystemFileUtil* file_system_file_util() const {
-    return context_.file_system_file_util();
+    // TODO(ericu): Support calls that have two different FSFU subclasses.
+    return context_.src_file_system_file_util();
   }
 
  private:

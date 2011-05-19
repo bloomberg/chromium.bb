@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/file_system_directory_database.h"
 
+#include <math.h>
+
 #include "base/memory/scoped_temp_dir.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -280,7 +282,9 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestUpdateModificationTime) {
   EXPECT_EQ(info0.name, info1.name);
   EXPECT_EQ(info0.parent_id, info1.parent_id);
   EXPECT_EQ(info0.data_path, info1.data_path);
-  EXPECT_EQ(info0.modification_time, info1.modification_time);
+  EXPECT_EQ(
+      floor(info0.modification_time.ToDoubleT()),
+      info1.modification_time.ToDoubleT());
 
   EXPECT_TRUE(db()->UpdateModificationTime(file_id, base::Time::UnixEpoch()));
   EXPECT_TRUE(db()->GetFileInfo(file_id, &info1));
@@ -288,7 +292,9 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestUpdateModificationTime) {
   EXPECT_EQ(info0.parent_id, info1.parent_id);
   EXPECT_EQ(info0.data_path, info1.data_path);
   EXPECT_NE(info0.modification_time, info1.modification_time);
-  EXPECT_EQ(info1.modification_time, base::Time::UnixEpoch());
+  EXPECT_EQ(
+      info1.modification_time.ToDoubleT(),
+      floor(base::Time::UnixEpoch().ToDoubleT()));
 
   EXPECT_FALSE(db()->UpdateModificationTime(999, base::Time::UnixEpoch()));
 }
@@ -307,7 +313,9 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
   EXPECT_EQ(info0.parent_id, info1.parent_id);
   EXPECT_EQ(info0.data_path, info1.data_path);
   EXPECT_EQ(info0.name, info1.name);
-  EXPECT_EQ(info0.modification_time, info1.modification_time);
+  EXPECT_EQ(
+      floor(info0.modification_time.ToDoubleT()),
+      info1.modification_time.ToDoubleT());
 }
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {

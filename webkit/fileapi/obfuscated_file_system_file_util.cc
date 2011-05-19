@@ -400,7 +400,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::DeleteSingleDirectory(
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
   if (!db->RemoveFileInfo(file_id))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
   return base::PLATFORM_FILE_OK;
 }
 
@@ -609,8 +609,10 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
   // We use the third- and fourth-to-last digits as the directory.
   int64 directory_number = number % 10000 / 100;
   FilePath path =
-      GetTopDir(origin_url, type).AppendASCII(
-          base::Int64ToString(directory_number));
+      GetDirectoryForOriginAndType(origin_url, type, false);
+  if (path.empty())
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  path = path.AppendASCII(base::Int64ToString(directory_number));
   PlatformFileError error;
   error = FileSystemFileUtil::GetInstance()->CreateDirectory(
       context, path, false /* exclusive */, false /* recursive */);
@@ -676,13 +678,28 @@ FilePath ObfuscatedFileSystemFileUtil::GetLocalPath(
   return file_info.data_path;
 }
 
-FilePath ObfuscatedFileSystemFileUtil::GetTopDir(
-    const GURL& origin, FileSystemType type) {
-  // TODO: Is this easy to make backwards-compatible to look up old filesystems
-  // by info extracted from their directory names?
+FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOriginAndType(
+    const GURL& origin, FileSystemType type, bool create) {
+  FilePath origin_dir = GetDirectoryForOrigin(origin, create);
+  if (origin_dir.empty())
+    return FilePath();
+  std::string type_string =
+      FileSystemPathManager::GetFileSystemTypeString(type);
+  if (type_string.empty()) {
+    LOG(WARNING) << "Unknown filesystem type requested:" << type;
+    return FilePath();
+  }
+  return origin_dir.AppendASCII(type_string);
+}
+
+FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
+    const GURL& origin, bool create) {
   if (!origin_database_.get()) {
+    if (!create && !file_util::DirectoryExists(file_system_directory_)) {
+      return FilePath();
+    }
     if (!file_util::CreateDirectory(file_system_directory_)) {
-      LOG(WARNING) << "Failed to create directory: " <<
+      LOG(WARNING) << "Failed to create FileSystem directory: " <<
           file_system_directory_.value();
       return FilePath();
     }
@@ -691,19 +708,18 @@ FilePath ObfuscatedFileSystemFileUtil::GetTopDir(
             file_system_directory_.AppendASCII(kOriginDatabaseName)));
   }
   FilePath directory_name;
+  // TODO(ericu): This should probably be using GetOriginIdentifierFromURL from
+  // sandbox_mount_point_provider.cc, instead of just using origin.spec().
+  if (!create && !origin_database_->HasOriginPath(origin.spec()))
+    return FilePath();
   if (!origin_database_->GetPathForOrigin(origin.spec(), &directory_name))
     return FilePath();
-  std::string type_string =
-      FileSystemPathManager::GetFileSystemTypeString(type);
-  if (type_string.empty()) {
-    LOG(WARNING) << "Unknown filesystem type requested:" << type;
-    return FilePath();
-  }
-  return file_system_directory_.Append(directory_name).AppendASCII(type_string);
+  return file_system_directory_.Append(directory_name);
 }
 
 // TODO: How to do the whole validation-without-creation thing?  We may not have
-// quota even to create the database.
+// quota even to create the database.  Ah, in that case don't even get here?
+// Still doesn't answer the quota issue, though.
 FileSystemDirectoryDatabase* ObfuscatedFileSystemFileUtil::GetDirectoryDatabase(
     const GURL& origin, FileSystemType type) {
 
@@ -714,15 +730,19 @@ FileSystemDirectoryDatabase* ObfuscatedFileSystemFileUtil::GetDirectoryDatabase(
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return NULL;
   }
+  // TODO(ericu): This should probably be using GetOriginIdentifierFromURL from
+  // sandbox_mount_point_provider.cc, instead of just using origin.spec().
   std::string key = origin.spec() + type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end())
     return iter->second;
 
-  FilePath path = GetTopDir(origin, type);
+  FilePath path = GetDirectoryForOriginAndType(origin, type, true);
+  if (path.empty())
+    return NULL;
   if (!file_util::DirectoryExists(path)) {
     if (!file_util::CreateDirectory(path)) {
-      LOG(WARNING) << "Failed to create directory: " << path.value();
+      LOG(WARNING) << "Failed to origin+type directory: " << path.value();
       return NULL;
     }
   }

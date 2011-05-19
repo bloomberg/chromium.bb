@@ -13,7 +13,8 @@ FileSystemOperationContext::FileSystemOperationContext(
     FileSystemContext* context,
     FileSystemFileUtil* file_system_file_util)
     : file_system_context_(context),
-      file_system_file_util_(file_system_file_util),
+      src_file_system_file_util_(file_system_file_util),
+      dest_file_system_file_util_(file_system_file_util),
       src_type_(kFileSystemTypeUnknown),
       dest_type_(kFileSystemTypeUnknown) {
 }

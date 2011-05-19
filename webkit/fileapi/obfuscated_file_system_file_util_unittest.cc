@@ -80,8 +80,8 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
-    obfuscated_file_system_file_util_.reset(
-        new ObfuscatedFileSystemFileUtil(data_dir_.path()));
+    obfuscated_file_system_file_util_ =
+        new ObfuscatedFileSystemFileUtil(data_dir_.path());
   }
 
   FileSystemOperationContext* NewContext() {
@@ -285,7 +285,7 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
  private:
   ScopedTempDir data_dir_;
-  scoped_ptr<ObfuscatedFileSystemFileUtil> obfuscated_file_system_file_util_;
+  scoped_refptr<ObfuscatedFileSystemFileUtil> obfuscated_file_system_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileSystemFileUtilTest);
 };
@@ -472,7 +472,7 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestDirectoryOps) {
 
   // Can't remove a non-empty directory.
   context.reset(NewContext());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_FAILED,
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
       ofsfu()->DeleteSingleDirectory(context.get(), path.DirName()));
 
   base::PlatformFileInfo file_info;

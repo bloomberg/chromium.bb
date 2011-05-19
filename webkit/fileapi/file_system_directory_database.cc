@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/file_system_directory_database.h"
 
+#include <math.h>
+
 #include "base/pickle.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -18,7 +20,11 @@ bool PickleFromFileInfo(
     Pickle* pickle) {
   DCHECK(pickle);
   std::string data_path;
+  // Round off here to match the behavior of the filesystem on real files.
+  base::Time time =
+      base::Time::FromDoubleT(floor(info.modification_time.ToDoubleT()));
   std::string name;
+
 #if defined(OS_POSIX)
   data_path = info.data_path.value();
   name = info.name;
@@ -29,7 +35,7 @@ bool PickleFromFileInfo(
   if (pickle->WriteInt64(info.parent_id) &&
       pickle->WriteString(data_path) &&
       pickle->WriteString(name) &&
-      pickle->WriteInt64(info.modification_time.ToInternalValue()))
+      pickle->WriteInt64(time.ToInternalValue()))
     return true;
 
   NOTREACHED();

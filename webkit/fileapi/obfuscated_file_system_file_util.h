@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
+#include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "webkit/fileapi/file_system_directory_database.h"
@@ -33,7 +34,15 @@ class FileSystemOperationContext;
 // backing file than have a database entry whose backing file is missing.  When
 // doing FSCK operations, if you find a loose backing file with no reference,
 // you may safely delete it.
-class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil {
+//
+// This class is RefCountedThreadSafe because it may gain a reference on the IO
+// thread, but must be deleted on the FILE thread because that's where
+// DropDatabases needs to be called.  References will be held by the
+// SandboxMountPointProvider [and the task it uses to drop the reference] and
+// SandboxMountPointProvider::GetFileSystemRootPathTask.  Without that last one,
+// we wouldn't need ref counting.
+class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
+    public base::RefCountedThreadSafe<ObfuscatedFileSystemFileUtil> {
  public:
 
   ObfuscatedFileSystemFileUtil(const FilePath& file_system_directory);
@@ -109,6 +118,19 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FilePath& file_path) OVERRIDE;
 
+  // Gets the topmost directory specific to this origin and type.  This will
+  // contain both the directory database's files and all the backing file
+  // subdirectories.  If we decide to migrate in-place, without moving old files
+  // that were created by LocalFileSystemFileUtil, not all backing files will
+  // actually be in this directory.
+  FilePath GetDirectoryForOriginAndType(
+      const GURL& origin, FileSystemType type, bool create);
+
+  // Gets the topmost directory specific to this origin.  This will
+  // contain both the filesystem type subdirectories.  See previous comment
+  // about migration; TODO(ericu): implement migration and fix these comments.
+  FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
+
  protected:
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
@@ -139,12 +161,6 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil {
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path);
-  // Gets the topmost directory specific to this origin and type.  This will
-  // contain both the directory database's files and all the backing file
-  // subdirectories.  If we decide to migrate in-place, without moving old files
-  // that were created by LocalFileSystemFileUtil, not all backing files will
-  // actually be in this directory.
-  FilePath GetTopDir(const GURL& origin, FileSystemType type);
   FileSystemDirectoryDatabase* GetDirectoryDatabase(
       const GURL& origin_url, FileSystemType type);
   void MarkUsed();
