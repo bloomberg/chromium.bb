@@ -69,23 +69,28 @@ void ObjectStubRpcServer::HasProperty(NaClSrpcRpc* rpc,
     return;
   }
   // Get the previous value of the exception PP_Var.
-  PP_Var exception;
+  nacl::scoped_ptr<PP_Var> exception(NULL);
   if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
     if (!DeserializeTo(rpc->channel,
                        ex_in_bytes,
                        ex_in_length,
                        1,
-                       &exception)) {
+                       exception.get())) {
       // Deserialization of exception failed.
       return;
     }
   }
   // Invoke the method.
-  *success = PPBVarInterface()->HasProperty(var, name, &exception);
+  *success = PPBVarInterface()->HasProperty(var, name, exception.get());
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -118,23 +123,28 @@ void ObjectStubRpcServer::HasMethod(NaClSrpcRpc* rpc,
     return;
   }
   // Get the previous value of the exception PP_Var.
-  PP_Var exception;
+  nacl::scoped_ptr<PP_Var> exception(NULL);
   if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
     if (!DeserializeTo(rpc->channel,
                        ex_in_bytes,
                        ex_in_length,
                        1,
-                       &exception)) {
+                       exception.get())) {
       // Deserialization of exception failed.
       return;
     }
   }
   // Invoke the method.
-  *success = PPBVarInterface()->HasMethod(var, name, &exception);
+  *success = PPBVarInterface()->HasMethod(var, name, exception.get());
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -168,28 +178,33 @@ void ObjectStubRpcServer::GetProperty(NaClSrpcRpc* rpc,
     return;
   }
   // Get the previous value of the exception PP_Var.
-  PP_Var exception;
+  nacl::scoped_ptr<PP_Var> exception(NULL);
   if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
     if (!DeserializeTo(rpc->channel,
                        ex_in_bytes,
                        ex_in_length,
                        1,
-                       &exception)) {
+                       exception.get())) {
       // Deserialization of exception failed.
       return;
     }
   }
   // Invoke the method.
-  PP_Var value = PPBVarInterface()->GetProperty(var, name, &exception);
+  PP_Var value = PPBVarInterface()->GetProperty(var, name, exception.get());
   // Return the value PP_Var.
   if (!SerializeTo(&value, value_bytes, value_length)) {
     // Serialization of value failed.
     return;
   }
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -217,10 +232,17 @@ void ObjectStubRpcServer::GetAllPropertyNames(
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
-  PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  nacl::scoped_ptr<PP_Var> exception(NULL);
+  if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       exception.get())) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   UNREFERENCED_PARAMETER(property_count);
   UNREFERENCED_PARAMETER(properties_length);
@@ -228,9 +250,13 @@ void ObjectStubRpcServer::GetAllPropertyNames(
   // Invoke the method.
   // TODO(sehr): implement GetAllPropertyNames.
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -269,24 +295,28 @@ void ObjectStubRpcServer::SetProperty(NaClSrpcRpc* rpc,
     // Deserialization of value failed.
     return;
   }
-  // Get the previous exception PP_Var.
-  PP_Var exception;
+  // Get the previous value of the exception PP_Var.
+  nacl::scoped_ptr<PP_Var> exception(NULL);
   if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
     if (!DeserializeTo(rpc->channel,
                        ex_in_bytes,
                        ex_in_length,
                        1,
-                       &exception)) {
+                       exception.get())) {
       // Deserialization of exception failed.
       return;
     }
-  }
-  // Invoke the method.
-  PPBVarInterface()->SetProperty(var, name, value, &exception);
+  }  // Invoke the method.
+  PPBVarInterface()->SetProperty(var, name, value, exception.get());
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -318,23 +348,27 @@ void ObjectStubRpcServer::RemoveProperty(NaClSrpcRpc* rpc,
     return;
   }
   // Get the previous value of the exception PP_Var.
-  PP_Var exception;
+  nacl::scoped_ptr<PP_Var> exception(NULL);
   if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
     if (!DeserializeTo(rpc->channel,
                        ex_in_bytes,
                        ex_in_length,
                        1,
-                       &exception)) {
+                       exception.get())) {
       // Deserialization of exception failed.
       return;
     }
-  }
-  // Invoke the method.
-  PPBVarInterface()->RemoveProperty(var, name, &exception);
+  }  // Invoke the method.
+  PPBVarInterface()->RemoveProperty(var, name, exception.get());
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -365,18 +399,18 @@ void ObjectStubRpcServer::Call(NaClSrpcRpc* rpc,
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
-  PP_Var exception;
+  nacl::scoped_ptr<PP_Var> exception(NULL);
   if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
     if (!DeserializeTo(rpc->channel,
                        ex_in_bytes,
                        ex_in_length,
                        1,
-                       &exception)) {
+                       exception.get())) {
       // Deserialization of exception failed.
       return;
     }
-  }
-  // Get the name PP_Var.
+  }  // Get the name PP_Var.
   PP_Var name;
   if (!DeserializeTo(rpc->channel, name_bytes, name_length, 1, &name)) {
     // Deserialization of name failed.
@@ -397,16 +431,20 @@ void ObjectStubRpcServer::Call(NaClSrpcRpc* rpc,
                                        name,
                                        static_cast<uint32_t>(argc),
                                        argv.get(),
-                                       &exception);
+                                       exception.get());
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.
     return;
   }
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -434,13 +472,14 @@ void ObjectStubRpcServer::Construct(NaClSrpcRpc* rpc,
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
-  PP_Var exception;
+  nacl::scoped_ptr<PP_Var> exception(NULL);
   if (ex_in_length != 0) {
+    exception.reset(new PP_Var);
     if (!DeserializeTo(rpc->channel,
                        ex_in_bytes,
                        ex_in_length,
                        1,
-                       &exception)) {
+                       exception.get())) {
       // Deserialization of exception failed.
       return;
     }
@@ -458,16 +497,20 @@ void ObjectStubRpcServer::Construct(NaClSrpcRpc* rpc,
   PP_Var ret = PPBVarInterface()->Construct(var,
                                             static_cast<uint32_t>(argc),
                                             argv.get(),
-                                            &exception);
+                                            exception.get());
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.
     return;
   }
   // Return the final value of the exception PP_Var.
-  if (!SerializeTo(&exception, exception_bytes, exception_length)) {
-    // Serialization of exception failed.
-    return;
+  if (exception.get() != NULL) {
+    if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
+      // Serialization of exception failed.
+      return;
+    }
+  } else {
+    *exception_length = 0;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
 }

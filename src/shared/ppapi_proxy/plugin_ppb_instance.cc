@@ -104,7 +104,6 @@ PP_Bool IsFullFrame(PP_Instance instance) {
 PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
   DebugPrintf("PPB_Instance::ExecuteScript: instance=%"NACL_PRIu32"\n",
               instance);
-  NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
   nacl_abi_size_t script_size = kMaxVarSize;

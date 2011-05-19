@@ -81,7 +81,6 @@ PP_Bool SetProperty(PP_Resource request,
 PP_Bool AppendDataToBody(PP_Resource request, const void* data, uint32_t len) {
   DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: request=%"NACL_PRIu32"\n",
               request);
-  NACL_UNTESTED();
 
   int32_t success;
   NaClSrpcError srpc_result =
@@ -106,7 +105,6 @@ PP_Bool AppendFileToBody(PP_Resource request,
                          PP_Time expected_last_modified_time) {
   DebugPrintf("PPB_URLRequestInfo::AppendFileToBody: request=%"NACL_PRIu32"\n",
               request);
-  NACL_UNTESTED();
 
   int32_t success;
   NaClSrpcError srpc_result =

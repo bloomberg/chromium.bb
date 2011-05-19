@@ -55,6 +55,7 @@ int32_t Open(PP_Resource loader,
              PP_Resource request,
              struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_URLLoader::Open: loader=%"NACL_PRIu32"\n", loader);
+  DebugPrintf("PPB_URLLoader::Open: request=%"NACL_PRIu32"\n", request);
 
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
