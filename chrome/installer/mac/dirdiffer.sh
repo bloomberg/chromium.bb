@@ -158,8 +158,10 @@ readonly GZ_SUFFIX='$gz'
 readonly XZ_SUFFIX='$xz'
 readonly PLAIN_SUFFIX='$raw'
 
-declare DIRDIFFER_EXCLUDE
-declare DIRDIFFER_NO_DIFF
+# Workaround for http://code.google.com/p/chromium/issues/detail?id=83180#c3
+# In bash 4.0, "declare VAR" no longer initializes VAR if not already set.
+DIRDIFFER_EXCLUDE="${DIRDIFFER_EXCLUDE:-}"
+DIRDIFFER_NO_DIFF="${DIRDIFFER_NO_DIFF:-}"
 
 err() {
   local error="${1}"
@@ -493,7 +495,7 @@ main() {
   # invalid regular expression.
 
   if [[ -n "${DIRDIFFER_EXCLUDE}" ]]; then
-    if [[ "" =~ ${DIRDIFFER_EXCLUDE} ]] ; then
+    if [[ "" =~ ${DIRDIFFER_EXCLUDE} ]]; then
       true
     elif [[ ${?} -eq 2 ]]; then
       err "DIRDIFFER_EXCLUDE contains an invalid regular expression"
@@ -502,7 +504,7 @@ main() {
   fi
 
   if [[ -n "${DIRDIFFER_NO_DIFF}" ]]; then
-    if [[ "" =~ ${DIRDIFFER_NO_DIFF} ]] ; then
+    if [[ "" =~ ${DIRDIFFER_NO_DIFF} ]]; then
       true
     elif [[ ${?} -eq 2 ]]; then
       err "DIRDIFFER_NO_DIFF contains an invalid regular expression"
