@@ -577,6 +577,8 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
         false);  // Match incognito exactly.
     TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
     browser::NavigateParams params(browser, wrapper);
+    if (!browser)
+      params.profile = contents->profile();
     params.disposition = NEW_POPUP;
     params.window_bounds = initial_pos;
     params.window_action = browser::NavigateParams::SHOW_WINDOW;
