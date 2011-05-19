@@ -1,15 +1,5 @@
 Core wayland protocol
 
- - Fix visuals
-
- - Generic error reporting mechanism: display.error(object, code, msg)
-   event that all interfaces can use to report fatal (ie client
-   killing) errors.  The object is the object that the "error is
-   generated for", what that means is up to the interface to define,
-   but the errorcode has to be unique in the context of that object.
-   The msg argument is a textual description that the client can print
-   as it dies.
-
  - Move map_* requests to wl_shell as set_*, rename to
    wl_desktop_shell.  Make initial attach the request that shows the
    surface and make attach with 0 buffer show the surface.  Drop the
