@@ -1323,6 +1323,7 @@
         'browser/content_settings/content_settings_mock_provider.cc',
         'browser/content_settings/content_settings_mock_provider.h',
         'browser/content_settings/content_settings_pattern_unittest.cc',
+        'browser/content_settings/content_settings_pattern_parser_unittest.cc',
         'browser/content_settings/content_settings_policy_provider_unittest.cc',
         'browser/content_settings/content_settings_pref_provider_unittest.cc',
         'browser/content_settings/content_settings_provider_unittest.cc',

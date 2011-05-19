@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -126,7 +129,7 @@ DictionaryValue* GetExceptionForPage(
   DictionaryValue* exception = new DictionaryValue();
   exception->Set(
       kDisplayPattern,
-      new StringValue(pattern.AsString()));
+      new StringValue(pattern.ToString()));
   exception->Set(
       kSetting,
       new StringValue(ContentSettingToString(setting)));
@@ -641,7 +644,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     // got destroyed before we received this message.
     if (settings_map) {
       settings_map->SetContentSetting(
-          ContentSettingsPattern(pattern),
+          ContentSettingsPattern::FromString(pattern),
           ContentSettingsTypeFromGroupName(type_string),
           "",
           CONTENT_SETTING_DEFAULT);
@@ -676,7 +679,7 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   if (!settings_map)
     return;
 
-  settings_map->SetContentSetting(ContentSettingsPattern(pattern),
+  settings_map->SetContentSetting(ContentSettingsPattern::FromString(pattern),
                                   type,
                                   "",
                                   ContentSettingFromString(setting));
@@ -692,7 +695,8 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   std::string pattern_string;
   CHECK(args->GetString(arg_i++, &pattern_string));
 
-  ContentSettingsPattern pattern(pattern_string);
+  ContentSettingsPattern pattern = ContentSettingsPattern::FromString(
+      pattern_string);
 
   scoped_ptr<Value> mode_value(Value::CreateStringValue(mode_string));
   scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));

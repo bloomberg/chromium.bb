@@ -11,49 +11,64 @@
 #include <ostream>
 #include <string>
 
+#include "base/basictypes.h"
+
 class GURL;
+
+namespace content_settings {
+class PatternParser;
+}
 
 // A pattern used in content setting rules. See |IsValid| for a description of
 // possible patterns.
 class ContentSettingsPattern {
  public:
-  // Returns a pattern that matches the host of this URL and all subdomains.
-  static ContentSettingsPattern FromURL(const GURL& url);
+  // Each content settings pattern describes a set of origins. Patterns, and the
+  // sets they describe, have specific relations. |Relation| describes the
+  // relation of two patterns A and B. When pattern A is compared with pattern B
+  // (A compare B) interessting relations are:
+  // - IDENTITY : Pattern A and B are identical. The patterns are equal.
+  // - DISJOINT : Pattern A and B have no intersection. A and B never match
+  //              a the origin of a URL at the same time.
+  // - SUCCESSOR  : Pattern A and B have an intersection. But pattern B has a
+  //                higher precedence than pattern A for URLs that are matched
+  //                by both pattern.
+  // - PREDECESSOR : Pattern A and B have an intersection. But pattern A has a
+  //                 higher precedence than pattern B for URLs that are matched
+  //                 by both pattern.
+  enum Relation {
+    DISJOINT = -2,
+    SUCCESSOR = -1,
+    IDENTITY = 0,
+    PREDECESSOR = 1,
+  };
 
-  // Returns a pattern that matches exactly this URL.
-  static ContentSettingsPattern FromURLNoWildcard(const GURL& url);
+  class BuilderInterface {
+   public:
+    virtual ~BuilderInterface() {}
 
-  ContentSettingsPattern() {}
+    virtual BuilderInterface* WithPort(const std::string& port) = 0;
 
-  explicit ContentSettingsPattern(const std::string& pattern)
-      : pattern_(pattern),
-        scheme_("") {}
+    virtual BuilderInterface* WithPortWildcard() = 0;
 
-  // True if this is a valid pattern. Valid patterns are
-  //   - [*.]domain.tld (matches domain.tld and all sub-domains)
-  //   - host (matches an exact hostname)
-  //   - a.b.c.d (matches an exact IPv4 ip)
-  //   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
-  // TODO(jochen): should also return true for a complete URL without a host.
-  bool IsValid() const;
+    virtual BuilderInterface* WithHost(const std::string& host) = 0;
 
-  // True if |url| matches this pattern.
-  bool Matches(const GURL& url) const;
+    virtual BuilderInterface* WithDomainWildcard() = 0;
 
-  // Returns a std::string representation of this pattern.
-  const std::string& AsString() const { return pattern_; }
+    virtual BuilderInterface* WithScheme(const std::string& scheme) = 0;
 
-  bool operator==(const ContentSettingsPattern& other) const {
-    return pattern_ == other.pattern_;
-  }
+    virtual BuilderInterface* WithSchemeWildcard() = 0;
 
-  // Canonicalizes the pattern so that it's ASCII only, either
-  // in original (if it was already ASCII) or punycode form.
-  std::string CanonicalizePattern() const;
+    virtual BuilderInterface* WithPath(const std::string& path) = 0;
 
-  std::string scheme() const {
-    return scheme_;
-  }
+    virtual BuilderInterface* Invalid() = 0;
+
+    // Returns a content settings pattern according to the current configuration
+    // of the builder.
+    virtual ContentSettingsPattern Build() = 0;
+  };
+
+  static BuilderInterface* CreateBuilder();
 
   // The version of the pattern format implemented.
   static const int kContentSettingsPatternVersion;
@@ -64,27 +79,149 @@ class ContentSettingsPattern {
   // The length of kDomainWildcard (without the trailing '\0').
   static const size_t kDomainWildcardLength;
 
+  // Returns a wildcard content settings pattern that matches all possible valid
+  // origins.
+  static ContentSettingsPattern Wildcard();
+
+  // Returns a pattern that matches the scheme and host of this URL, as well as
+  // all subdomains and ports.
+  static ContentSettingsPattern FromURL(const GURL& url);
+
+  // Returns a pattern that matches exactly this URL.
+  static ContentSettingsPattern FromURLNoWildcard(const GURL& url);
+
+  // Returns a pattern that matches the given pattern specification.
+  // Valid patterns specifications are:
+  //   - [*.]domain.tld (matches domain.tld and all sub-domains)
+  //   - host (matches an exact hostname)
+  //   - scheme://host:port (supported schemes: http,https)
+  //   - scheme://[*.]domain.tld:port (supported schemes: http,https)
+  //   - file://path (The path has to be an absolute path and start with a '/')
+  //   - a.b.c.d (matches an exact IPv4 ip)
+  //   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
+  static ContentSettingsPattern FromString(const std::string& pattern_spec);
+
+  // Constructs an empty pattern. Empty patterns are invalid patterns. Invalid
+  // patterns match nothing.
+  ContentSettingsPattern();
+
+  // True if this is a valid pattern.
+  bool IsValid() const { return is_valid_; }
+
+  // True if |url| matches this pattern.
+  bool Matches(const GURL& url) const;
+
+  // Returns a std::string representation of this pattern.
+  const std::string ToString() const;
+
+  // Compares the pattern with a given |other| pattern and returns the
+  // |Relation| of the two patterns.
+  Relation Compare(const ContentSettingsPattern& other) const;
+
+  bool operator==(const ContentSettingsPattern& other) const {
+    return Compare(other) == IDENTITY;
+  }
+
  private:
-  // TODO(markusheintz): This constructor is only here to fix bug 76693. Further
-  // refactoring pending to fully integrate scheme support in content settings
-  // patterns.
-  ContentSettingsPattern(const std::string& host, const std::string& scheme)
-      : pattern_(host),
-        scheme_(scheme) {}
+  friend class content_settings::PatternParser;
+  friend class ContentSettingsPatternParserTest_SerializePatterns_Test;
+  friend class Builder;
 
-  std::string pattern_;
+  struct PatternParts {
+    PatternParts();
+    ~PatternParts();
 
-  // TODO(markusheintz): This is only here to fix bug 76693. There is more work
-  // to do to add scheme support to content-settings patterns.
-  // TODO(markusheintz): canonicalize to lowercase;
-  std::string scheme_;
+    // Lowercase string of the URL scheme to match. This string is empty if the
+    // |is_scheme_wildcard| flag is set.
+    std::string scheme;
+
+    // True if the scheme wildcard is set.
+    bool is_scheme_wildcard;
+
+    // Normalized string that is either of the following:
+    // - IPv4 or IPv6
+    // - hostname
+    // - domain
+    // - empty string if the |is_host_wildcard flag is set.
+    std::string host;
+
+    // True if the domain wildcard is set.
+    bool has_domain_wildcard;
+
+    // String with the port to match. This string is empty if the
+    // |is_port_wildcard| flag is set.
+    std::string port;
+
+    // True if the port wildcard is set.
+    bool is_port_wildcard;
+
+    // TODO(markusheintz): Needed for legacy reasons. Remove. Path
+    // specification. Only used for content settings pattern with a "file"
+    // scheme part.
+    std::string path;
+  };
+
+  class Builder : public BuilderInterface {
+    public:
+     Builder();
+     virtual ~Builder();
+
+     // Overrides BuilderInterface
+     virtual BuilderInterface* WithPort(const std::string& port);
+
+     virtual BuilderInterface* WithPortWildcard();
+
+     virtual BuilderInterface* WithHost(const std::string& host);
+
+     virtual BuilderInterface* WithDomainWildcard();
+
+     virtual BuilderInterface* WithScheme(const std::string& scheme);
+
+     virtual BuilderInterface* WithSchemeWildcard();
+
+     virtual BuilderInterface* WithPath(const std::string& path);
+
+     virtual BuilderInterface* Invalid();
+
+     virtual ContentSettingsPattern Build();
+    private:
+     // Canonicalizes the pattern parts so that they are ASCII only, either
+     // in original (if it was already ASCII) or punycode form.
+     static void Canonicalize(PatternParts* parts);
+
+     bool invalid_;
+
+     PatternParts parts_;
+
+     DISALLOW_COPY_AND_ASSIGN(Builder);
+  };
+
+  static Relation CompareScheme(
+      const ContentSettingsPattern::PatternParts& parts,
+      const ContentSettingsPattern::PatternParts& other_parts);
+
+  static Relation CompareHost(
+      const ContentSettingsPattern::PatternParts& parts,
+      const ContentSettingsPattern::PatternParts& other_parts);
+
+  static Relation ComparePort(
+      const ContentSettingsPattern::PatternParts& parts,
+      const ContentSettingsPattern::PatternParts& other_parts);
+
+  static bool Validate(const PatternParts& parts);
+
+  explicit ContentSettingsPattern(const PatternParts& parts);
+
+  PatternParts parts_;
+
+  bool is_valid_;
 };
 
 // Stream operator so ContentSettingsPattern can be used in assertion
 // statements.
 inline std::ostream& operator<<(
     std::ostream& out, const ContentSettingsPattern& pattern) {
-  return out << pattern.AsString();
+  return out << pattern.ToString();
 }
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_H_

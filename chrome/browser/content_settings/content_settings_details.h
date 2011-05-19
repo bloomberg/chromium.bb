@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class ContentSettingsDetails {
   const ContentSettingsPattern& pattern() const { return pattern_; }
 
   // True if all settings should be updated for the given type.
-  bool update_all() const { return pattern_.AsString().empty(); }
+  bool update_all() const { return pattern_.ToString().empty(); }
 
   // The type of the pattern whose settings have changed.
   ContentSettingsType type() const { return type_; }
