@@ -278,8 +278,6 @@ void Messenger::RecvMessage() {
 
   Message* header = reinterpret_cast<Message*>(message->data());
   uint16 body_length = uint16_unpack(header->size.val);
-  if (body_length < 0)
-    return;
   if (body_length > kMaxMessageLength)
     return;
   if (body_length > message->size())
