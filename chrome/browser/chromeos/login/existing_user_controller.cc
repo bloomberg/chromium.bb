@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -43,8 +45,8 @@ namespace {
 const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
 // URL that will be opened on when user logs in first time on the device.
-const char kGetStartedURL[] =
-    "chrome-extension://cbmhffdpiobpchciemffincgahkkljig/index.html";
+const char kGetStartedURLPattern[] =
+    "http://services.google.com/chromeos/gettingstarted/index-%s.html";
 
 // URL for account creation.
 const char kCreateAccountURL[] =
@@ -339,9 +341,12 @@ void ExistingUserController::OnLoginSuccess(
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
   // TODO(nkostylev): May add login UI implementation callback call.
   if (!ready_for_browser_launch_) {
-#if defined(OFFICIAL_BUILD)
-    CommandLine::ForCurrentProcess()->AppendArg(kGetStartedURL);
-#endif  // OFFICIAL_BUILD
+    PrefService* prefs = g_browser_process->local_state();
+    const std::string current_locale =
+        StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
+    std::string start_url =
+      base::StringPrintf(kGetStartedURLPattern, current_locale.c_str());
+    CommandLine::ForCurrentProcess()->AppendArg(start_url);
 
     ServicesCustomizationDocument* customization =
       ServicesCustomizationDocument::GetInstance();

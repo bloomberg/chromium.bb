@@ -520,10 +520,6 @@ void ProfileImpl::RegisterComponentExtensions() {
           FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp"),
           IDR_HELP_MANIFEST));
     }
-
-    component_extensions.push_back(std::make_pair(
-        FILE_PATH_LITERAL("/usr/share/chromeos-assets/getstarted"),
-        IDR_GETSTARTED_MANIFEST));
 #endif
   }
 #endif
