@@ -286,11 +286,11 @@ void DevToolsHttpProtocolHandler::OnJsonRequestUI(
                            StringPrintf("ws://%s/devtools/page/%d",
                                         host.c_str(),
                                         i->id));
-      page_info->SetString(
-          "devtoolsFrontendUrl",
-          StringPrintf("http://%s/devtools/devtools.html?page=%d",
-                       host.c_str(),
-                       i->id));
+      page_info->SetString("devtoolsFrontendUrl",
+                           StringPrintf("%s?host=%s&page=%d",
+                                        overriden_frontend_url_.c_str(),
+                                        host.c_str(),
+                                        i->id));
     }
   }
 
