@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
@@ -72,7 +73,8 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_history_(false),
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_cache_(false),
-      waiting_for_clear_appcache_(false) {
+      waiting_for_clear_appcache_(false),
+      waiting_for_clear_gears_data_(false) {
   DCHECK(profile);
 }
 
@@ -101,7 +103,8 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_cache_(false),
       waiting_for_clear_appcache_(false),
-      waiting_for_clear_lso_data_(false) {
+      waiting_for_clear_lso_data_(false),
+      waiting_for_clear_gears_data_(false) {
   DCHECK(profile);
 }
 
@@ -200,6 +203,14 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         NewRunnableMethod(
             this,
             &BrowsingDataRemover::ClearAppCacheOnIOThread));
+
+    waiting_for_clear_gears_data_ = true;
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &BrowsingDataRemover::ClearGearsDataOnFILEThread,
+            profile_->GetPath()));
 
     // TODO(michaeln): delete temporary file system data too
 
@@ -513,6 +524,34 @@ ChromeAppCacheService* BrowsingDataRemover::GetAppCacheService() {
           main_context_getter_->GetURLRequestContext());
   return request_context ? request_context->appcache_service()
                          : NULL;
+}
+
+// static
+void BrowsingDataRemover::ClearGearsData(const FilePath& profile_dir) {
+  FilePath plugin_data = profile_dir.AppendASCII("Plugin Data");
+  if (file_util::DirectoryExists(plugin_data))
+    file_util::Delete(plugin_data, true);
+}
+
+void BrowsingDataRemover::OnClearedGearsData() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    bool result = BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &BrowsingDataRemover::OnClearedGearsData));
+    DCHECK(result);
+    return;
+  }
+  waiting_for_clear_gears_data_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearGearsDataOnFILEThread(
+    const FilePath& profile_dir) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(waiting_for_clear_gears_data_);
+
+  ClearGearsData(profile_dir);
+  OnClearedGearsData();
 }
 
 void BrowsingDataRemover::OnWaitableEventSignaled(

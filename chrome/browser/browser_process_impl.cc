@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/debugger/browser_list_tabcontents_provider.h"
 #include "chrome/browser/debugger/devtools_http_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -695,6 +696,7 @@ ChromeNetLog* BrowserProcessImpl::net_log() {
 
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
   webkit_database::DatabaseTracker::ClearLocalState(profile_path);
+  BrowsingDataRemover::ClearGearsData(profile_path);
 }
 
 bool BrowserProcessImpl::ShouldClearLocalState(FilePath* profile_path) {
