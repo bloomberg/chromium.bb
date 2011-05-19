@@ -34,7 +34,12 @@ def IncludeCompareKey(line):
   """
   for prefix in ('#include ', '#import '):
     if line.startswith(prefix):
-      return line[len(prefix):]
+      line = line[len(prefix):]
+      break
+  # <windows.h> needs to be before other includes, so return a key
+  # that's less than all other keys.
+  if line.lstrip().startswith('<windows.h>'):
+    return ''
   return line
 
 
