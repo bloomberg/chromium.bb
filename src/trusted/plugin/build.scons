@@ -117,6 +117,7 @@ common_libs = [
     'gio',
     'sel',
     'simple_service',
+    'thread_interface',
     'env_cleanser',
     'nacl_error_code',
 ]

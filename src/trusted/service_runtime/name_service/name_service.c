@@ -11,11 +11,6 @@
 
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
-
-#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
-#include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -28,7 +23,12 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
+#include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
+#include "native_client/src/trusted/threading/nacl_thread_interface.h"
 
 
 /*
@@ -56,7 +56,9 @@ int NaClNameServiceCtor(struct NaClNameService *self) {
   NaClLog(4, "Entered NaClNameServiceCtor\n");
   if (!NaClSimpleLtdServiceCtor(&self->base,
                                 kNaClNameServiceHandlers,
-                                NACL_NAME_SERVICE_CONNECTION_MAX)) {
+                                NACL_NAME_SERVICE_CONNECTION_MAX,
+                                NaClThreadInterfaceThreadFactory,
+                                (void *) NULL)) {
     NaClLog(4, "NaClSimpleLtdServiceCtor failed\n");
     goto done;
   }

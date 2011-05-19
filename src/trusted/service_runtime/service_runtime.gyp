@@ -181,6 +181,7 @@
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter',
         '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
+        '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface',
       ],
       'conditions': [
         ['target_arch=="arm"', {
@@ -243,6 +244,7 @@
       'dependencies': [
         'sel',
         '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
+        '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
@@ -274,6 +276,7 @@
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter64',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
+            '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncopcode_utils_gen',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
@@ -337,6 +340,7 @@
           'dependencies': [
             'sel64',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
+            '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',

@@ -13,6 +13,8 @@
 
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 
+#include "native_client/src/trusted/threading/nacl_thread_interface.h"
+
 namespace nacl {
 
 class DescWrapper;
@@ -30,24 +32,27 @@ class ReverseSocket {
   // have lifetimes that are not shorter than the constructed
   // ReverseSocket.
   ReverseSocket(nacl::DescWrapper* conn_cap,
-                NaClSrpcHandlerDesc* handlers)
+                NaClSrpcHandlerDesc const* handlers,
+                NaClThreadIfFactoryFunction thread_factory_fn,
+                void* thread_factory_data)
       : conn_cap_(conn_cap),
         handlers_(handlers),
+        thread_factory_fn_(thread_factory_fn),
+        thread_factory_data_(thread_factory_data),
         rev_service_(NULL) {}
 
   ~ReverseSocket();  // dtor will delete conn_cap
 
-  bool StartService(void* server_instance_data,
-                    void (*server_instance_data_cleanup)(
-                        void* server_instance_data));
+  bool StartService(void* server_instance_data);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ReverseSocket);
 
   nacl::DescWrapper* conn_cap_;
-  NaClSrpcHandlerDesc* handlers_;
-  void* server_instance_data_;
+  NaClSrpcHandlerDesc const* handlers_;
 
+  NaClThreadIfFactoryFunction thread_factory_fn_;
+  void* thread_factory_data_;
   NaClSimpleRevService* rev_service_;
 };
 }  // namespace nacl

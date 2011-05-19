@@ -8,9 +8,11 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SIMPLE_SERVICE_NACL_SIMPLE_RSERVICE_H_
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/nacl_compiler_annotations.h"
 
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
+#include "native_client/src/trusted/threading/nacl_thread_interface.h"
 
 /*
  * Reverse service channels.
@@ -30,11 +32,10 @@ EXTERN_C_BEGIN
  * the NaClSimpleRevServiceClient, and then becomes a service thread.
  */
 struct NaClSimpleRevClient {
-  struct NaClRefCount base NACL_IS_REFCOUNT_SUBCLASS;
-  struct NaClDesc     *bound_and_cap[2];
+  struct NaClRefCount         base NACL_IS_REFCOUNT_SUBCLASS;
+  struct NaClDesc             *bound_and_cap[2];
 
-  int                 acceptor_spawned;
-  struct NaClThread   acceptor;
+  struct NaClThreadInterface  *acceptor;
 
   /*
    * The client_callback is invoked on the |acceptor| thread.
@@ -46,10 +47,13 @@ struct NaClSimpleRevClient {
    * should spawn a new thread to do so, lest no other clients can
    * make connections.
    */
-  void                (*client_callback)(
+  void                        (*client_callback)(
       void                        *state,
+      struct NaClThreadInterface  *tif,
       struct NaClDesc             *conn);
-  void                *state;
+  void                        *state;
+  NaClThreadIfFactoryFunction thread_factory_fn;
+  void                        *thread_factory_data;
 };
 
 struct NaClSimpleRevClientVtbl {
@@ -58,11 +62,15 @@ struct NaClSimpleRevClientVtbl {
 
 extern struct NaClSimpleRevClientVtbl const kNaClSimpleRevClientVtbl;
 
-int NaClSimpleRevClientCtor(struct NaClSimpleRevClient  *self,
-                            void                        (*callback)(
-                                void                        *state,
-                                struct NaClDesc             *conn),
-                            void                        *state);
+int NaClSimpleRevClientCtor(
+    struct NaClSimpleRevClient  *self,
+    void                        (*callback)(
+        void                        *state,
+        struct NaClThreadInterface  *tif,
+        struct NaClDesc             *conn),
+    void                        *state,
+    NaClThreadIfFactoryFunction thread_factory_fn,
+    void                        *thread_factory_data);
 
 int NaClSimpleRevClientStartServiceThread(struct NaClSimpleRevClient *client);
 
@@ -77,6 +85,9 @@ struct NaClSimpleRevService {
   struct NaClDesc                   *conn_cap;
 
   struct NaClSrpcHandlerDesc const  *handlers;
+
+  NaClThreadIfFactoryFunction       thread_factory_fn;
+  void                              *thread_factory_data;
 };
 
 /*
@@ -87,9 +98,12 @@ struct NaClSimpleRevService {
  * the connection is closed.  When the service thread is created, it
  * holds a reference to the NaClSimpleRevService object.
  */
-int NaClSimpleRevServiceCtor(struct NaClSimpleRevService      *self,
-                             struct NaClDesc                  *conn_cap,
-                             struct NaClSrpcHandlerDesc const *handlers);
+int NaClSimpleRevServiceCtor(
+    struct NaClSimpleRevService       *self,
+    struct NaClDesc                   *conn_cap,
+    struct NaClSrpcHandlerDesc const  *handlers,
+    NaClThreadIfFactoryFunction       thread_factory_fn,
+    void                              *thread_factory_data);
 
 void NaClSimpleRevServiceDtor(struct NaClRefCount *vself);
 
@@ -106,17 +120,13 @@ struct NaClSimpleRevServiceVtbl {
   /* syscall convention */
   int                         (*ConnectAndSpawnHandler)(
       struct NaClSimpleRevService *self,
-      void                        *instance_data,
-      void                        (*instance_data_cleanup)(
-          void *instance_data));
+      void                        *instance_data);
 
   /* syscall convention */
   int                         (*RevConnectionFactory)(
       struct NaClSimpleRevService     *self,
       struct NaClDesc                 *conn,
       void                            *instance_data,
-      void                            (*instance_data_cleanup)(
-          void *instance_data),
       struct NaClSimpleRevConnection  **out);
 
   void                        (*RpcHandler)(
@@ -130,28 +140,27 @@ struct NaClSimpleRevConnection {
   struct NaClRefCount         base NACL_IS_REFCOUNT_SUBCLASS;
   struct NaClSimpleRevService *service;           /* holds a ref */
   struct NaClDesc             *connected_socket;  /* holds a ref */
-  struct NaClThread           thread;
+  struct NaClThreadInterface  *thread;
 
   void                        *instance_data;
-  void                        (*instance_data_cleanup)(void *instance_data);
 };
 
 int NaClSimpleRevConnectionCtor(
     struct NaClSimpleRevConnection  *self,
     struct NaClSimpleRevService     *service,
     struct NaClDesc                 *conn,
-    void                            *instance_data,
-    void                            (*instance_data_cleanup)(
-        void *instance_data));
+    void                            *instance_data);
 
 void NaClSimpleRevConnectionDtor(struct NaClRefCount *vself);
 
+/*
+ * Will take a new reference to instance data to pass to the
+ * RevConnection Ctor.
+ */
 int NaClSimpleRevServiceConnectionFactory(
     struct NaClSimpleRevService     *self,
     struct NaClDesc                 *conn,
     void                            *instance_data,
-    void                            (*instance_data_cleanup)(
-        void *instance_data),
     struct NaClSimpleRevConnection  **out);
 
 extern struct NaClRefCountVtbl kNaClSimpleRevConnectionVtbl;

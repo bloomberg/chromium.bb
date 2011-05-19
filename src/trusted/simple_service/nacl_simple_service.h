@@ -8,9 +8,11 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SIMPLE_SERVICE_NACL_SIMPLE_SERVICE_H_
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/nacl_compiler_annotations.h"
 
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
+#include "native_client/src/trusted/threading/nacl_thread_interface.h"
 
 EXTERN_C_BEGIN
 
@@ -28,7 +30,10 @@ struct NaClSimpleService {
 
   struct NaClSrpcHandlerDesc const  *handlers;
 
-  struct NaClThread                 acceptor;
+  NaClThreadIfFactoryFunction       thread_factory_fn;
+  void                              *thread_factory_data;
+
+  struct NaClThreadInterface        *acceptor;
 };
 
 struct NaClSimpleServiceVtbl {
@@ -110,9 +115,8 @@ struct NaClSimpleServiceConnection {
   struct NaClDesc             *connected_socket;
 
   void                        *instance_data;
-  void                        (*instance_data_cleanup)(void *instance_data);
 
-  struct NaClThread           thread;
+  struct NaClThreadInterface  *thread;
   /* other data is application specific, in subclasses only */
 };
 
@@ -120,9 +124,7 @@ int NaClSimpleServiceConnectionCtor(
     struct NaClSimpleServiceConnection  *self,
     struct NaClSimpleService            *server,
     struct NaClDesc                     *conn,
-    void                                *instance_data,
-    void                                (*instance_data_cleanup)(
-        void *instance_data));
+    void                                *instance_data);
 
 /*
  * This Dtor should only be called after the thread has exited.
@@ -132,23 +134,30 @@ void NaClSimpleServiceConnectionDtor(struct NaClRefCount *vself);
 int NaClSimpleServiceConnectionServerLoop(
     struct NaClSimpleServiceConnection *self);
 
-int NaClSimpleServiceCtor(struct NaClSimpleService          *self,
-                          struct NaClSrpcHandlerDesc const  *srpc_handlers);
+int NaClSimpleServiceCtor(
+    struct NaClSimpleService          *self,
+    struct NaClSrpcHandlerDesc const  *srpc_handlers,
+    NaClThreadIfFactoryFunction       thread_factory_fn,
+    void                              *thread_factory_data);
 
 int NaClSimpleServiceWithSocketCtor(
     struct NaClSimpleService          *self,
     struct NaClSrpcHandlerDesc const  *srpc_handlers,
+    NaClThreadIfFactoryFunction       thread_factory_fn,
+    void                              *thread_factory_data,
     struct NaClDesc                   *service_port,
     struct NaClDesc                   *sock_addr);
 
 void NaClSimpleServiceDtor(struct NaClRefCount *vself);
 
+/*
+ * Will take a new reference to instance data to pass to the
+ * Connection Ctor.
+ */
 int NaClSimpleServiceConnectionFactoryWithInstanceData(
     struct NaClSimpleService            *self,
     struct NaClDesc                     *conn,
     void                                *instance_data,
-    void                                (*instance_data_cleanup)(
-        void *instance_data),
     struct NaClSimpleServiceConnection  **out);
 
 int NaClSimpleServiceConnectionFactory(

@@ -253,13 +253,13 @@ int raii_main(int argc, char* argv[]) {
       exit(1);
     }
     nacl::scoped_ptr<nacl::DescWrapper> conn_cap(launcher.WrapCleanup(h));
-    if (conn_cap.get() == NULL) {
+    if (conn_cap == NULL) {
       NaClLog(LOG_ERROR, "sel_universal: reverse desc wrap failed\n");
       exit(1);
     }
 
     rev_svc.reset(new nacl::ReverseService(conn_cap.get()));
-    if (rev_svc.get() == NULL) {
+    if (rev_svc == NULL) {
       NaClLog(LOG_ERROR, "sel_universal: reverse service ctor failed\n");
       exit(1);
     }
@@ -326,6 +326,10 @@ int raii_main(int argc, char* argv[]) {
   // Close the connections to sel_ldr.
   NaClSrpcDtor(&command_channel);
   NaClSrpcDtor(&channel);
+
+  if (rev_svc != NULL) {
+    rev_svc->WaitForServiceThreadsToExit();
+  }
 
   return success ? 0 : -1;
 }

@@ -285,13 +285,12 @@ void ServiceRuntime::Shutdown() {
   runtime_channel_ = NULL;
 
   // subprocess_ killed, but threads waiting on messages from the
-  // service runtime may not have noticed yet.  however, the low-level
+  // service runtime may not have noticed yet.  The low-level
   // NaClSimpleRevService code takes care to refcount the data objects
-  // that it needs, and reverse_service_ is also refcounted.
-  //
-  // BUG(bsy) the thread may still do a NaClLog, and we should join
-  // them prior to running module finalizers such as NaClLogFini.
+  // that it needs, and reverse_service_ is also refcounted.  We wait
+  // for the service threads to get their EOF indications.
   if (reverse_service_ != NULL) {
+    reverse_service_->WaitForServiceThreadsToExit();
     reverse_service_->Unref();
   }
   reverse_service_ = NULL;

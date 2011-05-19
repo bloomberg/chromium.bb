@@ -23,9 +23,7 @@ ReverseSocket::~ReverseSocket() {
   rev_service_ = NULL;
 }
 
-bool ReverseSocket::StartService(void* server_instance_data,
-                                 void (*server_instance_data_cleanup)(
-                                     void *server_instance_data)) {
+bool ReverseSocket::StartService(void* server_instance_data) {
   NaClLog(4, "Entered ReverseSocket::StartService\n");
   nacl::scoped_ptr_malloc<NaClSimpleRevService> rev_service_tmp(
       reinterpret_cast<NaClSimpleRevService*>(
@@ -38,7 +36,9 @@ bool ReverseSocket::StartService(void* server_instance_data,
       &rev_service_tmp,
       NaClSimpleRevServiceCtor(rev_service_tmp.get(),
                                NaClDescRef(conn_cap_->desc()),
-                               handlers_));
+                               handlers_,
+                               thread_factory_fn_,
+                               thread_factory_data_));
   if (!ref.constructed()) {
     NaClLog(4, "FAILURE: Leaving ReverseSocket::StartService\n");
     NaClDescUnref(conn_cap_->desc());
@@ -50,8 +50,7 @@ bool ReverseSocket::StartService(void* server_instance_data,
   NaClLog(4, "ReverseSocket::StartService: invoking ConnectAndSpawnHandler\n");
   if (0 != (*NACL_VTBL(NaClSimpleRevService, rev_service_)->
             ConnectAndSpawnHandler)(rev_service_,
-                                    server_instance_data,
-                                    server_instance_data_cleanup)) {
+                                    server_instance_data)) {
     NaClLog(4, "FAILURE: Leaving ReverseSocket::StartService\n");
     return false;
   }

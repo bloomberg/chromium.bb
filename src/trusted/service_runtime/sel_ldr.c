@@ -52,6 +52,8 @@
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 
+#include "native_client/src/trusted/threading/nacl_thread_interface.h"
+
 static int IsEnvironmentVariableSet(char const *env_name) {
   return NULL != getenv(env_name);
 }
@@ -1093,6 +1095,7 @@ struct NaClConnectionHandler {
   /* used by NaClSimpleRevServiceClient's ClientCallback fn */
   void                          (*handler)(
       void                        *state,
+      struct NaClThreadInterface  *tif,
       struct NaClDesc             *conn);
   void                          *state;
 };
@@ -1115,6 +1118,8 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
                           struct NaClApp                    *nap) {
   if (!NaClSimpleServiceWithSocketCtor(&self->base,
                                        srpc_handlers,
+                                       NaClThreadInterfaceThreadFactory,
+                                       (void *) NULL,
                                        nap->service_port,
                                        nap->service_address)) {
     goto failure_simple_ctor;
@@ -1140,7 +1145,7 @@ void NaClSecureServiceDtor(struct NaClRefCount *vself) {
 int NaClSecureReverseClientCtor(
     struct NaClSecureReverseClient *self,
     void                            (*client_callback)(
-        void *, struct NaClDesc *),
+        void *, struct NaClThreadInterface *, struct NaClDesc *),
     void                            *state,
     struct NaClApp                  *nap);
 
@@ -1155,11 +1160,15 @@ int NaClSecureReverseClientCtor(
  * actual thread that made the connection request using |conn|
  * received in the first connection.
  */
-static void NaClSecureReverseClientCallback(void                        *state,
-                                            struct NaClDesc             *conn) {
+static void NaClSecureReverseClientCallback(
+    void                        *state,
+    struct NaClThreadInterface  *tif,
+    struct NaClDesc             *conn) {
   struct NaClSecureReverseClient *self =
       (struct NaClSecureReverseClient *) state;
   struct NaClApp *nap = self->nap;
+
+  UNREFERENCED_PARAMETER(tif);
 
   NaClLog(4, "Entered NaClSecureReverseClientCallback\n");
 
@@ -1231,6 +1240,7 @@ static
 int NaClSecureReverseClientInsertHandler_mu(
     struct NaClSecureReverseClient  *self,
     void                            (*h)(void *,
+                                         struct NaClThreadInterface *,
                                          struct NaClDesc *),
     void                            *d) {
   struct NaClConnectionHandler *entry;
@@ -1271,6 +1281,7 @@ static
 int NaClSecureReverseClientInsertHandler(
     struct NaClSecureReverseClient *self,
     void                            (*h)(void *,
+                                         struct NaClThreadInterface *,
                                          struct NaClDesc *),
     void                            *d) {
   int retval;
@@ -1310,12 +1321,15 @@ struct NaClConnectionHandler *NaClSecureReverseClientPopHandler(
 }
 
 static
-void NaClSecureReverseClientInternalCallback(void             *state,
-                                             struct NaClDesc  *conn) {
+void NaClSecureReverseClientInternalCallback(
+    void                        *state,
+    struct NaClThreadInterface  *tif,
+    struct NaClDesc             *conn) {
   struct NaClSecureReverseClient *self =
       (struct NaClSecureReverseClient *) state;
   struct NaClConnectionHandler *hand_ptr;
 
+  UNREFERENCED_PARAMETER(tif);
   NaClLog(4, "Entered NaClSecureReverseClientInternalCallback\n");
   hand_ptr = NaClSecureReverseClientPopHandler(self);
   NaClLog(4, " got callback object %"NACL_PRIxPTR"\n", (uintptr_t) hand_ptr);
@@ -1324,7 +1338,7 @@ void NaClSecureReverseClientInternalCallback(void             *state,
           (uintptr_t) hand_ptr->handler,
           (uintptr_t) hand_ptr->state,
           (uintptr_t) conn);
-  (*hand_ptr->handler)(hand_ptr->state, conn);
+  (*hand_ptr->handler)(hand_ptr->state, tif, conn);
   NaClLog(4, "NaClSecureReverseClientInternalCallback: freeing memory\n");
   free(hand_ptr);
   NaClLog(4, "Leaving NaClSecureReverseClientInternalCallback\n");
@@ -1338,7 +1352,7 @@ void NaClSecureReverseClientInternalCallback(void             *state,
 int NaClSecureReverseClientCtor(
     struct NaClSecureReverseClient  *self,
     void                            (*client_callback)(
-        void *, struct NaClDesc *),
+        void *, struct NaClThreadInterface*, struct NaClDesc *),
     void                            *state,
     struct NaClApp                  *nap) {
   NaClLog(4,
@@ -1348,7 +1362,9 @@ int NaClSecureReverseClientCtor(
           (uintptr_t) nap);
   if (!NaClSimpleRevClientCtor(&self->base,
                                NaClSecureReverseClientInternalCallback,
-                               (void *) self)) {
+                               (void *) self,
+                               NaClThreadInterfaceThreadFactory,
+                               (void *) NULL)) {
     goto failure_simple_ctor;
   }
   NaClLog(4, "NaClSecureReverseClientCtor: Mutex\n");
@@ -1416,7 +1432,7 @@ int NaClSecureServiceConnectionFactory(
 
   /* our instance_data is not connection specific */
   return NaClSimpleServiceConnectionFactoryWithInstanceData(
-      vself, conn, self->nap, (void (*)(void *)) NULL, out);
+      vself, conn, (void*) self->nap, out);
 }
 
 int NaClSecureServiceAcceptAndSpawnHandler(struct NaClSimpleService *vself) {

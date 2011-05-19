@@ -26,6 +26,7 @@ runner = trusted_env.ComponentProgram(
     'multidomain_test_host', ['multidomain_test_host.c'],
     EXTRA_LIBS=['sel',
                 'simple_service',
+                'thread_interface',
                 'gio_wrapped_desc',
                 'nonnacl_srpc',
                 'nrd_xfer',

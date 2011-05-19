@@ -6,6 +6,7 @@
 
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -20,11 +21,15 @@
 /* NACL_KERN_STACK_SIZE */
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
-int NaClSimpleRevClientCtor(struct NaClSimpleRevClient  *self,
-                            void                        (*callback)(
-                                void                        *state,
-                                struct NaClDesc             *conn),
-                            void                        *state) {
+int NaClSimpleRevClientCtor(
+    struct NaClSimpleRevClient  *self,
+    void                        (*callback)(
+        void                        *state,
+        struct NaClThreadInterface  *tif,
+        struct NaClDesc             *conn),
+    void                        *state,
+    NaClThreadIfFactoryFunction thread_factory_fn,
+    void                        *thread_factory_data) {
   NaClLog(4,
           "NaClSimpleRevClientCtor: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
@@ -36,9 +41,11 @@ int NaClSimpleRevClientCtor(struct NaClSimpleRevClient  *self,
     goto bound_failed;
   }
 
-  self->acceptor_spawned = 0;
+  self->acceptor = (struct NaClThreadInterface *) NULL;
   self->client_callback = callback;
   self->state = state;
+  self->thread_factory_fn = thread_factory_fn;
+  self->thread_factory_data = thread_factory_data;
   NaClLog(4,
           ("NaClSimpleRevClientCtor: callback 0x%"NACL_PRIxPTR
            ", state 0x%"NACL_PRIxPTR"\n"),
@@ -60,10 +67,6 @@ static void NaClSimpleRevClientDtor(struct NaClRefCount *vself) {
 
   NaClDescUnref(self->bound_and_cap[0]);
   NaClDescUnref(self->bound_and_cap[1]);
-  if (self->acceptor_spawned) {
-    NaClThreadDtor(&self->acceptor);
-  }
-  self->acceptor_spawned = 0;
 
   NACL_VTBL(NaClRefCount, self) = &kNaClRefCountVtbl;
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(&self->base);
@@ -75,9 +78,9 @@ struct NaClSimpleRevClientVtbl const kNaClSimpleRevClientVtbl = {
   },
 };
 
-static void WINAPI RevRpcHandlerBase(void *thread_state) {
+static void *RevRpcHandlerBase(struct NaClThreadInterface *tif) {
   struct NaClSimpleRevClient *self =
-      (struct NaClSimpleRevClient *) thread_state;
+      (struct NaClSimpleRevClient *) tif->thread_data;
 
   int             status;
   struct NaClDesc *conn;
@@ -101,7 +104,7 @@ static void WINAPI RevRpcHandlerBase(void *thread_state) {
      * up and giving |conn| to the thread that made the connection
      * request in the first place).
      */
-    (*self->client_callback)(self->state, conn);
+    (*self->client_callback)(self->state, tif, conn);
     NaClLog(4,
             "RevRpcHandlerBase: callback finished.\n");
   }
@@ -117,28 +120,34 @@ static void WINAPI RevRpcHandlerBase(void *thread_state) {
    * modified to) use thread info.
    */
   NaClRefCountUnref((struct NaClRefCount *) self);
+  return (void *) NULL;
 }
 
 int NaClSimpleRevClientStartServiceThread(struct NaClSimpleRevClient *self) {
   NaClLog(4, "Entered NaClSimpleRevClientStartServiceThread\n");
-  if (self->acceptor_spawned) {
+  if (NULL != self->acceptor) {
     NaClLog(LOG_FATAL,
             "NaClSimpleRevClientStartServiceThread: dup - already started\n");
   }
-  if (!NaClThreadCtor(&self->acceptor,
-                      RevRpcHandlerBase,
-                      (struct NaClSimpleRevClient *) NaClRefCountRef(
-                          (struct NaClRefCount *) self),
-                      NACL_KERN_STACK_SIZE)) {
+  if (!(*self->thread_factory_fn)(self->thread_factory_data,
+                                  RevRpcHandlerBase,
+                                  ((struct NaClSimpleRevClient *)
+                                   NaClRefCountRef(
+                                       (struct NaClRefCount *) self)),
+                                  NACL_KERN_STACK_SIZE,
+                                  &self->acceptor)) {
     NaClRefCountUnref((struct NaClRefCount *) self);
     return 0;
   }
   return 1;
 }
 
-int NaClSimpleRevServiceCtor(struct NaClSimpleRevService      *self,
-                             struct NaClDesc                  *conn_cap,
-                             struct NaClSrpcHandlerDesc const *handlers) {
+int NaClSimpleRevServiceCtor(
+    struct NaClSimpleRevService       *self,
+    struct NaClDesc                   *conn_cap,
+    struct NaClSrpcHandlerDesc const  *handlers,
+    NaClThreadIfFactoryFunction       thread_factory_fn,
+    void                              *thread_factory_data) {
   NaClLog(4,
           "NaClSimpleRevServiceCtor: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
@@ -149,9 +158,11 @@ int NaClSimpleRevServiceCtor(struct NaClSimpleRevService      *self,
   self->conn_cap = conn_cap;  /* take ownership, if ctor succeeds */
   self->handlers = handlers;
   /* caller ensures lifetime of handlers is at least that of self */
+  self->thread_factory_fn = thread_factory_fn;
+  self->thread_factory_data = thread_factory_data;
 
   NACL_VTBL(NaClRefCount, self) =
-      (struct NaClRefCountVtbl *) &kNaClSimpleRevServiceVtbl;
+     (struct NaClRefCountVtbl *) &kNaClSimpleRevServiceVtbl;
 
   NaClLog(4, "Leaving NaClSimpleRevServiceCtor\n");
   return 1;
@@ -169,25 +180,21 @@ void NaClSimpleRevServiceDtor(struct NaClRefCount *vself) {
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
 }
 
-static void WINAPI ConnRpcBase(void *thread_state) {
+static void *ConnRpcBase(struct NaClThreadInterface *tif) {
   struct NaClSimpleRevConnection *rev_conn =
-      (struct NaClSimpleRevConnection *) thread_state;
+      (struct NaClSimpleRevConnection *) tif->thread_data;
 
   NaClLog(4, "Entered ConnRpcBase, invoking RpcHandler vfn\n");
   (*NACL_VTBL(NaClSimpleRevService, rev_conn->service)->RpcHandler)(
       rev_conn->service, rev_conn);
-  if (NULL != rev_conn->instance_data_cleanup) {
-    (*rev_conn->instance_data_cleanup)(rev_conn->instance_data);
-  }
-  NaClThreadDtor(&rev_conn->thread);
   NaClLog(4, "Leaving ConnRpcBase\n");
   NaClRefCountUnref((struct NaClRefCount *) rev_conn);
+  return (void *) NULL;
 }
 
 int NaClSimpleRevServiceConnectAndSpawnHandler(
     struct NaClSimpleRevService *self,
-    void                        *instance_data,
-    void                        (*instance_data_cleanup)(void *instance_data)) {
+    void                        *instance_data) {
   int                             status;
   struct NaClDesc                 *conn = NULL;
   struct NaClSimpleRevConnection  *rev_conn;
@@ -202,7 +209,7 @@ int NaClSimpleRevServiceConnectAndSpawnHandler(
   }
   if (0 != (status =
             (*NACL_VTBL(NaClSimpleRevService, self)->RevConnectionFactory)(
-                self, conn, instance_data, instance_data_cleanup, &rev_conn))) {
+                self, conn, instance_data, &rev_conn))) {
     NaClDescUnref(conn);
     NaClLog(4,
             ("NaClSimpleRevServiceConnectAndSpawnHandler: factory failed,"
@@ -212,11 +219,14 @@ int NaClSimpleRevServiceConnectAndSpawnHandler(
   }
   conn = NULL;  /* rev_conn owns the ref in conn now */
   /*
-   * Spawn thread using NaClSimpleRevConnection.
+   * Spawn thread to use the NaClSimpleRevConnection.
    */
-  /* rev_conn not visible to other threads, so okay */
-  if (!NaClThreadCtor(&rev_conn->thread,
-                      ConnRpcBase, rev_conn, NACL_KERN_STACK_SIZE)) {
+  /* rev_conn not visible to other threads, ownership passed to thread */
+  if (!(*self->thread_factory_fn)(self->thread_factory_data,
+                                  ConnRpcBase,
+                                  (void *) rev_conn,
+                                  NACL_KERN_STACK_SIZE,
+                                  &rev_conn->thread)) {
     /*
      * no thread, clean up
      */
@@ -233,8 +243,6 @@ int NaClSimpleRevServiceConnectionFactory(
     struct NaClSimpleRevService     *self,
     struct NaClDesc                 *conn,
     void                            *instance_data,
-    void                            (*instance_data_cleanup)(
-        void *instance_data),
     struct NaClSimpleRevConnection  **out) {
   struct NaClSimpleRevConnection *rconn;
 
@@ -244,8 +252,12 @@ int NaClSimpleRevServiceConnectionFactory(
             " no memory\n");
     return -NACL_ABI_EAGAIN;
   }
-  if (!NaClSimpleRevConnectionCtor(rconn, self, conn, instance_data,
-                                   instance_data_cleanup)) {
+  /*
+   * In the common/degenerate case, factory instance_data becomes
+   * connection instance data.
+   */
+  if (!NaClSimpleRevConnectionCtor(rconn, self, conn,
+                                   instance_data)) {
     NaClLog(4, "NaClSimpleRevServiceConnectionFactoryWithInstanceData:"
             " NaClSimpleRevConnectionCtor failed\n");
     free(rconn);
@@ -281,9 +293,7 @@ int NaClSimpleRevConnectionCtor(
     struct NaClSimpleRevConnection  *self,
     struct NaClSimpleRevService     *service,
     struct NaClDesc                 *conn,
-    void                            *instance_data,
-    void                            (*instance_data_cleanup)(
-        void *instance_data)) {
+    void                            *instance_data) {
   NaClLog(4,
           "NaClSimpleRevConnectionCtor: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
@@ -294,7 +304,6 @@ int NaClSimpleRevConnectionCtor(
   self->service = service;
   self->connected_socket = conn;
   self->instance_data = instance_data;
-  self->instance_data_cleanup = instance_data_cleanup;
 
   return 1;
 }

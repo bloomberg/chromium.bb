@@ -6,6 +6,8 @@
 
 #include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
+
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -13,12 +15,17 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-int NaClSimpleLtdServiceCtor(struct NaClSimpleLtdService      *self,
-                             struct NaClSrpcHandlerDesc const *srpc_handlers,
-                             int                              max_cli) {
+int NaClSimpleLtdServiceCtor(
+    struct NaClSimpleLtdService       *self,
+    struct NaClSrpcHandlerDesc const  *srpc_handlers,
+    int                               max_cli,
+    NaClThreadIfFactoryFunction       thread_factory_fn,
+    void                              *thread_factory_data) {
   NaClLog(4, "Entered NaClSimpleLtdServiceCtor\n");
   if (!NaClSimpleServiceCtor((struct NaClSimpleService *) self,
-                             srpc_handlers)) {
+                             srpc_handlers,
+                             thread_factory_fn,
+                             thread_factory_data)) {
     NaClLog(4, "NaClSimpleServiceCtor failed\n");
     goto base_ctor_fail;
   }

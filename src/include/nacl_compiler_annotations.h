@@ -45,6 +45,7 @@
 
 #if NACL_WINDOWS
 # define THREAD __declspec(thread)
+# include <windows.h>
 #else
 # define THREAD __thread
 # define WINAPI
