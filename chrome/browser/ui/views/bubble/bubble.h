@@ -12,9 +12,9 @@
 #include "views/view.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #endif
 
 // Bubble is used to display an arbitrary view above all other windows.
@@ -71,9 +71,9 @@ class BubbleDelegate {
 // That way Bubble has no (or very few) ifdefs.
 class Bubble
 #if defined(OS_WIN)
-    : public views::WidgetWin,
+    : public views::NativeWidgetWin,
 #elif defined(TOOLKIT_USES_GTK)
-    : public views::WidgetGtk,
+    : public views::NativeWidgetGtk,
 #endif
       public views::AcceleratorTarget,
       public ui::AnimationDelegate {
@@ -123,7 +123,7 @@ class Bubble
     fade_away_on_close_ = fade_away_on_close;
   }
 
-  // Overridden from WidgetWin:
+  // Overridden from NativeWidgetWin:
   virtual void Close();
 
   // Overridden from ui::AnimationDelegate:
@@ -152,10 +152,10 @@ class Bubble
   virtual BorderContents* CreateBorderContents();
 
 #if defined(OS_WIN)
-  // Overridden from WidgetWin:
+  // Overridden from NativeWidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
 #elif defined(TOOLKIT_USES_GTK)
-  // Overridden from WidgetGtk:
+  // Overridden from NativeWidgetGtk:
   virtual void IsActiveChanged();
 #endif
 

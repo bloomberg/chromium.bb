@@ -39,10 +39,6 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(OS_WIN)
-#include "views/widget/widget_win.h"
-#endif
-
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>  // NOLINT
 #include <gdk/gdkkeysyms.h>  // NOLINT

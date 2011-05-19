@@ -25,17 +25,14 @@
 #include "views/test/views_test_base.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
 #include "views/controls/button/native_button_win.h"
 #include "views/test/test_views_delegate.h"
-#elif defined(OS_LINUX)
-#include "views/widget/widget_gtk.h"
-#include "views/window/window_gtk.h"
 #endif
 #if defined(TOUCH_UI)
 #include "views/touchui/gesture_manager.h"
@@ -536,7 +533,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
                             RDW_UPDATENOW | RDW_INVALIDATE | RDW_ALLCHILDREN);
   bool empty_paint = paint_window.empty_paint();
 
-  WidgetWin window;
+  NativeWidgetWin window;
   window.set_delete_on_destroy(false);
   window.set_window_style(WS_OVERLAPPEDWINDOW);
   window.Init(NULL, gfx::Rect(50, 50, 650, 650), NULL);

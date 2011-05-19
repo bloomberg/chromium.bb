@@ -69,7 +69,7 @@ gfx::NativeView GetHiddenTabHostWindow() {
     widget->Init(params);
   }
 
-  return static_cast<views::WidgetGtk*>(widget->native_widget())->
+  return static_cast<views::NativeWidgetGtk*>(widget->native_widget())->
       window_contents();
 }
 
@@ -80,7 +80,7 @@ gfx::NativeView GetHiddenTabHostWindow() {
 
 NativeTabContentsViewGtk::NativeTabContentsViewGtk(
     internal::NativeTabContentsViewDelegate* delegate)
-    : views::WidgetGtk(delegate->AsNativeWidgetDelegate()),
+    : views::NativeWidgetGtk(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate),
       ignore_next_char_event_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(drag_source_(
@@ -101,7 +101,7 @@ void NativeTabContentsViewGtk::AttachConstrainedWindow(
   AddChild(constrained_window->widget());
 
   gfx::Size requested_size;
-  views::WidgetGtk::GetRequestedSize(&requested_size);
+  views::NativeWidgetGtk::GetRequestedSize(&requested_size);
   PositionConstrainedWindows(requested_size);
 }
 
@@ -146,7 +146,7 @@ RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(
                    G_CALLBACK(OnMouseScroll), delegate_);
 
   // Let widget know that the tab contents has been painted.
-  views::WidgetGtk::RegisterChildExposeHandler(view->native_view());
+  views::NativeWidgetGtk::RegisterChildExposeHandler(view->native_view());
 
   // Renderer target DnD.
   if (delegate_->GetTabContents()->ShouldAcceptDragAndDrop())
@@ -197,14 +197,14 @@ views::NativeWidget* NativeTabContentsViewGtk::AsNativeWidget() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsViewGtk, views::WidgetGtk overrides:
+// NativeTabContentsViewGtk, views::NativeWidgetGtk overrides:
 
 // Called when the mouse moves within the widget. We notify SadTabView if it's
 // not NULL, else our delegate.
 gboolean NativeTabContentsViewGtk::OnMotionNotify(GtkWidget* widget,
                                                   GdkEventMotion* event) {
   if (delegate_->IsShowingSadTab())
-    return views::WidgetGtk::OnMotionNotify(widget, event);
+    return views::NativeWidgetGtk::OnMotionNotify(widget, event);
 
   delegate_->OnNativeTabContentsViewMouseMove(true);
   return FALSE;
@@ -213,7 +213,7 @@ gboolean NativeTabContentsViewGtk::OnMotionNotify(GtkWidget* widget,
 gboolean NativeTabContentsViewGtk::OnLeaveNotify(GtkWidget* widget,
                                                  GdkEventCrossing* event) {
   if (delegate_->IsShowingSadTab())
-    return views::WidgetGtk::OnLeaveNotify(widget, event);
+    return views::NativeWidgetGtk::OnLeaveNotify(widget, event);
 
   delegate_->OnNativeTabContentsViewMouseMove(false);
   return FALSE;
@@ -222,9 +222,9 @@ gboolean NativeTabContentsViewGtk::OnLeaveNotify(GtkWidget* widget,
 gboolean NativeTabContentsViewGtk::OnButtonPress(GtkWidget* widget,
                                                  GdkEventButton* event) {
   if (delegate_->IsShowingSadTab())
-    return views::WidgetGtk::OnButtonPress(widget, event);
+    return views::NativeWidgetGtk::OnButtonPress(widget, event);
   last_mouse_down_ = *event;
-  return views::WidgetGtk::OnButtonPress(widget, event);
+  return views::NativeWidgetGtk::OnButtonPress(widget, event);
 }
 
 void NativeTabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
@@ -234,12 +234,12 @@ void NativeTabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   if (size != size_)
     PositionConstrainedWindows(size);
   size_ = size;
-  views::WidgetGtk::OnSizeAllocate(widget, allocation);
+  views::NativeWidgetGtk::OnSizeAllocate(widget, allocation);
 }
 
 void NativeTabContentsViewGtk::OnShow(GtkWidget* widget) {
   delegate_->OnNativeTabContentsViewShown();
-  views::WidgetGtk::OnShow(widget);
+  views::NativeWidgetGtk::OnShow(widget);
 }
 
 void NativeTabContentsViewGtk::OnHide(GtkWidget* widget) {
@@ -248,7 +248,7 @@ void NativeTabContentsViewGtk::OnHide(GtkWidget* widget) {
   // delegate after it's already deleted.
   if (delegate_)
     delegate_->OnNativeTabContentsViewHidden();
-  views::WidgetGtk::OnHide(widget);
+  views::NativeWidgetGtk::OnHide(widget);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

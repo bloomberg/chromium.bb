@@ -9,8 +9,8 @@
 #include "ui/gfx/font.h"
 #include "views/focus/focus_manager.h"
 #include "views/screen.h"
+#include "views/widget/native_widget_gtk.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
 
 // WARNING: this implementation is good for a start, but it doesn't give us
 // control of tooltip positioning both on mouse events and when showing from
@@ -71,7 +71,7 @@ int TooltipManager::GetMaxWidth(int x, int y) {
   return monitor_bounds.width() == 0 ? 800 : (monitor_bounds.width() + 1) / 2;
 }
 
-TooltipManagerGtk::TooltipManagerGtk(WidgetGtk* widget)
+TooltipManagerGtk::TooltipManagerGtk(NativeWidgetGtk* widget)
     : widget_(widget),
       keyboard_view_(NULL),
       tooltip_window_(widget->window_contents()) {

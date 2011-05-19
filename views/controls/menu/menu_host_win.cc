@@ -12,7 +12,7 @@ namespace views {
 // MenuHostWin, public:
 
 MenuHostWin::MenuHostWin(internal::NativeMenuHostDelegate* delegate)
-    : WidgetWin(delegate->AsNativeWidgetDelegate()),
+    : NativeWidgetWin(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate) {
 }
 
@@ -31,16 +31,16 @@ NativeWidget* MenuHostWin::AsNativeWidget() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MenuHostWin, WidgetWin overrides:
+// MenuHostWin, NativeWidgetWin overrides:
 
 void MenuHostWin::OnDestroy() {
   delegate_->OnNativeMenuHostDestroy();
-  WidgetWin::OnDestroy();
+  NativeWidgetWin::OnDestroy();
 }
 
 void MenuHostWin::OnCancelMode() {
   delegate_->OnNativeMenuHostCancelCapture();
-  WidgetWin::OnCancelMode();
+  NativeWidgetWin::OnCancelMode();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

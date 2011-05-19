@@ -16,7 +16,6 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/events/event.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 

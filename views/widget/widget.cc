@@ -476,12 +476,12 @@ void Widget::DestroyRootView() {
   root_view_.reset();
 
   // Defer focus manager's destruction. This is for the case when the
-  // focus manager is referenced by a child WidgetGtk (e.g. TabbedPane in a
-  // dialog). When gtk_widget_destroy is called on the parent, the destroy
+  // focus manager is referenced by a child NativeWidgetGtk (e.g. TabbedPane in
+  // a dialog). When gtk_widget_destroy is called on the parent, the destroy
   // signal reaches parent first and then the child. Thus causing the parent
-  // WidgetGtk's dtor executed before the child's. If child's view hierarchy
-  // references this focus manager, it crashes. This will defer focus manager's
-  // destruction after child WidgetGtk's dtor.
+  // NativeWidgetGtk's dtor executed before the child's. If child's view
+  // hierarchy references this focus manager, it crashes. This will defer focus
+  // manager's destruction after child NativeWidgetGtk's dtor.
   FocusManager* focus_manager = focus_manager_.release();
   if (focus_manager)
     MessageLoop::current()->DeleteSoon(FROM_HERE, focus_manager);

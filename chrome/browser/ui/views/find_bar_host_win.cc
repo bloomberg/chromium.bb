@@ -11,7 +11,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/widget.h"
 
 void FindBarHost::AudibleAlert() {
   MessageBeep(MB_OK);
@@ -19,9 +19,7 @@ void FindBarHost::AudibleAlert() {
 
 void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   RECT frame_rect = {0}, webcontents_rect = {0};
-  ::GetWindowRect(
-      static_cast<views::WidgetWin*>(host()->native_widget())->GetParent(),
-      &frame_rect);
+  ::GetWindowRect(::GetParent(host()->GetNativeView()), &frame_rect);
   ::GetWindowRect(
       find_bar_controller_->
           tab_contents()->tab_contents()->view()->GetNativeView(),

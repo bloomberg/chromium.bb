@@ -52,7 +52,7 @@ HWND GetHiddenTabHostWindow() {
 
 NativeTabContentsViewWin::NativeTabContentsViewWin(
     internal::NativeTabContentsViewDelegate* delegate)
-    : views::WidgetWin(delegate->AsNativeWidgetDelegate()),
+    : views::NativeWidgetWin(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate) {
 }
 
@@ -136,7 +136,7 @@ views::NativeWidget* NativeTabContentsViewWin::AsNativeWidget() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsViewWin, views::WidgetWin overrides:
+// NativeTabContentsViewWin, views::NativeWidgetWin overrides:
 
 void NativeTabContentsViewWin::OnDestroy() {
   if (drop_target_.get()) {
@@ -144,7 +144,7 @@ void NativeTabContentsViewWin::OnDestroy() {
     drop_target_ = NULL;
   }
 
-  WidgetWin::OnDestroy();
+  NativeWidgetWin::OnDestroy();
 }
 
 void NativeTabContentsViewWin::OnHScroll(int scroll_type,
@@ -157,7 +157,7 @@ LRESULT NativeTabContentsViewWin::OnMouseRange(UINT msg,
                                                WPARAM w_param,
                                                LPARAM l_param) {
   if (delegate_->IsShowingSadTab())
-    return WidgetWin::OnMouseRange(msg, w_param, l_param);
+    return NativeWidgetWin::OnMouseRange(msg, w_param, l_param);
 
   switch (msg) {
     case WM_LBUTTONDOWN:
@@ -226,7 +226,7 @@ void NativeTabContentsViewWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
           gfx::Size(window_pos->cx, window_pos->cy));
     }
   }
-  WidgetWin::OnWindowPosChanged(window_pos);
+  NativeWidgetWin::OnWindowPosChanged(window_pos);
 }
 
 void NativeTabContentsViewWin::OnSize(UINT param, const CSize& size) {

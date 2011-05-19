@@ -8,13 +8,13 @@
 #include "chrome/browser/ui/views/bubble/border_widget_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #include "views/window/window.h"
 
-class BubbleWidget : public views::WidgetWin {
+class BubbleWidget : public views::NativeWidgetWin {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
-      : views::WidgetWin(new views::Widget),
+      : views::NativeWidgetWin(new views::Widget),
         bubble_(bubble),
         border_widget_(new BorderWidgetWin) {
     set_window_style(WS_POPUP | WS_CLIPCHILDREN);
@@ -27,7 +27,7 @@ class BubbleWidget : public views::WidgetWin {
     if (activate)
       ShowWindow(SW_SHOW);
     else
-      views::WidgetWin::Show();
+      views::NativeWidgetWin::Show();
   }
 
   void Close() {
@@ -39,7 +39,7 @@ class BubbleWidget : public views::WidgetWin {
         delegate->BubbleLostFocus(bubble_, NULL);
     }
     border_widget_->Close();
-    views::WidgetWin::Close();
+    views::NativeWidgetWin::Close();
     bubble_ = NULL;
   }
 
@@ -49,12 +49,12 @@ class BubbleWidget : public views::WidgetWin {
       if (delegate)
         delegate->BubbleLostFocus(bubble_, NULL);
     }
-    views::WidgetWin::Hide();
+    views::NativeWidgetWin::Hide();
     border_widget_->Hide();
   }
 
   void OnActivate(UINT action, BOOL minimized, HWND window) {
-    WidgetWin::OnActivate(action, minimized, window);
+    NativeWidgetWin::OnActivate(action, minimized, window);
     if (!bubble_)
       return;
 
@@ -90,7 +90,7 @@ class BubbleWidget : public views::WidgetWin {
   }
 
   virtual void OnSetFocus(HWND focused_window) {
-    WidgetWin::OnSetFocus(focused_window);
+    NativeWidgetWin::OnSetFocus(focused_window);
     if (bubble_ && bubble_->delegate())
       bubble_->delegate()->BubbleGotFocus(bubble_);
   }
@@ -107,8 +107,8 @@ class BubbleWidget : public views::WidgetWin {
 };
 
 void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
-  // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
-  // we'll assign it into popup_.
+  // popup_ is a Widget, but we need to do some NativeWidgetWin stuff first,
+  // then we'll assign it into popup_.
   BubbleWidget* bubble_widget = new BubbleWidget(this);
 
   BorderWidgetWin* border_widget = bubble_widget->border_widget();

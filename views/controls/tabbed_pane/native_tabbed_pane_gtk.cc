@@ -16,8 +16,9 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "views/layout/fill_layout.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

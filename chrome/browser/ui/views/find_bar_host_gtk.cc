@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "views/widget/widget_gtk.h"
 
 void FindBarHost::AudibleAlert() {
   // TODO(davemoore) implement.

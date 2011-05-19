@@ -88,7 +88,7 @@ class WindowImpl : public MessageMapInterface {
   // If necessary, this registers the window class.
   std::wstring GetWindowClassName();
 
-  // All classes registered by WidgetWin start with this name.
+  // All classes registered by WindowImpl start with this name.
   static const wchar_t* const kBaseClassName;
 
   // Window Styles used when creating the window.

@@ -18,7 +18,6 @@
 #include "views/ime/input_method.h"
 #include "views/touchui/touch_factory.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
 
 namespace views {
 
@@ -35,7 +34,7 @@ Widget* FindWidgetForGdkWindow(GdkWindow* gdk_window) {
   NativeWidget* widget = NativeWidget::GetNativeWidgetForNativeView(gtk_widget);
 
   if (!widget) {
-    DLOG(WARNING) << "no WidgetGtk found for that GtkWidget";
+    DLOG(WARNING) << "no NativeWidgetGtk found for that GtkWidget";
     return NULL;
   }
   return widget->GetWidget();

@@ -12,7 +12,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 class SkBitmap;
 
@@ -45,7 +45,7 @@ class MessageBubble : public Bubble,
                              MessageBubbleDelegate* delegate);
 
   // Create and show bubble which does not grab pointer.  This creates
-  // a TYPE_CHILD WidgetGtk and |position_relative_to| must be in parent's
+  // a TYPE_CHILD NativeWidgetGtk and |position_relative_to| must be in parent's
   // coordinates.
   static MessageBubble* ShowNoGrab(views::Widget* parent,
                                    const gfx::Rect& position_relative_to,
@@ -55,7 +55,7 @@ class MessageBubble : public Bubble,
                                    const std::wstring& help,
                                    MessageBubbleDelegate* delegate);
 
-  // Overridden from WidgetGtk.
+  // Overridden from NativeWidgetGtk.
   virtual void Close() OVERRIDE;
 
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
@@ -68,7 +68,7 @@ class MessageBubble : public Bubble,
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // Overridden from WidgetGtk.
+  // Overridden from NativeWidgetGtk.
   virtual void IsActiveChanged();
   virtual void SetMouseCapture();
 

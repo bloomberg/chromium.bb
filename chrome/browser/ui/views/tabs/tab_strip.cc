@@ -32,9 +32,6 @@
 
 #if defined(OS_WIN)
 #include "views/widget/monitor_win.h"
-#include "views/widget/widget_win.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
 #endif
 
 #undef min

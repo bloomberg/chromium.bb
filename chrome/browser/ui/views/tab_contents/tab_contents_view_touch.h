@@ -118,7 +118,7 @@ class TabContentsViewTouch : public TabContentsView, public views::View {
   // The event for the last mouse down we handled. We need this for drags.
   GdkEventButton last_mouse_down_;
 
-  // Current size. See comment in WidgetGtk as to why this is cached.
+  // Current size. See comment in NativeWidgetGtk as to why this is cached.
   gfx::Size size_;
 
   // Each individual UI for constrained dialogs currently displayed. The

@@ -24,7 +24,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "views/accelerator.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 class AutomationProvider;
 class Browser;
@@ -46,7 +46,7 @@ class ExternalTabContainer : public TabContentsDelegate,
                              public TabContentsObserver,
                              public DownloadTabHelperDelegate,
                              public NotificationObserver,
-                             public views::WidgetWin,
+                             public views::NativeWidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
                              public views::AcceleratorTarget,
                              public InfoBarContainer::Delegate,
@@ -191,7 +191,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Returns NULL if we fail to find the cookie in the map.
   static scoped_refptr<ExternalTabContainer> RemovePendingTab(uintptr_t cookie);
 
-  // Overridden from views::WidgetWin:
+  // Overridden from views::NativeWidgetWin:
   virtual views::Window* GetContainingWindow() OVERRIDE;
   virtual const views::Window* GetContainingWindow() const OVERRIDE;
 
@@ -221,7 +221,7 @@ class ExternalTabContainer : public TabContentsDelegate,
 
  protected:
   ~ExternalTabContainer();
-  // Overridden from views::WidgetWin:
+  // Overridden from views::NativeWidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
   virtual void OnDestroy();
   virtual void OnFinalMessage(HWND window);

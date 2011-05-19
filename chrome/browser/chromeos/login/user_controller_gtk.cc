@@ -4,21 +4,21 @@
 
 #include "chrome/browser/chromeos/login/user_controller.h"
 
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
-using views::WidgetGtk;
+using views::NativeWidgetGtk;
 
 namespace chromeos {
 
 namespace {
 
-class ControlsWidget : public WidgetGtk {
+class ControlsWidget : public NativeWidgetGtk {
  public:
-  ControlsWidget() : WidgetGtk(new views::Widget) {
+  ControlsWidget() : NativeWidgetGtk(new views::Widget) {
   }
 
  private:
-  // WidgetGtk overrides:
+  // NativeWidgetGtk overrides:
   virtual void OnMap(GtkWidget* widget) OVERRIDE {
     // For some reason, Controls window never gets first expose event,
     // which makes WM believe that the login screen is not ready.
@@ -35,10 +35,10 @@ class ControlsWidget : public WidgetGtk {
 
 // Widget that notifies window manager about clicking on itself.
 // Doesn't send anything if user is selected.
-class ClickNotifyingWidget : public WidgetGtk {
+class ClickNotifyingWidget : public NativeWidgetGtk {
  public:
   explicit ClickNotifyingWidget(UserController* controller)
-      : WidgetGtk(new views::Widget),
+      : NativeWidgetGtk(new views::Widget),
         controller_(controller) {
   }
 
@@ -47,7 +47,7 @@ class ClickNotifyingWidget : public WidgetGtk {
     if (!controller_->IsUserSelected())
       controller_->SelectUserRelative(0);
 
-    return WidgetGtk::OnButtonPress(widget, event);
+    return NativeWidgetGtk::OnButtonPress(widget, event);
   }
 
   UserController* controller_;

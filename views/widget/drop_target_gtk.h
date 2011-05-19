@@ -33,7 +33,7 @@ class View;
 // the target is notified. Similarly if the drop completes and the data has
 // not yet been fetched, it is fetched and the target then notified.
 //
-// When a drop finishes this class calls back to the containing WidgetGtk
+// When a drop finishes this class calls back to the containing NativeWidgetGtk
 // which results in deleting the DropTargetGtk.
 class DropTargetGtk {
  public:
@@ -47,7 +47,8 @@ class DropTargetGtk {
   // we don't target a view that was removed during dnd.
   void ResetTargetViewIfEquals(View* view);
 
-  // Drop methods from Gtk. These are forwarded from the containing WidgetGtk.
+  // Drop methods from Gtk. These are forwarded from the containing
+  // NativeWidgetGtk.
   void OnDragDataReceived(GdkDragContext* context,
                           gint x,
                           gint y,

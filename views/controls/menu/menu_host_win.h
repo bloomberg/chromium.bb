@@ -7,7 +7,7 @@
 #pragma once
 
 #include "views/controls/menu/native_menu_host.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 namespace views {
 namespace internal {
@@ -15,7 +15,7 @@ class NativeMenuHostDelegate;
 }
 
 // MenuHost implementation for windows.
-class MenuHostWin : public WidgetWin,
+class MenuHostWin : public NativeWidgetWin,
                     public NativeMenuHost {
  public:
   explicit MenuHostWin(internal::NativeMenuHostDelegate* delegate);
@@ -26,7 +26,7 @@ class MenuHostWin : public WidgetWin,
   virtual void StartCapturing() OVERRIDE;
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
 
-  // Overridden from WidgetWin:
+  // Overridden from NativeWidgetWin:
   virtual void OnDestroy() OVERRIDE;
   virtual void OnCancelMode() OVERRIDE;
 

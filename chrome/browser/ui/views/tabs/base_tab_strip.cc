@@ -13,7 +13,8 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
+// GET_X_LPARAM, et al.
+#include <windowsx.h>
 #endif
 
 namespace {

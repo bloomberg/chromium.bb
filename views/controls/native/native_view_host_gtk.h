@@ -16,7 +16,7 @@
 namespace views {
 
 class View;
-class WidgetGtk;
+class NativeWidgetGtk;
 
 // Note that the NativeViewHostGtk assumes ownership of the GtkWidget attached
 // to it for the duration of its attachment. This is so the NativeViewHostGtk
@@ -50,7 +50,7 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   // Destroys the GtkFixed that performs clipping on our hosted GtkWidget.
   void DestroyFixed();
 
-  WidgetGtk* GetHostWidget() const;
+  NativeWidgetGtk* GetHostWidget() const;
 
   // Returns the descendant of fixed_ that has focus, or NULL if focus is not
   // on a descendant of fixed_.

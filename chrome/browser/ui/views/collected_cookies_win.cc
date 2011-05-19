@@ -28,7 +28,6 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
 namespace browser {
@@ -480,9 +479,9 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
       tab_contents_->profile()->GetHostContentSettingsMap(), setting);
   infobar_->UpdateVisibility(true, setting, origin_node->GetTitle());
   gfx::Rect bounds = GetWidget()->GetClientAreaScreenBounds();
-  // WidgetWin::GetBounds returns the bounds relative to the parent window,
-  // while WidgetWin::SetBounds wants screen coordinates. Do the translation
-  // here until http://crbug.com/52851 is fixed.
+  // NativeWidgetWin::GetBounds returns the bounds relative to the parent
+  // window, while NativeWidgetWin::SetBounds wants screen coordinates. Do the
+  // translation here until http://crbug.com/52851 is fixed.
   POINT topleft = {bounds.x(), bounds.y()};
   MapWindowPoints(HWND_DESKTOP, tab_contents_->GetNativeView(), &topleft, 1);
   gfx::Size size = GetRootView()->GetPreferredSize();

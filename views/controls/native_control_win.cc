@@ -134,8 +134,8 @@ void NativeControlWin::ShowContextMenu(const gfx::Point& location) {
 }
 
 void NativeControlWin::NativeControlCreated(HWND native_control) {
-  // Associate this object with the control's HWND so that WidgetWin can find
-  // this object when it receives messages from it.
+  // Associate this object with the control's HWND so that NativeWidgetWin can
+  // find this object when it receives messages from it.
   props_.push_back(new ViewProp(native_control, kNativeControlWinKey, this));
   props_.push_back(ChildWindowMessageProcessor::Register(native_control, this));
 

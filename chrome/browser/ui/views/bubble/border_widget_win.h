@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/views/bubble/bubble_border.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 class BorderContents;
 
@@ -16,7 +16,7 @@ class BorderContents;
 // we can use >1-bit alpha shadow images on the borders, which look nicer than
 // the Windows CS_DROPSHADOW shadows.  The info bubble window itself cannot be a
 // layered window because that prevents it from hosting native child controls.
-class BorderWidgetWin : public views::WidgetWin {
+class BorderWidgetWin : public views::NativeWidgetWin {
  public:
   BorderWidgetWin();
   virtual ~BorderWidgetWin() { }
@@ -41,7 +41,7 @@ class BorderWidgetWin : public views::WidgetWin {
   BorderContents* border_contents_;
 
  private:
-  // Overridden from WidgetWin:
+  // Overridden from NativeWidgetWin:
   virtual LRESULT OnMouseActivate(UINT message,
                                   WPARAM w_param,
                                   LPARAM l_param) OVERRIDE;

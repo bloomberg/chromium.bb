@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 #include <dwmapi.h>
 
@@ -127,12 +127,12 @@ const int kCustomObjectID = 1;
 }  // namespace
 
 // static
-bool WidgetWin::screen_reader_active_ = false;
+bool NativeWidgetWin::screen_reader_active_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, public:
+// NativeWidgetWin, public:
 
-WidgetWin::WidgetWin(internal::NativeWidgetDelegate* delegate)
+NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
@@ -149,7 +149,7 @@ WidgetWin::WidgetWin(internal::NativeWidgetDelegate* delegate)
       is_input_method_win_(false) {
 }
 
-WidgetWin::~WidgetWin() {
+NativeWidgetWin::~NativeWidgetWin() {
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
@@ -158,7 +158,7 @@ WidgetWin::~WidgetWin() {
 }
 
 // static
-bool WidgetWin::IsAeroGlassEnabled() {
+bool NativeWidgetWin::IsAeroGlassEnabled() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
   // If composition is not enabled, we behave like on XP.
@@ -166,14 +166,14 @@ bool WidgetWin::IsAeroGlassEnabled() {
   return SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled;
 }
 
-View* WidgetWin::GetAccessibilityViewEventAt(int id) {
+View* NativeWidgetWin::GetAccessibilityViewEventAt(int id) {
   // Convert from MSAA child id.
   id = -(id + 1);
   DCHECK(id >= 0 && id < kMaxAccessibilityViewEvents);
   return accessibility_view_events_[id];
 }
 
-int WidgetWin::AddAccessibilityViewEvent(View* view) {
+int NativeWidgetWin::AddAccessibilityViewEvent(View* view) {
   accessibility_view_events_index_ =
       (accessibility_view_events_index_ + 1) % kMaxAccessibilityViewEvents;
   accessibility_view_events_[accessibility_view_events_index_] = view;
@@ -182,7 +182,7 @@ int WidgetWin::AddAccessibilityViewEvent(View* view) {
   return -(accessibility_view_events_index_ + 1);
 }
 
-void WidgetWin::ClearAccessibilityViewEvent(View* view) {
+void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
   for (std::vector<View*>::iterator it = accessibility_view_events_.begin();
       it != accessibility_view_events_.end();
       ++it) {
@@ -192,9 +192,9 @@ void WidgetWin::ClearAccessibilityViewEvent(View* view) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, NativeWidget implementation:
+// NativeWidgetWin, NativeWidget implementation:
 
-void WidgetWin::InitNativeWidget(const Widget::InitParams& params) {
+void NativeWidgetWin::InitNativeWidget(const Widget::InitParams& params) {
   SetInitParams(params);
 
   // Create the window.
@@ -203,38 +203,38 @@ void WidgetWin::InitNativeWidget(const Widget::InitParams& params) {
   WindowImpl::Init(parent, params.bounds);
 }
 
-Widget* WidgetWin::GetWidget() {
+Widget* NativeWidgetWin::GetWidget() {
   return delegate_->AsWidget();
 }
 
-const Widget* WidgetWin::GetWidget() const {
+const Widget* NativeWidgetWin::GetWidget() const {
   return delegate_->AsWidget();
 }
 
-gfx::NativeView WidgetWin::GetNativeView() const {
+gfx::NativeView NativeWidgetWin::GetNativeView() const {
   return WindowImpl::hwnd();
 }
 
-gfx::NativeWindow WidgetWin::GetNativeWindow() const {
+gfx::NativeWindow NativeWidgetWin::GetNativeWindow() const {
   return WindowImpl::hwnd();
 }
 
-Window* WidgetWin::GetContainingWindow() {
+Window* NativeWidgetWin::GetContainingWindow() {
   return GetWindowImpl(hwnd());
 }
 
-const Window* WidgetWin::GetContainingWindow() const {
+const Window* NativeWidgetWin::GetContainingWindow() const {
   return GetWindowImpl(hwnd());
 }
 
-void WidgetWin::ViewRemoved(View* view) {
+void NativeWidgetWin::ViewRemoved(View* view) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(view);
 
   ClearAccessibilityViewEvent(view);
 }
 
-void WidgetWin::SetNativeWindowProperty(const char* name, void* value) {
+void NativeWidgetWin::SetNativeWindowProperty(const char* name, void* value) {
   // Remove the existing property (if any).
   for (ViewProps::iterator i = props_.begin(); i != props_.end(); ++i) {
     if ((*i)->Key() == name) {
@@ -247,19 +247,19 @@ void WidgetWin::SetNativeWindowProperty(const char* name, void* value) {
     props_.push_back(new ViewProp(hwnd(), name, value));
 }
 
-void* WidgetWin::GetNativeWindowProperty(const char* name) {
+void* NativeWidgetWin::GetNativeWindowProperty(const char* name) {
   return ViewProp::GetValue(hwnd(), name);
 }
 
-TooltipManager* WidgetWin::GetTooltipManager() const {
+TooltipManager* NativeWidgetWin::GetTooltipManager() const {
   return tooltip_manager_.get();
 }
 
-bool WidgetWin::IsScreenReaderActive() const {
+bool NativeWidgetWin::IsScreenReaderActive() const {
   return screen_reader_active_;
 }
 
-void WidgetWin::SendNativeAccessibilityEvent(
+void NativeWidgetWin::SendNativeAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type) {
   // Now call the Windows-specific method to notify MSAA clients of this
@@ -272,20 +272,20 @@ void WidgetWin::SendNativeAccessibilityEvent(
                    GetNativeView(), OBJID_CLIENT, child_id);
 }
 
-void WidgetWin::SetMouseCapture() {
+void NativeWidgetWin::SetMouseCapture() {
   DCHECK(!HasMouseCapture());
   SetCapture(hwnd());
 }
 
-void WidgetWin::ReleaseMouseCapture() {
+void NativeWidgetWin::ReleaseMouseCapture() {
   ReleaseCapture();
 }
 
-bool WidgetWin::HasMouseCapture() const {
+bool NativeWidgetWin::HasMouseCapture() const {
   return GetCapture() == hwnd();
 }
 
-bool WidgetWin::IsMouseButtonDown() const {
+bool NativeWidgetWin::IsMouseButtonDown() const {
   return (GetKeyState(VK_LBUTTON) & 0x80) ||
       (GetKeyState(VK_RBUTTON) & 0x80) ||
       (GetKeyState(VK_MBUTTON) & 0x80) ||
@@ -293,11 +293,11 @@ bool WidgetWin::IsMouseButtonDown() const {
       (GetKeyState(VK_XBUTTON2) & 0x80);
 }
 
-InputMethod* WidgetWin::GetInputMethodNative() {
+InputMethod* NativeWidgetWin::GetInputMethodNative() {
   return input_method_.get();
 }
 
-void WidgetWin::ReplaceInputMethod(InputMethod* input_method) {
+void NativeWidgetWin::ReplaceInputMethod(InputMethod* input_method) {
   input_method_.reset(input_method);
   if (input_method) {
     input_method->set_delegate(this);
@@ -306,13 +306,13 @@ void WidgetWin::ReplaceInputMethod(InputMethod* input_method) {
   is_input_method_win_ = false;
 }
 
-gfx::Rect WidgetWin::GetWindowScreenBounds() const {
+gfx::Rect NativeWidgetWin::GetWindowScreenBounds() const {
   RECT r;
   GetWindowRect(&r);
   return gfx::Rect(r);
 }
 
-gfx::Rect WidgetWin::GetClientAreaScreenBounds() const {
+gfx::Rect NativeWidgetWin::GetClientAreaScreenBounds() const {
   RECT r;
   GetClientRect(&r);
   POINT point = { r.left, r.top };
@@ -320,7 +320,7 @@ gfx::Rect WidgetWin::GetClientAreaScreenBounds() const {
   return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
 }
 
-void WidgetWin::SetBounds(const gfx::Rect& bounds) {
+void NativeWidgetWin::SetBounds(const gfx::Rect& bounds) {
   LONG style = GetWindowLong(GWL_STYLE);
   if (style & WS_MAXIMIZE)
     SetWindowLong(GWL_STYLE, style & ~WS_MAXIMIZE);
@@ -328,21 +328,21 @@ void WidgetWin::SetBounds(const gfx::Rect& bounds) {
                SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
-void WidgetWin::SetSize(const gfx::Size& size) {
+void NativeWidgetWin::SetSize(const gfx::Size& size) {
   SetWindowPos(NULL, 0, 0, size.width(), size.height(),
                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
 }
 
-void WidgetWin::MoveAbove(gfx::NativeView native_view) {
+void NativeWidgetWin::MoveAbove(gfx::NativeView native_view) {
   SetWindowPos(native_view, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
-void WidgetWin::SetShape(gfx::NativeRegion region) {
+void NativeWidgetWin::SetShape(gfx::NativeRegion region) {
   SetWindowRgn(region, TRUE);
 }
 
-void WidgetWin::Close() {
+void NativeWidgetWin::Close() {
   if (!IsWindow())
     return;  // No need to do anything.
 
@@ -356,11 +356,11 @@ void WidgetWin::Close() {
     // dereference us when the callback returns).
     MessageLoop::current()->PostTask(FROM_HERE,
         close_widget_factory_.NewRunnableMethod(
-            &WidgetWin::CloseNow));
+            &NativeWidgetWin::CloseNow));
   }
 }
 
-void WidgetWin::CloseNow() {
+void NativeWidgetWin::CloseNow() {
   // Destroys the input method before closing the window so that it can be
   // detached from the widget correctly.
   input_method_.reset();
@@ -374,7 +374,7 @@ void WidgetWin::CloseNow() {
     DestroyWindow(hwnd());
 }
 
-void WidgetWin::Show() {
+void NativeWidgetWin::Show() {
   if (!IsWindow())
     return;
 
@@ -382,7 +382,7 @@ void WidgetWin::Show() {
   SetInitialFocus();
 }
 
-void WidgetWin::Hide() {
+void NativeWidgetWin::Hide() {
   if (IsWindow()) {
     // NOTE: Be careful not to activate any windows here (for example, calling
     // ShowWindow(SW_HIDE) will automatically activate another window).  This
@@ -394,43 +394,43 @@ void WidgetWin::Hide() {
   }
 }
 
-void WidgetWin::SetOpacity(unsigned char opacity) {
+void NativeWidgetWin::SetOpacity(unsigned char opacity) {
   layered_alpha_ = static_cast<BYTE>(opacity);
 }
 
-void WidgetWin::SetAlwaysOnTop(bool on_top) {
+void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
   if (on_top)
     set_window_ex_style(window_ex_style() | WS_EX_TOPMOST);
   else
     set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
 }
 
-bool WidgetWin::IsVisible() const {
+bool NativeWidgetWin::IsVisible() const {
   return !!::IsWindowVisible(hwnd());
 }
 
-bool WidgetWin::IsActive() const {
+bool NativeWidgetWin::IsActive() const {
   return IsWindowActive(hwnd());
 }
 
-bool WidgetWin::IsAccessibleWidget() const {
+bool NativeWidgetWin::IsAccessibleWidget() const {
   return screen_reader_active_;
 }
 
-bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) const {
+bool NativeWidgetWin::ContainsNativeView(gfx::NativeView native_view) const {
   return hwnd() == native_view || ::IsChild(hwnd(), native_view);
 }
 
-void WidgetWin::RunShellDrag(View* view,
-                             const ui::OSExchangeData& data,
-                             int operation) {
+void NativeWidgetWin::RunShellDrag(View* view,
+                                   const ui::OSExchangeData& data,
+                                   int operation) {
   scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
   DWORD effects;
   DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
              ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
 }
 
-void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
+void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
   if (use_layered_buffer_) {
     // We must update the back-buffer immediately, since Windows' handling of
     // invalid rects is somewhat mysterious.
@@ -444,7 +444,7 @@ void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
     if (paint_layered_window_factory_.empty()) {
       MessageLoop::current()->PostTask(FROM_HERE,
           paint_layered_window_factory_.NewRunnableMethod(
-          &WidgetWin::RedrawLayeredWindowContents));
+          &NativeWidgetWin::RedrawLayeredWindowContents));
     }
   } else {
     // InvalidateRect() expects client coordinates.
@@ -453,7 +453,7 @@ void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
   }
 }
 
-void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
+void NativeWidgetWin::SetCursor(gfx::NativeCursor cursor) {
   if(cursor) {
     previous_cursor_ = ::SetCursor(cursor);
   } else if (previous_cursor_) {
@@ -463,31 +463,32 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, MessageLoop::Observer implementation:
+// NativeWidgetWin, MessageLoop::Observer implementation:
 
-void WidgetWin::WillProcessMessage(const MSG& msg) {
+void NativeWidgetWin::WillProcessMessage(const MSG& msg) {
 }
 
-void WidgetWin::DidProcessMessage(const MSG& msg) {
+void NativeWidgetWin::DidProcessMessage(const MSG& msg) {
   RedrawInvalidRect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, WindowImpl overrides:
+// NativeWidgetWin, WindowImpl overrides:
 
-HICON WidgetWin::GetDefaultWindowIcon() const {
+HICON NativeWidgetWin::GetDefaultWindowIcon() const {
   if (ViewsDelegate::views_delegate)
     return ViewsDelegate::views_delegate->GetDefaultWindowIcon();
   return NULL;
 }
 
-LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnWndProc(UINT message, WPARAM w_param,
+                                   LPARAM l_param) {
   HWND window = hwnd();
   LRESULT result = 0;
 
   // First allow messages sent by child controls to be processed directly by
   // their associated views. If such a view is present, it will handle the
-  // message *instead of* this WidgetWin.
+  // message *instead of* this NativeWidgetWin.
   if (ProcessChildWindowMessage(message, w_param, l_param, &result))
     return result;
 
@@ -508,40 +509,44 @@ LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, protected:
+// NativeWidgetWin, protected:
 
 // Message handlers ------------------------------------------------------------
 
-void WidgetWin::OnActivate(UINT action, BOOL minimized, HWND window) {
+void NativeWidgetWin::OnActivate(UINT action, BOOL minimized, HWND window) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnActivateApp(BOOL active, DWORD thread_id) {
+void NativeWidgetWin::OnActivateApp(BOOL active, DWORD thread_id) {
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnAppCommand(HWND window, short app_command, WORD device,
-                                int keystate) {
+LRESULT NativeWidgetWin::OnAppCommand(HWND window,
+                                      short app_command,
+                                      WORD device,
+                                      int keystate) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-void WidgetWin::OnCancelMode() {
+void NativeWidgetWin::OnCancelMode() {
 }
 
-void WidgetWin::OnCaptureChanged(HWND hwnd) {
+void NativeWidgetWin::OnCaptureChanged(HWND hwnd) {
   delegate_->OnMouseCaptureLost();
 }
 
-void WidgetWin::OnClose() {
+void NativeWidgetWin::OnClose() {
   Close();
 }
 
-void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
+void NativeWidgetWin::OnCommand(UINT notification_code,
+                                int command_id,
+                                HWND window) {
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
+LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   SetNativeWindowProperty(kNativeWidgetKey, this);
   CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
 
@@ -598,7 +603,7 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   return 0;
 }
 
-void WidgetWin::OnDestroy() {
+void NativeWidgetWin::OnDestroy() {
   if (drop_target_.get()) {
     RevokeDragDrop(hwnd());
     drop_target_ = NULL;
@@ -607,40 +612,42 @@ void WidgetWin::OnDestroy() {
   props_.reset();
 }
 
-void WidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
+void NativeWidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
   if (GetWidget()->widget_delegate())
     GetWidget()->widget_delegate()->OnDisplayChanged();
 }
 
-LRESULT WidgetWin::OnDwmCompositionChanged(UINT msg,
-                                           WPARAM w_param,
-                                           LPARAM l_param) {
+LRESULT NativeWidgetWin::OnDwmCompositionChanged(UINT msg,
+                                                 WPARAM w_param,
+                                                 LPARAM l_param) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-void WidgetWin::OnEndSession(BOOL ending, UINT logoff) {
+void NativeWidgetWin::OnEndSession(BOOL ending, UINT logoff) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnEnterSizeMove() {
+void NativeWidgetWin::OnEnterSizeMove() {
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnEraseBkgnd(HDC dc) {
+LRESULT NativeWidgetWin::OnEraseBkgnd(HDC dc) {
   // This is needed for magical win32 flicker ju-ju.
   return 1;
 }
 
-void WidgetWin::OnExitMenuLoop(BOOL is_track_popup_menu) {
+void NativeWidgetWin::OnExitMenuLoop(BOOL is_track_popup_menu) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnExitSizeMove() {
+void NativeWidgetWin::OnExitSizeMove() {
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnGetObject(UINT uMsg,
+                                     WPARAM w_param,
+                                     LPARAM l_param) {
   LRESULT reference_result = static_cast<LRESULT>(0L);
 
   // Accessibility readers will send an OBJID_CLIENT message
@@ -667,15 +674,19 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
   return reference_result;
 }
 
-void WidgetWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
+void NativeWidgetWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnHScroll(int scroll_type, short position, HWND scrollbar) {
+void NativeWidgetWin::OnHScroll(int scroll_type,
+                                short position,
+                                HWND scrollbar) {
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnImeMessages(UINT message,
+                                       WPARAM w_param,
+                                       LPARAM l_param) {
   if (!is_input_method_win_) {
     SetMsgHandled(FALSE);
     return 0;
@@ -714,24 +725,27 @@ LRESULT WidgetWin::OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param) {
   return result;
 }
 
-void WidgetWin::OnInitMenu(HMENU menu) {
+void NativeWidgetWin::OnInitMenu(HMENU menu) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnInitMenuPopup(HMENU menu,
-                                UINT position,
-                                BOOL is_system_menu) {
+void NativeWidgetWin::OnInitMenuPopup(HMENU menu,
+                                      UINT position,
+                                      BOOL is_system_menu) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnInputLangChange(DWORD character_set, HKL input_language_id) {
+void NativeWidgetWin::OnInputLangChange(DWORD character_set,
+                                        HKL input_language_id) {
   if (is_input_method_win_) {
     static_cast<InputMethodWin*>(input_method_.get())->OnInputLangChange(
         character_set, input_language_id);
   }
 }
 
-LRESULT WidgetWin::OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
+                                    WPARAM w_param,
+                                    LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
   KeyEvent key(msg);
   if (input_method_.get())
@@ -741,23 +755,25 @@ LRESULT WidgetWin::OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
   return 0;
 }
 
-void WidgetWin::OnKillFocus(HWND focused_window) {
+void NativeWidgetWin::OnKillFocus(HWND focused_window) {
   delegate_->OnNativeBlur(focused_window);
   if (input_method_.get())
     input_method_->OnBlur();
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnMouseActivate(UINT message,
-                                   WPARAM w_param,
-                                   LPARAM l_param) {
+LRESULT NativeWidgetWin::OnMouseActivate(UINT message,
+                                         WPARAM w_param,
+                                         LPARAM l_param) {
   if (GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)
     return MA_NOACTIVATE;
   SetMsgHandled(FALSE);
   return MA_ACTIVATE;
 }
 
-LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnMouseRange(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
   MouseEvent event(msg);
@@ -772,8 +788,9 @@ LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
     TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
         TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
   } else if (event.type() == ui::ET_MOUSE_EXITED) {
-    // Reset our tracking flags so future mouse movement over this WidgetWin
-    // results in a new tracking session. Fall through for OnMouseEvent.
+    // Reset our tracking flags so future mouse movement over this
+    // NativeWidgetWin results in a new tracking session. Fall through for
+    // OnMouseEvent.
     active_mouse_tracking_flags_ = 0;
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
     // Reroute the mouse wheel to the window under the pointer if applicable.
@@ -785,51 +802,53 @@ LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
   return 0;
 }
 
-void WidgetWin::OnMove(const CPoint& point) {
+void NativeWidgetWin::OnMove(const CPoint& point) {
   // TODO(beng): move to Widget.
   if (GetWidget()->widget_delegate())
     GetWidget()->widget_delegate()->OnWidgetMove();
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
+void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
   // TODO(beng): move to Widget.
   if (GetWidget()->widget_delegate())
     GetWidget()->widget_delegate()->OnWidgetMove();
 }
 
-LRESULT WidgetWin::OnNCActivate(BOOL active) {
+LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-LRESULT WidgetWin::OnNCCalcSize(BOOL w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnNCCalcSize(BOOL w_param, LPARAM l_param) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-LRESULT WidgetWin::OnNCHitTest(const CPoint& pt) {
+LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& pt) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-void WidgetWin::OnNCPaint(HRGN rgn) {
+void NativeWidgetWin::OnNCPaint(HRGN rgn) {
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnNCUAHDrawCaption(UINT msg,
-                                      WPARAM w_param,
-                                      LPARAM l_param) {
-  SetMsgHandled(FALSE);
-  return 0;
-}
-
-LRESULT WidgetWin::OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnNCUAHDrawCaption(UINT msg,
+                                            WPARAM w_param,
+                                            LPARAM l_param) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
+LRESULT NativeWidgetWin::OnNCUAHDrawFrame(UINT msg,
+                                          WPARAM w_param,
+                                          LPARAM l_param) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT NativeWidgetWin::OnNotify(int w_param, NMHDR* l_param) {
   // We can be sent this message before the tooltip manager is created, if a
   // subclass overrides OnCreate and creates some kind of Windows control there
   // that sends WM_NOTIFY messages.
@@ -843,7 +862,7 @@ LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
   return 0;
 }
 
-void WidgetWin::OnPaint(HDC dc) {
+void NativeWidgetWin::OnPaint(HDC dc) {
   RECT dirty_rect;
   // Try to paint accelerated first.
   if (GetUpdateRect(hwnd(), &dirty_rect, FALSE) &&
@@ -859,7 +878,7 @@ void WidgetWin::OnPaint(HDC dc) {
   }
 }
 
-LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
+LRESULT NativeWidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   if (monitor)
     monitor->ProcessWmPowerBroadcastMessage(power_event);
@@ -867,77 +886,81 @@ LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
   return 0;
 }
 
-LRESULT WidgetWin::OnReflectedMessage(UINT msg,
-                                      WPARAM w_param,
-                                      LPARAM l_param) {
+LRESULT NativeWidgetWin::OnReflectedMessage(UINT msg,
+                                            WPARAM w_param,
+                                            LPARAM l_param) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-LRESULT WidgetWin::OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param) {
+LRESULT NativeWidgetWin::OnSetCursor(UINT message,
+                                     WPARAM w_param,
+                                     LPARAM l_param) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-void WidgetWin::OnSetFocus(HWND focused_window) {
+void NativeWidgetWin::OnSetFocus(HWND focused_window) {
   delegate_->OnNativeFocus(focused_window);
   if (input_method_.get())
     input_method_->OnFocus();
   SetMsgHandled(FALSE);
 }
 
-LRESULT WidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
+LRESULT NativeWidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-LRESULT WidgetWin::OnSetText(const wchar_t* text) {
+LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
   SetMsgHandled(FALSE);
   return 0;
 }
 
-void WidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
+void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
   // TODO(beng): move to Widget.
   if (flags == SPI_SETWORKAREA && GetWidget()->widget_delegate())
     GetWidget()->widget_delegate()->OnWorkAreaChanged();
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnSize(UINT param, const CSize& size) {
+void NativeWidgetWin::OnSize(UINT param, const CSize& size) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
+void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
 }
 
-void WidgetWin::OnThemeChanged() {
+void NativeWidgetWin::OnThemeChanged() {
   // Notify NativeThemeWin.
   gfx::NativeThemeWin::instance()->CloseHandles();
 }
 
-void WidgetWin::OnVScroll(int scroll_type, short position, HWND scrollbar) {
+void NativeWidgetWin::OnVScroll(int scroll_type,
+                                short position,
+                                HWND scrollbar) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
+void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
+void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnFinalMessage(HWND window) {
+void NativeWidgetWin::OnFinalMessage(HWND window) {
   if (delete_on_destroy_)
     delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, protected:
+// NativeWidgetWin, protected:
 
-void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
+void NativeWidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
   // Begin tracking mouse events for this HWND so that we get WM_MOUSELEAVE
   // when the user moves the mouse outside this HWND's bounds.
   if (active_mouse_tracking_flags_ == 0 || mouse_tracking_flags & TME_CANCEL) {
@@ -961,11 +984,11 @@ void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
   }
 }
 
-void WidgetWin::OnScreenReaderDetected() {
+void NativeWidgetWin::OnScreenReaderDetected() {
   screen_reader_active_ = true;
 }
 
-void WidgetWin::SetInitialFocus() {
+void NativeWidgetWin::SetInitialFocus() {
   // TODO(beng): move to Widget.
   View* v = GetWidget()->widget_delegate() ?
       GetWidget()->widget_delegate()->GetInitiallyFocusedView() : NULL;
@@ -974,16 +997,16 @@ void WidgetWin::SetInitialFocus() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, private:
+// NativeWidgetWin, private:
 
 // static
-Window* WidgetWin::GetWindowImpl(HWND hwnd) {
+Window* NativeWidgetWin::GetWindowImpl(HWND hwnd) {
   // NOTE: we can't use GetAncestor here as constrained windows are a Window,
   // but not a top level window.
   HWND parent = hwnd;
   while (parent) {
-    WidgetWin* widget =
-        reinterpret_cast<WidgetWin*>(ui::GetWindowUserData(parent));
+    NativeWidgetWin* widget =
+        reinterpret_cast<NativeWidgetWin*>(ui::GetWindowUserData(parent));
     if (widget && widget->is_window_)
       return static_cast<WindowWin*>(widget)->GetWindow();
     parent = ::GetParent(parent);
@@ -992,8 +1015,8 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
 }
 
 // static
-void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
-                                           int activation_state) {
+void NativeWidgetWin::PostProcessActivateMessage(NativeWidgetWin* widget,
+                                                 int activation_state) {
   if (!widget->delegate_->HasFocusManager()) {
     NOTREACHED();
     return;
@@ -1022,7 +1045,7 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
   }
 }
 
-void WidgetWin::SetInitParams(const Widget::InitParams& params) {
+void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   // Set non-style attributes.
   delete_on_destroy_ = params.delete_on_destroy;
 
@@ -1069,7 +1092,7 @@ void WidgetWin::SetInitParams(const Widget::InitParams& params) {
   set_window_ex_style(window_ex_style() | ex_style);
 }
 
-void WidgetWin::RedrawInvalidRect() {
+void NativeWidgetWin::RedrawInvalidRect() {
   if (!use_layered_buffer_) {
     RECT r = { 0, 0, 0, 0 };
     if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
@@ -1079,7 +1102,7 @@ void WidgetWin::RedrawInvalidRect() {
   }
 }
 
-void WidgetWin::RedrawLayeredWindowContents() {
+void NativeWidgetWin::RedrawLayeredWindowContents() {
   if (invalid_rect_.IsEmpty())
     return;
 
@@ -1105,7 +1128,7 @@ void WidgetWin::RedrawLayeredWindowContents() {
   layered_window_contents_->endPlatformPaint();
 }
 
-void WidgetWin::ClientAreaSizeChanged() {
+void NativeWidgetWin::ClientAreaSizeChanged() {
   RECT r;
   Window* window = GetWidget()->GetContainingWindow();
   if (IsZoomed() || (window && window->ShouldUseNativeFrame()))
@@ -1121,12 +1144,12 @@ void WidgetWin::ClientAreaSizeChanged() {
   }
 }
 
-gfx::AcceleratedWidget WidgetWin::GetAcceleratedWidget() {
+gfx::AcceleratedWidget NativeWidgetWin::GetAcceleratedWidget() {
   // TODO(sky):
   return gfx::kNullAcceleratedWidget;
 }
 
-void WidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
+void NativeWidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
   SetMsgHandled(delegate_->OnKeyEvent(key));
 }
 
@@ -1184,13 +1207,13 @@ bool Widget::ConvertRect(const Widget* source,
 // static
 NativeWidget* NativeWidget::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-  return new WidgetWin(delegate);
+  return new NativeWidgetWin(delegate);
 }
 
 // static
 NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
-  return reinterpret_cast<WidgetWin*>(
+  return reinterpret_cast<NativeWidgetWin*>(
       ViewProp::GetValue(native_view, kNativeWidgetKey));
 }
 

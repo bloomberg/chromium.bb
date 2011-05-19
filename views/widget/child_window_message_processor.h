@@ -17,7 +17,7 @@ namespace views {
 // Windows sends a handful of messages to the parent window rather than the
 // window itself. For example, selection changes of a rich edit (EN_SELCHANGE)
 // are sent to the parent, not the window. Typically such message are best
-// dealt with by the window rather than the parent. WidgetWin allows for
+// dealt with by the window rather than the parent. NativeWidgetWin allows for
 // registering a ChildWindowMessageProcessor to handle such messages.
 class ChildWindowMessageProcessor {
  public:

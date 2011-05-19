@@ -8,7 +8,6 @@
 
 #include "views/accelerator.h"
 #include "views/focus/focus_manager.h"
-#include "views/widget/widget_gtk.h"
 
 namespace views {
 
@@ -16,7 +15,7 @@ AcceleratorHandler::AcceleratorHandler() {}
 
 bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   // The logic for handling keyboard accelerators has been moved into
-  // WidgetGtk::OnEventKey handler (views/widget/widget_gtk.cc).
+  // NativeWidgetGtk::OnEventKey handler (views/widget/widget_gtk.cc).
   gtk_main_do_event(event);
   return true;
 }

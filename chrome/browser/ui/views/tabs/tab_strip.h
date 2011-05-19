@@ -19,11 +19,6 @@ class Tab;
 
 namespace views {
 class ImageView;
-#if defined(TOOLKIT_USES_GTK)
-class WidgetGtk;
-#elif defined(OS_WIN)
-class WidgetWin;
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

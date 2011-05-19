@@ -23,10 +23,6 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"

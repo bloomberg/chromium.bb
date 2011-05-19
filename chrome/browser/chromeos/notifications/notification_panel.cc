@@ -21,7 +21,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/scroll_view.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 #define SET_STATE(state) SetState(state, __PRETTY_FUNCTION__)
 
@@ -486,7 +486,7 @@ void NotificationPanel::Hide() {
     MessageLoop::current()->DeleteSoon(FROM_HERE, panel_controller_.release());
     // We need to remove & detach the scroll view from hierarchy to
     // avoid GTK deleting child.
-    // TODO(oshima): handle this details in WidgetGtk.
+    // TODO(oshima): handle this details in NativeWidgetGtk.
     panel_widget_->GetRootView()->RemoveChildView(scroll_view_.get());
     panel_widget_->Close();
     panel_widget_ = NULL;

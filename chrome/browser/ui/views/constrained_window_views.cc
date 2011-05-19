@@ -36,7 +36,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #include "views/window/window_win.h"
 #endif
 
@@ -207,7 +207,7 @@ class ConstrainedWindowFrameView
   SkColor GetTitleColor() const {
     return container_->owner()->profile()->IsOffTheRecord()
 #if defined(OS_WIN)
-            || !views::WidgetWin::IsAeroGlassEnabled()
+            || !views::NativeWidgetWin::IsAeroGlassEnabled()
 #endif
             ? SK_ColorWHITE : SK_ColorBLACK;
   }
@@ -546,7 +546,7 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
-  resources_.reset(views::WidgetWin::IsAeroGlassEnabled() ?
+  resources_.reset(views::NativeWidgetWin::IsAeroGlassEnabled() ?
     static_cast<views::WindowResources*>(new VistaWindowResources) :
     new XPWindowResources);
 }

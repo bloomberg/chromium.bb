@@ -21,7 +21,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
 namespace {

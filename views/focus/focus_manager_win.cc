@@ -5,7 +5,8 @@
 #include "views/focus/focus_manager.h"
 
 #include "views/view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

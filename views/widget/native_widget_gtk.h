@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_WIDGET_WIDGET_GTK_H_
-#define VIEWS_WIDGET_WIDGET_GTK_H_
+#ifndef VIEWS_WIDGET_NATIVE_WIDGET_GTK_H_
+#define VIEWS_WIDGET_NATIVE_WIDGET_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -41,12 +41,12 @@ class NativeWidgetDelegate;
 }
 
 // Widget implementation for GTK.
-class WidgetGtk : public NativeWidget,
-                  public ui::ActiveWindowWatcherX::Observer,
-                  public internal::InputMethodDelegate {
+class NativeWidgetGtk : public NativeWidget,
+                        public ui::ActiveWindowWatcherX::Observer,
+                        public internal::InputMethodDelegate {
  public:
-  explicit WidgetGtk(internal::NativeWidgetDelegate* delegate);
-  virtual ~WidgetGtk();
+  explicit NativeWidgetGtk(internal::NativeWidgetDelegate* delegate);
+  virtual ~NativeWidgetGtk();
 
   // Returns the transient parent. See make_transient_to_parent for details on
   // what the transient parent is.
@@ -82,10 +82,10 @@ class WidgetGtk : public NativeWidget,
   // Positions a child GtkWidget at the specified location and bounds.
   void PositionChild(GtkWidget* child, int x, int y, int w, int h);
 
-  // Parent GtkWidget all children are added to. When this WidgetGtk corresponds
-  // to a top level window, this is the GtkFixed within the GtkWindow, not the
-  // GtkWindow itself. For child widgets, this is the same GtkFixed as
-  // |widget_|.
+  // Parent GtkWidget all children are added to. When this NativeWidgetGtk
+  // corresponds to a top level window, this is the GtkFixed within the
+  // GtkWindow, not the GtkWindow itself. For child widgets, this is the same
+  // GtkFixed as |widget_|.
   GtkWidget* window_contents() const { return window_contents_; }
 
   // Starts a drag on this widget. This blocks until the drag is done.
@@ -134,7 +134,7 @@ class WidgetGtk : public NativeWidget,
 
   // Registers a expose handler that removes FREEZE_UPDATES property.
   // If you are adding a GtkWidget with its own GdkWindow that may
-  // fill the entire area of the WidgetGtk to the view hierachy, you
+  // fill the entire area of the NativeWidgetGtk to the view hierachy, you
   // need use this function to tell WM that when the widget is ready
   // to be shown.
   // Caller of this method do not need to disconnect this because the
@@ -205,42 +205,47 @@ class WidgetGtk : public NativeWidget,
   }
 
   // Event handlers:
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnButtonPress, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnSizeRequest, GtkRequisition*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnSizeAllocate, GtkAllocation*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnPaint, GdkEventExpose*);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, void, OnDragDataGet,
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnButtonPress,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnSizeRequest, GtkRequisition*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnSizeAllocate, GtkAllocation*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnPaint, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, void, OnDragDataGet,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
-  CHROMEGTK_CALLBACK_6(WidgetGtk, void, OnDragDataReceived,
+  CHROMEGTK_CALLBACK_6(NativeWidgetGtk, void, OnDragDataReceived,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
                        guint, guint);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnDragDrop,
+  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, gboolean, OnDragDrop,
                        GdkDragContext*, gint, gint, guint);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnDragEnd, GdkDragContext*);
-  CHROMEGTK_CALLBACK_2(WidgetGtk, gboolean, OnDragFailed,
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnDragEnd, GdkDragContext*);
+  CHROMEGTK_CALLBACK_2(NativeWidgetGtk, gboolean, OnDragFailed,
                        GdkDragContext*, GtkDragResult);
-  CHROMEGTK_CALLBACK_2(WidgetGtk, void, OnDragLeave,
+  CHROMEGTK_CALLBACK_2(NativeWidgetGtk, void, OnDragLeave,
                        GdkDragContext*, guint);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnDragMotion,
+  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, gboolean, OnDragMotion,
                        GdkDragContext*, gint, gint, guint);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnEnterNotify, GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnLeaveNotify, GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnMotionNotify, GdkEventMotion*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnButtonRelease, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusIn, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusOut, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnEventKey, GdkEventKey*);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnQueryTooltip,
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnEnterNotify,
+                       GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnLeaveNotify,
+                       GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnMotionNotify,
+                       GdkEventMotion*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnButtonRelease,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnFocusIn, GdkEventFocus*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnFocusOut, GdkEventFocus*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnEventKey, GdkEventKey*);
+  CHROMEGTK_CALLBACK_4(NativeWidgetGtk, gboolean, OnQueryTooltip,
                        gint, gint, gboolean, GtkTooltip*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnScroll, GdkEventScroll*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnVisibilityNotify,
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnScroll, GdkEventScroll*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnVisibilityNotify,
                        GdkEventVisibility*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnGrabBrokeEvent, GdkEvent*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnGrabNotify, gboolean);
-  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnDestroy);
-  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnShow);
-  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnMap);
-  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnHide);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnGrabBrokeEvent, GdkEvent*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, void, OnGrabNotify, gboolean);
+  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnDestroy);
+  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnShow);
+  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnMap);
+  CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnHide);
 
   // Invoked when gtk grab is stolen by other GtkWidget in the same
   // application.
@@ -266,7 +271,8 @@ class WidgetGtk : public NativeWidget,
   void SetInitParams(const Widget::InitParams& params);
 
   // This is called only when the window is transparent.
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnWindowPaint,
+                       GdkEventExpose*);
 
   // Callbacks for expose event on child widgets. See the description of
   // RegisterChildChildExposeHandler.
@@ -318,7 +324,7 @@ class WidgetGtk : public NativeWidget,
   scoped_ptr<DropTargetGtk> drop_target_;
 
   // The following factory is used to delay destruction.
-  ScopedRunnableMethodFactory<WidgetGtk> close_widget_factory_;
+  ScopedRunnableMethodFactory<NativeWidgetGtk> close_widget_factory_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   bool delete_on_destroy_;
@@ -397,9 +403,9 @@ class WidgetGtk : public NativeWidget,
 
   scoped_ptr<InputMethod> input_method_;
 
-  DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetGtk);
 };
 
 }  // namespace views
 
-#endif  // VIEWS_WIDGET_WIDGET_GTK_H_
+#endif  // VIEWS_WIDGET_NATIVE_WIDGET_GTK_H_

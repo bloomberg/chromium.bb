@@ -11,7 +11,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/gtk_views_fixed.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 namespace views {
 
@@ -112,7 +112,7 @@ void NativeViewHostGtk::NativeViewAttached() {
     gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
 
   // Let the widget know that the native component has been painted.
-  views::WidgetGtk::RegisterChildExposeHandler(host_->native_view());
+  views::NativeWidgetGtk::RegisterChildExposeHandler(host_->native_view());
 
   if (!destroy_signal_id_) {
     destroy_signal_id_ = g_signal_connect(host_->native_view(),
@@ -214,7 +214,7 @@ void NativeViewHostGtk::UninstallClip() {
 }
 
 void NativeViewHostGtk::ShowWidget(int x, int y, int w, int h) {
-  // x and y are the desired position of host_ in WidgetGtk coordinates.
+  // x and y are the desired position of host_ in NativeWidgetGtk coordinates.
   int fixed_x = x;
   int fixed_y = y;
   int fixed_w = w;
@@ -286,7 +286,7 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
   // Defeat refcounting. We need to own the fixed.
   gtk_widget_ref(fixed_);
 
-  WidgetGtk* widget_gtk = GetHostWidget();
+  NativeWidgetGtk* widget_gtk = GetHostWidget();
   if (widget_gtk)
     widget_gtk->AddChild(fixed_);
 
@@ -322,14 +322,14 @@ void NativeViewHostGtk::DestroyFixed() {
   fixed_ = NULL;
 }
 
-WidgetGtk* NativeViewHostGtk::GetHostWidget() const {
-  return static_cast<WidgetGtk*>(host_->GetWidget()->native_widget());
+NativeWidgetGtk* NativeViewHostGtk::GetHostWidget() const {
+  return static_cast<NativeWidgetGtk*>(host_->GetWidget()->native_widget());
 }
 
 GtkWidget* NativeViewHostGtk::GetFocusedDescendant() {
   if (!fixed_)
     return NULL;
-  WidgetGtk* host = GetHostWidget();
+  NativeWidgetGtk* host = GetHostWidget();
   if (!host)
     return NULL;
   GtkWidget* top_level = gtk_widget_get_toplevel(host->GetNativeView());

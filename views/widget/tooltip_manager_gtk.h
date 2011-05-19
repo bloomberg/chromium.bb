@@ -13,12 +13,12 @@
 
 namespace views {
 
-class WidgetGtk;
+class NativeWidgetGtk;
 
 // TooltipManager implementation for Gtk.
 class TooltipManagerGtk : public TooltipManager {
  public:
-  explicit TooltipManagerGtk(WidgetGtk* widget);
+  explicit TooltipManagerGtk(NativeWidgetGtk* widget);
   virtual ~TooltipManagerGtk() {}
 
   // Shows the tooltip at the specified location. Returns true if the tooltip
@@ -37,7 +37,7 @@ class TooltipManagerGtk : public TooltipManager {
   bool SendShowHelpSignal();
 
   // Our owner.
-  WidgetGtk* widget_;
+  NativeWidgetGtk* widget_;
 
   // The view supplied to the last invocation of ShowKeyboardTooltip.
   View* keyboard_view_;

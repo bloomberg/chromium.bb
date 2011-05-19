@@ -36,12 +36,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
 #include "views/widget/root_view.h"
-#if defined(OS_WIN)
-#include "views/widget/widget_win.h"
-#endif
-#if defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
-#endif
+#include "views/widget/widget.h"
 
 using views::Widget;
 

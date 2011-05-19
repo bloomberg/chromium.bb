@@ -17,7 +17,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "ui/gfx/point.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 using ui::OSExchangeData;
 
@@ -166,7 +166,7 @@ gboolean DropTargetGtk::OnDragDrop(GdkDragContext* context,
   OnDragMotion(context, x, y, time);
   if (!pending_view_) {
     // User isn't over a view, no drop can occur.
-    static_cast<WidgetGtk*>(
+    static_cast<NativeWidgetGtk*>(
         helper_.root_view()->GetWidget()->native_widget())->ResetDropTarget();
     // WARNING: we've been deleted.
     return FALSE;
@@ -246,8 +246,8 @@ void DropTargetGtk::FinishDrop(GdkDragContext* context,
   gtk_drag_finish(context, gdk_action != 0, (gdk_action & GDK_ACTION_MOVE),
                   time);
 
-  static_cast<WidgetGtk*>(helper_.root_view()->GetWidget()->native_widget())->
-      ResetDropTarget();
+  static_cast<NativeWidgetGtk*>(helper_.root_view()->GetWidget()->
+      native_widget())->ResetDropTarget();
   // WARNING: we've been deleted.
 }
 
@@ -265,8 +265,8 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
                                    int formats,
                                    const std::set<GdkAtom>& custom_formats,
                                    guint time) {
-  GtkWidget* widget = static_cast<WidgetGtk*>(helper_.root_view()->GetWidget()->
-      native_widget())->window_contents();
+  GtkWidget* widget = static_cast<NativeWidgetGtk*>(helper_.root_view()->
+      GetWidget()->native_widget())->window_contents();
 
   const std::set<GdkAtom>& known_formats =
       data_provider().known_custom_formats();

@@ -66,7 +66,7 @@
 #if defined(TOOLKIT_USES_GTK)
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/custom_drag.h"
 #include "chrome/browser/ui/gtk/unity_service.h"
@@ -609,7 +609,7 @@ void DragDownload(const DownloadItem* download,
   if (!root)
     return;
 
-  views::WidgetGtk* widget = static_cast<views::WidgetGtk*>(
+  views::NativeWidgetGtk* widget = static_cast<views::NativeWidgetGtk*>(
       views::NativeWidget::GetNativeWidgetForNativeView(root));
   if (!widget)
     return;

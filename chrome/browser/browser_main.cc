@@ -191,7 +191,7 @@
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "views/focus/accelerator_handler.h"
 #if defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #endif
 #endif
 
@@ -1004,7 +1004,7 @@ void InitializeToolkit(const MainFunctionParams& parameters) {
 #if defined(TOOLKIT_USES_GTK)
   // TODO(beng): Move to WidgetImpl and implement on Windows too!
   if (parameters.command_line_.HasSwitch(switches::kDebugViewsPaint))
-    views::WidgetGtk::EnableDebugPaint();
+    views::NativeWidgetGtk::EnableDebugPaint();
 #endif
 #endif
 

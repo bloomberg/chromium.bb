@@ -328,15 +328,15 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
  protected:
-  // TODO(beng): Remove WidgetGtk's dependence on the mouse state flags.
-  friend class WidgetGtk;
+  // TODO(beng): Remove NativeWidgetGtk's dependence on the mouse state flags.
+  friend class NativeWidgetGtk;
 
   // Creates the RootView to be used within this Widget. Subclasses may override
   // to create custom RootViews that do specialized event processing.
   // TODO(beng): Investigate whether or not this is needed.
   virtual RootView* CreateRootView();
 
-  // Provided to allow the WidgetWin/Gtk implementations to destroy the RootView
+  // Provided to allow the NativeWidget implementations to destroy the RootView
   // _before_ the focus manager/tooltip manager.
   // TODO(beng): remove once we fold those objects onto this one.
   void DestroyRootView();
@@ -344,12 +344,12 @@ class Widget : public internal::NativeWidgetDelegate,
   // Used for testing.
   void ReplaceFocusManager(FocusManager* focus_manager);
 
-  // TODO(beng): Remove WidgetGtk's dependence on these:
+  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // TODO(msw): Make this mouse state member private.
   // If true, the mouse is currently down.
   bool is_mouse_button_pressed_;
 
-  // TODO(beng): Remove WidgetGtk's dependence on these:
+  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // TODO(msw): Make these mouse state members private.
   // The following are used to detect duplicate mouse move events and not
   // deliver them. Displaying a window may result in the system generating

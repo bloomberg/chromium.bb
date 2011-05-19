@@ -54,7 +54,7 @@
 #include "ui/base/x/x11_util.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 namespace {
 
@@ -196,10 +196,10 @@ static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer(
 
 // A ScreenLock window that covers entire screen to keep the keyboard
 // focus/events inside the grab widget.
-class LockWindow : public views::WidgetGtk {
+class LockWindow : public views::NativeWidgetGtk {
  public:
   LockWindow()
-      : views::WidgetGtk(new views::Widget),
+      : views::NativeWidgetGtk(new views::Widget),
         toplevel_focus_widget_(NULL) {
     EnableDoubleBuffer(true);
   }
@@ -220,7 +220,7 @@ class LockWindow : public views::WidgetGtk {
 
   virtual void OnDestroy(GtkWidget* object) OVERRIDE {
     VLOG(1) << "OnDestroy: LockWindow destroyed";
-    views::WidgetGtk::OnDestroy(object);
+    views::NativeWidgetGtk::OnDestroy(object);
   }
 
   virtual void ClearNativeFocus() OVERRIDE {
@@ -288,10 +288,10 @@ class GrabWidgetRootView
 };
 
 // A child widget that grabs both keyboard and pointer input.
-class GrabWidget : public views::WidgetGtk {
+class GrabWidget : public views::NativeWidgetGtk {
  public:
   explicit GrabWidget(chromeos::ScreenLocker* screen_locker)
-      : views::WidgetGtk(new views::Widget),
+      : views::NativeWidgetGtk(new views::Widget),
         screen_locker_(screen_locker),
         ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
         grab_failure_count_(0),
@@ -302,7 +302,7 @@ class GrabWidget : public views::WidgetGtk {
   }
 
   virtual void Show() OVERRIDE {
-    views::WidgetGtk::Show();
+    views::NativeWidgetGtk::Show();
     signout_link_ =
         screen_locker_->GetViewByID(VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK);
     shutdown_ = screen_locker_->GetViewByID(VIEW_ID_SCREEN_LOCKER_SHUTDOWN);
@@ -328,7 +328,7 @@ class GrabWidget : public views::WidgetGtk {
     views::KeyEvent key_event(reinterpret_cast<GdkEvent*>(event));
     // This is a hack to workaround the issue crosbug.com/10655 due to
     // the limitation that a focus manager cannot handle views in
-    // TYPE_CHILD WidgetGtk correctly.
+    // TYPE_CHILD NativeWidgetGtk correctly.
     if (signout_link_ &&
         event->type == GDK_KEY_PRESS &&
         (event->keyval == GDK_Tab ||
@@ -345,12 +345,12 @@ class GrabWidget : public views::WidgetGtk {
         return true;
       }
     }
-    return views::WidgetGtk::OnEventKey(widget, event);
+    return views::NativeWidgetGtk::OnEventKey(widget, event);
   }
 
   virtual gboolean OnButtonPress(GtkWidget* widget,
                                  GdkEventButton* event) OVERRIDE {
-    WidgetGtk::OnButtonPress(widget, event);
+    NativeWidgetGtk::OnButtonPress(widget, event);
     // Never propagate event to parent.
     return true;
   }
@@ -812,7 +812,7 @@ void ScreenLocker::Init() {
   g_object_unref(window_group);
 
   lock_window->set_toplevel_focus_widget(
-      static_cast<views::WidgetGtk*>(lock_widget_->native_widget())->
+      static_cast<views::NativeWidgetGtk*>(lock_widget_->native_widget())->
           window_contents());
 
   // Create the SystemKeyEventListener so it can listen for system keyboard

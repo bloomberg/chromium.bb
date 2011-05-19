@@ -20,9 +20,9 @@ namespace {
 
 using views::View;
 
-// Some of GTK based view classes require WidgetGTK in the view
+// Some of GTK based view classes require NativeWidgetGtk in the view
 // parent chain. This class is used to defer the creation of such
-// views until a WidgetGTK is added to the view hierarchy.
+// views until a NativeWidgetGtk is added to the view hierarchy.
 class ContainerView : public View {
  public:
   explicit ContainerView(examples::ExampleBase* base)

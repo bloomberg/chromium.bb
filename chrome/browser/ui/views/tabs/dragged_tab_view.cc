@@ -11,9 +11,9 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #endif
 
 static const int kTransparentAlpha = 200;
@@ -48,7 +48,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
   container_->Init(params);
   container_->SetContentsView(this);
 #if defined(OS_WIN)
-  static_cast<views::WidgetWin*>(container_->native_widget())->
+  static_cast<views::NativeWidgetWin*>(container_->native_widget())->
       set_can_update_layered_window(false);
 
   BOOL drag;

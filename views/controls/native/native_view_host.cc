@@ -129,8 +129,8 @@ void NativeViewHost::Layout() {
 void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
   // Paint background if there is one. NativeViewHost needs to paint
   // a background when it is hosted in a TabbedPane. For Gtk implementation,
-  // NativeTabbedPaneGtk uses a WidgetGtk as page container and because
-  // WidgetGtk hook "expose" with its root view's paint, we need to
+  // NativeTabbedPaneGtk uses a NativeWidgetGtk as page container and because
+  // NativeWidgetGtk hook "expose" with its root view's paint, we need to
   // fill the content. Otherwise, the tab page's background is not properly
   // cleared. For Windows case, it appears okay to not paint background because
   // we don't have a container window in-between. However if you want to use

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/bubble/border_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -20,10 +20,10 @@ using std::vector;
 
 namespace {
 
-class BubbleWidget : public views::WidgetGtk {
+class BubbleWidget : public views::NativeWidgetGtk {
  public:
   BubbleWidget(BrowserBubble* bubble, const gfx::Insets& content_margins)
-      : views::WidgetGtk(new views::Widget),
+      : views::NativeWidgetGtk(new views::Widget),
         bubble_(bubble),
         border_contents_(new BorderContents) {
     border_contents_->Init();
@@ -32,7 +32,7 @@ class BubbleWidget : public views::WidgetGtk {
 
   void ShowAndActivate(bool activate) {
     // TODO: honor activate.
-    views::WidgetGtk::Show();
+    views::NativeWidgetGtk::Show();
   }
 
   virtual void Close() {
@@ -43,7 +43,7 @@ class BubbleWidget : public views::WidgetGtk {
       if (delegate)
         delegate->BubbleLostFocus(bubble_, false);
     }
-    views::WidgetGtk::Close();
+    views::NativeWidgetGtk::Close();
     bubble_ = NULL;
   }
 
@@ -53,7 +53,7 @@ class BubbleWidget : public views::WidgetGtk {
       if (delegate)
         delegate->BubbleLostFocus(bubble_, false);
     }
-    views::WidgetGtk::Hide();
+    views::NativeWidgetGtk::Hide();
   }
 
   virtual void IsActiveChanged() {
@@ -75,7 +75,7 @@ class BubbleWidget : public views::WidgetGtk {
   virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
     if (bubble_ && bubble_->delegate())
       bubble_->delegate()->BubbleGotFocus(bubble_);
-    return views::WidgetGtk::OnFocusIn(widget, event);
+    return views::NativeWidgetGtk::OnFocusIn(widget, event);
   }
 
   BorderContents* border_contents() {

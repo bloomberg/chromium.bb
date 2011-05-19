@@ -13,8 +13,6 @@
 
 namespace views {
 
-class WidgetGtk;
-
 class NativeTabbedPaneGtk : public NativeControlGtk,
                             public NativeTabbedPaneWrapper {
  public:

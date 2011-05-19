@@ -44,7 +44,7 @@ class NativeControlWin : public ChildWindowMessageProcessor,
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
   virtual void OnFocus();
 
-  // Called by the containing WidgetWin when a WM_CONTEXTMENU message is
+  // Called by the containing NativeWidgetWin when a WM_CONTEXTMENU message is
   // received from the HWND created by an object derived from NativeControlWin.
   virtual void ShowContextMenu(const gfx::Point& location);
 
@@ -75,9 +75,9 @@ class NativeControlWin : public ChildWindowMessageProcessor,
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
 
-  // Called by the containing WidgetWin when a message of type WM_CTLCOLORBTN or
-  // WM_CTLCOLORSTATIC is sent from the HWND created by an object dreived from
-  // NativeControlWin.
+  // Called by the containing NativeWidgetWin when a message of type
+  // WM_CTLCOLORBTN or WM_CTLCOLORSTATIC is sent from the HWND created by an
+  // object derived from NativeControlWin.
   LRESULT GetControlColor(UINT message, HDC dc, HWND sender);
 
   // Our subclass window procedure for the attached control.

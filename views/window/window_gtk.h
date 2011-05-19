@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #include "views/window/native_window.h"
 #include "views/window/window.h"
 
@@ -25,7 +25,7 @@ class Client;
 class WindowDelegate;
 
 // Window implementation for GTK.
-class WindowGtk : public WidgetGtk, public NativeWindow {
+class WindowGtk : public NativeWidgetGtk, public NativeWindow {
  public:
   explicit WindowGtk(internal::NativeWindowDelegate* delegate);
   virtual ~WindowGtk();
@@ -33,7 +33,7 @@ class WindowGtk : public WidgetGtk, public NativeWindow {
   virtual Window* GetWindow() OVERRIDE;
   virtual const Window* GetWindow() const OVERRIDE;
 
-  // Overridden from WidgetGtk:
+  // Overridden from NativeWidgetGtk:
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
   virtual gboolean OnConfigureEvent(GtkWidget* widget,
                                     GdkEventConfigure* event);

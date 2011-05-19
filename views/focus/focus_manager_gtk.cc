@@ -7,13 +7,13 @@
 #include "views/focus/focus_manager.h"
 
 #include "base/logging.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #include "views/window/window_gtk.h"
 
 namespace views {
 
 void FocusManager::ClearNativeFocus() {
-  static_cast<WidgetGtk*>(widget_->native_widget())->ClearNativeFocus();
+  static_cast<NativeWidgetGtk*>(widget_->native_widget())->ClearNativeFocus();
 }
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {

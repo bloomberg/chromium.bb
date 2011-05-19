@@ -10,10 +10,6 @@
 #include "views/widget/widget.h"
 #include "views/widget/native_widget_test_utils.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
-#endif
-
 namespace views {
 
 class ScopedTestWidget {

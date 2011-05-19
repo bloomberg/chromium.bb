@@ -13,10 +13,6 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
-#if defined(OS_WIN)
-#include "views/widget/widget_win.h"
-#endif
-
 // This class is only used on windows for now.
 #if defined(OS_WIN)
 

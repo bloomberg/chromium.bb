@@ -18,7 +18,7 @@
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 namespace views {
 
@@ -393,7 +393,8 @@ void NativeTextfieldGtk::OnActivate(GtkWidget* native_widget) {
   if (controller)
     handled = controller->HandleKeyEvent(textfield_, views_key_event);
 
-  WidgetGtk* widget = static_cast<WidgetGtk*>(GetWidget()->native_widget());
+  NativeWidgetGtk* widget =
+      static_cast<NativeWidgetGtk*>(GetWidget()->native_widget());
   if (!handled && widget)
     handled = widget->HandleKeyboardEvent(views_key_event);
 

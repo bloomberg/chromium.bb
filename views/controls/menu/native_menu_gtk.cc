@@ -22,7 +22,7 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 #include "views/views_delegate.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 namespace {
 
@@ -108,8 +108,8 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   // the menu after the menu painted itself.
   GtkWidget* popup_window = gtk_widget_get_ancestor(menu_, GTK_TYPE_WINDOW);
   CHECK(popup_window);
-  WidgetGtk::UpdateFreezeUpdatesProperty(GTK_WINDOW(popup_window),
-                                         true /* add */);
+  NativeWidgetGtk::UpdateFreezeUpdatesProperty(GTK_WINDOW(popup_window),
+                                               true /* add */);
   expose_handler_id_ = g_signal_connect_after(G_OBJECT(menu_), "expose_event",
                                               G_CALLBACK(&OnExposeThunk), this);
 
@@ -346,8 +346,8 @@ gboolean NativeMenuGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   GtkWidget* popup_window = gtk_widget_get_ancestor(menu_, GTK_TYPE_WINDOW);
   CHECK(popup_window);
   DCHECK(expose_handler_id_);
-  WidgetGtk::UpdateFreezeUpdatesProperty(GTK_WINDOW(popup_window),
-                                         false /* remove */);
+  NativeWidgetGtk::UpdateFreezeUpdatesProperty(GTK_WINDOW(popup_window),
+                                               false /* remove */);
   if (expose_handler_id_) {
     g_signal_handler_disconnect(menu_, expose_handler_id_);
     expose_handler_id_ = 0;

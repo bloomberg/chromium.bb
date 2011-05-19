@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/fullscreen_exit_bubble.h"
 
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "grit/generated_resources.h"
@@ -19,9 +20,6 @@
 
 #if defined(OS_WIN)
 #include "ui/base/l10n/l10n_util_win.h"
-#include "views/widget/widget_win.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "views/widget/widget_gtk.h"
 #endif
 
 // FullscreenExitView ----------------------------------------------------------

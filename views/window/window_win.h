@@ -6,7 +6,7 @@
 #define VIEWS_WINDOW_WINDOW_WIN_H_
 #pragma once
 
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #include "views/window/native_window.h"
 #include "views/window/window.h"
 
@@ -32,15 +32,16 @@ void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
 class Client;
 class WindowDelegate;
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // WindowWin
 //
-//  A WindowWin is a WidgetWin that has a caption and a border. The frame is
-//  rendered by the operating system.
+//  A WindowWin is a NativeWidgetWin that encapsulates a window with a frame.
+//  The frame may or may not be rendered by the operating system. The window may
+//  or may not be top level.
 //
-///////////////////////////////////////////////////////////////////////////////
-class WindowWin : public WidgetWin,
+////////////////////////////////////////////////////////////////////////////////
+class WindowWin : public NativeWidgetWin,
                   public NativeWindow {
  public:
   explicit WindowWin(internal::NativeWindowDelegate* delegate);
@@ -85,7 +86,7 @@ class WindowWin : public WidgetWin,
   // show state from the shortcut starutp info).
   virtual int GetShowState() const;
 
-  // Overridden from WidgetWin:
+  // Overridden from NativeWidgetWin:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual void OnActivateApp(BOOL active, DWORD thread_id) OVERRIDE;
   virtual LRESULT OnAppCommand(HWND window,

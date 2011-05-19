@@ -12,11 +12,11 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 // ConstrainedHtmlDelegateGtk works with ConstrainedWindowGtk to present
 // a TabContents in a ContraintedHtmlUI.
-class ConstrainedHtmlDelegateGtk : public views::WidgetGtk,
+class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
                                    public ConstrainedHtmlUIDelegate,
                                    public ConstrainedWindowDelegate,
                                    public HtmlDialogTabContentsDelegate {
@@ -70,7 +70,7 @@ class ConstrainedHtmlDelegateGtk : public views::WidgetGtk,
 ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
     Profile* profile,
     HtmlDialogUIDelegate* delegate)
-    : views::WidgetGtk(new views::Widget),
+    : views::NativeWidgetGtk(new views::Widget),
       HtmlDialogTabContentsDelegate(profile),
       html_tab_contents_(profile, NULL, MSG_ROUTING_NONE, NULL, NULL),
       tab_container_(NULL),

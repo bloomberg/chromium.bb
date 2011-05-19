@@ -23,7 +23,6 @@
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
-#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 

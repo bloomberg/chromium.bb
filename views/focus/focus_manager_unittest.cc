@@ -32,12 +32,8 @@
 #include "views/window/window.h"
 #include "views/window/window_delegate.h"
 
-#if defined(OS_WIN)
-#include "views/widget/widget_win.h"
-#include "views/window/window_win.h"
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
-#include "views/window/window_gtk.h"
 #endif
 
 namespace {
@@ -1500,7 +1496,7 @@ class MessageTrackingView : public View {
 #if defined(OS_WIN)
 // This test is now Windows only. Linux Views port does not handle accelerator
 // keys in AcceleratorHandler anymore. The logic has been moved into
-// WidgetGtk::OnKeyEvent().
+// NativeWidgetGtk::OnKeyEvent().
 // Tests that the keyup messages are eaten for accelerators.
 TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   FocusManager* focus_manager = GetFocusManager();

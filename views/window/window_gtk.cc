@@ -80,7 +80,7 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
 namespace views {
 
 WindowGtk::WindowGtk(internal::NativeWindowDelegate* delegate)
-    : WidgetGtk(delegate->AsNativeWidgetDelegate()),
+    : NativeWidgetGtk(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
@@ -91,7 +91,7 @@ WindowGtk::~WindowGtk() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowGtk, WidgetGtk overrides:
+// WindowGtk, NativeWidgetGtk overrides:
 
 gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
   GdkEventButton transformed_event = *event;
@@ -103,9 +103,9 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     case HTCAPTION: {
       // Start dragging if the mouse event is a single click and *not* a right
       // click. If it is a right click, then pass it through to
-      // WidgetGtk::OnButtonPress so that View class can show ContextMenu upon a
-      // mouse release event. We only start drag on single clicks as we get a
-      // crash in Gtk on double/triple clicks.
+      // NativeWidgetGtk::OnButtonPress so that View class can show ContextMenu
+      // upon a mouse release event. We only start drag on single clicks as we
+      // get a crash in Gtk on double/triple clicks.
       if (event->type == GDK_BUTTON_PRESS &&
           !mouse_event.IsOnlyRightMouseButton()) {
         gfx::Point screen_point(event->x, event->y);
@@ -140,7 +140,7 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
       // Everything else falls into standard client event handling...
       break;
   }
-  return WidgetGtk::OnButtonPress(widget, event);
+  return NativeWidgetGtk::OnButtonPress(widget, event);
 }
 
 gboolean WindowGtk::OnConfigureEvent(GtkWidget* widget,
@@ -162,11 +162,11 @@ gboolean WindowGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
     gdk_window_set_cursor(widget->window, gfx::GetCursor(cursor_type));
   }
 
-  return WidgetGtk::OnMotionNotify(widget, event);
+  return NativeWidgetGtk::OnMotionNotify(widget, event);
 }
 
 void WindowGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
-  WidgetGtk::OnSizeAllocate(widget, allocation);
+  NativeWidgetGtk::OnSizeAllocate(widget, allocation);
 
   // The Window's NonClientView may provide a custom shape for the Window.
   gfx::Path window_mask;
@@ -192,16 +192,16 @@ gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
 gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   gdk_window_set_cursor(widget->window, gfx::GetCursor(GDK_LEFT_PTR));
 
-  return WidgetGtk::OnLeaveNotify(widget, event);
+  return NativeWidgetGtk::OnLeaveNotify(widget, event);
 }
 
 void WindowGtk::IsActiveChanged() {
-  WidgetGtk::IsActiveChanged();
+  NativeWidgetGtk::IsActiveChanged();
   delegate_->OnNativeWindowActivationChanged(IsActive());
 }
 
 void WindowGtk::InitNativeWidget(const Widget::InitParams& params) {
-  WidgetGtk::InitNativeWidget(params);
+  NativeWidgetGtk::InitNativeWidget(params);
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
                    G_CALLBACK(CallConfigureEvent), this);
@@ -297,7 +297,7 @@ const Window* WindowGtk::GetWindow() const {
 void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
                                 gfx::NativeWindow other_window) {
   // TODO: need to deal with other_window.
-  WidgetGtk::SetBounds(bounds);
+  NativeWidgetGtk::SetBounds(bounds);
 }
 
 void WindowGtk::HideWindow() {
@@ -330,7 +330,7 @@ void WindowGtk::Restore() {
 }
 
 bool WindowGtk::IsActive() const {
-  return WidgetGtk::IsActive();
+  return NativeWidgetGtk::IsActive();
 }
 
 bool WindowGtk::IsVisible() const {
@@ -419,7 +419,7 @@ void WindowGtk::SaveWindowPosition() {
 
 void WindowGtk::OnDestroy(GtkWidget* widget) {
   delegate_->OnNativeWindowDestroying();
-  WidgetGtk::OnDestroy(widget);
+  NativeWidgetGtk::OnDestroy(widget);
   delegate_->OnNativeWindowDestroyed();
 }
 

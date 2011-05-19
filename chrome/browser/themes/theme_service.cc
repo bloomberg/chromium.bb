@@ -21,7 +21,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #endif
 
 // Strings used in alignment properties.
@@ -271,7 +271,7 @@ bool ThemeService::ShouldUseNativeFrame() const {
   if (HasCustomImage(IDR_THEME_FRAME))
     return false;
 #if defined(OS_WIN)
-  return views::WidgetWin::IsAeroGlassEnabled();
+  return views::NativeWidgetWin::IsAeroGlassEnabled();
 #else
   return false;
 #endif

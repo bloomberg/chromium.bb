@@ -30,7 +30,6 @@ class ButtonListener;
 class ImageButton;
 class ImagePainter;
 class TextButton;
-class WidgetWin;
 class Menu2;
 }  // namespace views
 

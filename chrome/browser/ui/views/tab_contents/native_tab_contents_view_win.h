@@ -7,13 +7,13 @@
 #pragma once
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 class WebDropTarget;
 class TabContents;
 class TabContentsDragWin;
 
-class NativeTabContentsViewWin : public views::WidgetWin,
+class NativeTabContentsViewWin : public views::NativeWidgetWin,
                                  public NativeTabContentsView {
  public:
   explicit NativeTabContentsViewWin(
@@ -43,7 +43,7 @@ class NativeTabContentsViewWin : public views::WidgetWin,
   virtual void SetDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
 
-  // Overridden from views::WidgetWin:
+  // Overridden from views::NativeWidgetWin:
   virtual void OnDestroy() OVERRIDE;
   virtual void OnHScroll(int scroll_type,
                          short position,
