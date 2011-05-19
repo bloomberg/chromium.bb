@@ -1814,7 +1814,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)doDefaultAction:(int32)accessibilityObjectId {
-  RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host;
+  RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
   rwh_->Send(new ViewMsg_AccessibilityDoDefaultAction(
       rwh->routing_id(), accessibilityObjectId));
 }
