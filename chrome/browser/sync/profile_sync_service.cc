@@ -505,7 +505,8 @@ void ProfileSyncService::OnUnrecoverableError(
   unrecoverable_error_location_.reset(
       new tracked_objects::Location(from_here.function_name(),
                                     from_here.file_name(),
-                                    from_here.line_number()));
+                                    from_here.line_number(),
+                                    from_here.program_counter()));
 
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);

@@ -41,7 +41,10 @@ class BASE_API Location {
   // Constructor should be called with a long-lived char*, such as __FILE__.
   // It assumes the provided value will persist as a global constant, and it
   // will not make a copy of it.
-  Location(const char* function_name, const char* file_name, int line_number);
+  Location(const char* function_name,
+           const char* file_name,
+           int line_number,
+           const void* program_counter);
 
   // Provide a default constructor for easy of debugging.
   Location();
@@ -60,9 +63,10 @@ class BASE_API Location {
     return function_name_ < other.function_name_;
   }
 
-  const char* function_name() const { return function_name_; }
-  const char* file_name()     const { return file_name_; }
-  int line_number()           const { return line_number_; }
+  const char* function_name()   const { return function_name_; }
+  const char* file_name()       const { return file_name_; }
+  int line_number()             const { return line_number_; }
+  const void* program_counter() const { return program_counter_; }
 
   void Write(bool display_filename, bool display_function_name,
              std::string* output) const;
@@ -74,13 +78,19 @@ class BASE_API Location {
   const char* const function_name_;
   const char* const file_name_;
   const int line_number_;
+  const void* const program_counter_;
 };
 
+BASE_API const void* GetProgramCounter();
 
 //------------------------------------------------------------------------------
 // Define a macro to record the current source location.
 
-#define FROM_HERE tracked_objects::Location(__FUNCTION__, __FILE__, __LINE__)
+#define FROM_HERE tracked_objects::Location(                                   \
+    __FUNCTION__,                                                              \
+    __FILE__,                                                                  \
+    __LINE__,                                                                  \
+    tracked_objects::GetProgramCounter())                                      \
 
 
 //------------------------------------------------------------------------------
@@ -110,6 +120,11 @@ class BASE_API Tracked {
   base::TimeTicks tracked_birth_time() const { return base::TimeTicks::Now(); }
 #endif  // defined(TRACK_ALL_TASK_OBJECTS)
 
+  // Returns null if SetBirthPlace has not been called.
+  const void* get_birth_program_counter() const {
+    return birth_program_counter_;
+  }
+
  private:
 #if defined(TRACK_ALL_TASK_OBJECTS)
 
@@ -122,6 +137,8 @@ class BASE_API Tracked {
   base::TimeTicks tracked_birth_time_;
 
 #endif  // defined(TRACK_ALL_TASK_OBJECTS)
+
+  const void* birth_program_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(Tracked);
 };

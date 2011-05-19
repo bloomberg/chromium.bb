@@ -1,6 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "build/build_config.h"
+
+#if defined(COMPILER_MSVC)
+#include <intrin.h>
+#endif
 
 #include "base/tracked.h"
 
@@ -13,17 +19,21 @@ namespace tracked_objects {
 
 //------------------------------------------------------------------------------
 
-Location::Location(const char* function_name, const char* file_name,
-                   int line_number)
+Location::Location(const char* function_name,
+                   const char* file_name,
+                   int line_number,
+                   const void* program_counter)
     : function_name_(function_name),
       file_name_(file_name),
-      line_number_(line_number) {
+      line_number_(line_number),
+      program_counter_(program_counter) {
 }
 
 Location::Location()
     : function_name_("Unknown"),
       file_name_("Unknown"),
-      line_number_(-1) {
+      line_number_(-1),
+      program_counter_(NULL) {
 }
 
 void Location::Write(bool display_filename, bool display_function_name,
@@ -58,15 +68,29 @@ void Location::WriteFunctionName(std::string* output) const {
   }
 }
 
+BASE_API const void* GetProgramCounter() {
+#if defined(COMPILER_MSVC)
+  return _ReturnAddress();
+#elif defined(COMPILER_GCC)
+  return __builtin_extract_return_addr(__builtin_return_address(0));
+#endif  // COMPILER_GCC
+
+  return NULL;
+}
+
 //------------------------------------------------------------------------------
 
 #ifndef TRACK_ALL_TASK_OBJECTS
 
-Tracked::Tracked() {}
+Tracked::Tracked() : birth_program_counter_(NULL) {}
 Tracked::~Tracked() {}
-void Tracked::SetBirthPlace(const Location& from_here) {}
+
+void Tracked::SetBirthPlace(const Location& from_here) {
+  birth_program_counter_ = from_here.program_counter();
+}
+
 const Location Tracked::GetBirthPlace() const {
-  static Location kNone("NoFunctionName", "NeedToSetBirthPlace", -1);
+  static Location kNone("NoFunctionName", "NeedToSetBirthPlace", -1, NULL);
   return kNone;
 }
 bool Tracked::MissingBirthplace() const { return false; }
@@ -79,7 +103,7 @@ Tracked::Tracked()
       tracked_birth_time_(TimeTicks::Now()) {
   if (!ThreadData::IsActive())
     return;
-  SetBirthPlace(Location("NoFunctionName", "NeedToSetBirthPlace", -1));
+  SetBirthPlace(Location("NoFunctionName", "NeedToSetBirthPlace", -1, NULL));
 }
 
 Tracked::~Tracked() {
@@ -98,6 +122,8 @@ void Tracked::SetBirthPlace(const Location& from_here) {
   if (!current_thread_data)
     return;  // Shutdown started, and this thread wasn't registered.
   tracked_births_ = current_thread_data->TallyABirth(from_here);
+
+  birth_program_counter_ = from_here.program_counter();
 }
 
 const Location Tracked::GetBirthPlace() const {
