@@ -154,8 +154,7 @@ class BookmarkButton : public views::TextButton {
     return !tooltip->empty();
   }
 
-  virtual bool IsTriggerableEvent(views::MenuItemView* menu,
-                                  const views::MouseEvent& e) {
+  virtual bool IsTriggerableEvent(const views::MouseEvent& e) OVERRIDE {
     return event_utils::IsPossibleDispositionEvent(e);
   }
 
@@ -188,8 +187,7 @@ class BookmarkFolderButton : public views::MenuButton {
     }
   }
 
-  virtual bool IsTriggerableEvent(views::MenuItemView* menu,
-                                  const views::MouseEvent& e) {
+  virtual bool IsTriggerableEvent(const views::MouseEvent& e) OVERRIDE {
     // Left clicks should show the menu contents and right clicks should show
     // the context menu. They should not trigger the opening of underlying urls.
     if (e.flags() == ui::EF_LEFT_BUTTON_DOWN ||
