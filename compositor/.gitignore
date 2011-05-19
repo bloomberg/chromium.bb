@@ -1,4 +1,4 @@
-compositor
+wayland-compositor
 screenshooter-protocol.c
 screenshooter-server-protocol.h
 meego-tablet-protocol.c
