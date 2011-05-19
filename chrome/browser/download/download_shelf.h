@@ -6,16 +6,10 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
-#include "ui/base/models/simple_menu_model.h"
-
 class BaseDownloadItemModel;
 class Browser;
-class DownloadItem;
 
-// DownloadShelf is an interface for platform-specific download shelf views.
+// This is an interface for platform specific download shelf implementations.
 class DownloadShelf {
  public:
   virtual ~DownloadShelf() {}
@@ -40,52 +34,6 @@ class DownloadShelf {
   virtual void Close() = 0;
 
   virtual Browser* browser() const = 0;
-};
-
-// Logic for the download shelf context menu. Platform specific subclasses are
-// responsible for creating and running the menu.
-class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
- public:
-  virtual ~DownloadShelfContextMenu();
-
-  virtual DownloadItem* download() const;
-
-  enum ContextMenuCommands {
-    SHOW_IN_FOLDER = 1,  // Open a file explorer window with the item selected.
-    OPEN_WHEN_COMPLETE,  // Open the download when it's finished.
-    ALWAYS_OPEN_TYPE,    // Default this file extension to always open.
-    CANCEL,              // Cancel the download.
-    TOGGLE_PAUSE,        // Temporarily pause a download.
-    MENU_LAST
-  };
-
- protected:
-  explicit DownloadShelfContextMenu(BaseDownloadItemModel* download_model);
-
-  ui::SimpleMenuModel* GetInProgressMenuModel();
-  ui::SimpleMenuModel* GetFinishedMenuModel();
-  // Information source.
-  DownloadItem* download_;
-
-  // ui::SimpleMenuModel::Delegate implementation:
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual void ExecuteCommand(int command_id);
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
-  virtual bool IsItemForCommandIdDynamic(int command_id) const;
-  virtual string16 GetLabelForCommandId(int command_id) const;
-
-  // A model to control the cancel behavior.
-  BaseDownloadItemModel* model_;
-
- private:
-  // We show slightly different menus if the download is in progress vs. if the
-  // download has finished.
-  scoped_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;
-  scoped_ptr<ui::SimpleMenuModel> finished_download_menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenu);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_

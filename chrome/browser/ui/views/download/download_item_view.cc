@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_shelf_context_menu.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -88,7 +89,7 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu {
   }
 
   void Run(const gfx::Point& point) {
-    if (download_->IsComplete())
+    if (download_item()->IsComplete())
       menu_.reset(new views::Menu2(GetFinishedMenuModel()));
     else
       menu_.reset(new views::Menu2(GetInProgressMenuModel()));
@@ -105,7 +106,7 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu {
   // This method runs when the caller has been deleted and we should not attempt
   // to access |download_|.
   void Stop() {
-    download_ = NULL;
+    set_download_item(NULL);
   }
 
  private:
@@ -671,7 +672,7 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
 
   // If the menu action was to remove the download, this view will also be
   // invalid so we must not access 'this' in this case.
-  if (context_menu_->download()) {
+  if (context_menu_->download_item()) {
     drop_down_pressed_ = false;
     // Showing the menu blocks. Here we revert the state.
     SetState(NORMAL, NORMAL);

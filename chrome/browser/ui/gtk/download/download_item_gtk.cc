@@ -14,7 +14,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/download/download_shelf_context_menu.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/custom_drag.h"
@@ -91,7 +91,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   DownloadShelfContextMenuGtk(BaseDownloadItemModel* model,
                               DownloadItemGtk* download_item)
       : DownloadShelfContextMenu(model),
-        download_item_(download_item) {
+        download_item_gtk_(download_item) {
   }
 
   ~DownloadShelfContextMenuGtk() {
@@ -100,7 +100,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   void Popup(GtkWidget* widget, GdkEventButton* event) {
     // Create the menu if we have not created it yet or we created it for
     // an in-progress download that has since completed.
-    if (download_->IsComplete())
+    if (download_item()->IsComplete())
       menu_.reset(new MenuGtk(this, GetFinishedMenuModel()));
     else
       menu_.reset(new MenuGtk(this, GetInProgressMenuModel()));
@@ -114,8 +114,8 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
 
   // MenuGtk::Delegate implementation:
   virtual void StoppedShowing() {
-    download_item_->menu_showing_ = false;
-    gtk_widget_queue_draw(download_item_->menu_button_);
+    download_item_gtk_->menu_showing_ = false;
+    gtk_widget_queue_draw(download_item_gtk_->menu_button_);
   }
 
   virtual GtkWidget* GetImageForCommandId(int command_id) const {
@@ -147,7 +147,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   scoped_ptr<MenuGtk> menu_;
 
   // The download item that created us.
-  DownloadItemGtk* download_item_;
+  DownloadItemGtk* download_item_gtk_;
 };
 
 // DownloadItemGtk -------------------------------------------------------------
