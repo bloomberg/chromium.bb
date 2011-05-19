@@ -30,6 +30,9 @@ class WebSocketProxyPrivateGetPassportForTCPFunction
   // Finalizes async operation.
   void Finalize();
 
+  // Whether already finalized.
+  bool is_finalized_;
+
   // Used to signal timeout (when waiting for proxy initial launch).
   base::OneShotTimer<WebSocketProxyPrivateGetPassportForTCPFunction> timer_;
 

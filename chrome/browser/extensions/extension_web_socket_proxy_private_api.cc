@@ -16,7 +16,7 @@
 #endif
 
 WebSocketProxyPrivateGetPassportForTCPFunction::
-    WebSocketProxyPrivateGetPassportForTCPFunction() {
+    WebSocketProxyPrivateGetPassportForTCPFunction() : is_finalized_(false) {
 }
 
 WebSocketProxyPrivateGetPassportForTCPFunction::
@@ -24,6 +24,7 @@ WebSocketProxyPrivateGetPassportForTCPFunction::
 }
 
 bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
+  AddRef();
   bool delay_response = false;
   result_.reset(Value::CreateStringValue(""));
 
@@ -55,12 +56,9 @@ bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
   }
 #endif  // defined(OS_CHROMEOS)
 
-  // TODO(dilmah): get idea why notification is not observed and timer callback
-  // is not called and remove this line.
-  delay_response = false;
-
   if (delay_response) {
-    timer_.Start(base::TimeDelta::FromSeconds(3),
+    const int kTimeout = 3;
+    timer_.Start(base::TimeDelta::FromSeconds(kTimeout),
         this, &WebSocketProxyPrivateGetPassportForTCPFunction::Finalize);
   } else {
     Finalize();
@@ -81,6 +79,12 @@ void WebSocketProxyPrivateGetPassportForTCPFunction::Observe(
 }
 
 void WebSocketProxyPrivateGetPassportForTCPFunction::Finalize() {
+  if (is_finalized_) {
+    NOTREACHED();
+    return;
+  }
+  is_finalized_ = true;
   SendResponse(true);
+  Release();
 }
 
