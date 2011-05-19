@@ -43,7 +43,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -1074,64 +1074,69 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   }
 }
 
-class DNSCertProvenanceCheckingInfoBar : public ConfirmInfoBarDelegate {
+class LearnMoreInfoBar : public LinkInfoBarDelegate {
  public:
-  explicit DNSCertProvenanceCheckingInfoBar(TabContents* tab_contents);
-  virtual ~DNSCertProvenanceCheckingInfoBar();
+  explicit LearnMoreInfoBar(TabContents* tab_contents,
+                            const string16& message,
+                            const GURL& url);
+  virtual ~LearnMoreInfoBar();
 
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
  private:
-  static const char kLearnMoreURL[];
   TabContents* const tab_contents_;
+  string16 message_;
+  GURL learn_more_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(DNSCertProvenanceCheckingInfoBar);
+  DISALLOW_COPY_AND_ASSIGN(LearnMoreInfoBar);
 };
 
-DNSCertProvenanceCheckingInfoBar::DNSCertProvenanceCheckingInfoBar(
-    TabContents* tab_contents)
-    : ConfirmInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents) {
+LearnMoreInfoBar::LearnMoreInfoBar(TabContents* tab_contents,
+                                   const string16& message,
+                                   const GURL& url)
+    : LinkInfoBarDelegate(tab_contents),
+      tab_contents_(tab_contents),
+      message_(message),
+      learn_more_url_(url) {
 }
 
-DNSCertProvenanceCheckingInfoBar::~DNSCertProvenanceCheckingInfoBar() {
+LearnMoreInfoBar::~LearnMoreInfoBar() {
 }
 
-string16 DNSCertProvenanceCheckingInfoBar::GetMessageText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
+string16 LearnMoreInfoBar::GetMessageTextWithOffset(size_t* link_offset) const {
+  string16 text = message_;
+  text.push_back(' ');  // Add a space before the following link.
+  *link_offset = text.size();
+  return text;
 }
 
-int DNSCertProvenanceCheckingInfoBar::GetButtons() const {
-  return BUTTON_OK;
-}
-
-string16 DNSCertProvenanceCheckingInfoBar::GetButtonLabel(
-    InfoBarButton button) const {
+string16 LearnMoreInfoBar::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool DNSCertProvenanceCheckingInfoBar::Accept() {
-  tab_contents_->OpenURL(GURL(kLearnMoreURL), GURL(), NEW_FOREGROUND_TAB,
-                         PageTransition::AUTO_BOOKMARK);
-  return true;
+bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
+  tab_contents_->OpenURL(learn_more_url_, GURL(), disposition,
+                         PageTransition::LINK);
+  return false;
 }
 
 // This is the page which provides information on DNS certificate provenance
 // checking.
-const char DNSCertProvenanceCheckingInfoBar::kLearnMoreURL[] =
-    "http://dev.chromium.org/dnscertprovenancechecking";
-
 void BrowserInit::LaunchWithProfile::
     AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(
         TabContentsWrapper* tab) {
   if (!command_line_.HasSwitch(switches::kEnableDNSCertProvenanceChecking))
     return;
 
-  tab->AddInfoBar(new DNSCertProvenanceCheckingInfoBar(tab->tab_contents()));
+  const char* kLearnMoreURL =
+      "http://dev.chromium.org/dnscertprovenancechecking";
+  string16 message = l10n_util::GetStringUTF16(
+      IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
+  tab->AddInfoBar(new LearnMoreInfoBar(tab->tab_contents(),
+                                       message,
+                                       GURL(kLearnMoreURL)));
 }
 
 void BrowserInit::LaunchWithProfile::AddStartupURLs(
