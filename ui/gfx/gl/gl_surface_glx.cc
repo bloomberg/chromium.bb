@@ -4,7 +4,10 @@
 
 extern "C" {
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 }
+
+#include <map>
 
 #include "ui/gfx/gl/gl_surface_glx.h"
 
@@ -18,7 +21,10 @@ extern "C" {
 
 namespace {
 
-Display* g_display;
+static Display* g_display;
+typedef std::map<gfx::PluginWindowHandle, XID> XIDMapping;
+static XIDMapping glx_windows_destroyed_;
+static const char kGLX_WINDOWPropertyName[] = "GLX_WINDOW";
 
 }  // namespace
 
@@ -34,7 +40,45 @@ class ScopedPtrXFree {
   void operator()(void* x) const {
     ::XFree(x);
   }
+
 };
+
+XID GetGLX_WINDOWProperty(XID window) {
+  Atom a = XInternAtom(g_display, kGLX_WINDOWPropertyName, False);
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems;
+  unsigned long bytes_after;
+  unsigned char* prop;
+
+  if (XGetWindowProperty(g_display, window, a, 0, 1, False, XA_WINDOW,
+                         &actual_type, &actual_format, &nitems,
+                         &bytes_after, &prop) == Success && actual_type) {
+    scoped_ptr_malloc<unsigned char, ScopedPtrXFree> prop_scoped(prop);
+    return *reinterpret_cast<XID*>(prop);
+  } else {
+    return 0;
+  }
+}
+
+void SetGLX_WINDOWProperty(XID window, XID glx_window) {
+  Atom a = XInternAtom(g_display, kGLX_WINDOWPropertyName, False);
+  XChangeProperty(g_display, window, a, XA_WINDOW, 32, PropModeReplace,
+                  reinterpret_cast<unsigned char*>(&glx_window), 1);
+}
+
+void CollectGarbage() {
+  for (XIDMapping::iterator iter = glx_windows_destroyed_.begin();
+       iter != glx_windows_destroyed_.end(); ) {
+    XID glx_window = GetGLX_WINDOWProperty(iter->second);
+    if (glx_window != iter->first) {
+      glXDestroyWindow(g_display, iter->first);
+      glx_windows_destroyed_.erase(iter++);
+    } else {
+      iter++;
+    }
+  }
+}
 
 }  // namespace anonymous
 
@@ -143,22 +187,43 @@ bool NativeViewGLSurfaceGLX::Initialize() {
     config_ = configs.get()[0];
   }
 
-  glx_window_ = glXCreateWindow(g_display,
-                                static_cast<GLXFBConfig>(config_),
-                                window_,
-                                NULL);
+  // Some X servers do not allow recreating the GLX window after a previous GLX
+  // window for the same X window was destroyed.  To work around this, we attach
+  // a GLX_WINDOW property to the X window that stores the XID of the GLX
+  // window.  In the destructor we do not call glXDestroyWindow right away;
+  // instead we add the XID of the deleted window to the destroyed windows list.
+  //
+  // CollectGarbage call walks through the destroyed windows list and checks
+  // that corresponding X windows still exist and refer to the correct GLX
+  // window.  If an X window does not exist, it must have been deleted by the
+  // browser process.  If an X window does exist but the property does not exist
+  // or does not match, X server must have recycled the XID.  In these two cases
+  // the GLX window is orphaned and needs to be deleted.
+  glx_window_ = GetGLX_WINDOWProperty(window_);
+  if (glx_window_)
+    glx_windows_destroyed_.erase(glx_window_);
+  else {
+    glx_window_ = glXCreateWindow(g_display,
+                                  static_cast<GLXFBConfig>(config_),
+                                  window_,
+                                  NULL);
+    SetGLX_WINDOWProperty(window_, glx_window_);
+  }
+
   if (!glx_window_) {
     Destroy();
     LOG(ERROR) << "glXCreateWindow failed.";
     return false;
   }
 
+  CollectGarbage();
+
   return true;
 }
 
 void NativeViewGLSurfaceGLX::Destroy() {
   if (glx_window_) {
-    glXDestroyWindow(g_display, glx_window_);
+    glx_windows_destroyed_[glx_window_] = window_;
     glx_window_ = 0;
   }
 
