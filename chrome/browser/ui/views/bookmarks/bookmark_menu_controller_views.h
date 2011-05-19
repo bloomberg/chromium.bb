@@ -85,7 +85,8 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   // MenuDelegate methods.
   virtual std::wstring GetTooltipText(int id, const gfx::Point& p);
-  virtual bool IsTriggerableEvent(const views::MouseEvent& e);
+  virtual bool IsTriggerableEvent(views::MenuItemView* view,
+                                  const views::MouseEvent& e);
   virtual void ExecuteCommand(int id, int mouse_event_flags);
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
@@ -115,7 +116,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
       views::MenuItemView::AnchorPosition* anchor,
       bool* has_mnemonics,
       views::MenuButton** button);
-  virtual int GetMaxWidthForMenu();
+  virtual int GetMaxWidthForMenu(views::MenuItemView* view);
 
   // BookmarkModelObserver methods.
   virtual void BookmarkModelChanged();

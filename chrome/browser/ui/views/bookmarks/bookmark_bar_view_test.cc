@@ -405,6 +405,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
   void Step3() {
     // Make sure sub menu is showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu);
     views::MenuItemView* child_menu =
         menu->GetSubmenu()->GetMenuItemAt(1);
     ASSERT_TRUE(child_menu->GetSubmenu() != NULL);

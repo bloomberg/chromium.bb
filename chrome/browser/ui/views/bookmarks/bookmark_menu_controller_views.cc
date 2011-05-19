@@ -99,7 +99,8 @@ std::wstring BookmarkMenuController::GetTooltipText(
   return std::wstring();
 }
 
-bool BookmarkMenuController::IsTriggerableEvent(const views::MouseEvent& e) {
+bool BookmarkMenuController::IsTriggerableEvent(MenuItemView* view,
+                                                const views::MouseEvent& e) {
   return event_utils::IsPossibleDispositionEvent(e);
 }
 
@@ -276,7 +277,7 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
   return alt_menu;
 }
 
-int BookmarkMenuController::GetMaxWidthForMenu() {
+int BookmarkMenuController::GetMaxWidthForMenu(MenuItemView* view) {
   return kMaxMenuWidth;
 }
 

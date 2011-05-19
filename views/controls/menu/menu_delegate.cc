@@ -55,7 +55,8 @@ void MenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   ExecuteCommand(id);
 }
 
-bool MenuDelegate::IsTriggerableEvent(const MouseEvent& e) {
+bool MenuDelegate::IsTriggerableEvent(MenuItemView* source,
+                                      const MouseEvent& e) {
   return e.IsLeftMouseButton() || e.IsRightMouseButton();
 }
 
@@ -109,10 +110,13 @@ MenuItemView* MenuDelegate::GetSiblingMenu(MenuItemView* menu,
   return NULL;
 }
 
-int MenuDelegate::GetMaxWidthForMenu() {
+int MenuDelegate::GetMaxWidthForMenu(MenuItemView* menu) {
   // NOTE: this needs to be large enough to accommodate the wrench menu with
   // big fonts.
   return 800;
+}
+
+void MenuDelegate::WillShowMenu(MenuItemView* menu) {
 }
 
 }  // namespace views

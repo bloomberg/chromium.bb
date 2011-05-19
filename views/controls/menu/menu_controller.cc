@@ -544,7 +544,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
       SendMouseReleaseToActiveView(source, event);
       return;
     }
-    if (part.menu->GetDelegate()->IsTriggerableEvent(event)) {
+    if (part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
       Accept(part.menu, event.flags());
       return;
     }
@@ -1325,6 +1325,8 @@ void MenuController::OpenMenu(MenuItemView* item) {
 }
 
 void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
+  if (show)
+    item->GetDelegate()->WillShowMenu(item);
   bool prefer_leading =
       state_.open_leading.empty() ? true : state_.open_leading.back();
   bool resulting_direction;
@@ -1421,7 +1423,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
   // Don't let the menu go to wide.
   pref.set_width(std::min(pref.width(),
-                          item->GetDelegate()->GetMaxWidthForMenu()));
+                          item->GetDelegate()->GetMaxWidthForMenu(item)));
   if (!state_.monitor_bounds.IsEmpty())
     pref.set_width(std::min(pref.width(), state_.monitor_bounds.width()));
 
