@@ -13,19 +13,28 @@
 #include "base/time.h"
 #include "chrome_frame/ready_mode/internal/ready_mode_state.h"
 
-class InstallationState;
-class Task;
-
+// Defines the possible Ready Mode states.
 enum ReadyModeStatus {
+  // Chrome Frame is permanently disabled and should be uninstalled.
   READY_MODE_PERMANENTLY_DECLINED,
+  // Chrome Frame is temporarily disabled.
   READY_MODE_TEMPORARILY_DECLINED,
+  // Chrome Frame is disabled, but should be enabled by calling
+  // ExpireTemporaryDecline().
   READY_MODE_TEMPORARY_DECLINE_EXPIRED,
+  // Chrome Frame is enabled, but not permanently (the user should be prompted).
   READY_MODE_ACTIVE,
+  // Chrome Frame is permanently enabled.
   READY_MODE_ACCEPTED
-};  // enum ReadyModeStatus
+};
 
-// Implements ReadyModeState, reading state from the Registry and delegating to
-// an elevated process launcher to effect state changes.
+// Implements ReadyModeState, reading state from the Registry and delegating
+// to the installer to effect state changes.
+//
+// If the current process is running at high integrity the installer is
+// launched directly. Otherwise, it is launched by invoking a helper exe
+// (chrome_launcher) at medium integrity (thanks to an elevation policy) that,
+// in turn, delegates to Omaha's ProcessLauncher to reach high integrity.
 class RegistryReadyModeState : public ReadyModeState {
  public:
   // Receives notification when the Ready Mode state changes in response to a
@@ -36,9 +45,9 @@ class RegistryReadyModeState : public ReadyModeState {
     virtual ~Observer() {}
     // Indicates that a state change has occurred, passing the new status.
     virtual void OnStateChange(ReadyModeStatus status) = 0;
-  };  // class Observer
+  };
 
-  // Construct an instance backed by the specified key (pre-existing under
+  // Constructs an instance backed by the specified key (pre-existing under
   // HKCU or HKLM). The provided duration indicates how long, after a temporary
   // decline, Ready Mode re-activates.
   //
@@ -61,14 +70,14 @@ class RegistryReadyModeState : public ReadyModeState {
   virtual void AcceptChromeFrame();
 
  protected:
-  // allow dependency replacement via derivation for tests
+  // Allows dependency replacement via derivation for tests.
   virtual base::Time GetNow();
 
  private:
   // Sends the result of GetStatus() to our observer.
   void NotifyObserver();
   // Retrieves state from the registry. Returns true upon success.
-  bool GetValue(int64* value, bool* exists);
+  bool GetStateFromRegistry(int64* value, bool* exists);
   // Refreshes the process state after mutating installation state.
   void RefreshStateAndNotify();
 
@@ -77,6 +86,6 @@ class RegistryReadyModeState : public ReadyModeState {
   scoped_ptr<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryReadyModeState);
-};  // class RegistryReadyModeState
+};
 
 #endif  // CHROME_FRAME_READY_MODE_INTERNAL_REGISTRY_READY_MODE_STATE_H_

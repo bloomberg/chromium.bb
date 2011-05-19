@@ -158,7 +158,7 @@ ReadyModeStatus RegistryReadyModeState::GetStatus() {
   bool exists = false;
   int64 value = 0;
 
-  if (!GetValue(&value, &exists))
+  if (!GetStateFromRegistry(&value, &exists))
     return READY_MODE_ACTIVE;
 
   if (!exists)
@@ -189,7 +189,7 @@ void RegistryReadyModeState::NotifyObserver() {
     observer_->OnStateChange(GetStatus());
 }
 
-bool RegistryReadyModeState::GetValue(int64* value, bool* exists) {
+bool RegistryReadyModeState::GetStateFromRegistry(int64* value, bool* exists) {
   *exists = false;
   *value = 0;
 
