@@ -15,6 +15,9 @@
 // static
 const int ThreadWatcher::kPingCount = 3;
 
+// static
+const int ThreadWatcher::kUnresponsiveCount = 3;
+
 // ThreadWatcher methods and members.
 ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
                              const std::string& thread_name,
@@ -240,8 +243,8 @@ void ThreadWatcher::GotNoResponse() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   // Record how other threads are responding when we don't get a response for
-  // ping message atleast three times.
-  if (++unresponsive_count_ < 3)
+  // ping message atleast kUnresponsiveCount (three) times.
+  if (++unresponsive_count_ < kUnresponsiveCount)
     return;
 
   // Record total unresponsive_time since last pong message.
@@ -263,13 +266,13 @@ void ThreadWatcher::GotNoResponse() {
   // Record how many watched threads are not responding.
   unresponsive_count_histogram_->Add(no_of_unresponding_threads);
 
-  // Crash the browser if IO thread hasn't responded atleast 3 times and if the
-  // number of other threads is equal to 1. We picked 1 to reduce the number of
-  // crashes and to get some sample data.
-  if (thread_id_ == BrowserThread::IO && no_of_responding_threads == 1) {
-    int* crash = NULL;
-    CHECK(crash++);
-  }
+  // Crash the browser if IO thread hasn't responded atleast kUnresponsiveCount
+  // times and if the number of other threads is equal to 1. We picked 1 to
+  // reduce the number of crashes and to get some sample data.
+  // if (thread_id_ == BrowserThread::IO && no_of_responding_threads == 1) {
+  //   int* crash = NULL;
+  //   CHECK(crash++);
+  // }
 
   hung_processing_complete_ = true;
 }
@@ -320,7 +323,7 @@ void ThreadWatcherList::StartWatchingAll() {
     WatchDogThread::PostDelayedTask(
         FROM_HERE,
         NewRunnableFunction(&ThreadWatcherList::StartWatchingAll),
-        base::TimeDelta::FromSeconds(kSleepSeconds).InMilliseconds());
+        base::TimeDelta::FromSeconds(120).InMilliseconds());
     return;
   }
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
@@ -391,10 +394,10 @@ void ThreadWatcherList::GetStatusOfThreads(int* no_of_responding_threads,
   for (RegistrationList::iterator it = global_->registered_.begin();
        global_->registered_.end() != it;
        ++it) {
-    if (it->second->unresponsive_count_ > 0)
-      ++(*no_of_unresponding_threads);
-    else
+    if (it->second->unresponsive_count_ < ThreadWatcher::kUnresponsiveCount)
       ++(*no_of_responding_threads);
+    else
+      ++(*no_of_unresponding_threads);
   }
 }
 

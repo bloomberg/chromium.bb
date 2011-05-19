@@ -161,6 +161,12 @@ class ThreadWatcher {
   // ping_count_ will be initialized to kPingCount whenever user becomes active.
   static const int kPingCount;
 
+  // This value is used to determine if the watched thread is responsive or not.
+  // If unresponsive_count_ is less than kUnresponsiveCount then watched thread
+  // is considered as responsive (in responsive_count_histogram_) otherwise it
+  // is considered as unresponsive (in unresponsive_count_histogram_).
+  static const int kUnresponsiveCount;
+
   // The thread_id of the thread being watched. Only one instance can exist for
   // the given thread_id of the thread being watched.
   const BrowserThread::ID thread_id_;
