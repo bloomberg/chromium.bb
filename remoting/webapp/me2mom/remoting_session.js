@@ -152,25 +152,13 @@ function toggleScaleToFit() {
   remoting.plugin.setScaleToFit(remoting.scaleToFit);
 }
 
-function submitLogin() {
-  var username = document.getElementById('username').value;
-  var password = document.getElementById('password').value;
-
-  // Make the login panel invisible and submit login info.
-  document.getElementById('login_panel').style.display = 'none';
-  remoting.plugin.submitLoginInfo(username, password);
-}
-
 /**
  * This is the callback method that the plugin calls to request username and
- * password for logging into the remote host.
+ * password for logging into the remote host. For Me2Mom we are pre-authorized
+ * so this should never be called.
  */
 function loginChallengeCallback() {
-  // Make the login panel visible.
-  document.getElementById('login_panel').style.display = 'block';
-
-  // Put the insertion point into the form.
-  document.getElementById('username').focus();
+  console.log("loginChallengeCallback called unexpectedly!");
 }
 
 /**

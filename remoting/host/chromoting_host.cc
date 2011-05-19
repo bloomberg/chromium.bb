@@ -62,7 +62,8 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       access_verifier_(access_verifier),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
-      is_curtained_(false) {
+      is_curtained_(false),
+      preauthenticated_(false) {
   DCHECK(desktop_environment_.get());
 }
 
@@ -177,6 +178,12 @@ void ChromotingHost::AddStatusObserver(
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
   VLOG(1) << "Connection to client established.";
+  if (preauthenticated_) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::ProcessPreAuthentication,
+                          make_scoped_refptr(connection)));
+  }
 }
 
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
@@ -331,8 +338,7 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
 
   // Find the client session corresponding to the given connection.
   ClientList::iterator client;
-  for (client = clients_.begin(); client != clients_.end();
-       ++client) {
+  for (client = clients_.begin(); client != clients_.end(); ++client) {
     if (client->get()->connection() == connection)
       break;
   }
@@ -466,6 +472,19 @@ void ChromotingHost::LocalLoginFailed(
   status->set_success(false);
   connection->client_stub()->BeginSessionResponse(
       status, new DeleteTask<protocol::LocalLoginStatus>(status));
+}
+
+void ChromotingHost::ProcessPreAuthentication(
+    const scoped_refptr<ConnectionToClient>& connection) {
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+  // Find the client session corresponding to the given connection.
+  ClientList::iterator client;
+  for (client = clients_.begin(); client != clients_.end(); ++client) {
+    if (client->get()->connection() == connection)
+      break;
+  }
+  CHECK(client != clients_.end());
+  client->get()->OnAuthorizationComplete(true);
 }
 
 }  // namespace remoting

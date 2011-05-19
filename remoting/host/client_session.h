@@ -54,6 +54,9 @@ class ClientSession : public protocol::HostStub,
   // Disconnect this client session.
   void Disconnect();
 
+  // Set the authenticated flag or log a failure message as appropriate.
+  void OnAuthorizationComplete(bool success);
+
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
   }

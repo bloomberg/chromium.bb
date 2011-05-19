@@ -55,11 +55,15 @@ void ClientSession::BeginSessionRequest(
       break;
   }
 
+  OnAuthorizationComplete(success);
+}
+
+void ClientSession::OnAuthorizationComplete(bool success) {
   if (success) {
     authenticated_ = true;
     event_handler_->LocalLoginSucceeded(connection_.get());
   } else {
-    LOG(WARNING) << "Login failed for user " << credentials->username();
+    LOG(WARNING) << "Login failed";
     event_handler_->LocalLoginFailed(connection_.get());
   }
 }

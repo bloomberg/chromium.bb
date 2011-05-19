@@ -96,7 +96,7 @@ class SimpleHost {
  public:
   SimpleHost()
       : fake_(false),
-        me2mom_(false) {
+        is_me2mom_(false) {
   }
 
   int Run() {
@@ -129,7 +129,7 @@ class SimpleHost {
     // Fix this.
     scoped_ptr<remoting::AccessVerifier> access_verifier;
     scoped_refptr<remoting::RegisterSupportHostRequest> register_request;
-    if (me2mom_) {
+    if (is_me2mom_) {
       scoped_ptr<remoting::SupportAccessVerifier> support_access_verifier(
           new remoting::SupportAccessVerifier());
       if (!support_access_verifier->Init())
@@ -165,12 +165,13 @@ class SimpleHost {
       host = ChromotingHost::Create(&context, config,
                                     access_verifier.release());
     }
+    host->set_preauthenticated(is_me2mom_);
 
     if (protocol_config_.get()) {
       host->set_protocol_config(protocol_config_.release());
     }
 
-    if (me2mom_) {
+    if (is_me2mom_) {
       host->AddStatusObserver(register_request);
     } else {
       // Initialize HeartbeatSender.
@@ -196,7 +197,7 @@ class SimpleHost {
     config_path_ = config_path;
   }
   void set_fake(bool fake) { fake_ = fake; }
-  void set_me2mom(bool me2mom) { me2mom_ = me2mom; }
+  void set_is_me2mom(bool is_me2mom) { is_me2mom_ = is_me2mom; }
   void set_protocol_config(CandidateSessionConfig* protocol_config) {
     protocol_config_.reset(protocol_config);
   }
@@ -217,7 +218,7 @@ class SimpleHost {
 
   FilePath config_path_;
   bool fake_;
-  bool me2mom_;
+  bool is_me2mom_;
   scoped_ptr<CandidateSessionConfig> protocol_config_;
 };
 
@@ -251,7 +252,7 @@ int main(int argc, char** argv) {
         cmd_line->GetSwitchValuePath(kConfigSwitchName));
   }
   simple_host.set_fake(cmd_line->HasSwitch(kFakeSwitchName));
-  simple_host.set_me2mom(cmd_line->HasSwitch(kMe2MomSwitchName));
+  simple_host.set_is_me2mom(cmd_line->HasSwitch(kMe2MomSwitchName));
 
   if (cmd_line->HasSwitch(kVideoSwitchName)) {
     string video_codec = cmd_line->GetSwitchValueASCII(kVideoSwitchName);

@@ -79,19 +79,6 @@ h1 {
   float: right;
  }
 
-.local_login_panel {
-  -webkit-user-select: none;
-  font-family: arial,sans-serif;
-  position: absolute;
-  display: none;
-  z-index: 1;
-  top: 50%;
-  left: 45%;
-  border: 2px solid #e8eefa;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .plugin-scroll-panel {
   -webkit-user-select: none;
   overflow: auto;
