@@ -85,16 +85,21 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutofillEntries(
                               UTF8ToUTF16(autofill.value())));
 
       std::vector<base::Time> timestamps;
-      if (MergeTimestamps(autofill, ix->timestamps(), &timestamps)) {
-        AutofillEntry new_entry(ix->key(), timestamps);
+      bool different = MergeTimestamps(autofill, ix->timestamps(), &timestamps);
+      if (different || ix->timestamps_culled()) {
+        AutofillEntry new_entry(ix->key(),
+                                different ? timestamps : ix->timestamps());
         new_entries->push_back(new_entry);
 
-        sync_api::WriteNode write_node(write_trans);
-        if (!write_node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
-          LOG(ERROR) << "Failed to write autofill sync node.";
-          return false;
+        // Update the sync db if the list of timestamps have changed.
+        if (different) {
+          sync_api::WriteNode write_node(write_trans);
+          if (!write_node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
+            LOG(ERROR) << "Failed to write autofill sync node.";
+            return false;
+          }
+          AutofillChangeProcessor::WriteAutofillEntry(new_entry, &write_node);
         }
-        AutofillChangeProcessor::WriteAutofillEntry(new_entry, &write_node);
       }
 
       Associate(&tag, node.GetId());

@@ -1818,6 +1818,7 @@
         'browser/visitedlink/visitedlink_unittest.cc',
         'browser/web_applications/web_app_unittest.cc',
         'browser/web_resource/promo_resource_service_unittest.cc',
+        'browser/webdata/autofill_entry_unittest.cc',
         'browser/webdata/autofill_table_unittest.cc',
         'browser/webdata/keyword_table_unittest.cc',
         'browser/webdata/logins_table_unittest.cc',

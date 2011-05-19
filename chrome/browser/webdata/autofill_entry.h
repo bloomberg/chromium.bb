@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
 #pragma once
 
+#include <stddef.h>
 #include <vector>
+
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "base/time.h"
 
@@ -41,9 +44,24 @@ class AutofillEntry {
   bool operator==(const AutofillEntry& entry) const;
   bool operator<(const AutofillEntry& entry) const;
 
+  bool timestamps_culled() const { return timestamps_culled_; }
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(AutofillEntryTest, NoCulling);
+  FRIEND_TEST_ALL_PREFIXES(AutofillEntryTest, Culling);
+
+  // Culls the list of timestamps to |kMaxAutofillTimeStamps| latest timestamps.
+  // Result is stored in |result|. If the original vtor's size is less
+  // than kMaxAutofillTimeStamps then false is returned. Otherwise true is
+  // returned. Note: source and result should be DIFFERENT vectors.
+  static bool CullTimeStamps(const std::vector<base::Time>& source,
+                             std::vector<base::Time>* result);
+
   AutofillKey key_;
   std::vector<base::Time> timestamps_;
+  bool timestamps_culled_;
 };
 
+// TODO(lipalani): Move this inside the class defintion.
+const unsigned int kMaxAutofillTimeStamps = 50;
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
