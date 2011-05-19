@@ -41,8 +41,14 @@ const base::TimeDelta ClientSideDetectionService::kPositiveCacheInterval =
 
 const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
+// Note: when updatng the model version, don't forget to change the filename
+// in chrome/common/chrome_constants.cc as well, or else existing users won't
+// download the new model.
+//
+// TODO(bryner): add version metadata so that clients can download new models
+// without needing a new model filename.
 const char ClientSideDetectionService::kClientModelUrl[] =
-    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v0.pb";
+    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v1.pb";
 
 struct ClientSideDetectionService::ClientReportInfo {
   scoped_ptr<ClientReportPhishingRequestCallback> callback;
@@ -99,6 +105,14 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
     delete cb;
     return NULL;
   }
+
+  // Delete the previous-version model file.
+  // TODO(bryner): Remove this for M14.
+  base::FileUtilProxy::Delete(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      model_path.DirName().AppendASCII("Safe Browsing Phishing Model"),
+      false /* not recursive */,
+      NULL /* not interested in result */);
   return service.release();
 }
 

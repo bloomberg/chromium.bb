@@ -92,7 +92,7 @@ const FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const FilePath::CharType kSafeBrowsingBaseFilename[] = FPL("Safe Browsing");
 const FilePath::CharType kSafeBrowsingPhishingModelFilename[] =
-    FPL("Safe Browsing Phishing Model");
+    FPL("Safe Browsing Phishing Model v1");
 const FilePath::CharType kSingletonCookieFilename[] = FPL("SingletonCookie");
 const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");
 const FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");
