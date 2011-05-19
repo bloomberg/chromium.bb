@@ -970,6 +970,26 @@ bool PluginInstance::LoadSelectionInterface() {
   return !!plugin_selection_interface_;
 }
 
+bool PluginInstance::LoadPrintInterface() {
+  if (!plugin_print_interface_.get()) {
+    // Try to get the most recent version first.  Fall back to older supported
+    // versions if necessary.
+    const PPP_Printing_Dev* print_if = static_cast<const PPP_Printing_Dev*>(
+        module_->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));
+    if (print_if) {
+      plugin_print_interface_.reset(new PPP_Printing_Dev_Combined(*print_if));
+    } else {
+      const PPP_Printing_Dev_0_3* print_if_0_3 =
+          static_cast<const PPP_Printing_Dev_0_3*>(
+              module_->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE_0_3));
+      if (print_if_0_3)
+        plugin_print_interface_.reset(
+            new PPP_Printing_Dev_Combined(*print_if_0_3));
+    }
+  }
+  return !!plugin_print_interface_.get();
+}
+
 bool PluginInstance::LoadPrivateInterface() {
   if (!plugin_private_interface_) {
     plugin_private_interface_ = static_cast<const PPP_Instance_Private*>(
@@ -1005,35 +1025,49 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
     PP_PrintOutputFormat_Dev* format) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
-  if (!plugin_print_interface_) {
-    plugin_print_interface_ =
-        static_cast<const PPP_Printing_Dev*>(module_->GetPluginInterface(
-            PPP_PRINTING_DEV_INTERFACE));
-  }
-  if (!plugin_print_interface_)
+  if (!LoadPrintInterface())
     return false;
-  uint32_t format_count = 0;
-  PP_PrintOutputFormat_Dev* supported_formats =
-      plugin_print_interface_->QuerySupportedFormats(pp_instance(),
-                                                     &format_count);
-  if (!supported_formats)
-    return false;
-
-  bool found_supported_format = false;
-  for (uint32_t index = 0; index < format_count; index++) {
-    if (supported_formats[index] == PP_PRINTOUTPUTFORMAT_PDF) {
-      // If we found PDF, we are done.
-      found_supported_format = true;
+  if (plugin_print_interface_->QuerySupportedFormats) {
+    // If the most recent version of the QuerySupportedFormats functions is
+    // available, use it.
+    uint32_t supported_formats =
+        plugin_print_interface_->QuerySupportedFormats(pp_instance());
+    if (supported_formats & PP_PRINTOUTPUTFORMAT_PDF) {
       *format = PP_PRINTOUTPUTFORMAT_PDF;
-      break;
-    } else if (supported_formats[index] == PP_PRINTOUTPUTFORMAT_RASTER) {
-      // We found raster. Keep looking.
-      found_supported_format = true;
+      return true;
+    } else if (supported_formats & PP_PRINTOUTPUTFORMAT_RASTER) {
       *format = PP_PRINTOUTPUTFORMAT_RASTER;
+      return true;
     }
+    return false;
+  } else if (plugin_print_interface_->QuerySupportedFormats_0_3) {
+    // If we couldn't use the latest version of the function, but the 0.3
+    // version exists, we can use it.
+    uint32_t format_count = 0;
+    PP_PrintOutputFormat_Dev_0_3* supported_formats =
+        plugin_print_interface_->QuerySupportedFormats_0_3(pp_instance(),
+                                                           &format_count);
+    if (!supported_formats)
+      return false;
+
+    bool found_supported_format = false;
+    for (uint32_t index = 0; index < format_count; index++) {
+      if (supported_formats[index] == PP_PRINTOUTPUTFORMAT_PDF_DEPRECATED) {
+        // If we found PDF, we are done.
+        found_supported_format = true;
+        *format = PP_PRINTOUTPUTFORMAT_PDF;
+        break;
+      } else if (supported_formats[index] ==
+                 PP_PRINTOUTPUTFORMAT_RASTER_DEPRECATED) {
+        // We found raster. Keep looking.
+        found_supported_format = true;
+        *format = PP_PRINTOUTPUTFORMAT_RASTER;
+      }
+    }
+    PluginModule::GetCore()->MemFree(supported_formats);
+    return found_supported_format;
   }
-  PluginModule::GetCore()->MemFree(supported_formats);
-  return found_supported_format;
+  return false;
 }
 
 bool PluginInstance::SupportsPrintInterface() {
@@ -1053,14 +1087,41 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
     return 0;
   }
 
+  int num_pages = 0;
   PP_PrintSettings_Dev print_settings;
   RectToPPRect(printable_area, &print_settings.printable_area);
   print_settings.dpi = printer_dpi;
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
   print_settings.grayscale = PP_FALSE;
   print_settings.format = format;
-  int num_pages = plugin_print_interface_->Begin(pp_instance(),
-                                                 &print_settings);
+  if (plugin_print_interface_->Begin) {
+    // If we have the most current version of Begin, use it.
+    num_pages = plugin_print_interface_->Begin(pp_instance(),
+                                               &print_settings);
+  } else if (plugin_print_interface_->Begin_0_3) {
+    // Fall back to the 0.3 version of Begin if necessary, and convert the
+    // output format.
+    PP_PrintSettings_Dev_0_3 print_settings_0_3;
+    RectToPPRect(printable_area, &print_settings_0_3.printable_area);
+    print_settings_0_3.dpi = printer_dpi;
+    print_settings_0_3.orientation = PP_PRINTORIENTATION_NORMAL;
+    print_settings_0_3.grayscale = PP_FALSE;
+    switch (format) {
+      case PP_PRINTOUTPUTFORMAT_RASTER:
+        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_RASTER_DEPRECATED;
+        break;
+      case PP_PRINTOUTPUTFORMAT_PDF:
+        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_PDF_DEPRECATED;
+        break;
+      case PP_PRINTOUTPUTFORMAT_POSTSCRIPT:
+        print_settings_0_3.format = PP_PRINTOUTPUTFORMAT_POSTSCRIPT_DEPRECATED;
+        break;
+      default:
+        return 0;
+    }
+    num_pages = plugin_print_interface_->Begin_0_3(pp_instance(),
+                                                   &print_settings_0_3);
+  }
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
@@ -1072,7 +1133,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
 }
 
 bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
-  DCHECK(plugin_print_interface_);
+  DCHECK(plugin_print_interface_.get());
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
 #if defined(OS_LINUX)
@@ -1118,8 +1179,8 @@ void PluginInstance::PrintEnd() {
   ranges_.clear();
 #endif  // defined(OS_LINUX)
 
-  DCHECK(plugin_print_interface_);
-  if (plugin_print_interface_)
+  DCHECK(plugin_print_interface_.get());
+  if (plugin_print_interface_.get())
     plugin_print_interface_->End(pp_instance());
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));

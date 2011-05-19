@@ -17,6 +17,9 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_graphics_3d_dev.h"
+// TODO(dmichael): Remove the 0.3 printing interface and remove the following
+//                 #define.
+#define PPP_PRINTING_DEV_USE_0_4 1
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -266,6 +269,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool LoadMessagingInterface();
   bool LoadPdfInterface();
   bool LoadSelectionInterface();
+  bool LoadPrintInterface();
   bool LoadPrivateInterface();
   bool LoadZoomInterface();
 
@@ -386,8 +390,36 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 #endif  // defined(OS_LINUX)
 
-  // The plugin print interface.
-  const PPP_Printing_Dev* plugin_print_interface_;
+  // The plugin print interface.  This nested struct adds functions needed for
+  // backwards compatibility.
+  struct PPP_Printing_Dev_Combined : public PPP_Printing_Dev {
+    // Conversion constructor for the most current interface.  Sets all old
+    // functions to NULL, so we know not to try to use them.
+    PPP_Printing_Dev_Combined(const PPP_Printing_Dev& base_if)
+        : PPP_Printing_Dev(base_if),
+          QuerySupportedFormats_0_3(NULL),
+          Begin_0_3(NULL) {}
+
+    // Conversion constructor for version 0.3.  Sets unsupported functions to
+    // NULL, so we know not to try to use them.
+    PPP_Printing_Dev_Combined(const PPP_Printing_Dev_0_3& old_if)
+        : PPP_Printing_Dev(),  // NOTE: The parens are important, to zero-
+                               // initialize the struct.
+          QuerySupportedFormats_0_3(old_if.QuerySupportedFormats),
+          Begin_0_3(old_if.Begin) {
+      PrintPages = old_if.PrintPages;
+      End = old_if.End;
+    }
+
+    // The 0.3 version of 'QuerySupportedFormats'.
+    PP_PrintOutputFormat_Dev_0_3* (*QuerySupportedFormats_0_3)(
+        PP_Instance instance, uint32_t* format_count);
+    // The 0.3 version of 'Begin'.
+    int32_t (*Begin_0_3)(PP_Instance instance,
+                         const struct PP_PrintSettings_Dev_0_3* print_settings);
+
+  };
+  scoped_ptr<PPP_Printing_Dev_Combined> plugin_print_interface_;
 
   // The plugin 3D interface.
   const PPP_Graphics3D_Dev* plugin_graphics_3d_interface_;
