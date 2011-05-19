@@ -131,7 +131,7 @@ BOT_ASSIGNMENT = {
     # Toolchain gnu.
     'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
-    'hardy32-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
+    'lucid64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
     # Pnacl toolchain builders.
     'linux-armtools-x86_32':
         'bash buildbot/buildbot_toolchain_arm_trusted.sh',
