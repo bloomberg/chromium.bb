@@ -6,7 +6,6 @@
 #include "base/string16.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
@@ -20,6 +19,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/common/content_client.h"
+#include "content/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -28,6 +28,7 @@ namespace {
 // doesn't think that the webui URLs have a host). Figure out where this is
 // coming from and fix it.
 const char kWebUIScheme[] = "chrome";
+const char kSameAsAnyInstanceURL[] = "about:internets";
 
 class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
  public:
@@ -43,6 +44,10 @@ class SiteInstanceTestBrowserClient : public content::ContentBrowserClient {
  public:
   virtual content::WebUIFactory* GetWebUIFactory() {
     return &factory_;
+  }
+
+  virtual bool IsURLSameAsAnySiteInstance(const GURL& url) {
+    return url.spec() == kSameAsAnyInstanceURL;
   }
 
  private:
@@ -300,8 +305,7 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   GURL url_foo_port = GURL("http://foo:8080/a.html");
   GURL url_javascript = GURL("javascript:alert(1);");
   GURL url_crash = GURL(chrome::kAboutCrashURL);
-  GURL url_hang = GURL(chrome::kAboutHangURL);
-  GURL url_shorthang = GURL(chrome::kAboutShorthangURL);
+  GURL url_browser_specified = GURL(kSameAsAnyInstanceURL);
 
   // Same scheme and port -> same site.
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo, url_foo2));
@@ -318,10 +322,11 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_https));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_port));
 
-  // The crash/hang URLs should also be treated as same site.  (Bug 1143809.)
+  // The URLs specified by the ContentBrowserClient should also be treated as
+  // same site.
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_crash, url_foo));
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_hang, url_foo));
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_shorthang, url_foo));
+  EXPECT_TRUE(
+      SiteInstance::IsSameWebSite(NULL, url_browser_specified, url_foo));
 }
 
 // Test to ensure that there is only one SiteInstance per site in a given

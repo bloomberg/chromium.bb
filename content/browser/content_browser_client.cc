@@ -33,6 +33,10 @@ GURL ContentBrowserClient::GetEffectiveURL(Profile* profile, const GURL& url) {
   return url;
 }
 
+bool ContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
+  return false;
+}
+
 GURL ContentBrowserClient::GetAlternateErrorPageURL(const TabContents* tab) {
   return GURL();
 }

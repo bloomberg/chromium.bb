@@ -171,6 +171,12 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(Profile* profile,
   return extension->GetResourceURL(url.path());
 }
 
+bool ChromeContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
+  return url.spec() == chrome::kAboutKillURL ||
+         url.spec() == chrome::kAboutHangURL ||
+         url.spec() == chrome::kAboutShorthangURL;
+}
+
 GURL ChromeContentBrowserClient::GetAlternateErrorPageURL(
     const TabContents* tab) {
   GURL url;

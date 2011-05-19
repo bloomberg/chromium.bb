@@ -101,7 +101,6 @@ include_rules = [
   "+chrome/common/chrome_paths.h",
   "+chrome/common/logging_chrome.h",
   "+chrome/common/render_messages.h",
-  "+chrome/common/url_constants.h",
 
   "+chrome/common/net/url_fetcher.h",
 
@@ -121,4 +120,5 @@ include_rules = [
   "+chrome/browser/ui/cocoa/find_pasteboard.h",
   "+chrome/browser/ui/tab_contents/tab_contents_wrapper.h",
   "+chrome/common/net/test_url_fetcher_factory.h",
+  "+chrome/common/url_constants.h",
 ]

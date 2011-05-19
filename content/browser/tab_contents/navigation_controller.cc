@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/site_instance.h"

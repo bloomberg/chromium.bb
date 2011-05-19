@@ -4,7 +4,7 @@
 
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 
-#include "chrome/common/url_constants.h"
+#include "content/common/url_constants.h"
 #include "ui/gfx/rect.h"
 
 std::string TabContentsDelegate::GetNavigationHeaders(const GURL& url) {

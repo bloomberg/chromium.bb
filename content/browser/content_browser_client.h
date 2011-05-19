@@ -57,6 +57,10 @@ class ContentBrowserClient {
   // group different url schemes in the same SiteInstance.
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
 
+  // Returns whether a specified URL is to be considered the same as any
+  // SiteInstance.
+  virtual bool IsURLSameAsAnySiteInstance(const GURL& url);
+
   // See RenderViewHostDelegate's comment.
   virtual GURL GetAlternateErrorPageURL(const TabContents* tab);
 
