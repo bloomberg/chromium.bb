@@ -39,6 +39,8 @@ unittests -- Runs unittests for packages.
 quick_unit -- If unittests is true, only run the unit tests for packages which
               have changed since the previous build.
 
+build_tests -- Builds autotest tests.  Must be True if vm_tests is set.
+
 vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
             using KVM.
 quick_vm -- If vm_tests is true, run a minimal au test harness suite.
@@ -106,6 +108,7 @@ default = {
   'unittests' : True,
   'quick_unit' : True,
 
+  'build_tests' : True,
   'vm_tests' : True,
   'quick_vm' : True,
 
@@ -128,6 +131,7 @@ default = {
 
 arm = {
   # VM/tests are broken on arm.
+  'build_tests' : False,
   'unittests' : False,
   'vm_tests' : False,
 
@@ -164,6 +168,7 @@ release = {
   # Typical matching cbuild command line
   # --autorev --official --officialversion --chromeos --with-pdf
   #   --bvt --clean --no-gstorage --ctest
+  'build_tests' : True,
   'chrome_tests' : True,
   'manifest_version' : MANIFEST_VERSIONS_INT_URL,
   # --official

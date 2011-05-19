@@ -399,7 +399,8 @@ class BuildTargetStage(BuilderStage):
 
     commands.Build(
         self._build_root, emptytree, usepkg=self._build_config['usepkg'],
-        build_autotest=(self._build_config['vm_tests'] and self._options.tests),
+        build_autotest=(self._build_config['build_tests'] and
+                        self._options.tests),
         extra_env=env)
 
     if self._prebuilt_type == 'full':
