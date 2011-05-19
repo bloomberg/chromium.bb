@@ -558,9 +558,10 @@ void TestingAutomationProvider::ShowCollectedCookiesDialog(
     int handle, bool* success) {
   *success = false;
   if (tab_tracker_->ContainsHandle(handle)) {
-    TabContents* tab_contents =
-        tab_tracker_->GetResource(handle)->tab_contents();
-    tab_contents->delegate()->ShowCollectedCookiesDialog(tab_contents);
+    NavigationController* controller = tab_tracker_->GetResource(handle);
+    TabContents* tab_contents = controller->tab_contents();
+    Browser* browser = Browser::GetBrowserForController(controller, NULL);
+    browser->ShowCollectedCookiesDialog(tab_contents);
     *success = true;
   }
 }

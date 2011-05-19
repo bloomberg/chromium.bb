@@ -44,6 +44,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   }
 
   virtual ~ContentSettingTitleAndLinkModel() {}
+  Browser* browser() const { return browser_; }
 
  private:
   void SetBlockedResources() {
@@ -345,8 +346,7 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
         NotificationType::COLLECTED_COOKIES_SHOWN,
         Source<TabSpecificContentSettings>(tab_contents()->content_settings()),
         NotificationService::NoDetails());
-    tab_contents()->tab_contents()->delegate()->
-        ShowCollectedCookiesDialog(tab_contents()->tab_contents());
+    browser()->ShowCollectedCookiesDialog(tab_contents()->tab_contents());
   }
 };
 

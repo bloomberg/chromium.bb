@@ -151,10 +151,6 @@ void TabContentsDelegate::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
 }
 
-void TabContentsDelegate::ShowCollectedCookiesDialog(
-    TabContents* tab_contents) {
-}
-
 bool TabContentsDelegate::OnGoToEntryOffset(int offset) {
   return true;
 }
