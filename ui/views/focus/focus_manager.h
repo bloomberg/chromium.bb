@@ -48,7 +48,7 @@
 // method SetNextFocusableView().
 //
 // If you are embedding a native view containing a nested RootView (for example
-// by adding a NativeControl that contains a WidgetWin as its native
+// by adding a NativeControl that contains a NativeWidgetWin as its native
 // component), then you need to:
 // - override the View::GetFocusTraversable() method in your outer component.
 //   It should return the RootView of the inner component. This is used when

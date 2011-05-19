@@ -10,7 +10,7 @@
 #include "views/widget/widget.h"
 
 BorderWidgetWin::BorderWidgetWin()
-    : views::WidgetWin(new views::Widget),
+    : views::NativeWidgetWin(new views::Widget),
       border_contents_(NULL) {
 }
 

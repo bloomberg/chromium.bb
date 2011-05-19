@@ -171,7 +171,7 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
       return false;
     case ui::Event::ET_MOUSE_RELEASED:
       // TODO(beng): NativeWidgetGtk should not call this function if drag data
-      //             exists, see comment in this function in WidgetGtk.
+      //             exists, see comment in this function in NativeWidgetGtk.
       // Release the capture first, that way we don't get confused if
       // OnMouseReleased blocks.
       if (native_widget_->HasMouseCapture() &&

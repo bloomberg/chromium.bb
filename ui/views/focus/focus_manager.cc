@@ -128,7 +128,7 @@ FocusManager::WidgetFocusManager* FocusManager::GetWidgetFocusManager() {
 bool FocusManager::OnKeyEvent(const KeyEvent& event) {
   // If the focused view wants to process the key event as is, let it be.
   // On Linux we always dispatch key events to the focused view first, so
-  // we should not do this check here. See also WidgetGtk::OnKeyEvent().
+  // we should not do this check here. See also NativeWidgetGtk::OnKeyEvent().
   if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event))
     return true;
 
@@ -372,7 +372,7 @@ View* FocusManager::GetNextFocusableView(
     if (!focus_traversable) {
       if (IsTraverseForward(direction)) {
         // If the starting view has a focus traversable, use it.
-        // This is the case with WidgetWins for example.
+        // This is the case with NativeWidgetWins for example.
         focus_traversable = original_starting_view->GetFocusTraversable();
 
         // Otherwise default to the root view.
