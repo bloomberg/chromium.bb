@@ -494,8 +494,13 @@ void RenderWidgetHostViewMac::ImeUpdateTextInputState(
     const gfx::Rect& caret_rect) {
   if (text_input_type_ != type) {
     text_input_type_ = type;
-    if (HasFocus())
+    if (HasFocus()) {
       SetTextInputActive(true);
+
+      // Let AppKit cache the new input context to make IMEs happy.
+      // See http://crbug.com/73039.
+      [NSApp updateWindows];
+    }
   }
 }
 
