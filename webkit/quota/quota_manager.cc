@@ -524,8 +524,6 @@ QuotaManager::QuotaManager(bool is_incognito,
     db_disabled_(false),
     io_thread_(io_thread),
     db_thread_(db_thread),
-    num_eviction_requested_clients_(0),
-    num_evicted_clients_(0),
     temporary_global_quota_(-1),
     callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -781,17 +779,22 @@ void QuotaManager::DidOriginDataEvicted(
   DCHECK(io_thread_->BelongsToCurrentThread());
 
   if (status != kQuotaStatusOk) {
-    // TODO(dmikurube): Handle error.
+    ++eviction_context_.num_eviction_error;
+    // TODO(dmikurube): The origin with some error should have lower priority in
+    // the next eviction?
   }
 
-  ++num_evicted_clients_;
-  DCHECK(num_evicted_clients_ <= num_eviction_requested_clients_);
-  if (num_evicted_clients_ == num_eviction_requested_clients_) {
-    num_eviction_requested_clients_ = 0;
-    num_evicted_clients_ = 0;
+  ++eviction_context_.num_evicted_clients;
+  DCHECK(eviction_context_.num_evicted_clients <=
+      eviction_context_.num_eviction_requested_clients);
+  if (eviction_context_.num_evicted_clients ==
+      eviction_context_.num_eviction_requested_clients) {
+    eviction_context_.num_eviction_requested_clients = 0;
+    eviction_context_.num_evicted_clients = 0;
 
-    evict_origin_data_callback_->Run(kQuotaStatusOk);
-    evict_origin_data_callback_.reset();
+    // TODO(dmikurube): Call DeleteOriginFromDatabase here.
+    eviction_context_.evict_origin_data_callback->Run(kQuotaStatusOk);
+    eviction_context_.evict_origin_data_callback.reset();
   }
 }
 
@@ -801,7 +804,7 @@ void QuotaManager::EvictOriginData(
     EvictOriginDataCallback* callback) {
   DCHECK(io_thread_->BelongsToCurrentThread());
   DCHECK(database_.get());
-  DCHECK(num_eviction_requested_clients_ == 0);
+  DCHECK(eviction_context_.num_eviction_requested_clients == 0);
   DCHECK(type == kStorageTypeTemporary);
 
   int num_clients = clients_.size();
@@ -812,10 +815,10 @@ void QuotaManager::EvictOriginData(
     return;
   }
 
-  num_eviction_requested_clients_ = num_clients;
-  num_evicted_clients_ = 0;
+  eviction_context_.num_eviction_requested_clients = num_clients;
+  eviction_context_.num_evicted_clients = 0;
 
-  evict_origin_data_callback_.reset(callback);
+  eviction_context_.evict_origin_data_callback.reset(callback);
   for (QuotaClientList::iterator p = clients_.begin();
        p != clients_.end();
        ++p) {
@@ -824,9 +827,44 @@ void QuotaManager::EvictOriginData(
   }
 }
 
+void QuotaManager::DidGetAvailableSpaceForEviction(
+    QuotaStatusCode status,
+    int64 available_space) {
+  eviction_context_.get_usage_and_quota_callback->Run(status,
+      eviction_context_.usage, eviction_context_.quota, available_space);
+  eviction_context_.get_usage_and_quota_callback.reset();
+}
+
+void QuotaManager::DidGetGlobalQuotaForEviction(
+    QuotaStatusCode status,
+    int64 quota) {
+  if (status != kQuotaStatusOk) {
+    eviction_context_.get_usage_and_quota_callback->Run(status,
+        eviction_context_.usage, quota, 0);
+    eviction_context_.get_usage_and_quota_callback.reset();
+    return;
+  }
+
+  eviction_context_.quota = quota;
+  GetAvailableSpace(callback_factory_.
+      NewCallback(&QuotaManager::DidGetAvailableSpaceForEviction));
+}
+
+void QuotaManager::DidGetGlobalUsageForEviction(int64 usage) {
+  eviction_context_.usage = usage;
+  GetTemporaryGlobalQuota(callback_factory_.
+      NewCallback(&QuotaManager::DidGetGlobalQuotaForEviction));
+}
+
 void QuotaManager::GetUsageAndQuotaForEviction(
     GetUsageAndQuotaForEvictionCallback* callback) {
-  // TODO(dmikurube): Implement it.
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(!eviction_context_.get_usage_and_quota_callback.get());
+
+  eviction_context_.get_usage_and_quota_callback.reset(callback);
+  // TODO(dmikurube): Make kStorageTypeTemporary an argument.
+  GetGlobalUsage(kStorageTypeTemporary, callback_factory_.
+      NewCallback(&QuotaManager::DidGetGlobalUsageForEviction));
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {

@@ -66,6 +66,7 @@ class QuotaClient {
                                 DeletionCallback* callback) = 0;
 };
 
+// TODO(dmikurube): Replace it to std::vector for efficiency.
 typedef std::list<QuotaClient*> QuotaClientList;
 
 }  // namespace quota

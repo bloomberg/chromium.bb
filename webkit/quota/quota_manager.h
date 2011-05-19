@@ -56,6 +56,9 @@ class QuotaEvictionHandler {
 
   virtual void GetUsageAndQuotaForEviction(
       GetUsageAndQuotaForEvictionCallback* callback) = 0;
+
+ protected:
+  virtual ~QuotaEvictionHandler() {}
 };
 
 // The quota manager class.  This class is instantiated per profile and
@@ -154,6 +157,26 @@ class QuotaManager : public QuotaTaskObserver,
 
   class AvailableSpaceQueryTask;
 
+  struct EvictionContext {
+    EvictionContext()
+        : num_eviction_requested_clients(0),
+          num_evicted_clients(0),
+          num_eviction_error(0),
+          usage(0),
+          quota(0) {}
+    virtual ~EvictionContext() {}
+
+    scoped_ptr<EvictOriginDataCallback> evict_origin_data_callback;
+    int num_eviction_requested_clients;
+    int num_evicted_clients;
+    int num_eviction_error;
+
+    scoped_ptr<GetUsageAndQuotaForEvictionCallback>
+        get_usage_and_quota_callback;
+    int64 usage;
+    int64 quota;
+  };
+
   typedef std::pair<std::string, StorageType> HostAndType;
   typedef std::map<HostAndType, UsageAndQuotaDispatcherTask*>
       UsageAndQuotaDispatcherTaskMap;
@@ -181,6 +204,13 @@ class QuotaManager : public QuotaTaskObserver,
   void DeleteOriginFromDatabase(const GURL& origin, StorageType type);
 
   void DidOriginDataEvicted(QuotaStatusCode status);
+  void DidGetAvailableSpaceForEviction(
+      QuotaStatusCode status,
+      int64 available_space);
+  void DidGetGlobalQuotaForEviction(
+      QuotaStatusCode status,
+      int64 quota);
+  void DidGetGlobalUsageForEviction(int64 usage);
 
   virtual void GetLRUOrigin(
       StorageType type,
@@ -208,11 +238,9 @@ class QuotaManager : public QuotaTaskObserver,
   scoped_ptr<UsageTracker> temporary_usage_tracker_;
   scoped_ptr<UsageTracker> persistent_usage_tracker_;
 
-  UsageAndQuotaDispatcherTaskMap usage_and_quota_dispatchers_;
+  EvictionContext eviction_context_;
 
-  scoped_ptr<EvictOriginDataCallback> evict_origin_data_callback_;
-  int num_eviction_requested_clients_;
-  int num_evicted_clients_;
+  UsageAndQuotaDispatcherTaskMap usage_and_quota_dispatchers_;
 
   int64 temporary_global_quota_;
   QuotaCallbackQueue temporary_global_quota_callbacks_;

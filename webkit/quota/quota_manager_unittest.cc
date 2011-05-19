@@ -151,10 +151,20 @@ class QuotaManagerTest : public testing::Test {
 
   void GetAvailableSpace() {
     quota_status_ = kQuotaStatusUnknown;
-    quota_ = -1;
+    available_space_ = -1;
     quota_manager_->GetAvailableSpace(
         callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetQuota));
+            &QuotaManagerTest::DidGetAvailableSpace));
+  }
+
+  void GetUsageAndQuotaForEviction() {
+    quota_status_ = kQuotaStatusUnknown;
+    usage_ = -1;
+    quota_ = -1;
+    available_space_ = -1;
+    quota_manager_->GetUsageAndQuotaForEviction(
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::DidGetUsageAndQuotaForEviction));
   }
 
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
@@ -166,6 +176,11 @@ class QuotaManagerTest : public testing::Test {
   void DidGetQuota(QuotaStatusCode status, int64 quota) {
     quota_status_ = status;
     quota_ = quota;
+  }
+
+  void DidGetAvailableSpace(QuotaStatusCode status, int64 available_space) {
+    quota_status_ = status;
+    available_space_ = available_space;
   }
 
   void DidGetHostQuota(QuotaStatusCode status,
@@ -191,6 +206,14 @@ class QuotaManagerTest : public testing::Test {
     quota_status_ = status;
   }
 
+  void DidGetUsageAndQuotaForEviction(QuotaStatusCode status,
+      int64 usage, int64 quota, int64 available_space) {
+    quota_status_ = status;
+    usage_ = usage;
+    quota_ = quota;
+    available_space_ = available_space;
+  }
+
   void set_additional_callback_count(int c) { additional_callback_count_ = c; }
   int additional_callback_count() const { return additional_callback_count_; }
   void DidGetUsageAndQuotaAdditional(
@@ -206,6 +229,7 @@ class QuotaManagerTest : public testing::Test {
   QuotaStatusCode status() const { return quota_status_; }
   int64 usage() const { return usage_; }
   int64 quota() const { return quota_; }
+  int64 available_space() const { return available_space_; }
   FilePath profile_path() const { return data_dir_.path(); }
 
  private:
@@ -218,6 +242,7 @@ class QuotaManagerTest : public testing::Test {
   std::string host_;
   int64 usage_;
   int64 quota_;
+  int64 available_space_;
 
   int additional_callback_count_;
 
@@ -745,9 +770,7 @@ TEST_F(QuotaManagerTest, GetAvailableSpaceTest) {
   GetAvailableSpace();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_LE(0, quota());
-  int64 direct_called = base::SysInfo::AmountOfFreeDiskSpace(profile_path());
-  EXPECT_EQ(direct_called, quota());
+  EXPECT_LE(0, available_space());
 }
 
 TEST_F(QuotaManagerTest, EvictOriginData) {
@@ -795,6 +818,28 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   GetHostUsage("foo.com", kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(predelete_host_pers, usage());
+}
+
+TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
+  static const MockOriginData kData[] = {
+    { "http://foo.com/",   kStorageTypeTemporary,        1 },
+    { "http://foo.com:1/", kStorageTypeTemporary,       20 },
+    { "http://foo.com/",   kStorageTypePersistent,     300 },
+    { "http://bar.com/",   kStorageTypeTemporary,     4000 },
+  };
+
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  SetTemporaryGlobalQuota(10000000);
+  MessageLoop::current()->RunAllPending();
+
+  GetUsageAndQuotaForEviction();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(4021, usage());
+  EXPECT_EQ(10000000, quota());
+  EXPECT_LE(0, available_space());
 }
 
 }  // namespace quota
