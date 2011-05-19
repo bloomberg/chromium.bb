@@ -209,3 +209,6 @@ BrowserEncodingTest.TestEncodingAliasMapping
 LoginPromptTest.TestBasicAuth
 LoginPromptTest.TestDigestAuth
 ResourceDispatcherTest.DoNotSniffHTMLFromTextPlain
+
+# OptionsUITest.NavBarCheck fails, see http://crbug.com/83209
+OptionsUITest.NavBarCheck
