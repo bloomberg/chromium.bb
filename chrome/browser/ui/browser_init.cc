@@ -1027,7 +1027,6 @@ void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(Browser* browser) {
   AddCrashedInfoBarIfNecessary(tab_contents);
   AddBadFlagsInfoBarIfNecessary(tab_contents);
   AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(tab_contents);
-  AddObsoleteSystemInfoBarIfNecessary(tab_contents);
 }
 
 void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
@@ -1138,31 +1137,6 @@ void BrowserInit::LaunchWithProfile::
   tab->AddInfoBar(new LearnMoreInfoBar(tab->tab_contents(),
                                        message,
                                        GURL(kLearnMoreURL)));
-}
-
-void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
-    TabContentsWrapper* tab) {
-#if defined(TOOLKIT_USES_GTK)
-  // We've deprecated support for Ubuntu Hardy.  Rather than attempting to
-  // determine whether you're using that, we instead key off the GTK version;
-  // this will also deprecate other distributions (including variants of Ubuntu)
-  // that are of a similar age.
-  // Version key:
-  //   Ubuntu Hardy: GTK 2.12
-  //   RHEL 6:       GTK 2.18
-  //   Ubuntu Lucid: GTK 2.20
-  if (gtk_check_version(2, 18, 0)) {
-    string16 message =
-        l10n_util::GetStringFUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE,
-                                   l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-    // Link to an article in the help center on minimum system requirements.
-    const char* kLearnMoreURL =
-        "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
-    tab->AddInfoBar(new LearnMoreInfoBar(tab->tab_contents(),
-                                         message,
-                                         GURL(kLearnMoreURL)));
-  }
-#endif
 }
 
 void BrowserInit::LaunchWithProfile::AddStartupURLs(
