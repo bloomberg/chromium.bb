@@ -24,11 +24,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
-#if defined(OS_MACOSX)
-#include <string.h>
-#include <sys/resource.h>
-#endif
-
 #ifndef NDEBUG
 static const int kTestIterations = 2;
 static const int kDatabaseTestIterations = 2;
@@ -46,39 +41,6 @@ static const int kIDBTestIterations = 5;
 static const char kBaseUrl[] = "http://localhost:8000/";
 
 namespace {
-
-#if defined(OS_MACOSX)
-// TODO(tvl/stuart): remove all this fd limit setting on the Mac when/if we
-// replace the Mac reference build.  The trunk raises the limit within the
-// browser app, but we do this here also so the current reference build without
-// that code will pass the intl[12] tests.  This keeps us on an older
-// reference build for all the other reference tests (javascript benchmarks,
-// tab switch, etc.).
-rlim_t GetFileDescriptorLimit(void) {
-  struct rlimit limits;
-  if (getrlimit(RLIMIT_NOFILE, &limits) == 0) {
-    return limits.rlim_cur;
-  }
-  PLOG(ERROR) << "Failed to get file descriptor limit";
-  return 0;
-}
-
-void SetFileDescriptorLimit(rlim_t max_descriptors) {
-  struct rlimit limits;
-  if (getrlimit(RLIMIT_NOFILE, &limits) == 0) {
-    if (limits.rlim_max == 0) {
-      limits.rlim_cur = max_descriptors;
-    } else {
-      limits.rlim_cur = std::min(max_descriptors, limits.rlim_max);
-    }
-    if (setrlimit(RLIMIT_NOFILE, &limits) != 0) {
-      PLOG(ERROR) << "Failed to set file descriptor limit";
-    }
-  } else {
-    PLOG(ERROR) << "Failed to get file descriptor limit";
-  }
-}
-#endif  // OS_MACOSX
 
 void PopulateBufferCache(const FilePath& test_dir) {
   // This will recursively walk the directory given and read all the
@@ -157,9 +119,6 @@ class PageCyclerTest : public UIPerfTest {
  protected:
   bool print_times_only_;
   int num_test_iterations_;
-#if defined(OS_MACOSX)
-  rlim_t fd_limit_;
-#endif
  public:
   PageCyclerTest()
       : print_times_only_(false) {
@@ -178,16 +137,9 @@ class PageCyclerTest : public UIPerfTest {
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchASCII(switches::kJavaScriptFlags,
                                         "--expose_gc");
-#if defined(OS_MACOSX)
-    static rlim_t initial_fd_limit = GetFileDescriptorLimit();
-    fd_limit_ = initial_fd_limit;
-#endif
   }
 
   void SetUp() {
-#if defined(OS_MACOSX)
-    SetFileDescriptorLimit(fd_limit_);
-#endif
     UITest::SetUp();
   }
 
@@ -309,10 +261,6 @@ class PageCyclerReferenceTest : public PageCyclerTest {
   // override the browser directory that is used by UITest::SetUp to cause it
   // to use the reference build instead.
   void SetUp() {
-#if defined(OS_MACOSX)
-    fd_limit_ = 1024;
-#endif
-
     FilePath dir;
     PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
     dir = dir.AppendASCII("reference_build");
