@@ -8,12 +8,12 @@
       ['exclude', '_(gl|win)\\.(cc?)$'],
     ],
     'conditions': [
-      ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {'sources/': [
-        ['include', '_(gl)\\.cc$'],
-      ]}],
-      ['OS=="win"', {'sources/': [
-        ['include', '_(win)\\.cc$'],
-      ]}],
+      ['os_posix == 1 and OS != "mac"', {
+        'sources/': [['include', '_(gl)\\.cc$'],]
+      }],
+      ['OS == "win"', {
+        'sources/': [['include', '_(win)\\.cc$'],]
+      }],
     ],
   },
   'targets': [
@@ -33,7 +33,7 @@
         'compositor_gl.cc',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['os_posix == 1 and OS != "mac"', {
           'sources!': [
             'compositor.cc',
           ],

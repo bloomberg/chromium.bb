@@ -8,7 +8,7 @@
   },
 
   'conditions': [
-    [ 'OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+    ['os_posix == 1 and OS != "mac"', {
       'conditions': [
         ['sysroot!=""', {
           'variables': {
@@ -29,7 +29,7 @@
       ['exclude', '/(gtk|win|x11)_[^/]*\\.cc$'],
     ],
     'conditions': [
-      ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {'sources/': [
+      ['toolkit_uses_gtk == 1', {'sources/': [
         ['include', '/gtk/'],
         ['include', '_(gtk|linux|posix|skia|x)\\.cc$'],
         ['include', '/(gtk|x11)_[^/]*\\.cc$'],
@@ -398,7 +398,7 @@
         '<(DEPTH)/third_party/wtl/include',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:x11',
@@ -519,7 +519,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../chrome/chrome.gyp:packed_resources',
@@ -607,7 +607,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../chrome/chrome.gyp:packed_resources',

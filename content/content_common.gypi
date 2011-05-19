@@ -266,12 +266,12 @@
             ],
           },
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['OS=="linux" and target_arch!="arm"', {
+        ['use_x11 == 1 and target_arch != "arm"', {
           'sources': [
             'common/gpu/x_util.cc',
             'common/gpu/x_util.h',

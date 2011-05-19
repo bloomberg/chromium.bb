@@ -150,7 +150,7 @@
         'disable_pie%': 0,
       },
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['os_posix == 1 and OS != "mac"', {
           'actions': [
             {
               'action_name': 'manpage',

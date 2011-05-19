@@ -12,13 +12,13 @@
       <if expr="os.find('win') != -1">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\about_conflicts.html" flattenhtml="true" type="BINDATA" />
       </if>
-      <if expr="os == 'linux2' or os.find('bsd') != -1">
+      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="BINDATA" />
       </if>
       <if expr="os == 'darwin'">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_mac.html" flattenhtml="true" type="BINDATA" />
       </if>
-      <if expr="os != 'linux2' and os != 'darwin' and os.find('bsd') == -1">
+      <if expr="os != 'linux2' and os != 'darwin' and os.find('bsd') == -1 and os != 'sunos5'">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="BINDATA" />
       </if>
       <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" flattenhtml="true" type="BINDATA" />

@@ -497,7 +497,7 @@
       </message>
 
       <!-- The width and height for the "create application shortcuts error" dialog. -->
-      <if expr="os == 'linux2' or os.find('bsd') != -1">
+      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
         <message name="IDS_CREATE_SHORTCUTS_ERROR_DIALOG_WIDTH_CHARS" use_name_for_id="true">
          60
         </message>

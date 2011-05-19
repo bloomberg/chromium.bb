@@ -132,7 +132,7 @@
             '../third_party/wtl/include',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             # font_gtk.cc uses fontconfig.
             # TODO(evanm): I think this is wrong; it should just use GTK.

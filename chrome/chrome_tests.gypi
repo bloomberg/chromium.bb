@@ -208,7 +208,7 @@
             ['exclude', '^browser/chromeos'],
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
@@ -263,7 +263,7 @@
             'chrome.gyp:crash_service',  # run time dependency
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -348,7 +348,7 @@
         'test/unit/run_all_unittests.cc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             # Needed for the following #include chain:
             #   test/unit/run_all_unittests.cc
@@ -395,7 +395,7 @@
             },
           },
         },],
-        ['OS=="linux"', {
+        ['use_x11 == 1', {
           'dependencies': [
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
@@ -469,14 +469,14 @@
         'test/unit/chrome_test_suite.h',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="linux" and toolkit_views==0', {
+        ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
           'sources!': [
             # TODO(port)
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
@@ -680,12 +680,12 @@
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
-        }, { # else: OS != "linux"
+        }, { # else: toolkit_uses_gtk != 1
           'sources!': [
             'browser/process_singleton_linux_uitest.cc',
           ],
@@ -746,7 +746,7 @@
             'browser/printing/printing_layout_uitest.cc',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['os_posix == 1 and OS != "mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -864,7 +864,7 @@
         'test/webdriver/commands/webelement_commands.cc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -875,7 +875,7 @@
             '../views/views.gyp:views',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['os_posix == 1 and OS != "mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -1024,7 +1024,7 @@
           ],
         },],
         # Set fPIC in case it isn't set.
-        ['(OS=="linux" or OS=="openbsd" or OS=="freebsd" or OS=="solaris")'
+        ['os_posix == 1 and OS != "mac"'
          'and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
           'cflags': ['-fPIC'],
         },],
@@ -1997,7 +1997,7 @@
             ['exclude', '^browser/ui/webui/chromeos/login'],
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'conditions': [
             ['selinux==0', {
               'dependencies': [
@@ -2027,14 +2027,14 @@
           'sources!': [
             'browser/printing/print_job_unittest.cc',
           ],
-        }, { # else: OS != "linux"
+        }, { # else: toolkit_uses_gtk != 1
           'sources!': [
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
             '../views/focus/accelerator_handler_gtk_unittest.cc',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['os_posix == 1 and OS != "mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -2557,7 +2557,7 @@
             '../content/browser/child_process_security_policy_browsertest.cc',
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
@@ -2595,7 +2595,7 @@
             'browser/extensions/browser_action_test_util_mac.mm',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['os_posix == 1 and OS != "mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -2728,7 +2728,7 @@
             },
           },
         },],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -2759,7 +2759,7 @@
             },
           },
         },],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['os_posix == 1 and OS != "mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -2830,7 +2830,7 @@
             },
           },
         },],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -2867,7 +2867,7 @@
             },
           },
         },],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -2905,7 +2905,7 @@
         'test/tab_switching/tab_switching_test.cc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -2940,7 +2940,7 @@
         'test/memory_test/memory_test.cc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -3106,7 +3106,7 @@
             'browser/sync/util/data_encryption_unittest.cc',
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
@@ -3230,7 +3230,7 @@
         'test/data/resource.rc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
              '../build/linux/system.gyp:nss',
@@ -3378,7 +3378,7 @@
           # See comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
              '../build/linux/system.gyp:nss',
@@ -3513,7 +3513,7 @@
             'test/perf/url_parse_perftest.cc',
           ],
           'conditions': [
-            ['OS=="linux"', {
+            ['toolkit_uses_gtk == 1', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
                 '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -3669,7 +3669,7 @@
     ],  # OS=="win"
     # If you change this condition, make sure you also change it in all.gyp
     # for the chromium_builder_qa target.
-    ['OS=="mac" or OS=="win" or (OS=="linux" and target_arch==python_arch)', {
+    ['OS == "mac" or OS == "win" or (os_posix == 1 and target_arch == python_arch)', {
       'targets': [
         {
           # Documentation: http://dev.chromium.org/developers/testing/pyauto
@@ -3721,7 +3721,7 @@
             'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',  # -Wno-error
           },
           'conditions': [
-            ['OS=="linux"', {
+            ['os_posix == 1 and OS!="mac"', {
               'include_dirs': [
                 '..',
                 '<(sysroot)/usr/include/python<(python_ver)',

@@ -47,11 +47,11 @@
             ],
           },
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+        ['os_posix == 1 and OS != "mac"', {
           'type': 'shared_library',
           'cflags': ['-fvisibility=hidden'],
         }],
-        ['OS=="linux" or OS=="openbsd" or OS=="freebsd" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
+        ['os_posix == 1 and OS != "mac" and (target_arch == "x64" or target_arch == "arm") and linux_fpic != 1', {
           'product_name': 'pepper_test_plugin',
           # Shared libraries need -fPIC on x86-64
           'cflags': ['-fPIC'],

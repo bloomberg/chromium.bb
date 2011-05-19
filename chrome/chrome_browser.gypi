@@ -3580,7 +3580,7 @@
             ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gconf',
@@ -3648,21 +3648,13 @@
               ],
             }],
           ],
-        }, {  # OS != "linux"
+        }, {  # toolkit_uses_gtk != 1
           'sources!': [
             # TODO(mattm): Cert manager stuff is really !USE_NSS.
             'browser/certificate_manager_model.cc',
             'browser/certificate_manager_model.h',
             'browser/ui/webui/options/certificate_manager_handler.cc',
             'browser/ui/webui/options/certificate_manager_handler.h',
-          ],
-        }],
-        ['OS=="freebsd" or OS=="openbsd"', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:gtkprint',
-            '../build/linux/system.gyp:nss',
-            '../build/linux/system.gyp:x11',
           ],
         }],
         ['OS=="mac"', {
@@ -4266,14 +4258,14 @@
             }],
             # Exclude extension_input_ui_api again
             # (Required because of the '^browser/extensions/' include abrove)
-            ['OS=="linux" and ( touchui==0 or chromeos==0 )', {
+            ['toolkit_uses_gtk == 1 and ( touchui == 0 or chromeos == 0 )', {
               'sources/': [
                 ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
                 ['exclude', '^browser/extensions/extension_input_ui_api.h'],
               ],
             }],
             # GTK build only
-            ['OS=="linux" and toolkit_views==0', {
+            ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
@@ -4361,7 +4353,7 @@
                 },
               ],
             }],
-            ['OS=="linux" and gcc_version==45', {
+            ['os_posix == 1 and OS != "mac" and gcc_version == 45', {
               # Avoid gcc 4.5 miscompilation of template_url.cc
               # as per http://crbug.com/41887
               'cflags': [

@@ -40,7 +40,7 @@
     },
   ],
   'conditions': [
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+    ['os_posix == 1 and OS != "mac"', {
       'targets': [{
         'target_name': 'ui_unittest_strings',
         'type': 'none',

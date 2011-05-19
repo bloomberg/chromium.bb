@@ -254,7 +254,7 @@
         'common/zip.h',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -270,7 +270,7 @@
             ],
           },
         },],
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
+        ['os_posix == 1 and OS != "mac"', {
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)',
           ],
@@ -385,7 +385,7 @@
         '../third_party/icu/icu.gyp:icuuc',
       ],
       'conditions': [
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
+        ['os_posix == 1 and OS != "mac"', {
             'conditions': [
               ['use_openssl==1', {
                  'dependencies': [

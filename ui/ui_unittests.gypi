@@ -90,7 +90,7 @@
             ],
           },
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../app/app.gyp:app_base',
             '../build/linux/system.gyp:gtk',

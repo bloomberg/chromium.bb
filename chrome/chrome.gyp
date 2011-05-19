@@ -73,6 +73,10 @@
           }],
         ],
       },],
+      ['os_posix == 1 and OS != "mac" and OS != "linux"', {
+        'platform_locale_settings_grd':
+            'app/resources/locale_settings_linux.grd',
+      },],
       ['OS=="mac"', {
         'tweak_info_plist_path': 'tools/build/mac/tweak_info_plist',
         'nacl_defines': [
@@ -464,7 +468,7 @@
         'browser/debugger/inspectable_tab_proxy.h',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -488,7 +492,7 @@
         '..',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -709,7 +713,7 @@
             'browser/sync/util/data_encryption.h',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -840,7 +844,7 @@
             'service/cloud_print/print_system_win.cc',
           ],
         }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -1528,7 +1532,7 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+    ['os_posix == 1 and OS != "mac"', {
       'targets': [{
         'target_name': 'packed_resources',
         'type': 'none',
@@ -1629,7 +1633,7 @@
           },
         ],
       }],  # targets
-    }],  # OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"
+    }],  # os_posix == 1 and OS != "mac"
   ],  # 'conditions'
 }
 

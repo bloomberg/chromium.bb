@@ -445,15 +445,14 @@
       # own hard dependencies.
       'hard_dependency': 1,
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
-        }, { # else: OS!="linux" and OS!="freebsd" and OS!="openbsd" \
-             # and OS!="solaris"'
+        }, { # else: toolkit_uses_gtk != 1
           'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$'],
                        ['exclude', r'/gtk_']],
         }],
