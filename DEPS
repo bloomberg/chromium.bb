@@ -11,7 +11,7 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
-  "tools_rev": "5308",
+  "tools_rev": "5360",
   "wix_rev": "153",
 }
 
