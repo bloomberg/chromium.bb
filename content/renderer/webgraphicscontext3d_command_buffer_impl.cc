@@ -16,6 +16,7 @@
 
 #include "base/string_tokenizer.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "content/common/content_switches.h"
@@ -53,6 +54,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
     bool render_directly_to_web_view) {
+  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
   webkit_glue::BindSkiaToCommandBufferGL();
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
@@ -1045,6 +1047,7 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToCompositor(
     WebGLId texture, WebGLId parentTexture) {
+  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::copyTextureToCompositor");
   makeContextCurrent();
   glCopyTextureToParentTextureCHROMIUM(texture, parentTexture);
   glFlush();

@@ -6333,10 +6333,14 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32 immediate_data_size, const gles2::SwapBuffers& c) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleSwapBuffers");
+  bool is_offscreen = !!offscreen_target_frame_buffer_.get();
+  int this_frame_number = frame_number_++;
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleSwapBuffers",
+               "offscreen", is_offscreen,
+               "frame", this_frame_number);
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
-  if (offscreen_target_frame_buffer_.get()) {
+  if (is_offscreen) {
     ScopedGLErrorSuppressor suppressor(this);
 
     // First check to see if a deferred offscreen render buffer resize is
@@ -6379,8 +6383,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       return error::kNoError;
     }
   } else {
-    TRACE_EVENT1("gpu", "GLContext::SwapBuffers", "frame", frame_number_);
-    frame_number_++;
+    TRACE_EVENT1("gpu", "GLContext::SwapBuffers", "frame", this_frame_number);
     if (!context_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;
