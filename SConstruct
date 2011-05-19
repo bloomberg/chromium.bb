@@ -1486,6 +1486,11 @@ def CommandSelLdrTestNacl(env, name, command,
   # Always run tests with signal catching enabled
   sel_ldr_flags += ['-S']
 
+  # Disable the validator if running a GLibC test under Valgrind.
+  # http://code.google.com/p/nativeclient/issues/detail?id=1799
+  if env.IsRunningUnderValgrind() and env.Bit('nacl_glibc'):
+    sel_ldr_flags += ['-cc']
+
   # Skip platform qualification checks on configurations with known issues.
   if GetEmulator(env) or \
     env.Bit('disable_hardy64_vmware_failures') or \
