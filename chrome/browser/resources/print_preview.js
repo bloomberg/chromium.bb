@@ -340,16 +340,18 @@ function setPrinters(printers, defaultPrinterIndex) {
   var printerList = $('printer-list');
   for (var i = 0; i < printers.length; ++i) {
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
-                             i == defaultPrinterIndex);
+                             i == defaultPrinterIndex, false);
   }
+  addDestinationListOption('','',false, true);
 
   // Adding option for saving PDF to disk.
   addDestinationListOption(localStrings.getString('printToPDF'),
-                           PRINT_TO_PDF, false);
+                           PRINT_TO_PDF, false, false);
+  addDestinationListOption('','',false, true);
 
   // Add an option to manage printers.
   addDestinationListOption(localStrings.getString('managePrinters'),
-                           MANAGE_PRINTERS, false);
+                           MANAGE_PRINTERS, false, false);
 
   printerList.disabled = false;
   updateControlsWithSelectedPrinterCapabilities();
@@ -359,15 +361,17 @@ function setPrinters(printers, defaultPrinterIndex) {
  * Adds an option to the printer destination list.
  * @param {String} optionText specifies the option text content.
  * @param {String} optionValue specifies the option value.
- * @param {boolean} is_default is true if the option needs to be selected.
+ * @param {boolean} isDefault is true if the option needs to be selected.
+ * @param {boolean} isDisabled is true if the option needs to be disabled.
  */
-function addDestinationListOption(optionText, optionValue, is_default) {
+function addDestinationListOption(optionText, optionValue, isDefault,
+    isDisabled) {
   var option = document.createElement('option');
   option.textContent = optionText;
   option.value = optionValue;
   $('printer-list').add(option);
-  if (is_default)
-    option.selected = true;
+  option.selected = isDefault;
+  option.disabled = isDisabled;
 }
 
 /**
