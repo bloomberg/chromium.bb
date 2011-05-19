@@ -6,6 +6,7 @@
 #define WEBKIT_QUOTA_QUOTA_DATABASE_H_
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -51,6 +52,12 @@ class QuotaDatabase {
   bool GetLRUOrigin(StorageType type,
                     const std::set<GURL>& exceptions,
                     GURL* origin);
+
+  // Returns false if SetOriginDatabaseBootstrapped has never
+  // been called before, which means existing origins may not have been
+  // registered.
+  bool IsOriginDatabaseBootstrapped();
+  bool SetOriginDatabaseBootstrapped(bool bootstrap_flag);
 
  private:
   bool FindOriginUsedCount(const GURL& origin,

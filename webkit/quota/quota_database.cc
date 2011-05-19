@@ -24,6 +24,7 @@ const char kOriginsTable[] = "Origins";
 const char kHostQuotaTable[] = "HostQuotaTable";
 const char kOriginLastAccessTable[] = "OriginLastAccessTable";
 const char kGlobalQuotaKeyPrefix[] = "GlobalQuota-";
+const char kIsOriginTableBootstrapped[] = "IsOriginTableBootstrapped";
 
 const struct {
   const char* table_name;
@@ -129,7 +130,7 @@ bool QuotaDatabase::GetHostQuota(
 
 bool QuotaDatabase::SetHostQuota(
     const std::string& host, StorageType type, int64 quota) {
-  DCHECK(quota >= 0);
+  DCHECK_GE(quota, 0);
   if (!LazyOpen(true))
     return false;
 
@@ -279,6 +280,21 @@ bool QuotaDatabase::GetLRUOrigin(
 
   *origin = GURL();
   return statement.Succeeded();
+}
+
+bool QuotaDatabase::IsOriginDatabaseBootstrapped() {
+  if (!LazyOpen(true))
+    return false;
+
+  int flag = 0;
+  return meta_table_->GetValue(kIsOriginTableBootstrapped, &flag) && flag;
+}
+
+bool QuotaDatabase::SetOriginDatabaseBootstrapped(bool bootstrap_flag) {
+  if (!LazyOpen(true))
+    return false;
+
+  return meta_table_->SetValue(kIsOriginTableBootstrapped, bootstrap_flag);
 }
 
 bool QuotaDatabase::FindOriginUsedCount(

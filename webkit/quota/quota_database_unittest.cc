@@ -184,4 +184,20 @@ TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   OriginLastAccessTimeLRU(FilePath());
 }
 
+TEST(QuotaDatabaseTest, BootstrapFlag) {
+  ScopedTempDir data_dir;
+  ASSERT_TRUE(data_dir.CreateUniqueTempDir());
+
+  const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
+  QuotaDatabase db(kDbFile);
+
+
+  EXPECT_FALSE(db.IsOriginDatabaseBootstrapped());
+  EXPECT_TRUE(db.SetOriginDatabaseBootstrapped(true));
+  EXPECT_TRUE(db.IsOriginDatabaseBootstrapped());
+  EXPECT_TRUE(db.SetOriginDatabaseBootstrapped(false));
+  EXPECT_FALSE(db.IsOriginDatabaseBootstrapped());
+}
+
+
 }  // namespace quota
