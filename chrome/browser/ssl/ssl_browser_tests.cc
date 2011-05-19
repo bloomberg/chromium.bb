@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -329,6 +330,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
 
   // Simulate user clicking on back button (crbug.com/39248).
   browser()->GoBack(CURRENT_TAB);
+
+  // Wait until we hear the load failure, and make sure we haven't swapped out
+  // the previous page.  Prevents regression of http://crbug.com/82667.
+  ui_test_utils::WaitForNotification(
+      NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR);
+  EXPECT_FALSE(tab->render_view_host()->is_swapped_out());
 
   // We should be back at the original good page.
   EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());

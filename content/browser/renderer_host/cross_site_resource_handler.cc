@@ -115,8 +115,10 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info) {
   if (!in_cross_site_transition_) {
-    if (has_started_response_) {
-      // We've already completed the transition, so just pass it through.
+    if (has_started_response_ ||
+        status.status() != net::URLRequestStatus::FAILED) {
+      // We've already completed the transition or we're canceling the request,
+      // so just pass it through.
       return next_handler_->OnResponseCompleted(request_id, status,
                                                 security_info);
     } else {
