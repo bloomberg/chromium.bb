@@ -28,11 +28,6 @@
 class BrowserActionsContainer;
 class Browser;
 class Profile;
-#if defined(OS_CHROMEOS)
-namespace views {
-class Menu2;
-}  // namespace views
-#endif
 class WrenchMenu;
 
 // The Browser Window's toolbar.
@@ -206,12 +201,6 @@ class ToolbarView : public AccessiblePaneView,
 
   // The contents of the wrench menu.
   scoped_ptr<ui::SimpleMenuModel> wrench_menu_model_;
-
-#if defined(OS_CHROMEOS)
-  // Wrench menu using WebUI menu.
-  // MenuLister is managed by Menu2.
-  scoped_ptr<views::Menu2> wrench_menu_2_;
-#endif
 
   // Wrench menu.
   scoped_refptr<WrenchMenu> wrench_menu_;
