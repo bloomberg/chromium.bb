@@ -91,6 +91,11 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // some plugins crash if unloaded).
   void PreventLibraryUnload();
 
+  // Indicates whether plugin unload can be deferred.
+  void set_defer_unload(bool defer_unload) {
+    defer_unload_ = defer_unload;
+  }
+
   // protected for testability.
  protected:
   friend class base::RefCounted<PluginLib>;
@@ -124,6 +129,9 @@ class PluginLib : public base::RefCounted<PluginLib> {
 
   // Function pointers to entry points into the plugin.
   PluginEntryPoints entry_points_;
+
+  // Set to true if unloading of the plugin dll is to be deferred.
+  bool defer_unload_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginLib);
 };

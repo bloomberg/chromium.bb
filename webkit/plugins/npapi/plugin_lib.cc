@@ -72,7 +72,8 @@ PluginLib::PluginLib(const WebPluginInfo& info,
       initialized_(false),
       saved_data_(0),
       instance_count_(0),
-      skip_unload_(false) {
+      skip_unload_(false),
+      defer_unload_(false) {
   base::StatsCounter(kPluginLibrariesLoadedCounter).Increment();
   memset(static_cast<void*>(&plugin_funcs_), 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(make_scoped_refptr(this));
@@ -170,7 +171,7 @@ void PluginLib::CloseInstance() {
   instance_count_--;
   // If a plugin is running in its own process it will get unloaded on process
   // shutdown.
-  if ((instance_count_ == 0) && webkit_glue::IsPluginRunningInRendererProcess())
+  if ((instance_count_ == 0) && !defer_unload_)
     Unload();
 }
 
@@ -315,8 +316,6 @@ void PluginLib::Unload() {
     // In case of single process mode, a plugin can delete itself
     // by executing a script. So delay the unloading of the library
     // so that the plugin will have a chance to unwind.
-    bool defer_unload = webkit_glue::IsPluginRunningInRendererProcess();
-
 /* TODO(dglazkov): Revisit when re-enabling the JSC build.
 #if USE(JSC)
     // The plugin NPAPI instances may still be around. Delay the
@@ -325,8 +324,7 @@ void PluginLib::Unload() {
     defer_unload = true;
 #endif
 */
-
-    if (defer_unload) {
+    if (!defer_unload_) {
       FreePluginLibraryTask* free_library_task =
           new FreePluginLibraryTask(web_plugin_info_.path,
                                     skip_unload_ ? NULL : library_,

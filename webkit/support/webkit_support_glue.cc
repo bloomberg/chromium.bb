@@ -38,19 +38,7 @@ bool IsDefaultPluginEnabled() {
   return false;
 }
 
-bool IsPluginRunningInRendererProcess() {
-  return true;
-}
-
 void AppendToLog(const char*, int, const char*) {
-}
-
-bool GetApplicationDirectory(FilePath* path) {
-  return PathService::Get(base::DIR_EXE, path);
-}
-
-bool GetExeDirectory(FilePath* path) {
-  return GetApplicationDirectory(path);
 }
 
 bool IsProtocolSupportedForMedia(const GURL& url) {

@@ -342,6 +342,9 @@ class PluginList {
   // accessed on multiple threads.
   base::Lock lock_;
 
+  // Set to true if the default plugin is enabled.
+  bool default_plugin_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginList);
 };
 

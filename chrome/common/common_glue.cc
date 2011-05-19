@@ -17,18 +17,6 @@
 
 namespace webkit_glue {
 
-bool GetExeDirectory(FilePath* path) {
-  return PathService::Get(base::DIR_EXE, path);
-}
-
-bool GetApplicationDirectory(FilePath* path) {
-  return PathService::Get(chrome::DIR_APP, path);
-}
-
-bool IsPluginRunningInRendererProcess() {
-  return !IsPluginProcess();
-}
-
 std::string GetWebKitLocale() {
   // The browser process should have passed the locale to the renderer via the
   // --lang command line flag.  In single process mode, this will return the

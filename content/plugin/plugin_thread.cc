@@ -78,8 +78,12 @@ PluginThread::PluginThread()
 
   scoped_refptr<webkit::npapi::PluginLib> plugin(
       webkit::npapi::PluginLib::CreatePluginLib(plugin_path_));
-  if (plugin.get())
+  if (plugin.get()) {
     plugin->NP_Initialize();
+    // For OOP plugins the plugin dll will be unloaded during process shutdown
+    // time.
+    plugin->set_defer_unload(true);
+  }
 
   content::GetContentClient()->plugin()->PluginProcessStarted(
       plugin.get() ? plugin->plugin_info().name : string16());
@@ -140,10 +144,6 @@ void PluginThread::OnNotifyRenderersOfPendingShutdown() {
 }
 
 namespace webkit_glue {
-bool IsDefaultPluginEnabled() {
-  return true;
-}
-
 bool FindProxyForUrl(const GURL& url, std::string* proxy_list) {
   int net_error;
   std::string proxy_result;

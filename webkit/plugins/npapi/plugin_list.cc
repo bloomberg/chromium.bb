@@ -241,6 +241,8 @@ void PluginList::RegisterInternalPlugin(const FilePath& filename,
 
   base::AutoLock lock(lock_);
   internal_plugins_.push_back(plugin);
+  if (filename.value() == kDefaultPluginLibraryName)
+    default_plugin_enabled_ = true;
 }
 
 void PluginList::UnregisterInternalPlugin(const FilePath& path) {
@@ -323,7 +325,8 @@ PluginList::PluginList()
       plugins_need_refresh_(false),
       disable_outdated_plugins_(false),
       group_definitions_(kGroupDefinitions),
-      num_group_definitions_(ARRAYSIZE_UNSAFE(kGroupDefinitions)) {
+      num_group_definitions_(ARRAYSIZE_UNSAFE(kGroupDefinitions)),
+      default_plugin_enabled_(false) {
   PlatformInit();
   AddHardcodedPluginGroups(&plugin_groups_);
 }
@@ -392,7 +395,7 @@ void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
 #endif
 
   // Load the default plugin last.
-  if (webkit_glue::IsDefaultPluginEnabled())
+  if (default_plugin_enabled_)
     LoadPlugin(FilePath(kDefaultPluginLibraryName), plugin_groups);
 }
 

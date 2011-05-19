@@ -47,20 +47,24 @@ const char16 kRegistryJavaHome[] = L"JavaHome";
 const char16 kJavaDeploy1[] = L"npdeploytk.dll";
 const char16 kJavaDeploy2[] = L"npdeployjava1.dll";
 
-// The application path where we expect to find plugins.
+// Gets the directory where the application data and libraries exist.  This
+// may be a versioned subdirectory, or it may be the same directory as the
+// GetExeDirectory(), depending on the embedder's implementation.
+// Path is an output parameter to receive the path.
 void GetAppDirectory(std::set<FilePath>* plugin_dirs) {
   FilePath app_path;
-  if (!webkit_glue::GetApplicationDirectory(&app_path))
+  if (!PathService::Get(base::DIR_MODULE, &app_path))
     return;
 
   app_path = app_path.AppendASCII("plugins");
   plugin_dirs->insert(app_path);
 }
 
-// The executable path where we expect to find plugins.
+// Gets the directory where the launching executable resides on disk.
+// Path is an output parameter to receive the path.
 void GetExeDirectory(std::set<FilePath>* plugin_dirs) {
   FilePath exe_path;
-  if (!webkit_glue::GetExeDirectory(&exe_path))
+  if (!PathService::Get(base::DIR_EXE, &exe_path))
     return;
 
   exe_path = exe_path.AppendASCII("plugins");

@@ -566,7 +566,7 @@ WebKit::WebThemeEngine* GetThemeEngine() {
 // DevTools
 WebURL GetDevToolsPathAsURL() {
   FilePath dirExe;
-  if (!webkit_glue::GetExeDirectory(&dirExe)) {
+  if (!PathService::Get(base::DIR_EXE, &dirExe)) {
       DCHECK(false);
       return WebURL();
   }

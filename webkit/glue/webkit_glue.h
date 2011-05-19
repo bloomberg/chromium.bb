@@ -206,28 +206,9 @@ bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
 bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
                             std::vector<string16>* filenames);
 
-// Gets the directory where the application data and libraries exist.  This
-// may be a versioned subdirectory, or it may be the same directory as the
-// GetExeDirectory(), depending on the embedder's implementation.
-// Path is an output parameter to receive the path.
-// Returns true if successful, false otherwise.
-bool GetApplicationDirectory(FilePath* path);
-
-// Gets the directory where the launching executable resides on disk.
-// Path is an output parameter to receive the path.
-// Returns true if successful, false otherwise.
-bool GetExeDirectory(FilePath* path);
-
 // Embedders implement this function to return the list of plugins to Webkit.
 void GetPlugins(bool refresh,
                 std::vector<webkit::npapi::WebPluginInfo>* plugins);
-
-// Returns true if the plugins run in the same process as the renderer, and
-// false otherwise.
-bool IsPluginRunningInRendererProcess();
-
-// Returns a bool indicating if the Null plugin should be enabled or not.
-bool IsDefaultPluginEnabled();
 
 // Returns true if the protocol implemented to serve |url| supports features
 // required by the media engine.

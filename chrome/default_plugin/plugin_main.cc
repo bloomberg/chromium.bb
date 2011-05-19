@@ -163,13 +163,6 @@ NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16_t mode,
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  // We don't want the null plugin to work in the following cases:-
-  // 1. Test-shell
-  // 2. The plugin is running in the renderer process.
-  if (webkit_glue::IsPluginRunningInRendererProcess()) {
-    return NPERR_GENERIC_ERROR;
-  }
-
   if (!NegotiateModels(instance))
     return NPERR_INCOMPATIBLE_VERSION_ERROR;
 

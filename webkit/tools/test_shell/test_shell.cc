@@ -625,33 +625,6 @@ WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
 
 namespace webkit_glue {
 
-bool GetApplicationDirectory(FilePath* path) {
-  return PathService::Get(base::DIR_EXE, path);
-}
-
-bool GetExeDirectory(FilePath* path) {
-  return GetApplicationDirectory(path);
-}
-
-bool IsPluginRunningInRendererProcess() {
-  return true;
-}
-
-bool GetPluginFinderURL(std::string* plugin_finder_url) {
-  return false;
-}
-
-bool IsDefaultPluginEnabled() {
-  FilePath exe_path;
-
-  if (PathService::Get(base::FILE_EXE, &exe_path)) {
-    std::string exe_name = exe_path.BaseName().MaybeAsASCII();
-    if (StartsWithASCII(exe_name, "test_shell_tests", false))
-      return true;
-  }
-  return false;
-}
-
 bool IsProtocolSupportedForMedia(const GURL& url) {
   if (url.SchemeIsFile() ||
       url.SchemeIs("http") ||
