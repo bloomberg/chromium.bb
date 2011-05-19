@@ -248,6 +248,7 @@ NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
     : TextButton(listener, label), is_default_(false) {
   set_alignment(TextButton::ALIGN_CENTER);
   SetNormalHasBorder(true);
+  SetFocusable(true);
 }
 
 void NativeButton::SetLabel(const std::wstring& label) {
