@@ -192,9 +192,7 @@ bool TestServer::GetAddressList(AddressList* address_list) const {
   DCHECK(address_list);
 
   scoped_ptr<HostResolver> resolver(
-      CreateSystemHostResolver(HostResolver::kDefaultParallelism,
-                               HostResolver::kDefaultRetryAttempts,
-                               NULL));
+      CreateSystemHostResolver(HostResolver::kDefaultParallelism, NULL));
   HostResolver::RequestInfo info(host_port_pair_);
   int rv = resolver->Resolve(info, address_list, NULL, NULL, BoundNetLog());
   if (rv != net::OK) {

@@ -139,7 +139,6 @@ int main(int argc, char** argv) {
 
   scoped_ptr<net::HostResolver> host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    net::HostResolver::kDefaultRetryAttempts,
                                     NULL));
 
   scoped_ptr<net::CertVerifier> cert_verifier(new net::CertVerifier);
