@@ -303,13 +303,13 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
                                  GDK_BUTTON_PRESS_MASK |
                                  GDK_BUTTON_RELEASE_MASK);
   g_signal_connect(window_, "motion-notify-event",
-                   G_CALLBACK(&HandleMotionThunk), this);
+                   G_CALLBACK(HandleMotionThunk), this);
   g_signal_connect(window_, "button-press-event",
-                   G_CALLBACK(&HandleButtonPressThunk), this);
+                   G_CALLBACK(HandleButtonPressThunk), this);
   g_signal_connect(window_, "button-release-event",
-                   G_CALLBACK(&HandleButtonReleaseThunk), this);
+                   G_CALLBACK(HandleButtonReleaseThunk), this);
   g_signal_connect(window_, "expose-event",
-                   G_CALLBACK(&HandleExposeThunk), this);
+                   G_CALLBACK(HandleExposeThunk), this);
 
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
