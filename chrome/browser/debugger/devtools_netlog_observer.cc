@@ -113,6 +113,11 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
           static_cast<net::NetLogHttpRequestParameter*>(params);
       const net::HttpRequestHeaders &request_headers =
           request_parameter->GetHeaders();
+
+      // We need to clear headers in case the same url_request is reused for
+      // several http requests (e.g. see http://crbug.com/80157).
+      info->request_headers.clear();
+
       for (net::HttpRequestHeaders::Iterator it(request_headers);
            it.GetNext();) {
         info->request_headers.push_back(std::make_pair(it.name(),
@@ -129,6 +134,11 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       info->http_status_code = response_headers.response_code();
       info->http_status_text = response_headers.GetStatusText();
       std::string name, value;
+
+      // We need to clear headers in case the same url_request is reused for
+      // several http requests (e.g. see http://crbug.com/80157).
+      info->response_headers.clear();
+
       for (void* it = NULL;
            response_headers.EnumerateHeaderLines(&it, &name, &value); ) {
         info->response_headers.push_back(std::make_pair(name, value));
