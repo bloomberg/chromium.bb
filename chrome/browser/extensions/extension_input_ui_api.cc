@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_input_ui_api.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/json/json_writer.h"
@@ -294,7 +295,13 @@ void ExtensionInputUiEventRouter::OnUpdateLookupTable(
   }
 
   ListValue *candidates = new ListValue();
-  for (size_t i = 0; i < lookup_table.candidates.size(); i++) {
+
+  size_t page = lookup_table.cursor_absolute_index / lookup_table.page_size;
+  size_t begin = page * lookup_table.page_size;
+  size_t end = std::min(begin + lookup_table.page_size,
+      lookup_table.candidates.size());
+
+  for (size_t i = begin; i < end; i++) {
     candidates->Append(Value::CreateStringValue(lookup_table.candidates[i]));
   }
 
