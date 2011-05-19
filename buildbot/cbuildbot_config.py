@@ -182,10 +182,6 @@ official = {
   # TODO(dgarret): turned off for testing
   'vm_tests' : False,
 
-  # Enable these two temporarily for Bot Testing
-  'push_image' : True,
-  'upload_symbols' : True,
-
   'gs_path' : None,
 
   # cbuild --official
