@@ -77,6 +77,7 @@ function onLoad() {
   $('decrement').addEventListener('click',
                                   function() { onCopiesButtonsClicked(-1); });
   $('controls').onsubmit = function() { return false; };
+  $('dancing-dots').classList.remove('invisible');
   chrome.send('getPrinters');
 }
 
