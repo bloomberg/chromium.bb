@@ -279,7 +279,19 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
       return;  // Yup, known extension, don't uninstall.
   }
 
-  // This is an external extension that we don't have registered.  Uninstall.
+  // We get the list of external extensions to check from preferences.
+  // It is possible that an extension has preferences but is not loaded.
+  // For example, an extension that requires experimental permissions
+  // will not be loaded if the experimental command line flag is not used.
+  // In this case, do not uninstall.
+  const Extension* extension = GetInstalledExtension(id);
+  if (!extension) {
+    // We can't call UninstallExtension with an unloaded/invalid
+    // extension ID.
+    LOG(WARNING) << "Attempted uninstallation of unloaded/invalid extension "
+                 << "with id: " << id;
+    return;
+  }
   UninstallExtension(id, true, NULL);
 }
 

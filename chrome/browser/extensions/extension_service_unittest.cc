@@ -1245,6 +1245,34 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   ASSERT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
 }
 
+// Test that uninstalling an external extension does not crash when
+// the extension could not be loaded.
+// This extension shown in preferences file requires an experimental permission.
+// It could not be loaded without such permission.
+TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
+  FilePath source_install_dir = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions");
+  // The preference contains an external extension
+  // that requires 'experimental' permission.
+  FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("PreferencesExperimental");
+
+  // Aforementioned extension will not be loaded if
+  // there is no '--enable-experimental-extension-apis' command line flag.
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  service_->Init();
+  loop_.RunAllPending();
+
+  // Check and try to uninstall it.
+  // If we don't check whether the extension is loaded before we uninstall it
+  // in CheckExternalUninstall, a crash will happen here because we will get or
+  // dereference a NULL pointer (extension) inside UninstallExtension.
+  service_->OnExternalProviderReady();
+}
+
 // Test that external extensions with incorrect IDs are not installed.
 TEST_F(ExtensionServiceTest, FailOnWrongId) {
   InitializeEmptyExtensionService();
