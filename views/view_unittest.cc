@@ -1898,24 +1898,57 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
 
   top_view.SetBounds(0, 0, 1000, 1000);
 
-  child->SetBounds(10, 10, 500, 500);
+  child->SetBounds(7, 19, 500, 500);
   ui::Transform transform;
-  transform.SetScale(5.0f, 5.0f);
+  transform.SetScale(3.0f, 4.0f);
   child->SetTransform(transform);
 
-  child_child->SetBounds(10, 10, 100, 100);
+  child_child->SetBounds(17, 13, 100, 100);
   transform = ui::Transform();
-  transform.SetScale(2.0f, 2.0f);
+  transform.SetScale(5.0f, 7.0f);
   child_child->SetTransform(transform);
+
+  // Sanity check to make sure basic transforms act as expected.
+  {
+    ui::Transform transform;
+    transform.ConcatTranslate(1, 1);
+    transform.ConcatScale(100, 55);
+    transform.ConcatTranslate(110, -110);
+
+    EXPECT_EQ(210, transform.matrix().getTranslateX());
+    EXPECT_EQ(-55, transform.matrix().getTranslateY());
+    EXPECT_EQ(100, transform.matrix().getScaleX());
+    EXPECT_EQ(55, transform.matrix().getScaleY());
+    EXPECT_EQ(0, transform.matrix().getSkewX());
+    EXPECT_EQ(0, transform.matrix().getSkewY());
+  }
+
+  {
+    ui::Transform transform;
+    transform.SetTranslate(1, 1);
+    ui::Transform t2;
+    t2.SetScale(100, 55);
+    ui::Transform t3;
+    t3.SetTranslate(110, -110);
+    transform.ConcatTransform(t2);
+    transform.ConcatTransform(t3);
+
+    EXPECT_EQ(210, transform.matrix().getTranslateX());
+    EXPECT_EQ(-55, transform.matrix().getTranslateY());
+    EXPECT_EQ(100, transform.matrix().getScaleX());
+    EXPECT_EQ(55, transform.matrix().getScaleY());
+    EXPECT_EQ(0, transform.matrix().getSkewX());
+    EXPECT_EQ(0, transform.matrix().getSkewY());
+  }
 
   // Conversions from child->top and top->child.
   {
     gfx::Point point(5, 5);
     View::ConvertPointToView(child, &top_view, &point);
-    EXPECT_EQ(35, point.x());
-    EXPECT_EQ(35, point.y());
+    EXPECT_EQ(22, point.x());
+    EXPECT_EQ(39, point.y());
 
-    point.SetPoint(35, 35);
+    point.SetPoint(22, 39);
     View::ConvertPointToView(&top_view, child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
@@ -1925,10 +1958,10 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   {
     gfx::Point point(5, 5);
     View::ConvertPointToView(child_child, &top_view, &point);
-    EXPECT_EQ(110, point.x());
-    EXPECT_EQ(110, point.y());
+    EXPECT_EQ(133, point.x());
+    EXPECT_EQ(211, point.y());
 
-    point.SetPoint(110, 110);
+    point.SetPoint(133, 211);
     View::ConvertPointToView(&top_view, child_child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
@@ -1938,10 +1971,10 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   {
     gfx::Point point(5, 5);
     View::ConvertPointToView(child_child, child, &point);
-    EXPECT_EQ(20, point.x());
-    EXPECT_EQ(20, point.y());
+    EXPECT_EQ(42, point.x());
+    EXPECT_EQ(48, point.y());
 
-    point.SetPoint(20, 20);
+    point.SetPoint(42, 48);
     View::ConvertPointToView(child, child_child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());

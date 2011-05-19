@@ -1517,19 +1517,18 @@ void View::RemoveDescendantToNotify(View* view) {
 
 bool View::GetTransformRelativeTo(const View* ancestor,
                                   ui::Transform* transform) const {
-  if (this == ancestor)
-    return true;
-  bool ret_value = false;
-  if (parent_) {
-    ret_value = parent_->GetTransformRelativeTo(ancestor, transform);
-  } else if (transform_.get()) {
-    *transform = *transform_;
+  const View* p = this;
+
+  while (p && p != ancestor) {
+    if (p->transform_.get())
+      transform->ConcatTransform(*p->transform_);
+    transform->ConcatTranslate(static_cast<float>(p->GetMirroredX()),
+                               static_cast<float>(p->y()));
+
+    p = p->parent_;
   }
-  transform->ConcatTranslate(static_cast<float>(GetMirroredX()),
-                             static_cast<float>(y()));
-  if (transform_.get())
-    transform->ConcatTransform(*transform_);
-  return ret_value;
+
+  return p == ancestor;
 }
 
 // Coordinate conversion -------------------------------------------------------

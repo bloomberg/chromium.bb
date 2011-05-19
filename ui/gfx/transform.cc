@@ -53,19 +53,15 @@ void Transform::ConcatScale(float x, float y) {
 }
 
 void Transform::ConcatTranslate(float x, float y) {
-  // Temporary workaround for bug in Skia.
-  ui::Transform t;
-  t.SetTranslate(x, y);
-  ConcatTransform(t);
-  // matrix_.postTranslate(SkFloatToScalar(x), SkFloatToScalar(y));
+  matrix_.postTranslate(SkFloatToScalar(x), SkFloatToScalar(y));
 }
 
 bool Transform::PreconcatTransform(const Transform& transform) {
-  return matrix_.setConcat(transform.matrix_, matrix_);
+  return matrix_.setConcat(matrix_, transform.matrix_);
 }
 
 bool Transform::ConcatTransform(const Transform& transform) {
-  return matrix_.setConcat(matrix_, transform.matrix_);
+  return matrix_.setConcat(transform.matrix_, matrix_);
 }
 
 bool Transform::HasChange() const {

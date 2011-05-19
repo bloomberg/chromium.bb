@@ -57,12 +57,12 @@ class Transform {
   void ConcatTranslate(float x, float y);
 
   // Applies a transformation on the current transformation
-  // (i.e. 'this = transform * this;'). Returns true if the result can be
+  // (i.e. 'this = this * transform;'). Returns true if the result can be
   // represented.
   bool PreconcatTransform(const Transform& transform);
 
   // Applies a transformation on the current transformation
-  // (i.e. 'this = this * transform;'). Returns true if the result can be
+  // (i.e. 'this = transform * this;'). Returns true if the result can be
   // represented.
   bool ConcatTransform(const Transform& transform);
 
