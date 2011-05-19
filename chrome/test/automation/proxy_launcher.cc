@@ -127,17 +127,24 @@ bool ProxyLauncher::WaitForBrowserLaunch(bool wait_for_initial_loads) {
     return false;
 
   if (wait_for_initial_loads) {
-    bool waited = automation_proxy_->WaitForInitialLoads();
-    EXPECT_TRUE(waited);
-    if (!waited)
+    if (!automation_proxy_->WaitForInitialLoads()) {
+      LOG(ERROR) << "WaitForInitialLoads failed.";
       return false;
+    }
   } else {
+    // TODO(phajdan.jr): We should get rid of this sleep, but some tests
+    // "rely" on it, e.g. AssertionTest.Assertion and CheckFalseTest.CheckFails.
+    // Those tests do not wait in any way until the crash gets noticed,
+    // so it's possible for the browser to exit before the tested crash happens.
     base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
   }
 
-  bool set_inet_filter = automation()->SetFilteredInet(ShouldFilterInet());
-  EXPECT_TRUE(set_inet_filter);
-  return set_inet_filter;
+  if (!automation()->SetFilteredInet(ShouldFilterInet())) {
+    LOG(ERROR) << "SetFilteredInet failed.";
+    return false;
+  }
+
+  return true;
 }
 
 bool ProxyLauncher::LaunchBrowserAndServer(const LaunchState& state,
@@ -146,20 +153,25 @@ bool ProxyLauncher::LaunchBrowserAndServer(const LaunchState& state,
   automation_proxy_.reset(CreateAutomationProxy(
                               TestTimeouts::action_max_timeout_ms()));
 
-  LaunchBrowser(state);
-  return WaitForBrowserLaunch(wait_for_initial_loads);
+  if (!LaunchBrowser(state))
+    return false;
+
+  if (!WaitForBrowserLaunch(wait_for_initial_loads))
+    return false;
+
+  return true;
 }
 
-void ProxyLauncher::ConnectToRunningBrowser(bool wait_for_initial_loads) {
+bool ProxyLauncher::ConnectToRunningBrowser(bool wait_for_initial_loads) {
   // Set up IPC testing interface as a client.
   automation_proxy_.reset(CreateAutomationProxy(
                               TestTimeouts::action_max_timeout_ms()));
-  WaitForBrowserLaunch(wait_for_initial_loads);
+
+  return WaitForBrowserLaunch(wait_for_initial_loads);
 }
 
 void ProxyLauncher::CloseBrowserAndServer() {
   QuitBrowser();
-  CleanupAppProcesses();
 
   // Suppress spammy failures that seem to be occurring when running
   // the UI tests in single-process mode.
@@ -176,32 +188,48 @@ void ProxyLauncher::DisconnectFromRunningBrowser() {
   automation_proxy_.reset();  // Shut down IPC testing interface.
 }
 
-void ProxyLauncher::LaunchBrowser(const LaunchState& state) {
+bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
   if (state.clear_profile || !temp_profile_dir_.IsValid()) {
-    if (temp_profile_dir_.IsValid())
-      ASSERT_TRUE(temp_profile_dir_.Delete());
-    ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
+    if (temp_profile_dir_.IsValid() && !temp_profile_dir_.Delete()) {
+      LOG(ERROR) << "Failed to delete temporary directory.";
+      return false;
+    }
 
-    ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir()));
+    if (!temp_profile_dir_.CreateUniqueTempDir()) {
+      LOG(ERROR) << "Failed to create temporary directory.";
+      return false;
+    }
+
+    if (!test_launcher_utils::OverrideUserDataDir(user_data_dir())) {
+      LOG(ERROR) << "Failed to override user data directory.";
+      return false;
+    }
   }
 
   if (!state.template_user_data.empty()) {
     // Recursively copy the template directory to the user_data_dir.
-    ASSERT_TRUE(file_util::CopyRecursiveDirNoCache(
-        state.template_user_data,
-        user_data_dir()));
+    if (!file_util::CopyRecursiveDirNoCache(
+            state.template_user_data, user_data_dir())) {
+      LOG(ERROR) << "Failed to copy user data directory template.";
+      return false;
+    }
+
     // If we're using the complex theme data, we need to write the
     // user_data_dir_ to our preferences file.
-    if (state.profile_type == COMPLEX_THEME) {
+    if (state.profile_type == COMPLEX_THEME)
       RewritePreferencesFile(user_data_dir());
-    }
 
     // Update the history file to include recent dates.
     UpdateHistoryDates(user_data_dir());
   }
 
-  ASSERT_TRUE(LaunchBrowserHelper(state, false, &process_));
+  if (!LaunchBrowserHelper(state, false, &process_)) {
+    LOG(ERROR) << "LaunchBrowserHelper failed.";
+    return false;
+  }
   process_id_ = base::GetProcId(process_);
+
+  return true;
 }
 
 #if !defined(OS_MACOSX)
@@ -212,6 +240,11 @@ bool ProxyLauncher::LaunchAnotherBrowserBlockUntilClosed(
 #endif
 
 void ProxyLauncher::QuitBrowser() {
+  // If we have already finished waiting for the browser to exit
+  // (or it hasn't launched at all), there's nothing to do here.
+  if (process_ == base::kNullProcessHandle)
+    return;
+
   if (SESSION_ENDING == shutdown_type_) {
     TerminateBrowser();
     return;
@@ -219,52 +252,45 @@ void ProxyLauncher::QuitBrowser() {
 
   base::TimeTicks quit_start = base::TimeTicks::Now();
 
-  // There's nothing to do here if the browser is not running.
-  // WARNING: There is a race condition here where the browser may shut down
-  // after this check but before some later automation call. Your test should
-  // use WaitForBrowserProcessToQuit() if it intentionally
-  // causes the browser to shut down.
-  if (IsBrowserRunning()) {
-    EXPECT_TRUE(automation()->SetFilteredInet(false));
+  EXPECT_TRUE(automation()->SetFilteredInet(false));
 
-    if (WINDOW_CLOSE == shutdown_type_) {
-      int window_count = 0;
-      EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  if (WINDOW_CLOSE == shutdown_type_) {
+    int window_count = 0;
+    EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
 
-      // Synchronously close all but the last browser window. Closing them
-      // one-by-one may help with stability.
-      while (window_count > 1) {
-        scoped_refptr<BrowserProxy> browser_proxy =
-            automation()->GetBrowserWindow(0);
-        EXPECT_TRUE(browser_proxy.get());
-        if (browser_proxy.get()) {
-          EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
-          EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-        } else {
-          break;
-        }
-      }
-
-      // Close the last window asynchronously, because the browser may
-      // shutdown faster than it will be able to send a synchronous response
-      // to our message.
+    // Synchronously close all but the last browser window. Closing them
+    // one-by-one may help with stability.
+    while (window_count > 1) {
       scoped_refptr<BrowserProxy> browser_proxy =
           automation()->GetBrowserWindow(0);
       EXPECT_TRUE(browser_proxy.get());
       if (browser_proxy.get()) {
-        EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
-        browser_proxy = NULL;
+        EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
+        EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+      } else {
+        break;
       }
-    } else if (USER_QUIT == shutdown_type_) {
-      scoped_refptr<BrowserProxy> browser_proxy =
-          automation()->GetBrowserWindow(0);
-      EXPECT_TRUE(browser_proxy.get());
-      if (browser_proxy.get()) {
-        EXPECT_TRUE(browser_proxy->RunCommandAsync(IDC_EXIT));
-      }
-    } else {
-      NOTREACHED() << "Invalid shutdown type " << shutdown_type_;
     }
+
+    // Close the last window asynchronously, because the browser may
+    // shutdown faster than it will be able to send a synchronous response
+    // to our message.
+    scoped_refptr<BrowserProxy> browser_proxy =
+        automation()->GetBrowserWindow(0);
+    EXPECT_TRUE(browser_proxy.get());
+    if (browser_proxy.get()) {
+      EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
+      browser_proxy = NULL;
+    }
+  } else if (USER_QUIT == shutdown_type_) {
+    scoped_refptr<BrowserProxy> browser_proxy =
+        automation()->GetBrowserWindow(0);
+    EXPECT_TRUE(browser_proxy.get());
+    if (browser_proxy.get()) {
+      EXPECT_TRUE(browser_proxy->RunCommandAsync(IDC_EXIT));
+    }
+  } else {
+    NOTREACHED() << "Invalid shutdown type " << shutdown_type_;
   }
 
   // Now, drop the automation IPC channel so that the automation provider in
@@ -275,57 +301,43 @@ void ProxyLauncher::QuitBrowser() {
   // Wait for the browser process to quit. It should quit once all tabs have
   // been closed.
   int exit_code = -1;
-  if (WaitForBrowserProcessToQuit(
-          TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code)) {
-    EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
-  } else {
-    // We need to force the browser to quit because it didn't quit fast
-    // enough. Take no chance and kill every chrome processes.
-    CleanupAppProcesses();
-  }
-  browser_quit_time_ = base::TimeTicks::Now() - quit_start;
+  EXPECT_TRUE(WaitForBrowserProcessToQuit(
+                  TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code));
+  EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 
-  // Don't forget to close the handle
-  base::CloseProcessHandle(process_);
-  process_ = base::kNullProcessHandle;
-  process_id_ = -1;
+  browser_quit_time_ = base::TimeTicks::Now() - quit_start;
 }
 
 void ProxyLauncher::TerminateBrowser() {
+  // If we have already finished waiting for the browser to exit
+  // (or it hasn't launched at all), there's nothing to do here.
+  if (process_ == base::kNullProcessHandle)
+    return;
+
   base::TimeTicks quit_start = base::TimeTicks::Now();
 
-  if (IsBrowserRunning()) {
-    EXPECT_TRUE(automation()->SetFilteredInet(false));
+  EXPECT_TRUE(automation()->SetFilteredInet(false));
 #if defined(OS_WIN)
-    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-    ASSERT_TRUE(browser.get());
-    ASSERT_TRUE(browser->TerminateSession());
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  ASSERT_TRUE(browser->TerminateSession());
 #endif  // defined(OS_WIN)
 
-    // Now, drop the automation IPC channel so that the automation provider in
-    // the browser notices and drops its reference to the browser process.
-    automation()->Disconnect();
+  // Now, drop the automation IPC channel so that the automation provider in
+  // the browser notices and drops its reference to the browser process.
+  if (automation_proxy_.get())
+    automation_proxy_->Disconnect();
 
 #if defined(OS_POSIX)
-    EXPECT_EQ(kill(process_, SIGTERM), 0);
+  EXPECT_EQ(kill(process_, SIGTERM), 0);
 #endif  // OS_POSIX
-  }
 
-  int exit_code = 0;
-  if (WaitForBrowserProcessToQuit(
-          TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code)) {
-    EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
-  } else {
-    // We need to force the browser to quit because it didn't quit fast
-    // enough. Take no chance and kill every chrome processes.
-    CleanupAppProcesses();
-  }
+  int exit_code = -1;
+  EXPECT_TRUE(WaitForBrowserProcessToQuit(
+                  TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code));
+  EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
+
   browser_quit_time_ = base::TimeTicks::Now() - quit_start;
-
-  // Don't forget to close the handle
-  base::CloseProcessHandle(process_);
-  process_ = base::kNullProcessHandle;
-  process_id_ = -1;
 }
 
 void ProxyLauncher::AssertAppNotRunning(const std::wstring& error_message) {
@@ -343,26 +355,20 @@ void ProxyLauncher::AssertAppNotRunning(const std::wstring& error_message) {
   ASSERT_TRUE(processes.empty()) << final_error_message;
 }
 
-void ProxyLauncher::CleanupAppProcesses() {
-  TerminateAllChromeProcesses(process_id_);
-}
-
 bool ProxyLauncher::WaitForBrowserProcessToQuit(int timeout, int* exit_code) {
 #ifdef WAIT_FOR_DEBUGGER_ON_OPEN
   timeout = 500000;
 #endif
-  return base::WaitForExitCodeWithTimeout(process_, exit_code, timeout);
-}
+  bool success = base::WaitForExitCodeWithTimeout(process_, exit_code, timeout);
 
-bool ProxyLauncher::IsBrowserRunning() {
-  // If there is no active AutomationProxy the browser shouldn't be running.
-  if (!automation_proxy_.get())
-    return false;
+  if (!success)
+    TerminateAllChromeProcesses(process_id_);
 
-  // Send a simple message to the browser. If it comes back, the browser
-  // must be alive.
-  int window_count;
-  return automation_proxy_->GetBrowserWindowCount(&window_count);
+  base::CloseProcessHandle(process_);
+  process_ = base::kNullProcessHandle;
+  process_id_ = -1;
+
+  return success;
 }
 
 void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
@@ -556,7 +562,7 @@ void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
     EXPECT_TRUE(file_util::Delete(testing_channel_path, false));
 
     // Set up IPC testing interface as a client.
-    LaunchBrowser(state);
+    ASSERT_TRUE(LaunchBrowser(state));
   }
 
   // Wait for browser to be ready for connections.
@@ -571,7 +577,7 @@ void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
   }
   EXPECT_TRUE(testing_channel_exists);
 
-  ConnectToRunningBrowser(wait_for_initial_loads);
+  ASSERT_TRUE(ConnectToRunningBrowser(wait_for_initial_loads));
 }
 
 void NamedProxyLauncher::TerminateConnection() {
@@ -604,7 +610,7 @@ AutomationProxy* AnonymousProxyLauncher::CreateAutomationProxy(
 
 void AnonymousProxyLauncher::InitializeConnection(const LaunchState& state,
                                                   bool wait_for_initial_loads) {
-  LaunchBrowserAndServer(state, wait_for_initial_loads);
+  ASSERT_TRUE(LaunchBrowserAndServer(state, wait_for_initial_loads));
 }
 
 void AnonymousProxyLauncher::TerminateConnection() {

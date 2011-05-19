@@ -178,7 +178,6 @@ TEST_F(UnloadTest, DISABLED_CrossSiteInfiniteUnloadAsync) {
   NavigateToDataURL(INFINITE_UNLOAD_HTML, L"infiniteunload");
   // Must navigate to a non-data URL to trigger cross-site codepath.
   NavigateToNolistenersFileTwiceAsync();
-  ASSERT_TRUE(IsBrowserRunning());
 }
 
 // Navigate to a page with an infinite unload handler.
@@ -192,7 +191,6 @@ TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
   NavigateToDataURL(INFINITE_UNLOAD_HTML, L"infiniteunload");
   // Must navigate to a non-data URL to trigger cross-site codepath.
   NavigateToNolistenersFileTwice();
-  ASSERT_TRUE(IsBrowserRunning());
 }
 
 // TODO(creis): This test is currently failing intermittently on Linux and
@@ -237,7 +235,6 @@ TEST_F(UnloadTest, MAYBE_CrossSiteInfiniteUnloadAsyncInputEvent) {
 
   // The title should update before the timeout in CheckTitle.
   CheckTitle(L"Title Of Awesomeness");
-  ASSERT_TRUE(IsBrowserRunning());
 }
 
 // Navigate to a page with an infinite beforeunload handler.
@@ -252,7 +249,6 @@ TEST_F(UnloadTest, FLAKY_CrossSiteInfiniteBeforeUnloadAsync) {
   NavigateToDataURL(INFINITE_BEFORE_UNLOAD_HTML, L"infinitebeforeunload");
   // Must navigate to a non-data URL to trigger cross-site codepath.
   NavigateToNolistenersFileTwiceAsync();
-  ASSERT_TRUE(IsBrowserRunning());
 }
 
 // Navigate to a page with an infinite beforeunload handler.
@@ -266,7 +262,6 @@ TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadSync) {
   NavigateToDataURL(INFINITE_BEFORE_UNLOAD_HTML, L"infinitebeforeunload");
   // Must navigate to a non-data URL to trigger cross-site codepath.
   NavigateToNolistenersFileTwice();
-  ASSERT_TRUE(IsBrowserRunning());
 }
 
 // Tests closing the browser on a page with no unload listeners registered.
@@ -309,7 +304,6 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   // There's no real graceful way to wait for something _not_ to happen, so
   // we just wait a short period.
   base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
-  ASSERT_TRUE(IsBrowserRunning());
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(ui::MessageBoxFlags::DIALOGBUTTON_OK);

@@ -443,7 +443,6 @@ class NotificationsTest(pyauto.PyUITest):
     self.assertTrue(self.WaitForInfobarCount(1))
     self.KillRendererProcess(
         self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
-    self.assertTrue(self.IsBrowserRunning())
 
   def testKillNotificationProcess(self):
     """Test killing a notification doesn't crash Chrome."""
@@ -451,7 +450,6 @@ class NotificationsTest(pyauto.PyUITest):
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.KillRendererProcess(self.GetActiveNotifications()[0]['pid'])
-    self.assertTrue(self.IsBrowserRunning())
     self.WaitForNotificationCount(0)
 
   def testIncognitoNotification(self):
@@ -481,7 +479,6 @@ class NotificationsTest(pyauto.PyUITest):
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
     self.GetBrowserWindow(0).GetTab(0).Close(True)
-    self.assertTrue(self.IsBrowserRunning())
 
   def testNavigateAwayWithPermissionInfobar(self):
     """Test navigating away when an infobar is present, then trying to create a
@@ -508,7 +505,6 @@ class NotificationsTest(pyauto.PyUITest):
     self.assertEquals(1, len(self.GetActiveNotifications()))
     self.KillRendererProcess(
         self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
-    self.assertTrue(self.IsBrowserRunning())
     self.assertEquals(1, len(self.GetActiveNotifications()))
 
   def testNotificationOrderAfterClosingOne(self):

@@ -362,11 +362,6 @@ class PyUITestBase {
                         int tab_index=0);
 
   // Misc methods
-  %feature("docstring", "Determine if the browser is running. "
-           "Returns False if user closed the window or if the browser died")
-      IsBrowserRunning;
-  bool IsBrowserRunning();
-
   %feature("docstring", "Install an extension from the given file.  The file "
            "must be specified with an absolute path. Returns the extension ID "
            "if successfully installed and loaded. Otherwise, returns the empty "

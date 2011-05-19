@@ -11,11 +11,9 @@ class ChromeProcessUtilTest : public UITest {
 
 // Flaky on Mac only. See http://crbug.com/79175
 TEST_F(ChromeProcessUtilTest, FLAKY_SanityTest) {
-  EXPECT_TRUE(IsBrowserRunning());
   ChromeProcessList processes = GetRunningChromeProcesses(browser_process_id());
   EXPECT_FALSE(processes.empty());
   QuitBrowser();
-  EXPECT_FALSE(IsBrowserRunning());
   EXPECT_EQ(-1, browser_process_id());
   processes = GetRunningChromeProcesses(browser_process_id());
   EXPECT_TRUE(processes.empty());

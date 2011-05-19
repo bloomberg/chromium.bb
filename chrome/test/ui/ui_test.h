@@ -134,11 +134,6 @@ class UITestBase {
   // Like above, but looks at the window at the given index.
   int GetActiveTabIndex(int window_index);
 
-  // Returns true when the browser process is running, independent if any
-  // renderer process exists or not. It will returns false if an user closed the
-  // window or if the browser process died by itself.
-  bool IsBrowserRunning();
-
   // Returns the number of tabs in the first window.  If no windows exist,
   // causes a test failure and returns 0.
   int GetTabCount();
@@ -275,12 +270,6 @@ class UITestBase {
   // Extra command-line switches that need to be passed to the browser are
   // added in this function. Add new command-line switches here.
   void SetLaunchSwitches();
-
-  // Wait a certain amount of time for all the app processes to exit,
-  // forcibly killing them if they haven't exited by then.
-  // It has the side-effect of killing every browser window opened in your
-  // session, even those unrelated in the test.
-  void CleanupAppProcesses();
 
   // Returns the proxy for the currently active tab, or NULL if there is no
   // tab or there was some kind of error. Only looks at the first window, for

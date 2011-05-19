@@ -208,12 +208,12 @@ void UITestBase::LaunchBrowser() {
 }
 
 void UITestBase::LaunchBrowserAndServer() {
-  launcher_->LaunchBrowserAndServer(DefaultLaunchState(),
-                                    wait_for_initial_loads_);
+  ASSERT_TRUE(launcher_->LaunchBrowserAndServer(DefaultLaunchState(),
+                                                wait_for_initial_loads_));
 }
 
 void UITestBase::ConnectToRunningBrowser() {
-  launcher_->ConnectToRunningBrowser(wait_for_initial_loads_);
+  ASSERT_TRUE(launcher_->ConnectToRunningBrowser(wait_for_initial_loads_));
 }
 
 void UITestBase::CloseBrowserAndServer() {
@@ -225,7 +225,7 @@ void UITestBase::LaunchBrowser(const CommandLine& arguments,
                                bool clear_profile) {
   ProxyLauncher::LaunchState state = DefaultLaunchState();
   state.clear_profile = clear_profile;
-  launcher_->LaunchBrowser(state);
+  ASSERT_TRUE(launcher_->LaunchBrowser(state));
 }
 
 #if !defined(OS_MACOSX)
@@ -239,10 +239,6 @@ bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
 
 void UITestBase::QuitBrowser() {
   launcher_->QuitBrowser();
-}
-
-void UITestBase::CleanupAppProcesses() {
-  TerminateAllChromeProcesses(browser_process_id());
 }
 
 scoped_refptr<TabProxy> UITestBase::GetActiveTab(int window_index) {
@@ -371,10 +367,6 @@ int UITestBase::GetActiveTabIndex(int window_index) {
   return active_tab_index;
 }
 
-bool UITestBase::IsBrowserRunning() {
-  return launcher_->IsBrowserRunning();
-}
-
 int UITestBase::GetTabCount() {
   return GetTabCount(0);
 }
@@ -437,9 +429,10 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
     return false;
 
   if (*application_closed) {
-    // Let's wait until the process dies (if it is not gone already).
-    bool success = base::WaitForSingleProcess(process(), base::kNoTimeout);
-    EXPECT_TRUE(success);
+    int exit_code = -1;
+    EXPECT_TRUE(launcher_->WaitForBrowserProcessToQuit(
+                    TestTimeouts::action_max_timeout_ms(), &exit_code));
+    EXPECT_EQ(0, exit_code);  // Expect a clean shutown.
   }
 
   return result;

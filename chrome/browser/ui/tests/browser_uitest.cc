@@ -51,7 +51,6 @@ TEST_F(BrowserTest, PosixSessionEnd) {
 
   NavigateToURL(net::FilePathToFileURL(test_file));
   TerminateBrowser();
-  ASSERT_FALSE(IsBrowserRunning());
 
   // Make sure the UMA metrics say we didn't crash.
   scoped_ptr<DictionaryValue> local_prefs(GetLocalState());
@@ -326,7 +325,6 @@ TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   ASSERT_TRUE(browser->RunCommand(IDC_CLOSE_WINDOW));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(0, window_count);
-  ASSERT_TRUE(IsBrowserRunning());
   ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED, true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(1, window_count);
@@ -349,7 +347,6 @@ TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   EXPECT_EQ(0, window_count);
 
   // Starting a browser window should work just fine.
-  ASSERT_TRUE(IsBrowserRunning());
   ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED, true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(1, window_count);
