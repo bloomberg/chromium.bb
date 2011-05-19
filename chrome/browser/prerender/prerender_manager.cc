@@ -53,6 +53,9 @@ const int kPeriodicCleanupIntervalMs = 1000;
 // Time interval before a new prerender is allowed.
 const int kMinTimeBetweenPrerendersMs = 500;
 
+// Time window for which we record old navigations, in milliseconds.
+const int kNavigationRecordWindowMs = 5000;
+
 // Valid HTTP methods for prerendering.
 const char* const kValidHttpMethods[] = {
   "OPTIONS",
@@ -141,6 +144,15 @@ struct PrerenderManager::PrerenderContentsData {
   PrerenderContentsData(PrerenderContents* contents, base::Time start_time)
       : contents_(contents),
         start_time_(start_time) {
+  }
+};
+
+struct PrerenderManager::NavigationRecord {
+  GURL url_;
+  base::TimeTicks time_;
+  NavigationRecord(const GURL& url, base::TimeTicks time)
+      : url_(url),
+        time_(time) {
   }
 };
 
@@ -916,6 +928,40 @@ bool PrerenderManager::WouldTabContentsBePrerendered(
     TabContents* tab_contents) const {
   DCHECK(CalledOnValidThread());
   return would_be_prerendered_tab_contents_set_.count(tab_contents) > 0;
+}
+
+void PrerenderManager::RecordNavigation(const GURL& url) {
+  DCHECK(CalledOnValidThread());
+
+  navigations_.push_back(NavigationRecord(url, GetCurrentTimeTicks()));
+  CleanUpOldNavigations();
+}
+
+bool PrerenderManager::HasRecentlyBeenNavigatedTo(const GURL& url) {
+  DCHECK(CalledOnValidThread());
+
+  CleanUpOldNavigations();
+  for (std::list<NavigationRecord>::const_iterator it = navigations_.begin();
+       it != navigations_.end();
+       ++it) {
+    if (it->url_ == url)
+      return true;
+  }
+
+  return false;
+}
+
+void PrerenderManager::CleanUpOldNavigations() {
+  DCHECK(CalledOnValidThread());
+
+  // Cutoff.  Navigations before this cutoff can be discarded.
+  base::TimeTicks cutoff = GetCurrentTimeTicks() -
+      base::TimeDelta::FromMilliseconds(kNavigationRecordWindowMs);
+  while (!navigations_.empty()) {
+    if (navigations_.front().time_ > cutoff)
+      break;
+    navigations_.pop_front();
+  }
 }
 
 }  // namespace prerender

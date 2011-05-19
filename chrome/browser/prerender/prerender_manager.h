@@ -173,6 +173,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool IsTabContentsPrerendered(TabContents* tab_contents) const;
   bool WouldTabContentsBePrerendered(TabContents* tab_contents) const;
 
+  // Records that some visible tab navigated (or was redirected) to the
+  // provided URL.
+  void RecordNavigation(const GURL& url);
+
+  // Checks whether navigation to the provided URL has occured in a visible
+  // tab recently.
+  bool HasRecentlyBeenNavigatedTo(const GURL& url);
+
   // Extracts a urlencoded URL stored in a url= query parameter from a URL
   // supplied, if available, and stores it in alias_url.  Returns whether or not
   // the operation succeeded (i.e. a valid URL was found).
@@ -198,6 +206,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   friend class base::RefCountedThreadSafe<PrerenderManager>;
 
   struct PrerenderContentsData;
+  struct NavigationRecord;
 
   // Starts scheduling periodic cleanups.
   void StartSchedulingPeriodicCleanups();
@@ -254,6 +263,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // so cannot immediately be deleted.
   void DeleteOldTabContents();
 
+  // Cleans up old NavigationRecord's.
+  void CleanUpOldNavigations();
+
   // Specifies whether prerendering is currently enabled for this
   // manager. The value can change dynamically during the lifetime
   // of the PrerenderManager.
@@ -269,6 +281,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // List of prerendered elements.
   std::list<PrerenderContentsData> prerender_list_;
+
+  // List of recent navigations in this profile, sorted by ascending
+  // navigate_time_.
+  std::list<NavigationRecord> navigations_;
 
   // List of prerender elements to be deleted
   std::list<PrerenderContents*> pending_delete_list_;

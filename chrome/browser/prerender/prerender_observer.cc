@@ -28,6 +28,7 @@ void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url) {
     return;
   prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
   MaybeUsePreloadedPage(url);
+  prerender_manager->RecordNavigation(url);
 }
 
 bool PrerenderObserver::OnMessageReceived(const IPC::Message& message) {

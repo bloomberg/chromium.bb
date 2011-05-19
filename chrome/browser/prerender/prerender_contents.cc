@@ -640,6 +640,10 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
       Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
   }
+  if (prerender_manager_->HasRecentlyBeenNavigatedTo(url)) {
+    Destroy(FINAL_STATUS_RECENTLY_VISITED);
+    return false;
+  }
   alias_urls_.push_back(url);
   return true;
 }
