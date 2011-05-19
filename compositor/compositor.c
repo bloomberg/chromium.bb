@@ -1587,7 +1587,6 @@ static const char texture_fragment_shader[] =
 
 static const char solid_fragment_shader[] =
 	"precision mediump float;\n"
-	"varying vec2 v_texcoord;\n"
 	"uniform vec4 color;\n"
 	"void main()\n"
 	"{\n"
