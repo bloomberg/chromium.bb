@@ -520,7 +520,7 @@ void GetBookmarksContainingText(BookmarkModel* model,
                                 std::vector<const BookmarkNode*>* nodes) {
   std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(base::i18n::ToLower(text), &words);
+  parser.ParseQueryWords(base::i18n::ToLower(text), &words);
   if (words.empty())
     return;
 
@@ -540,7 +540,7 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
                              const std::string& languages) {
   std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(base::i18n::ToLower(text), &words);
+  parser.ParseQueryWords(base::i18n::ToLower(text), &words);
   if (words.empty())
     return false;
 

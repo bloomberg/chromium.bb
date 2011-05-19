@@ -115,7 +115,7 @@ TEST_F(QueryParserTest, ParseQueryNodesAndMatch) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     QueryParser parser;
     ScopedVector<QueryNode> query_nodes;
-    parser.ParseQuery(UTF8ToUTF16(data[i].query), &query_nodes.get());
+    parser.ParseQueryNodes(UTF8ToUTF16(data[i].query), &query_nodes.get());
     Snippet::MatchPositions match_positions;
     ASSERT_EQ(data[i].matches,
               parser.DoesQueryMatch(UTF8ToUTF16(data[i].text),
@@ -136,7 +136,7 @@ TEST_F(QueryParserTest, ParseQueryNodesAndMatch) {
   }
 }
 
-TEST_F(QueryParserTest, ExtractQueryWords) {
+TEST_F(QueryParserTest, ParseQueryWords) {
   struct TestData2 {
     const std::string text;
     const std::string w1;
@@ -152,7 +152,7 @@ TEST_F(QueryParserTest, ExtractQueryWords) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     std::vector<string16> results;
     QueryParser parser;
-    parser.ExtractQueryWords(UTF8ToUTF16(data[i].text), &results);
+    parser.ParseQueryWords(UTF8ToUTF16(data[i].text), &results);
     ASSERT_EQ(data[i].word_count, results.size());
     EXPECT_EQ(data[i].w1, UTF16ToUTF8(results[0]));
     if (results.size() == 2)

@@ -307,19 +307,19 @@ int QueryParser::ParseQuery(const string16& query, string16* sqlite_query) {
   return root.AppendToSQLiteQuery(sqlite_query);
 }
 
-void QueryParser::ParseQuery(const string16& query,
-                             std::vector<QueryNode*>* nodes) {
-  QueryNodeList root;
-  if (ParseQueryImpl(base::i18n::ToLower(query), &root))
-    nodes->swap(*root.children());
-}
-
-void QueryParser::ExtractQueryWords(const string16& query,
-                                    std::vector<string16>* words) {
+void QueryParser::ParseQueryWords(const string16& query,
+                                  std::vector<string16>* words) {
   QueryNodeList root;
   if (!ParseQueryImpl(query, &root))
     return;
   root.AppendWords(words);
+}
+
+void QueryParser::ParseQueryNodes(const string16& query,
+                                  std::vector<QueryNode*>* nodes) {
+  QueryNodeList root;
+  if (ParseQueryImpl(base::i18n::ToLower(query), &root))
+    nodes->swap(*root.children());
 }
 
 bool QueryParser::DoesQueryMatch(const string16& text,

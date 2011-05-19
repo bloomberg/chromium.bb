@@ -70,15 +70,16 @@ class QueryParser {
   // |sqlite_query| and the number of words is returned.
   int ParseQuery(const string16& query, string16* sqlite_query);
 
-  // Parses the query words in |query|, returning the nodes that constitute the
-  // valid words in the query. This is intended for later usage with
-  // DoesQueryMatch. Ownership of the nodes passes to the caller.
-  void ParseQuery(const string16& query, std::vector<QueryNode*>* nodes);
+  // Parses |query|, returning the words that make up it. Any words in quotes
+  // are put in |words| without the quotes. For example, the query text
+  // "foo bar" results in two entries being added to words, one for foo and one
+  // for bar.
+  void ParseQueryWords(const string16& query, std::vector<string16>* words);
 
-  // Parses |query| returning the words that make up it. Any words in quotes are
-  // put in |words| without the quotes. For example, the query text "foo bar"
-  // results in two entries being added to words, one for foo and one for bar.
-  void ExtractQueryWords(const string16& query, std::vector<string16>* words);
+  // Parses |query|, returning the nodes that constitute the valid words in the
+  // query. This is intended for later usage with DoesQueryMatch. Ownership of
+  // the nodes passes to the caller.
+  void ParseQueryNodes(const string16& query, std::vector<QueryNode*>* nodes);
 
   // Returns true if the string text matches the query nodes created by a call
   // to ParseQuery. If the query does match, each of the matching positions in

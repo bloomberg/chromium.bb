@@ -96,7 +96,7 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
   // matches and so this shouldn't be performance critical.
   QueryParser parser;
   ScopedVector<QueryNode> query_nodes;
-  parser.ParseQuery(query, &query_nodes.get());
+  parser.ParseQueryNodes(query, &query_nodes.get());
 
   // The highest typed counts should be at the beginning of the results vector
   // so that the best matches will always be included in the results. The loop
@@ -245,7 +245,7 @@ std::vector<string16> BookmarkIndex::ExtractQueryWords(const string16& query) {
   QueryParser parser;
   // TODO(brettw): use ICU normalization:
   // http://userguide.icu-project.org/transforms/normalization
-  parser.ExtractQueryWords(base::i18n::ToLower(query), &terms);
+  parser.ParseQueryWords(base::i18n::ToLower(query), &terms);
   return terms;
 }
 
