@@ -36,6 +36,17 @@ using npapi_test::kTestCompleteSuccess;
 
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 
+namespace {
+
+class NPAPIAutomationEnabledTest : public NPAPIVisiblePluginTester {
+ public:
+  NPAPIAutomationEnabledTest() {
+    dom_automation_enabled_ = true;
+  }
+};
+
+}
+
 // Test passing arguments to a plugin.
 TEST_F(NPAPITesterBase, Arguments) {
   const FilePath test_case(FILE_PATH_LITERAL("arguments.html"));
@@ -426,5 +437,29 @@ TEST_F(NPAPIVisiblePluginTester, ClickToPlay) {
   ASSERT_TRUE(tab->LoadBlockedPlugins());
 
   WaitForFinish("setup", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
+}
+
+TEST_F(NPAPIAutomationEnabledTest, LoadAllBlockedPlugins) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  ASSERT_TRUE(browser->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                CONTENT_SETTING_BLOCK));
+
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("npapi/load_all_blocked_plugins.html"))));
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+
+  scoped_refptr<TabProxy> tab(browser->GetTab(0));
+  ASSERT_TRUE(tab.get());
+
+  ASSERT_TRUE(tab->LoadBlockedPlugins());
+
+  WaitForFinish("setup", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
+
+  ASSERT_TRUE(tab->ExecuteJavaScript("window.inject()"));
+
+  WaitForFinish("setup", "2", url, kTestCompleteCookie,
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }

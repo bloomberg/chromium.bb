@@ -66,6 +66,7 @@ class ContentSettingsObserver
   void OnSetContentSettingsForLoadingURL(
       const GURL& url,
       const ContentSettings& content_settings);
+  void OnLoadBlockedPlugins();
 
   // Helper method that returns if the user wants to block content of type
   // |content_type|.
@@ -82,6 +83,8 @@ class ContentSettingsObserver
 
   // Stores if images, scripts, and plugins have actually been blocked.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
+
+  bool plugins_temporarily_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };
