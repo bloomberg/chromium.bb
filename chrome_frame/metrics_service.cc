@@ -179,7 +179,7 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
                      "%s\r\n",
                      base::Int64ToString(upload_data_size_).c_str(),
                      kMetricsType,
-                     http_utils::GetDefaultUserAgentHeaderWithCFTag());
+                     http_utils::GetDefaultUserAgentHeaderWithCFTag().c_str());
 
     *additional_headers = reinterpret_cast<wchar_t*>(
         CoTaskMemAlloc((new_headers.size() + 1) * sizeof(wchar_t)));
