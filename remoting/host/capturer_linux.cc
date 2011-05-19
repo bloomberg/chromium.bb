@@ -24,6 +24,12 @@ namespace {
 
 static const int kBytesPerPixel = 4;
 
+static bool ShouldUseXDamage() {
+  // For now, always use full-screen polling instead of the DAMAGE extension,
+  // as this extension is broken on many current systems OOTB.
+  return false;
+}
+
 // A class representing a full-frame pixel buffer
 class VideoFrameBuffer {
  public:
@@ -78,6 +84,8 @@ class CapturerLinux : public Capturer {
 
  private:
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
+
+  void InitXDamage();
 
   // Read and handle all currently-pending XEvents.
   // In the DAMAGE case, process the XDamage events and store the resulting
@@ -195,6 +203,17 @@ bool CapturerLinux::Init() {
     return false;
   }
 
+  if (ShouldUseXDamage()) {
+    InitXDamage();
+  }
+
+  // Register for changes to the dimensions of the root window.
+  XSelectInput(display_, root_window_, StructureNotifyMask);
+
+  return true;
+}
+
+void CapturerLinux::InitXDamage() {
   // Setup XDamage to report changes in the damage window.  Mark the whole
   // window as invalid.
   if (XDamageQueryExtension(display_, &damage_event_base_,
@@ -214,11 +233,6 @@ bool CapturerLinux::Init() {
   } else {
     LOG(INFO) << "Server does not support XDamage.";
   }
-
-  // Register for changes to the dimensions of the root window.
-  XSelectInput(display_, root_window_, StructureNotifyMask);
-
-  return true;
 }
 
 void CapturerLinux::ScreenConfigurationChanged() {
