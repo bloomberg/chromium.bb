@@ -7,14 +7,14 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_native_library.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
+#include "base/scoped_native_library.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/c/trusted/ppp_broker.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 
 class FilePath;
 class PpapiWebKitThread;

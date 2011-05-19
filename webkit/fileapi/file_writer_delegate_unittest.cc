@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/file_util_proxy.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
@@ -25,11 +25,11 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 
 namespace fileapi {
 

@@ -8,12 +8,11 @@
 
 #include "base/file_util.h"
 #include "base/memory/scoped_handle.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "net/base/file_stream.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -23,6 +22,7 @@
 #include "content/common/common_param_traits.h"
 #include "content/common/json_value_serializer.h"
 #include "ipc/ipc_message_utils.h"
+#include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 

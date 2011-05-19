@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "webkit/fileapi/file_system_origin_database.h"
 
 namespace fileapi {

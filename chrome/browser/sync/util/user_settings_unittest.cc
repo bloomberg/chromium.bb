@@ -7,7 +7,7 @@
 
 #include "app/sql/statement.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/encryptor.h"

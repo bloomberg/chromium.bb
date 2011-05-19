@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/duplicate_tree_detector.h"
 #include "testing/gtest/include/gtest/gtest.h"

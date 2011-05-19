@@ -10,7 +10,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"

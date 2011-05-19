@@ -11,7 +11,7 @@
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/logging_chrome.h"
 #include "testing/gtest/include/gtest/gtest.h"

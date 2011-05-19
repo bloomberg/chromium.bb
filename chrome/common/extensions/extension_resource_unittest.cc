@@ -5,8 +5,8 @@
 #include <algorithm>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"

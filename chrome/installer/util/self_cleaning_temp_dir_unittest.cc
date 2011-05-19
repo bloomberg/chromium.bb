@@ -6,7 +6,7 @@
 #include <wincrypt.h>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"

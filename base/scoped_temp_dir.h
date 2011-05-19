@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MEMORY_SCOPED_TEMP_DIR_H_
-#define BASE_MEMORY_SCOPED_TEMP_DIR_H_
+#ifndef BASE_SCOPED_TEMP_DIR_H_
+#define BASE_SCOPED_TEMP_DIR_H_
 #pragma once
 
 // An object representing a temporary / scratch directory that should be cleaned
@@ -56,4 +56,4 @@ class BASE_API ScopedTempDir {
   DISALLOW_COPY_AND_ASSIGN(ScopedTempDir);
 };
 
-#endif  // BASE_MEMORY_SCOPED_TEMP_DIR_H_
+#endif  // BASE_SCOPED_TEMP_DIR_H_

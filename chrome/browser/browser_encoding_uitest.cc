@@ -4,9 +4,9 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
-#include "chrome/browser/net/url_request_mock_http_job.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/download/save_package.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"

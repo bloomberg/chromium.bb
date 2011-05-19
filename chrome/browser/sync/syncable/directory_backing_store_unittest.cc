@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"

@@ -4,10 +4,10 @@
 
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "remoting/host/json_host_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

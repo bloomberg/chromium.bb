@@ -7,7 +7,7 @@
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 

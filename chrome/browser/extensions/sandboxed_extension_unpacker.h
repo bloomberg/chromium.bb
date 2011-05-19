@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/utility_process_host.h"
 
 class DictionaryValue;

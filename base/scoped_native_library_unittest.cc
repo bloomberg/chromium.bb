@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_native_library.h"
+#include "base/scoped_native_library.h"
 #if defined(OS_WIN)
 #include "base/file_path.h"
 #endif

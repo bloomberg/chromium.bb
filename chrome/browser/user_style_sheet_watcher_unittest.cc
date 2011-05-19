@@ -4,11 +4,11 @@
 
 #include "chrome/browser/user_style_sheet_watcher.h"
 
-#include "base/basictypes.h"
 #include "base/base64.h"
+#include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread.h"

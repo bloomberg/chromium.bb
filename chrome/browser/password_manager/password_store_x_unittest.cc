@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"

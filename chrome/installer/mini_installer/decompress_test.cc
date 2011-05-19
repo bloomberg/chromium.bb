@@ -5,8 +5,8 @@
 #include <windows.h>
 
 #include "base/file_path.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/installer/mini_installer/decompress.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

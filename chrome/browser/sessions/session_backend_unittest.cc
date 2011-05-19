@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/sessions/session_backend.h"

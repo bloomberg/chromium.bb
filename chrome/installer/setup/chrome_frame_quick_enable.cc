@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/setup/install_worker.h"

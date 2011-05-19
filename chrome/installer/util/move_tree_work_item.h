@@ -8,7 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that recursively move a file system hierarchy from

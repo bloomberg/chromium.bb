@@ -5,9 +5,9 @@
 #include "webkit/blob/deletable_file_reference.h"
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace webkit_blob {

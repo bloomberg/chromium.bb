@@ -7,8 +7,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,10 +17,10 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManager;

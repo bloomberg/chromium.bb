@@ -5,8 +5,8 @@
 #include <algorithm>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"

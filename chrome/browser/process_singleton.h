@@ -23,7 +23,7 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(USE_X11)
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #endif  // defined(USE_X11)
 
 class CommandLine;

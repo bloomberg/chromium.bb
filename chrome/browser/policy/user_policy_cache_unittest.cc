@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"

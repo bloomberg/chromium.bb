@@ -10,8 +10,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "crypto/nss_util.h"
@@ -23,8 +23,8 @@
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
-#include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
+#include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace psm = mozilla_security_manager;

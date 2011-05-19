@@ -5,21 +5,21 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/message_loop_proxy.h"
 #include "base/memory/scoped_callback_factory.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_test_helper.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {

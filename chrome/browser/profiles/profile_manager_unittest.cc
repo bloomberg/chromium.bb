@@ -5,9 +5,9 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"

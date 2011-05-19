@@ -9,9 +9,9 @@
 
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
 #include "base/task.h"

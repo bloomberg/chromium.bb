@@ -5,22 +5,21 @@
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_main_win.h"
 
-#include <shellapi.h>
 #include <windows.h>
+#include <shellapi.h>
 
 #include <algorithm>
 
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_native_library.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/scoped_native_library.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
-#include "crypto/nss_util.h"
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -36,6 +35,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "content/common/main_function_params.h"
 #include "content/common/result_codes.h"
+#include "crypto/nss_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/winsock_init.h"

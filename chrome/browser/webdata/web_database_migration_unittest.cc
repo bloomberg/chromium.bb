@@ -6,7 +6,7 @@
 
 #include "app/sql/statement.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"

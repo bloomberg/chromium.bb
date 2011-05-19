@@ -4,19 +4,19 @@
 
 #include "chrome/browser/extensions/extension_creator.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/file_util.h"
 #include "base/memory/scoped_handle.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
-#include "crypto/rsa_private_key.h"
-#include "crypto/signature_creator.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/zip.h"
+#include "crypto/rsa_private_key.h"
+#include "crypto/signature_creator.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

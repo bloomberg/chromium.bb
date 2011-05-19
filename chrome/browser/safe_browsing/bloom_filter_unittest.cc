@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

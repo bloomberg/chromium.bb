@@ -8,11 +8,11 @@
 // TYPE_UI, which URLRequest doesn't allow.
 //
 
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
-#include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -26,9 +26,9 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
-#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManager;

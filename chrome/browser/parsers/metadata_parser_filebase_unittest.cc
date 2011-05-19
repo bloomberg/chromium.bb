@@ -7,7 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"  // TODO(brettw) remove when WideToASCII moves.
 #include "chrome/browser/parsers/metadata_parser_filebase.h"

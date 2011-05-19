@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that recursively deletes a file system hierarchy at the

@@ -10,13 +10,13 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
+#include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

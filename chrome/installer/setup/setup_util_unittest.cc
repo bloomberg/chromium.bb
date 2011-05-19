@@ -6,8 +6,8 @@
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_paths.h"

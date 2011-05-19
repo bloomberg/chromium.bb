@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/common/extensions/extension.h"
 
 class DictionaryValue;

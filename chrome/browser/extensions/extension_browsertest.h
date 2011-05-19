@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"

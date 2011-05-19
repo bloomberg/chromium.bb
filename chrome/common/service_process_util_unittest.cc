@@ -25,8 +25,8 @@
 #endif
 
 #if defined(OS_LINUX)
-#include <glib.h>
 #include "chrome/common/auto_start_linux.h"
+#include <glib.h>
 #endif
 
 namespace {
@@ -232,8 +232,8 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
 #include "base/file_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/test/test_timeouts.h"

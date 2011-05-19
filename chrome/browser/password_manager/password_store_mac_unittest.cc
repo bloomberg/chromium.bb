@@ -7,17 +7,17 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_thread.h"
 #include "chrome/browser/mock_keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/browser/browser_thread.h"
 
 using webkit_glue::PasswordForm;
 using testing::_;

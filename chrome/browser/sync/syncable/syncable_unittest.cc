@@ -24,7 +24,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"

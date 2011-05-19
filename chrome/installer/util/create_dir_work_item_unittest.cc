@@ -7,11 +7,11 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
-#include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/create_dir_work_item.h"
+#include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

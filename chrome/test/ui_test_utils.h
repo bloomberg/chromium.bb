@@ -12,8 +12,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/automation/dom_element_proxy.h"

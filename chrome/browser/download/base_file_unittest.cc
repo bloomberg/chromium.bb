@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/download/base_file.h"
 #include "content/browser/browser_thread.h"

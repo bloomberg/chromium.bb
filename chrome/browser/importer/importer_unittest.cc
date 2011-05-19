@@ -10,8 +10,8 @@
 #include <unknwn.h>
 #include <intshcut.h>
 #include <pstore.h>
-#include <urlhist.h>
 #include <shlguid.h>
+#include <urlhist.h>
 #endif
 
 #include <vector>
@@ -21,10 +21,10 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/memory/scoped_temp_dir.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
