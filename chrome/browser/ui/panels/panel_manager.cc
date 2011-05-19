@@ -338,12 +338,3 @@ void PanelManager::RemoveAllActive() {
 
   ProcessPending();
 }
-
-bool PanelManager::AreAllMinimized() const {
-  for (ActivePanels::const_iterator iter = active_panels_.begin();
-       iter != active_panels_.end(); ++iter) {
-    if (!(*iter)->minimized())
-      return false;
-  }
-  return true;
-}

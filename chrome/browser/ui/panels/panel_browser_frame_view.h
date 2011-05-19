@@ -10,22 +10,16 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/button.h"
-#include "views/controls/menu/view_menu_delegate.h"
 
 class PanelBrowserView;
 namespace views {
 class ImageButton;
 class Label;
-class Menu2;
-class MenuButton;
 }
 
 class PanelBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
-                              public views::ViewMenuDelegate,
-                              public ui::SimpleMenuModel::Delegate,
                               public TabIconView::TabIconViewModel {
  public:
   PanelBrowserFrameView(BrowserFrame* frame, PanelBrowserView* browser_view);
@@ -65,16 +59,6 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)
       OVERRIDE;
 
-  // Overridden from views::ViewMenuDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
-
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id, ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
-
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
@@ -82,19 +66,11 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
  private:
   friend class PanelBrowserViewTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreateOrUpdateOptionsMenu);
 
   enum PaintState {
     NOT_PAINTED,
     PAINT_AS_INACTIVE,
     PAINT_AS_ACTIVE
-  };
-
-  enum {
-    COMMAND_MINIMIZE_ALL,
-    COMMAND_RESTORE_ALL,
-    COMMAND_CLOSE_ALL,
-    COMMAND_ABOUT
   };
 
   // Returns the thickness of the entire nonclient left, right, and bottom
@@ -105,19 +81,12 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // frame, any title area, and any connected client edge.
   int NonClientTopBorderHeight() const;
 
-  // Update control styles to indicate if the title bar is active or not, i.e.
-  // changing the font and color of title text.
+  // Update control styles to indicate if the title bar is active or not.
   void UpdateControlStyles(PaintState paint_state);
 
   // Custom draw the frame.
   void PaintFrameBorder(gfx::Canvas* canvas);
   void PaintClientEdge(gfx::Canvas* canvas);
-
-  void CreateOrUpdateOptionsMenu();
-
-  // Returns true to indicate if we need to rebuild the menu if the menu items
-  // in the existing menu has been updated.
-  bool CreateOrUpdateOptionsMenuItems();
 
   // The frame that hosts this view. This is a weak reference such that frame_
   // will always be valid in the lifetime of this view.
@@ -129,14 +98,11 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   PanelBrowserView* browser_view_;
 
   PaintState paint_state_;
-  views::MenuButton* options_button_;
+  views::ImageButton* info_button_;
   views::ImageButton* close_button_;
   TabIconView* title_icon_;
   views::Label* title_label_;
   gfx::Rect client_view_bounds_;
-  std::wstring accessible_name_;
-  scoped_ptr<views::Menu2> options_menu_;
-  scoped_ptr<ui::SimpleMenuModel> options_menu_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);
 };

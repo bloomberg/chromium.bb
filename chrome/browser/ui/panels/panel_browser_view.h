@@ -31,7 +31,6 @@ class PanelBrowserView : public ::BrowserView {
  private:
   friend class PanelBrowserViewTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreateOrUpdateOptionsMenu);
 
   // Overridden from BrowserView:
   virtual void Init() OVERRIDE;

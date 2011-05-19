@@ -46,9 +46,6 @@ class PanelManager {
   // Removes all active panels. Pending panels will be processed for display.
   void RemoveAllActive();
 
-  // Returns true if all active panels are in minimized state.
-  bool AreAllMinimized() const;
-
   // Drags the given active panel.
   void StartDragging(Panel* panel);
   void Drag(int delta_x);

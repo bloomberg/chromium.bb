@@ -4706,6 +4706,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_SIDE_BAR" desc="The accessible name for the side bar.">
         Sidebar
       </message>
+      <message name="IDS_ACCNAME_ABOUT_PANEL" desc="The accessible name for 'About this Panel' button on the panel window.">
+        About this panel
+      </message>
 
       <!-- Browser Hung Plugin Detector -->
       <message name="IDS_UNKNOWN_PLUGIN_NAME" desc="Name for a plugin whose name could not be determined">
@@ -12391,20 +12394,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user clicks attempts to export his bookmarks.">
       bookmarks_<ph name="DATESTAMP">$1<ex>02_11_11</ex></ph>.html
     </message>
-
-      <!-- Panels -->
-      <message name="IDS_PANEL_OPTIONS_MENU_MINIMIZE_ALL" desc="Text for the menu item of the options menu to minimize all panels.">
-        Minimize all
-      </message>
-      <message name="IDS_PANEL_OPTIONS_MENU_RESTORE_ALL" desc="Text for the menu item of the options menu to restore all panels.">
-        Restore all
-      </message>
-      <message name="IDS_PANEL_OPTIONS_MENU_CLOSE_ALL" desc="Text for the menu item of the options menu to close all panels.">
-        Close all
-      </message>
-      <message name="IDS_PANEL_OPTIONS_MENU_ABOUT" desc="Text for the menu item of the options menu to show the information about the panel.">
-        About this panel
-      </message>
 
     </messages>
     <includes>

@@ -149,13 +149,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   EXPECT_EQ(4, frame_view->child_count());
   EXPECT_TRUE(frame_view->Contains(frame_view->title_icon_));
   EXPECT_TRUE(frame_view->Contains(frame_view->title_label_));
-  EXPECT_TRUE(frame_view->Contains(frame_view->options_button_));
+  EXPECT_TRUE(frame_view->Contains(frame_view->info_button_));
   EXPECT_TRUE(frame_view->Contains(frame_view->close_button_));
 
   // These controls should be visible.
   EXPECT_TRUE(frame_view->title_icon_->IsVisible());
   EXPECT_TRUE(frame_view->title_label_->IsVisible());
-  EXPECT_TRUE(frame_view->options_button_->IsVisible());
+  EXPECT_TRUE(frame_view->info_button_->IsVisible());
   EXPECT_TRUE(frame_view->close_button_->IsVisible());
 
   // Validate their layouts.
@@ -167,105 +167,27 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   EXPECT_GT(frame_view->title_label_->width(), 0);
   EXPECT_GT(frame_view->title_label_->height(), 0);
   EXPECT_LT(frame_view->title_label_->height(), title_bar_height);
-  EXPECT_GT(frame_view->options_button_->width(), 0);
-  EXPECT_GT(frame_view->options_button_->height(), 0);
-  EXPECT_LT(frame_view->options_button_->height(), title_bar_height);
+  EXPECT_GT(frame_view->info_button_->width(), 0);
+  EXPECT_GT(frame_view->info_button_->height(), 0);
+  EXPECT_LT(frame_view->info_button_->height(), title_bar_height);
   EXPECT_GT(frame_view->close_button_->width(), 0);
   EXPECT_GT(frame_view->close_button_->height(), 0);
   EXPECT_LT(frame_view->close_button_->height(), title_bar_height);
   EXPECT_LT(frame_view->title_icon_->x() + frame_view->title_icon_->width(),
       frame_view->title_label_->x());
   EXPECT_LT(frame_view->title_label_->x() + frame_view->title_label_->width(),
-      frame_view->options_button_->x());
+      frame_view->info_button_->x());
   EXPECT_LT(
-      frame_view->options_button_->x() + frame_view->options_button_->width(),
+      frame_view->info_button_->x() + frame_view->info_button_->width(),
       frame_view->close_button_->x());
 
   // Validate that the controls should be updated when the activation state is
   // changed.
   frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_ACTIVE);
-  SkColor title_label_color1 = frame_view->title_label_->GetColor();
+  gfx::Font title_label_font1 = frame_view->title_label_->font();
   frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_INACTIVE);
-  SkColor title_label_color2 = frame_view->title_label_->GetColor();
-  EXPECT_NE(title_label_color1, title_label_color2);
-}
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateOrUpdateOptionsMenu) {
-  int single_panel_menu[] = { PanelBrowserFrameView::COMMAND_ABOUT };
-  size_t single_panel_menu_count = arraysize(single_panel_menu);
-  int multi_panel_menu_for_minimize[] = {
-      PanelBrowserFrameView::COMMAND_MINIMIZE_ALL,
-      PanelBrowserFrameView::COMMAND_CLOSE_ALL,
-      -1,  // Separator
-      PanelBrowserFrameView::COMMAND_ABOUT };
-  size_t multi_panel_menu_for_minimize_count =
-      arraysize(multi_panel_menu_for_minimize);
-  int multi_panel_menu_for_restore[] = {
-      PanelBrowserFrameView::COMMAND_RESTORE_ALL,
-      PanelBrowserFrameView::COMMAND_CLOSE_ALL,
-      -1,  // Separator
-      PanelBrowserFrameView::COMMAND_ABOUT };
-  size_t multi_panel_menu_for_restore_count =
-      arraysize(multi_panel_menu_for_restore);
-
-  // With only one panel, we should only have 1 menu item: "About this panel".
-  PanelBrowserFrameView* frame_view1 =
-      CreatePanelBrowserView("PanelTest1")->GetFrameView();
-
-  frame_view1->CreateOrUpdateOptionsMenu();
-  ASSERT_TRUE(frame_view1->options_menu_.get());
-  ValidateOptionsMenuItems(frame_view1->options_menu_contents_.get(),
-                           single_panel_menu_count,
-                           single_panel_menu);
-
-  // With another panel, we should have 4 menu items, including separator.
-  PanelBrowserFrameView* frame_view2 =
-      CreatePanelBrowserView("PanelTest2")->GetFrameView();
-
-  frame_view1->CreateOrUpdateOptionsMenu();
-  ValidateOptionsMenuItems(frame_view1->options_menu_contents_.get(),
-                           multi_panel_menu_for_minimize_count,
-                           multi_panel_menu_for_minimize);
-
-  frame_view2->CreateOrUpdateOptionsMenu();
-  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
-                           multi_panel_menu_for_minimize_count,
-                           multi_panel_menu_for_minimize);
-
-  // When we minimize one panel, "Minimize all" remains intact.
-  frame_view1->browser_view_->panel_->Minimize();
-
-  frame_view1->CreateOrUpdateOptionsMenu();
-  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
-                           multi_panel_menu_for_minimize_count,
-                           multi_panel_menu_for_minimize);
-
-  frame_view2->CreateOrUpdateOptionsMenu();
-  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
-                           multi_panel_menu_for_minimize_count,
-                           multi_panel_menu_for_minimize);
-
-  // When we minimize the remaining panel, "Minimize all" should become
-  // "Restore all".
-  frame_view2->browser_view_->panel_->Minimize();
-
-  frame_view1->CreateOrUpdateOptionsMenu();
-  ValidateOptionsMenuItems(frame_view1->options_menu_contents_.get(),
-                           multi_panel_menu_for_restore_count,
-                           multi_panel_menu_for_restore);
-
-  frame_view2->CreateOrUpdateOptionsMenu();
-  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
-                           multi_panel_menu_for_restore_count,
-                           multi_panel_menu_for_restore);
-
-  // When we close one panel, we should be back to have only 1 menu item.
-  frame_view1->browser_view_->panel_->Close();
-
-  frame_view2->CreateOrUpdateOptionsMenu();
-  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
-                           single_panel_menu_count,
-                           single_panel_menu);
+  gfx::Font title_label_font2 = frame_view->title_label_->font();
+  EXPECT_NE(title_label_font1.GetStyle(), title_label_font2.GetStyle());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
