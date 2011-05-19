@@ -17,7 +17,6 @@
 #include "net/base/completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
-#include "webkit/fileapi/file_system_url_request_job_base.h"
 
 class GURL;
 
@@ -29,10 +28,11 @@ namespace fileapi {
 class FileSystemContext;
 
 // A request job that handles reading filesystem: URLs
-class FileSystemURLRequestJob : public FileSystemURLRequestJobBase {
+class FileSystemURLRequestJob : public net::URLRequestJob {
  public:
   FileSystemURLRequestJob(
-      net::URLRequest* request, FileSystemContext* file_system_context,
+      net::URLRequest* request,
+      FileSystemContext* file_system_context,
       scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
 
   // URLRequestJob methods:
@@ -47,23 +47,26 @@ class FileSystemURLRequestJob : public FileSystemURLRequestJobBase {
   // FilterContext methods (via URLRequestJob):
   virtual bool GetMimeType(std::string* mime_type) const;
 
- protected:
-  // FileSystemURLRequestJobBase methods.
-  virtual void DidGetLocalPath(const FilePath& local_path);
-
  private:
+  class CallbackDispatcher;
+
   virtual ~FileSystemURLRequestJob();
 
-  void DidResolve(base::PlatformFileError error_code,
-                  const base::PlatformFileInfo& file_info);
+  void StartAsync();
+  void DidGetMetadata(const base::PlatformFileInfo& file_info,
+                      const FilePath& platform_path);
   void DidOpen(base::PlatformFileError error_code,
                base::PassPlatformFile file, bool created);
   void DidRead(int result);
+  void NotifyFailed(int rv);
 
+  FileSystemContext* file_system_context_;
+  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   ScopedRunnableMethodFactory<FileSystemURLRequestJob> method_factory_;
   base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
   net::CompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
   scoped_ptr<net::FileStream> stream_;
+  FilePath absolute_file_path_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   int64 remaining_bytes_;

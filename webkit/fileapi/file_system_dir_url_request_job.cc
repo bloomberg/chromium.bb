@@ -30,11 +30,67 @@ using net::URLRequestStatus;
 
 namespace fileapi {
 
+static FilePath GetRelativePath(const GURL& url) {
+  FilePath relative_path;
+  GURL unused_url;
+  FileSystemType unused_type;
+  CrackFileSystemURL(url, &unused_url, &unused_type, &relative_path);
+  return relative_path;
+}
+
+class FileSystemDirURLRequestJob::CallbackDispatcher
+    : public FileSystemCallbackDispatcher {
+ public:
+  explicit CallbackDispatcher(FileSystemDirURLRequestJob* job)
+      : job_(job) {
+    DCHECK(job_);
+  }
+
+  // fileapi::FileSystemCallbackDispatcher overrides.
+  virtual void DidSucceed() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo& file_info,
+                               const FilePath& platform_path) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) OVERRIDE {
+    job_->DidReadDirectory(entries, has_more);
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const GURL& root_path) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
+    int rv = net::ERR_FILE_NOT_FOUND;
+    if (error_code == base::PLATFORM_FILE_ERROR_INVALID_URL)
+      rv = net::ERR_INVALID_URL;
+    job_->NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
+  }
+
+ private:
+  // TODO(adamk): Get rid of the need for refcounting here by
+  // allowing FileSystemOperations to be cancelled.
+  scoped_refptr<FileSystemDirURLRequestJob> job_;
+  DISALLOW_COPY_AND_ASSIGN(CallbackDispatcher);
+};
+
 FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
     URLRequest* request, FileSystemContext* file_system_context,
     scoped_refptr<base::MessageLoopProxy> file_thread_proxy)
-    : FileSystemURLRequestJobBase(request, file_system_context,
-                                  file_thread_proxy),
+    : URLRequestJob(request),
+      file_system_context_(file_system_context),
+      file_thread_proxy_(file_thread_proxy),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
 }
@@ -57,20 +113,13 @@ bool FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
 void FileSystemDirURLRequestJob::Start() {
   MessageLoop::current()->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(
-          &FileSystemURLRequestJobBase::StartAsync));
+          &FileSystemDirURLRequestJob::StartAsync));
 }
 
 void FileSystemDirURLRequestJob::Kill() {
   URLRequestJob::Kill();
+  method_factory_.RevokeAll();
   callback_factory_.RevokeAll();
-}
-
-void FileSystemDirURLRequestJob::DidGetLocalPath(
-    const FilePath& local_path) {
-  absolute_file_path_ = local_path;
-  base::FileUtilProxy::ReadDirectory(file_thread_proxy_, absolute_file_path_,
-      callback_factory_.NewCallback(
-          &FileSystemDirURLRequestJob::DidReadDirectory));
 }
 
 bool FileSystemDirURLRequestJob::GetMimeType(std::string* mime_type) const {
@@ -83,21 +132,27 @@ bool FileSystemDirURLRequestJob::GetCharset(std::string* charset) {
   return true;
 }
 
-void FileSystemDirURLRequestJob::DidReadDirectory(
-    base::PlatformFileError error_code,
-    const std::vector<base::FileUtilProxy::Entry>& entries) {
-  if (error_code != base::PLATFORM_FILE_OK) {
-    NotifyFailed(error_code);
-    return;
-  }
+void FileSystemDirURLRequestJob::StartAsync() {
+  if (request_)
+    GetNewOperation()->ReadDirectory(request_->url());
+}
 
+void FileSystemDirURLRequestJob::DidReadDirectory(
+    const std::vector<base::FileUtilProxy::Entry>& entries,
+    bool has_more) {
+  if (!request_)
+    return;
+
+  if (data_.empty()) {
+    FilePath relative_path = GetRelativePath(request_->url());
 #if defined(OS_WIN)
-  const string16& title = relative_file_path_.value();
+    const string16& title = relative_path.value();
 #elif defined(OS_POSIX)
-  const string16& title = WideToUTF16(
-      base::SysNativeMBToWide(relative_file_path_.value()));
+    const string16& title = WideToUTF16(
+        base::SysNativeMBToWide(relative_path.value()));
 #endif
-  data_.append(net::GetDirectoryListingHeader(ASCIIToUTF16("/") + title));
+    data_.append(net::GetDirectoryListingHeader(ASCIIToUTF16("/") + title));
+  }
 
   typedef std::vector<base::FileUtilProxy::Entry>::const_iterator EntryIterator;
   for (EntryIterator it = entries.begin(); it != entries.end(); ++it) {
@@ -112,8 +167,19 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
         name, std::string(), it->is_directory, 0, base::Time()));
   }
 
-  set_expected_content_size(data_.size());
-  NotifyHeadersComplete();
+  if (has_more)
+    GetNewOperation()->ReadDirectory(request_->url());
+  else {
+    set_expected_content_size(data_.size());
+    NotifyHeadersComplete();
+  }
+}
+
+FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation() {
+  return new FileSystemOperation(new CallbackDispatcher(this),
+                                 file_thread_proxy_,
+                                 file_system_context_,
+                                 NULL);
 }
 
 }  // namespace fileapi

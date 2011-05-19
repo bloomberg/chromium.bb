@@ -20,6 +20,8 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -49,11 +51,59 @@ static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
   return headers;
 }
 
+class FileSystemURLRequestJob::CallbackDispatcher
+    : public FileSystemCallbackDispatcher {
+ public:
+  explicit CallbackDispatcher(FileSystemURLRequestJob* job)
+      : job_(job) {
+    DCHECK(job_);
+  }
+
+  // fileapi::FileSystemCallbackDispatcher overrides.
+  virtual void DidSucceed() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo& file_info,
+                               const FilePath& platform_path) OVERRIDE {
+    job_->DidGetMetadata(file_info, platform_path);
+  }
+
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const GURL& root_path) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
+    int rv = net::ERR_FILE_NOT_FOUND;
+    if (error_code == base::PLATFORM_FILE_ERROR_INVALID_URL)
+      rv = net::ERR_INVALID_URL;
+    job_->NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
+  }
+
+ private:
+  // TODO(adamk): Get rid of the need for refcounting here by
+  // allowing FileSystemOperations to be cancelled.
+  scoped_refptr<FileSystemURLRequestJob> job_;
+  DISALLOW_COPY_AND_ASSIGN(CallbackDispatcher);
+};
+
 FileSystemURLRequestJob::FileSystemURLRequestJob(
     URLRequest* request, FileSystemContext* file_system_context,
     scoped_refptr<base::MessageLoopProxy> file_thread_proxy)
-    : FileSystemURLRequestJobBase(request, file_system_context,
-                                  file_thread_proxy),
+    : URLRequestJob(request),
+      file_system_context_(file_system_context),
+      file_thread_proxy_(file_thread_proxy),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -82,6 +132,7 @@ void FileSystemURLRequestJob::Kill() {
     stream_.reset(NULL);
   }
   URLRequestJob::Kill();
+  method_factory_.RevokeAll();
   callback_factory_.RevokeAll();
 }
 
@@ -146,12 +197,6 @@ void FileSystemURLRequestJob::SetExtraRequestHeaders(
   }
 }
 
-void FileSystemURLRequestJob::DidGetLocalPath(const FilePath& local_path) {
-  absolute_file_path_ = local_path;
-  base::FileUtilProxy::GetFileInfo(file_thread_proxy_, absolute_file_path_,
-      callback_factory_.NewCallback(&FileSystemURLRequestJob::DidResolve));
-}
-
 void FileSystemURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   if (response_info_.get())
     *info = *response_info_;
@@ -163,21 +208,23 @@ int FileSystemURLRequestJob::GetResponseCode() const {
   return URLRequestJob::GetResponseCode();
 }
 
-void FileSystemURLRequestJob::DidResolve(base::PlatformFileError error_code,
-    const base::PlatformFileInfo& file_info) {
+void FileSystemURLRequestJob::StartAsync() {
+  if (request_) {
+    (new FileSystemOperation(new CallbackDispatcher(this),
+                             file_thread_proxy_,
+                             file_system_context_,
+                             NULL))->GetMetadata(request_->url());
+  }
+}
+
+void FileSystemURLRequestJob::DidGetMetadata(
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path) {
   // We may have been orphaned...
   if (!request_)
     return;
 
-  // We use FileSystemURLRequestJob to handle files as well as directories
-  // without trailing slash.
-  // If a directory does not exist, we return ERR_FILE_NOT_FOUND. Otherwise,
-  // we will append trailing slash and redirect to FileDirJob.
-  if (error_code != base::PLATFORM_FILE_OK) {
-    NotifyFailed(error_code);
-    return;
-  }
-
+  absolute_file_path_ = platform_path;
   is_directory_ = file_info.is_directory;
 
   if (!byte_range_.ComputeBounds(file_info.size)) {
@@ -255,6 +302,10 @@ bool FileSystemURLRequestJob::IsRedirectResponse(GURL* location,
   }
 
   return false;
+}
+
+void FileSystemURLRequestJob::NotifyFailed(int rv) {
+  NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
 }
 
 }  // namespace fileapi

@@ -44,10 +44,6 @@ class BrowserFileSystemCallbackDispatcher
     dispatcher_host_->Send(new FileSystemMsg_DidSucceed(request_id_));
   }
 
-  virtual void DidGetLocalPath(const FilePath& local_path) {
-    NOTREACHED();
-  }
-
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& info,
       const FilePath& platform_path) {

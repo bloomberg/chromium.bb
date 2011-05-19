@@ -321,32 +321,6 @@ void FileSystemOperation::FileExists(const GURL& path) {
           &FileSystemOperation::DidFileExists));
 }
 
-void FileSystemOperation::GetLocalPath(const GURL& path) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationGetLocalPath;
-#endif
-
-  FilePath virtual_path;
-  GURL origin_url;
-  FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
-  if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path,
-      &file_system_file_util)) {
-    delete this;
-    return;
-  }
-  file_system_operation_context_.set_src_origin_url(origin_url);
-  file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
-  FileSystemFileUtilProxy::GetLocalPath(
-      file_system_operation_context_,
-      proxy_, virtual_path, callback_factory_.NewCallback(
-          &FileSystemOperation::DidGetLocalPath));
-}
-
 void FileSystemOperation::GetMetadata(const GURL& path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
@@ -735,16 +709,6 @@ void FileSystemOperation::DidFileExists(
   } else {
     dispatcher_->DidFail(rv);
   }
-  delete this;
-}
-
-void FileSystemOperation::DidGetLocalPath(
-    base::PlatformFileError rv,
-    const FilePath& local_path) {
-  if (rv == base::PLATFORM_FILE_OK)
-    dispatcher_->DidGetLocalPath(local_path);
-  else
-    dispatcher_->DidFail(rv);
   delete this;
 }
 

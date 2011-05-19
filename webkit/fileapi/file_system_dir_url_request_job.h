@@ -16,17 +16,17 @@
 #include "base/platform_file.h"
 #include "base/task.h"
 #include "net/url_request/url_request_job.h"
-#include "webkit/fileapi/file_system_url_request_job_base.h"
 
 namespace fileapi {
 class FileSystemContext;
 class FileSystemOperation;
 
 // A request job that handles reading filesystem: URLs for directories.
-class FileSystemDirURLRequestJob : public FileSystemURLRequestJobBase {
+class FileSystemDirURLRequestJob : public net::URLRequestJob {
  public:
   FileSystemDirURLRequestJob(
-      net::URLRequest* request, FileSystemContext* file_system_context,
+      net::URLRequest* request,
+      FileSystemContext* file_system_context,
       scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
 
   // URLRequestJob methods:
@@ -40,17 +40,19 @@ class FileSystemDirURLRequestJob : public FileSystemURLRequestJobBase {
   // TODO(adamk): Implement GetResponseInfo and GetResponseCode to simulate
   // an HTTP response.
 
- protected:
-  // FileSystemURLRequestJobBase methods.
-  virtual void DidGetLocalPath(const FilePath& local_path);
+ private:
+  class CallbackDispatcher;
 
   virtual ~FileSystemDirURLRequestJob();
 
-  void DidReadDirectory(base::PlatformFileError error_code,
-                        const std::vector<base::FileUtilProxy::Entry>& entries);
-  fileapi::FileSystemOperation* GetNewOperation();
+  void StartAsync();
+  void DidReadDirectory(const std::vector<base::FileUtilProxy::Entry>& entries,
+                        bool has_more);
+  FileSystemOperation* GetNewOperation();
 
   std::string data_;
+  FileSystemContext* file_system_context_;
+  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   ScopedRunnableMethodFactory<FileSystemDirURLRequestJob> method_factory_;
   base::ScopedCallbackFactory<FileSystemDirURLRequestJob> callback_factory_;
 

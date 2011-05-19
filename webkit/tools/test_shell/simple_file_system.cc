@@ -64,11 +64,6 @@ class SimpleFileSystemCallbackDispatcher
     callbacks_->didSucceed();
   }
 
-  // Callback to report information for a file.
-  virtual void DidGetLocalPath(const FilePath& local_path) {
-    NOTREACHED();
-  }
-
   virtual void DidReadMetadata(const base::PlatformFileInfo& info,
       const FilePath& platform_path) {
     DCHECK(file_system_);

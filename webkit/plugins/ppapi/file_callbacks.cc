@@ -42,10 +42,6 @@ void FileCallbacks::DidSucceed() {
   callback_->Run(PP_OK);
 }
 
-void FileCallbacks::DidGetLocalPath(const FilePath& local_path) {
-  NOTREACHED();
-}
-
 void FileCallbacks::DidReadMetadata(
     const base::PlatformFileInfo& file_info,
     const FilePath& unused) {

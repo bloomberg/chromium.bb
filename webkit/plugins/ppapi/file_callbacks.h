@@ -39,7 +39,6 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
 
   // FileSystemCallbackDispatcher implementation.
   virtual void DidSucceed();
-  virtual void DidGetLocalPath(const FilePath& local_path);
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& file_info,
       const FilePath& unused);

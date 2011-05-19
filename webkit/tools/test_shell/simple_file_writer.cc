@@ -96,10 +96,6 @@ class SimpleFileWriter::IOThreadProxy
       proxy_->DidSucceed();
     }
 
-    virtual void DidGetLocalPath(const FilePath& local_path) {
-      NOTREACHED();
-    }
-
     virtual void DidFail(base::PlatformFileError error_code) {
       proxy_->DidFail(error_code);
     }

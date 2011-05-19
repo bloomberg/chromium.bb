@@ -150,10 +150,6 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
     ADD_FAILURE();
   }
 
-  virtual void DidGetLocalPath(const FilePath& local_path) {
-    ADD_FAILURE();
-  }
-
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& info,
       const FilePath& platform_path) {

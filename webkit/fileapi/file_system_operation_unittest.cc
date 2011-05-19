@@ -186,11 +186,6 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
     test_->set_status(base::PLATFORM_FILE_OK);
   }
 
-  virtual void DidGetLocalPath(const FilePath& local_path) {
-    test_->set_local_path(local_path);
-    test_->set_status(base::PLATFORM_FILE_OK);
-  }
-
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& info,
       const FilePath& platform_path) {
@@ -657,20 +652,6 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(info().is_directory);
   EXPECT_EQ(PlatformPath(file_path), path());
-}
-
-TEST_F(FileSystemOperationTest, TestGetLocalFilePathSuccess) {
-  FilePath dir_path(CreateVirtualTemporaryDir());
-  operation()->GetLocalPath(URLForPath(dir_path));
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
-  EXPECT_EQ(local_path().value(), PlatformPath(dir_path).value());
-
-  FilePath file_path(CreateVirtualTemporaryFileInDir(dir_path));
-  operation()->GetLocalPath(URLForPath(file_path));
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
-  EXPECT_EQ(local_path().value(), PlatformPath(file_path).value());
 }
 
 TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {

@@ -239,10 +239,6 @@ class LocalFileSystemCallbackDispatcher
     NOTREACHED();
   }
 
-  virtual void DidGetLocalPath(const FilePath& local_path) {
-    NOTREACHED();
-  }
-
   virtual void DidReadMetadata(const base::PlatformFileInfo& info,
                                const FilePath& unused) OVERRIDE {
     NOTREACHED();
@@ -445,10 +441,6 @@ class ExecuteTasksFileSystemCallbackDispatcher
 
   // fileapi::FileSystemCallbackDispatcher overrides.
   virtual void DidSucceed() OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void DidGetLocalPath(const FilePath& local_path) {
     NOTREACHED();
   }
 

@@ -301,7 +301,7 @@ TEST_F(FileSystemURLRequestJobTest, NoSuchFile) {
   TestRequest(CreateFileSystemURL("somefile"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, request_->status().os_error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().os_error());
 }
 
 class QuitNowTask : public Task {

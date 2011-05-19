@@ -58,11 +58,6 @@ class FileSystemCallbackDispatcher {
   virtual void DidOpenFile(
       base::PlatformFile file,
       base::ProcessHandle peer_handle);
-
-  // Callback for the real local platform path lookup, where possible.
-  // This isn't in WebFileSystemCallbacks.
-  virtual void DidGetLocalPath(const FilePath& local_path);
-
 };
 
 }  // namespace fileapi

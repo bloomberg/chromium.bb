@@ -190,7 +190,7 @@ TEST_F(FileSystemDirURLRequestJobTest, NoSuchDirectory) {
   TestRequest(CreateFileSystemURL("somedir/"));
   ASSERT_FALSE(request_->is_pending());
   ASSERT_FALSE(request_->status().is_success());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, request_->status().os_error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().os_error());
 }
 
 class QuitNowTask : public Task {
