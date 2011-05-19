@@ -184,13 +184,12 @@ TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   OriginLastAccessTimeLRU(FilePath());
 }
 
-TEST(QuotaDatabaseTest, BootstrapFlag) {
+TEST_F(QuotaDatabaseTest, BootstrapFlag) {
   ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
 
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   QuotaDatabase db(kDbFile);
-
 
   EXPECT_FALSE(db.IsOriginDatabaseBootstrapped());
   EXPECT_TRUE(db.SetOriginDatabaseBootstrapped(true));
