@@ -14,8 +14,9 @@ class EmailField : public FormField {
  public:
   static EmailField* Parse(AutofillScanner* scanner, bool is_ecml);
 
+ protected:
   // FormField:
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const OVERRIDE;
+  virtual bool ClassifyField(FieldTypeMap* map) const OVERRIDE;
 
  private:
   explicit EmailField(const AutofillField* field);

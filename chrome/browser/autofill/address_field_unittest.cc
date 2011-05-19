@@ -5,13 +5,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
-
-namespace {
 
 class AddressFieldTest : public testing::Test {
  public:
@@ -53,8 +52,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -73,8 +71,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kBillingAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_BILLING_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -93,8 +90,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kShippingAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -114,8 +110,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressEcml) {
   field_.reset(AddressField::Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kShippingAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -142,8 +137,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -181,8 +175,7 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -216,8 +209,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressEcml) {
   field_.reset(AddressField::Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kShippingAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -239,8 +231,7 @@ TEST_F(AddressFieldTest, ParseCity) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("city1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_CITY, field_type_map_[ASCIIToUTF16("city1")]);
@@ -259,8 +250,7 @@ TEST_F(AddressFieldTest, ParseCityEcml) {
   field_.reset(AddressField::Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("city1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_CITY, field_type_map_[ASCIIToUTF16("city1")]);
@@ -279,8 +269,7 @@ TEST_F(AddressFieldTest, ParseState) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("state1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_STATE, field_type_map_[ASCIIToUTF16("state1")]);
@@ -300,8 +289,7 @@ TEST_F(AddressFieldTest, ParseStateEcml) {
   field_.reset(AddressField::Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("state1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_STATE, field_type_map_[ASCIIToUTF16("state1")]);
@@ -320,8 +308,7 @@ TEST_F(AddressFieldTest, ParseZip) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("zip1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_ZIP, field_type_map_[ASCIIToUTF16("zip1")]);
@@ -341,8 +328,7 @@ TEST_F(AddressFieldTest, ParseZipEcml) {
   field_.reset(AddressField::Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("zip1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_ZIP, field_type_map_[ASCIIToUTF16("zip1")]);
@@ -373,8 +359,7 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("state")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_STATE, field_type_map_[ASCIIToUTF16("state")]);
@@ -396,8 +381,7 @@ TEST_F(AddressFieldTest, ParseCountry) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("country1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_COUNTRY, field_type_map_[ASCIIToUTF16("country1")]);
@@ -416,8 +400,7 @@ TEST_F(AddressFieldTest, ParseCountryEcml) {
   field_.reset(AddressField::Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("country1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_COUNTRY, field_type_map_[ASCIIToUTF16("country1")]);
@@ -444,8 +427,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_TRUE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
@@ -467,8 +449,7 @@ TEST_F(AddressFieldTest, ParseCompany) {
   field_.reset(AddressField::Parse(&scanner, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
   EXPECT_EQ(COMPANY_NAME, field_type_map_[ASCIIToUTF16("company1")]);
@@ -488,11 +469,8 @@ TEST_F(AddressFieldTest, ParseCompanyEcml) {
   field_.reset(AddressField::Parse(&scanner, true));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  EXPECT_FALSE(field_->IsFullAddress());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
   EXPECT_EQ(COMPANY_NAME, field_type_map_[ASCIIToUTF16("company1")]);
 }
-
-}  // namespace

@@ -11,28 +11,14 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
-  bool ok = Add(field_type_map, number_, CREDIT_CARD_NUMBER);
-
-  // If the heuristics detected first and last name in separate fields,
-  // then ignore both fields. Putting them into separate fields is probably
-  // wrong, because the credit card can also contain a middle name or middle
-  // initial.
-  if (cardholder_last_ == NULL)
-    ok = ok && Add(field_type_map, cardholder_, CREDIT_CARD_NAME);
-
-  ok = ok && Add(field_type_map, type_, CREDIT_CARD_TYPE);
-  ok = ok && Add(field_type_map, expiration_month_, CREDIT_CARD_EXP_MONTH);
-  ok = ok && Add(field_type_map, expiration_year_,
-                 CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  return ok;
-}
+using autofill::GetEcmlPattern;
 
 // static
 CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
@@ -68,7 +54,7 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
         }
       }
 
-      if (ParseText(scanner, name_pattern, &credit_card_field->cardholder_))
+      if (ParseField(scanner, name_pattern, &credit_card_field->cardholder_))
         continue;
 
       // As a hard-coded hack for Expedia's billing pages (expedia_checkout.html
@@ -77,9 +63,9 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
       // and "clnm".
       scanner->SaveCursor();
       const AutofillField* first;
-      if (!is_ecml && ParseText(scanner, ASCIIToUTF16("^cfnm"), &first) &&
-          ParseText(scanner, ASCIIToUTF16("^clnm"),
-                    &credit_card_field->cardholder_last_)) {
+      if (!is_ecml && ParseField(scanner, ASCIIToUTF16("^cfnm"), &first) &&
+          ParseField(scanner, ASCIIToUTF16("^clnm"),
+                     &credit_card_field->cardholder_last_)) {
         credit_card_field->cardholder_ = first;
         continue;
       }
@@ -98,9 +84,9 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
       pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_CVC_RE);
 
     if (!credit_card_field->verification_ &&
-        ParseText(scanner, pattern, &credit_card_field->verification_))
+        ParseField(scanner, pattern, &credit_card_field->verification_)) {
       continue;
-
+    }
     // TODO(jhawkins): Parse the type select control.
 
     if (is_ecml)
@@ -109,8 +95,9 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
       pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_NUMBER_RE);
 
     if (!credit_card_field->number_ &&
-        ParseText(scanner, pattern, &credit_card_field->number_))
+        ParseField(scanner, pattern, &credit_card_field->number_)) {
       continue;
+    }
 
     if (LowerCaseEqualsASCII(scanner->Cursor()->form_control_type, "month")) {
       credit_card_field->expiration_month_ = scanner->Cursor();
@@ -135,14 +122,14 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
 
       if ((!credit_card_field->expiration_month_ ||
            credit_card_field->expiration_month_->IsEmpty()) &&
-          ParseText(scanner, pattern, &credit_card_field->expiration_month_)) {
+          ParseField(scanner, pattern, &credit_card_field->expiration_month_)) {
         if (is_ecml)
           pattern = GetEcmlPattern(kEcmlCardExpireYear);
         else
           pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
 
-        if (!ParseText(scanner, pattern,
-                       &credit_card_field->expiration_year_)) {
+        if (!ParseField(scanner, pattern,
+                        &credit_card_field->expiration_year_)) {
           scanner->Rewind();
           return NULL;
         }
@@ -150,7 +137,7 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
       }
     }
 
-    if (ParseText(scanner, GetEcmlPattern(kEcmlCardExpireDay)))
+    if (ParseField(scanner, GetEcmlPattern(kEcmlCardExpireDay), NULL))
       continue;
 
     // Some pages (e.g. ExpediaBilling.html) have a "card description"
@@ -158,9 +145,11 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
     // We also ignore any other fields within a credit card block that
     // start with "card", under the assumption that they are related to
     // the credit card section being processed but are uninteresting to us.
-    if (ParseText(scanner,
-                  l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_IGNORED_RE)))
+    if (ParseField(scanner,
+                   l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_IGNORED_RE),
+                   NULL)) {
       continue;
+    }
 
     break;
   }
@@ -199,4 +188,22 @@ CreditCardField::CreditCardField()
       verification_(NULL),
       expiration_month_(NULL),
       expiration_year_(NULL) {
+}
+
+bool CreditCardField::ClassifyField(FieldTypeMap* map) const {
+  bool ok = AddClassification(number_, CREDIT_CARD_NUMBER, map);
+
+  // If the heuristics detected first and last name in separate fields,
+  // then ignore both fields. Putting them into separate fields is probably
+  // wrong, because the credit card can also contain a middle name or middle
+  // initial.
+  if (cardholder_last_ == NULL)
+    ok = ok && AddClassification(cardholder_, CREDIT_CARD_NAME, map);
+
+  ok = ok && AddClassification(type_, CREDIT_CARD_TYPE, map);
+  ok = ok && AddClassification(expiration_month_, CREDIT_CARD_EXP_MONTH, map);
+  ok = ok && AddClassification(expiration_year_,
+                               CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                               map);
+  return ok;
 }

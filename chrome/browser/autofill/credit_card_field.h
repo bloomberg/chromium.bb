@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_field.h"
 
@@ -18,12 +19,20 @@ class AutofillScanner;
 
 class CreditCardField : public FormField {
  public:
-  // FormField implementation:
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const OVERRIDE;
-
   static CreditCardField* Parse(AutofillScanner* scanner, bool is_ecml);
 
+ protected:
+  // FormField:
+  virtual bool ClassifyField(FieldTypeMap* map) const OVERRIDE;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseMiniumCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseMiniumCreditCardEcml);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseFullCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseFullCreditCardEcml);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear2);
+
   CreditCardField();
 
   const AutofillField* cardholder_;  // Optional.

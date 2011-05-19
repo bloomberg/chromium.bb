@@ -25,12 +25,25 @@ class PhoneField : public FormField {
  public:
   virtual ~PhoneField();
 
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const OVERRIDE;
-
   static PhoneField* Parse(AutofillScanner* scanner, bool is_ecml);
   static PhoneField* ParseECML(AutofillScanner* scanner);
 
+ protected:
+  // FormField:
+  virtual bool ClassifyField(FieldTypeMap* map) const OVERRIDE;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLinePhone);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLinePhoneEcml);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseTwoLinePhone);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseTwoLinePhoneEcmlShipTo);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseTwoLinePhoneEcmlBillTo);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumber);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLineFax);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseTwoLineFax);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix);
+
   PhoneField();
 
   enum PhoneType {

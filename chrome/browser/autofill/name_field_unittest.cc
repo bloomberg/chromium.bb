@@ -11,8 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 
-namespace {
-
 class NameFieldTest : public testing::Test {
  public:
   NameFieldTest() {}
@@ -55,7 +53,7 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -95,7 +93,7 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -127,7 +125,7 @@ TEST_F(NameFieldTest, FirstLast) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -156,7 +154,7 @@ TEST_F(NameFieldTest, FirstLast2) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -193,7 +191,7 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -225,7 +223,7 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -262,7 +260,7 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -302,7 +300,7 @@ TEST_F(NameFieldTest, MiddleInitial) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -366,7 +364,7 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -442,7 +440,7 @@ TEST_F(NameFieldTest, ECMLFirstMiddleLast) {
   AutofillScanner scanner(list_.get());
   field_.reset(NameField::Parse(&scanner, true));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
@@ -453,5 +451,3 @@ TEST_F(NameFieldTest, ECMLFirstMiddleLast) {
       field_type_map_.find(ASCIIToUTF16("name3")) != field_type_map_.end());
   EXPECT_EQ(NAME_LAST, field_type_map_[ASCIIToUTF16("name3")]);
 }
-
-}  // namespace

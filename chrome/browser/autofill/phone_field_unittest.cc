@@ -5,13 +5,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/phone_field.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
-
-namespace {
 
 class PhoneFieldTest : public testing::Test {
  public:
@@ -52,7 +51,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("phone1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, field_type_map_[ASCIIToUTF16("phone1")]);
@@ -70,7 +69,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhoneEcml) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, true));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("phone1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, field_type_map_[ASCIIToUTF16("phone1")]);
@@ -96,7 +95,7 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
@@ -126,7 +125,7 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlShipTo) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
@@ -156,7 +155,7 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlBillTo) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
@@ -206,7 +205,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
@@ -249,7 +248,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
@@ -273,7 +272,7 @@ TEST_F(PhoneFieldTest, ParseOneLineFax) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("fax1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_FAX_WHOLE_NUMBER, field_type_map_[ASCIIToUTF16("fax1")]);
@@ -299,7 +298,7 @@ TEST_F(PhoneFieldTest, ParseTwoLineFax) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   // It should be FAX, based on the other phone in the group.
@@ -337,7 +336,7 @@ TEST_F(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix) {
   AutofillScanner scanner(list_.get());
   field_.reset(PhoneField::Parse(&scanner, false));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_FAX_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
@@ -348,5 +347,3 @@ TEST_F(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix) {
       field_type_map_.find(ASCIIToUTF16("suffix1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
 }
-
-}  // namespace
