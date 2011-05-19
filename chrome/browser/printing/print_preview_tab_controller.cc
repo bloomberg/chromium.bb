@@ -171,7 +171,7 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
   Browser* current_browser = BrowserList::FindBrowserWithID(
       initiator_tab->controller().window_id().id());
   if (!current_browser)
-    return;
+    return NULL;
 
   // Add a new tab next to initiator tab.
   browser::NavigateParams params(current_browser,
