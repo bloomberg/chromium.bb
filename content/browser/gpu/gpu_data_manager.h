@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/task.h"
 #include "base/values.h"
 #include "content/common/gpu/gpu_feature_flags.h"
 #include "content/common/gpu/gpu_info.h"
@@ -104,5 +105,7 @@ class GpuDataManager {
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManager);
 };
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(GpuDataManager);
 
 #endif  // CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_H_

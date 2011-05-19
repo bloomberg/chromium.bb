@@ -49,6 +49,7 @@ void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
   if (!gpu_info_.Merge(gpu_info))
     return;
 
+  RunGpuInfoUpdateCallbacks();
   content::GetContentClient()->SetGpuInfo(gpu_info_);
 }
 
@@ -158,7 +159,12 @@ void GpuDataManager::UpdateGpuBlacklist(GpuBlacklist* gpu_blacklist) {
 }
 
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if(!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &GpuDataManager::RunGpuInfoUpdateCallbacks));
+    return;
+  }
+
   std::set<Callback0::Type*>::iterator i = gpu_info_update_callbacks_.begin();
   for (; i != gpu_info_update_callbacks_.end(); ++i) {
     (*i)->Run();
@@ -177,15 +183,6 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
   if (!gpu_blacklist) {
     gpu_feature_flags_.set_flags(0);
     return;
-  }
-
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    gpu_feature_flags_ = gpu_blacklist->DetermineGpuFeatureFlags(
-        GpuBlacklist::kOsAny, NULL, gpu_info_);
-
-    // If gpu is blacklisted, no further GPUInfo will be collected.
-    gpu_info_.finalized = true;
   }
 
   uint32 max_entry_id = gpu_blacklist->max_entry_id();
