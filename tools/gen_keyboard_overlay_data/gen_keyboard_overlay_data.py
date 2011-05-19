@@ -390,15 +390,18 @@ def OutputAltGr(keyboard_glyph_data, outfile):
 
   for layout in keyboard_glyph_data.keys():
     try:
-      right_alt = keyboard_glyph_data[layout]["keys"]["E0 38"]["key"].strip()
-      if right_alt.lower() == "alt gr":
+      # If left and right alt have different values, this layout to the list of
+      # layouts that don't remap the right alt key.
+      right_alt = keyboard_glyph_data[layout]["keys"]["E0 38"]["label"].strip()
+      left_alt = keyboard_glyph_data[layout]["keys"]["38"]["label"].strip()
+      if right_alt.lower() != left_alt.lower():
         altgr_output.append('  "%s",' % layout)
     except KeyError:
       pass
 
     try:
-      caps_lock = keyboard_glyph_data[layout]["keys"]["E0 5B"]["key"].strip()
-      if caps_lock.lower() != "glyph_search":
+      caps_lock = keyboard_glyph_data[layout]["keys"]["E0 5B"]["label"].strip()
+      if caps_lock.lower() != "search":
         capslock_output.append('  "%s",' % layout)
     except KeyError:
       pass
