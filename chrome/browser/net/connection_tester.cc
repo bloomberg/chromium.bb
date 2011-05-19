@@ -108,8 +108,10 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
       scoped_ptr<net::HostResolver>* host_resolver) {
     // Create a vanilla HostResolver that disables caching.
     const size_t kMaxJobs = 50u;
+    const size_t kMaxRetryAttempts = 4u;
     net::HostResolverImpl* impl =
-        new net::HostResolverImpl(NULL, NULL, kMaxJobs, NULL);
+        new net::HostResolverImpl(NULL, NULL, kMaxJobs, kMaxRetryAttempts,
+                                  NULL);
 
     host_resolver->reset(impl);
 
