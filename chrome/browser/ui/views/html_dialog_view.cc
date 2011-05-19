@@ -17,7 +17,7 @@
 #include "views/window/window.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "views/window/window_gtk.h"
+#include "views/window/native_window_gtk.h"
 #endif
 
 namespace browser {
@@ -193,8 +193,8 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
 #elif defined(TOOLKIT_USES_GTK)
-  views::WindowGtk* window_gtk =
-      static_cast<views::WindowGtk*>(window()->native_window());
+  views::NativeWindowGtk* window_gtk =
+      static_cast<views::NativeWindowGtk*>(window()->native_window());
   if (event.os_event && !event.skip_in_browser) {
     views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
     window_gtk->HandleKeyboardEvent(views_event);

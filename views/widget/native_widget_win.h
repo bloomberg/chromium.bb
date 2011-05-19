@@ -394,7 +394,7 @@ class NativeWidgetWin : public ui::WindowImpl,
 
   scoped_refptr<DropTargetWin> drop_target_;
 
-  // Are a subclass of WindowWin?
+  // Are a subclass of NativeWindowWin?
   bool is_window_;
 
   const gfx::Rect& invalid_rect() const { return invalid_rect_; }

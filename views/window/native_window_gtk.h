@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_WINDOW_WINDOW_GTK_H_
-#define VIEWS_WINDOW_WINDOW_GTK_H_
+#ifndef VIEWS_WINDOW_NATIVE_WINDOW_GTK_H_
+#define VIEWS_WINDOW_NATIVE_WINDOW_GTK_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -24,11 +24,11 @@ class NativeWindowDelegate;
 class Client;
 class WindowDelegate;
 
-// Window implementation for GTK.
-class WindowGtk : public NativeWidgetGtk, public NativeWindow {
+// Window implementation for Gtk.
+class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
  public:
-  explicit WindowGtk(internal::NativeWindowDelegate* delegate);
-  virtual ~WindowGtk();
+  explicit NativeWindowGtk(internal::NativeWindowDelegate* delegate);
+  virtual ~NativeWindowGtk();
 
   virtual Window* GetWindow() OVERRIDE;
   virtual const Window* GetWindow() const OVERRIDE;
@@ -93,10 +93,10 @@ class WindowGtk : public NativeWidgetGtk, public NativeWindow {
  private:
   static gboolean CallConfigureEvent(GtkWidget* widget,
                                      GdkEventConfigure* event,
-                                     WindowGtk* window_gtk);
+                                     NativeWindowGtk* window_gtk);
   static gboolean CallWindowStateEvent(GtkWidget* widget,
                                        GdkEventWindowState* event,
-                                       WindowGtk* window_gtk);
+                                       NativeWindowGtk* window_gtk);
 
   // Asks the delegate if any to save the window's location and size.
   void SaveWindowPosition();
@@ -119,9 +119,9 @@ class WindowGtk : public NativeWidgetGtk, public NativeWindow {
   // Set to true if the window is in the process of closing.
   bool window_closed_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowGtk);
+  DISALLOW_COPY_AND_ASSIGN(NativeWindowGtk);
 };
 
 }  // namespace views
 
-#endif  // VIEWS_WINDOW_WINDOW_GTK_H_
+#endif  // VIEWS_WINDOW_NATIVE_WINDOW_GTK_H_

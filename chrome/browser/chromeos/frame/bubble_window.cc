@@ -31,12 +31,12 @@ namespace chromeos {
 const SkColor BubbleWindow::kBackgroundColor = SK_ColorWHITE;
 
 BubbleWindow::BubbleWindow(views::Window* window)
-    : views::WindowGtk::WindowGtk(window) {
+    : views::NativeWindowGtk(window) {
   MakeTransparent();
 }
 
 void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
-  views::WindowGtk::InitNativeWidget(params);
+  views::NativeWindowGtk::InitNativeWidget(params);
 
   // Turn on double buffering so that the hosted GtkWidgets does not
   // flash as in http://crosbug.com/9065.

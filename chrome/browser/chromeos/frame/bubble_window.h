@@ -7,7 +7,7 @@
 #pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "views/window/window_gtk.h"
+#include "views/window/native_window_gtk.h"
 
 namespace gfx {
 class Rect;
@@ -21,7 +21,7 @@ class WindowDelegate;
 namespace chromeos {
 
 // A window that uses BubbleFrameView as its frame.
-class BubbleWindow : public views::WindowGtk {
+class BubbleWindow : public views::NativeWindowGtk {
  public:
   enum Style {
     STYLE_GENERIC = 0, // Default style.
@@ -40,7 +40,7 @@ class BubbleWindow : public views::WindowGtk {
  protected:
   explicit BubbleWindow(views::Window* window);
 
-  // Overidden from views::WindowGtk:
+  // Overidden from views::NativeWindowGtk:
   virtual void InitNativeWidget(
       const views::Widget::InitParams& params) OVERRIDE;
 

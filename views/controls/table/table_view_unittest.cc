@@ -20,12 +20,8 @@
 #include "ui/base/models/table_model_observer.h"
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/table_view2.h"
+#include "views/window/window.h"
 #include "views/window/window_delegate.h"
-#if defined(OS_WIN)
-#include "views/window/window_win.h"
-#else
-#include "views/window/window_gtk.h"
-#endif
 
 using ui::TableModel;
 using ui::TableModelObserver;  // TODO(beng): remove these

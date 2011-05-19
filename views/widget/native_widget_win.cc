@@ -35,7 +35,7 @@
 #include "views/widget/native_widget_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/window_win.h"
+#include "views/window/native_window_win.h"
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -1008,7 +1008,7 @@ Window* NativeWidgetWin::GetWindowImpl(HWND hwnd) {
     NativeWidgetWin* widget =
         reinterpret_cast<NativeWidgetWin*>(ui::GetWindowUserData(parent));
     if (widget && widget->is_window_)
-      return static_cast<WindowWin*>(widget)->GetWindow();
+      return static_cast<NativeWindowWin*>(widget)->GetWindow();
     parent = ::GetParent(parent);
   }
   return NULL;

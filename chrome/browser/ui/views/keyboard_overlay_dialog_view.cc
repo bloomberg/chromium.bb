@@ -20,10 +20,6 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "views/window/window_gtk.h"
-#endif
-
 namespace {
 struct Accelerator {
   ui::KeyboardCode keycode;

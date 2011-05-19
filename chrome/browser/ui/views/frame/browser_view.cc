@@ -94,6 +94,7 @@
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
 #include "views/layout/grid_layout.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
@@ -103,11 +104,10 @@
 #include "chrome/browser/jumplist_win.h"
 #include "ui/base/message_box_win.h"
 #include "ui/base/view_prop.h"
-#include "views/window/window_win.h"
+#include "views/window/native_window_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
-#include "views/window/window_gtk.h"
 #if !defined(TOUCH_UI)
 #include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
 #endif
@@ -288,7 +288,7 @@ class ResizeCorner : public views::View {
   }
 
  private:
-  // Returns the WindowWin we're displayed in. Returns NULL if we're not
+  // Returns the NativeWindowWin we're displayed in. Returns NULL if we're not
   // currently in a window.
   views::Window* GetWindow() {
     views::Widget* widget = GetWidget();
@@ -2254,7 +2254,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif
   }
 #if defined(OS_WIN)
-  static_cast<views::WindowWin*>(frame_->native_window())->PushForceHidden();
+  static_cast<views::NativeWindowWin*>(frame_->native_window())->
+      PushForceHidden();
 #endif
 
   // Notify bookmark bar, so it can set itself to the appropriate drawing state.
@@ -2290,12 +2291,13 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif
   }
 
-  // Undo our anti-jankiness hacks and force the window to relayout now that
+  // Undo our anti-jankiness hacks and force the window to re-layout now that
   // it's in its final position.
   ignore_layout_ = false;
   Layout();
 #if defined(OS_WIN)
-  static_cast<views::WindowWin*>(frame_->native_window())->PopForceHidden();
+  static_cast<views::NativeWindowWin*>(frame_->native_window())->
+      PopForceHidden();
 #endif
 }
 

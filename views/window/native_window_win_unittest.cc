@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/window/window_win.h"
+#include "views/window/native_window_win.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
 namespace views {
 
-TEST(WindowWinTest, EnsureRectIsVisibleInRect) {
+TEST(NativeWindowWinTest, EnsureRectIsVisibleInRect) {
   gfx::Rect parent_rect(0, 0, 500, 400);
 
   {

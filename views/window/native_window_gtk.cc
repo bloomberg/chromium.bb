@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/window/window_gtk.h"
+#include "views/window/native_window_gtk.h"
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
@@ -79,7 +79,7 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
 
 namespace views {
 
-WindowGtk::WindowGtk(internal::NativeWindowDelegate* delegate)
+NativeWindowGtk::NativeWindowGtk(internal::NativeWindowDelegate* delegate)
     : NativeWidgetGtk(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
@@ -87,13 +87,14 @@ WindowGtk::WindowGtk(internal::NativeWindowDelegate* delegate)
   is_window_ = true;
 }
 
-WindowGtk::~WindowGtk() {
+NativeWindowGtk::~NativeWindowGtk() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowGtk, NativeWidgetGtk overrides:
+// NativeWindowGtk, NativeWidgetGtk overrides:
 
-gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
+gboolean NativeWindowGtk::OnButtonPress(GtkWidget* widget,
+                                        GdkEventButton* event) {
   GdkEventButton transformed_event = *event;
   MouseEvent mouse_event(TransformEvent(&transformed_event));
 
@@ -143,13 +144,14 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
   return NativeWidgetGtk::OnButtonPress(widget, event);
 }
 
-gboolean WindowGtk::OnConfigureEvent(GtkWidget* widget,
-                                     GdkEventConfigure* event) {
+gboolean NativeWindowGtk::OnConfigureEvent(GtkWidget* widget,
+                                           GdkEventConfigure* event) {
   SaveWindowPosition();
   return FALSE;
 }
 
-gboolean WindowGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
+gboolean NativeWindowGtk::OnMotionNotify(GtkWidget* widget,
+                                         GdkEventMotion* event) {
   GdkEventMotion transformed_event = *event;
   TransformEvent(&transformed_event);
   gfx::Point translated_location(transformed_event.x, transformed_event.y);
@@ -165,7 +167,8 @@ gboolean WindowGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   return NativeWidgetGtk::OnMotionNotify(widget, event);
 }
 
-void WindowGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
+void NativeWindowGtk::OnSizeAllocate(GtkWidget* widget,
+                                     GtkAllocation* allocation) {
   NativeWidgetGtk::OnSizeAllocate(widget, allocation);
 
   // The Window's NonClientView may provide a custom shape for the Window.
@@ -181,26 +184,27 @@ void WindowGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   SaveWindowPosition();
 }
 
-gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
-                                       GdkEventWindowState* event) {
+gboolean NativeWindowGtk::OnWindowStateEvent(GtkWidget* widget,
+                                             GdkEventWindowState* event) {
   window_state_ = event->new_window_state;
   if (!(window_state_ & GDK_WINDOW_STATE_WITHDRAWN))
     SaveWindowPosition();
   return FALSE;
 }
 
-gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
+gboolean NativeWindowGtk::OnLeaveNotify(GtkWidget* widget,
+                                        GdkEventCrossing* event) {
   gdk_window_set_cursor(widget->window, gfx::GetCursor(GDK_LEFT_PTR));
 
   return NativeWidgetGtk::OnLeaveNotify(widget, event);
 }
 
-void WindowGtk::IsActiveChanged() {
+void NativeWindowGtk::IsActiveChanged() {
   NativeWidgetGtk::IsActiveChanged();
   delegate_->OnNativeWindowActivationChanged(IsActive());
 }
 
-void WindowGtk::InitNativeWidget(const Widget::InitParams& params) {
+void NativeWindowGtk::InitNativeWidget(const Widget::InitParams& params) {
   NativeWidgetGtk::InitNativeWidget(params);
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
@@ -210,33 +214,33 @@ void WindowGtk::InitNativeWidget(const Widget::InitParams& params) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowGtk, NativeWindow implementation:
+// NativeWindowGtk, NativeWindow implementation:
 
-NativeWidget* WindowGtk::AsNativeWidget() {
+NativeWidget* NativeWindowGtk::AsNativeWidget() {
   return this;
 }
 
-const NativeWidget* WindowGtk::AsNativeWidget() const {
+const NativeWidget* NativeWindowGtk::AsNativeWidget() const {
   return this;
 }
 
-gfx::Rect WindowGtk::GetRestoredBounds() const {
+gfx::Rect NativeWindowGtk::GetRestoredBounds() const {
   // We currently don't support tiling, so this doesn't matter.
   return GetWindowScreenBounds();
 }
 
-void WindowGtk::ShowNativeWindow(ShowState state) {
+void NativeWindowGtk::ShowNativeWindow(ShowState state) {
   // No concept of maximization (yet) on ChromeOS.
   if (state == NativeWindow::SHOW_INACTIVE)
     gtk_window_set_focus_on_map(GetNativeWindow(), false);
   gtk_widget_show(GetNativeView());
 }
 
-void WindowGtk::BecomeModal() {
+void NativeWindowGtk::BecomeModal() {
   gtk_window_set_modal(GetNativeWindow(), true);
 }
 
-void WindowGtk::CenterWindow(const gfx::Size& size) {
+void NativeWindowGtk::CenterWindow(const gfx::Size& size) {
   gfx::Rect center_rect;
 
   GtkWindow* parent = gtk_window_get_transient_for(GetNativeWindow());
@@ -259,68 +263,68 @@ void WindowGtk::CenterWindow(const gfx::Size& size) {
   SetWindowBounds(bounds, NULL);
 }
 
-void WindowGtk::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                 bool* maximized) const {
+void NativeWindowGtk::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                       bool* maximized) const {
   // Do nothing for now. ChromeOS isn't yet saving window placement.
 }
 
-void WindowGtk::EnableClose(bool enable) {
+void NativeWindowGtk::EnableClose(bool enable) {
   gtk_window_set_deletable(GetNativeWindow(), enable);
 }
 
-void WindowGtk::SetWindowTitle(const std::wstring& title) {
+void NativeWindowGtk::SetWindowTitle(const std::wstring& title) {
   // We don't have a window title on ChromeOS (right now).
 }
 
-void WindowGtk::SetWindowIcons(const SkBitmap& window_icon,
-                               const SkBitmap& app_icon) {
+void NativeWindowGtk::SetWindowIcons(const SkBitmap& window_icon,
+                                     const SkBitmap& app_icon) {
   // We don't have window icons on ChromeOS.
 }
 
-void WindowGtk::SetAccessibleName(const std::wstring& name) {
+void NativeWindowGtk::SetAccessibleName(const std::wstring& name) {
 }
 
-void WindowGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
+void NativeWindowGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
 }
 
-void WindowGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
+void NativeWindowGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
-Window* WindowGtk::GetWindow() {
+Window* NativeWindowGtk::GetWindow() {
   return delegate_->AsWindow();
 }
 
-const Window* WindowGtk::GetWindow() const {
+const Window* NativeWindowGtk::GetWindow() const {
   return delegate_->AsWindow();
 }
 
-void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
+void NativeWindowGtk::SetWindowBounds(const gfx::Rect& bounds,
                                 gfx::NativeWindow other_window) {
   // TODO: need to deal with other_window.
   NativeWidgetGtk::SetBounds(bounds);
 }
 
-void WindowGtk::HideWindow() {
+void NativeWindowGtk::HideWindow() {
   GetWindow()->Hide();
 }
 
-void WindowGtk::Activate() {
+void NativeWindowGtk::Activate() {
   gtk_window_present(GTK_WINDOW(GetNativeView()));
 }
 
-void WindowGtk::Deactivate() {
+void NativeWindowGtk::Deactivate() {
   gdk_window_lower(GTK_WIDGET(GetNativeView())->window);
 }
 
-void WindowGtk::Maximize() {
+void NativeWindowGtk::Maximize() {
   gtk_window_maximize(GetNativeWindow());
 }
 
-void WindowGtk::Minimize() {
+void NativeWindowGtk::Minimize() {
   gtk_window_iconify(GetNativeWindow());
 }
 
-void WindowGtk::Restore() {
+void NativeWindowGtk::Restore() {
   if (IsMaximized())
     gtk_window_unmaximize(GetNativeWindow());
   else if (IsMinimized())
@@ -329,60 +333,60 @@ void WindowGtk::Restore() {
     SetFullscreen(false);
 }
 
-bool WindowGtk::IsActive() const {
+bool NativeWindowGtk::IsActive() const {
   return NativeWidgetGtk::IsActive();
 }
 
-bool WindowGtk::IsVisible() const {
+bool NativeWindowGtk::IsVisible() const {
   return GTK_WIDGET_VISIBLE(GetNativeView());
 }
 
-bool WindowGtk::IsMaximized() const {
+bool NativeWindowGtk::IsMaximized() const {
   return window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
 }
 
-bool WindowGtk::IsMinimized() const {
+bool NativeWindowGtk::IsMinimized() const {
   return window_state_ & GDK_WINDOW_STATE_ICONIFIED;
 }
 
-void WindowGtk::SetFullscreen(bool fullscreen) {
+void NativeWindowGtk::SetFullscreen(bool fullscreen) {
   if (fullscreen)
     gtk_window_fullscreen(GetNativeWindow());
   else
     gtk_window_unfullscreen(GetNativeWindow());
 }
 
-bool WindowGtk::IsFullscreen() const {
+bool NativeWindowGtk::IsFullscreen() const {
   return window_state_ & GDK_WINDOW_STATE_FULLSCREEN;
 }
 
-void WindowGtk::SetUseDragFrame(bool use_drag_frame) {
+void NativeWindowGtk::SetUseDragFrame(bool use_drag_frame) {
   NOTIMPLEMENTED();
 }
 
-NonClientFrameView* WindowGtk::CreateFrameViewForWindow() {
+NonClientFrameView* NativeWindowGtk::CreateFrameViewForWindow() {
   return new CustomFrameView(delegate_->AsWindow());
 }
 
-void WindowGtk::SetAlwaysOnTop(bool always_on_top) {
+void NativeWindowGtk::SetAlwaysOnTop(bool always_on_top) {
   gtk_window_set_keep_above(GetNativeWindow(), always_on_top);
 }
 
-void WindowGtk::UpdateFrameAfterFrameChange() {
+void NativeWindowGtk::UpdateFrameAfterFrameChange() {
   // We currently don't support different frame types on Gtk, so we don't
   // need to implement this.
   NOTIMPLEMENTED();
 }
 
-gfx::NativeWindow WindowGtk::GetNativeWindow() const {
+gfx::NativeWindow NativeWindowGtk::GetNativeWindow() const {
   return GTK_WINDOW(GetNativeView());
 }
 
-bool WindowGtk::ShouldUseNativeFrame() const {
+bool NativeWindowGtk::ShouldUseNativeFrame() const {
   return false;
 }
 
-void WindowGtk::FrameTypeChanged() {
+void NativeWindowGtk::FrameTypeChanged() {
   // This is called when the Theme has changed, so forward the event to the root
   // widget.
   GetWidget()->ThemeChanged();
@@ -390,23 +394,23 @@ void WindowGtk::FrameTypeChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowGtk, private:
+// NativeWindowGtk, private:
 
 // static
-gboolean WindowGtk::CallConfigureEvent(GtkWidget* widget,
-                                       GdkEventConfigure* event,
-                                       WindowGtk* window_gtk) {
+gboolean NativeWindowGtk::CallConfigureEvent(GtkWidget* widget,
+                                             GdkEventConfigure* event,
+                                             NativeWindowGtk* window_gtk) {
   return window_gtk->OnConfigureEvent(widget, event);
 }
 
 // static
-gboolean WindowGtk::CallWindowStateEvent(GtkWidget* widget,
-                                         GdkEventWindowState* event,
-                                         WindowGtk* window_gtk) {
+gboolean NativeWindowGtk::CallWindowStateEvent(GtkWidget* widget,
+                                               GdkEventWindowState* event,
+                                               NativeWindowGtk* window_gtk) {
   return window_gtk->OnWindowStateEvent(widget, event);
 }
 
-void WindowGtk::SaveWindowPosition() {
+void NativeWindowGtk::SaveWindowPosition() {
   // The delegate may have gone away on us.
   if (!GetWindow()->window_delegate())
     return;
@@ -417,7 +421,7 @@ void WindowGtk::SaveWindowPosition() {
       maximized);
 }
 
-void WindowGtk::OnDestroy(GtkWidget* widget) {
+void NativeWindowGtk::OnDestroy(GtkWidget* widget) {
   delegate_->OnNativeWindowDestroying();
   NativeWidgetGtk::OnDestroy(widget);
   delegate_->OnNativeWindowDestroyed();
@@ -429,7 +433,7 @@ void WindowGtk::OnDestroy(GtkWidget* widget) {
 // static
 NativeWindow* NativeWindow::CreateNativeWindow(
     internal::NativeWindowDelegate* delegate) {
-  return new WindowGtk(delegate);
+  return new NativeWindowGtk(delegate);
 }
 
 }  // namespace views

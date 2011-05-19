@@ -9,17 +9,17 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
-#include "views/window/window_win.h"
+#include "views/window/native_window_win.h"
 
 class BrowserView;
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin
 //
-//  BrowserFrame is a WindowWin subclass that provides the window frame for the
-//  Chrome browser window.
+//  BrowserFrame is a NativeWindowWin subclass that provides the window frame
+//  for the Chrome browser window.
 //
-class BrowserFrameWin : public views::WindowWin,
+class BrowserFrameWin : public views::NativeWindowWin,
                         public NativeBrowserFrame {
  public:
   BrowserFrameWin(BrowserFrame* browser_frame, BrowserView* browser_view);
@@ -33,7 +33,7 @@ class BrowserFrameWin : public views::WindowWin,
   static void SetShowState(int state);
 
  protected:
-  // Overridden from views::WindowWin:
+  // Overridden from views::NativeWindowWin:
   virtual int GetShowState() const OVERRIDE;
   virtual gfx::Insets GetClientAreaInsets() const OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;

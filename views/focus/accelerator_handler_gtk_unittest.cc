@@ -7,8 +7,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "views/focus/accelerator_handler.h"
+#include "views/focus/focus_manager.h"
 #include "views/view.h"
-#include "views/window/window_gtk.h"
+#include "views/window/window.h"
 #include "views/window/window_delegate.h"
 
 namespace views {

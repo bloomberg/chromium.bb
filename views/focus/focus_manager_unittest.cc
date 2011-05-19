@@ -1677,7 +1677,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
     }
 
     virtual ~WindowDtorTracked() {
-      dtor_tracker_->push_back("WindowGtkDtorTracked");
+      dtor_tracker_->push_back("WindowDtorTracked");
     }
 
     FocusManagerDtorTracked* tracked_focus_manager_;
@@ -1686,7 +1686,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
  public:
   virtual void SetUp() {
-    // Create WindowGtkDtorTracked that uses FocusManagerDtorTracked.
+    // Create WindowDtorTracked that uses FocusManagerDtorTracked.
     window_ = new WindowDtorTracked(this, &dtor_tracker_);
     ASSERT_TRUE(GetFocusManager() == static_cast<WindowDtorTracked*>(
         window_)->tracked_focus_manager_);

@@ -37,7 +37,7 @@
 
 #if defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
-#include "views/window/window_win.h"
+#include "views/window/native_window_win.h"
 #endif
 
 using base::TimeDelta;
@@ -556,7 +556,7 @@ void ConstrainedWindowFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
 #if defined(OS_WIN)
-    title_font_ = new gfx::Font(views::WindowWin::GetWindowTitleFont());
+    title_font_ = new gfx::Font(views::NativeWindowWin::GetWindowTitleFont());
 #endif
     initialized = true;
   }

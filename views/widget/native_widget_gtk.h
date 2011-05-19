@@ -34,7 +34,6 @@ class DropTargetGtk;
 class InputMethod;
 class TooltipManagerGtk;
 class View;
-class WindowGtk;
 
 namespace internal {
 class NativeWidgetDelegate;
@@ -255,7 +254,7 @@ class NativeWidgetGtk : public NativeWidget,
   // when a window holding grab is closed without releasing grab.
   virtual void HandleXGrabBroke();
 
-  // Are we a subclass of WindowGtk?
+  // Are we a subclass of NativeWindowGtk?
   bool is_window_;
 
  private:

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "views/widget/native_widget_gtk.h"
-#include "views/window/window_gtk.h"
 
 namespace views {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_WINDOW_WINDOW_WIN_H_
-#define VIEWS_WINDOW_WINDOW_WIN_H_
+#ifndef VIEWS_WINDOW_NATIVE_WINDOW_WIN_H_
+#define VIEWS_WINDOW_NATIVE_WINDOW_WIN_H_
 #pragma once
 
 #include "views/widget/native_widget_win.h"
@@ -34,18 +34,18 @@ class WindowDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// WindowWin
+// NativeWindowWin
 //
-//  A WindowWin is a NativeWidgetWin that encapsulates a window with a frame.
-//  The frame may or may not be rendered by the operating system. The window may
-//  or may not be top level.
+//  A NativeWindowWin is a NativeWidgetWin that encapsulates a window with a
+//  frame. The frame may or may not be rendered by the operating system. The
+//  window may or may not be top level.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class WindowWin : public NativeWidgetWin,
-                  public NativeWindow {
+class NativeWindowWin : public NativeWidgetWin,
+                        public NativeWindow {
  public:
-  explicit WindowWin(internal::NativeWindowDelegate* delegate);
-  virtual ~WindowWin();
+  explicit NativeWindowWin(internal::NativeWindowDelegate* delegate);
+  virtual ~NativeWindowWin();
 
   // Show the window with the specified show command.
   void Show(int show_state);
@@ -248,7 +248,7 @@ class WindowWin : public NativeWidgetWin,
 
   // The following factory is used to ignore SetWindowPos() calls for short time
   // periods.
-  ScopedRunnableMethodFactory<WindowWin> ignore_pos_changes_factory_;
+  ScopedRunnableMethodFactory<NativeWindowWin> ignore_pos_changes_factory_;
 
   // If this is greater than zero, we should prevent attempts to make the window
   // visible when we handle WM_WINDOWPOSCHANGING. Some calls like
@@ -269,9 +269,9 @@ class WindowWin : public NativeWidgetWin,
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowWin);
+  DISALLOW_COPY_AND_ASSIGN(NativeWindowWin);
 };
 
 }  // namespace views
 
-#endif  // VIEWS_WINDOW_WINDOW_WIN_H_
+#endif  // VIEWS_WINDOW_NATIVE_WINDOW_WIN_H_

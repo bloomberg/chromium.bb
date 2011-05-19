@@ -33,7 +33,7 @@ static int explicit_show_state = -1;
 
 BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
-    : views::WindowWin(browser_frame),
+    : views::NativeWindowWin(browser_frame),
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
   // Don't focus anything on creation, selecting a tab will set the focus.
@@ -49,7 +49,7 @@ void BrowserFrameWin::SetShowState(int state) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameWin, views::WindowWin overrides:
+// BrowserFrameWin, views::NativeWindowWin overrides:
 
 int BrowserFrameWin::GetShowState() const {
   if (explicit_show_state != -1)
@@ -67,7 +67,7 @@ gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
   // frame.
   if (!GetWindow()->ShouldUseNativeFrame() ||
       !browser_view_->IsBrowserTypeNormal()) {
-    return WindowWin::GetClientAreaInsets();
+    return NativeWindowWin::GetClientAreaInsets();
   }
 
   int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
@@ -84,7 +84,7 @@ void BrowserFrameWin::UpdateFrameAfterFrameChange() {
   // We need to update the glass region on or off before the base class adjusts
   // the window region.
   UpdateDWMFrame();
-  WindowWin::UpdateFrameAfterFrameChange();
+  NativeWindowWin::UpdateFrameAfterFrameChange();
 }
 
 void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
@@ -97,7 +97,7 @@ void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,
 }
 
 void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  WindowWin::OnWindowPosChanged(window_pos);
+  NativeWindowWin::OnWindowPosChanged(window_pos);
   UpdateDWMFrame();
 
   // Windows lies to us about the position of the minimize button before a
@@ -117,7 +117,7 @@ void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
 
 void BrowserFrameWin::OnScreenReaderDetected() {
   BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-  WindowWin::OnScreenReaderDetected();
+  NativeWindowWin::OnScreenReaderDetected();
 }
 
 bool BrowserFrameWin::ShouldUseNativeFrame() const {
@@ -129,7 +129,7 @@ bool BrowserFrameWin::ShouldUseNativeFrame() const {
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
   if (!browser_view_->IsBrowserTypeNormal() &&
-      WindowWin::ShouldUseNativeFrame()) {
+      NativeWindowWin::ShouldUseNativeFrame()) {
     return true;
   }
 
@@ -204,7 +204,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
 // static
 const gfx::Font& BrowserFrame::GetTitleFont() {
   static gfx::Font* title_font =
-      new gfx::Font(views::WindowWin::GetWindowTitleFont());
+      new gfx::Font(views::NativeWindowWin::GetWindowTitleFont());
   return *title_font;
 }
 

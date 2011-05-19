@@ -1056,9 +1056,10 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       close_button_size.height());
 
 #if defined(OS_CHROMEOS)
-  // LayoutWindowControls could be triggered from WindowGtk::UpdateWindowTitle,
-  // which could happen when user navigates in fullscreen mode. And because
-  // BrowserFrameChromeos::IsMaximized return false for fullscreen mode, we
+  // LayoutWindowControls could be triggered from
+  // NativeWindowGtk::UpdateWindowTitle(), which could happen when user
+  // navigates in fullscreen mode. And because
+  // BrowserFrameChromeos::IsMaximized() return false for fullscreen mode, we
   // explicitly test fullscreen mode here and make it use the same code path
   // as maximized mode.
   // TODO(oshima): Optimize the relayout logic to defer the frame view's

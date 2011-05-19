@@ -34,7 +34,7 @@
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/window_gtk.h"
+#include "views/window/native_window_gtk.h"
 
 #if defined(TOUCH_UI)
 #if defined(HAVE_XINPUT2)
@@ -1477,7 +1477,7 @@ Window* NativeWidgetGtk::GetWindowImpl(GtkWidget* widget) {
     NativeWidgetGtk* widget_gtk = static_cast<NativeWidgetGtk*>(
         NativeWidget::GetNativeWidgetForNativeView(parent));
     if (widget_gtk && widget_gtk->is_window_)
-      return static_cast<WindowGtk*>(widget_gtk)->GetWindow();
+      return static_cast<NativeWindowGtk*>(widget_gtk)->GetWindow();
     parent = gtk_widget_get_parent(parent);
   }
   return NULL;
