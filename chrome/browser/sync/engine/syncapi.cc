@@ -2546,7 +2546,14 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
       syncable::ModelTypeSet encrypted_types =
           syncable::GetEncryptedDataTypesFromNigori(nigori);
-      if (!encrypted_types.empty()) {
+      syncable::ModelTypeSet encrypted_and_enabled_types;
+      for (syncable::ModelTypeSet::iterator iter = encrypted_types.begin();
+           iter != encrypted_types.end();
+           ++iter) {
+        if (enabled_types.count(*iter) > 0)
+          encrypted_and_enabled_types.insert(*iter);
+      }
+      if (!encrypted_and_enabled_types.empty()) {
         Cryptographer* cryptographer = trans.GetCryptographer();
         if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
           if (!nigori.encrypted().blob().empty()) {
@@ -2568,7 +2575,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
                             OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
         } else {
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                            OnEncryptionComplete(encrypted_types));
+                            OnEncryptionComplete(encrypted_and_enabled_types));
         }
       }
     }
