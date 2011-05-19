@@ -3288,16 +3288,6 @@ void RenderView::EvaluateScript(const string16& frame_xpath,
   }
 }
 
-void RenderView::InsertCSS(const std::wstring& frame_xpath,
-                           const std::string& css,
-                           const std::string& id) {
-  WebFrame* web_frame = GetChildFrame(frame_xpath);
-  if (!web_frame)
-    return;
-
-  web_frame->insertStyleText(WebString::fromUTF8(css), WebString::fromUTF8(id));
-}
-
 void RenderView::OnScriptEvalRequest(const string16& frame_xpath,
                                      const string16& jscript,
                                      int id,
@@ -3308,10 +3298,11 @@ void RenderView::OnScriptEvalRequest(const string16& frame_xpath,
 void RenderView::OnCSSInsertRequest(const std::wstring& frame_xpath,
                                     const std::string& css,
                                     const std::string& id) {
-  InsertCSS(frame_xpath, css, id);
+  WebFrame* web_frame = GetChildFrame(frame_xpath);
+  if (!web_frame)
+    return;
 
-  // Notify RenderViewHost that css has been inserted into the frame.
-  Send(new ViewHostMsg_OnCSSInserted(routing_id_));
+  web_frame->insertStyleText(WebString::fromUTF8(css), WebString::fromUTF8(id));
 }
 
 void RenderView::OnAllowBindings(int enabled_bindings_flags) {

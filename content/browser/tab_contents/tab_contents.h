@@ -281,9 +281,6 @@ class TabContents : public PageNavigator,
   // Stop any pending navigation.
   virtual void Stop();
 
-  // Called on a TabContents when it isn't a popup, but a new window.
-  virtual void DisassociateFromPopupCount();
-
   // Creates a new TabContents with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
   virtual TabContents* Clone();
@@ -423,8 +420,6 @@ class TabContents : public PageNavigator,
   // Remove any user-defined override encoding and reload by sending down
   // ViewMsg_ResetPageEncodingToDefault to the renderer.
   void ResetOverrideEncoding();
-
-  void WindowMoveOrResizeStarted();
 
   RendererPreferences* GetMutableRendererPrefs() {
     return &renderer_preferences_;
@@ -586,8 +581,11 @@ class TabContents : public PageNavigator,
   void OnDocumentLoadedInFrame(int64 frame_id);
   void OnDidFinishLoad(int64 frame_id);
   void OnUpdateContentRestrictions(int restrictions);
-
   void OnGoToEntryAtOffset(int offset);
+  void OnUpdateZoomLimits(int minimum_percent,
+                          int maximum_percent,
+                          bool remember);
+  void OnFocusedNodeChanged(bool is_editable_node);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -730,11 +728,6 @@ class TabContents : public PageNavigator,
   virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
                                 uint64 upload_position, uint64 upload_size);
   virtual bool IsExternalTabContainer() const;
-  virtual void DidInsertCSS();
-  virtual void FocusedNodeChanged(bool is_editable_node);
-  virtual void UpdateZoomLimits(int minimum_percent,
-                                int maximum_percent,
-                                bool remember);
   virtual void WorkerCrashed();
   virtual void RequestDesktopNotificationPermission(const GURL& source_origin,
                                                     int callback_context);

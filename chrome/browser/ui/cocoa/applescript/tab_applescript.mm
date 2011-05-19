@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 
 @interface TabAppleScript()
@@ -224,7 +225,7 @@
     return;
   }
 
-  view->Stop();
+  view->Send(new ViewMsg_Stop(view->routing_id()));
 }
 
 - (void)handlesPrintScriptCommand:(NSScriptCommand*)command {

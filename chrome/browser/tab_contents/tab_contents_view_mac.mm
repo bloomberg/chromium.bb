@@ -169,7 +169,8 @@ void TabContentsViewMac::RenderViewCreated(RenderViewHost* host) {
   // We want updates whenever the intrinsic width of the webpage changes.
   // Put the RenderView into that mode. The preferred width is used for example
   // when the "zoom" button in the browser window is clicked.
-  host->EnablePreferredSizeChangedMode(kPreferredSizeWidth);
+  host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+      host->routing_id(), kPreferredSizeWidth));
 }
 
 void TabContentsViewMac::SetPageTitle(const std::wstring& title) {

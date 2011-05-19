@@ -855,13 +855,6 @@ class RenderView : public RenderWidget,
   // Should only be called if this object wraps a PluginDocument.
   WebKit::WebPlugin* GetWebPluginFromPluginDocument();
 
-  // Inserts a string of CSS in a particular frame. |id| can be specified to
-  // give the CSS style element an id, and (if specified) will replace the
-  // element with the same id.
-  void InsertCSS(const std::wstring& frame_xpath,
-                 const std::string& css,
-                 const std::string& id);
-
   // Returns false unless this is a top-level navigation that crosses origins.
   bool IsNonLocalTopLevelNavigation(const GURL& url,
                                     WebKit::WebFrame* frame,

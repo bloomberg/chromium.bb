@@ -73,11 +73,13 @@
 #include "chrome/common/native_window_notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1642,8 +1644,10 @@ void BrowserView::OnWindowActivationChanged(bool active) {
 
 void BrowserView::OnWindowBeginUserBoundsChange() {
   TabContents* tab_contents = GetSelectedTabContents();
-  if (tab_contents)
-    tab_contents->WindowMoveOrResizeStarted();
+  if (!tab_contents)
+    return;
+  RenderViewHost* rvh = tab_contents->render_view_host();
+  rvh->Send(new ViewMsg_MoveOrResizeStarted(rvh->routing_id()));
 }
 
 void BrowserView::OnWidgetMove() {

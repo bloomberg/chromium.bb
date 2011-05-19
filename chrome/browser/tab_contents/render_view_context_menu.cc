@@ -56,6 +56,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
+#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -1203,12 +1204,14 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     return;
   }
 
+  RenderViewHost* rvh = source_tab_contents_->render_view_host();
+
   // Process custom actions range.
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
     unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-    source_tab_contents_->render_view_host()->PerformCustomContextMenuAction(
-        params_.custom_context, action);
+    rvh->Send(new ViewMsg_CustomContextMenuAction(
+        rvh->routing_id(), params_.custom_context, action));
     return;
   }
 
@@ -1225,7 +1228,6 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
     return;
   }
-
 
   switch (id) {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
@@ -1367,7 +1369,6 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
           tab_contents_wrapper->print_view_manager()->PrintNow();
         }
       } else {
-        RenderViewHost* rvh = source_tab_contents_->render_view_host();
         rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->routing_id()));
       }
       break;
@@ -1415,7 +1416,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
-      source_tab_contents_->render_view_host()->ReloadFrame();
+      rvh->Send(new ViewMsg_ReloadFrame(rvh->routing_id()));
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
@@ -1444,31 +1445,31 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
 
     case IDC_CONTENT_CONTEXT_UNDO:
-      source_tab_contents_->render_view_host()->Undo();
+      rvh->Undo();
       break;
 
     case IDC_CONTENT_CONTEXT_REDO:
-      source_tab_contents_->render_view_host()->Redo();
+      rvh->Redo();
       break;
 
     case IDC_CONTENT_CONTEXT_CUT:
-      source_tab_contents_->render_view_host()->Cut();
+      rvh->Cut();
       break;
 
     case IDC_CONTENT_CONTEXT_COPY:
-      source_tab_contents_->render_view_host()->Copy();
+      rvh->Copy();
       break;
 
     case IDC_CONTENT_CONTEXT_PASTE:
-      source_tab_contents_->render_view_host()->Paste();
+      rvh->Paste();
       break;
 
     case IDC_CONTENT_CONTEXT_DELETE:
-      source_tab_contents_->render_view_host()->Delete();
+      rvh->Delete();
       break;
 
     case IDC_CONTENT_CONTEXT_SELECTALL:
-      source_tab_contents_->render_view_host()->SelectAll();
+      rvh->SelectAll();
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
@@ -1483,7 +1484,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_SPELLCHECK_SUGGESTION_2:
     case IDC_SPELLCHECK_SUGGESTION_3:
     case IDC_SPELLCHECK_SUGGESTION_4: {
-      source_tab_contents_->render_view_host()->Replace(
+      rvh->Replace(
           params_.dictionary_suggestions[id - IDC_SPELLCHECK_SUGGESTION_0]);
       SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
       if (!spellcheck_host) {
@@ -1494,8 +1495,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
     case IDC_CHECK_SPELLING_OF_THIS_FIELD: {
-      RenderViewHost* view = source_tab_contents_->render_view_host();
-      view->Send(new SpellCheckMsg_ToggleSpellCheck(view->routing_id()));
+      rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->routing_id()));
       break;
     }
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY: {
@@ -1517,9 +1517,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
 
     case IDC_SPELLPANEL_TOGGLE: {
-      RenderViewHost* view = source_tab_contents_->render_view_host();
-      view->Send(new SpellCheckMsg_ToggleSpellPanel(
-          view->routing_id(), SpellCheckerPlatform::SpellingPanelVisible()));
+      rvh->Send(new SpellCheckMsg_ToggleSpellPanel(
+          rvh->routing_id(), SpellCheckerPlatform::SpellingPanelVisible()));
       break;
     }
 
@@ -1533,8 +1532,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       WebKit::WebTextDirection dir = WebKit::WebTextDirectionLeftToRight;
       if (id == IDC_WRITING_DIRECTION_RTL)
         dir = WebKit::WebTextDirectionRightToLeft;
-      source_tab_contents_->render_view_host()->UpdateTextDirection(dir);
-      source_tab_contents_->render_view_host()->NotifyTextDirection();
+      rvh->UpdateTextDirection(dir);
+      rvh->NotifyTextDirection();
       break;
     }
     case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
@@ -1558,9 +1557,10 @@ void RenderViewContextMenu::MenuClosed() {
   RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
   if (view)
     view->ShowingContextMenu(false);
-  if (source_tab_contents_->render_view_host()) {
-    source_tab_contents_->render_view_host()->ContextMenuClosed(
-        params_.custom_context);
+  RenderViewHost* rvh = source_tab_contents_->render_view_host();
+  if (rvh) {
+    rvh->Send(new ViewMsg_ContextMenuClosed(
+        rvh->routing_id(), params_.custom_context));
   }
 }
 
@@ -1614,7 +1614,8 @@ void RenderViewContextMenu::OpenURL(
 }
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {
-  source_tab_contents_->render_view_host()->CopyImageAt(x, y);
+  RenderViewHost* rvh = source_tab_contents_->render_view_host();
+  rvh->Send(new ViewMsg_CopyImageAt(rvh->routing_id(), x, y));
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
@@ -1633,6 +1634,7 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 void RenderViewContextMenu::MediaPlayerActionAt(
     const gfx::Point& location,
     const WebMediaPlayerAction& action) {
-  source_tab_contents_->render_view_host()->MediaPlayerActionAt(
-      location, action);
+  RenderViewHost* rvh = source_tab_contents_->render_view_host();
+  rvh->Send(new ViewMsg_MediaPlayerActionAt(
+      rvh->routing_id(), location, action));
 }

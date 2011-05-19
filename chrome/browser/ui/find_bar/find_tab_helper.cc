@@ -12,6 +12,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
+
+using WebKit::WebFindOptions;
 
 // static
 int FindTabHelper::find_request_id_counter_ = -1;
@@ -71,11 +74,14 @@ void FindTabHelper::StartFinding(string16 search_string,
   // Keep track of what the last search was across the tabs.
   FindBarState* find_bar_state = tab_contents()->profile()->GetFindBarState();
   find_bar_state->set_last_prepopulate_text(find_text_);
-  tab_contents()->render_view_host()->StartFinding(current_find_request_id_,
-                                                   find_text_,
-                                                   forward_direction,
-                                                   case_sensitive,
-                                                   find_next);
+
+  WebFindOptions options;
+  options.forward = forward_direction;
+  options.matchCase = case_sensitive;
+  options.findNext = find_next;
+  tab_contents()->render_view_host()->Send(new ViewMsg_Find(
+      tab_contents()->render_view_host()->routing_id(),
+      current_find_request_id_, find_text_, options));
 }
 
 void FindTabHelper::StopFinding(
@@ -93,7 +99,24 @@ void FindTabHelper::StopFinding(
   find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();
-  tab_contents()->render_view_host()->StopFinding(selection_action);
+
+  ViewMsg_StopFinding_Params params;
+  switch (selection_action) {
+    case FindBarController::kClearSelection:
+      params.action = ViewMsg_StopFinding_Params::kClearSelection;
+      break;
+    case FindBarController::kKeepSelection:
+      params.action = ViewMsg_StopFinding_Params::kKeepSelection;
+      break;
+    case FindBarController::kActivateSelection:
+      params.action = ViewMsg_StopFinding_Params::kActivateSelection;
+      break;
+    default:
+      NOTREACHED();
+      params.action = ViewMsg_StopFinding_Params::kKeepSelection;
+  }
+  tab_contents()->render_view_host()->Send(new ViewMsg_StopFinding(
+      tab_contents()->render_view_host()->routing_id(), params));
 }
 
 bool FindTabHelper::OnMessageReceived(const IPC::Message& message) {

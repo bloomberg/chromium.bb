@@ -118,6 +118,8 @@
 #include "content/common/content_restriction.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
+#include "content/common/page_zoom.h"
+#include "content/common/view_messages.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -1763,14 +1765,15 @@ void Browser::FindPrevious() {
 
 void Browser::Zoom(PageZoom::Function zoom_function) {
   static const UserMetricsAction kActions[] = {
-                      UserMetricsAction("ZoomMinus"),
-                      UserMetricsAction("ZoomNormal"),
-                      UserMetricsAction("ZoomPlus")
-                      };
+      UserMetricsAction("ZoomMinus"),
+      UserMetricsAction("ZoomNormal"),
+      UserMetricsAction("ZoomPlus")
+      };
 
   UserMetrics::RecordAction(kActions[zoom_function - PageZoom::ZOOM_OUT]);
   TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
-  tab_contents->render_view_host()->Zoom(zoom_function);
+  RenderViewHost* host = tab_contents->render_view_host();
+  host->Send(new ViewMsg_Zoom(host->routing_id(), zoom_function));
 }
 
 void Browser::FocusToolbar() {
@@ -3061,7 +3064,8 @@ void Browser::AddNewContents(TabContents* source,
       return;
     }
 
-    new_contents->DisassociateFromPopupCount();
+    RenderViewHost* view = new_contents->render_view_host();
+    view->Send(new ViewMsg_DisassociateFromPopupCount(view->routing_id()));
   }
 
   browser::NavigateParams params(this, new_wrapper);

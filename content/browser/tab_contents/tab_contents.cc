@@ -351,6 +351,8 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateContentRestrictions,
                         OnUpdateContentRestrictions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -559,8 +561,9 @@ bool TabContents::NavigateToEntry(
     return false;  // Unable to create the desired render view host.
 
   if (delegate_ && delegate_->ShouldEnablePreferredSizeNotifications()) {
-    dest_render_view_host->EnablePreferredSizeChangedMode(
-        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+    dest_render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+        dest_render_view_host->routing_id(),
+        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
   }
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
@@ -613,10 +616,6 @@ bool TabContents::NavigateToEntry(
 void TabContents::Stop() {
   render_manager_.Stop();
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, StopNavigation());
-}
-
-void TabContents::DisassociateFromPopupCount() {
-  render_view_host()->DisassociateFromPopupCount();
 }
 
 TabContents* TabContents::Clone() {
@@ -780,16 +779,14 @@ bool TabContents::IsActiveEntry(int32 page_id) {
 
 void TabContents::SetOverrideEncoding(const std::string& encoding) {
   set_encoding(encoding);
-  render_view_host()->SetPageEncoding(encoding);
+  render_view_host()->Send(new ViewMsg_SetPageEncoding(
+      render_view_host()->routing_id(), encoding));
 }
 
 void TabContents::ResetOverrideEncoding() {
   reset_encoding();
-  render_view_host()->ResetPageEncodingToDefault();
-}
-
-void TabContents::WindowMoveOrResizeStarted() {
-  render_view_host()->WindowMoveOrResizeStarted();
+  render_view_host()->Send(new ViewMsg_ResetPageEncodingToDefault(
+      render_view_host()->routing_id()));
 }
 
 void TabContents::OnCloseStarted() {
@@ -1044,6 +1041,35 @@ void TabContents::OnUpdateContentRestrictions(int restrictions) {
   SetContentRestrictions(restrictions);
 }
 
+void TabContents::OnGoToEntryAtOffset(int offset) {
+  if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
+    NavigationEntry* entry = controller_.GetEntryAtOffset(offset);
+    if (!entry)
+      return;
+    // Note that we don't call NavigationController::GotToOffset() as we don't
+    // want to create a pending navigation entry (it might end up lingering
+    // http://crbug.com/51680).
+    entry->set_transition_type(entry->transition_type() |
+                               PageTransition::FORWARD_BACK);
+    NavigateToEntry(*entry, NavigationController::NO_RELOAD);
+  }
+}
+
+void TabContents::OnUpdateZoomLimits(int minimum_percent,
+                                     int maximum_percent,
+                                     bool remember) {
+  minimum_zoom_percent_ = minimum_percent;
+  maximum_zoom_percent_ = maximum_percent;
+  temporary_zoom_settings_ = !remember;
+}
+
+void TabContents::OnFocusedNodeChanged(bool is_editable_node) {
+  NotificationService::current()->Notify(
+      NotificationType::FOCUS_CHANGED_IN_PAGE,
+      Source<TabContents>(this),
+      Details<const bool>(&is_editable_node));
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,
@@ -1202,15 +1228,18 @@ void TabContents::CloseConstrainedWindows() {
 
 void TabContents::UpdateAlternateErrorPageURL() {
   GURL url = GetAlternateErrorPageURL();
-  render_view_host()->SetAlternateErrorPageURL(url);
+  render_view_host()->Send(new ViewMsg_SetAltErrorPageURL(
+      render_view_host()->routing_id(), url));
 }
 
 void TabContents::UpdateWebPreferences() {
-  render_view_host()->UpdateWebPreferences(GetWebkitPrefs());
+  render_view_host()->Send(new ViewMsg_UpdateWebPreferences(
+      render_view_host()->routing_id(), GetWebkitPrefs()));
 }
 
 void TabContents::UpdateZoomLevel() {
-  render_view_host()->SetZoomLevel(GetZoomLevel());
+  render_view_host()->Send(new ViewMsg_SetZoomLevel(
+      render_view_host()->routing_id(), GetZoomLevel()));
 }
 
 void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
@@ -1233,7 +1262,8 @@ void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
       // the max.
       if (curr_max_page_id < 0)
         curr_max_page_id = 0;
-      rvh->ReservePageIDRange(max_restored_page_id - curr_max_page_id);
+      rvh->Send(new ViewMsg_ReservePageIDRange(
+          rvh->routing_id(), max_restored_page_id - curr_max_page_id));
     }
   }
 }
@@ -1327,20 +1357,6 @@ void TabContents::NotifyDisconnected() {
       NotificationType::TAB_CONTENTS_DISCONNECTED,
       Source<TabContents>(this),
       NotificationService::NoDetails());
-}
-
-void TabContents::OnGoToEntryAtOffset(int offset) {
-  if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    NavigationEntry* entry = controller_.GetEntryAtOffset(offset);
-    if (!entry)
-      return;
-    // Note that we don't call NavigationController::GotToOffset() as we don't
-    // want to create a pending navigation entry (it might end up lingering
-    // http://crbug.com/51680).
-    entry->set_transition_type(entry->transition_type() |
-                               PageTransition::FORWARD_BACK);
-    NavigateToEntry(*entry, NavigationController::NO_RELOAD);
-  }
 }
 
 RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
@@ -1866,25 +1882,6 @@ bool TabContents::IsExternalTabContainer() const {
     return false;
 
   return delegate()->IsExternalTabContainer();
-}
-
-void TabContents::DidInsertCSS() {
-  // This RVHDelegate function is used for extensions and not us.
-}
-
-void TabContents::FocusedNodeChanged(bool is_editable_node) {
-  NotificationService::current()->Notify(
-      NotificationType::FOCUS_CHANGED_IN_PAGE,
-      Source<TabContents>(this),
-      Details<const bool>(&is_editable_node));
-}
-
-void TabContents::UpdateZoomLimits(int minimum_percent,
-                                   int maximum_percent,
-                                   bool remember) {
-  minimum_zoom_percent_ = minimum_percent;
-  maximum_zoom_percent_ = maximum_percent;
-  temporary_zoom_settings_ = !remember;
 }
 
 void TabContents::WorkerCrashed() {

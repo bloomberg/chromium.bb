@@ -92,16 +92,19 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/json_value_serializer.h"
+#include "content/common/view_messages.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "webkit/glue/password_form.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/external_tab_container_win.h"
 #endif  // defined(OS_WIN)
 
+using WebKit::WebFindOptions;
 using base::Time;
 
 AutomationProvider::AutomationProvider(Profile* profile)
@@ -502,12 +505,14 @@ void AutomationProvider::SendFindRequest(
   if (wrapper)
     wrapper->find_tab_helper()->set_current_find_request_id(request_id);
 
-  tab_contents->render_view_host()->StartFinding(
-      FindInPageNotificationObserver::kFindInPageRequestId,
-      search_string,
-      forward,
-      match_case,
-      find_next);
+  WebFindOptions options;
+  options.forward = forward;
+  options.matchCase = match_case;
+  options.findNext = find_next;
+  tab_contents->render_view_host()->Send(new ViewMsg_Find(
+      tab_contents->render_view_host()->routing_id(),
+      FindInPageNotificationObserver::kFindInPageRequestId, search_string,
+      options));
 }
 
 class SetProxyConfigTask : public Task {
@@ -704,7 +709,7 @@ void AutomationProvider::StopAsync(int tab_handle) {
     return;
   }
 
-  view->Stop();
+  view->Send(new ViewMsg_Stop(view->routing_id()));
 }
 
 void AutomationProvider::OnSetPageFontSize(int tab_handle,

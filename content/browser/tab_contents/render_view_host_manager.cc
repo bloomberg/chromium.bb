@@ -127,12 +127,14 @@ RenderViewHost* RenderViewHostManager::Navigate(const NavigationEntry& entry) {
 }
 
 void RenderViewHostManager::Stop() {
-  render_view_host_->Stop();
+  render_view_host_->Send(new ViewMsg_Stop(render_view_host_->routing_id()));
 
   // If we are cross-navigating, we should stop the pending renderers.  This
   // will lead to a DidFailProvisionalLoad, which will properly destroy them.
-  if (cross_navigation_pending_)
-    pending_render_view_host_->Stop();
+  if (cross_navigation_pending_) {
+    pending_render_view_host_->Send(
+        new ViewMsg_Stop(pending_render_view_host_->routing_id()));
+  }
 }
 
 void RenderViewHostManager::SetIsLoading(bool is_loading) {
@@ -692,7 +694,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
     // Otherwise, it's safe to treat this as a pending cross-site transition.
 
     // Make sure the old render view stops, in case a load is in progress.
-    render_view_host_->Stop();
+    render_view_host_->Send(new ViewMsg_Stop(render_view_host_->routing_id()));
 
     // Suspend the new render view (i.e., don't let it send the cross-site
     // Navigate message) until we hear back from the old renderer's

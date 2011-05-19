@@ -12,9 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
-#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/page_zoom.h"
 #include "content/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -41,7 +39,6 @@ struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
-struct WebPreferences;
 struct UserMetricsAction;
 
 namespace gfx {
@@ -53,7 +50,6 @@ class Range;
 }  // namespace ui
 
 namespace webkit_glue {
-struct CustomContextMenuContext;
 struct WebAccessibility;
 }  // namespace webkit_glue
 
@@ -219,39 +215,6 @@ class RenderViewHost : public RenderWidgetHost {
   // hangs, in which case we need to swap to the pending RenderViewHost.
   int GetPendingRequestId();
 
-  // Stops the current load.
-  void Stop();
-
-  // Reloads the current frame.
-  void ReloadFrame();
-
-  // Start looking for a string within the content of the page, with the
-  // specified options.
-  void StartFinding(int request_id,
-                    const string16& search_string,
-                    bool forward,
-                    bool match_case,
-                    bool find_next);
-
-  // Cancel a pending find operation.
-  void StopFinding(FindBarController::SelectionAction selection_action);
-
-  // Increment, decrement, or reset the zoom level of a page.
-  void Zoom(PageZoom::Function function);
-
-  // Change the zoom level of a page to a specific value.
-  void SetZoomLevel(double zoom_level);
-
-  // Change the encoding of the page.
-  void SetPageEncoding(const std::string& encoding);
-
-  // Reset any override encoding on the page and change back to default.
-  void ResetPageEncodingToDefault();
-
-  // Change the alternate error page URL.  An empty GURL disables the use of
-  // alternate error pages.
-  void SetAlternateErrorPageURL(const GURL& url);
-
   // D&d drop target messages that get sent to WebKit.
   void DragTargetDragEnter(const WebDropData& drop_data,
                            const gfx::Point& client_pt,
@@ -264,9 +227,6 @@ class RenderViewHost : public RenderWidgetHost {
   void DragTargetDrop(const gfx::Point& client_pt,
                       const gfx::Point& screen_pt);
 
-  // Tell the RenderView to reserve a range of page ids of the given size.
-  void ReservePageIDRange(int size);
-
   // Runs some javascript within the context of a frame in the page.
   void ExecuteJavascriptInWebFrame(const string16& frame_xpath,
                                    const string16& jscript);
@@ -275,12 +235,6 @@ class RenderViewHost : public RenderWidgetHost {
   // is sent back via the notification EXECUTE_JAVASCRIPT_RESULT.
   int ExecuteJavascriptInWebFrameNotifyResult(const string16& frame_xpath,
                                               const string16& jscript);
-
-  // Insert some css into a frame in the page. |id| is optional, and specifies
-  // the element id given when inserting/replacing the style element.
-  void InsertCSSInWebFrame(const std::wstring& frame_xpath,
-                           const std::string& css,
-                           const std::string& id);
 
   // Edit operations.
   void Undo();
@@ -297,17 +251,6 @@ class RenderViewHost : public RenderWidgetHost {
   void JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,
                                   const std::wstring& prompt);
-
-  // Send an action to the media player element located at |location|.
-  void MediaPlayerActionAt(const gfx::Point& location,
-                           const WebKit::WebMediaPlayerAction& action);
-
-  // Notifies the renderer that the context menu has closed.
-  void ContextMenuClosed(
-      const webkit_glue::CustomContextMenuContext& custom_context);
-
-  // Copies the image at the specified point.
-  void CopyImageAt(int x, int y);
 
   // Notifies the renderer that a a drag operation that it started has ended,
   // either in a drop or by being cancelled.
@@ -338,15 +281,6 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Tells the renderer view to focus the first (last if reverse is true) node.
   void SetInitialFocus(bool reverse);
-
-  // Clears the node that is currently focused (if any).
-  void ClearFocusedNode();
-
-  // Tells the renderer view to scroll to the focused node.
-  void ScrollFocusedEditableNodeIntoView();
-
-  // Update render view specific (WebKit) preferences.
-  void UpdateWebPreferences(const WebPreferences& prefs);
 
   // Get html data by serializing all frames of current page with lists
   // which contain all resource links that have local copy.
@@ -381,10 +315,6 @@ class RenderViewHost : public RenderWidgetHost {
   // as a popup.
   void DisassociateFromPopupCount();
 
-  // Notifies the Renderer that a move or resize of its containing window has
-  // started (this is used to hide the autocomplete popups if any).
-  void WindowMoveOrResizeStarted();
-
   // RenderWidgetHost public overrides.
   virtual void Shutdown();
   virtual bool IsRenderView() const;
@@ -394,10 +324,6 @@ class RenderViewHost : public RenderWidgetHost {
   virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
   virtual void OnMouseActivate();
   virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
-  virtual void ForwardEditCommand(const std::string& name,
-                                  const std::string& value);
-  virtual void ForwardEditCommandsForNextKeyEvent(
-      const EditCommands& edit_commands);
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id,
@@ -409,17 +335,6 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int route_id);
-
-  // Tells the render view that a custom context action has been selected.
-  void PerformCustomContextMenuAction(
-      const webkit_glue::CustomContextMenuContext& custom_context,
-      unsigned action);
-
-  // Tells the renderer to notify us when the page contents preferred size
-  // changed. |flags| is a combination of
-  // |ViewHostMsg_EnablePreferredSizeChangedMode_Flags| values, which is defined
-  // in render_messages.h.
-  void EnablePreferredSizeChangedMode(int flags);
 
 #if defined(OS_MACOSX)
   // Select popup menu related methods (for external popup menus).
@@ -447,6 +362,9 @@ class RenderViewHost : public RenderWidgetHost {
                         int renderer_id,
                         GURL* url);
 
+  // NOTE: Do not add functions that just send an IPC message that are called in
+  // one or two places.  Have the caller send the IPC message directly.
+
  protected:
   friend class RenderViewHostObserver;
 
@@ -462,7 +380,6 @@ class RenderViewHost : public RenderWidgetHost {
   virtual void OnUserGesture();
   virtual void NotifyRendererUnresponsive();
   virtual void NotifyRendererResponsive();
-  virtual void OnMsgFocusedNodeChanged(bool is_editable_node);
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
 
@@ -522,10 +439,6 @@ class RenderViewHost : public RenderWidgetHost {
 
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
-  void OnCSSInserted();
-  void OnUpdateZoomLimits(int minimum_percent,
-                          int maximum_percent,
-                          bool remember);
   void OnScriptEvalResponse(int id, const ListValue& result);
 
 #if defined(OS_MACOSX)

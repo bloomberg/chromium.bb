@@ -502,10 +502,6 @@ void RenderWidgetHost::StopHangMonitorTimeout() {
   // started again shortly, which happens to be the common use case.
 }
 
-void RenderWidgetHost::SystemThemeChanged() {
-  Send(new ViewMsg_ThemeChanged(routing_id_));
-}
-
 void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardMouseEvent");
   if (ignore_input_events_ || process_->ignore_input_events())
@@ -659,19 +655,6 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
 
-void RenderWidgetHost::ForwardEditCommand(const std::string& name,
-      const std::string& value) {
-  // We don't need an implementation of this function here since the
-  // only place we use this is for the case of dropdown menus and other
-  // edge cases for which edit commands don't make sense.
-}
-
-void RenderWidgetHost::ForwardEditCommandsForNextKeyEvent(
-    const EditCommands& edit_commands) {
-  // We don't need an implementation of this function here since this message is
-  // only handled by RenderView.
-}
-
 #if defined(TOUCH_UI)
 void RenderWidgetHost::ForwardTouchEvent(
     const WebKit::WebTouchEvent& touch_event) {
@@ -759,10 +742,6 @@ void RenderWidgetHost::ImeConfirmComposition() {
 void RenderWidgetHost::ImeCancelComposition() {
   Send(new ViewMsg_ImeSetComposition(routing_id(), string16(),
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
-}
-
-void RenderWidgetHost::SetActive(bool active) {
-  Send(new ViewMsg_SetActive(routing_id(), active));
 }
 
 void RenderWidgetHost::Destroy() {
@@ -1246,18 +1225,6 @@ void RenderWidgetHost::EnableRendererAccessibility() {
     // Renderer accessibility wasn't enabled on process launch. Enable it now.
     Send(new ViewMsg_EnableAccessibility(routing_id()));
   }
-}
-
-void RenderWidgetHost::SetAccessibilityFocus(int acc_obj_id) {
-  Send(new ViewMsg_SetAccessibilityFocus(routing_id(), acc_obj_id));
-}
-
-void RenderWidgetHost::AccessibilityDoDefaultAction(int acc_obj_id) {
-  Send(new ViewMsg_AccessibilityDoDefaultAction(routing_id(), acc_obj_id));
-}
-
-void RenderWidgetHost::AccessibilityNotificationsAck() {
-  Send(new ViewMsg_AccessibilityNotifications_ACK(routing_id()));
 }
 
 void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {

@@ -95,8 +95,9 @@ void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
 #if !defined(OS_MACOSX)
   // TODO(levin): Make all of the code that went in originally with this change
   // to be cross-platform. See http://crbug.com/64720
-  render_view_host->EnablePreferredSizeChangedMode(
-      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+  render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+      render_view_host->routing_id(),
+      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
 #endif
 }
 
@@ -235,8 +236,9 @@ void BalloonHost::Observe(NotificationType type,
     const NotificationDetails& details) {
   if (type == NotificationType::RENDER_WIDGET_HOST_DID_PAINT) {
     registrar_.RemoveAll();
-    render_view_host_->EnablePreferredSizeChangedMode(
-        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+    render_view_host_->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+        render_view_host_->routing_id(),
+        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
   }
 }
 

@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/view_messages.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -142,7 +143,8 @@ void OpenUsingReader(TabContentsWrapper* tab,
   plugin.plugin.version = ASCIIToUTF16("11.0.0.0");
 
   PluginService::GetInstance()->OverridePluginForTab(plugin);
-  tab->render_view_host()->ReloadFrame();
+  tab->render_view_host()->Send(new ViewMsg_ReloadFrame(
+      tab->render_view_host()->routing_id()));
 
   if (new_delegate) {
     if (old_delegate) {

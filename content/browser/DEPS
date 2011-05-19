@@ -93,7 +93,6 @@ include_rules = [
   "+chrome/browser/ui/app_modal_dialogs/message_box_handler.h",
   "+chrome/browser/ui/browser_dialogs.h",
   "+chrome/browser/ui/crypto_module_password_dialog.h",
-  "+chrome/browser/ui/find_bar/find_bar_controller.h",
   "+chrome/browser/ui/login/login_prompt.h",
 
   "+chrome/common/chrome_constants.h",

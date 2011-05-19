@@ -13,6 +13,8 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/notification_details.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"

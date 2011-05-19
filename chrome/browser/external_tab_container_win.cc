@@ -42,6 +42,7 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
+#include "content/common/page_zoom.h"
 #include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -959,16 +960,17 @@ bool ExternalTabContainer::AcceleratorPressed(
     return false;
   }
 
+  RenderViewHost* host = tab_contents_->render_view_host();
   int command_id = iter->second;
   switch (command_id) {
     case IDC_ZOOM_PLUS:
-      tab_contents_->render_view_host()->Zoom(PageZoom::ZOOM_IN);
+      host->Send(new ViewMsg_Zoom(host->routing_id(), PageZoom::ZOOM_IN));
       break;
     case IDC_ZOOM_NORMAL:
-      tab_contents_->render_view_host()->Zoom(PageZoom::RESET);
+      host->Send(new ViewMsg_Zoom(host->routing_id(), PageZoom::RESET));
       break;
     case IDC_ZOOM_MINUS:
-      tab_contents_->render_view_host()->Zoom(PageZoom::ZOOM_OUT);
+      host->Send(new ViewMsg_Zoom(host->routing_id(), PageZoom::ZOOM_OUT));
       break;
     case IDC_DEV_TOOLS:
       DevToolsManager::GetInstance()->ToggleDevToolsWindow(

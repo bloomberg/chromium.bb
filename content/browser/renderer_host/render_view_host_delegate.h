@@ -415,17 +415,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // Returns true if this view is used to host an external tab container.
   virtual bool IsExternalTabContainer() const;
 
-  // The RenderView has inserted one css file into page.
-  virtual void DidInsertCSS() {}
-
-  // A different node in the page got focused.
-  virtual void FocusedNodeChanged(bool is_editable_node) {}
-
-  // Updates the minimum and maximum zoom percentages.
-  virtual void UpdateZoomLimits(int minimum_percent,
-                                int maximum_percent,
-                                bool remember) {}
-
   // Notification that a worker process has crashed.
   void WorkerCrashed() {}
 

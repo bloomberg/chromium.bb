@@ -336,8 +336,9 @@ void ExtensionHost::InsertInfobarCSS() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_EXTENSIONS_INFOBAR_CSS));
 
-  render_view_host()->InsertCSSInWebFrame(
-      L"", css.as_string(), "InfobarThemeCSS");
+  render_view_host()->Send(new ViewMsg_CSSInsertRequest(
+      render_view_host()->routing_id(), L"", css.as_string(),
+      "InfobarThemeCSS"));
 }
 
 void ExtensionHost::DisableScrollbarsForSmallWindows(
@@ -778,8 +779,9 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 
   if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
-    render_view_host->EnablePreferredSizeChangedMode(
-        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+    render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+        render_view_host->routing_id(),
+        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
   }
 }
 

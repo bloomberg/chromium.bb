@@ -24,6 +24,7 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/common/view_messages.h"
 #include "net/test/test_server.h"
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
@@ -170,7 +171,16 @@ class TestInterstitialPage : public InterstitialPage {
   }
 
  protected:
-  virtual void FocusedNodeChanged(bool is_editable_node) {
+  bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(TestInterstitialPage, message)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void OnFocusedNodeChanged(bool is_editable_node) {
     NotificationService::current()->Notify(
         NotificationType::FOCUS_CHANGED_IN_PAGE,
         Source<TabContents>(tab()),

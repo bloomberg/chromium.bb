@@ -1147,7 +1147,8 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
   EditCommands edit_commands;
   if (!event.skip_in_browser &&
       key_bindings_handler_->Match(event, &edit_commands)) {
-    host_->ForwardEditCommandsForNextKeyEvent(edit_commands);
+    host_->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
+        host_->routing_id(), edit_commands));
     NativeWebKeyboardEvent copy_event(event);
     copy_event.match_edit_command = true;
     host_->ForwardKeyboardEvent(copy_event);

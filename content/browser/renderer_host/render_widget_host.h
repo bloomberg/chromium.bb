@@ -15,7 +15,6 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "content/common/edit_command.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/property_bag.h"
 #include "ipc/ipc_channel.h"
@@ -255,11 +254,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // responsive.
   void StopHangMonitorTimeout();
 
-  // Called when the system theme changes. At this time all existing native
-  // theme handles are invalid and the renderer must obtain new ones and
-  // repaint.
-  void SystemThemeChanged();
-
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
   virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
@@ -267,10 +261,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   virtual void OnMouseActivate();
   void ForwardWheelEvent(const WebKit::WebMouseWheelEvent& wheel_event);
   virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
-  virtual void ForwardEditCommand(const std::string& name,
-                                  const std::string& value);
-  virtual void ForwardEditCommandsForNextKeyEvent(
-      const EditCommands& edit_commands);
 #if defined(TOUCH_UI)
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
 #endif
@@ -367,20 +357,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // screenreader is detected.
   void EnableRendererAccessibility();
 
-  // Relays a request from assistive technology to set focus to the
-  // node with this accessibility object id.
-  void SetAccessibilityFocus(int acc_obj_id);
-
-  // Relays a request from assistive technology to perform the default action
-  // on a node with this accessibility object id.
-  void AccessibilityDoDefaultAction(int acc_obj_id);
-
-  // Acknowledges a ViewHostMsg_AccessibilityNotifications message.
-  void AccessibilityNotificationsAck();
-
-  // Sets the active state (i.e., control tints).
-  virtual void SetActive(bool active);
-
   void set_ignore_input_events(bool ignore_input_events) {
     ignore_input_events_ = ignore_input_events;
   }
@@ -396,7 +372,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Notification that the user has made some kind of input that could
   // perform an action. See OnUserGesture for more details.
   void StartUserGesture();
-
+  
  protected:
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,

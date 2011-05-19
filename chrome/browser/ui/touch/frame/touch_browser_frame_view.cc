@@ -300,7 +300,8 @@ void TouchBrowserFrameView::AnimationEnded(const ui::Animation* animation) {
     // the renderer scrolls when necessary to keep the textfield visible.
     RenderViewHost* host =
         browser_view()->browser()->GetSelectedTabContents()->render_view_host();
-    host->ScrollFocusedEditableNodeIntoView();
+    host->Send(new ViewMsg_ScrollFocusedEditableNodeIntoView(
+        host->routing_id()));
   }
   SchedulePaint();
 }

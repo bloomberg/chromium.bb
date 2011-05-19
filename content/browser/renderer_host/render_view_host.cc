@@ -44,7 +44,6 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/webaccessibility.h"
@@ -55,7 +54,6 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
-using WebKit::WebFindOptions;
 using WebKit::WebInputEvent;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebTextDirection;
@@ -174,7 +172,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
 
   // Set the alternate error page, which is profile specific, in the renderer.
   GURL url = delegate_->GetAlternateErrorPageURL();
-  SetAlternateErrorPageURL(url);
+  Send(new ViewMsg_SetAltErrorPageURL(routing_id(), url));
 
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
@@ -389,73 +387,6 @@ int RenderViewHost::GetPendingRequestId() {
   return pending_request_id_;
 }
 
-void RenderViewHost::Stop() {
-  Send(new ViewMsg_Stop(routing_id()));
-}
-
-void RenderViewHost::ReloadFrame() {
-  Send(new ViewMsg_ReloadFrame(routing_id()));
-}
-
-void RenderViewHost::StartFinding(int request_id,
-                                  const string16& search_text,
-                                  bool forward,
-                                  bool match_case,
-                                  bool find_next) {
-  if (search_text.empty())
-    return;
-
-  WebFindOptions options;
-  options.forward = forward;
-  options.matchCase = match_case;
-  options.findNext = find_next;
-  Send(new ViewMsg_Find(routing_id(), request_id, search_text, options));
-
-  // This call is asynchronous and returns immediately.
-  // The result of the search is sent as a notification message by the renderer.
-}
-
-void RenderViewHost::StopFinding(
-    FindBarController::SelectionAction selection_action) {
-  ViewMsg_StopFinding_Params params;
-
-  switch (selection_action) {
-    case FindBarController::kClearSelection:
-      params.action = ViewMsg_StopFinding_Params::kClearSelection;
-      break;
-    case FindBarController::kKeepSelection:
-      params.action = ViewMsg_StopFinding_Params::kKeepSelection;
-      break;
-    case FindBarController::kActivateSelection:
-      params.action = ViewMsg_StopFinding_Params::kActivateSelection;
-      break;
-    default:
-      NOTREACHED();
-      params.action = ViewMsg_StopFinding_Params::kKeepSelection;
-  }
-  Send(new ViewMsg_StopFinding(routing_id(), params));
-}
-
-void RenderViewHost::Zoom(PageZoom::Function function) {
-  Send(new ViewMsg_Zoom(routing_id(), function));
-}
-
-void RenderViewHost::SetZoomLevel(double zoom_level) {
-  Send(new ViewMsg_SetZoomLevel(routing_id(), zoom_level));
-}
-
-void RenderViewHost::SetPageEncoding(const std::string& encoding_name) {
-  Send(new ViewMsg_SetPageEncoding(routing_id(), encoding_name));
-}
-
-void RenderViewHost::ResetPageEncodingToDefault() {
-  Send(new ViewMsg_ResetPageEncodingToDefault(routing_id()));
-}
-
-void RenderViewHost::SetAlternateErrorPageURL(const GURL& url) {
-  Send(new ViewMsg_SetAltErrorPageURL(routing_id(), url));
-}
-
 void RenderViewHost::DragTargetDragEnter(
     const WebDropData& drop_data,
     const gfx::Point& client_pt,
@@ -496,10 +427,6 @@ void RenderViewHost::DragTargetDrop(
   Send(new DragMsg_TargetDrop(routing_id(), client_pt, screen_pt));
 }
 
-void RenderViewHost::ReservePageIDRange(int size) {
-  Send(new ViewMsg_ReservePageIDRange(routing_id(), size));
-}
-
 void RenderViewHost::ExecuteJavascriptInWebFrame(
     const string16& frame_xpath,
     const string16& jscript) {
@@ -514,13 +441,6 @@ int RenderViewHost::ExecuteJavascriptInWebFrameNotifyResult(
   Send(new ViewMsg_ScriptEvalRequest(routing_id(), frame_xpath, jscript,
                                      next_id, true));
   return next_id++;
-}
-
-void RenderViewHost::InsertCSSInWebFrame(
-    const std::wstring& frame_xpath,
-    const std::string& css,
-    const std::string& id) {
-  Send(new ViewMsg_CSSInsertRequest(routing_id(), frame_xpath, css, id));
 }
 
 void RenderViewHost::Undo() {
@@ -589,10 +509,6 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
     delegate_->RendererUnresponsive(this, is_waiting);
 }
 
-void RenderViewHost::CopyImageAt(int x, int y) {
-  Send(new ViewMsg_CopyImageAt(routing_id(), x, y));
-}
-
 void RenderViewHost::DragSourceEndedAt(
     int client_x, int client_y, int screen_x, int screen_y,
     WebDragOperation operation) {
@@ -645,18 +561,6 @@ void RenderViewHost::LostCapture() {
 
 void RenderViewHost::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(routing_id(), reverse));
-}
-
-void RenderViewHost::ClearFocusedNode() {
-  Send(new ViewMsg_ClearFocusedNode(routing_id()));
-}
-
-void RenderViewHost::ScrollFocusedEditableNodeIntoView() {
-  Send(new ViewMsg_ScrollFocusedEditableNodeIntoView(routing_id()));
-}
-
-void RenderViewHost::UpdateWebPreferences(const WebPreferences& prefs) {
-  Send(new ViewMsg_UpdateWebPreferences(routing_id(), prefs));
 }
 
 void RenderViewHost::FilesSelectedInChooser(
@@ -767,15 +671,14 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
+    // NOTE: Do not add a message handler that just calls the delegate!
+    // Dispatch the message directly there instead.
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -1058,10 +961,6 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
   view->UpdatePreferredSize(new_size);
 }
 
-void RenderViewHost::DisassociateFromPopupCount() {
-  Send(new ViewMsg_DisassociateFromPopupCount(routing_id()));
-}
-
 void RenderViewHost::OnMsgSetTooltipText(
     const std::wstring& tooltip_text,
     WebTextDirection text_direction_hint) {
@@ -1123,17 +1022,6 @@ void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
   process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
   delegate_->RunBeforeUnloadConfirm(this, message, reply_msg);
-}
-
-void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
-                                         const WebMediaPlayerAction& action) {
-  // TODO(ajwong): Which thread should run this?  Does it matter?
-  Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
-}
-
-void RenderViewHost::ContextMenuClosed(
-    const webkit_glue::CustomContextMenuContext& custom_context) {
-  Send(new ViewMsg_ContextMenuClosed(routing_id(), custom_context));
 }
 
 void RenderViewHost::OnMsgStartDragging(
@@ -1221,10 +1109,6 @@ void RenderViewHost::OnMsgClosePageACK() {
   ClosePageIgnoringUnloadEvents();
 }
 
-void RenderViewHost::WindowMoveOrResizeStarted() {
-  Send(new ViewMsg_MoveOrResizeStarted(routing_id()));
-}
-
 void RenderViewHost::NotifyRendererUnresponsive() {
   delegate_->RendererUnresponsive(
       this, is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_);
@@ -1232,10 +1116,6 @@ void RenderViewHost::NotifyRendererUnresponsive() {
 
 void RenderViewHost::NotifyRendererResponsive() {
   delegate_->RendererResponsive(this);
-}
-
-void RenderViewHost::OnMsgFocusedNodeChanged(bool is_editable_node) {
-  delegate_->FocusedNodeChanged(is_editable_node);
 }
 
 void RenderViewHost::OnMsgFocus() {
@@ -1299,28 +1179,6 @@ void RenderViewHost::ForwardKeyboardEvent(
   RenderWidgetHost::ForwardKeyboardEvent(key_event);
 }
 
-void RenderViewHost::ForwardEditCommand(const std::string& name,
-                                        const std::string& value) {
-  Send(new ViewMsg_ExecuteEditCommand(routing_id(), name, value));
-}
-
-void RenderViewHost::ForwardEditCommandsForNextKeyEvent(
-    const EditCommands& edit_commands) {
-  Send(new ViewMsg_SetEditCommandsForNextKeyEvent(routing_id(), edit_commands));
-}
-
-void RenderViewHost::PerformCustomContextMenuAction(
-    const webkit_glue::CustomContextMenuContext& custom_context,
-    unsigned action) {
-  Send(new ViewMsg_CustomContextMenuAction(routing_id(),
-                                           custom_context,
-                                           action));
-}
-
-void RenderViewHost::EnablePreferredSizeChangedMode(int flags) {
-  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
-}
-
 #if defined(OS_MACOSX)
 void RenderViewHost::DidSelectPopupMenuItem(int selected_index) {
   Send(new ViewMsg_SelectPopupMenuItem(routing_id(), selected_index));
@@ -1379,17 +1237,7 @@ void RenderViewHost::OnAccessibilityNotifications(
         NotificationService::NoDetails());
   }
 
-  AccessibilityNotificationsAck();
-}
-
-void RenderViewHost::OnCSSInserted() {
-  delegate_->DidInsertCSS();
-}
-
-void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,
-                                        int maximum_percent,
-                                        bool remember) {
-  delegate_->UpdateZoomLimits(minimum_percent, maximum_percent, remember);
+  Send(new ViewMsg_AccessibilityNotifications_ACK(routing_id()));
 }
 
 void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {

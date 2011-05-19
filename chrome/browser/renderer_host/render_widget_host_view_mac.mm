@@ -974,8 +974,10 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
-  if (render_widget_host_)
-    render_widget_host_->SetActive(active);
+  if (render_widget_host_) {
+    render_widget_host_->Send(new ViewMsg_SetActive(
+        render_widget_host_->routing_id(), active));
+  }
   if (HasFocus())
     SetTextInputActive(active);
   if (!active)
@@ -1305,8 +1307,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     if (hasEditCommands_ && !hasMarkedText_)
       delayEventUntilAfterImeCompostion = YES;
   } else {
-    if (!editCommands_.empty())
-      widgetHost->ForwardEditCommandsForNextKeyEvent(editCommands_);
+    if (!editCommands_.empty()) {
+      widgetHost->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
+          widgetHost->routing_id(), editCommands_));
+    }
     widgetHost->ForwardKeyboardEvent(event);
   }
 
@@ -1369,8 +1373,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     // a key event with |skip_in_browser| == true won't be handled by browser,
     // thus it won't destroy the widget.
 
-    if (!editCommands_.empty())
-      widgetHost->ForwardEditCommandsForNextKeyEvent(editCommands_);
+    if (!editCommands_.empty()) {
+      widgetHost->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
+        widgetHost->routing_id(), editCommands_));
+    }
     widgetHost->ForwardKeyboardEvent(event);
 
     // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
@@ -1808,8 +1814,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)doDefaultAction:(int32)accessibilityObjectId {
-  renderWidgetHostView_->render_widget_host_->
-      AccessibilityDoDefaultAction(accessibilityObjectId);
+  RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host;
+  rwh_->Send(new ViewMsg_AccessibilityDoDefaultAction(
+      rwh->routing_id(), accessibilityObjectId));
 }
 
 // Convert a web accessibility's location in web coordinates into a cocoa
@@ -1828,8 +1835,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (void)setAccessibilityFocus:(BOOL)focus
               accessibilityId:(int32)accessibilityObjectId {
   if (focus) {
-    renderWidgetHostView_->render_widget_host_->
-        SetAccessibilityFocus(accessibilityObjectId);
+    RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
+    rwh->Send(new ViewMsg_SetAccessibilityFocus(
+        rwh->routing_id(), accessibilityObjectId));
   }
 }
 
@@ -2322,7 +2330,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     if (!StartsWithASCII(command, "insert", false))
       editCommands_.push_back(EditCommand(command, ""));
   } else {
-    renderWidgetHostView_->render_widget_host_->ForwardEditCommand(command, "");
+    RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
+    rwh->Send(new ViewMsg_ExecuteEditCommand(rwh->routing_id(), command, ""));
   }
 }
 
@@ -2428,8 +2437,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (void)pasteAsPlainText:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      ForwardEditCommand("PasteAndMatchStyle", "");
+      RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
+    rwh->Send(new ViewMsg_ExecuteEditCommand(
+        rwh->routing_id(), "PasteAndMatchStyle", ""));
   }
 }
 

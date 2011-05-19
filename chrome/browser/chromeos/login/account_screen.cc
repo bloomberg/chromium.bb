@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 #include "views/events/event.h"
 
@@ -124,9 +125,10 @@ void AccountScreen::LoadingStateChanged(TabContents* source) {
 void AccountScreen::NavigationStateChanged(const TabContents* source,
                                            unsigned changed_flags) {
   if (source->render_view_host()) {
-    source->render_view_host()->InsertCSSInWebFrame(
-        L"", kCreateAccountCSS, "");
-    source->render_view_host()->ExecuteJavascriptInWebFrame(
+    RenderViewHost* host = source->render_view_host();
+    host->Send(new ViewMsg_CSSInsertRequest(
+        host->routing_id(), L"", kCreateAccountCSS, ""));
+    host->ExecuteJavascriptInWebFrame(
         string16(), ASCIIToUTF16(kCreateAccountJS));
   }
 }

@@ -78,10 +78,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1324,8 +1326,10 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   GetLocationBar()->location_entry()->ClosePopup();
 
   TabContents* tab_contents = GetDisplayedTabContents();
-  if (tab_contents)
-    tab_contents->WindowMoveOrResizeStarted();
+  if (tab_contents) {
+    RenderViewHost* rvh = tab_contents->render_view_host();
+    rvh->Send(new ViewMsg_MoveOrResizeStarted(rvh->routing_id()));
+  }
 
   if (bounds_.size() != bounds.size())
     OnSizeChanged(bounds.width(), bounds.height());
