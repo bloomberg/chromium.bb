@@ -89,6 +89,7 @@ PPB_Buffer_Impl* PPB_Buffer_Impl::AsPPB_Buffer_Impl() {
 bool PPB_Buffer_Impl::Init(uint32_t size) {
   if (size == 0 || !instance())
     return false;
+  size_ = size;
   shared_memory_.reset(
       instance()->delegate()->CreateAnonymousSharedMemory(size));
   return shared_memory_.get() != NULL;
@@ -99,7 +100,9 @@ void PPB_Buffer_Impl::Describe(uint32_t* size_in_bytes) const {
 }
 
 void* PPB_Buffer_Impl::Map() {
-  if (!shared_memory_.get() || !shared_memory_->Map(size_))
+  DCHECK(size_);
+  DCHECK(shared_memory_.get());
+  if (!shared_memory_->Map(size_))
     return NULL;
   return shared_memory_->memory();
 }
