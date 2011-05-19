@@ -161,6 +161,20 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
     goto cleanup;
   }
 
+  if (NACL_OSX) {
+    /*
+     * Send a message to acknowledge that we received the socket FD
+     * successfully.  This is part of a workaround for a Mac OS X
+     * kernel bug.
+     * See http://code.google.com/p/nativeclient/issues/detail?id=1796
+     */
+    ssize_t sent = send(received_fd, "a", 1, 0);
+    if (sent != 1) {
+      retval = -NACL_ABI_EIO;
+      goto cleanup;
+    }
+  }
+
   if (!NaClDescImcDescCtor(peer, received_fd)) {
     retval = -NACL_ABI_EMFILE;
     goto cleanup;
