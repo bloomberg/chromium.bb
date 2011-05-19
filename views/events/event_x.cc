@@ -11,6 +11,7 @@
 #endif
 #include <X11/Xlib.h>
 
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "views/widget/root_view.h"
