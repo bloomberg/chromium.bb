@@ -9,6 +9,7 @@ import email
 import logging
 import os
 import smtplib
+import subprocess
 import types
 
 import pyauto_functional
@@ -234,3 +235,25 @@ def CallFunctionWithNewTimeout(self, new_timeout, function):
                % new_timeout)
   function()
   del timeout_changer
+
+
+def GetMemoryUsageOfProcess(pid):
+  """Queries the system for the current memory usage of a specified process.
+
+  This function only works in Linux and ChromeOS.
+
+  Args:
+    pid: The integer process identifier for the process to use.
+
+  Returns:
+    The memory usage of the process in MB, given as a float.  If the process
+    doesn't exist on the machine, then the value 0 is returned.
+  """
+  assert pyauto.PyUITest.IsLinux() or pyauto.PyUITest.IsChromeOS()
+  process = subprocess.Popen('ps h -o rss -p %s' % pid, shell=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  stdout = process.communicate()[0]
+  if stdout:
+    return float(stdout.strip()) / 1024
+  else:
+    return 0
