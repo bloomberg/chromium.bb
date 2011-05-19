@@ -18,9 +18,13 @@ is_broken = env.Bit('target_arm') and env.UsingEmulator()
 if env.IsRunningUnderValgrind():
   EXTRA_ARGS = ['20']
 
+ANNOTATIONS_LIBS=[]
+if env.Bit('nacl_glibc'):
+  ANNOTATIONS_LIBS += ['dynamic_annotations']
+
 env.ComponentProgram('thread_test.nexe',
                      'thread_test.c',
-                     EXTRA_LIBS=['pthread'],
+                     EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS,
                      )
 node = env.CommandSelLdrTestNacl(
     'thread_test.out',
@@ -55,7 +59,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test',
 
 env.ComponentProgram('race_test.nexe',
                      'race_test.c',
-                     EXTRA_LIBS=['pthread'],
+                     EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS,
                      )
 node = env.CommandSelLdrTestNacl(
     'race_test.out',
