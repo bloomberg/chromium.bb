@@ -13,7 +13,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profile_menu_button.h"
-#include "chrome/browser/ui/views/profile_menu_model.h"
 #include "chrome/browser/ui/views/profile_tag_view.h"
 #include "chrome/browser/ui/views/tabs/side_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -67,9 +66,6 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
-// Menu should display below the profile button tag image on the frame. This
-// offset size depends on whether the frame is in glass or opaque mode.
-const int kMenuDisplayOffset = 7;
 // Y position for profile button inside the frame.
 const int kProfileButtonYPosition = 2;
 // Y position for profile tag inside the frame.
@@ -231,11 +227,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::ViewMenuDelegate implementation:
 void GlassBrowserFrameView::RunMenu(views::View *source, const gfx::Point &pt) {
-  if (profile_menu_model_ == NULL)
-    profile_menu_model_.reset(new ProfileMenuModel);
-  gfx::Point menu_point(pt.x(),
-                        pt.y() + kMenuDisplayOffset);
-  profile_menu_model_->RunMenuAt(menu_point);
+  profile_button_->RunMenuAt(pt);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

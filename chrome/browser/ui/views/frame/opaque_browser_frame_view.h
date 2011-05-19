@@ -197,9 +197,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Image tag displayed on frame beneath profile_button_.
   scoped_ptr<ProfileTagView> profile_tag_;
 
-  // Multi-profile menu for profile_button_.
-  scoped_ptr<ProfileMenuModel> profile_menu_model_;
-
   // The Google services user name associated with this BrowserView's profile.
   StringPrefMember username_pref_;
 

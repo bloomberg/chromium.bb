@@ -118,9 +118,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Image tag displayed on frame beneath profile_button_.
   scoped_ptr<ProfileTagView> profile_tag_;
 
-  // Multi-profile menu for profile_button_.
-  scoped_ptr<ProfileMenuModel> profile_menu_model_;
-
   // Whether or not the window throbber is currently animating.
   bool throbber_running_;
 

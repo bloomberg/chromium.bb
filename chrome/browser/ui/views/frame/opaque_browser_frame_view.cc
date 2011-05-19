@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profile_menu_button.h"
-#include "chrome/browser/ui/views/profile_menu_model.h"
 #include "chrome/browser/ui/views/profile_tag_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -99,9 +98,6 @@ const int kTabStripIndent = 1;
 // Inset from the top of the toolbar/tabstrip to the shadow. Used only for
 // vertical tabs.
 const int kVerticalTabBorderInset = 3;
-// Menu should display below the profile button tag image on the frame. This
-// offset size depends on whether the frame is in glass or opaque mode.
-const int kMenuDisplayOffset = 7;
 // Y position for profile tag inside the frame.
 const int kProfileTagYPosition = 1;
 // Offset y position of profile button and tag by this amount when maximized.
@@ -427,11 +423,7 @@ void OpaqueBrowserFrameView::UpdateWindowIcon() {
 // OpaqueBrowserFrameView, views::ViewMenuDelegate overrides:
 void OpaqueBrowserFrameView::RunMenu(views::View* source,
                                      const gfx::Point &pt) {
-  if (profile_menu_model_ == NULL)
-    profile_menu_model_.reset(new ProfileMenuModel);
-  gfx::Point menu_point(pt.x(),
-                        pt.y() + kMenuDisplayOffset);
-  profile_menu_model_->RunMenuAt(menu_point);
+  profile_button_->RunMenuAt(pt);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
