@@ -1497,7 +1497,7 @@
     {
       'name': 'AllowFileSelectionDialogs',
       'type': 'main',
-      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:12-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 84,
