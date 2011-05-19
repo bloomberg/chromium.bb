@@ -398,15 +398,13 @@ void PrefProvider::SetContentSetting(
          CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableClickToPlay));
 
-  const ContentSettingsPattern pattern(
-      requesting_pattern.CanonicalizePattern());
-
   bool early_exit = false;
-  std::string pattern_str(pattern.AsString());
+  std::string pattern_str(requesting_pattern.ToString());
   DictionaryValue* all_settings_dictionary = NULL;
 
   updating_preferences_ = true;
-  {  // Begin scope of update.
+  {
+    // Begin scope of update.
     // profile_ may be NULL in unit tests.
     DictionaryPrefUpdate update(profile_ ? profile_->GetPrefs() : NULL,
                                 prefs::kContentSettingsPatterns);
@@ -493,7 +491,7 @@ void PrefProvider::SetContentSetting(
   }  // End scope of update.
   updating_preferences_ = false;
 
-  NotifyObservers(ContentSettingsDetails(pattern, content_type, ""));
+  NotifyObservers(ContentSettingsDetails(requesting_pattern, content_type, ""));
 }
 
 void PrefProvider::ResetToDefaults() {
@@ -639,7 +637,7 @@ void PrefProvider::ReadExceptions(bool overwrite) {
     for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
          i != mutable_settings->end_keys(); ++i) {
       const std::string& pattern(*i);
-      if (!ContentSettingsPattern(pattern).IsValid())
+      if (!ContentSettingsPattern::FromString(pattern).IsValid())
         LOG(WARNING) << "Invalid pattern stored in content settings";
       DictionaryValue* pattern_settings_dictionary = NULL;
       bool found = mutable_settings->GetDictionaryWithoutPathExpansion(
@@ -669,7 +667,7 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
        i != all_settings_dictionary->end_keys(); ++i) {
     const std::string& pattern(*i);
     const std::string canonicalized_pattern =
-        ContentSettingsPattern(pattern).CanonicalizePattern();
+        ContentSettingsPattern::FromString(pattern).ToString();
 
     if (canonicalized_pattern.empty() || canonicalized_pattern == pattern)
       continue;
@@ -793,7 +791,7 @@ void PrefProvider::MigrateObsoletePerhostPref(PrefService* prefs) {
          i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
       const std::string& host(*i);
-      ContentSettingsPattern pattern(
+      ContentSettingsPattern pattern = ContentSettingsPattern::FromString(
           std::string(ContentSettingsPattern::kDomainWildcard) + host);
       DictionaryValue* host_settings_dictionary = NULL;
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
@@ -825,8 +823,8 @@ void PrefProvider::MigrateObsoletePopupsPref(PrefService* prefs) {
          i != whitelist_pref->end(); ++i) {
       std::string host;
       (*i)->GetAsString(&host);
-      SetContentSetting(ContentSettingsPattern(host),
-                        ContentSettingsPattern(host),
+      SetContentSetting(ContentSettingsPattern::FromString(host),
+                        ContentSettingsPattern::FromString(host),
                         CONTENT_SETTINGS_TYPE_POPUPS,
                         "",
                         CONTENT_SETTING_ALLOW);

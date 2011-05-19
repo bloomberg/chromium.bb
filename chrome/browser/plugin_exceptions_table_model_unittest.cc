@@ -67,8 +67,10 @@ class PluginExceptionsTableModelTest : public testing::Test {
 
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
 
-    ContentSettingsPattern example_com("[*.]example.com");
-    ContentSettingsPattern moose_org("[*.]moose.org");
+    ContentSettingsPattern example_com =
+        ContentSettingsPattern::FromString("[*.]example.com");
+    ContentSettingsPattern moose_org =
+        ContentSettingsPattern::FromString("[*.]moose.org");
     map->SetContentSetting(example_com,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            "a-foo",
@@ -185,7 +187,7 @@ TEST_F(PluginExceptionsTableModelTest, RemoveLastRowInGroup) {
 
   HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
   EXPECT_CALL(observer, OnModelChanged());
-  map->SetContentSetting(ContentSettingsPattern("[*.]blurp.net"),
+  map->SetContentSetting(ContentSettingsPattern::FromString("[*.]blurp.net"),
                          CONTENT_SETTINGS_TYPE_PLUGINS,
                          "b-bar",
                          CONTENT_SETTING_BLOCK);

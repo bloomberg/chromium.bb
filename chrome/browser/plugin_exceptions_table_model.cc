@@ -84,7 +84,7 @@ string16 PluginExceptionsTableModel::GetText(int row, int column_id) {
   SettingsEntry& entry = settings_[row];
   if (column_id == IDS_EXCEPTIONS_PATTERN_HEADER ||
       column_id == IDS_EXCEPTIONS_HOSTNAME_HEADER) {
-    return UTF8ToUTF16(entry.pattern.AsString());
+    return UTF8ToUTF16(entry.pattern.ToString());
   } else if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {
     switch (entry.setting) {
       case CONTENT_SETTING_ALLOW:

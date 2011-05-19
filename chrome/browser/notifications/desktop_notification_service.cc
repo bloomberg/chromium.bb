@@ -60,7 +60,7 @@ void GetOriginsWithSettingFromContentSettingsRules(
        rule != content_setting_rules.end();
        ++rule) {
     if (setting == rule->content_setting) {
-      std::string url_str = rule->requesting_url_pattern.AsString();
+      std::string url_str = rule->requesting_url_pattern.ToString();
       if (!rule->requesting_url_pattern.IsValid()) {
         // TODO(markusheintz): This will be removed in one of the next
         // refactoring steps as this entire function will disapear.

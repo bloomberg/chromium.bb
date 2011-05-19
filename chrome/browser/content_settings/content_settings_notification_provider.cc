@@ -52,32 +52,20 @@ ContentSettingsPattern NotificationProvider::ToContentSettingsPattern(
   if (origin.spec().empty()) {
     std::string pattern_spec(chrome::kFileScheme);
     pattern_spec += chrome::kStandardSchemeSeparator;
-    return ContentSettingsPattern(pattern_spec);
+    return ContentSettingsPattern::FromString(pattern_spec);
   }
   return ContentSettingsPattern::FromURLNoWildcard(origin);
 }
 
 // static
 GURL NotificationProvider::ToGURL(const ContentSettingsPattern& pattern) {
-  std::string pattern_spec(pattern.AsString());
-
-  if (pattern_spec.empty() ||
-      StartsWithASCII(pattern_spec,
-                      std::string(ContentSettingsPattern::kDomainWildcard),
-                      true)) {
+  std::string pattern_spec(pattern.ToString());
+  if (!pattern.IsValid() ||
+      (pattern_spec.find(std::string(
+           ContentSettingsPattern::kDomainWildcard)) != std::string::npos)) {
     NOTREACHED();
   }
-
-  std::string url_spec("");
-  if (StartsWithASCII(pattern_spec, std::string(chrome::kFileScheme), false)) {
-    url_spec += pattern_spec;
-  } else if (!pattern.scheme().empty()) {
-    url_spec += pattern.scheme();
-    url_spec += chrome::kStandardSchemeSeparator;
-    url_spec += pattern_spec;
-  }
-
-  return GURL(url_spec);
+  return GURL(pattern_spec);
 }
 
 NotificationProvider::NotificationProvider(
