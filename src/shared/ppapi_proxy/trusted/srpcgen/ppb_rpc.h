@@ -366,6 +366,11 @@ class PpbFindRpcServer {
 
 class PpbFontRpcServer {
  public:
+  static void PPB_Font_GetFontFamilies(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t* font_families_bytes, char* font_families);
   static void PPB_Font_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

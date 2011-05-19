@@ -323,6 +323,10 @@ class PpbFindRpcClient {
 
 class PpbFontRpcClient {
  public:
+  static NaClSrpcError PPB_Font_GetFontFamilies(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t* font_families_bytes, char* font_families);
   static NaClSrpcError PPB_Font_Create(
       NaClSrpcChannel* channel,
       PP_Instance instance,

@@ -7,6 +7,12 @@
 {
  'name': 'PpbFontRpc',
  'rpcs': [
+          {'name': 'PPB_Font_GetFontFamilies',
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
+                    ],
+           'outputs': [['font_families', 'char[]'],  # PP_Var
+                      ]
+          },
           {'name': 'PPB_Font_Create',
            'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                       ['description', 'char[]'],    # PP_FontDescription_Dev

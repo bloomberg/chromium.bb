@@ -707,6 +707,20 @@ NaClSrpcError PpbFindRpcClient::PPB_Find_SelectedFindResultChanged(
   return retval;
 }
 
+NaClSrpcError PpbFontRpcClient::PPB_Font_GetFontFamilies(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t* font_families_bytes, char* font_families)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_GetFontFamilies:i:C",
+      instance,
+      font_families_bytes, font_families
+  );
+  return retval;
+}
+
 NaClSrpcError PpbFontRpcClient::PPB_Font_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

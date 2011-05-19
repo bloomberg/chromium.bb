@@ -23,6 +23,26 @@ using ppapi_proxy::SerializeTo;
 using ppapi_proxy::DeserializeTo;
 using ppapi_proxy::PPBFontInterface;
 
+void PpbFontRpcServer::PPB_Font_GetFontFamilies(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      // inputs
+      PP_Instance instance,
+      // outputs
+      nacl_abi_size_t* font_families_size, char* font_families_bytes) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  PP_Var font_families = PPBFontInterface()->GetFontFamilies(instance);
+  DebugPrintf("PPB_Font::GetFontFamilies: type=%d\n",
+              font_families.type);
+
+  if (!SerializeTo(
+      &font_families, font_families_bytes, font_families_size))
+    return;
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 void PpbFontRpcServer::PPB_Font_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,

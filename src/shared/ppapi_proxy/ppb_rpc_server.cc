@@ -677,6 +677,20 @@ static void PPB_Find_SelectedFindResultChangedDispatcher(
   );
 }
 
+static void PPB_Font_GetFontFamiliesDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_GetFontFamilies(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
 static void PPB_Font_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2034,6 +2048,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_FileSystem_Dev_GetType:i:i", PPB_FileSystem_Dev_GetTypeDispatcher },
   { "PPB_Find_NumberOfFindResultsChanged:iii:", PPB_Find_NumberOfFindResultsChangedDispatcher },
   { "PPB_Find_SelectedFindResultChanged:ii:", PPB_Find_SelectedFindResultChangedDispatcher },
+  { "PPB_Font_GetFontFamilies:i:C", PPB_Font_GetFontFamiliesDispatcher },
   { "PPB_Font_Create:iCC:i", PPB_Font_CreateDispatcher },
   { "PPB_Font_IsFont:i:i", PPB_Font_IsFontDispatcher },
   { "PPB_Font_Describe:i:CCCi", PPB_Font_DescribeDispatcher },

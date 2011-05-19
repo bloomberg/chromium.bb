@@ -32,6 +32,31 @@ const nacl_abi_size_t kPPFontMetricsBytes =
 const nacl_abi_size_t kPPFontDescriptionBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_FontDescription_Dev));
 
+PP_Var GetFontFamilies(PP_Instance instance) {
+  DebugPrintf("PPB_Font::GetFontFamilies: instance=%"NACL_PRIu32"\n",
+              instance);
+  NaClSrpcChannel* channel = GetMainSrpcChannel();
+
+  PP_Var font_families = PP_MakeUndefined();
+  nacl_abi_size_t var_size = kMaxVarSize;
+  nacl::scoped_array<char> var_bytes(new char[kMaxVarSize]);
+
+  NaClSrpcError srpc_result =
+      PpbFontRpcClient::PPB_Font_GetFontFamilies(
+          channel,
+          instance,
+          &var_size,
+          var_bytes.get());
+
+  DebugPrintf("PPB_Font::GetFontFamilies: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    (void) DeserializeTo(
+        channel, var_bytes.get(), var_size, 1, &font_families);
+  return font_families;
+}
+
 PP_Resource Create(PP_Instance instance,
                    const struct PP_FontDescription_Dev* description) {
   DebugPrintf("PPB_Font::Create: instance=%"NACL_PRIu32"\n", instance);
@@ -228,6 +253,7 @@ int32_t PixelOffsetForCharacter(PP_Resource font,
 
 const PPB_Font_Dev* PluginFont::GetInterface() {
   static const PPB_Font_Dev font_interface = {
+    GetFontFamilies,
     Create,
     IsFont,
     Describe,
