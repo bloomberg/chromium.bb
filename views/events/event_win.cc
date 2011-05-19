@@ -60,9 +60,10 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
     case WM_RBUTTONUP:
       return ui::ET_MOUSE_RELEASED;
     case WM_MOUSEMOVE:
-    case WM_NCMOUSEMOVE:
       return IsButtonDown(native_event) ? ui::ET_MOUSE_DRAGGED :
                                           ui::ET_MOUSE_MOVED;
+    case WM_NCMOUSEMOVE:
+      return ui::ET_MOUSE_MOVED;
     case WM_MOUSEWHEEL:
       return ui::ET_MOUSEWHEEL;
     case WM_MOUSELEAVE:
