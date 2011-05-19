@@ -170,6 +170,9 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
     TabContents* initiator_tab) {
   Browser* current_browser = BrowserList::FindBrowserWithID(
       initiator_tab->controller().window_id().id());
+  if (!current_browser)
+    return;
+
   // Add a new tab next to initiator tab.
   browser::NavigateParams params(current_browser,
                                  GURL(chrome::kChromeUIPrintURL),

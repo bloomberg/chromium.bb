@@ -403,6 +403,8 @@ TabContents* PrintPreviewHandler::GetInitiatorTab() {
 void PrintPreviewHandler::ClosePrintPreviewTab() {
   Browser* preview_tab_browser = BrowserList::FindBrowserWithID(
       preview_tab()->controller().window_id().id());
+  if (!preview_tab_browser)
+    return;
   TabStripModel* tabstrip = preview_tab_browser->tabstrip_model();
 
   // Keep print preview tab out of the recently closed tab list, because
