@@ -239,6 +239,17 @@ void UsageTracker::UpdateUsageCache(
   client_tracker->UpdateUsageCache(origin, delta);
 }
 
+void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
+  DCHECK(origins);
+  origins->clear();
+  for (ClientTrackerMap::const_iterator iter = client_tracker_map_.begin();
+       iter != client_tracker_map_.end();
+       ++iter) {
+    const std::set<GURL>& client_origins = iter->second->cached_origins();
+    origins->insert(client_origins.begin(), client_origins.end());
+  }
+}
+
 void UsageTracker::DidGetClientGlobalUsage(int64 usage) {
   global_usage_.usage += usage;
   if (--global_usage_.pending_clients == 0) {

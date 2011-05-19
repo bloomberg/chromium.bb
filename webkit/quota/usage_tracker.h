@@ -39,6 +39,8 @@ class UsageTracker : public QuotaTaskObserver {
                         const GURL& origin,
                         int64 delta);
 
+  void GetCachedOrigins(std::set<GURL>* origins) const;
+
  private:
   struct TrackingInfo {
     TrackingInfo() : pending_clients(0), usage(0) {}
@@ -76,6 +78,8 @@ class ClientUsageTracker {
   void DetermineOriginsToGetUsage(const std::set<GURL>& origins,
                                   std::set<GURL>* origins_to_process);
   void UpdateUsageCache(const GURL& origin, int64 delta);
+
+  const std::set<GURL>& cached_origins() const { return cached_origins_; }
 
  private:
   class GatherUsageTaskBase;

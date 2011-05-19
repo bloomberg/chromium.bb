@@ -167,6 +167,12 @@ class QuotaManagerTest : public testing::Test {
             &QuotaManagerTest::DidGetUsageAndQuotaForEviction));
   }
 
+  void GetCachedOrigins(StorageType type, std::set<GURL>* origins) {
+    ASSERT_TRUE(origins != NULL);
+    origins->clear();
+    quota_manager_->GetCachedOrigins(type, origins);
+  }
+
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
     quota_status_ = status;
     usage_ = usage;
@@ -440,6 +446,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   };
   RegisterClient(CreateClient(kData, ARRAYSIZE_UNSAFE(kData)));
   SetTemporaryGlobalQuota(100);
+  MessageLoop::current()->RunAllPending();
 
   GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
   GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
@@ -471,6 +478,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
   };
   RegisterClient(CreateClient(kData, ARRAYSIZE_UNSAFE(kData)));
   SetTemporaryGlobalQuota(100);
+  MessageLoop::current()->RunAllPending();
 
   set_additional_callback_count(0);
   GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
@@ -840,6 +848,47 @@ TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
   EXPECT_EQ(4021, usage());
   EXPECT_EQ(10000000, quota());
   EXPECT_LE(0, available_space());
+}
+
+TEST_F(QuotaManagerTest, GetCachedOrigins) {
+  static const MockOriginData kData[] = {
+    { "http://a.com/",   kStorageTypeTemporary,        1 },
+    { "http://a.com:1/", kStorageTypeTemporary,       20 },
+    { "http://b.com/",   kStorageTypePersistent,     300 },
+    { "http://c.com/",   kStorageTypeTemporary,     4000 },
+  };
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  // TODO(kinuko): Be careful when we add cache pruner.
+
+  std::set<GURL> origins;
+  GetCachedOrigins(kStorageTypeTemporary, &origins);
+  EXPECT_TRUE(origins.empty());
+
+  // Make the cache hot.
+  GetHostUsage("a.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  GetCachedOrigins(kStorageTypeTemporary, &origins);
+  EXPECT_EQ(2U, origins.size());
+
+  GetHostUsage("b.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  GetCachedOrigins(kStorageTypeTemporary, &origins);
+  EXPECT_EQ(2U, origins.size());
+
+  GetCachedOrigins(kStorageTypePersistent, &origins);
+  EXPECT_TRUE(origins.empty());
+
+  GetGlobalUsage(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  GetCachedOrigins(kStorageTypeTemporary, &origins);
+  EXPECT_EQ(3U, origins.size());
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kData); ++i) {
+    if (kData[i].type == kStorageTypeTemporary)
+      EXPECT_TRUE(origins.find(GURL(kData[i].origin)) != origins.end());
+  }
 }
 
 }  // namespace quota
