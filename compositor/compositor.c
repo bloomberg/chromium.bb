@@ -125,7 +125,7 @@ wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec)
 {
 	double force, v, current, step;
 
-	step = (msec - spring->timestamp) / 500.0;
+	step = (msec - spring->timestamp) / 300.0;
 	spring->timestamp = msec;
 
 	current = spring->current;
@@ -137,6 +137,7 @@ wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec)
 		current + (current - spring->previous) + force * step * step;
 	spring->previous = current;
 
+#if 0
 	if (spring->current >= 1.0) {
 #ifdef TWEENER_BOUNCE
 		spring->current = 2.0 - spring->current;
@@ -151,6 +152,7 @@ wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec)
 		spring->current = 0.0;
 		spring->previous = 0.0;
 	}
+#endif
 }
 
 WL_EXPORT int
