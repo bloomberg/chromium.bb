@@ -26,8 +26,13 @@ const int kRoundedCornerSize = 6;
                           styleMask:NSBorderlessWindowMask
                             backing:NSBackingStoreBuffered
                               defer:NO];
+  // Using NSModalPanelWindowLevel (8) rather then NSStatusWindowLevel (25)
+  // ensures notification balloons on top of regular windows, but below
+  // popup menus which are at NSPopUpMenuWindowLevel (101) and Spotlight
+  // drop-out, which is at NSStatusWindowLevel-2 (23) for OSX 10.6/7.
+  // See http://crbug.com/59878.
   if (self) {
-    [self setLevel:NSStatusWindowLevel];
+    [self setLevel:NSModalPanelWindowLevel];
     [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
   }
