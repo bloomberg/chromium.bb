@@ -168,10 +168,9 @@ void BaseProvider::GetAllContentSettingsRules(
     if (setting != CONTENT_SETTING_DEFAULT) {
       // Use of push_back() relies on the map iterator traversing in order of
       // ascending keys.
-      content_setting_rules->push_back(
-          Rule(ContentSettingsPattern::FromString(i->first),
-               ContentSettingsPattern::FromString(i->first),
-               setting));
+      content_setting_rules->push_back(Rule(ContentSettingsPattern(i->first),
+                                            ContentSettingsPattern(i->first),
+                                            setting));
     }
   }
 }
@@ -234,9 +233,10 @@ void BaseProvider::UpdateContentSettingsMap(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting content_setting) {
+  std::string pattern_str(requesting_pattern.CanonicalizePattern());
   HostContentSettings* content_settings_map = host_content_settings();
   ExtendedContentSettings& extended_settings =
-      (*content_settings_map)[requesting_pattern.ToString()];
+      (*content_settings_map)[pattern_str];
   extended_settings.content_settings.settings[content_type] = content_setting;
 }
 

@@ -738,8 +738,6 @@
         'browser/content_settings/content_settings_details.h',
         'browser/content_settings/content_settings_pattern.cc',
         'browser/content_settings/content_settings_pattern.h',
-        'browser/content_settings/content_settings_pattern_parser.cc',
-        'browser/content_settings/content_settings_pattern_parser.h',
         'browser/content_settings/content_settings_provider.h',
         'browser/content_settings/host_content_settings_map.cc',
         'browser/content_settings/host_content_settings_map.h',

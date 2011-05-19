@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,8 @@ class TableModelArrayControllerTest : public CocoaTest {
     TestingProfile* profile = browser_helper_.profile();
     HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
 
-    ContentSettingsPattern example_com =
-        ContentSettingsPattern::FromString("[*.]example.com");
-    ContentSettingsPattern moose_org =
-        ContentSettingsPattern::FromString("[*.]moose.org");
+    ContentSettingsPattern example_com("[*.]example.com");
+    ContentSettingsPattern moose_org("[*.]moose.org");
     map->SetContentSetting(example_com,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            "a-foo",
@@ -144,8 +142,7 @@ TEST_F(TableModelArrayControllerTest, RemoveAll) {
 TEST_F(TableModelArrayControllerTest, AddException) {
   TestingProfile* profile = browser_helper_.profile();
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-  ContentSettingsPattern example_com =
-      ContentSettingsPattern::FromString("[*.]example.com");
+  ContentSettingsPattern example_com("[*.]example.com");
   map->SetContentSetting(example_com,
                          CONTENT_SETTINGS_TYPE_PLUGINS,
                          "c-blurp",

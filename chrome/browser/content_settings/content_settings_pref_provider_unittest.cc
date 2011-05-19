@@ -177,8 +177,7 @@ TEST_F(PrefProviderTest, Observer) {
   Profile* p = &profile;
   PrefProvider pref_content_settings_provider(p);
   StubSettingsObserver observer;
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("[*.]example.com");
+  ContentSettingsPattern pattern("[*.]example.com");
 
   pref_content_settings_provider.SetContentSetting(
       pattern,
@@ -235,8 +234,7 @@ TEST_F(PrefProviderTest, Incognito) {
 
   PrefProvider pref_content_settings_provider(&profile);
   PrefProvider pref_content_settings_provider_incognito(otr_profile);
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("[*.]example.com");
+  ContentSettingsPattern pattern("[*.]example.com");
   pref_content_settings_provider.SetContentSetting(
       pattern,
       pattern,
@@ -267,12 +265,9 @@ TEST_F(PrefProviderTest, Patterns) {
   GURL host2("http://www.example.com/");
   GURL host3("http://example.org/");
   GURL host4("file:///tmp/test.html");
-  ContentSettingsPattern pattern1 =
-      ContentSettingsPattern::FromString("[*.]example.com");
-  ContentSettingsPattern pattern2 =
-      ContentSettingsPattern::FromString("example.org");
-  ContentSettingsPattern pattern3 =
-      ContentSettingsPattern::FromString("file:///tmp/test.html");
+  ContentSettingsPattern pattern1("[*.]example.com");
+  ContentSettingsPattern pattern2("example.org");
+  ContentSettingsPattern pattern3("file:///tmp/test.html");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             pref_content_settings_provider.GetContentSetting(
@@ -329,8 +324,7 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
       testing_profile.GetOriginalProfile());
 
   GURL host("http://example.com/");
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("[*.]example.com");
+  ContentSettingsPattern pattern("[*.]example.com");
   std::string resource1("someplugin");
   std::string resource2("otherplugin");
 

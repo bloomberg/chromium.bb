@@ -5825,7 +5825,7 @@ void TestingAutomationProvider::SetContentSetting(
     if (host.empty()) {
       map->SetDefaultContentSetting(content_type, setting);
     } else {
-      map->SetContentSetting(ContentSettingsPattern::FromString(host),
+      map->SetContentSetting(ContentSettingsPattern(host),
                              content_type, "", setting);
     }
     *success = true;
