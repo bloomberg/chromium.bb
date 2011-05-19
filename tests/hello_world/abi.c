@@ -1,13 +1,14 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * Check ABI compliance, this is especially important for PNaCl
  */
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -86,6 +87,15 @@ int CheckSizes() {
 
   CHECK_SIZEOF(struct NaClImcMsgHdr, 20);
 #ifdef PNACL_ABI_TEST
+  /* the idea behind picking such an insanely high value
+     is to be prepapared for crazy architectures */
+  /* current values are:
+     nacl-gcc (newlib): 36
+     nacl64-gcc (newlib):  48
+     Note: Itanium uses 560 bytes
+  */
+  CHECK_SIZEOF(jmp_buf, 1024);
+
   CHECK_SIZEOF(va_list, 24);
 #endif
   return nerror;
@@ -109,6 +119,9 @@ int CheckAlignment() {
   CHECK_ALIGNMENT(FunctionPointer, 4);
   CHECK_ALIGNMENT(long_long, 8);
 #ifdef PNACL_ABI_TEST
+  /* TODO: we may want to switch this 16 (used by Itanium) */
+  /* NOTE: alignment for nacl-gcc differs between x86-32/64 */
+  CHECK_ALIGNMENT(jmp_buf, 8);
   CHECK_ALIGNMENT(va_list, 8);
 #endif
   return nerror;
