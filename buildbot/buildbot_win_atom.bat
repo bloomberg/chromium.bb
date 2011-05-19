@@ -51,14 +51,14 @@ call scons.bat ^
  chrome_browser_tests
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
-# TODO(mseaborn): Drop support for non-IRT builds so that this is the
-# default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
+# TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1691
 echo @@@BUILD_STEP chrome_browser_tests using IRT@@@
 call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 ^
  -k --verbose --mode=%MODE%-win,nacl,doc SILENT=1 platform=x86-%BITS% ^
- chrome_browser_tests irt=1
+ chrome_browser_tests irt=0
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP pyauto_tests@@@

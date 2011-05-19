@@ -281,7 +281,7 @@ def SetUpArgumentBits(env):
       'and we do not open a browser window on the user\'s desktop.  '
       'Unfortunately there is no equivalent on Mac OS X.')
 
-  BitFromArgument(env, 'irt', default=False,
+  BitFromArgument(env, 'irt', default=not env.IrtIsBroken(),
     desc='Use the integrated runtime (IRT) untrusted blob library when '
       'running tests')
 
@@ -373,6 +373,17 @@ else:
 
 DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
 pre_base_env.SetBitFromOption('nacl_glibc', False)
+
+def IrtIsBroken(env):
+  if env.Bit('nacl_glibc') or env.Bit('use_sandboxed_translator'):
+    # The IRT image doesn't get built.
+    return True
+  if env.Bit('bitcode'):
+    # The pnacl linker doesn't leave a segment gap.
+    return True
+  return False
+
+pre_base_env.AddMethod(IrtIsBroken)
 
 # This function should be called ASAP after the environment is created, but
 # after ExpandArguments.

@@ -177,15 +177,15 @@ if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
 
 
-# TODO(mseaborn): Drop support for non-IRT builds so that this is the
-# default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
-echo @@@BUILD_STEP chrome_browser_tests using IRT@@@
+# TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1691
+echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
 setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc ^
  SILENT=1 platform=x86-%BITS% ^
- chrome_browser_tests irt=1
+ chrome_browser_tests irt=0
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
 

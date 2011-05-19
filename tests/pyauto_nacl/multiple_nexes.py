@@ -26,7 +26,10 @@ class NaClTest(pyauto.PyUITest):
     """Load nexes in multiple tabs and surf away from all of them."""
 
     # Prime each tab by navigating to about:version.
-    num_tabs = 10
+    # TODO(mcgrathr): Reduced from 10 to 5 because 256MB*10 is too
+    # much /dev/shm space for the bots to handle.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=503
+    num_tabs = 5
     self.NavigateToURL('about:version')
     original_title = self.GetActiveTabTitle()
     for i in range(1, num_tabs):

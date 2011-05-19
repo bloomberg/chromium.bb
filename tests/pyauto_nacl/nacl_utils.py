@@ -46,7 +46,7 @@ def WaitForNexeLoad(browser, tab_index=0):
   AssertTrueOrLogTab(browser, browser.WaitUntil(
       lambda:
         browser.FindInPage('[SHUTDOWN]', tab_index=tab_index)['match_count'],
-      expect_retval=1),
+      expect_retval=1, timeout=90),
                      'nexe did not load',
                      tab_index)
 
