@@ -146,6 +146,7 @@ class BaseTabStrip : public AbstractTabStripView,
   };
 
   // View overrides.
+  virtual const views::View* GetViewByID(int id) const OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;

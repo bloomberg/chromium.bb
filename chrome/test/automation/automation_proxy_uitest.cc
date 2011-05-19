@@ -170,13 +170,18 @@ TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
     }
     EXPECT_EQ(bounds2.y(), bounds.y());
 
-    gfx::Rect urlbar_bounds;
-    ASSERT_TRUE(window->GetViewBounds(VIEW_ID_LOCATION_BAR, &urlbar_bounds,
-                                      false));
-    EXPECT_GT(urlbar_bounds.x(), 0);
-    EXPECT_GT(urlbar_bounds.y(), 0);
-    EXPECT_GT(urlbar_bounds.width(), 0);
-    EXPECT_GT(urlbar_bounds.height(), 0);
+    // Sometimes tests start the browser in full screen mode. Don't check the
+    // location bar in such a case.
+    bool fullscreen = false;
+    if (browser->IsFullscreen(&fullscreen) && !fullscreen) {
+      gfx::Rect urlbar_bounds;
+      ASSERT_TRUE(window->GetViewBounds(VIEW_ID_LOCATION_BAR, &urlbar_bounds,
+                                        false));
+      EXPECT_GT(urlbar_bounds.x(), 0);
+      EXPECT_GT(urlbar_bounds.y(), 0);
+      EXPECT_GT(urlbar_bounds.width(), 0);
+      EXPECT_GT(urlbar_bounds.height(), 0);
+    }
 
     /*
 
