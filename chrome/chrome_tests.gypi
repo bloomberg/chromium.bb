@@ -2043,6 +2043,11 @@
             }],
           ],
         }],
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+          'dependencies': [
+            'packed_resources',
+          ],
+        }],
         ['OS=="mac"', {
            # The test fetches resources which means Mac need the app bundle to
            # exist on disk so it can pull from it.
@@ -2093,6 +2098,7 @@
         }, { # OS != "mac"
           'dependencies': [
             'convert_dict_lib',
+            'packed_extra_resources',
             '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
           'sources!': [
