@@ -50,41 +50,41 @@ echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=dbg-linux,nacl,doc platform=x86-64
 
-
-if [[ $TOOLCHAIN != glibc ]]; then
-
 echo @@@BUILD_STEP memcheck@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
     buildbot=memcheck memcheck_bot_tests
 
-echo @@@BUILD_STEP leakcheck@@@
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
-    buildbot=memcheck run_under_extra_args=--leak-check=full run_leak_test
 
-echo "@@@BUILD_STEP tsan(untrusted)@@@"
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none buildbot=tsan \
-    run_under_extra_args= tsan_bot_tests
+if [[ "$TOOLCHAIN" != glibc ]]; then
 
-echo "@@@BUILD_STEP tsan(trusted)@@@"
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
-    buildbot=tsan-trusted run_under_extra_args= tsan_bot_tests
+  echo @@@BUILD_STEP leakcheck@@@
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
+      buildbot=memcheck run_under_extra_args=--leak-check=full run_leak_test
 
-echo "@@@BUILD_STEP tsan(trusted, hybrid, RV)@@@"
-# The first RaceVerifier invocation may fail.
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
-    buildbot=tsan-trusted run_under_extra_args=--hybrid,--log-file=race.log \
-    tsan_bot_tests || true
+  echo "@@@BUILD_STEP tsan(untrusted)@@@"
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
+      buildbot=tsan run_under_extra_args= tsan_bot_tests
 
-echo "== RaceVerifier 2nd run =="
+  echo "@@@BUILD_STEP tsan(trusted)@@@"
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
+      buildbot=tsan-trusted run_under_extra_args= tsan_bot_tests
 
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
-    buildbot=tsan-trusted run_under_extra_args=--race-verifier=race.log \
-    tsan_bot_tests
+  echo "@@@BUILD_STEP tsan(trusted, hybrid, RV)@@@"
+  # The first RaceVerifier invocation may fail.
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
+      buildbot=tsan-trusted run_under_extra_args=--hybrid,--log-file=race.log \
+      tsan_bot_tests || true
+
+  echo "== RaceVerifier 2nd run =="
+
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
+      buildbot=tsan-trusted run_under_extra_args=--race-verifier=race.log \
+      tsan_bot_tests
 
 fi

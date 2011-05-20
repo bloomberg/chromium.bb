@@ -647,7 +647,11 @@ Alias('pyauto_tests', [])
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
 
-Alias('memcheck_bot_tests', ['small_tests', 'medium_tests', 'large_tests'])
+if pre_base_env.Bit('nacl_glibc'):
+  Alias('memcheck_bot_tests', ['small_tests'])
+else:
+  Alias('memcheck_bot_tests', ['small_tests', 'medium_tests', 'large_tests'])
+
 Alias('tsan_bot_tests', [])
 
 # ----------------------------------------------------------
