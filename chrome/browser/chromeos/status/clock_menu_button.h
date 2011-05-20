@@ -17,8 +17,12 @@
 #include "chrome/browser/chromeos/system_access.h"
 #include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/view_menu_delegate.h"
+
+namespace views {
+class MenuItemView;
+}
 
 namespace chromeos {
 
@@ -27,8 +31,8 @@ class StatusAreaHost;
 // The clock menu button in the status area.
 // This button shows the current time.
 class ClockMenuButton : public StatusAreaButton,
+                        public views::MenuDelegate,
                         public views::ViewMenuDelegate,
-                        public ui::MenuModel,
                         public NotificationObserver,
                         public PowerLibrary::Observer,
                         public SystemAccess::Observer {
@@ -36,25 +40,10 @@ class ClockMenuButton : public StatusAreaButton,
   explicit ClockMenuButton(StatusAreaHost* host);
   virtual ~ClockMenuButton();
 
-  // ui::MenuModel implementation.
-  virtual bool HasIcons() const;
-  virtual int GetItemCount() const;
-  virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
-  virtual int GetCommandIdAt(int index) const;
-  virtual string16 GetLabelAt(int index) const;
-  virtual bool IsItemDynamicAt(int index) const;
-  virtual bool GetAcceleratorAt(int index,
-      ui::Accelerator* accelerator) const;
-  virtual bool IsItemCheckedAt(int index) const;
-  virtual int GetGroupIdAt(int index) const;
-  virtual bool GetIconAt(int index, SkBitmap* icon);
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
-  virtual bool IsEnabledAt(int index) const;
-  virtual ui::MenuModel* GetSubmenuModelAt(int index) const;
-  virtual void HighlightChangedTo(int index) {}
-  virtual void ActivatedAt(int index);
-  virtual void MenuWillShow() {}
-  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {}
+  // views::MenuDelegate implementation
+  virtual std::wstring GetLabel(int id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual void ExecuteCommand(int id) OVERRIDE;
 
   // Overridden from ResumeLibrary::Observer:
   virtual void PowerChanged(PowerLibrary* obj) {}
@@ -82,6 +71,9 @@ class ClockMenuButton : public StatusAreaButton,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
+  // Create and initialize menu if not already present.
+  void EnsureMenu();
+
   // Updates text and schedules the timer to fire at the next minute interval.
   void UpdateTextAndSetNextTimer();
 
@@ -90,7 +82,7 @@ class ClockMenuButton : public StatusAreaButton,
   // The clock menu.
   // NOTE: we use a scoped_ptr here as menu calls into 'this' from the
   // constructor.
-  scoped_ptr<views::Menu2> clock_menu_;
+  scoped_ptr<views::MenuItemView> menu_;
 
   PrefChangeRegistrar registrar_;
 
