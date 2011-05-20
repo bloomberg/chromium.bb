@@ -160,8 +160,8 @@ readonly PLAIN_SUFFIX='$raw'
 
 # Workaround for http://code.google.com/p/chromium/issues/detail?id=83180#c3
 # In bash 4.0, "declare VAR" no longer initializes VAR if not already set.
-DIRDIFFER_EXCLUDE="${DIRDIFFER_EXCLUDE:-}"
-DIRDIFFER_NO_DIFF="${DIRDIFFER_NO_DIFF:-}"
+: ${DIRDIFFER_EXCLUDE:=}
+: ${DIRDIFFER_NO_DIFF:=}
 
 err() {
   local error="${1}"

@@ -63,7 +63,7 @@ readonly ME
 
 # Workaround for http://code.google.com/p/chromium/issues/detail?id=83180#c3
 # In bash 4.0, "declare VAR" no longer initializes VAR if not already set.
-GOOGLE_CHROME_UPDATER_DEBUG="${GOOGLE_CHROME_UPDATER_DEBUG:-}"
+: ${GOOGLE_CHROME_UPDATER_DEBUG:=}
 err() {
   local error="${1}"
 
