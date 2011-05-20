@@ -15,6 +15,7 @@
 #include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_registrar.h"
@@ -51,7 +52,8 @@ class PrerenderContents : public RenderViewHostDelegate,
                           public RenderViewHostDelegate::View,
                           public NotificationObserver,
                           public TabContentsObserver,
-                          public JavaScriptAppModalDialogDelegate {
+                          public JavaScriptAppModalDialogDelegate,
+                          public DownloadTabHelperDelegate {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -217,6 +219,11 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
                                     bool is_during_unload) OVERRIDE;
+
+  // DownloadTabHelperDelegate implementation.
+  virtual bool CanDownload(int request_id) OVERRIDE;
+  virtual void OnStartDownload(DownloadItem* download,
+                               TabContentsWrapper* tab) OVERRIDE;
 
   // Adds an alias URL, for one of the many redirections. If the URL can not
   // be prerendered - for example, it's an ftp URL - |this| will be destroyed

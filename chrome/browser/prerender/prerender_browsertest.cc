@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -242,15 +241,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    // TODO(mmenke):  Once downloading is stopped earlier, remove this.
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                  false);
-
-    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
-
-    browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory,
-        downloads_directory_.path());
   }
 
   // Overload for a single expected final status
@@ -434,9 +426,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   GURL dest_url_;
   bool use_https_src_server_;
   bool call_javascript_;
-
-  // Location of the downloads directory for these tests
-  ScopedTempDir downloads_directory_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -670,8 +659,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Prerenders a page that contains an automatic download triggered through an
 // iframe. This should not prerender successfully.
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderDownloadIframe) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIframe) {
   PrerenderTestURL("files/prerender/prerender_download_iframe.html",
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -680,9 +668,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderDownloadIframe) {
 // Prerenders a page that contains an automatic download triggered through
 // Javascript changing the window.location. This should not prerender
 // successfully
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FLAKY_PrerenderDownloadLocation) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
   PrerenderTestURL(CreateClientRedirect("files/download-test1.lib"),
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -690,9 +676,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Prerenders a page that contains an automatic download triggered through a
 // client-issued redirect. This should not prerender successfully.
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FLAKY_PrerenderDownloadClientRedirect) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadClientRedirect) {
   PrerenderTestURL("files/prerender/prerender_download_refresh.html",
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -968,8 +952,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
 
 // Checks that a prerender of a CRX will result in a cancellation due to
 // download.
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderCrx) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCrx) {
   PrerenderTestURL("files/prerender/extension.crx", FINAL_STATUS_DOWNLOAD, 1);
 }
 

@@ -19,6 +19,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -253,6 +254,7 @@ void PrerenderContents::StartPrerendering(
                                               NULL, NULL);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   tab_contents_observer_registrar_.Observe(new_contents);
+  prerender_contents_->download_tab_helper()->set_delegate(this);
 
   TabContents* source_tc =
       source_render_view_host->delegate()->GetAsTabContents();
@@ -305,10 +307,6 @@ void PrerenderContents::StartPrerendering(
                               NotificationService::AllSources());
 
   notification_registrar_.Add(this, NotificationType::AUTH_CANCELLED,
-                              NotificationService::AllSources());
-
-  // Register all responses to see if we should cancel.
-  notification_registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
                               NotificationService::AllSources());
 
   // Register to inform new RenderViews that we're prerendering.
@@ -380,6 +378,11 @@ PrerenderContents::~PrerenderContents() {
     PrerenderTracker::GetInstance()->OnPrerenderingFinished(
         child_id_, route_id_);
   }
+
+  // If we still have a TabContents, clean up anything we need to and then
+  // destroy it.
+  if (prerender_contents_.get())
+    delete ReleasePrerenderContents();
 }
 
 RenderViewHostDelegate::View* PrerenderContents::GetViewDelegate() {
@@ -462,6 +465,8 @@ void PrerenderContents::Observe(NotificationType type,
       break;
     }
 
+    // TODO(mmenke):  Once we get rid of the old RenderViewHost code, remove
+    //                this.
     case NotificationType::DOWNLOAD_INITIATED: {
       // If the download is started from a RenderViewHost that we are
       // delegating, kill the prerender. This cancels any pending requests
@@ -740,6 +745,18 @@ void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
   Destroy(FINAL_STATUS_RENDERER_UNRESPONSIVE);
 }
 
+bool PrerenderContents::CanDownload(int request_id) {
+  Destroy(FINAL_STATUS_DOWNLOAD);
+  // Cancel the download.
+  return false;
+}
+
+void PrerenderContents::OnStartDownload(DownloadItem* download,
+                                        TabContentsWrapper* tab) {
+  // Prerendered pages should never be able to download files.
+  NOTREACHED();
+}
+
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (process_metrics_.get() == NULL) {
     // If a PrenderContents hasn't started prerending, don't be fully formed.
@@ -776,6 +793,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
   render_view_host_observer_.reset();
+  prerender_contents_->download_tab_helper()->set_delegate(NULL);
   return prerender_contents_.release();
 }
 
