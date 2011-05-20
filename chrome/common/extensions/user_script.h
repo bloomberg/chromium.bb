@@ -13,6 +13,7 @@
 #include "base/string_piece.h"
 #include "googleurl/src/gurl.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 
 class Pickle;
 class URLPattern;
@@ -21,8 +22,6 @@ class URLPattern;
 // extension.
 class UserScript {
  public:
-  typedef std::vector<URLPattern> PatternList;
-
   // The file extension for standalone user scripts.
   static const char kFileExtension[];
 
@@ -150,7 +149,7 @@ class UserScript {
 
   // The URLPatterns, if any, that determine which pages this script runs
   // against.
-  const PatternList& url_patterns() const { return url_patterns_; }
+  const URLPatternList& url_patterns() const { return url_set_.patterns(); }
   void add_url_pattern(const URLPattern& pattern);
 
   // List of js scripts for this user script
@@ -171,7 +170,7 @@ class UserScript {
 
   // Returns true if the script should be applied to the specified URL, false
   // otherwise.
-  bool MatchesUrl(const GURL& url) const;
+  bool MatchesURL(const GURL& url) const;
 
   // Serialize the UserScript into a pickle. The content of the scripts and
   // paths to UserScript::Files will not be serialized!
@@ -207,7 +206,7 @@ class UserScript {
 
   // URLPatterns that determine pages to inject the script into. These are
   // only used with scripts that are part of extensions.
-  PatternList url_patterns_;
+  URLPatternSet url_set_;
 
   // List of js scripts defined in content_scripts
   FileList js_scripts_;

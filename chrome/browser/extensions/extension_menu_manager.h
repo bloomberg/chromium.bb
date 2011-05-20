@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
-#include "chrome/common/extensions/extension_extent.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -117,10 +117,10 @@ class ExtensionMenuItem {
   ContextList contexts() const { return contexts_; }
   Type type() const { return type_; }
   bool checked() const { return checked_; }
-  const ExtensionExtent& document_url_patterns() const {
+  const URLPatternSet& document_url_patterns() const {
     return document_url_patterns_;
   }
-  const ExtensionExtent& target_url_patterns() const {
+  const URLPatternSet& target_url_patterns() const {
     return target_url_patterns_;
   }
 
@@ -128,10 +128,10 @@ class ExtensionMenuItem {
   void set_title(const std::string& new_title) { title_ = new_title; }
   void set_contexts(ContextList contexts) { contexts_ = contexts; }
   void set_type(Type type) { type_ = type; }
-  void set_document_url_patterns(const ExtensionExtent& patterns) {
+  void set_document_url_patterns(const URLPatternSet& patterns) {
     document_url_patterns_ = patterns;
   }
-  void set_target_url_patterns(const ExtensionExtent& patterns) {
+  void set_target_url_patterns(const URLPatternSet& patterns) {
     target_url_patterns_ = patterns;
   }
 
@@ -178,11 +178,11 @@ class ExtensionMenuItem {
 
   // Patterns for restricting what documents this item will appear for. This
   // applies to the frame where the click took place.
-  ExtensionExtent document_url_patterns_;
+  URLPatternSet document_url_patterns_;
 
   // Patterns for restricting where items appear based on the src/href
   // attribute of IMAGE/AUDIO/VIDEO/LINK tags.
-  ExtensionExtent target_url_patterns_;
+  URLPatternSet target_url_patterns_;
 
   // Any children this item may have.
   List children_;

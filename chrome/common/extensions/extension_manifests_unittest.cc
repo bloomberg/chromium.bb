@@ -512,7 +512,7 @@ TEST_F(ExtensionManifestTest, DefaultPathForExtent) {
 
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("/*", extension->web_extent().patterns()[0].path());
-  EXPECT_TRUE(extension->web_extent().ContainsURL(
+  EXPECT_TRUE(extension->web_extent().MatchesURL(
       GURL("http://www.google.com/monkey")));
 }
 
@@ -605,7 +605,7 @@ TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
       extension->file_browser_handlers()->at(0).get();
   EXPECT_EQ(action->title(), "Default title");
   EXPECT_EQ(action->icon_path(), "icon.png");
-  const FileBrowserHandler::PatternList& patterns = action->file_url_patterns();
+  const URLPatternList& patterns = action->file_url_patterns();
   ASSERT_EQ(patterns.size(), 1U);
   ASSERT_TRUE(action->MatchesURL(
       GURL("filesystem:chrome-extension://foo/local/test.txt")));

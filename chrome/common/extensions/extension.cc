@@ -1178,7 +1178,7 @@ bool Extension::LoadIsApp(const DictionaryValue* manifest,
 
 bool Extension::LoadExtent(const DictionaryValue* manifest,
                            const char* key,
-                           ExtensionExtent* extent,
+                           URLPatternSet* extent,
                            const char* list_error,
                            const char* value_error,
                            URLPattern::ParseOption parse_strictness,
@@ -1566,7 +1566,7 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 // static
 bool Extension::IsPrivilegeIncrease(const bool granted_full_access,
                                     const std::set<std::string>& granted_apis,
-                                    const ExtensionExtent& granted_extent,
+                                    const URLPatternSet& granted_extent,
                                     const Extension* new_extension) {
   // If the extension had native code access, we don't need to go any further.
   // Things can't get any worse.
@@ -1583,7 +1583,7 @@ bool Extension::IsPrivilegeIncrease(const bool granted_full_access,
     if (new_extension->HasEffectiveAccessToAllHosts())
       return true;
 
-    const ExtensionExtent new_extent =
+    const URLPatternSet new_extent =
         new_extension->GetEffectiveHostPermissions();
 
     if (IsElevatedHostList(granted_extent.patterns(), new_extent.patterns()))
@@ -2736,7 +2736,7 @@ bool Extension::HasApiPermission(
 bool Extension::HasHostPermission(const GURL& url) const {
   for (URLPatternList::const_iterator host = host_permissions().begin();
        host != host_permissions().end(); ++host) {
-    if (host->MatchesUrl(url))
+    if (host->MatchesURL(url))
       return true;
   }
   return false;
@@ -2760,7 +2760,7 @@ void Extension::InitEffectiveHostPermissions() {
   for (UserScriptList::const_iterator content_script =
            content_scripts().begin();
        content_script != content_scripts().end(); ++content_script) {
-    UserScript::PatternList::const_iterator pattern =
+    URLPatternList::const_iterator pattern =
         content_script->url_patterns().begin();
     for (; pattern != content_script->url_patterns().end(); ++pattern)
       effective_host_permissions_.AddPattern(*pattern);
@@ -2813,12 +2813,12 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
 
   // If a script is specified, use its matches.
   if (script)
-    return script->MatchesUrl(page_url);
+    return script->MatchesURL(page_url);
 
   // Otherwise, see if this extension has permission to execute script
   // programmatically on pages.
   for (size_t i = 0; i < host_permissions_.size(); ++i) {
-    if (host_permissions_[i].MatchesUrl(page_url))
+    if (host_permissions_[i].MatchesURL(page_url))
       return true;
   }
 
@@ -2832,7 +2832,7 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
 
 // static
 bool Extension::HasEffectiveAccessToAllHosts(
-    const ExtensionExtent& effective_host_permissions,
+    const URLPatternSet& effective_host_permissions,
     const std::set<std::string>& api_permissions) {
   const URLPatternList patterns = effective_host_permissions.patterns();
   for (URLPatternList::const_iterator host = patterns.begin();
@@ -2924,7 +2924,7 @@ bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   origin_only_pattern.set_host(origin.host());
   origin_only_pattern.SetPath("/*");
 
-  ExtensionExtent origin_only_pattern_list;
+  URLPatternSet origin_only_pattern_list;
   origin_only_pattern_list.AddPattern(origin_only_pattern);
 
   return web_extent().OverlapsWith(origin_only_pattern_list);

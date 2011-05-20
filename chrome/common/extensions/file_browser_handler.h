@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 
 class URLPattern;
@@ -18,8 +19,6 @@ class URLPattern;
 // FileBrowserHandler encapsulates the state of a file browser action.
 class FileBrowserHandler {
  public:
-  typedef std::vector<URLPattern> PatternList;
-
   FileBrowserHandler();
   ~FileBrowserHandler();
 
@@ -38,7 +37,9 @@ class FileBrowserHandler {
   void set_title(const std::string& title) { title_ = title; }
 
   // File schema URL patterns.
-  const PatternList& file_url_patterns() const { return patterns_; }
+  const URLPatternList& file_url_patterns() const {
+    return url_set_.patterns();
+  }
   void AddPattern(const URLPattern& pattern);
   bool MatchesURL(const GURL& url) const;
   void ClearPatterns();
@@ -58,7 +59,7 @@ class FileBrowserHandler {
   // The id for the FileBrowserHandler, for example: "PdfFileAction".
   std::string id_;
   // A list of file filters.
-  PatternList patterns_;
+  URLPatternSet url_set_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_

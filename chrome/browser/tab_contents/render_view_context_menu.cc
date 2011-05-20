@@ -243,12 +243,12 @@ static bool ExtensionContextMatch(const ContextMenuParams& params,
   return false;
 }
 
-static bool ExtensionPatternMatch(const ExtensionExtent& patterns,
+static bool ExtensionPatternMatch(const URLPatternSet& patterns,
                                   const GURL& url) {
   // No patterns means no restriction, so that implicitly matches.
   if (patterns.is_empty())
     return true;
-  return patterns.ContainsURL(url);
+  return patterns.MatchesURL(url);
 }
 
 static const GURL& GetDocumentURL(const ContextMenuParams& params) {

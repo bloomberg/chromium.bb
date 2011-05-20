@@ -577,7 +577,7 @@ TabContents* Browser::OpenApplicationWindow(
   GURL url;
   if (!url_input.is_empty()) {
     if (extension)
-      DCHECK(extension->web_extent().ContainsURL(url_input));
+      DCHECK(extension->web_extent().MatchesURL(url_input));
     url = url_input;
   } else {
     DCHECK(extension);  // Empty url and no extension.  Nothing to open.

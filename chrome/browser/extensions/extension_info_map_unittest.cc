@@ -134,7 +134,7 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
 
   GURL app_url("http://www.google.com/mail/foo.html");
   ASSERT_TRUE(app->is_app());
-  ASSERT_TRUE(app->web_extent().ContainsURL(app_url));
+  ASSERT_TRUE(app->web_extent().MatchesURL(app_url));
 
   info_map->AddExtension(app);
   info_map->AddExtension(extension);

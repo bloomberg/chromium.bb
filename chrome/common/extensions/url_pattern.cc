@@ -215,7 +215,7 @@ void URLPattern::SetPath(const std::string& path) {
   ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
 }
 
-bool URLPattern::MatchesUrl(const GURL &test) const {
+bool URLPattern::MatchesURL(const GURL &test) const {
   if (!MatchesScheme(test.scheme()))
     return false;
 
@@ -318,7 +318,7 @@ bool URLPattern::OverlapsWith(const URLPattern& other) const {
     return false;
 
   // We currently only use OverlapsWith() for the patterns inside
-  // ExtensionExtent. In those cases, we know that the path will have only a
+  // URLPatternSet. In those cases, we know that the path will have only a
   // single wildcard at the end. This makes figuring out overlap much easier. It
   // seems like there is probably a computer-sciency way to solve the general
   // case, but we don't need that yet.

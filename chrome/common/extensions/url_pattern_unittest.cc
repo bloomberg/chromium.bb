@@ -91,11 +91,11 @@ TEST(ExtensionURLPatternTest, Match1) {
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://google.com")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://yahoo.com")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://google.com/foo")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("https://google.com")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://74.125.127.100/search")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://google.com")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://yahoo.com")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://google.com/foo")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("https://google.com")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://74.125.127.100/search")));
 }
 
 // all domains
@@ -108,10 +108,10 @@ TEST(ExtensionURLPatternTest, Match2) {
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("https://www.google.com/foo")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("https://www.google.com/foobar")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("http://www.google.com/foo")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("https://www.google.com/")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("https://www.google.com/foo")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("https://www.google.com/foobar")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("http://www.google.com/foo")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("https://www.google.com/")));
 }
 
 // subdomains
@@ -125,11 +125,11 @@ TEST(URLPatternTest, Match3) {
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo*bar", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://google.com/foobar")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://www.google.com/foo?bar")));
-  EXPECT_TRUE(pattern.MatchesUrl(
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://google.com/foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://www.google.com/foo?bar")));
+  EXPECT_TRUE(pattern.MatchesURL(
       GURL("http://monkey.images.google.com/foooobar")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("http://yahoo.com/foobar")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("http://yahoo.com/foobar")));
 }
 
 // glob escaping
@@ -142,8 +142,8 @@ TEST(ExtensionURLPatternTest, Match5) {
   EXPECT_FALSE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo?bar\\*baz", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("file:///foo?bar\\hellobaz")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("file:///fooXbar\\hellobaz")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo?bar\\hellobaz")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file:///fooXbar\\hellobaz")));
 }
 
 // ip addresses
@@ -156,7 +156,7 @@ TEST(ExtensionURLPatternTest, Match6) {
   EXPECT_FALSE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
 }
 
 // subdomain matching with ip addresses
@@ -171,7 +171,7 @@ TEST(ExtensionURLPatternTest, Match7) {
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
   // Subdomain matching is never done if the argument has an IP address host.
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("http://127.0.0.1")));
 };
 
 // unicode
@@ -187,9 +187,9 @@ TEST(ExtensionURLPatternTest, Match8) {
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/a%C2%81%E1*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(
+  EXPECT_TRUE(pattern.MatchesURL(
       GURL("http://abc.\xe1\x80\xbf/a\xc2\x81\xe1xyz")));
-  EXPECT_TRUE(pattern.MatchesUrl(
+  EXPECT_TRUE(pattern.MatchesURL(
       GURL("http://\xe1\x80\xbf/a\xc2\x81\xe1\xe1")));
 };
 
@@ -203,9 +203,9 @@ TEST(ExtensionURLPatternTest, Match9) {
   EXPECT_FALSE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/https://google.com")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("chrome://history")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://favicon/http://google.com")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://favicon/https://google.com")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("chrome://history")));
 };
 
 // *://
@@ -221,9 +221,9 @@ TEST(ExtensionURLPatternTest, Match10) {
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("file:///foo/bar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("chrome://favicon/http://google.com")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file:///foo/bar")));
 };
 
 // <all_urls>
@@ -238,9 +238,9 @@ TEST(ExtensionURLPatternTest, Match11) {
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_TRUE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("file:///foo/bar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://favicon/http://google.com")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo/bar")));
 };
 
 // SCHEME_ALL matches all schemes.
@@ -259,13 +259,13 @@ TEST(ExtensionURLPatternTest, Match12) {
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_TRUE(pattern.match_all_urls());
   EXPECT_EQ("/*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("file:///foo/bar")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://newtab")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("about:blank")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("about:version")));
-  EXPECT_TRUE(pattern.MatchesUrl(
+  EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://favicon/http://google.com")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo/bar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://newtab")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("about:blank")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("about:version")));
+  EXPECT_TRUE(pattern.MatchesURL(
       GURL("data:text/html;charset=utf-8,<html>asdf</html>")));
 };
 
@@ -289,7 +289,7 @@ TEST(ExtensionURLPatternTest, Match13) {
               pattern.Parse(kMatch13UrlPatternTestCases[i].pattern,
                             URLPattern::PARSE_STRICT))
         << " while parsing " << kMatch13UrlPatternTestCases[i].pattern;
-    EXPECT_TRUE(pattern.MatchesUrl(
+    EXPECT_TRUE(pattern.MatchesURL(
         GURL(kMatch13UrlPatternTestCases[i].matches)))
         << " while matching " << kMatch13UrlPatternTestCases[i].matches;
   }
@@ -298,7 +298,7 @@ TEST(ExtensionURLPatternTest, Match13) {
   URLPattern pattern(URLPattern::SCHEME_ALL);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("data:*", URLPattern::PARSE_STRICT));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("about:blank")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("about:blank")));
 };
 
 static const struct GetAsStringPatterns {
@@ -369,15 +369,15 @@ TEST(ExtensionURLPatternTest, OverlapsWith) {
 }
 
 TEST(ExtensionURLPatternTest, ConvertToExplicitSchemes) {
-  std::vector<URLPattern> all_urls(URLPattern(
+  URLPatternList all_urls(URLPattern(
       kAllSchemes,
       "<all_urls>").ConvertToExplicitSchemes());
 
-  std::vector<URLPattern> all_schemes(URLPattern(
+  URLPatternList all_schemes(URLPattern(
       kAllSchemes,
       "*://google.com/foo").ConvertToExplicitSchemes());
 
-  std::vector<URLPattern> monkey(URLPattern(
+  URLPatternList monkey(URLPattern(
       URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
       URLPattern::SCHEME_FTP,
       "http://google.com/monkey").ConvertToExplicitSchemes());

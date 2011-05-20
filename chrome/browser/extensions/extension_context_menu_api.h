@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
-#include "chrome/common/extensions/extension_extent.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 
 class DictionaryValue;
 class ExtensionMenuItem;
@@ -41,7 +41,7 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
   // name.
   bool ParseURLPatterns(const DictionaryValue& properties,
                         const char* key,
-                        ExtensionExtent* result);
+                        URLPatternSet* result);
 
   // Reads in any document and targetUrl patterns from |properties| and sets
   // them on |item|.

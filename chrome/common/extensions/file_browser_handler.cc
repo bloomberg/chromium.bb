@@ -14,19 +14,13 @@ FileBrowserHandler::~FileBrowserHandler() {
 }
 
 void FileBrowserHandler::AddPattern(const URLPattern& pattern) {
-  patterns_.push_back(pattern);
+  url_set_.AddPattern(pattern);
 }
 
 void FileBrowserHandler::ClearPatterns() {
-  patterns_.clear();
+  url_set_.ClearPatterns();
 }
 
 bool FileBrowserHandler::MatchesURL(const GURL& url) const {
-  for (PatternList::const_iterator pattern = patterns_.begin();
-       pattern != patterns_.end(); ++pattern) {
-    if (pattern->MatchesUrl(url))
-      return true;
-  }
-  return false;
+  return url_set_.MatchesURL(url);
 }
-

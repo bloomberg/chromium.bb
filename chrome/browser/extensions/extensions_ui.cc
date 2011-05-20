@@ -792,7 +792,7 @@ void ExtensionsDOMHandler::GetActivePagesForExtensionProcess(
     if (url.SchemeIs(chrome::kExtensionScheme)) {
       if (url.host() != extension->id())
         continue;
-    } else if (!extension->web_extent().ContainsURL(url)) {
+    } else if (!extension->web_extent().MatchesURL(url)) {
       continue;
     }
 

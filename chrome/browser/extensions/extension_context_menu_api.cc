@@ -128,7 +128,7 @@ bool ExtensionContextMenuFunction::ParseChecked(
 bool ExtensionContextMenuFunction::ParseURLPatterns(
     const DictionaryValue& properties,
     const char* key,
-    ExtensionExtent* result) {
+    URLPatternSet* result) {
   if (!properties.HasKey(key))
     return true;
   ListValue* list = NULL;
@@ -157,7 +157,7 @@ bool ExtensionContextMenuFunction::SetURLPatterns(
     const DictionaryValue& properties,
     ExtensionMenuItem* item) {
   // Process the documentUrlPattern value.
-  ExtensionExtent document_url_patterns;
+  URLPatternSet document_url_patterns;
   if (!ParseURLPatterns(properties, kDocumentUrlPatternsKey,
                         &document_url_patterns))
     return false;
@@ -167,7 +167,7 @@ bool ExtensionContextMenuFunction::SetURLPatterns(
   }
 
   // Process the targetUrlPattern value.
-  ExtensionExtent target_url_patterns;
+  URLPatternSet target_url_patterns;
   if (!ParseURLPatterns(properties, kTargetUrlPatternsKey,
                         &target_url_patterns))
     return false;

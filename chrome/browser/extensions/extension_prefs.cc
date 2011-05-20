@@ -239,10 +239,10 @@ static void CleanupBadExtensionKeys(const FilePath& root_dir,
   }
 }
 
-static void ExtentToStringSet(const ExtensionExtent& host_extent,
+static void ExtentToStringSet(const URLPatternSet& host_extent,
                               std::set<std::string>* result) {
-  ExtensionExtent::PatternList patterns = host_extent.patterns();
-  ExtensionExtent::PatternList::const_iterator i;
+  URLPatternList patterns = host_extent.patterns();
+  URLPatternList::const_iterator i;
 
   for (i = patterns.begin(); i != patterns.end(); ++i)
     result->insert(i->GetAsString());
@@ -653,7 +653,7 @@ bool ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id,
     bool* full_access,
     std::set<std::string>* api_permissions,
-    ExtensionExtent* host_extent) {
+    URLPatternSet* host_extent) {
   CHECK(Extension::IdIsValid(extension_id));
 
   const DictionaryValue* ext = GetExtensionPref(extension_id);
@@ -698,7 +698,7 @@ void ExtensionPrefs::AddGrantedPermissions(
     const std::string& extension_id,
     const bool full_access,
     const std::set<std::string>& api_permissions,
-    const ExtensionExtent& host_extent) {
+    const URLPatternSet& host_extent) {
   CHECK(Extension::IdIsValid(extension_id));
 
   UpdateExtensionPref(extension_id, kPrefGrantedPermissionsAll,

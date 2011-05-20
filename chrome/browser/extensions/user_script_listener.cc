@@ -50,7 +50,7 @@ bool UserScriptListener::ShouldDelayRequest(
 
   for (URLPatterns::iterator it = url_patterns_.begin();
        it != url_patterns_.end(); ++it) {
-    if ((*it).MatchesUrl(request->url())) {
+    if ((*it).MatchesURL(request->url())) {
       // One of the user scripts wants to inject into this request, but the
       // script isn't ready yet. Delay the request.
       delayed_request_ids_.push_front(request_id);

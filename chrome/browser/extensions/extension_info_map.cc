@@ -109,10 +109,10 @@ std::string ExtensionInfoMap::GetDefaultLocaleForExtension(
   return result;
 }
 
-ExtensionExtent ExtensionInfoMap::GetEffectiveHostPermissionsForExtension(
+URLPatternSet ExtensionInfoMap::GetEffectiveHostPermissionsForExtension(
     const std::string& id) const {
   Map::const_iterator iter = extension_info_.find(id);
-  ExtensionExtent result;
+  URLPatternSet result;
   if (iter != extension_info_.end())
     result = iter->second->GetEffectiveHostPermissions();
 
@@ -132,7 +132,7 @@ bool ExtensionInfoMap::CheckURLAccessToExtensionPermission(
     // disallowed, so only one will match.
     info = extension_info_.begin();
     while (info != extension_info_.end() &&
-           !info->second->web_extent().ContainsURL(url))
+           !info->second->web_extent().MatchesURL(url))
       ++info;
   }
 

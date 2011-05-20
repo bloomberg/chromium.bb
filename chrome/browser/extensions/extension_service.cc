@@ -878,7 +878,7 @@ void ExtensionService::GrantPermissions(const Extension* extension) {
   // We only maintain the granted permissions prefs for INTERNAL extensions.
   CHECK_EQ(Extension::INTERNAL, extension->location());
 
-  ExtensionExtent effective_hosts = extension->GetEffectiveHostPermissions();
+  URLPatternSet effective_hosts = extension->GetEffectiveHostPermissions();
   extension_prefs_->AddGrantedPermissions(extension->id(),
                                           extension->HasFullPermissions(),
                                           extension->api_permissions(),
@@ -1821,7 +1821,7 @@ void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
                                                   true, true, false);
   bool granted_full_access;
   std::set<std::string> granted_apis;
-  ExtensionExtent granted_extent;
+  URLPatternSet granted_extent;
 
   bool is_extension_upgrade = old != NULL;
   bool is_privilege_increase = false;
@@ -2028,7 +2028,7 @@ const Extension* ExtensionService::GetExtensionByURL(const GURL& url) {
 
 const Extension* ExtensionService::GetExtensionByWebExtent(const GURL& url) {
   for (size_t i = 0; i < extensions_.size(); ++i) {
-    if (extensions_[i]->web_extent().ContainsURL(url))
+    if (extensions_[i]->web_extent().MatchesURL(url))
       return extensions_[i];
   }
   return NULL;
@@ -2045,7 +2045,7 @@ bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
 }
 
 const Extension* ExtensionService::GetExtensionByOverlappingWebExtent(
-    const ExtensionExtent& extent) {
+    const URLPatternSet& extent) {
   for (size_t i = 0; i < extensions_.size(); ++i) {
     if (extensions_[i]->web_extent().OverlapsWith(extent))
       return extensions_[i];

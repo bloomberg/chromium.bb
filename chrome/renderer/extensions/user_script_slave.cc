@@ -149,7 +149,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
     WebVector<WebString> patterns;
     std::vector<WebString> temp_patterns;
     for (size_t k = 0; k < script->url_patterns().size(); ++k) {
-      std::vector<URLPattern> explicit_patterns =
+      URLPatternList explicit_patterns =
           script->url_patterns()[k].ConvertToExplicitSchemes();
       for (size_t m = 0; m < explicit_patterns.size(); ++m) {
         temp_patterns.push_back(WebString::fromUTF8(

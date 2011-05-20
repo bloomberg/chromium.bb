@@ -46,7 +46,7 @@ const Extension* ExtensionSet::GetByURL(const GURL& url) const {
 
   ExtensionMap::const_iterator i = extensions_.begin();
   for (; i != extensions_.end(); ++i) {
-    if (i->second->web_extent().ContainsURL(url))
+    if (i->second->web_extent().MatchesURL(url))
       return i->second.get();
   }
 
@@ -73,7 +73,7 @@ bool ExtensionSet::ExtensionBindingsAllowed(const GURL& url) const {
   ExtensionMap::const_iterator i = extensions_.begin();
   for (; i != extensions_.end(); ++i) {
     if (i->second->location() == Extension::COMPONENT &&
-        i->second->web_extent().ContainsURL(url))
+        i->second->web_extent().MatchesURL(url))
       return true;
   }
 

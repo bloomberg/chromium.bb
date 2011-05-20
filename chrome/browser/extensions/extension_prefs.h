@@ -17,6 +17,7 @@
 #include "googleurl/src/gurl.h"
 
 class ExtensionPrefValueMap;
+class URLPatternSet;
 
 // Class for managing global and per-extension preferences.
 //
@@ -180,7 +181,7 @@ class ExtensionPrefs {
   bool GetGrantedPermissions(const std::string& extension_id,
                              bool* full_access,
                              std::set<std::string>* api_permissions,
-                             ExtensionExtent* host_extent);
+                             URLPatternSet* host_extent);
 
   // Adds the specified |api_permissions|, |host_extent| and |full_access|
   // to the granted permissions for extension with |extension_id|.
@@ -189,7 +190,7 @@ class ExtensionPrefs {
   void AddGrantedPermissions(const std::string& extension_id,
                              const bool full_access,
                              const std::set<std::string>& api_permissions,
-                             const ExtensionExtent& host_extent);
+                             const URLPatternSet& host_extent);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.

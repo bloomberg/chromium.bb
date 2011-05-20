@@ -38,15 +38,15 @@ const char kDefaultPref4[] = "default pref 4";
 
 }  // namespace
 
-static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
+static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-static void AssertEqualExtents(ExtensionExtent* extent1,
-                               ExtensionExtent* extent2) {
-  std::vector<URLPattern> patterns1 = extent1->patterns();
-  std::vector<URLPattern> patterns2 = extent2->patterns();
+static void AssertEqualExtents(URLPatternSet* extent1,
+                               URLPatternSet* extent2) {
+  URLPatternList patterns1 = extent1->patterns();
+  URLPatternList patterns2 = extent2->patterns();
   std::set<std::string> strings1;
   EXPECT_EQ(patterns1.size(), patterns2.size());
 
@@ -231,8 +231,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     std::set<std::string> empty_set;
     std::set<std::string> api_perms;
     bool full_access = false;
-    ExtensionExtent host_perms;
-    ExtensionExtent empty_extent;
+    URLPatternSet host_perms;
+    URLPatternSet empty_extent;
 
     // Make sure both granted api and host permissions start empty.
     EXPECT_FALSE(prefs()->GetGrantedPermissions(
@@ -249,7 +249,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_EQ(api_perm_set1_, api_perms);
     EXPECT_TRUE(host_perms.is_empty());
     EXPECT_FALSE(full_access);
-    host_perms.ClearPaths();
+    host_perms.ClearPatterns();
     api_perms.clear();
 
     // Add part of the host permissions.
@@ -260,7 +260,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_FALSE(full_access);
     EXPECT_EQ(api_perm_set1_, api_perms);
     AssertEqualExtents(&host_perm_set1_, &host_perms);
-    host_perms.ClearPaths();
+    host_perms.ClearPatterns();
     api_perms.clear();
 
     // Add the rest of both the api and host permissions.
@@ -278,7 +278,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
   virtual void Verify() {
     std::set<std::string> api_perms;
-    ExtensionExtent host_perms;
+    URLPatternSet host_perms;
     bool full_access;
 
     EXPECT_TRUE(prefs()->GetGrantedPermissions(
@@ -292,12 +292,12 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
   std::string extension_id_;
   std::set<std::string> api_perm_set1_;
   std::set<std::string> api_perm_set2_;
-  ExtensionExtent host_perm_set1_;
-  ExtensionExtent host_perm_set2_;
+  URLPatternSet host_perm_set1_;
+  URLPatternSet host_perm_set2_;
 
 
   std::set<std::string> api_permissions_;
-  ExtensionExtent host_permissions_;
+  URLPatternSet host_permissions_;
 };
 TEST_F(ExtensionPrefsGrantedPermissions, GrantedPermissions) {}
 

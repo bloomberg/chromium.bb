@@ -109,15 +109,15 @@ static std::vector<std::string> GetErrors() {
   return ret_val;
 }
 
-static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
+static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-static void AssertEqualExtents(ExtensionExtent* extent1,
-                               ExtensionExtent* extent2) {
-  std::vector<URLPattern> patterns1 = extent1->patterns();
-  std::vector<URLPattern> patterns2 = extent2->patterns();
+static void AssertEqualExtents(URLPatternSet* extent1,
+                               URLPatternSet* extent2) {
+  URLPatternList patterns1 = extent1->patterns();
+  URLPatternList patterns2 = extent2->patterns();
   std::set<std::string> strings1;
   EXPECT_EQ(patterns1.size(), patterns2.size());
 
@@ -1033,7 +1033,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
       extension->path().AppendASCII("js_files").AppendASCII("script3.js");
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
   EXPECT_TRUE(resource10.ComparePathWithDefault(expected_path));
-  const std::vector<URLPattern> permissions = extension->host_permissions();
+  const URLPatternList permissions = extension->host_permissions();
   ASSERT_EQ(2u, permissions.size());
   EXPECT_EQ("http://*.google.com/*", permissions[0].GetAsString());
   EXPECT_EQ("https://*.google.com/*", permissions[1].GetAsString());
@@ -1374,8 +1374,8 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   std::set<std::string> expected_api_perms;
   std::set<std::string> known_api_perms;
   bool full_access;
-  ExtensionExtent expected_host_perms;
-  ExtensionExtent known_host_perms;
+  URLPatternSet expected_host_perms;
+  URLPatternSet known_host_perms;
 
   // Make sure there aren't any granted permissions before the
   // extension is installed.
@@ -1435,7 +1435,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
 
   bool full_access;
   std::set<std::string> api_permissions;
-  ExtensionExtent host_permissions;
+  URLPatternSet host_permissions;
   EXPECT_TRUE(prefs->GetGrantedPermissions(
       extension_id, &full_access, &api_permissions, &host_permissions));
 
@@ -1467,7 +1467,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ExtensionPrefs* prefs = service_->extension_prefs();
 
   std::set<std::string> expected_api_permissions;
-  ExtensionExtent expected_host_permissions;
+  URLPatternSet expected_host_permissions;
 
   expected_api_permissions.insert("tabs");
   AddPattern(&expected_host_permissions, "http://*.google.com/*");
@@ -1498,7 +1498,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
 
   std::set<std::string> current_api_permissions;
-  ExtensionExtent current_host_permissions;
+  URLPatternSet current_host_permissions;
   bool current_full_access;
 
   ASSERT_TRUE(prefs->GetGrantedPermissions(extension_id,
@@ -1517,7 +1517,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   api_permissions.clear();
   host_permissions.clear();
   current_api_permissions.clear();
-  current_host_permissions.ClearPaths();
+  current_host_permissions.ClearPatterns();
 
   api_permissions.insert("tabs");
   host_permissions.insert("http://*.google.com/*");
@@ -1553,7 +1553,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   // Tests that the granted permissions preferences are initialized when
   // migrating from the old pref schema.
   current_api_permissions.clear();
-  current_host_permissions.ClearPaths();
+  current_host_permissions.ClearPatterns();
 
   ClearPref(extension_id, "granted_permissions");
 
@@ -1836,7 +1836,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   const std::string id1 = extension->id();
   EXPECT_TRUE(extension->HasApiPermission(
                   Extension::kUnlimitedStoragePermission));
-  EXPECT_TRUE(extension->web_extent().ContainsURL(
+  EXPECT_TRUE(extension->web_extent().MatchesURL(
                   extension->GetFullLaunchURL()));
   const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
@@ -1850,7 +1850,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   const std::string id2 = extension->id();
   EXPECT_TRUE(extension->HasApiPermission(
                   Extension::kUnlimitedStoragePermission));
-  EXPECT_TRUE(extension->web_extent().ContainsURL(
+  EXPECT_TRUE(extension->web_extent().MatchesURL(
                   extension->GetFullLaunchURL()));
   const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
   EXPECT_EQ(origin1, origin2);

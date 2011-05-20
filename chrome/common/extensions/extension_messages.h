@@ -8,8 +8,8 @@
 #include "base/shared_memory.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/web_apps.h"
 #include "content/common/view_types.h"
 #include "ipc/ipc_message_macros.h"
@@ -124,8 +124,8 @@ struct ParamTraits<URLPattern> {
 };
 
 template <>
-struct ParamTraits<ExtensionExtent> {
-  typedef ExtensionExtent param_type;
+struct ParamTraits<URLPatternSet> {
+  typedef URLPatternSet param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

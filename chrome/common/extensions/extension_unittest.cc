@@ -48,7 +48,7 @@ void CompareLists(const std::vector<std::string>& expected,
   }
 }
 
-static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
+static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
 }
@@ -847,65 +847,65 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
 
 TEST(ExtensionTest, EffectiveHostPermissions) {
   scoped_refptr<Extension> extension;
-  ExtensionExtent hosts;
+  URLPatternSet hosts;
 
   extension = LoadManifest("effective_host_permissions", "empty.json");
   EXPECT_EQ(0u, extension->GetEffectiveHostPermissions().patterns().size());
-  EXPECT_FALSE(hosts.ContainsURL(GURL("http://www.google.com")));
+  EXPECT_FALSE(hosts.MatchesURL(GURL("http://www.google.com")));
   EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "one_host.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
-  EXPECT_FALSE(hosts.ContainsURL(GURL("https://www.google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.google.com")));
+  EXPECT_FALSE(hosts.MatchesURL(GURL("https://www.google.com")));
   EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions",
                            "one_host_wildcard.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://foo.google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://foo.google.com")));
   EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "two_hosts.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.reddit.com")));
   EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions",
                            "https_not_considered.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("https://google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("https://google.com")));
   EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions",
                            "two_content_scripts.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://news.ycombinator.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.reddit.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://news.ycombinator.com")));
   EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "all_hosts.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://test/")));
-  EXPECT_FALSE(hosts.ContainsURL(GURL("https://test/")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://test/")));
+  EXPECT_FALSE(hosts.MatchesURL(GURL("https://test/")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.google.com")));
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "all_hosts2.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://test/")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://test/")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.google.com")));
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "all_hosts3.json");
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_FALSE(hosts.ContainsURL(GURL("http://test/")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("https://test/")));
-  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
+  EXPECT_FALSE(hosts.MatchesURL(GURL("http://test/")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("https://test/")));
+  EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.google.com")));
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 }
 
@@ -980,7 +980,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     for (size_t j = 0; kTests[i].granted_apis[j] != NULL; ++j)
       granted_apis.insert(kTests[i].granted_apis[j]);
 
-    ExtensionExtent granted_hosts;
+    URLPatternSet granted_hosts;
     for (size_t j = 0; kTests[i].granted_hosts[j] != NULL; ++j)
       AddPattern(&granted_hosts, kTests[i].granted_hosts[j]);
 

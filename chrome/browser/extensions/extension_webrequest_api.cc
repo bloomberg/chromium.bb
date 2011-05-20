@@ -805,7 +805,7 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   std::set<EventListener>& listeners = listeners_[profile_id][event_name];
   for (std::set<EventListener>::iterator it = listeners.begin();
        it != listeners.end(); ++it) {
-    if (!it->filter.urls.is_empty() && !it->filter.urls.ContainsURL(url))
+    if (!it->filter.urls.is_empty() && !it->filter.urls.MatchesURL(url))
       continue;
     if (it->filter.tab_id != -1 && tab_id != it->filter.tab_id)
       continue;

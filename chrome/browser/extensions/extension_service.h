@@ -349,7 +349,7 @@ class ExtensionService
   // Returns an extension that contains any URL that overlaps with the given
   // extent, if one exists.
   const Extension* GetExtensionByOverlappingWebExtent(
-      const ExtensionExtent& extent);
+      const URLPatternSet& extent);
 
   // Returns true if |url| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension

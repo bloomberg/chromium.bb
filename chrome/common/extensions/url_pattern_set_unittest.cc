@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,43 +14,43 @@ static const int kAllSchemes =
     URLPattern::SCHEME_FTP |
     URLPattern::SCHEME_CHROMEUI;
 
-TEST(ExtensionExtentTest, Empty) {
-  ExtensionExtent extent;
-  EXPECT_FALSE(extent.ContainsURL(GURL("http://www.foo.com/bar")));
-  EXPECT_FALSE(extent.ContainsURL(GURL()));
-  EXPECT_FALSE(extent.ContainsURL(GURL("invalid")));
+TEST(URLPatternSetTest, Empty) {
+  URLPatternSet extent;
+  EXPECT_FALSE(extent.MatchesURL(GURL("http://www.foo.com/bar")));
+  EXPECT_FALSE(extent.MatchesURL(GURL()));
+  EXPECT_FALSE(extent.MatchesURL(GURL("invalid")));
 }
 
-TEST(ExtensionExtentTest, One) {
-  ExtensionExtent extent;
+TEST(URLPatternSetTest, One) {
+  URLPatternSet extent;
   extent.AddPattern(URLPattern(kAllSchemes, "http://www.google.com/*"));
 
-  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/")));
-  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
-  EXPECT_FALSE(extent.ContainsURL(GURL("https://www.google.com/")));
-  EXPECT_FALSE(extent.ContainsURL(GURL("https://www.microsoft.com/")));
+  EXPECT_TRUE(extent.MatchesURL(GURL("http://www.google.com/")));
+  EXPECT_TRUE(extent.MatchesURL(GURL("http://www.google.com/monkey")));
+  EXPECT_FALSE(extent.MatchesURL(GURL("https://www.google.com/")));
+  EXPECT_FALSE(extent.MatchesURL(GURL("https://www.microsoft.com/")));
 }
 
-TEST(ExtensionExtentTest, Two) {
-  ExtensionExtent extent;
+TEST(URLPatternSetTest, Two) {
+  URLPatternSet extent;
   extent.AddPattern(URLPattern(kAllSchemes, "http://www.google.com/*"));
   extent.AddPattern(URLPattern(kAllSchemes, "http://www.yahoo.com/*"));
 
-  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
-  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.yahoo.com/monkey")));
-  EXPECT_FALSE(extent.ContainsURL(GURL("https://www.apple.com/monkey")));
+  EXPECT_TRUE(extent.MatchesURL(GURL("http://www.google.com/monkey")));
+  EXPECT_TRUE(extent.MatchesURL(GURL("http://www.yahoo.com/monkey")));
+  EXPECT_FALSE(extent.MatchesURL(GURL("https://www.apple.com/monkey")));
 }
 
-TEST(ExtensionExtentTest, OverlapsWith) {
-  ExtensionExtent extent1;
+TEST(URLPatternSetTest, OverlapsWith) {
+  URLPatternSet extent1;
   extent1.AddPattern(URLPattern(kAllSchemes, "http://www.google.com/f*"));
   extent1.AddPattern(URLPattern(kAllSchemes, "http://www.yahoo.com/b*"));
 
-  ExtensionExtent extent2;
+  URLPatternSet extent2;
   extent2.AddPattern(URLPattern(kAllSchemes, "http://www.reddit.com/f*"));
   extent2.AddPattern(URLPattern(kAllSchemes, "http://www.yahoo.com/z*"));
 
-  ExtensionExtent extent3;
+  URLPatternSet extent3;
   extent3.AddPattern(URLPattern(kAllSchemes, "http://www.google.com/q/*"));
   extent3.AddPattern(URLPattern(kAllSchemes, "http://www.yahoo.com/b/*"));
 

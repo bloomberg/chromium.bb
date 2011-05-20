@@ -15,7 +15,7 @@
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_extent.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 #include "ipc/ipc_message.h"
 #include "net/base/completion_callback.h"
 #include "webkit/glue/resource_type.h"
@@ -52,7 +52,7 @@ class ExtensionWebRequestEventRouter {
   // Internal representation of the webRequest.RequestFilter type, used to
   // filter what network events an extension cares about.
   struct RequestFilter {
-    ExtensionExtent urls;
+    URLPatternSet urls;
     std::vector<ResourceType::Type> types;
     int tab_id;
     int window_id;

@@ -9,17 +9,6 @@
 
 namespace {
 
-bool UrlMatchesPatterns(const UserScript::PatternList* patterns,
-                        const GURL& url) {
-  for (UserScript::PatternList::const_iterator pattern = patterns->begin();
-       pattern != patterns->end(); ++pattern) {
-    if (pattern->MatchesUrl(url))
-      return true;
-  }
-
-  return false;
-}
-
 bool UrlMatchesGlobs(const std::vector<std::string>* globs,
                      const GURL& url) {
   for (std::vector<std::string>::const_iterator glob = globs->begin();
@@ -68,12 +57,12 @@ UserScript::~UserScript() {
 }
 
 void UserScript::add_url_pattern(const URLPattern& pattern) {
-  url_patterns_.push_back(pattern);
+  url_set_.AddPattern(pattern);
 }
 
-bool UserScript::MatchesUrl(const GURL& url) const {
-  if (!url_patterns_.empty()) {
-    if (!UrlMatchesPatterns(&url_patterns_, url))
+bool UserScript::MatchesURL(const GURL& url) const {
+  if (!url_set_.is_empty()) {
+    if (!url_set_.MatchesURL(url))
       return false;
   }
 
@@ -123,9 +112,10 @@ void UserScript::Pickle(::Pickle* pickle) const {
   }
 
   // Write url patterns.
-  pickle->WriteSize(url_patterns_.size());
-  for (PatternList::const_iterator pattern = url_patterns_.begin();
-       pattern != url_patterns_.end(); ++pattern) {
+  URLPatternList pattern_list = url_set_.patterns();
+  pickle->WriteSize(pattern_list.size());
+  for (URLPatternList::const_iterator pattern = pattern_list.begin();
+       pattern != pattern_list.end(); ++pattern) {
     pickle->WriteInt(pattern->valid_schemes());
     pickle->WriteString(pattern->GetAsString());
   }
@@ -179,7 +169,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
   size_t num_patterns = 0;
   CHECK(pickle.ReadSize(iter, &num_patterns));
 
-  url_patterns_.clear();
+  url_set_.ClearPatterns();
   for (size_t i = 0; i < num_patterns; ++i) {
     int valid_schemes;
     CHECK(pickle.ReadInt(iter, &valid_schemes));
@@ -198,7 +188,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     if (!had_file_scheme)
       pattern.set_valid_schemes(valid_schemes);
 
-    url_patterns_.push_back(pattern);
+    url_set_.AddPattern(pattern);
   }
 
   // Read js scripts.

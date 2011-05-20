@@ -107,7 +107,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
     // Skip host permissions for hosted apps.
     const URLPatternList host_perms = extension.host_permissions();
     if (!host_perms.empty()) {
-      std::vector<URLPattern>::const_iterator host_perms_iter;
+      URLPatternList::const_iterator host_perms_iter;
       for (host_perms_iter = host_perms.begin();
            host_perms_iter != host_perms.end();
            ++host_perms_iter) {
