@@ -109,6 +109,13 @@ class BuilderStage():
       line = '*' * 60 + '\n'
       edge = '*' * 2
 
+      if ManifestVersionedSyncStage.manifest_manager:
+        file.write(line)
+        file.write(edge +
+                   " RELEASETAG: " +
+                   ManifestVersionedSyncStage.manifest_manager.current_version +
+                   '\n')
+
       file.write(line)
       file.write(edge + ' Stage Results\n')
 

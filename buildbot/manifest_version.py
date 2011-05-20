@@ -392,6 +392,8 @@ class BuildSpecsManager(object):
     self.current_build_spec = None
     self.compare_versions_fn = lambda s: map(int, s.split('.'))
 
+    self.current_version = None
+
   def _GetMatchingSpecs(self, version_info, directory):
     """Returns the sorted list of buildspecs that match '*.xml in a directory.'
     Args:

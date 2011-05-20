@@ -773,8 +773,10 @@ class BuildStagesResultsTest(unittest.TestCase):
     for i in xrange(len(expectedResults)):
       self.assertEqual(expectedResults[i], actualResults[i])
 
-  def testStagesReport(self):
+  def testStagesReportSuccess(self):
     """Tests Stage reporting."""
+
+    stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
     stages.BuilderStage.Results.Clear()
@@ -817,9 +819,32 @@ class BuildStagesResultsTest(unittest.TestCase):
     actualLines = results.getvalue().split('\n')
 
     # Break out the asserts to be per item to make debugging easier
-    self.assertEqual(len(expectedLines), len(actualLines))
     for i in xrange(len(expectedLines)):
       self.assertEqual(expectedLines[i], actualLines[i])
+    self.assertEqual(len(expectedLines), len(actualLines))
+
+  def testStagesReportError(self):
+    """Tests Stage reporting with exceptions."""
+
+    stages.ManifestVersionedSyncStage.manifest_manager = None
+
+    # Store off a known set of results and generate a report
+    stages.BuilderStage.Results.Clear()
+    stages.BuilderStage.Results.Record('Pass',
+                                       stages.BuilderStage.Results.SKIPPED)
+    stages.BuilderStage.Results.Record('Pass2',
+                                       stages.BuilderStage.Results.SUCCESS)
+    stages.BuilderStage.Results.Record('Fail', self.failException)
+    stages.BuilderStage.Results.Record(
+        'FailRunCommand',
+        cros_lib.RunCommandError(
+            'Command "/bin/false /nosuchdir" failed.\n',
+            ['/bin/false', '/nosuchdir']))
+    stages.BuilderStage.Results.Record(
+        'FailOldRunCommand',
+        cros_lib.RunCommandException(
+            'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
+            ['/bin/false', '/nosuchdir']))
 
     results = StringIO.StringIO()
 
@@ -849,9 +874,42 @@ class BuildStagesResultsTest(unittest.TestCase):
     actualLines = results.getvalue().split('\n')
 
     # Break out the asserts to be per item to make debugging easier
-#    self.assertEqual(len(expectedLines), len(actualLines))
     for i in xrange(len(expectedLines)):
       self.assertEqual(expectedLines[i], actualLines[i])
+    self.assertEqual(len(expectedLines), len(actualLines))
+
+  def testStagesReportReleaseTag(self):
+    """Tests Release Tag entry in stages report."""
+
+    manifest_manager = mox.MockAnything()
+    manifest_manager.current_version = "release_tag_string"
+    stages.ManifestVersionedSyncStage.manifest_manager = manifest_manager
+
+    # Store off a known set of results and generate a report
+    stages.BuilderStage.Results.Clear()
+    stages.BuilderStage.Results.Record('Pass',
+                                       stages.BuilderStage.Results.SUCCESS)
+
+    results = StringIO.StringIO()
+
+    stages.BuilderStage.Results.Report(results)
+
+    expectedResults = (
+        "************************************************************\n"
+        "** RELEASETAG: release_tag_string\n"
+        "************************************************************\n"
+        "** Stage Results\n"
+        "************************************************************\n"
+        "** Pass\n"
+        "************************************************************\n")
+
+    expectedLines = expectedResults.split('\n')
+    actualLines = results.getvalue().split('\n')
+
+    # Break out the asserts to be per item to make debugging easier
+    for i in xrange(len(expectedLines)):
+      self.assertEqual(expectedLines[i], actualLines[i])
+    self.assertEqual(len(expectedLines), len(actualLines))
 
   def testSaveCompletedStages(self):
     """Tests that we can save out completed stages."""
