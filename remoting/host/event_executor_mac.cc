@@ -171,9 +171,9 @@ const int kUsVkeyToKeysym[256] = {
   /* XF86kVK_Mail */ -1, /* XF86kVK_AudioMedia */ -1, /* XF86kVK_Launch0 */ -1,
   /* XF86kVK_Launch1 */ -1,
   // 0xB8 - 0xBB
-  -1, -1, kVK_ANSI_Semicolon, kVK_ANSI_KeypadPlus,
+  -1, -1, kVK_ANSI_Semicolon, kVK_ANSI_Equal,
   // 0xBC - 0xBF
-  kVK_ANSI_Comma, kVK_ANSI_KeypadMinus, kVK_ANSI_Period, kVK_ANSI_Slash,
+  kVK_ANSI_Comma, kVK_ANSI_Minus, kVK_ANSI_Period, kVK_ANSI_Slash,
 
   // 0xC0 - 0xC3
   kVK_ANSI_Grave, -1, -1, -1,
