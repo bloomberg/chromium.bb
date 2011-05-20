@@ -192,6 +192,31 @@ class InstantTest(pyauto.PyUITest):
     self.CloseBrowserWindow(1)
     self.assertEqual(self.GetActiveTabTitle(), 'about:blank')
 
+  def testPreFetchInstantURLNotInHistory(self):
+    """Test that pre-fetched URLs are not saved in History."""
+    self._BringUpInstant()
+    history = self.GetHistoryInfo().History()
+    self.assertFalse(history, msg='Pre-feteched URL saved in History')
+
+  def testPreFetchInstantURLGeneratesNoPopups(self):
+    """Test that pre-fetched URL does not generate popups."""
+    file_url = self.GetHttpURLForDataPath('pyauto_private', 'popup_blocker',
+                                          'PopupTest1.html')
+    # Set the preference to allow all sites to show popups.
+    self.SetPrefs(pyauto.kDefaultContentSettings, {u'popups': 1})
+    self.SetOmniboxText(file_url)
+    self.WaitUntilOmniboxQueryDone()
+    self.assertEqual(1, self.GetBrowserWindowCount(),
+                     msg='Pre-fetched URL generated popups.')
+
+  def testPreFetchInstantURLSetsNoCookies(self):
+    """Test that pre-fetched URL does not set cookies."""
+    file_url = self.GetHttpURLForDataPath('cookie1.html')
+    self.SetOmniboxText(file_url)
+    self.WaitUntilOmniboxQueryDone()
+    cookie_data = self.GetCookie(pyauto.GURL(file_url))
+    self.assertFalse(cookie_data, msg='Cookie set for pre-fetched instant URL')
+
   def _AssertInstantDoesNotDownloadFile(self, path):
     """Asserts instant does not download the specified file.
 
