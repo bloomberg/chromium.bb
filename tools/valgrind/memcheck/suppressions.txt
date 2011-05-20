@@ -3867,7 +3867,7 @@
    fun:_Znw*
    fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
    ...
-   fun:_ZN18TabContentsViewGtk10CreateViewERKN3gfx4SizeE
+   fun:_ZN18TabContentsView*CreateView*
    fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
    fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
    fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
@@ -4536,21 +4536,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN13BookmarkModel30CreateRootNodeFromStarredEntryERKN7history12StarredEntryE
-}
-{
-   bug_82642
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
-   fun:_ZN5views9WidgetGtk16InitNativeWidgetERKNS_6Widget10InitParamsE
-   fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
-   fun:_ZN24NativeTabContentsViewGtk25InitNativeTabContentsViewEv
-   fun:_ZN20TabContentsViewViews10CreateViewERKN3gfx4SizeE
-   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
-   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
-   fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
-   fun:_ZN25RenderViewHostTestHarness5SetUpEv
-   fun:_ZN19PasswordManagerTest5SetUpEv
 }
 {
    bug_82716a
