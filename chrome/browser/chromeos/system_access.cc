@@ -27,7 +27,7 @@ const char kTimezoneFilesDir[] = "/usr/share/zoneinfo/";
 
 // The system command that returns the hardware class.
 const char kHardwareClassKey[] = "hardware_class";
-const char* kHardwareClassTool[] = { "/usr/bin/hardware_class" };
+const char* kHardwareClassTool[] = { "crossystem", "hwid" };
 const char kUnknownHardwareClass[] = "unknown";
 
 // Command to get machine hardware info and key/value delimiters.
