@@ -178,7 +178,7 @@ void BlockedPlugin::OnSetIsPrerendering(bool is_prerendering) {
   // Prerendering can only be enabled prior to a RenderView's first navigation,
   // so no BlockedPlugin should see the notification that enables prerendering.
   DCHECK(!is_prerendering);
-  if (!is_prerendering)
+  if (is_blocked_for_prerendering_ && !is_prerendering)
     LoadPlugin();
 }
 

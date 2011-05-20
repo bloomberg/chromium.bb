@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -226,6 +227,9 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kPrerender,
                                     switches::kPrerenderSwitchValueEnabled);
+    // This is needed to enable click-to-play without triggering a DCHECK.
+    // It does not actually enable click-to-play.
+    command_line->AppendSwitchASCII(switches::kEnableClickToPlay, "");
 #if defined(OS_MACOSX)
     // The plugins directory isn't read by default on the Mac, so it needs to be
     // explicitly registered.
@@ -463,6 +467,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 // are loaded when the page is displayed.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
   PrerenderTestURL("files/prerender/plugin_delay_load.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that plugins are not loaded on prerendering pages when click-to-play
+// is enabled.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickToPlay) {
+  // Enable click-to-play.
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);
+
+  PrerenderTestURL("files/prerender/prerender_plugin_click_to_play.html",
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
