@@ -172,6 +172,12 @@
   fun:ui::GetWindowGeometry*
 }
 
+{
+  bug_83322
+  ThreadSanitizer:Race
+  fun:base::debug::Alias
+}
+
 ############################
 # Real races in third_party
 {
