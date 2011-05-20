@@ -116,14 +116,13 @@ body header > h1 {
 }
 
 #print-header {
-  -webkit-padding-end: 16px;
+  -webkit-padding-start: 16px;
   font-size: 13px;
   line-height: 22px;
   margin-bottom: 10px;
   margin-top: 10px;
   max-width: 616px;
   position: relative;
-  text-align: center;
 }
 
 p {
@@ -636,6 +635,7 @@ select {
 
 #mainview {
   -webkit-box-flex: 1;
+  -webkit-user-select: none;
   background-color: #ccc;
   position: relative;
 }
@@ -687,12 +687,16 @@ html[dir='rtl'] .messages {
 
 @-webkit-keyframes dancing-dots-jump {
   0% { top: 0; }
-  35% { top: 0; }
+  55% { top: 0; }
   60% { top: -10px; }
   80% { top: 3px; }
   90% { top: -2px; }
   95% { top: 1px; }
   100% { top: 0; }
+}
+
+#loading {
+  -webkit-margin-end: -3px;
 }
 
 #dancing-dots-text span span {
