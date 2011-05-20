@@ -42,8 +42,8 @@ class WindowSizer {
   // the monitors on the system.
   class MonitorInfoProvider {
    public:
-    MonitorInfoProvider();
-    virtual ~MonitorInfoProvider();
+    MonitorInfoProvider() {}
+    virtual ~MonitorInfoProvider() {}
 
     // Returns the bounds of the work area of the primary monitor.
     virtual gfx::Rect GetPrimaryMonitorWorkArea() const = 0;
@@ -85,7 +85,7 @@ class WindowSizer {
   // persistent store or an existing window.
   class StateProvider {
    public:
-    virtual ~StateProvider() { }
+    virtual ~StateProvider() {}
 
     // Retrieve the persisted bounds of the window. Returns true if there was
     // persisted data to retrieve state information, false otherwise.
@@ -136,11 +136,6 @@ class WindowSizer {
   // The edge of the screen to check for out-of-bounds.
   enum Edge { TOP, LEFT, BOTTOM, RIGHT };
 
-  explicit WindowSizer(const std::string& app_name);
-
-  void Init(StateProvider* state_provider,
-            MonitorInfoProvider* monitor_info_provider);
-
   // Gets the size and placement of the last window. Returns true if this data
   // is valid, false if there is no last window and the application should
   // restore saved state from preferences using RestoreWindowPosition.
@@ -182,4 +177,3 @@ class WindowSizer {
 };
 
 #endif  // CHROME_BROWSER_UI_WINDOW_SIZER_H_
-

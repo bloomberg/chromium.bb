@@ -34,7 +34,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       key.append(app_name_);
     }
 
-    if (!browser_->profile()->GetPrefs())
+    if (!browser_ || !browser_->profile()->GetPrefs())
       return false;
 
     const DictionaryValue* wp_pref =
@@ -108,19 +108,13 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// MonitorInfoProvider, public:
-
-WindowSizer::MonitorInfoProvider::MonitorInfoProvider() {}
-
-WindowSizer::MonitorInfoProvider::~MonitorInfoProvider() {}
-
-///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
 
 WindowSizer::WindowSizer(
     StateProvider* state_provider,
-    MonitorInfoProvider* monitor_info_provider) {
-  Init(state_provider, monitor_info_provider);
+    MonitorInfoProvider* monitor_info_provider)
+    : state_provider_(state_provider),
+      monitor_info_provider_(monitor_info_provider) {
 }
 
 WindowSizer::~WindowSizer() {
@@ -143,17 +137,6 @@ void WindowSizer::GetBrowserWindowBounds(const std::string& app_name,
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, private:
-
-WindowSizer::WindowSizer(const std::string& app_name) {
-  Init(new DefaultStateProvider(app_name, NULL),
-       CreateDefaultMonitorInfoProvider());
-}
-
-void WindowSizer::Init(StateProvider* state_provider,
-                       MonitorInfoProvider* monitor_info_provider) {
-  state_provider_ = state_provider;
-  monitor_info_provider_ = monitor_info_provider;
-}
 
 void WindowSizer::DetermineWindowBounds(const gfx::Rect& specified_bounds,
                                         gfx::Rect* bounds,
