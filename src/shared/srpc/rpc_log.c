@@ -24,20 +24,19 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
-/* TODO(sehr): Re-enable logging mutex when this does not require C++. */
-/* static struct NaClMutex log_mu; */
+static struct NaClMutex log_mu;
 
 #define VERBOSITY_NOT_SET ((int) (((unsigned) -1) >> 1))
 
 static int verbosity = VERBOSITY_NOT_SET;
 
 int NaClSrpcLogInit() {
-  /* NaClXMutexCtor(&log_mu); */
+  NaClXMutexCtor(&log_mu);
   return 1;
 }
 
 void NaClSrpcLogFini() {
-  /* NaClMutexDtor(&log_mu); */
+  NaClMutexDtor(&log_mu);
 }
 
 static int getVerbosity() {
@@ -62,6 +61,7 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
    * TODO(bsy,sehr): convert this when NaClLog is ready for SRPC levels, etc.
    */
   if (detail_level <= getVerbosity()) {
+    char timestamp[128];
     int pid = GETPID();
     va_list ap;
 #ifdef __native_client__
@@ -70,13 +70,15 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
     const char* host_or_nacl = "HOST";
 #endif
     va_start(ap, fmt);
-    /* NaClXMutexLock(&log_mu); */
+    NaClXMutexLock(&log_mu);
     fprintf(stderr,
-            "[SRPC:%s:%d] ",
+            "[SRPC:%s:%d,%"NACL_PRIu32":%s] ",
             host_or_nacl,
-            pid);
+            pid,
+            NaClThreadId(),
+            NaClTimeStampString(timestamp, sizeof timestamp));
     vfprintf(stderr, fmt, ap);
-    /* NaClXMutexUnlock(&log_mu); */
+    NaClXMutexUnlock(&log_mu);
     va_end(ap);
   }
 }
@@ -247,9 +249,13 @@ void NaClSrpcFormatArg(int detail_level,
       }
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      formatString("\"", &buffer, &buffer_size);
-      formatString(arg->arrays.str, &buffer, &buffer_size);
-      formatString("\"", &buffer, &buffer_size);
+      if (arg->arrays.str == NULL) {
+        formatString("(nil)", &buffer, &buffer_size);
+      } else {
+        formatString("\"", &buffer, &buffer_size);
+        formatString(arg->arrays.str, &buffer, &buffer_size);
+        formatString("\"", &buffer, &buffer_size);
+      }
       break;
       /*
        * The cases below are added to avoid warnings, they are only used
