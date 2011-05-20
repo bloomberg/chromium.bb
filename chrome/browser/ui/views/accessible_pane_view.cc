@@ -165,7 +165,7 @@ bool AccessiblePaneView::AcceleratorPressed(
     return false;
   }
 
-  switch (accelerator.GetKeyCode()) {
+  switch (accelerator.key_code()) {
     case ui::VKEY_ESCAPE:
       RemovePaneFocus();
       RestoreLastFocusedView();

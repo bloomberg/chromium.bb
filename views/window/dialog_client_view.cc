@@ -30,8 +30,8 @@
 #include "ui/gfx/native_theme.h"
 #else
 #include "ui/gfx/skia_utils_gtk.h"
-#include "views/window/hit_test.h"
 #include "views/widget/widget.h"
+#include "views/window/hit_test.h"
 #endif
 
 using ui::MessageBoxFlags;
@@ -396,7 +396,7 @@ gfx::Size DialogClientView::GetPreferredSize() {
 
 bool DialogClientView::AcceleratorPressed(const Accelerator& accelerator) {
   // We only expect Escape key.
-  DCHECK(accelerator.GetKeyCode() == ui::VKEY_ESCAPE);
+  DCHECK(accelerator.key_code() == ui::VKEY_ESCAPE);
   Close();
   return true;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ bool NativeMenuX::GetAccelerator(int id, views::Accelerator* accelerator) {
   if (!model->GetAcceleratorAt(index, &menu_accelerator))
     return false;
 
-  *accelerator = views::Accelerator(menu_accelerator.GetKeyCode(),
+  *accelerator = views::Accelerator(menu_accelerator.key_code(),
                                     menu_accelerator.modifiers());
   return true;
 }

@@ -22,22 +22,22 @@ namespace ui {
 namespace {
 
 bool IsShiftDown(const Accelerator& accelerator) {
-  return (accelerator.GetKeyCode() & VKEY_SHIFT) == VKEY_SHIFT;
+  return (accelerator.key_code() & VKEY_SHIFT) == VKEY_SHIFT;
 }
 
 bool IsCtrlDown(const Accelerator& accelerator) {
-  return (accelerator.GetKeyCode() & VKEY_CONTROL) == VKEY_CONTROL;
+  return (accelerator.key_code() & VKEY_CONTROL) == VKEY_CONTROL;
 }
 
 bool IsAltDown(const Accelerator& accelerator) {
-  return (accelerator.GetKeyCode() & VKEY_MENU) == VKEY_MENU;
+  return (accelerator.key_code() & VKEY_MENU) == VKEY_MENU;
 }
 
 }  // namespace
 
 string16 GetShortcutTextForAccelerator(const Accelerator& accelerator) {
   int string_id = 0;
-  switch(accelerator.GetKeyCode()) {
+  switch(accelerator.key_code()) {
     case ui::VKEY_TAB:
       string_id = IDS_APP_TAB_KEY;
       break;
@@ -94,19 +94,19 @@ string16 GetShortcutTextForAccelerator(const Accelerator& accelerator) {
     // accent' for '0'). For display in the menu (e.g. Ctrl-0 for the
     // default zoom level), we leave VK_[0-9] alone without translation.
     wchar_t key;
-    if (accelerator.GetKeyCode() >= '0' && accelerator.GetKeyCode() <= '9')
-      key = accelerator.GetKeyCode();
+    if (accelerator.key_code() >= '0' && accelerator.key_code() <= '9')
+      key = accelerator.key_code();
     else
-      key = LOWORD(::MapVirtualKeyW(accelerator.GetKeyCode(), MAPVK_VK_TO_CHAR));
+      key = LOWORD(::MapVirtualKeyW(accelerator.key_code(), MAPVK_VK_TO_CHAR));
     shortcut += key;
 #elif defined(OS_LINUX)
     const gchar* name = NULL;
-    switch (accelerator.GetKeyCode()) {
+    switch (accelerator.key_code()) {
       case ui::VKEY_OEM_2:
         name = static_cast<const gchar*>("/");
         break;
       default:
-        name = gdk_keyval_name(gdk_keyval_to_lower(accelerator.GetKeyCode()));
+        name = gdk_keyval_name(gdk_keyval_to_lower(accelerator.key_code()));
         break;
     }
     if (name) {

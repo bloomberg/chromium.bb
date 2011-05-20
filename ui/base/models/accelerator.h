@@ -12,7 +12,6 @@ namespace ui {
 
 // This is a cross-platform base class for accelerator keys used in menus. It is
 // meant to be subclassed for concrete toolkit implementations.
-
 class Accelerator {
  public:
   Accelerator() : key_code_(ui::VKEY_UNKNOWN), modifiers_(0) {}
@@ -52,14 +51,9 @@ class Accelerator {
     return !(*this == rhs);
   }
 
-  // TODO(beng): unix_hacker
-  ui::KeyboardCode GetKeyCode() const {
-    return key_code_;
-  }
+  ui::KeyboardCode key_code() const { return key_code_; }
 
-  int modifiers() const {
-    return modifiers_;
-  }
+  int modifiers() const { return modifiers_; }
 
  protected:
   // The keycode (VK_...).
@@ -76,9 +70,8 @@ class AcceleratorProvider {
  public:
   // Gets the accelerator for the specified command id. Returns true if the
   // command id has a valid accelerator, false otherwise.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) = 0;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          ui::Accelerator* accelerator) = 0;
 
  protected:
   virtual ~AcceleratorProvider() {}
@@ -87,4 +80,3 @@ class AcceleratorProvider {
 }  // namespace ui
 
 #endif  // UI_BASE_MODELS_ACCELERATOR_H_
-

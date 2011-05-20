@@ -60,7 +60,7 @@ gfx::Size HtmlDialogView::GetPreferredSize() {
 
 bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
   // Pressing ESC closes the dialog.
-  DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.GetKeyCode());
+  DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
   OnWindowClosed();
   OnDialogClosed(std::string());
   return true;

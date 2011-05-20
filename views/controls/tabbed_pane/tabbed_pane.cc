@@ -97,7 +97,7 @@ void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
 bool TabbedPane::AcceleratorPressed(const views::Accelerator& accelerator) {
   // We only accept Ctrl+Tab keyboard events.
-  DCHECK(accelerator.GetKeyCode() ==
+  DCHECK(accelerator.key_code() ==
       ui::VKEY_TAB && accelerator.IsCtrlDown());
 
   int tab_count = GetTabCount();

@@ -143,7 +143,7 @@ void BookmarkBubbleView::BubbleShown() {
 
 bool BookmarkBubbleView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  if (accelerator.GetKeyCode() != ui::VKEY_RETURN)
+  if (accelerator.key_code() != ui::VKEY_RETURN)
     return false;
 
   if (edit_button_->HasFocus())

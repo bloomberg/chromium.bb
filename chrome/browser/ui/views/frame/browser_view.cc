@@ -473,7 +473,7 @@ bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   // If accessibility is enabled, stop speech and return false so that key
   // combinations involving Search can be used for extra accessibility
   // functionality.
-  if (accelerator.GetKeyCode() == ui::VKEY_LWIN &&
+  if (accelerator.key_code() == ui::VKEY_LWIN &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kAccessibilityEnabled)) {
     ExtensionTtsController::GetInstance()->Stop();
@@ -2482,7 +2482,7 @@ void BrowserView::UpdateAcceleratorMetrics(
 #if defined(OS_CHROMEOS)
   // Collect information about the relative popularity of various accelerators
   // on Chrome OS.
-  const ui::KeyboardCode key_code = accelerator.GetKeyCode();
+  const ui::KeyboardCode key_code = accelerator.key_code();
   switch (command_id) {
     case IDC_BACK:
       if (key_code == ui::VKEY_BACK)

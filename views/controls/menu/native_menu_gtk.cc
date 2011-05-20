@@ -13,8 +13,8 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
@@ -439,7 +439,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     if (accelerator.IsAltDown())
       gdk_modifiers |= GDK_MOD1_MASK;
     gtk_widget_add_accelerator(menu_item, "activate", accel_group,
-        ui::GdkKeyCodeForWindowsKeyCode(accelerator.GetKeyCode(), false),
+        ui::GdkKeyCodeForWindowsKeyCode(accelerator.key_code(), false),
         static_cast<GdkModifierType>(gdk_modifiers), GTK_ACCEL_VISIBLE);
   }
 

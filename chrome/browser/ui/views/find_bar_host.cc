@@ -172,7 +172,7 @@ FindBarTesting* FindBarHost::GetFindBarTesting() {
 // FindBarWin, views::AcceleratorTarget implementation:
 
 bool FindBarHost::AcceleratorPressed(const views::Accelerator& accelerator) {
-  ui::KeyboardCode key = accelerator.GetKeyCode();
+  ui::KeyboardCode key = accelerator.key_code();
   if (key == ui::VKEY_RETURN && accelerator.IsCtrlDown()) {
     // Ctrl+Enter closes the Find session and navigates any link that is active.
     find_bar_controller_->EndFindSession(FindBarController::kActivateSelection);

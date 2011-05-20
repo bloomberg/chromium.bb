@@ -251,7 +251,7 @@ string16 GetAccessibleNameForWrenchMenuItem(
   ui::Accelerator menu_accelerator;
   if (model->GetAcceleratorAt(item_index, &menu_accelerator)) {
     accelerator_text =
-        views::Accelerator(menu_accelerator.GetKeyCode(),
+        views::Accelerator(menu_accelerator.key_code(),
                            menu_accelerator.modifiers()).GetShortcutText();
   }
 
@@ -637,7 +637,7 @@ bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
   if (!entry.first->GetAcceleratorAt(entry.second, &menu_accelerator))
     return false;
 
-  *accelerator = views::Accelerator(menu_accelerator.GetKeyCode(),
+  *accelerator = views::Accelerator(menu_accelerator.key_code(),
                                     menu_accelerator.modifiers());
   return true;
 }
