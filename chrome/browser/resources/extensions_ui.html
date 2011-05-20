@@ -31,14 +31,12 @@ div#header {
   display: inline;
   margin: 0;
   padding-bottom: 43px;
-  padding-left: 75px;
+  -webkit-padding-start: 75px;
   padding-top: 40px;
 }
 
 html[dir=rtl] #header h1 {
   background: url('../../app/theme/extensions_section.png') right no-repeat;
-  padding-right: 95px;
-  padding-left: 0;
 }
 
 h1 {
@@ -112,7 +110,7 @@ body.showDevMode .showInDevMode {
 }
 
 .developer-mode-link {
-  margin-right: 3px;
+  -webkit-margin-end: 3px;
   white-space: nowrap;
 }
 
@@ -192,23 +190,14 @@ html[dir=rtl] #get-moar-extensions {
 }
 
 .extension-views {
-  margin: 0 0 0;
-  margin-left: 2ex;
+  margin: 0;
+  -webkit-margin-start: 2ex;
   padding: 0;
   list-style-type: none;
 }
 
-html[dir=rtl] .extension-views {
-  margin: 0 2ex 0 0;
-}
-
 button {
   font-size: 104%;
-}
-
-#dialogBackground, #dialogBackground div {
-  display: -webkit-box;
-  -webkit-box-align: center;
 }
 
 #dialog input[type=button] {
@@ -232,8 +221,14 @@ button {
   top: 0;
   width: 100%;
   z-index: 1;
+  -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-user-select: none;
+}
+
+#dialogBody div {
+  display: -webkit-box;
+  -webkit-box-align: center;
 }
 
 html[dir=rtl] #dialogBackground {
@@ -244,6 +239,7 @@ html[dir=rtl] #dialogBackground {
 #dialogHBackground {
   height: 100%;
   -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
 }
 
 
@@ -254,6 +250,7 @@ html[dir=rtl] #dialogBackground {
   font-size: 12px;
   width: 600px;
   -webkit-box-orient: vertical;
+  -webkit-box-align: start;
 }
 
 html[dir=rtl] #dialog {
@@ -264,11 +261,7 @@ html[dir=rtl] #dialog {
   background-color: rgba(0,0,0,0);
   color: white;
   margin: 4px;
-  width: 100%;
-}
-
-html[dir=rtl] #dialogHeader {
-  margin-left: -20px;
+  -webkit-box-align: start;
 }
 
 #dialogBody {
@@ -276,7 +269,7 @@ html[dir=rtl] #dialogHeader {
   border: 1px solid #3A75BD;
   border-bottom-left-radius: 4px 4px;
   border-bottom-right-radius: 4px 4px;
-  margin: 0px 2px 2px 2px;
+  margin: 0px 2px 2px;
   -webkit-box-orient: vertical;
 }
 
@@ -285,7 +278,6 @@ html[dir=rtl] #dialogHeader {
 }
 
 .dialogBrowseRow {
-  -webkit-margin-start: -24px;
   width: 100%;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
@@ -293,6 +285,16 @@ html[dir=rtl] #dialogHeader {
 
 .dialogBrowseRow>* {
   margin: 2px
+}
+
+.dialogRowLabel {
+  -webkit-box-flex: 1;
+  -webkit-box-pack: end;  /* Bug: doesn't work in line-wrap */
+  text-align: right;
+}
+
+html[dir=rtl] .dialogRowLabel {
+  text-align: left;
 }
 
 #dialogContentFooter {
@@ -688,7 +690,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
             HEADING
           </div>
           <div class="dialogBrowseRow">
-            <div i18n-content="rootDirectoryLabel">
+            <div class="dialogRowLabel" i18n-content="rootDirectoryLabel">
               ROOT_DIR
             </div>
             <div>
@@ -701,7 +703,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
             </div>
           </div>
           <div class="dialogBrowseRow">
-            <div i18n-content="privateKeyLabel">
+            <div class="dialogRowLabel" i18n-content="privateKeyLabel">
               PRIVATE_KEY
             </div>
             <div>
@@ -735,7 +737,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
     <div id="extensionTemplate">
 
       <div id="container" class="vbox-container">
-      <div id="top" class="wbox" style="padding-right: 5px">
+      <div id="top" class="wbox" style="-webkit-padding-end: 5px">
 
         <div class="section-header">
           <table cellpadding="0" cellspacing="0" width="100%">
