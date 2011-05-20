@@ -15,7 +15,6 @@ import constants
 sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot as cbuildbot
 import chromite.buildbot.cbuildbot_config as config
-import chromite.lib.cros_build_lib as cros_lib
 
 
 class CBuildBotTest(mox.MoxTestBase):
@@ -136,82 +135,6 @@ class CBuildBotTest(mox.MoxTestBase):
     # Clean up after the test
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
-
-  def testGetManifestBranch(self):
-    """Verify helper function for getting the manifest branch."""
-    self.mox.StubOutWithMock(cbuildbot, '_RunCommandInFileDir')
-    output = ('cros/11.1.241.B\n'
-                     'cros/master\n'
-                     'm/11.1.241.B -> cros/11.1.241.B')
-    cbuildbot._RunCommandInFileDir(mox.In('branch')).AndReturn(output)
-
-    self.mox.ReplayAll()
-    manifest_branch = cbuildbot._GetManifestBranch()
-    self.mox.VerifyAll()
-    self.assertEquals(manifest_branch, '11.1.241.B')
-
-  def testGetTrackingBranchSuccess(self):
-    """Verify getting the tracking branch from the current branch."""
-    self.mox.StubOutWithMock(cbuildbot, '_RunCommandInFileDir')
-    (cbuildbot._RunCommandInFileDir(mox.In('symbolic-ref'))
-        .AndReturn('refs/heads/tracking'))
-    (cbuildbot._RunCommandInFileDir(mox.In('branch.tracking.merge'))
-        .AndReturn('refs/heads/master'))
-
-    self.mox.ReplayAll()
-    upstream_branch = cbuildbot._GetTrackingBranch()
-    self.mox.VerifyAll()
-    self.assertEquals(upstream_branch, 'master')
-
-  def testGetTrackingBranchDetachedHeadSuccess(self):
-    """Case where repo is on detached head of manifest branch."""
-    self.mox.StubOutWithMock(cbuildbot, '_RunCommandInFileDir')
-    self.mox.StubOutWithMock(cbuildbot, '_GetManifestBranch')
-    error = cros_lib.RunCommandError('error', 'command')
-
-    cbuildbot._RunCommandInFileDir(mox.In('symbolic-ref')).AndRaise(error)
-    cbuildbot._GetManifestBranch().AndReturn('master')
-    cbuildbot._RunCommandInFileDir(mox.In('rev-parse') and
-                                   mox.In('HEAD')).AndReturn('A2564A5B')
-    cbuildbot._RunCommandInFileDir(mox.In('rev-parse') and
-                                   mox.In('cros/master')).AndReturn('A2564A5B')
-    self.mox.ReplayAll()
-    upstream_branch = cbuildbot._GetTrackingBranch()
-    self.mox.VerifyAll()
-    self.assertEquals(upstream_branch, 'master')
-
-  def testGetTrackingBranchDetachedHeadFailure(self):
-    """Case where repo is on detached head, but not of manifest branch."""
-    self.mox.StubOutWithMock(cbuildbot, '_RunCommandInFileDir')
-    self.mox.StubOutWithMock(cbuildbot, '_GetManifestBranch')
-    error = cros_lib.RunCommandError('error', 'command')
-
-    cbuildbot._RunCommandInFileDir(mox.In('symbolic-ref')).AndRaise(error)
-    cbuildbot._GetManifestBranch().AndReturn('master')
-    cbuildbot._RunCommandInFileDir(mox.In('rev-parse') and
-                                   mox.In('HEAD')).AndReturn('A2564A5B')
-    cbuildbot._RunCommandInFileDir(mox.In('rev-parse') and
-                                   mox.In('cros/master')).AndReturn('BD3445CC')
-
-    self.mox.ReplayAll()
-    self.assertRaises(cbuildbot.BranchError, cbuildbot._GetTrackingBranch)
-    self.mox.VerifyAll()
-
-  def testGetTrackingBranchNoUpstream(self):
-    """Case where current branch is not tracking a remote branch."""
-    self.mox.StubOutWithMock(cbuildbot, '_RunCommandInFileDir')
-    self.mox.StubOutWithMock(cbuildbot, '_GetManifestBranch')
-    error = cros_lib.RunCommandError('error', 'command')
-
-    (cbuildbot._RunCommandInFileDir(mox.In('symbolic-ref'))
-        .AndReturn('refs/heads/tracking'))
-    (cbuildbot._RunCommandInFileDir(mox.In('branch.tracking.merge'))
-        .AndRaise(error))
-    cbuildbot._GetManifestBranch().AndReturn('master')
-
-    self.mox.ReplayAll()
-    self.assertRaises(cbuildbot.BranchError, cbuildbot._GetTrackingBranch)
-    self.mox.VerifyAll()
 
 
 if __name__ == '__main__':
