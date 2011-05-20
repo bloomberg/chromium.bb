@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_render_widget_host_view.h"
@@ -29,6 +30,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -80,6 +82,55 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
       const GURL& referrer) OVERRIDE {
     return new PrerenderContents(prerender_manager, profile, url, referrer);
   }
+};
+
+// TabContentsDelegateImpl -----------------------------------------------------
+
+class PrerenderContents::TabContentsDelegateImpl
+    : public TabContentsDelegate {
+ public:
+  explicit TabContentsDelegateImpl(PrerenderContents* prerender_contents) :
+      prerender_contents_(prerender_contents) {
+  }
+  virtual void OpenURLFromTab(TabContents* source,
+                              const GURL& url, const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition) {}
+  virtual void NavigationStateChanged(const TabContents* source,
+                                      unsigned changed_flags) {}
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) {}
+  virtual void ActivateContents(TabContents* contents) {}
+  virtual void DeactivateContents(TabContents* contents) {}
+  virtual void LoadingStateChanged(TabContents* source) {}
+  virtual void CloseContents(TabContents* source) {}
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+  virtual bool ShouldAddNavigationToHistory(
+      const history::HistoryAddPageArgs& add_page_args,
+      NavigationType::Type navigation_type) {
+    add_page_vector_.push_back(
+        scoped_refptr<history::HistoryAddPageArgs>(add_page_args.Clone()));
+    return false;
+  }
+  // Commits the History of Pages to the given TabContents.
+  void CommitHistory(TabContents* tc) {
+    DCHECK(tc != NULL);
+    for (size_t i = 0; i < add_page_vector_.size(); ++i)
+      tc->UpdateHistoryForNavigation(add_page_vector_[i].get());
+  }
+
+ private:
+  typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
+      AddPageVector;
+
+  // Caches pages to be added to the history.
+  AddPageVector add_page_vector_;
+
+  PrerenderContents* prerender_contents_;
 };
 
 PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
@@ -227,6 +278,9 @@ void PrerenderContents::StartPrerendering(
       prerender_contents_->controller().set_max_restored_page_id(
           max_page_id + 10);
     }
+
+    tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
+    new_contents->set_delegate(tab_contents_delegate_.get());
 
     // Set the size of the new TC to that of the old TC.
     gfx::Rect tab_bounds;
@@ -762,6 +816,11 @@ const RenderViewHost* PrerenderContents::render_view_host() const {
     return prerender_contents_->render_view_host();
   }
   return render_view_host_;
+}
+
+void PrerenderContents::CommitHistory(TabContents* tc) {
+  if (tab_contents_delegate_.get())
+    tab_contents_delegate_->CommitHistory(tc);
 }
 
 }  // namespace prerender

@@ -565,6 +565,16 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
       false);
   old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
                                                 new_tab_contents);
+  prerender_contents->CommitHistory(new_tab_contents->tab_contents());
+
+  GURL icon_url = prerender_contents->icon_url();
+  if (!icon_url.is_empty()) {
+    std::vector<FaviconURL> urls;
+    urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
+    new_tab_contents->favicon_tab_helper()->OnUpdateFaviconURL(
+        prerender_contents->page_id(),
+        urls);
+  }
 
   // See if we have any pending prerender requests for this routing id and start
   // the preload if we do.

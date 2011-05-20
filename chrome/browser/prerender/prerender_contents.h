@@ -243,6 +243,10 @@ class PrerenderContents : public RenderViewHostDelegate,
     return true;
   }
 
+  // Applies all the URL history encountered during prerendering to the
+  // new tab.
+  void CommitHistory(TabContents* tc);
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
                     Profile* profile,
@@ -260,6 +264,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   virtual void OnRenderViewHostCreated(RenderViewHost* new_render_view_host);
 
  private:
+  class TabContentsDelegateImpl;
+
   // Needs to be able to call the constructor.
   friend class PrerenderContentsFactoryImpl;
 
@@ -334,6 +340,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   scoped_ptr<TabContentsWrapper> prerender_contents_;
 
   scoped_ptr<PrerenderRenderViewHostObserver> render_view_host_observer_;
+
+  scoped_ptr<TabContentsDelegateImpl> tab_contents_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
