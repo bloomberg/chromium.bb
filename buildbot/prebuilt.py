@@ -131,10 +131,12 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   new_file_fh.close()
 
 
-def RevGitPushWithRetry(retries=5):
+def RevGitPushWithRetry(tracking_branch, cwd, retries=5):
   """Repo sync and then push git changes in flight.
 
     Args:
+      tracking_branch: Branch to rebase against.
+      cwd: Directory to push in.
       retries: The number of times to retry before giving up, default: 5
 
     Raises:
@@ -142,8 +144,9 @@ def RevGitPushWithRetry(retries=5):
   """
   for retry in range(1, retries + 1):
     try:
-      cros_build_lib.RunCommand(['repo', 'sync', '.'])
-      cros_build_lib.RunCommand(['git', 'push'])
+      cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=cwd)
+      cros_build_lib.RunCommand(['git', 'rebase', tracking_branch], cwd=cwd)
+      cros_build_lib.RunCommand(['git', 'push'], cwd=cwd)
       break
     except cros_build_lib.RunCommandError:
       if retry < retries:
@@ -151,6 +154,22 @@ def RevGitPushWithRetry(retries=5):
         time.sleep(5 * retry)
   else:
     raise GitPushFailed('Failed to push change after %s retries' % retries)
+
+
+def _GetTrackingBranch(branch, cwd):
+  """Get the tracking branch for the specified branch / directory.
+
+  Args:
+    branch: Branch to examine for tracking branch.
+    cwd: Directory to look in.
+  """
+  info = {}
+  for key in ('remote', 'merge'):
+    cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
+    info[key] = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                                          cwd=cwd).output.strip()
+  assert info["merge"].startswith("refs/heads/")
+  return info["merge"].replace("refs/heads", info["remote"])
 
 
 def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
@@ -165,30 +184,31 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
         (Default: PORTAGE_BINHOST)
   """
   prebuilt_branch = 'prebuilt_branch'
-  old_cwd = os.getcwd()
-  os.chdir(os.path.dirname(filename))
-
-  commit = cros_build_lib.RunCommand(['git', 'rev-parse', 'HEAD'],
+  cwd = os.path.abspath(os.path.dirname(filename))
+  commit = cros_build_lib.RunCommand(['git', 'rev-parse', 'HEAD'], cwd=cwd,
                                      redirect_stdout=True).output.rstrip()
-  cros_build_lib.RunCommand(['git', 'remote', 'update'])
-  cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'])
   git_ssh_config_cmd = [
       'git',
       'config',
-      'url.ssh://git@gitrw.chromium.org:9222.pushinsteadof',
-      'http://git.chromium.org/git' ]
-  cros_build_lib.RunCommand(git_ssh_config_cmd)
+      'url.ssh://gerrit.chromium.org:29418.insteadof',
+      'http://git.chromium.org']
+  cros_build_lib.RunCommand(git_ssh_config_cmd, cwd=cwd)
+  cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=cwd)
+  cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'], cwd=cwd)
+  tracking_branch = _GetTrackingBranch(prebuilt_branch, cwd=cwd)
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
   try:
     UpdateLocalFile(filename, value, key)
-    cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'])
-    cros_build_lib.RunCommand(['git', 'commit', '-am', description])
-    RevGitPushWithRetry(retries)
+    cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
+                              cwd=cwd)
+    cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
+    cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
+    RevGitPushWithRetry(tracking_branch, cwd, retries)
   finally:
-    cros_build_lib.RunCommand(['repo', 'abandon', 'prebuilt_branch', '.'])
-    cros_build_lib.RunCommand(['git', 'checkout', commit])
-    os.chdir(old_cwd)
+    cros_build_lib.RunCommand(['git', 'checkout', commit], cwd=cwd)
+    cros_build_lib.RunCommand(['repo', 'abandon', 'prebuilt_branch', '.'],
+                              cwd=cwd)
 
 
 def GetVersion():
