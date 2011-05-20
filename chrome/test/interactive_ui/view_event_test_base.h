@@ -6,8 +6,6 @@
 #define CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
 #pragma once
 
-#if defined(HAS_OUT_OF_PROC_TEST_RUNNER)
-
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -123,6 +121,9 @@ class ViewEventTestBase : public views::WindowDelegate,
   // supplied task and if there are failures invokes Done.
   void RunTestMethod(Task* task);
 
+  // Called when the test has been running for longer than expected.
+  void TimedOut();
+
   // The content of the Window.
   views::View* content_view_;
 
@@ -143,7 +144,5 @@ class ViewEventTestBase : public views::WindowDelegate,
   TEST_F(test_class, name) {\
     StartMessageLoopAndRunTest();\
   }
-
-#endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #endif  // CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
