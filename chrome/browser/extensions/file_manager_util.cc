@@ -81,11 +81,19 @@ bool FileManagerUtil::ConvertFileToFileSystemUrl(
        iter != root_dirs.end();
        ++iter) {
     FilePath path;
+    std::vector<FilePath::StringType> components;
     const FilePath& root_path = *iter;
+    root_path.GetComponents(&components);
+    if (!components.size()) {
+      NOTREACHED();
+      continue;
+    }
     if (root_path.AppendRelativePath(full_file_path, &path)) {
       GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
           fileapi::kFileSystemTypeExternal);
-      *url = GURL(base_url.spec() + root_path.Append(path).value().substr(1));
+      std::string final_url = base_url.spec();
+      FilePath relative_path(components[components.size() - 1]);
+      *url = GURL(base_url.spec() + relative_path.Append(path).value());
       return true;
     }
   }
@@ -154,7 +162,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
     return;
   }
 
-  // Unknwon file type. Show an error message.
+  // Unknown file type. Show an error message.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
