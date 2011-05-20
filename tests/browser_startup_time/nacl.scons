@@ -52,6 +52,8 @@ node = env.PPAPIBrowserTester(
     # Assume verbosity level of 1 will give us NaClLogs for sel_ldr times.
     log_verbosity=1)
 
+# TODO(jvoung): re-enable when it works on the integration bots / sandboxed.
+# http://code.google.com/p/nativeclient/issues/detail?id=1833
 # TODO(jvoung): use a single test suite when either
 # (a) performance_tests are always run, or
 # (b) we have decided to just fold this test into chrome_browser_tests.
@@ -59,7 +61,7 @@ test_suites = ['chrome_browser_tests', 'performance_tests']
 env.AddNodeToTestSuite(node,
                        test_suites,
                        'run_browser_startup_time_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or True)
 
 # Also check the size of this nexe.
 node = env.FileSizeTest('browser_startup_size.out',
