@@ -429,6 +429,11 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
   host_config_ = host_config;
   register_request_ = register_request;
 
+  // Start the Host.
+  // TODO(wez): Attach to the Host for notifications of state changes.
+  // It currently has no interface for that, though.
+  host_->Start(NewRunnableMethod(this, &HostNPScriptObject::OnHostShutdown));
+
   OnStateChanged(kRequestedAccessCode);
   return true;
 }
@@ -468,12 +473,6 @@ void HostNPScriptObject::OnReceivedSupportID(bool success,
   // TODO(wez): Locking, anyone?
   access_code_ = support_id + "-" + host_secret_;
   host_secret_ = std::string();
-
-  // TODO(wez): Attach to the Host for notifications of state changes.
-  // It currently has no interface for that, though.
-
-  // Start the Host.
-  host_->Start(NewRunnableMethod(this, &HostNPScriptObject::OnHostShutdown));
 
   // Let the caller know that life is good.
   OnStateChanged(kReceivedAccessCode);
