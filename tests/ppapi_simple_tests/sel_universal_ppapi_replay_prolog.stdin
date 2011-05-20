@@ -98,15 +98,10 @@ echo
 echo "*** REGISTER REPLAY METHODS"
 replay_activate
 
-# This is not strictly necessary
-echo
-echo "*** INITIALIZE PEPPER"
-initialize_pepper pepper_desc
-
 # Create a upcall service on the channel between nexe and sel_univeral.
 # The service string is save into the variable "service_string".
 echo
 echo "*** CREATE UPCALL SERVICE"
-install_upcalls service_string
+install_upcalls service_string pepper_desc
 # the variable service string is very long and might change so we suppress it
-nondeterministic s("${service_string}") @LENGTHY_SERIVE_STRING
+nondeterministic s("${service_string}") @LENGTHY_SERVICE_STRING

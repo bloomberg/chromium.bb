@@ -12,12 +12,19 @@
 #include <string.h>
 #include <sstream>
 
+#include "native_client/src/include/portability.h"
+
 #include "native_client/src/include/nacl_base.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
@@ -25,6 +32,9 @@
 #define kMaxCommandLineLength 4096
 
 using std::stringstream;
+
+using nacl::DescWrapperFactory;
+using nacl::DescWrapper;
 
 static NaClSrpcImcDescType DescFromPlatformDesc(int fd, int mode) {
   return
@@ -122,6 +132,19 @@ void NaClCommandLoop::AddUpcallRpc(string name, NaClSrpcMethod rpc) {
 }
 
 
+void NaClCommandLoop::AddUpcallRpcSecondary(string name, NaClSrpcMethod rpc) {
+  if (upcall_installed_) {
+    NaClLog(LOG_ERROR, "upcall service is already install - ignoring\n");
+    return;
+  }
+
+  if (upcall_rpcs_secondary_.find(name) != upcall_rpcs_secondary_.end()) {
+    NaClLog(LOG_ERROR, "rpc (secondary) %s already exists\n", name.c_str());
+  }
+  upcall_rpcs_secondary_[name] = rpc;
+}
+
+
 void NaClCommandLoop::DumpArgsAndResults(NaClSrpcArg* inv[],
                                          NaClSrpcArg* outv[]) {
   for (size_t j = 0; inv[j] != NULL; ++j) {
@@ -204,6 +227,7 @@ bool NaClCommandLoop::HandleSetVariable(NaClCommandLoop* ncl,
   return true;
 }
 
+
 bool NaClCommandLoop::HandleNondeterministic(NaClCommandLoop* ncl,
                                              const vector<string>& args) {
   if (args.size() != 3) {
@@ -213,6 +237,7 @@ bool NaClCommandLoop::HandleNondeterministic(NaClCommandLoop* ncl,
   ncl->RegisterNonDeterministicOutput(args[1], args[2]);
   return true;
 }
+
 
 bool NaClCommandLoop::HandleEcho(NaClCommandLoop* ncl,
                                  const vector<string>& args) {
@@ -226,22 +251,14 @@ bool NaClCommandLoop::HandleEcho(NaClCommandLoop* ncl,
   return true;
 }
 
-
-bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
-                                           const vector<string>& args) {
-  if (args.size() != 2) {
-    NaClLog(LOG_ERROR, "not the right number of args for this command\n");
-    return false;
-  }
-
-  NaClLog(1, "installing %d upcall rpcs", (int)ncl->upcall_rpcs_.size());
-  // Note, we do not care about this leak
+static NaClSrpcHandlerDesc* MakeDescriptorArray(
+  const map<string, NaClSrpcMethod>& method_map) {
   NaClSrpcHandlerDesc* handlers =
-    new NaClSrpcHandlerDesc[ncl->upcall_rpcs_.size() + 1];
+    new NaClSrpcHandlerDesc[method_map.size() + 1];
 
   NaClSrpcHandlerDesc* curr = handlers;
   typedef map<string, NaClSrpcMethod>::const_iterator Ci;
-  for (Ci it = ncl->upcall_rpcs_.begin(); it != ncl->upcall_rpcs_.end(); ++it) {
+  for (Ci it = method_map.begin(); it != method_map.end(); ++it) {
     curr->entry_fmt = it->first.c_str();
     curr->handler = it->second;
     ++curr;
@@ -250,6 +267,58 @@ bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
   // terminate the handlers with a zero sentinel
   curr->entry_fmt = 0;
   curr->handler = 0;
+  return handlers;
+}
+
+
+static void Unimplemented(NaClSrpcRpc* rpc,
+                          NaClSrpcArg** inputs,
+                          NaClSrpcArg** outputs,
+                          NaClSrpcClosure* done) {
+  UNREFERENCED_PARAMETER(inputs);
+  UNREFERENCED_PARAMETER(outputs);
+  UNREFERENCED_PARAMETER(done);
+
+  const char* rpc_name;
+  const char* arg_types;
+  const char* ret_types;
+
+  if (NaClSrpcServiceMethodNameAndTypes(rpc->channel->server,
+                                        rpc->rpc_number,
+                                        &rpc_name,
+                                        &arg_types,
+                                        &ret_types)) {
+    NaClLog(LOG_ERROR, "cannot find signature for rpc %d\n", rpc->rpc_number);
+  }
+
+  // TODO(robertm): add full argument printing
+  printf("invoking: %s (%s) -> %s\n", rpc_name, arg_types, ret_types);
+}
+
+
+// Makes data available to SecondaryHandlerThread.
+static NaClSrpcHandlerDesc* SecondaryHandlers = 0;
+
+void WINAPI SecondaryHandlerThread(void* desc_void) {
+  DescWrapper* desc = reinterpret_cast<DescWrapper*>(desc_void);
+
+  NaClLog(1, "secondary service thread started %p\n", desc_void);
+  NaClSrpcServerLoop(desc->desc(), SecondaryHandlers, NULL);
+  NaClLog(1, "secondary service thread stopped\n");
+  NaClThreadExit(0);
+}
+
+bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
+                                           const vector<string>& args) {
+  if (args.size() != 3) {
+    NaClLog(LOG_ERROR, "not the right number of args for this command\n");
+    return false;
+  }
+
+  NaClLog(1, "installing %d primary upcall rpcs",
+          (int)ncl->upcall_rpcs_.size());
+  // Note, we do not care about this leak
+  NaClSrpcHandlerDesc* handlers = MakeDescriptorArray(ncl->upcall_rpcs_);
 
   // Note, we do not care about this leak
   NaClSrpcService* service =
@@ -259,6 +328,37 @@ bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
   }
   ncl->channel_->server = service;
   ncl->SetVariable(args[1], service->service_string);
+
+  // NOTE: Make sure there is at least one entry.
+  // weird things happen otherwise
+  ncl->AddUpcallRpcSecondary("Dummy::", &Unimplemented);
+  NaClLog(1, "installing %d secondary upcall rpcs",
+          (int)ncl->upcall_rpcs_secondary_.size());
+
+  SecondaryHandlers = MakeDescriptorArray(ncl->upcall_rpcs_secondary_);
+  DescWrapperFactory* factory = new DescWrapperFactory();
+  // NOTE: these are really NaClDescXferableDataDesc. Code was mimicked after
+  //       the exisiting plugin code
+  NaClLog(1, "create socket pair so that client can make pepper upcalls\n");
+
+  DescWrapper* descs[2] = { NULL, NULL };
+  if (0 != factory->MakeSocketPair(descs)) {
+    NaClLog(LOG_FATAL, "cannot create socket pair\n");
+  }
+
+  NaClLog(1, "spawning secondary service thread\n");
+
+  NaClThread thread;
+  if (!NaClThreadCtor(
+        &thread,
+        SecondaryHandlerThread,
+        descs[0],
+        128 << 10)) {
+    NaClLog(LOG_FATAL, "cannot create service handler thread\n");
+  }
+
+  ncl->AddDesc(descs[1]->desc(),  args[2]);
+
   ncl->upcall_installed_ = true;
   return true;
 }

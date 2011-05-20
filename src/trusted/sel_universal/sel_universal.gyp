@@ -15,7 +15,6 @@
                     'file_handler.cc',
                     'postmessage_handler.cc',
                     'replay_handler.cc',
-                    'pepper_handler.cc',
                     'parsing.cc',
                     ],
   },

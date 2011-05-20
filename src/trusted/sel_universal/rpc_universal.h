@@ -33,6 +33,7 @@ class NaClCommandLoop {
   void AddHandler(string name, CommandHandler handler);
   void AddDesc(NaClDesc* desc, string name);
   void AddUpcallRpc(string signature, NaClSrpcMethod rpc);
+  void AddUpcallRpcSecondary(string signature, NaClSrpcMethod rpc);
   string AddDescUniquify(NaClDesc* desc, string prefix);
   NaClSrpcImcDescType FindDescByName(string name) const;
   NaClSrpcService* getService() const { return service_; }
@@ -72,6 +73,7 @@ class NaClCommandLoop {
   map<string, NaClSrpcImcDescType> descs_;
   map<string, CommandHandler> handlers_;
   map<string, NaClSrpcMethod> upcall_rpcs_;
+  map<string, NaClSrpcMethod> upcall_rpcs_secondary_;
   bool upcall_installed_;
 };
 

@@ -289,8 +289,6 @@ int raii_main(int argc, char* argv[]) {
   // show_descriptors
   // rpc PPP_InitializeModule i(0) l(0) h(pepper) s("${service}") * i(0) i(0)
 
-  loop.AddHandler("initialize_pepper", HandlerPepperInit);
-
   loop.AddHandler("replay_activate", HandlerReplayActivate);
   loop.AddHandler("replay", HandlerReplay);
   loop.AddHandler("replay_unused", HandlerUnusedReplays);

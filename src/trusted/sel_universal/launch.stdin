@@ -10,12 +10,6 @@ set_variable TAGS C(23,id\000name\000src\000style\000type\000)
 set_variable VALUES C(74,naclModule\000naclModule\000ppapi.nexe\000background-color:gray\000application/x-nacl\000)
 
 echo
-echo "*** INITIALIZE DUMMY PEPPER UPCALL"
-# This initializes the secondary srpc channel that is currently not used
-# but we need to create the handle to pass it in PPP_InitializeModule
-initialize_pepper pepper_desc
-
-echo
 echo "*** INITIALIZE SDL PEPPER"
 # this registers the currently supported PPB_xxx rpcs
 sdl_initialize  ${INSTANCE} ${WIDTH} ${HEIGHT} demo
@@ -28,9 +22,9 @@ postmessage_initialize
 echo
 echo "*** CREATE UPCALL SERVICE"
 # advertise the registered rpcs to the nexe
-install_upcalls service_string
+install_upcalls service_string pepper_desc
 # the variable service string is very long and might change so we suppress it
-nondeterministic s("${service_string}") @LENGTHY_SERIVE_STRING
+nondeterministic s("${service_string}") @LENGTHY_SERVICE_STRING
 
 echo
 echo "*** INIT MODULE"
