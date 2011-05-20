@@ -41,6 +41,9 @@ class FileSystemOperationContext;
 // SandboxMountPointProvider [and the task it uses to drop the reference] and
 // SandboxMountPointProvider::GetFileSystemRootPathTask.  Without that last one,
 // we wouldn't need ref counting.
+//
+// TODO(ericu): We don't ever update directory mtimes; which operations should
+// do that?
 class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
     public base::RefCountedThreadSafe<ObfuscatedFileSystemFileUtil> {
  public:
@@ -131,6 +134,21 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   // about migration; TODO(ericu): implement migration and fix these comments.
   FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
 
+  // This will migrate a filesystem from the old passthrough sandbox into the
+  // new obfuscated one.  It won't obfuscate the old filenames [it will maintain
+  // the old structure, but move it to a new root], but any new files created
+  // will go into the new standard locations.  This will be completely
+  // transparent to the user.  This migration is atomic in that it won't alter
+  // the source data until it's done, and that will be with a single directory
+  // move [the directory with the unguessable name will move into the new
+  // filesystem storage directory].  However, if this fails partway through, it
+  // might leave a seemingly-valid database for this origin.  When it starts up,
+  // it will clear any such database, just in case.
+  bool MigrateFromOldSandbox(
+      const GURL& origin, FileSystemType type, const FilePath& root);
+
+  FilePath::StringType GetDirectoryNameForType(FileSystemType type) const;
+
  protected:
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
@@ -142,29 +160,41 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
 
   // Creates a new file, both the underlying backing file and the entry in the
   // database.  file_info is an in-out parameter.  Supply the name and
-  // parent_id; supply data_path if you want it to be used as a source from
-  // which to COPY data--otherwise leave it empty.  On success, data_path will
-  // always be set to the full path of a NEW backing file, and handle, if
-  // supplied, will hold open PlatformFile for the backing file, which the
-  // caller is responsible for closing.
+  // parent_id; data_path is ignored.  On success, data_path will
+  // always be set to the relative path [from the root of the type-specific
+  // filesystem directory] of a NEW backing file, and handle, if supplied, will
+  // hold open PlatformFile for the backing file, which the caller is
+  // responsible for closing.  If you supply a path in source_path, it will be
+  // used as a source from which to COPY data.
   // Caveat: do not supply handle if you're also supplying a data path.  It was
   // easier not to support this, and no code has needed it so far, so it will
   // DCHECK and handle will hold base::kInvalidPlatformFileValue.
   base::PlatformFileError CreateFile(
       FileSystemOperationContext* context,
       const GURL& origin_url, FileSystemType type,
-      FileInfo* file_info,
+      const FilePath& source_path, FileInfo* file_info,
       int file_flags, base::PlatformFile* handle);
   // Given the filesystem's root URL and a virtual path, produces a real, full
-  // local path to the underlying data file.
+  // local path to the underlying data file.  This does a database lookup, and
+  // verifies that the file exists.
   FilePath GetLocalPath(
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path);
+  // This converts from a relative path [as is stored in the FileInfo.data_path
+  // field] to an absolute local path that can be given to the operating system.
+  // It does no checks as to whether the file actually exists; it's pure path
+  // manipulation.
+  FilePath DataPathToLocalPath(
+      const GURL& origin, FileSystemType type, const FilePath& data_path);
+  // This does the reverse of DataPathToLocalPath.
+  FilePath LocalPathToDataPath(
+      const GURL& origin, FileSystemType type, const FilePath& local_path);
   FileSystemDirectoryDatabase* GetDirectoryDatabase(
       const GURL& origin_url, FileSystemType type);
   void MarkUsed();
   void DropDatabases();
+  bool DestroyDirectoryDatabase(const GURL& origin, FileSystemType type);
 
   typedef std::map<std::string, FileSystemDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;

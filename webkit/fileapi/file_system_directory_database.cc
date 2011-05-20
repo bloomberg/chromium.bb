@@ -389,6 +389,22 @@ bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
   return GetNextInteger(next);
 }
 
+// static
+bool FileSystemDirectoryDatabase::DestroyDatabase(const FilePath& path) {
+  std::string name;
+#if defined(OS_POSIX)
+  name = path.value();
+#elif defined(OS_WIN)
+  name = base::SysWideToUTF8(path.value());
+#endif
+  leveldb::Status status = leveldb::DestroyDB(name, leveldb::Options());
+  if (status.ok())
+    return true;
+  LOG(WARNING) << "Failed to destroy a database with status " <<
+      status.ToString();
+  return false;
+}
+
 bool FileSystemDirectoryDatabase::Init() {
  if (db_.get())
    return true;

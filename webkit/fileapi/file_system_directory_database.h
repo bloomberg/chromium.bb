@@ -80,6 +80,8 @@ class FileSystemDirectoryDatabase {
   // creation/destruction of FileSystemDirectoryDatabase objects.
   bool GetNextInteger(int64* next);
 
+  static bool DestroyDatabase(const FilePath& path);
+
  private:
   bool Init();
   bool StoreDefaultValues();

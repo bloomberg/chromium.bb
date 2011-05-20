@@ -66,6 +66,33 @@ const CopyMoveTestCaseRecord kCopyMoveTestCases[] = {
   {false, "dir0/file0", "dir1/file1", true},
 };
 
+struct MigrationTestCaseRecord {
+  bool is_directory;
+  const FilePath::CharType path[64];
+  int64 data_file_size;
+};
+
+const MigrationTestCaseRecord kMigrationTestCases[] = {
+  {true, FILE_PATH_LITERAL("dir a"), 0},
+  {true, FILE_PATH_LITERAL("dir a/dir a"), 0},
+  {true, FILE_PATH_LITERAL("dir a/dir d"), 0},
+  {true, FILE_PATH_LITERAL("dir a/dir d/dir e"), 0},
+  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir f"), 0},
+  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g"), 0},
+  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir h"), 0},
+  {true, FILE_PATH_LITERAL("dir b"), 0},
+  {true, FILE_PATH_LITERAL("dir b/dir a"), 0},
+  {true, FILE_PATH_LITERAL("dir c"), 0},
+  {false, FILE_PATH_LITERAL("file 0"), 38},
+  {false, FILE_PATH_LITERAL("file 2"), 60},
+  {false, FILE_PATH_LITERAL("file 3"), 0},
+  {false, FILE_PATH_LITERAL("dir a/file 0"), 39},
+  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 0"), 40},
+  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 1"), 41},
+  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 2"), 42},
+  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 3"), 50},
+};
+
 }  // namespace (anonymous)
 
 // TODO(ericu): The vast majority of this and the other FSFU subclass tests
@@ -98,6 +125,10 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
   ObfuscatedFileSystemFileUtil* ofsfu() {
     return obfuscated_file_system_file_util_.get();
+  }
+
+  const FilePath& test_directory() const {
+    return data_dir_.path();
   }
 
   int64 GetSize(const FilePath& path) {
@@ -752,4 +783,71 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestEnumerator) {
       ofsfu()->Delete(context.get(), dest_path, recursive));
   context.reset(NewContext());
   EXPECT_FALSE(ofsfu()->DirectoryExists(context.get(), dest_path));
+}
+
+TEST_F(ObfuscatedFileSystemFileUtilTest, TestMigration) {
+  ScopedTempDir source_dir;
+  ASSERT_TRUE(source_dir.CreateUniqueTempDir());
+  FilePath root_path = source_dir.path().AppendASCII("chrome-pLmnMWXE7NzTFRsn");
+  ASSERT_TRUE(file_util::CreateDirectory(root_path));
+
+  for (size_t i = 0; i < arraysize(kMigrationTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Creating kMigrationTestPath " << i);
+    const MigrationTestCaseRecord& test_case = kMigrationTestCases[i];
+    FilePath local_src_path = root_path.Append(test_case.path);
+    if (test_case.is_directory) {
+      ASSERT_TRUE(
+          file_util::CreateDirectory(local_src_path));
+    } else {
+      base::PlatformFileError error_code;
+      bool created = false;
+      int file_flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
+      base::PlatformFile file_handle =
+          base::CreatePlatformFile(
+              local_src_path, file_flags, &created, &error_code);
+      EXPECT_TRUE(created);
+      ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
+      ASSERT_TRUE(
+          base::TruncatePlatformFile(file_handle, test_case.data_file_size));
+      EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+    }
+  }
+
+  const GURL origin_url("http://example.com");
+  fileapi::FileSystemType type = kFileSystemTypeTemporary;
+  EXPECT_TRUE(ofsfu()->MigrateFromOldSandbox(origin_url, type, root_path));
+
+  FilePath new_root =
+    test_directory().AppendASCII("000").Append(
+        ofsfu()->GetDirectoryNameForType(type)).AppendASCII("Legacy");
+  for (size_t i = 0; i < arraysize(kMigrationTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Validating kMigrationTestPath " << i);
+    const MigrationTestCaseRecord& test_case = kMigrationTestCases[i];
+    FilePath local_data_path = new_root.Append(test_case.path);
+#if defined(OS_WIN)
+    local_data_path = local_data_path.NormalizeWindowsPathSeparators();
+#endif
+    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    base::PlatformFileInfo ofsfu_file_info;
+    FilePath data_path;
+    SCOPED_TRACE(testing::Message() << "Path is " << test_case.path);
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+        ofsfu()->GetFileInfo(context.get(), FilePath(test_case.path),
+            &ofsfu_file_info, &data_path));
+    if (test_case.is_directory) {
+      EXPECT_TRUE(ofsfu_file_info.is_directory);
+    } else {
+      base::PlatformFileInfo platform_file_info;
+      SCOPED_TRACE(testing::Message() << "local_data_path is " <<
+          local_data_path.value());
+      SCOPED_TRACE(testing::Message() << "data_path is " << data_path.value());
+      ASSERT_TRUE(file_util::GetFileInfo(local_data_path, &platform_file_info));
+      EXPECT_EQ(test_case.data_file_size, platform_file_info.size);
+      EXPECT_FALSE(platform_file_info.is_directory);
+      scoped_ptr<FileSystemOperationContext> context(NewContext());
+      EXPECT_EQ(local_data_path, data_path);
+      EXPECT_EQ(platform_file_info.size, ofsfu_file_info.size);
+      EXPECT_FALSE(ofsfu_file_info.is_directory);
+    }
+  }
 }

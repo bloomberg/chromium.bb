@@ -4,8 +4,10 @@
 
 #include "webkit/fileapi/file_system_origin_database.h"
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "third_party/leveldb/include/leveldb/iterator.h"
@@ -93,7 +95,7 @@ bool FileSystemOriginDatabase::GetPathForOrigin(
     int last_path_number;
     if (!GetLastPathNumber(&last_path_number))
       return false;
-    path_string = base::IntToString(last_path_number + 1);
+    path_string = StringPrintf("%03u", last_path_number + 1);
     // store both back as a single transaction
     leveldb::WriteBatch batch;
     batch.Put(LastPathKey(), path_string);
