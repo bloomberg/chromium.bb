@@ -12,26 +12,28 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+static const char kStringsJsFile[] = "strings.js";
+static const char kDownloadsJsFile[]  = "downloads.js";
 
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// DownloadsHTMLSource
+// DownloadsUIHTMLSource
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-class DownloadsUIHTMLSource : public ChromeURLDataManager::DataSource {
+class DownloadsUIHTMLSource : public ChromeWebUIDataSource {
  public:
   DownloadsUIHTMLSource();
 
@@ -40,84 +42,63 @@ class DownloadsUIHTMLSource : public ChromeURLDataManager::DataSource {
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
+
+  virtual std::string GetMimeType(const std::string&) const;
+
+  static int PathToIDR(const std::string& path);
 
  private:
   ~DownloadsUIHTMLSource() {}
-
   DISALLOW_COPY_AND_ASSIGN(DownloadsUIHTMLSource);
 };
 
 DownloadsUIHTMLSource::DownloadsUIHTMLSource()
-    : DataSource(chrome::kChromeUIDownloadsHost, MessageLoop::current()) {
+    : ChromeWebUIDataSource(chrome::kChromeUIDownloadsHost) {
+  AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
+  AddLocalizedString("searchbutton", IDS_DOWNLOAD_SEARCH_BUTTON);
+  AddLocalizedString("no_results", IDS_DOWNLOAD_SEARCH_BUTTON);
+  AddLocalizedString("searchresultsfor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
+  AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
+  AddLocalizedString("clear_all", IDS_DOWNLOAD_LINK_CLEAR_ALL);
+
+  // Status.
+  AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELED);
+  AddLocalizedString("status_paused", IDS_DOWNLOAD_PROGRESS_PAUSED);
+  AddLocalizedString("status_interrupted", IDS_DOWNLOAD_PROGRESS_INTERRUPTED);
+
+  // Dangerous file.
+  AddLocalizedString("danger_file_desc", IDS_PROMPT_DANGEROUS_DOWNLOAD);
+  AddLocalizedString("danger_url_desc", IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
+  AddLocalizedString("danger_save", IDS_SAVE_DOWNLOAD);
+  AddLocalizedString("danger_discard", IDS_DISCARD_DOWNLOAD);
+
+  // Controls.
+  AddLocalizedString("control_pause", IDS_DOWNLOAD_LINK_PAUSE);
+  if (browser_defaults::kDownloadPageHasShowInFolder) {
+    AddLocalizedString("control_showinfolder", IDS_DOWNLOAD_LINK_SHOW);
+  }
+  AddLocalizedString("control_retry", IDS_DOWNLOAD_LINK_RETRY);
+  AddLocalizedString("control_cancel", IDS_DOWNLOAD_LINK_CANCEL);
+  AddLocalizedString("control_resume", IDS_DOWNLOAD_LINK_RESUME);
+  AddLocalizedString("control_removefromlist", IDS_DOWNLOAD_LINK_REMOVE);
 }
 
 void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
                                              bool is_incognito,
                                              int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("title",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE));
-  localized_strings.SetString("searchbutton",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_SEARCH_BUTTON));
-  localized_strings.SetString("no_results",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_SEARCH_BUTTON));
-  localized_strings.SetString("searchresultsfor",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_SEARCHRESULTSFOR));
-  localized_strings.SetString("downloads",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE));
-  localized_strings.SetString("clear_all",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CLEAR_ALL));
-
-  // Status.
-  localized_strings.SetString("status_cancelled",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TAB_CANCELED));
-  localized_strings.SetString("status_paused",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED));
-  localized_strings.SetString("status_interrupted",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_INTERRUPTED));
-
-  // Dangerous file.
-  localized_strings.SetString("danger_file_desc",
-      l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD));
-  localized_strings.SetString("danger_url_desc",
-      l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL));
-  localized_strings.SetString("danger_save",
-      l10n_util::GetStringUTF16(IDS_SAVE_DOWNLOAD));
-  localized_strings.SetString("danger_discard",
-      l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-
-  // Controls.
-  localized_strings.SetString("control_pause",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_PAUSE));
-  if (browser_defaults::kDownloadPageHasShowInFolder) {
-    localized_strings.SetString("control_showinfolder",
-        l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_SHOW));
+  if (path == kStringsJsFile) {
+    SendLocalizedStringsAsJSON(request_id);
+  } else {
+    int idr = path == kDownloadsJsFile ? IDR_DOWNLOADS_JS : IDR_DOWNLOADS_HTML;
+    SendFromResourceBundle(request_id, idr);
   }
-  localized_strings.SetString("control_retry",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_RETRY));
-  localized_strings.SetString("control_cancel",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL));
-  localized_strings.SetString("control_resume",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_RESUME));
-  localized_strings.SetString("control_removefromlist",
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_REMOVE));
+}
 
-  SetFontAndTextDirection(&localized_strings);
+std::string DownloadsUIHTMLSource::GetMimeType(const std::string& path) const {
+  if (path == kStringsJsFile || path == kDownloadsJsFile)
+    return "application/javascript";
 
-  static const base::StringPiece downloads_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_DOWNLOADS_HTML));
-  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      downloads_html, &localized_strings);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  return "text/html";
 }
 
 }  // namespace

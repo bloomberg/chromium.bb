@@ -3240,6 +3240,8 @@
         'browser/ui/webui/chrome_url_data_manager_backend.h',
         'browser/ui/webui/chrome_url_data_manager.cc',
         'browser/ui/webui/chrome_url_data_manager.h',
+        'browser/ui/webui/chrome_web_ui_data_source.cc',
+        'browser/ui/webui/chrome_web_ui_data_source.h',
         'browser/ui/webui/chrome_web_ui_factory.cc',
         'browser/ui/webui/chrome_web_ui_factory.h',
         'browser/ui/webui/chromeos/choose_mobile_network_ui.cc',

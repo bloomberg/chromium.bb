@@ -26,7 +26,8 @@
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
       <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CREDITS_HTML" file="resources\about_credits.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_DOWNLOADS_JS" file="resources\downloads.js" type="BINDATA" />
+      <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <if expr="os == 'darwin'">
         <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar_mac.css" flattenhtml="true" type="BINDATA" />
       </if>
@@ -38,7 +39,8 @@
       <include name="IDR_FLAGS_HTML_WARNING" file="resources\flags_warning.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_HTML" file="resources\gpu_internals.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_HISTORY_HTML" file="resources\history.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_HISTORY_JS" file="resources\history.js" type="BINDATA" />
+      <include name="IDR_HISTORY_HTML" file="resources\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY2_HTML" file="resources\history2.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources\keyboard\manifest.json" type="BINDATA" />

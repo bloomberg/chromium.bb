@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
@@ -43,78 +44,80 @@
 // Maximum number of search results to return in a given search. We should
 // eventually remove this.
 static const int kMaxSearchResults = 100;
+static const char kStringsJsFile[] = "strings.js";
+static const char kHistoryJsFile[] = "history.js";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// HistoryHTMLSource
+// HistoryUIHTMLSource
 //
 ////////////////////////////////////////////////////////////////////////////////
+class HistoryUIHTMLSource : public ChromeWebUIDataSource {
+ public:
+  HistoryUIHTMLSource();
+
+  // Called when the network layer has requested a resource underneath
+  // the path we registered.
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_incognito,
+                                int request_id);
+
+  virtual std::string GetMimeType(const std::string& path) const;
+
+ private:
+  ~HistoryUIHTMLSource();
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryUIHTMLSource);
+};
+
 
 HistoryUIHTMLSource::HistoryUIHTMLSource()
-    : DataSource(chrome::kChromeUIHistoryHost, MessageLoop::current()) {
+    : ChromeWebUIDataSource(chrome::kChromeUIHistoryHost) {
+  AddLocalizedString("loading", IDS_HISTORY_LOADING);
+  AddLocalizedString("title", IDS_HISTORY_TITLE);
+  AddLocalizedString("loading", IDS_HISTORY_LOADING);
+  AddLocalizedString("newest", IDS_HISTORY_NEWEST);
+  AddLocalizedString("newer",  IDS_HISTORY_NEWER);
+  AddLocalizedString("older", IDS_HISTORY_OLDER);
+  AddLocalizedString("searchresultsfor", IDS_HISTORY_SEARCHRESULTSFOR);
+  AddLocalizedString("history", IDS_HISTORY_BROWSERESULTS);
+  AddLocalizedString("cont", IDS_HISTORY_CONTINUED);
+  AddLocalizedString("searchbutton", IDS_HISTORY_SEARCH_BUTTON);
+  AddLocalizedString("noresults", IDS_HISTORY_NO_RESULTS);
+  AddLocalizedString("noitems", IDS_HISTORY_NO_ITEMS);
+  AddLocalizedString("edithistory", IDS_HISTORY_START_EDITING_HISTORY);
+  AddLocalizedString("doneediting", IDS_HISTORY_STOP_EDITING_HISTORY);
+  AddLocalizedString("removeselected", IDS_HISTORY_REMOVE_SELECTED_ITEMS);
+  AddLocalizedString("clearallhistory",
+                     IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
+  AddLocalizedString("deletewarning",
+                     IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING);
+}
+
+HistoryUIHTMLSource::~HistoryUIHTMLSource() {
 }
 
 void HistoryUIHTMLSource::StartDataRequest(const std::string& path,
                                            bool is_incognito,
                                            int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("loading",
-      l10n_util::GetStringUTF16(IDS_HISTORY_LOADING));
-  localized_strings.SetString("title",
-      l10n_util::GetStringUTF16(IDS_HISTORY_TITLE));
-  localized_strings.SetString("loading",
-      l10n_util::GetStringUTF16(IDS_HISTORY_LOADING));
-  localized_strings.SetString("newest",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NEWEST));
-  localized_strings.SetString("newer",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NEWER));
-  localized_strings.SetString("older",
-      l10n_util::GetStringUTF16(IDS_HISTORY_OLDER));
-  localized_strings.SetString("searchresultsfor",
-      l10n_util::GetStringUTF16(IDS_HISTORY_SEARCHRESULTSFOR));
-  localized_strings.SetString("history",
-      l10n_util::GetStringUTF16(IDS_HISTORY_BROWSERESULTS));
-  localized_strings.SetString("cont",
-      l10n_util::GetStringUTF16(IDS_HISTORY_CONTINUED));
-  localized_strings.SetString("searchbutton",
-      l10n_util::GetStringUTF16(IDS_HISTORY_SEARCH_BUTTON));
-  localized_strings.SetString("noresults",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NO_RESULTS));
-  localized_strings.SetString("noitems",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NO_ITEMS));
-  localized_strings.SetString("edithistory",
-      l10n_util::GetStringUTF16(IDS_HISTORY_START_EDITING_HISTORY));
-  localized_strings.SetString("doneediting",
-      l10n_util::GetStringUTF16(IDS_HISTORY_STOP_EDITING_HISTORY));
-  localized_strings.SetString("removeselected",
-      l10n_util::GetStringUTF16(IDS_HISTORY_REMOVE_SELECTED_ITEMS));
-  localized_strings.SetString("clearallhistory",
-      l10n_util::GetStringUTF16(IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG));
-  localized_strings.SetString("deletewarning",
-      l10n_util::GetStringUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING));
-
-  SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece history_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HISTORY_HTML));
-  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      history_html, &localized_strings);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  if (path == kStringsJsFile) {
+    SendLocalizedStringsAsJSON(request_id);
+  } else {
+    int idr = path == kHistoryJsFile ? IDR_HISTORY_JS : IDR_HISTORY_HTML;
+    SendFromResourceBundle(request_id, idr);
+  }
 }
 
-std::string HistoryUIHTMLSource::GetMimeType(const std::string&) const {
+std::string HistoryUIHTMLSource::GetMimeType(const std::string& path) const {
+  if (path == kStringsJsFile || path == kHistoryJsFile)
+    return "application/javascript";
+
   return "text/html";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// HistoryHandler
+// BrowsingHistoryHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
 BrowsingHistoryHandler::BrowsingHistoryHandler()
@@ -359,7 +362,7 @@ history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// HistoryUIContents
+// HistoryUI
 //
 ////////////////////////////////////////////////////////////////////////////////
 
