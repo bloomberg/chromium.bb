@@ -164,7 +164,6 @@ nptl/tst-atfork1
 nptl/tst-atfork2
 nptl/tst-attr3
 nptl/tst-barrier2
-nptl/tst-basic3
 nptl/tst-basic4
 nptl/tst-basic6
 nptl/tst-cancel1
@@ -215,8 +214,6 @@ nptl/tst-exec1
 nptl/tst-exec2
 nptl/tst-exec3
 nptl/tst-execstack
-nptl/tst-exit2
-nptl/tst-exit3
 nptl/tst-fini1
 nptl/tst-flock1
 nptl/tst-flock2
@@ -227,7 +224,6 @@ nptl/tst-fork4
 nptl/tst-getpid1
 nptl/tst-getpid2
 nptl/tst-getpid3
-nptl/tst-join1
 nptl/tst-kill1
 nptl/tst-kill2
 nptl/tst-kill5
@@ -260,7 +256,6 @@ nptl/tst-signal5
 nptl/tst-stack2
 nptl/tst-tls4
 nptl/tst-tls5
-nptl/tst-tsd5
 nptl/tst-tsd6
 nptl/tst-umask1
 nptl/tst-vfork1
