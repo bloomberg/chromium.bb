@@ -130,27 +130,6 @@ class Syncer {
   DISALLOW_COPY_AND_ASSIGN(Syncer);
 };
 
-// Inline utility functions.
-
-// Given iterator ranges from two collections sorted according to a common
-// strict weak ordering, return true if the two ranges contain any common
-// items, and false if they do not. This function is in this header so that it
-// can be tested.
-template <class Iterator1, class Iterator2>
-bool SortedCollectionsIntersect(Iterator1 begin1, Iterator1 end1,
-                                Iterator2 begin2, Iterator2 end2) {
-  Iterator1 i1 = begin1;
-  Iterator2 i2 = begin2;
-  while (i1 != end1 && i2 != end2) {
-    if (*i1 == *i2)
-      return true;
-    if (*i1 > *i2)
-      ++i2;
-    else
-      ++i1;
-  }
-  return false;
-}
 // Utility function declarations.
 void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest);
 void ClearServerData(syncable::MutableEntry* entry);

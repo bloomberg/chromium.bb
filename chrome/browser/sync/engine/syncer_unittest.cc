@@ -3729,24 +3729,6 @@ TEST_F(SyncerTest, TestMoveSanitizedNamedFolder) {
   SyncShareAsDelegate();
 }
 
-TEST(SortedCollectionsIntersect, SortedCollectionsIntersectTest) {
-  int negative[] = {-3, -2, -1};
-  int straddle[] = {-1, 0, 1};
-  int positive[] = {1, 2, 3};
-  EXPECT_TRUE(SortedCollectionsIntersect(negative, negative + 3,
-                                         straddle, straddle + 3));
-  EXPECT_FALSE(SortedCollectionsIntersect(negative, negative + 3,
-                                          positive, positive + 3));
-  EXPECT_TRUE(SortedCollectionsIntersect(straddle, straddle + 3,
-                                         positive, positive + 3));
-  EXPECT_FALSE(SortedCollectionsIntersect(straddle + 2, straddle + 3,
-                                          positive, positive));
-  EXPECT_FALSE(SortedCollectionsIntersect(straddle, straddle + 3,
-                                          positive + 1, positive + 1));
-  EXPECT_TRUE(SortedCollectionsIntersect(straddle, straddle + 3,
-                                         positive, positive + 1));
-}
-
 // Don't crash when this occurs.
 TEST_F(SyncerTest, UpdateWhereParentIsNotAFolder) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());

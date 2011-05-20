@@ -87,12 +87,6 @@ class ConflictResolver {
   ConflictSetCountMap conflict_set_count_map_;
   SimpleConflictCountMap simple_conflict_count_map_;
 
-  // Contains the ids of uncommitted items that are children of entries merged
-  // in the previous cycle. This is used to speed up the merge resolution of
-  // deep trees. Used to happen in store refresh.
-  // TODO(chron): Can we get rid of this optimization?
-  std::set<syncable::Id> children_of_merged_dirs_;
-
   DISALLOW_COPY_AND_ASSIGN(ConflictResolver);
 };
 

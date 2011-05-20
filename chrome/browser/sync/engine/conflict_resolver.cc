@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
@@ -183,6 +184,7 @@ namespace {
 
 bool AttemptToFixCircularConflict(WriteTransaction* trans,
                                   ConflictSet* conflict_set) {
+  UMA_HISTOGRAM_COUNTS("Sync.ConflictFixCircularity", 1);
   ConflictSet::const_iterator i, j;
   for (i = conflict_set->begin() ; i != conflict_set->end() ; ++i) {
     MutableEntry entryi(trans, syncable::GET_BY_ID, *i);
@@ -347,6 +349,7 @@ bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
 
 bool AttemptToFixRemovedDirectoriesWithContent(WriteTransaction* trans,
                                                ConflictSet* conflict_set) {
+  UMA_HISTOGRAM_COUNTS("Sync.ConflictFixRemovedDirectoriesWithContent", 1);
   ConflictSet::const_iterator i, j;
   for (i = conflict_set->begin() ; i != conflict_set->end() ; ++i) {
     Entry entry(trans, syncable::GET_BY_ID, *i);
@@ -419,6 +422,7 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
   }
 
   status->set_syncer_stuck(true);
+  UMA_HISTOGRAM_COUNTS("Sync.SyncerConflictStuck", 1);
 
   return true;
   // TODO(sync): If we're stuck for a while we need to alert the user, clear
@@ -474,8 +478,6 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
   if (ResolveSimpleConflicts(dir, status))
     rv = true;
   WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
-  set<Id> children_of_dirs_merged_last_round;
-  std::swap(children_of_merged_dirs_, children_of_dirs_merged_last_round);
   set<ConflictSet*>::const_iterator set_it;
   for (set_it = progress.ConflictSetsBegin();
        set_it != progress.ConflictSetsEnd();
@@ -487,14 +489,6 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
     // Keep a metric for new sets.
     if (2 == conflict_count) {
       // METRIC conflict sets seen ++
-    }
-    // See if this set contains entries whose parents were merged last round.
-    if (SortedCollectionsIntersect(children_of_dirs_merged_last_round.begin(),
-                                   children_of_dirs_merged_last_round.end(),
-                                   conflict_set->begin(),
-                                   conflict_set->end())) {
-      VLOG(1) << "Accelerating resolution for hierarchical merge.";
-      conflict_count += 2;
     }
     // See if we should process this set.
     if (ProcessConflictSet(&trans, conflict_set, conflict_count)) {
