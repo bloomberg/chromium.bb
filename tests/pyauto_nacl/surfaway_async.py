@@ -31,7 +31,7 @@ class NaClTest(pyauto.PyUITest):
     #    expect to be back on the about:version page.
     # This test intentionally tries to interrupt the page during mid-load,
     # so it does not wait for the test to complete.
-    for i in range(1, num_tries):
+    for i in range(0, num_tries):
       tab.NavigateToURLAsync(pyauto.GURL(url))
       self.WaitUntil(lambda: self.GetActiveTabTitle() == page_title)
       if wait_max > 0:

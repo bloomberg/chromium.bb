@@ -67,6 +67,7 @@ class MyInstance : public pp::Instance {
       if (tag == "duration_msec") duration_msec_ = strtod(argv[i], 0);
       if (tag == "basic_tests") basic_tests_ = (0 != atoi(argv[i]));
       if (tag == "stress_tests") stress_tests_ = (0 != atoi(argv[i]));
+      if (tag == "headless") headless_ = (0 != atoi(argv[i]));
       // ignore other tags
     }
   }
@@ -80,6 +81,7 @@ class MyInstance : public pp::Instance {
         frequency_r_(kDefaultFrequencyRight),
         amplitude_l_(1.0),
         amplitude_r_(1.0),
+        headless_(false),
         basic_tests_(false),
         stress_tests_(false),
         duration_msec_(kDefaultDuration),
@@ -114,7 +116,11 @@ class MyInstance : public pp::Instance {
     NaClLog(1, "example: StopOutput() invoked on main thread\n");
     if (PP_OK == err) {
       if (instance->audio_.StopPlayback()) {
-        if (instance->callback_count_ >= 2) {
+        // In headless mode, the build bots may not have an audio driver, in
+        // which case the callback won't be invoked.
+        // TODO(nfullagar): Other ways to determine if machine has audio
+        // capabilities. Currently PPAPI returns a valid resource regardless.
+        if ((instance->callback_count_ >= 2) || instance->headless_) {
           result = "pass";
         } else {
           result = "failure: too few callbacks occurred";
@@ -262,6 +268,8 @@ class MyInstance : public pp::Instance {
 
   double amplitude_l_;
   double amplitude_r_;
+
+  bool headless_;
 
   bool basic_tests_;
   bool stress_tests_;

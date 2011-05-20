@@ -55,7 +55,8 @@ function setupTests(tester, plugin) {
 
 var playback;
 if (location.hash == "#mute") {
-  playback = 'amplitude_l="0" amplitude_r="0" duration_msec="1000"';
+  playback = 'amplitude_l="0" amplitude_r="0" duration_msec="1000"' +
+             'headless="1"';
 } else {
   playback = 'amplitude_l="1" amplitude_r="1" duration_msec="10000"';
 }
