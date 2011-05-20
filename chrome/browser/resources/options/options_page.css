@@ -376,7 +376,8 @@ section > h3 {
   font-weight: bold;
   margin: 0;
   vertical-align: middle;
-  width: 140px;
+  width: 130px;
+  -webkit-padding-end: 10px;
 }
 
 section > div:only-of-type {
