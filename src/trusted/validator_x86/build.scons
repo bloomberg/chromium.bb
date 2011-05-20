@@ -8,6 +8,19 @@ import os
 import sys
 Import('env')
 
+# Now build validator for x86
+if not env.Bit('target_x86'): Return()
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): there should be a better way to generalize this requirement.
+# NOTE: debug builds on windows break without this
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '$STAGING_DIR']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
 # TODO(robertm): consider adding this to the top level scons files
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 
@@ -17,9 +30,158 @@ env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 # Start by building libary utilities that may be used by other architectures.
 env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 
-# Now build validator for x86
-if not env.Bit('target_x86'):
-  Return()
+
+#
+#
+# ncopcode_desc_0
+#
+# This one source file is shared in two projects so we generate it first
+# to prevent conflics in compile options.
+#
+ncopcode_desc_o = env.ComponentObject('ncopcode_desc.c')
+force_cpp_o = env.ComponentObject('force_cpp.cc')
+
+generate = False
+if 'valgen' in COMMAND_LINE_TARGETS: generate = True
+if 'valclean' in COMMAND_LINE_TARGETS: generate = True
+ 
+#
+# Only generate/clean these files if the alias is specified on the
+# command line.  We conditionally add these pieces to scons to prevent
+# a normal invocation from accidentally regenerating the files.
+#
+if generate:
+  #
+  # valgen - Table Generator
+  #
+  # We create an alias 'valgen' which we use to generate the various
+  # headers used by the x86 validator.  This target will generate
+  # *.h, *_impl.h from the *.enum files, as well as the executables
+  # ncdecode_table and ncdecode_tablegen which are used to generate
+  # the large opcode tables.
+  #
+  
+  # Get the directory in which we will generate checking in files.
+  val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
+  
+  #------------------------------------------------------
+  # Generate the needed header files for enumerated types.
+  # Note that we use the same directory for all platforms.
+  
+  # Define enumerate type files, and the options to process.
+  enum_headers = []
+  ncv_enum_pairs = {
+      'nacl_disallows': '--name=NaClDisallowsFlag --add_size=1',
+      'ncopcode_prefix': '--name=NaClInstPrefix --add_size=1',
+      'ncopcode_insts':
+        '--name=NaClMnemonic --add_size=1 --sort=1 --name_prefix=Inst',
+      'ncopcode_opcode_flags': '--name=NaClIFlag --add_size=1',
+      'ncopcode_operand_kind': '--name=NaClOpKind --add_size=1',
+      'ncopcode_operand_flag': '--name=NaClOpFlag --add_size=1',
+      'ncop_expr_node_flag': '--name=NaClExpFlag --add_size=1',
+      'ncop_expr_node_kind': '--name=NaClExpKind --add_size=1',
+  }
+  
+  # Now code generate the enumerated types.
+  for ncv_enum in ncv_enum_pairs:
+    ncv_options = ncv_enum_pairs[ncv_enum]
+    ncv_enum_file = env.File(ncv_enum + '.enum')
+    ncv_header_1 = env.File('%s/gen/%s.h' % (val_src_dir, ncv_enum))
+    ncv_header_2 = env.File('%s/gen/%s_impl.h' % (val_src_dir, ncv_enum))
+  
+    cmd_line = (
+        '${PYTHON} %s --header="%s" --source="%s" --path_prefix="%s" %s %s' %
+        (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, val_src_dir,
+         ncv_options, ncv_enum_file))
+         
+    env.Command([ncv_header_1, ncv_header_2], ncv_enum_file, cmd_line)
+    enum_headers.append(ncv_header_1)
+    enum_headers.append(ncv_header_2)
+  
+  #
+  # Switch to generator environment to turn on macro:
+  #   NACL_TRUSTED_BUT_NOT_TCB
+  #
+    
+  tables = []
+  for bits in ['32', '64']:
+    ncv_decodetab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdecodetab', bits)
+    ncv_disasmtab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdisasmtab', bits)
+    ncv_badprefixmask_h= '%s/gen/%s_%s.h' % (val_src_dir, 'ncbadprefixmask', bits)
+    exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'
+    env.Command(
+        [ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h],
+        exe_path,
+        ['%s -m%s %s %s %s' % (exe_path, bits, ncv_decodetab_h,
+                               ncv_disasmtab_h, ncv_badprefixmask_h )]
+    )
+    tables.append(ncv_decodetab_h)
+    tables.append(ncv_disasmtab_h)
+    tables.append(ncv_badprefixmask_h)
+  
+  
+#
+# In the middle of generating, we unconditionally add ncdecode_tablegen
+# so that the tests which depend on it, can run correctly.  This step
+# sits in the middle because of dependency order, where the next 
+# generation step requires this executable.
+#
+# Add new x86 table generator.
+#
+#
+gen_env = env.Clone();
+gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+ncdecode_tablegen = gen_env.ComponentProgram(
+    'ncdecode_tablegen',
+    ['ncdecode_tablegen.c',
+     'ncdecode_forms.c',
+     'zero_extends.c',
+     'long_mode.c',
+     'nc_rep_prefix.c',
+     'defsize64.c',
+     'nacl_illegal.c',
+     'lock_insts.c',
+     'ncdecode_st.c',
+     'ncdecode_onebyte.c',
+     'ncdecode_OF.c',
+     'ncdecode_sse.c',
+     'ncdecodeX87.c',
+     'nacl_regsgen.c',
+     ncopcode_desc_o,
+     force_cpp_o,
+    ],
+    EXTRA_LIBS=['utils',
+                'gio',
+                'platform'])
+gen_env.Requires(ncdecode_tablegen, crt)
+  
+  
+#
+# Now we are back to conditionally defining the large tables generated
+# by ncdecode_tablegen.
+#
+if generate:
+  #
+  # Generate 32 and 64 bit versions of nc_opcode_table and nc_subregs
+  #
+  for filename in ['nc_opcode_table', 'nc_subregs']:
+    for bits in ['32', '64']:
+      fullname = '%s/gen/%s_%s.h' % (val_src_dir, filename, bits)
+      exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'
+      if filename == 'nc_subregs':
+        cmd_line = '%s -m%s -nacl_subregs %s'% (exe_path, bits, fullname)
+      else: 
+        cmd_line = '%s -m%s %s'% (exe_path, bits, fullname)
+      out = gen_env.Command(env.File(fullname), exe_path, cmd_line)
+  #    gen_env.Alias('valgen', source=[exe_path], action=[Action(cmd_line)])
+      tables.append(fullname)
+  
+  gen_list = enum_headers + tables
+  gen_env.AlwaysBuild(
+      gen_env.Alias('valgen', gen_list))
+  gen_env.AlwaysBuild(
+      gen_env.Alias('valclean', action=[Delete(x) for x in gen_list]))
+
 
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
@@ -66,51 +228,6 @@ def __OutTestFile(test, base, ext):
 def __AddTest(test, test_env, base, ext, command, groups):
   test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
 
-#------------------------------------------------------
-# Generate the needed header files for enumerated types.
-# Note that we use the same directory for all platforms.
-
-# Define enumerate type files, and the options to process.
-ncv_enum_pairs = {
-    'nacl_disallows': '--name=NaClDisallowsFlag --add_size=1',
-    'ncopcode_prefix': '--name=NaClInstPrefix --add_size=1',
-    'ncopcode_insts':
-      '--name=NaClMnemonic --add_size=1 --sort=1 --name_prefix=Inst',
-    'ncopcode_opcode_flags': '--name=NaClIFlag --add_size=1',
-    'ncopcode_operand_kind': '--name=NaClOpKind --add_size=1',
-    'ncopcode_operand_flag': '--name=NaClOpFlag --add_size=1',
-    'ncop_expr_node_flag': '--name=NaClExpFlag --add_size=1',
-    'ncop_expr_node_kind': '--name=NaClExpKind --add_size=1',
-}
-
-# Now code generate the enumerated types.
-for ncv_enum in ncv_enum_pairs:
-  ncv_options = ncv_enum_pairs[ncv_enum]
-  ncv_base = ncv_gen_dir + '/' + ncv_enum
-  ncv_enum_file = env.File(ncv_enum + '.enum')
-  ncv_header_1 = env.File(ncv_base + '.h')
-  ncv_header_2 = env.File(ncv_base + '_impl.h')
-  ncv_headers = [ ncv_header_1 , ncv_header_2 ]
-  ncv_command = (
-      '${PYTHON} %s --header="%s" --source="%s" --path_prefix="%s" %s %s' %
-      (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, ncv_gen_basedir,
-       ncv_options, ncv_enum_file))
-  env.Command(ncv_headers,
-              [ncv_enum_file, env.File('enum_gen.py')],
-              [ncv_command])
-
-ncopcode_desc_o = env.ComponentObject('ncopcode_desc.c')
-env.ComponentLibrary('ncopcode_utils', ncopcode_desc_o)
-
-# Make a copy of debug CRT for now.
-# TODO(bradnelson): there should be a better way to generalize this requirement.
-# NOTE: debug builds on windows break without this
-crt = []
-if env.AllBits('windows', 'debug'):
-  for i in ['.', '$STAGING_DIR']:
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
-                         'x86/Microsoft.VC80.DebugCRT')
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
 
 # Isolate the environment for ncdecode_table to prevent a cycle.
 env_decode_table = test_env.Clone()
@@ -123,33 +240,7 @@ ncdecode_table = env_decode_table.ComponentProgram('ncdecode_table',
                                                    ['ncdecode_table.c'],)
 env.Requires(ncdecode_table, crt)
 
-force_cpp = env.ComponentObject('force_cpp.cc')
 
-# Add new x86 table generator.
-ncdecode_tablegen = env_decode_table.ComponentProgram(
-    'ncdecode_tablegen',
-    ['ncdecode_tablegen.c',
-     'ncdecode_forms.c',
-     'zero_extends.c',
-     'long_mode.c',
-     'nc_rep_prefix.c',
-     'defsize64.c',
-     'nacl_illegal.c',
-     'lock_insts.c',
-     'ncdecode_st.c',
-     'ncdecode_onebyte.c',
-     'ncdecode_OF.c',
-     'ncdecode_sse.c',
-     'ncdecodeX87.c',
-     'nacl_regsgen.c',
-     force_cpp,
-    ],
-    EXTRA_LIBS=['utils',
-                'gio',
-                'platform',
-                'ncopcode_utils'])
-
-env.Requires(ncdecode_tablegen, crt)
 
 # Segment register validator library
 NCVALIDATE_SOURCES = ['halt_trim.c',
@@ -163,10 +254,9 @@ NCVALIDATE_SOURCES = ['halt_trim.c',
                       'ncop_exps.c',
                       'ncvalidate.c',
                       'nccopycode.c',
-                      'nccopycode_stores.S'
+                      'nccopycode_stores.S',
+                      ncopcode_desc_o
                       ]
-
-NCVALIDATE_SOURCES = NCVALIDATE_SOURCES + ncopcode_desc_o
 
 env.ComponentLibrary('ncvalidate', NCVALIDATE_SOURCES)
 
@@ -194,13 +284,6 @@ test_env.ComponentLibrary('ncdis_util',
 #------------------------------------------------------------------
 # Generate the header files containing the modeled x86 instructions.
 
-def GenerateInstructionTables(target_subarch, filename):
-  env.Command(
-      [filename],
-      [ncdecode_tablegen,
-       '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
-      ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
-       (target_subarch, filename)])
 
 def TestGeneratedInstructionTables(target_subarch, golden_filename, groups):
   test_name = 'ncdecode_tablegen_inst_tables_' + target_subarch + '.out'
@@ -211,13 +294,6 @@ def TestGeneratedInstructionTables(target_subarch, golden_filename, groups):
       stdout_golden = golden_output)
   test_env.AddNodeToTestSuite(test, groups, test_name)
 
-def GenerateSubregisterTables(target_subarch, filename):
-  env.Command(
-      [filename],
-      [ncdecode_tablegen,
-       '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
-      ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s -nacl_subregs %s' %
-       (target_subarch, filename)])
 
 def TestGeneratedSubregisterTables(target_subarch, golden_filename, groups):
   test_name = 'ncdecode_tablegen_subreg_tables_' + target_subarch + '.out'
@@ -228,27 +304,7 @@ def TestGeneratedSubregisterTables(target_subarch, golden_filename, groups):
       stdout_golden = golden_output)
   test_env.AddNodeToTestSuite(test, groups, test_name)
 
-ncv_decodetab_h = env.File(ncv_gen_dir + '/ncdecodetab.h')
-ncv_disasmtab_h = env.File(ncv_gen_dir + '/ncdisasmtab.h')
-ncv_badprefixmask_h = env.File(ncv_gen_dir + '/ncbadprefixmask.h')
 
-env.Command(
-    [ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h],
-    [ncdecode_table, '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'],
-    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s %s' %
-     (env['TARGET_SUBARCH'],
-      ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h )])
-
-if env.Bit('target_x86_64'):
-  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table_64.h')
-  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs_64.h')
-else:
-  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table_32.h')
-  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs_32.h')
-
-GenerateInstructionTables(env['TARGET_SUBARCH'], ncv_opcode_table_h)
-
-GenerateSubregisterTables(env['TARGET_SUBARCH'], ncv_subregs_h)
 
 # The following verifies that we generate the same source files, independent of
 # whether the 32 bit or 64 bit table generator is used.
@@ -283,7 +339,7 @@ if test_env.Bit('target_x86_32'):
 ncdis = test_env.ComponentProgram(
   'ncdis', [
     'ncdis.c',
-    force_cpp,
+    force_cpp_o,
   ],
   EXTRA_LIBS=[
     'ncdis_util',
@@ -389,7 +445,7 @@ test_env.AddNodeToTestSuite(ncdis_internal_test,
 ncval = test_env.ComponentProgram(
   'ncval', [
     'ncval.c',
-    force_cpp,
+    force_cpp_o,
   ],
   EXTRA_LIBS=[
     'ncdis_util',
@@ -596,3 +652,4 @@ for source in gtest_sources:
       command=[test_exe])
   gtest_env.AddNodeToTestSuite(test_node, ['small_tests'],
                                'run_x86_validator_tests')
+

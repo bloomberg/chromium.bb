@@ -24,7 +24,12 @@
 #include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "gen/native_client/src/trusted/validator_x86/ncbadprefixmask.h"
+
+#if NACL_TARGET_SUBARCH == 64
+# include "native_client/src/trusted/validator_x86/gen/ncbadprefixmask_64.h"
+#else
+# include "native_client/src/trusted/validator_x86/gen/ncbadprefixmask_32.h"
+#endif
 
 /* debugging stuff */
 #define DEBUGGING 0

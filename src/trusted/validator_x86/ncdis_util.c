@@ -19,8 +19,13 @@
 #include <string.h>
 
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
-#include "gen/native_client/src/trusted/validator_x86/ncdisasmtab.h"
 #include "native_client/src/trusted/validator_x86/rex_prefixes.h"
+
+#if NACL_TARGET_SUBARCH == 64
+# include "native_client/src/trusted/validator_x86/gen/ncdisasmtab_64.h"
+#else
+# include "native_client/src/trusted/validator_x86/gen/ncdisasmtab_32.h"
+#endif
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.

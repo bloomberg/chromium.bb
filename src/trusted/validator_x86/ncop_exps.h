@@ -12,8 +12,8 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOP_EXPS_H_
 
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
-#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_flag.h"
-#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_kind.h"
+#include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_flag.h"
+#include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_kind.h"
 
 /* Defines the state used to match an instruction, while walking
  * instructions using the NaClInstIter.

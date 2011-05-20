@@ -277,7 +277,6 @@
             '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter64',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
             '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncopcode_utils_gen',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',

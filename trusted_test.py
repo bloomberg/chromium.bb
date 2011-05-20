@@ -60,46 +60,6 @@ GlobalSettings = {
 }
 
 
-# ----------------------------------------------------------
-# TODO(gregoryd): move test definitions into the appropriate locations
-def AddNcdisTests():
-  name = 'ncdis'
-  native_client_dir = GetLocalPath()
-  testdata_dir = os.path.join(native_client_dir, 'src', 'trusted',
-                              'validator_x86', 'testdata',
-                              str(GlobalSettings['bits']))
-  stdin_path = os.path.join(testdata_dir, 'ncdis_test.input')
-  stdout_path = os.path.join(testdata_dir, 'ncdis_test.input')
-  options = ['--stdin=%s' % stdin_path,
-             '--stdout_golden=%s' % stdout_path]
-  extras = ['--self_document',
-            '--commands=-']
-  TESTS.append([name, options, extras, 'small'])
-
-  # Also add test using new iterator model
-  stdin_path = os.path.join(testdata_dir, 'ncdis_iter_test.input')
-  stdout_path = os.path.join(testdata_dir,'ncdis_iter_test.input')
-  options = ['--stdin=%s' % stdin_path,
-             '--stdout_golden=%s' % stdout_path]
-  extras = ['--use_iter'] + extras
-  TESTS.append([name, options, extras, 'small'])
-
-  # Same as above, but comparing internal representation against golden files.
-  stdout_path = os.path.join(testdata_dir, 'ncdis_iter_test.internal')
-  options = ['--stdin=%s' % stdin_path,
-             '--stdout_golden=%s' % stdout_path]
-  TESTS.append([name, options, ['--use_iter', '--internal', '--commands=-'],
-               'small'])
-
-  # Test that we can textually define a code segment using hex values.
-  stdin_path = os.path.join(testdata_dir, 'test_hex.txt')
-  stdout_path = os.path.join(testdata_dir, 'test_hex.gold')
-  options = ['--stdin=%s' % stdin_path,
-             '--stdout_golden=%s' % stdout_path]
-  # TODO(gregoryd): disabling the test since it fails, reenable when we
-  # can successfully run the script on the bots.
-  #TESTS.append([name, options, ['--use_iter', '--hex_text=-'], 'small'])
-
 def AddServiceRuntimeTests():
   # Service_runtime_tests itself is in the initialized TESTS
   if GlobalSettings['platform'].startswith('arm'):
@@ -141,13 +101,6 @@ def AddServiceRuntimeTests():
     segfault = str(command_tester.MassageExitStatus('segfault'))
     TESTS.append(['sel_ldr_thread_death_test', ['--exit_status=' + segfault],
                  [], 'medium'])
-
-def AddTests():
-  if GlobalSettings['bits'] == 32:
-    AddNcdisTests()
-  # TODO(gregoryd): disabling these tests to make sure the script
-  # runs successfully on the bots
-  #AddServiceRuntimeTests()
 
 
 # ----------------------------------------------------------
@@ -284,7 +237,6 @@ def ProcessOptions(argv):
 
 def main(argv):
   ProcessOptions(argv)
-  AddTests()
   errors = 0
   for test in TESTS:
     try:

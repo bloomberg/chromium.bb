@@ -44,7 +44,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
-#include "gen/native_client/src/trusted/validator_x86/ncdecodetab.h"
+
+#if NACL_TARGET_SUBARCH == 64
+# include "native_client/src/trusted/validator_x86/gen/ncdecodetab_64.h"
+#else
+# include "native_client/src/trusted/validator_x86/gen/ncdecodetab_32.h"
+#endif
 
 /* Generates a print name for the given NCDecodeImmediateType. */
 static const char* NCDecodeImmediateTypeName(NCDecodeImmediateType type) {

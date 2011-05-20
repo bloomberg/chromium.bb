@@ -16,8 +16,8 @@
 #endif
 
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_kind.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
-#include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_kind.h"
 #include "native_client/src/trusted/validator_x86/error_reporter.h"
 
 /* Flag holding the (default) block alignment to use. */

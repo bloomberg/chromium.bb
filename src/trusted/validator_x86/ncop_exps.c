@@ -16,8 +16,8 @@
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
-#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_flag_impl.h"
-#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_kind_impl.h"
+#include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_flag_impl.h"
+#include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_kind_impl.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.

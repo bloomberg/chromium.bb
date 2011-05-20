@@ -64,9 +64,6 @@
           ] },
         ],
       ],
-      'dependencies': [
-        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_gen',
-      ],
     },
   ],
 }

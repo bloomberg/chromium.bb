@@ -27,9 +27,9 @@
 #include "native_client/src/trusted/validator_x86/rex_prefixes.h"
 
 #if NACL_TARGET_SUBARCH == 64
-# include "gen/native_client/src/trusted/validator_x86/nc_opcode_table_64.h"
+# include "native_client/src/trusted/validator_x86/gen/nc_opcode_table_64.h"
 #else
-# include "gen/native_client/src/trusted/validator_x86/nc_opcode_table_32.h"
+# include "native_client/src/trusted/validator_x86/gen/nc_opcode_table_32.h"
 #endif
 
 EXTERN_C_BEGIN

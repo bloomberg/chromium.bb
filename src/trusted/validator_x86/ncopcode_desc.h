@@ -19,12 +19,12 @@
 #include "native_client/src/shared/utils/types.h"
 
 /* Define enumerated types. */
-#include "gen/native_client/src/trusted/validator_x86/nacl_disallows.h"
-#include "gen/native_client/src/trusted/validator_x86/ncopcode_prefix.h"
-#include "gen/native_client/src/trusted/validator_x86/ncopcode_insts.h"
-#include "gen/native_client/src/trusted/validator_x86/ncopcode_opcode_flags.h"
-#include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_kind.h"
-#include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_flag.h"
+#include "native_client/src/trusted/validator_x86/gen/nacl_disallows.h"
+#include "native_client/src/trusted/validator_x86/gen/ncopcode_prefix.h"
+#include "native_client/src/trusted/validator_x86/gen/ncopcode_insts.h"
+#include "native_client/src/trusted/validator_x86/gen/ncopcode_opcode_flags.h"
+#include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_kind.h"
+#include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_flag.h"
 
 EXTERN_C_BEGIN
 
