@@ -311,7 +311,6 @@ class HostNPScriptObject {
   scoped_refptr<remoting::ChromotingHost> host_;
   scoped_refptr<remoting::MutableHostConfig> host_config_;
   remoting::ChromotingHostContext host_context_;
-  std::string host_secret_;
 
   // Start connection. args are:
   //   string uid, string auth_token
@@ -324,8 +323,10 @@ class HostNPScriptObject {
   // Call OnStateChanged handler if there is one.
   void OnStateChanged(State state);
 
-  // Currently just mock methods to verify that everything is working
-  void OnReceivedSupportID(bool success, const std::string& support_id);
+  // Callbacks invoked during session setup.
+  void OnReceivedSupportID(remoting::SupportAccessVerifier* access_verifier,
+                           bool success,
+                           const std::string& support_id);
   void OnConnected();
   void OnHostShutdown();
 
@@ -399,7 +400,6 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     SetException("connect: SupportAccessVerifier::Init failed");
     return false;
   }
-  host_secret_ = access_verifier->host_secret();
 
   // Generate a key pair for the Host to use.
   // TODO(wez): Move this to the worker thread.
@@ -407,22 +407,26 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
   host_key_pair.Generate();
   host_key_pair.Save(host_config);
 
-  // Create the Host.
-  scoped_refptr<remoting::ChromotingHost> host =
-      remoting::ChromotingHost::Create(&host_context_, host_config,
-                                       access_verifier.release());
-
   // Request registration of the host for support.
   scoped_refptr<remoting::RegisterSupportHostRequest> register_request =
       new remoting::RegisterSupportHostRequest();
   if (!register_request->Init(
           host_config.get(),
           base::Bind(&HostNPScriptObject::OnReceivedSupportID,
-                     base::Unretained(this)))) {
+                     base::Unretained(this),
+                     access_verifier.get()))) {
     SetException("connect: RegisterSupportHostRequest::Init failed");
     return false;
   }
+
+  // Create the Host.
+  scoped_refptr<remoting::ChromotingHost> host =
+      remoting::ChromotingHost::Create(&host_context_, host_config,
+                                       access_verifier.release());
   host->AddStatusObserver(register_request);
+
+  // TODO(wez): Improve our authentication framework.
+  host->set_preauthenticated(true);
 
   // Nothing went wrong, so lets save the host, config and request.
   host_ = host;
@@ -453,14 +457,15 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
   }
   register_request_ = NULL;
   host_config_ = NULL;
-  host_secret_.clear();
 
   OnStateChanged(kDisconnected);
   return true;
 }
 
-void HostNPScriptObject::OnReceivedSupportID(bool success,
-                                             const std::string& support_id) {
+void HostNPScriptObject::OnReceivedSupportID(
+    remoting::SupportAccessVerifier* access_verifier,
+    bool success,
+    const std::string& support_id) {
   CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
 
   if (!success) {
@@ -469,10 +474,12 @@ void HostNPScriptObject::OnReceivedSupportID(bool success,
     return;
   }
 
-  // Combine the Support Id with the Host Id to make the Access Code
+  // Inform the AccessVerifier of our Support-Id, for authentication.
+  access_verifier->OnMe2MomHostRegistered(success, support_id);
+
+  // Combine the Support Id with the Host Id to make the Access Code.
   // TODO(wez): Locking, anyone?
-  access_code_ = support_id + "-" + host_secret_;
-  host_secret_ = std::string();
+  access_code_ = support_id + "-" + access_verifier->host_secret();
 
   // Let the caller know that life is good.
   OnStateChanged(kReceivedAccessCode);
