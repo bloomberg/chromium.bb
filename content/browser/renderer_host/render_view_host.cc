@@ -109,7 +109,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
   }
 
   DCHECK(instance_);
-  DCHECK(delegate_);
+  CHECK(delegate_);  // http://crbug.com/82827
 
   content::GetContentClient()->browser()->RenderViewHostCreated(this);
 
