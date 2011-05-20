@@ -21,6 +21,7 @@ var chrome = chrome || {};
   native function IsIncognitoProcess();
   native function GetUniqueSubEventName(eventName);
   native function GetLocalFileSystem(name, path);
+  native function DecodeJPEG(jpeg_image);
 
   var chromeHidden = GetChromeHidden();
 
@@ -672,6 +673,11 @@ var chrome = chrome || {};
         if (request.callback)
           request.callback(fs);
         request.callback = null;
+      };
+
+    apiFunctions["chromePrivate.decodeJPEG"].handleRequest =
+      function(jpeg_image) {
+        return DecodeJPEG(jpeg_image);
       };
 
     apiFunctions["extension.getViews"].handleRequest = function(properties) {

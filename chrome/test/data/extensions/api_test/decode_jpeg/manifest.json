@@ -1,0 +1,7 @@
+{
+  "name": "chrome.decodeJPEG",
+  "version": "0.1",
+  "description": "Test for decodeJPEG.decode",
+  "background_page": "background.html",
+  "permissions": ["chromePrivate"]
+}

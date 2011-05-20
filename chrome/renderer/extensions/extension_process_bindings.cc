@@ -38,6 +38,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/webkit_glue.h"
 
 using bindings_utils::GetStringResource;
 using bindings_utils::GetPendingRequestMap;
@@ -181,6 +182,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetUniqueSubEventName);
     } else if (name->Equals(v8::String::New("GetLocalFileSystem"))) {
       return v8::FunctionTemplate::New(GetLocalFileSystem);
+    } else if (name->Equals(v8::String::New("DecodeJPEG"))) {
+      return v8::FunctionTemplate::New(DecodeJPEG);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -250,7 +253,6 @@ class ExtensionImpl : public ExtensionBase {
     return v8::String::New(unique_event_name.c_str());
   }
 
-  // Attach an event name to an object.
   static v8::Handle<v8::Value> GetLocalFileSystem(
       const v8::Arguments& args) {
     DCHECK(args.Length() == 2);
@@ -269,6 +271,57 @@ class ExtensionImpl : public ExtensionBase {
             WebKit::WebString::fromUTF8(name.c_str()),
             WebKit::WebString::fromUTF8(path.c_str()));
 #endif
+  }
+
+  // Decodes supplied JPEG byte array to image pixel array.
+  static v8::Handle<v8::Value> DecodeJPEG(const v8::Arguments& args) {
+    DCHECK(args.Length() == 1);
+    DCHECK(args[0]->IsArray());
+    v8::Local<v8::Object> jpeg_array = args[0]->ToObject();
+    size_t jpeg_length =
+        jpeg_array->Get(v8::String::New("length"))->Int32Value();
+
+    // Put input JPEG array into string for DecodeImage().
+    std::string jpeg_array_string;
+    jpeg_array_string.reserve(jpeg_length);
+
+    // Unfortunately we cannot request continuous backing store of the
+    // |jpeg_array| object as it might not have one. So we make
+    // element copy here.
+    // Note(mnaganov): If it is not fast enough
+    // (and main constraints might be in repetition of v8 API calls),
+    // change the argument type from Array to String and use
+    // String::Write().
+    // Note(vitalyr): Another option is to use Int8Array for inputs and
+    // Int32Array for output.
+    for (size_t i = 0; i != jpeg_length; ++i) {
+      jpeg_array_string.push_back(
+          jpeg_array->Get(v8::Integer::New(i))->Int32Value());
+    }
+
+    // Decode and verify resulting image metrics.
+    SkBitmap bitmap;
+    if (!webkit_glue::DecodeImage(jpeg_array_string, &bitmap))
+      return v8::Undefined();
+    if (bitmap.config() != SkBitmap::kARGB_8888_Config)
+      return v8::Undefined();
+    const int width = bitmap.width();
+    const int height = bitmap.height();
+    SkAutoLockPixels lockpixels(bitmap);
+    const uint32_t* pixels = static_cast<uint32_t*>(bitmap.getPixels());
+    if (!pixels)
+      return v8::Undefined();
+
+    // Compose output array. This API call only accepts kARGB_8888_Config images
+    // so we rely on each pixel occupying 4 bytes.
+    // Note(mnaganov): to speed this up, you may use backing store
+    // technique from CreateExternalArray() of samples/shell.cc.
+    v8::Local<v8::Object> bitmap_array = v8::Array::New(width * height);
+    for (int i = 0; i != width * height; ++i) {
+      bitmap_array->Set(v8::Integer::New(i),
+                        v8::Integer::New(pixels[i] & 0xFFFFFF));
+    }
+    return bitmap_array;
   }
 
   // Creates a new messaging channel to the tab with the given ID.

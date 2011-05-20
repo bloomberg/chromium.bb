@@ -3297,6 +3297,30 @@
     "events": []
   },
   {
+    "namespace": "chromePrivate",
+    "nodoc": "true",
+    "functions": [
+      {
+        "name": "decodeJPEG",
+        "description": "Decodes JPEG image array to raw bitmap array",
+        "parameters": [
+          {
+            "name": "jpeg_image",
+            "type": "array",
+            "optional": false,
+            "description": "The JPEG image bytes array",
+            "items": {"type": "number"}
+          }
+        ],
+        "returns": {
+          "type": "array",
+          "description": "Decoded bitmap RGB array formatted as (B | G << 8 | R << 16)",
+          "items": {"type": "number"}
+        }
+      }
+    ]
+  },
+  {
     "namespace": "chromeosInfoPrivate",
     "nodoc": "true",
     "functions": [

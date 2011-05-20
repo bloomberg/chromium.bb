@@ -268,6 +268,7 @@ const char Extension::kClipboardWritePermission[] = "clipboardWrite";
 const char Extension::kContextMenusPermission[] = "contextMenus";
 const char Extension::kContentSettingsPermission[] = "contentSettings";
 const char Extension::kCookiePermission[] = "cookies";
+const char Extension::kChromePrivatePermission[] = "chromePrivate";
 const char Extension::kChromeosInfoPrivatePermission[] = "chromeosInfoPrivate";
 const char Extension::kDebuggerPermission[] = "debugger";
 const char Extension::kExperimentalPermission[] = "experimental";
@@ -291,6 +292,7 @@ const char Extension::kWebSocketProxyPrivatePermission[] =
 const Extension::Permission Extension::kPermissions[] = {
   { kBackgroundPermission,            PermissionMessage::ID_NONE },
   { kBookmarkPermission,              PermissionMessage::ID_BOOKMARKS },
+  { kChromePrivatePermission,         PermissionMessage::ID_NONE },
   { kChromeosInfoPrivatePermission,   PermissionMessage::ID_NONE },
   { kClipboardReadPermission,         PermissionMessage::ID_CLIPBOARD },
   { kClipboardWritePermission,        PermissionMessage::ID_NONE },
@@ -302,8 +304,8 @@ const Extension::Permission Extension::kPermissions[] = {
   { kFileBrowserHandlerPermission,    PermissionMessage::ID_NONE },
   { kFileBrowserPrivatePermission,    PermissionMessage::ID_NONE },
   { kGeolocationPermission,           PermissionMessage::ID_GEOLOCATION },
-  { kIdlePermission,                  PermissionMessage::ID_NONE },
   { kHistoryPermission,               PermissionMessage::ID_BROWSING_HISTORY },
+  { kIdlePermission,                  PermissionMessage::ID_NONE },
   { kManagementPermission,            PermissionMessage::ID_MANAGEMENT },
   { kNotificationPermission,          PermissionMessage::ID_NONE },
   { kProxyPermission,                 PermissionMessage::ID_NONE },
@@ -316,6 +318,7 @@ const size_t Extension::kNumPermissions = arraysize(Extension::kPermissions);
 
 const char* const Extension::kHostedAppPermissionNames[] = {
   Extension::kBackgroundPermission,
+  Extension::kChromePrivatePermission,
   Extension::kGeolocationPermission,
   Extension::kNotificationPermission,
   Extension::kUnlimitedStoragePermission,
