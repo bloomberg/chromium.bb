@@ -107,7 +107,7 @@ DeviceManagementRequestContextGetter::GetIOMessageLoopProxy() const {
 }  // namespace
 
 DeviceManagementService::~DeviceManagementService() {
-  // All running jobs should have been canceled by now. If not, there are
+  // All running jobs should have been cancelled by now. If not, there are
   // backend objects still around, which is an error.
   DCHECK(pending_jobs_.empty());
   DCHECK(queued_jobs_.empty());
@@ -117,10 +117,24 @@ DeviceManagementBackend* DeviceManagementService::CreateBackend() {
   return new DeviceManagementBackendImpl(this);
 }
 
+void DeviceManagementService::ScheduleInitialization(int delay_milliseconds) {
+  if (initialized_)
+    return;
+  CancelableTask* initialization_task = method_factory_.NewRunnableMethod(
+      &DeviceManagementService::Initialize);
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          initialization_task,
+                                          delay_milliseconds);
+}
+
 void DeviceManagementService::Initialize() {
+  if (initialized_)
+    return;
   DCHECK(!request_context_getter_);
   request_context_getter_ = new DeviceManagementRequestContextGetter(
       g_browser_process->system_request_context());
+  initialized_ = true;
+
   while (!queued_jobs_.empty()) {
     StartJob(queued_jobs_.front());
     queued_jobs_.pop_front();
@@ -139,11 +153,13 @@ void DeviceManagementService::Shutdown() {
 
 DeviceManagementService::DeviceManagementService(
     const std::string& server_url)
-    : server_url_(server_url) {
+    : server_url_(server_url),
+      initialized_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 void DeviceManagementService::AddJob(DeviceManagementJob* job) {
-  if (request_context_getter_.get())
+  if (initialized_)
     StartJob(job);
   else
     queued_jobs_.push_back(job);

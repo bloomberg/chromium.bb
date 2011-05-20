@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -38,6 +39,11 @@
 #endif
 
 namespace {
+
+// The delay of triggering initialization of the device policy subsystem
+// after the login screen is initialized. This makes sure that device policy
+// network requests are made while the system is idle waiting for user input.
+const int kPolicyServiceInitializationDelayMilliseconds = 100;
 
 // Determines the hardware keyboard from the given locale code
 // and the OEM layout information, and saves it to "Locale State".
@@ -148,6 +154,11 @@ void BaseLoginDisplayHost::StartSignInScreen() {
 
   // Initiate services customization manifest fetching.
   ServicesCustomizationDocument::GetInstance()->StartFetching();
+
+  // Initiate device policy fetching.
+  g_browser_process->browser_policy_connector()->
+      ScheduleServiceInitialization(
+          kPolicyServiceInitializationDelayMilliseconds);
 }
 
 // BaseLoginDisplayHost --------------------------------------------------------

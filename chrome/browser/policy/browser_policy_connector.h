@@ -69,6 +69,10 @@ class BrowserPolicyConnector {
   // Initiates a policy fetch after a successful device registration.
   void FetchPolicy();
 
+  // Schedules initialization of the policy backend service, if the service is
+  // already constructed.
+  void ScheduleServiceInitialization(int delay_milliseconds);
+
  private:
   friend class ::TestingBrowserProcess;
 

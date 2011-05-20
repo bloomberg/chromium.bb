@@ -31,6 +31,15 @@
 
 namespace policy {
 
+namespace {
+
+// The following constants define delays applied before the initial policy fetch
+// on startup. (So that displaying Chrome's GUI does not get delayed.)
+// Delay in milliseconds from startup.
+const int kServiceInitializationStartupDelay = 5000;
+
+}  // namespace
+
 // static
 BrowserPolicyConnector* BrowserPolicyConnector::Create() {
   return new BrowserPolicyConnector();
@@ -190,9 +199,17 @@ void BrowserPolicyConnector::FetchPolicy() {
 }
 
 void BrowserPolicyConnector::Initialize() {
-  // TODO(jkummerow, mnissler): Move this out of the browser startup path.
+  if (cloud_policy_subsystem_.get()) {
+    cloud_policy_subsystem_->Initialize(
+        g_browser_process->local_state(),
+        kServiceInitializationStartupDelay);
+  }
+}
+
+void BrowserPolicyConnector::ScheduleServiceInitialization(
+    int delay_milliseconds) {
   if (cloud_policy_subsystem_.get())
-    cloud_policy_subsystem_->Initialize(g_browser_process->local_state());
+    cloud_policy_subsystem_->ScheduleServiceInitialization(delay_milliseconds);
 }
 
 }  // namespace

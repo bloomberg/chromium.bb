@@ -57,16 +57,15 @@ class DeviceManagementService : public URLFetcher::Delegate {
   // Marked virtual for the benefit of tests.
   virtual DeviceManagementBackend* CreateBackend();
 
-  // Initializes the request context based on the system request context.
-  // This will also fire any requests queued earlier.
-  void Initialize();
+  // Schedules a task to run |Initialize| after |delay_milliseconds| had passed.
+  void ScheduleInitialization(int delay_milliseconds);
 
   // Makes the service stop all requests and drop the reference to the request
   // context.
   void Shutdown();
 
   // Adds a job. Caller must make sure the job pointer stays valid until the job
-  // completes or gets cancelled via RemoveJob().
+  // completes or gets canceled via RemoveJob().
   void AddJob(DeviceManagementJob* job);
 
   // Removes a job. The job will be removed and won't receive a completion
@@ -88,6 +87,10 @@ class DeviceManagementService : public URLFetcher::Delegate {
                                   const net::ResponseCookies& cookies,
                                   const std::string& data);
 
+  // Does the actual initialization using the request context specified for
+  // |PrepareInitialization|. This will also fire any pending network requests.
+  void Initialize();
+
   // Server at which to contact the service.
   const std::string server_url_;
 
@@ -99,6 +102,13 @@ class DeviceManagementService : public URLFetcher::Delegate {
 
   // Jobs that are registered, but not started yet.
   JobQueue queued_jobs_;
+
+  // If this service is initialized, incoming requests get fired instantly.
+  // If it is not initialized, incoming requests are queued.
+  bool initialized_;
+
+  // Creates tasks used for running |Initialize| delayed on the UI thread.
+  ScopedRunnableMethodFactory<DeviceManagementService> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementService);
 };

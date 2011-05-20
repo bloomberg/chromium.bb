@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
                        CannedResponses) {
   URLFetcher::enable_interception_for_tests(true);
   DeviceManagementService service(kServiceUrl);
-  service.Initialize();
+  service.ScheduleInitialization(0);
   scoped_ptr<DeviceManagementBackend> backend(service.CreateBackend());
 
   {
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
   ASSERT_TRUE(test_server_.Start());
   DeviceManagementService service(
       test_server_.GetURL("device_management").spec());
-  service.Initialize();
+  service.ScheduleInitialization(0);
   scoped_ptr<DeviceManagementBackend> backend(service.CreateBackend());
 
   {

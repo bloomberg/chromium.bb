@@ -43,9 +43,10 @@ template<typename TESTBASE>
 class DeviceManagementServiceTestBase : public TESTBASE {
  protected:
   DeviceManagementServiceTestBase()
-      : io_thread_(BrowserThread::IO, &loop_) {
+      : ui_thread_(BrowserThread::UI, &loop_),
+        io_thread_(BrowserThread::IO, &loop_) {
     ResetService();
-    service_->Initialize();
+    InitializeService();
   }
 
   virtual void SetUp() {
@@ -65,12 +66,18 @@ class DeviceManagementServiceTestBase : public TESTBASE {
     backend_.reset(service_->CreateBackend());
   }
 
+  void InitializeService() {
+    service_->ScheduleInitialization(0);
+    loop_.RunAllPending();
+  }
+
   TestURLFetcherFactory factory_;
   scoped_ptr<DeviceManagementService> service_;
   scoped_ptr<DeviceManagementBackend> backend_;
 
  private:
   MessageLoopForUI loop_;
+  BrowserThread ui_thread_;
   BrowserThread io_thread_;
 };
 
@@ -426,7 +433,7 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
   ASSERT_FALSE(fetcher);
 
   // Now initialize the service. That should start the job.
-  service_->Initialize();
+  InitializeService();
   fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   factory_.RemoveFetcherFromMap(0);

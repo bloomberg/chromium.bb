@@ -86,7 +86,9 @@ void CloudPolicySubsystem::OnIPAddressChanged() {
   }
 }
 
-void CloudPolicySubsystem::Initialize(PrefService* prefs) {
+void CloudPolicySubsystem::Initialize(
+    PrefService* prefs,
+    int delay_milliseconds) {
   DCHECK(!prefs_);
   prefs_ = prefs;
 
@@ -102,7 +104,7 @@ void CloudPolicySubsystem::Initialize(PrefService* prefs) {
   }
 
   if (device_management_service_.get())
-    device_management_service_->Initialize();
+    device_management_service_->ScheduleInitialization(delay_milliseconds);
 
   policy_refresh_rate_.Init(prefs::kPolicyRefreshRate, prefs_, this);
   UpdatePolicyRefreshRate();
@@ -173,6 +175,12 @@ void CloudPolicySubsystem::Observe(NotificationType type,
   } else {
     NOTREACHED();
   }
+}
+
+void CloudPolicySubsystem::ScheduleServiceInitialization(
+    int delay_milliseconds) {
+  if (device_management_service_.get())
+    device_management_service_->ScheduleInitialization(delay_milliseconds);
 }
 
 }  // namespace policy

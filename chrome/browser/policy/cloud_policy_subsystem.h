@@ -75,8 +75,9 @@ class CloudPolicySubsystem
   // net::NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  // Initializes the subsystem.
-  void Initialize(PrefService* prefs);
+  // Initializes the subsystem.The first network request will only be made
+  // after |delay_milliseconds|.
+  void Initialize(PrefService* prefs, int delay_milliseconds);
 
   // Shuts the subsystem down. This must be called before threading and network
   // infrastructure goes away.
@@ -95,6 +96,9 @@ class CloudPolicySubsystem
 
   // Registers cloud policy related prefs.
   static void RegisterPrefs(PrefService* pref_service);
+
+  // Schedule initialization of the policy backend service.
+  void ScheduleServiceInitialization(int delay_milliseconds);
 
  private:
   // Updates the policy controller with a new refresh rate value.

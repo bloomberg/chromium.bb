@@ -128,6 +128,7 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
     return;
   }
 
+  connector->ScheduleServiceInitialization(0);
   registrar_.reset(new policy::CloudPolicySubsystem::ObserverRegistrar(
       connector->cloud_policy_subsystem(), this));
 

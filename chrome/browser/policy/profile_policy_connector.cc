@@ -24,6 +24,8 @@ const FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Device Management");
 const FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
 const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
 
+const int kServiceInitializationStartupDelay = 2000;
+
 }  // namespace
 
 namespace policy {
@@ -61,12 +63,18 @@ ProfilePolicyConnector::~ProfilePolicyConnector() {
   identity_strategy_.reset();
 }
 
+void ProfilePolicyConnector::ScheduleServiceInitialization(
+    int delay_milliseconds) {
+  if (cloud_policy_subsystem_.get())
+    cloud_policy_subsystem_->ScheduleServiceInitialization(delay_milliseconds);
+}
+
 void ProfilePolicyConnector::Initialize() {
-  // TODO(jkummerow, mnissler): Move this out of the browser startup path.
   if (identity_strategy_.get())
     identity_strategy_->LoadTokenCache();
   if (cloud_policy_subsystem_.get())
-    cloud_policy_subsystem_->Initialize(profile_->GetPrefs());
+    cloud_policy_subsystem_->Initialize(profile_->GetPrefs(),
+                                        kServiceInitializationStartupDelay);
 }
 
 void ProfilePolicyConnector::Shutdown() {
