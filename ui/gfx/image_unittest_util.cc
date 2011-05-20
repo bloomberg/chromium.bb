@@ -43,11 +43,11 @@ PlatformImage CreatePlatformImage() {
 
 gfx::Image::RepresentationType GetPlatformRepresentationType() {
 #if defined(OS_MACOSX)
-  return gfx::Image::kNSImageRep;
+  return gfx::Image::kImageRepCocoa;
 #elif defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-  return gfx::Image::kGdkPixbufRep;
+  return gfx::Image::kImageRepGdk;
 #else
-  return gfx::Image::kSkBitmapRep;
+  return gfx::Image::kImageRepSkia;
 #endif
 }
 

@@ -43,9 +43,9 @@ class ImageStorage;
 class Image {
  public:
   enum RepresentationType {
-    kGdkPixbufRep,
-    kNSImageRep,
-    kSkBitmapRep,
+    kImageRepGdk,
+    kImageRepCocoa,
+    kImageRepSkia,
   };
 
   typedef std::map<RepresentationType, internal::ImageRep*> RepresentationMap;

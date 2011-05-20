@@ -71,7 +71,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
     base::AutoLock lock(*lock_);
     ImageMap::const_iterator found = images_.find(resource_id);
     if (found != images_.end()) {
-      if (!found->second->HasRepresentation(gfx::Image::kNSImageRep)) {
+      if (!found->second->HasRepresentation(gfx::Image::kImageRepCocoa)) {
         DLOG(WARNING) << "ResourceBundle::GetNativeImageNamed() is returning a"
           << " cached gfx::Image that isn't backed by an NSImage. The image"
           << " will be converted, rather than going through the NSImage loader."

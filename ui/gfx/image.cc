@@ -40,9 +40,9 @@ const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
 }
 #endif
 
-class SkBitmapRep;
-class GdkPixbufRep;
-class NSImageRep;
+class ImageRepSkia;
+class ImageRepGdk;
+class ImageRepCocoa;
 
 // An ImageRep is the object that holds the backing memory for an Image. Each
 // RepresentationType has an ImageRep subclass that is responsible for freeing
@@ -57,22 +57,22 @@ class ImageRep {
   virtual ~ImageRep() {}
 
   // Cast helpers ("fake RTTI").
-  SkBitmapRep* AsSkBitmapRep() {
-    CHECK_EQ(type_, Image::kSkBitmapRep);
-    return reinterpret_cast<SkBitmapRep*>(this);
+  ImageRepSkia* AsImageRepSkia() {
+    CHECK_EQ(type_, Image::kImageRepSkia);
+    return reinterpret_cast<ImageRepSkia*>(this);
   }
 
 #if defined(OS_LINUX)
-  GdkPixbufRep* AsGdkPixbufRep() {
-    CHECK_EQ(type_, Image::kGdkPixbufRep);
-    return reinterpret_cast<GdkPixbufRep*>(this);
+  ImageRepGdk* AsImageRepGdk() {
+    CHECK_EQ(type_, Image::kImageRepGdk);
+    return reinterpret_cast<ImageRepGdk*>(this);
   }
 #endif
 
 #if defined(OS_MACOSX)
-  NSImageRep* AsNSImageRep() {
-    CHECK_EQ(type_, Image::kNSImageRep);
-    return reinterpret_cast<NSImageRep*>(this);
+  ImageRepCocoa* AsImageRepCocoa() {
+    CHECK_EQ(type_, Image::kImageRepCocoa);
+    return reinterpret_cast<ImageRepCocoa*>(this);
   }
 #endif
 
@@ -82,21 +82,21 @@ class ImageRep {
   Image::RepresentationType type_;
 };
 
-class SkBitmapRep : public ImageRep {
+class ImageRepSkia : public ImageRep {
  public:
-  explicit SkBitmapRep(const SkBitmap* bitmap)
-      : ImageRep(Image::kSkBitmapRep) {
+  explicit ImageRepSkia(const SkBitmap* bitmap)
+      : ImageRep(Image::kImageRepSkia) {
     CHECK(bitmap);
     bitmaps_.push_back(bitmap);
   }
 
-  explicit SkBitmapRep(const std::vector<const SkBitmap*>& bitmaps)
-      : ImageRep(Image::kSkBitmapRep),
+  explicit ImageRepSkia(const std::vector<const SkBitmap*>& bitmaps)
+      : ImageRep(Image::kImageRepSkia),
         bitmaps_(bitmaps) {
     CHECK(!bitmaps_.empty());
   }
 
-  virtual ~SkBitmapRep() {
+  virtual ~ImageRepSkia() {
     STLDeleteElements(&bitmaps_);
   }
 
@@ -107,19 +107,19 @@ class SkBitmapRep : public ImageRep {
  private:
   std::vector<const SkBitmap*> bitmaps_;
 
-  DISALLOW_COPY_AND_ASSIGN(SkBitmapRep);
+  DISALLOW_COPY_AND_ASSIGN(ImageRepSkia);
 };
 
 #if defined(OS_LINUX)
-class GdkPixbufRep : public ImageRep {
+class ImageRepGdk : public ImageRep {
  public:
-  explicit GdkPixbufRep(GdkPixbuf* pixbuf)
-      : ImageRep(Image::kGdkPixbufRep),
+  explicit ImageRepGdk(GdkPixbuf* pixbuf)
+      : ImageRep(Image::kImageRepGdk),
         pixbuf_(pixbuf) {
     CHECK(pixbuf);
   }
 
-  virtual ~GdkPixbufRep() {
+  virtual ~ImageRepGdk() {
     if (pixbuf_) {
       g_object_unref(pixbuf_);
       pixbuf_ = NULL;
@@ -131,20 +131,20 @@ class GdkPixbufRep : public ImageRep {
  private:
   GdkPixbuf* pixbuf_;
 
-  DISALLOW_COPY_AND_ASSIGN(GdkPixbufRep);
+  DISALLOW_COPY_AND_ASSIGN(ImageRepGdk);
 };
 #endif
 
 #if defined(OS_MACOSX)
-class NSImageRep : public ImageRep {
+class ImageRepCocoa : public ImageRep {
  public:
-  explicit NSImageRep(NSImage* image)
-      : ImageRep(Image::kNSImageRep),
+  explicit ImageRepCocoa(NSImage* image)
+      : ImageRep(Image::kImageRepCocoa),
         image_(image) {
     CHECK(image);
   }
 
-  virtual ~NSImageRep() {
+  virtual ~ImageRepCocoa() {
     base::mac::NSObjectRelease(image_);
     image_ = nil;
   }
@@ -154,7 +154,7 @@ class NSImageRep : public ImageRep {
  private:
   NSImage* image_;
 
-  DISALLOW_COPY_AND_ASSIGN(NSImageRep);
+  DISALLOW_COPY_AND_ASSIGN(ImageRepCocoa);
 };
 #endif
 
@@ -196,29 +196,29 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
 }  // namespace internal
 
 Image::Image(const SkBitmap* bitmap)
-    : storage_(new internal::ImageStorage(Image::kSkBitmapRep)) {
-  internal::SkBitmapRep* rep = new internal::SkBitmapRep(bitmap);
+    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
+  internal::ImageRepSkia* rep = new internal::ImageRepSkia(bitmap);
   AddRepresentation(rep);
 }
 
 Image::Image(const std::vector<const SkBitmap*>& bitmaps)
-    : storage_(new internal::ImageStorage(Image::kSkBitmapRep)) {
-  internal::SkBitmapRep* rep = new internal::SkBitmapRep(bitmaps);
+    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
+  internal::ImageRepSkia* rep = new internal::ImageRepSkia(bitmaps);
   AddRepresentation(rep);
 }
 
 #if defined(OS_LINUX)
 Image::Image(GdkPixbuf* pixbuf)
-    : storage_(new internal::ImageStorage(Image::kGdkPixbufRep)) {
-  internal::GdkPixbufRep* rep = new internal::GdkPixbufRep(pixbuf);
+    : storage_(new internal::ImageStorage(Image::kImageRepGdk)) {
+  internal::ImageRepGdk* rep = new internal::ImageRepGdk(pixbuf);
   AddRepresentation(rep);
 }
 #endif
 
 #if defined(OS_MACOSX)
 Image::Image(NSImage* image)
-    : storage_(new internal::ImageStorage(Image::kNSImageRep)) {
-  internal::NSImageRep* rep = new internal::NSImageRep(image);
+    : storage_(new internal::ImageStorage(Image::kImageRepCocoa)) {
+  internal::ImageRepCocoa* rep = new internal::ImageRepCocoa(image);
   AddRepresentation(rep);
 }
 #endif
@@ -235,8 +235,8 @@ Image::~Image() {
 }
 
 Image::operator const SkBitmap*() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kSkBitmapRep);
-  return rep->AsSkBitmapRep()->bitmap();
+  internal::ImageRep* rep = GetRepresentation(Image::kImageRepSkia);
+  return rep->AsImageRepSkia()->bitmap();
 }
 
 Image::operator const SkBitmap&() const {
@@ -245,15 +245,15 @@ Image::operator const SkBitmap&() const {
 
 #if defined(OS_LINUX)
 Image::operator GdkPixbuf*() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kGdkPixbufRep);
-  return rep->AsGdkPixbufRep()->pixbuf();
+  internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
+  return rep->AsImageRepGdk()->pixbuf();
 }
 #endif
 
 #if defined(OS_MACOSX)
 Image::operator NSImage*() const {
-  internal::ImageRep* rep = GetRepresentation(Image::kNSImageRep);
-  return rep->AsNSImageRep()->image();
+  internal::ImageRep* rep = GetRepresentation(Image::kImageRepCocoa);
+  return rep->AsImageRepCocoa()->image();
 }
 #endif
 
@@ -293,20 +293,20 @@ internal::ImageRep* Image::GetRepresentation(
   // from the default rep.
 
   // Handle native-to-Skia conversion.
-  if (rep_type == Image::kSkBitmapRep) {
-    internal::SkBitmapRep* rep = NULL;
+  if (rep_type == Image::kImageRepSkia) {
+    internal::ImageRepSkia* rep = NULL;
 #if defined(OS_LINUX)
-    if (storage_->default_representation_type() == Image::kGdkPixbufRep) {
-      internal::GdkPixbufRep* pixbuf_rep = default_rep->AsGdkPixbufRep();
-      rep = new internal::SkBitmapRep(
+    if (storage_->default_representation_type() == Image::kImageRepGdk) {
+      internal::ImageRepGdk* pixbuf_rep = default_rep->AsImageRepGdk();
+      rep = new internal::ImageRepSkia(
           internal::GdkPixbufToSkBitmap(pixbuf_rep->pixbuf()));
     }
 #elif defined(OS_MACOSX)
-    if (storage_->default_representation_type() == Image::kNSImageRep) {
-      internal::NSImageRep* nsimage_rep = default_rep->AsNSImageRep();
+    if (storage_->default_representation_type() == Image::kImageRepCocoa) {
+      internal::ImageRepCocoa* nsimage_rep = default_rep->AsImageRepCocoa();
       std::vector<const SkBitmap*> bitmaps;
       CHECK(internal::NSImageToSkBitmaps(nsimage_rep->image(), &bitmaps));
-      rep = new internal::SkBitmapRep(bitmaps);
+      rep = new internal::ImageRepSkia(bitmaps);
     }
 #endif
     CHECK(rep);
@@ -315,19 +315,19 @@ internal::ImageRep* Image::GetRepresentation(
   }
 
   // Handle Skia-to-native conversions.
-  if (default_rep->type() == Image::kSkBitmapRep) {
-    internal::SkBitmapRep* skia_rep = default_rep->AsSkBitmapRep();
+  if (default_rep->type() == Image::kImageRepSkia) {
+    internal::ImageRepSkia* skia_rep = default_rep->AsImageRepSkia();
     internal::ImageRep* native_rep = NULL;
 #if defined(OS_LINUX)
-    if (rep_type == Image::kGdkPixbufRep) {
+    if (rep_type == Image::kImageRepGdk) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_rep->bitmap());
-      native_rep = new internal::GdkPixbufRep(pixbuf);
+      native_rep = new internal::ImageRepGdk(pixbuf);
     }
 #elif defined(OS_MACOSX)
-    if (rep_type == Image::kNSImageRep) {
+    if (rep_type == Image::kImageRepCocoa) {
       NSImage* image = gfx::SkBitmapsToNSImage(skia_rep->bitmaps());
       base::mac::NSObjectRetain(image);
-      native_rep = new internal::NSImageRep(image);
+      native_rep = new internal::ImageRepCocoa(image);
     }
 #endif
     CHECK(native_rep);
@@ -344,12 +344,12 @@ void Image::AddRepresentation(internal::ImageRep* rep) const {
 }
 
 size_t Image::GetNumberOfSkBitmaps() const  {
-  return GetRepresentation(Image::kSkBitmapRep)->AsSkBitmapRep()->
+  return GetRepresentation(Image::kImageRepSkia)->AsImageRepSkia()->
       bitmaps().size();
 }
 
 const SkBitmap* Image::GetSkBitmapAtIndex(size_t index) const {
-  return GetRepresentation(Image::kSkBitmapRep)->AsSkBitmapRep()->
+  return GetRepresentation(Image::kImageRepSkia)->AsImageRepSkia()->
       bitmaps()[index];
 }
 
