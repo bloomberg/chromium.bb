@@ -134,10 +134,6 @@ arm = {
   'build_tests' : False,
   'unittests' : False,
   'vm_tests' : False,
-
-  # These images don't work for arm.
-  'factory_install_mod' : False,
-  'factory_test_mod' : False,
 }
 
 full = {
@@ -382,19 +378,19 @@ add_config('x86-zgb-release', [internal, full, official, release, {
 }])
 
 add_config('arm-tegra2_seaboard-release', [
-    internal, full, official, release, arm, {
+    arm, internal, full, official, release, {
   'board' : 'tegra2_seaboard',
   'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_aebl-release', [
-    internal, full, official, release, arm, {
+    arm, internal, full, official, release, {
   'board' : 'tegra2_aebl',
   'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_kaen-release', [
-    internal, full, official, release, arm, {
+    arm, internal, full, official, release, {
   'board' : 'tegra2_kaen',
   'prebuilts' : False,
 }])
