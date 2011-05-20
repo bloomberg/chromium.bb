@@ -184,34 +184,6 @@ html[dir='rtl'] .details-button {
   background-image: url('warning.png');
 }
 
-#internetPage:not([accesslocked]) #locked-network-banner,
-#internetPage[accesslocked] #wireless-buttons,
-#internetPage[accesslocked] #wired-section,
-#internetPage[accesslocked] #wireless-section,
-#internetPage[accesslocked] #remembered-section,
-#internetPage[accesslocked] #detailsInternetPage {
-  display: none;
-}
-
-#detailsInternetPage:not([connected]) > #advancedSection,
-#detailsInternetPage:not([wireless]) > * > #detailsInternetOk,
-#detailsInternetPage[ethernet] .wifi-details,
-#detailsInternetPage[ethernet] .cellular-details,
-#detailsInternetPage[cellular] .wifi-details,
-#detailsInternetPage[wireless] .cellular-details,
-#detailsInternetPage[cellplanloading] .no-plan-info,
-#detailsInternetPage[cellplanloading] .plan-details-info,
-#detailsInternetPage[cellplanloading] #planList,
-#detailsInternetPage[hascellplan] .plan-loading-info,
-#detailsInternetPage[hascellplan] .no-plan-info,
-#detailsInternetPage[nocellplan] .plan-loading-info,
-#detailsInternetPage[nocellplan] .plan-details-info,
-#detailsInternetPage:not([gsm]) .gsm-only,
-#detailsInternetPage[gsm] .cdma-only,
-#detailsInternetPage:not([password]) .password-details {
-  display: none;
-}
-
 #wireless-buttons > * > button {
   margin-left: 5px;
 }

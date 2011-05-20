@@ -150,9 +150,7 @@ function load() {
     OptionsPage.registerSubPage(ChangePictureOptions.getInstance(),
                                 PersonalOptions.getInstance(),
                                 [$('change-picture-button')]);
-    OptionsPage.registerOverlay(new OptionsPage('detailsInternetPage',
-                                                'detailsInternetPage',
-                                                'detailsInternetPage'),
+    OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
 
     var languageModifierKeysOverlay = new OptionsPage(

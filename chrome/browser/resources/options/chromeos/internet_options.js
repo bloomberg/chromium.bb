@@ -31,8 +31,7 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       if (templateData.accessLocked) {
-        var page = $('internetPage');
-        page.setAttribute('accesslocked', true);
+        this.accesslocked = true;
       }
 
       options.internet.NetworkElement.decorate($('wired-list'));
@@ -119,8 +118,30 @@ cr.define('options', function() {
         return;
       chrome.send('buttonClickCallback',
           [networkType, servicePath, "options"]);
+    },
+
+    /**
+     * Update internet page controls.
+     * @private
+     */
+    updateControls_: function() {
+      accesslocked = this.accesslocked;
+
+      $('locked-network-banner').hidden = !accesslocked;
+      $('wireless-buttons').hidden = accesslocked;
+      $('wired-section').hidden = accesslocked;
+      $('wireless-section').hidden = accesslocked;
+      $('remembered-section').hidden = accesslocked;
+      $('detailsInternetPage').hidden = accesslocked;
     }
   };
+
+  /**
+   * Whether access to this page is locked.
+   * @type {boolean}
+   */
+  cr.defineProperty(InternetOptions, 'accesslocked', cr.PropertyKind.JS,
+      InternetOptions.prototype.updateControls_);
 
   // A boolean flag from InternerOptionsHandler to indicate whether to use
   // inline WebUI for ethernet/wifi login/options.
@@ -203,6 +224,7 @@ cr.define('options', function() {
       }
       if (!AccountsOptions.currentUserIsOwner())
         $('internet-owner-only-warning').hidden = false;
+      $('data-roaming').hidden = false;
     } else {
       $('enable-cellular').hidden = true;
       $('disable-cellular').hidden = true;
@@ -228,12 +250,12 @@ cr.define('options', function() {
   //Chrome callbacks
   //
   InternetOptions.refreshNetworkData = function (data) {
-    var page = $('internetPage');
+    var self = InternetOptions.getInstance();
     if (data.accessLocked) {
-      page.setAttribute('accesslocked', true);
+      self.accesslocked = true;
       return;
     }
-    page.removeAttribute('accesslocked');
+    self.accesslocked = false;
     if (InternetOptions.updateLocked) {
       InternetOptions.updateData = data;
       InternetOptions.updatePending = true;
@@ -251,47 +273,26 @@ cr.define('options', function() {
     }
   };
 
+  // TODO(xiyuan): This function seems belonging to DetailsInternetPage.
   InternetOptions.updateCellularPlans = function (data) {
-    var page = $('detailsInternetPage');
-    page.removeAttribute('cellplanloading');
+    var detailsPage = DetailsInternetPage.getInstance();
+    detailsPage.cellplanloading = false;
     if (data.plans && data.plans.length) {
-      page.removeAttribute('nocellplan');
-      page.setAttribute('hascellplan', true);
+      detailsPage.nocellplan = false
+      detailsPage.hascellplan = true;
       $('planList').load(data.plans);
     } else {
-      page.setAttribute('nocellplan', true);
-      page.removeAttribute('hascellplan');
+      detailsPage.nocellplan = true;
+      detailsPage.hascellplan = false;
     }
 
-    if (!data.needsPlan)
-      page.setAttribute('hasactiveplan', true);
-    else
-      page.removeAttribute('hasactiveplan');
+    detailsPage.hasactiveplan = !data.needsPlan;
+    detailsPage.activated = data.activated;
+    if (!data.activated)
+      $('detailsInternetLogin').hidden = true;
 
-    if (data.activated) {
-      page.setAttribute('activated', true);
-    } else {
-      page.removeAttribute('activated');
-      $('detailsInternetLogin').classList.add('hidden');
-    }
-
-    // CSS selectors don't like me anymore, switching to classList
-    if (data.showBuyButton)
-      $('buyplanDetails').classList.remove('hidden');
-    else
-      $('buyplanDetails').classList.add('hidden');
-
-    if (data.showActivateButton)
-      $('activateDetails').classList.remove('hidden');
-    else
-      $('activateDetails').classList.add('hidden');
-
-    // Nudge webkit so that it redraws the details overlay page.
-    // See http://crosbug.com/9616 for details.
-    // Webkit bug: https://bugs.webkit.org/show_bug.cgi?id=50176
-    var dummy = page.ownerDocument.createTextNode(' ');
-    page.appendChild(dummy);
-    page.removeChild(dummy);
+    $('buyplanDetails').hidden = !data.showBuyButton;
+    $('activateDetails').hidden = !data.showActivateButton;
   };
 
   InternetOptions.updateSecurityTab = function(data) {
@@ -305,22 +306,18 @@ cr.define('options', function() {
   };
 
   InternetOptions.showDetailedInfo = function (data) {
-    var page = $('detailsInternetPage');
-    $('buyplanDetails').classList.add('hidden');
-    $('activateDetails').classList.add('hidden');
-    $('detailsInternetLogin').classList.add('hidden');
-    if (data.connecting) {
-      page.setAttribute('connecting', data.connecting);
-    } else {
-      page.removeAttribute('connecting');
-    }
+    var detailsPage = DetailsInternetPage.getInstance();
+    $('buyplanDetails').hidden = true;
+    $('activateDetails').hidden = true;
+    $('detailsInternetLogin').hidden = data.connected;
+
+    detailsPage.connecting = data.connecting;
+
+    detailsPage.connected = data.connected;
     if (data.connected) {
-      page.setAttribute('connected', data.connected);
       $('inetTitle').textContent = localStrings.getString('inetStatus');
     } else {
-      page.removeAttribute('connected');
       $('inetTitle').textContent = localStrings.getString('inetConnect');
-      $('detailsInternetLogin').classList.remove('hidden');
     }
     $('connectionState').textContent = data.connectionState;
     var address = $('inetAddress');
@@ -348,28 +345,25 @@ cr.define('options', function() {
     }
     if (data.type == 2) {
       OptionsPage.showTab($('wifiNetworkNavTab'));
-      page.setAttribute('wireless', true);
-      page.removeAttribute('ethernet');
-      page.removeAttribute('cellular');
-      page.removeAttribute('gsm');
+      detailsPage.wireless = true;
+      detailsPage.ethernet = false;
+      detailsPage.cellular = false;
+      detailsPage.gsm = false;
       $('inetSsid').textContent = data.ssid;
       $('autoConnectNetwork').checked = data.autoConnect;
       if (!AccountsOptions.currentUserIsOwner()) {
         // Disable this for guest non-Owners.
         $('autoConnectNetwork').disabled = true;
       }
-      page.removeAttribute('password');
-      if (data.encrypted) {
-        page.setAttribute('password', true);
-      }
+      detailsPage.password = data.encrypted;
     } else if(data.type == 5) {
       if (!data.gsm)
         OptionsPage.showTab($('cellularPlanNavTab'));
       else
         OptionsPage.showTab($('cellularConnNavTab'));
-      page.removeAttribute('ethernet');
-      page.removeAttribute('wireless');
-      page.setAttribute('cellular', true);
+      detailsPage.ethernet = false;
+      detailsPage.wireless = false;
+      detailsPage.cellular = true;
       if (data.carrierUrl) {
         var a = $('carrierUrl');
         if (!a) {
@@ -398,9 +392,8 @@ cr.define('options', function() {
       $('mdn').textContent = data.mdn;
       $('esn').textContent = data.esn;
       $('min').textContent = data.min;
-      if (!data.gsm) {
-        page.removeAttribute('gsm');
-      } else {
+      detailsPage.gsm = data.gsm;
+      if (data.gsm) {
         $('operatorName').textContent = data.operatorName;
         $('operatorCode').textContent = data.operatorCode;
         $('imsi').textContent = data.imsi;
@@ -409,37 +402,29 @@ cr.define('options', function() {
         $('cellularApnPassword').value = data.apn_password;
         $('sim-card-lock-enabled').checked = data.simCardLockEnabled;
         InternetOptions.enableSecurityTab(true);
-        page.setAttribute('gsm', true);
       }
 
-      // CSS selectors don't like me anymore, switching to classList
-      if (data.showBuyButton)
-        $('buyplanDetails').classList.remove('hidden');
-      else
-        $('buyplanDetails').classList.add('hidden');
-
+      $('buyplanDetails').hidden = !data.showBuyButton;
+      $('activateDetails').hidden = !data.showActivateButton;
       if (data.showActivateButton) {
-        $('activateDetails').classList.remove('hidden')
-        $('detailsInternetLogin').classList.add('hidden');
-      } else {
-        $('activateDetails').classList.add('hidden');
+        $('detailsInternetLogin').hidden = true;
       }
 
-      page.removeAttribute('hascellplan');
+      detailsPage.hascellplan = false;
       if (data.connected) {
-        page.removeAttribute('nocellplan');
-        page.setAttribute('cellplanloading', true);
+        detailsPage.nocellplan = false;
+        detailsPage.cellplanloading = true;
         chrome.send('refreshCellularPlan', [data.servicePath])
       } else {
-        page.setAttribute('nocellplan', true);
-        page.removeAttribute('cellplanloading');
+        detailsPage.nocellplan = true;
+        detailsPage.cellplanloading = false;
       }
     } else {
       OptionsPage.showTab($('internetNavTab'));
-      page.setAttribute('ethernet', true);
-      page.removeAttribute('wireless');
-      page.removeAttribute('cellular');
-      page.removeAttribute('gsm');
+      detailsPage.ethernet = true;
+      detailsPage.wireless = false;
+      detailsPage.cellular = false;
+      detailsPage.gsm = false;
     }
     OptionsPage.navigateToPage('detailsInternetPage');
   };

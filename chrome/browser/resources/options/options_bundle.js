@@ -16,6 +16,7 @@
   <include src="chromeos/change_picture_options.js"></include>
   <include src="chromeos/internet_network_element.js"></include>
   <include src="chromeos/internet_options.js"></include>
+  <include src="chromeos/internet_detail.js"></include>
   <include src="chromeos/system_options.js"></include>
   <include src="chromeos/accounts_options.js"></include>
   <include src="chromeos/proxy_options.js"></include>
@@ -26,6 +27,7 @@
   var AccountsOptions = options.AccountsOptions;
   var ChangePictureOptions = options.ChangePictureOptions;
   var InternetOptions = options.InternetOptions;
+  var DetailsInternetPage = options.internet.DetailsInternetPage;
   var SystemOptions = options.SystemOptions;
 </if>
 <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
