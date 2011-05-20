@@ -8,6 +8,7 @@ locales
 product_logo_48.png
 resources
 resources.pak
+xdg-mime
 xdg-settings
 libpdf.so
 libppGoogleNaClPluginChrome.so
