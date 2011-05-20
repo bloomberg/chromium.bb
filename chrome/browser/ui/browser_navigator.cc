@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_url_handler.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -34,8 +35,11 @@ SiteInstance* GetSiteInstance(TabContents* source_contents, Profile* profile,
   // If url is a WebUI or extension, we need to be sure to use the right type
   // of renderer process up front.  Otherwise, we create a normal SiteInstance
   // as part of creating the tab.
-  if (ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, url))
+  ExtensionService* service = profile->GetExtensionService();
+  if (ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, url) ||
+      (service && service->GetExtensionByWebExtent(url))) {
     return SiteInstance::CreateSiteInstanceForURL(profile, url);
+  }
 
   if (!source_contents)
     return NULL;

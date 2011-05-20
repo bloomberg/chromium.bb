@@ -81,12 +81,25 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   replace_host.SetHostStr(host_str);
   base_url = base_url.ReplaceComponents(replace_host);
 
-  browser()->NewTab();
-  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
+  // Test both opening a URL in a new tab, and opening a tab and then navigating
+  // it.  Either way, app tabs should be considered extension processes, but
+  // they have no elevated privileges and thus should not have WebUI bindings.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("path1/empty.html"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_TRUE(browser()->GetTabContentsAt(1)->render_view_host()->process()->
+                  is_extension_process());
+  EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
+  EXPECT_TRUE(browser()->GetTabContentsAt(2)->render_view_host()->process()->
+                  is_extension_process());
+  EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
+  EXPECT_FALSE(browser()->GetTabContentsAt(3)->render_view_host()->process()->
+                  is_extension_process());
+  EXPECT_FALSE(browser()->GetTabContentsAt(3)->web_ui());
 
   // The extension should have opened 3 new tabs. Including the original blank
   // tab, we now have 4 tabs. Two should be part of the extension app, and
