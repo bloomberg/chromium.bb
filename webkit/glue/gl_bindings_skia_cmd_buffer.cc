@@ -125,6 +125,7 @@ void BindSkiaToCommandBufferGL() {
     NULL,  // glResolveMultisampleFramebuffer
     NULL,  // glMapBuffer
     NULL,  // glUnmapBuffer
+    NULL,  // glBindFragDataLocationIndexed
 
     GrGLInterface::kStaticInitEndGuard
   };

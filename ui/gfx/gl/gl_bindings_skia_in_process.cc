@@ -566,6 +566,7 @@ void BindSkiaToInProcessGL() {
       NULL,  // glResolveMultisampleFramebuffer
       StubGLMapBuffer,
       StubGLUnmapBuffer,
+      NULL,  // glBindFragDataLocationIndexed
       GrGLInterface::kStaticInitEndGuard,
     };
     GrGLSetGLInterface(&host_gl_interface);
