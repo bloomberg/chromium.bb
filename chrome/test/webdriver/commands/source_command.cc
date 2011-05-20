@@ -8,8 +8,8 @@
 
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -30,15 +30,12 @@ bool SourceCommand::DoesGet() {
 void SourceCommand::ExecuteGet(Response* const response) {
   ListValue args;
   Value* result = NULL;
-  ErrorCode code = session_->ExecuteScript(kSource, &args, &result);
-
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "ExecuteAndExtractString failed",
-                        kInternalServerError);
+  Error* error = session_->ExecuteScript(kSource, &args, &result);
+  if (error) {
+    response->SetError(error);
     return;
   }
   response->SetValue(result);
-  response->SetStatus(kSuccess);
 }
 
 }  // namespace webdriver

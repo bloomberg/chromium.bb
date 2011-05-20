@@ -739,13 +739,14 @@ bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
     return false;
 
   int browser_index, tab_index;
+  std::string error_msg;
   if (!SendGetIndicesFromTabHandleJSONRequest(
-         sender_, handle_, &browser_index, &tab_index)) {
+         sender_, handle_, &browser_index, &tab_index, &error_msg)) {
     return false;
   }
 
   return SendCaptureEntirePageJSONRequest(sender_, browser_index,
-                                          tab_index, path);
+                                          tab_index, path, &error_msg);
 }
 
 #if defined(OS_WIN)

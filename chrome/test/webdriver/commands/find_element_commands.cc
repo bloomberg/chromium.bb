@@ -6,9 +6,9 @@
 
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -29,12 +29,12 @@ void FindElementCommand::ExecutePost(Response* const response) {
   std::string locator, query;
   if (!GetStringParameter("using", &locator) ||
       !GetStringParameter("value", &query)) {
-    SET_WEBDRIVER_ERROR(response,
-        "Request is missing required 'using' and/or 'value' data", kBadRequest);
+    response->SetError(new Error(
+        kBadRequest,
+        "Request is missing required 'using' and/or 'value' data"));
     return;
   }
 
-  // TODO(jmikhail): The findElement(s) atom should handle this conversion.
   if (locator == "class name") {
     locator = LocatorType::kClassName;
   } else if (locator == "css selector") {
@@ -53,25 +53,29 @@ void FindElementCommand::ExecutePost(Response* const response) {
   // "/session/$session/element/$id/element(s)"
   WebElementId root_element(GetPathVariable(4));
 
-  ErrorCode code = kUnknownError;
   if (find_one_element_) {
     WebElementId element;
-    code = session_->FindElement(
+    Error* error = session_->FindElement(
         session_->current_target(), root_element, locator, query, &element);
-    if (code == kSuccess)
-      response->SetValue(element.ToValue());
+    if (error) {
+      response->SetError(error);
+      return;
+    }
+    response->SetValue(element.ToValue());
   } else {
     std::vector<WebElementId> elements;
-    code = session_->FindElements(
+    Error* error = session_->FindElements(
         session_->current_target(), root_element, locator, query, &elements);
-    if (code == kSuccess) {
-      ListValue* element_list = new ListValue();
-      for (size_t i = 0; i < elements.size(); ++i)
-        element_list->Append(elements[i].ToValue());
-      response->SetValue(element_list);
+    if (error) {
+      response->SetError(error);
+      return;
     }
+    ListValue* element_list = new ListValue();
+    for (size_t i = 0; i < elements.size(); ++i)
+      element_list->Append(elements[i].ToValue());
+    response->SetValue(element_list);
   }
-  response->SetStatus(code);
+  response->SetStatus(kSuccess);
 }
 
 }  // namespace webdriver

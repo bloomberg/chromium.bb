@@ -7,6 +7,8 @@
 #include <string>
 
 #include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -26,32 +28,29 @@ bool URLCommand::DoesPost() {
 
 void URLCommand::ExecuteGet(Response* const response) {
   std::string url;
-  ErrorCode code = session_->GetURL(&url);
-  if (code == kSuccess)
-    response->SetValue(new StringValue(url));
-  response->SetStatus(code);
+  Error* error = session_->GetURL(&url);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+  response->SetValue(new StringValue(url));
 }
 
 void URLCommand::ExecutePost(Response* const response) {
   std::string url;
 
   if (!GetStringASCIIParameter("url", &url)) {
-    SET_WEBDRIVER_ERROR(response, "URL field not found", kInternalServerError);
-    return;
-  }
-  // TODO(jmikhail): sniff for meta-redirects.
-  if (!session_->NavigateToURL(url)) {
-    SET_WEBDRIVER_ERROR(response, "NavigateToURL failed",
-                        kInternalServerError);
+    response->SetError(new Error(kBadRequest, "Missing 'url' parameter"));
     return;
   }
 
+  Error* error = session_->NavigateToURL(url);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(new StringValue(url));
-  response->SetStatus(kSuccess);
 }
 
-bool URLCommand::RequiresValidTab() {
-  return true;
-}
 
 }  // namespace webdriver

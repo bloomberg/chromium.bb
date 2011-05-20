@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/automation_constants.h"
@@ -26,6 +27,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/webdriver/frame_path.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/point.h"
 
@@ -119,21 +121,24 @@ Automation::Automation() {}
 Automation::~Automation() {}
 
 void Automation::Init(const CommandLine& options,
-                      ErrorCode* code) {
+                      Error** error) {
   FilePath browser_exe;
   if (!GetDefaultChromeExe(&browser_exe)) {
-    *code = kBrowserCouldNotBeFound;
+    *error = new Error(kUnknownError, "Could not find default Chrome binary");
     return;
   }
 
-  InitWithBrowserPath(browser_exe, options, code);
+  InitWithBrowserPath(browser_exe, options, error);
 }
 
 void Automation::InitWithBrowserPath(const FilePath& browser_exe,
                                      const CommandLine& options,
-                                     ErrorCode* code) {
+                                     Error** error) {
   if (!file_util::PathExists(browser_exe)) {
-    *code = kBrowserCouldNotBeFound;
+    std::string message = base::StringPrintf(
+        "Could not find Chrome binary at: %" PRFilePath,
+        browser_exe.value().c_str());
+    *error = new Error(kUnknownError, message);
     return;
   }
 
@@ -160,17 +165,26 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
   };
 
   if (!launcher_->LaunchBrowserAndServer(launch_props, true)) {
-    *code = kBrowserFailedToStart;
+    *error = new Error(
+        kUnknownError,
+        "Unable to either launch or connect to Chrome. Please check that "
+            "ChromeDriver is up-to-date");
     return;
   }
 
   int version = 0;
-  if (!SendGetChromeDriverAutomationVersion(automation(), &version) ||
-      version > automation::kChromeDriverAutomationVersion) {
-    *code = kIncompatibleBrowserVersion;
+  std::string error_msg;
+  if (!SendGetChromeDriverAutomationVersion(
+          automation(), &version, &error_msg)) {
+    *error = CreateChromeError(error_msg);
     return;
   }
-  *code = kSuccess;
+  if (version > automation::kChromeDriverAutomationVersion) {
+    *error = new Error(
+        kUnknownError,
+        "ChromeDriver is not compatible with this version of Chrome.");
+    return;
+  }
 }
 
 void Automation::Terminate() {
@@ -183,194 +197,225 @@ void Automation::ExecuteScript(int tab_id,
                                const FramePath& frame_path,
                                const std::string& script,
                                std::string* result,
-                               bool* success) {
+                               Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
   Value* unscoped_value;
+  std::string error_msg;
   if (!SendExecuteJavascriptJSONRequest(automation(), windex, tab_index,
                                         frame_path.value(), script,
-                                        &unscoped_value)) {
-    *success = false;
+                                        &unscoped_value, &error_msg)) {
+    *error = CreateChromeError(error_msg);
     return;
   }
   scoped_ptr<Value> value(unscoped_value);
-  *success = value->GetAsString(result);
+  if (!value->GetAsString(result))
+    *error = CreateChromeError("Execute script did not return string");
 }
 
 void Automation::MouseMove(int tab_id,
                            const gfx::Point& p,
-                           bool* success) {
+                           Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendMouseMoveJSONRequest(
-      automation(), windex, tab_index, p.x(), p.y());
+  std::string error_msg;
+  if (!SendMouseMoveJSONRequest(
+          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::MouseClick(int tab_id,
                             const gfx::Point& p,
                             automation::MouseButton button,
-                            bool* success) {
+                            Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendMouseClickJSONRequest(
-      automation(), windex, tab_index, button, p.x(), p.y());
+  std::string error_msg;
+  if (!SendMouseClickJSONRequest(
+          automation(), windex, tab_index, button, p.x(), p.y(), &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::MouseDrag(int tab_id,
                            const gfx::Point& start,
                            const gfx::Point& end,
-                           bool* success) {
+                           Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendMouseDragJSONRequest(
-      automation(), windex, tab_index, start.x(), start.y(), end.x(), end.y());
+  std::string error_msg;
+  if (!SendMouseDragJSONRequest(automation(), windex, tab_index, start.x(),
+                                start.y(), end.x(), end.y(), &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::MouseButtonUp(int tab_id,
                                const gfx::Point& p,
-                               bool* success) {
+                               Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendMouseButtonUpJSONRequest(
-      automation(), windex, tab_index, p.x(), p.y());
+  std::string error_msg;
+  if (!SendMouseButtonUpJSONRequest(
+          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::MouseButtonDown(int tab_id,
                                  const gfx::Point& p,
-                                 bool* success) {
+                                 Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendMouseButtonDownJSONRequest(
-      automation(), windex, tab_index, p.x(), p.y());
+  std::string error_msg;
+  if (!SendMouseButtonDownJSONRequest(
+          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::MouseDoubleClick(int tab_id,
                                   const gfx::Point& p,
-                                  bool* success) {
+                                  Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendMouseDoubleClickJSONRequest(
-      automation(), windex, tab_index, p.x(), p.y());
+  std::string error_msg;
+  if (!SendMouseDoubleClickJSONRequest(
+          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::SendWebKeyEvent(int tab_id,
                                  const WebKeyEvent& key_event,
-                                 bool* success) {
+                                 Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
+
+  std::string error_msg;
+  if (!SendWebKeyEventJSONRequest(
+          automation(), windex, tab_index, key_event, &error_msg)) {
+    *error = CreateChromeError(error_msg);
   }
-  *success = SendWebKeyEventJSONRequest(
-      automation(), windex, tab_index, key_event);
 }
 
 void Automation::SendNativeKeyEvent(int tab_id,
                                     ui::KeyboardCode key_code,
                                     int modifiers,
-                                    bool* success) {
+                                    Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
+
+  std::string error_msg;
+  if (!SendNativeKeyEventJSONRequest(
+         automation(), windex, tab_index, key_code, modifiers, &error_msg)) {
+    *error = CreateChromeError(error_msg);
   }
-  *success = SendNativeKeyEventJSONRequest(
-      automation(), windex, tab_index, key_code, modifiers);
 }
 
 void Automation::CaptureEntirePageAsPNG(int tab_id,
                                         const FilePath& path,
-                                        bool* success) {
+                                        Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendCaptureEntirePageJSONRequest(
-      automation(), windex, tab_index, path);
+  std::string error_msg;
+  if (!SendCaptureEntirePageJSONRequest(
+          automation(), windex, tab_index, path, &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::NavigateToURL(int tab_id,
                                const std::string& url,
-                               bool* success) {
-  int browser_index = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &browser_index, &tab_index)) {
-    *success = false;
+                               Error** error) {
+  int windex = 0, tab_index = 0;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
   AutomationMsg_NavigationResponseValues navigate_response;
-  if (!SendNavigateToURLJSONRequest(automation(), browser_index, tab_index,
-                                    GURL(url), 1, &navigate_response)) {
-    *success = false;
+  std::string error_msg;
+  if (!SendNavigateToURLJSONRequest(automation(), windex, tab_index,
+                                    GURL(url), 1, &navigate_response,
+                                    &error_msg)) {
+    *error = CreateChromeError(error_msg);
     return;
   }
-  *success = navigate_response != AUTOMATION_MSG_NAVIGATION_ERROR;
+  // TODO(kkania): Do not rely on this enum.
+  if (navigate_response == AUTOMATION_MSG_NAVIGATION_ERROR)
+    *error = new Error(kUnknownError, "Navigation error occurred");
 }
 
-void Automation::GoForward(int tab_id, bool* success) {
+void Automation::GoForward(int tab_id, Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendGoForwardJSONRequest(automation(), windex, tab_index);
+  std::string error_msg;
+  if (!SendGoForwardJSONRequest(
+          automation(), windex, tab_index, &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
-void Automation::GoBack(int tab_id, bool* success) {
+void Automation::GoBack(int tab_id, Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendGoBackJSONRequest(automation(), windex, tab_index);
+  std::string error_msg;
+  if (!SendGoBackJSONRequest(automation(), windex, tab_index, &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
-void Automation::Reload(int tab_id, bool* success) {
+void Automation::Reload(int tab_id, Error** error) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
     return;
-  }
 
-  *success = SendReloadJSONRequest(automation(), windex, tab_index);
+  std::string error_msg;
+  if (!SendReloadJSONRequest(automation(), windex, tab_index, &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
 void Automation::GetCookies(const std::string& url,
                             ListValue** cookies,
-                            bool* success) {
-  *success = SendGetCookiesJSONRequest(automation(), url, cookies);
+                            Error** error) {
+  std::string error_msg;
+  if (!SendGetCookiesJSONRequest(automation(), url, cookies, &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
 void Automation::GetCookiesDeprecated(int tab_id,
@@ -378,7 +423,8 @@ void Automation::GetCookiesDeprecated(int tab_id,
                                       std::string* cookies,
                                       bool* success) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+  scoped_ptr<Error> error(GetIndicesForTab(tab_id, &windex, &tab_index));
+  if (error.get()) {
     *success = false;
     return;
   }
@@ -389,8 +435,12 @@ void Automation::GetCookiesDeprecated(int tab_id,
 
 void Automation::DeleteCookie(const std::string& url,
                               const std::string& cookie_name,
-                              bool* success) {
-  *success = SendDeleteCookieJSONRequest(automation(), url, cookie_name);
+                              Error** error) {
+  std::string error_msg;
+  if (!SendDeleteCookieJSONRequest(
+          automation(), url, cookie_name, &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::DeleteCookieDeprecated(int tab_id,
@@ -398,7 +448,8 @@ void Automation::DeleteCookieDeprecated(int tab_id,
                                         const std::string& cookie_name,
                                         bool* success) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+  scoped_ptr<Error> error(GetIndicesForTab(tab_id, &windex, &tab_index));
+  if (error.get()) {
     *success = false;
     return;
   }
@@ -412,8 +463,10 @@ void Automation::DeleteCookieDeprecated(int tab_id,
 
 void Automation::SetCookie(const std::string& url,
                            DictionaryValue* cookie_dict,
-                           bool* success) {
-  *success = SendSetCookieJSONRequest(automation(), url, cookie_dict);
+                           Error** error) {
+  std::string error_msg;
+  if (!SendSetCookieJSONRequest(automation(), url, cookie_dict, &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
 void Automation::SetCookieDeprecated(int tab_id,
@@ -421,7 +474,8 @@ void Automation::SetCookieDeprecated(int tab_id,
                                      const std::string& cookie,
                                      bool* success) {
   int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+  scoped_ptr<Error> error(GetIndicesForTab(tab_id, &windex, &tab_index));
+  if (error.get()) {
     *success = false;
     return;
   }
@@ -434,63 +488,88 @@ void Automation::SetCookieDeprecated(int tab_id,
 }
 
 void Automation::GetTabIds(std::vector<int>* tab_ids,
-                           bool* success) {
-  *success = SendGetTabIdsJSONRequest(automation(), tab_ids);
+                           Error** error) {
+  std::string error_msg;
+  if (!SendGetTabIdsJSONRequest(automation(), tab_ids, &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
-void Automation::DoesTabExist(int tab_id, bool* does_exist, bool* success) {
-  *success = SendIsTabIdValidJSONRequest(automation(), tab_id, does_exist);
-}
-
-void Automation::CloseTab(int tab_id, bool* success) {
-  int windex = 0, tab_index = 0;
-  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
-    *success = false;
-    return;
+void Automation::DoesTabExist(int tab_id, bool* does_exist, Error** error) {
+  std::string error_msg;
+  if (!SendIsTabIdValidJSONRequest(
+          automation(), tab_id, does_exist, &error_msg)) {
+    *error = CreateChromeError(error_msg);
   }
-
-  *success = SendCloseTabJSONRequest(automation(), windex, tab_index);
 }
 
-void Automation::GetAppModalDialogMessage(std::string* message, bool* success) {
-  *success = SendGetAppModalDialogMessageJSONRequest(automation(), message);
+void Automation::CloseTab(int tab_id, Error** error) {
+  int windex = 0, tab_index = 0;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
+    return;
+
+  std::string error_msg;
+  if (!SendCloseTabJSONRequest(automation(), windex, tab_index, &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
-void Automation::AcceptOrDismissAppModalDialog(bool accept, bool* success) {
-  *success = SendAcceptOrDismissAppModalDialogJSONRequest(
-      automation(), accept);
+void Automation::GetAppModalDialogMessage(std::string* message, Error** error) {
+  std::string error_msg;
+  if (!SendGetAppModalDialogMessageJSONRequest(
+          automation(), message, &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
+}
+
+void Automation::AcceptOrDismissAppModalDialog(bool accept, Error** error) {
+  std::string error_msg;
+  if (!SendAcceptOrDismissAppModalDialogJSONRequest(
+          automation(), accept, &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::AcceptPromptAppModalDialog(const std::string& prompt_text,
-                                            bool* success) {
-  *success = SendAcceptPromptAppModalDialogJSONRequest(
-      automation(), prompt_text);
+                                            Error** error) {
+  std::string error_msg;
+  if (!SendAcceptPromptAppModalDialogJSONRequest(
+          automation(), prompt_text, &error_msg)) {
+    *error = CreateChromeError(error_msg);
+  }
 }
 
 void Automation::GetBrowserVersion(std::string* version) {
   *version = automation()->server_version();
 }
 
-void Automation::GetChromeDriverAutomationVersion(int* version, bool* success) {
-  *success = SendGetChromeDriverAutomationVersion(automation(), version);
+void Automation::GetChromeDriverAutomationVersion(int* version, Error** error) {
+  std::string error_msg;
+  if (!SendGetChromeDriverAutomationVersion(automation(), version, &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
-void Automation::WaitForAllTabsToStopLoading(bool* success) {
-  *success = SendWaitForAllTabsToStopLoadingJSONRequest(automation());
+void Automation::WaitForAllTabsToStopLoading(Error** error) {
+  std::string error_msg;
+  if (!SendWaitForAllTabsToStopLoadingJSONRequest(automation(), &error_msg))
+    *error = CreateChromeError(error_msg);
 }
 
 AutomationProxy* Automation::automation() const {
   return launcher_->automation();
 }
 
-bool Automation::GetIndicesForTab(
+Error* Automation::GetIndicesForTab(
     int tab_id, int* browser_index, int* tab_index) {
-  if (!SendGetIndicesFromTabIdJSONRequest(automation(), tab_id,
-                                          browser_index, tab_index)) {
-    LOG(ERROR) << "Could not get browser and tab indices for WebDriver tab id";
-    return false;
+  std::string error_msg;
+  if (!SendGetIndicesFromTabIdJSONRequest(
+          automation(), tab_id, browser_index, tab_index, &error_msg)) {
+    return CreateChromeError(error_msg);
   }
-  return true;
+  return NULL;
+}
+
+Error* Automation::CreateChromeError(const std::string& message) {
+  return new Error(kUnknownError, "Internal Chrome error: " + message);
 }
 
 }  // namespace webdriver

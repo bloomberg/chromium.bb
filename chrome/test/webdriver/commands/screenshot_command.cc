@@ -10,8 +10,8 @@
 #include "base/base64.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -27,23 +27,21 @@ bool ScreenshotCommand::DoesGet() {
 
 void ScreenshotCommand::ExecuteGet(Response* const response) {
   std::string raw_bytes;
-  if (!session_->GetScreenShot(&raw_bytes)) {
-    SET_WEBDRIVER_ERROR(response, "Screenshot of current page failed",
-                        kInternalServerError);
+  Error* error = session_->GetScreenShot(&raw_bytes);
+  if (error) {
+    response->SetError(error);
     return;
   }
 
   // Convert the raw binary data to base 64 encoding for webdriver.
   std::string base64_screenshot;
   if (!base::Base64Encode(raw_bytes, &base64_screenshot)) {
-    SET_WEBDRIVER_ERROR(response, "Encoding the PNG to base64 format failed",
-                        kInternalServerError);
+    response->SetError(new Error(
+        kUnknownError, "Encoding the PNG to base64 format failed"));
     return;
   }
 
   response->SetValue(new StringValue(base64_screenshot));
-  response->SetStatus(kSuccess);
 }
 
 }  // namespace webdriver
-

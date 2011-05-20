@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 
 #include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -19,16 +21,9 @@ bool ForwardCommand::DoesPost() {
 }
 
 void ForwardCommand::ExecutePost(Response* const response) {
-  if (!session_->GoForward()) {
-    SET_WEBDRIVER_ERROR(response, "GoForward failed", kInternalServerError);
-    return;
-  }
-
-  response->SetStatus(kSuccess);
-}
-
-bool ForwardCommand::RequiresValidTab() {
-  return true;
+  Error* error = session_->GoForward();
+  if (error)
+    response->SetError(error);
 }
 
 BackCommand::BackCommand(const std::vector<std::string>& path_segments,
@@ -42,16 +37,9 @@ bool BackCommand::DoesPost() {
 }
 
 void BackCommand::ExecutePost(Response* const response) {
-  if (!session_->GoBack()) {
-    SET_WEBDRIVER_ERROR(response, "GoBack failed", kInternalServerError);
-    return;
-  }
-
-  response->SetStatus(kSuccess);
-}
-
-bool BackCommand::RequiresValidTab() {
-  return true;
+  Error* error = session_->GoBack();
+  if (error)
+    response->SetError(error);
 }
 
 RefreshCommand::RefreshCommand(const std::vector<std::string>& path_segments,
@@ -65,16 +53,9 @@ bool RefreshCommand::DoesPost() {
 }
 
 void RefreshCommand::ExecutePost(Response* const response) {
-  if (!session_->Reload()) {
-    SET_WEBDRIVER_ERROR(response, "Reload failed", kInternalServerError);
-    return;
-  }
-
-  response->SetStatus(kSuccess);
-}
-
-bool RefreshCommand::RequiresValidTab() {
-  return true;
+  Error* error = session_->Reload();
+  if (error)
+    response->SetError(error);
 }
 
 }  // namespace webdriver

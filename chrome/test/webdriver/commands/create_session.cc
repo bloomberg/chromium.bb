@@ -16,11 +16,9 @@
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/session_manager.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
-
-// The minimum supported version of Chrome for this version of ChromeDriver.
-const int kMinSupportedChromeVersion = 12;
 
 CreateSession::CreateSession(const std::vector<std::string>& path_segments,
                              const DictionaryValue* const parameters)
@@ -46,9 +44,8 @@ void CreateSession::ExecutePost(Response* const response) {
     while (i != added_options->end_keys()) {
       FilePath::StringType value;
       if (!added_options->GetString(*i, &value)) {
-        SET_WEBDRIVER_ERROR(response,
-                            "Invalid format for added options to browser",
-                             kBadRequest);
+        response->SetError(new Error(
+            kBadRequest, "Invalid format for added options to browser"));
         return;
       } else {
         if (!value.empty()) {
@@ -57,7 +54,7 @@ void CreateSession::ExecutePost(Response* const response) {
           options.AppendSwitch(*i);
         }
       }
-     ++i;
+      ++i;
     }
     FilePath::StringType path;
     desiredCapabilities->GetString("chrome.binary", &path);
@@ -66,33 +63,9 @@ void CreateSession::ExecutePost(Response* const response) {
 
   // Session manages its own liftime, so do not call delete.
   Session* session = new Session();
-  ErrorCode code = session->Init(user_browser_exe, options);
-
-  if (code == kBrowserCouldNotBeFound) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Chrome could not be found.",
-                        kUnknownError);
-    return;
-  } else if (code == kBrowserFailedToStart) {
-    std::string error_msg = base::StringPrintf(
-        "Chrome could not be started successfully. "
-            "Please update ChromeDriver and ensure you are using Chrome %d+.",
-        kMinSupportedChromeVersion);
-    SET_WEBDRIVER_ERROR(response, error_msg, kUnknownError);
-    return;
-  } else if (code == kIncompatibleBrowserVersion) {
-    std::string error_msg = base::StringPrintf(
-        "Version of Chrome is incompatible with version of ChromeDriver. "
-            "Please update ChromeDriver and ensure you are using Chrome %d+.",
-        kMinSupportedChromeVersion);
-    SET_WEBDRIVER_ERROR(response, error_msg, kUnknownError);
-    return;
-  } else if (code != kSuccess) {
-    std::string error_msg = base::StringPrintf(
-        "Unknown error while initializing session. "
-            "Ensure ChromeDriver is up-to-date and Chrome is version %d+.",
-        kMinSupportedChromeVersion);
-    SET_WEBDRIVER_ERROR(response, error_msg, kUnknownError);
+  Error* error = session->Init(user_browser_exe, options);
+  if (error) {
+    response->SetError(error);
     return;
   }
 

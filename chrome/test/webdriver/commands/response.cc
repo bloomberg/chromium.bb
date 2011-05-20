@@ -57,48 +57,14 @@ void Response::SetValue(Value* value) {
   data_.Set(kValueKey, value);
 }
 
-void Response::SetError(ErrorCode error_code, const std::string& message,
-                        const std::string& file, int line) {
-  DictionaryValue* error = new DictionaryValue;
-  error->SetString(kMessageKey, message);
+void Response::SetError(Error* error) {
+  DictionaryValue* error_dict = new DictionaryValue();
+  error_dict->SetString(kMessageKey, error->ToString());
 
-  DictionaryValue* stack = new DictionaryValue;
-  stack->SetString(kStackTraceFileNameKey, file);
-  stack->SetString(kStackTraceClassNameKey, "");
-  stack->SetString(kStackTraceMethodNameKey, "");
-  stack->SetInteger(kStackTraceLineNumberKey, line);
-  ListValue* stack_list = new ListValue;
-  stack_list->Append(stack);
-  error->Set(kStackTraceKey, stack_list);
-
-  SetStatus(error_code);
-  SetValue(error);
+  SetStatus(error->code());
+  SetValue(error_dict);
+  delete error;
 }
-
-void Response::SetError(ErrorCode error_code,
-                        const std::string& message,
-                        const std::string& file,
-                        int line,
-                        const std::string& png) {
-  DictionaryValue* error = new DictionaryValue;
-
-  error->SetString(kMessageKey, message);
-  error->SetString(kStackTraceFileNameKey, file);
-  error->SetInteger(kStackTraceLineNumberKey, line);
-  std::string base64_png;
-
-  // Convert the raw binary data to base 64 encoding for webdriver.
-  if (!base::Base64Encode(png, &base64_png)) {
-    LOG(ERROR) << "Failed to encode screenshot to base64 "
-               << "sending back an empty string instead.";
-  } else {
-    error->SetString(kScreenKey, base64_png);
-  }
-
-  SetStatus(error_code);
-  SetValue(error);
-}
-
 
 void Response::SetField(const std::string& key, Value* value) {
   data_.Set(key, value);

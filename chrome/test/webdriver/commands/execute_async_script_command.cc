@@ -6,8 +6,8 @@
 
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -25,24 +25,26 @@ bool ExecuteAsyncScriptCommand::DoesPost() {
 void ExecuteAsyncScriptCommand::ExecutePost(Response* const response) {
   std::string script;
   if (!GetStringParameter("script", &script)) {
-    SET_WEBDRIVER_ERROR(response, "No script to execute specified",
-                        kBadRequest);
+    response->SetError(new Error(
+        kBadRequest, "No script to execute specified"));
     return;
   }
 
   ListValue* args;
   if (!GetListParameter("args", &args)) {
-    SET_WEBDRIVER_ERROR(response, "No script arguments specified",
-                        kBadRequest);
+    response->SetError(new Error(
+        kBadRequest, "No script arguments specified"));
     return;
   }
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteAsyncScript(
+  Error* error = session_->ExecuteAsyncScript(
       session_->current_target(), script, args, &result);
-  response->SetStatus(status);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
 }  // namspace webdriver
-

@@ -229,9 +229,9 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
     std::string json(request_info->post_data, request_info->post_data_len);
     std::string error;
     if (!ParseJSONDictionary(json, parameters, &error)) {
-      SET_WEBDRIVER_ERROR(response,
-          "Failed to parse command data: " + error + "\n  Data: " + json,
-          kBadRequest);
+      response->SetError(new Error(
+          kBadRequest,
+          "Failed to parse command data: " + error + "\n  Data: " + json));
       return false;
     }
   }

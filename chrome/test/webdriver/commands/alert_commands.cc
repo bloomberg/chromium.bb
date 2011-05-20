@@ -6,8 +6,8 @@
 
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -30,19 +30,24 @@ bool AlertTextCommand::DoesPost() {
 
 void AlertTextCommand::ExecuteGet(Response* const response) {
   std::string text;
-  ErrorCode code = session_->GetAlertMessage(&text);
-  if (code == kSuccess)
-    response->SetValue(Value::CreateStringValue(text));
-  response->SetStatus(code);
+  Error* error = session_->GetAlertMessage(&text);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+  response->SetValue(Value::CreateStringValue(text));
 }
 
 void AlertTextCommand::ExecutePost(Response* const response) {
   std::string text;
   if (!GetStringParameter("text", &text)) {
-    SET_WEBDRIVER_ERROR(response, "'text' is missing or invalid", kBadRequest);
+    response->SetError(new Error(
+        kBadRequest, "'text' is missing or invalid"));
     return;
   }
-  response->SetStatus(session_->SetAlertPromptText(text));
+  Error* error = session_->SetAlertPromptText(text);
+  if (error)
+    response->SetError(error);
 }
 
 AcceptAlertCommand::AcceptAlertCommand(
@@ -59,7 +64,9 @@ bool AcceptAlertCommand::DoesPost() {
 }
 
 void AcceptAlertCommand::ExecutePost(Response* const response) {
-  response->SetStatus(session_->AcceptOrDismissAlert(true));
+  Error* error = session_->AcceptOrDismissAlert(true);
+  if (error)
+    response->SetError(error);
 }
 
 DismissAlertCommand::DismissAlertCommand(
@@ -76,7 +83,9 @@ bool DismissAlertCommand::DoesPost() {
 }
 
 void DismissAlertCommand::ExecutePost(Response* const response) {
-  response->SetStatus(session_->AcceptOrDismissAlert(false));
+  Error* error = session_->AcceptOrDismissAlert(false);
+  if (error)
+    response->SetError(error);
 }
 
 }  // namespace webdriver

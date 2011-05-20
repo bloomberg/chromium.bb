@@ -11,7 +11,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/session_manager.h"
 
@@ -56,18 +55,12 @@ void SessionWithID::ExecuteGet(Response* const response) {
   temp_value->SetString("chrome.automationVersion", chrome::kChromeVersion);
   temp_value->SetBoolean("chrome.nativeEvents", session_->use_native_events());
 
-  response->SetStatus(kSuccess);
   response->SetValue(temp_value);
 }
 
 void SessionWithID::ExecuteDelete(Response* const response) {
   // Session manages its own lifetime, so do not call delete.
   session_->Terminate();
-  response->SetStatus(kSuccess);
-}
-
-bool SessionWithID::RequiresValidTab() {
-  return false;
 }
 
 }  // namespace webdriver

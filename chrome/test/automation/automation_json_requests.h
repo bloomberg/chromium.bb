@@ -50,7 +50,8 @@ bool SendGetIndicesFromTabIdJSONRequest(
     AutomationMessageSender* sender,
     int tab_id,
     int* browser_index,
-    int* tab_index) WARN_UNUSED_RESULT;
+    int* tab_index,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the current browser and tab indices for the given |TabProxy|
 // handle. Returns true on success.
@@ -58,7 +59,8 @@ bool SendGetIndicesFromTabHandleJSONRequest(
     AutomationMessageSender* sender,
     int tab_proxy_handle,
     int* browser_index,
-    int* tab_index) WARN_UNUSED_RESULT;
+    int* tab_index,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to navigate to the given url and wait for the given number of
 // navigations to complete. Returns true on success.
@@ -68,7 +70,8 @@ bool SendNavigateToURLJSONRequest(
     int tab_index,
     const GURL& url,
     int navigation_count,
-    AutomationMsg_NavigationResponseValues* nav_response) WARN_UNUSED_RESULT;
+    AutomationMsg_NavigationResponseValues* nav_response,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the given javascript to be executed in the frame specified by the
 // given xpath. Returns true on success. If true, |result| will be set to the
@@ -79,28 +82,32 @@ bool SendExecuteJavascriptJSONRequest(
     int tab_index,
     const std::string& frame_xpath,
     const std::string& javascript,
-    Value** result) WARN_UNUSED_RESULT;
+    Value** result,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the specified tab to go forward. Waits for the load to complete.
 // Returns true on success.
 bool SendGoForwardJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
-    int tab_index) WARN_UNUSED_RESULT;
+    int tab_index,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the specified tab to go back. Waits for the load to complete.
 // Returns true on success.
 bool SendGoBackJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
-    int tab_index) WARN_UNUSED_RESULT;
+    int tab_index,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the specified tab to reload. Waits for the load to complete.
 // Returns true on success.
 bool SendReloadJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
-    int tab_index) WARN_UNUSED_RESULT;
+    int tab_index,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests a snapshot of the entire page to be saved to the given path
 // in PNG format.
@@ -109,21 +116,24 @@ bool SendCaptureEntirePageJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
     int tab_index,
-    const FilePath& path) WARN_UNUSED_RESULT;
+    const FilePath& path,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the url of the specified tab. Returns true on success.
 bool SendGetTabURLJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
     int tab_index,
-    std::string* url) WARN_UNUSED_RESULT;
+    std::string* url,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the title of the specified tab. Returns true on success.
 bool SendGetTabTitleJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
     int tab_index,
-    std::string* tab_title) WARN_UNUSED_RESULT;
+    std::string* tab_title,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests all the cookies for the given URL. On success returns true and
 // caller takes ownership of |cookies|, which is a list of all the cookies in
@@ -131,7 +141,8 @@ bool SendGetTabTitleJSONRequest(
 bool SendGetCookiesJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
-    ListValue** cookies) WARN_UNUSED_RESULT;
+    ListValue** cookies,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests all the cookies for the given URL. Returns true on success.
 // Use |SendGetCookiesJSONRequest| for chrome versions greater than 11.
@@ -147,7 +158,8 @@ bool SendGetCookiesJSONRequestDeprecated(
 bool SendDeleteCookieJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
-    const std::string& cookie_name) WARN_UNUSED_RESULT;
+    const std::string& cookie_name,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests deletion of the cookie with the given name and URL. Returns true
 // on success. Use |SendDeleteCookieJSONRequest| for chrome versions greater
@@ -164,7 +176,8 @@ bool SendDeleteCookieJSONRequestDeprecated(
 bool SendSetCookieJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
-    DictionaryValue* cookie_dict) WARN_UNUSED_RESULT;
+    DictionaryValue* cookie_dict,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests setting the given cookie for the given URL. Returns true on
 // success. Use |SendSetCookieJSONRequest| instead for chrome versions greater
@@ -179,19 +192,22 @@ bool SendSetCookieJSONRequestDeprecated(
 // Requests the IDs for all open tabs. Returns true on success.
 bool SendGetTabIdsJSONRequest(
     AutomationMessageSender* sender,
-    std::vector<int>* tab_ids) WARN_UNUSED_RESULT;
+    std::vector<int>* tab_ids,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests whether the given tab ID is valid. Returns true on success.
 bool SendIsTabIdValidJSONRequest(
     AutomationMessageSender* sender,
     int tab_id,
-    bool* is_valid) WARN_UNUSED_RESULT;
+    bool* is_valid,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to close the given tab. Returns true on success.
 bool SendCloseTabJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
-    int tab_index) WARN_UNUSED_RESULT;
+    int tab_index,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the WebKit event for a mouse move to the given
 // coordinate in the specified tab. Returns true on success.
@@ -200,7 +216,8 @@ bool SendMouseMoveJSONRequest(
     int browser_index,
     int tab_index,
     int x,
-    int y) WARN_UNUSED_RESULT;
+    int y,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the WebKit events for a mouse click at the given
 // coordinate in the specified tab. Returns true on success.
@@ -210,7 +227,8 @@ bool SendMouseClickJSONRequest(
     int tab_index,
     automation::MouseButton button,
     int x,
-    int y) WARN_UNUSED_RESULT;
+    int y,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the WebKit events for a mouse drag from the start to end
 // coordinates given in the specified tab. Returns true on success.
@@ -221,7 +239,8 @@ bool SendMouseDragJSONRequest(
     int start_x,
     int start_y,
     int end_x,
-    int end_y) WARN_UNUSED_RESULT;
+    int end_y,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the WebKit event for a mouse button down at the given
 // coordinate in the specified tab. Returns true on success.
@@ -230,7 +249,8 @@ bool SendMouseButtonDownJSONRequest(
     int browser_index,
     int tab_index,
     int x,
-    int y) WARN_UNUSED_RESULT;
+    int y,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the WebKit event for a mouse button up at the given
 // coordinate in the specified tab. Returns true on success.
@@ -239,7 +259,8 @@ bool SendMouseButtonUpJSONRequest(
     int browser_index,
     int tab_index,
     int x,
-    int y) WARN_UNUSED_RESULT;
+    int y,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the WebKit event for a mouse double click at the given
 // coordinate in the specified tab. Returns true on success.
@@ -248,7 +269,8 @@ bool SendMouseDoubleClickJSONRequest(
     int browser_index,
     int tab_index,
     int x,
-    int y) WARN_UNUSED_RESULT;
+    int y,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the WebKit event for the given |WebKeyEvent| in a
 // specified tab. Returns true on success.
@@ -256,7 +278,8 @@ bool SendWebKeyEventJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
     int tab_index,
-    const WebKeyEvent& key_event) WARN_UNUSED_RESULT;
+    const WebKeyEvent& key_event,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to send the key event for the given keycode+modifiers to a
 // browser window containing the specified tab. Returns true on success.
@@ -265,34 +288,40 @@ bool SendNativeKeyEventJSONRequest(
     int browser_index,
     int tab_index,
     ui::KeyboardCode key_code,
-    int modifiers) WARN_UNUSED_RESULT;
+    int modifiers,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to get the active JavaScript modal dialog's message. Returns true
 // on success.
 bool SendGetAppModalDialogMessageJSONRequest(
     AutomationMessageSender* sender,
-    std::string* message) WARN_UNUSED_RESULT;
+    std::string* message,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to accept or dismiss the active JavaScript modal dialog.
 // Returns true on success.
 bool SendAcceptOrDismissAppModalDialogJSONRequest(
     AutomationMessageSender* sender,
-    bool accept) WARN_UNUSED_RESULT;
+    bool accept,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to accept the active JavaScript modal dialog with the given prompt
 // text. Returns true on success.
 bool SendAcceptPromptAppModalDialogJSONRequest(
     AutomationMessageSender* sender,
-    const std::string& prompt_text) WARN_UNUSED_RESULT;
+    const std::string& prompt_text,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to wait for all tabs to stop loading. Returns true on success.
 bool SendWaitForAllTabsToStopLoadingJSONRequest(
-    AutomationMessageSender* sender) WARN_UNUSED_RESULT;
+    AutomationMessageSender* sender,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the version of ChromeDriver automation supported by the automation
 // server. Returns true on success.
 bool SendGetChromeDriverAutomationVersion(
     AutomationMessageSender* sender,
-    int* version) WARN_UNUSED_RESULT;
+    int* version,
+    std::string* error_msg) WARN_UNUSED_RESULT;
 
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_JSON_REQUESTS_H_

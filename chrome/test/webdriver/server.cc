@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/webdriver/dispatch.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/alert_commands.h"
@@ -43,7 +42,6 @@
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/set_timeout_commands.h"
 #include "chrome/test/webdriver/commands/source_command.h"
-#include "chrome/test/webdriver/commands/speed_command.h"
 #include "chrome/test/webdriver/commands/target_locator_commands.h"
 #include "chrome/test/webdriver/commands/title_command.h"
 #include "chrome/test/webdriver/commands/url_command.h"
@@ -138,7 +136,6 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   dispatcher->Add<SwitchFrameCommand>(  "/session/*/frame");
   dispatcher->Add<RefreshCommand>(      "/session/*/refresh");
   dispatcher->Add<SourceCommand>(       "/session/*/source");
-  dispatcher->Add<SpeedCommand>(        "/session/*/speed");
   dispatcher->Add<TitleCommand>(        "/session/*/title");
   dispatcher->Add<URLCommand>(          "/session/*/url");
   dispatcher->Add<WindowCommand>(       "/session/*/window");

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/test/webdriver/commands/command.h"
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
 namespace webdriver {
@@ -68,4 +67,3 @@ class FindManyElementsCommand : public FindElementCommand {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_FIND_ELEMENT_COMMANDS_H_
-

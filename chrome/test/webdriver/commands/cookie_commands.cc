@@ -33,16 +33,16 @@ CookieCommand::~CookieCommand() {}
 bool CookieCommand::Init(Response* const response) {
   if (!WebDriverCommand::Init(response))
     return false;
-  if (!session_->CompareBrowserVersion(kNewInterfaceBuildNo, 0,
-                                       &uses_new_interface_)) {
-    SET_WEBDRIVER_ERROR(response, "Failed to check Chrome version number",
-                        kUnknownError);
+
+  Error* error = session_->CompareBrowserVersion(
+      kNewInterfaceBuildNo, 0, &uses_new_interface_);
+  if (error) {
+    response->SetError(error);
     return false;
   }
-  ErrorCode code = session_->GetURL(&current_url_);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "Failed to query current page URL",
-                        code);
+  error = session_->GetURL(&current_url_);
+  if (error) {
+    response->SetError(error);
     return false;
   }
   return true;
@@ -63,9 +63,10 @@ bool CookieCommand::DoesPost() {
 void CookieCommand::ExecuteGet(Response* const response) {
   if (uses_new_interface_) {
     ListValue* cookies;
-    if (!session_->GetCookies(current_url_.possibly_invalid_spec(), &cookies)) {
-      SET_WEBDRIVER_ERROR(response, "Failed to fetch cookies",
-                          kUnknownError);
+    Error* error = session_->GetCookies(current_url_.possibly_invalid_spec(),
+                                        &cookies);
+    if (error) {
+      response->SetError(error);
       return;
     }
     response->SetStatus(kSuccess);
@@ -74,8 +75,7 @@ void CookieCommand::ExecuteGet(Response* const response) {
     std::string cookies;
     std::vector<std::string> tokens;
     if (!session_->GetCookiesDeprecated(current_url_, &cookies)) {
-      SET_WEBDRIVER_ERROR(response, "Failed to fetch cookies",
-                          kUnknownError);
+      response->SetError(new Error(kUnknownError, "Failed to fetch cookies"));
       return;
     }
     // Note that ';' separates cookies while ':' separates name/value pairs.
@@ -87,9 +87,7 @@ void CookieCommand::ExecuteGet(Response* const response) {
       if (cookie.valid()) {
         cookie_list->Append(cookie.ToDictionary());
       } else {
-        LOG(ERROR) << "Failed to parse cookie: " << *i;
-        SET_WEBDRIVER_ERROR(response, "Could not get all cookies",
-                            kInternalServerError);
+        response->SetError(new Error(kUnknownError, "Failed to parse cookies"));
         return;
       }
     }
@@ -104,9 +102,7 @@ void CookieCommand::ExecutePost(Response* const response) {
 
   // Check to see if the cookie was passed in as a JSON onject.
   if (!GetDictionaryParameter("cookie", &cookie_dict)) {
-    // No valid cookie sent.
-    SET_WEBDRIVER_ERROR(response, "Cookie key not found",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Cookie key not found"));
     return;
   }
 
@@ -116,18 +112,18 @@ void CookieCommand::ExecutePost(Response* const response) {
       std::vector<std::string> split_domain;
       base::SplitString(domain, ':', &split_domain);
       if (split_domain.size() > 2) {
-        SET_WEBDRIVER_ERROR(response, "Cookie domain has too many colons",
-                            kInvalidCookieDomain);
+        response->SetError(new Error(
+            kInvalidCookieDomain, "Cookie domain has too many colons"));
         return;
       } else if (split_domain.size() == 2) {
         // Remove the port number.
         cookie_dict->SetString("domain", split_domain[0]);
       }
     }
-    if (!session_->SetCookie(current_url_.possibly_invalid_spec(),
-                             cookie_dict)) {
-      SET_WEBDRIVER_ERROR(response, "Failed to set cookie",
-                          kUnableToSetCookie);
+    Error* error = session_->SetCookie(
+        current_url_.possibly_invalid_spec(), cookie_dict);
+    if (error) {
+      response->SetError(error);
       return;
     }
   } else {
@@ -135,14 +131,12 @@ void CookieCommand::ExecutePost(Response* const response) {
 
     // Make sure the cookie is formated preoperly.
     if (!cookie.valid()) {
-      SET_WEBDRIVER_ERROR(response, "Invalid cookie",
-                          kBadRequest);
+      response->SetError(new Error(kBadRequest, "Invalid cookie"));
        return;
     }
 
     if (!session_->SetCookieDeprecated(current_url_, cookie.ToString())) {
-      SET_WEBDRIVER_ERROR(response, "Failed to set cookie",
-                          kUnableToSetCookie);
+      response->SetError(new Error(kUnableToSetCookie, "Failed to set cookie"));
       return;
     }
     response->SetValue(new StringValue(cookie.ToString()));
@@ -153,32 +147,31 @@ void CookieCommand::ExecutePost(Response* const response) {
 void CookieCommand::ExecuteDelete(Response* const response) {
   if (uses_new_interface_) {
     ListValue* unscoped_cookies;
-    if (!session_->GetCookies(current_url_.possibly_invalid_spec(),
-                              &unscoped_cookies)) {
-      SET_WEBDRIVER_ERROR(response, "Failed to fetch cookies",
-                          kUnknownError);
+    Error* error = session_->GetCookies(
+        current_url_.possibly_invalid_spec(), &unscoped_cookies);
+    if (error) {
+      response->SetError(error);
       return;
     }
     scoped_ptr<ListValue> cookies(unscoped_cookies);
     for (size_t i = 0; i < cookies->GetSize(); ++i) {
       DictionaryValue* cookie_dict;
       if (!cookies->GetDictionary(i, &cookie_dict)) {
-        SET_WEBDRIVER_ERROR(response, "GetCookies returned non-dict type",
-                            kUnknownError);
+        response->SetError(new Error(
+            kUnknownError, "GetCookies returned non-dict type"));
         return;
       }
       std::string name;
       if (!cookie_dict->GetString("name", &name)) {
-        SET_WEBDRIVER_ERROR(
-            response,
-            "GetCookies returned cookie with missing or invalid 'name'",
-            kUnknownError);
+        response->SetError(new Error(
+            kUnknownError,
+            "GetCookies returned cookie with missing or invalid 'name'"));
         return;
       }
-      if (!session_->DeleteCookie(current_url_.possibly_invalid_spec(),
-                                  name)) {
-        SET_WEBDRIVER_ERROR(response, "Could not delete all cookies",
-                            kUnknownError);
+      Error* error = session_->DeleteCookie(
+          current_url_.possibly_invalid_spec(), name);
+      if (error) {
+        response->SetError(error);
         return;
       }
     }
@@ -187,8 +180,8 @@ void CookieCommand::ExecuteDelete(Response* const response) {
     std::vector<std::string> tokens;
 
     if (!session_->GetCookiesDeprecated(current_url_, &cookies)) {
-      SET_WEBDRIVER_ERROR(response, "Failed to fetch cookies",
-                          kUnableToSetCookie);
+      response->SetError(new Error(
+          kUnableToSetCookie, "Failed to fetch cookies"));
       return;
     }
 
@@ -199,16 +192,12 @@ void CookieCommand::ExecuteDelete(Response* const response) {
       if (cookie.valid()) {
         if (!session_->DeleteCookie(current_url_.possibly_invalid_spec(),
                                     cookie.name())) {
-          VLOG(1) << "Could not delete cookie: " << cookie.name() << "\n"
-                  << "Contents of cookie: " << cookie.ToString();
-          SET_WEBDRIVER_ERROR(response, "Could not delete all cookies",
-                              kInternalServerError);
+          response->SetError(new Error(
+              kUnknownError, "Could not delete all cookies"));
           return;
         }
       } else {
-        LOG(ERROR) << "Failed to parse cookie: " << *i;
-        SET_WEBDRIVER_ERROR(response, "Could not delete all cookies",
-                            kInternalServerError);
+        response->SetError(new Error(kUnknownError, "Failed to parse cookie"));
         return;
       }
     }
@@ -228,17 +217,16 @@ bool NamedCookieCommand::Init(Response* const response) {
   if (!WebDriverCommand::Init(response))
     return false;
 
-  if (!session_->CompareBrowserVersion(kNewInterfaceBuildNo, 0,
-                                       &uses_new_interface_)) {
-    SET_WEBDRIVER_ERROR(response, "Failed to check Chrome version number",
-                        kUnknownError);
+  Error* error = session_->CompareBrowserVersion(
+      kNewInterfaceBuildNo, 0, &uses_new_interface_);
+  if (error)  {
+    response->SetError(error);
     return false;
   }
 
-  ErrorCode code = session_->GetURL(&current_url_);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "Failed to query current page URL",
-                        code);
+  error = session_->GetURL(&current_url_);
+  if (error) {
+    response->SetError(error);
     return false;
   }
 
@@ -246,8 +234,7 @@ bool NamedCookieCommand::Init(Response* const response) {
   // /session/:sessionId/cookie/:name
   cookie_name_ = GetPathVariable(4);
   if (cookie_name_ == "") {
-    SET_WEBDRIVER_ERROR(response, "No cookie name specified",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "No cookie name specified"));
     return false;
   }
 
@@ -260,17 +247,15 @@ bool NamedCookieCommand::DoesDelete() {
 
 void NamedCookieCommand::ExecuteDelete(Response* const response) {
   if (uses_new_interface_) {
-    if (!session_->DeleteCookie(current_url_.possibly_invalid_spec(),
-                                cookie_name_)) {
-      SET_WEBDRIVER_ERROR(response,
-                          "Failed to delete cookie",
-                          kUnknownError);
+    Error* error = session_->DeleteCookie(
+        current_url_.possibly_invalid_spec(), cookie_name_);
+    if (error) {
+      response->SetError(error);
       return;
     }
   } else {
     if (!session_->DeleteCookieDeprecated(current_url_, cookie_name_)) {
-      SET_WEBDRIVER_ERROR(response, "Failed to delete cookie",
-                          kUnknownError);
+      response->SetError(new Error(kUnknownError, "Failed to delete cookie"));
       return;
     }
   }

@@ -9,8 +9,8 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 #include "third_party/webdriver/atoms.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -34,8 +34,7 @@ bool WebElementCommand::Init(Response* const response) {
   // There should be at least 5 segments to match
   // "/session/$session/element/$id"
   if (path_segments_.size() < 5) {
-    SET_WEBDRIVER_ERROR(response, "Path segments is less than 5",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Path segments is less than 5"));
     return false;
   }
 
@@ -62,21 +61,23 @@ void ElementAttributeCommand::ExecuteGet(Response* const response) {
   // There should be at least 7 segments to match
   // "/session/$session/element/$id/attribute/$name"
   if (path_segments_.size() < 7) {
-    SET_WEBDRIVER_ERROR(response, "Path segments is less than 7",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Path segments is less than 7"));
     return;
   }
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_ATTRIBUTE);
 
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
-  args->Append(Value::CreateStringValue(path_segments_.at(6)));
+  ListValue args;
+  args.Append(element.ToValue());
+  args.Append(Value::CreateStringValue(path_segments_.at(6)));
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -94,15 +95,18 @@ bool ElementClearCommand::DoesPost() {
 }
 
 void ElementClearCommand::ExecutePost(Response* const response) {
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
+  ListValue args;
+  args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "(%s).apply(null, arguments);", atoms::CLEAR);
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -123,21 +127,23 @@ void ElementCssCommand::ExecuteGet(Response* const response) {
   // There should be at least 7 segments to match
   // "/session/$session/element/$id/css/$propertyName"
   if (path_segments_.size() < 7) {
-    SET_WEBDRIVER_ERROR(response, "Path segments is less than 7",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Path segments is less than 7"));
     return;
   }
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_EFFECTIVE_STYLE);
 
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
-  args->Append(Value::CreateStringValue(path_segments_.at(6)));
+  ListValue args;
+  args.Append(element.ToValue());
+  args.Append(Value::CreateStringValue(path_segments_.at(6)));
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -156,11 +162,13 @@ bool ElementDisplayedCommand::DoesGet() {
 
 void ElementDisplayedCommand::ExecuteGet(Response* const response) {
   bool is_displayed;
-  ErrorCode status = session_->IsElementDisplayed(
+  Error* error = session_->IsElementDisplayed(
       session_->current_target(), element, &is_displayed);
-  if (status == kSuccess)
-    response->SetValue(Value::CreateBooleanValue(is_displayed));
-  response->SetStatus(status);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+  response->SetValue(Value::CreateBooleanValue(is_displayed));
 }
 
 ///////////////////// ElementEnabledCommand ////////////////////
@@ -177,15 +185,18 @@ bool ElementEnabledCommand::DoesGet() {
 }
 
 void ElementEnabledCommand::ExecuteGet(Response* const response) {
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
+  ListValue args;
+  args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::IS_ENABLED);
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -206,22 +217,24 @@ void ElementEqualsCommand::ExecuteGet(Response* const response) {
   // There should be at least 7 segments to match
   // "/session/$session/element/$id/equals/$other"
   if (path_segments_.size() < 7) {
-    SET_WEBDRIVER_ERROR(response, "Path segments is less than 7",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Path segments is less than 7"));
     return;
   }
 
   std::string script = "return arguments[0] == arguments[1];";
 
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
+  ListValue args;
+  args.Append(element.ToValue());
 
   WebElementId other_element(path_segments_.at(6));
-  args->Append(other_element.ToValue());
+  args.Append(other_element.ToValue());
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -246,8 +259,11 @@ void ElementLocationCommand::ExecuteGet(Response* const response) {
   args.Append(element.ToValue());
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, &args, &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -266,14 +282,15 @@ bool ElementLocationInViewCommand::DoesGet() {
 
 void ElementLocationInViewCommand::ExecuteGet(Response* const response) {
   gfx::Point location;
-  ErrorCode code = session_->GetElementLocationInView(element, &location);
-  response->SetStatus(code);
-  if (code == kSuccess) {
-    DictionaryValue* coord_dict = new DictionaryValue();
-    coord_dict->SetInteger("x", location.x());
-    coord_dict->SetInteger("y", location.y());
-    response->SetValue(coord_dict);
+  Error* error = session_->GetElementLocationInView(element, &location);
+  if (error) {
+    response->SetError(error);
+    return;
   }
+  DictionaryValue* coord_dict = new DictionaryValue();
+  coord_dict->SetInteger("x", location.x());
+  coord_dict->SetInteger("y", location.y());
+  response->SetValue(coord_dict);
 }
 
 ///////////////////// ElementNameCommand ////////////////////
@@ -290,14 +307,17 @@ bool ElementNameCommand::DoesGet() {
 }
 
 void ElementNameCommand::ExecuteGet(Response* const response) {
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
+  ListValue args;
+  args.Append(element.ToValue());
 
   std::string script = "return arguments[0].tagName.toLocaleLowerCase();";
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -319,29 +339,35 @@ bool ElementSelectedCommand::DoesPost() {
 }
 
 void ElementSelectedCommand::ExecuteGet(Response* const response) {
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
+  ListValue args;
+  args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::IS_SELECTED);
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
 void ElementSelectedCommand::ExecutePost(Response* const response) {
-  scoped_ptr<ListValue> args(new ListValue);
-  args->Append(element.ToValue());
-  args->Append(Value::CreateBooleanValue(true));
+  ListValue args;
+  args.Append(element.ToValue());
+  args.Append(Value::CreateBooleanValue(true));
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::SET_SELECTED);
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -360,15 +386,16 @@ bool ElementSizeCommand::DoesGet() {
 
 void ElementSizeCommand::ExecuteGet(Response* const response) {
   gfx::Size size;
-  ErrorCode status = session_->GetElementSize(
+  Error* error = session_->GetElementSize(
       session_->current_target(), element, &size);
-  if (status == kSuccess) {
-    DictionaryValue* dict = new DictionaryValue();
-    dict->SetInteger("width", size.width());
-    dict->SetInteger("height", size.height());
-    response->SetValue(dict);
+  if (error) {
+    response->SetError(error);
+    return;
   }
-  response->SetStatus(status);
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger("width", size.width());
+  dict->SetInteger("height", size.height());
+  response->SetValue(dict);
 }
 
 ///////////////////// ElementSubmitCommand ////////////////////
@@ -394,8 +421,11 @@ void ElementSubmitCommand::ExecutePost(Response* const response) {
   args.Append(element.ToValue());
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, &args, &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -420,8 +450,11 @@ void ElementToggleCommand::ExecutePost(Response* const response) {
   args.Append(element.ToValue());
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, &args, &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, &args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
@@ -447,30 +480,28 @@ void ElementValueCommand::ExecuteGet(Response* const response) {
   ListValue args;
   std::string script = "return arguments[0]['value']";
   args.Append(element.ToValue());
-  ErrorCode code =
+
+  Error* error =
       session_->ExecuteScript(script, &args, &unscoped_result);
   scoped_ptr<Value> result(unscoped_result);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "Failed to execute script", code);
+  if (error) {
+    response->SetError(error);
     return;
   }
   if (!result->IsType(Value::TYPE_STRING) &&
       !result->IsType(Value::TYPE_NULL)) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Result is not string or null type",
-                        kInternalServerError);
+    response->SetError(new Error(
+        kUnknownError, "Result is not string or null type"));
     return;
   }
-  response->SetStatus(kSuccess);
   response->SetValue(result.release());
 }
 
 void ElementValueCommand::ExecutePost(Response* const response) {
   ListValue* key_list;
   if (!GetListParameter("value", &key_list)) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Missing or invalid 'value' parameter",
-                        kBadRequest);
+    response->SetError(new Error(
+        kBadRequest, "Missing or invalid 'value' parameter"));
     return;
   }
   // Flatten the given array of strings into one.
@@ -480,24 +511,17 @@ void ElementValueCommand::ExecutePost(Response* const response) {
     key_list->GetString(i, &keys_list_part);
     for (size_t j = 0; j < keys_list_part.size(); ++j) {
       if (CBU16_IS_SURROGATE(keys_list_part[j])) {
-        SET_WEBDRIVER_ERROR(
-            response,
-            "ChromeDriver only supports characters in the BMP",
-            kBadRequest);
+        response->SetError(new Error(
+            kBadRequest, "ChromeDriver only supports characters in the BMP"));
         return;
       }
     }
     keys.append(keys_list_part);
   }
 
-  ErrorCode code = session_->SendKeys(element, keys);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Internal SendKeys error",
-                        code);
-    return;
-  }
-  response->SetStatus(kSuccess);
+  Error* error = session_->SendKeys(element, keys);
+  if (error)
+    response->SetError(error);
 }
 
 ///////////////////// ElementTextCommand ////////////////////
@@ -521,20 +545,17 @@ void ElementTextCommand::ExecuteGet(Response* const response) {
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_TEXT);
 
-  ErrorCode code = session_->ExecuteScript(script, &args,
-                                           &unscoped_result);
+  Error* error = session_->ExecuteScript(script, &args,
+                                         &unscoped_result);
   scoped_ptr<Value> result(unscoped_result);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "Failed to execute script", code);
+  if (error) {
+    response->SetError(error);
     return;
   }
   if (!result->IsType(Value::TYPE_STRING)) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Result is not string type",
-                        kInternalServerError);
+    response->SetError(new Error(kUnknownError, "Result is not string type"));
     return;
   }
-  response->SetStatus(kSuccess);
   response->SetValue(result.release());
 }
 

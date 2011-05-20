@@ -7,17 +7,19 @@
 #include "base/values.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
 namespace {
-static const int kLeftButton = 0;
-static const int kMiddleButton = 1;
-static const int kRightButton = 2;
-}
+
+const int kLeftButton = 0;
+const int kMiddleButton = 1;
+const int kRightButton = 2;
+
+}  // namespace
 
 namespace webdriver {
 
@@ -33,40 +35,32 @@ bool ElementMouseCommand::DoesPost() {
 }
 
 void ElementMouseCommand::ExecutePost(Response* response) {
-  bool is_displayed;
-  ErrorCode code = session_->IsElementDisplayed(
-      session_->current_target(), element, &is_displayed);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "Failed to determine element visibility",
-                        code);
-    return;
-  }
-  if (!is_displayed) {
-    SET_WEBDRIVER_ERROR(response, "Element must be displayed",
-                        kElementNotVisible);
+  Error* error = session_->CheckElementPreconditionsForClicking(element);
+  if (error) {
+    response->SetError(error);
     return;
   }
 
   gfx::Point location;
-  code = session_->GetElementLocationInView(element, &location);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "Failed to compute element location.",
-                        code);
+  error = session_->GetElementLocationInView(element, &location);
+  if (error) {
+    response->SetError(error);
     return;
   }
 
   gfx::Size size;
-  code = session_->GetElementSize(session_->current_target(), element, &size);
-  if (code != kSuccess) {
-    SET_WEBDRIVER_ERROR(response, "Failed to compute element size.", code);
+  error = session_->GetElementSize(session_->current_target(), element, &size);
+  if (error) {
+    response->SetError(error);
     return;
   }
 
   location.Offset(size.width() / 2, size.height() / 2);
-  if (!Action(location, response))
+  error = Action(location);
+  if (error) {
+    response->SetError(error);
     return;
-
-  response->SetStatus(kSuccess);
+  }
 }
 
 MoveAndClickCommand::MoveAndClickCommand(
@@ -76,17 +70,8 @@ MoveAndClickCommand::MoveAndClickCommand(
 
 MoveAndClickCommand::~MoveAndClickCommand() {}
 
-bool MoveAndClickCommand::Action(const gfx::Point& location,
-                                 Response* const response) {
-  VLOG(1) << "Mouse click at: (" << location.x() << ", "
-          << location.y() << ")" << std::endl;
-  if (!session_->MouseMoveAndClick(location, automation::kLeftButton)) {
-    SET_WEBDRIVER_ERROR(response, "Performing mouse operation failed",
-                        kUnknownError);
-    return false;
-  }
-
-  return true;
+Error* MoveAndClickCommand::Action(const gfx::Point& location) {
+  return session_->MouseMoveAndClick(location, automation::kLeftButton);
 }
 
 HoverCommand::HoverCommand(const std::vector<std::string>& path_segments,
@@ -95,17 +80,8 @@ HoverCommand::HoverCommand(const std::vector<std::string>& path_segments,
 
 HoverCommand::~HoverCommand() {}
 
-bool HoverCommand::Action(const gfx::Point& location,
-                          Response* const response) {
-  VLOG(1) << "Mouse hover at: (" << location.x() << ", "
-          << location.y() << ")" << std::endl;
-  if (!session_->MouseMove(location)) {
-    SET_WEBDRIVER_ERROR(response, "Performing mouse operation failed",
-                        kUnknownError);
-    return false;
-  }
-
-  return true;
+Error* HoverCommand::Action(const gfx::Point& location) {
+  return session_->MouseMove(location);
 }
 
 DragCommand::DragCommand(const std::vector<std::string>& path_segments,
@@ -120,37 +96,21 @@ bool DragCommand::Init(Response* const response) {
 
   if (!GetIntegerParameter("x", &drag_x_) ||
       !GetIntegerParameter("y", &drag_y_)) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Request is missing the required positional data",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Missing (x,y) coordinates"));
     return false;
   }
 
   return true;
 }
 
-bool DragCommand::Action(const gfx::Point& location, Response* const response) {
+Error* DragCommand::Action(const gfx::Point& location) {
   gfx::Point drag_from(location);
   gfx::Point drag_to(drag_from);
   drag_to.Offset(drag_x_, drag_y_);
-  if (drag_to.x() < 0 || drag_to.y() < 0) {
-    SET_WEBDRIVER_ERROR(response, "Invalid pos to drag to", kBadRequest);
-    return false;
-  }
+  if (drag_to.x() < 0 || drag_to.y() < 0)
+    return new Error(kBadRequest, "Invalid (x,y) coordinates");
 
-  // click on the element
-  VLOG(1) << "Dragging mouse from: "
-          << "(" << location.x() << ", " << location.y() << ") "
-          << "to: (" << drag_to.x() << ", " << drag_to.y() << ")"
-          << std::endl;
-  if (!session_->MouseDrag(location, drag_to)) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Request is missing the required positional data",
-                        kBadRequest);
-    return false;
-  }
-
-  return true;
+  return session_->MouseDrag(location, drag_to);
 }
 
 AdvancedMouseCommand::AdvancedMouseCommand(
@@ -187,9 +147,8 @@ bool MoveToCommand::Init(Response* const response) {
       GetIntegerParameter("yoffset", &y_offset_);
 
   if (!has_element_ && !has_offset_) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Request is missing the required data",
-                        kBadRequest);
+    response->SetError(new Error(
+        kBadRequest, "Invalid command arguments"));
     return false;
   }
 
@@ -201,63 +160,45 @@ void MoveToCommand::ExecutePost(Response* const response) {
 
   if (has_element_) {
     // If an element is specified, calculate the coordinate.
-    bool is_displayed;
-    ErrorCode code = session_->IsElementDisplayed(session_->current_target(),
-                                                  element_, &is_displayed);
-    if (code != kSuccess) {
-      SET_WEBDRIVER_ERROR(response, "Failed to determine element visibility",
-                          code);
+    Error* error = session_->CheckElementPreconditionsForClicking(element_);
+    if (error) {
+      response->SetError(error);
       return;
     }
 
-    if (!is_displayed) {
-      SET_WEBDRIVER_ERROR(response, "Element must be displayed",
-                          kElementNotVisible);
+    error = session_->GetElementLocationInView(element_, &location);
+    if (error) {
+      response->SetError(error);
       return;
     }
-
-    code = session_->GetElementLocationInView(element_, &location);
-    if (code != kSuccess) {
-      SET_WEBDRIVER_ERROR(response, "Failed to compute element location.",
-                          code);
-      return;
-    }
-
-    VLOG(1) << "An element requested. x:" << location.x() << " y:"
-            << location.y();
-
   } else {
     // If not, use the current mouse position.
-    VLOG(1) << "No element requested, using current mouse position";
     location = session_->get_mouse_position();
   }
 
   if (has_offset_) {
     // If an offset is specified, translate by the offset.
     location.Offset(x_offset_, y_offset_);
-
-    VLOG(1) << "An offset requested. x:" << x_offset_ << " y:" << y_offset_;
-
   } else {
     DCHECK(has_element_);
 
     // If not, calculate the half of the element size and translate by it.
     gfx::Size size;
-    ErrorCode code = session_->GetElementSize(session_->current_target(),
-                                              element_, &size);
-    if (code != kSuccess) {
-      SET_WEBDRIVER_ERROR(response, "Failed to compute element size.", code);
+    Error* error = session_->GetElementSize(session_->current_target(),
+                                            element_, &size);
+    if (error) {
+      response->SetError(error);
       return;
     }
 
     location.Offset(size.width() / 2, size.height() / 2);
-
-    VLOG(1) << "No offset requested. The element size is " << size.width()
-            << "x" << size.height();
   }
 
-  VLOG(1) << "Mouse moved to: (" << location.x() << ", " << location.y() << ")";
-  session_->MouseMove(location);
+  Error* error = session_->MouseMove(location);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
 }
 
 ClickCommand::ClickCommand(const std::vector<std::string>& path_segments,
@@ -271,9 +212,7 @@ bool ClickCommand::Init(Response* const response) {
     return false;
 
   if (!GetIntegerParameter("button", &button_)) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Request is missing the required button data",
-                        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Missing mouse button argument"));
     return false;
   }
 
@@ -290,11 +229,15 @@ void ClickCommand::ExecutePost(Response* const response) {
   } else if (button_ == kRightButton) {
     button = automation::kRightButton;
   } else {
-    SET_WEBDRIVER_ERROR(response, "Invalid button", kBadRequest);
+    response->SetError(new Error(kBadRequest, "Invalid mouse button"));
     return;
   }
 
-  session_->MouseClick(button);
+  Error* error = session_->MouseClick(button);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
 }
 
 ButtonDownCommand::ButtonDownCommand(
@@ -326,7 +269,11 @@ DoubleClickCommand::DoubleClickCommand(
 DoubleClickCommand::~DoubleClickCommand() {}
 
 void DoubleClickCommand::ExecutePost(Response* const response) {
-  session_->MouseDoubleClick();
+  Error* error = session_->MouseDoubleClick();
+  if (error) {
+    response->SetError(error);
+    return;
+  }
 }
 
 }  // namespace webdriver

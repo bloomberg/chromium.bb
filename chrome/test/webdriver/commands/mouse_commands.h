@@ -9,11 +9,17 @@
 #include <vector>
 
 #include "chrome/test/webdriver/commands/webelement_commands.h"
+#include "chrome/test/webdriver/web_element_id.h"
 
 class DictionaryValue;
 
+namespace gfx {
+class Point;
+}
+
 namespace webdriver {
 
+class Error;
 class Response;
 
 // Base class for the following API command classes.
@@ -28,7 +34,7 @@ class ElementMouseCommand : public WebElementCommand {
 
   virtual bool DoesPost();
   virtual void ExecutePost(Response* const response);
-  virtual bool Action(const gfx::Point& location, Response* const response) = 0;
+  virtual Error* Action(const gfx::Point& location) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementMouseCommand);
@@ -46,7 +52,7 @@ class MoveAndClickCommand : public ElementMouseCommand {
                       const DictionaryValue* const parameters);
   virtual ~MoveAndClickCommand();
 
-  virtual bool Action(const gfx::Point& location, Response* const response);
+  virtual Error* Action(const gfx::Point& location);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MoveAndClickCommand);
@@ -60,7 +66,7 @@ class HoverCommand : public ElementMouseCommand {
                const DictionaryValue* const parameters);
   virtual ~HoverCommand();
 
-  virtual bool Action(const gfx::Point& location, Response* const response);
+  virtual Error* Action(const gfx::Point& location);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HoverCommand);
@@ -76,7 +82,7 @@ class DragCommand : public ElementMouseCommand {
   virtual ~DragCommand();
 
   virtual bool Init(Response* const response);
-  virtual bool Action(const gfx::Point& location, Response* const response);
+  virtual Error* Action(const gfx::Point& location);
 
  private:
   int drag_x_, drag_y_;

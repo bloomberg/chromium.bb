@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,12 +30,9 @@ class ExecuteCommand : public WebDriverCommand {
   virtual void ExecutePost(Response* const response);
 
  private:
-  virtual bool RequiresValidTab();
-
   DISALLOW_COPY_AND_ASSIGN(ExecuteCommand);
 };
 
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_EXECUTE_COMMAND_H_
-

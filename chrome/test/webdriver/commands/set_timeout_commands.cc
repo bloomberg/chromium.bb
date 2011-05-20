@@ -9,8 +9,8 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -30,7 +30,7 @@ void SetTimeoutCommand::ExecutePost(Response* const response) {
   const char kTimeoutMsKey[] = "ms";
 
   if (!HasParameter(kTimeoutMsKey)) {
-    SET_WEBDRIVER_ERROR(response, "Request missing ms parameter", kBadRequest);
+    response->SetError(new Error(kBadRequest, "Request missing ms parameter"));
     return;
   }
 
@@ -42,8 +42,8 @@ void SetTimeoutCommand::ExecutePost(Response* const response) {
     // we are safe to downcast.
     double ms;
     if (!GetDoubleParameter(kTimeoutMsKey, &ms)) {
-      SET_WEBDRIVER_ERROR(response, "ms parameter is not a number",
-                          kBadRequest);
+      response->SetError(new Error(
+          kBadRequest, "ms parameter is not a number"));
       return;
     }
     ms_to_wait = static_cast<int>(ms);
@@ -51,16 +51,11 @@ void SetTimeoutCommand::ExecutePost(Response* const response) {
 
   // Validate the wait time before setting it to the session.
   if (ms_to_wait < 0) {
-    SET_WEBDRIVER_ERROR(
-        response,
-        base::StringPrintf("timeout must be non-negative: %d",
-                           ms_to_wait),
-        kBadRequest);
+    response->SetError(new Error(kBadRequest, "Timeout must be non-negative"));
     return;
   }
 
   SetTimeout(ms_to_wait);
-  response->SetStatus(kSuccess);
 }
 
 SetAsyncScriptTimeoutCommand::SetAsyncScriptTimeoutCommand(
@@ -86,4 +81,3 @@ void ImplicitWaitCommand::SetTimeout(int timeout_ms) {
 }
 
 }  // namespace webdriver
-

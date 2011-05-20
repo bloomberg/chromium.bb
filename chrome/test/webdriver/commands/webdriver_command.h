@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "chrome/test/webdriver/commands/command.h"
-#include "chrome/test/webdriver/session.h"
 
 class DictionaryValue;
 
 namespace webdriver {
 
 class Response;
+class Session;
 
 // All URLs that are found in the document:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol
@@ -25,10 +25,9 @@ class Response;
 // directly.
 class WebDriverCommand : public Command {
  public:
-  WebDriverCommand(const std::vector<std::string> path_segments,
-                   const DictionaryValue* const parameters)
-      : Command(path_segments, parameters), session_(NULL) {}
-  virtual ~WebDriverCommand() {}
+  WebDriverCommand(const std::vector<std::string>& path_segments,
+                   const DictionaryValue* const parameters);
+  virtual ~WebDriverCommand();
 
   // Initializes this webdriver command by fetching the command session.
   virtual bool Init(Response* const response);

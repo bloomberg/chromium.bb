@@ -9,22 +9,9 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/test/webdriver/error_codes.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
-
-// All errors in webdriver must use this macro in order to send back
-// a proper stack trace to the client.
-#define SET_WEBDRIVER_ERROR(response, msg, err) \
-  response->SetError(err, msg, __FILE__, __LINE__); \
-  LOG(ERROR) << msg
-
-// Error which need to send back a screenshot should use this macro.
-// |png| needs to be a string which contains the raw binary data of
-// the PNG file.
-#define SET_WEBDRIVER_ERROR_WITH_SCREENSHOT(response, msg, err , png) \
-  response->SetError(err, msg, __FILE__, __LINE__, png); \
-  LOG(ERROR) << msg
 
 // A simple class that encapsulates the information describing the response to
 // a |Command|. In Webdriver all responses must be sent back as a JSON value,
@@ -47,21 +34,9 @@ class Response {
   // process.
   void SetValue(Value* value);
 
-  // Configures this response to report an error. The |file| and |line|
-  // parameters, which identify where in the source the error occurred, can be
-  // set using the |SET_WEBDRIVER_ERROR| macro above.
-  void SetError(ErrorCode error, const std::string& message,
-                const std::string& file, int line);
-
-  // Configures this response to report an error. The |file| and |line|
-  // parameters, which identify where in the source the error occurred, can be
-  // set using the |SET_WEBDRIVER_ERROR_WITH_SCREENSHOT| macro above.  Includes
-  // a screen shot of the tab which caused the error.
-  void SetError(ErrorCode error,
-                const std::string& message,
-                const std::string& file,
-                int line,
-                const std::string& png);
+  // Configures this response to report the given error. Ownership of the error
+  // is taken from the caller.
+  void SetError(Error* error);
 
   // Sets a JSON field in this response. The |key| may be a "." delimitted
   // string to indicate the value should be set in a nested object. Any
@@ -81,4 +56,3 @@ class Response {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_RESPONSE_H_
-

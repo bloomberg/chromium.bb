@@ -7,33 +7,51 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/session_manager.h"
-#include "chrome/test/webdriver/error_codes.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
+
+WebDriverCommand::WebDriverCommand(
+    const std::vector<std::string>& path_segments,
+    const DictionaryValue* const parameters)
+    : Command(path_segments, parameters), session_(NULL) {
+}
+
+WebDriverCommand::~WebDriverCommand() {}
 
 bool WebDriverCommand::Init(Response* const response) {
   // There should be at least 3 path segments to match "/session/$id".
   std::string session_id = GetPathVariable(2);
   if (session_id.length() == 0) {
-    SET_WEBDRIVER_ERROR(response, "No session ID specified", kBadRequest);
+    response->SetError(
+        new Error(kBadRequest, "No session ID specified"));
     return false;
   }
 
   VLOG(1) << "Fetching session: " << session_id;
   session_ = SessionManager::GetInstance()->GetSession(session_id);
   if (session_ == NULL) {
-    SET_WEBDRIVER_ERROR(response, "Session not found: " + session_id,
-                        kSessionNotFound);
+    response->SetError(
+        new Error(kSessionNotFound, "Session not found: " + session_id));
     return false;
   }
-  if (!session_->WaitForAllTabsToStopLoading()) {
-    LOG(WARNING) << "Failed to wait for all tabs to stop loading";
+
+  // TODO(kkania): Do not use the standard automation timeout for this,
+  // and throw an error if it does not succeed.
+  scoped_ptr<Error> error(session_->WaitForAllTabsToStopLoading());
+  if (error.get()) {
+    LOG(WARNING) << error->ToString();
   }
-  session_->SwitchToTopFrameIfCurrentFrameInvalid();
+  error.reset(session_->SwitchToTopFrameIfCurrentFrameInvalid());
+  if (error.get()) {
+    LOG(WARNING) << error->ToString();
+  }
 
   response->SetField("sessionId", Value::CreateStringValue(session_id));
   return true;

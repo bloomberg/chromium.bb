@@ -7,6 +7,8 @@
 #include <string>
 
 #include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
 
@@ -22,14 +24,12 @@ bool TitleCommand::DoesGet() {
 
 void TitleCommand::ExecuteGet(Response* const response) {
   std::string title;
-  ErrorCode code = session_->GetTitle(&title);
-  if (code == kSuccess)
-    response->SetValue(new StringValue(title));
-  response->SetStatus(code);
-}
-
-bool TitleCommand::RequiresValidTab() {
-  return true;
+  Error* error = session_->GetTitle(&title);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+  response->SetValue(new StringValue(title));
 }
 
 }  // namespace webdriver

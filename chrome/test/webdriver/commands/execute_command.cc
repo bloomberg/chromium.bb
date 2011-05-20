@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,14 +7,11 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 
 namespace webdriver {
-
-const char kArgs[] = "args";
-const char kScript[] = "script";
 
 ExecuteCommand::ExecuteCommand(const std::vector<std::string>& path_segments,
                                const DictionaryValue* const parameters)
@@ -28,28 +25,25 @@ bool ExecuteCommand::DoesPost() {
 
 void ExecuteCommand::ExecutePost(Response* const response) {
   std::string script;
-  if (!GetStringParameter(kScript, &script)) {
-    SET_WEBDRIVER_ERROR(response, "No script to execute specified",
-                        kBadRequest);
+  if (!GetStringParameter("script", &script)) {
+    response->SetError(new Error(kBadRequest, "No script specified"));
     return;
   }
 
   ListValue* args;
-  if (!GetListParameter(kArgs, &args)) {
-    SET_WEBDRIVER_ERROR(response, "No script arguments specified",
-                        kBadRequest);
+  if (!GetListParameter("args", &args)) {
+    response->SetError(new Error(
+        kBadRequest, "No script arguments specified"));
     return;
   }
 
   Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, args, &result);
-  response->SetStatus(status);
+  Error* error = session_->ExecuteScript(script, args, &result);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
   response->SetValue(result);
 }
 
-bool ExecuteCommand::RequiresValidTab() {
-  return true;
-}
-
 }  // namspace webdriver
-

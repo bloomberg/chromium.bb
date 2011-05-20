@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "chrome/test/webdriver/commands/command.h"
-#include "chrome/test/webdriver/commands/webdriver_command.h"
 
 namespace webdriver {
 
@@ -37,4 +36,3 @@ class CreateSession : public Command {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_CREATE_SESSION_H_
-
