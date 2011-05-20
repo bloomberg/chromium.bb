@@ -2,3 +2,5 @@
 *.pyc
 *~
 buildbot/revisions.pfq
+.project
+.pydevproject
