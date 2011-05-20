@@ -74,7 +74,7 @@ class ServiceProcessControlBrowserTest
   void WaitForShutdown() {
     EXPECT_TRUE(base::WaitForSingleProcess(
         service_process_handle_,
-        TestTimeouts::wait_for_terminate_timeout_ms()));
+        TestTimeouts::action_max_timeout_ms()));
   }
 
   void ProcessControlLaunched() {

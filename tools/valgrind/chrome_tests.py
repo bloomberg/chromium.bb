@@ -273,8 +273,7 @@ class ChromeTests:
   UI_VALGRIND_ARGS = ["--timeout=7200", "--trace_children", "--indirect"]
   # UI test timeouts are in milliseconds.
   UI_TEST_ARGS = ["--ui-test-action-timeout=120000",
-                  "--ui-test-action-max-timeout=280000",
-                  "--ui-test-terminate-timeout=120000"]
+                  "--ui-test-action-max-timeout=280000"]
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,

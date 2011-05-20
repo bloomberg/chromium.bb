@@ -302,7 +302,7 @@ void ProxyLauncher::QuitBrowser() {
   // been closed.
   int exit_code = -1;
   EXPECT_TRUE(WaitForBrowserProcessToQuit(
-                  TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code));
+                  TestTimeouts::action_max_timeout_ms(), &exit_code));
   EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 
   browser_quit_time_ = base::TimeTicks::Now() - quit_start;
@@ -334,7 +334,7 @@ void ProxyLauncher::TerminateBrowser() {
 
   int exit_code = -1;
   EXPECT_TRUE(WaitForBrowserProcessToQuit(
-                  TestTimeouts::wait_for_terminate_timeout_ms(), &exit_code));
+                  TestTimeouts::action_max_timeout_ms(), &exit_code));
   EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 
   browser_quit_time_ = base::TimeTicks::Now() - quit_start;
