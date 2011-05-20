@@ -18,7 +18,7 @@
 
 class Profile;
 
-// This class fetches database information in the WEBKIT thread, and notifies
+// This class fetches database information in the FILE thread, and notifies
 // the UI thread upon completion.
 // A client of this class need to call StartFetching from the UI thread to
 // initiate the flow, and it'll be notified by the callback in its UI
@@ -64,7 +64,7 @@ class BrowsingDataDatabaseHelper
   // This must be called only in the UI thread.
   virtual void CancelNotification();
 
-  // Requests a single database to be deleted in the WEBKIT thread. This must be
+  // Requests a single database to be deleted in the FILE thread. This must be
   // called in the UI thread.
   virtual void DeleteDatabase(const std::string& origin,
                               const std::string& name);
@@ -76,7 +76,7 @@ class BrowsingDataDatabaseHelper
   // Notifies the completion callback. This must be called in the UI thread.
   void NotifyInUIThread();
 
-  // This only mutates in the WEBKIT thread.
+  // This only mutates in the FILE thread.
   std::vector<DatabaseInfo> database_info_;
 
   // This only mutates on the UI thread.
@@ -90,11 +90,11 @@ class BrowsingDataDatabaseHelper
   bool is_fetching_;
 
  private:
-  // Enumerates all databases. This must be called in the WEBKIT thread.
-  void FetchDatabaseInfoInWebKitThread();
+  // Enumerates all databases. This must be called in the FILE thread.
+  void FetchDatabaseInfoOnFileThread();
 
-  // Delete a single database file. This must be called in the WEBKIT thread.
-  void DeleteDatabaseInWebKitThread(const std::string& origin,
+  // Delete a single database file. This must be called in the FILE thread.
+  void DeleteDatabaseOnFileThread(const std::string& origin,
                                   const std::string& name);
 
   scoped_refptr<webkit_database::DatabaseTracker> tracker_;

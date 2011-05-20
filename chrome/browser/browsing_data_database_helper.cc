@@ -63,8 +63,8 @@ void BrowsingDataDatabaseHelper::StartFetching(
   is_fetching_ = true;
   database_info_.clear();
   completion_callback_.reset(callback);
-  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataDatabaseHelper::FetchDatabaseInfoInWebKitThread));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
+      this, &BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread));
 }
 
 void BrowsingDataDatabaseHelper::CancelNotification() {
@@ -75,13 +75,13 @@ void BrowsingDataDatabaseHelper::CancelNotification() {
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataDatabaseHelper::DeleteDatabaseInWebKitThread, origin,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
+      this, &BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread, origin,
       name));
 }
 
-void BrowsingDataDatabaseHelper::FetchDatabaseInfoInWebKitThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<webkit_database::OriginInfo> origins_info;
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
@@ -133,10 +133,10 @@ void BrowsingDataDatabaseHelper::NotifyInUIThread() {
   database_info_.clear();
 }
 
-void BrowsingDataDatabaseHelper::DeleteDatabaseInWebKitThread(
+void BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread(
     const std::string& origin,
     const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!tracker_.get())
     return;
   tracker_->DeleteDatabase(UTF8ToUTF16(origin), UTF8ToUTF16(name), NULL);
