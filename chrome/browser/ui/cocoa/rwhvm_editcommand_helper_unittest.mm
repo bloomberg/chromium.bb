@@ -9,6 +9,7 @@
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/view_messages.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -65,18 +66,25 @@ namespace {
   }
 }  // namespace
 
-// Create a Mock RenderWidget
-class MockRenderWidgetHostEditCommandCounter : public RenderWidgetHost {
+// Create a RenderWidget for which we can filter messages.
+class RenderWidgetHostEditCommandCounter : public RenderWidgetHost {
  public:
-  MockRenderWidgetHostEditCommandCounter(RenderProcessHost* process,
-                                         int routing_id) :
-    RenderWidgetHost(process, routing_id) {}
+  RenderWidgetHostEditCommandCounter(RenderProcessHost* process,
+                                     int routing_id)
+    : RenderWidgetHost(process, routing_id),
+      edit_command_message_count_(0) {
+  }
 
-  MOCK_METHOD2(ForwardEditCommand, void(const std::string&,
-      const std::string&));
+  virtual bool Send(IPC::Message* message) {
+    if (message->type() == ViewMsg_ExecuteEditCommand::ID)
+      edit_command_message_count_++;
+    return RenderWidgetHost::Send(message);
+  }
+
+  unsigned int edit_command_message_count_;
 };
 
-/*
+
 // Tests that editing commands make it through the pipeline all the way to
 // RenderWidgetHost.
 TEST_F(RWHVMEditCommandHelperTest, TestEditingCommandDelivery) {
@@ -87,31 +95,11 @@ TEST_F(RWHVMEditCommandHelperTest, TestEditingCommandDelivery) {
   MessageLoopForUI message_loop;
   TestingProfile profile;
   MockRenderProcessHost mock_process(&profile);
-  MockRenderWidgetHostEditCommandCounter mock_render_widget(&mock_process, 0);
-
-  size_t num_edit_commands = [edit_command_strings count];
-  EXPECT_CALL(mock_render_widget,
-        ForwardEditCommand(testing::_, testing::_)).Times(num_edit_commands);
-
-// TODO(jeremy): Figure this out and reenable this test.
-// For some bizarre reason this code doesn't work, running the code in the
-// debugger confirms that the function is called with the correct parameters
-// however gmock appears not to be able to match up parameters correctly.
-// Disable for now till we can figure this out.
-#if 0
-  // Tell Mock object that we expect to recieve each edit command once.
-  std::string empty_str;
-  for (NSString* edit_command_name in edit_command_strings) {
-    std::string command([edit_command_name UTF8String]);
-    EXPECT_CALL(mock_render_widget,
-        ForwardEditCommand(command, empty_str)).Times(1);
-  }
-#endif  // 0
+  RenderWidgetHostEditCommandCounter render_widget(&mock_process, 0);
 
   // RenderWidgetHostViewMac self destructs (RenderWidgetHostViewMacCocoa
   // takes ownership) so no need to delete it ourselves.
-  RenderWidgetHostViewMac* rwhvm = new RenderWidgetHostViewMac(
-      &mock_render_widget);
+  RenderWidgetHostViewMac* rwhvm = new RenderWidgetHostViewMac(&render_widget);
 
   RenderWidgetHostViewMacOwner* rwhwvm_owner =
       [[[RenderWidgetHostViewMacOwner alloc]
@@ -123,8 +111,10 @@ TEST_F(RWHVMEditCommandHelperTest, TestEditingCommandDelivery) {
     NSString* sel_str = [edit_command_name stringByAppendingString:@":"];
     [rwhwvm_owner performSelector:NSSelectorFromString(sel_str) withObject:nil];
   }
+
+  size_t num_edit_commands = [edit_command_strings count];
+  EXPECT_EQ(render_widget.edit_command_message_count_, num_edit_commands);
 }
-*/
 
 // Test RWHVMEditCommandHelper::AddEditingSelectorsToClass
 TEST_F(RWHVMEditCommandHelperTest, TestAddEditingSelectorsToClass) {
