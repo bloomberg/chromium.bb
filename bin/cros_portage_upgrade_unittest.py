@@ -456,6 +456,16 @@ class UpgraderTest(mox.MoxTestBase):
   #
   # TODO(mtennant): Implement this.  It will require some cleverness.
 
+  #
+  # _ToCSV testing
+  #
+  # TODO(mtennant): Implement tests for CSV output functionality.
+
+  #
+  # _ToHTML testing
+  #
+  # TODO(mtennant): Implement tests for HTML output functionality.
+
 ################
 ### MainTest ###
 ################

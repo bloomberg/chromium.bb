@@ -17,27 +17,97 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
+import chromite.lib.table as table
 
+class UpgradeTable(table.Table):
+  """Class to represent upgrade data in memory, can be written to csv/html."""
 
-class Upgrader(object):
-  """A class to perform various tasks related to updating Portage packages."""
-
-  # These constants serve two roles:
+  # These constants serve two roles, for both csv and html table output:
   # 1) Restrict which column names are valid.
   # 2) Specify the order of those columns.
+  COL_PACKAGE = 'Package'
   COL_OVERLAY = 'Overlay'
-  COL_CURRENT_PKG = 'Current Package'
-  COL_UPSTREAM_PKG = 'Stable Upstream Package'
+  COL_CURRENT_VER = 'Current Version'
+  COL_UPSTREAM_VER = 'Stable Upstream Version'
   COL_STATE = 'State'
   COL_DEPENDS_ON = 'Depends On'
   COL_ACTION_TAKEN = 'Action Taken'
-  CSV_COLUMNS = [COL_OVERLAY,
-                 COL_CURRENT_PKG,
-                 COL_UPSTREAM_PKG,
-                 COL_STATE,
-                 COL_DEPENDS_ON,
-                 COL_ACTION_TAKEN,
-                 ]
+  COLUMNS = [COL_PACKAGE,
+             COL_OVERLAY,
+             COL_CURRENT_VER,
+             COL_UPSTREAM_VER,
+             COL_STATE,
+             COL_DEPENDS_ON,
+             COL_ACTION_TAKEN,
+             ]
+
+  # COL_STATE values should be one of the following
+  STATE_UNKNOWN = 'unknown'
+  STATE_NEEDS_UPGRADE = 'needs upgrade'
+  STATE_PATCHED = 'patched locally'
+  STATE_CURRENT = 'current'
+
+  # COL_ACTION_TAKEN values should be one of the following
+  ACTION_UPGRADED = 'upgraded'
+  ACTION_NONE = ''
+
+  def __init__(self):
+    table.Table.__init__(self, UpgradeTable.COLUMNS)
+
+  def WriteHTML(self, filehandle):
+    """Write table out as a custom html table to |filehandle|."""
+    # Basic HTML, up to and including start of table and table headers.
+    filehandle.write('<html>\n')
+    filehandle.write('  <table border="1" cellspacing="0" cellpadding="3">\n')
+    filehandle.write('    <caption>Portage Package Status</caption>\n')
+    filehandle.write('    <thead>\n')
+    filehandle.write('      <tr>\n')
+    filehandle.write('        <th>%s</th>\n' %
+             '</th>\n        <th>'.join(self._columns))
+    filehandle.write('      </tr>\n')
+    filehandle.write('    </thead>\n')
+    filehandle.write('    <tbody>\n')
+
+    # Now write out the rows.
+    for row in self._rows:
+      filehandle.write('      <tr>\n')
+      for col in self._columns:
+        val = row.get(col, "")
+
+        # Add color to the text in specific cases.
+        if val and col == self.COL_STATE:
+          # Add colors for state column.
+          if val == self.STATE_NEEDS_UPGRADE or val == self.STATE_UNKNOWN:
+            val = '<span style="color:red">%s</span>' % val
+          elif val == self.STATE_CURRENT:
+            val = '<span style="color:green">%s</span>' % val
+        if val and col == self.COL_DEPENDS_ON:
+          # Add colors for dependencies column.  If a dependency is itself
+          # out of date, then make it red.
+          vallist = []
+          for cpv in val.split(' '):
+            # Get category/packagename from cpv, in order to look up row for
+            # the dependency.  Then see if that pkg is red in its own row.
+            catpkg = Upgrader._GetCatPkgFromCpv(cpv)
+            deprow = self.GetRowsByValue({self.COL_PACKAGE: catpkg})[0]
+            if (deprow[self.COL_STATE] == self.STATE_NEEDS_UPGRADE or
+                deprow[self.COL_STATE] == self.STATE_UNKNOWN):
+              vallist.append('<span style="color:red">%s</span>' % cpv)
+            else:
+              vallist.append(cpv)
+          val = ' '.join(vallist)
+
+        filehandle.write('        <td>%s</td>\n' % val)
+
+      filehandle.write('      </tr>\n')
+
+    # Finish the table and html
+    filehandle.write('    </tbody>\n')
+    filehandle.write('  </table>\n')
+    filehandle.write('</html>\n')
+
+class Upgrader(object):
+  """A class to perform various tasks related to updating Portage packages."""
 
   def __init__(self, options=None, args=None):
     # TODO(mtennant): Don't save options object, but instead grab option
@@ -51,7 +121,7 @@ class Upgrader(object):
     if not self._upstream_repo:
       self._upstream_repo = os.path.join(self._options.srcroot,
                                          'third_party', 'portage')
-    self._csv_file = None
+    self._table = UpgradeTable()
 
   @staticmethod
   def _GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited):
@@ -88,6 +158,18 @@ class Upgrader(object):
     """Returns standard cmp result between |cpv1| and |cpv2|."""
     return portage.versions.pkgcmp(portage.versions.pkgsplit(cpv1),
                                    portage.versions.pkgsplit(cpv2))
+
+  @staticmethod
+  def _GetVerRevFromCpv(cpv):
+    """Returns just the version-revision string from a full |cpv|."""
+    (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
+    return '%s-%s' % (version, rev)
+
+  @staticmethod
+  def _GetCatPkgFromCpv(cpv):
+    """Returns just the category/packagename string from a full |cpv|."""
+    (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
+    return '%s/%s' % (cat, pn)
 
   def _RunGit(self, repo, command):
     """Runs |command| in the git |repo|."""
@@ -164,87 +246,98 @@ class Upgrader(object):
 
     # Print details for this package
     if cpv_cmp_upstream is None:
-      upgrade = ' no stable package found upstream!'
-      csv_state = 'unknown'
+      state = UpgradeTable.STATE_UNKNOWN
     elif cpv_cmp_upstream > 0:
       # Upstream upgrade available.  Note that it is possible that the local
       # package has also been patched.
       # TODO(mtennant): A check for when package is locally patched and
       # uprev'ed upstream.
-      upgrade = ' -> %s' % info['latest_cpv']
-      csv_state = 'needs upgrade'
+      state = UpgradeTable.STATE_NEEDS_UPGRADE
     elif cpv_cmp_upstream < 0:
       # Local package is patched from upstream package
-      upgrade = ' <- %s' % info['latest_cpv']
-      csv_state = "patched locally"
+      state = UpgradeTable.STATE_PATCHED
     else:
-      upgrade = ' (current)'
-      csv_state = 'current'
+      state = UpgradeTable.STATE_CURRENT
 
-    upgraded = ''
-    if info['upgraded']: upgraded = ' (UPGRADED)'
-    print '[%s] %s%s%s' % (info['overlay'], info['cpv'], upgrade, upgraded)
+    action_taken = UpgradeTable.ACTION_NONE
+    if info['upgraded']: action_taken = UpgradeTable.ACTION_UPGRADED
 
-    if self._CSVIsOpen():
-      # Recreate list of packages that this cpv depends on.
-      needslist = self._deps_graph[cpv]['needs'].keys()
-      upstream_pkg = info['latest_cpv'] if info['latest_cpv'] else 'N/A'
-      action_taken = 'upgraded' if upgraded else ''
+    # Print a brief one-line report
+    if action_taken == UpgradeTable.ACTION_UPGRADED:
+      action_stat = ' (UPGRADED)'
+    else:
+      action_stat = ''
+    up_stat = {UpgradeTable.STATE_UNKNOWN: ' no stable package found upstream!',
+               UpgradeTable.STATE_NEEDS_UPGRADE: ' -> %s' % info['latest_cpv'],
+               UpgradeTable.STATE_PATCHED: ' <- %s' % info['latest_cpv'],
+               UpgradeTable.STATE_CURRENT: ' (current)',
+               }[state]
+    print '[%s] %s%s%s' % (info['overlay'], info['cpv'],
+                           up_stat, action_stat)
 
-      # Translate to csv column values:
-      self._WriteCSVLine({self.COL_OVERLAY: info['overlay'],
-                          self.COL_CURRENT_PKG: info['cpv'],
-                          self.COL_UPSTREAM_PKG: upstream_pkg,
-                          self.COL_STATE: csv_state,
-                          self.COL_DEPENDS_ON: ' '.join(needslist),
-                          self.COL_ACTION_TAKEN: action_taken,
-                          })
+    # Create a table row to represent this package.
+    # Recreate list of packages that this cpv depends on.
+    needslist = self._deps_graph[cpv]['needs'].keys()
+    upstream_ver = 'N/A'
+    if info['latest_cpv']:
+      upstream_ver = Upgrader._GetVerRevFromCpv(info['latest_cpv'])
 
-  def _OpenCSV(self, csv_file):
-    """If |csv_file| not None, open for writing csv contents."""
+    # Translate to table column values:
+    self._table.AppendRow({UpgradeTable.COL_PACKAGE: info['package'],
+                           UpgradeTable.COL_OVERLAY: info['overlay'],
+                           UpgradeTable.COL_CURRENT_VER: info['version_rev'],
+                           UpgradeTable.COL_UPSTREAM_VER: upstream_ver,
+                           UpgradeTable.COL_STATE: state,
+                           UpgradeTable.COL_DEPENDS_ON: ' '.join(needslist),
+                           UpgradeTable.COL_ACTION_TAKEN: action_taken,
+                           })
+
+  def _OpenFileForWrite(self, file):
+    """If |file| not None, open for writing."""
     try:
-      if csv_file:
-        self._csv_file = open(csv_file, 'w')
-        # Column headers
-        self._csv_file.write(','.join(self.CSV_COLUMNS) + '\n')
+      if file:
+        return open(file, 'w')
     except IOError as ex:
-      print("Unable to open %s for write: %s" %
-            (csv_file, str(ex)))
-      self._csv_file = None
+      print("Unable to open %s for write: %s" % (file, str(ex)))
+      return None
 
-  def _CSVIsOpen(self):
-    """Return true if a csv output file is currently open."""
-    return bool(self._csv_file)
+  def _WriteTableFiles(self, csv=None, html=None):
+    """Write table to |csv| and/or |html| files, if requested."""
+    # First sort the table, putting packages of greater interest toward the top.
+    def rowkey(row):
+      # First key is for COL_STATE value.
+      state_val = row[UpgradeTable.COL_STATE]
+      key1 = {UpgradeTable.STATE_NEEDS_UPGRADE: 0,
+              UpgradeTable.STATE_UNKNOWN: 1,
+              UpgradeTable.STATE_PATCHED: 2,
+              }.get(state_val, 4)
 
-  def _WriteCSVLine(self, values):
-    """Write one csv line out, with the given column |values|.
+      # Next key is for overlay.
+      key2 = row[UpgradeTable.COL_OVERLAY]
 
-    The |values| dict is expected to have keywords that match known
-    column names.  Each value will be written to the column specified
-    by its keyword."""
-    # Internal check.  Make sure only known column names are used.
-    for col in values:
-      if not col in self.CSV_COLUMNS:
-        raise LookupError("Tried writing to unknown csv column '%s'" % col)
+      # Next key is for package name, which is unique final decider.
+      key3 = row[UpgradeTable.COL_PACKAGE]
 
-    if self._csv_file:
-      vals = [values.get(col, "") for col in self.CSV_COLUMNS]
-      self._csv_file.write(','.join(vals) + '\n')
+      return (key1, key2, key3)
+    self._table.Sort(rowkey)
 
-  def _CloseCSV(self):
-    """Close the csv output file, if it is open."""
-    if self._csv_file:
-      self._csv_file.close()
-      self._csv_file = None
+    if csv:
+      filehandle = self._OpenFileForWrite(csv)
+      if filehandle:
+        self._table.WriteCSV(filehandle)
+        filehandle.close()
+    if html:
+      filehandle = self._OpenFileForWrite(html)
+      if filehandle:
+        self._table.WriteHTML(filehandle)
+        filehandle.close()
 
   def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the latest_cpv to the infos."""
+    self._table.Clear()
     dash_q = ''
     if not self._options.verbose: dash_q = '-q'
     try:
-      if self._options.csv_file:
-        self._OpenCSV(self._options.csv_file)
-
       # TODO(petkov): Currently portage's master branch is stale so we need to
       # checkout latest upstream. At some point portage's master branch will be
       # upstream so there will be no need to chdir/checkout. At that point we
@@ -266,7 +359,6 @@ class Upgrader(object):
     finally:
       if not self._options.upstream:
         self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
-      self._CloseCSV()
 
   def _GenParallelEmergeArgv(self):
     """Creates an argv for parallel_emerge based on current options."""
@@ -310,7 +402,10 @@ class Upgrader(object):
       ebuild_path = cros_lib.RunCommand(equery, print_cmd=self._options.verbose,
                                         redirect_stdout=True).output.strip()
       (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
-      infolist.append({'cpv': cpv, 'overlay': overlay})
+      ver_rev = pv.replace(pn + '-', '')
+      infolist.append({'cpv': cpv, 'overlay': overlay,
+                       'package': '%s/%s' % (cat, pn), 'version_rev': ver_rev,
+                       'category': cat, 'package_name': pn, 'package_ver': pv})
 
     return infolist
 
@@ -322,6 +417,8 @@ class Upgrader(object):
     cpvlist = self._GetCurrentVersions()
     infolist = self._GetInfoListWithOverlays(cpvlist)
     self._UpgradePackages(infolist)
+    self._WriteTableFiles(csv=self._options.csv_file,
+                          html=self._options.html_file)
 
 def main():
   usage = 'Usage: %prog [options] packages...'
@@ -336,6 +433,9 @@ def main():
                     help="Path to root src directory [default: '%default']")
   parser.add_option('--to_csv', dest='csv_file', type='string', action='store',
                     default=None, help="File to write csv-formatted results to")
+  parser.add_option('--to_html', dest='html_file',
+                    type='string', action='store', default=None,
+                    help="File to write html-formatted results to")
   parser.add_option('--upgrade', dest='upgrade', action='store_true',
                     default=False,
                     help="Perform package upgrade")
