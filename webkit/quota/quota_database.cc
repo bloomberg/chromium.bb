@@ -13,6 +13,7 @@
 #include "app/sql/transaction.h"
 #include "base/auto_reset.h"
 #include "base/file_util.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -90,6 +91,8 @@ std::string GetGlobalQuotaKey(quota::StorageType type) {
   return std::string();
 }
 
+const int kCommitIntervalMs = 30000;
+
 }  // anonymous namespace
 
 namespace quota {
@@ -101,6 +104,9 @@ QuotaDatabase::QuotaDatabase(const FilePath& path)
 }
 
 QuotaDatabase::~QuotaDatabase() {
+  if (db_.get()) {
+    db_->CommitTransaction();
+  }
 }
 
 void QuotaDatabase::CloseConnection() {
@@ -138,10 +144,6 @@ bool QuotaDatabase::SetHostQuota(
   if (!LazyOpen(true))
     return false;
 
-  sql::Transaction transaction(db_.get());
-  if (!transaction.Begin())
-    return false;
-
   sql::Statement statement;
 
   int64 dummy;
@@ -167,16 +169,13 @@ bool QuotaDatabase::SetHostQuota(
   if (!statement.Run())
     return false;
 
-  return transaction.Commit();
+  ScheduleCommit();
+  return true;
 }
 
 bool QuotaDatabase::SetOriginLastAccessTime(
     const GURL& origin, StorageType type, base::Time last_access_time) {
   if (!LazyOpen(true))
-    return false;
-
-  sql::Transaction transaction(db_.get());
-  if (!transaction.Begin())
     return false;
 
   sql::Statement statement;
@@ -206,7 +205,8 @@ bool QuotaDatabase::SetOriginLastAccessTime(
   if (!statement.Run())
     return false;
 
-  return transaction.Commit();
+  ScheduleCommit();
+  return true;
 }
 
 bool QuotaDatabase::RegisterOrigins(const std::set<GURL>& origins,
@@ -257,7 +257,11 @@ bool QuotaDatabase::DeleteHostQuota(
 
   statement.BindString(0, host);
   statement.BindInt(1, static_cast<int>(type));
-  return statement.Run();
+  if (!statement.Run())
+    return false;
+
+  ScheduleCommit();
+  return true;
 }
 
 bool QuotaDatabase::DeleteOriginLastAccessTime(
@@ -275,7 +279,11 @@ bool QuotaDatabase::DeleteOriginLastAccessTime(
 
   statement.BindString(0, origin.spec());
   statement.BindInt(1, static_cast<int>(type));
-  return statement.Run();
+  if (!statement.Run())
+    return false;
+
+  ScheduleCommit();
+  return true;
 }
 
 bool QuotaDatabase::GetGlobalQuota(StorageType type, int64* quota) {
@@ -332,6 +340,25 @@ bool QuotaDatabase::SetOriginDatabaseBootstrapped(bool bootstrap_flag) {
     return false;
 
   return meta_table_->SetValue(kIsOriginTableBootstrapped, bootstrap_flag);
+}
+
+void QuotaDatabase::Commit() {
+  if (!db_.get())
+    return;
+
+  // Note: for now this will be called only by ScheduleCommit, but when it
+  // becomes untrue we should call timer_.Stop() here.
+  DCHECK(!timer_.IsRunning());
+
+  db_->CommitTransaction();
+  db_->BeginTransaction();
+}
+
+void QuotaDatabase::ScheduleCommit() {
+  if (timer_.IsRunning())
+    return;
+  timer_.Start(base::TimeDelta::FromMilliseconds(kCommitIntervalMs), this,
+               &QuotaDatabase::Commit);
 }
 
 bool QuotaDatabase::FindOriginUsedCount(
@@ -393,6 +420,9 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
     meta_table_.reset();
     return false;
   }
+
+  // Start a long-running transaction.
+  db_->BeginTransaction();
 
   return true;
 }

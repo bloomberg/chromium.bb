@@ -12,6 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/sys_info.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
@@ -135,6 +136,7 @@ class QuotaManagerTest : public testing::Test {
   void DeleteClientOriginData(QuotaClient* client,
                         const GURL& origin,
                         StorageType type) {
+    DCHECK(client);
     quota_status_ = kQuotaStatusUnknown;
     client->DeleteOriginData(origin, type,
         callback_factory_.NewCallback(
@@ -171,6 +173,31 @@ class QuotaManagerTest : public testing::Test {
     ASSERT_TRUE(origins != NULL);
     origins->clear();
     quota_manager_->GetCachedOrigins(type, origins);
+  }
+
+  void NotifyStorageAccessed(QuotaClient* client,
+                             const GURL& origin,
+                             StorageType type) {
+    DCHECK(client);
+    quota_manager_->NotifyStorageAccessed(client->id(), origin, type);
+  }
+
+  void DeleteOriginFromDatabase(const GURL& origin, StorageType type) {
+    quota_manager_->DeleteOriginFromDatabase(origin, type);
+  }
+
+  void GetLRUOrigin(StorageType type) {
+    lru_origin_ = GURL();
+    quota_manager_->GetLRUOrigin(type,
+        callback_factory_.NewCallback(&QuotaManagerTest::DidGetLRUOrigin));
+  }
+
+  void NotifyOriginInUse(const GURL& origin) {
+    quota_manager_->NotifyOriginInUse(origin);
+  }
+
+  void NotifyOriginNoLongerInUse(const GURL& origin) {
+    quota_manager_->NotifyOriginNoLongerInUse(origin);
   }
 
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
@@ -220,6 +247,10 @@ class QuotaManagerTest : public testing::Test {
     available_space_ = available_space;
   }
 
+  void DidGetLRUOrigin(const GURL& origin) {
+    lru_origin_ = origin;
+  }
+
   void set_additional_callback_count(int c) { additional_callback_count_ = c; }
   int additional_callback_count() const { return additional_callback_count_; }
   void DidGetUsageAndQuotaAdditional(
@@ -236,6 +267,7 @@ class QuotaManagerTest : public testing::Test {
   int64 usage() const { return usage_; }
   int64 quota() const { return quota_; }
   int64 available_space() const { return available_space_; }
+  const GURL& lru_origin() const { return lru_origin_; }
   FilePath profile_path() const { return data_dir_.path(); }
 
  private:
@@ -249,6 +281,7 @@ class QuotaManagerTest : public testing::Test {
   int64 usage_;
   int64 quota_;
   int64 available_space_;
+  GURL lru_origin_;
 
   int additional_callback_count_;
 
@@ -889,6 +922,99 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
     if (kData[i].type == kStorageTypeTemporary)
       EXPECT_TRUE(origins.find(GURL(kData[i].origin)) != origins.end());
   }
+}
+
+TEST_F(QuotaManagerTest, NotifyAndLRUOrigin) {
+  static const MockOriginData kData[] = {
+    { "http://a.com/",   kStorageTypeTemporary,  0 },
+    { "http://a.com:1/", kStorageTypeTemporary,  0 },
+    { "https://a.com/",  kStorageTypeTemporary,  0 },
+    { "http://b.com/",   kStorageTypePersistent, 0 },  // persistent
+    { "http://c.com/",   kStorageTypeTemporary,  0 },
+  };
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  GURL origin;
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(lru_origin().is_empty());
+
+  NotifyStorageAccessed(client, GURL("http://a.com/"), kStorageTypeTemporary);
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("http://a.com/", lru_origin().spec());
+
+  NotifyStorageAccessed(client, GURL("http://b.com/"), kStorageTypePersistent);
+  NotifyStorageAccessed(client, GURL("https://a.com/"), kStorageTypeTemporary);
+  NotifyStorageAccessed(client, GURL("http://c.com/"), kStorageTypeTemporary);
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("http://a.com/", lru_origin().spec());
+
+  DeleteOriginFromDatabase(lru_origin(), kStorageTypeTemporary);
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("https://a.com/", lru_origin().spec());
+
+  DeleteOriginFromDatabase(lru_origin(), kStorageTypeTemporary);
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("http://c.com/", lru_origin().spec());
+}
+
+TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
+  static const MockOriginData kData[] = {
+    { "http://a.com/",   kStorageTypeTemporary,  0 },
+    { "http://a.com:1/", kStorageTypeTemporary,  0 },
+    { "https://a.com/",  kStorageTypeTemporary,  0 },
+    { "http://b.com/",   kStorageTypePersistent, 0 },  // persistent
+    { "http://c.com/",   kStorageTypeTemporary,  0 },
+  };
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  GURL origin;
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(lru_origin().is_empty());
+
+  NotifyStorageAccessed(client, GURL("http://a.com/"), kStorageTypeTemporary);
+  NotifyStorageAccessed(client, GURL("http://b.com/"), kStorageTypePersistent);
+  NotifyStorageAccessed(client, GURL("https://a.com/"), kStorageTypeTemporary);
+  NotifyStorageAccessed(client, GURL("http://c.com/"), kStorageTypeTemporary);
+
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("http://a.com/", lru_origin().spec());
+
+  // Notify origin http://a.com is in use.
+  NotifyOriginInUse(GURL("http://a.com/"));
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("https://a.com/", lru_origin().spec());
+
+  // Notify origin https://a.com is in use while GetLRUOrigin is running.
+  GetLRUOrigin(kStorageTypeTemporary);
+  NotifyOriginInUse(GURL("https://a.com/"));
+  MessageLoop::current()->RunAllPending();
+  // Post-filtering must have excluded the returned origin, so we will
+  // see empty result here.
+  EXPECT_TRUE(lru_origin().is_empty());
+
+  // Notify access for http://c.com while GetLRUOrigin is running.
+  GetLRUOrigin(kStorageTypeTemporary);
+  NotifyStorageAccessed(client, GURL("http://c.com/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  // Post-filtering must have excluded the returned origin, so we will
+  // see empty result here.
+  EXPECT_TRUE(lru_origin().is_empty());
+
+  NotifyOriginNoLongerInUse(GURL("http://a.com/"));
+  NotifyOriginNoLongerInUse(GURL("https://a.com/"));
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("http://a.com/", lru_origin().spec());
 }
 
 }  // namespace quota

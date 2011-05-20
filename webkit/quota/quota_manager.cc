@@ -592,6 +592,33 @@ class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
   scoped_ptr<AvailableSpaceCallback> callback_;
 };
 
+class QuotaManager::OriginAccessRecordDatabaseTask
+    : public QuotaManager::DatabaseTaskBase {
+ public:
+  OriginAccessRecordDatabaseTask(
+      QuotaManager* manager,
+      QuotaDatabase* database,
+      scoped_refptr<base::MessageLoopProxy> db_message_loop,
+      const GURL& origin,
+      StorageType type)
+      : DatabaseTaskBase(manager, database, db_message_loop),
+        origin_(origin),
+        type_(type) {}
+
+ protected:
+  virtual void RunOnTargetThread() OVERRIDE {
+    if (!database()->SetOriginLastAccessTime(
+            origin_, type_, base::Time::Now())) {
+      set_db_disabled(true);
+    }
+  }
+  virtual void DatabaseTaskCompleted() OVERRIDE {}
+
+ private:
+  GURL origin_;
+  StorageType type_;
+};
+
 // QuotaManager ---------------------------------------------------------------
 
 QuotaManager::QuotaManager(bool is_incognito,
@@ -652,38 +679,6 @@ void QuotaManager::RequestQuota(
   // TODO(kinuko): implement me.
   callback->Run(kQuotaErrorNotSupported, 0);
   delete callback;
-}
-
-void QuotaManager::NotifyStorageAccessed(
-    QuotaClient::ID client_id,
-    const GURL& origin, StorageType type) {
-  if (type == kStorageTypeTemporary && lru_origin_callback_.get()) {
-    // Record the accessed origins while GetLRUOrigin task is runing
-    // to filter out them from eviction.
-    access_notified_origins_.insert(origin);
-  }
-
-  // TODO(michaeln): write me
-}
-
-void QuotaManager::NotifyStorageModified(
-    QuotaClient::ID client_id,
-    const GURL& origin, StorageType type, int64 delta) {
-  LazyInitialize();
-  GetUsageTracker(type)->UpdateUsageCache(client_id, origin, delta);
-}
-
-void QuotaManager::NotifyOriginInUse(const GURL& origin) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
-  origins_in_use_[origin]++;
-}
-
-void QuotaManager::NotifyOriginNoLongerInUse(const GURL& origin) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
-  DCHECK(IsOriginInUse(origin));
-  int& count = origins_in_use_[origin];
-  if (--count == 0)
-    origins_in_use_.erase(origin);
 }
 
 void QuotaManager::GetAvailableSpace(AvailableSpaceCallback* callback) {
@@ -796,6 +791,44 @@ void QuotaManager::RegisterClient(QuotaClient* client) {
   clients_.push_back(client);
 }
 
+void QuotaManager::NotifyStorageAccessed(
+    QuotaClient::ID client_id,
+    const GURL& origin, StorageType type) {
+  LazyInitialize();
+  if (type == kStorageTypeTemporary && lru_origin_callback_.get()) {
+    // Record the accessed origins while GetLRUOrigin task is runing
+    // to filter out them from eviction.
+    access_notified_origins_.insert(origin);
+  }
+
+  if (db_disabled_)
+    return;
+  scoped_refptr<OriginAccessRecordDatabaseTask> task(
+      new OriginAccessRecordDatabaseTask(
+          this, database_.get(), db_thread_, origin, type));
+  task->Start();
+}
+
+void QuotaManager::NotifyStorageModified(
+    QuotaClient::ID client_id,
+    const GURL& origin, StorageType type, int64 delta) {
+  LazyInitialize();
+  GetUsageTracker(type)->UpdateUsageCache(client_id, origin, delta);
+}
+
+void QuotaManager::NotifyOriginInUse(const GURL& origin) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  origins_in_use_[origin]++;
+}
+
+void QuotaManager::NotifyOriginNoLongerInUse(const GURL& origin) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(IsOriginInUse(origin));
+  int& count = origins_in_use_[origin];
+  if (--count == 0)
+    origins_in_use_.erase(origin);
+}
+
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
   switch (type) {
     case kStorageTypeTemporary:
@@ -826,7 +859,6 @@ void QuotaManager::GetCachedOrigins(
   }
 }
 
-// TODO(kinuko): add test for this.
 void QuotaManager::DeleteOriginFromDatabase(
     const GURL& origin, StorageType type) {
   LazyInitialize();

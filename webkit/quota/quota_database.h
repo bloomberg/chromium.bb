@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/timer.h"
 #include "webkit/quota/quota_types.h"
 
 namespace sql {
@@ -66,6 +66,13 @@ class QuotaDatabase {
   bool SetOriginDatabaseBootstrapped(bool bootstrap_flag);
 
  private:
+  // For long-running transactions support.  We always keep a transaction open
+  // so that multiple transactions can be batched.  They are flushed
+  // with a delay after a modification has been made.  We support neither
+  // nested transactions nor rollback (as we don't need them for now).
+  void Commit();
+  void ScheduleCommit();
+
   bool FindOriginUsedCount(const GURL& origin,
                            StorageType type,
                            int* used_count);
@@ -81,6 +88,8 @@ class QuotaDatabase {
   scoped_ptr<sql::MetaTable> meta_table_;
   bool is_recreating_;
   bool is_disabled_;
+
+  base::OneShotTimer<QuotaDatabase> timer_;
 
   friend class QuotaDatabaseTest;
 

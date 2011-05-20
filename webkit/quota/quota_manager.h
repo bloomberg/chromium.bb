@@ -152,6 +152,7 @@ class QuotaManager : public QuotaTaskObserver,
   class GetLRUOriginTask;
   class OriginDeletionDatabaseTask;
   class TemporaryOriginsRegistrationTask;
+  class OriginAccessRecordDatabaseTask;
 
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
