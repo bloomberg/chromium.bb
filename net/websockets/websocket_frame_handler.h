@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/net_api.h"
 
 namespace net {
 
@@ -18,7 +19,7 @@ class IOBuffer;
 class IOBufferWithSize;
 
 // Handles WebSocket frame messages.
-class WebSocketFrameHandler {
+class NET_TEST WebSocketFrameHandler {
  public:
   struct FrameInfo {
     const char* frame_start;

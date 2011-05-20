@@ -11,12 +11,13 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_api.h"
 
 namespace net {
 
 class HttpResponseHeaders;
 
-class WebSocketHandshake {
+class NET_TEST WebSocketHandshake {
  public:
   static const int kWebSocketPort;
   static const int kSecureWebSocketPort;
@@ -72,7 +73,7 @@ class WebSocketHandshake {
  private:
   friend class WebSocketHandshakeTest;
 
-  class Parameter {
+  class NET_TEST Parameter {
    public:
     static const int kKey3Size = 8;
     static const int kExpectedResponseSize = 16;

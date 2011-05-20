@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_api.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request_context.h"
 
@@ -55,8 +56,8 @@ class WebSocketDelegate {
   virtual void OnSocketError(const WebSocket* socket, int error) {}
 };
 
-class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
-                  public SocketStream::Delegate {
+class NET_API WebSocket : public base::RefCountedThreadSafe<WebSocket>,
+                          public SocketStream::Delegate {
  public:
   enum State {
     INITIALIZED = -1,
