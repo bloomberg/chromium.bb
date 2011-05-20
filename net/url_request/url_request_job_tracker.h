@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "net/base/net_api.h"
 #include "net/url_request/url_request_status.h"
 
 class GURL;
@@ -24,7 +25,7 @@ class URLRequestJob;
 // onthe same thread where all of the application's URLRequest calls are
 // made.
 //
-class URLRequestJobTracker {
+class NET_API URLRequestJobTracker {
  public:
   typedef std::vector<URLRequestJob*> JobList;
   typedef JobList::const_iterator JobIterator;
@@ -97,7 +98,7 @@ class URLRequestJobTracker {
   JobList active_jobs_;
 };
 
-extern URLRequestJobTracker g_url_request_job_tracker;
+NET_API extern URLRequestJobTracker g_url_request_job_tracker;
 
 }  // namespace net
 
