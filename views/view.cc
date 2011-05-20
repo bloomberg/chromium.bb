@@ -413,8 +413,22 @@ void View::SetTransform(const ui::Transform& transform) {
     SchedulePaint();
   } else {
     transform_.reset(new ui::Transform(transform));
-    // TODO: this needs to trigger a paint on the widget. It shouldn't use
-    // SchedulePaint as we don't want to mark the views dirty.
+#if defined(COMPOSITOR_2)
+    if (!texture_.get()) {
+      // We don't yet have a texture. SchedulePaint so one is created.
+      SchedulePaint();
+    } else {
+      // We have a texture. When the transform changes and the texture is up to
+      // date we don't want to SchedulePaint as it'll trigger painting to the
+      // texture. Instead we tell the Widget to paint, which makes the
+      // compositor draw using the existing texture.
+      // We schedule paint the complete bounds as compositor generally don't
+      // support partial painting.
+      Widget* widget = GetWidget();
+      if (widget)
+        widget->SchedulePaintInRect(widget->GetRootView()->bounds());
+    }
+#endif
   }
 }
 
@@ -1169,9 +1183,19 @@ void View::PaintToTexture(const gfx::Rect& dirty_region) {
     return;
 
   if (ShouldPaintToTexture() && texture_needs_updating_) {
-    texture_clip_rect_ = dirty_region;
-    Paint(NULL);
-    texture_clip_rect_.SetRect(0, 0, 0, 0);
+    if (!texture_.get()) {
+      // If we have no texture paint the whole view. We do this to handle two
+      // cases:
+      // . Workaround for WidgetWin/WindowWin. In particular its possible to
+      //   create the rootview at the non-client size, even though we'll never
+      //   paint at that size.
+      // . In case the texture is recreated and a partial paint was scheduled.
+      Paint(NULL);
+    } else {
+      texture_clip_rect_ = dirty_region;
+      Paint(NULL);
+      texture_clip_rect_.SetRect(0, 0, 0, 0);
+    }
   } else {
     // Forward to all children as a descendant may be dirty and have a texture.
     for (int i = child_count() - 1; i >= 0; --i) {
