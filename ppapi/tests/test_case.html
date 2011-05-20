@@ -79,7 +79,7 @@ onload = function() {
   } else {
     var mimeType = "application/x-ppapi-tests";
     if (mimeType in navigator.mimeTypes) {
-      obj = document.createElement("OBJECT");
+      obj = document.createElement("EMBED");
       obj.setAttribute("type", mimeType);
     } else {
       document.getElementById("console").innerHTML =

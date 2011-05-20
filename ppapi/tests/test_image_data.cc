@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ std::string TestImageData::TestInvalidSize() {
   negative_height.width = 16;
   negative_height.height = -2;
   PP_Resource rsrc = image_data_interface_->Create(
-      pp::Module::Get()->pp_module(),
+      instance_->pp_instance(),
       PP_IMAGEDATAFORMAT_BGRA_PREMUL,
       &negative_height, PP_TRUE);
   if (rsrc)
@@ -70,7 +70,7 @@ std::string TestImageData::TestInvalidSize() {
   negative_width.width = -2;
   negative_width.height = 16;
   rsrc = image_data_interface_->Create(
-      pp::Module::Get()->pp_module(),
+      instance_->pp_instance(),
       PP_IMAGEDATAFORMAT_BGRA_PREMUL,
       &negative_width, PP_TRUE);
   if (rsrc)

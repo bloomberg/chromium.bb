@@ -66,8 +66,9 @@ class PPAPITest : public UITest {
     EXPECT_TRUE(file_util::PathExists(test_path));
 
     GURL::Replacements replacements;
-    replacements.SetQuery(test_case.c_str(),
-                          url_parse::Component(0, test_case.size()));
+    std::string query("testcase=");
+    query += test_case;
+    replacements.SetQuery(query.c_str(), url_parse::Component(0, query.size()));
     GURL test_url = net::FilePathToFileURL(test_path);
     RunTestURL(test_url.ReplaceComponents(replacements));
   }
@@ -77,7 +78,8 @@ class PPAPITest : public UITest {
         net::TestServer::TYPE_HTTP,
         FilePath(FILE_PATH_LITERAL("ppapi/tests")));
     ASSERT_TRUE(test_server.Start());
-    RunTestURL(test_server.GetURL("files/test_case.html?" + test_case));
+    RunTestURL(
+        test_server.GetURL("files/test_case.html?testcase=" + test_case));
   }
 
  private:
@@ -145,15 +147,16 @@ TEST_F(PPAPITest, CharSet) {
   RunTest("CharSet");
 }
 
-TEST_F(PPAPITest, Var) {
-  RunTest("Var");
+TEST_F(PPAPITest, VarDeprecated) {
+  RunTest("VarDeprecated");
 }
 
 TEST_F(PPAPITest, PostMessage) {
   RunTest("PostMessage");
 }
 
-TEST_F(PPAPITest, FileIO) {
+// http://crbug.com/83443
+TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");
 }
 
@@ -166,6 +169,7 @@ TEST_F(PPAPITest, DISABLED_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
 
-TEST_F(PPAPITest, Transport) {
+// http://crbug.com/83395
+TEST_F(PPAPITest, DISABLED_Transport) {
   RunTest("Transport");
 }

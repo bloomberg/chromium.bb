@@ -243,12 +243,12 @@ std::string TestGraphics2D::TestInvalidSize() {
   size.width = 16;
   size.height = -16;
   ASSERT_FALSE(!!graphics_2d_interface_->Create(
-      pp::Module::Get()->pp_module(), &size, PP_FALSE));
+      instance_->pp_instance(), &size, PP_FALSE));
 
   size.width = -16;
   size.height = 16;
   ASSERT_FALSE(!!graphics_2d_interface_->Create(
-      pp::Module::Get()->pp_module(), &size, PP_FALSE));
+      instance_->pp_instance(), &size, PP_FALSE));
 
   PASS();
 }
