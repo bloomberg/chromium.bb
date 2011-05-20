@@ -8,8 +8,23 @@ import os
 import sys
 Import('env')
 
-# Now build validator for x86
+#
+# DO NOT MOVE
+#
+# A small piece of the code is shared, so we build that first
+#
+# TODO(robertm): consider adding this to the top level scons files
+env.Append(CPPPATH=['${TARGET_ROOT}'])
+env.ComponentLibrary('nchelper', ['ncfileutil.c'])
+
+
+#
+#
+# Now build x86 only pieces
+#
+#
 if not env.Bit('target_x86'): Return()
+
 
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
@@ -21,14 +36,9 @@ if env.AllBits('windows', 'debug'):
                          'x86/Microsoft.VC80.DebugCRT')
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
 
-# TODO(robertm): consider adding this to the top level scons files
-env.Append(CPPPATH=['${TARGET_ROOT}'])
-
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
-# Start by building libary utilities that may be used by other architectures.
-env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 
 
 #
@@ -44,7 +54,7 @@ force_cpp_o = env.ComponentObject('force_cpp.cc')
 generate = False
 if 'valgen' in COMMAND_LINE_TARGETS: generate = True
 if 'valclean' in COMMAND_LINE_TARGETS: generate = True
- 
+
 #
 # Only generate/clean these files if the alias is specified on the
 # command line.  We conditionally add these pieces to scons to prevent
@@ -60,14 +70,14 @@ if generate:
   # ncdecode_table and ncdecode_tablegen which are used to generate
   # the large opcode tables.
   #
-  
+
   # Get the directory in which we will generate checking in files.
   val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
-  
+
   #------------------------------------------------------
   # Generate the needed header files for enumerated types.
   # Note that we use the same directory for all platforms.
-  
+
   # Define enumerate type files, and the options to process.
   enum_headers = []
   ncv_enum_pairs = {
@@ -81,28 +91,28 @@ if generate:
       'ncop_expr_node_flag': '--name=NaClExpFlag --add_size=1',
       'ncop_expr_node_kind': '--name=NaClExpKind --add_size=1',
   }
-  
+
   # Now code generate the enumerated types.
   for ncv_enum in ncv_enum_pairs:
     ncv_options = ncv_enum_pairs[ncv_enum]
     ncv_enum_file = env.File(ncv_enum + '.enum')
     ncv_header_1 = env.File('%s/gen/%s.h' % (val_src_dir, ncv_enum))
     ncv_header_2 = env.File('%s/gen/%s_impl.h' % (val_src_dir, ncv_enum))
-  
+
     cmd_line = (
         '${PYTHON} %s --header="%s" --source="%s" --path_prefix="%s" %s %s' %
         (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, val_src_dir,
          ncv_options, ncv_enum_file))
-         
+
     env.Command([ncv_header_1, ncv_header_2], ncv_enum_file, cmd_line)
     enum_headers.append(ncv_header_1)
     enum_headers.append(ncv_header_2)
-  
+
   #
   # Switch to generator environment to turn on macro:
   #   NACL_TRUSTED_BUT_NOT_TCB
   #
-    
+
   tables = []
   for bits in ['32', '64']:
     ncv_decodetab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdecodetab', bits)
@@ -118,12 +128,11 @@ if generate:
     tables.append(ncv_decodetab_h)
     tables.append(ncv_disasmtab_h)
     tables.append(ncv_badprefixmask_h)
-  
-  
+
 #
 # In the middle of generating, we unconditionally add ncdecode_tablegen
 # so that the tests which depend on it, can run correctly.  This step
-# sits in the middle because of dependency order, where the next 
+# sits in the middle because of dependency order, where the next
 # generation step requires this executable.
 #
 # Add new x86 table generator.
@@ -154,8 +163,7 @@ ncdecode_tablegen = gen_env.ComponentProgram(
                 'gio',
                 'platform'])
 gen_env.Requires(ncdecode_tablegen, crt)
-  
-  
+
 #
 # Now we are back to conditionally defining the large tables generated
 # by ncdecode_tablegen.
@@ -170,12 +178,12 @@ if generate:
       exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'
       if filename == 'nc_subregs':
         cmd_line = '%s -m%s -nacl_subregs %s'% (exe_path, bits, fullname)
-      else: 
+      else:
         cmd_line = '%s -m%s %s'% (exe_path, bits, fullname)
       out = gen_env.Command(env.File(fullname), exe_path, cmd_line)
   #    gen_env.Alias('valgen', source=[exe_path], action=[Action(cmd_line)])
       tables.append(fullname)
-  
+
   gen_list = enum_headers + tables
   gen_env.AlwaysBuild(
       gen_env.Alias('valgen', gen_list))
