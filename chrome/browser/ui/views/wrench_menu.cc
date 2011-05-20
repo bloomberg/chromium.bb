@@ -9,8 +9,11 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_observer.h"
@@ -564,7 +567,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 WrenchMenu::WrenchMenu(Browser* browser)
     : browser_(browser),
       selected_menu_model_(NULL),
-      selected_index_(0) {
+      selected_index_(0),
+      bookmark_menu_(NULL),
+      first_bookmark_command_id_(0) {
 }
 
 void WrenchMenu::Init(ui::MenuModel* model) {
@@ -574,6 +579,7 @@ void WrenchMenu::Init(ui::MenuModel* model) {
                                // so we get the taller menu style.
   int next_id = 1;
   PopulateMenu(root_.get(), model, &next_id);
+  first_bookmark_command_id_ = next_id + 1;
 }
 
 void WrenchMenu::RunMenu(views::MenuButton* host) {
@@ -589,16 +595,114 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   root_->RunMenuAt(host->GetWindow()->GetNativeWindow(), host, bounds,
       base::i18n::IsRTL() ? MenuItemView::TOPLEFT : MenuItemView::TOPRIGHT,
       true);
+  if (bookmark_menu_delegate_.get()) {
+    BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+    if (model)
+      model->RemoveObserver(this);
+  }
   if (selected_menu_model_)
     selected_menu_model_->ActivatedAt(selected_index_);
 }
 
+std::wstring WrenchMenu::GetTooltipText(int id,
+                                        const gfx::Point& p) {
+  return is_bookmark_command(id) ?
+      bookmark_menu_delegate_->GetTooltipText(id, p) : std::wstring();
+}
+
+bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,
+                                    const views::MouseEvent& e) {
+  return is_bookmark_command(menu->GetCommand()) ?
+      bookmark_menu_delegate_->IsTriggerableEvent(menu, e) :
+      MenuDelegate::IsTriggerableEvent(menu, e);
+}
+
+bool WrenchMenu::GetDropFormats(
+      MenuItemView* menu,
+      int* formats,
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+  CreateBookmarkMenu();
+  return bookmark_menu_delegate_.get() &&
+      bookmark_menu_delegate_->GetDropFormats(menu, formats, custom_formats);
+}
+
+bool WrenchMenu::AreDropTypesRequired(MenuItemView* menu) {
+  CreateBookmarkMenu();
+  return bookmark_menu_delegate_.get() &&
+      bookmark_menu_delegate_->AreDropTypesRequired(menu);
+}
+
+bool WrenchMenu::CanDrop(MenuItemView* menu,
+                         const ui::OSExchangeData& data) {
+  CreateBookmarkMenu();
+  return bookmark_menu_delegate_.get() &&
+      bookmark_menu_delegate_->CanDrop(menu, data);
+}
+
+int WrenchMenu::GetDropOperation(
+    MenuItemView* item,
+    const views::DropTargetEvent& event,
+    DropPosition* position) {
+  return is_bookmark_command(item->GetCommand()) ?
+      bookmark_menu_delegate_->GetDropOperation(item, event, position) :
+      ui::DragDropTypes::DRAG_NONE;
+}
+
+int WrenchMenu::OnPerformDrop(MenuItemView* menu,
+                              DropPosition position,
+                              const views::DropTargetEvent& event) {
+  if (!is_bookmark_command(menu->GetCommand()))
+    return ui::DragDropTypes::DRAG_NONE;
+
+  int result = bookmark_menu_delegate_->OnPerformDrop(menu, position, event);
+  return result;
+}
+
+bool WrenchMenu::ShowContextMenu(MenuItemView* source,
+                                 int id,
+                                 const gfx::Point& p,
+                                 bool is_mouse_gesture) {
+  return is_bookmark_command(id) ?
+      bookmark_menu_delegate_->ShowContextMenu(source, id, p,
+                                               is_mouse_gesture) :
+      false;
+}
+
+bool WrenchMenu::CanDrag(MenuItemView* menu) {
+  return is_bookmark_command(menu->GetCommand()) ?
+      bookmark_menu_delegate_->CanDrag(menu) : false;
+}
+
+void WrenchMenu::WriteDragData(MenuItemView* sender,
+                               ui::OSExchangeData* data) {
+  DCHECK(is_bookmark_command(sender->GetCommand()));
+  return bookmark_menu_delegate_->WriteDragData(sender, data);
+}
+
+int WrenchMenu::GetDragOperations(MenuItemView* sender) {
+  return is_bookmark_command(sender->GetCommand()) ?
+      bookmark_menu_delegate_->GetDragOperations(sender) :
+      MenuDelegate::GetDragOperations(sender);
+}
+
+int WrenchMenu::GetMaxWidthForMenu(MenuItemView* menu) {
+  return is_bookmark_command(menu->GetCommand()) ?
+      bookmark_menu_delegate_->GetMaxWidthForMenu(menu) :
+      MenuDelegate::GetMaxWidthForMenu(menu);
+}
+
 bool WrenchMenu::IsItemChecked(int id) const {
+  if (!is_bookmark_command(id))
+    return false;
+
   const Entry& entry = id_to_entry_.find(id)->second;
   return entry.first->IsItemCheckedAt(entry.second);
 }
 
 bool WrenchMenu::IsCommandEnabled(int id) const {
+  if (is_bookmark_command(id))
+    return true;
+
   if (id == 0)
     return false;  // The root item.
 
@@ -611,7 +715,13 @@ bool WrenchMenu::IsCommandEnabled(int id) const {
       entry.first->IsEnabledAt(entry.second);
 }
 
-void WrenchMenu::ExecuteCommand(int id) {
+void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {
+  if (is_bookmark_command(id)) {
+    bookmark_menu_delegate_->ExecuteCommand(id, mouse_event_flags);
+    return;
+  }
+
+  // Not a bookmark
   const Entry& entry = id_to_entry_.find(id)->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
 
@@ -626,6 +736,9 @@ void WrenchMenu::ExecuteCommand(int id) {
 }
 
 bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
+  if (is_bookmark_command(id))
+    return false;
+
   const Entry& entry = id_to_entry_.find(id)->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
   if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
@@ -640,6 +753,15 @@ bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
   *accelerator = views::Accelerator(menu_accelerator.key_code(),
                                     menu_accelerator.modifiers());
   return true;
+}
+
+void WrenchMenu::WillShowMenu(MenuItemView* menu) {
+  if (menu == bookmark_menu_)
+    CreateBookmarkMenu();
+}
+
+void WrenchMenu::BookmarkModelChanged() {
+  root_->Cancel();
 }
 
 WrenchMenu::~WrenchMenu() {
@@ -658,23 +780,35 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
     if (model->GetTypeAt(index) == MenuModel::TYPE_SUBMENU)
       PopulateMenu(item, model->GetSubmenuModelAt(index), next_id);
 
-    if (model->GetCommandIdAt(index) == IDC_CUT) {
-      DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
-      DCHECK_LT(i + 2, max);
-      DCHECK_EQ(IDC_COPY, model->GetCommandIdAt(index + 1));
-      DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(index + 2));
-      item->SetTitle(UTF16ToWide(l10n_util::GetStringUTF16(IDS_EDIT2)));
-      item->AddChildView(
-          new CutCopyPasteView(this, model, index, index + 1, index + 2));
-      i += 2;
-    } else if (model->GetCommandIdAt(index) == IDC_ZOOM_MINUS) {
-      DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
-      DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(index + 1));
-      DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(index + 2));
-      item->SetTitle(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2)));
-      item->AddChildView(
-          new ZoomView(this, model, index, index + 1, index + 2));
-      i += 2;
+    switch (model->GetCommandIdAt(index)) {
+      case IDC_CUT:
+        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
+        DCHECK_LT(i + 2, max);
+        DCHECK_EQ(IDC_COPY, model->GetCommandIdAt(index + 1));
+        DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(index + 2));
+        item->SetTitle(UTF16ToWide(l10n_util::GetStringUTF16(IDS_EDIT2)));
+        item->AddChildView(
+            new CutCopyPasteView(this, model, index, index + 1, index + 2));
+        i += 2;
+        break;
+
+      case IDC_ZOOM_MINUS:
+        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
+        DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(index + 1));
+        DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(index + 2));
+        item->SetTitle(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2)));
+        item->AddChildView(
+            new ZoomView(this, model, index, index + 1, index + 2));
+        i += 2;
+        break;
+
+      case IDC_BOOKMARKS_MENU:
+        DCHECK(!bookmark_menu_);
+        bookmark_menu_ = item;
+        break;
+
+      default:
+        break;
     }
   }
 }
@@ -707,4 +841,23 @@ void WrenchMenu::CancelAndEvaluate(MenuModel* model, int index) {
   selected_menu_model_ = model;
   selected_index_ = index;
   root_->Cancel();
+}
+
+void WrenchMenu::CreateBookmarkMenu() {
+  if (bookmark_menu_delegate_.get())
+    return;  // Already created the menu.
+
+  BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+  if (!model->IsLoaded())
+    return;
+
+  model->AddObserver(this);
+  bookmark_menu_delegate_.reset(
+      new BookmarkMenuDelegate(browser_->profile(),
+                               NULL,
+                               browser_->window()->GetNativeHandle(),
+                               first_bookmark_command_id_));
+  bookmark_menu_delegate_->Init(
+      this, bookmark_menu_, model->GetBookmarkBarNode(), 0,
+      BookmarkMenuDelegate::SHOW_OTHER_FOLDER);
 }

@@ -11,9 +11,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_delegate.h"
 
+class BookmarkMenuDelegate;
 class Browser;
 
 namespace views {
@@ -24,7 +26,8 @@ class View;
 
 // WrenchMenu adapts the WrenchMenuModel to view's menu related classes.
 class WrenchMenu : public base::RefCounted<WrenchMenu>,
-                   public views::MenuDelegate {
+                   public views::MenuDelegate,
+                   public BaseBookmarkModelObserver {
  public:
   explicit WrenchMenu(Browser* browser);
 
@@ -34,10 +37,39 @@ class WrenchMenu : public base::RefCounted<WrenchMenu>,
   void RunMenu(views::MenuButton* host);
 
   // MenuDelegate overrides:
-  virtual bool IsItemChecked(int id) const;
-  virtual bool IsCommandEnabled(int id) const;
-  virtual void ExecuteCommand(int id);
-  virtual bool GetAccelerator(int id, views::Accelerator* accelerator);
+  virtual std::wstring GetTooltipText(int id, const gfx::Point& p) OVERRIDE;
+  virtual bool IsTriggerableEvent(views::MenuItemView* menu,
+                                  const views::MouseEvent& e) OVERRIDE;
+  virtual bool GetDropFormats(
+      views::MenuItemView* menu,
+      int* formats,
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool AreDropTypesRequired(views::MenuItemView* menu) OVERRIDE;
+  virtual bool CanDrop(views::MenuItemView* menu,
+                       const ui::OSExchangeData& data) OVERRIDE;
+  virtual int GetDropOperation(views::MenuItemView* item,
+                               const views::DropTargetEvent& event,
+                               DropPosition* position) OVERRIDE;
+  virtual int OnPerformDrop(views::MenuItemView* menu,
+                            DropPosition position,
+                            const views::DropTargetEvent& event) OVERRIDE;
+  virtual bool ShowContextMenu(views::MenuItemView* source,
+                               int id,
+                               const gfx::Point& p,
+                               bool is_mouse_gesture) OVERRIDE;
+  virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
+  virtual void WriteDragData(views::MenuItemView* sender,
+                             ui::OSExchangeData* data) OVERRIDE;
+  virtual int GetDragOperations(views::MenuItemView* sender) OVERRIDE;
+  virtual int GetMaxWidthForMenu(views::MenuItemView* menu) OVERRIDE;
+  virtual bool IsItemChecked(int id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
+  virtual bool GetAccelerator(int id, views::Accelerator* accelerator) OVERRIDE;
+  virtual void WillShowMenu(views::MenuItemView* menu) OVERRIDE;
+
+  // BaseBookmarkModelObserver overrides:
+  virtual void BookmarkModelChanged() OVERRIDE;
 
  private:
   friend class base::RefCounted<WrenchMenu>;
@@ -69,6 +101,15 @@ class WrenchMenu : public base::RefCounted<WrenchMenu>,
   // activates the menu item in |model| at |index|.
   void CancelAndEvaluate(ui::MenuModel* model, int index);
 
+  // Creates the bookmark menu if necessary. Does nothing if already created or
+  // the bookmark model isn't loaded.
+  void CreateBookmarkMenu();
+
+  // Returns true if |id| identifies a bookmark menu item.
+  bool is_bookmark_command(int id) const {
+    return bookmark_menu_delegate_.get() && id >= first_bookmark_command_id_;
+  }
+
   // The views menu.
   scoped_ptr<views::MenuItemView> root_;
 
@@ -85,6 +126,15 @@ class WrenchMenu : public base::RefCounted<WrenchMenu>,
   // while the message loop is nested.
   ui::MenuModel* selected_menu_model_;
   int selected_index_;
+
+  // Used for managing the bookmark menu items.
+  scoped_ptr<BookmarkMenuDelegate> bookmark_menu_delegate_;
+
+  // Menu corresponding to IDC_BOOKMARKS_MENU.
+  views::MenuItemView* bookmark_menu_;
+
+  // ID to use for the items representing bookmarks in the bookmark menu.
+  int first_bookmark_command_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenu);
 };

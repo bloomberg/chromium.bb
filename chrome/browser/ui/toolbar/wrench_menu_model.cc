@@ -154,7 +154,7 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
 ToolsMenuModel::~ToolsMenuModel() {}
 
 void ToolsMenuModel::Build(Browser* browser) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
   AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
   AddSeparator();
 #endif
@@ -462,7 +462,7 @@ void WrenchMenuModel::Build() {
 
   AddSeparator();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(TOOLKIT_VIEWS)
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
