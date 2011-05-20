@@ -639,6 +639,13 @@ void ProfileSyncService::OnPassphraseRequired(
 
   passphrase_required_reason_ = reason;
 
+  // We will skip the passphrase prompt and suppress the warning if the
+  // passphrase is needed for decryption but the user is not syncing an
+  // encrypted data type on this machine. Otherwise we look for one.
+  if (!IsEncryptedDatatypeEnabled() && IsPassphraseRequiredForDecryption()) {
+    OnPassphraseAccepted();
+  }
+
   // First try supplying gaia password as the passphrase.
   if (!gaia_password_.empty()) {
     SetPassphrase(gaia_password_, false, true);
@@ -656,15 +663,9 @@ void ProfileSyncService::OnPassphraseRequired(
     return;
   }
 
-  // We will skip the passphrase prompt and suppress the warning if the
-  // passphrase is needed for decryption but the user is not syncing an
-  // encrypted data type on this machine. Otherwise we prompt.
-  if (!IsEncryptedDatatypeEnabled() && IsPassphraseRequiredForDecryption()) {
-    OnPassphraseAccepted();
-    return;
-  }
-
-  if (WizardIsVisible() && IsPassphraseRequiredForDecryption()) {
+  // Prompt the user for a password.
+  if (WizardIsVisible() && IsEncryptedDatatypeEnabled() &&
+      IsPassphraseRequiredForDecryption()) {
     wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
   }
 
