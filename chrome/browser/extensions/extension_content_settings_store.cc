@@ -267,9 +267,9 @@ ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
   for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
     DictionaryValue* setting_dict = new DictionaryValue();
     setting_dict->SetString(keys::kEmbeddedPatternKey,
-                            it->embedded_pattern.AsString());
+                            it->embedded_pattern.ToString());
     setting_dict->SetString(keys::kTopLevelPatternKey,
-                            it->top_level_pattern.AsString());
+                            it->top_level_pattern.ToString());
     setting_dict->SetString(
         keys::kContentSettingsTypeKey,
         helpers::ContentSettingsTypeToString(it->content_type));
