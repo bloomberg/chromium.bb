@@ -1,28 +1,13 @@
-/*
- * TODO(xiyuan): Remove the section overrides when options_page.css uses the
- * new style.
- */
 #inetTitle {
   border: none;
 }
 
-#internetPage > section > h3 {
-  font-size: 100%;
-  width: auto;
-}
-
-#internetPage > section[hidden] {
-  display: none;
-}
-
-#internetPage > section > div:only-of-type > div.checkbox {
-  margin: 10px 0;
-  -webkit-margin-start: 10px;
+#network-general-div {
+  -webkit-margin-start: 15px;
 }
 
 #networking-controls {
   display: -webkit-box;
-  -webkit-margin-start: 10px;
 }
 
 .networks {
@@ -94,7 +79,6 @@ html[dir='rtl'] .network-item-text {
   background: right center no-repeat;
 }
 
-
 .network-item[connected] > * > .network-name-label {
   font-weight: bold;
 }
@@ -128,10 +112,6 @@ html[dir='rtl'] .network-item-text {
   position: relative;
 }
 
-.details-button {
-  float: right;
-}
-
 #details-plan-table {
   width: 100%;
 }
@@ -145,10 +125,6 @@ html[dir='rtl'] .network-item-text {
   width: 350px;
   padding-top: 5px;
   font-weight: bold;
-}
-
-html[dir='rtl'] .details-button {
-  float: left;
 }
 
 #locked-network-banner {
@@ -175,15 +151,9 @@ html[dir='rtl'] .details-button {
 }
 
 #internet-owner-only-warning {
-  margin-bottom: 10px;
-  margin-top: 10px;
+  margin: 10px 0;
   padding-bottom: 1px;
-  -webkit-margin-start: 10px;
   -webkit-padding-start: 20px;
   background-repeat: no-repeat;
   background-image: url('warning.png');
-}
-
-#wireless-buttons > * > button {
-  margin-left: 5px;
 }
