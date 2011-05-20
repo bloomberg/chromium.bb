@@ -341,6 +341,7 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
       }
     }
   }
+  file->Flush();
   return true;
 }
 
