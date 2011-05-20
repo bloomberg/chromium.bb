@@ -23,6 +23,7 @@
 #include "ui/gfx/font.h"
 #include "views/controls/button/native_button.h"
 #include "views/layout/layout_constants.h"
+#include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
@@ -256,9 +257,10 @@ void DialogClientView::SetBottomView(View* bottom_view) {
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 
-void DialogClientView::NativeViewHierarchyChanged(bool attached,
-                                                  gfx::NativeView native_view,
-                                                  RootView* root_view) {
+void DialogClientView::NativeViewHierarchyChanged(
+    bool attached,
+    gfx::NativeView native_view,
+    internal::RootView* root_view) {
   if (attached) {
     UpdateFocusListener();
   }

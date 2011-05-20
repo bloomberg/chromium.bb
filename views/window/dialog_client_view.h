@@ -16,6 +16,9 @@ namespace views {
 class DialogDelegate;
 class NativeButton;
 class Window;
+namespace internal {
+class RootView;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView
@@ -60,30 +63,34 @@ class DialogClientView : public ClientView,
   void SetBottomView(View* bottom_view);
 
   // Overridden from View:
-  virtual void NativeViewHierarchyChanged(bool attached,
-                                          gfx::NativeView native_view,
-                                          RootView* root_view);
+  virtual void NativeViewHierarchyChanged(
+      bool attached,
+      gfx::NativeView native_view,
+      internal::RootView* root_view) OVERRIDE;
 
   // Overridden from ClientView:
-  virtual bool CanClose();
-  virtual void WindowClosing();
-  virtual int NonClientHitTest(const gfx::Point& point);
-  virtual DialogClientView* AsDialogClientView();
+  virtual bool CanClose() OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+  virtual DialogClientView* AsDialogClientView() OVERRIDE;
 
   // FocusChangeListener implementation:
-  virtual void FocusWillChange(View* focused_before, View* focused_now);
+  virtual void FocusWillChange(View* focused_before,
+                               View* focused_now) OVERRIDE;
 
  protected:
   // View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void PaintChildren(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual gfx::Size GetPreferredSize();
-  virtual bool AcceleratorPressed(const Accelerator& accelerator);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+                                    View* child) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
 
   // ButtonListener implementation:
-  virtual void ButtonPressed(Button* sender, const views::Event& event);
+  virtual void ButtonPressed(Button* sender,
+                             const views::Event& event) OVERRIDE;
 
  private:
   // Paint the size box in the bottom right corner of the window if it is
