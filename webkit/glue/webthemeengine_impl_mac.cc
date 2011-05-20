@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,10 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+
+#if WEBKIT_USING_SKIA
+#include "skia/ext/skia_utils_mac.h"
+#endif
 
 using WebKit::WebCanvas;
 using WebKit::WebRect;
@@ -52,7 +56,13 @@ void WebThemeEngineImpl::paintScrollbarThumb(
   trackInfo.trackInfo.scrollbar.pressState =
       state == WebThemeEngine::StatePressed ? kThemeThumbPressed : 0;
   trackInfo.attributes |= (kThemeTrackShowThumb | kThemeTrackHideTrack);
-  HIThemeDrawTrack(&trackInfo, 0, canvas, kHIThemeOrientationNormal);
+#if WEBKIT_USING_SKIA
+  gfx::SkiaBitLocker bitLocker(canvas);
+  CGContextRef cgContext = bitLocker.cgContext();
+#else
+  CGContextRef cgContext = canvas;
+#endif
+  HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
 }
 
 }  // namespace webkit_glue

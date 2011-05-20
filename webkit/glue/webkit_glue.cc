@@ -271,7 +271,7 @@ bool DecodeImage(const std::string& image_data, SkBitmap* image) {
   if (web_image.isNull())
     return false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(USE_SKIA)
   *image = gfx::CGImageToSkBitmap(web_image.getCGImageRef());
 #else
   *image = web_image.getSkBitmap();

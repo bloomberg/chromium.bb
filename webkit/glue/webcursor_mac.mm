@@ -334,6 +334,7 @@ void WebCursor::InitFromNSCursor(NSCursor* cursor) {
   InitFromCursorInfo(cursor_info);
 }
 
+#if !WEBKIT_USING_SKIA
 void WebCursor::SetCustomData(const WebImage& image) {
   if (image.isNull())
     return;
@@ -374,6 +375,7 @@ void WebCursor::ImageFromCustomData(WebImage* image) const {
       CreateCGImageFromCustomData(custom_data_, custom_size_));
   *image = cg_image.get();
 }
+#endif
 
 void WebCursor::InitPlatformData() {
   return;
