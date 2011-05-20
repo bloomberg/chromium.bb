@@ -1352,6 +1352,11 @@ ExtensionPrefs* ExtensionService::extension_prefs() {
   return extension_prefs_;
 }
 
+ExtensionContentSettingsStore*
+    ExtensionService::GetExtensionContentSettingsStore() {
+  return extension_prefs()->content_settings_store();
+}
+
 ExtensionUpdater* ExtensionService::updater() {
   return updater_.get();
 }

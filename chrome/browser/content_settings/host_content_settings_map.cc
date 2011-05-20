@@ -8,9 +8,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_extension_provider.h"
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,12 +70,11 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // critical, as providers that are further down in the list (i.e. added later)
   // override providers further up.
   default_content_settings_providers_.push_back(
-      DefaultContentSettingsProviderPtr(
-          new content_settings::PrefDefaultProvider(profile)));
+      make_linked_ptr(new content_settings::PrefDefaultProvider(profile)));
   content_settings::DefaultProviderInterface* policy_default_provider =
       new content_settings::PolicyDefaultProvider(profile);
   default_content_settings_providers_.push_back(
-      DefaultContentSettingsProviderPtr(policy_default_provider));
+      make_linked_ptr(policy_default_provider));
 
   PrefService* prefs = profile_->GetPrefs();
 
@@ -100,9 +101,17 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // The order in which the content settings providers are created is critical,
   // as providers that are further up in the list (i.e. added earlier) override
   // providers further down.
-  content_settings_providers_.push_back(
-      make_linked_ptr(new content_settings::PolicyProvider(
-          profile, policy_default_provider)));
+  content_settings_providers_.push_back(make_linked_ptr(
+      new content_settings::PolicyProvider(profile, policy_default_provider)));
+  ExtensionService* extension_service = profile->GetExtensionService();
+  if (extension_service) {
+    // |extension_service| can be NULL in unit tests.
+    content_settings_providers_.push_back(make_linked_ptr(
+        new content_settings::ExtensionProvider(
+            profile,
+            extension_service->GetExtensionContentSettingsStore(),
+            is_off_the_record_)));
+  }
   content_settings_providers_.push_back(
       make_linked_ptr(new content_settings::PrefProvider(profile)));
 

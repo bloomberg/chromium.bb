@@ -119,7 +119,7 @@ class PolicyProvider : public BaseProvider,
       ContentSettingsPattern,
       ContentSettingsPattern,
       ContentSettingsType,
-      content_settings::ProviderInterface::ResourceIdentifier,
+      ResourceIdentifier,
       ContentSetting> ContentSettingsRule;
 
   typedef std::vector<ContentSettingsRule> ContentSettingsRules;

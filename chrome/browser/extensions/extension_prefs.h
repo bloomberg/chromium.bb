@@ -12,6 +12,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
@@ -34,7 +35,7 @@ class URLPatternSet;
 //       preference. Extension-controlled preferences are stored in
 //       PrefValueStore::extension_prefs(), which this class populates and
 //       maintains as the underlying extensions change.
-class ExtensionPrefs {
+class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
  public:
   // Key name for a preference that keeps track of per-extension settings. This
   // is a dictionary object read from the Preferences file, keyed off of
@@ -332,6 +333,10 @@ class ExtensionPrefs {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  ExtensionContentSettingsStore* content_settings_store() {
+    return content_settings_store_.get();
+  }
+
   // The underlying PrefService.
   PrefService* pref_service() const { return prefs_; }
 
@@ -341,6 +346,13 @@ class ExtensionPrefs {
   virtual base::Time GetCurrentTime() const;
 
  private:
+  // ExtensionContentSettingsStore::Observer methods:
+  virtual void OnContentSettingChanged(
+      const std::string& extension_id,
+      bool incognito) OVERRIDE;
+
+  virtual void OnDestruction() OVERRIDE {}
+
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.
   void MakePathsRelative();
@@ -431,6 +443,8 @@ class ExtensionPrefs {
 
   // Weak pointer, owned by Profile.
   ExtensionPrefValueMap* extension_pref_value_map_;
+
+  scoped_ptr<ExtensionContentSettingsStore> content_settings_store_;
 
   // The URLs of all of the toolstrips.
   URLList shelf_order_;

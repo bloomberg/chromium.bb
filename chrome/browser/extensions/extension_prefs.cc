@@ -113,6 +113,9 @@ const char kPrefInstallTime[] = "install_time";
 // A preference that contains any extension-controlled preferences.
 const char kPrefPreferences[] = "preferences";
 
+// A preference that contains extension-set content settings.
+const char kPrefContentSettings[] = "content_settings";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -256,16 +259,20 @@ ExtensionPrefs::ExtensionPrefs(
     ExtensionPrefValueMap* extension_pref_value_map)
     : prefs_(prefs),
       install_directory_(root_dir),
-      extension_pref_value_map_(extension_pref_value_map) {
+      extension_pref_value_map_(extension_pref_value_map),
+      content_settings_store_(new ExtensionContentSettingsStore()) {
   // TODO(mihaip): Remove this by July 2011 (see comment above).
   CleanupBadExtensionKeys(root_dir, prefs_);
 
   MakePathsRelative();
 
   InitPrefStore();
+
+  content_settings_store_->AddObserver(this);
 }
 
-ExtensionPrefs::~ExtensionPrefs() {}
+ExtensionPrefs::~ExtensionPrefs() {
+}
 
 // static
 const char ExtensionPrefs::kExtensionsPref[] = "extensions.settings";
@@ -875,6 +882,7 @@ void ExtensionPrefs::OnExtensionInstalled(
                       Value::CreateStringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
   extension_dict->Set(kPrefPreferences, new DictionaryValue());
+  extension_dict->Set(kPrefContentSettings, new ListValue());
 
   FilePath::StringType path = MakePathRelative(install_directory_,
       extension->path());
@@ -888,6 +896,8 @@ void ExtensionPrefs::OnExtensionInstalled(
   extension_dict->Set(kPrefAppLaunchIndex,
                       Value::CreateIntegerValue(GetNextAppLaunchIndex()));
   extension_pref_value_map_->RegisterExtension(
+      id, install_time, initial_state == Extension::ENABLED);
+  content_settings_store_->RegisterExtension(
       id, install_time, initial_state == Extension::ENABLED);
 }
 
@@ -903,6 +913,7 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
                         Value::CreateIntegerValue(
                             Extension::EXTERNAL_EXTENSION_UNINSTALLED));
     extension_pref_value_map_->SetExtensionState(extension_id, false);
+    content_settings_store_->SetExtensionState(extension_id, false);
   } else {
     DeleteExtensionPrefs(extension_id);
   }
@@ -932,6 +943,7 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
                       Value::CreateIntegerValue(state));
   bool enabled = (state == Extension::ENABLED);
   extension_pref_value_map_->SetExtensionState(extension_id, enabled);
+  content_settings_store_->SetExtensionState(extension_id, enabled);
 }
 
 bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
@@ -1016,6 +1028,7 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
     SavePrefs();
   }
   extension_pref_value_map_->UnregisterExtension(extension_id);
+  content_settings_store_->UnregisterExtension(extension_id);
 }
 
 const DictionaryValue* ExtensionPrefs::GetExtensionPref(
@@ -1307,6 +1320,15 @@ base::Time ExtensionPrefs::GetCurrentTime() const {
   return base::Time::Now();
 }
 
+void ExtensionPrefs::OnContentSettingChanged(const std::string& extension_id,
+                                             bool incognito) {
+  if (!incognito) {
+    UpdateExtensionPref(
+        extension_id, kPrefContentSettings,
+        content_settings_store_->GetSettingsForExtension(extension_id));
+  }
+}
+
 base::Time ExtensionPrefs::GetInstallTime(
     const std::string& extension_id) const {
   const DictionaryValue* extension = GetExtensionPref(extension_id);
@@ -1372,16 +1394,12 @@ void ExtensionPrefs::InitPrefStore() {
   ExtensionIdSet extension_ids;
   GetExtensions(&extension_ids);
   // Create empty preferences dictionary for each extension (these dictionaries
-  // are pruned when persisting the preferneces to disk).
-  {
-    DictionaryPrefUpdate update(prefs_, kExtensionsPref);
-    const DictionaryValue* source_dict = prefs_->GetDictionary(kExtensionsPref);
-    for (ExtensionIdSet::iterator ext_id = extension_ids.begin();
-         ext_id != extension_ids.end(); ++ext_id) {
-      std::string key = *ext_id + std::string(".") + kPrefPreferences;
-      if (!source_dict->GetDictionary(key, NULL))
-        update.Get()->Set(key, new DictionaryValue);
-    }
+  // are pruned when persisting the preferences to disk).
+  for (ExtensionIdSet::iterator ext_id = extension_ids.begin();
+       ext_id != extension_ids.end(); ++ext_id) {
+    ScopedExtensionPrefUpdate update(prefs_, *ext_id);
+    // This creates an empty dictionary if none is stored.
+    update.Get();
   }
 
   FixMissingPrefs(extension_ids);
@@ -1394,6 +1412,10 @@ void ExtensionPrefs::InitPrefStore() {
         *ext_id,
         GetInstallTime(*ext_id),
         GetExtensionState(*ext_id) == Extension::ENABLED);
+    content_settings_store_->RegisterExtension(
+        *ext_id,
+        GetInstallTime(*ext_id),
+        GetExtensionState(*ext_id) == Extension::ENABLED);
 
     const DictionaryValue* prefs = GetExtensionControlledPrefs(*ext_id);
     for (DictionaryValue::key_iterator i = prefs->begin_keys();
@@ -1403,6 +1425,14 @@ void ExtensionPrefs::InitPrefStore() {
         continue;
       extension_pref_value_map_->SetExtensionPref(
           *ext_id, *i, false, value->DeepCopy());
+    }
+
+    const DictionaryValue* extension_prefs = GetExtensionPref(*ext_id);
+    DCHECK(extension_prefs);
+    ListValue* content_settings = NULL;
+    if (extension_prefs->GetList(kPrefContentSettings, &content_settings)) {
+      content_settings_store_->SetExtensionContentSettingsFromList(
+          *ext_id, content_settings);
     }
   }
 

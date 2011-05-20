@@ -352,7 +352,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
           pattern,
           pattern,
           kPrefsForManagedContentSettingsMap[i].content_type,
-          ProviderInterface::ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
+          ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
           kPrefsForManagedContentSettingsMap[i].setting));
     }
   }

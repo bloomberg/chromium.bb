@@ -40,6 +40,7 @@
 
 class CrxInstaller;
 class ExtensionBrowserEventRouter;
+class ExtensionContentSettingsStore;
 class ExtensionInstallUI;
 class ExtensionPreferenceEventRouter;
 class ExtensionServiceBackend;
@@ -417,6 +418,8 @@ class ExtensionService
   // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
   // ExtensionPrefs* mutable_extension_prefs().
   ExtensionPrefs* extension_prefs();
+
+  ExtensionContentSettingsStore* GetExtensionContentSettingsStore();
 
   // Whether the extension service is ready.
   // TODO(skerner): Get rid of this method.  crbug.com/63756
