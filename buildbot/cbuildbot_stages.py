@@ -301,12 +301,14 @@ class ManifestVersionedSyncStage(BuilderStage):
     # Need to determine branch and set a local value here
     branch_parts = self._options.tracking_branch.split('/')
 
+    branch = 'master'
     if len(branch_parts) >= 2:
       branch = branch_parts[1]
-      increment = 'patch'
-    else:
-      branch = 'master'
+
+    if branch == 'master':
       increment = 'branch'
+    else:
+      increment = 'patch'
 
     manifest_manager = manifest_version.BuildSpecsManager(
        tmp_dir=os.path.join('/b', 'git.root'),
