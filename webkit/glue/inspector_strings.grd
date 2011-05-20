@@ -49,12 +49,18 @@ so we include the original license below:
     <output filename="inspectorStrings_bg.js" type="js_map_format" lang="bg" />
     <output filename="inspectorStrings_bn.js" type="js_map_format" lang="bn" />
     <output filename="inspectorStrings_ca.js" type="js_map_format" lang="ca" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="inspectorStrings_ca@valencia.js" type="js_map_format" lang="ca@valencia" />
+    </if>
     <output filename="inspectorStrings_cs.js" type="js_map_format" lang="cs" />
     <output filename="inspectorStrings_da.js" type="js_map_format" lang="da" />
     <output filename="inspectorStrings_de.js" type="js_map_format" lang="de" />
     <output filename="inspectorStrings_el.js" type="js_map_format" lang="el" />
     <output filename="inspectorStrings_en-GB.js" type="js_map_format" lang="en-GB" />
     <output filename="inspectorStrings_en-US.js" type="js_map_format" lang="en" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="inspectorStrings_eo.js" type="js_map_format" lang="eo" />
+    </if>
     <output filename="inspectorStrings_es.js" type="js_map_format" lang="es" />
     <output filename="inspectorStrings_es-419.js" type="js_map_format" lang="es-419" />
     <output filename="inspectorStrings_et.js" type="js_map_format" lang="et" />
@@ -140,6 +146,7 @@ so we include the original license below:
       <file path="../../third_party/launchpad_translations/inspector_strings_sv.xtb" lang="sv" />
       <file path="../../third_party/launchpad_translations/inspector_strings_ug.xtb" lang="ug" />
       <file path="../../third_party/launchpad_translations/inspector_strings_zh-CN.xtb" lang="zh-CN" />
+      <file path="../../third_party/launchpad_translations/inspector_strings_zh-TW.xtb" lang="zh-TW" />
     </if>
   </translations>
   <release seq="1">

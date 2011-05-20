@@ -1553,7 +1553,7 @@
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
 <translation id="6178664161104547336">Hautatu ziurtagiri bat</translation>
 <translation id="6188939051578398125">Sartu izenak edo helbideak.</translation>
-<translation id="6193618946302416945">Eskaiki itzulpena irakurtzen ez dakidan hizkuntza batean dauden orrietarako</translation>
+<translation id="6193618946302416945">Eskaini itzulpena irakurtzen ez dakidan hizkuntza batean dauden orrietarako</translation>
 <translation id="619398760000422129">Pluginak (adib. Adobe Flash Player, Quicktime, etab.)</translation>
 <translation id="6199775032047436064">Birkargatu uneko orria</translation>
 <translation id="6204930791202015665">Ikusi...</translation>
@@ -1585,7 +1585,6 @@
 <translation id="6320286250305104236">Sare-ezarpenak...</translation>
 <translation id="6322279351188361895">Gako pribatuaren irakurketak huts egin du.</translation>
 <translation id="6333049849394141510">Hautatu zer sinkronizatuko den</translation>
-<translation id="6337234675334993532">Zifraketa</translation>
 <translation id="6342069812937806050">Oraintxe bertan</translation>
 <translation id="6348657800373377022">Konbinazio-koadroa</translation>
 <translation id="6349678711452810642">Bihurtu lehenetsia</translation>
@@ -1821,7 +1820,6 @@
 <translation id="715487527529576698">Hasierako txinerako modua txinera soildua da</translation>
 <translation id="7166764805709183719">&amp;Erakutsi karpetan</translation>
 <translation id="7167486101654761064">Ireki &amp;beti mota honetako fitxategiak</translation>
-<translation id="7167621057293532233">Datu-motak</translation>
 <translation id="7168109975831002660">Gutxieneko letra-tamaina</translation>
 <translation id="7170041865419449892">Barrutitik kanpo</translation>
 <translation id="7186367841673660872">Orri hau <ph name="ORIGINAL_LANGUAGE"/>-(e)tik <ph name="LANGUAGE_LANGUAGE"/>-(e)ra itzuli da</translation>
@@ -2938,7 +2936,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="5920618722884262402">Blokeatu irainak</translation>
 <translation id="5948544841277865110">Gehitu sare pribatua</translation>
 <translation id="5950967683057767490">L2TP/IPSec + aurrepartekatutako gakoa</translation>
-<translation id="5970231080121144965">Historian gordetako URLen kate-zatien eta zati anitzen bat etortzeak gaitzen ditu.</translation>
 <translation id="6005282720244019462">Latinoamerikako teklatua</translation>
 <translation id="603890000178803545">Urt^Ots^Mar^Api^Mai^Eka^Uzt^Abu^Ira^Urr^Aza^Abe</translation>
 <translation id="6147020289383635445">Inprimatze-aurrebistak huts egin du.</translation>
@@ -2976,7 +2973,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="7420789336015002755">Karaktere baliogabea karpeta-izenean: $1</translation>
 <translation id="7424526482660971538">Hautatu neronen pasaesaldia</translation>
 <translation id="7434823369735508263">Erresuma Batuko Svorak teklatua</translation>
-<translation id="7454780465968211330">Historia-parekatze hobea omnibox-en</translation>
 <translation id="7474889694310679759">Kanadako ingeleseko teklatua</translation>
 <translation id="7516602544578411747">Nabigatzaile-leiho bakoitza profil batekin lotzen du, eta profil-aldatzailea gehitzen du goi eskuineko izkinan.  Profil bakoitzak bere laster-markak, hedapenak, aplikazioak, etab. ditu.</translation>
 <translation id="7681202901521675750">SIM txartela blokeatuta dago, sartu PIN zenbakia. Geratzen diren saialdiak: <ph name="TRIES_COUNT"/></translation>
@@ -3086,4 +3082,32 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8631271110654520730">Berreskuratze-irudia kopiatzen...</translation>
 <translation id="8816996941061600321">&amp;Fitxategi-kudeatzailea</translation>
 <translation id="938470336146445890">Instalatu erabiltzaile-ziurtagiri bat.</translation>
+<translation id="1049337682107026577">Sartu zure sinkronizazio-pasaesaldia</translation>
+<translation id="1408167824939409937">Nabigazio-barra konpaktua</translation>
+<translation id="1431303024104436728">Inprimatze-aurrebistak huts egin du, inprimatzen saiatzen ari zaren orria itxi egin delako. Egin klik &lt;a href=&quot;<ph name="INITIATOR_TAB_URL"/>&quot;&gt;hemen&lt;/a&gt; orria berriro irekitzeko eta inprimatzen berriro saiatzeko.</translation>
+<translation id="1559235587769913376">Unicode karaktereen sarbidea</translation>
+<translation id="1559528461873125649">Ez dago halako fitxategi edo direktoriorik</translation>
+<translation id="1704967159337061587">Ezkutatu tresna-barra</translation>
+<translation id="1710259589646384581">SE</translation>
+<translation id="1731589410171062430">Guztira: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
+<translation id="2565875069387440417">Hasi saioa zure Google kontuarekin</translation>
+<translation id="2580924999637585241">Guztira: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
+<translation id="3596315483920932980">Onartu datu lokalak uneko saiorako soilik ezartzea</translation>
+<translation id="4744603770635761495">Exekutagarriaren bide-izena</translation>
+<translation id="4844024059590024413">Pertsonalizatu sinkronizazio-hobespenak</translation>
+<translation id="5951823343679007761">Ez dago bateriarik</translation>
+<translation id="6878031674662373246">Gelditu kontu honen sinkronizazioa...</translation>
+<translation id="7030689690480150547">Panel honi buruz</translation>
+<translation id="7419106976560586862">Profilaren bide-izena</translation>
+<translation id="747459581954555080">Leheneratu dena</translation>
+<translation id="7552723648707145905">Nabigazio konpaktua</translation>
+<translation id="7845201717638045845">Kopiatu eta itsatsiko dituzun datuak</translation>
+<translation id="8074548357564495927">Gaitu urruneko bezeroaren plugina. Abisua: Hau garatzaileen probetarako da soilik. Garatzaileen taldean eta haien zerrenda zurian ez bazaude, gaitutako interfazean ez du ezerk funtzionatuko.</translation>
+<translation id="8082103788701842156">&quot;Ezkutatu tresna-barra&quot; aukera eransten dio fitxa-barraren testuinguru-menuari. Erabili hau tresna-barra beti erakustearen (lehenetsia) eta soilik beharrezkoa denean goitibeherako koadro modura irekitzearen aukeren artean txandakatzeko.</translation>
+<translation id="8552662731500157999">Ikonotu denak</translation>
+<translation id="8632196666436827923">Ezkutatu tresna-barra</translation>
+<translation id="8788054318005539616">Gelditu kontu honen sinkronizazioa</translation>
+<translation id="8813811964357448561">paper-orria</translation>
+<translation id="8915916167043355778">Itxi denak</translation>
+<translation id="948487459457438956">Gelditu kontu honen sinkronizazioa...</translation>
 </translationbundle>

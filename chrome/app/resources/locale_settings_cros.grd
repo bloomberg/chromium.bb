@@ -12,12 +12,18 @@
     <output filename="platform_locale_settings_bg.pak" type="data_package" lang="bg" />
     <output filename="platform_locale_settings_bn.pak" type="data_package" lang="bn" />
     <output filename="platform_locale_settings_ca.pak" type="data_package" lang="ca" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="platform_locale_settings_ca@valencia.pak" type="data_package" lang="ca@valencia" />
+    </if>
     <output filename="platform_locale_settings_cs.pak" type="data_package" lang="cs" />
     <output filename="platform_locale_settings_da.pak" type="data_package" lang="da" />
     <output filename="platform_locale_settings_de.pak" type="data_package" lang="de" />
     <output filename="platform_locale_settings_el.pak" type="data_package" lang="el" />
     <output filename="platform_locale_settings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="platform_locale_settings_en-US.pak" type="data_package" lang="en" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="platform_locale_settings_eo.pak" type="data_package" lang="eo" />
+    </if>
     <output filename="platform_locale_settings_es.pak" type="data_package" lang="es" />
     <output filename="platform_locale_settings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="platform_locale_settings_et.pak" type="data_package" lang="et" />

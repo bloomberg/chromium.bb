@@ -73,12 +73,18 @@ be available for now. -->
     <output filename="chromium_strings_bg.pak" type="data_package" lang="bg" />
     <output filename="chromium_strings_bn.pak" type="data_package" lang="bn" />
     <output filename="chromium_strings_ca.pak" type="data_package" lang="ca" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_ca@valencia.pak" type="data_package" lang="ca@valencia" />
+    </if>
     <output filename="chromium_strings_cs.pak" type="data_package" lang="cs" />
     <output filename="chromium_strings_da.pak" type="data_package" lang="da" />
     <output filename="chromium_strings_de.pak" type="data_package" lang="de" />
     <output filename="chromium_strings_el.pak" type="data_package" lang="el" />
     <output filename="chromium_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="chromium_strings_en-US.pak" type="data_package" lang="en" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_eo.pak" type="data_package" lang="eo" />
+    </if>
     <output filename="chromium_strings_es.pak" type="data_package" lang="es" />
     <output filename="chromium_strings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="chromium_strings_et.pak" type="data_package" lang="et" />
@@ -164,7 +170,9 @@ be available for now. -->
       <file path="../../third_party/launchpad_translations/chromium_strings_sr.xtb" lang="sr" />
       <file path="../../third_party/launchpad_translations/chromium_strings_sv.xtb" lang="sv" />
       <file path="../../third_party/launchpad_translations/chromium_strings_ug.xtb" lang="ug" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_vi.xtb" lang="vi" />
       <file path="../../third_party/launchpad_translations/chromium_strings_zh-CN.xtb" lang="zh-CN" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_zh-TW.xtb" lang="zh-TW" />
     </if>
   </translations>
   <release seq="1" allow_pseudo="false">

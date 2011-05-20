@@ -1540,7 +1540,6 @@
 <translation id="6320286250305104236">تور تەڭشەك…</translation>
 <translation id="6322279351188361895">شەخسىي شىفىرلىق ئاچقۇچنى ئوقۇيالمىدى.</translation>
 <translation id="6333049849394141510">قانداق قەدەمداشلاشنى تاللاش</translation>
-<translation id="6337234675334993532">شىفىرلاش</translation>
 <translation id="6342069812937806050">ھازىر</translation>
 <translation id="6348657800373377022">بىرىكمە رامكا</translation>
 <translation id="6349678711452810642">كۆڭۈلدىكىگە تەڭشە</translation>
@@ -1764,7 +1763,6 @@
 <translation id="715487527529576698">دەسلەپكى خەنزۇچە كىرگۈزۈش ئۇسۇلى ئاددىي خەنزۇچە</translation>
 <translation id="7166764805709183719">قىسقۇچتا كۆرسەت(&amp;S)</translation>
 <translation id="7167486101654761064">بۇ خىل ھۆججەتنى دائىم ئاچ(&amp;A)</translation>
-<translation id="7167621057293532233">سانلىق مەلۇمات تىپى</translation>
 <translation id="7168109975831002660">ئەڭ كىچىك خەت چوڭلۇقى</translation>
 <translation id="7170041865419449892">چېگرا ھالقىدى</translation>
 <translation id="7179921470347911571">ھازىرلا قايتا قوزغات</translation>
@@ -2909,7 +2907,6 @@ DNS مۇلازىمېتىردا ئىنكاس يوقلۇقى ياكى مۇداپى
 <translation id="5920618722884262402">قوپال سوزلەرنى توس</translation>
 <translation id="5948544841277865110">شەخسىي تور قوش</translation>
 <translation id="5950967683057767490">L2TP/IPSec + ئالدىن ھەمبەھىر ئاچقۇچ</translation>
-<translation id="5970231080121144965">زىيارەت خاتىرىسىدىكى تور ئادرېسىنىڭ تارماق تىزىقى ۋە كۆپ بۆلەك ماسلىشىشنى قوزغىتىدۇ.</translation>
 <translation id="6147020289383635445">بېسىشنى ئالدىن كۆزىتەلمىدى.</translation>
 <translation id="6198252989419008588">PIN ئۆزگەرت</translation>
 <translation id="6263541650532042179">قەدەمداشنى ئەسلىگە قايتۇر</translation>
@@ -3031,7 +3028,6 @@ DNS مۇلازىمېتىردا ئىنكاس يوقلۇقى ياكى مۇداپى
 <translation id="7024867552176634416">ئىشلىتىدىغان كۆچمە ئۈسكۈنىدىن بىرنى تاللاڭ</translation>
 <translation id="7032947513385578725">Flash قوزغاتقۇچ</translation>
 <translation id="7231224339346098802">باسىدىغان ۋاراق سانى سان بىلەن ئىپادىلىنىدۇ (1 ياكى تېخىمۇ كۆپ).</translation>
-<translation id="7454780465968211330">يېڭىلانغان omnibox تارىخىنىڭ ماس كەلگىنى</translation>
 <translation id="7531238562312180404"><ph name="PRODUCT_NAME"/> كېڭەيتىلمىلەرنىڭ شەخسىي سانلىق مەلۇماتلىرىڭىزنى بىر تەرەپ قىلىش ئۇسۇلىنى تىزگىنلىمىگەنلىكتىن، ھەممە كېڭەيتىلمىلەر يوشۇرۇن كۆزنەكتە چەكلەندى.  تۆۋەندىكى ئۇلانمىدىن ھەر قايسى كېڭەيتىلمىلەرنى قوزغىتالايسىز:
         <ph name="BEGIN_LINK"/>كېڭەيتىلمە باشقۇرغۇچ<ph name="END_LINK"/></translation>
 <translation id="774576312655125744"><ph name="WEBSITE_1"/>، <ph name="WEBSITE_2"/> ۋە باشقا <ph name="NUMBER_OF_OTHER_WEBSITES"/> تور بېكەتتىكى سانلىق مەلۇماتىڭىز</translation>
@@ -3048,4 +3044,32 @@ DNS مۇلازىمېتىردا ئىنكاس يوقلۇقى ياكى مۇداپى
 <translation id="8816996941061600321">ھۆججەت باشقۇرغۇچ(&amp;F)</translation>
 <translation id="8987670145726065238">دىققەت بۇ ھۆججەت زىيانلىق. راستلا داۋاملاشتۇرامسىز؟</translation>
 <translation id="938470336146445890">ئىشلەتكۈچى گۇۋاھنامىسىدىن بىرنى ئورنىتىڭ.</translation>
+<translation id="1049337682107026577">قەدەمداشلايدىغان ئىمنى كىرگۈزۈڭ</translation>
+<translation id="1408167824939409937">ئىخچام يولباشچى بالداق</translation>
+<translation id="1431303024104436728">بېسىشنى ئالدىن كۆزىتەلمىدى سەۋەبى سىز بېسىشنى سىنىماقچى بولغان بەت يېپىلغان. &lt;a href=&quot;<ph name="INITIATOR_TAB_URL"/>&quot;&gt;بۇ جاي&lt;/a&gt;نى چېكىپ بەتنى قايتا ئېچىپ ئاندىن بېسىشنى قايتا سىناڭ.</translation>
+<translation id="1559235587769913376">يۇنىكود ھەرپ كىرگۈزۈڭ</translation>
+<translation id="1559528461873125649">بۇنداق ھۆججەت ياكى مۇندەرىجە يوق</translation>
+<translation id="1704967159337061587">قورال بالداقنى يوشۇر</translation>
+<translation id="1710259589646384581">OS</translation>
+<translation id="1731589410171062430">جەمئى: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
+<translation id="2565875069387440417">گۇگىل ھېساباتىڭىزدا تىزىمغا كىرىڭ</translation>
+<translation id="2580924999637585241">جەمئى: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
+<translation id="3596315483920932980">نۆۋەتتىكى ئەڭگىمەنىڭلا يەرلىك سانلىق مەلۇماتنى تەڭشىشىگە يول قويىدۇ</translation>
+<translation id="4744603770635761495">ئىجراچان يول</translation>
+<translation id="4844024059590024413">ئۆزلەشتۈرگەن قەدەمداش مايىللىقى</translation>
+<translation id="5951823343679007761">توكدان يوق</translation>
+<translation id="6878031674662373246">بۇ ھېساباتنى قەدەمداشلاشنى توختىتىۋاتىدۇ…</translation>
+<translation id="7030689690480150547">بۇ تاختا ھەققىدە</translation>
+<translation id="7419106976560586862">سەپلىمە ھۆججەت يولى</translation>
+<translation id="747459581954555080">ھەممىنى ئەسلىگە كەلتۈر</translation>
+<translation id="7552723648707145905">ئىخچام يولباشچى</translation>
+<translation id="7845201717638045845">سىز كۆچۈرۈپ چاپلايدىغان سانلىق مەلۇمات</translation>
+<translation id="8074548357564495927">يىراقتىكى ئىقتىدار خېرىدار قىستۇرمىسىنى قوزغىتىدۇ. ئاگاھلاندۇرۇش: نۆۋەتتە ئىجادكارلارنىڭ سىنىشى ئۈچۈنلا تەمىنلىنىدۇ. ئىجادكارلار قوشۇنىدا بولۇپ ئاق تىزىملىكتە بولمىسىڭىز ئارايۈزدە قوزغاتقان ئىقتىدار ئىشلىمەيدۇ.</translation>
+<translation id="8082103788701842156">بەتكۈچنىڭ تىل مۇھىت تىزىملىكىگە «قورال بالداقنى يوشۇر» تىزىملىك تۈرىنى قوشىدۇ. بۇ ئىقتىدارنى ئىشلىتىپ ھەمىشە قورال بالداقنى كۆرسەت(كۆڭۈلدىكى) بىلەن زۆرۈر بولغاندا تارتما رامكىدا ئاچ ئوتتۇرىسىدا ئالماشتۇرغىلى بولىدۇ.</translation>
+<translation id="8552662731500157999">ھەممىنى كىچىكلەت</translation>
+<translation id="8632196666436827923">قورال بالداقنى يوشۇر</translation>
+<translation id="8788054318005539616">بۇ ھېساباتنى قەدەمداشلاشنى توختىتىدۇ</translation>
+<translation id="8813811964357448561">ۋاراق قەغەز</translation>
+<translation id="8915916167043355778">ھەممىنى ياپ</translation>
+<translation id="948487459457438956">بۇ ھېساباتنى قەدەمداشلاشنى توختىتىدۇ…</translation>
 </translationbundle>

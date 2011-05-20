@@ -192,7 +192,7 @@
 <translation id="166278006618318542">Algoritmo da chave pública do titular</translation>
 <translation id="1664314758578115406">Engadir páxina...</translation>
 <translation id="1664712100580477121">Está seguro de que quere gravar a imaxe ao seguinte dispositivo?:</translation>
-<translation id="1665770420914915777">Utilizar a páxina Nova lapela</translation>
+<translation id="1665770420914915777">Utilizar a páxina «Nova lapela»</translation>
 <translation id="1666788816626221136">Ten certificados no ficheiro que non corresponden a ningunha outra categoría:</translation>
 <translation id="1674989413181946727">Configuración de SSL en todo o equipo:</translation>
 <translation id="1676388805288306495">Cambia o tipo de letra e o idioma predeterminados para as páxinas web.</translation>
@@ -446,7 +446,7 @@
 <translation id="2501173422421700905">Certificado en espera</translation>
 <translation id="2501278716633472235">Retroceder</translation>
 <translation id="2502105862509471425">Engadir unha nova tarxeta de crédito...</translation>
-<translation id="2503522102815150840">O navegador quebrou... foi e estourou</translation>
+<translation id="2503522102815150840">Produciuse un fallo do navegador...</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> de <ph name="TOTAL_SIZE"/></translation>
 <translation id="250599269244456932">Executar automaticamente (recomendado)</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -472,7 +472,7 @@
 <translation id="2574102660421949343">As cookies de <ph name="DOMAIN"/> están permitidas.</translation>
 <translation id="2580170710466019930">Agarde mentres <ph name="PRODUCT_NAME"/> instala as últimas actualizacións do sistema.</translation>
 <translation id="2587203970400270934">Código de operador:</translation>
-<translation id="2592884116796016067">Unha parte desta páxina (Operador do web HTML) quebrou, polo que é posíbel que non funcione correctamente.</translation>
+<translation id="2592884116796016067">Unha parte desta páxina (Operador do web HTML) está danada, polo que é posíbel que non funcione correctamente.</translation>
 <translation id="2600306978737826651">Produciuse un fallo na descarga da imaxe, a gravación foi interrompida!</translation>
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> foi desactivada. Se detén a sincronización dos seus marcadores, pode reactivala na páxina de extensións, accesíbel a través do menú de ferramentas.</translation>
 <translation id="2607101320794533334">Información do titular da chave pública</translation>
@@ -697,7 +697,7 @@
 <translation id="3384773155383850738">Número máximo de suxestións</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="3388026114049080752">As lapelas e a actividade de navegación</translation>
-<translation id="3391060940042023865">O seguinte complemento quebrou: <ph name="PLUGIN_NAME"/></translation>
+<translation id="3391060940042023865">O seguinte complemento pechouse de forma inesperada: <ph name="PLUGIN_NAME"/></translation>
 <translation id="3398951731874728419">Inf. de erro:</translation>
 <translation id="340485819826776184">Usar un servizo de predición para axudarlle a completar as buscas e os enderezos introducidos na barra de enderezos</translation>
 <translation id="3412265149091626468">Saltar á selección</translation>
@@ -852,7 +852,7 @@
 <translation id="3954582159466790312">Activar &amp;son</translation>
 <translation id="3966072572894326936">Seleccionar outro cartafol...</translation>
 <translation id="3968739731834770921">Kana</translation>
-<translation id="3978267865113951599">(quebrou)</translation>
+<translation id="3978267865113951599">(estragado)</translation>
 <translation id="3979748722126423326">Activar <ph name="NETWORKDEVICE"/></translation>
 <translation id="3981760180856053153">O tipo de gardado introducido non é válido.</translation>
 <translation id="3984413272403535372">Produciuse un erro ao asinar a extensión.</translation>
@@ -942,7 +942,7 @@
 <translation id="4215444178533108414">Rematou a eliminación de elementos</translation>
 <translation id="421577943854572179">incrustado en calquera outro sitio</translation>
 <translation id="4216499942524365685">Os detalles da súa conta de inicio de sesión están obsoletos. Prema para volver a introducir o contrasinal.</translation>
-<translation id="4220128509585149162">Quebras</translation>
+<translation id="4220128509585149162">Peches inesperados</translation>
 <translation id="4222982218026733335">Certificado do servidor non válido</translation>
 <translation id="4224803122026931301">Excepcións de localizacións</translation>
 <translation id="422929353996972043">asdfzxcv89</translation>
@@ -1582,7 +1582,6 @@
 <translation id="6320286250305104236">Configuración de rede...</translation>
 <translation id="6322279351188361895">Produciuse un erro ao ler a chave privada.</translation>
 <translation id="6333049849394141510">Escolla o que desexa sincronizar</translation>
-<translation id="6337234675334993532">Cifrado</translation>
 <translation id="6342069812937806050">Agora mesmo</translation>
 <translation id="6348657800373377022">Selector</translation>
 <translation id="6349678711452810642">Facer predeterminado</translation>
@@ -1818,7 +1817,6 @@
 <translation id="715487527529576698">O modo inicial para o chinés é o chinés simplificado.</translation>
 <translation id="7166764805709183719">Mo&amp;strar nun cartafol</translation>
 <translation id="7167486101654761064">&amp;Abrir sempre ficheiros deste tipo</translation>
-<translation id="7167621057293532233">Tipos de datos</translation>
 <translation id="7168109975831002660">Tamaño mínimo de letra</translation>
 <translation id="7170041865419449892">Fóra de rango</translation>
 <translation id="7186367841673660872">Esta páxina foi traducida do <ph name="ORIGINAL_LANGUAGE"/> ao <ph name="LANGUAGE_LANGUAGE"/>.</translation>
@@ -2383,7 +2381,7 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="8974161578568356045">Detectar automaticamente</translation>
 <translation id="8977410484919641907">Sincronizado...</translation>
 <translation id="8986267729801483565">Localización da descarga:</translation>
-<translation id="8986494364107987395">Enviar automaticamente estatísticas de uso e informes de quebras a Google</translation>
+<translation id="8986494364107987395">Enviar automaticamente estatísticas de uso e informes de erros a Google</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="899403249577094719">URL base de certificado de Netscape</translation>
 <translation id="9001035236599590379">Tipo MIME</translation>
@@ -2567,11 +2565,11 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="2799223571221894425">Volver iniciar</translation>
 <translation id="2900139581179749587">Voz non recoñecida.</translation>
 <translation id="3174168572213147020">Illa</translation>
-<translation id="3220586366024592812">O proceso do conectador <ph name="CLOUD_PRINT_NAME"/> quebrou. Reiniciar?</translation>
+<translation id="3220586366024592812">O proceso do conectador <ph name="CLOUD_PRINT_NAME"/> estragouse. Reiniciar?</translation>
 <translation id="3423858849633684918">Volva a iniciar <ph name="PRODUCT_NAME"/></translation>
 <translation id="354211537509721945">As actualizacións foron desactivadas polo administrador</translation>
 <translation id="3753317529742723206">Quere empregar <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) para manexar as ligazóns <ph name="PROTOCOL"/>:// no canto de <ph name="REPLACED_HANDLER_TITLE"/> a partir de agora?</translation>
-<translation id="3759461132968374835">Recentemente non se informou de quebras. As quebras que ocorren cando está desactivado o informe de quebras non aparecerán aquí.</translation>
+<translation id="3759461132968374835">Recentemente non se informou de quebras. As quebras que ocorres cando está desactivado o informe de quebras non aparecerán aquí.</translation>
 <translation id="3885155851504623709">Parroquia</translation>
 <translation id="4051923669149193910">Xa se está a empregar <ph name="HANDLER_TITLE"/> para manexar as ligazóns <ph name="PROTOCOL"/>://.</translation>
 <translation id="4088820693488683766">Opcións de busca</translation>
@@ -2710,7 +2708,7 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="4419409365248380979">Permitirlle sempre a <ph name="HOST"/> estabelecer cookies</translation>
 <translation id="4480627574828695486">Desconectar esta conta...</translation>
 <translation id="4539401194496451708">Usando o perfil de Chrome <ph name="USER_EMAIL_ADDRESS"/>. Sincronizado por última vez o: <ph name="LAST_SYNC_TIME"/></translation>
-<translation id="4665674675433053715">Páxina Nova lapela experimental</translation>
+<translation id="4665674675433053715">Páxina «Nova lapela» experimental</translation>
 <translation id="5105855035535475848">Fixar lapelas</translation>
 <translation id="5453029940327926427">Pechar lapelas</translation>
 <translation id="5542132724887566711">Perfil</translation>
@@ -2723,7 +2721,7 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="7064842770504520784">Personalizar a configuración da sincronización</translation>
 <translation id="7268365133021434339">Pechar lapelas</translation>
 <translation id="7452120598248906474">Tipo de letra de largo fixo</translation>
-<translation id="7747704580171477003">Activa un rediseño  en modo desenvolvemento da páxina de nova lapela</translation>
+<translation id="7747704580171477003">Activa un redeseño  en modo desenvolvemento da páxina de «Nova lapela»</translation>
 <translation id="780617032715125782">Crear novo perfil</translation>
 <translation id="8072988827236813198">Fixar lapelas</translation>
 <translation id="8205333955675906842">Tipo de letra Sans-serif</translation>
@@ -2962,7 +2960,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="5920618722884262402">Bloquear palabras ofensivas</translation>
 <translation id="5948544841277865110">Engadir rede privada</translation>
 <translation id="5950967683057767490">L2TP/IPSec + chave precompartida</translation>
-<translation id="5970231080121144965">Activar subcadeas e a congruencia de múltiples fragmentos dentro dos enderezos URL do historial.</translation>
 <translation id="6147020289383635445">Non foi posíbel obter a vista previa de impresión</translation>
 <translation id="6198252989419008588">Cambiar o PIN</translation>
 <translation id="6263541650532042179">restabelecer a sincronización</translation>
@@ -2996,7 +2993,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="7323391064335160098">Compatibilidade VPN</translation>
 <translation id="7424526482660971538">Escoller a miña propia frase de paso</translation>
 <translation id="7434823369735508263">Teclado Dvorak UK</translation>
-<translation id="7454780465968211330">Mellor coincidencia do historial na caixa multifunción</translation>
 <translation id="7516602544578411747">Asocia cada xanela do navegador cun perfil, e  engade un selector de perfil no canto superior dereito. Cada perfil ten os seus propios marcadores, extensións, aplicativos, etc.</translation>
 <translation id="7681202901521675750">A tarxeta SIM está bloqueada, introduza o PIN. Intentos restantes: <ph name="TRIES_COUNT"/></translation>
 <translation id="7723779034587221017">Perdeuse a conexión co servizo de políticas. Reinicie o dispositivo ou póñase en contacto co seu representante de asistencia técnica.</translation>
@@ -3088,4 +3084,32 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="8631271110654520730">Copiando a imaxe de recuperación...</translation>
 <translation id="8816996941061600321">Administrador de &amp;ficheiros</translation>
 <translation id="938470336146445890">Instale o certificado do usuario</translation>
+<translation id="1049337682107026577">Introduza a súa frase de paso de sincronozación</translation>
+<translation id="1408167824939409937">Barra de navegación compacta</translation>
+<translation id="1431303024104436728">Non foi posibel obter a vista previa xa que a páxina que está tentando imprimir foi pechada. Prema &lt;a href=&quot;<ph name="INITIATOR_TAB_URL"/>&quot;&gt;aquí&lt;/a&gt; para volver a abrir a páxina e tente imprimir de novo.</translation>
+<translation id="1559235587769913376">Entrada de caracteres Unicode</translation>
+<translation id="1559528461873125649">Non existe ese ficheiro ou cartafol</translation>
+<translation id="1704967159337061587">Agochar a barra de ferramentas</translation>
+<translation id="1710259589646384581">SO</translation>
+<translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
+<translation id="2565875069387440417">Inicie sesión coa súa conta de Google</translation>
+<translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
+<translation id="3596315483920932980">Permitir o estabelecemento de datos locais para a sesión actual</translation>
+<translation id="4744603770635761495">Ruta ao executábel</translation>
+<translation id="4844024059590024413">Personalice as súas preferencias de sincronización</translation>
+<translation id="5951823343679007761">Sen batería</translation>
+<translation id="6878031674662373246">Deter a sincronización desta conta...</translation>
+<translation id="7030689690480150547">Sobre este panel</translation>
+<translation id="7419106976560586862">Ruta ao perfil</translation>
+<translation id="747459581954555080">Restaurar todos</translation>
+<translation id="7552723648707145905">Navegación compacta</translation>
+<translation id="7845201717638045845">Copiar e pegar os sus datos</translation>
+<translation id="8074548357564495927">Permitir o complemento de cliente remoto. Aviso: Na actualidade isto utilizase unicamente para probas dos desenvolvedores. A non ser que vostede estea no equipo de desenvolvemento e na lista branca, nada do que estea activado na IU funcionará.</translation>
+<translation id="8082103788701842156">Engade unha entrada «Agochar a barra de ferramentas» ao menú contextual da tira de lapelas. Utilice esta opción para alternar entre mostrar sempre a barra de ferramentas (predeterminado) e abrir só co menú desagregábel, segundo lle sexa necesario.</translation>
+<translation id="8552662731500157999">Minimizar todo</translation>
+<translation id="8632196666436827923">Agochar a barra de ferramentas</translation>
+<translation id="8788054318005539616">Deter a sincronización desta conta</translation>
+<translation id="8813811964357448561">folla de papel</translation>
+<translation id="8915916167043355778">Pechar todo</translation>
+<translation id="948487459457438956">Deter a sincronización desta conta...</translation>
 </translationbundle>

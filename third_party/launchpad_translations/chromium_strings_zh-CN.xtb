@@ -101,4 +101,7 @@
 <translation id="2886012850691518054">可选: 通过将使用统计与崩溃报告自动发送给 Google 来帮助改进 Chromium。</translation>
 <translation id="378917192836375108">Chromium 允许您点击网页中的电话号码调用 Skype 拨打!</translation>
 <translation id="5994107996638824097">抱歉! Chromium 未包含 Google Chrome 内置的显示打印预览所需的 PDF 查看器。</translation>
+<translation id="1006216960596407529">是否确定要退出 Chromium? (可在 <ph name="ADVANCED_OPTIONS_TAB_TITLE"/> 切换本设置)</translation>
+<translation id="3296368748942286671">当关闭 Chromium 时继续运行后台应用程序</translation>
+<translation id="872034308864968620">允许 Chromium 在后台运行</translation>
 </translationbundle>
