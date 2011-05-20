@@ -4605,6 +4605,19 @@
    fun:_ZN4base33DefaultRefCountedThreadSafeTraitsIN8chromeos12OwnerManagerEE8DestructEPKS2_
    fun:_ZNK4base20RefCountedThreadSafeIN8chromeos12OwnerManagerENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE7ReleaseEv
 }
+{
+   bug_83343
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13ThreadWatcher13StartWatchingERKN13BrowserThread2IDERKSsRKN4base9TimeDeltaES9_
+   fun:_ZN17ThreadWatcherList16StartWatchingAllEv
+   fun:_Z18DispatchToFunctionIPFvvEEvT_RK6Tuple0
+   fun:_ZN16RunnableFunctionIPFvvE6Tuple0E3RunEv
+   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
+   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
