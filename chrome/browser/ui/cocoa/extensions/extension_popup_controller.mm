@@ -207,7 +207,7 @@ class DevtoolsNotificationBridge : public NotificationObserver {
   if (!manager)
     return nil;
 
-  ExtensionHost* host = manager->CreatePopup(url, browser);
+  ExtensionHost* host = manager->CreatePopupHost(url, browser);
   DCHECK(host);
   if (!host)
     return nil;
