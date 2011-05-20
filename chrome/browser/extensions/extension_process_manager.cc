@@ -29,10 +29,10 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
  public:
   explicit IncognitoExtensionProcessManager(Profile* profile);
   virtual ~IncognitoExtensionProcessManager() {}
-  virtual ExtensionHost* CreateView(const Extension* extension,
-                                    const GURL& url,
-                                    Browser* browser,
-                                    ViewType::Type view_type);
+  virtual ExtensionHost* CreateViewHost(const Extension* extension,
+                                        const GURL& url,
+                                        Browser* browser,
+                                        ViewType::Type view_type) OVERRIDE;
   virtual void CreateBackgroundHost(const Extension* extension,
                                     const GURL& url);
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
@@ -109,10 +109,11 @@ ExtensionProcessManager::~ExtensionProcessManager() {
   DCHECK(background_hosts_.empty());
 }
 
-ExtensionHost* ExtensionProcessManager::CreateView(const Extension* extension,
-                                                   const GURL& url,
-                                                   Browser* browser,
-                                                   ViewType::Type view_type) {
+ExtensionHost* ExtensionProcessManager::CreateViewHost(
+    const Extension* extension,
+    const GURL& url,
+    Browser* browser,
+    ViewType::Type view_type) {
   DCHECK(extension);
   // A NULL browser may only be given for pop-up views.
   DCHECK(browser || (!browser && view_type == ViewType::EXTENSION_POPUP));
@@ -128,9 +129,8 @@ ExtensionHost* ExtensionProcessManager::CreateView(const Extension* extension,
   return host;
 }
 
-ExtensionHost* ExtensionProcessManager::CreateView(const GURL& url,
-                                                   Browser* browser,
-                                                   ViewType::Type view_type) {
+ExtensionHost* ExtensionProcessManager::CreateViewHost(
+    const GURL& url, Browser* browser, ViewType::Type view_type) {
   // A NULL browser may only be given for pop-up views.
   DCHECK(browser || (!browser && view_type == ViewType::EXTENSION_POPUP));
   ExtensionService* service =
@@ -138,30 +138,34 @@ ExtensionHost* ExtensionProcessManager::CreateView(const GURL& url,
   if (service) {
     const Extension* extension = service->GetExtensionByURL(url);
     if (extension)
-      return CreateView(extension, url, browser, view_type);
+      return CreateViewHost(extension, url, browser, view_type);
   }
   return NULL;
 }
 
-ExtensionHost* ExtensionProcessManager::CreatePopup(const Extension* extension,
-                                                    const GURL& url,
-                                                    Browser* browser) {
-  return CreateView(extension, url, browser, ViewType::EXTENSION_POPUP);
-}
-
-ExtensionHost* ExtensionProcessManager::CreatePopup(const GURL& url,
-                                                    Browser* browser) {
-  return CreateView(url, browser, ViewType::EXTENSION_POPUP);
-}
-
-ExtensionHost* ExtensionProcessManager::CreateInfobar(
+ExtensionHost* ExtensionProcessManager::CreatePopupHost(
     const Extension* extension, const GURL& url, Browser* browser) {
-  return CreateView(extension, url, browser, ViewType::EXTENSION_INFOBAR);
+  return CreateViewHost(extension, url, browser, ViewType::EXTENSION_POPUP);
 }
 
-ExtensionHost* ExtensionProcessManager::CreateInfobar(const GURL& url,
-                                                      Browser* browser) {
-  return CreateView(url, browser, ViewType::EXTENSION_INFOBAR);
+ExtensionHost* ExtensionProcessManager::CreatePopupHost(
+    const GURL& url, Browser* browser) {
+  return CreateViewHost(url, browser, ViewType::EXTENSION_POPUP);
+}
+
+ExtensionHost* ExtensionProcessManager::CreateDialogHost(
+    const GURL& url, Browser* browser) {
+  return CreateViewHost(url, browser, ViewType::EXTENSION_DIALOG);
+}
+
+ExtensionHost* ExtensionProcessManager::CreateInfobarHost(
+    const Extension* extension, const GURL& url, Browser* browser) {
+  return CreateViewHost(extension, url, browser, ViewType::EXTENSION_INFOBAR);
+}
+
+ExtensionHost* ExtensionProcessManager::CreateInfobarHost(
+    const GURL& url, Browser* browser) {
+  return CreateViewHost(url, browser, ViewType::EXTENSION_INFOBAR);
 }
 
 void ExtensionProcessManager::CreateBackgroundHost(
@@ -365,15 +369,15 @@ IncognitoExtensionProcessManager::IncognitoExtensionProcessManager(
                  NotificationService::AllSources());
 }
 
-ExtensionHost* IncognitoExtensionProcessManager::CreateView(
+ExtensionHost* IncognitoExtensionProcessManager::CreateViewHost(
     const Extension* extension,
     const GURL& url,
     Browser* browser,
     ViewType::Type view_type) {
   if (extension->incognito_split_mode()) {
     if (IsIncognitoEnabled(extension)) {
-      return ExtensionProcessManager::CreateView(extension, url,
-                                                 browser, view_type);
+      return ExtensionProcessManager::CreateViewHost(extension, url,
+                                                     browser, view_type);
     } else {
       NOTREACHED() <<
           "We shouldn't be trying to create an incognito extension view unless "
@@ -381,7 +385,8 @@ ExtensionHost* IncognitoExtensionProcessManager::CreateView(
       return NULL;
     }
   } else {
-    return original_manager_->CreateView(extension, url, browser, view_type);
+    return original_manager_->CreateViewHost(extension, url,
+                                             browser, view_type);
   }
 }
 

@@ -17,7 +17,6 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 class GURL;
-class HtmlDialogView;
 
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
 class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
@@ -85,29 +84,23 @@ class FileDialogFunction
   class Callback {
    public:
     Callback(SelectFileDialog::Listener* listener,
-             HtmlDialogView* dialog,
              void* params)
         : listener_(listener),
-          dialog_(dialog),
           params_(params) {
     }
     SelectFileDialog::Listener* listener() const { return listener_; }
-    HtmlDialogView* dialog() const { return dialog_; }
     void* params() const { return params_; }
     bool IsNull() const { return listener_ == NULL; }
 
     static void Add(int32 tab_id,
                     SelectFileDialog::Listener* listener,
-                    HtmlDialogView* dialog,
                     void* params);
     static void Remove(int32 tab_id);
     static const Callback& Find(int32 tab_id);
     static const Callback& null() { return null_; }
 
    private:
-
     SelectFileDialog::Listener* listener_;
-    HtmlDialogView* dialog_;
     void* params_;
 
     // statics.
@@ -132,9 +125,6 @@ class FileDialogFunction
 
   // Get the callback for the hosting tab.
   const Callback& GetCallback() const;
-
-  // Closes the dialog window containing the file dialog HtmlDialogView.
-  void CloseDialog(HtmlDialogView* dialog);
 
  private:
   // Figure out the tab_id of the hosting tab.

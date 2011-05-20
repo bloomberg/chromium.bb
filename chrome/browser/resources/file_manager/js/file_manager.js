@@ -1871,6 +1871,11 @@ FileManager.prototype = {
         }
         break;
 
+      case 27:  // Escape => Cancel dialog.
+        event.preventDefault();
+        this.onCancel_();
+        break;
+
       case 32:  // Ctrl-Space => New Folder.
         if (this.newFolderButton_.style.display != 'none' && event.ctrlKey) {
           event.preventDefault();
@@ -1902,6 +1907,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onCancel_ = function(event) {
     chrome.fileBrowserPrivate.cancelDialog();
+    window.close();
   };
 
   /**
@@ -1927,7 +1933,7 @@ FileManager.prototype = {
 
       chrome.fileBrowserPrivate.selectFile(currentDirUrl + encodeURI(filename),
                                            0);
-      // Window closed by above call.
+      window.close();
       return;
     }
 
@@ -1953,7 +1959,7 @@ FileManager.prototype = {
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       chrome.fileBrowserPrivate.selectFiles(ary);
-      // Window closed by above call.
+      window.close();
       return;
     }
 
@@ -1977,7 +1983,7 @@ FileManager.prototype = {
     }
 
     chrome.fileBrowserPrivate.selectFile(ary[0], 0);
-    // Window closed by above call.
+    window.close();
   };
 
 })();

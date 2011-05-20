@@ -163,7 +163,7 @@ void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
   if (!manager)
     return;
 
-  ExtensionHost* host = manager->CreatePopup(url, browser);
+  ExtensionHost* host = manager->CreatePopupHost(url, browser);
   // This object will delete itself when the bubble is closed.
   new ExtensionPopupGtk(browser, host, anchor, inspect);
 }

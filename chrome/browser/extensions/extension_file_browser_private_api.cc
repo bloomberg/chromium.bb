@@ -24,7 +24,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -765,7 +764,7 @@ FileDialogFunction::~FileDialogFunction() {
 
 // static
 FileDialogFunction::Callback
-FileDialogFunction::Callback::null_(NULL, NULL, NULL);
+FileDialogFunction::Callback::null_(NULL, NULL);
 
 // static
 FileDialogFunction::Callback::Map FileDialogFunction::Callback::map_;
@@ -773,10 +772,9 @@ FileDialogFunction::Callback::Map FileDialogFunction::Callback::map_;
 // static
 void FileDialogFunction::Callback::Add(int32 tab_id,
                                      SelectFileDialog::Listener* listener,
-                                     HtmlDialogView* dialog,
                                      void* params) {
   if (map_.find(tab_id) == map_.end()) {
-    map_.insert(std::make_pair(tab_id, Callback(listener, dialog, params)));
+    map_.insert(std::make_pair(tab_id, Callback(listener, params)));
   } else {
     DLOG_ASSERT("FileDialogFunction::AddCallback tab_id already present");
   }
@@ -796,23 +794,21 @@ FileDialogFunction::Callback::Find(int32 tab_id) {
 
 
 int32 FileDialogFunction::GetTabId() const {
-  return dispatcher()->delegate()->GetAssociatedTabContents()->
-    controller().session_id().id();
+  int32 tab_id = 0;
+  // TODO(jamescook):  This is going to fail when we switch to tab-modal
+  // dialogs.  Figure out a way to find which SelectFileDialog::Listener
+  // to call from inside these extension FileDialogFunctions.
+  Browser* browser = const_cast<FileDialogFunction*>(this)->GetCurrentBrowser();
+  if (browser) {
+    TabContents* contents = browser->GetSelectedTabContents();
+    if (contents)
+      tab_id = ExtensionTabUtil::GetTabId(contents);
+  }
+  return tab_id;
 }
 
 const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
-  if (!dispatcher() || !dispatcher()->delegate() ||
-      !dispatcher()->delegate()->GetAssociatedTabContents()) {
-    return Callback::null();
-  }
   return Callback::Find(GetTabId());
-}
-
-void FileDialogFunction::CloseDialog(HtmlDialogView* dialog) {
-  DCHECK(dialog);
-  TabContents* contents = dispatcher()->delegate()->GetAssociatedTabContents();
-  if (contents)
-    dialog->CloseContents(contents);
 }
 
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,
@@ -898,9 +894,6 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
-    // Must do this before callback, as the callback may delete listeners
-    // waiting for window close.
-    CloseDialog(callback.dialog());
     callback.listener()->FileSelected(files[0],
                                       index,
                                       callback.params());
@@ -997,9 +990,6 @@ void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
-    // Must do this before callback, as the callback may delete listeners
-    // waiting for window close.
-    CloseDialog(callback.dialog());
     callback.listener()->MultiFilesSelected(files, callback.params());
   }
   SendResponse(true);
@@ -1009,9 +999,6 @@ bool CancelFileDialogFunction::RunImpl() {
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
-    // Must do this before callback, as the callback may delete listeners
-    // waiting for window close.
-    CloseDialog(callback.dialog());
     callback.listener()->FileSelectionCanceled(callback.params());
   }
   SendResponse(true);

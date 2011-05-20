@@ -186,7 +186,7 @@ ExtensionPopup* ExtensionPopup::Show(
   if (!manager)
     return NULL;
 
-  ExtensionHost* host = manager->CreatePopup(url, browser);
+  ExtensionHost* host = manager->CreatePopupHost(url, browser);
   views::Widget* frame = BrowserView::GetBrowserViewForNativeWindow(
       browser->window()->GetNativeHandle())->GetWidget();
   ExtensionPopup* popup = new ExtensionPopup(host, frame, relative_to,

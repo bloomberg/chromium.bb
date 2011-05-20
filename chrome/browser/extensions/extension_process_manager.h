@@ -35,27 +35,28 @@ class ExtensionProcessManager : public NotificationObserver {
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
-  virtual ExtensionHost* CreateView(const Extension* extension,
-                            const GURL& url,
-                            Browser* browser,
-                            ViewType::Type view_type);
-  ExtensionHost* CreateView(const GURL& url,
-                            Browser* browser,
-                            ViewType::Type view_type);
-  ExtensionHost* CreatePopup(const Extension* extension,
-                             const GURL& url,
-                             Browser* browser);
-  ExtensionHost* CreatePopup(const GURL& url, Browser* browser);
-  ExtensionHost* CreateInfobar(const Extension* extension,
-                               const GURL& url,
-                               Browser* browser);
-  ExtensionHost* CreateInfobar(const GURL& url,
-                               Browser* browser);
+  virtual ExtensionHost* CreateViewHost(const Extension* extension,
+                                        const GURL& url,
+                                        Browser* browser,
+                                        ViewType::Type view_type);
+  ExtensionHost* CreateViewHost(const GURL& url,
+                                Browser* browser,
+                                ViewType::Type view_type);
+  ExtensionHost* CreatePopupHost(const Extension* extension,
+                                 const GURL& url,
+                                 Browser* browser);
+  ExtensionHost* CreatePopupHost(const GURL& url, Browser* browser);
+  ExtensionHost* CreateDialogHost(const GURL& url, Browser* browser);
+  ExtensionHost* CreateInfobarHost(const Extension* extension,
+                                   const GURL& url,
+                                   Browser* browser);
+  ExtensionHost* CreateInfobarHost(const GURL& url,
+                                   Browser* browser);
 
   // Open the extension's options page.
   void OpenOptionsPage(const Extension* extension, Browser* browser);
 
-  // Creates a new UI-less extension instance.  Like CreateView, but not
+  // Creates a new UI-less extension instance.  Like CreateViewHost, but not
   // displayed anywhere.
   virtual void CreateBackgroundHost(const Extension* extension,
                                     const GURL& url);

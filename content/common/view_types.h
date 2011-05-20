@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,16 +21,18 @@ class ViewType {
     DEV_TOOLS_UI,
     INTERSTITIAL_PAGE,
     NOTIFICATION,
+    EXTENSION_DIALOG,
   };
 
   // Constant strings corresponding to the Type enumeration values.  Used
   // when converting JS arguments.
-  static const char* kTabContents;
-  static const char* kBackgroundPage;
-  static const char* kPopup;
-  static const char* kInfobar;
-  static const char* kNotification;
-  static const char* kAll;
+  static const char* const kTabContents;
+  static const char* const kBackgroundPage;
+  static const char* const kPopup;
+  static const char* const kInfobar;
+  static const char* const kNotification;
+  static const char* const kExtensionDialog;
+  static const char* const kAll;
 
  private:
   // This class is for scoping only, so you shouldn't create an instance of it.

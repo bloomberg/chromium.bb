@@ -43,10 +43,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   virtual bool IsRunning(gfx::NativeWindow parent_window) const;
   virtual void ListenerDestroyed();
 
-  virtual void set_browser_mode(bool value) {
-    browser_mode_ = value;
-  }
-
  protected:
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
@@ -153,9 +149,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // The set of all FileBrowseDelegate that we are currently running.
   std::set<FileBrowseDelegate*> delegates_;
 
-  // True when opening in browser, otherwise in OOBE/login mode.
-  bool browser_mode_;
-
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
@@ -167,8 +160,7 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
 }
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : SelectFileDialog(listener),
-      browser_mode_(true) {
+    : SelectFileDialog(listener) {
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
@@ -224,21 +216,11 @@ void SelectFileDialogImpl::SelectFileImpl(
       default_extension, owning_window, params);
   delegates_.insert(file_browse_delegate);
 
-  if (browser_mode_) {
-    Browser* browser = BrowserList::GetLastActive();
-    // As SelectFile may be invoked after a delay, it is entirely possible for
-    // it be invoked when no browser is around. Silently ignore this case.
-    if (browser)
-      browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &SelectFileDialogImpl::OpenHtmlDialog,
-                          owning_window,
-                          file_browse_delegate));
-  }
+  Browser* browser = BrowserList::GetLastActive();
+  // As SelectFile may be invoked after a delay, it is entirely possible for
+  // it be invoked when no browser is around. Silently ignore this case.
+  if (browser)
+    browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
 }
 
 void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,

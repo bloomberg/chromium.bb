@@ -864,7 +864,8 @@ void ExtensionsDOMHandler::GetActivePagesForExtensionProcess(
       continue;
     const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
     if (host == deleting_rvh_ ||
-        ViewType::EXTENSION_POPUP == host->delegate()->GetRenderViewType())
+        ViewType::EXTENSION_POPUP == host->delegate()->GetRenderViewType() ||
+        ViewType::EXTENSION_DIALOG == host->delegate()->GetRenderViewType())
       continue;
 
     GURL url = host->delegate()->GetURL();

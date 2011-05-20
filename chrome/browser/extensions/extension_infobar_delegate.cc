@@ -25,7 +25,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
       closing_(false) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
-  extension_host_.reset(manager->CreateInfobar(url, browser));
+  extension_host_.reset(manager->CreateInfobarHost(url, browser));
   extension_host_->set_associated_tab_contents(tab_contents);
 
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,

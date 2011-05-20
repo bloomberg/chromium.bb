@@ -220,6 +220,8 @@ class ExtensionImpl : public ExtensionBase {
       view_type = ViewType::TAB_CONTENTS;
     } else if (view_type_string == ViewType::kPopup) {
       view_type = ViewType::EXTENSION_POPUP;
+    } else if (view_type_string == ViewType::kExtensionDialog) {
+      view_type = ViewType::EXTENSION_DIALOG;
     } else if (view_type_string != ViewType::kAll) {
       return v8::Undefined();
     }
