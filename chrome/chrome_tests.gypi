@@ -442,7 +442,7 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
       'sources': [
         'browser/accessibility/accessibility_mac_uitest.mm',
         'browser/autofill/autofill_browsertest.cc',
@@ -2237,7 +2237,7 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
       'sources': [
         'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
@@ -2651,7 +2651,7 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
       'sources': [
         'app/chrome_dll.rc',
         'browser/safe_browsing/safe_browsing_test.cc',
@@ -3166,7 +3166,7 @@
         '<(protoc_out_dir)',
       ],
       # TODO(phajdan.jr): Only temporary, to make transition easier.
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
       'sources': [
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
@@ -3323,7 +3323,7 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
       'sources': [
         'browser/gpu_pixel_browsertest.cc',
         'browser/gpu_crash_browsertest.cc',
