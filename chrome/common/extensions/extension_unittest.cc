@@ -1299,6 +1299,154 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url, &extension->content_scripts()[0], NULL));
 }
 
+// Base class for testing the CanExecuteScriptOnPage and CanCaptureVisiblePage
+// methods of Extension for extensions with various permissions.
+class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
+ public:
+  ExtensionScriptAndCaptureVisibleTest() {
+    PathService::Get(chrome::DIR_TEST_DATA, &dirpath_);
+  }
+
+  scoped_refptr<Extension> MakeExtension(const std::string& permissions,
+                                         Extension::Location location) {
+    // Replace single-quotes with double-quotes in permissions, since JSON
+    // mandates double-quotes.
+    std::string munged_permissions = permissions;
+    ReplaceSubstringsAfterOffset(&munged_permissions, 0, "'", "\"");
+
+    DictionaryValue dictionary;
+    dictionary.SetString(keys::kName, "permission test");
+    dictionary.SetString(keys::kVersion, "1");
+    std::string error;
+    JSONStringValueSerializer serializer(munged_permissions);
+    scoped_ptr<Value> permission_value(serializer.Deserialize(NULL, &error));
+    EXPECT_EQ("", error);
+    if (!permission_value.get())
+      return NULL;
+    EXPECT_TRUE(permission_value->IsType(Value::TYPE_LIST));
+    dictionary.Set(keys::kPermissions, permission_value.release());
+
+    FilePath dirpath;
+    PathService::Get(chrome::DIR_TEST_DATA, &dirpath);
+    dirpath = dirpath.AppendASCII("extensions").AppendASCII("permissions");
+
+    scoped_refptr<Extension> extension =  Extension::Create(
+        dirpath,
+        location,
+        dictionary,
+        Extension::STRICT_ERROR_CHECKS,
+        &error);
+    if (!extension)
+      VLOG(1) << error;
+    return extension;
+  }
+
+  bool Allowed(const Extension* extension, const GURL& url) {
+    return (extension->CanExecuteScriptOnPage(url, NULL, NULL) &&
+            extension->CanCaptureVisiblePage(url, NULL));
+  }
+
+  bool CaptureOnly(const Extension* extension, const GURL& url) {
+    return !extension->CanExecuteScriptOnPage(url, NULL, NULL) &&
+        extension->CanCaptureVisiblePage(url, NULL);
+  }
+
+  bool Blocked(const Extension* extension, const GURL& url) {
+    return !(extension->CanExecuteScriptOnPage(url, NULL, NULL) ||
+             extension->CanCaptureVisiblePage(url, NULL));
+  }
+
+ protected:
+  FilePath dirpath_;
+};
+
+TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
+  scoped_refptr<Extension> extension;
+  // URLs that are "safe" to provide scripting and capture visible tab access
+  // to if the permissions allow it.
+  GURL http_url("http://www.google.com");
+  GURL https_url("https://www.google.com");
+  GURL file_url("file:///foo/bar");
+
+  // We should allow host permission but not scripting permission for favicon
+  // urls.
+  GURL favicon_url("chrome://favicon/http://www.google.com");
+
+  std::string dummy_id =
+      Extension::GenerateIdForPath(FilePath(FILE_PATH_LITERAL("whatever")));
+
+  // URLs that regular extensions should never get access to.
+  GURL extension_url("chrome-extension://" + dummy_id);
+  GURL settings_url("chrome://settings");
+  GURL about_url("about:flags");
+
+  // Test <all_urls> for regular extensions.
+  extension = MakeExtension("['tabs','<all_urls>']", Extension::INTERNAL);
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Allowed(extension, https_url));
+  EXPECT_TRUE(Blocked(extension, file_url));
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(CaptureOnly(extension, favicon_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(Blocked(extension, extension_url));
+
+  EXPECT_FALSE(extension->HasHostPermission(settings_url));
+  EXPECT_FALSE(extension->HasHostPermission(about_url));
+  EXPECT_TRUE(extension->HasHostPermission(favicon_url));
+
+  // Test * for scheme, which implies just the http/https schemes.
+  extension = MakeExtension("['tabs','*://*/']", Extension::INTERNAL);
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Allowed(extension, https_url));
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(Blocked(extension, file_url));
+  EXPECT_TRUE(Blocked(extension, favicon_url));
+  extension = MakeExtension("['tabs','*://settings/*']", Extension::INTERNAL);
+  EXPECT_TRUE(Blocked(extension, settings_url));
+
+  // Having chrome://*/ should not work for regular extensions. Note that
+  // for favicon access, we require the explicit pattern chrome://favicon/*.
+  extension = MakeExtension("['tabs','chrome://*/']",
+                            Extension::INTERNAL);
+  EXPECT_TRUE(extension == NULL);
+
+  // Having chrome://favicon/* should not give you chrome://*
+  extension = MakeExtension("['tabs','chrome://favicon/*']",
+                            Extension::INTERNAL);
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(CaptureOnly(extension, favicon_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(extension->HasHostPermission(favicon_url));
+
+  // Having http://favicon should not give you chrome://favicon
+  extension = MakeExtension("['tabs', 'http://favicon/']", Extension::INTERNAL);
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Blocked(extension, favicon_url));
+
+  // Component extensions with <all_urls> should get everything.
+  extension = MakeExtension("['tabs','<all_urls>']", Extension::COMPONENT);
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Allowed(extension, https_url));
+  EXPECT_TRUE(Allowed(extension, settings_url));
+  EXPECT_TRUE(Allowed(extension, about_url));
+  EXPECT_TRUE(Allowed(extension, favicon_url));
+  EXPECT_TRUE(extension->HasHostPermission(favicon_url));
+
+  // Component extensions should only get access to what they ask for.
+  extension = MakeExtension("['tabs', 'http://www.google.com/']",
+                            Extension::COMPONENT);
+  EXPECT_TRUE(Allowed(extension, http_url));
+  EXPECT_TRUE(Blocked(extension, https_url));
+  EXPECT_TRUE(Blocked(extension, file_url));
+  EXPECT_TRUE(Blocked(extension, settings_url));
+  EXPECT_TRUE(Blocked(extension, favicon_url));
+  EXPECT_TRUE(Blocked(extension, about_url));
+  EXPECT_TRUE(Blocked(extension, extension_url));
+  EXPECT_FALSE(extension->HasHostPermission(settings_url));
+}
+
+
 TEST(ExtensionTest, GetDistinctHostsForDisplay) {
   std::vector<std::string> expected;
   expected.push_back("www.foo.com");
