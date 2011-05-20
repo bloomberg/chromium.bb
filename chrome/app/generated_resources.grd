@@ -8610,6 +8610,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Search
         </message>
       </if>
+      <message name="IDS_BOOKMARKS_MENU" desc="The title of the bookmarks menu in the wrench menu and in the mac menu bar">
+        Bookmarks
+      </message>
 
       <message name="IDS_DEFAULT_DOWNLOAD_FILENAME" desc="Default name for downloaded files when we have no idea what they could be.">
         download
@@ -9244,9 +9247,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_HISTORY_MENU_MAC" desc="The menu title of the Mac history menu.">
           History
-        </message>
-        <message name="IDS_BOOKMARKS_MENU_MAC" desc="The menu title of the Mac bookmarks menu.">
-          Bookmarks
         </message>
         <message name="IDS_WINDOW_MENU_MAC" desc="The menu title of the Mac window menu.">
           Window

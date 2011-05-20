@@ -956,15 +956,15 @@
 					</object>
 					<object class="NSMenuItem" id="299901009">
 						<reference key="NSMenu" ref="649796088"/>
-						<string key="NSTitle">^IDS_BOOKMARKS_MENU_MAC</string>
+						<string key="NSTitle">^IDS_BOOKMARKS_MENU</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="353210768"/>
 						<reference key="NSMixedImage" ref="549394948"/>
 						<string key="NSAction">submenuAction:</string>
-						<int key="NSTag">43000</int>
+						<int key="NSTag">40032</int>
 						<object class="NSMenu" key="NSSubmenu" id="891828782">
-							<string key="NSTitle">^IDS_BOOKMARKS_MENU_MAC</string>
+							<string key="NSTitle">^IDS_BOOKMARKS_MENU</string>
 							<object class="NSMutableArray" key="NSMenuItems">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="926580029">

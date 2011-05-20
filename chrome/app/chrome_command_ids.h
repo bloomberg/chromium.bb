@@ -165,6 +165,7 @@
 #define IDC_SHOW_KEYBOARD_OVERLAY       40029
 #define IDC_PROFILING_ENABLED           40030
 #define IDC_FILE_MANAGER                40031
+#define IDC_BOOKMARKS_MENU              40032
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -201,7 +202,6 @@
 
 // Identifiers for platform-specific items.
 // Placed in a common file to help insure they never collide.
-#define IDC_BOOKMARK_MENU               43000     // OSX only
 #define IDC_VIEW_MENU                   44000     // OSX only
 #define IDC_SYSTEM_OPTIONS              45000     // ChromeOS only
 #define IDC_INTERNET_OPTIONS            45100     // ChromeOS only

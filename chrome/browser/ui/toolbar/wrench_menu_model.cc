@@ -464,7 +464,7 @@ void WrenchMenuModel::Build() {
 
 #if defined(OS_MACOSX)
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
-  AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_BOOKMARKS_MENU_MAC,
+  AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
 #else
   AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);

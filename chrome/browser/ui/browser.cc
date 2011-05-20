@@ -3809,6 +3809,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, true);
 
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_FILE_MANAGER, true);
