@@ -160,26 +160,23 @@ cr.define('cr.ui', function() {
 
     /**
      * The data model driving the list.
-     * @type {ListDataModel}
+     * @type {ArrayDataModel}
      */
     set dataModel(dataModel) {
       if (this.dataModel_ != dataModel) {
-        if (!this.boundHandleDataModelSplice_) {
-          this.boundHandleDataModelSplice_ =
-              this.handleDataModelSplice_.bind(this);
+        if (!this.boundHandleDataModelPermuted_) {
+          this.boundHandleDataModelPermuted_ =
+              this.handleDataModelPermuted_.bind(this);
           this.boundHandleDataModelChange_ =
               this.handleDataModelChange_.bind(this);
-          this.boundHandleSorted_ =
-              this.handleSorted_.bind(this);
         }
 
         if (this.dataModel_) {
-          this.dataModel_.removeEventListener('splice',
-                                              this.boundHandleDataModelSplice_);
+          this.dataModel_.removeEventListener(
+              'permuted',
+              this.boundHandleDataModelPermuted_);
           this.dataModel_.removeEventListener('change',
                                               this.boundHandleDataModelChange_);
-          this.dataModel_.removeEventListener('sorted',
-                                             this.boundHandleSorted_);
         }
 
         this.dataModel_ = dataModel;
@@ -187,15 +184,14 @@ cr.define('cr.ui', function() {
         this.cachedItems_ = {};
         this.selectionModel.clear();
         if (dataModel)
-          this.selectionModel.adjust(0, 0, dataModel.length);
+          this.selectionModel.adjustLength(dataModel.length);
 
         if (this.dataModel_) {
-          this.dataModel_.addEventListener('splice',
-                                           this.boundHandleDataModelSplice_);
+          this.dataModel_.addEventListener(
+              'permuted',
+              this.boundHandleDataModelPermuted_);
           this.dataModel_.addEventListener('change',
                                            this.boundHandleDataModelChange_);
-          this.dataModel_.addEventListener('sorted',
-                                           this.boundHandleSorted_);
         }
 
         this.redraw();
@@ -554,40 +550,43 @@ cr.define('cr.ui', function() {
       }
     },
 
-    handleDataModelSplice_: function(e) {
-      this.selectionModel.adjust(e.index, e.removed.length, e.added.length);
-      // Remove the cache of everything above index.
+    /**
+     * This handles data model 'permuted' event.
+     * this event is dispatched as a part of sort or splice.
+     * We need to
+     *  - adjust the cache.
+     *  - adjust selection.
+     *  - redraw.
+     *  - scroll the list to show selection.
+     *  It is important that the cache adjustment happens before selection model
+     *  adjustments.
+     * @param {Event} e The 'permuted' event.
+     */
+    handleDataModelPermuted_: function(e) {
+      var newCachedItems = {};
       for (var index in this.cachedItems_) {
-        if (index >= e.index)
+        if (e.permutation[index] != -1)
+          newCachedItems[e.permutation[index]] = this.cachedItems_[index];
+        else
           delete this.cachedItems_[index];
       }
+      this.cachedItems_ = newCachedItems;
+
+      var sm = this.selectionModel;
+      sm.adjustToReordering(e.permutation);
+
       this.redraw();
+
+      if (sm.leadIndex != -1)
+        this.scrollIndexIntoView(sm.leadIndex);
     },
 
     handleDataModelChange_: function(e) {
       if (e.index >= this.firstIndex_ && e.index < this.lastIndex_) {
-        this.cachedItems_ = null;
+        if (this.cachedItems_[index])
+          delete this.cachedItems_[index];
         this.redraw();
       }
-    },
-
-    /**
-     * This handles data model 'sorted' event.
-     * After sorting we need to
-     *  - adjust selection.
-     *  - delete the cache.
-     *  - redraw all the items.
-     *  - scroll the list to show selection.
-     * @param {Event} e The 'sorted' event.
-     */
-    handleSorted_: function(e) {
-      var sm = this.selectionModel;
-      sm.adjustToReordering(e.sortPermutation);
-
-      this.cachedItems_ = null;
-      this.redraw();
-      if (sm.leadIndex != -1)
-        this.scrollIndexIntoView(sm.leadIndex);
     },
 
     /**
@@ -928,6 +927,13 @@ cr.define('cr.ui', function() {
           }
         });
       }
+    },
+
+    /**
+     * Invalidates list by removing cached items.
+     */
+    invalidate: function() {
+      this.cachedItems_ = {};
     },
 
     /**

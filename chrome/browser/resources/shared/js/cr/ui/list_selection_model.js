@@ -247,43 +247,29 @@ cr.define('cr.ui', function() {
      * @param {!Array.<number>} permutation The reordering permutation.
      */
     adjustToReordering: function(permutation) {
+      var oldLeadIndex = this.leadIndex;
+
+      var oldSelectedIndexes = this.selectedIndexes;
+      this.selectedIndexes = oldSelectedIndexes.map(function(oldIndex) {
+        return permutation[oldIndex];
+      }).filter(function(index) {
+        return index != -1;
+      });
+
+      if (oldLeadIndex != -1)
+        this.leadIndex = permutation[oldLeadIndex];
     },
 
     /**
-     * Adjust the selection by adding or removing a certain numbers of items.
-     * This should be called by the owner of the selection model as items are
-     * added and removed from the underlying data model.
-     * @param {number} index The index of the first change.
-     * @param {number} itemsRemoved Number of items removed.
-     * @param {number} itemsAdded Number of items added.
+     * Adjusts selection model length. This is only used when data model is
+     * set, so it is safe to clear() first.
+     * This should not be used for dataModel updates, use adjustToReordering
+     * instead.
+     * @param {number} length New selection model length.
      */
-    adjust: function(index, itemsRemoved, itemsAdded) {
-      function getNewAdjustedIndex(i) {
-        if (i >= index && i < index + itemsRemoved) {
-          return index
-        } else if (i >= index) {
-          return i - itemsRemoved + itemsAdded;
-        }
-        return i;
-      }
-
-      this.length_ += itemsAdded - itemsRemoved;
-
-      var newMap = [];
-      for (var i in this.selectedIndexes_) {
-        i = Number(i);
-        if (i < index) {
-          newMap[i] = true;
-        } else if (i < index + itemsRemoved) {
-          // noop
-        } else {
-          newMap[i + itemsAdded - itemsRemoved] = true;
-        }
-      }
-      this.selectedIndexes_ = newMap;
-
-      this.leadIndex = getNewAdjustedIndex(this.leadIndex);
-      this.anchorIndex = getNewAdjustedIndex(this.anchorIndex);
+    adjustLength: function(length) {
+      this.clear();
+      this.length_ = length;
     }
   };
 

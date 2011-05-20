@@ -197,35 +197,25 @@ cr.define('cr.ui', function() {
      * @param {!Array.<number>} permutation The reordering permutation.
      */
     adjustToReordering: function(permutation) {
+      if (this.leadIndex != -1)
+        this.leadIndex = permutation[this.leadIndex];
+
+      var oldSelectedIndex = this.selectedIndex;
+      if (oldSelectedIndex != -1) {
+        this.selectedIndex = permutation[oldSelectedIndex];
+      }
     },
 
     /**
-     * Adjust the selection by adding or removing a certain numbers of items.
-     * This should be called by the owner of the selection model as items are
-     * added and removed from the underlying data model.
-     * @param {number} index The index of the first change.
-     * @param {number} itemsRemoved Number of items removed.
-     * @param {number} itemsAdded Number of items added.
+     * Adjusts selection model length. This is only used when data model is
+     * set, so it is safe to clear() first.
+     * This should not be used for dataModel updates, use adjustToReordering
+     * instead.
+     * @param {number} length New selection model length.
      */
-    adjust: function(index, itemsRemoved, itemsAdded) {
-      function getNewAdjustedIndex(i) {
-        if (i >= index && i < index + itemsRemoved) {
-          return index;
-        } else if (i >= index) {
-          return i + itemsAdded - itemsRemoved;
-        }
-        return i;
-      }
-
-      this.length_ += itemsAdded - itemsRemoved;
-
-      var i = this.selectedIndex;
-      if (itemsRemoved > 0 && i >= index && i < index + itemsRemoved)
-        this.selectedIndex = -1;
-      else if (i >= index)
-        this.selectedIndex = i + itemsAdded - itemsRemoved;
-
-      this.leadIndex = getNewAdjustedIndex(this.leadIndex);
+    adjustLength: function(length) {
+      this.clear();
+      this.length_ = length;
     }
   };
 
