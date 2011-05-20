@@ -83,7 +83,7 @@ MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
 MANIFEST_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-internal'
 
 MANIFEST_VERSIONS_URL = GERRIT_URL + '/chromiumos/manifest-versions-external'
-MANIFEST_VERSIONS_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-versions-test'
+MANIFEST_VERSIONS_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-versions'
 
 default = {
   # 'board' No default value
@@ -183,9 +183,6 @@ official = {
 
   'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
-
-  # TODO(dgarret): turned off for testing
-  'vm_tests' : False,
 
   'gs_path' : None,
 
@@ -336,8 +333,6 @@ add_config('x86-mario-pre-flight-queue', [internal, {
 #   --upload-board-prebuilt --ctest --unittests --bvt
 add_config('x86-mario-private-full', [internal, full, official, {
   'board' : 'x86-mario',
-  # TODO(sosa): This is wrong but restores don's builder to build with mvp.
-  'manifest_version' : MANIFEST_VERSIONS_INT_URL,
   'prebuilts' : False,
 }])
 

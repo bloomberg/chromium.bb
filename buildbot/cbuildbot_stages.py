@@ -18,7 +18,8 @@ _FULL_BINHOST = 'FULL_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
-VERSION_FILE = 'chromite/buildbot/chromeos_version_test.sh'
+VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
+                            'chromeos/config/chromeos_version.sh')
 
 class BuilderStage():
   """Parent class for stages to be performed by a builder."""
