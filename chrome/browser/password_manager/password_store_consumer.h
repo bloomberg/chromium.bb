@@ -12,7 +12,7 @@ namespace webkit_glue {
 struct PasswordForm;
 };
 
-// Reads from the PasswordStore are done asynchrously on a separate
+// Reads from the PasswordStore are done asynchronously on a separate
 // thread. PasswordStoreConsumer provides the virtual callback method, which is
 // guaranteed to be executed on this (the UI) thread. It also provides the
 // CancelableRequestConsumer member, which cancels any outstanding requests upon

@@ -1797,7 +1797,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
-  def AddSavedPassword(self, password_dict, window_index=0):
+  def AddSavedPassword(self, password_dict, windex=0):
     """Adds the given username-password combination to the saved passwords.
 
     Args:
@@ -1812,7 +1812,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'submit_element': 'submit',                  # The HTML element
         'action_target': 'https://www.example.com/login/',
         'blacklist': False }
-      window_index: window index, defaults to 0
+      windex: window index; defaults to 0 (first window).
 
     *Blacklist notes* To blacklist a site, add a blacklist password with the
     following dictionary items: origin_url, signon_realm, username_element,
@@ -1824,14 +1824,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       mode, adding the password should fail.
 
     Raises:
-      JSONInterfaceError on error.
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'AddSavedPassword',
       'password': password_dict
     }
     return self._GetResultFromJSONRequest(
-        cmd_dict, windex=window_index)['password_added']
+        cmd_dict, windex=windex)['password_added']
 
   def RemoveSavedPassword(self, password_dict, window_index=0):
     """Removes the password matching the provided password dictionary.

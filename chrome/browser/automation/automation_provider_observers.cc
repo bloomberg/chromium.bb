@@ -1660,7 +1660,7 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
 
   ListValue* passwords = new ListValue;
   for (std::vector<webkit_glue::PasswordForm*>::const_iterator it =
-          result.begin(); it != result.end(); ++it) {
+           result.begin(); it != result.end(); ++it) {
     DictionaryValue* password_val = new DictionaryValue;
     webkit_glue::PasswordForm* password_form = *it;
     password_val->SetString("username_value", password_form->username_value);
@@ -1673,8 +1673,7 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
                             password_form->username_element);
     password_val->SetString("password_element",
                             password_form->password_element);
-    password_val->SetString("submit_element",
-                                     password_form->submit_element);
+    password_val->SetString("submit_element", password_form->submit_element);
     password_val->SetString("action_target", password_form->action.spec());
     password_val->SetBoolean("blacklist", password_form->blacklisted_by_user);
     passwords->Append(password_val);
@@ -1684,6 +1683,66 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
   AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
       return_value.get());
   delete this;
+}
+
+PasswordStoreLoginsChangedObserver::PasswordStoreLoginsChangedObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    const std::string& result_key)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      result_key_(result_key),
+      done_event_(false, false) {
+  AddRef();
+}
+
+PasswordStoreLoginsChangedObserver::~PasswordStoreLoginsChangedObserver() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void PasswordStoreLoginsChangedObserver::Init() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      NewRunnableMethod(
+          this, &PasswordStoreLoginsChangedObserver::RegisterObserversTask));
+  done_event_.Wait();
+}
+
+void PasswordStoreLoginsChangedObserver::RegisterObserversTask() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  registrar_.Add(this, NotificationType::LOGINS_CHANGED,
+                 NotificationService::AllSources());
+  done_event_.Signal();
+}
+
+void PasswordStoreLoginsChangedObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(type.value == NotificationType::LOGINS_CHANGED);
+
+  registrar_.RemoveAll();  // Must be done from thread BrowserThread::DB.
+
+  // Notify thread BrowserThread::UI that we're done listening.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableMethod(
+          this, &PasswordStoreLoginsChangedObserver::IndicateDone));
+}
+
+void PasswordStoreLoginsChangedObserver::IndicateDone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (automation_) {
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetBoolean(result_key_, true);
+    AutomationJSONReply(
+        automation_, reply_message_.release()).SendSuccess(return_value.get());
+  }
+  Release();
 }
 
 AutomationProviderBrowsingDataObserver::AutomationProviderBrowsingDataObserver(

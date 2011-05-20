@@ -3543,40 +3543,42 @@ void TestingAutomationProvider::AddSavedPassword(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
   DictionaryValue* password_dict = NULL;
-
   if (!args->GetDictionary("password", &password_dict)) {
-    reply.SendError("Password must be a dictionary.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Must specify a password dictionary.");
     return;
   }
 
-  // The signon realm is effectively the primary key and must be included.
+  // The "signon realm" is effectively the primary key and must be included.
   // Check here before calling GetPasswordFormFromDict.
   if (!password_dict->HasKey("signon_realm")) {
-    reply.SendError("Password must include signon_realm.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Password must include a value for 'signon_realm.'");
     return;
   }
+
   webkit_glue::PasswordForm new_password =
       GetPasswordFormFromDict(*password_dict);
 
-  Profile* profile = browser->profile();
   // Use IMPLICIT_ACCESS since new passwords aren't added in incognito mode.
   PasswordStore* password_store =
-      profile->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+      browser->profile()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
 
-  // Set the return based on whether setting the password succeeded.
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-
-  // It will be null if it's accessed in an incognito window.
-  if (password_store != NULL) {
-    password_store->AddLogin(new_password);
-    return_value->SetBoolean("password_added", true);
-  } else {
+  // The password store does not exist for an incognito window.
+  if (password_store == NULL) {
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
     return_value->SetBoolean("password_added", false);
+    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+    return;
   }
 
-  reply.SendSuccess(return_value.get());
+  // This observer will delete itself.
+  PasswordStoreLoginsChangedObserver *observer =
+      new PasswordStoreLoginsChangedObserver(this, reply_message,
+                                             "password_added");
+  observer->Init();
+  password_store->AddLogin(new_password);
 }
 
 // See RemoveSavedPassword() in chrome/test/functional/pyauto.py for sample
@@ -3603,10 +3605,9 @@ void TestingAutomationProvider::RemoveSavedPassword(
   webkit_glue::PasswordForm to_remove =
       GetPasswordFormFromDict(*password_dict);
 
-  Profile* profile = browser->profile();
   // Use EXPLICIT_ACCESS since passwords can be removed in incognito mode.
   PasswordStore* password_store =
-      profile->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+      browser->profile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 
   password_store->RemoveLogin(to_remove);
   reply.SendSuccess(NULL);
@@ -3619,14 +3620,13 @@ void TestingAutomationProvider::GetSavedPasswords(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  Profile* profile = browser->profile();
   // Use EXPLICIT_ACCESS since saved passwords can be retrieved in
   // incognito mode.
   PasswordStore* password_store =
-      profile->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+      browser->profile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
   password_store->GetAutofillableLogins(
       new AutomationProviderGetPasswordsObserver(this, reply_message));
-  // Observer deletes itself after returning.
+  // Observer deletes itself after sending the result.
 }
 
 // Refer to ClearBrowsingData() in chrome/test/pyautolib/pyauto.py for sample

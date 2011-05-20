@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,6 +24,10 @@ class PasswordTest(pyauto.PyUITest):
       import pprint
       pp = pprint.PrettyPrinter(indent=2)
       pp.pprint(self.GetSavedPasswords())
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self.assertFalse(self.GetSavedPasswords())
 
   def _AssertWithinOneSecond(self, time1, time2):
     self.assertTrue(abs(time1 - time2) < 1.0,
@@ -54,7 +58,7 @@ class PasswordTest(pyauto.PyUITest):
         'https://www.example.com/', 'https://www.example.com/login',
         'username', 'password', 'https://www.example.com/login/')
     self.assertTrue(self.AddSavedPassword(password1))
-    self.assertEquals(self.GetSavedPasswords(), [password1])
+    self.assertEqual(self.GetSavedPasswords(), [password1])
 
   def testRemovePasswords(self):
     """Verify that saved passwords can be removed."""

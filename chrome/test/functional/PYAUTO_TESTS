@@ -58,8 +58,7 @@
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
-      # crbug.com/73078
-      '-passwords',
+      'passwords',
       'pdf',
       'plugins',
       'plugins_check',
@@ -83,14 +82,14 @@
       # crbug.com/50481, crbug.com/54942
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
-      '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      # crbug.com/70694
+      # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
       # crbug.com/67588
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
+      '-prefs.PrefsTest.testDownloadDirPref',
     ],
 
     'mac': [
@@ -122,9 +121,8 @@
 
     'linux': [  # linux != chromeos
       '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
-      # crbug.com/70694
-      '-passwords.PasswordTest.testInfoBarDisappearByReload',
-      '-passwords.PasswordTest.testNeverSavePasswords',
+      # System password manager obstructs password automation.
+      '-passwords',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
     ],
@@ -158,9 +156,6 @@
       '-infobars.InfobarTest.testPluginCrashInfobar',
       # Flaky: crosbug.com/14439
       '-instant.InstantSettingsTest.testEnableDisableInstant',
-      # crbug.com/70694
-      '-passwords.PasswordTest.testInfoBarDisappearByReload',
-      '-passwords.PasswordTest.testNeverSavePasswords',
 
       # Deal with i18n chars.  crosbug.com/12639
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
