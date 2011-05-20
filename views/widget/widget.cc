@@ -18,7 +18,7 @@ namespace views {
 
 namespace {
 // Set to true if a pure Views implementation is preferred
-bool use_pure_views;
+bool use_pure_views = false;
 }
 
 
@@ -84,10 +84,12 @@ Widget::~Widget() {
     delete native_widget_;
 }
 
+// static
 void Widget::SetPureViews(bool pure) {
   use_pure_views = pure;
 }
 
+// static
 bool Widget::IsPureViews() {
   return use_pure_views;
 }

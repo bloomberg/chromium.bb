@@ -123,7 +123,7 @@ class Widget : public internal::NativeWidgetDelegate,
                           gfx::Rect* rect);
 
   // SetPureViews and IsPureViews update and return the state of a global
-  // setting that tracks whether to use available pure Views implementations
+  // setting that tracks whether to use available pure Views implementations.
   static void SetPureViews(bool pure);
   static bool IsPureViews();
 
