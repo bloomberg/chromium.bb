@@ -79,6 +79,17 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
         snapshot->syncer_status.num_local_overwrites;
     status.num_server_overwrites_total +=
         snapshot->syncer_status.num_server_overwrites;
+    if (snapshot->syncer_status.num_updates_downloaded_total == 0) {
+      ++status.empty_get_updates;
+    } else {
+      ++status.nonempty_get_updates;
+    }
+    if (snapshot->syncer_status.num_successful_commits == 0 &&
+        snapshot->syncer_status.num_updates_downloaded_total == 0) {
+      ++status.useless_sync_cycles;
+    } else {
+      ++status.useful_sync_cycles;
+    }
   }
   return status;
 }

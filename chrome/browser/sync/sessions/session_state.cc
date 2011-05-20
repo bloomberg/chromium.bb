@@ -121,7 +121,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     int num_blocking_conflicting_updates,
     int num_conflicting_updates,
     bool did_commit_items,
-    const SyncSourceInfo& source)
+    const SyncSourceInfo& source,
+    size_t num_entries)
     : syncer_status(syncer_status),
       errors(errors),
       num_server_changes_remaining(num_server_changes_remaining),
@@ -134,7 +135,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       num_blocking_conflicting_updates(num_blocking_conflicting_updates),
       num_conflicting_updates(num_conflicting_updates),
       did_commit_items(did_commit_items),
-      source(source) {
+      source(source),
+      num_entries(num_entries){
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     const_cast<std::string&>(this->download_progress_markers[i]).assign(
@@ -165,6 +167,7 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
                     num_blocking_conflicting_updates);
   value->SetInteger("numConflictingUpdates", num_conflicting_updates);
   value->SetBoolean("didCommitItems", did_commit_items);
+  value->SetInteger("numEntries", num_entries);
   value->Set("source", source.ToValue());
   return value;
 }
