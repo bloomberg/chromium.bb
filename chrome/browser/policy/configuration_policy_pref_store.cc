@@ -282,6 +282,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kDefaultSearchProviderSearchURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderSuggestURL,
     prefs::kDefaultSearchProviderSuggestURL },
+  { Value::TYPE_STRING, kPolicyDefaultSearchProviderInstantURL,
+    prefs::kDefaultSearchProviderInstantURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderIconURL,
     prefs::kDefaultSearchProviderIconURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderEncodings,
