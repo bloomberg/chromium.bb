@@ -288,7 +288,7 @@ void DevToolsHttpProtocolHandler::OnJsonRequestUI(
                                         i->id));
       page_info->SetString("devtoolsFrontendUrl",
                            StringPrintf("%s?host=%s&page=%d",
-                                        overriden_frontend_url_.c_str(),
+                                        overridden_frontend_url_.c_str(),
                                         host.c_str(),
                                         i->id));
     }
@@ -431,10 +431,10 @@ DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
     TabContentsProvider* provider)
     : ip_(ip),
       port_(port),
-      overriden_frontend_url_(frontend_host),
+      overridden_frontend_url_(frontend_host),
       tab_contents_provider_(provider) {
-  if (overriden_frontend_url_.empty())
-      overriden_frontend_url_ = "/devtools/devtools.html";
+  if (overridden_frontend_url_.empty())
+      overridden_frontend_url_ = "/devtools/devtools.html";
 }
 
 void DevToolsHttpProtocolHandler::Init() {

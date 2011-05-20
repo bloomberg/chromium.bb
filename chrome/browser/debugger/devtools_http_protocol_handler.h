@@ -95,7 +95,7 @@ class DevToolsHttpProtocolHandler
 
   std::string ip_;
   int port_;
-  std::string overriden_frontend_url_;
+  std::string overridden_frontend_url_;
   scoped_refptr<net::HttpServer> server_;
   typedef std::map<net::URLRequest*, int>
       RequestToSocketMap;
