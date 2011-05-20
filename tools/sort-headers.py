@@ -39,10 +39,15 @@ def IncludeCompareKey(line):
     if line.startswith(prefix):
       line = line[len(prefix):]
       break
-  # <windows.h> needs to be before other includes, so return a key
-  # that's less than all other keys.
-  if line.lstrip().startswith('<windows.h>'):
-    return ''
+
+  # The win32 api has all sorts of implicit include order dependencies :-/
+  # Give a few headers special sort keys that make sure they appear before all
+  # other headers.
+  if line.startswith('<windows.h>'):  # Must be before e.g. shellapi.h
+    return '0'
+  if line.startswith('<unknwn.h>'):  # Must be before e.g. intshcut.h
+    return '1'
+
   return line
 
 
