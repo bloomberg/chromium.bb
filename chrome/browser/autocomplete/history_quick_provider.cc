@@ -149,7 +149,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     match.inline_autocomplete_offset = string16::npos;
   } else {
     match.inline_autocomplete_offset =
-        history_match.input_location + autocomplete_input_.text().length();
+        history_match.input_location + match.fill_into_edit.length();
     DCHECK_LE(match.inline_autocomplete_offset, match.fill_into_edit.length());
   }
 

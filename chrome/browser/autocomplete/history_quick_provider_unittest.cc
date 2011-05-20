@@ -222,6 +222,14 @@ TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
   RunTest(text, expected_urls, expected_url);
 }
 
+TEST_F(HistoryQuickProviderTest, NonWordLastCharacterMatch) {
+  string16 text(ASCIIToUTF16("slashdot.org/"));
+  std::string expected_url("http://slashdot.org/favorite_page.html");
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back(expected_url);
+  RunTest(text, expected_urls, expected_url);
+}
+
 TEST_F(HistoryQuickProviderTest, MultiMatch) {
   string16 text(ASCIIToUTF16("foo"));
   std::vector<std::string> expected_urls;
