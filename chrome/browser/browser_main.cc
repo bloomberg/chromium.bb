@@ -144,7 +144,6 @@
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
-#include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
