@@ -18,6 +18,20 @@ made in recent releases.
 
 <h2 id="11"> Google Chrome 11 </h2>
 
+<h4> Changes to existing APIs </h4>
+  <ul>
+    <li>
+      For security reasons, you can no longer call
+      <a href="tabs.html#method-captureVisibleTab">chrome.tab.captureVisibleTab()</a>
+      on just any tab.
+      Instead, you now must have
+      <a href="manifest.html#permissions">host permission</a>
+      for the URL displayed by that tab.
+      To get the previous behavior,
+      specify <code>&lt;all_urls></code> for the host permission.
+    </li>
+  </ul>
+
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>

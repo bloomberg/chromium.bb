@@ -1241,7 +1241,7 @@
       {
         "name": "captureVisibleTab",
         "type": "function",
-        "description": "Captures the visible area of the currently selected tab in the specified window.",
+        "description": "Captures the visible area of the currently selected tab in the specified window. You must have <a href='manifest.html#permissions'>host permission</a> for the URL displayed by the tab; for maximum coverage, request <code>&lt;all_urls></code> permission.",
         "parameters": [
           {
             "type": "integer",
@@ -1254,7 +1254,6 @@
             "type": "object",
             "name": "options",
             "optional": true,
-            "min_version": "5.0.372.0",
             "description": "Set parameters of image capture, such as the format of the resulting image.",
             "properties": {
               "format": {
