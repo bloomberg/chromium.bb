@@ -171,6 +171,8 @@ release = {
   'build_tests' : True,
   'chrome_tests' : True,
   'manifest_version' : MANIFEST_VERSIONS_INT_URL,
+  'push_image' : True,
+  'upload_symbols' : True,
   # --official
   # --officialversion
 }
