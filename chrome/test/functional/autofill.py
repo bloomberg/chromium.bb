@@ -265,7 +265,7 @@ class AutofillTest(pyauto.PyUITest):
                'EMAIL_ADDRESS': 'bsmith@example.com',
                'COMPANY_NAME': 'Company X',
                'ADDRESS_HOME_CITY': 'Mountain View',
-               'PHONE_HOME_WHOLE_NUMBER': '650-123-4567',}
+               'PHONE_HOME_WHOLE_NUMBER': '650-555-4567',}
     self._FillFormAndSubmit(
         profile, 'duplicate_profiles_test.html', tab_index=0, windex=0)
     self.assertFalse(self.GetAutofillProfile()['profiles'],
@@ -281,7 +281,7 @@ class AutofillTest(pyauto.PyUITest):
                'ADDRESS_HOME_STATE': 'CA',
                'ADDRESS_HOME_ZIP': '95110',
                'COMPANY_NAME': 'Company X',
-               'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
+               'PHONE_HOME_WHOLE_NUMBER': '408-871-4567',}
     self._FillFormAndSubmit(
         profile, 'duplicate_profiles_test.html', tab_index=0, windex=0)
     self.assertFalse(self.GetAutofillProfile()['profiles'],
@@ -351,7 +351,7 @@ class AutofillTest(pyauto.PyUITest):
                'ADDRESS_HOME_STATE': 'CA',
                'ADDRESS_HOME_ZIP': '95110',
                'COMPANY_NAME': 'Company X',
-               'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
+               'PHONE_HOME_WHOLE_NUMBER': '408-871-4567',}
 
     self.FillAutofillProfile(profiles=[profile])
     url = self.GetHttpURLForDataPath(
@@ -390,7 +390,7 @@ class AutofillTest(pyauto.PyUITest):
                'EMAIL_ADDRESS': 'bsmith@gmail.com',
                'ADDRESS_HOME_LINE1': '1234 H St.',
                'ADDRESS_HOME_CITY': 'San Jose',
-               'PHONE_HOME_WHOLE_NUMBER': '4081234567',}
+               'PHONE_HOME_WHOLE_NUMBER': '4088714567',}
 
     self.FillAutofillProfile(profiles=[profile])
     url = self.GetHttpURLForDataPath(
@@ -429,7 +429,7 @@ class AutofillTest(pyauto.PyUITest):
                'EMAIL_ADDRESS': 'bsmith@gmail.com',
                'ADDRESS_HOME_LINE1': '1234 H St.',
                'ADDRESS_HOME_CITY': 'San Jose',
-               'PHONE_HOME_WHOLE_NUMBER': '4081234567',}
+               'PHONE_HOME_WHOLE_NUMBER': '4088714567',}
 
     middle_initial = profile['NAME_MIDDLE'][0]
     self.FillAutofillProfile(profiles=[profile])
@@ -456,7 +456,7 @@ class AutofillTest(pyauto.PyUITest):
     profile = {'NAME_FIRST': 'Bob',
                'NAME_LAST': 'Smith',
                'EMAIL_ADDRESS': 'bsmith@gmail.com',
-               'PHONE_HOME_WHOLE_NUMBER': '4081234567',}
+               'PHONE_HOME_WHOLE_NUMBER': '4088714567',}
 
     self.FillAutofillProfile(profiles=[profile])
     url = self.GetHttpURLForDataPath(
@@ -484,7 +484,7 @@ class AutofillTest(pyauto.PyUITest):
                'ADDRESS_HOME_STATE': 'CA',
                'ADDRESS_HOME_ZIP': '95110',
                'COMPANY_NAME': 'Company X',
-               'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
+               'PHONE_HOME_WHOLE_NUMBER': '408-871-4567',}
     self._FillFormAndSubmit(
         profile, 'duplicate_profiles_test.html', tab_index=0, windex=0)
     self.assertFalse(self.GetAutofillProfile()['profiles'],
