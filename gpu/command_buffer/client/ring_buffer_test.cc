@@ -30,6 +30,25 @@ class BaseRingBufferTest : public testing::Test {
   static const unsigned int kBaseOffset = 128;
   static const unsigned int kBufferSize = 1024;
 
+  class DoJumpCommand {
+   public:
+    explicit DoJumpCommand(CommandParser* parser)
+        : parser_(parser) {
+    }
+
+    error::Error DoCommand(
+        unsigned int command,
+        unsigned int arg_count,
+        const void* cmd_data) {
+      const cmd::Jump* jump_cmd = static_cast<const cmd::Jump*>(cmd_data);
+      parser_->set_get(jump_cmd->offset);
+      return error::kNoError;
+    };
+
+   private:
+    CommandParser* parser_;
+  };
+
   virtual void SetUp() {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
@@ -58,6 +77,10 @@ class BaseRingBufferTest : public testing::Test {
         gpu_scheduler_.get(), &GpuScheduler::PutChanged));
 
     api_mock_->set_engine(gpu_scheduler_.get());
+    do_jump_command_.reset(new DoJumpCommand(parser_));
+    EXPECT_CALL(*api_mock_, DoCommand(cmd::kJump, _, _))
+        .WillRepeatedly(
+            Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kBufferSize);
@@ -74,6 +97,7 @@ class BaseRingBufferTest : public testing::Test {
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
+  scoped_ptr<DoJumpCommand> do_jump_command_;
 };
 
 #ifndef _MSC_VER
@@ -256,6 +280,7 @@ TEST_F(RingBufferWrapperTest, TestFreePendingToken) {
   EXPECT_LE(tokens[0], GetToken());
 
   allocator_->FreePendingToken(pointer1, helper_->InsertToken());
+  EXPECT_LE(command_buffer_->GetState().token, helper_->InsertToken());
 }
 
 }  // namespace gpu
