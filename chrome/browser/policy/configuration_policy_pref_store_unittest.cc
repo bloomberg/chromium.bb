@@ -125,10 +125,16 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kAuthServerWhitelist),
         TypeAndName(kPolicyAuthNegotiateDelegateWhitelist,
                     prefs::kAuthNegotiateDelegateWhitelist),
-        TypeAndName(kPolicyDownloadDirectory,
-                    prefs::kDownloadDefaultDirectory),
         TypeAndName(kPolicyGSSAPILibraryName,
                     prefs::kGSSAPILibraryName)));
+
+#if !defined(OS_CHROMEOS)
+INSTANTIATE_TEST_CASE_P(
+    ConfigurationPolicyPrefStoreDownloadDirectoryInstance,
+    ConfigurationPolicyPrefStoreStringTest,
+    testing::Values(TypeAndName(kPolicyDownloadDirectory,
+                                prefs::kDownloadDefaultDirectory)));
+#endif  // !defined(OS_CHROMEOS)
 
 // Test cases for boolean-valued policy settings.
 class ConfigurationPolicyPrefStoreBooleanTest
@@ -718,6 +724,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, Default) {
             store_->GetValue(prefs::kPromptForDownload, NULL));
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kPromptForDownload, NULL));
@@ -734,6 +741,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
   ASSERT_TRUE(result);
   EXPECT_FALSE(prompt_for_download);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
        EnableFileSelectionDialogs) {

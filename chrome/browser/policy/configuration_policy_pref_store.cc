@@ -431,6 +431,9 @@ bool ConfigurationPolicyPrefKeeper::ApplyDownloadDirPolicy(
   // Replace the policy string which might contain some user variables to an
   // expanded string.
   if (policy == kPolicyDownloadDirectory) {
+    // This policy is ignored on ChromeOS because the download path there is
+    // fixed and can not be configured by the user.
+#if !defined(OS_CHROMEOS)
     FilePath::StringType string_value;
     bool result = value->GetAsString(&string_value);
     DCHECK(result);
@@ -440,6 +443,7 @@ bool ConfigurationPolicyPrefKeeper::ApplyDownloadDirPolicy(
                     Value::CreateStringValue(expanded_value));
     prefs_.SetValue(prefs::kPromptForDownload,
                     Value::CreateBooleanValue(false));
+#endif  // !defined(OS_CHROMEOS)
     delete value;
     return true;
   }
