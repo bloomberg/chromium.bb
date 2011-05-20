@@ -30,6 +30,8 @@ class AbstractStageTest(mox.MoxTestBase):
   default values for testing BuilderStage and its derivatives.
   """
 
+  TRACKING_BRANCH = 'ooga_booga'
+
   def ConstructStage(self):
     """Returns an instance of the stage to be tested.
     Implement in subclasses.
@@ -50,13 +52,15 @@ class AbstractStageTest(mox.MoxTestBase):
     self.options.buildroot = self.build_root
     self.options.debug = False
     self.options.prebuilts = False
-    self.options.tracking_branch = 'ooga_booga'
     self.options.clobber = False
     self.options.buildnumber = 1234
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
     stages.BuilderStage.rev_overlays = [self.overlay]
     stages.BuilderStage.push_overlays = [self.overlay]
+
+    stages.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
+
     self.mox.StubOutWithMock(os.path, 'isdir')
 
   def RunStage(self):
@@ -138,7 +142,7 @@ class SyncStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    commands.FullCheckout(self.build_root, self.options.tracking_branch,
+    commands.FullCheckout(self.build_root, self.TRACKING_BRANCH,
                           url=self.url)
     os.path.isdir(self.overlay).AndReturn(True)
 
@@ -153,7 +157,8 @@ class SyncStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.PreFlightRinse(self.build_root, self.build_config['board'],
-                            self.options.tracking_branch, [self.overlay])
+                            self.TRACKING_BRANCH,
+                            [self.overlay])
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.BuilderStage._GetPortageEnvVar(stages._FULL_BINHOST)
     commands.IncrementalCheckout(self.build_root)
@@ -164,14 +169,14 @@ class SyncStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class ManifestVersionedSyncStageTest(BuilderStageTest):
+class ManifestVersionedSyncStageTest(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    BuilderStageTest.setUp(self)
+    AbstractStageTest.setUp(self)
 
     self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
@@ -194,8 +199,6 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
 
-    self.options.tracking_branch = 'ooga_booga'
-
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetNextBuildSpec')
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
@@ -205,34 +208,7 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
         latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
-                              self.options.tracking_branch,
-                              self.next_version,
-                              url=self.manifest_version_url)
-
-    os.path.isdir('/fake_root/src/'
-                  'third_party/chromiumos-overlay').AndReturn(True)
-
-    self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncStage(self.bot_id,
-                                              self.options,
-                                              self.build_config)
-    stage.Run()
-    self.mox.VerifyAll()
-
-  def testManifestVersionedSyncTwoPartBranch(self):
-    """Tests basic ManifestVersionedSyncStage with branch ooga/booga"""
-    self.manager.branch = 'ooga/booga'
-
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetNextBuildSpec')
-    self.mox.StubOutWithMock(commands, 'ManifestCheckout')
-
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    self.manager.GetNextBuildSpec(stages.VERSION_FILE,
-        latest=True).AndReturn(self.next_version)
-
-    commands.ManifestCheckout(self.build_root,
-                              self.options.tracking_branch,
+                              self.TRACKING_BRANCH,
                               self.next_version,
                               url=self.manifest_version_url)
 
@@ -443,7 +419,9 @@ class UprevStageTest(AbstractStageTest):
     chrome_atom = 'chromeos-base/chromeos-chrome-12.0.719.0_alpha-r1'
 
     commands.MarkChromeAsStable(
-        self.build_root, self.options.tracking_branch, self.options.chrome_rev,
+        self.build_root,
+        self.TRACKING_BRANCH,
+        self.options.chrome_rev,
         self.build_config['board']).AndReturn(chrome_atom)
 
     self.mox.ReplayAll()
@@ -455,7 +433,9 @@ class UprevStageTest(AbstractStageTest):
     self.options.chrome_rev = 'tot'
 
     commands.MarkChromeAsStable(
-        self.build_root, self.options.tracking_branch, self.options.chrome_rev,
+        self.build_root,
+        self.TRACKING_BRANCH,
+        self.options.chrome_rev,
         self.build_config['board'])
 
     sys.exit(0)
@@ -469,7 +449,7 @@ class UprevStageTest(AbstractStageTest):
     self.build_config['uprev'] = True
 
     commands.UprevPackages(
-        self.build_root, self.options.tracking_branch,
+        self.build_root, self.TRACKING_BRANCH,
         self.build_config['board'], [self.overlay])
 
     self.mox.ReplayAll()
@@ -491,11 +471,13 @@ class UprevStageTest(AbstractStageTest):
     # if we rev the build then we don't exit
 
     commands.MarkChromeAsStable(
-        self.build_root, self.options.tracking_branch, self.options.chrome_rev,
+        self.build_root,
+        self.TRACKING_BRANCH,
+        self.options.chrome_rev,
         self.build_config['board']).AndReturn(None)
 
     commands.UprevPackages(
-        self.build_root, self.options.tracking_branch,
+        self.build_root, self.TRACKING_BRANCH,
         self.build_config['board'], [self.overlay])
 
     self.mox.ReplayAll()
@@ -662,7 +644,7 @@ class PushChangesStageTest(AbstractStageTest):
         self.options.chrome_rev)
 
     commands.UprevPush(
-        self.build_root, self.options.tracking_branch,
+        self.build_root, self.TRACKING_BRANCH,
         self.build_config['board'], [self.overlay],
         self.options.debug)
 
@@ -681,7 +663,7 @@ class PushChangesStageTest(AbstractStageTest):
         self.options.chrome_rev)
 
     commands.UprevPush(
-        self.build_root, self.options.tracking_branch,
+        self.build_root, self.TRACKING_BRANCH,
         self.build_config['board'], [self.overlay],
         self.options.debug)
 
@@ -694,7 +676,7 @@ class PushChangesStageTest(AbstractStageTest):
     self.build_config['build_type'] = 'full'
 
     commands.UprevPush(
-        self.build_root, self.options.tracking_branch,
+        self.build_root, self.TRACKING_BRANCH,
         self.build_config['board'], [self.overlay],
         self.options.debug)
 
@@ -721,7 +703,6 @@ class BuildStagesResultsTest(unittest.TestCase):
     self.options.buildroot = self.build_root
     self.options.debug = False
     self.options.prebuilts = False
-    self.options.tracking_branch = 'ooga_booga'
     self.options.clobber = False
     self.options.url = self.url
     self.options.buildnumber = 1234
