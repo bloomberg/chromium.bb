@@ -11,14 +11,11 @@ import sys
 def Main():
   pwd = os.environ.get('PWD', '')
   # TODO(ncbray): figure out why this is failing on windows and enable.
-  if (sys.platform in ['win32', 'cygwin'] and
-      'xp-nacl-chrome' not in pwd and 'win64-nacl-chrome' not in pwd): return
+  if sys.platform in ['win32', 'cygwin'] and 'nacl-chrome' not in pwd: return
   # TODO(ncbray): figure out why this is failing on mac and re-enable.
-  if (sys.platform == 'darwin' and
-      'mac-nacl-chrome' not in pwd): return
+  if sys.platform == 'darwin' and 'nacl-chrome' not in pwd: return
   # TODO(ncbray): figure out why this is failing on some linux trybots.
-  if (sys.platform in ['linux', 'linux2'] and
-      'hardy64-nacl-chrome' not in pwd): return
+  if sys.platform in ['linux', 'linux2'] and 'nacl-chrome' not in pwd: return
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
   test_dir = os.path.dirname(script_dir)
