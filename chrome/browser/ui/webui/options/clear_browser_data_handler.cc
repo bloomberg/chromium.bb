@@ -21,9 +21,8 @@ ClearBrowserDataHandler::ClearBrowserDataHandler() : remover_(NULL) {
 }
 
 ClearBrowserDataHandler::~ClearBrowserDataHandler() {
-  if (remover_) {
+  if (remover_)
     remover_->RemoveObserver(this);
-  }
 }
 
 void ClearBrowserDataHandler::Initialize() {
@@ -124,6 +123,11 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   FundamentalValue state(true);
   web_ui_->CallJavascriptFunction("ClearBrowserDataOverlay.setClearingState",
                                   state);
+
+  // If we are still observing a previous data remover, we need to stop
+  // observing.
+  if (remover_)
+    remover_->RemoveObserver(this);
 
   // BrowsingDataRemover deletes itself when done.
   remover_ = new BrowsingDataRemover(profile,
