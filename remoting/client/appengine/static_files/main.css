@@ -135,7 +135,7 @@ a.hostentry {
   overflow: auto;
   font-family: monospace;
   font-weight: bold;
-  line-height: 0.5em;
+  font-size: small;
   border: 2px solid #ffffff;
   display: none;
   opacity: 0.9;
