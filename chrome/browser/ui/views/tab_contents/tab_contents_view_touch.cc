@@ -6,7 +6,6 @@
 
 #include "base/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #include "chrome/browser/ui/views/sad_tab_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
