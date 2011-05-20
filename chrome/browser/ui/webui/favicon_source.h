@@ -23,7 +23,9 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   // Defines the type of icon the FaviconSource will provide.
   enum IconType {
     FAVICON,
-    TOUCH
+    // Any available icon in the priority of TOUCH_ICON_PRECOMPOSED, TOUCH_ICON,
+    // FAVICON, and default favicon.
+    ANY
   };
 
   // |type| is the type of icon this FaviconSource will provide.
