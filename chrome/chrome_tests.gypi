@@ -360,6 +360,32 @@
       ],
     },
     {
+      'target_name': 'test_support_out_of_proc',
+      'type': '<(library)',
+      'dependencies': [
+        'test_support_common',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
+      ],
+      'sources': [
+        'test/out_of_proc_test_runner.cc',
+      ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+      ],
+      'direct_dependent_settings': {
+        'defines': [
+          'HAS_OUT_OF_PROC_TEST_RUNNER',
+        ],
+      },
+    },
+    {
       'target_name': 'automated_ui_tests',
       'type': 'executable',
       'msvs_guid': 'D2250C20-3A94-4FB9-AF73-11BC5B73884B',
@@ -426,6 +452,7 @@
         'debugger',
         'syncapi',
         'test_support_common',
+        'test_support_out_of_proc',
         'test_support_ui',
         '../third_party/hunspell/hunspell.gyp:hunspell',
         '../net/net.gyp:net_resources',
@@ -442,7 +469,6 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'browser/accessibility/accessibility_mac_uitest.mm',
         'browser/autofill/autofill_browsertest.cc',
@@ -465,7 +491,6 @@
         'test/interactive_ui/npapi_interactive_test.cc',
         'test/interactive_ui/view_event_test_base.cc',
         'test/interactive_ui/view_event_test_base.h',
-        'test/out_of_proc_test_runner.cc',
         'test/unit/chrome_test_suite.h',
       ],
       'conditions': [
@@ -2217,6 +2242,7 @@
         'profile_import',
         'renderer',
         'test_support_common',
+        'test_support_out_of_proc',
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -2236,7 +2262,6 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
@@ -2456,7 +2481,6 @@
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
         'test/gpu/gpu_browsertest.cc',
-        'test/out_of_proc_test_runner.cc',
         'test/render_view_test.cc',
         'test/render_view_test.h',
         # TODO(craig): Rename this and run from base_unittests when the test
@@ -2638,6 +2662,7 @@
       'dependencies': [
         'chrome',
         'test_support_common',
+        'test_support_out_of_proc',
         '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../net/net.gyp:net_test_support',
@@ -2649,11 +2674,9 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'app/chrome_dll.rc',
         'browser/safe_browsing/safe_browsing_test.cc',
-        'test/out_of_proc_test_runner.cc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -3148,6 +3171,7 @@
         'renderer',
         'chrome_strings',
         'test_support_common',
+        'test_support_out_of_proc',
         '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
@@ -3163,8 +3187,6 @@
         '<(INTERMEDIATE_DIR)',
         '<(protoc_out_dir)',
       ],
-      # TODO(phajdan.jr): Only temporary, to make transition easier.
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
@@ -3173,7 +3195,6 @@
         'browser/password_manager/password_form_data.cc',
         'browser/sessions/session_backend.cc',
         'browser/sync/glue/session_model_associator.cc',
-        'test/out_of_proc_test_runner.cc',
         'test/live_sync/bookmark_model_verifier.cc',
         'test/live_sync/bookmark_model_verifier.h',
         'test/live_sync/live_apps_sync_test.cc',
@@ -3307,6 +3328,7 @@
         'chrome_strings',
         'renderer',
         'test_support_common',
+        'test_support_out_of_proc',
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
@@ -3321,11 +3343,9 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'browser/gpu_pixel_browsertest.cc',
         'browser/gpu_crash_browsertest.cc',
-        'test/out_of_proc_test_runner.cc',
       ],
       'conditions': [
         ['OS=="win"', {

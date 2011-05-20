@@ -224,7 +224,7 @@ class InProcessBrowserTest : public testing::Test {
 // We only want to use IN_PROC_BROWSER_TEST in binaries which will properly
 // isolate each test case. Otherwise hard-to-debug, possibly intermittent
 // crashes caused by carrying state in singletons are very likely.
-#if defined(ALLOW_IN_PROC_BROWSER_TEST)
+#if defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #define IN_PROC_BROWSER_TEST_(test_case_name, test_name, parent_class,\
                               parent_id)\
@@ -255,6 +255,6 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
   IN_PROC_BROWSER_TEST_(test_fixture, test_name, test_fixture,\
                     ::testing::internal::GetTypeId<test_fixture>())
 
-#endif  // defined(ALLOW_IN_PROC_BROWSER_TEST)
+#endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #endif  // CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
