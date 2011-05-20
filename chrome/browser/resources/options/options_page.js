@@ -687,16 +687,6 @@ cr.define('options', function() {
     if (!topPage || topPage.isOverlay || !topPage.parentPage)
       return;
 
-    // Do nothing if the client coordinates are not within the source element.
-    // This situation is indicative of a Webkit bug where clicking on a
-    // radio/checkbox label span will generate an event with client coordinates
-    // of (-scrollX, -scrollY).
-    // See https://bugs.webkit.org/show_bug.cgi?id=56606
-    if (event.clientX == -document.body.scrollLeft &&
-        event.clientY == -document.body.scrollTop) {
-      return;
-    }
-
     // Don't interfere with navbar clicks.
     if ($('navbar').contains(event.target))
       return;
