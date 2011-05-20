@@ -469,7 +469,7 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     lstrcpyW(bind_info->szCustomVerb, verb.c_str());
   }
 
-  if (bind_info->dwBindVerb = BINDVERB_POST ||
+  if (bind_info->dwBindVerb == BINDVERB_POST ||
       bind_info->dwBindVerb == BINDVERB_PUT) {
     // Bypass caching proxies on upload requests and avoid writing responses to
     // the browser's cache.
