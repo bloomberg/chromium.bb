@@ -79,6 +79,16 @@ class Range {
   bool operator!=(const Range& other) const;
   bool EqualsIgnoringDirection(const Range& other) const;
 
+  // Returns true if this range intersects the specified |range|.
+  bool Intersects(const Range& range) const;
+
+  // Returns true if this range contains the specified |range|.
+  bool Contains(const Range& range) const;
+
+  // Computes the intersection of this range with the given |range|.
+  // If they don't intersects, it returns an InvalidRange().
+  Range Intersect(const Range& range) const;
+
 #if defined(OS_MACOSX)
   Range& operator=(const NSRange& range);
 

@@ -55,6 +55,26 @@ bool Range::EqualsIgnoringDirection(const Range& other) const {
   return GetMin() == other.GetMin() && GetMax() == other.GetMax();
 }
 
+bool Range::Intersects(const Range& range) const {
+  return IsValid() && range.IsValid() &&
+      !(range.GetMax() < GetMin() || range.GetMin() >= GetMax());
+}
+
+bool Range::Contains(const Range& range) const {
+  return IsValid() && range.IsValid() &&
+      GetMin() <= range.GetMin() && range.GetMax() <= GetMax();
+}
+
+Range Range::Intersect(const Range& range) const {
+  size_t min = std::max(GetMin(), range.GetMin());
+  size_t max = std::min(GetMax(), range.GetMax());
+
+  if (min >= max)  // No intersection.
+    return InvalidRange();
+
+  return Range(min, max);
+}
+
 #if defined(OS_WIN)
 Range::Range(const CHARRANGE& range, LONG total_length) {
   // Check if this is an invalid range.

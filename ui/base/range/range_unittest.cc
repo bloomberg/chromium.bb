@@ -150,6 +150,63 @@ TEST(RangeTest, SetReversedRange) {
   EXPECT_EQ(25U, r.GetMax());
 }
 
+void TestContainsAndIntersects(const ui::Range& r1,
+                               const ui::Range& r2,
+                               const ui::Range& r3) {
+  EXPECT_TRUE(r1.Intersects(r1));
+  EXPECT_TRUE(r1.Contains(r1));
+  EXPECT_EQ(ui::Range(10, 12), r1.Intersect(r1));
+
+  EXPECT_FALSE(r1.Intersects(r2));
+  EXPECT_FALSE(r1.Contains(r2));
+  EXPECT_TRUE(r1.Intersect(r2).is_empty());
+  EXPECT_FALSE(r2.Intersects(r1));
+  EXPECT_FALSE(r2.Contains(r1));
+  EXPECT_TRUE(r2.Intersect(r1).is_empty());
+
+  EXPECT_TRUE(r1.Intersects(r3));
+  EXPECT_TRUE(r3.Intersects(r1));
+  EXPECT_TRUE(r3.Contains(r1));
+  EXPECT_FALSE(r1.Contains(r3));
+  EXPECT_EQ(ui::Range(10, 12), r1.Intersect(r3));
+  EXPECT_EQ(ui::Range(10, 12), r3.Intersect(r1));
+
+  EXPECT_TRUE(r2.Intersects(r3));
+  EXPECT_TRUE(r3.Intersects(r2));
+  EXPECT_FALSE(r3.Contains(r2));
+  EXPECT_FALSE(r2.Contains(r3));
+  EXPECT_EQ(ui::Range(5, 8), r2.Intersect(r3));
+  EXPECT_EQ(ui::Range(5, 8), r3.Intersect(r2));
+}
+
+TEST(RangeTest, ContainAndIntersect) {
+  {
+    SCOPED_TRACE("contain and intersect");
+    ui::Range r1(10, 12);
+    ui::Range r2(1, 8);
+    ui::Range r3(5, 12);
+    TestContainsAndIntersects(r1, r2, r3);
+  }
+  {
+    SCOPED_TRACE("contain and intersect: reversed");
+    ui::Range r1(12, 10);
+    ui::Range r2(8, 1);
+    ui::Range r3(12, 5);
+    TestContainsAndIntersects(r1, r2, r3);
+  }
+  // Invalid rect tests
+  ui::Range r1(10, 12);
+  ui::Range r2(8, 1);
+  ui::Range invalid = r1.Intersect(r2);
+  EXPECT_FALSE(invalid.IsValid());
+  EXPECT_FALSE(invalid.Contains(invalid));
+  EXPECT_FALSE(invalid.Contains(r1));
+  EXPECT_FALSE(invalid.Intersects(invalid));
+  EXPECT_FALSE(invalid.Intersects(r1));
+  EXPECT_FALSE(r1.Contains(invalid));
+  EXPECT_FALSE(r1.Intersects(invalid));
+}
+
 #if defined(OS_WIN)
 TEST(RangeTest, FromCHARRANGE) {
   CHARRANGE cr = { 10, 32 };
