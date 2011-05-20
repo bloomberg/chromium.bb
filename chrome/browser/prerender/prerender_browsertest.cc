@@ -659,7 +659,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Prerenders a page that contains an automatic download triggered through an
 // iframe. This should not prerender successfully.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIframe) {
+// Flaky: http://crbug.com/81985
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderDownloadIframe) {
   PrerenderTestURL("files/prerender/prerender_download_iframe.html",
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -668,7 +669,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIframe) {
 // Prerenders a page that contains an automatic download triggered through
 // Javascript changing the window.location. This should not prerender
 // successfully
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
+// Flaky: http://crbug.com/81985
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       FLAKY_PrerenderDownloadLocation) {
   PrerenderTestURL(CreateClientRedirect("files/download-test1.lib"),
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -676,7 +679,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
 
 // Prerenders a page that contains an automatic download triggered through a
 // client-issued redirect. This should not prerender successfully.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadClientRedirect) {
+// Flaky: http://crbug.com/81985
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       FLAKY_PrerenderDownloadClientRedirect) {
   PrerenderTestURL("files/prerender/prerender_download_refresh.html",
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -952,7 +957,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
 
 // Checks that a prerender of a CRX will result in a cancellation due to
 // download.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCrx) {
+// Flaky: http://crbug.com/81985
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderCrx) {
   PrerenderTestURL("files/prerender/extension.crx", FINAL_STATUS_DOWNLOAD, 1);
 }
 
