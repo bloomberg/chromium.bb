@@ -115,7 +115,8 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->TotalNumBlockingConflictingItems(),
       status_controller_->TotalNumConflictingItems(),
       status_controller_->did_commit_items(),
-      source_);
+      source_,
+      dir->GetEntriesCount());
 }
 
 SyncSourceInfo SyncSession::TestAndSetSource() {

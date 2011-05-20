@@ -127,7 +127,8 @@ struct SyncSessionSnapshot {
       int num_blocking_conflicting_updates,
       int num_conflicting_updates,
       bool did_commit_items,
-      const SyncSourceInfo& source);
+      const SyncSourceInfo& source,
+      size_t num_entries);
   ~SyncSessionSnapshot();
 
   // Caller takes ownership of the returned dictionary.
@@ -146,6 +147,7 @@ struct SyncSessionSnapshot {
   const int num_conflicting_updates;
   const bool did_commit_items;
   const SyncSourceInfo source;
+  const size_t num_entries;
 };
 
 // Tracks progress of conflicts and their resolution using conflict sets.

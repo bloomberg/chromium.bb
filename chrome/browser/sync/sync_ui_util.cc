@@ -11,6 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/protocol/proto_enum_conversions.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
@@ -289,6 +291,14 @@ void AddBoolSyncDetail(ListValue* details,
   details->Append(val);
 }
 
+void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
+                          const std::string& stat_value) {
+  DictionaryValue* val = new DictionaryValue;
+  val->SetString("stat_name", stat_name);
+  val->SetString("stat_value", stat_value);
+  details->Append(val);
+}
+
 void AddIntSyncDetail(ListValue* details, const std::string& stat_name,
                       int64 stat_value) {
   DictionaryValue* val = new DictionaryValue;
@@ -403,6 +413,42 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddIntSyncDetail(details,
                                    "Max Consecutive Errors",
                                    full_status.max_consecutive_errors);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Empty GetUpdates",
+                                   full_status.empty_get_updates);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Nonempty GetUpdates",
+                                   full_status.nonempty_get_updates);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Useless Sync Cycles",
+                                   full_status.useless_sync_cycles);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Useful Sync Cycles",
+                                   full_status.useful_sync_cycles);
+
+    const browser_sync::sessions::SyncSessionSnapshot* snapshot =
+        service->GetLastSessionSnapshot();
+
+    // |snapshot| could be null if sync is not yet completed.
+    if (snapshot) {
+      sync_ui_util::AddIntSyncDetail(details, "Download Count (This Session)",
+          snapshot->syncer_status.num_updates_downloaded_total);
+      sync_ui_util::AddIntSyncDetail(details, "Commit Count (This Session)",
+          snapshot->syncer_status.num_successful_commits);
+      sync_ui_util::AddStringSyncDetails(details, "Last Sync Source",
+          browser_sync::GetUpdatesSourceString(
+          snapshot->source.updates_source));
+
+      // Print the count of entries from snapshot. Warning: This might be
+      // slightly out of date if there are client side changes that are yet
+      // unsynced  However if we query the latest count here we will
+      // have to hold the transaction which means we cannot display this page
+      // when syncing.
+      sync_ui_util::AddIntSyncDetail(details, "Entries" ,
+                                     snapshot->num_entries);
+      sync_ui_util::AddBoolSyncDetail(details, "Throttled",
+                                      snapshot->is_silenced);
+    }
 
     if (service->unrecoverable_error_detected()) {
       strings->Set("unrecoverable_error_detected", new FundamentalValue(true));

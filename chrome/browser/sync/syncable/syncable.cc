@@ -795,6 +795,11 @@ void Directory::GetDownloadProgressAsString(
       value_out);
 }
 
+size_t Directory::GetEntriesCount() const {
+  ScopedKernelLock lock(this);
+  return kernel_->metahandles_index ? kernel_->metahandles_index->size() : 0;
+}
+
 void Directory::SetDownloadProgress(
     ModelType model_type,
     const sync_pb::DataTypeProgressMarker& new_progress) {

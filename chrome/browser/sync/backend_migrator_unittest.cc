@@ -53,7 +53,7 @@ class BackendMigratorTest : public testing::Test {
 
     snap_.reset(new SyncSessionSnapshot(SyncerStatus(), ErrorCounters(),
         0, false, syncable::ModelTypeBitSet(), download_progress_markers,
-        false, false, 0, 0, 0, false, sessions::SyncSourceInfo()));
+        false, false, 0, 0, 0, false, sessions::SyncSourceInfo(), 0));
     EXPECT_CALL(service_, GetLastSessionSnapshot())
         .WillOnce(Return(snap_.get()));
   }

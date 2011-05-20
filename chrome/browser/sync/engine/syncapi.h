@@ -736,6 +736,14 @@ class SyncManager {
     // Total number of overwrites due to conflict resolver since browser start.
     int num_local_overwrites_total;
     int num_server_overwrites_total;
+
+    // Count of empty and non empty getupdates;
+    int nonempty_get_updates;
+    int empty_get_updates;
+
+    // Count of useless and useful syncs we perform.
+    int useless_sync_cycles;
+    int useful_sync_cycles;
   };
 
   // An interface the embedding application implements to receive notifications
