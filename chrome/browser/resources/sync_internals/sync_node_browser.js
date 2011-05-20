@@ -18,6 +18,23 @@ cr.define('chrome.sync', function() {
   // hide all these details.
 
   /**
+   * Returns an object which measures elapsed time.
+   */
+  var makeTimer = function() {
+    var start = new Date();
+
+    return {
+      /**
+       * @return {number} The number of seconds since the timer was
+       * created.
+       */
+      get elapsedSeconds() {
+        return ((new Date()).getTime() - start.getTime()) / 1000.0;
+      }
+    };
+  };
+
+  /**
    * Gets all children of the given node and passes it to the given
    * callback.
    * @param {Object} nodeInfo The info for the node whose children we
@@ -26,16 +43,19 @@ cr.define('chrome.sync', function() {
    *     children.
    */
   function getSyncNodeChildren(nodeInfo, callback) {
-    var children = [];
-    function processChildInfo(childNodeInfo) {
-      if (!childNodeInfo) {
+    var timer = makeTimer();
+    chrome.sync.getChildNodeIds(nodeInfo.id, function(childNodeIds) {
+      console.debug('getChildNodeIds took ' +
+                    timer.elapsedSeconds + 's to retrieve ' +
+                    childNodeIds.length + ' ids');
+      timer = makeTimer();
+      chrome.sync.getNodesById(childNodeIds, function(children) {
+        console.debug('getNodesById took ' +
+                      timer.elapsedSeconds + 's to retrieve ' +
+                      children.length + ' nodes');
         callback(children);
-        return;
-      }
-      children.push(childNodeInfo);
-      chrome.sync.getNodeById(childNodeInfo.successorId, processChildInfo);
-    };
-    chrome.sync.getNodeById(nodeInfo.firstChildId, processChildInfo);
+      });
+    });
   }
 
   /**
@@ -59,10 +79,13 @@ cr.define('chrome.sync', function() {
       treeItem.addEventListener('expand', function(event) {
         if (!treeItem.triggeredLoad_) {
           getSyncNodeChildren(nodeInfo, function(children) {
+            var timer = makeTimer();
             for (var i = 0; i < children.length; ++i) {
               var childTreeItem = makeNodeTreeItem(children[i]);
               treeItem.add(childTreeItem);
             }
+            console.debug('adding ' + children.length + ' children took ' +
+                          timer.elapsedSeconds + 's');
           });
           treeItem.triggeredLoad_ = true;
         }

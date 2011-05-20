@@ -140,7 +140,8 @@ var syncFunctions = [
 
   // Node lookup functions.
   'getRootNode',
-  'getNodeById',
+  'getNodesById',
+  'getChildNodeIds',
   'findNodesContainingString'
 ];
 

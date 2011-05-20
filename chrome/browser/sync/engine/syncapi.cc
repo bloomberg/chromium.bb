@@ -1548,7 +1548,10 @@ class SyncManager::SyncInternal
   void OnIPAddressChangedImpl();
 
   // Functions called by ProcessMessage().
-  browser_sync::JsArgList ProcessGetNodeByIdMessage(
+  browser_sync::JsArgList ProcessGetNodesByIdMessage(
+      const browser_sync::JsArgList& args);
+
+  browser_sync::JsArgList ProcessGetChildNodeIdsMessage(
       const browser_sync::JsArgList& args);
 
   browser_sync::JsArgList ProcessFindNodesContainingString(
@@ -2719,13 +2722,20 @@ void SyncManager::SyncInternal::ProcessMessage(
     return_args.Append(root.ToValue());
     parent_router_->RouteJsMessageReply(
         name, browser_sync::JsArgList(&return_args), sender);
-  } else if (name == "getNodeById") {
+  } else if (name == "getNodesById") {
     if (!parent_router_) {
       LogNoRouter(name, args);
       return;
     }
     parent_router_->RouteJsMessageReply(
-        name, ProcessGetNodeByIdMessage(args), sender);
+        name, ProcessGetNodesByIdMessage(args), sender);
+  } else if (name == "getChildNodeIds") {
+    if (!parent_router_) {
+      LogNoRouter(name, args);
+      return;
+    }
+    parent_router_->RouteJsMessageReply(
+        name, ProcessGetChildNodeIdsMessage(args), sender);
   } else if (name == "findNodesContainingString") {
     if (!parent_router_) {
       LogNoRouter(name, args);
@@ -2758,29 +2768,70 @@ void SyncManager::SyncInternal::RouteJsMessageReply(
   parent_router_->RouteJsMessageReply(name, args, target);
 }
 
-browser_sync::JsArgList SyncManager::SyncInternal::ProcessGetNodeByIdMessage(
-    const browser_sync::JsArgList& args) {
-  ListValue null_return_args_list;
-  null_return_args_list.Append(Value::CreateNullValue());
-  browser_sync::JsArgList null_return_args(&null_return_args_list);
+namespace {
+
+bool GetId(const ListValue& ids, int i, int64* id) {
   std::string id_str;
-  if (!args.Get().GetString(0, &id_str)) {
-    return null_return_args;
+  if (!ids.GetString(i, &id_str)) {
+    return false;
   }
-  int64 id;
-  if (!base::StringToInt64(id_str, &id)) {
-    return null_return_args;
+  if (!base::StringToInt64(id_str, id)) {
+    return false;
   }
-  if (id == kInvalidId) {
-    return null_return_args;
+  if (*id == kInvalidId) {
+    return false;
   }
-  ReadTransaction trans(GetUserShare());
-  ReadNode node(&trans);
-  if (!node.InitByIdLookup(id)) {
-    return null_return_args;
-  }
+  return true;
+}
+
+}  // namespace
+
+browser_sync::JsArgList SyncManager::SyncInternal::ProcessGetNodesByIdMessage(
+    const browser_sync::JsArgList& args) {
   ListValue return_args;
-  return_args.Append(node.ToValue());
+  ListValue* nodes = new ListValue();
+  return_args.Append(nodes);
+  ListValue* id_list = NULL;
+  ReadTransaction trans(GetUserShare());
+  if (args.Get().GetList(0, &id_list)) {
+    for (size_t i = 0; i < id_list->GetSize(); ++i) {
+      int64 id = kInvalidId;
+      if (!GetId(*id_list, i, &id)) {
+        continue;
+      }
+      ReadNode node(&trans);
+      if (!node.InitByIdLookup(id)) {
+        continue;
+      }
+      nodes->Append(node.ToValue());
+    }
+  }
+  return browser_sync::JsArgList(&return_args);
+}
+
+browser_sync::JsArgList SyncManager::SyncInternal::
+    ProcessGetChildNodeIdsMessage(
+        const browser_sync::JsArgList& args) {
+  ListValue return_args;
+  ListValue* child_ids = new ListValue();
+  return_args.Append(child_ids);
+  int64 id = kInvalidId;
+  if (GetId(args.Get(), 0, &id)) {
+    ReadTransaction trans(GetUserShare());
+    ReadNode node(&trans);
+    if (node.InitByIdLookup(id)) {
+      int64 child_id = node.GetFirstChildId();
+      while (child_id != kInvalidId) {
+        ReadNode child_node(&trans);
+        if (!child_node.InitByIdLookup(child_id)) {
+          break;
+        }
+        child_ids->Append(Value::CreateStringValue(
+            base::Int64ToString(child_id)));
+        child_id = child_node.GetSuccessorId();
+      }
+    }
+  }
   return browser_sync::JsArgList(&return_args);
 }
 

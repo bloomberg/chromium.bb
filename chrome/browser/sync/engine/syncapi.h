@@ -979,22 +979,24 @@ class SyncManager {
   // The following messages are processed by the returned backend:
   //
   // getNotificationState():
-  //   If there is a parent router, sends the
-  //   onGetNotificationStateFinished(boolean notificationsEnabled)
-  //   event to |sender| via the parent router with whether or not
-  //   notifications are enabled.
+  //   callback(boolean notificationsEnabled):
+  //     notificationsEnabled: whether or not notifications are
+  //     enabled.
   //
   // getRootNode():
-  //   If there is a parent router, sends the
-  //   onGetRootNodeFinished(dictionary nodeInfo) event to |sender|
-  //   via the parent router with information on the root node.
+  //   callback(dictionary nodeInfo):
+  //     nodeInfo: Information on the root node.
   //
-  // getNodeById(string id):
-  //   If there is a parent router, sends the
-  //   onGetNodeByIdFinished(dictionary nodeInfo) event to |sender|
-  //   via the parent router with information on the node with the
-  //   given id (metahandle), if the id is valid and a node with that
-  //   id exists.  Otherwise, calls onGetNodeByIdFinished(null).
+  // getNodesById(array idList):
+  //   idList: A list of IDs as strings.
+  //   callback(array nodeList):
+  //     nodeList: Information on each node for each valid id in
+  //     idList.  Not guaranteed to be in any order.
+  //
+  // getChildNodeIds(string id):
+  //   id: The id of the node for which to return the child node ids.
+  //   callback(array idList):
+  //     idList: The child node IDs of the node with the given id.
   //
   // All other messages are dropped.
   browser_sync::JsBackend* GetJsBackend();
