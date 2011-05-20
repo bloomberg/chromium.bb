@@ -103,6 +103,12 @@
 #     $3 -> Google Chrome Frame / Chromium Frame
 #     $6 is reserved for doc_writer
 #
+# Device Policy:
+#   An additional flag device_only (optional, defaults to False) indicates
+#   that this policy is only supported as a device-level Cloud Policy.
+#   In that case no entry in the UserPolicy Protobuf is generated and
+#   it is assumed that it will be added to the DevicePolicy Protobuf manually.
+#
   'policy_definitions': [
     {
       'name': 'Homepage',

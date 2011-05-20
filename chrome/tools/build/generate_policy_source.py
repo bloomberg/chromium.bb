@@ -186,6 +186,8 @@ RESERVED_IDS = 2
 
 
 def _WritePolicyProto(file, policy, fields):
+  if policy.get('device_only', False):
+    return
   file.write('message %sProto {\n' % policy['name'])
   file.write('  optional PolicyOptions policy_options = 1;\n')
   file.write('  optional %s %s = 2;\n' %
@@ -283,6 +285,8 @@ def _CreateValue(type):
 
 
 def _WritePolicyCode(file, policy):
+  if policy.get('device_only', False):
+    return
   membername = policy['name'].lower()
   proto_type = "%sProto" % policy['name']
   proto_name = "%s_proto" % membername
