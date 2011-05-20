@@ -77,6 +77,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/ui.gyp:ui_base',
         'glue',
       ],
       'export_dependent_settings': [

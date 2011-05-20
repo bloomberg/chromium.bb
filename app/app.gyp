@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,14 +26,10 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/ui.gyp:ui_base',
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'sources': [
-        '../ui/base/animation/animation_container_unittest.cc',
-        '../ui/base/animation/animation_unittest.cc',
-        '../ui/base/animation/multi_animation_unittest.cc',
-        '../ui/base/animation/slide_animation_unittest.cc',
-        '../ui/base/clipboard/clipboard_unittest.cc',
         '../ui/base/dragdrop/os_exchange_data_win_unittest.cc',
         '../ui/base/l10n/l10n_util_mac_unittest.mm',
         '../ui/base/l10n/l10n_util_unittest.cc',
