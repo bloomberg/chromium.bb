@@ -4097,7 +4097,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         CRX-less Web Apps
       </message>
       <message name="IDS_FLAGS_CRXLESS_WEB_APPS_DESCRIPTION" desc="Description of the CRX-less web apps lab">
-        Enables support for installing Chrome apps that are deployed using a manifest file on a web page, rather than by packaging the manifest and icons into a crx file.
+        Enables support for installing Chrome apps that are deployed using a manifest file on a webpage, rather than by packaging the manifest and icons into a crx file.
       </message>
       <message name="IDS_FLAGS_CONFLICTS_CHECK_NAME" desc="Title of the run conflicts check flag">
         Check for known conflicts with 3rd party modules.
@@ -4109,7 +4109,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         GPU Accelerated Compositing
       </message>
       <message name="IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION" desc="Description of the 'GPU Accelerated Compositing' lab.">
-        Enables 3D CSS and higher performance compositing of web pages using Graphics Processor Unit (GPU) hardware.
+        Enables 3D CSS and higher performance compositing of webpages using Graphics Processor Unit (GPU) hardware.
       </message>
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS" desc="Name of the 'Composited layer borders' lab.">
         Composited render layer borders
@@ -4299,7 +4299,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable Instant for faster searching and browsing?
       </message>
       <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant opt-in dialog">
-        With Instant enabled, most web pages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause search results are requested even while you're typing your query, your default search engine may be logging these as search queries.\n
+        With Instant enabled, most webpages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause search results are requested even while you're typing your query, your default search engine may be logging these as search queries.\n
       </message>
       <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant">
         Enable Instant for faster searching and browsing
@@ -4506,17 +4506,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Javascript Dialog Box strings -->
-      <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for Javascript alert originating from a web page if there is no hostname to display">
+      <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for Javascript alert originating from a webpage if there is no hostname to display">
         Javascript Alert
       </message>
-      <message name="IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE" desc="Title for Javascript prompt and confirm originating from a web page if there is no hostname to display">
+      <message name="IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE" desc="Title for Javascript prompt and confirm originating from a webpage if there is no hostname to display">
         Javascript
       </message>
-      <message name="IDS_JAVASCRIPT_ALERT_TITLE" desc="Title for Javascript alert originating from a web page">
+      <message name="IDS_JAVASCRIPT_ALERT_TITLE" desc="Title for Javascript alert originating from a webpage">
         The page at <ph name="SITE">$1<ex>http://www.google.com</ex> says:
         </ph>
       </message>
-      <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for Javascript prompt and confirm originating from a web page">
+      <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for Javascript prompt and confirm originating from a webpage">
         The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
       </message>
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION" desc="Optional UI shown on the message box, in the form of a checkbox, allowing the user to suppress additional message boxes from the page.">
@@ -5885,7 +5885,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_APP_MENU_COPY_URL" desc="The copy url menu in application windows">
           Copy URL
         </message>
-        <message name="IDS_APP_MENU_NEW_WEB_PAGE" desc="The new web page menu in application windows">
+        <message name="IDS_APP_MENU_NEW_WEB_PAGE" desc="The new webpage menu in application windows">
           Open browser window
         </message>
       </if>
@@ -5896,7 +5896,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_APP_MENU_COPY_URL" desc="In Title Case: The copy url menu in application windows">
           Copy URL
         </message>
-        <message name="IDS_APP_MENU_NEW_WEB_PAGE" desc="In Title Case: The new web page menu in application windows">
+        <message name="IDS_APP_MENU_NEW_WEB_PAGE" desc="In Title Case: The new webpage menu in application windows">
           Open Browser Window
         </message>
       </if>
@@ -6007,13 +6007,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD" desc="When a page fails to load, we provide a suggestion that the user try reloading the page later">
-        <ph name="BEGIN_LINK">&lt;a jsvalues="href:reloadUrl"&gt;</ph>Reload<ph name="END_LINK">&lt;/a&gt;</ph> this web page later.
+        <ph name="BEGIN_LINK">&lt;a jsvalues="href:reloadUrl"&gt;</ph>Reload<ph name="END_LINK">&lt;/a&gt;</ph> this webpage later.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_HOMEPAGE" desc="When a page fails to load, sometimes we provide a suggesting of trying just the hostname of the site.">
         Go to the home page of the site:
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION" desc="When a page fails to load, sometimes we suggest checking the network connection.">
-        Check your Internet connection. Reboot any routers, modems, or other
+        Check your Internet connection. Restart any router, modem, or other
         network devices you may be using.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG" desc="When a page fails to load, sometimes we suggest checking the DNS configuration.">
@@ -6024,7 +6024,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Try disabling network prediction by following these steps:
         Go to
         <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-        Wrench menu &gt;
+        the wrench menu &gt;
         <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
         &gt;
         <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
@@ -6033,19 +6033,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
         If this does not resolve the issue, we recommend selecting this option
         again for improved performance.
       </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG" desc="When a web page fails to load, in some cases we suggest reconfiguring the firewall.">
-        Try adding
+      <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG" desc="When a webpage fails to load, in some cases we suggest reconfiguring the firewall.">
+        Add
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        as a permitted program in your firewall or antivirus software's settings. If it is
+        as a permitted program in your firewall's or antivirus software's settings. If it is
         already a permitted program, try deleting it from the list of permitted programs
         and adding it again.
       </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG" desc="When a web page fails to load, in some cases we suggest checking the proxy server configuration.">
-        If you use a proxy server, check your proxy settings or check with your network administrator
-        to make sure the proxy server is working.
-      </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE" desc="When a web page fails to load, in some cases we suggest disabling the proxy server.">
-        If you don't believe you should be using a proxy server, try the following steps:
+      <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG" desc="When a webpage fails to load, in some cases we suggest checking the proxy server configuration, or disabling the proxy server.">
+        If you use a proxy server, check your proxy settings or contact your
+        network administrator to make sure the proxy server is working. If you
+        don't believe you should be using a proxy server, adjust your proxy
+        settings:
         <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It</ex></ph>
       </message>
       <if expr="os == 'darwin'">
@@ -6057,35 +6056,38 @@ Keep your key file in a safe place. You will need it to create new versions of y
           and deselect any proxies that have been selected.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="ChromeOS instructions for disabling use of a proxy server.">
+      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux and ChromeOS instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-          Wrench menu &gt; Settings &gt; Under the Hood &gt; Change proxy settings
+          the wrench menu &gt;
+          <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
+          &gt;
+          <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
+          &gt;
+          <ph name="PROXIES_TITLE">&lt;span jscontent="proxyTitle"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>
           <ph name="END_BOLD">&lt;/strong&gt;</ph>
           and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and (os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
-          Go to
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-          Wrench menu &gt; Preferences &gt; Under the Hood &gt; Change proxy settings
-          <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
-        </message>
-      </if>
-      <if expr="os != 'darwin' and os != 'linux2' and os.find('bsd') == -1 and os != 'sunos5'">
+      <if expr="os == 'win32'">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Windows instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-          Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings &gt; LAN Settings
+          the wrench menu &gt;
+          <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
+          &gt;
+          <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
+          &gt;
+          <ph name="PROXIES_TITLE">&lt;span jscontent="proxyTitle"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>
+          &gt;
+          LAN Settings
           <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and deselect &quot;Use a proxy server for your LAN.&quot;
+          and deselect the &quot;Use a proxy server for your LAN&quot; checkbox.
         </message>
       </if>
 
-      <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE" desc="When a web page fails to load, we provide a link to the help center to learn more about the failure.">
+      <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
         <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about this problem.
       </message>
 
@@ -6140,8 +6142,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
       </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_TIMED_OUT" desc="Summary in the error page when a page takes too long to load.">
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        could not load the webpage because
+        <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+        took too long to respond.  The website may be down, or you may be
+        experiencing issues with your Internet connection.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_CONNECTION_RESET" desc="Summary in the error page when the connection was reset.">
+        The connection to
+        <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+        was interrupted.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_CONNECTION_REFUSED" desc="Summary in the error page when we try and connect to a server, but the server doesn't let us.">
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+        connection attempt to
+        <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+        was rejected.  The website may be down, or your network may not be
+        properly configured.
+      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails.">
-        The server at <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;</ph>
+        The server at
+        <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
         can't be found, because the DNS lookup failed.  DNS is the web service
         that translates a website's name to its Internet address.  This error is
         most often caused by having no connection to the Internet or a
@@ -6307,10 +6329,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_RESET" desc="The error message displayed when a connection was reset.">
         The connection was reset.
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_REFUSED" desc="The error message displayed a connection attempt is refused.">
+      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_REFUSED" desc="The error message displayed when we try and connect to a server, but the server doesn't let us.">
         The server refused the connection.
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_FAILED" desc="The error message displayed when we can not reach the web site.">
+      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_FAILED" desc="The error message displayed when we can not reach the website.">
         The attempt to connect to the server failed.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
@@ -6452,7 +6474,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
-        This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed. Press Reload to resend that data and display this page.
+        This webpage requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed. Press Reload to resend that data and display this page.
       </message>
 
       <message name="IDS_ERRORPAGES_APP_WARNING" desc="The error message displayed when the browser can not reach the requested page from an app.">
@@ -7542,7 +7564,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Misc advanced option description strings. -->
-      <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of web pages.">
+      <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
         Predict network actions to improve page load performance
       </message>
 
@@ -8176,7 +8198,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Saving Page-->
-      <message name="IDS_SAVE_PAGE_DESC_HTML_ONLY" desc="In the Save Page dialog, the description of saving only the HTML of a web page.">
+      <message name="IDS_SAVE_PAGE_DESC_HTML_ONLY" desc="In the Save Page dialog, the description of saving only the HTML of a webpage.">
         Web Page, HTML Only
       </message>
       <message name="IDS_SAVE_PAGE_DESC_COMPLETE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources.">
@@ -8246,7 +8268,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Pressing Tab on a webpage highlights links, as well as form fields
       </message>
 
-      <message name="IDS_OPTIONS_FONTSETTINGS_INFO" desc="Information text about font and language options for web pages">
+      <message name="IDS_OPTIONS_FONTSETTINGS_INFO" desc="Information text about font and language options for webpages">
         Change the default font and language for webpages.
       </message>
       <message name="IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL" desc="The label of the 'Default Zoom Level' select menu">
@@ -9796,7 +9818,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_IMAGEBURN_BURN_CANCELED_STATUS" desc="Progress message shown when burning image breaks">
         Image burning has been terminated
       </message>
-      <message name="IDS_IMAGEBURN_HEADER_TITLE" desc="Title that is displayed on image burning web page ">
+      <message name="IDS_IMAGEBURN_HEADER_TITLE" desc="Title that is displayed on image burning webpage ">
         Create OS Recovery Media
       </message>
       <message name="IDS_IMAGEBURN_HEADER_DESCRIPTION" desc="Text diplayed under image burning page title">

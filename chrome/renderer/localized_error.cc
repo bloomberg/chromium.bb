@@ -56,16 +56,18 @@ const LocalizedErrorMap net_error_options[] = {
   {net::ERR_TIMED_OUT,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_TIMED_OUT,
    IDS_ERRORPAGES_DETAILS_TIMED_OUT,
-   SUGGEST_RELOAD,
+   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
+       SUGGEST_PROXY_CONFIG,
   },
   {net::ERR_CONNECTION_TIMED_OUT,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_TIMED_OUT,
    IDS_ERRORPAGES_DETAILS_TIMED_OUT,
-   SUGGEST_RELOAD,
+   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
+       SUGGEST_PROXY_CONFIG,
   },
   {net::ERR_CONNECTION_CLOSED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
@@ -77,16 +79,18 @@ const LocalizedErrorMap net_error_options[] = {
   {net::ERR_CONNECTION_RESET,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_CONNECTION_RESET,
    IDS_ERRORPAGES_DETAILS_CONNECTION_RESET,
-   SUGGEST_RELOAD,
+   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
+       SUGGEST_PROXY_CONFIG,
   },
   {net::ERR_CONNECTION_REFUSED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_CONNECTION_REFUSED,
    IDS_ERRORPAGES_DETAILS_CONNECTION_REFUSED,
-   SUGGEST_RELOAD,
+   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
+       SUGGEST_PROXY_CONFIG,
   },
   {net::ERR_CONNECTION_FAILED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
@@ -101,7 +105,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
    IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
    SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_DNS_CONFIG |
-   SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG,
+       SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG,
   },
   {net::ERR_ADDRESS_UNREACHABLE,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
@@ -360,6 +364,17 @@ bool LocaleIsRTL() {
 #endif
 }
 
+// Returns a dictionary containing the strings for the settings menu under the
+// wrench, and the advanced settings button.
+DictionaryValue* GetStandardMenuItemsText() {
+  DictionaryValue* standard_menu_items_text = new DictionaryValue();
+  standard_menu_items_text->SetString("settingsTitle",
+      l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
+  standard_menu_items_text->SetString("advancedTitle",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
+  return standard_menu_items_text;
+}
+
 }  // namespace
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
@@ -488,14 +503,10 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
         l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG));
     error_strings->Set("suggestionsDNSConfig", suggest_dns_config);
 
-    DictionaryValue* suggest_network_prediction = new DictionaryValue;
+    DictionaryValue* suggest_network_prediction = GetStandardMenuItemsText();
     suggest_network_prediction->SetString("msg",
         l10n_util::GetStringUTF16(
             IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION));
-    suggest_network_prediction->SetString("settingsTitle",
-        l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
-    suggest_network_prediction->SetString("advancedTitle",
-        l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
     suggest_network_prediction->SetString(
         "noNetworkPredictionTitle",
         l10n_util::GetStringUTF16(
@@ -514,17 +525,14 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   }
 
   if (options.suggestions & SUGGEST_PROXY_CONFIG) {
-    DictionaryValue* suggest_proxy_config = new DictionaryValue;
+    DictionaryValue* suggest_proxy_config = GetStandardMenuItemsText();
     suggest_proxy_config->SetString("msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG));
-    error_strings->Set("suggestionsProxyConfig", suggest_proxy_config);
-
-    DictionaryValue* suggest_proxy_disable = new DictionaryValue;
-    suggest_proxy_disable->SetString("msg",
-        l10n_util::GetStringFUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE,
+        l10n_util::GetStringFUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG,
             l10n_util::GetStringUTF16(
                 IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM)));
-    error_strings->Set("suggestionsProxyDisable", suggest_proxy_disable);
+    suggest_proxy_config->SetString("proxyTitle",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
+    error_strings->Set("suggestionsProxyConfig", suggest_proxy_config);
   }
 
   if (options.suggestions & SUGGEST_LEARNMORE) {
