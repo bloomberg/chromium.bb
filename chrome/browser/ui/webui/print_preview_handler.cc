@@ -448,8 +448,10 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   PrintPreviewUIHTMLSource::PrintPreviewData data;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
   print_preview_ui->html_source()->GetPrintPreviewData(&data);
-  DCHECK(data.first);
-  DCHECK_GT(data.second, 0U);
+  if (!data.first || !data.second) {
+    NOTREACHED();
+    return;
+  }
 
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(data.first->memory(), data.second);
