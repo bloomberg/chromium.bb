@@ -102,6 +102,7 @@
         'remoting_base',
         'remoting_client',
         'remoting_jingle_glue',
+        '../media/media.gyp:yuv_convert',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
 
         # TODO(sergeyu): This is a hack: plugin should not depend on
@@ -130,12 +131,6 @@
         'client/plugin/pepper_util.h',
         'client/plugin/pepper_xmpp_proxy.cc',
         'client/plugin/pepper_xmpp_proxy.h',
-        '../media/base/yuv_convert.cc',
-        '../media/base/yuv_convert.h',
-        '../media/base/yuv_row.h',
-        '../media/base/yuv_row_table.cc',
-        '../media/base/yuv_row_win.cc',
-        '../media/base/yuv_row_posix.cc',
       ],
     },  # end of target 'remoting_client_plugin'
     {
