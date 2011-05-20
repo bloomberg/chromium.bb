@@ -25,10 +25,10 @@ typedef enum {
 } DownloadFlags;
 
 typedef enum {
-  SCHEME_NORMAL,
-  SCHEME_CHROME_EXT,
-  SCHEME_DATA
-} DownloadScheme;
+  SCHEME_CHROME_EXTENSION,
+  SCHEME_DATA,
+  SCHEME_OTHER
+} UrlSchemeType;
 
 // A class that wraps PPAPI URLLoader and FileIO functionality for downloading
 // the url into a file and providing an open file descriptor.
@@ -116,7 +116,7 @@ class FileDownloader {
   static const uint32_t kTempBufferSize = 1024;
   char temp_buffer_[kTempBufferSize];
   std::deque<char> buffer_;
-  DownloadScheme scheme_;
+  UrlSchemeType url_scheme_;
 };
 }  // namespace plugin;
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_

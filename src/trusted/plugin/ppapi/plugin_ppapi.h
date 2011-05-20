@@ -20,6 +20,7 @@
 
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
 
 struct NaClSrpcChannel;
@@ -116,9 +117,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
   int32_t GetPOSIXFileDesc(const nacl::string& url);
 
-  // A helper function that tests to see if |url| is of a particular
-  // |test_scheme|.  Uses URLUtil_Dev interface which this class has a member.
-  bool IsUrlOfScheme(const std::string& url, const std::string& test_scheme);
+  // A helper function that gets the scheme type for |url|. Uses URLUtil_Dev
+  // interface which this class has as a member.
+  UrlSchemeType GetUrlScheme(const std::string& url);
 
   // Get the text description of the last error reported by the plugin.
   const nacl::string& last_error_string() const { return last_error_string_; }
@@ -131,9 +132,10 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // is being used as a content type handler for another content type (such as
   // PDF), then this function will return that type.
   const nacl::string& mime_type() const { return mime_type_; }
-
   // The default MIME type for the NaCl plugin.
   static const char* const kNaClMIMEType;
+  // Tests if the MIME type is not a NaCl MIME type.
+  bool IsForeignMIMEType() const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
@@ -225,6 +227,11 @@ class PluginPpapi : public pp::Instance, public Plugin {
   bool replayDidChangeView;
   pp::Rect replayDidChangeViewPosition;
   pp::Rect replayDidChangeViewClip;
+
+  // If we get a HandleDocumentLoad event before the nexe is loaded, we store
+  // it and replay it to nexe after it's loaded.
+  bool replayHandleDocumentLoad;
+  pp::URLLoader replayHandleDocumentLoadURLLoader;
 
   nacl::string mime_type_;
 

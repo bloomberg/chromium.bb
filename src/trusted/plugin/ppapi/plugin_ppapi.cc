@@ -76,6 +76,10 @@ const char* const kNaClManifestAttribute = "nacl";
 // for the null termination character.
 const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
 
+// URL schemes that we treat in special ways.
+const char* const kChromeExtensionUriScheme = "chrome-extension";
+const char* const kDataUriScheme = "data";
+
 // The key used to find the dictionary nexe URLs in the manifest file.
 const char* const kNexesKey = "nexes";
 // The top level dictionary entries valid in the manifest file.
@@ -432,6 +436,13 @@ bool ValidateManifestObject(pp::Var manifest_candidate,
 
 const char* const PluginPpapi::kNaClMIMEType = "application/x-nacl";
 
+bool PluginPpapi::IsForeignMIMEType() const {
+  return
+      !mime_type().empty() &&
+      mime_type() != kNaClMIMEType;
+}
+
+
 bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
   PluginPpapi* plugin =
       static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
@@ -525,7 +536,9 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     }
 
     const char* manifest_url = LookupArgument(kSrcManifestAttribute);
-    if (!mime_type_.empty() && mime_type_ != kNaClMIMEType)
+    // If the MIME type is foreign, then 'src' will be the URL for the content
+    // and 'nacl' will be the URL for the manifest.
+    if (IsForeignMIMEType())
         manifest_url = LookupArgument(kNaClManifestAttribute);
     // Use the document URL as the base for resolving relative URLs to find the
     // manifest.  This takes into account the setting of <base> tags that
@@ -565,6 +578,7 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
       last_error_string_(""),
       ppapi_proxy_(NULL),
       replayDidChangeView(false),
+      replayHandleDocumentLoad(false),
       nexe_size_(0) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
@@ -639,6 +653,11 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   PLUGIN_PRINTF(("PluginPpapi::HandleDocumentLoad (this=%p)\n",
                  static_cast<void*>(this)));
   if (ppapi_proxy_ == NULL) {
+    // Store this event and replay it when the proxy becomes available.
+    replayHandleDocumentLoad = true;
+    replayHandleDocumentLoadURLLoader = url_loader;
+    // Returning false allows the caller release its reference to the
+    // URL loader.
     return false;
   } else {
     return pp::PPBoolToBool(
@@ -811,6 +830,11 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   if (replayDidChangeView) {
     replayDidChangeView = false;
     DidChangeView(replayDidChangeViewPosition, replayDidChangeViewClip);
+  }
+  if (replayHandleDocumentLoad) {
+    replayHandleDocumentLoad = false;
+    if (!HandleDocumentLoad(replayHandleDocumentLoadURLLoader))
+      replayHandleDocumentLoadURLLoader.Close();
   }
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (success=true)\n"));
   return true;
@@ -996,7 +1020,7 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
                         false,  // length_computable
                         kUnknownBytes,
                         kUnknownBytes);
-  if (IsUrlOfScheme(nmf_resolved_url.AsString(), "data")) {
+  if (GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA) {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&PluginPpapi::NaClManifestBufferReady);
     // Will always call the callback on success or failure.
@@ -1351,8 +1375,7 @@ void PluginPpapi::DispatchProgressEvent(const char* event_type,
   }
 }
 
-bool PluginPpapi::IsUrlOfScheme(const std::string& url,
-                                const std::string& test_scheme) {
+UrlSchemeType PluginPpapi::GetUrlScheme(const std::string& url) {
   CHECK(url_util_ != NULL);
   PP_URLComponents_Dev comps;
   pp::Var canonicalized =
@@ -1361,7 +1384,7 @@ bool PluginPpapi::IsUrlOfScheme(const std::string& url,
   if (canonicalized.is_null() ||
       (comps.scheme.begin == 0 && comps.scheme.len == -1)) {
     // |url| was an invalid URL or has no scheme.
-    return false;
+    return SCHEME_OTHER;
   }
 
   CHECK(comps.scheme.begin <
@@ -1371,7 +1394,11 @@ bool PluginPpapi::IsUrlOfScheme(const std::string& url,
 
   std::string scheme = canonicalized.AsString().substr(comps.scheme.begin,
                                                        comps.scheme.len);
-  return scheme == test_scheme;
+  if (scheme == kChromeExtensionUriScheme)
+    return SCHEME_CHROME_EXTENSION;
+  if (scheme == kDataUriScheme)
+    return SCHEME_DATA;
+  return SCHEME_OTHER;
 }
 
 }  // namespace plugin

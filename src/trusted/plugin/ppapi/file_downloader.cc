@@ -20,10 +20,8 @@
 #include "ppapi/cpp/url_response_info.h"
 
 namespace {
-const char* const kChromeExtensionScheme = "chrome-extension";
-const int32_t kExtensionRequestStatusOk = 200;
-const char* const kDataURIScheme = "data";
-const int32_t kDataURIRequestStatusOk = 0;
+const int32_t kExtensionUrlRequestStatusOk = 200;
+const int32_t kDataUriRequestStatusOk = 0;
 }
 
 namespace plugin {
@@ -58,40 +56,31 @@ bool FileDownloader::Open(const nacl::string& url,
 
 
   do {
-    if (instance_->IsUrlOfScheme(url, kChromeExtensionScheme)) {
-      scheme_ = SCHEME_CHROME_EXT;
-    } else if (instance_->IsUrlOfScheme(url, kDataURIScheme)) {
-      scheme_ = SCHEME_DATA;
-    } else {
-      scheme_ = SCHEME_NORMAL;
-    }
-
     // Reset the url loader and file reader.
     // Note that we have the only reference to the underlying objects, so
     // this will implicitly close any pending IO and destroy them.
     url_loader_ = pp::URLLoader(instance_);
-
+    url_scheme_ = instance_->GetUrlScheme(url);
     bool grant_universal_access = false;
-
-    if (!instance_->mime_type().empty() &&
-        instance_->mime_type() != PluginPpapi::kNaClMIMEType &&
-        scheme_ == SCHEME_CHROME_EXT) {
-      // This NEXE is being used as a content type handler rather than directly
-      // by an HTML document. In that case, the NEXE runs in the security
-      // context of the content it is rendering and the NEXE itself appears to
-      // be a cross-origin resource stored in a Chrome extension. We request
-      // universal access during this load so that we can read the NEXE.
-      grant_universal_access = true;
-    }
-
-    // TODO(elijahtaylor) Remove this when data URIs can be read without
-    // universal access.
-    if (streaming_to_buffer() && scheme_ == SCHEME_DATA) {
-      grant_universal_access = true;
-    }
-    if (!streaming_to_buffer() && scheme_ == SCHEME_DATA) {
-      pp_error = PP_ERROR_BADARGUMENT;
-      break;
+    if (url_scheme_ == SCHEME_CHROME_EXTENSION) {
+      if (instance_->IsForeignMIMEType()) {
+        // This NEXE is being used as a content type handler rather than
+        // directly by an HTML document. In that case, the NEXE runs in the
+        // security context of the content it is rendering and the NEXE itself
+        // appears to be a cross-origin resource stored in a Chrome extension.
+        // We request universal access during this load so that we can read the
+        // NEXE.
+        grant_universal_access = true;
+      }
+    } else if (url_scheme_ == SCHEME_DATA) {
+      // TODO(elijahtaylor) Remove this when data URIs can be read without
+      // universal access.
+      if (streaming_to_buffer()) {
+        grant_universal_access = true;
+      } else {
+        pp_error = PP_ERROR_BADARGUMENT;
+        break;
+      }
     }
 
     if (grant_universal_access) {
@@ -204,18 +193,22 @@ bool FileDownloader::InitialResponseIsValid(int32_t pp_error) {
   }
   bool status_ok = false;
   int32_t status_code = url_response.GetStatusCode();
-  if (scheme_ == SCHEME_CHROME_EXT) {
-    PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (chrome-extension "
-                   "response status_code=%"NACL_PRId32")\n", status_code));
-    status_ok = (status_code == kExtensionRequestStatusOk);
-  } else if (scheme_ == SCHEME_DATA) {
-    PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (data URI "
-                   "response status_code=%"NACL_PRId32")\n", status_code));
-    status_ok = (status_code == kDataURIRequestStatusOk);
-  } else {
-    PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (HTTP response "
-                   "status_code=%"NACL_PRId32")\n", status_code));
-    status_ok = (status_code == NACL_HTTP_STATUS_OK);
+  switch (url_scheme_) {
+    case SCHEME_CHROME_EXTENSION:
+      PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (chrome-extension "
+                     "response status_code=%"NACL_PRId32")\n", status_code));
+      status_ok = (status_code == kExtensionUrlRequestStatusOk);
+      break;
+    case SCHEME_DATA:
+      PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (data URI "
+                     "response status_code=%"NACL_PRId32")\n", status_code));
+      status_ok = (status_code == kDataUriRequestStatusOk);
+      break;
+    case SCHEME_OTHER:
+      PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (HTTP response "
+                     "status_code=%"NACL_PRId32")\n", status_code));
+      status_ok = (status_code == NACL_HTTP_STATUS_OK);
+      break;
   }
 
   if (!status_ok) {
@@ -257,7 +250,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   pp::URLResponseInfo url_response(url_loader_.GetResponseInfo());
   // Validated on load.
   CHECK(url_response.GetStatusCode() == NACL_HTTP_STATUS_OK ||
-        url_response.GetStatusCode() == kExtensionRequestStatusOk);
+        url_response.GetStatusCode() == kExtensionUrlRequestStatusOk);
 
   // Record the full url from the response.
   pp::Var full_url = url_response.GetURL();
