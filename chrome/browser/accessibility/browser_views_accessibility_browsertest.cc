@@ -20,7 +20,6 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accessibility/native_view_accessibility_win.h"
-#include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 namespace {
@@ -154,8 +153,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestNonClientViewAccObj) {
 // accessibility info.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                        TestBrowserRootViewAccObj) {
-  views::View* browser_root_view =
-      GetBrowserView()->frame()->GetFrameView()->GetRootView();
+  views::View* browser_root_view = GetBrowserView()->frame()->GetRootView();
 
   TestViewAccessibilityObject(
       browser_root_view,

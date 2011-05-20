@@ -30,7 +30,6 @@
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/widget/native_widget_gtk.h"
 
@@ -170,7 +169,7 @@ void RenderWidgetHostViewViews::InitAsPopup(
   // to tell the parent it's showing a popup so that it doesn't respond to
   // blurs.
   parent->is_showing_popup_menu_ = true;
-  views::RootView* root_view = GetWidget()->GetRootView();
+  views::View* root_view = GetWidget()->GetRootView();
   // TODO(fsamuel): WebKit is computing the screen coordinates incorrectly.
   // Fixing this is a long and involved process, because WebKit needs to know
   // how to direct an IPC at a particular View. For now, we simply convert

@@ -15,7 +15,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/link.h"
 #include "views/screen.h"
-#include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 #if defined(OS_WIN)

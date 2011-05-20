@@ -53,7 +53,7 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* source,
     View::ConvertPointToView(source, target, &location_);
 }
 
-LocatedEvent::LocatedEvent(const LocatedEvent& model, RootView* root)
+LocatedEvent::LocatedEvent(const LocatedEvent& model, View* root)
     : Event(model),
       location_(model.location_) {
   View::ConvertPointFromWidget(root, &location_);
@@ -206,7 +206,7 @@ TouchEvent::TouchEvent(const TouchEvent& model, View* source, View* target)
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, private:
 
-TouchEvent::TouchEvent(const TouchEvent& model, RootView* root)
+TouchEvent::TouchEvent(const TouchEvent& model, View* root)
     : LocatedEvent(model, root),
       touch_id_(model.touch_id_),
       radius_(model.radius_),

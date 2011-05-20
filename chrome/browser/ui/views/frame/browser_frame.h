@@ -70,7 +70,7 @@ class BrowserFrame : public views::Window {
 
   // Overridden from views::Window:
   virtual bool IsMaximized() const OVERRIDE;
-  virtual views::RootView* CreateRootView() OVERRIDE;
+  virtual views::internal::RootView* CreateRootView() OVERRIDE;
   virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual bool GetAccelerator(int command_id,
                               ui::Accelerator* accelerator) OVERRIDE;

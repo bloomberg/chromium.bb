@@ -11,7 +11,6 @@
 #include "ui/gfx/rect.h"
 #include "views/events/event.h"
 #include "views/screen.h"
-#include "views/widget/root_view.h"
 #include "views/window/custom_frame_view.h"
 #include "views/window/hit_test.h"
 #include "views/window/native_window_delegate.h"

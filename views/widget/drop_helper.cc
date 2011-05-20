@@ -6,11 +6,11 @@
 
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/view.h"
-#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
-DropHelper::DropHelper(RootView* root_view)
+DropHelper::DropHelper(View* root_view)
     : root_view_(root_view),
       target_view_(NULL),
       deepest_view_(NULL) {
@@ -61,7 +61,7 @@ int DropHelper::OnDrop(const OSExchangeData& data,
   }
 
   gfx::Point view_location(root_view_location);
-  View* root_view = drop_view->GetRootView();
+  View* root_view = drop_view->GetWidget()->GetRootView();
   View::ConvertPointToView(root_view, drop_view, &view_location);
   DropTargetEvent drop_event(data, view_location.x(), view_location.y(),
                              drag_operation);

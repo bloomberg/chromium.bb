@@ -22,6 +22,7 @@
 #endif
 
 namespace views {
+namespace internal {
 
 // static
 const char RootView::kViewClassName[] = "views/RootView";
@@ -415,19 +416,6 @@ bool RootView::GetKeepMouseCursor() {
 
 #endif
 
-namespace {
-// Set to true if a pure Views implementation is preferred
-bool use_pure_views;
-}
-
-void RootView::SetPureViews(bool pure) {
-  use_pure_views = pure;
-}
-
-bool RootView::IsPureViews() {
-  return use_pure_views;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, protected:
 
@@ -481,4 +469,6 @@ void RootView::SetMouseLocationAndFlags(const MouseEvent& event) {
   last_mouse_event_y_ = event.y();
 }
 
+}  // namespace internal
 }  // namespace views
+

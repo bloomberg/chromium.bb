@@ -11,7 +11,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 // This class is only used on windows for now.
@@ -30,7 +29,7 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
-  views::RootView* root_view = widget->GetRootView();
+  views::View* root_view = widget->GetRootView();
 
   GenericInfoView* view1 = new GenericInfoView(1);
   root_view->AddChildView(view1);

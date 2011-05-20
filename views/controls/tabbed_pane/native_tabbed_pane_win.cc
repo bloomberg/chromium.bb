@@ -155,7 +155,7 @@ void NativeTabbedPaneWin::AddTabAtIndex(int index, const std::wstring& title,
     // The newly added tab may have made the contents window smaller.
     ResizeContents();
 
-    RootView* content_root = content_window_->GetRootView();
+    View* content_root = content_window_->GetRootView();
     content_root->AddChildView(contents);
     // Switch to the newly added tab if requested;
     if (tab_views_.size() == 1 && select_if_first_tab)
@@ -303,7 +303,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   if (base::i18n::IsRTL())
     l10n_util::HWNDSetRTLLayout(tab_control);
 
-  RootView* root_view = content_window_->GetRootView();
+  View* root_view = content_window_->GetRootView();
   tab_layout_manager_ = new TabLayout();
   root_view->SetLayoutManager(tab_layout_manager_);
   DWORD sys_color = ::GetSysColor(COLOR_3DHILIGHT);
@@ -371,7 +371,7 @@ void NativeTabbedPaneWin::InitializeTabs() {
   for (size_t i = 0; i < tab_titles_.size(); ++i)
     AddNativeTab(i, tab_titles_[i]);
 
-  RootView* content_root = content_window_->GetRootView();
+  View* content_root = content_window_->GetRootView();
   for (std::vector<View*>::iterator tab(tab_views_.begin());
        tab != tab_views_.end(); ++tab)
     content_root->AddChildView(*tab);
@@ -380,7 +380,7 @@ void NativeTabbedPaneWin::InitializeTabs() {
 void NativeTabbedPaneWin::DoSelectTabAt(int index, boolean invoke_listener) {
   selected_index_ = index;
   if (content_window_) {
-    RootView* content_root = content_window_->GetRootView();
+    View* content_root = content_window_->GetRootView();
     tab_layout_manager_->SwitchToPage(content_root, tab_views_.at(index));
   }
   if (invoke_listener && tabbed_pane_->listener())

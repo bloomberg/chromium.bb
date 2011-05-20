@@ -31,7 +31,6 @@
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
-#include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/native_window_gtk.h"
@@ -1170,8 +1169,11 @@ gboolean NativeWidgetGtk::OnDragMotion(GtkWidget* widget,
                                        gint x,
                                        gint y,
                                        guint time) {
-  if (!drop_target_.get())
-    drop_target_.reset(new DropTargetGtk(GetWidget()->GetRootView(), context));
+  if (!drop_target_.get()) {
+    drop_target_.reset(new DropTargetGtk(
+        reinterpret_cast<internal::RootView*>(GetWidget()->GetRootView()),
+        context));
+  }
   return drop_target_->OnDragMotion(context, x, y, time);
 }
 

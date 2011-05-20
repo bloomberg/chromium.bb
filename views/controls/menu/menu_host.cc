@@ -79,7 +79,7 @@ void MenuHost::ReleaseMenuHostCapture() {
 ////////////////////////////////////////////////////////////////////////////////
 // MenuHost, Widget overrides:
 
-RootView* MenuHost::CreateRootView() {
+internal::RootView* MenuHost::CreateRootView() {
   return new MenuHostRootView(this, submenu_);
 }
 

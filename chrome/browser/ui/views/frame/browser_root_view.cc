@@ -21,7 +21,7 @@
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
-    : views::RootView(widget),
+    : views::internal::RootView(widget),
       browser_view_(browser_view),
       forwarding_to_tab_strip_(false) { }
 
@@ -110,7 +110,7 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
 }
 
 void BrowserRootView::GetAccessibleState(ui::AccessibleViewState* state) {
-  RootView::GetAccessibleState(state);
+  views::internal::RootView::GetAccessibleState(state);
   state->name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 

@@ -8,7 +8,6 @@
 #if defined(OS_WIN)
 #include "chrome/browser/external_tab_container_win.h"
 #endif
-#include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 namespace {

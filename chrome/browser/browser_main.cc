@@ -199,7 +199,7 @@
 #endif
 
 #if defined(TOUCH_UI) || defined(TOOLKIT_VIEWS)
-#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 #endif
 
 // BrowserMainParts ------------------------------------------------------------
@@ -1758,7 +1758,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  views::RootView::SetPureViews(
+  views::Widget::SetPureViews(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
 #endif
 

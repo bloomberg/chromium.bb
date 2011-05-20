@@ -35,7 +35,6 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 using views::Widget;

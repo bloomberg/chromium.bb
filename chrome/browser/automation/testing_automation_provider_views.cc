@@ -14,7 +14,6 @@
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/view.h"
 #include "views/widget/native_widget.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace {

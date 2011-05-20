@@ -21,7 +21,6 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/path.h"
 #include "views/accessibility/native_view_accessibility_win.h"
-#include "views/widget/root_view.h"
 #include "views/window/client_view.h"
 #include "views/window/custom_frame_view.h"
 #include "views/window/native_window_delegate.h"
@@ -766,7 +765,6 @@ void NativeWindowWin::OnNCPaint(HRGN rgn) {
   EnumChildWindows(GetNativeView(), &ClipDCToChild,
                    reinterpret_cast<LPARAM>(&clip_state));
 
-  RootView* root_view = GetWidget()->GetRootView();
   gfx::Rect old_paint_region = invalid_rect();
 
   if (!old_paint_region.IsEmpty()) {

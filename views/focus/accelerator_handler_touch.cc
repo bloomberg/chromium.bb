@@ -18,7 +18,6 @@
 #include "views/ime/input_method.h"
 #include "views/touchui/touch_factory.h"
 #include "views/widget/native_widget.h"
-#include "views/widget/root_view.h"
 
 namespace views {
 
@@ -80,7 +79,7 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
         // If the TouchEvent is processed by |root|, then return. Otherwise let
         // it fall through so it can be used as a MouseEvent, if desired.
         TouchEvent touch(xev, from_native);
-        RootView* root = widget->GetRootView();
+        View* root = widget->GetRootView();
         if (root->OnTouchEvent(touch) != views::View::TOUCH_STATUS_UNKNOWN)
           return true;
 

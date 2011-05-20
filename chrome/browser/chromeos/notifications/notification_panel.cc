@@ -20,7 +20,6 @@
 #include "views/background.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/scroll_view.h"
-#include "views/widget/root_view.h"
 #include "views/widget/native_widget_gtk.h"
 
 #define SET_STATE(state) SetState(state, __PRETTY_FUNCTION__)

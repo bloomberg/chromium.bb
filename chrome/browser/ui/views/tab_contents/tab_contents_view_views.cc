@@ -21,7 +21,6 @@
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
 #include "views/widget/native_widget.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)

@@ -642,7 +642,8 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
   // matter where the user pressed. To force RootView to recalculate the
   // mouse target during the mouse press we explicitly set the mouse handler
   // to NULL.
-  GetRootView()->SetMouseHandler(NULL);
+  static_cast<views::internal::RootView*>(GetWidget()->GetRootView())->
+      SetMouseHandler(NULL);
 
   // If |is_mouse_gesture| is false, |p| is ignored. The menu is shown aligned
   // to drop down arrow button.

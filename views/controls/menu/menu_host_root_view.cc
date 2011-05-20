@@ -11,7 +11,7 @@ namespace views {
 
 MenuHostRootView::MenuHostRootView(Widget* widget,
                                    SubmenuView* submenu)
-    : RootView(widget),
+    : internal::RootView(widget),
       submenu_(submenu),
       forward_drag_to_menu_controller_(true) {
 }

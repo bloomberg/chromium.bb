@@ -29,14 +29,14 @@ class View;
 // then either OnDragExit or OnDrop when the drop is done.
 class DropHelper {
  public:
-  explicit DropHelper(RootView* root_view);
+  explicit DropHelper(View* root_view);
   ~DropHelper();
 
   // Current view drop events are targeted at, may be NULL.
   View* target_view() const { return target_view_; }
 
   // Returns the RootView the DropHelper was created with.
-  RootView* root_view() const { return root_view_; }
+  View* root_view() const { return root_view_; }
 
   // Resets the target_view_ to NULL if it equals view.
   //
@@ -92,7 +92,7 @@ class DropHelper {
   void NotifyDragExit();
 
   // RootView we were created for.
-  RootView* root_view_;
+  View* root_view_;
 
   // View we're targeting events at.
   View* target_view_;

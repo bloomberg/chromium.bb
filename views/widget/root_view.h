@@ -20,6 +20,10 @@ class Widget;
 class GestureManager;
 #endif
 
+// This is a views-internal API and should not be used externally.
+// Widget exposes this object as a View*.
+namespace internal {
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootView class
 //
@@ -34,9 +38,7 @@ class GestureManager;
 //  initialized to attach the contents view to the RootView.
 //  TODO(beng): Enforce no other callers to AddChildView/tree functions by
 //              overriding those methods as private here.
-//  TODO(beng): Move to internal namespace and remove accessors from
-//              View/Widget.
-//  TODO(beng): Clean up API further, make WidgetImpl a friend.
+//  TODO(beng): Clean up API further, make Widget a friend.
 //
 class RootView : public View,
                  public FocusTraversable {
@@ -117,11 +119,6 @@ class RootView : public View,
   static void SetKeepMouseCursor(bool keep);
   static bool GetKeepMouseCursor();
 #endif
-
-  // SetPureViews and IsPureViews update and return the state of a global
-  // setting that tracks whether to use available pure Views implementations
-  static void SetPureViews(bool pure);
-  static bool IsPureViews();
 
  protected:
   // Overridden from View:
@@ -214,6 +211,8 @@ class RootView : public View,
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RootView);
 };
+
+}  // namespace internal
 }  // namespace views
 
 #endif  // VIEWS_WIDGET_ROOT_VIEW_H_

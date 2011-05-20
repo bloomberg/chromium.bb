@@ -65,7 +65,7 @@ class MenuHost : public Widget,
 
  private:
   // Overridden from Widget:
-  virtual RootView* CreateRootView() OVERRIDE;
+  virtual internal::RootView* CreateRootView() OVERRIDE;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
 
   // Overridden from NativeMenuHostDelegate:

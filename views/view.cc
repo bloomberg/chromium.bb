@@ -232,12 +232,6 @@ bool View::ContainsNativeView(gfx::NativeView native_view) const {
   return false;
 }
 
-// TODO(beng): remove
-RootView* View::GetRootView() {
-  Widget* widget = GetWidget();
-  return widget ? widget->GetRootView() : NULL;
-}
-
 // Size and disposition --------------------------------------------------------
 
 void View::SetBounds(int x, int y, int width, int height) {
@@ -1087,7 +1081,7 @@ void View::VisibilityChanged(View* starting_from, bool is_visible) {
 
 void View::NativeViewHierarchyChanged(bool attached,
                                       gfx::NativeView native_view,
-                                      RootView* root_view) {
+                                      internal::RootView* root_view) {
   FocusManager* focus_manager = GetFocusManager();
   if (!accelerator_registration_delayed_ &&
       accelerator_focus_manager_ &&
@@ -1361,7 +1355,7 @@ void View::PropagateAddNotifications(View* parent, View* child) {
 
 void View::PropagateNativeViewHierarchyChanged(bool attached,
                                                gfx::NativeView native_view,
-                                               RootView* root_view) {
+                                               internal::RootView* root_view) {
   for (int i = 0, count = child_count(); i < count; ++i)
     GetChildViewAt(i)->PropagateNativeViewHierarchyChanged(attached,
                                                            native_view,

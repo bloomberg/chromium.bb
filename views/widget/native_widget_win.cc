@@ -558,7 +558,8 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
   props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
 
-  drop_target_ = new DropTargetWin(GetWidget()->GetRootView());
+  drop_target_ = new DropTargetWin(
+      static_cast<internal::RootView*>(GetWidget()->GetRootView()));
 
   // We need to add ourselves as a message loop observer so that we can repaint
   // aggressively if the contents of our window become invalid. Unfortunately

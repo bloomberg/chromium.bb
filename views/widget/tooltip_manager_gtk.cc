@@ -9,8 +9,8 @@
 #include "ui/gfx/font.h"
 #include "views/focus/focus_manager.h"
 #include "views/screen.h"
+#include "views/view.h"
 #include "views/widget/native_widget_gtk.h"
-#include "views/widget/root_view.h"
 
 // WARNING: this implementation is good for a start, but it doesn't give us
 // control of tooltip positioning both on mouse events and when showing from
@@ -85,7 +85,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
     view = keyboard_view_;
     view_loc.SetPoint(view->width() / 2, view->height() / 2);
   } else if (!for_keyboard) {
-    RootView* root_view = widget_->GetWidget()->GetRootView();
+    View* root_view = widget_->GetWidget()->GetRootView();
     view = root_view->GetEventHandlerForPoint(gfx::Point(x, y));
     view_loc.SetPoint(x, y);
     View::ConvertPointFromWidget(view, &view_loc);

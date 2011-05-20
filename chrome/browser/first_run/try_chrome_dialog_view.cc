@@ -24,7 +24,6 @@
 #include "views/controls/link.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace {
@@ -78,7 +77,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   params.bounds = gfx::Rect(310, 160);
   popup_->Init(params);
 
-  views::RootView* root_view = popup_->GetRootView();
+  views::View* root_view = popup_->GetRootView();
   // The window color is a tiny bit off-white.
   root_view->set_background(
       views::Background::CreateSolidBackground(0xfc, 0xfc, 0xfc));

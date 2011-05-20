@@ -16,7 +16,7 @@ using ui::OSExchangeDataProviderWin;
 
 namespace views {
 
-DropTargetWin::DropTargetWin(RootView* root_view)
+DropTargetWin::DropTargetWin(internal::RootView* root_view)
     : ui::DropTarget(root_view->GetWidget()->GetNativeView()),
       helper_(root_view) {
 }

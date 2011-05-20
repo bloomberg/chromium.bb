@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -71,7 +71,7 @@ void RadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 View* RadioButton::GetSelectedViewForGroup(int group_id) {
   std::vector<View*> views;
-  GetRootView()->GetViewsWithGroup(group_id, &views);
+  GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
   if (views.empty())
     return NULL;
 
@@ -170,7 +170,7 @@ void RadioButtonNt::GetAccessibleState(ui::AccessibleViewState* state) {
 
 View* RadioButtonNt::GetSelectedViewForGroup(int group_id) {
   std::vector<View*> views;
-  GetRootView()->GetViewsWithGroup(group_id, &views);
+  GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
   if (views.empty())
     return NULL;
 

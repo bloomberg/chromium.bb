@@ -16,6 +16,12 @@
 
 namespace views {
 
+namespace {
+// Set to true if a pure Views implementation is preferred
+bool use_pure_views;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, InitParams:
 
@@ -76,6 +82,14 @@ Widget::~Widget() {
 
   if (!delete_on_destroy_)
     delete native_widget_;
+}
+
+void Widget::SetPureViews(bool pure) {
+  use_pure_views = pure;
+}
+
+bool Widget::IsPureViews() {
+  return use_pure_views;
 }
 
 void Widget::Init(const InitParams& params) {
@@ -206,7 +220,7 @@ void Widget::SetAlwaysOnTop(bool on_top) {
   native_widget_->SetAlwaysOnTop(on_top);
 }
 
-RootView* Widget::GetRootView() {
+View* Widget::GetRootView() {
   if (!root_view_.get()) {
     // First time the root view is being asked for, create it now.
     root_view_.reset(CreateRootView());
@@ -291,7 +305,7 @@ void Widget::ResetLastMouseMoveFlag() {
 }
 
 FocusTraversable* Widget::GetFocusTraversable() {
-  return root_view_.get();
+  return static_cast<internal::RootView*>(root_view_.get());
 }
 
 void Widget::ThemeChanged() {
@@ -381,7 +395,7 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
 }
 
 bool Widget::OnKeyEvent(const KeyEvent& event) {
-  return GetRootView()->OnKeyEvent(event);
+  return static_cast<internal::RootView*>(GetRootView())->OnKeyEvent(event);
 }
 
 bool Widget::OnMouseEvent(const MouseEvent& event) {
@@ -468,8 +482,8 @@ View* Widget::GetFocusTraversableParentView() {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, protected:
 
-RootView* Widget::CreateRootView() {
-  return new RootView(this);
+internal::RootView* Widget::CreateRootView() {
+  return new internal::RootView(this);
 }
 
 void Widget::DestroyRootView() {

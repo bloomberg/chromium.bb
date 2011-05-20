@@ -36,11 +36,13 @@ namespace views {
 class DefaultThemeProvider;
 class InputMethod;
 class NativeWidget;
-class RootView;
 class TooltipManager;
 class View;
 class WidgetDelegate;
 class Window;
+namespace internal {
+class RootView;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
@@ -119,6 +121,11 @@ class Widget : public internal::NativeWidgetDelegate,
   static bool ConvertRect(const Widget* source,
                           const Widget* target,
                           gfx::Rect* rect);
+
+  // SetPureViews and IsPureViews update and return the state of a global
+  // setting that tracks whether to use available pure Views implementations
+  static void SetPureViews(bool pure);
+  static bool IsPureViews();
 
   void Init(const InitParams& params);
 
@@ -212,8 +219,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // Sets the widget to be on top of all other widgets in the windowing system.
   void SetAlwaysOnTop(bool on_top);
 
-  // Returns the RootView contained by this Widget.
-  RootView* GetRootView();
+  // Returns the View at the root of the View hierarchy contained by this
+  // Widget.
+  View* GetRootView();
 
   // A secondary widget is one that is automatically closed (via Close()) when
   // all non-secondary widgets are closed.
@@ -334,7 +342,7 @@ class Widget : public internal::NativeWidgetDelegate,
   // Creates the RootView to be used within this Widget. Subclasses may override
   // to create custom RootViews that do specialized event processing.
   // TODO(beng): Investigate whether or not this is needed.
-  virtual RootView* CreateRootView();
+  virtual internal::RootView* CreateRootView();
 
   // Provided to allow the NativeWidget implementations to destroy the RootView
   // _before_ the focus manager/tooltip manager.
@@ -373,7 +381,7 @@ class Widget : public internal::NativeWidgetDelegate,
   // The root of the View hierarchy attached to this window.
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with
   // this and tooltip_manager_.
-  scoped_ptr<RootView> root_view_;
+  scoped_ptr<internal::RootView> root_view_;
 
   // The focus manager keeping track of focus for this Widget and any of its
   // children.  NULL for non top-level widgets.

@@ -8,7 +8,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/slide_animation.h"
 #include "views/background.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 // Min/max opacity of the overlay.

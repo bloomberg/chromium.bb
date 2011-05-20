@@ -355,7 +355,8 @@ void BaseTabStrip::ContinueDrag(const views::MouseEvent& event) {
     if (drag_controller_->started_drag() && !started_drag) {
       // The drag just started. Redirect mouse events to us to that the tab that
       // originated the drag can be safely deleted.
-      GetRootView()->SetMouseHandler(this);
+      static_cast<views::internal::RootView*>(GetWidget()->GetRootView())->
+          SetMouseHandler(this);
     }
   }
 }

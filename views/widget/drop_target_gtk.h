@@ -21,8 +21,10 @@ using ui::OSExchangeDataProviderGtk;
 
 namespace views {
 
-class RootView;
 class View;
+namespace internal {
+class RootView;
+}
 
 // DropTarget implementation for Gtk.
 //
@@ -37,7 +39,7 @@ class View;
 // which results in deleting the DropTargetGtk.
 class DropTargetGtk {
  public:
-  explicit DropTargetGtk(RootView* root_view,
+  explicit DropTargetGtk(internal::RootView* root_view,
                          GdkDragContext* context);
   ~DropTargetGtk();
 

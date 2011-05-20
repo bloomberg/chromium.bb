@@ -16,7 +16,6 @@
 #include "views/screen.h"
 #include "views/view.h"
 #include "views/widget/monitor_win.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -148,7 +147,7 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
       case TTN_GETDISPINFO: {
         if (last_view_out_of_sync_) {
           // View under the mouse is out of sync, determine it now.
-          RootView* root_view = widget_->GetRootView();
+          View* root_view = widget_->GetRootView();
           last_tooltip_view_ =
               root_view->GetEventHandlerForPoint(last_mouse_pos_);
           last_view_out_of_sync_ = false;
@@ -271,7 +270,7 @@ int TooltipManagerWin::CalcTooltipHeight() {
 }
 
 void TooltipManagerWin::UpdateTooltip(const gfx::Point& mouse_pos) {
-  RootView* root_view = widget_->GetRootView();
+  View* root_view = widget_->GetRootView();
   View* view = root_view->GetEventHandlerForPoint(mouse_pos);
   if (view != last_tooltip_view_) {
     // NOTE: This *must* be sent regardless of the visibility of the tooltip.

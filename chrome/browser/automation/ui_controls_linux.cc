@@ -17,7 +17,6 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #endif
 

@@ -31,7 +31,7 @@
 #include "views/examples/widget_example.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/layout/grid_layout.h"
-#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 #include "views/test/test_views_delegate.h"
 
@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
 
   // We do not this header: chrome/common/chrome_switches.h
   // because that would create a dependency back on Chrome
-  views::RootView::SetPureViews(
+  views::Widget::SetPureViews(
         CommandLine::ForCurrentProcess()->HasSwitch("use-pure-views"));
 
   examples::ExamplesMain main;

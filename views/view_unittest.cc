@@ -298,7 +298,7 @@ TEST_F(ViewTest, MouseEvent) {
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
-  RootView* root = widget->GetRootView();
+  View* root = widget->GetRootView();
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -407,10 +407,10 @@ TEST_F(ViewTest, TouchEvent) {
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
-  RootView* root = widget->GetRootView();
+  View* root = widget->GetRootView();
 
   root->AddChildView(v1);
-  root->SetGestureManager(gm);
+  static_cast<internal::RootView*>(root)->SetGestureManager(gm);
   v1->AddChildView(v2);
   v2->AddChildView(v3);
 
@@ -537,7 +537,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
   window.set_delete_on_destroy(false);
   window.set_window_style(WS_OVERLAPPEDWINDOW);
   window.Init(NULL, gfx::Rect(50, 50, 650, 650), NULL);
-  RootView* root = window.GetRootView();
+  View* root = window.GetRootView();
 
   TestView* v1 = new TestView();
   v1->SetBounds(0, 0, 650, 650);
@@ -604,7 +604,7 @@ TEST_F(ViewTest, DISABLED_RemoveNotification) {
   ViewStorage* vs = ViewStorage::GetInstance();
   Widget* widget = new Widget;
   widget->Init(Widget::InitParams(Widget::InitParams::TYPE_WINDOW));
-  RootView* root_view = widget->GetRootView();
+  View* root_view = widget->GetRootView();
 
   View* v1 = new View;
   int s1 = vs->CreateStorageID();
@@ -723,7 +723,7 @@ class HitTestView : public View {
 
 gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
   gfx::Point tmp(p);
-  View::ConvertPointToView(view->GetRootView(), view, &tmp);
+  View::ConvertPointToView(view->GetWidget()->GetRootView(), view, &tmp);
   return tmp;
 }
 }
@@ -731,7 +731,7 @@ gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
 TEST_F(ViewTest, HitTestMasks) {
   Widget* widget = new Widget;
   widget->Init(Widget::InitParams(Widget::InitParams::TYPE_WINDOW));
-  RootView* root_view = widget->GetRootView();
+  View* root_view = widget->GetRootView();
   root_view->SetBounds(0, 0, 500, 500);
 
   gfx::Rect v1_bounds = gfx::Rect(0, 0, 100, 100);
@@ -777,7 +777,7 @@ TEST_F(ViewTest, Textfield) {
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
-  RootView* root_view = widget->GetRootView();
+  View* root_view = widget->GetRootView();
 
   Textfield* textfield = new Textfield();
   root_view->AddChildView(textfield);
@@ -815,7 +815,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
-  RootView* root_view = widget->GetRootView();
+  View* root_view = widget->GetRootView();
 
   Textfield* normal = new Textfield();
   Textfield* read_only = new Textfield();
@@ -938,7 +938,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
-  RootView* root = widget->GetRootView();
+  View* root = widget->GetRootView();
   root->AddChildView(view);
 
   // Get the focus manager.
@@ -1003,7 +1003,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
-  RootView* root = widget->GetRootView();
+  View* root = widget->GetRootView();
   root->AddChildView(view);
 
   FocusManager* focus_manager = FocusManager::GetFocusManagerForNativeView(
@@ -1441,7 +1441,7 @@ TEST_F(ViewTest, ChangeVisibility) {
 #endif
   scoped_ptr<Widget> window(CreateWidget());
   window->Init(NULL, gfx::Rect(0, 0, 500, 300));
-  RootView* root_view = window->GetRootView();
+  View* root_view = window->GetRootView();
   NativeButtonBase* native = new NativeButtonBase(NULL, L"Native");
 
   root_view->SetContentsView(native);
@@ -1467,7 +1467,7 @@ class TestNativeViewHierarchy : public View {
 
   virtual void NativeViewHierarchyChanged(bool attached,
                                           gfx::NativeView native_view,
-                                          RootView* root_view) {
+                                          internal::RootView* root_view) {
     NotificationInfo info;
     info.attached = attached;
     info.native_view = native_view;
@@ -1477,7 +1477,7 @@ class TestNativeViewHierarchy : public View {
   struct NotificationInfo {
     bool attached;
     gfx::NativeView native_view;
-    RootView* root_view;
+    internal::RootView* root_view;
   };
   static const size_t kTotalViews = 2;
   std::vector<NotificationInfo> notifications_;
@@ -1524,7 +1524,7 @@ class TestChangeNativeViewHierarchy {
     // go through all of them.
     for (NativeWidget::NativeWidgets::iterator i = widgets.begin();
          i != widgets.end(); ++i) {
-      RootView* root_view = (*i)->GetWidget()->GetRootView();
+      View* root_view = (*i)->GetWidget()->GetRootView();
       if (host_->GetRootView() == root_view)
         continue;
       size_t j;
@@ -1543,10 +1543,10 @@ class TestChangeNativeViewHierarchy {
     size_t i;
     for (i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
       // TODO(georgey): use actual hierarchy changes to send notifications.
-      root_views_[i]->NotifyNativeViewHierarchyChanged(false,
-          host_->GetNativeView());
-      root_views_[i]->NotifyNativeViewHierarchyChanged(true,
-          host_->GetNativeView());
+      static_cast<internal::RootView*>(root_views_[i])->
+          NotifyNativeViewHierarchyChanged(false, host_->GetNativeView());
+      static_cast<internal::RootView*>(root_views_[i])->
+          NotifyNativeViewHierarchyChanged(true, host_->GetNativeView());
     }
     for (i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
       ASSERT_EQ(static_cast<size_t>(2), test_views_[i]->notifications_.size());
@@ -1564,7 +1564,7 @@ class TestChangeNativeViewHierarchy {
   NativeViewHost* native_host_;
   Widget* host_;
   Widget* windows_[TestNativeViewHierarchy::kTotalViews];
-  RootView* root_views_[TestNativeViewHierarchy::kTotalViews];
+  View* root_views_[TestNativeViewHierarchy::kTotalViews];
   TestNativeViewHierarchy* test_views_[TestNativeViewHierarchy::kTotalViews];
   ViewTest* view_test_;
 };
@@ -1624,7 +1624,7 @@ TEST_F(ViewTest, TransformPaint) {
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   widget->Show();
-  RootView* root = widget->GetRootView();
+  View* root = widget->GetRootView();
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -1662,7 +1662,7 @@ TEST_F(ViewTest, TransformEvent) {
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
-  RootView* root = widget->GetRootView();
+  View* root = widget->GetRootView();
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -1828,7 +1828,7 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
   View* viewport = new View;
-  widget->GetRootView()->SetContentsView(viewport);
+  widget->SetContentsView(viewport);
   View* contents = new View;
   viewport->AddChildView(contents);
   viewport->SetBoundsRect(viewport_bounds);

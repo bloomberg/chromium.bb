@@ -69,7 +69,7 @@ int CalculateTypes(GList* targets, std::set<GdkAtom>* type_set) {
 
 namespace views {
 
-DropTargetGtk::DropTargetGtk(RootView* root_view,
+DropTargetGtk::DropTargetGtk(internal::RootView* root_view,
                              GdkDragContext* context)
     : helper_(root_view),
       requested_formats_(0),

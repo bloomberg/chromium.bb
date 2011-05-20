@@ -54,11 +54,14 @@ class FocusManager;
 class FocusTraversable;
 class InputMethod;
 class LayoutManager;
-class RootView;
 class ScrollView;
 class TextInputClient;
 class Widget;
 class Window;
+
+namespace internal {
+class RootView;
+}
 
 // ContextMenuController is responsible for showing the context menu for a
 // View. To use a ContextMenuController invoke SetContextMenuController on a
@@ -241,10 +244,6 @@ class View : public AcceleratorTarget {
   // Returns true if the native view |native_view| is contained in the view
   // hierarchy beneath this view.
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-
-  // TODO(beng): REMOVE (RootView->internal API)
-  // Get the containing RootView
-  virtual RootView* GetRootView();
 
   // Size and disposition ------------------------------------------------------
   // Methods for obtaining and modifying the position and size of the view.
@@ -997,7 +996,7 @@ class View : public AcceleratorTarget {
   // it - like registering accelerators, for example.
   virtual void NativeViewHierarchyChanged(bool attached,
                                           gfx::NativeView native_view,
-                                          RootView* root_view);
+                                          internal::RootView* root_view);
 
   // Painting ------------------------------------------------------------------
 
@@ -1130,9 +1129,10 @@ class View : public AcceleratorTarget {
   static int GetVerticalDragThreshold();
 
  private:
-  friend class RootView;
+  friend class internal::RootView;
   friend class FocusManager;
   friend class ViewStorage;
+  friend class Widget;
 
   // Used to track a drag. RootView passes this into
   // ProcessMousePressed/Dragged.
@@ -1179,7 +1179,7 @@ class View : public AcceleratorTarget {
   // children.
   void PropagateNativeViewHierarchyChanged(bool attached,
                                            gfx::NativeView native_view,
-                                           RootView* root_view);
+                                           internal::RootView* root_view);
 
   // Takes care of registering/unregistering accelerators if
   // |register_accelerators| true and calls ViewHierarchyChanged().

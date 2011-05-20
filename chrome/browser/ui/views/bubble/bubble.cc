@@ -12,7 +12,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
 #include "views/layout/fill_layout.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
 #include "views/window/window.h"

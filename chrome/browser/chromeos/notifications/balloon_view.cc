@@ -33,7 +33,6 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace {

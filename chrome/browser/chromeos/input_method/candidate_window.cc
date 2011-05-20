@@ -23,7 +23,6 @@
 #include "views/layout/fill_layout.h"
 #include "views/layout/grid_layout.h"
 #include "views/screen.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -1291,12 +1290,7 @@ void CandidateWindowController::Impl::CreateView() {
   candidate_window_->Init();
   candidate_window_->AddObserver(this);
 
-  // Put the candidate window view on the frame.  The frame is resized
-  // later when the candidate window is shown.
-  views::RootView* root_view = frame_->GetRootView();
-  // |root_view| owns the |candidate_window_|, thus |frame_| effectively
-  // owns |candidate_window_|.
-  root_view->SetContentsView(candidate_window_);
+  frame_->SetContentsView(candidate_window_);
 }
 
 CandidateWindowController::Impl::Impl()

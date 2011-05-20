@@ -95,7 +95,7 @@ bool BrowserFrame::IsMaximized() const {
   return Window::IsMaximized();
 }
 
-views::RootView* BrowserFrame::CreateRootView() {
+views::internal::RootView* BrowserFrame::CreateRootView() {
   root_view_ = new BrowserRootView(browser_view_, this);
   return root_view_;
 }

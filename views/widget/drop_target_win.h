@@ -11,8 +11,10 @@
 
 namespace views {
 
-class RootView;
 class View;
+namespace internal {
+class RootView;
+}
 
 // DropTargetWin takes care of managing drag and drop for NativeWidgetWin. It
 // converts Windows OLE drop messages into Views drop messages.
@@ -21,7 +23,7 @@ class View;
 // drop messages at.
 class DropTargetWin : public ui::DropTarget {
  public:
-  explicit DropTargetWin(RootView* root_view);
+  explicit DropTargetWin(internal::RootView* root_view);
   virtual ~DropTargetWin();
 
   // If a drag and drop is underway and view is the current drop target, the

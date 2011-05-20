@@ -267,12 +267,12 @@ class BorderView : public NativeViewHost {
 
   virtual ~BorderView() {}
 
-  virtual RootView* GetContentsRootView() {
-    return widget_->GetRootView();
+  virtual internal::RootView* GetContentsRootView() {
+    return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
   virtual FocusTraversable* GetFocusTraversable() {
-    return widget_->GetRootView();
+    return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child) {
@@ -283,7 +283,7 @@ class BorderView : public NativeViewHost {
         widget_ = new Widget;
         Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
 #if defined(OS_WIN)
-        params.parent = parent->GetRootView()->GetWidget()->GetNativeView();
+        params.parent = parent->GetWidget()->GetNativeView();
 #elif defined(TOOLKIT_USES_GTK)
         params.parent = native_view();
 #endif
@@ -295,8 +295,8 @@ class BorderView : public NativeViewHost {
       // We have been added to a view hierarchy, attach the native view.
       Attach(widget_->GetNativeView());
       // Also update the FocusTraversable parent so the focus traversal works.
-      widget_->GetRootView()->SetFocusTraversableParent(
-          GetWidget()->GetFocusTraversable());
+      static_cast<internal::RootView*>(widget_->GetRootView())->
+          SetFocusTraversableParent(GetWidget()->GetFocusTraversable());
     }
   }
 

@@ -20,7 +20,7 @@ class OSExchangeData;
 // actually it doesn't. The tabstrip is only as high as a tab. To enable
 // dropping above the tabstrip BrowserRootView forwards drop events to the
 // TabStrip.
-class BrowserRootView : public views::RootView {
+class BrowserRootView : public views::internal::RootView {
  public:
   // You must call set_tabstrip before this class will accept drops.
   BrowserRootView(BrowserView* browser_view, views::Widget* widget);

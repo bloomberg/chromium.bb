@@ -27,7 +27,6 @@
 #include "views/layout/box_layout.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 namespace browser {
@@ -484,7 +483,7 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
   // translation here until http://crbug.com/52851 is fixed.
   POINT topleft = {bounds.x(), bounds.y()};
   MapWindowPoints(HWND_DESKTOP, tab_contents_->GetNativeView(), &topleft, 1);
-  gfx::Size size = GetRootView()->GetPreferredSize();
+  gfx::Size size = GetWidget()->GetRootView()->GetPreferredSize();
   bounds.SetRect(topleft.x, topleft.y, size.width(), size.height());
   GetWidget()->SetBounds(bounds);
   status_changed_ = true;

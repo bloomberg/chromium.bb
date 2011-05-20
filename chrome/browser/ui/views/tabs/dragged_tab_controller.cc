@@ -35,7 +35,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/events/event.h"
 #include "views/screen.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 

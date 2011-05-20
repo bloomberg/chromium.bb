@@ -28,7 +28,7 @@
 #include "views/ime/input_method.h"
 #include "views/metrics.h"
 #include "views/views_delegate.h"
-#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"
@@ -530,7 +530,7 @@ bool NativeTextfieldViews::IsTextfieldViewsEnabled() {
 #if defined(TOUCH_UI)
   return true;
 #else
-  return textfield_view_enabled || RootView::IsPureViews();
+  return textfield_view_enabled || Widget::IsPureViews();
 #endif
 }
 

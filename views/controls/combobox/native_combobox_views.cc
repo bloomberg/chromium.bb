@@ -271,7 +271,7 @@ bool NativeComboboxViews::IsComboboxViewsEnabled() {
 #if defined(TOUCH_UI)
   return true;
 #else
-  return combobox_view_enabled || RootView::IsPureViews();
+  return combobox_view_enabled || Widget::IsPureViews();
 #endif
 }
 

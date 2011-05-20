@@ -53,7 +53,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 #include "views/screen.h"
-#include "views/widget/root_view.h"
 #include "views/widget/native_widget_gtk.h"
 
 namespace {

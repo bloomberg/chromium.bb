@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/views/frame/app_panel_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/gfx/font.h"
 #include "views/widget/root_view.h"

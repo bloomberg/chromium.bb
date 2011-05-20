@@ -50,7 +50,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/view_prop.h"
 #include "views/layout/grid_layout.h"
-#include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 using ui::ViewProp;
