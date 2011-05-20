@@ -154,6 +154,16 @@ bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl);
 // Convert a file:/// URL to a base64 encoded data: URL.
 WebKit::WebURL LocalFileToDataURL(const WebKit::WebURL& fileUrl);
 
+// Scoped temporary directories for use by webkit layout tests.
+class ScopedTempDirectory {
+ public:
+  virtual ~ScopedTempDirectory() {}
+  virtual bool CreateUniqueTempDir() = 0;
+  virtual std::string path() const = 0;
+};
+
+ScopedTempDirectory* CreateScopedTempDirectory();
+
 // -------- Time
 int64 GetCurrentTimeInMillisecond();
 

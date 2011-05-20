@@ -17,6 +17,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -484,6 +485,26 @@ WebURL LocalFileToDataURL(const WebURL& fileUrl) {
 
   const char kDataUrlPrefix[] = "data:text/css;charset=utf-8;base64,";
   return WebURL(GURL(kDataUrlPrefix + contents_base64));
+}
+
+// A wrapper object for exporting ScopedTempDir to be used
+// by webkit layout tests.
+class ScopedTempDirectoryInternal : public ScopedTempDirectory {
+ public:
+   virtual bool CreateUniqueTempDir() {
+     return tempDirectory_.CreateUniqueTempDir();
+   }
+
+   virtual std::string path() const {
+     return tempDirectory_.path().MaybeAsASCII();
+   }
+
+ private:
+   ScopedTempDir tempDirectory_;
+};
+
+ScopedTempDirectory* CreateScopedTempDirectory() {
+  return new ScopedTempDirectoryInternal();
 }
 
 int64 GetCurrentTimeInMillisecond() {
