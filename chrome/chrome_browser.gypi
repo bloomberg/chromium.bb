@@ -1653,6 +1653,8 @@
         'browser/prerender/prerender_render_view_host_observer.h',
         'browser/prerender/prerender_render_widget_host_view.cc',
         'browser/prerender/prerender_render_widget_host_view.h',
+        'browser/prerender/prerender_tracker.cc',
+        'browser/prerender/prerender_tracker.h',
         'browser/printing/background_printing_manager.cc',
         'browser/printing/background_printing_manager.h',
         'browser/printing/cloud_print/cloud_print_proxy_service.cc',

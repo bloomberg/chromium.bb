@@ -16,6 +16,7 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_render_widget_host_view.h"
+#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -60,18 +61,6 @@ struct PrerenderUrlPredicate {
   }
   GURL url_;
 };
-
-void AddChildRoutePair(ResourceDispatcherHost* resource_dispatcher_host,
-                       int child_id, int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  resource_dispatcher_host->AddPrerenderChildRoutePair(child_id, route_id);
-}
-
-void RemoveChildRoutePair(ResourceDispatcherHost* resource_dispatcher_host,
-                          int child_id, int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  resource_dispatcher_host->RemovePrerenderChildRoutePair(child_id, route_id);
-}
 
 }  // end namespace
 
@@ -146,7 +135,9 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_observer_registrar_(this)),
       has_stopped_loading_(false),
       final_status_(FINAL_STATUS_MAX),
-      prerendering_has_started_(false) {
+      prerendering_has_started_(false),
+      child_id_(-1),
+      route_id_(-1) {
   DCHECK(prerender_manager != NULL);
 }
 
@@ -187,18 +178,14 @@ void PrerenderContents::StartPrerenderingOld(
       new PrerenderRenderWidgetHostView(render_view_host_, this);
   view->Init(source_render_view_host->view());
 
-  // Register this with the ResourceDispatcherHost as a prerender
-  // RenderViewHost. This must be done before the Navigate message to catch all
-  // resource requests, but as it is on the same thread as the Navigate message
-  // (IO) there is no race condition.
-  int process_id = render_view_host_->process()->id();
-  int view_id = render_view_host_->routing_id();
+  child_id_ = render_view_host_->process()->id();
+  route_id_ = render_view_host_->routing_id();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&AddChildRoutePair,
-                          g_browser_process->resource_dispatcher_host(),
-                          process_id, view_id));
+  // Register this with the PrerenderTracker as a prerendering RenderViewHost.
+  // This must be done before the Navigate message to catch all resource
+  // requests.
+  PrerenderTracker::GetInstance()->OnPrerenderingStarted(child_id_, route_id_,
+                                                         prerender_manager_);
 
   // Close ourselves when the application is shutting down.
   notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
@@ -292,20 +279,15 @@ void PrerenderContents::StartPrerendering(
   render_view_host_observer_.reset(
       new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
 
-  int process_id;
-  int view_id;
-  CHECK(GetChildId(&process_id));
-  CHECK(GetRouteId(&view_id));
+  child_id_ = render_view_host()->process()->id();
+  route_id_ = render_view_host()->routing_id();
 
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
   // resource requests, but as it is on the same thread as the Navigate message
   // (IO) there is no race condition.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&AddChildRoutePair,
-                          g_browser_process->resource_dispatcher_host(),
-                          process_id, view_id));
+  PrerenderTracker::GetInstance()->OnPrerenderingStarted(child_id_, route_id_,
+                                                         prerender_manager_);
 
   // Close ourselves when the application is shutting down.
   notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
@@ -353,22 +335,16 @@ void PrerenderContents::StartPrerendering(
 
 bool PrerenderContents::GetChildId(int* child_id) const {
   CHECK(child_id);
-  const RenderViewHost* prerender_render_view_host = render_view_host();
-  if (prerender_render_view_host) {
-    *child_id = prerender_render_view_host->process()->id();
-    return true;
-  }
-  return false;
+  DCHECK_GE(child_id_, -1);
+  *child_id = child_id_;
+  return child_id_ != -1;
 }
 
 bool PrerenderContents::GetRouteId(int* route_id) const {
   CHECK(route_id);
-  const RenderViewHost* prerender_render_view_host = render_view_host();
-  if (prerender_render_view_host) {
-    *route_id = prerender_render_view_host->routing_id();
-    return true;
-  }
-  return false;
+  DCHECK_GE(route_id_, -1);
+  *route_id = route_id_;
+  return route_id_ != -1;
 }
 
 void PrerenderContents::set_final_status(FinalStatus final_status) {
@@ -396,21 +372,13 @@ PrerenderContents::~PrerenderContents() {
   if (prerendering_has_started())
     RecordFinalStatus(final_status_);
 
-  if (render_view_host_ || prerender_contents_.get()) {
-    RenderViewHost* prerender_render_view_host = render_view_host_mutable();
+  // Only delete the RenderViewHost if we own it.
+  if (render_view_host_)
+    render_view_host_->Shutdown();
 
-    int process_id = prerender_render_view_host->process()->id();
-    int view_id = prerender_render_view_host->routing_id();
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&RemoveChildRoutePair,
-                            g_browser_process->resource_dispatcher_host(),
-                            process_id, view_id));
-
-    // Only delete the RenderViewHost if we own it.
-    if (render_view_host_)
-      render_view_host_->Shutdown();
+  if (child_id_ != -1 && route_id_ != -1) {
+    PrerenderTracker::GetInstance()->OnPrerenderingFinished(
+        child_id_, route_id_);
   }
 }
 
@@ -738,6 +706,24 @@ void PrerenderContents::DidStopLoading() {
 void PrerenderContents::Destroy(FinalStatus final_status) {
   if (prerender_manager_->IsPendingDelete(this))
     return;
+
+  if (child_id_ != -1 && route_id_ != -1) {
+    // Cancel the prerender in the PrerenderTracker.  This is needed
+    // because destroy may be called directly from the UI thread without calling
+    // TryCancel().  This is difficult to completely avoid, since prerendering
+    // can be cancelled before a RenderView is created.
+    bool is_cancelled =
+        PrerenderTracker::GetInstance()->TryCancel(child_id_, route_id_,
+                                                   final_status);
+    CHECK(is_cancelled);
+
+    // A different final status may have been set already from another thread.
+    // If so, use it instead.
+    if (!PrerenderTracker::GetInstance()->GetFinalStatus(child_id_, route_id_,
+                                                         &final_status)) {
+      NOTREACHED();
+    }
+  }
 
   prerender_manager_->MoveEntryToPendingDelete(this);
   set_final_status(final_status);

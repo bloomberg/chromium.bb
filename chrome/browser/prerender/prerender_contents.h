@@ -323,6 +323,8 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   bool has_stopped_loading_;
 
+  // This must be the same value as the PrerenderTracker has recorded for
+  // |this|, when |this| has a RenderView.
   FinalStatus final_status_;
 
   bool prerendering_has_started_;
@@ -342,6 +344,10 @@ class PrerenderContents : public RenderViewHostDelegate,
   scoped_ptr<PrerenderRenderViewHostObserver> render_view_host_observer_;
 
   scoped_ptr<TabContentsDelegateImpl> tab_contents_delegate_;
+
+  // These are -1 before a RenderView is created.
+  int child_id_;
+  int route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

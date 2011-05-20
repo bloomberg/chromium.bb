@@ -48,15 +48,6 @@ void HandlePrefetchTag(
     const GURL& referrer,
     bool make_pending);
 
-// Given a renderer process id and view id, this will destroy any preloads and
-// pending preloads than are using or originated in the given render view.
-// Must be called on the UI thread.
-void DestroyPreloadForRenderView(
-    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
-    int render_process_id,
-    int render_view_id,
-    FinalStatus final_status);
-
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages. All methods must be called on the UI thread unless
 // indicated otherwise.
@@ -93,7 +84,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Destroy all preloads for the given child route id pair and assign a final
   // status to them.
-  void DestroyPreloadForChildRouteIdPair(
+  virtual void DestroyPreloadForChildRouteIdPair(
       const std::pair<int, int>& child_route_id_pair,
       FinalStatus final_status);
 

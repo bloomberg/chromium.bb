@@ -26,6 +26,7 @@
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
@@ -432,7 +433,9 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   const GURL referrer = MaybeStripReferrer(request_data.referrer);
-  const bool is_prerendering = IsPrerenderingChildRoutePair(child_id, route_id);
+  const bool is_prerendering =
+      prerender::PrerenderTracker::GetInstance()->IsPrerenderingOnIOThread(
+          child_id, route_id);
 
   // Handle a PREFETCH resource type. If prefetch is disabled, squelch the
   // request. If prerendering is enabled, trigger a prerender for the URL
@@ -467,16 +470,11 @@ void ResourceDispatcherHost::BeginRequest(
   // Abort any prerenders that spawn requests that use invalid HTTP methods.
   if (is_prerendering &&
       !prerender::PrerenderManager::IsValidHttpMethod(request_data.method)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(
-            prerender::DestroyPreloadForRenderView,
-            resource_context.prerender_manager(),
-            child_id,
-            route_id,
-            prerender::FINAL_STATUS_INVALID_HTTP_METHOD));
-    AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
-    return;
+    if (prerender::PrerenderTracker::GetInstance()->TryCancelOnIOThread(
+            child_id, route_id, prerender::FINAL_STATUS_INVALID_HTTP_METHOD)) {
+      AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
+      return;
+    }
   }
 
   // Construct the event handler.
@@ -2034,28 +2032,6 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
       NOTREACHED();
       return net::LOW;
   }
-}
-
-void ResourceDispatcherHost::AddPrerenderChildRoutePair(int child_id,
-                                                        int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!IsPrerenderingChildRoutePair(child_id, route_id));
-  prerender_child_route_pairs_.insert(std::make_pair(child_id, route_id));
-}
-
-void ResourceDispatcherHost::RemovePrerenderChildRoutePair(int child_id,
-                                                           int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(IsPrerenderingChildRoutePair(child_id, route_id));
-  prerender_child_route_pairs_.erase(std::make_pair(child_id, route_id));
-}
-
-bool ResourceDispatcherHost::IsPrerenderingChildRoutePair(int child_id,
-                                                          int route_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::pair<int, int> c_r_pair = std::make_pair(child_id, route_id);
-  return (prerender_child_route_pairs_.find(c_r_pair) !=
-            prerender_child_route_pairs_.end());
 }
 
 

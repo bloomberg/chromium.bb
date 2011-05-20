@@ -62,6 +62,7 @@ include_rules = [
 
   # http://crbug.com/77090
   "+chrome/browser/prerender/prerender_manager.h",
+  "+chrome/browser/prerender/prerender_tracker.h",
 
   # http://crbug.com/76788
   "+chrome/browser/profiles/profile.h",
