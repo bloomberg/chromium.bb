@@ -1,7 +1,7 @@
 {
   "nexes": {
-    "x86-32": "pnacl_support/x8632/ld",
-    "x86-64": "pnacl_support/x8664/ld",
-    "arm":    "pnacl_support/arm/ld"
+    "x86-32": "x8632/ld",
+    "x86-64": "x8664/ld",
+    "arm":    "arm/ld"
   }
 }
