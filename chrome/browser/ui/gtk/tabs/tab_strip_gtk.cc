@@ -1983,7 +1983,7 @@ gboolean TabStripGtk::OnDragDrop(GtkWidget* widget, GdkDragContext* context,
 gboolean TabStripGtk::OnDragLeave(GtkWidget* widget, GdkDragContext* context,
                                   guint time) {
   // Destroy the drop indicator.
-  drop_info_.reset();
+  drop_info_->DestroyContainer();
 
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
