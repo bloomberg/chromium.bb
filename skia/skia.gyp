@@ -331,6 +331,7 @@
         '../third_party/skia/src/core/SkFloat.cpp',
         '../third_party/skia/src/core/SkFloat.h',
         '../third_party/skia/src/core/SkFloatBits.cpp',
+        '../third_party/skia/src/core/SkFontHost.cpp',
         '../third_party/skia/src/core/SkGeometry.cpp',
         '../third_party/skia/src/core/SkGlobals.cpp',
         '../third_party/skia/src/core/SkGlyphCache.cpp',
@@ -776,7 +777,6 @@
             'ext/SkFontHost_fontconfig_direct.cpp',
             '../third_party/skia/src/core/SkBlitter_ARGB32_Subpixel.cpp',
             '../third_party/skia/src/ports/SkFontHost_FreeType_Subpixel.cpp',
-            '../third_party/skia/src/core/SkFontHost.cpp',
           ],
           'defines': [
             'SK_SUPPORT_LCDTEXT',
