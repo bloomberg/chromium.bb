@@ -13,6 +13,7 @@
   },
   "permissions": [
     "tabs",
+    "https://accounts.google.com/o/oauth2/*",
     "https://www.google.com/accounts/*",
     "https://www.googleapis.com/chromoting/*"
   ],

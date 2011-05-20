@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,14 +10,14 @@ if SCRIPT_PATH == "":
   SCRIPT_PATH = os.getcwd()
 
 PATHS_TO_TRY = [
-  '\\..\\..\\build\\Debug\\chromoting_host_keygen.exe',
-  '\\..\\..\\build\\Release\\chromoting_host_keygen.exe',
-  '\\..\\Debug\\chromoting_host_keygen.exe',
-  '\\..\\Release\\chromoting_host_keygen.exe',
-  '/../../xcodebuild/Debug/chromoting_host_keygen',
-  '/../../xcodebuild/Release/chromoting_host_keygen',
-  '/../../out/Debug/chromoting_host_keygen',
-  '/../../out/Release/chromoting_host_keygen']
+  '\\..\\..\\build\\Debug\\remoting_host_keygen.exe',
+  '\\..\\..\\build\\Release\\remoting_host_keygen.exe',
+  '\\..\\Debug\\remoting_host_keygen.exe',
+  '\\..\\Release\\remoting_host_keygen.exe',
+  '/../../xcodebuild/Debug/remoting_host_keygen',
+  '/../../xcodebuild/Release/remoting_host_keygen',
+  '/../../out/Debug/remoting_host_keygen',
+  '/../../out/Release/remoting_host_keygen']
 
 KEYGEN_PATH = None
 for path in PATHS_TO_TRY:
@@ -26,7 +26,7 @@ for path in PATHS_TO_TRY:
     break
 
 if not KEYGEN_PATH:
-  raise Exception("Unable to find chromoting_host_keygen. Please build it " +
+  raise Exception("Unable to find remoting_host_keygen. Please build it " +
                   "and try again")
 
 def generateRSAKeyPair():
@@ -35,5 +35,5 @@ def generateRSAKeyPair():
   pipe = os.popen(KEYGEN_PATH)
   out = pipe.readlines()
   if len(out) != 2:
-    raise Exception("chromoting_host_keygen failed.")
+    raise Exception("remoting_host_keygen failed.")
   return (out[0].strip(), out[1].strip())

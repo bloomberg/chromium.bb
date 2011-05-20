@@ -10,6 +10,7 @@ found in the LICENSE file.
   <head>
     <link rel="stylesheet" type="text/css" href="main.css" />
     <script type="text/javascript" src="remoting.js"></script>
+    <script type="text/javascript" src="oauth2.js"></script>
     <title>Select Role</title>
   </head>
 
@@ -17,31 +18,45 @@ found in the LICENSE file.
 
     <!-- Auth panel -->
     <div id="auth_panel">
-      Chromoting OAuth1 Token: <span id="oauth1_status"></span>
-      <button onclick="authorizeOAuth1();">Authorize</button>
-      <button onclick="clearOAuth1();">Clear</button >
-      <br />
-      XMPP Token: <span id="xmpp_status"></span>
-      <button onclick="clearXmpp();" id="xmpp_clear" style="display:none;">
+      OAuth2 Token: <span id="oauth2_status"></span>
+      <button onclick="remoting.oauth2.openOAuth2Window();"
+              id="oauth2_code_button">
+        Open OAuth2 Window
+      </button>
+      <button onclick="clearOAuth2();" id="oauth2_clear_button">
         Clear
       </button>
-      <form id='xmpp_form' action=""
-        onsubmit="authorizeXmpp(this); return false;">
-        <label for="xmpp_username">Email:</label>
-        <input type="text" name="xmpp_username" id="xmpp_username" />
-        <label for="xmpp_password">App-specific Password:</label>
-        <input type="password" name="xmpp_password" id="xmpp_password" />
-        <div id="xmpp_captcha" style="display:none;">
-          <img style="display:block;" id="xmpp_captcha_img" />
-          <input type="hidden" name="xmpp_captcha_token" />
-          <input type="text" name="xmpp_captcha_result" />
-        </div>
+      <form id='oauth2_form' action=""
+            onsubmit="authorizeOAuth2(this['oauth2_code'].value); return false;"
+            style="display:none">
+        <label for="auth2_code">OAuth2 Code (from window):</label>
+        <input type="text" name="oauth2_code" id="oauth2_code" />
         <input type="submit"/>
       </form>
-      <span id="xmpp_last_error" style="display:none"></span>
-      <iframe id="xmpp_error" style="display:none">
-        <p> No iframe support
-      </iframe>
+      <div id="xmpp_div">
+        XMPP Token: <span id="xmpp_status"></span>
+        <button onclick="clearXmpp();" id="xmpp_clear" style="display:none;">
+            Clear
+          </button>
+
+        <form id='xmpp_form' action=""
+          onsubmit="authorizeXmpp(this); return false;">
+          <label for="xmpp_username">Email:</label>
+          <input type="text" name="xmpp_username" id="xmpp_username" />
+          <label for="xmpp_password">App-specific Password:</label>
+          <input type="password" name="xmpp_password" id="xmpp_password" />
+          <div id="xmpp_captcha" style="display:none;">
+            <img style="display:block;" id="xmpp_captcha_img" />
+            <input type="hidden" name="xmpp_captcha_token" />
+            <input type="text" name="xmpp_captcha_result" />
+          </div>
+          <input type="submit"/>
+        </form>
+        <span id="xmpp_last_error" style="display:none"></span>
+        <iframe id="xmpp_error" style="display:none">
+          <p> No iframe support
+        </iframe>
+      </div>
     </div>
 
     <!-- Host UI -->

@@ -2,20 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(ajwong): This seems like a bad idea to share the exact same object
+// with the background page.  Why are we doing it like this?
 var remoting = chrome.extension.getBackgroundPage().remoting;
+
 XMPP_LOGIN_NAME = 'xmpp_login';
 XMPP_TOKEN_NAME = 'xmpp_token';
-OAUTH2_TOKEN_NAME = 'oauth2_token';
 HOST_PLUGIN_ID = 'host_plugin_id';
 
 function updateAuthStatus_() {
-  var oauth1_status = document.getElementById('oauth1_status');
-  if (remoting.oauth.hasToken()) {
-    oauth1_status.innerText = 'OK';
-    oauth1_status.style.color = 'green';
+  var oauth2_status = document.getElementById('oauth2_status');
+  if (remoting.oauth2.isAuthenticated()) {
+    oauth2_status.innerText = 'OK';
+    oauth2_status.style.color = 'green';
+    document.getElementById('oauth2_code_button').style.display = 'none';
+    document.getElementById('oauth2_clear_button').style.display = 'inline';
+    document.getElementById('oauth2_form').style.display = 'none';
   } else {
-    oauth1_status.innerText = 'Unauthorized';
-    oauth1_status.style.color = 'red';
+    oauth2_status.innerText = 'Unauthorized';
+    oauth2_status.style.color = 'red';
+    document.getElementById('oauth2_code_button').style.display = 'inline';
+    document.getElementById('oauth2_clear_button').style.display = 'none';
+    document.getElementById('oauth2_form').style.display = 'inline';
   }
   var xmpp_status = document.getElementById('xmpp_status');
   if (remoting.getItem(XMPP_TOKEN_NAME) && remoting.getItem(XMPP_LOGIN_NAME)) {
@@ -78,7 +86,7 @@ function initBackgroundFuncs_() {
   remoting.getItem = chrome.extension.getBackgroundPage().getItem;
   remoting.setItem = chrome.extension.getBackgroundPage().setItem;
   remoting.removeItem = chrome.extension.getBackgroundPage().removeItem;
-  remoting.oauth = chrome.extension.getBackgroundPage().oauth;
+  remoting.oauth2 = new OAuth2();
 }
 
 function authorizeXmpp(form) {
@@ -131,12 +139,12 @@ function authorizeXmpp(form) {
   xhr.send(post_data);
 }
 
-function authorizeOAuth1() {
-  remoting.oauth.authorize(updateAuthStatus_);
+function authorizeOAuth2(code) {
+  remoting.oauth2.exchangeCodeForToken(code, updateAuthStatus_);
 }
 
-function clearOAuth1() {
-  remoting.oauth.clearTokens();
+function clearOAuth2() {
+  remoting.oauth2.clear();
   updateAuthStatus_();
 }
 
@@ -243,7 +251,7 @@ function showConnectError_(responseCode, responseString) {
   setClientMode('connect_failed');
 }
 
-function parseServerResponse_(reply, xhr) {
+function parseServerResponse_(xhr) {
   if (xhr.status == 200) {
     var host = JSON.parse(xhr.responseText);
     if (host.data && host.data.jabberId) {
@@ -255,6 +263,24 @@ function parseServerResponse_(reply, xhr) {
   showConnectError_(xhr.status, xhr.responseText);
 }
 
+function resolveSupportId(support_id) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState != 4) {
+        return;
+      }
+      parseServerResponse_(xhr);
+    };
+
+    xhr.open('GET',
+             'https://www.googleapis.com/chromoting/v1/support-hosts/' +
+                 encodeURIComponent(support_id),
+             true);
+    xhr.setRequestHeader('Authorization',
+                         'OAuth ' + remoting.oauth2.getAccessToken());
+    xhr.send(null);
+}
+
 function tryConnect(form) {
   remoting.accessCode = form['access_code_entry'].value;
   // TODO(jamiewalch): Since the mapping from (SupportId, HostSecret) to
@@ -264,10 +290,14 @@ function tryConnect(form) {
     showConnectError_(404);
   } else {
     setClientMode('connecting');
-    var urlBase = 'https://www.googleapis.com/chromoting/v1/support-hosts/';
-    remoting.oauth.sendSignedRequest(
-        urlBase + '' + encodeURIComponent(parts[0]) + '',
-        parseServerResponse_);
+    if (remoting.oauth2.needsNewAccessToken()) {
+      remoting.oauth2.refreshAccessToken(function() {
+        resolveSupportId(parts[0]);
+      });
+      return;
+    } else {
+      resolveSupportId(parts[0]);
+    }
   }
 }
 
