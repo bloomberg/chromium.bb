@@ -770,7 +770,6 @@ class Directory {
   void GetDownloadProgressAsString(
       ModelType type,
       std::string* value_out) const;
-  size_t GetEntriesCount() const;
   void SetDownloadProgress(
       ModelType type,
       const sync_pb::DataTypeProgressMarker& value);

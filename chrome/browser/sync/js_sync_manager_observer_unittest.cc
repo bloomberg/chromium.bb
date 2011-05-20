@@ -87,8 +87,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
                                          8,
                                          5,
                                          false,
-                                         sessions::SyncSourceInfo(),
-                                         0);
+                                         sessions::SyncSourceInfo());
   DictionaryValue expected_details;
   expected_details.Set("snapshot", snapshot.ToValue());
 

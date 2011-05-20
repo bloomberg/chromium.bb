@@ -159,8 +159,7 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                kNumBlockingConflictingUpdates,
                                kNumConflictingUpdates,
                                kDidCommitItems,
-                               source,
-                               0);
+                               source);
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(13u, value->size());
   ExpectDictDictionaryValue(*expected_syncer_status_value, *value,
