@@ -99,6 +99,7 @@ void SearchString(PP_Instance instance,
                   struct PP_PrivateFindResult** results,
                   int* count) {
   *count = 0;
+  *results = NULL;
   DebugPrintf("PPB_PDF::SearchString: Not Implemented\n");
 }
 
