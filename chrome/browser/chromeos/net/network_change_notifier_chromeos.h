@@ -15,8 +15,10 @@ namespace chromeos {
 
 class NetworkChangeNotifierChromeos
     : public net::NetworkChangeNotifier,
-      public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public chromeos::NetworkLibrary::NetworkObserver {
+#if defined(CONNECTIVITY_DETECTION)
+    public chromeos::NetworkLibrary::NetworkObserver,
+#endif
+      public chromeos::NetworkLibrary::NetworkManagerObserver {
  public:
   NetworkChangeNotifierChromeos();
   virtual ~NetworkChangeNotifierChromeos();
@@ -28,9 +30,11 @@ class NetworkChangeNotifierChromeos
   // NetworkManagerObserver overrides:
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj) OVERRIDE;
 
+#if defined(CONNECTIVITY_DETECTION)
   // NetworkObserver overrides:
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* cros,
                                 const chromeos::Network* network) OVERRIDE;
+#endif
 
   // Updates data members that keep the track the network stack state.
   void UpdateNetworkState(chromeos::NetworkLibrary* cros);

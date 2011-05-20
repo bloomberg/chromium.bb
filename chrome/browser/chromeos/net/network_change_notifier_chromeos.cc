@@ -24,7 +24,9 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
+#if defined(CONNECTIVITY_DETECTION)
   lib->RemoveObserverForAllNetworks(this);
+#endif
 }
 
 void NetworkChangeNotifierChromeos::OnNetworkManagerChanged(
@@ -45,8 +47,10 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
       (network && (!has_active_network_ ||
                    network->service_path() != service_path_ ||
                    network->ip_address() != ip_address_))) {
+#if defined(CONNECTIVITY_DETECTION)
     if (has_active_network_)
       lib->RemoveObserverForAllNetworks(this);
+#endif
     if (!network) {
       has_active_network_ = false;
       service_path_.clear();
@@ -54,8 +58,10 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
     } else {
       has_active_network_ = true;
       service_path_ = network->service_path();
-      lib->AddNetworkObserver(network->service_path(), this);
       ip_address_ = network->ip_address();
+#if defined(CONNECTIVITY_DETECTION)
+      lib->AddNetworkObserver(network->service_path(), this);
+#endif
     }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -64,6 +70,7 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
   }
 }
 
+#if defined(CONNECTIVITY_DETECTION)
 void NetworkChangeNotifierChromeos::OnNetworkChanged(
     chromeos::NetworkLibrary* cros,
     const chromeos::Network* network) {
@@ -84,5 +91,6 @@ void NetworkChangeNotifierChromeos::OnNetworkChanged(
           &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
   }
 }
+#endif
 
 }  // namespace net

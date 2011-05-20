@@ -530,6 +530,9 @@ void BrowserMainParts::MainMessageLoopStart() {
   // TODO(viettrungluu): should these really go before setting the thread name?
   system_monitor_.reset(new base::SystemMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
+
+  InitializeMainThread();
+
 #if defined(OS_CHROMEOS)
   // TODO(zelidrag): We need to move cros library glue code outside of
   // chrome/browser directory to avoid check_deps issues and then migrate
@@ -539,7 +542,6 @@ void BrowserMainParts::MainMessageLoopStart() {
 #else
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
 #endif
-  InitializeMainThread();
 
   PostMainMessageLoopStart();
   Profiling::MainMessageLoopStarted();
