@@ -6,7 +6,6 @@
 
 import os
 import re
-import shutil
 import sys
 import tempfile
 
@@ -200,10 +199,16 @@ class BuilderStage():
                 'both': Both the public and private overlays.
     """
     cmd = OVERLAY_LIST_CMD % {'buildroot': self._build_root}
+    # Check in case we haven't checked out the source yet.
+    if not os.path.exists(cmd):
+      return []
+
     public_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--noprivate'],
-                                          redirect_stdout=True).output.split()
+                                          redirect_stdout=True,
+                                          print_cmd=False).output.split()
     private_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--nopublic'],
-                                           redirect_stdout=True).output.split()
+                                           redirect_stdout=True,
+                                           print_cmd=False).output.split()
 
     # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
     #                   its list of public overlays. But it doesn't yet...
@@ -218,6 +223,7 @@ class BuilderStage():
     else:
       cros_lib.Info('No overlays found.')
       paths = []
+
     return paths
 
   def _PrintLoudly(self, msg, is_start):
@@ -308,33 +314,31 @@ class ManifestVersionedSyncStage(BuilderStage):
     increment = 'branch' if self._tracking_branch == 'master' else 'patch'
 
     manifest_manager = manifest_version.BuildSpecsManager(
-       tmp_dir=os.path.join('/b', 'git.root'),
-       source_repo=self._build_config['git_url'],
+       source_dir=self._build_root,
+       checkout_repo=self._build_config['git_url'],
        manifest_repo=self._build_config['manifest_version'],
        branch=self._tracking_branch,
        build_name=self._build_config['board'],
        incr_type=increment,
+       clobber=self._options.clobber,
        dry_run=self._options.debug)
 
-    next_version = manifest_manager.GetNextBuildSpec(VERSION_FILE, latest=True)
-    if not next_version:
+    if os.path.isdir(os.path.join(self._build_root, '.repo')):
+      commands.PreFlightRinse(self._build_root, self._build_config['board'],
+                              BuilderStage.rev_overlays)
+
+    next_manifest = manifest_manager.GetNextBuildSpec(VERSION_FILE, latest=True)
+    if not next_manifest:
       print 'AUTOREV: Nothing to build!'
       sys.exit(0);
 
     # Store off this value where the Completion stage can find it...
     ManifestVersionedSyncStage.manifest_manager = manifest_manager
 
-    # Clean up previous work.
-    repo_directory = os.path.join(self._build_root, '.repo')
-    if os.path.exists(repo_directory):
-      commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                              BuilderStage.rev_overlays)
-      shutil.rmtree(repo_directory)
-
     commands.ManifestCheckout(self._build_root,
                               self._tracking_branch,
-                              next_version,
-                              url=self._build_config['manifest_version'])
+                              next_manifest,
+                              url=self._build_config['git_url'])
 
     # Check that all overlays can be found.
     self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
@@ -405,8 +409,8 @@ class BuildTargetStage(BuilderStage):
     BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
     emptytree = (BuilderStage.old_binhost and
                  BuilderStage.old_binhost != BuilderStage.new_binhost)
-    build_autotest=(self._build_config['build_tests'] and
-                    self._options.tests)
+    build_autotest = (self._build_config['build_tests'] and
+                      self._options.tests)
     env = {}
     if self._build_config.get('useflags'):
       env['USE'] = ' '.join(self._build_config['useflags'])

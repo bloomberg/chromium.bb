@@ -88,7 +88,7 @@ class HelperMethodsTest(unittest.TestCase):
          ' http://git.chromium.org').split(), cwd=git_dir)
 
 
-    manifest_version._PrepForChanges(git_dir, use_repo=True)
+    manifest_version._PrepForChanges(git_dir)
 
     # Change something.
     cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
@@ -96,7 +96,7 @@ class HelperMethodsTest(unittest.TestCase):
 
     # Push the change with dryrun.
     manifest_version._PushGitChanges(git_dir, 'Test appending user.',
-                                     use_repo=True, dry_run=True)
+                                     dry_run=True)
 
   def tearDown(self):
     shutil.rmtree(self.tmpdir)
@@ -138,8 +138,7 @@ class VersionInfoTest(mox.MoxTestBase):
 
     version_file = self.CreateFakeVersionFile(self.tmpdir)
 
-    manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False,
-                                     use_repo=True)
+    manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False)
 
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
@@ -161,6 +160,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
 
     self.tmpdir = tempfile.mkdtemp()
+    os.makedirs(os.path.join(self.tmpdir, '.repo'))
     self.source_repo = 'ssh://source/repo'
     self.manifest_repo = 'ssh://manifest/repo'
     self.version_file = 'version-file.sh'
@@ -219,7 +219,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     specs_dir = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx)
     m1 = os.path.join(specs_dir, '1.2.3.5.xml')
     m2 = os.path.join(specs_dir, '1.2.3.10.xml')
-    m3 = os.path.join(specs_dir, '1.2.4.6.xml')
+    m3 = os.path.join(specs_dir, '1.2.555.6.xml')
     m4 = os.path.join(specs_dir, '1.2.3.4.xml')
 
     # Create fake buildspecs.
@@ -232,14 +232,14 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     specs = self.manager._GetMatchingSpecs(info, specs_dir)
     self.mox.VerifyAll()
     # Should be the latest on the 1.2.3 branch.
-    self.assertEqual(specs[-1], '1.2.3.10')
+    self.assertEqual(specs[-1], '1.2.555.6')
 
   def testCreateNewBuildSpecNoCopy(self):
     """Tests whether we can create a new build spec correctly.
 
     Tests without pre-existing version file in manifest dir.
     """
-    self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
     self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
@@ -247,9 +247,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
                                          incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
                                               'buildspecs', '1.2')
-    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
     manifest_version._PrepForChanges(mox.IsA(str))
-    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    repository.RepoRepository.ExportManifest(mox.IgnoreArg())
     manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
 
     self.mox.ReplayAll()
@@ -260,8 +259,9 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
 
   def testCreateNewBuildIncrement(self):
     """Tests that we create a new version if a previous one exists."""
-    self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
+
     self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
     self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
@@ -271,13 +271,12 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
                                          incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
                                               'buildspecs', '1.2')
-    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
     info.IncrementVersion('Automatic: Updating the new version number %s' %
                           FAKE_VERSION_STRING, dry_run=True).AndReturn(
                               FAKE_VERSION_STRING_NEXT)
-    repository.RepoRepository.Sync()
+    repository.RepoRepository.Sync('default')
     manifest_version._PrepForChanges(mox.IsA(str))
-    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    repository.RepoRepository.ExportManifest(mox.IgnoreArg())
     manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
 
     self.mox.ReplayAll()
@@ -294,7 +293,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     print self.manager.UpdateStatus('pass')
 
   def tearDown(self):
-    shutil.rmtree(self.tmpdir)
+    if os.path.exists(self.tmpdir):
+      shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':

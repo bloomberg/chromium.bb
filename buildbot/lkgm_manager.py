@@ -135,7 +135,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                                                      self.current_version)
         self._SetInFlight(commit_message)
 
-      return self.current_version
+      return self.GetLocalManifest(self.current_version)
 
     except (cros_lib.RunCommandError,
             manifest_version.GitCommandException) as e:
@@ -149,8 +149,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         version_file: File to use in cros when checking for cros version.
         retries: Number of retries for updating the status
       Returns:
-        next_build: a string of the next build number for the builder to consume
-                    or None in case of no need to build.
+        Local path to manifest to build or None in case of no need to build.
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
@@ -164,7 +163,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                                                      self.current_version)
         self._SetInFlight(commit_message)
 
-      return self.current_version
+      return self.GetLocalManifest(self.current_version)
 
     except (cros_lib.RunCommandError,
             manifest_version.GitCommandException) as e:

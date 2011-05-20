@@ -95,7 +95,7 @@ def _PrepForChanges(git_repo, use_repo=False):
 
     cros_lib.RunCommand(['git',
                          'config',
-                         'url.ssh://gerrit.chromium.org:29418.insteadof',
+                         'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
                          'http://git.chromium.org'], cwd=git_repo)
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
@@ -106,12 +106,11 @@ def _PrepForChanges(git_repo, use_repo=False):
     raise GitCommandException(err_msg)
 
 
-def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
+def _PushGitChanges(git_repo, message, dry_run=True):
   """Do the final commit into the git repo
   Args:
     git_repo: git repo to push
     message: Commit message
-    use_repo: use repo tool for pushing changes. Default: False
     dry_run: If true, don't actually push changes to the server
   raises: GitCommandException
   """
@@ -119,52 +118,16 @@ def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
   try:
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
-    cros_lib.GitPushWithRetry(_PUSH_BRANCH, cwd=git_repo, dryrun=dry_run)
-  except cros_lib.GitPushFailed, e:
+    push_cmd = ['git', 'push', '--verbose']
+    if dry_run: push_cmd.append('--dry-run')
+    cros_lib.RunCommand(push_cmd, cwd=git_repo)
+  except cros_lib.RunCommandError, e:
     err_msg = 'Failed to commit to %s' % e.message
     logging.error(err_msg)
     git_status = cros_lib.RunCommand(['git', 'status'], cwd=git_repo)
     logging.error('Current repo %s status:\n%s', git_repo, git_status)
     _GitCleanDirectory(git_repo)
     raise GitCommandException(err_msg)
-  finally:
-    if use_repo:
-      cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH], cwd=git_repo,
-                          error_ok=True)
-
-
-def _ExportManifest(source_dir, output_file):
-  """Exports manifests file
-  Args:
-    source_dir: repo root
-    output_file: output_file to out put the manifest to
-  """
-  cros_lib.RunCommand(['repo', 'manifest', '-r', '-o', output_file],
-                      cwd=source_dir)
-
-
-def _DiffManifests(manifest1, manifest2):
-  """Diff two manifest files. excluding the revisions to manifest-verisons.git
-  Args:
-    manifest1: First manifest file to compare
-    manifest2: Second manifest file to compare
-  Returns:
-    True: If the manifests are different
-    False: If the manifests are same
-  """
-  logging.debug('Calling DiffManifests with %s, %s', manifest1, manifest2)
-  black_list = ['manifest-versions']
-  blacklist_pattern = re.compile(r'|'.join(black_list))
-  with open(manifest1, 'r') as manifest1_fh:
-    with open(manifest2, 'r') as manifest2_fh:
-      for (line1, line2) in zip(manifest1_fh, manifest2_fh):
-        if blacklist_pattern.search(line1):
-          logging.debug('%s ignored %s', line1, line2)
-          continue
-
-        if line1 != line2:
-          return True
-      return False
 
 
 def _RemoveDirs(dir_name):
@@ -323,7 +286,7 @@ class VersionInfo(object):
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
 
-    _PushGitChanges(repo_dir, message, use_repo=True, dry_run=dry_run)
+    _PushGitChanges(repo_dir, message, dry_run=dry_run)
 
     return self.VersionString()
 
@@ -348,28 +311,23 @@ class VersionInfo(object):
 
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
-  def __init__(self, tmp_dir, source_repo, manifest_repo, branch,
-               build_name, incr_type, dry_run):
+  def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
+               build_name, incr_type, clobber=False, dry_run=True):
     """Initializes a build specs manager.
     Args:
-      tmp_dir: Working directory for all manifest_version work.
-      source_repo:  Source repository for cros.
+      source_dir: Directory to which we checkout out source code.
+      checkout_repo:  Checkout repository for cros.
       manifest_repo:  Manifest repository for manifest versions / buildspecs.
         branch: The branch.
-      build_name: Name of the build that we are interested in. E.g., x86-alex
+      build_name: Identifier for the build.  Generally the board is a good idea.
       incr_type: part of the version to increment. 'patch or branch'
       dry_run: Whether we actually commit changes we make or not.
     """
-    mirror_dir = os.path.join(tmp_dir, 'mirror')
-    self.local_mirror = repository.RepoRepository(
-        source_repo, mirror_dir, is_mirror=True)
-    self.source_dir = os.path.join(tmp_dir, 'source')
+    self.work_directory = tempfile.mkdtemp('manifest')
     self.cros_source = repository.RepoRepository(
-        source_repo, self.source_dir, branch=branch,
-        local_mirror=self.local_mirror)
-
+        checkout_repo, source_dir, branch=branch, clobber=clobber)
     self.manifest_repo = manifest_repo
-    self.manifests_dir = os.path.join(tmp_dir, 'manifests')
+    self.manifests_dir = os.path.join(self.work_directory, 'manifests')
     self.branch = branch
     self.build_name = build_name
     self.incr_type = incr_type
@@ -390,6 +348,11 @@ class BuildSpecsManager(object):
     self.compare_versions_fn = lambda s: map(int, s.split('.'))
 
     self.current_version = None
+
+  def __del__(self):
+    # Clean up of our manifest work directory.
+    if os.path.isdir(self.work_directory):
+      shutil.rmtree(self.work_directory)
 
   def _GetMatchingSpecs(self, version_info, directory):
     """Returns the sorted list of buildspecs that match '*.xml in a directory.'
@@ -415,6 +378,7 @@ class BuildSpecsManager(object):
     """Loads the specifications from the working directory.
     Args:
       version_info: Info class for version information of cros.
+      relative_working_dir: Optional working directory within buildspecs repo.
     """
     working_dir = os.path.join(self.manifests_dir, relative_working_dir)
     dir_pfx = version_info.DirPrefix()
@@ -448,6 +412,7 @@ class BuildSpecsManager(object):
                                                          latest_processed))
     # Remove unprocessed candidates that are older than the latest processed.
     if latest_processed:
+      to_be_removed = []
       for build in self.unprocessed:
         build1 = map(int, build.split('.'))
         build2 = map(int, latest_processed.split('.'))
@@ -457,17 +422,20 @@ class BuildSpecsManager(object):
         else:
           logging.debug('Ignoring build %s less than %s' %
                         (build, latest_processed))
-          self.unprocessed.remove(build)
+          to_be_removed.append(build)
+
+      for build in to_be_removed:
+        self.unprocessed.remove(build)
 
     if self.unprocessed: self.latest_unprocessed = self.unprocessed[-1]
 
   def _GetCurrentVersionInfo(self, version_file):
     """Returns the current version info from the version file.
     Args:
-      version_info: Info class for version information of cros.
+      version_file: Relative path to the version file inside the repo.
     """
-    self.cros_source.Sync()
-    version_file_path = os.path.join(self.source_dir, version_file)
+    self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
+    version_file_path = self.cros_source.GetRelativePath(version_file)
     return VersionInfo(version_file=version_file_path,
                        incr_type=self.incr_type)
 
@@ -485,12 +453,10 @@ class BuildSpecsManager(object):
       next build number: on new changes or
       None: on no new changes
     """
-    temp_manifest_file = tempfile.mkstemp(suffix='mvp', text=True)[1]
-    _ExportManifest(self.source_dir, temp_manifest_file)
     if self.latest:
       latest_spec_file = '%s.xml' % os.path.join(self.all_specs_dir,
                                                  self.latest)
-      if not _DiffManifests(temp_manifest_file, latest_spec_file):
+      if not self.cros_source.IsManifestDifferent(latest_spec_file):
         return None
 
     version = version_info.VersionString()
@@ -499,22 +465,25 @@ class BuildSpecsManager(object):
                  version)
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
       logging.debug('Incremented version number to  %s', version)
-      self.cros_source.Sync()
+      self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
 
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     if not os.path.exists(os.path.dirname(spec_file)):
       os.makedirs(os.path.dirname(spec_file))
 
     self._PrepSpecChanges()
-    _ExportManifest(self.source_dir, spec_file)
+    self.cros_source.ExportManifest(spec_file)
     self._PushSpecChanges('Automatic: Creating new manifest file: %s.xml' %
                           version)
     logging.debug('Created New Build Spec %s', version)
     return version
 
-  def GetMirror(self):
-    """Returns a mirror repository object to use in other repos."""
-    return self.local_mirror
+  def GetLocalManifest(self, version):
+    """Return path to local copy of manifest given by version."""
+    if version:
+      return os.path.join(self.all_specs_dir, version + '.xml')\
+
+    return None
 
   def GetNextBuildSpec(self, version_file, latest=False, retries=0):
     """Gets the version number of the next build spec to build.
@@ -523,8 +492,7 @@ class BuildSpecsManager(object):
         latest: Whether we need to handout the latest build. Default: False
         retries: Number of retries for updating the status
       Returns:
-        next_build: a string of the next build number for the builder to consume
-                    or None in case of no need to build.
+        Local path to manifest to build or None in case of no need to build.
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
@@ -545,7 +513,7 @@ class BuildSpecsManager(object):
                                                      self.current_version)
         self._SetInFlight(commit_message)
 
-      return self.current_version
+      return self.GetLocalManifest(self.current_version)
 
     except (cros_lib.RunCommandError, GitCommandException) as e:
       err_msg = 'Failed to generate buildspec. error: %s' % e

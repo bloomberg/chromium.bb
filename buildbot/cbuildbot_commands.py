@@ -31,20 +31,22 @@ def _GitCleanup(buildroot, board, overlays):
         ['../../chromite/buildbot/cros_mark_as_stable', '--srcroot=..',
          '--board=%s' % board,
          '--overlays=%s' % ':'.join(overlays),
-         'clean'
-        ], cwd=cwd, error_ok=True)
+         'clean',
+        ], cwd=cwd, error_ok=True, redirect_stderr=True, redirect_stdout=True)
 
 
 def _CleanUpMountPoints(buildroot):
   """Cleans up any stale mount points from previous runs."""
-  mount_output = cros_lib.OldRunCommand(['mount'], redirect_stdout=True)
+  mount_output = cros_lib.OldRunCommand(['mount'], redirect_stdout=True,
+                                        print_cmd=False)
   mount_pts_in_buildroot = cros_lib.OldRunCommand(
       ['grep', buildroot], input=mount_output, redirect_stdout=True,
-      error_ok=True)
+      error_ok=True, print_cmd=False)
 
   for mount_pt_str in mount_pts_in_buildroot.splitlines():
     mount_pt = mount_pt_str.rpartition(' type ')[0].partition(' on ')[2]
-    cros_lib.OldRunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True)
+    cros_lib.OldRunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True,
+                           print_cmd=False)
 
 
 def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
@@ -62,7 +64,7 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
            '-c',
            'git',
            'config',
-           'url.ssh://gerrit.chromium.org:29418.insteadof',
+           'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
            'http://git.chromium.org'
           ], cwd=buildroot)
       retries = 0
@@ -160,27 +162,20 @@ def PreFlightRinse(buildroot, board, overlays):
   cros_lib.OldRunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
 
 
-def ManifestCheckout(buildroot, tracking_branch, next_version,
-                     retries=_DEFAULT_RETRIES, url=None, mirror=None):
+def ManifestCheckout(buildroot, tracking_branch, next_manifest,
+                     retries=_DEFAULT_RETRIES, url=None):
   """Performs a manifest checkout and clobbers any previous checkouts."""
 
   print "BUILDROOT: %s" % buildroot
   print "TRACKING BRANCH: %s" % tracking_branch
-  print "NEXT VERSION: %s" % next_version
-  print "URL: %s" % url
+  print "NEXT MANIFEST: %s" % next_manifest
 
   branch = 'master'
   branch_parts = tracking_branch.split('/')
   if len(branch_parts) >= 2:
     branch = branch_parts[1]
 
-  next_version_subdir = next_version.split('.');
-  manifest = os.path.join('buildspecs',
-                          next_version_subdir[0] + '.' + next_version_subdir[1],
-                          next_version + '.xml')
-
-  repository.RepoRepository(url, buildroot, branch=branch, manifest=manifest,
-                            local_mirror=mirror, clobber=True).Sync()
+  repository.RepoRepository(url, buildroot, branch=branch).Sync(next_manifest)
 
 
 def FullCheckout(buildroot, tracking_branch,
