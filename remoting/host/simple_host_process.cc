@@ -102,7 +102,8 @@ class SimpleHost {
   int Run() {
     // |message_loop| is declared early so that any code we call into which
     // requires a current message-loop won't complain.
-    MessageLoop message_loop;
+    // It needs to be a UI message loop to keep runloops spinning on the Mac.
+    MessageLoop message_loop(MessageLoop::TYPE_UI);
 
     remoting::ChromotingHostContext context;
     context.Start();
