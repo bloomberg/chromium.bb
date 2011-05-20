@@ -469,7 +469,8 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     lstrcpyW(bind_info->szCustomVerb, verb.c_str());
   }
 
-  if (post_data_len()) {
+  if (bind_info->dwBindVerb = BINDVERB_POST ||
+      bind_info->dwBindVerb == BINDVERB_PUT) {
     // Bypass caching proxies on upload requests and avoid writing responses to
     // the browser's cache.
     *bind_flags |= BINDF_GETNEWESTVERSION | BINDF_PRAGMA_NO_CACHE;
@@ -486,7 +487,8 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     if (bind_info->dwBindVerb != BINDVERB_CUSTOM)
       bind_info->szCustomVerb = NULL;
 
-    if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
+    if (post_data_len() &&
+        get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
 #pragma warning(disable:4244)
       bind_info->cbstgmedData = post_data_len();
@@ -498,7 +500,6 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
       DVLOG(1) << __FUNCTION__ << me() << "POST request with no data!";
     }
   }
-
   return S_OK;
 }
 
