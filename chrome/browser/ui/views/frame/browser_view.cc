@@ -1638,8 +1638,10 @@ views::ClientView* BrowserView::CreateClientView(views::Window* window) {
 }
 
 void BrowserView::OnWindowActivationChanged(bool active) {
-  if (active)
+  if (active) {
     BrowserList::SetLastActive(browser_.get());
+    browser_->OnWindowActivated();
+  }
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {

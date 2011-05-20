@@ -333,6 +333,11 @@ class Browser : public TabHandlerDelegate,
   // cleanup.
   void OnWindowClosing();
 
+  // OnWindowActivationChanged handling ///////////////////////////////////////
+
+  // Invoked when the window containing us is activated.
+  void OnWindowActivated();
+
   // In-progress download termination handling /////////////////////////////////
 
   // Are normal and/or incognito downloads in progress?
