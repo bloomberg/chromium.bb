@@ -585,16 +585,17 @@ function pageRangesFieldChanged() {
  * 'copies' value.
  */
 function updateCopiesButtonsState() {
+  var copiesField = $('copies');
   if (!isNumberOfCopiesValid()) {
-    $('copies').classList.add('invalid');
-    $('increment').disabled = true;
-    $('decrement').disabled = true;
+    copiesField.classList.add('invalid');
+    $('increment').disabled = false;
+    $('decrement').disabled = false;
     showInvalidHint($('copies-hint'));
   }
   else {
-    $('copies').classList.remove('invalid');
-    $('increment').disabled = false;
-    $('decrement').disabled = false;
+    copiesField.classList.remove('invalid');
+    $('increment').disabled = (getCopies() == copiesField.max) ? true : false;
+    $('decrement').disabled = (getCopies() == copiesField.min) ? true : false;
     hideInvalidHint($('copies-hint'));
   }
 }
@@ -892,9 +893,15 @@ function areArraysEqual(array1, array2) {
  * Executed when the 'increment' or 'decrement' button is clicked.
  */
 function onCopiesButtonsClicked(sign) {
-  if($('copies').value == 1 && (sign == -1))
-    return;
-  $('copies').value = getCopies() + sign * 1;
+  var copiesField = $('copies');
+  if (!isNumberOfCopiesValid())
+    copiesField.value = 1;
+  else {
+    var newValue = getCopies() + sign * 1;
+    if (newValue < copiesField.min || newValue > copiesField.max)
+      return;
+    copiesField.value = newValue;
+  }
   copiesFieldChanged();
 }
 
