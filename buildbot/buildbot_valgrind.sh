@@ -50,13 +50,12 @@ echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=dbg-linux,nacl,doc platform=x86-64
 
-echo @@@BUILD_STEP memcheck@@@
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
-    buildbot=memcheck memcheck_bot_tests
-
-
 if [[ "$TOOLCHAIN" != glibc ]]; then
+
+  echo @@@BUILD_STEP memcheck@@@
+  ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+      ${GLIBCOPTS} --mode=dbg-linux,nacl platform=x86-64 sdl=none \
+      buildbot=memcheck memcheck_bot_tests
 
   echo @@@BUILD_STEP leakcheck@@@
   ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
