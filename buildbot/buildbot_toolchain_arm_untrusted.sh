@@ -77,7 +77,7 @@ fi
 
 for arch in ${RUN_TESTS} ; do
   echo @@@BUILD_STEP test-${arch}@@@
-  UTMAN_BUILDBOT=true tools/llvm/utman.sh test-${arch} ||
+  UTMAN_BUILDBOT=true tools/llvm/utman-test.sh test-${arch} ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 done
 
