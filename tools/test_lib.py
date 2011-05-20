@@ -102,6 +102,22 @@ class SubprocessCpuTimer:
 def PopenBufSize():
   return 1000 * 1000
 
+def RunCmdWithInput(cmd, input_data):
+  try:
+    p = subprocess.Popen(cmd,
+                         bufsize=PopenBufSize(),
+                         stdin=subprocess.PIPE)
+    p.communicate(input_data)
+    retcode = p.wait()
+    if retcode != 0:
+      print ('Failed to cmd %s (retcode=%d)' %
+             (cmd, retcode))
+      return False
+  except OSError:
+    print 'RunCmdWithInput exception: ' + str(sys.exc_info()[1])
+    return False
+  return True
+
 def RunTestWithInput(cmd, input_data):
   """Run a test where we only care about the return code."""
   assert type(cmd) == list

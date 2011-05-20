@@ -1202,7 +1202,6 @@ def GetPPAPIPluginPath(env, redirect_windows=True):
 
 pre_base_env.AddMethod(GetPPAPIPluginPath)
 
-
 def PPAPIBrowserTester(env,
                        target,
                        url,
@@ -1210,7 +1209,8 @@ def PPAPIBrowserTester(env,
                        map_files=(),
                        extensions=(),
                        log_verbosity=2,
-                       args=()):
+                       args=(),
+                       **extra):
   if 'TRUSTED_ENV' not in env:
     return []
 
@@ -1237,12 +1237,16 @@ def PPAPIBrowserTester(env,
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
   command.extend(args)
+  if ShouldUseVerboseOptions(extra):
+    env.MakeVerboseExtraOptions(target, log_verbosity, extra)
   return env.CommandTest(target,
                          command,
                          # Set to 'huge' so that the browser tester's timeout
                          # takes precedence over the default of the test_suite.
                          size='huge',
-                         capture_output=False)
+                         # Heuristic for when to capture output...
+                         capture_output='process_output' in extra,
+                         **extra)
 
 pre_base_env.AddMethod(PPAPIBrowserTester)
 
@@ -1457,8 +1461,8 @@ def MakeNaClLogOption(env, target):
 pre_base_env.AddMethod(MakeNaClLogOption)
 
 def MakeVerboseExtraOptions(env, target, log_verbosity, extra):
-  ''' Generates **extra options that will give access to service runtime logs,
-  at a given log_verbosity. Slips the options into the given extra dict. '''
+  """ Generates **extra options that will give access to service runtime logs,
+  at a given log_verbosity. Slips the options into the given extra dict. """
   log_file = env.MakeNaClLogOption(target)
   extra['log_file'] = log_file
   extra_env = ['NACLLOG=%s' % log_file,
@@ -1466,6 +1470,11 @@ def MakeVerboseExtraOptions(env, target, log_verbosity, extra):
   extra['osenv'] = extra.get('osenv', []) + extra_env
 
 pre_base_env.AddMethod(MakeVerboseExtraOptions)
+
+def ShouldUseVerboseOptions(extra):
+  """ Heuristic for setting up Verbose NACLLOG options. """
+  return ('process_output' in extra or
+          'log_golden' in extra)
 
 # ----------------------------------------------------------
 def CommandSelLdrTestNacl(env, name, command,
@@ -1523,10 +1532,7 @@ def CommandSelLdrTestNacl(env, name, command,
 
   command = [sel_ldr] + sel_ldr_flags + ['--'] + command
 
-  # NOTE(robertm): log handling is a little magical
-  # We do not pass these via flags because those are not usable for sel_ldr
-  # when testing via plugin, esp windows.
-  if 'log_golden' in extra:
+  if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
 
   # Add Architechture Info
@@ -1540,7 +1546,8 @@ pre_base_env.AddMethod(CommandSelLdrTestNacl)
 TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
-                   'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime']
+                   'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime',
+                   'process_output']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,
@@ -1563,8 +1570,8 @@ UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigill' ,
 
 
 def GetPerfEnvDescription(env):
-  ''' Return a string describing architecture, library, etc. options that may
-      affect performance. '''
+  """ Return a string describing architecture, library, etc. options that may
+      affect performance. """
   description_list = [env['TARGET_FULLARCH']]
   # Using a list to keep the order consistent.
   bit_to_description = [ ('bitcode', ('pnacl', 'nnacl')),
@@ -1623,9 +1630,6 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
       extra_env = ['EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ ')]
       extra['osenv'] = extra.get('osenv', []) + extra_env
 
-  if not capture_output:
-    script_flags.append('--capture_output 0')
-
   script_flags.append('--perf_env_description')
   script_flags.append(env.GetPerfEnvDescription())
 
@@ -1636,8 +1640,12 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
       # Options to command_tester.py which are actually lists must not be
       # separated by whitespace. This stringifies the lists with a separator
       # char to satisfy command_tester.
-      flag_value =  ','.join(flag_value)
+      flag_value =  command_tester.StringifyList(flag_value)
     script_flags.append(flag_value)
+
+  # Other extra flags
+  if not capture_output:
+    script_flags.extend(['--capture_output', '0'])
 
   test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
   command = ['${PYTHON}', test_script] + script_flags + command
@@ -2432,6 +2440,7 @@ nacl_env.Append(
     'tests/barebones/nacl.scons',
     'tests/blob_library_loading/nacl.scons',
     'tests/browser_dynamic_library/nacl.scons',
+    'tests/browser_startup_time/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/computed_gotos/nacl.scons',

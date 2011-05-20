@@ -195,6 +195,13 @@ function RPCWrapper() {
     this._log('');
   }
 
+  // Allows users to log time data that will be parsed and re-logged
+  // for chrome perf-bot graphs / performance regression testing.
+  // See: native_client/tools/process_perf_output.py
+  this.logTimeData = function(event, timeMS) {
+    this.log('NaClPerf [' + event + '] ' + timeMS + ' millisecs');
+  }
+
   this.visualError = function() {
     // Changing the color is defered until testing is done
     this.ever_failed = true;

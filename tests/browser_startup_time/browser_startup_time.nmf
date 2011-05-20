@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "browser_startup_time_x86-32.nexe",
+    "x86-64": "browser_startup_time_x86-64.nexe",
+    "arm": "browser_startup_time_arm.nexe"
+  }
+}

@@ -75,6 +75,7 @@ def ResetGlobalSettings():
   global GlobalSettings
   GlobalSettings = {
       'exit_status': 0,
+      # List of environment variables to set.
       'osenv': '',
 
       'arch': None,
@@ -106,12 +107,22 @@ def ResetGlobalSettings():
       'filter_inverse': False,
       'filter_group_only': False,
 
+      # Script for processing output along with its arguments.
+      'process_output': '',
+
       'time_warning': 0,
       'time_error': 0,
 
       'run_under': None,
   }
 
+def StringifyList(lst):
+  return ','.join(lst)
+
+def DestringifyList(lst):
+  # BUG(robertm): , is a legitimate character for an environment variable
+  # value.
+  return lst.split(',')
 
 def FailureMessage():
   return '%s: FAILED' % os.path.basename(GlobalSettings['name'])
@@ -443,6 +454,19 @@ def CheckGoldenOutput(stdout, stderr):
         return False
   return True
 
+def ProcessLogOutput(stdout, stderr):
+  output_processor = GlobalSettings['process_output']
+  if output_processor:
+    output_processor_cmd = DestringifyList(output_processor)
+    # Also, get the output from logout (to get NaClLog output in Windows).
+    log_output = open(GlobalSettings['log_file']).read()
+    # Assume the log processor does not care about the order of the lines.
+    all_output = log_output + stdout + stderr
+    if not test_lib.RunCmdWithInput(output_processor_cmd, all_output):
+      Print(FailureMessage())
+      return False
+  return True
+
 def main(argv):
   global GlobalSigType
   global GlobalPlatform
@@ -457,9 +481,7 @@ def main(argv):
 
   if GlobalSettings['osenv']:
     Banner('setting environment')
-    # BUG(robertm): , is a legitimate character for an environment variable
-    # value.
-    env_vars = GlobalSettings['osenv'].split(',')
+    env_vars = DestringifyList(GlobalSettings['osenv'])
   else:
     env_vars = []
   for env_var in env_vars:
@@ -494,6 +516,7 @@ def main(argv):
             and not GlobalSettings['filter_regex']
             and not GlobalSettings['filter_inverse']
             and not GlobalSettings['filter_group_only']
+            and not GlobalSettings['process_output']
             )
     # If python ever changes popen.stdout.read() to not risk deadlock,
     # we could stream and capture, and use RunTestWithInputOutput instead.
@@ -518,6 +541,8 @@ def main(argv):
                                        stderr):
       return -1
     if not CheckGoldenOutput(stdout, stderr):
+      return -1
+    if not ProcessLogOutput(stdout, stderr):
       return -1
 
   if not CheckTimeBounds(total_time):

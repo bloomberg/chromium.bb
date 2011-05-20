@@ -1,0 +1,69 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Test startup time for loading a basic PPAPI nexe in the browser.
+
+Import('env')
+
+# Pull in the ppapi_test_example as a "barebones" PPAPI startup example.
+# Hope it does not change to do more than just the barebones.
+# We must make a separate build though, to get a different nexe "key"
+# for the env.Publish() / env.ExtractPublishedFiles() magic.
+nexe = 'browser_startup_time_%s.nexe' % env.get('TARGET_FULLARCH')
+
+# Build object file separately to prevent crud left in the source directory.
+browser_startup_obj = env.ComponentObject(
+    'pnacl_test_example',
+    '${SCONSTRUCT_DIR}/tests/ppapi_test_example/ppapi_test_example.cc')
+
+browser_startup_nexe = env.ComponentProgram(
+    nexe,
+    [browser_startup_obj],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                'ppapi_test_lib',
+                'platform',  # for CHECK
+                'pthread',
+                'gio',
+                ])
+
+# Borrow the smoke tests.
+borrowed_files = [env.File('${STAGING_DIR}/ppapi_test_example.js')]
+
+env.Publish(nexe, 'run',
+            ['browser_startup_time.html',
+             'browser_startup_time.nmf',
+             'browser_startup_time.js'])
+
+test_name = 'browser_startup_time.out'
+output_processor = ['${PYTHON}',
+                    str(env.File(
+                        '${SCONSTRUCT_DIR}/tools/process_perf_output.py')),
+                    test_name,
+                    env.GetPerfEnvDescription()]
+
+node = env.PPAPIBrowserTester(
+    test_name,
+    url='browser_startup_time.html',
+    files=env.ExtractPublishedFiles(nexe) + borrowed_files,
+    args=['--enable_experimental_js'],
+    process_output=output_processor,
+    # Assume verbosity level of 1 will give us NaClLogs for sel_ldr times.
+    log_verbosity=1)
+
+# TODO(jvoung): use a single test suite when either
+# (a) performance_tests are always run, or
+# (b) we have decided to just fold this test into chrome_browser_tests.
+test_suites = ['chrome_browser_tests', 'performance_tests']
+env.AddNodeToTestSuite(node,
+                       test_suites,
+                       'run_browser_startup_time_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+
+# Also check the size of this nexe.
+node = env.FileSizeTest('browser_startup_size.out',
+                        nexe)
+env.AddNodeToTestSuite(node,
+                       test_suites,
+                       'run_browser_startup_size_test')
