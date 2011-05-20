@@ -189,6 +189,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "views/focus/accelerator_handler.h"
+#include "views/widget/widget.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
 #endif
@@ -198,8 +199,8 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
-#if defined(TOUCH_UI) || defined(TOOLKIT_VIEWS)
-#include "views/widget/widget.h"
+#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+#include "views/touchui/touch_factory.h"
 #endif
 
 // BrowserMainParts ------------------------------------------------------------
@@ -1752,8 +1753,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-#if defined(TOUCH_UI)
-  views::RootView::SetKeepMouseCursor(
+#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+  views::TouchFactory::GetInstance()->set_keep_mouse_cursor(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
 #endif
 

@@ -115,11 +115,6 @@ class RootView : public View,
   virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-#if defined(TOUCH_UI)
-  static void SetKeepMouseCursor(bool keep);
-  static bool GetKeepMouseCursor();
-#endif
-
  protected:
   // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,

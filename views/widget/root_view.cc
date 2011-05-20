@@ -400,22 +400,6 @@ void RootView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_APPLICATION;
 }
 
-#if defined(TOUCH_UI)
-namespace {
-// Always show the mouse cursor, useful when debugging touch builds
-bool keep_mouse_cursor;
-}
-
-void RootView::SetKeepMouseCursor(bool keep) {
-  keep_mouse_cursor = keep;
-}
-
-bool RootView::GetKeepMouseCursor() {
-  return keep_mouse_cursor;
-}
-
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, protected:
 

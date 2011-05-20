@@ -98,6 +98,9 @@ class TouchFactory {
   // is not found.
   bool ExtractTouchParam(const XEvent& xev, TouchParam tp, float* value);
 
+  void set_keep_mouse_cursor(bool keep) { keep_mouse_cursor_ = keep; }
+  bool keep_mouse_cursor() const { return keep_mouse_cursor_; }
+
  private:
   TouchFactory();
 
@@ -118,6 +121,10 @@ class TouchFactory {
   // idle for a while. Once there is some event from a mouse device, the cursor
   // is immediately displayed.
   bool is_cursor_visible_;
+
+  // Whether to turn off automatic hiding of mouse cursor. This is useful for
+  // debugging touch build on the desktop.
+  bool keep_mouse_cursor_;
 
   // The cursor is hidden if it is idle for a certain amount time. This timer
   // is used to keep track of the idleness.

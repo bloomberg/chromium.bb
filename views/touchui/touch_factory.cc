@@ -122,6 +122,7 @@ TouchFactory* TouchFactory::GetInstance() {
 
 TouchFactory::TouchFactory()
     : is_cursor_visible_(true),
+      keep_mouse_cursor_(false),
       cursor_timer_(),
       pointer_device_lookup_(),
       touch_device_list_(),

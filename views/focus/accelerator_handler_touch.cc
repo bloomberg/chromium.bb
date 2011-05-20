@@ -17,6 +17,7 @@
 #include "views/focus/focus_manager.h"
 #include "views/ime/input_method.h"
 #include "views/touchui/touch_factory.h"
+#include "views/view.h"
 #include "views/widget/native_widget.h"
 
 namespace views {
