@@ -1,7 +1,7 @@
 #!/bin/bash
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 #@ This script build the arm trusted SDK.
 #@ It must be run from the native_client/ directory.
@@ -82,7 +82,7 @@ SanityCheck() {
     exit -1
   fi
 
-  for tool in cleanlinks wget ; do
+  for tool in wget ; do
     if ! which ${tool} ; then
       echo "Required binary $tool not found."
       echo "Exiting."
@@ -148,11 +148,6 @@ InstallMissingHeaders() {
   cp -r /usr/include/openssl ${JAIL}/usr/include/
 }
 
-
-MissingSharedLibCleanup() {
-  Banner "Cleanup dangling symlinks"
-  rm -f ${CS_ROOT}/arm-none-linux-gnueabi/libc/usr/lib/libcrypto.so
-}
 
 # ----------------------------------------------------------------------
 # armel deb files to complete our code sourcery jail
@@ -230,12 +225,23 @@ InstallMissingLibraries() {
       | tar -xvf - --exclude=./usr/share -C ${JAIL}
   done
 
-  Banner "some cleanup"
-  save=$(pwd)
-  cd  ${JAIL}/usr/lib/
-  cleanlinks > /dev/null 2> /dev/null
-  cd ${save}
-
+  Banner "symlink cleanup"
+  (
+    cd ${JAIL}
+    find usr/lib -type l -printf '%p %l\n' | while read link target; do
+      case "$target" in
+        /*)
+          # Relativize the symlink.
+          ln -snfv "../..$target" "$link"
+          ;;
+      esac
+      # Just in case there are dangling links other than ones
+      # that just needed to be relativized, remove them.
+      if [ ! -r "$link" ]; then
+        rm -fv "$link"
+      fi
+    done
+  )
 }
 
 
@@ -317,7 +323,6 @@ if [ ${MODE} = 'trusted_sdk' ] ; then
   PruneDirs
   InstallMissingHeaders
   InstallMissingLibraries
-  MissingSharedLibCleanup
   BuildAndInstallQemu
   CreateTarBall $1
   exit 0
