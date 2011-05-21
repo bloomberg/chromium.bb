@@ -748,8 +748,7 @@ ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
       match.url_matches.size() / terms.size();
   int title_score =
       ScoreComponentForMatches(match.title_matches, title.size()) *
-      static_cast<int>(match.title_matches.size()) /
-      static_cast<int>(terms.size());
+      match.title_matches.size() / terms.size();
   // Arbitrarily pick the best.
   // TODO(mrossetti): It might make sense that a term which appears in both the
   // URL and the Title should boost the score a bit.
@@ -828,8 +827,12 @@ int InMemoryURLIndex::ScoreComponentForMatches(const TermMatches& matches,
   // that was matched.
   size_t term_length_total = std::accumulate(matches.begin(), matches.end(),
                                              0, AccumulateMatchLength);
+  const size_t kMaxSignificantLength = 50;
+  size_t max_significant_length =
+      std::min(max_length, std::max(term_length_total, kMaxSignificantLength));
   const int kCompleteMaxValue = 500;
-  int complete_value = term_length_total * kCompleteMaxValue / max_length;
+  int complete_value =
+      term_length_total * kCompleteMaxValue / max_significant_length;
 
   int raw_score = order_value + start_value + complete_value;
   const int kTermScoreLevel[] = { 1000, 650, 500, 200 };
