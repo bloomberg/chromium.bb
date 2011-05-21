@@ -290,7 +290,8 @@
     'filebrowse': ['achuith+watch@chromium.org', 'rginda+watch@chromium.org'],
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
-    	       'prasadt@chromium.org', 'dcheng@chromium.org',
+               'prasadt@chromium.org', 'dcheng@chromium.org',
 	       'jianli@chromium.org'],
+    'importer': ['tfarina@chromium.org'],
   },
 }
