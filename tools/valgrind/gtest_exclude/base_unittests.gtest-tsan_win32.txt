@@ -11,5 +11,4 @@ TimeTicks.*
 WMIUtilTest.*
 
 # Too slow under TSan
-RSAPrivateKeyUnitTest.*
 ConditionVariableTest.LargeFastTaskTest
