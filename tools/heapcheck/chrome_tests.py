@@ -81,6 +81,7 @@ class ChromeTests(object):
     self._test_list = {
       "base": self.TestBase,            "base_unittests": self.TestBase,
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
+      "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
       "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
       "courgette": self.TestCourgette,
       "courgette_unittests": self.TestCourgette,
@@ -253,6 +254,9 @@ class ChromeTests(object):
 
   def TestBrowser(self):
     return self.SimpleTest("chrome", "browser_tests")
+
+  def TestCrypto(self):
+    return self.SimpleTest("crypto", "crypto_unittests")
 
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
