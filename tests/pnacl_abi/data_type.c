@@ -19,7 +19,7 @@ int size_p = sizeof(void*);
 int size_f = sizeof(float);
 int size_d = sizeof(double);
 
-/* A 24 bytes buffer to accomodate all three architectures */
+/* A 16 byte buffer to accomodate all three architectures */
 int size_vl = sizeof(va_list);
 
 /* A 1024 byte buffer to accomodate future architectures */

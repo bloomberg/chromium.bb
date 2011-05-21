@@ -96,7 +96,7 @@ int CheckSizes() {
   */
   CHECK_SIZEOF(jmp_buf, 1024);
 
-  CHECK_SIZEOF(va_list, 24);
+  CHECK_SIZEOF(va_list, 16);
 #endif
   return nerror;
 }
@@ -122,8 +122,8 @@ int CheckAlignment() {
   /* TODO: we may want to switch this 16 (used by Itanium) */
   /* NOTE: alignment for nacl-gcc differs between x86-32/64 */
   CHECK_ALIGNMENT(jmp_buf, 8);
-  CHECK_ALIGNMENT(va_list, 8);
 #endif
+  CHECK_ALIGNMENT(va_list, 4);
   return nerror;
 }
 
