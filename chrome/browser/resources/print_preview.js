@@ -64,7 +64,7 @@ function onLoad() {
       onPageSelectionMayHaveChanged();
   });
   $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
-  $('individual-pages').addEventListener('input', pageRangesFieldChanged);
+  $('individual-pages').addEventListener('input', resetPageRangeFieldTimer);
   $('two-sided').addEventListener('click', handleTwoSidedClick)
   $('landscape').addEventListener('click', onLayoutModeToggle);
   $('portrait').addEventListener('click', onLayoutModeToggle);
@@ -101,15 +101,8 @@ function showSystemDialog() {
  * @param {string} initiatorTabURL The URL of the initiator tab.
  */
 function onInitiatorTabClosed(initiatorTabURL) {
-  if (isPreviewStillLoading)
-    displayErrorMessage(localStrings.getStringF('initiatorTabClosed',
-                                                initiatorTabURL));
-
-  var controlIDs = ['landscape', 'portrait', 'all-pages', 'print-pages',
-                    'individual-pages', 'printer-list'];
-  var controlCount = controlIDs.length;
-  for (var i = 0; i < controlCount; i++)
-    $(controlIDs[i]).disabled = true;
+  displayErrorMessage(localStrings.getStringF('initiatorTabClosed',
+                                              initiatorTabURL));
 }
 
 /**
@@ -537,8 +530,8 @@ function copiesFieldChanged() {
 }
 
 /**
- * Executes whenever an input event occurs on the 'individual-pages'
- * field. It takes care of
+ * Executes whenever a blur event occurs on the 'individual-pages'
+ * field or when the timer expires. It takes care of
  * 1) showing/hiding warnings/suggestions
  * 2) updating print button/summary
  */
@@ -661,7 +654,6 @@ function handleTwoSidedClick() {
  * clicked.
  */
 function handleIndividualPagesCheckbox() {
-  onPageSelectionMayHaveChanged();
   $('individual-pages').focus();
 }
 
@@ -860,6 +852,8 @@ function resetPageRangeFieldTimer() {
  * 2) The newly selected pages differ from the previously selected.
  */
 function onPageSelectionMayHaveChanged() {
+  if ($('print-pages').checked)
+    pageRangesFieldChanged();
   var validityLevel = getSelectedPagesValidityLevel();
   var currentlySelectedPages = getSelectedPagesSet();
 

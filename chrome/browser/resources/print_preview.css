@@ -37,6 +37,7 @@ body #main:after {
 
 .sidebar {
   -webkit-user-select: none;
+  border: 1px solid #a0a0a0;
   background: white;
   height: 100%;
   overflow-x: hidden;
