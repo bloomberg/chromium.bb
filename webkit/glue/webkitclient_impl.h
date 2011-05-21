@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,15 +78,12 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   void SuspendSharedTimer();
   void ResumeSharedTimer();
 
-  // Hack for http://crbug.com/71735.
-  // TODO(jamesr): move this back to the private section once
-  // http://crbug.com/72007 is fixed.
+ private:
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
       shared_timer_func_();
   }
 
- private:
   MessageLoop* main_loop_;
   base::OneShotTimer<WebKitClientImpl> shared_timer_;
   void (*shared_timer_func_)();

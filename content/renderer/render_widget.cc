@@ -609,10 +609,6 @@ void RenderWidget::AnimateIfNeeded() {
         this, &RenderWidget::AnimationCallback), 16);
     animation_task_posted_ = true;
     animation_update_pending_ = false;
-    // Explicitly pump the WebCore Timer queue to avoid starvation on OS X.
-    // See crbug.com/71735.
-    // TODO(jamesr) Remove this call once crbug.com/72007 is fixed.
-    RenderThread::current()->GetWebKitClientImpl()->DoTimeout();
     webwidget_->animate();
     return;
   }

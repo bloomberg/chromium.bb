@@ -213,12 +213,6 @@ class RenderThread : public RenderThreadBase,
   // on the renderer's main thread.
   scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
 
-  // Hack for http://crbug.com/71735.
-  // TODO(jamesr): remove once http://crbug.com/72007 is fixed.
-  RendererWebKitClientImpl* GetWebKitClientImpl() const {
-    return webkit_client_.get();
-  }
-
   // Schedule a call to IdleHandler with the given initial delay.
   void ScheduleIdleHandler(double initial_delay_s);
 
