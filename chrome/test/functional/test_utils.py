@@ -236,6 +236,25 @@ def CallFunctionWithNewTimeout(self, new_timeout, function):
   function()
   del timeout_changer
 
+def GetOmniboxMatchesFor(self, text, windex=0, attr_dict=None):
+    """Fetch omnibox matches with the given attributes for the given query.
+
+    Args:
+      text: the query text to use
+      windex: the window index to work on. Defaults to 0 (first window)
+      attr_dict: the dictionary of properties to be satisfied
+
+    Returns:
+      a list of match items
+    """
+    self.SetOmniboxText(text, windex=windex)
+    self.WaitUntilOmniboxQueryDone(windex=windex)
+    if not attr_dict:
+      matches = self.GetOmniboxInfo(windex=windex).Matches()
+    else:
+      matches = self.GetOmniboxInfo(windex=windex).MatchesWithAttributes(
+          attr_dict=attr_dict)
+    return matches
 
 def GetMemoryUsageOfProcess(pid):
   """Queries the system for the current memory usage of a specified process.

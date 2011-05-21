@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,7 @@ import urlparse
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class OmniboxTest(pyauto.PyUITest):
@@ -34,26 +35,6 @@ class OmniboxTest(pyauto.PyUITest):
     self.WaitUntilOmniboxReadyHack()
     self.assertTrue(self.GetOmniboxInfo().Properties('has_focus'))
 
-  def _GetOmniboxMatchesFor(self, text, windex=0, attr_dict=None):
-    """Fetch omnibox matches with the given attributes for the given query.
-
-    Args:
-      text: the query text to use
-      windex: the window index to work on. Defaults to 0 (first window)
-      attr_dict: the dictionary of properties to be satisfied
-
-    Returns:
-      a list of match items
-    """
-    self.SetOmniboxText(text, windex=windex)
-    self.WaitUntilOmniboxQueryDone(windex=windex)
-    if not attr_dict:
-      matches = self.GetOmniboxInfo(windex=windex).Matches()
-    else:
-      matches = self.GetOmniboxInfo(windex=windex).MatchesWithAttributes(
-          attr_dict=attr_dict)
-    return matches
-
   def testHistoryResult(self):
     """Verify that omnibox can fetch items from history."""
     url = self.GetFileURLForDataPath('title2.html')
@@ -62,7 +43,7 @@ class OmniboxTest(pyauto.PyUITest):
     def _VerifyHistoryResult(query_list, description, windex=0):
       """Verify result matching given description for given list of queries."""
       for query_text in query_list:
-        matches = self._GetOmniboxMatchesFor(
+        matches = test_utils.GetOmniboxMatchesFor(self,
             query_text, windex=windex, attr_dict={'description': description})
         self.assertTrue(matches)
         self.assertEqual(1, len(matches))
@@ -91,7 +72,7 @@ class OmniboxTest(pyauto.PyUITest):
                    to match against
       windex: the window index to work on. Defaults to 0 (first window)
     """
-    matches_description = self._GetOmniboxMatchesFor(
+    matches_description = test_utils.GetOmniboxMatchesFor(self,
         url, windex=windex, attr_dict={'description': description})
     self.assertEqual(1, len(matches_description))
     if description == 'Google Search':
@@ -124,7 +105,7 @@ class OmniboxTest(pyauto.PyUITest):
     title1 = 'Title Of Awesomeness'
     self.NavigateToURL(url1)
     self.NavigateToURL(url2)
-    matches = self._GetOmniboxMatchesFor('file://')
+    matches = test_utils.GetOmniboxMatchesFor(self, 'file://')
     self.assertTrue(matches)
     # Find the index of match for url1
     index = None
@@ -142,7 +123,7 @@ class OmniboxTest(pyauto.PyUITest):
     search_text = 'hello world'
     verify_str = 'Google Search'
     url_re = 'http://www.google.com/search\?.*q=hello\+world.*'
-    matches_description = self._GetOmniboxMatchesFor(
+    matches_description = test_utils.GetOmniboxMatchesFor(self,
         search_text, attr_dict={'description': verify_str})
     self.assertTrue(matches_description)
     self.assertEqual(1, len(matches_description))
@@ -153,7 +134,7 @@ class OmniboxTest(pyauto.PyUITest):
   def testInlinAutoComplete(self):
     """Verify inline autocomplete for a pre-visited url."""
     self.NavigateToURL('http://www.google.com')
-    matches = self._GetOmniboxMatchesFor('goog')
+    matches = test_utils.GetOmniboxMatchesFor(self, 'goog')
     self.assertTrue(matches)
     # Omnibox should suggest auto completed url as the first item
     matches_description = matches[0]
@@ -201,7 +182,7 @@ class OmniboxTest(pyauto.PyUITest):
 
       # Verify omnibox queries.
       for file_url in crazy_fileurls:
-        matches = self._GetOmniboxMatchesFor(
+        matches = test_utils.GetOmniboxMatchesFor(self,
             file_url, attr_dict={'type': 'url-what-you-typed',
                                  'description': title})
         self.assertTrue(matches)
@@ -213,7 +194,7 @@ class OmniboxTest(pyauto.PyUITest):
 
   def testSuggest(self):
     """Verify suggested results in omnibox."""
-    matches = self._GetOmniboxMatchesFor('apple')
+    matches = test_utils.GetOmniboxMatchesFor(self, 'apple')
     self.assertTrue(matches)
     self.assertTrue([x for x in matches if x['type'] == 'search-suggest'])
 
@@ -228,7 +209,7 @@ class OmniboxTest(pyauto.PyUITest):
     self.AddBookmarkURL(  # Add a bookmark
         self.GetBookmarkModel().BookmarkBar()['id'], 0, title, url)
     self.NavigateToURL(url)  # Build up history
-    matches = self._GetOmniboxMatchesFor(search_string)
+    matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     self.assertTrue(matches)
     # Verify starred result (indicating bookmarked url)
     self.assertTrue([x for x in matches if x['starred'] == True])
@@ -240,13 +221,13 @@ class OmniboxTest(pyauto.PyUITest):
     """Verify no suggests for omnibox when suggested-services disabled."""
     search_string = 'apple'
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kSearchSuggestEnabled))
-    matches = self._GetOmniboxMatchesFor(search_string)
+    matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     self.assertTrue(matches)
     self.assertTrue([x for x in matches if x['type'] == 'search-suggest'])
     # Disable suggest-service
     self.SetPrefs(pyauto.kSearchSuggestEnabled, False)
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kSearchSuggestEnabled))
-    matches = self._GetOmniboxMatchesFor(search_string)
+    matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     self.assertTrue(matches)
     # Verify there are no suggest results
     self.assertFalse([x for x in matches if x['type'] == 'search-suggest'])
@@ -255,7 +236,7 @@ class OmniboxTest(pyauto.PyUITest):
     """Verify omnibox autocomplete for search."""
     search_string = 'youtu'
     verify_string = 'youtube'
-    matches = self._GetOmniboxMatchesFor(search_string)
+    matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     # retrieve last contents element.
     matches_description = matches[-1]['contents'].split()
     self.assertEqual(verify_string, matches_description[0])
@@ -263,19 +244,21 @@ class OmniboxTest(pyauto.PyUITest):
   def _CheckBookmarkResultForVariousInputs(self, url, title, windex=0):
     """Check if we get the Bookmark for complete and partial inputs."""
     # Check if the complete URL would get the bookmark.
-    url_matches = self._GetOmniboxMatchesFor(url, windex=windex)
+    url_matches = test_utils.GetOmniboxMatchesFor(self, url, windex=windex)
     self._VerifyHasBookmarkResult(url_matches)
     # Check if the complete title would get the bookmark.
-    title_matches = self._GetOmniboxMatchesFor(title, windex=windex)
+    title_matches = test_utils.GetOmniboxMatchesFor(self, title, windex=windex)
     self._VerifyHasBookmarkResult(title_matches)
     # Check if the partial URL would get the bookmark.
     split_url = urlparse.urlsplit(url)
-    partial_url = self._GetOmniboxMatchesFor(split_url.scheme, windex=windex)
+    partial_url = test_utils.GetOmniboxMatchesFor(self,
+        split_url.scheme, windex=windex)
     self._VerifyHasBookmarkResult(partial_url)
     # Check if the partial title would get the bookmark.
     split_title = title.split()
     search_term = split_title[len(split_title) - 1]
-    partial_title = self._GetOmniboxMatchesFor(search_term, windex=windex)
+    partial_title = test_utils.GetOmniboxMatchesFor(self,
+        search_term, windex=windex)
     self._VerifyHasBookmarkResult(partial_title)
 
   def _GotContentHistory(self, search_text, url):
@@ -285,7 +268,7 @@ class OmniboxTest(pyauto.PyUITest):
     # Omnibox doesn't change results if searching the same text repeatedly.
     # So setting '' in omnibox before the next repeated search.
     self.SetOmniboxText('')
-    matches = self._GetOmniboxMatchesFor(search_text)
+    matches = test_utils.GetOmniboxMatchesFor(self, search_text)
     matches_description = [x for x in matches if x['destination_url'] == url]
     return 1 == len(matches_description)
 

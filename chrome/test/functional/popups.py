@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import logging
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
-
+import test_utils
 
 class PopupsTest(pyauto.PyUITest):
   """TestCase for Popup blocking."""
@@ -140,6 +140,38 @@ class PopupsTest(pyauto.PyUITest):
     # Check if last popup is launched when the tab is closed.
     self.assertEqual(5, self.GetBrowserWindowCount(),
                      msg='Last popup did not launch when the tab is closed.')
+
+  def testUnblockedPopupShowsInHistory(self):
+    """Verify that when you unblock popup, the popup shows in history."""
+    file_url = self.GetFileURLForDataPath('popup_blocker',
+                                          'popup-window-open.html')
+    self.NavigateToURL(file_url)
+    self.assertEqual(1, len(self.GetBlockedPopupsInfo()))
+    self.UnblockAndLaunchBlockedPopup(0)
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(2, len(history))
+    self.assertEqual('Popup Success!', history[0]['title'])
+
+  def testBlockedPopupNotShowInHistory(self):
+    """Verify that a blocked popup does not show up in history."""
+    file_url = self.GetFileURLForDataPath('popup_blocker',
+                                          'popup-window-open.html')
+    self.NavigateToURL(file_url)
+    self.assertEqual(1, len(self.GetBlockedPopupsInfo()))
+    self.assertEqual(1, len(self.GetHistoryInfo().History()))
+
+  def testUnblockedPopupAddedToOmnibox(self):
+    """Verify that an unblocked popup shows up in omnibox suggestions."""
+    file_url = self.GetFileURLForDataPath('popup_blocker',
+                                          'popup-window-open.html')
+    self.NavigateToURL(file_url)
+    self.assertEqual(1, len(self.GetBlockedPopupsInfo()))
+    self.UnblockAndLaunchBlockedPopup(0)
+    search_string = 'data:text/html,<title>Popup Success!</title> \
+                  you should not see this message if popup blocker is enabled'
+    matches = test_utils.GetOmniboxMatchesFor(self, search_string)
+    self.assertEqual(search_string, matches[0]['destination_url'])
+    self.assertEqual(search_string, matches[0]['contents'])
 
 
 if __name__ == '__main__':

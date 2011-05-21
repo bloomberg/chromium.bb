@@ -49,7 +49,7 @@
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       'execute_javascript',
       'history',
-      'https',      
+      'https',
       'imports',
       'infobars',
       'instant',
@@ -67,6 +67,8 @@
       'popups',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
+      # crbug.com/47935
+      '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
       'prefs',
       'search_engines',
       'shortcuts',
