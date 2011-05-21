@@ -427,9 +427,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    full_status.useful_sync_cycles);
 
     const browser_sync::sessions::SyncSessionSnapshot* snapshot =
-        service->GetLastSessionSnapshot();
+        service->sync_initialized() ?
+        service->GetLastSessionSnapshot() : NULL;
 
-    // |snapshot| could be null if sync is not yet completed.
+    // |snapshot| could be NULL if sync is not yet initialized.
     if (snapshot) {
       sync_ui_util::AddIntSyncDetail(details, "Download Count (This Session)",
           snapshot->syncer_status.num_updates_downloaded_total);
