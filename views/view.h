@@ -175,9 +175,7 @@ class View : public AcceleratorTarget {
 
   // FATE TBD ------------------------------------------------------------------
   // TODO(beng): Figure out what these methods are for and delete them.
-
-  // TODO(beng): this one isn't even google3-style. wth.
-  virtual Widget* child_widget();
+  virtual Widget* GetChildWidget();
 
   // Creation and lifetime -----------------------------------------------------
 

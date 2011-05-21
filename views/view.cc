@@ -87,7 +87,7 @@ bool View::IsHotTracked() const {
 
 // FATE TBD --------------------------------------------------------------------
 
-Widget* View::child_widget() {
+Widget* View::GetChildWidget() {
   return NULL;
 }
 

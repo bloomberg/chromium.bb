@@ -364,6 +364,10 @@ void NativeTabbedPaneWin::ViewHierarchyChanged(bool is_add,
   }
 }
 
+Widget* NativeTabbedPaneWin::GetChildWidget() {
+  return content_window_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneWin, private:
 

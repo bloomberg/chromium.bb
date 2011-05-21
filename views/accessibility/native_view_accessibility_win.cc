@@ -42,9 +42,9 @@ IAccessible* NativeViewAccessibilityWin::GetAccessibleForView(
   }
 
   // Next, see if the view is a widget container.
-  if (view->child_widget()) {
+  if (view->GetChildWidget()) {
     views::NativeWidgetWin* native_widget =
-      reinterpret_cast<views::NativeWidgetWin*>(view->child_widget());
+      reinterpret_cast<views::NativeWidgetWin*>(view->GetChildWidget());
     if (GetNativeIAccessibleInterface(
         native_widget->GetNativeView(), &accessible) == S_OK) {
       return accessible;
