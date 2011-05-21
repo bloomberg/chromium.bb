@@ -10,8 +10,7 @@ import logging
 
 from django.utils import simplejson as json
 
-import gdata.client
-
+from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 from google.appengine.ext.webapp.util import login_required
@@ -30,26 +29,26 @@ class GetXmppTokenHandler(webapp.RequestHandler):
       self.response.out.write('User has not authenticated')
       self.set_status(400)
 
+
 class GetHostListHandler(webapp.RequestHandler):
   """Proxies the host-list handlers on the Chromoting directory."""
   @login_required
   def get(self):
-    try:
-      client = gdata.client.GDClient()
-      host_list_json = client.Request(
-          method='GET',
-          uri="https://www.googleapis.com/chromoting/v1/@me/hosts",
-          converter=None,
-          desired_class=None,
-          auth_token=auth.GetChromotingToken())
+    if not auth.HasOAuth2Tokens():
+      self.response.set_status(403)
       self.response.headers['Content-Type'] = 'application/json'
-      self.response.out.write(host_list_json.read())
-    except auth.NotAuthenticated:
-      self.response.out.write('User has not authenticated')
-      self.response.set_status(400)
-    except (gdata.client.Unauthorized, gdata.client.RequestError), inst:
-      self.response.out.write(inst.reason)
-      self.response.set_status(inst.status)
+      self.response.out.write(
+          '{"error": { "code": -1, "message": "No OAuth2 token" }}')
+      return
+    result = urlfetch.fetch(
+        url = 'https://www.googleapis.com/chromoting/v1/@me/hosts',
+        method = urlfetch.GET,
+        headers = {'Authorization': 'OAuth ' + auth.GetAccessToken()})
+    self.response.set_status(result.status_code)
+    for i in result.headers:
+      self.response.headers[i] = result.headers[i]
+    self.response.out.write(result.content)
+
 
 def main():
   application = webapp.WSGIApplication(

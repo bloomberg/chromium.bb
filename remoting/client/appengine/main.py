@@ -9,9 +9,6 @@ import os
 
 from django.utils import simplejson as json
 
-import gdata.gauth
-import gdata.client
-
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -25,7 +22,7 @@ class HostListHandler(webapp.RequestHandler):
   @login_required
   def get(self):
     template_params = {
-      'chromoting_token': auth.GetChromotingToken(throws=False),
+      'has_oauth2_tokens': auth.HasOAuth2Tokens(),
       'xmpp_token': auth.GetXmppToken(throws=False)
     }
     path = os.path.join(os.path.dirname(__file__), 'hostlist.html')
@@ -43,7 +40,7 @@ class ChromotingSessionHandler(webapp.RequestHandler):
       'connect_method': self.request.get('connect_method'),
       'insecure': self.request.get('insecure'),
       'xmpp_token': auth.GetXmppToken(),
-      'http_xmpp_proxy': auth.GetHttpXmppProxy(),
+      'http_xmpp_proxy': self.request.get('http_xmpp_proxy')
     }
     path = os.path.join(os.path.dirname(__file__), 'chromoting_session.html')
     self.response.out.write(template.render(path, template_params))

@@ -24,6 +24,12 @@ found in the LICENSE file.
         <div id="mainview-content">
           <div class="page">
             <section>
+              <h3>Http Xmpp Proxy</h3>
+              <input type="text" id="http_xmpp_proxy"
+                     value="https://chromoting-httpxmpp-dev.corp.google.com"
+                     size="50" />
+            </section>
+            <section>
               <h3>Host List</h3>
                 <div class="hostlist">
                   <list id="hostlist-div">
@@ -42,21 +48,21 @@ found in the LICENSE file.
                 </div>
             </section>
             <section>
-              <h3>Chromoting Token</h3>
+              <h3>OAuth2 Token</h3>
               <div>
-{% ifnotequal chromoting_token None %}
+{% if has_oauth2_tokens %}
                 <div>Token Authenticated</div>
                 <button id="subitem"
-                   onclick="window.location='/auth/clear_chromoting_token'">
-                  Clear Token
+                   onclick="window.location='/auth/clear_oauth2_token'">
+                   Clear Token
                 </button>
 {% else %}
                 <div class="error-msg">Token Not Authenticated</div>
                 <button id="subitem"
-                   onclick="window.location='/auth/chromoting_auth'">
+                   onclick="authorizeOAuth2();">
                   Authenticate Token
                 </button>
-{% endifnotequal %}
+{% endif %}
               </div>
             </section>
             <section>
