@@ -4273,7 +4273,7 @@
 {
    bug_79671
    Memcheck:Cond
-   fun:_ZN5views9WindowGtk16ShowNativeWindowENS_12NativeWindow9ShowStateE
+   fun:_ZN5views15NativeWindowGtk16ShowNativeWindowENS_12NativeWindow9ShowStateE
    fun:_ZN5views6Window4ShowEv
    fun:_ZN11BrowserView4ShowEv
    fun:_ZN8chromeos11BrowserView12ShowInternalEb
