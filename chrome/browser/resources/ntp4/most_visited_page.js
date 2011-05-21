@@ -280,8 +280,8 @@ cr.define('ntp4', function() {
     },
 
     /** @inheritDoc */
-    acceptOutsideDrags: function() {
-      return false;
+    shouldAcceptDrag: function(tile, dataTransfer) {
+      return this.contains(tile);
     },
 
     /** @inheritDoc */

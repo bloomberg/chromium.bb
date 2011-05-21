@@ -79,6 +79,48 @@ cr.define('ntp4', function() {
     },
   };
 
+  /**
+   * Creates a new Link object. This is a stub implementation for now.
+   * @param {Object} data The url and title.
+   * @constructor
+   * @extends {HTMLAnchorElement}
+   */
+  function Link(data) {
+    var el = cr.doc.createElement('a');
+    el.__proto__ = Link.prototype;
+    el.data = data;
+    el.initialize();
+
+    return el;
+  };
+
+  Link.prototype = {
+    __proto__: HTMLAnchorElement.prototype,
+
+    initialize: function() {
+      this.className = 'link';
+      var thumbnailDiv = this.ownerDocument.createElement('div');
+      this.appendChild(thumbnailDiv);
+
+      var title = this.ownerDocument.createElement('span');
+      title.textContent = this.data.title;
+      this.appendChild(title);
+    },
+
+    /**
+     * Set the size and position of the link tile.
+     * @param {number} size The total size of |this|.
+     * @param {number} x The x-position.
+     * @param {number} y The y-position.
+     *     animate.
+     */
+    setBounds: function(size, x, y) {
+      this.style.width = this.style.height = size + 'px';
+      this.style.left = x + 'px';
+      this.style.top = y + 'px';
+    },
+  };
+
   // The fraction of the app tile size that the icon uses.
   var APP_IMG_SIZE_FRACTION = 4 / 5;
 
@@ -123,6 +165,36 @@ cr.define('ntp4', function() {
      */
     appendApp: function(appData) {
       this.appendTile(new App(appData));
+    },
+
+    /** @inheritDoc */
+    shouldAcceptDrag: function(tile, dataTransfer) {
+      return tile || (dataTransfer && dataTransfer.types.indexOf('url') != -1);
+    },
+
+    /** @inheritDoc */
+    addOutsideData: function(dataTransfer, index) {
+      var url = dataTransfer.getData('url');
+      assert(url);
+      if (!url)
+        return;
+
+      // If the dataTransfer has html data, use that html's text contents as the
+      // title of the new link.
+      var html = dataTransfer.getData('text/html');
+      var title;
+      if (html) {
+        // It's important that we don't attach this node to the document
+        // because it might contain scripts.
+        var node = this.ownerDocument.createElement('div');
+        node.innerHTML = html;
+        title = node.textContent;
+      }
+      if (!title)
+        title = url;
+
+      var data = {url: url, title: title};
+      this.addTileAt(new Link(data), index);
     },
   };
 

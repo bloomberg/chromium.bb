@@ -6,6 +6,8 @@
  */
 
 html {
+  font-family: segoe ui, arial, helvetica, sans-serif;
+  font-size: 14px;
   /* It's necessary to put this here instead of in body in order to get the
      background-size of 100% to work properly */
   height: 100%;
@@ -20,12 +22,6 @@ body {
   -webkit-tap-highlight-color: transparent;
   /* Don't allow selecting text - can occur when dragging */
   -webkit-user-select: none;
-}
-
-body,
-button span {
-  font-family: segoe ui, arial, helvetica, sans-serif;
-  font-size: 14px;
 }
 
 #card-slider-frame {

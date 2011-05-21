@@ -334,12 +334,26 @@ cr.define('ntp4', function() {
      * @protected
      */
     appendTile: function(tileElement) {
+      this.addTileAt(tileElement, this.tileElements_.length);
+    },
+
+    /**
+     * Adds the given element to the tile grid.
+     * @param {Node} tileElement The tile object/node to insert.
+     * @param {number} index The location in the tile grid to insert it at.
+     * @protected
+     */
+    addTileAt: function(tileElement, index) {
+      var wrapperDiv = new Tile(tileElement);
+      if (index == this.tileElements_.length) {
+        this.tileGrid_.appendChild(wrapperDiv);
+      } else {
+        this.tileGrid_.insertBefore(wrapperDiv,
+                                    this.tileElements_[index]);
+      }
       this.calculateLayoutValues_();
 
-      var wrapperDiv = new Tile(tileElement);
-      this.tileGrid_.appendChild(wrapperDiv);
-
-      this.positionTile_(this.tileElements_.length - 1);
+      this.positionTile_(index);
       this.classList.remove('animating-tile-page');
     },
 
@@ -562,11 +576,20 @@ cr.define('ntp4', function() {
      * The number of un-paired dragenter events that have fired on |this|. This
      * is incremented by |onDragEnter_| and decremented by |onDragLeave_|. This
      * is necessary because dragging over child widgets will fire additional
-     * enter and leave events on |this|.
+     * enter and leave events on |this|. A non-zero value does not necessarily
+     * indicate that |isCurrentDragTarget_| is true.
      * @type {number}
      * @private
      */
     dragEnters_: 0,
+
+    /**
+     * Whether the tile page is currently being dragged over with data it can
+     * accept.
+     * @type {boolean}
+     * @private
+     */
+    isCurrentDragTarget_: false,
 
     /**
      * Handler for dragenter events fired on |tileGrid_|.
@@ -576,10 +599,57 @@ cr.define('ntp4', function() {
     onDragEnter_: function(e) {
       if (++this.dragEnters_ > 1)
         return;
+      this.doDragEnter_(e);
+    },
 
-      // TODO(estade): for now we only allow tile drags.
-      if (!TilePage.currentlyDraggingTile)
+    /**
+     * Thunk for dragover events fired on |tileGrid_|.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    onDragOver_: function(e) {
+      if (!this.isCurrentDragTarget_)
         return;
+      this.doDragOver_(e);
+    },
+
+    /**
+     * Thunk for drop events fired on |tileGrid_|.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    onDrop_: function(e) {
+      this.dragEnters_ = 0;
+      if (!this.isCurrentDragTarget_)
+        return;
+      this.doDrop_(e);
+    },
+
+    /**
+     * Thunk for dragleave events fired on |tileGrid_|.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    onDragLeave_: function(e) {
+      if (--this.dragEnters_ > 0)
+        return;
+
+      this.isCurrentDragTarget_ = false;
+      this.cleanUpDrag_();
+    },
+
+    /**
+     * Performs all actions necessary when a drag enters the tile page.
+     * @param {Event} e A mouseover event for the drag enter.
+     * @private
+     */
+    doDragEnter_: function(e) {
+      if (!this.shouldAcceptDrag(TilePage.currentlyDraggingTile,
+                                 e.dataTransfer)) {
+        return;
+      }
+
+      this.isCurrentDragTarget_ = true;
 
       // Applies the mask so doppleganger tiles disappear into the fog.
       this.updateMask_();
@@ -592,17 +662,18 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Handler for dragover events fired on |tileGrid_|.
-     * @param {Event} e A MouseEvent for the drag.
+     * Performs all actions necessary when the user moves the cursor during
+     * a drag over the tile page.
+     * @param {Event} e A mouseover event for the drag over.
      * @private
      */
-    onDragOver_: function(e) {
-      e.dataTransfer.dropEffect = 'move';
-      var draggedTile = TilePage.currentlyDraggingTile;
-      if (!draggedTile)
-        return;
-
+    doDragOver_: function(e) {
       e.preventDefault();
+
+      if (TilePage.currentlyDraggingTile)
+        e.dataTransfer.dropEffect = 'move';
+      else
+        e.dataTransfer.dropEffect = 'copy';
 
       var newDragIndex = this.getWouldBeIndexForPoint_(e.clientX, e.clientY);
       if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
@@ -611,34 +682,29 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Handler for drop events fired on |tileGrid_|.
-     * @param {Event} e A MouseEvent for the drag.
+     * Performs all actions necessary when the user completes a drop.
+     * @param {Event} e A mouseover event for the drag drop.
      * @private
      */
-    onDrop_: function(e) {
-      this.dragEnters_ = 0;
+    doDrop_: function(e) {
       e.stopPropagation();
+      this.isCurrentDragTarget_ = false;
 
       var index = this.currentDropIndex_;
       if ((index == this.dragItemIndex_) && this.withinPageDrag_)
         return;
 
-      var adjustment = index > this.dragItemIndex_ ? 1 : 0;
-      this.tileGrid_.insertBefore(
-          TilePage.currentlyDraggingTile,
-          this.tileElements_[this.currentDropIndex_ + adjustment]);
-      this.cleanUpDrag_();
-    },
+      var adjustedIndex = this.currentDropIndex_ +
+          (index > this.dragItemIndex_ ? 1 : 0);
+      if (TilePage.currentlyDraggingTile) {
+        this.tileGrid_.insertBefore(
+            TilePage.currentlyDraggingTile,
+            this.tileElements_[adjustedIndex]);
+      } else {
+        this.addOutsideData(e.dataTransfer, adjustedIndex);
+      }
 
-    /**
-     * Handler for dragleave events fired on |tileGrid_|.
-     * @param {Event} e A MouseEvent for the drag.
-     * @private
-     */
-    onDragLeave_: function(e) {
-      if (--this.dragEnters_ > 0)
-        return;
-
+      this.classList.remove('animating-tile-page');
       this.cleanUpDrag_();
     },
 
@@ -647,7 +713,6 @@ cr.define('ntp4', function() {
      * @private
      */
     cleanUpDrag_: function() {
-      this.classList.remove('animating-tile-page');
       for (var i = 0; i < this.tileElements_.length; i++) {
         // The current drag tile will be positioned in its dragend handler.
         if (this.tileElements_[i] == this.currentlyDraggingTile)
@@ -686,10 +751,13 @@ cr.define('ntp4', function() {
     },
 
     /**
-      * This is equivalent to dragEnters_, but for drags over the navigation
-      * dot.
+      * These are equivalent to dragEnters_ and isCurrentDragTarget_, but for
+      * drags over the navigation dot.
+      * TODO(estade): thunkify the event handlers in the same manner as the
+      * tile grid drag handlers.
       */
     dotDragEnters_: 0,
+    dotIsCurrentDragTarget_: false,
 
     /**
      * A drag has entered the navigation dot. If the user hovers long enough,
@@ -700,10 +768,12 @@ cr.define('ntp4', function() {
       if (++this.dotDragEnters_ > 1)
         return;
 
-      if (!TilePage.currentlyDraggingTile)
+      if (!this.shouldAcceptDrag(TilePage.currentlyDraggingTile,
+                                 e.dataTransfer)) {
         return;
-      if (!this.acceptOutsideDrags())
-        return;
+      }
+
+      this.dotIsCurrentDragTarget_ = true;
 
       var self = this;
       function navPageClearTimeout() {
@@ -721,10 +791,37 @@ cr.define('ntp4', function() {
       if (--this.dotDragEnters_ > 0)
         return;
 
+      if (!this.dotIsCurrentDragTarget_)
+        return;
+      this.dotIsCurrentDragTarget_ = false;
+
       if (this.dotNavTimeout) {
         window.clearTimeout(this.dotNavTimeout);
         this.dotNavTimeout = null;
       }
+    },
+
+    /**
+     * Checks if a page can accept a drag with the given data.
+     * @param {Object} tile The drag tile, if any.
+     * @param {Object} dataTransfer The dataTransfer object, if the drag object
+     *     is not a tile (e.g. it is a link).
+     * @return {boolean} True if this page can handle the drag.
+     */
+    shouldAcceptDrag: function(tile, dataTransfer) {
+      return false;
+    },
+
+    /**
+     * Called to accept a drag drop.
+     * @param {Object} dataTransfer The data transfer object that holds the drop
+     *     data.
+     * @param {number} index The tile index at which the drop occurred.
+     */
+    addOutsideData: function(dataTransfer, index) {
+      // This should not get called unless there is a non-default
+      // implementation.
+      assert(false);
     },
   };
 

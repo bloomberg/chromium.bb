@@ -60,7 +60,8 @@ body {
   border-color-top: $$9; /* COLOR_NTP_SECTION_HEADER_RULE */
 }
 
-.app span {
+.app span,
+.link span {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
