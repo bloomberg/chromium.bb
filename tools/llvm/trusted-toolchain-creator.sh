@@ -244,6 +244,16 @@ InstallMissingLibraries() {
   )
 }
 
+# libssl.so and libcrypto.so cannot be used because they have
+# a dependency on libz.so. We don't download libz, although
+# we probably should. For now, remove the .so and let the linker
+# use the .a instead.
+HideSOHack() {
+  Banner "Hide SO Hack"
+  rm -f "${CS_ROOT}"/arm-none-linux-gnueabi/libc/usr/lib/libcrypto.so
+  rm -f "${CS_ROOT}"/arm-none-linux-gnueabi/libc/usr/lib/libssl.so
+  rm -f "${CS_ROOT}"/arm-none-linux-gnueabi/libc/usr/lib/libssl.so.0.9.8
+}
 
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
@@ -323,6 +333,7 @@ if [ ${MODE} = 'trusted_sdk' ] ; then
   PruneDirs
   InstallMissingHeaders
   InstallMissingLibraries
+  HideSOHack
   BuildAndInstallQemu
   CreateTarBall $1
   exit 0
