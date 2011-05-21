@@ -70,6 +70,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   int tab_count = 1;
   int host_count = 1;
 
+#if defined(TOUCH_UI)
+  ++host_count;  // For the touch keyboard.
+#endif
+
   // Change the first tab to be the new tab page (TYPE_WEBUI).
   GURL newtab(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(browser(), newtab);
@@ -121,6 +125,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcessPPT) {
   int tab_count = 1;
   int host_count = 1;
 
+#if defined(TOUCH_UI)
+  ++host_count;  // For the touch keyboard.
+#endif
+
   GURL page1("data:text/html,hello world1");
   browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
@@ -152,6 +160,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcessPPT) {
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcess) {
   int tab_count = 1;
   int host_count = 1;
+
+#if defined(TOUCH_UI)
+  ++host_count;  // For the touch keyboard.
+#endif
 
   GURL page1("data:text/html,hello world1");
   browser()->ShowSingletonTab(page1);
@@ -194,6 +206,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   RenderProcessHost* rph1 = NULL;
   RenderProcessHost* rph2 = NULL;
   RenderProcessHost* rph3 = NULL;
+
+#if defined(TOUCH_UI)
+  ++host_count;  // For the touch keyboard.
+#endif
 
   // Change the first tab to be the new tab page (TYPE_WEBUI).
   GURL newtab(chrome::kChromeUINewTabURL);
@@ -252,7 +268,11 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
+#if !defined(TOUCH_UI)
+  // The keyboard in touchui already creates an extension process. So this
+  // should not increase the process count.
   host_count++;
+#endif
   EXPECT_EQ(tab_count, browser()->tab_count());
   tab1 = browser()->GetTabContentsAt(tab_count - 1);
   rph3 = tab1->GetRenderProcessHost();
