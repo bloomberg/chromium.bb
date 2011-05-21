@@ -363,10 +363,16 @@ class BuildBoardStage(BuilderStage):
     board_path = os.path.join(chroot_path, 'build', self._build_config['board'])
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
       commands.MakeChroot(
-          self._build_root, self._build_config['chroot_replace'])
+          buildroot=self._build_root,
+          replace=self._build_config['chroot_replace'],
+          fast=self._build_config['fast'],
+          usepkg=self._build_config['usepkg'])
 
     if not os.path.isdir(board_path):
-      commands.SetupBoard(self._build_root, board=self._build_config['board'])
+      commands.SetupBoard(self._build_root,
+                          board=self._build_config['board'],
+                          fast=self._build_config['fast'],
+                          usepkg=self._build_config['usepkg'])
 
 
 class UprevStage(BuilderStage):
@@ -401,15 +407,18 @@ class BuildTargetStage(BuilderStage):
     BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
     emptytree = (BuilderStage.old_binhost and
                  BuilderStage.old_binhost != BuilderStage.new_binhost)
+    build_autotest=(self._build_config['build_tests'] and
+                    self._options.tests)
     env = {}
     if self._build_config.get('useflags'):
       env['USE'] = ' '.join(self._build_config['useflags'])
 
-    commands.Build(
-        self._build_root, emptytree, usepkg=self._build_config['usepkg'],
-        build_autotest=(self._build_config['build_tests'] and
-                        self._options.tests),
-        extra_env=env)
+    commands.Build(self._build_root,
+                   emptytree=emptytree,
+                   build_autotest=build_autotest,
+                   fast=self._build_config['fast'],
+                   usepkg=self._build_config['usepkg'],
+                   extra_env=env)
 
     if self._prebuilt_type == 'full':
       commands.UploadPrebuilts(
