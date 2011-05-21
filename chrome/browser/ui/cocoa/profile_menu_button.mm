@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "chrome/browser/ui/profile_menu_model.h"
 #import "third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h"
 
 namespace {
@@ -52,6 +53,10 @@ NSColor* GetBlackWithAlpha(CGFloat alpha) {
   [textFieldCell_ setAlignment:NSRightTextAlignment];
   [textFieldCell_ setFont:[NSFont systemFontOfSize:
       [NSFont smallSystemFontSize]]];
+
+  profile_menu_model_.reset(new ProfileMenuModel);
+  menu_.reset([[MenuController alloc] initWithModel:profile_menu_model_.get()
+                             useWithPopUpButtonCell:NO]);
 }
 
 - (id)initWithFrame:(NSRect)frame
@@ -324,6 +329,10 @@ NSColor* GetBlackWithAlpha(CGFloat alpha) {
       [textFieldCell_ setTextColor:textColor];
     [textFieldCell_ drawWithFrame:[self textFieldRect] inView:self];
   }
+}
+
+- (NSMenu *)menu {
+  return [menu_.get() menu];
 }
 
 - (NSPoint)popUpMenuPosition {

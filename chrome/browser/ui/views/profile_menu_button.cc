@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/profile_menu_button.h"
 
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/profile_menu_model.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/color_utils.h"
@@ -37,7 +36,7 @@ ProfileMenuButton::ProfileMenuButton(const std::wstring& text, Profile* profile)
   SetEnabledColor(kTextEnabled);
   SetHighlightColor(kTextHighlighted);
 
-  profile_menu_model_.reset(new ProfileMenuModel(this));
+  profile_menu_model_.reset(new ProfileMenuModel);
   menu_.reset(new views::Menu2(profile_menu_model_.get()));
 }
 
@@ -46,31 +45,6 @@ ProfileMenuButton::~ProfileMenuButton() {}
 void ProfileMenuButton::SetText(const std::wstring& text) {
   MenuButton::SetText(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(text),
                       font(), kMaxTextWidth, false)));
-}
-
-// ui::SimpleMenuModel::Delegate implementation
-bool ProfileMenuButton::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool ProfileMenuButton::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-bool ProfileMenuButton::GetAcceleratorForCommandId(int command_id,
-    ui::Accelerator* accelerator) {
-  return false;
-}
-
-void ProfileMenuButton::ExecuteCommand(int command_id) {
-  switch (command_id) {
-    case ProfileMenuModel::COMMAND_CREATE_NEW_PROFILE:
-      ProfileManager::CreateMultiProfileAsync();
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 // views::ViewMenuDelegate implementation

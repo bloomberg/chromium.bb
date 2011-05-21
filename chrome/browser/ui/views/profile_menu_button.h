@@ -34,8 +34,7 @@ class Menu2;
 // underneath that displays the profile tag.
 
 class ProfileMenuButton : public views::MenuButton,
-                          public views::ViewMenuDelegate,
-                          public ui::SimpleMenuModel::Delegate {
+                          public views::ViewMenuDelegate {
  public:
   // DefaultActiveTextShadow is a darkened blue color that works with Windows
   // default theme background coloring.
@@ -53,13 +52,6 @@ class ProfileMenuButton : public views::MenuButton,
 
   // Override MenuButton to clamp text at kMaxTextWidth.
   virtual void SetText(const std::wstring& text) OVERRIDE;
-
-  // ui::SimpleMenuModel::Delegate implementation
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id, ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
  private:
   // Overridden from views::ViewMenuDelegate:

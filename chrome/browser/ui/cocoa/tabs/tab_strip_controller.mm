@@ -175,7 +175,6 @@ private:
 - (void)updateCommonTitlePrefix;
 - (BOOL)shouldShowProfileMenuButton;
 - (void)updateProfileMenuButton;
-- (void)createNewProfile:(id)sender;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -2177,23 +2176,6 @@ class NotificationBridge : public NotificationObserver {
   [profileMenuButton_ setProfileDisplayName:
       [NSString stringWithUTF8String:profileName.c_str()]];
   [profileMenuButton_ setHidden:NO];
-
-  NSMenu* menu = [profileMenuButton_ menu];
-  while ([menu numberOfItems] > 0) {
-    [menu removeItemAtIndex:0];
-  }
-
-  NSString* menuTitle =
-      l10n_util::GetNSStringWithFixup(IDS_PROFILES_CREATE_NEW_PROFILE_OPTION);
-  NSMenuItem* menuItem = [menu addItemWithTitle:menuTitle
-                                         action:@selector(createNewProfile:)
-                                  keyEquivalent:@""];
-  [menuItem setState:NSOffState];
-  [menuItem setTarget:self];
-}
-
-- (void)createNewProfile:(id)sender {
-  ProfileManager::CreateMultiProfileAsync();
 }
 
 @end
