@@ -511,6 +511,15 @@ void NativeBackendKWallet::DeserializeValue(const string& signon_realm,
     return;
   }
 
+  if (count > 0xFFFF) {
+    // Trying to pin down the cause of http://crbug.com/80728 (or fix it).
+    // This is a very large number of passwords to be saved for a single realm.
+    // It is almost certainly a corrupt pickle and not real data. Ignore it.
+    LOG(ERROR) << "Suspiciously large number of entries in KWallet entry "
+               << "(" << count << "; realm: " << signon_realm << ")";
+    return;
+  }
+
   forms->reserve(forms->size() + count);
   for (size_t i = 0; i < count; ++i) {
     scoped_ptr<PasswordForm> form(new PasswordForm());
