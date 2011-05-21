@@ -6,7 +6,6 @@
 
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
-import __builtin__
 import mox
 import os
 import shutil
@@ -164,25 +163,35 @@ class CBuildBotTest(mox.MoxTestBase):
     commands._RepoSync(self._buildroot, retries=2)
     self.mox.VerifyAll()
 
-  def testBuildIncremental(self):
-    """Base case where Build is called."""
+  def testBuildMinimal(self):
+    """Base case where Build is called with minimal options."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(mox.IgnoreArg(), cwd=mox.StrContains(buildroot),
-        enter_chroot=True, extra_env=mox.IgnoreArg())
+    cros_lib.RunCommand(['./build_packages', '--fast', '--nowithautotest',
+                         '--nousepkg'],
+                        cwd=mox.StrContains(buildroot),
+                        enter_chroot=True,
+                        extra_env={})
     self.mox.ReplayAll()
-    commands.Build(buildroot, False)
+    commands.Build(buildroot=buildroot,
+                   emptytree=False,
+                   build_autotest=False,
+                   fast=True,
+                   usepkg=False)
     self.mox.VerifyAll()
 
-  def testBuildClobber(self):
-    """Base case where Build with emptytree is called."""
+  def testBuildMaximum(self):
+    """Base case where Build is called with all options (except extra_evn)."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(
-      mox.IgnoreArg(),
-      cwd=mox.StrContains(buildroot),
-      enter_chroot=True,
-      extra_env=mox.ContainsKeyValue('EXTRA_BOARD_FLAGS', '--emptytree'))
+    cros_lib.RunCommand(['./build_packages', '--fast'],
+                        cwd=mox.StrContains(buildroot),
+                        enter_chroot=True,
+                        extra_env={'EXTRA_BOARD_FLAGS': '--emptytree'})
     self.mox.ReplayAll()
-    commands.Build(buildroot, True)
+    commands.Build(buildroot=buildroot,
+                   emptytree=True,
+                   fast=True,
+                   build_autotest=True,
+                   usepkg=True)
     self.mox.VerifyAll()
 
   def testBuildWithEnv(self):
@@ -196,14 +205,19 @@ class CBuildBotTest(mox.MoxTestBase):
       extra_env=mox.And(
         mox.ContainsKeyValue('A', 'Av'), mox.ContainsKeyValue('B', 'Bv')))
     self.mox.ReplayAll()
-    commands.Build(buildroot, True, extra_env=extra)
+    commands.Build(buildroot=buildroot,
+                   emptytree=True,
+                   build_autotest=False,
+                   fast=False,
+                   usepkg=False,
+                   extra_env=extra)
     self.mox.VerifyAll()
 
   def testLegacyArchiveBuildMinimal(self):
     """Test Legacy Archive Command, with minimal values."""
-    buildroot='/bob'
-    buildnumber=4
-    test_tarball=None
+    buildroot = '/bob'
+    buildnumber = 4
+    test_tarball = None
 
     buildconfig = {}
     buildconfig['board'] = 'config_board'
@@ -249,9 +263,9 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testLegacyArchiveBuildMaximum(self):
     """Test Legacy Archive Command, with all values."""
-    buildroot='/bob'
-    buildnumber=4
-    test_tarball='/path/test.tar.gz'
+    buildroot = '/bob'
+    buildnumber = 4
+    test_tarball = '/path/test.tar.gz'
 
     buildconfig = {}
     buildconfig['board'] = 'config_board'
@@ -301,7 +315,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testUploadSymbols(self):
     """Test UploadSymbols Command."""
-    buildroot='/bob'
+    buildroot = '/bob'
     board = 'board_name'
 
     cros_lib.RunCommand(['./upload_symbols',
@@ -326,7 +340,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testPushImages(self):
     """Test UploadSymbols Command."""
-    buildroot='/bob'
+    buildroot = '/bob'
     board = 'board_name'
     branch_name = 'branch_name'
     archive_dir = '/archive/dir'
