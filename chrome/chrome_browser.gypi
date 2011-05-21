@@ -2649,6 +2649,8 @@
         'browser/ui/gtk/download/download_in_progress_dialog_gtk.h',
         'browser/ui/gtk/download/download_item_gtk.cc',
         'browser/ui/gtk/download/download_item_gtk.h',
+        'browser/ui/gtk/download/download_shelf_context_menu_gtk.cc',
+        'browser/ui/gtk/download/download_shelf_context_menu_gtk.h',
         'browser/ui/gtk/download/download_shelf_gtk.cc',
         'browser/ui/gtk/download/download_shelf_gtk.h',
         'browser/ui/gtk/download/download_started_animation_gtk.cc',

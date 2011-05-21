@@ -14,14 +14,13 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_shelf_context_menu.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/download/download_shelf_context_menu_gtk.h"
 #include "chrome/browser/ui/gtk/download/download_shelf_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -79,79 +78,6 @@ static const double kDownloadItemLuminanceMod = 0.8;
 
 }  // namespace
 
-// DownloadShelfContextMenuGtk -------------------------------------------------
-
-class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
-                                    public MenuGtk::Delegate {
- public:
-  // The constructor creates the menu and immediately pops it up.
-  // |model| is the download item model associated with this context menu,
-  // |widget| is the button that popped up this context menu, and |e| is
-  // the button press event that caused this menu to be created.
-  DownloadShelfContextMenuGtk(BaseDownloadItemModel* model,
-                              DownloadItemGtk* download_item)
-      : DownloadShelfContextMenu(model),
-        download_item_gtk_(download_item) {
-  }
-
-  ~DownloadShelfContextMenuGtk() {
-  }
-
-  void Popup(GtkWidget* widget, GdkEventButton* event) {
-    // Create the menu if we have not created it yet or we created it for
-    // an in-progress download that has since completed.
-    if (download_item()->IsComplete())
-      menu_.reset(new MenuGtk(this, GetFinishedMenuModel()));
-    else
-      menu_.reset(new MenuGtk(this, GetInProgressMenuModel()));
-
-    if (widget)
-      menu_->PopupForWidget(widget, event->button, event->time);
-    else
-      menu_->PopupAsContext(gfx::Point(event->x_root, event->y_root),
-                            event->time);
-  }
-
-  // MenuGtk::Delegate implementation:
-  virtual void StoppedShowing() {
-    download_item_gtk_->menu_showing_ = false;
-    gtk_widget_queue_draw(download_item_gtk_->menu_button_);
-  }
-
-  virtual GtkWidget* GetImageForCommandId(int command_id) const {
-    const char* stock = NULL;
-    switch (command_id) {
-      case SHOW_IN_FOLDER:
-      case OPEN_WHEN_COMPLETE:
-        stock = GTK_STOCK_OPEN;
-        break;
-
-      case CANCEL:
-        stock = GTK_STOCK_CANCEL;
-        break;
-
-      case ALWAYS_OPEN_TYPE:
-      case TOGGLE_PAUSE:
-        stock = NULL;
-    }
-
-    return stock ? gtk_image_new_from_stock(stock, GTK_ICON_SIZE_MENU) : NULL;
-  }
-
- private:
-  // The menu we show on Popup(). We keep a pointer to it for a couple reasons:
-  //  * we don't want to have to recreate the menu every time it's popped up.
-  //  * we have to keep it in scope for longer than the duration of Popup(), or
-  //    completing the user-selected action races against the menu's
-  //    destruction.
-  scoped_ptr<MenuGtk> menu_;
-
-  // The download item that created us.
-  DownloadItemGtk* download_item_gtk_;
-};
-
-// DownloadItemGtk -------------------------------------------------------------
-
 NineBox* DownloadItemGtk::body_nine_box_normal_ = NULL;
 NineBox* DownloadItemGtk::body_nine_box_prelight_ = NULL;
 NineBox* DownloadItemGtk::body_nine_box_active_ = NULL;
@@ -167,8 +93,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     : parent_shelf_(parent_shelf),
       arrow_(NULL),
       menu_showing_(false),
-      theme_service_(GtkThemeService::GetFrom(
-                          parent_shelf->browser()->profile())),
+      theme_service_(
+          GtkThemeService::GetFrom(parent_shelf->browser()->profile())),
       progress_angle_(download_util::kStartAngleDegrees),
       download_model_(download_model),
       dangerous_prompt_(NULL),
