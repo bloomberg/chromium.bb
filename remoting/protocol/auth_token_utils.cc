@@ -12,27 +12,6 @@
 namespace remoting {
 namespace protocol {
 
-namespace {
-
-// Normalizes access code. Must be applied on the access code entered
-// by the user before generating auth token. It (1)converts the string
-// to upper case, (2) replaces O with 0 and (3) replaces I with 1.
-std::string NormalizeAccessCode(const std::string& access_code) {
-  std::string normalized = access_code;
-  StringToUpperASCII(&normalized);
-  for (std::string::iterator i = normalized.begin();
-       i != normalized.end(); ++i) {
-    if (*i == 'O') {
-      *i = '0';
-    } else if (*i == 'I') {
-      *i = '1';
-    }
-  }
-  return normalized;
-}
-
-}  // namespace
-
 std::string GenerateSupportAuthToken(const std::string& jid,
                                      const std::string& access_code) {
   std::string sha256 = crypto::SHA256HashString(jid + " " + access_code);
@@ -47,7 +26,7 @@ bool VerifySupportAuthToken(const std::string& jid,
                             const std::string& access_code,
                             const std::string& auth_token) {
   std::string expected_token =
-      GenerateSupportAuthToken(jid, NormalizeAccessCode(access_code));
+      GenerateSupportAuthToken(jid, access_code);
   return expected_token == auth_token;
 }
 

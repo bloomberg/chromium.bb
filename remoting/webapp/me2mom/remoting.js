@@ -263,6 +263,12 @@ function parseServerResponse_(xhr) {
   showConnectError_(xhr.status, xhr.responseText);
 }
 
+function normalizeAccessCode(accessCode) {
+  // Trim whitespace from beginning and the end.
+  // TODO(sergeyu): Do we need to do any other normalization here?
+  return accessCode.replace(/^\s+|\s+$/, '');
+}
+
 function resolveSupportId(support_id) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -282,7 +288,7 @@ function resolveSupportId(support_id) {
 }
 
 function tryConnect(form) {
-  remoting.accessCode = form['access_code_entry'].value;
+  remoting.accessCode = normalizeAccessCode(form['access_code_entry'].value);
   // TODO(jamiewalch): Since the mapping from (SupportId, HostSecret) to
   // AccessCode is not yet defined, assume it's hyphen-separated for now.
   var parts = remoting.accessCode.split('-');

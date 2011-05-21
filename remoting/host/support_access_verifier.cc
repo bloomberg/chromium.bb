@@ -16,14 +16,11 @@
 namespace remoting {
 
 namespace {
-// 5 characters long from 34-letter alphabet gives 4.5M possible
+// 8 characters long from 10-letter alphabet gives 100M possible
 // host secrets with uniform distribution, which should be enough
 // for short-term passwords.
-const int kHostSecretLength = 5;
-
-// The following set includes 10 digits and Latin alphabet except I
-// and O. I and O are not used to avoid confusion with 1 and 0.
-const char kHostSecretAlphabet[] = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+const int kHostSecretLength = 8;
+const char kHostSecretAlphabet[] = "0123456789";
 
 // Generates cryptographically strong random number in the range [0, max).
 int CryptoRandomInt(int max) {
