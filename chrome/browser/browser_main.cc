@@ -1386,6 +1386,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (!parsed_command_line.HasSwitch(switches::kNoErrorDialogs))
     WarnAboutMinimumSystemRequirements();
 
+  // Convert active labs into switches. Modifies the current command line.
+  about_flags::ConvertFlagsToSwitches(local_state,
+                                      CommandLine::ForCurrentProcess());
+
   InitializeNetworkOptions(parsed_command_line);
 
   // Initialize histogram synchronizer system. This is a singleton and is used
@@ -1399,10 +1403,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // WatchDogThread to keep track of information about threads that are being
   // watched.
   scoped_ptr<ThreadWatcherList> thread_watcher_list(new ThreadWatcherList());
-
-  // Convert active labs into switches. Modifies the current command line.
-  about_flags::ConvertFlagsToSwitches(local_state,
-                                      CommandLine::ForCurrentProcess());
 
   // Now the command line has been mutated based on about:flags, we can
   // set up metrics and initialize field trials.
