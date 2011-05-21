@@ -53,6 +53,8 @@
       'imports',
       'infobars',
       'instant',
+      # crbug.com/83459
+      '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
       'navigation',
       'notifications',
       'ntp',
