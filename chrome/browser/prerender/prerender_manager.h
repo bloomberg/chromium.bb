@@ -92,8 +92,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // determines whether a preloaded version of the URL can be used,
   // and substitutes the prerendered RVH into the TabContents.  Returns
   // whether or not a prerendered RVH could be used or not.
-  bool MaybeUsePreloadedPage(TabContents* tab_contents, const GURL& url);
-  bool MaybeUsePreloadedPageOld(TabContents* tab_contents, const GURL& url);
+  bool MaybeUsePreloadedPage(TabContents* tab_contents,
+                             const GURL& url,
+                             bool has_opener_set);
+  bool MaybeUsePreloadedPageOld(TabContents* tab_contents,
+                                const GURL& url,
+                                bool has_opener_set);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.

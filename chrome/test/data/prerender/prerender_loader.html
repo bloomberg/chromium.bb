@@ -1,9 +1,27 @@
 <html>
 <head>
 <title>Preloader</title>
-</head>
+
 <script>
-document.write('<link rel="prefetch" href="REPLACE_WITH_PREFETCH_URL"/>');
+  function ClickOpenLinkInNewWindow() {
+    var eventObject = document.createEvent("MouseEvents");
+    eventObject.initMouseEvent('click');
+    document.getElementById("toClick").dispatchEvent(eventObject);
+    return true;
+  }
+
+  function JsOpenLinkInNewWindow() {
+    window.open("REPLACE_WITH_PREFETCH_URL");
+    return true;
+  }
 </script>
+
+</head>
+<body>
+<script>
+  document.write('<link rel="prefetch" href="REPLACE_WITH_PREFETCH_URL"/>');
+</script>
+<a target="_blank" id="toClick"
+   href="REPLACE_WITH_PREFETCH_URL">Link To Click</a>
 </body>
 </html>

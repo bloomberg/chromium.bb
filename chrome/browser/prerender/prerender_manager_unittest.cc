@@ -189,7 +189,7 @@ class PrerenderManagerTest : public testing::Test {
 
 TEST_F(PrerenderManagerTest, EmptyTest) {
   GURL url("http://www.google.com/");
-  EXPECT_FALSE(prerender_manager()->MaybeUsePreloadedPage(NULL, url));
+  EXPECT_FALSE(prerender_manager()->MaybeUsePreloadedPage(NULL, url, false));
 }
 
 TEST_F(PrerenderManagerTest, FoundTest) {

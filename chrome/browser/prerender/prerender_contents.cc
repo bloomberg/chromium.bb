@@ -631,6 +631,7 @@ void PrerenderContents::OnRenderViewHostCreated(
 
 void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
+                                                          bool has_opener_set,
                                                           const GURL& url) {
   if (is_main_frame) {
     if (!AddAliasURL(url))

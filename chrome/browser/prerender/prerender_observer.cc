@@ -20,14 +20,15 @@ PrerenderObserver::PrerenderObserver(TabContents* tab_contents)
 PrerenderObserver::~PrerenderObserver() {
 }
 
-void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url) {
+void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url,
+                                                        bool has_opener_set) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
   if (prerender_manager->IsTabContentsPrerendering(tab_contents()))
     return;
   prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
-  MaybeUsePreloadedPage(url);
+  MaybeUsePreloadedPage(url, has_opener_set);
   prerender_manager->RecordNavigation(url);
 }
 
@@ -41,6 +42,7 @@ bool PrerenderObserver::OnMessageReceived(const IPC::Message& message) {
 
 void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
+                                                          bool has_opener_set,
                                                           const GURL& url) {
   // Don't include prerendered pages in the PPLT metric until after they are
   // swapped in.
@@ -72,14 +74,15 @@ PrerenderManager* PrerenderObserver::MaybeGetPrerenderManager() {
   return tab_contents()->profile()->GetPrerenderManager();
 }
 
-bool PrerenderObserver::MaybeUsePreloadedPage(const GURL& url) {
+bool PrerenderObserver::MaybeUsePreloadedPage(const GURL& url,
+                                              bool has_opener_set) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
   DCHECK(!prerender_manager->IsTabContentsPrerendering(tab_contents()));
-  if (prerender_manager->MaybeUsePreloadedPage(tab_contents(), url))
-    return true;
-  return false;
+  return prerender_manager->MaybeUsePreloadedPage(tab_contents(),
+                                                  url,
+                                                  has_opener_set);
 }
 
 bool PrerenderObserver::IsPrerendering() {
