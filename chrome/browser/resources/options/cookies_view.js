@@ -24,6 +24,20 @@ cr.define('options', function() {
   CookiesView.prototype = {
     __proto__: OptionsPage.prototype,
 
+    /**
+     * The timer id of the timer set on search query change events.
+     * @type {number}
+     * @private
+     */
+    queryDelayTimerId_: 0,
+
+    /**
+     * The most recent search query, or null if the query is empty.
+     * @type {?string}
+     * @private
+     */
+    lastQuery_ : null,
+
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
@@ -40,8 +54,6 @@ cr.define('options', function() {
       this.addEventListener('visibleChange', this.handleVisibleChange_);
     },
 
-    lastQuery_ : null,
-
     /**
      * Search cookie using text in |cookies-search-box|.
      */
@@ -54,12 +66,10 @@ cr.define('options', function() {
       }
     },
 
-    queryDelayTimerId_: 0,
-
     /**
      * Handles search query changes.
-     * @private
      * @param {!Event} e The event object.
+     * @private
      */
     handleSearchQueryChange_: function(e) {
       if (this.queryDelayTimerId_)

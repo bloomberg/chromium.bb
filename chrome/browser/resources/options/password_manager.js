@@ -40,9 +40,26 @@ cr.define('options', function() {
      */
     passwordExceptionsList_: null,
 
+    /**
+     * The timer id of the timer set on search query change events.
+     * @type {number}
+     * @private
+     */
+    queryDelayTimerId_: 0,
+
+    /**
+     * The most recent search query, or null if the query is empty.
+     * @type {?string}
+     * @private
+     */
+    lastQuery_: null,
+
     /** @inheritDoc */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
+
+      $('password-search-box').addEventListener('search',
+          this.handleSearchQueryChange_.bind(this));
 
       this.createSavedPasswordsList_();
       this.createPasswordExceptionsList_();
@@ -82,6 +99,39 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles search query changes.
+     * @param {!Event} e The event object.
+     * @private
+     */
+    handleSearchQueryChange_: function(e) {
+      if (this.queryDelayTimerId_)
+        window.clearTimeout(this.queryDelayTimerId_);
+
+      // Searching cookies uses a timeout of 500ms. We use a shorter timeout
+      // because there are probably fewer passwords and we want the UI to be
+      // snappier since users will expect that it's "less work."
+      this.queryDelayTimerId_ = window.setTimeout(
+          this.searchPasswords_.bind(this), 250);
+    },
+
+    /**
+     * Search passwords using text in |password-search-box|.
+     * @private
+     */
+    searchPasswords_: function() {
+      this.queryDelayTimerId_ = 0;
+      var filter = $('password-search-box').value;
+      filter = (filter == '') ? null : filter;
+      if (this.lastQuery_ != filter) {
+        this.lastQuery_ = filter;
+        // Searching for passwords has the side effect of requerying the
+        // underlying password store. This is done intentionally, as on OS X and
+        // Linux they can change from outside and we won't be notified of it.
+        chrome.send('updatePasswordLists');
+      }
+    },
+
+    /**
      * Updates the visibility of the list and empty list placeholder.
      * @param {!List} list The list to toggle visilibility for.
      */
@@ -98,6 +148,16 @@ cr.define('options', function() {
      * @param {Array} entries The list of saved password data.
      */
     setSavedPasswordsList_: function(entries) {
+      if (this.lastQuery_) {
+        // Implement password searching here in javascript, rather than in C++.
+        // The number of saved passwords shouldn't be too big for us to handle.
+        var query = this.lastQuery_;
+        var filter = function(entry) {
+          // Search both URL and username.
+          return entry[0].indexOf(query) >= 0 || entry[1].indexOf(query) >= 0;
+        };
+        entries = entries.filter(filter);
+      }
       this.savedPasswordsList_.dataModel = new ArrayDataModel(entries);
       this.updateListVisibility_(this.savedPasswordsList_);
     },

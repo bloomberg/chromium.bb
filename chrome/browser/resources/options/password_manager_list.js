@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@ cr.define('options.passwordManager', function() {
       var urlLabel = this.ownerDocument.createElement('div');
       urlLabel.classList.add('favicon-cell');
       urlLabel.classList.add('url');
+      urlLabel.setAttribute('title', this.url);
       urlLabel.textContent = this.url;
       urlLabel.style.backgroundImage = url('chrome://favicon/' + this.url);
       this.contentElement.appendChild(urlLabel);
@@ -53,7 +54,7 @@ cr.define('options.passwordManager', function() {
       passwordInput.type = 'password';
       passwordInput.className = 'inactive-password';
       passwordInput.readOnly = true;
-      passwordInput.value = showPasswords ? this.password : "********";
+      passwordInput.value = showPasswords ? this.password : '********';
       passwordInputDiv.appendChild(passwordInput);
 
       // The show/hide button.
