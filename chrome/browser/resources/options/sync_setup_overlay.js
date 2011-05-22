@@ -70,7 +70,7 @@ cr.define('options', function() {
         self.closeOverlay_();
       };
       $('customize-link').onclick = function() {
-        self.showCustomizePage_(false);
+        self.showCustomizePage_(true);
       };
       $('confirm-everything-ok').onclick = function() {
         self.sendConfiguration_();
