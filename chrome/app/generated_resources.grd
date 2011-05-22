@@ -4762,6 +4762,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Never Saved
         </message>
       </if>
+      <message name="IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS" desc="Placeholder text shown in password table search box">
+        Search passwords
+      </message>
       <message name="IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN" desc="Password table view Site column title">
         Site
       </message>
@@ -7663,6 +7666,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
         Cookies and Other Data
+      </message>
+      <message name="IDS_COOKIES_SEARCH_COOKIES" desc="Placeholder text shown in the search box in the Cookies Window">
+        Search cookies
       </message>
       <message name="IDS_COOKIES_REMOVE_LABEL" desc="The label of the 'Remove' button in the Cookies Window">
         Remove

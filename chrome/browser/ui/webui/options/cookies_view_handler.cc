@@ -56,6 +56,7 @@ void CookiesViewHandler::GetLocalizedValues(
     { "cookie_indexed_db", IDS_COOKIES_INDEXED_DB },
     { "cookie_local_storage", IDS_COOKIES_LOCAL_STORAGE },
     { "cookie_app_cache", IDS_COOKIES_APPLICATION_CACHE },
+    { "search_cookies", IDS_COOKIES_SEARCH_COOKIES },
     { "remove_cookie", IDS_COOKIES_REMOVE_LABEL },
     { "remove_all_cookie", IDS_COOKIES_REMOVE_ALL_LABEL },
   };

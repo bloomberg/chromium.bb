@@ -39,6 +39,8 @@ void PasswordManagerHandler::GetLocalizedValues(
       IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE },
     { "passwordExceptionsTitle",
       IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE },
+    { "passwordSearchPlaceholder",
+      IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS },
     { "passwordShowButton",
       IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON },
     { "passwordHideButton",
