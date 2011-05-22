@@ -43,7 +43,7 @@ cr.define('options', function() {
     lastQuery_ : null,
 
     /**
-     * Search cookie using text in cookiesSearchBox.
+     * Search cookie using text in |cookies-search-box|.
      */
     searchCookie: function() {
       this.queryDelayTimerId_ = 0;

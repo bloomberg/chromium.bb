@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 /* styles for the cookies list elements in cookies_view.html */
 #remove-all-cookies-search-column {
-  bottom: 0;
+  bottom: 10px;
   position: absolute;
   right: 0;
 }
@@ -17,13 +17,14 @@ html[dir=rtl] #remove-all-cookies-search-column {
 }
 
 #cookies-column-headers {
-  margin-bottom: 10px;
   position: relative;
   width: 100%;
 }
 
 #cookies-column-headers h3 {
-  margin-bottom: 0;
+  font-size: 105%;
+  font-weight: bold;
+  margin: 10px 0;
 }
 
 /* notice the width and padding for these columns match up with those below */
