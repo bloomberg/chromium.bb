@@ -168,6 +168,7 @@ const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
 
 const char kSyncViewInternalsURL[] = "chrome://sync-internals/";
+const char kSyncGoogleDashboardURL[] = "https://www.google.com/dashboard/";
 
 // GPU sub pages
 const char kGpuInternalsURL[] = "chrome://gpu-internals/";

@@ -128,7 +128,7 @@ cr.define('options', function() {
       var statusSet = status != '';
       $('sync-overview').hidden = statusSet;
       $('sync-status').hidden = !statusSet;
-      $('sync-status-text').textContent = status;
+      $('sync-status-text').innerHTML = status;
     },
 
     setSyncStatusErrorVisible_: function(visible) {

@@ -162,6 +162,7 @@ extern const char kNetworkViewInternalsURL[];
 
 // Sync related URLs.
 extern const char kSyncViewInternalsURL[];
+extern const char kSyncGoogleDashboardURL[];
 
 // GPU related URLs
 extern const char kGpuInternalsURL[];
