@@ -1364,9 +1364,13 @@ def main():
 
   # If we already upgraded portage, we don't need to do so again. But we do
   # need to upgrade the rest of the packages. So we'll go ahead and do that.
+  #
+  # In order to grant the child permission to run setsid, we need to run sudo
+  # again. We preserve SUDO_USER here in case an ebuild depends on it.
   if portage_upgrade:
-    args = parallel_emerge_args + ["--exclude=sys-apps/portage"]
-    os.execvp(os.path.realpath(sys.argv[0]), args)
+    sudo = ["sudo", "-E", "SUDO_USER=%s" % os.environ.get("SUDO_USER", "")]
+    args = sudo + parallel_emerge_args + ["--exclude=sys-apps/portage"]
+    os.execvp("sudo", args)
 
   print "Done"
   sys.exit(0)
