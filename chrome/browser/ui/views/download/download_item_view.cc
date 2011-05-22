@@ -16,9 +16,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_shelf_context_menu.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -33,7 +33,6 @@
 #include "unicode/uchar.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -78,42 +77,6 @@ static const int kDisabledOnOpenDuration = 3000;
 // creating a "muted" version of title text for both dark-on-light and
 // light-on-dark themes.
 static const double kDownloadItemLuminanceMod = 0.8;
-
-// DownloadShelfContextMenuWin -------------------------------------------------
-
-class DownloadShelfContextMenuWin : public DownloadShelfContextMenu {
- public:
-  explicit DownloadShelfContextMenuWin(BaseDownloadItemModel* model)
-      : DownloadShelfContextMenu(model) {
-    DCHECK(model);
-  }
-
-  void Run(const gfx::Point& point) {
-    if (download_item()->IsComplete())
-      menu_.reset(new views::Menu2(GetFinishedMenuModel()));
-    else
-      menu_.reset(new views::Menu2(GetInProgressMenuModel()));
-
-    // The menu's alignment is determined based on the UI layout.
-    views::Menu2::Alignment alignment;
-    if (base::i18n::IsRTL())
-      alignment = views::Menu2::ALIGN_TOPRIGHT;
-    else
-      alignment = views::Menu2::ALIGN_TOPLEFT;
-    menu_->RunMenuAt(point, alignment);
-  }
-
-  // This method runs when the caller has been deleted and we should not attempt
-  // to access |download_|.
-  void Stop() {
-    set_download_item(NULL);
-  }
-
- private:
-  scoped_ptr<views::Menu2> menu_;
-};
-
-// DownloadItemView ------------------------------------------------------------
 
 DownloadItemView::DownloadItemView(DownloadItem* download,
     DownloadShelfView* parent,
@@ -661,7 +624,7 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
   views::View::ConvertPointToScreen(this, &point);
 
   if (!context_menu_.get())
-    context_menu_.reset(new DownloadShelfContextMenuWin(model_.get()));
+    context_menu_.reset(new DownloadShelfContextMenuView(model_.get()));
   // When we call the Run method on the menu, it runs an inner message loop
   // that might causes us to be deleted.
   bool deleted = false;

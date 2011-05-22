@@ -36,7 +36,7 @@
 class BaseDownloadItemModel;
 class DownloadShelfView;
 class SkBitmap;
-class DownloadShelfContextMenuWin;
+class DownloadShelfContextMenuView;
 
 namespace gfx {
 class Image;
@@ -276,7 +276,7 @@ class DownloadItemView : public views::ButtonListener,
   ScopedRunnableMethodFactory<DownloadItemView> reenable_method_factory_;
 
   // The currently running download context menu.
-  scoped_ptr<DownloadShelfContextMenuWin> context_menu_;
+  scoped_ptr<DownloadShelfContextMenuView> context_menu_;
 
   // If non-NULL, set to true when this object is deleted.
   // (Used when showing the context menu as it runs an inner message loop that
