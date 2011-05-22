@@ -319,6 +319,8 @@ const size_t Extension::kNumPermissions = arraysize(Extension::kPermissions);
 const char* const Extension::kHostedAppPermissionNames[] = {
   Extension::kBackgroundPermission,
   Extension::kChromePrivatePermission,
+  Extension::kClipboardReadPermission,
+  Extension::kClipboardWritePermission,
   Extension::kGeolocationPermission,
   Extension::kNotificationPermission,
   Extension::kUnlimitedStoragePermission,
