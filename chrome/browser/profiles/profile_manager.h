@@ -17,7 +17,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -39,7 +38,6 @@ class ProfileManagerObserver {
 };
 
 class ProfileManager : public base::NonThreadSafe,
-                       public base::SystemMonitor::PowerObserver,
                        public BrowserList::Observer,
                        public NotificationObserver,
                        public Profile::Delegate {
@@ -96,10 +94,6 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns created profiles. Note, profiles order is NOT guaranteed to be
   // related with the creation order.
   std::vector<Profile*> GetLoadedProfiles() const;
-
-  // PowerObserver notifications
-  virtual void OnSuspend();
-  virtual void OnResume();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

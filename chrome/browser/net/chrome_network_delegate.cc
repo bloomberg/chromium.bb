@@ -5,10 +5,12 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
@@ -96,6 +98,11 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       profile_id_, event_router_.get(), request);
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
+}
+
+void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
+                                           int bytes_read) {
+  TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {

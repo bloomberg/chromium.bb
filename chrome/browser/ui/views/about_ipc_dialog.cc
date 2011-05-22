@@ -29,7 +29,6 @@
 #include "content/common/plugin_messages.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_tracker.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/layout/grid_layout.h"

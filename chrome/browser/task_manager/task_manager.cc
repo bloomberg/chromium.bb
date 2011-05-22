@@ -34,8 +34,6 @@
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/coll.h"
@@ -500,13 +498,6 @@ void TaskManagerModel::StartUpdating() {
   }
   update_state_ = TASK_PENDING;
 
-  // Register jobs notifications so we can compute network usage (it must be
-  // done from the IO thread).
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-         this, &TaskManagerModel::RegisterForJobDoneNotifications));
-
   // Notify resource providers that we are updating.
   for (ResourceProviderList::iterator iter = providers_.begin();
        iter != providers_.end(); ++iter) {
@@ -531,12 +522,6 @@ void TaskManagerModel::StopUpdating() {
     (*iter)->StopUpdating();
   }
 
-  // Unregister jobs notification (must be done from the IO thread).
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &TaskManagerModel::UnregisterForJobDoneNotifications));
-
   // Must clear the resources before the next attempt to start updating.
   Clear();
 }
@@ -547,14 +532,6 @@ void TaskManagerModel::AddResourceProvider(
   // AddRef matched with Release in destructor.
   provider->AddRef();
   providers_.push_back(provider);
-}
-
-void TaskManagerModel::RegisterForJobDoneNotifications() {
-  net::g_url_request_job_tracker.AddObserver(this);
-}
-
-void TaskManagerModel::UnregisterForJobDoneNotifications() {
-  net::g_url_request_job_tracker.RemoveObserver(this);
 }
 
 void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
@@ -836,41 +813,21 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
 }
 
 
-// In order to retrieve the network usage, we register for net::URLRequestJob
-// notifications. Every time we get notified some bytes were read we bump a
-// counter of read bytes for the associated resource. When the timer ticks,
-// we'll compute the actual network usage (see the Refresh method).
-void TaskManagerModel::OnJobAdded(net::URLRequestJob* job) {
-}
-
-void TaskManagerModel::OnJobRemoved(net::URLRequestJob* job) {
-}
-
-void TaskManagerModel::OnJobDone(net::URLRequestJob* job,
-                                 const net::URLRequestStatus& status) {
-}
-
-void TaskManagerModel::OnJobRedirect(net::URLRequestJob* job,
-                                     const GURL& location,
-                                     int status_code) {
-}
-
-void TaskManagerModel::OnBytesRead(net::URLRequestJob* job, const char* buf,
-                                   int byte_count) {
+void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
+                                       int byte_count) {
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
   // have a render view associated.  All other jobs will have -1 returned for
   // the render process child and routing ids - the jobs may still match a
   // resource based on their origin id, otherwise BytesRead() will attribute
   // the activity to the Browser resource.
   int render_process_host_child_id = -1, routing_id = -1;
-  ResourceDispatcherHost::RenderViewForRequest(job->request(),
+  ResourceDispatcherHost::RenderViewForRequest(&request,
                                                &render_process_host_child_id,
                                                &routing_id);
 
   // Get the origin PID of the request's originator.  This will only be set for
   // plugins - for renderer or browser initiated requests it will be zero.
-  int origin_pid =
-      chrome_browser_net::GetOriginPIDForRequest(job->request());
+  int origin_pid = chrome_browser_net::GetOriginPIDForRequest(&request);
 
   // This happens in the IO thread, post it to the UI thread.
   BrowserThread::PostTask(
@@ -879,8 +836,8 @@ void TaskManagerModel::OnBytesRead(net::URLRequestJob* job, const char* buf,
           this,
           &TaskManagerModel::BytesRead,
           BytesReadParam(origin_pid,
-          render_process_host_child_id,
-          routing_id, byte_count)));
+                         render_process_host_child_id,
+                         routing_id, byte_count)));
 }
 
 bool TaskManagerModel::GetProcessMetricsForRow(
