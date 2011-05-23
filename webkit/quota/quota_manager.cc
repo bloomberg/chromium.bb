@@ -120,15 +120,24 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
         global_usage_(-1),
         host_usage_(-1),
         quota_status_(kQuotaStatusUnknown),
+        waiting_callbacks_(1),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual ~UsageAndQuotaDispatcherTask() {
     STLDeleteContainerPointers(callbacks_.begin(), callbacks_.end());
   }
 
-  virtual bool IsCompleted() const = 0;
-
+  // Subclasses must implement them.
+  virtual void RunBody() = 0;
   virtual void DispatchCallback(GetUsageAndQuotaCallback* callback) = 0;
+
+  virtual void Run() OVERRIDE {
+    RunBody();
+    // We initialize waiting_callbacks to 1 so that we won't run
+    // the completion callback until here even some of the callbacks
+    // are dispatched synchronously.
+    CheckCompleted();
+  }
 
   virtual void Aborted() OVERRIDE {
     for (CallbackList::iterator iter = callbacks_.begin();
@@ -144,6 +153,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   virtual void Completed() OVERRIDE {
     DeleteSoon();
   }
+
   QuotaManager* manager() const {
     return static_cast<QuotaManager*>(observer());
   }
@@ -153,31 +163,34 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   int64 quota() const { return quota_; }
   int64 global_usage() const { return global_usage_; }
   int64 host_usage() const { return host_usage_; }
-  QuotaStatusCode status() const { return quota_status_; }
+  QuotaStatusCode quota_status() const { return quota_status_; }
 
-  UsageCallback* NewGlobalUsageCallback() {
+  // Subclasses must call following methods to create a new 'waitable'
+  // callback, which decrements waiting_callbacks when it is called.
+  UsageCallback* NewWaitableGlobalUsageCallback() {
+    ++waiting_callbacks_;
     return callback_factory_.NewCallback(
             &UsageAndQuotaDispatcherTask::DidGetGlobalUsage);
   }
-
-  HostUsageCallback* NewHostUsageCallback() {
+  HostUsageCallback* NewWaitableHostUsageCallback() {
+    ++waiting_callbacks_;
     return callback_factory_.NewCallback(
             &UsageAndQuotaDispatcherTask::DidGetHostUsage);
   }
-
-  QuotaCallback* NewGlobalQuotaCallback() {
+  QuotaCallback* NewWaitableGlobalQuotaCallback() {
+    ++waiting_callbacks_;
     return callback_factory_.NewCallback(
             &UsageAndQuotaDispatcherTask::DidGetGlobalQuota);
   }
-
-  HostQuotaCallback* NewHostQuotaCallback() {
+  HostQuotaCallback* NewWaitableHostQuotaCallback() {
+    ++waiting_callbacks_;
     return callback_factory_.NewCallback(
             &UsageAndQuotaDispatcherTask::DidGetHostQuota);
   }
 
  private:
   void CheckCompleted() {
-    if (IsCompleted()) {
+    if (--waiting_callbacks_ <= 0) {
       // Dispatches callbacks.
       for (CallbackList::iterator iter = callbacks_.begin();
           iter != callbacks_.end();
@@ -202,6 +215,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   int64 host_usage_;
   QuotaStatusCode quota_status_;
   CallbackList callbacks_;
+  int waiting_callbacks_;
   ScopedCallbackFactory<UsageAndQuotaDispatcherTask> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaDispatcherTask);
@@ -215,16 +229,12 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
       : UsageAndQuotaDispatcherTask(manager, host, kStorageTypeTemporary) {}
 
  protected:
-  virtual void Run() OVERRIDE {
+  virtual void RunBody() OVERRIDE {
     manager()->temporary_usage_tracker_->GetGlobalUsage(
-        NewGlobalUsageCallback());
+        NewWaitableGlobalUsageCallback());
     manager()->temporary_usage_tracker_->GetHostUsage(
-        host(), NewHostUsageCallback());
-    manager()->GetTemporaryGlobalQuota(NewGlobalQuotaCallback());
-  }
-
-  virtual bool IsCompleted() const OVERRIDE {
-    return (quota() >= 0 && global_usage() >= 0 && host_usage() >= 0);
+        host(), NewWaitableHostUsageCallback());
+    manager()->GetTemporaryGlobalQuota(NewWaitableGlobalQuotaCallback());
   }
 
   virtual void DispatchCallback(GetUsageAndQuotaCallback* callback) OVERRIDE {
@@ -232,7 +242,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
     // to return {usage, quota - nonevictable_usage} once eviction is
     // supported.
     int64 other_usage = global_usage() - host_usage();
-    callback->Run(status(), host_usage(), quota() - other_usage);
+    callback->Run(quota_status(), host_usage(), quota() - other_usage);
   }
 };
 
@@ -244,19 +254,15 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForPersistent
       : UsageAndQuotaDispatcherTask(manager, host, kStorageTypePersistent) {}
 
  protected:
-  virtual void Run() OVERRIDE {
+  virtual void RunBody() OVERRIDE {
     manager()->persistent_usage_tracker_->GetHostUsage(
-        host(), NewHostUsageCallback());
+        host(), NewWaitableHostUsageCallback());
     manager()->GetPersistentHostQuota(
-        host(), NewHostQuotaCallback());
-  }
-
-  virtual bool IsCompleted() const OVERRIDE {
-    return (quota() >= 0 && host_usage() >= 0);
+        host(), NewWaitableHostQuotaCallback());
   }
 
   virtual void DispatchCallback(GetUsageAndQuotaCallback* callback) OVERRIDE {
-    callback->Run(status(), host_usage(), quota());
+    callback->Run(quota_status(), host_usage(), quota());
   }
 };
 
