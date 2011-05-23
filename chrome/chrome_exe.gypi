@@ -194,21 +194,11 @@
                 ],
               },
             ],
-            # TODO(rkc): Remove disable_pie (and instead always use
-            # -pie) once we have a fix for remote gdb and are able to
-            # correctly get section header offsets for pie
-            # executables. Currently -pie breaks remote debugging.
+            # TODO(rkc): Remove this once we have a fix for remote gdb
+            # and are able to correctly get section header offsets for
+            # pie executables. Currently -pie breaks remote debugging.
             ['disable_pie==1', {
-              'ldflags': ['-nopie'],
-            }, {
-              # Building with -fPIE fails on ARM and ia32 bots.
-              # http://code.google.com/p/chromium/issues/detail?id=57908
-              # Until that is fixed, at least use it on other platforms.
-              'conditions': [
-                ['target_arch!="arm" and target_arch!="ia32"', {
-                  'ldflags': ['-pie'],
-                }],
-              ],
+              'ldflags' : ['-nopie'],
             }],
             ['use_system_xdg_utils==0', {
               'copies': [
