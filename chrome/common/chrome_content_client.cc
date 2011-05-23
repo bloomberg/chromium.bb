@@ -187,6 +187,7 @@ void AddOutOfProcessFlash(std::vector<PepperPluginInfo>* plugins) {
 namespace chrome {
 
 const char* ChromeContentClient::kPDFPluginName = ::kPDFPluginName;
+const char* ChromeContentClient::kNaClPluginName = ::kNaClPluginName;
 
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   child_process_logging::SetActiveURL(url);

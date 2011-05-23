@@ -13,6 +13,7 @@ namespace chrome {
 class ChromeContentClient : public content::ContentClient {
  public:
   static const char* kPDFPluginName;
+  static const char* kNaClPluginName;
 
   virtual void SetActiveURL(const GURL& url);
   virtual void SetGpuInfo(const GPUInfo& gpu_info);
