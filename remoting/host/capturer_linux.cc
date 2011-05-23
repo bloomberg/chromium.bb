@@ -263,6 +263,7 @@ void CapturerLinux::InvalidateScreen(const gfx::Size& size) {
 
 void CapturerLinux::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
+  last_buffer_ = NULL;
 }
 
 void CapturerLinux::CaptureInvalidRects(
