@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_LDR_UNIVERSAL_WORKQUEUE_H_
@@ -22,11 +22,13 @@ class ScopedMutexLock {
  public:
   explicit ScopedMutexLock(NaClMutex* m)
     : mutex_(m) {
-    NaClMutexLock(mutex_);
+    // work around compiler warning, cast to void does not work!
+    // More instances of this hack below
+    if (NaClMutexLock(mutex_)) {}
   }
 
   ~ScopedMutexLock() {
-    NaClMutexUnlock(mutex_);
+    if (NaClMutexUnlock(mutex_)) {}
   }
 
  private:
@@ -39,12 +41,12 @@ class ScopedMutexLock {
 class Job {
  public:
   Job() {
-    NaClMutexCtor(&mutex_);
-    NaClCondVarCtor(&condvar_);
+    if (NaClMutexCtor(&mutex_)) {}
+    if (NaClCondVarCtor(&condvar_)) {}
     // we grab the lock here so that we have it when Wait is called
     // subsequently - otherwise NaClCondVarSignal might happen
     // before NaClCondVarWait which is an error
-    NaClMutexLock(&mutex_);
+    if (NaClMutexLock(&mutex_)) {}
   }
 
   virtual ~Job() {}
@@ -52,12 +54,12 @@ class Job {
   void Run() {
     Action();
     ScopedMutexLock lock(&mutex_);
-    NaClCondVarSignal(&condvar_);
+    if (NaClCondVarSignal(&condvar_)) { /* work around compiler warning */}
   }
 
   void Wait() {
     // NOTE: the mutex has been locked in the constructor
-    NaClCondVarWait(&condvar_, &mutex_);
+    if (NaClCondVarWait(&condvar_, &mutex_)) {}
   }
 
   virtual void Action() = 0;
@@ -73,7 +75,7 @@ class Job {
 class ThreadedWorkQueue {
  public:
   ThreadedWorkQueue() {
-    NaClMutexCtor(&mutex_);
+    if (NaClMutexCtor(&mutex_)) {}
     NaClSemCtor(&sem_, 0);
   }
 

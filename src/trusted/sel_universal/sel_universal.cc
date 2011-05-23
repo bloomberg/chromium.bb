@@ -26,7 +26,6 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
-#include "native_client/src/trusted/sel_universal/pepper_handler.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
@@ -303,8 +302,6 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("file_size", HandlerFileSize);
   loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
   loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
-  loop.AddHandler("fileio_initialize", HandlerFileIOInitialize);
-  loop.AddHandler("postmessage_initialize", HandlerPostMessageInitialize);
 #if  NACL_SEL_UNIVERSAL_INCLUDE_SDL
   loop.AddHandler("sdl_initialize", HandlerSDLInitialize);
   loop.AddHandler("sdl_event_loop", HandlerSDLEventLoop);

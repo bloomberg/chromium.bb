@@ -12,6 +12,13 @@
 
 class PP_InputEvent;
 
+const int MY_EVENT_FLUSH_CALL_BACK = 88;
+const int MY_EVENT_INIT_AUDIO = 89;
+// data1 = callback_id, data2 = result value
+const int MY_EVENT_TIMER_CALL_BACK = 90;
+
+
+
 bool IsUserEvent(PP_InputEvent* event);
 void MakeUserEvent(PP_InputEvent* event, int code, int data1, int data2);
 

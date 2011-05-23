@@ -13,21 +13,14 @@
 #include <string>
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/sel_universal/pepper_emu.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
+#include "native_client/src/trusted/sel_universal/srpc_helper.h"
 
-#define SRPC_PARAMS NaClSrpcRpc* rpc,  \
-                    NaClSrpcArg** ins, \
-                    NaClSrpcArg** outs, \
-                    NaClSrpcClosure* done
+namespace {
 
-#define UNIMPLEMENTED(name) \
-static void name(SRPC_PARAMS) { \
-  UNREFERENCED_PARAMETER(rpc); \
-  UNREFERENCED_PARAMETER(ins); \
-  UNREFERENCED_PARAMETER(outs); \
-  UNREFERENCED_PARAMETER(done); \
-  NaClLog(LOG_FATAL, #name " not yet implemented\n"); \
-}
+// This will be used to invoke the call backs
+IMultimedia* GlobalMultiMediaInterface = 0;
 
 UNIMPLEMENTED(PPB_URLLoader_Create)
 UNIMPLEMENTED(PPB_URLLoader_IsURLLoader)
@@ -48,15 +41,11 @@ UNIMPLEMENTED(PPB_URLResponseInfo_IsURLResponseInfo)
 UNIMPLEMENTED(PPB_URLResponseInfo_GetProperty)
 UNIMPLEMENTED(PPB_URLResponseInfo_GetBodyAsFileRef)
 
-#define TUPLE(a, b) #a #b, a
-bool HandlerFileIOInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
-  NaClLog(LOG_INFO, "HandlerFileIOInitialize\n");
-  if (args.size() < 5) {
-    NaClLog(LOG_ERROR, "Insufficient arguments to 'rpc' command.\n");
-    return false;
-  }
+}  // end namespace
 
-  UNREFERENCED_PARAMETER(ncl);
+#define TUPLE(a, b) #a #b, a
+void PepperEmuInitFileIO(NaClCommandLoop* ncl, IMultimedia* im) {
+  GlobalMultiMediaInterface = im;
 
   ncl->AddUpcallRpc(TUPLE(PPB_URLLoader_Create, :i:i));
   ncl->AddUpcallRpc(TUPLE(PPB_URLLoader_IsURLLoader, :i:i));
@@ -76,5 +65,4 @@ bool HandlerFileIOInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
   ncl->AddUpcallRpc(TUPLE(PPB_URLResponseInfo_IsURLResponseInfo, :i:i));
   ncl->AddUpcallRpc(TUPLE(PPB_URLResponseInfo_GetProperty, :ii:C));
   ncl->AddUpcallRpc(TUPLE(PPB_URLResponseInfo_GetBodyAsFileRef, :i:i));
-  return true;
 }

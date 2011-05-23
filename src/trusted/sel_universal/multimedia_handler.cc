@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // This file exports a single function used to setup the
@@ -43,14 +43,11 @@
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/multimedia.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
+#include "native_client/src/trusted/sel_universal/pepper_emu.h"
+#include "native_client/src/trusted/sel_universal/srpc_helper.h"
 
 using nacl::DescWrapperFactory;
 using nacl::DescWrapper;
-
-#define SRPC_PARAMS NaClSrpcRpc* rpc, \
-                    NaClSrpcArg** ins, \
-                    NaClSrpcArg** outs, \
-                    NaClSrpcClosure* done
 
 // ======================================================================
 const int kInvalidInstance = 0;
@@ -64,10 +61,6 @@ const int kBytesPerSample = 4;  // 16-bit stereo
 const int kRecommendSampleFrameCount = 2048;
 const int kMaxAudioBufferSize = 0x10000;
 const int kBytesPerPixel = 4;
-
-const int MY_EVENT_FLUSH_CALL_BACK = 88;
-const int MY_EVENT_INIT_AUDIO = 89;
-const int MY_EVENT_TIMER_CALL_BACK = 90;
 
 // ======================================================================
 
@@ -122,83 +115,6 @@ static void AudioCallBack(void* data, unsigned char* buffer, int length) {
   // ping sync socket
   int value = 0;
   Global.desc_audio_sync_in->Write(&value, sizeof value);
-}
-// ======================================================================
-// NOTE: These are not fully supported at this time.
-//       They undoubtedly need to be updated when ppapi changes.
-//       We do not use defines like PPB_CORE_INTERFACE because
-//       the implementation/emulation needs to be updated as well.
-static bool IsSupportedInterface(string interface) {
-  return
-    interface == "PPB_Audio;0.6" ||
-    interface == "PPB_AudioConfig;0.5" ||
-    interface == "PPB_Core;0.4" ||
-    interface == "PPB_FileIO(Dev);0.3" ||
-    interface == "PPB_Graphics2D;0.3" ||
-    interface == "PPB_ImageData;0.3" ||
-    interface == "PPB_Instance;0.4" ||
-    interface == "PPB_URLLoader;0.1" ||
-    interface == "PPB_URLRequestInfo;0.2" ||
-    interface == "PPB_URLResponseInfo;0.1";
-}
-
-// void* PPB_GetInterface(const char* interface_name);
-// PPB_GetInterface:s:i
-static void PPB_GetInterface(SRPC_PARAMS) {
-  string interface(ins[0]->arrays.str);
-  NaClLog(1, "PPB_GetInterface(%s)\n", interface.c_str());
-  bool supported = IsSupportedInterface(interface);
-  if (!supported) {
-    NaClLog(LOG_ERROR, "unsupported interface\n");
-  }
-  outs[0]->u.ival = supported ? 1 : 0;
-
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the Core API
-// void ReleaseResource(PP_Resource resource);
-// PPB_Core_ReleaseResource:i:
-static void PPB_Core_ReleaseResource(SRPC_PARAMS) {
-  UNREFERENCED_PARAMETER(ins);
-  UNREFERENCED_PARAMETER(outs);
-  NaClLog(1, "PPB_Core_ReleaseResource\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the Core API
-// void CallOnMainThread(int32_t delay_in_milliseconds,
-//                       struct PP_CompletionCallback callback,
-//                       int32_t result);
-// PPB_Core_CallOnMainThread:iii:
-static void PPB_Core_CallOnMainThread(SRPC_PARAMS) {
-  UNREFERENCED_PARAMETER(outs);
-  const int delay = ins[0]->u.ival;
-  const int callback = ins[1]->u.ival;
-  const int result = ins[2]->u.ival;
-
-  NaClLog(1, "PPB_Core_CallOnMainThread(%d, %d, %d)\n",
-          delay, callback, result);
-
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-
-  Global.sdl_engine->PushUserEvent(delay,
-                                   MY_EVENT_TIMER_CALL_BACK,
-                                   callback,
-                                   result);
-}
-
-// This appears to have no equivalent in the ppapi world
-// ReleaseResourceMultipleTimes:ii:
-static void ReleaseResourceMultipleTimes(SRPC_PARAMS) {
-  UNREFERENCED_PARAMETER(outs);
-  NaClLog(1, "ReleaseResourceMultipleTimes(%d, %d)\n",
-          ins[0]->u.ival, ins[1]->u.ival);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
 }
 
 // From the ImageData API
@@ -541,6 +457,7 @@ static void PPB_AudioConfig_GetSampleFrameCount(SRPC_PARAMS) {
 }
 
 
+// TODO(robertm): rename this to HandlerPepperEmuInitialize
 #define TUPLE(a, b) #a #b, a
 bool HandlerSDLInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
   NaClLog(LOG_INFO, "HandlerSDLInitialize\n");
@@ -550,6 +467,8 @@ bool HandlerSDLInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
   }
 
   UNREFERENCED_PARAMETER(ncl);
+  // TODO(robertm): factor the audio video rpcs into a different file
+  // and initialize them via say PepperEmuInitAV()
   ncl->AddUpcallRpc(TUPLE(PPB_Audio_Create, :ii:i));
   ncl->AddUpcallRpc(TUPLE(PPB_Audio_IsAudio, :i:i));
   ncl->AddUpcallRpc(TUPLE(PPB_Audio_GetCurrentConfig, :i:i));
@@ -562,11 +481,6 @@ bool HandlerSDLInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
   ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleRate, :i:i));
   ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleFrameCount, :i:i));
 
-  ncl->AddUpcallRpc(TUPLE(PPB_Core_ReleaseResource, :i:));
-  ncl->AddUpcallRpc(TUPLE(PPB_Core_CallOnMainThread, :iii:));
-
-  ncl->AddUpcallRpc(TUPLE(PPB_GetInterface, :s:i));
-
   ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_Create, :iCi:i));
   ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_ReplaceContents, :ii:));
   ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_PaintImageData, :iiCC:));
@@ -577,18 +491,22 @@ bool HandlerSDLInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
 
   ncl->AddUpcallRpc(TUPLE(PPB_Instance_BindGraphics, :ii:i));
 
-  ncl->AddUpcallRpc(TUPLE(ReleaseResourceMultipleTimes, :ii:));
 
   Global.instance = ExtractInt32(args[1]);
   Global.screen_width = ExtractInt32(args[2]);
   Global.screen_height = ExtractInt32(args[3]);
   Global.title = args[4];
 
+  // NOTE: we decide at linktime which incarnation to use here
   Global.sdl_engine = MakeMultimediaSDL(Global.screen_width,
                                         Global.screen_height,
                                         Global.title.c_str());
+  PepperEmuInitCore(ncl, Global.sdl_engine);
+  PepperEmuInitFileIO(ncl, Global.sdl_engine);
+  PepperEmuInitPostMessage(ncl, Global.sdl_engine);
   return true;
 }
+
 
 bool GetNextEvent(PP_InputEvent* event) {
   if (Global.event_replay_stream.is_open()) {

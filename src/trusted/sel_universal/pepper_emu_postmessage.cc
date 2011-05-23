@@ -4,8 +4,7 @@
  * found in the LICENSE file.
  */
 
-// This file exports a single function used to setup the
-// post-message sub-system for use with sel_universal
+// initialize post-message sub-system for use with sel_universal
 // for now we just print the post-message content on the screen for debugging
 
 
@@ -15,13 +14,10 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/sel_universal/pepper_emu.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
+#include "native_client/src/trusted/sel_universal/srpc_helper.h"
 
-
-#define SRPC_PARAMS NaClSrpcRpc* rpc,  \
-                    NaClSrpcArg** ins, \
-                    NaClSrpcArg** outs, \
-                    NaClSrpcClosure* done
 
 // Marshalling Conventions Used By NaCl
 #define JAVA_SCRIPT_TYPE_STRING 5
@@ -33,8 +29,14 @@ struct JavaScriptData {
   char     payload[1];
 };
 
+namespace {
+
+// Currently not use
+IMultimedia* GlobalMultiMediaInterface = 0;
+
+
 // PPB_Messaging_PostMessage:iC:
-static void PPB_Messaging_PostMessage(SRPC_PARAMS) {
+void PPB_Messaging_PostMessage(SRPC_PARAMS) {
   UNREFERENCED_PARAMETER(outs);
   JavaScriptData* data = reinterpret_cast<JavaScriptData*>(ins[1]->arrays.carr);
   // NOTE: only string supported for now
@@ -44,11 +46,12 @@ static void PPB_Messaging_PostMessage(SRPC_PARAMS) {
   done->Run(done);
 }
 
+}  // end namespace
+
 #define TUPLE(a, b) #a #b, a
-bool HandlerPostMessageInitialize(NaClCommandLoop* ncl, const vector<string>& args) {
-  UNREFERENCED_PARAMETER(args);
+void PepperEmuInitPostMessage(NaClCommandLoop* ncl, IMultimedia* im) {
+  GlobalMultiMediaInterface = im;
   NaClLog(LOG_INFO, "HandlerPostMessageInitialize\n");
 
   ncl->AddUpcallRpc(TUPLE(PPB_Messaging_PostMessage, :iC:));
-  return true;
 }

@@ -44,9 +44,13 @@ if env.Bit('sdl_sel_universal'):
   else:
     ErrorUnsupportedPlatform(env)
 
-  sdl_multimedia_srcs.append('multimedia_handler.cc')
-  sdl_multimedia_srcs.append('sdl_ppapi_event_translator.cc')
-  sdl_multimedia_srcs.append('multimedia_sdl.cc')
+  sdl_multimedia_srcs += ['sdl_ppapi_event_translator.cc',
+                          'multimedia_sdl.cc',
+                          'multimedia_handler.cc',
+                          'pepper_emu_fileio.cc',
+                          'pepper_emu_core.cc',
+                          'pepper_emu_postmessage.cc',
+                          ]
 
 
 # NOTE: Probably because of GetPluginDir()
@@ -58,8 +62,6 @@ if env.Bit('linux') and env.Bit('target_x86'):
 env.ComponentProgram('sel_universal',
                     ['sel_universal.cc',
                      'rpc_universal.cc',
-                     'file_handler.cc',
-                     'postmessage_handler.cc',
                      'replay_handler.cc',
                      'parsing.cc',
                      'rpc_universal_system.cc',
