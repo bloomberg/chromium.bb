@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/shared_memory.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
@@ -32,7 +33,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   const std::vector<uint32>& GetConfig(
       const std::vector<uint32>& prototype_config);
   bool Initialize(const std::vector<uint32>& config);
-  bool Decode(media::BitstreamBuffer* bitstream_buffer,
+  bool Decode(const media::BitstreamBuffer& bitstream_buffer,
               const media::VideoDecodeAcceleratorCallback& callback);
   void AssignPictureBuffer(std::vector<PictureBuffer*> picture_buffers);
   void ReusePictureBuffer(int32 picture_buffer_id);
@@ -129,8 +130,10 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // void pointer to hold EGLImage handle.
   void* egl_image_;
 
-  typedef std::map<OMX_BUFFERHEADERTYPE*,
-                   media::VideoDecodeAcceleratorCallback> OMXBufferCallbackMap;
+  typedef std::map<
+    OMX_BUFFERHEADERTYPE*,
+    std::pair<base::SharedMemory*,
+              media::VideoDecodeAcceleratorCallback> > OMXBufferCallbackMap;
   OMXBufferCallbackMap omx_buff_cb_;
 
   // Method used the change the state of the port.
@@ -160,4 +163,3 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 };
 
 #endif  // CONTENT_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
-

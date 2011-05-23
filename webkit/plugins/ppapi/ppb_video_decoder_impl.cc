@@ -233,12 +233,10 @@ bool PPB_VideoDecoder_Impl::Decode(
   if (!platform_video_decoder_.get())
     return false;
 
-  scoped_refptr<PPB_Buffer_Impl> pepper_buffer =
-      Resource::GetAs<PPB_Buffer_Impl>(bitstream_buffer->data);
-
-  media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
-                                       pepper_buffer->mapped_buffer(),
-                                       bitstream_buffer->size);
+  media::BitstreamBuffer decode_buffer(
+      bitstream_buffer->id,
+      Resource::GetAs<PPB_Buffer_Impl>(bitstream_buffer->data)->handle(),
+      bitstream_buffer->size);
 
   // Store the callback to inform when bitstream buffer has been processed.
   // TODO(vmr): handle simultaneous decodes + callbacks.

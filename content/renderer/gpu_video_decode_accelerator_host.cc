@@ -87,9 +87,14 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(
 
 bool GpuVideoDecodeAcceleratorHost::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
-  // TODO(vrk): Implement.
-  NOTIMPLEMENTED();
-  return false;
+  if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_Decode(
+          decoder_id_, bitstream_buffer.id(),
+          bitstream_buffer.handle(), bitstream_buffer.size()))) {
+    DLOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_Decode) failed";
+    return false;
+  }
+
+  return true;
 }
 
 void GpuVideoDecodeAcceleratorHost::AssignGLESBuffers(

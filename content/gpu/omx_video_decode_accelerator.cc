@@ -248,7 +248,7 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
 }
 
 bool OmxVideoDecodeAccelerator::Decode(
-    media::BitstreamBuffer* bitstream_buffer,
+    const media::BitstreamBuffer& bitstream_buffer,
     const media::VideoDecodeAcceleratorCallback& callback) {
   DCHECK(!free_input_buffers_.empty());
   DCHECK(bitstream_buffer);
@@ -260,9 +260,15 @@ bool OmxVideoDecodeAccelerator::Decode(
   OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
   free_input_buffers_.pop();
 
-  // setup |omx_buffer|.
-  omx_buffer->pBuffer = static_cast<OMX_U8*>(bitstream_buffer->bitstream());
-  omx_buffer->nFilledLen = bitstream_buffer->bitstream_size();
+  // Setup |omx_buffer|.
+  scoped_ptr<base::SharedMemory> shm(
+      new base::SharedMemory(bitstream_buffer.handle(), true));
+  if (!shm->Map(bitstream_buffer.size())) {
+    LOG(ERROR) << "Failed to SharedMemory::Map().";
+    return false;
+  }
+  omx_buffer->pBuffer = static_cast<OMX_U8*>(shm->memory());
+  omx_buffer->nFilledLen = bitstream_buffer->size();
   omx_buffer->nAllocLen = omx_buffer->nFilledLen;
 
   omx_buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
@@ -279,7 +285,8 @@ bool OmxVideoDecodeAccelerator::Decode(
   input_buffers_at_component_++;
   // OMX_EmptyThisBuffer is a non blocking call and should
   // not make any assumptions about its completion.
-  omx_buff_cb_.insert(std::make_pair(omx_buffer, callback));
+  omx_buff_cb_.insert(std::make_pair(
+      omx_buffer, make_pair(shm.release(), callback)));
   return true;
 }
 
@@ -729,7 +736,8 @@ void OmxVideoDecodeAccelerator::EmptyBufferDoneTask(
     StopOnError();
     return;
   }
-  it->second.Run();
+  delete it->second.first;
+  it->second.second.Run();
   omx_buff_cb_.erase(it);
 }
 
@@ -879,4 +887,3 @@ void OmxVideoDecodeAccelerator::ChangePort(
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(OmxVideoDecodeAccelerator);
-

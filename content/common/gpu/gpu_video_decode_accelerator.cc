@@ -117,8 +117,9 @@ void GpuVideoDecodeAccelerator::OnInitialize(
 void GpuVideoDecodeAccelerator::OnDecode(int32 id,
                                          base::SharedMemoryHandle handle,
                                          int32 size) {
-  // TODO(vrk): Implement.
-  NOTIMPLEMENTED();
+  if (!video_decode_accelerator_)
+    return;
+  video_decode_accelerator_->Decode(media::BitstreamBuffer(id, handle, size));
 }
 
 void GpuVideoDecodeAccelerator::OnAssignGLESBuffers(
@@ -164,8 +165,12 @@ void GpuVideoDecodeAccelerator::OnAbort() {
 
 void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
-  // TODO(vrk): Implement.
-  NOTIMPLEMENTED();
+  if (!Send(new AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed(
+          route_id_, bitstream_buffer_id))) {
+    DLOG(ERROR)
+        << "Send(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed) "
+        << "failed";
+  }
 }
 
 void GpuVideoDecodeAccelerator::NotifyFlushDone() {
