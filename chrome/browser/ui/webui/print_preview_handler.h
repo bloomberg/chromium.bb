@@ -85,6 +85,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Helper function to activate the initiator tab and close the preview tab.
   void ActivateInitiatorTabAndClosePreviewTab();
 
+  // Adds all the recorded stats taken so far to histogram counts.
+  void ReportStats();
+
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
 
@@ -92,6 +95,19 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   static FilePath* last_saved_path_;
+
+  // A count of how many requests received to regenerate preview data.
+  // Initialized to 0 then incremented and emitted to a histogram.
+  int regenerate_preview_request_count_;
+
+  // A count of how many requests received to show manage printers dialog.
+  int manage_printers_dialog_request_count_;
+
+  // A count of how many times print preview failed.
+  int print_preview_failed_count_;
+
+  // Whether we have already logged the number of printers this session.
+  bool has_logged_printers_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };
