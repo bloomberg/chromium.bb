@@ -366,6 +366,21 @@ TEST(ExtensionURLPatternTest, OverlapsWith) {
   // Test that '<all_urls>' includes file URLs, while scheme '*' does not.
   TestPatternOverlap(pattern7, pattern8, false);
   TestPatternOverlap(pattern7, pattern10, true);
+
+  // Test that wildcard schemes are handled correctly, especially when compared
+  // to each-other.
+  URLPattern pattern11(kAllSchemes, "http://example.com/*");
+  URLPattern pattern12(kAllSchemes, "*://example.com/*");
+  URLPattern pattern13(kAllSchemes, "*://example.com/foo/*");
+  URLPattern pattern14(kAllSchemes, "*://google.com/*");
+  TestPatternOverlap(pattern8, pattern12, true);
+  TestPatternOverlap(pattern9, pattern12, true);
+  TestPatternOverlap(pattern10, pattern12, true);
+  TestPatternOverlap(pattern11, pattern12, true);
+  TestPatternOverlap(pattern12, pattern13, true);
+  TestPatternOverlap(pattern11, pattern13, true);
+  TestPatternOverlap(pattern14, pattern12, false);
+  TestPatternOverlap(pattern14, pattern13, false);
 }
 
 TEST(ExtensionURLPatternTest, ConvertToExplicitSchemes) {
