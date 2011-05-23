@@ -46,6 +46,20 @@
    fun:malloc
 }
 
+{
+   glibc_free1
+   Memcheck:Addr1
+   fun:_int_free
+   fun:free
+}
+
+{
+   glibc_malloc1
+   Memcheck:Addr1
+   fun:_int_malloc
+   fun:malloc
+}
+
 # Generic ld.so suppressions.
 # Default Valgrind suppressions for ld.so specify both major and minor version
 # numbers of glibc from the build machine. Because of this, we get false reports
