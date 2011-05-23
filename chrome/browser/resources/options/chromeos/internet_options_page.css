@@ -33,7 +33,7 @@
   height: 35px;
 }
 
-.network-item[connectable]:hover {
+.network-item:not([connecting]):hover {
   border-color: hsl(214, 91%, 85%);
   background-color: hsl(214, 91%, 97%);
 }
@@ -53,14 +53,6 @@
 .network-item[connecting] {
   background-color: hsl(214, 91%, 97%);
   border-color: hsl(214, 91%, 85%);
-  padding-top: 5px;
-  height: 60px;
-  -webkit-box-align: start;
-  display: block;
-}
-
-.network-item[connecting][other] {
-  height: 105px;
 }
 
 .network-item-text {

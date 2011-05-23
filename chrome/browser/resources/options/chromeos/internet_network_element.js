@@ -154,8 +154,9 @@ cr.define('options.internet', function() {
     /** @inheritDoc */
     decorate: function() {
       this.className = 'network-item';
-      this.connected = this.data.connected;
       this.connectable = this.data.connectable;
+      this.connected = this.data.connected;
+      this.connecting = this.data.connecting;
       this.other = this.data.servicePath == '?';
       this.id = this.data.servicePath;
       // textDiv holds icon, name and status text.
