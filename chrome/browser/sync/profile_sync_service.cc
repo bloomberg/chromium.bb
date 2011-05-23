@@ -43,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -539,7 +540,7 @@ void ProfileSyncService::OnBackendInitialized() {
 
   if (!cros_user_.empty()) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-      ShowConfigure(true);
+      ShowConfigure(NULL, true);
     } else {
       SetSyncSetupCompleted();
     }
@@ -709,7 +710,7 @@ void ProfileSyncService::OnMigrationNeededForTypes(
   migrator_->MigrateTypes(types);
 }
 
-void ProfileSyncService::ShowLoginDialog() {
+void ProfileSyncService::ShowLoginDialog(WebUI* web_ui) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     // Force the wizard to step to the login screen (which will only actually
@@ -726,10 +727,16 @@ void ProfileSyncService::ShowLoginDialog() {
 
   wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
 
+  if (web_ui) {
+    web_ui->CallJavascriptFunction("options.SyncSetupOverlay.showSyncDialog");
+  } else {
+    BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
+  }
+
   NotifyObservers();
 }
 
-void ProfileSyncService::ShowErrorUI() {
+void ProfileSyncService::ShowErrorUI(WebUI* web_ui) {
   if (IsPassphraseRequired()) {
     if (IsUsingSecondaryPassphrase())
       PromptForExistingPassphrase();
@@ -745,12 +752,11 @@ void ProfileSyncService::ShowErrorUI() {
       error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
       error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
       error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-    ShowLoginDialog();
+    ShowLoginDialog(web_ui);
   }
 }
 
-
-void ProfileSyncService::ShowConfigure(bool sync_everything) {
+void ProfileSyncService::ShowConfigure(WebUI* web_ui, bool sync_everything) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -760,6 +766,11 @@ void ProfileSyncService::ShowConfigure(bool sync_everything) {
     wizard_.Step(SyncSetupWizard::SYNC_EVERYTHING);
   else
     wizard_.Step(SyncSetupWizard::CONFIGURE);
+
+  if (web_ui)
+    web_ui->CallJavascriptFunction("options.SyncSetupOverlay.showSyncDialog");
+  else
+    BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
 }
 
 void ProfileSyncService::PromptForExistingPassphrase() {

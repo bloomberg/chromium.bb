@@ -34,12 +34,12 @@ class SyncSetupHandler : public OptionsPageUIHandler,
 
  private:
   // Callbacks from the page.
-  void OnDidShowPage(const ListValue* args);
   void OnDidClosePage(const ListValue* args);
   void HandleSubmitAuth(const ListValue* args);
   void HandleConfigure(const ListValue* args);
   void HandlePassphraseEntry(const ListValue* args);
   void HandlePassphraseCancel(const ListValue* args);
+  void HandleAttachHandler(const ListValue* args);
 
   // Weak reference.
   SyncSetupFlow* flow_;

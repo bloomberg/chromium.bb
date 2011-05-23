@@ -253,18 +253,18 @@ void SyncSetupHandler::Initialize() {
 }
 
 void SyncSetupHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("didShowPage",
-      NewCallback(this, &SyncSetupHandler::OnDidShowPage));
-  web_ui_->RegisterMessageCallback("didClosePage",
+  web_ui_->RegisterMessageCallback("SyncSetupDidClosePage",
       NewCallback(this, &SyncSetupHandler::OnDidClosePage));
-  web_ui_->RegisterMessageCallback("SubmitAuth",
+  web_ui_->RegisterMessageCallback("SyncSetupSubmitAuth",
       NewCallback(this, &SyncSetupHandler::HandleSubmitAuth));
-  web_ui_->RegisterMessageCallback("Configure",
+  web_ui_->RegisterMessageCallback("SyncSetupConfigure",
       NewCallback(this, &SyncSetupHandler::HandleConfigure));
-  web_ui_->RegisterMessageCallback("Passphrase",
+  web_ui_->RegisterMessageCallback("SyncSetupPassphrase",
       NewCallback(this, &SyncSetupHandler::HandlePassphraseEntry));
-  web_ui_->RegisterMessageCallback("PassphraseCancel",
+  web_ui_->RegisterMessageCallback("SyncSetupPassphraseCancel",
       NewCallback(this, &SyncSetupHandler::HandlePassphraseCancel));
+  web_ui_->RegisterMessageCallback("SyncSetupAttachHandler",
+      NewCallback(this, &SyncSetupHandler::HandleAttachHandler));
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
@@ -307,17 +307,6 @@ void SyncSetupHandler::ShowSetupDone(const std::wstring& user) {
 
 void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
   flow_ = flow;
-}
-
-void SyncSetupHandler::OnDidShowPage(const ListValue* args) {
-  DCHECK(web_ui_);
-
-  ProfileSyncService* sync_service =
-      web_ui_->GetProfile()->GetProfileSyncService();
-  if (!sync_service)
-    return;
-
-  flow_ = sync_service->get_wizard().AttachSyncSetupHandler(this);
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
@@ -397,3 +386,16 @@ void SyncSetupHandler::HandlePassphraseCancel(const ListValue* args) {
   DCHECK(flow_);
   flow_->OnPassphraseCancel();
 }
+
+void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
+  DCHECK(web_ui_);
+
+  ProfileSyncService* sync_service =
+      web_ui_->GetProfile()->GetProfileSyncService();
+  if (!sync_service)
+    return;
+
+  if (!flow_)
+    flow_ = sync_service->get_wizard().AttachSyncSetupHandler(this);
+}
+

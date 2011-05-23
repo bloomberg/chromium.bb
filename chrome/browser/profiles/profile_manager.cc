@@ -52,7 +52,7 @@ class NewProfileLauncher : public ProfileManagerObserver {
     Browser::NewWindowWithProfile(profile);
     ProfileSyncService* service = profile->GetProfileSyncService();
     DCHECK(service);
-    service->ShowLoginDialog();
+    service->ShowLoginDialog(NULL);
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_PROFILE_MENU);
   }
 

@@ -83,7 +83,7 @@ cr.define('options', function() {
         return false;
       };
       $('cancel-yes-button').onclick = function() {
-        chrome.send('PassphraseCancel', ['']);
+        chrome.send('SyncSetupPassphraseCancel', ['']);
         return false;
       };
       $('passphrase-form').onsubmit = $('passphrase-ok').onclick = function() {
@@ -96,18 +96,22 @@ cr.define('options', function() {
       };
     },
 
+    showOverlay_: function() {
+      OptionsPage.navigateToPage('syncSetup');
+    },
+
     closeOverlay_: function() {
       OptionsPage.closeOverlay();
     },
 
     /** @inheritDoc */
     didShowPage: function() {
-      chrome.send('didShowPage');
+      chrome.send('SyncSetupAttachHandler');
     },
 
     /** @inheritDoc */
     didClosePage: function() {
-      chrome.send('didClosePage');
+      chrome.send('SyncSetupDidClosePage');
     },
 
     showCancelWarning_: function() {
@@ -120,7 +124,7 @@ cr.define('options', function() {
     sendPassphraseAndClose_: function() {
       var f = $('passphrase-form');
       var result = JSON.stringify({"passphrase": f.passphrase.value});
-      chrome.send("Passphrase", [result]);
+      chrome.send('SyncSetupPassphrase', [result]);
     },
 
     getRadioCheckedValue_: function() {
@@ -236,7 +240,7 @@ cr.define('options', function() {
 
       // Don't allow the user to tweak the settings once we send the
       // configuration to the backend.
-      this.disableConfigureElements_();
+      this.setInputElementsDisabledState_(true);
 
       var syncAll =
         document.getElementById('sync-select-datatypes').selectedIndex == 0;
@@ -257,20 +261,22 @@ cr.define('options', function() {
           "usePassphrase": (this.getRadioCheckedValue_() == 'explicit'),
           "passphrase": $('custom-passphrase').value
       });
-      chrome.send("Configure", [result]);
+      chrome.send('SyncSetupConfigure', [result]);
     },
 
     /**
-     * Disables all input elements within the 'Customize Sync Preferences'
-     * screen. This is used to prohibit the user from changing the inputs after
-     * confirming the customized sync preferences.
+     * Sets the disabled property of all input elements within the 'Customize
+     * Sync Preferences' screen. This is used to prohibit the user from changing
+     * the inputs after confirming the customized sync preferences, or resetting
+     * the state when re-showing the dialog.
+     * @param disabled True if controls should be set to disabled.
      * @private
      */
-    disableConfigureElements_: function() {
+    setInputElementsDisabledState_: function(disabled) {
       var configureElements =
           $('customize-sync-preferences').querySelectorAll('input');
       for (var i = 0; i < configureElements.length; i++)
-        configureElements[i].disabled = true;
+        configureElements[i].disabled = disabled;
     },
 
     setChooseDataTypesCheckboxes_: function(args) {
@@ -415,6 +421,10 @@ cr.define('options', function() {
       $('choose-datatypes-ok').focus();
     },
 
+    attach_: function() {
+      chrome.send('SyncSetupAttachHandler');
+    },
+
     showSyncSetupPage_: function(page, args) {
       if (page == 'settingUp') {
         this.setThrobbersVisible_(true);
@@ -428,14 +438,19 @@ cr.define('options', function() {
       for (var i = 0; i < overlay.children.length; i++)
         overlay.children[i].classList.add('hidden');
 
+      this.setInputElementsDisabledState_(false);
+
       if (page == 'login')
         this.showGaiaLogin_(args);
       else if (page == 'configure')
         this.showConfigure_(args);
       else if (page == 'passphrase')
         this.showPassphrase_(args);
-      else if (page == 'done')
+
+      if (page == 'done')
         this.closeOverlay_();
+      else
+        this.showOverlay_();
     },
 
     setThrobbersVisible_: function(visible) {
@@ -630,7 +645,7 @@ cr.define('options', function() {
                                    "captcha" : f.captchaValue.value,
                                    "access_code" : f.accessCode.value});
       $('sign-in').disabled = true;
-      chrome.send("SubmitAuth", [result]);
+      chrome.send('SyncSetupSubmitAuth', [result]);
     },
 
     showGaiaSuccessAndClose_: function() {
@@ -645,7 +660,7 @@ cr.define('options', function() {
     /** @inheritDoc */
     shouldClose: function() {
       if (!$('cancel-warning-box').hidden) {
-        chrome.send('PassphraseCancel', ['']);
+        chrome.send('SyncSetupPassphraseCancel', ['']);
         return true;
       } else if (!$('sync-setup-passphrase').classList.contains('hidden')) {
         // The Passphrase page is showing, and the use has pressed escape.
@@ -656,6 +671,10 @@ cr.define('options', function() {
 
       return true;
     },
+  };
+
+  SyncSetupOverlay.showSyncDialog = function() {
+    SyncSetupOverlay.getInstance().attach_();
   };
 
   SyncSetupOverlay.showSyncSetupPage = function(page, args) {
