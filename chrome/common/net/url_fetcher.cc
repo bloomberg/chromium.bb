@@ -192,7 +192,7 @@ class URLFetcher::Core
   void AppendChunkToUpload(const std::string& data, bool is_last_chunk);
 
   // Store the response bytes in |buffer_| in the container indicated by
-  // |fetcher_->response_destination_|. Return true if the write has been
+  // |response_destination_|. Return true if the write has been
   // done, and another read can overwrite |buffer_|.  If this function
   // returns false, it will post a task that will read more bytes once the
   // write is complete.
@@ -264,6 +264,9 @@ class URLFetcher::Core
   // If writing results to a file, |temp_file_writer_| will manage creation,
   // writing, and destruction of that file.
   scoped_ptr<TempFileWriter> temp_file_writer_;
+
+  // Where should responses be saved?
+  ResponseDestinationType response_destination_;
 
   static base::LazyInstance<Registry> g_registry;
 
@@ -466,8 +469,6 @@ void URLFetcher::Delegate::OnURLFetchComplete(const URLFetcher* source) {
   // parameter list to OnURLFetchComplete(). If a user asked to save
   // the response to a file, they must use the new parameter list,
   // in which case we can not get here.
-  CHECK(source->response_destination_ == STRING);
-
   // To avoid updating all callers, thunk to the old prototype for now.
   OnURLFetchComplete(source,
                      source->url(),
@@ -486,8 +487,7 @@ URLFetcher::URLFetcher(const GURL& url,
     : ALLOW_THIS_IN_INITIALIZER_LIST(
       core_(new Core(this, url, request_type, d))),
       automatically_retry_on_5xx_(true),
-      max_retries_(0),
-      response_destination_(STRING) {
+      max_retries_(0) {
 }
 
 URLFetcher::~URLFetcher() {
@@ -517,7 +517,8 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       buffer_(new net::IOBuffer(kBufferSize)),
       is_chunked_upload_(false),
       num_retries_(0),
-      was_cancelled_(false) {
+      was_cancelled_(false),
+      response_destination_(STRING) {
 }
 
 URLFetcher::Core::~Core() {
@@ -532,7 +533,7 @@ void URLFetcher::Core::Start() {
   io_message_loop_proxy_ = request_context_getter_->GetIOMessageLoopProxy();
   CHECK(io_message_loop_proxy_.get()) << "We need an IO message loop proxy";
 
-  switch (fetcher_->response_destination_) {
+  switch (response_destination_) {
     case STRING:
       io_message_loop_proxy_->PostTask(
           FROM_HERE,
@@ -614,7 +615,7 @@ void URLFetcher::Core::AppendChunkToUpload(const std::string& content,
 // be done later.
 bool URLFetcher::Core::WriteBuffer(int num_bytes) {
   bool write_complete = false;
-  switch (fetcher_->response_destination_) {
+  switch (response_destination_) {
     case STRING:
       data_.append(buffer_->data(), num_bytes);
       write_complete = true;
@@ -913,7 +914,7 @@ void URLFetcher::set_automatically_retry_on_5xx(bool retry) {
 void URLFetcher::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
   core_->file_message_loop_proxy_ = file_message_loop_proxy;
-  response_destination_ = TEMP_FILE;
+  core_->response_destination_ = TEMP_FILE;
 }
 
 net::HttpResponseHeaders* URLFetcher::response_headers() const {
@@ -972,7 +973,7 @@ void URLFetcher::ReceivedContentWasMalformed() {
 }
 
 bool URLFetcher::GetResponseAsString(std::string* out_response_string) const {
-  if (response_destination_ != STRING)
+  if (core_->response_destination_ != STRING)
     return false;
 
   *out_response_string = core_->data_;
@@ -980,13 +981,24 @@ bool URLFetcher::GetResponseAsString(std::string* out_response_string) const {
 }
 
 const std::string& URLFetcher::GetResponseStringRef() const {
-  CHECK(response_destination_ == STRING);
+  CHECK(core_->response_destination_ == STRING);
   return core_->data_;
+}
+
+void URLFetcher::SetResponseDestinationForTesting(
+    ResponseDestinationType value) {
+  core_->response_destination_ = value;
+}
+
+URLFetcher::ResponseDestinationType
+URLFetcher::GetResponseDestinationForTesting() const {
+  return core_->response_destination_;
 }
 
 bool URLFetcher::GetResponseAsFilePath(bool take_ownership,
                                        FilePath* out_response_path) const {
-  if (response_destination_ != TEMP_FILE || !core_->temp_file_writer_.get())
+  if (core_->response_destination_ != TEMP_FILE ||
+      !core_->temp_file_writer_.get())
     return false;
 
   *out_response_path = core_->temp_file_writer_->temp_file();
