@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "chrome/browser/history/history_types.h"
 
-struct DownloadCreateInfo;
+struct DownloadHistoryInfo;
 class FilePath;
 
 namespace sql {
@@ -25,7 +25,7 @@ class DownloadDatabase {
   virtual ~DownloadDatabase();
 
   // Get all the downloads from the database.
-  void QueryDownloads(std::vector<DownloadCreateInfo>* results);
+  void QueryDownloads(std::vector<DownloadHistoryInfo>* results);
 
   // Update the state of one download. Returns true if successful.
   bool UpdateDownload(int64 received_bytes, int32 state, DownloadID db_handle);
@@ -40,7 +40,7 @@ class DownloadDatabase {
   bool CleanUpInProgressEntries();
 
   // Create a new database entry for one download and return its primary db id.
-  int64 CreateDownload(const DownloadCreateInfo& info);
+  int64 CreateDownload(const DownloadHistoryInfo& info);
 
   // Remove a download from the database.
   void RemoveDownload(DownloadID db_handle);

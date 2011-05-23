@@ -255,14 +255,14 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     // The dangerous download label text and icon are different
     // under different cases.
     string16 dangerous_label;
-    if (download->danger_type() == DownloadItem::DANGEROUS_URL) {
+    if (download->GetDangerType() == DownloadItem::DANGEROUS_URL) {
       // Safebrowsing shows the download URL leads to malicious file.
       warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
       dangerous_label =
           l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
     } else {
       // The download file has dangerous file type (e.g.: an executable).
-      DCHECK(download->danger_type() == DownloadItem::DANGEROUS_FILE);
+      DCHECK(download->GetDangerType() == DownloadItem::DANGEROUS_FILE);
       warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
       if (download->is_extension_install()) {
         dangerous_label =

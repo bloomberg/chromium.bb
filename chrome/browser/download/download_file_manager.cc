@@ -10,10 +10,10 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_process_handle.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,22 +58,24 @@ void DownloadFileManager::OnShutdown() {
 void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
                                              DownloadManager* download_manager,
                                              bool get_hash) {
+  DCHECK(info);
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Life of |info| ends here. No more references to it after this method.
+  scoped_ptr<DownloadCreateInfo> infop(info);
 
   scoped_ptr<DownloadFile>
       download_file(new DownloadFile(info, download_manager));
   if (!download_file->Initialize(get_hash)) {
     download_util::CancelDownloadRequest(resource_dispatcher_host_,
                                          info->process_handle);
-    delete info;
     return;
   }
 
-  DCHECK(GetDownloadFile(info->download_id) == NULL);
-  downloads_[info->download_id] = download_file.release();
-  // TODO(phajdan.jr): fix the duplication of path info below.
-  info->path = info->save_info.file_path;
+  int32 id = info->download_id;
+  DCHECK(GetDownloadFile(id) == NULL);
+  downloads_[id] = download_file.release();
 
   // The file is now ready, we can un-pause the request and start saving data.
   BrowserThread::PostTask(
@@ -86,7 +88,7 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
-                        &DownloadManager::StartDownload, info));
+                        &DownloadManager::StartDownload, id));
 }
 
 void DownloadFileManager::ResumeDownloadRequest(
@@ -151,6 +153,9 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
     return;
   }
 
+  // TODO(phajdan.jr): fix the duplication of path info below.
+  info->path = info->save_info.file_path;
+
   manager->CreateDownloadItem(info);
 
   bool hash_needed = resource_dispatcher_host_->safe_browsing_service()->
@@ -158,8 +163,7 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
-                        info,
-                        make_scoped_refptr(manager), hash_needed));
+                        info, make_scoped_refptr(manager), hash_needed));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle
@@ -175,12 +179,12 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
     contents.swap(buffer->contents);
   }
 
-  DownloadFile* download = GetDownloadFile(id);
+  DownloadFile* download_file = GetDownloadFile(id);
   for (size_t i = 0; i < contents.size(); ++i) {
     net::IOBuffer* data = contents[i].first;
     const int data_len = contents[i].second;
-    if (download)
-      download->AppendDataToFile(data->data(), data_len);
+    if (download_file)
+      download_file->AppendDataToFile(data->data(), data_len);
     data->Release();
   }
 }
@@ -195,27 +199,27 @@ void DownloadFileManager::OnResponseCompleted(
            << " security_info = \"" << security_info << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   delete buffer;
-  DownloadFile* download = GetDownloadFile(id);
-  if (!download)
+  DownloadFile* download_file = GetDownloadFile(id);
+  if (!download_file)
     return;
 
-  download->Finish();
+  download_file->Finish();
 
-  DownloadManager* download_manager = download->GetDownloadManager();
+  DownloadManager* download_manager = download_file->GetDownloadManager();
   if (!download_manager) {
     CancelDownload(id);
     return;
   }
 
   std::string hash;
-  if (!download->GetSha256Hash(&hash))
+  if (!download_file->GetSha256Hash(&hash))
     hash.clear();
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
         download_manager, &DownloadManager::OnResponseCompleted,
-        id, download->bytes_so_far(), os_error, hash));
+        id, download_file->bytes_so_far(), os_error, hash));
   // We need to keep the download around until the UI thread has finalized
   // the name.
 }
@@ -230,10 +234,10 @@ void DownloadFileManager::CancelDownload(int id) {
   if (it == downloads_.end())
     return;
 
-  DownloadFile* download = it->second;
+  DownloadFile* download_file = it->second;
   VLOG(20) << __FUNCTION__ << "()"
-           << " download = " << download->DebugString();
-  download->Cancel();
+           << " download_file = " << download_file->DebugString();
+  download_file->Cancel();
 
   EraseDownload(id);
 }
@@ -291,13 +295,14 @@ void DownloadFileManager::RenameInProgressDownloadFile(
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  DownloadFile* download = GetDownloadFile(id);
-  if (!download)
+  DownloadFile* download_file = GetDownloadFile(id);
+  if (!download_file)
     return;
 
-  VLOG(20) << __FUNCTION__ << "()" << " download = " << download->DebugString();
+  VLOG(20) << __FUNCTION__ << "()"
+           << " download_file = " << download_file->DebugString();
 
-  if (!download->Rename(full_path)) {
+  if (!download_file->Rename(full_path)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
     CancelDownloadOnRename(id);
@@ -318,14 +323,15 @@ void DownloadFileManager::RenameCompletingDownloadFile(
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  DownloadFile* download = GetDownloadFile(id);
-  if (!download)
+  DownloadFile* download_file = GetDownloadFile(id);
+  if (!download_file)
     return;
 
-  DCHECK(download->GetDownloadManager());
-  DownloadManager* download_manager = download->GetDownloadManager();
+  DCHECK(download_file->GetDownloadManager());
+  DownloadManager* download_manager = download_file->GetDownloadManager();
 
-  VLOG(20) << __FUNCTION__ << "()" << " download = " << download->DebugString();
+  VLOG(20) << __FUNCTION__ << "()"
+           << " download_file = " << download_file->DebugString();
 
   int uniquifier = 0;
   FilePath new_path = full_path;
@@ -344,7 +350,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
   }
 
   // Rename the file, overwriting if necessary.
-  if (!download->Rename(new_path)) {
+  if (!download_file->Rename(new_path)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
     CancelDownloadOnRename(id);
@@ -354,7 +360,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
 #if defined(OS_MACOSX)
   // Done here because we only want to do this once; see
   // http://crbug.com/13120 for details.
-  download->AnnotateWithSourceInformation();
+  download_file->AnnotateWithSourceInformation();
 #endif
 
   BrowserThread::PostTask(
@@ -369,16 +375,16 @@ void DownloadFileManager::RenameCompletingDownloadFile(
 void DownloadFileManager::CancelDownloadOnRename(int id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  DownloadFile* download = GetDownloadFile(id);
-  if (!download)
+  DownloadFile* download_file = GetDownloadFile(id);
+  if (!download_file)
     return;
 
-  DownloadManager* download_manager = download->GetDownloadManager();
+  DownloadManager* download_manager = download_file->GetDownloadManager();
   if (!download_manager) {
     // Without a download manager, we can't cancel the request normally, so we
     // need to do it here.  The normal path will also update the download
     // history before cancelling the request.
-    download->CancelDownloadRequest(resource_dispatcher_host_);
+    download_file->CancelDownloadRequest(resource_dispatcher_host_);
     return;
   }
 

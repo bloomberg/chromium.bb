@@ -15,7 +15,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/history/download_create_info.h"
+#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/net/url_request_slow_download_job.h"
@@ -698,7 +698,7 @@ class DownloadsHistoryDataCollector {
     ui_test_utils::RunMessageLoop();
   }
 
-  bool GetDownloadsHistoryEntry(DownloadCreateInfo* result) {
+  bool GetDownloadsHistoryEntry(DownloadHistoryInfo* result) {
     DCHECK(result);
     *result = result_;
     return result_valid_;
@@ -706,9 +706,9 @@ class DownloadsHistoryDataCollector {
 
  private:
   void OnQueryDownloadsComplete(
-      std::vector<DownloadCreateInfo>* entries) {
+      std::vector<DownloadHistoryInfo>* entries) {
     result_valid_ = false;
-    for (std::vector<DownloadCreateInfo>::const_iterator it = entries->begin();
+    for (std::vector<DownloadHistoryInfo>::const_iterator it = entries->begin();
          it != entries->end(); ++it) {
       if (it->db_handle == download_db_handle_) {
         result_ = *it;
@@ -718,7 +718,7 @@ class DownloadsHistoryDataCollector {
     MessageLoopForUI::current()->Quit();
   }
 
-  DownloadCreateInfo result_;
+  DownloadHistoryInfo result_;
   bool result_valid_;
   int64 download_db_handle_;
   CancelableRequestConsumer callback_consumer_;
@@ -1284,10 +1284,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   DownloadsHistoryDataCollector history_collector(
       db_handle,
       browser()->profile()->GetDownloadManager());
-  DownloadCreateInfo info;
+  DownloadHistoryInfo info;
   EXPECT_TRUE(history_collector.GetDownloadsHistoryEntry(&info)) << db_handle;
   EXPECT_EQ(file, info.path.BaseName());
-  EXPECT_EQ(url, info.url());
+  EXPECT_EQ(url, info.url);
   // Ignore start_time.
   EXPECT_EQ(origin_size, info.received_bytes);
   EXPECT_EQ(origin_size, info.total_bytes);

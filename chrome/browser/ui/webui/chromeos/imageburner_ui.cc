@@ -613,7 +613,7 @@ void ImageBurnResourceManager::ModelChanged() {
   for (std::vector<DownloadItem*>::const_iterator it = downloads.begin();
       it != downloads.end();
       ++it) {
-    if ((*it)->url() == config_file_url_) {
+    if ((*it)->GetURL() == config_file_url_) {
       download_item_observer_added_ = true;
       (*it)->AddObserver(this);
       active_download_item_ = *it;

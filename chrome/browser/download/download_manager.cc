@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
@@ -27,7 +28,7 @@
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/history/download_create_info.h"
+#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -253,36 +254,51 @@ bool DownloadManager::Init(Profile* profile) {
 // observers at this point. OnCreateDownloadEntryComplete() handles that
 // finalization of the the download creation as a callback from the
 // history thread.
-void DownloadManager::StartDownload(DownloadCreateInfo* info) {
+void DownloadManager::StartDownload(int32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
 
   // Create a client to verify download URL with safebrowsing.
   // It deletes itself after the callback.
   scoped_refptr<DownloadSBClient> sb_client = new DownloadSBClient(
-      info->download_id, info->url_chain, info->referrer_url);
+      download_id, download->url_chain(), download->referrer_url());
   sb_client->CheckDownloadUrl(
-      info, NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
+      NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
 }
 
-void DownloadManager::CheckDownloadUrlDone(DownloadCreateInfo* info,
+void DownloadManager::CheckDownloadUrlDone(int32 download_id,
                                            bool is_dangerous_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(info);
 
-  info->is_dangerous_url = is_dangerous_url;
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
+
+  if (is_dangerous_url)
+    download->MarkUrlDangerous();
+
+  DownloadStateInfo state = download->state_info();
 
   // Check whether this download is for an extension install or not.
   // Allow extensions to be explicitly saved.
-  if (!info->prompt_user_for_save_location) {
-    if (UserScript::IsURLUserScript(info->url(), info->mime_type) ||
-        info->mime_type == Extension::kMimeType) {
-      info->is_extension_install = true;
+  if (!state.prompt_user_for_save_location) {
+    if (UserScript::IsURLUserScript(download->GetURL(),
+        download->mime_type()) ||
+        (download->mime_type() == Extension::kMimeType)) {
+      state.is_extension_install = true;
     }
   }
 
-  if (info->save_info.file_path.empty()) {
+  if (state.force_file_name.empty()) {
     FilePath generated_name;
-    download_util::GenerateFileNameFromInfo(info, &generated_name);
+    download_util::GenerateFileNameFromRequest(download->GetURL(),
+                                               download->content_disposition(),
+                                               download->referrer_charset(),
+                                               download->mime_type(),
+                                               &generated_name);
 
     // Freeze the user's preference for showing a Save As dialog.  We're going
     // to bounce around a bunch of threads and we don't want to worry about race
@@ -294,32 +310,29 @@ void DownloadManager::CheckDownloadUrlDone(DownloadCreateInfo* info,
       //    "save as...".
       // 2) Filetypes marked "always open." If the user just wants this file
       //    opened, don't bother asking where to keep it.
-      if (!info->is_extension_install &&
+      if (!state.is_extension_install &&
           !ShouldOpenFileBasedOnExtension(generated_name))
-        info->prompt_user_for_save_location = true;
+        state.prompt_user_for_save_location = true;
     }
     if (download_prefs_->IsDownloadPathManaged()) {
-      info->prompt_user_for_save_location = false;
+      state.prompt_user_for_save_location = false;
     }
 
     // Determine the proper path for a download, by either one of the following:
     // 1) using the default download directory.
     // 2) prompting the user.
-    if (info->prompt_user_for_save_location && !last_download_path_.empty()) {
-      info->suggested_path = last_download_path_;
+    if (state.prompt_user_for_save_location && !last_download_path_.empty()) {
+      state.suggested_path = last_download_path_;
     } else {
-      info->suggested_path = download_prefs_->download_path();
+      state.suggested_path = download_prefs_->download_path();
     }
-    info->suggested_path = info->suggested_path.Append(generated_name);
+    state.suggested_path = state.suggested_path.Append(generated_name);
   } else {
-    info->suggested_path = info->save_info.file_path;
+    state.suggested_path = state.force_file_name;
   }
 
-  if (!info->prompt_user_for_save_location &&
-      info->save_info.file_path.empty()) {
-    info->is_dangerous_file = download_util::IsDangerous(
-        info, profile(), ShouldOpenFileBasedOnExtension(info->suggested_path));
-  }
+  if (!state.prompt_user_for_save_location && state.force_file_name.empty())
+    state.is_dangerous_file = IsDangerous(*download, state);
 
   // We need to move over to the download thread because we don't want to stat
   // the suggested path on the UI thread.
@@ -330,14 +343,15 @@ void DownloadManager::CheckDownloadUrlDone(DownloadCreateInfo* info,
       NewRunnableMethod(
           this,
           &DownloadManager::CheckIfSuggestedPathExists,
-          info,
+          download_id,
+          state,
           download_prefs()->download_path()));
 }
 
-void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info,
+void DownloadManager::CheckIfSuggestedPathExists(int32 download_id,
+                                                 DownloadStateInfo state,
                                                  const FilePath& default_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(info);
 
   // Make sure the default download directory exists.
   // TODO(phajdan.jr): only create the directory when we're sure the user
@@ -346,18 +360,18 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info,
 
   // Check writability of the suggested path. If we can't write to it, default
   // to the user's "My Documents" directory. We'll prompt them in this case.
-  FilePath dir = info->suggested_path.DirName();
-  FilePath filename = info->suggested_path.BaseName();
+  FilePath dir = state.suggested_path.DirName();
+  FilePath filename = state.suggested_path.BaseName();
   if (!file_util::PathIsWritable(dir)) {
     VLOG(1) << "Unable to write to directory \"" << dir.value() << "\"";
-    info->prompt_user_for_save_location = true;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, &info->suggested_path);
-    info->suggested_path = info->suggested_path.Append(filename);
+    state.prompt_user_for_save_location = true;
+    PathService::Get(chrome::DIR_USER_DOCUMENTS, &state.suggested_path);
+    state.suggested_path = state.suggested_path.Append(filename);
   }
 
   // If the download is deemed dangerous, we'll use a temporary name for it.
-  if (info->IsDangerous()) {
-    info->original_name = FilePath(info->suggested_path).BaseName();
+  if (state.IsDangerous()) {
+    state.target_name = FilePath(state.suggested_path).BaseName();
     // Create a temporary file to hold the file until the user approves its
     // download.
     FilePath::StringType file_name;
@@ -380,61 +394,73 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info,
       if (file_util::PathExists(path))
         path = FilePath();
     }
-    info->suggested_path = path;
+    state.suggested_path = path;
   } else {
     // Do not add the path uniquifier if we are saving to a specific path as in
     // the drag-out case.
-    if (info->save_info.file_path.empty()) {
-      info->path_uniquifier = download_util::GetUniquePathNumberWithCrDownload(
-          info->suggested_path);
+    if (state.force_file_name.empty()) {
+      state.path_uniquifier = download_util::GetUniquePathNumberWithCrDownload(
+          state.suggested_path);
     }
     // We know the final path, build it if necessary.
-    if (info->path_uniquifier > 0) {
-      download_util::AppendNumberToPath(&(info->suggested_path),
-                                        info->path_uniquifier);
+    if (state.path_uniquifier > 0) {
+      download_util::AppendNumberToPath(&(state.suggested_path),
+                                        state.path_uniquifier);
       // Setting path_uniquifier to 0 to make sure we don't try to unique it
       // later on.
-      info->path_uniquifier = 0;
-    } else if (info->path_uniquifier == -1) {
+      state.path_uniquifier = 0;
+    } else if (state.path_uniquifier == -1) {
       // We failed to find a unique path.  We have to prompt the user.
       VLOG(1) << "Unable to find a unique path for suggested path \""
-              << info->suggested_path.value() << "\"";
-      info->prompt_user_for_save_location = true;
+              << state.suggested_path.value() << "\"";
+      state.prompt_user_for_save_location = true;
     }
   }
 
   // Create an empty file at the suggested path so that we don't allocate the
   // same "non-existant" path to multiple downloads.
   // See: http://code.google.com/p/chromium/issues/detail?id=3662
-  if (!info->prompt_user_for_save_location &&
-      info->save_info.file_path.empty()) {
-    if (info->IsDangerous())
-      file_util::WriteFile(info->suggested_path, "", 0);
+  if (!state.prompt_user_for_save_location &&
+      state.force_file_name.empty()) {
+    if (state.IsDangerous())
+      file_util::WriteFile(state.suggested_path, "", 0);
     else
       file_util::WriteFile(download_util::GetCrDownloadPath(
-          info->suggested_path), "", 0);
+          state.suggested_path), "", 0);
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &DownloadManager::OnPathExistenceAvailable,
-                        info));
+                        download_id,
+                        state));
 }
 
-void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
-  VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
+void DownloadManager::OnPathExistenceAvailable(
+    int32 download_id, DownloadStateInfo new_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(info);
 
-  if (info->prompt_user_for_save_location) {
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
+
+  VLOG(20) << __FUNCTION__ << "()"
+           << " download = " << download->DebugString(true);
+
+  download->SetFileCheckResults(new_state);
+
+  FilePath suggested_path = download->suggested_path();
+
+  if (download->save_as()) {
     // We must ask the user for the place to put the download.
     if (!select_file_dialog_.get())
       select_file_dialog_ = SelectFileDialog::Create(this);
 
-    TabContents* contents = info->process_handle.GetTabContents();
+    DownloadProcessHandle process_handle = download->process_handle();
+    TabContents* contents = process_handle.GetTabContents();
     SelectFileDialog::FileTypeInfo file_type_info;
-    FilePath::StringType extension = info->suggested_path.Extension();
+    FilePath::StringType extension = suggested_path.Extension();
     if (!extension.empty()) {
       extension.erase(extension.begin()); // drop the .
       file_type_info.extensions.resize(1);
@@ -443,17 +469,21 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
     file_type_info.include_all_files = true;
     gfx::NativeWindow owning_window =
         contents ? platform_util::GetTopLevel(contents->GetNativeView()) : NULL;
+    // |id_ptr| will be deleted in either FileSelected() or
+    // FileSelectionCancelled().
+    int32* id_ptr = new int32;
+    *id_ptr = download_id;
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
-                                    info->suggested_path,
+                                    suggested_path,
                                     &file_type_info, 0, FILE_PATH_LITERAL(""),
-                                    contents, owning_window, info);
+                                    contents, owning_window,
+                                    reinterpret_cast<void*>(id_ptr));
     FOR_EACH_OBSERVER(Observer, observers_,
-                      SelectFileDialogDisplayed(info->download_id));
+                      SelectFileDialogDisplayed(download_id));
   } else {
     // No prompting for download, just continue with the suggested name.
-    info->path = info->suggested_path;
-    AttachDownloadItem(info);
+    ContinueDownloadWithPath(download, suggested_path);
   }
 }
 
@@ -462,52 +492,52 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info) {
 
   DownloadItem* download = new DownloadItem(this, *info,
                                             profile_->IsOffTheRecord());
-  DCHECK(!ContainsKey(in_progress_, info->download_id));
-  DCHECK(!ContainsKey(active_downloads_, info->download_id));
+  int32 download_id = info->download_id;
+  DCHECK(!ContainsKey(in_progress_, download_id));
+  DCHECK(!ContainsKey(active_downloads_, download_id));
   downloads_.insert(download);
-  active_downloads_[info->download_id] = download;
+  active_downloads_[download_id] = download;
 }
 
-void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info) {
-  VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
-
+void DownloadManager::ContinueDownloadWithPath(DownloadItem* download,
+                                               const FilePath& chosen_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(download);
 
-  // Life of |info| ends here. No more references to it after this method.
-  scoped_ptr<DownloadCreateInfo> infop(info);
+  int32 download_id = download->id();
 
   // NOTE(ahendrickson) Eventually |active_downloads_| will replace
   // |in_progress_|, but we don't want to change the semantics yet.
-  DCHECK(!ContainsKey(in_progress_, info->download_id));
-  DCHECK(ContainsKey(active_downloads_, info->download_id));
-  DownloadItem* download = active_downloads_[info->download_id];
-  DCHECK(download != NULL);
+  DCHECK(!ContainsKey(in_progress_, download_id));
   DCHECK(ContainsKey(downloads_, download));
+  DCHECK(ContainsKey(active_downloads_, download_id));
 
-  download->SetFileCheckResults(info->path,
-                                info->is_dangerous_file,
-                                info->is_dangerous_url,
-                                info->path_uniquifier,
-                                info->prompt_user_for_save_location,
-                                info->is_extension_install,
-                                info->original_name);
-  in_progress_[info->download_id] = download;
+  // Make sure the initial file name is set only once.
+  DCHECK(download->full_path().empty());
+  download->OnPathDetermined(chosen_file);
+  download->UpdateTarget();
+
+  VLOG(20) << __FUNCTION__ << "()"
+           << " download = " << download->DebugString(true);
+
+  in_progress_[download_id] = download;
   UpdateAppIcon();  // Reflect entry into in_progress_.
 
   // Rename to intermediate name.
   FilePath download_path;
-  if (info->IsDangerous()) {
+  if (download->IsDangerous()) {
     // The download is not safe.  We can now rename the file to its
     // tentative name using RenameInProgressDownloadFile.
     // NOTE: The |Rename| below will be a no-op for dangerous files, as we're
     // renaming it to the same name.
-    download_path = info->path;
+    download_path = download->full_path();
   } else {
     // The download is a safe download.  We need to
     // rename it to its intermediate '.crdownload' path.  The final
     // name after user confirmation will be set from
     // DownloadItem::OnDownloadCompleting.
-    download_path = download_util::GetCrDownloadPath(info->path);
+    download_path =
+        download_util::GetCrDownloadPath(download->full_path());
   }
 
   BrowserThread::PostTask(
@@ -518,7 +548,7 @@ void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info) {
 
   download->Rename(download_path);
 
-  download_history_->AddEntry(*info, download,
+  download_history_->AddEntry(download,
       NewCallback(this, &DownloadManager::OnCreateDownloadEntryComplete));
 }
 
@@ -591,7 +621,7 @@ void DownloadManager::CheckDownloadHashDone(int32 download_id,
     return;
 
   DVLOG(1) << "CheckDownloadHashDone, url: "
-           << active_downloads_[download_id]->url().spec();
+           << active_downloads_[download_id]->GetURL().spec();
 }
 
 bool DownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
@@ -732,9 +762,11 @@ void DownloadManager::OnDownloadError(int32 download_id,
 
   DownloadItem* download = it->second;
 
-  VLOG(20) << "Error " << os_error << " at offset "
-           << download->received_bytes() << " for download = "
-           << download->DebugString(true);
+  VLOG(20) << __FUNCTION__ << "()" << " Error " << os_error
+           << " at offset " << download->received_bytes()
+           << " for download = " << download->DebugString(true);
+
+  download->Interrupted(size, os_error);
 
   // TODO(ahendrickson) - Remove this when we add resuming of interrupted
   // downloads, as we will keep the download item around in that case.
@@ -747,8 +779,6 @@ void DownloadManager::OnDownloadError(int32 download_id,
     UpdateAppIcon();  // Reflect removal from in_progress_.
     download_history_->UpdateEntry(download);
   }
-
-  download->Interrupted(size, os_error);
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -966,19 +996,69 @@ int64 DownloadManager::GetTotalDownloadBytes() {
 
 void DownloadManager::FileSelected(const FilePath& path,
                                    int index, void* params) {
-  DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
-  if (info->prompt_user_for_save_location)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  int32* id_ptr = reinterpret_cast<int32*>(params);
+  DCHECK(id_ptr != NULL);
+  int32 download_id = *id_ptr;
+  delete id_ptr;
+
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
+  VLOG(20) << __FUNCTION__ << "()" << " path = \"" << path.value() << "\""
+            << " download = " << download->DebugString(true);
+
+  if (download->save_as())
     last_download_path_ = path.DirName();
 
-  info->path = path;
-  AttachDownloadItem(info);
+  // Make sure the initial file name is set only once.
+  ContinueDownloadWithPath(download, path);
 }
 
 void DownloadManager::FileSelectionCanceled(void* params) {
   // The user didn't pick a place to save the file, so need to cancel the
   // download that's already in progress to the temporary location.
-  DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
-  DownloadCancelledInternal(info->download_id, info->process_handle);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int32* id_ptr = reinterpret_cast<int32*>(params);
+  DCHECK(id_ptr != NULL);
+  int32 download_id = *id_ptr;
+  delete id_ptr;
+
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
+
+  VLOG(20) << __FUNCTION__ << "()"
+           << " download = " << download->DebugString(true);
+
+  DownloadCancelledInternal(download_id, download->process_handle());
+}
+
+// TODO(phajdan.jr): This is apparently not being exercised in tests.
+bool DownloadManager::IsDangerous(const DownloadItem& download,
+                                  const DownloadStateInfo& state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  bool auto_open = ShouldOpenFileBasedOnExtension(state.suggested_path);
+  download_util::DownloadDangerLevel danger_level =
+      download_util::GetFileDangerLevel(state.suggested_path.BaseName());
+
+  if (danger_level == download_util::Dangerous)
+    return !(auto_open && state.has_user_gesture);
+
+  if (danger_level == download_util::AllowOnUserGesture &&
+      !state.has_user_gesture)
+    return true;
+
+  if (state.is_extension_install) {
+    // Extensions that are not from the gallery are considered dangerous.
+    ExtensionService* service = profile()->GetExtensionService();
+    if (!service || !service->IsDownloadFromGallery(download.GetURL(),
+                                                    download.referrer_url()))
+      return true;
+  }
+  return false;
 }
 
 void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
@@ -993,9 +1073,9 @@ void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
 // Operations posted to us from the history service ----------------------------
 
 // The history service has retrieved all download entries. 'entries' contains
-// 'DownloadCreateInfo's in sorted order (by ascending start_time).
+// 'DownloadHistoryInfo's in sorted order (by ascending start_time).
 void DownloadManager::OnQueryDownloadEntriesComplete(
-    std::vector<DownloadCreateInfo>* entries) {
+    std::vector<DownloadHistoryInfo>* entries) {
   for (size_t i = 0; i < entries->size(); ++i) {
     DownloadItem* download = new DownloadItem(this, entries->at(i));
     DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
@@ -1010,16 +1090,15 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
 // Once the new DownloadItem's creation info has been committed to the history
 // service, we associate the DownloadItem with the db handle, update our
 // 'history_downloads_' map and inform observers.
-void DownloadManager::OnCreateDownloadEntryComplete(
-    DownloadCreateInfo info,
-    int64 db_handle) {
+void DownloadManager::OnCreateDownloadEntryComplete(int32 download_id,
+                                                    int64 db_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DownloadMap::iterator it = in_progress_.find(info.download_id);
-  DCHECK(it != in_progress_.end());
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
 
-  DownloadItem* download = it->second;
   VLOG(20) << __FUNCTION__ << "()" << " db_handle = " << db_handle
-           << " download_id = " << info.download_id
+           << " download_id = " << download_id
            << " download = " << download->DebugString(true);
 
   // It's not immediately obvious, but HistoryBackend::CreateDownload() can
@@ -1038,7 +1117,7 @@ void DownloadManager::OnCreateDownloadEntryComplete(
 
   // Show in the appropriate browser UI.
   // This includes buttons to save or cancel, for a dangerous download.
-  ShowDownloadInBrowser(&info.process_handle, download);
+  ShowDownloadInBrowser(download);
 
   // Inform interested objects about the new download.
   NotifyModelChanged();
@@ -1055,22 +1134,20 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   } else {
     DCHECK(download->IsCancelled())
         << " download = " << download->DebugString(true);
-    in_progress_.erase(it);
-    active_downloads_.erase(info.download_id);
+    in_progress_.erase(download_id);
+    active_downloads_.erase(download_id);
     download_history_->UpdateEntry(download);
     download->UpdateObservers();
   }
 }
 
-void DownloadManager::ShowDownloadInBrowser(
-    DownloadProcessHandle* process_handle, DownloadItem* download) {
-  if (!process_handle)
-    return;
+void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
 
   // The 'contents' may no longer exist if the user closed the tab before we
   // get this start completion event. If it does, tell the origin TabContents
   // to display its download shelf.
-  TabContents* contents = process_handle->GetTabContents();
+  DownloadProcessHandle process_handle = download->process_handle();
+  TabContents* contents = process_handle.GetTabContents();
   TabContentsWrapper* wrapper = NULL;
   if (contents)
       wrapper = TabContentsWrapper::GetCurrentWrapperForContents(contents);
@@ -1099,14 +1176,23 @@ void DownloadManager::NotifyModelChanged() {
   FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
 }
 
-DownloadItem* DownloadManager::GetDownloadItem(int id) {
+DownloadItem* DownloadManager::GetDownloadItem(int download_id) {
+  // The |history_downloads_| map is indexed by the download's db_handle,
+  // not its id, so we have to iterate.
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
     DownloadItem* item = it->second;
-    if (item->id() == id)
+    if (item->id() == download_id)
       return item;
   }
   return NULL;
+}
+
+DownloadItem* DownloadManager::GetActiveDownloadItem(int download_id) {
+  DCHECK(ContainsKey(active_downloads_, download_id));
+  DownloadItem* download = active_downloads_[download_id];
+  DCHECK(download != NULL);
+  return download;
 }
 
 // Confirm that everything in all maps is also in |downloads_|, and that

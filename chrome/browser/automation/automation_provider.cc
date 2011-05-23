@@ -254,7 +254,7 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
 
   DictionaryValue* dl_item_value = new DictionaryValue;
   dl_item_value->SetInteger("id", static_cast<int>(download->id()));
-  dl_item_value->SetString("url", download->url().spec());
+  dl_item_value->SetString("url", download->GetURL().spec());
   dl_item_value->SetString("referrer_url", download->referrer_url().spec());
   dl_item_value->SetString("file_name",
                            download->GetFileNameToReportUser().value());

@@ -26,11 +26,13 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/download/download_process_handle.h"
+#include "chrome/browser/download/download_state_info.h"
 #include "googleurl/src/gurl.h"
 
 class DownloadFileManager;
 class DownloadManager;
 struct DownloadCreateInfo;
+struct DownloadHistoryInfo;
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download. Multiple views, such as a tab's download shelf and the
@@ -41,7 +43,7 @@ class DownloadItem {
  public:
   enum DownloadState {
     // Download is actively progressing.
-    IN_PROGRESS,
+    IN_PROGRESS = 0,
 
     // Download is completely finished.
     COMPLETE,
@@ -54,7 +56,10 @@ class DownloadItem {
     REMOVING,
 
     // This state indicates that the download has been interrupted.
-    INTERRUPTED
+    INTERRUPTED,
+
+    // Maximum value.
+    MAX_DOWNLOAD_STATE
   };
 
   enum SafetyState {
@@ -101,7 +106,7 @@ class DownloadItem {
 
   // Constructing from persistent store:
   DownloadItem(DownloadManager* download_manager,
-               const DownloadCreateInfo& info);
+               const DownloadHistoryInfo& info);
 
   // Constructing for a regular download:
   DownloadItem(DownloadManager* download_manager,
@@ -122,7 +127,7 @@ class DownloadItem {
   // Notifies our observers periodically.
   void UpdateObservers();
 
-  // Whether it is OK to open this download.
+  // Returns true if it is OK to open this download.
   bool CanOpenDownload();
 
   // Tests if a file type should be opened automatically.
@@ -191,19 +196,19 @@ class DownloadItem {
   // total size).
   int PercentComplete() const;
 
-  // Whether or not this download has saved all of its data.
+  // Called when the final path has been determined.
+  void OnPathDetermined(const FilePath& path) { full_path_ = path; }
+
+  // Returns true if this download has saved all of its data.
   bool all_data_saved() const { return all_data_saved_; }
 
-  // Update the fields that may have changed in DownloadCreateInfo as a
+  // Update the fields that may have changed in DownloadStateInfo as a
   // result of analyzing the file and figuring out its type, location, etc.
   // May only be called once.
-  void SetFileCheckResults(const FilePath& path,
-                           bool is_dangerous_file,
-                           bool is_dangerous_url,
-                           int path_uniquifier,
-                           bool prompt,
-                           bool is_extension_install,
-                           const FilePath& original_name);
+  void SetFileCheckResults(const DownloadStateInfo& state);
+
+  // Updates the target file.
+  void UpdateTarget();
 
   // Update the download's path, the actual file is renamed on the download
   // thread.
@@ -241,17 +246,24 @@ class DownloadItem {
   // Accessors
   DownloadState state() const { return state_; }
   FilePath full_path() const { return full_path_; }
-  void set_path_uniquifier(int uniquifier) { path_uniquifier_ = uniquifier; }
-  const GURL& url() const { return url_chain_.back(); }
+  void set_path_uniquifier(int uniquifier) {
+    state_info_.path_uniquifier = uniquifier;
+  }
+  const GURL& GetURL() const;
+
   const std::vector<GURL>& url_chain() const { return url_chain_; }
   const GURL& original_url() const { return url_chain_.front(); }
   const GURL& referrer_url() const { return referrer_url_; }
+  std::string content_disposition() const { return content_disposition_; }
   std::string mime_type() const { return mime_type_; }
   std::string original_mime_type() const { return original_mime_type_; }
+  std::string referrer_charset() const { return referrer_charset_; }
   int64 total_bytes() const { return total_bytes_; }
-  void set_total_bytes(int64 total_bytes) { total_bytes_ = total_bytes; }
+  void set_total_bytes(int64 total_bytes) {
+    total_bytes_ = total_bytes;
+  }
   int64 received_bytes() const { return received_bytes_; }
-  int32 id() const { return id_; }
+  int32 id() const { return download_id_; }
   base::Time start_time() const { return start_time_; }
   void set_db_handle(int64 handle) { db_handle_ = handle; }
   int64 db_handle() const { return db_handle_; }
@@ -262,16 +274,25 @@ class DownloadItem {
   void set_safety_state(SafetyState safety_state) {
     safety_state_ = safety_state;
   }
-  DangerType danger_type() { return danger_type_;}
+  // Why |safety_state_| is not SAFE.
+  DangerType GetDangerType() const;
+  bool IsDangerous() const;
+  void MarkUrlDangerous();
+
   bool auto_opened() { return auto_opened_; }
-  FilePath target_name() const { return target_name_; }
-  bool save_as() const { return save_as_; }
+  FilePath target_name() const { return state_info_.target_name; }
+  bool save_as() const { return state_info_.prompt_user_for_save_location; }
   bool is_otr() const { return is_otr_; }
-  bool is_extension_install() const { return is_extension_install_; }
+  bool is_extension_install() const {
+    return state_info_.is_extension_install;
+  }
+  FilePath suggested_path() const { return state_info_.suggested_path; }
   bool is_temporary() const { return is_temporary_; }
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
 
+  DownloadHistoryInfo GetHistoryInfo() const;
+  DownloadStateInfo state_info() const { return state_info_; }
   const DownloadProcessHandle& process_handle() const {
     return process_handle_;
   }
@@ -280,7 +301,7 @@ class DownloadItem {
   FilePath GetTargetFilePath() const;
 
   // Returns the file-name that should be reported to the user, which is
-  // target_name_ possibly with the uniquifier number.
+  // target_name possibly with the uniquifier number.
   FilePath GetFileNameToReportUser() const;
 
   // Returns the user-verified target file path for the download.
@@ -290,7 +311,7 @@ class DownloadItem {
 
   // Returns true if the current file name is not the final target name yet.
   bool NeedsRename() const {
-    return target_name_ != full_path_.BaseName();
+    return state_info_.target_name != full_path_.BaseName();
   }
 
   std::string DebugString(bool verbose) const;
@@ -309,8 +330,15 @@ class DownloadItem {
   void StartProgressTimer();
   void StopProgressTimer();
 
-  // Request ID assigned by the ResourceDispatcherHost.
-  int32 id_;
+  // State information used by the download manager.
+  DownloadStateInfo state_info_;
+
+  // The handle to the process information.  Used for operations outside the
+  // download system.
+  DownloadProcessHandle process_handle_;
+
+  // Download ID assigned by DownloadResourceHandler.
+  int32 download_id_;
 
   // Full path to the downloaded or downloading file.
   FilePath full_path_;
@@ -325,12 +353,21 @@ class DownloadItem {
   // The URL of the page that initiated the download.
   GURL referrer_url_;
 
-  // The mimetype of the download
+  // Information from the request.
+  // Content-disposition field from the header.
+  std::string content_disposition_;
+
+  // Mime-type from the header.  Subject to change.
   std::string mime_type_;
 
-  // The value of the content type header received when downloading
-  // this item.  |mime_type_| may be different because of type sniffing.
+  // The value of the content type header sent with the downloaded item.  It
+  // may be different from |mime_type_|, which may be set based on heuristics
+  // which may look at the file extension and first few bytes of the file.
   std::string original_mime_type_;
+
+  // The charset of the referring page where the download request comes from.
+  // It's used to construct a suggested filename.
+  std::string referrer_charset_;
 
   // Total bytes expected
   int64 total_bytes_;
@@ -368,35 +405,17 @@ class DownloadItem {
   // A flag for indicating if the download should be opened at completion.
   bool open_when_complete_;
 
-  // Whether the download is considered potentially safe or dangerous
+  // Indicates if the download is considered potentially safe or dangerous
   // (executable files are typically considered dangerous).
   SafetyState safety_state_;
 
-  // Why |safety_state_| is not SAFE.
-  DangerType danger_type_;
-
-  // Whether the download was auto-opened. We set this rather than using
+  // True if the download was auto-opened. We set this rather than using
   // an observer as it's frequently possible for the download to be auto opened
   // before the observer is added.
   bool auto_opened_;
 
-  // Dangerous downloads or ongoing downloads are given temporary names until
-  // the user approves them or the downloads finish.
-  // This stores their final target name.
-  FilePath target_name_;
-
-  // The handle to the process information.  Used for operations outside the
-  // download system.
-  DownloadProcessHandle process_handle_;
-
-  // True if the item was downloaded as a result of 'save as...'
-  bool save_as_;
-
   // True if the download was initiated in an incognito window.
   bool is_otr_;
-
-  // True if the item was downloaded for an extension installation.
-  bool is_extension_install_;
 
   // True if the item was downloaded temporarily.
   bool is_temporary_;

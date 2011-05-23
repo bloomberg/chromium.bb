@@ -10,6 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_item.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/mock_download_manager.h"
-#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -61,8 +61,8 @@ class DownloadManagerTest : public testing::Test {
     download_manager_->FileSelected(path, index, params);
   }
 
-  void AttachDownloadItem(DownloadCreateInfo* info) {
-    download_manager_->AttachDownloadItem(info);
+  void ContinueDownloadWithPath(DownloadItem* download, const FilePath& path) {
+    download_manager_->ContinueDownloadWithPath(download, path);
   }
 
   void OnDownloadError(int32 download_id, int64 size, int os_error) {
@@ -312,11 +312,11 @@ TEST_F(DownloadManagerTest, StartDownload) {
     DownloadFile* download_file(new DownloadFile(info, download_manager_));
     AddDownloadToFileManager(info->download_id, download_file);
     download_file->Initialize(false);
-    download_manager_->StartDownload(info);
+    download_manager_->StartDownload(info->download_id);
     message_loop_.RunAllPending();
 
-    // NOTE: At this point, |AttachDownloadItem| will have been run if we don't
-    // need to prompt the user, so |info| could have been destructed.
+    // NOTE: At this point, |ContinueDownloadWithPath| will have been run if
+    // we don't need to prompt the user, so |info| could have been destructed.
     // This means that we can't check any of its values.
     // However, SelectFileObserver will have recorded any attempt to open the
     // select file dialog.
@@ -324,7 +324,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
               observer.ShowedFileDialogForId(i));
 
     // If the Save As dialog pops up, it never reached
-    // DownloadManager::AttachDownloadItem(), and never deleted info or
+    // DownloadManager::ContinueDownloadWithPath(), and never deleted info or
     // completed.  This cleans up info.
     // Note that DownloadManager::FileSelectionCanceled() is never called.
     if (observer.ShowedFileDialogForId(i)) {
@@ -347,7 +347,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     info->url_chain.push_back(GURL());
     info->is_dangerous_file = kDownloadRenameCases[i].is_dangerous_file;
     info->is_dangerous_url = kDownloadRenameCases[i].is_dangerous_url;
-    FilePath new_path(kDownloadRenameCases[i].suggested_path);
+    const FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
     MockDownloadFile* download_file(
         new MockDownloadFile(info, download_manager_));
@@ -372,12 +372,14 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     }
     download_manager_->CreateDownloadItem(info);
 
+    int32* id_ptr = new int32;
+    *id_ptr = i;  // Deleted in FileSelected().
     if (kDownloadRenameCases[i].finish_before_rename) {
       OnAllDataSaved(i, 1024, std::string("fake_hash"));
       message_loop_.RunAllPending();
-      FileSelected(new_path, i, info);
+      FileSelected(new_path, i, id_ptr);
     } else {
-      FileSelected(new_path, i, info);
+      FileSelected(new_path, i, id_ptr);
       message_loop_.RunAllPending();
       OnAllDataSaved(i, 1024, std::string("fake_hash"));
     }
@@ -425,8 +427,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   download_file->AppendDataToFile(kTestData, kTestDataLen);
 
-  info->path = new_path;
-  AttachDownloadItem(info);
+  ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
@@ -489,8 +490,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
-  info->path = new_path;
-  AttachDownloadItem(info);
+  ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
@@ -568,8 +568,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   // |download_file| is owned by DownloadFileManager.
   AddDownloadToFileManager(info->download_id, download_file);
 
-  info->path = new_path;
-  AttachDownloadItem(info);
+  ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 

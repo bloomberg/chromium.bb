@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_item.h"
-#include "chrome/browser/history/download_create_info.h"
+#include "chrome/browser/history/download_history_info.h"
 
 // Download schema:
 //
@@ -81,7 +81,7 @@ bool DownloadDatabase::DropDownloadTable() {
 }
 
 void DownloadDatabase::QueryDownloads(
-    std::vector<DownloadCreateInfo>* results) {
+    std::vector<DownloadHistoryInfo>* results) {
   results->clear();
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -93,11 +93,11 @@ void DownloadDatabase::QueryDownloads(
     return;
 
   while (statement.Step()) {
-    DownloadCreateInfo info;
+    DownloadHistoryInfo info;
     info.db_handle = statement.ColumnInt64(0);
 
     info.path = ColumnFilePath(statement, 1);
-    info.url_chain.push_back(GURL(statement.ColumnString(2)));
+    info.url = GURL(statement.ColumnString(2));
     info.start_time = base::Time::FromTimeT(statement.ColumnInt64(3));
     info.received_bytes = statement.ColumnInt64(4);
     info.total_bytes = statement.ColumnInt64(5);
@@ -145,7 +145,7 @@ bool DownloadDatabase::CleanUpInProgressEntries() {
   return statement.Run();
 }
 
-int64 DownloadDatabase::CreateDownload(const DownloadCreateInfo& info) {
+int64 DownloadDatabase::CreateDownload(const DownloadHistoryInfo& info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
       "(full_path, url, start_time, received_bytes, total_bytes, state) "
@@ -154,7 +154,7 @@ int64 DownloadDatabase::CreateDownload(const DownloadCreateInfo& info) {
     return 0;
 
   BindFilePath(statement, info.path, 0);
-  statement.BindString(1, info.url().spec());
+  statement.BindString(1, info.url.spec());
   statement.BindInt64(2, info.start_time.ToTimeT());
   statement.BindInt64(3, info.received_bytes);
   statement.BindInt64(4, info.total_bytes);

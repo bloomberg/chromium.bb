@@ -27,7 +27,7 @@
 #include "content/common/page_transition_types.h"
 
 class BookmarkService;
-struct DownloadCreateInfo;
+struct DownloadHistoryInfo;
 class FilePath;
 class GURL;
 class HistoryURLProvider;
@@ -416,24 +416,25 @@ class HistoryService : public CancelableRequestProvider,
 
   // Implemented by the caller of 'CreateDownload' below, and is called when the
   // history service has created a new entry for a download in the history db.
-  typedef Callback2<DownloadCreateInfo, int64>::Type
+  typedef Callback2<int32, int64>::Type
       DownloadCreateCallback;
 
   // Begins a history request to create a new persistent entry for a download.
   // 'info' contains all the download's creation state, and 'callback' runs
   // when the history service request is complete.
-  Handle CreateDownload(const DownloadCreateInfo& info,
+  Handle CreateDownload(int32 id,
+                        const DownloadHistoryInfo& info,
                         CancelableRequestConsumerBase* consumer,
                         DownloadCreateCallback* callback);
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
-  typedef Callback1<std::vector<DownloadCreateInfo>*>::Type
+  typedef Callback1<std::vector<DownloadHistoryInfo>*>::Type
       DownloadQueryCallback;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
-  // at which point 'info' contains an array of DownloadCreateInfo, one per
+  // at which point 'info' contains an array of DownloadHistoryInfo, one per
   // download.
   Handle QueryDownloads(CancelableRequestConsumerBase* consumer,
                         DownloadQueryCallback* callback);

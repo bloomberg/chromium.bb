@@ -26,6 +26,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -281,11 +281,17 @@ void GenerateExtension(const FilePath& file_name,
   generated_extension->swap(extension);
 }
 
-void GenerateFileNameFromInfo(DownloadCreateInfo* info,
-                              FilePath* generated_name) {
-  GenerateFileNameInternal(GURL(info->url()), info->content_disposition,
-                           info->referrer_charset, std::string(),
-                           info->mime_type, generated_name);
+void GenerateFileNameFromRequest(const GURL& url,
+                                 const std::string& content_disposition,
+                                 const std::string& referrer_charset,
+                                 const std::string& mime_type,
+                                 FilePath* generated_name) {
+  GenerateFileNameInternal(url,
+                           content_disposition,
+                           referrer_charset,
+                           std::string(),
+                           mime_type,
+                           generated_name);
 }
 
 void GenerateFileNameFromSuggestedName(const GURL& url,
@@ -336,7 +342,7 @@ void OpenChromeExtension(Profile* profile,
   ExtensionService* service = profile->GetExtensionService();
   CHECK(service);
   NotificationService* nservice = NotificationService::current();
-  GURL nonconst_download_url = download_item.url();
+  GURL nonconst_download_url = download_item.GetURL();
   nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
                    Source<DownloadManager>(download_manager),
                    Details<GURL>(&nonconst_download_url));
@@ -345,18 +351,18 @@ void OpenChromeExtension(Profile* profile,
       service->MakeCrxInstaller(new ExtensionInstallUI(profile)));
   installer->set_delete_source(true);
 
-  if (UserScript::IsURLUserScript(download_item.url(),
+  if (UserScript::IsURLUserScript(download_item.GetURL(),
                                   download_item.mime_type())) {
     installer->InstallUserScript(download_item.full_path(),
-                                 download_item.url());
+                                 download_item.GetURL());
     return;
   }
 
   bool is_gallery_download = service->IsDownloadFromGallery(
-      download_item.url(), download_item.referrer_url());
+      download_item.GetURL(), download_item.referrer_url());
   installer->set_original_mime_type(download_item.original_mime_type());
   installer->set_apps_require_extension_mime_type(true);
-  installer->set_original_url(download_item.url());
+  installer->set_original_url(download_item.GetURL());
   installer->set_is_gallery_install(is_gallery_download);
   installer->set_allow_silent_install(is_gallery_download);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
@@ -642,16 +648,16 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   string16 file_name = download->GetFileNameToReportUser().LossyDisplayName();
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
   file_value->SetString("file_name", file_name);
-  file_value->SetString("url", download->url().spec());
+  file_value->SetString("url", download->GetURL().spec());
   file_value->SetBoolean("otr", download->is_otr());
 
   if (download->IsInProgress()) {
     if (download->safety_state() == DownloadItem::DANGEROUS) {
       file_value->SetString("state", "DANGEROUS");
-      DCHECK(download->danger_type() == DownloadItem::DANGEROUS_FILE ||
-             download->danger_type() == DownloadItem::DANGEROUS_URL);
+      DCHECK(download->GetDangerType() == DownloadItem::DANGEROUS_FILE ||
+             download->GetDangerType() == DownloadItem::DANGEROUS_URL);
       const char* danger_type_value =
-          download->danger_type() == DownloadItem::DANGEROUS_FILE ?
+          download->GetDangerType() == DownloadItem::DANGEROUS_FILE ?
           "DANGEROUS_FILE" : "DANGEROUS_URL";
       file_value->SetString("danger_type", danger_type_value);
     } else if (download->is_paused()) {
@@ -905,24 +911,6 @@ FilePath GetCrDownloadPath(const FilePath& suggested_path) {
       PRFilePathLiteral FILE_PATH_LITERAL(".crdownload"),
       suggested_path.value().c_str());
   return FilePath(file_name);
-}
-
-// TODO(erikkay,phajdan.jr): This is apparently not being exercised in tests.
-bool IsDangerous(DownloadCreateInfo* info, Profile* profile, bool auto_open) {
-  DownloadDangerLevel danger_level = GetFileDangerLevel(
-      info->suggested_path.BaseName());
-  if (danger_level == Dangerous)
-    return !(auto_open && info->has_user_gesture);
-  if (danger_level == AllowOnUserGesture && !info->has_user_gesture)
-    return true;
-  if (info->is_extension_install) {
-    // Extensions that are not from the gallery are considered dangerous.
-    ExtensionService* service = profile->GetExtensionService();
-    if (!service ||
-        !service->IsDownloadFromGallery(info->url(), info->referrer_url))
-      return true;
-  }
-  return false;
 }
 
 }  // namespace download_util

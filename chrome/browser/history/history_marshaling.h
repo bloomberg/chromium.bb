@@ -56,7 +56,7 @@ typedef CancelableRequest<FaviconService::FaviconDataCallback>
 // Downloads ------------------------------------------------------------------
 
 typedef CancelableRequest1<HistoryService::DownloadQueryCallback,
-                           std::vector<DownloadCreateInfo> >
+                           std::vector<DownloadHistoryInfo> >
     DownloadQueryRequest;
 
 typedef CancelableRequest<HistoryService::DownloadCreateCallback>

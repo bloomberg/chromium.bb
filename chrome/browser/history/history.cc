@@ -32,7 +32,7 @@
 #include "base/task.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/download_create_info.h"
+#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
@@ -514,11 +514,13 @@ HistoryService::Handle HistoryService::QueryURL(
 // Handle creation of a download by creating an entry in the history service's
 // 'downloads' table.
 HistoryService::Handle HistoryService::CreateDownload(
-    const DownloadCreateInfo& create_info,
+    int32 id,
+    const DownloadHistoryInfo& create_info,
     CancelableRequestConsumerBase* consumer,
     HistoryService::DownloadCreateCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::CreateDownload, consumer,
-                  new history::DownloadCreateRequest(callback), create_info);
+                  new history::DownloadCreateRequest(callback), id,
+                  create_info);
 }
 
 // Handle queries for a list of all downloads in the history database's

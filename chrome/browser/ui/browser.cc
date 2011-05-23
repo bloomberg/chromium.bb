@@ -3471,7 +3471,7 @@ void Browser::OnStartDownload(DownloadItem* download, TabContentsWrapper* tab) {
   // Don't show content browser for extension/theme downloads from gallery.
   if (download->is_extension_install()) {
     ExtensionService* service = profile_->GetExtensionService();
-    if (service && service->IsDownloadFromGallery(download->url(),
+    if (service && service->IsDownloadFromGallery(download->GetURL(),
                                                   download->referrer_url())) {
       return;
     }
@@ -3488,7 +3488,7 @@ void Browser::OnStartDownload(DownloadItem* download, TabContentsWrapper* tab) {
 
   // For non-theme extensions, we don't show the download animation.
   if (download->is_extension_install() &&
-      !ExtensionService::IsDownloadFromMiniGallery(download->url()))
+      !ExtensionService::IsDownloadFromMiniGallery(download->GetURL()))
     return;
 
   TabContents* current_tab = GetSelectedTabContents();

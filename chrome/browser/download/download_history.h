@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,7 @@ class DownloadHistory {
   void Load(HistoryService::DownloadQueryCallback* callback);
 
   // Adds a new entry for a download to the history database.
-  void AddEntry(const DownloadCreateInfo& info,
-                DownloadItem* download_item,
+  void AddEntry(DownloadItem* download_item,
                 HistoryService::DownloadCreateCallback* callback);
 
   // Updates the history entry for |download_item|.

@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/download/download_history.h"
 
 #include "base/logging.h"
-#include "chrome/browser/history/download_create_info.h"
+#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,9 +40,9 @@ void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
 }
 
 void DownloadHistory::AddEntry(
-    const DownloadCreateInfo& info,
     DownloadItem* download_item,
     HistoryService::DownloadCreateCallback* callback) {
+  DCHECK(download_item);
   // Do not store the download in the history database for a few special cases:
   // - incognito mode (that is the point of this mode)
   // - extensions (users don't think of extension installation as 'downloading')
@@ -57,12 +57,15 @@ void DownloadHistory::AddEntry(
   if (download_item->is_otr() || download_item->is_extension_install() ||
       download_item->is_temporary() || !hs) {
     callback->RunWithParams(
-        history::DownloadCreateRequest::TupleType(info, GetNextFakeDbHandle()));
+        history::DownloadCreateRequest::TupleType(download_item->id(),
+                                                  GetNextFakeDbHandle()));
     delete callback;
     return;
   }
 
-  hs->CreateDownload(info, &history_consumer_, callback);
+  int32 id = download_item->id();
+  DownloadHistoryInfo history_info = download_item->GetHistoryInfo();
+  hs->CreateDownload(id, history_info, &history_consumer_, callback);
 }
 
 void DownloadHistory::UpdateEntry(DownloadItem* download_item) {

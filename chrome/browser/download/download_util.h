@@ -61,8 +61,11 @@ void GenerateExtension(const FilePath& file_name,
                        FilePath::StringType* generated_extension);
 
 // Create a file name based on the response from the server.
-void GenerateFileNameFromInfo(DownloadCreateInfo* info,
-                              FilePath* generated_name);
+void GenerateFileNameFromRequest(const GURL& url,
+                                 const std::string& content_disposition,
+                                 const std::string& referrer_charset,
+                                 const std::string& mime_type,
+                                 FilePath* generated_name);
 
 void GenerateFileNameFromSuggestedName(const GURL& url,
                                        const std::string& suggested_name,
@@ -268,12 +271,6 @@ void EraseUniqueDownloadFiles(const FilePath& path_prefix);
 
 // Returns a .crdownload intermediate path for the |suggested_path|.
 FilePath GetCrDownloadPath(const FilePath& suggested_path);
-
-// Returns true if this download should show the "dangerous file" warning.
-// Various factors are considered, such as the type of the file, whether a
-// user action initiated the download, and whether the user has explictly
-// marked the file type as "auto open".
-bool IsDangerous(DownloadCreateInfo* info, Profile* profile, bool auto_open);
 
 }  // namespace download_util
 

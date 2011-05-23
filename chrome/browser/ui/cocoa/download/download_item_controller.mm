@@ -171,7 +171,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
     // The dangerous download label, button text and icon are different under
     // different cases.
-    if (downloadModel->download()->danger_type() ==
+    if (downloadModel->download()->GetDangerType() ==
         DownloadItem::DANGEROUS_URL) {
       // Safebrowsing shows the download URL leads to malicious file.
       alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING);
@@ -180,7 +180,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
       confirmButtonTitle = l10n_util::GetNSStringWithFixup(IDS_SAVE_DOWNLOAD);
     } else {
       // It's a dangerous file type (e.g.: an executable).
-      DCHECK_EQ(downloadModel->download()->danger_type(),
+      DCHECK_EQ(downloadModel->download()->GetDangerType(),
                 DownloadItem::DANGEROUS_FILE);
       alertIcon = rb.GetNativeImageNamed(IDR_WARNING);
       if (downloadModel->download()->is_extension_install()) {

@@ -11,8 +11,6 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
-struct DownloadCreateInfo;
-
 // This is a helper class used by DownloadManager to check a download URL with
 // SafeBrowsingService. The client is refcounted and will be  released once
 // there is no reference to it.
@@ -32,7 +30,7 @@ class DownloadSBClient
     : public SafeBrowsingService::Client,
       public base::RefCountedThreadSafe<DownloadSBClient> {
  public:
-  typedef Callback2<DownloadCreateInfo*, bool>::Type UrlDoneCallback;
+  typedef Callback2<int32, bool>::Type UrlDoneCallback;
   typedef Callback2<int32, bool>::Type HashDoneCallback;
 
   DownloadSBClient(int32 download_id,
@@ -43,7 +41,7 @@ class DownloadSBClient
   // For each DownloadSBClient instance, either CheckDownloadUrl or
   // CheckDownloadHash can be called, and be called only once.
   // DownloadSBClient instance.
-  void CheckDownloadUrl(DownloadCreateInfo* info, UrlDoneCallback* callback);
+  void CheckDownloadUrl(UrlDoneCallback* callback);
   void CheckDownloadHash(const std::string& hash, HashDoneCallback* callback);
 
  private:
@@ -90,9 +88,6 @@ class DownloadSBClient
 
   scoped_ptr<UrlDoneCallback> url_done_callback_;
   scoped_ptr<HashDoneCallback> hash_done_callback_;
-
-  // Not owned by this class.
-  DownloadCreateInfo* info_;
 
   int32 download_id_;
   scoped_refptr<SafeBrowsingService> sb_service_;

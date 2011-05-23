@@ -25,7 +25,7 @@
 #include "chrome/browser/search_engines/template_url_id.h"
 
 class BookmarkService;
-struct DownloadCreateInfo;
+struct DownloadHistoryInfo;
 class TestingProfile;
 struct ThumbnailScore;
 
@@ -240,7 +240,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void UpdateDownload(int64 received_bytes, int32 state, int64 db_handle);
   void UpdateDownloadPath(const FilePath& path, int64 db_handle);
   void CreateDownload(scoped_refptr<DownloadCreateRequest> request,
-                      const DownloadCreateInfo& info);
+                      int32 id,
+                      const DownloadHistoryInfo& info);
   void RemoveDownload(int64 db_handle);
   void RemoveDownloadsBetween(const base::Time remove_begin,
                               const base::Time remove_end);
