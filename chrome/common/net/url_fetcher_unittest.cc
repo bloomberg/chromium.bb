@@ -357,13 +357,6 @@ TEST_F(URLFetcherTempFileTest, SmallGet) {
 
   MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
-  ASSERT_TRUE(file_util::PathExists(temp_file_))
-      << temp_file_.value() << " not found.";
-
-  // Deleting the fetcher should remove the file.
-  delete fetcher_;
-
-  MessageLoop::current()->RunAllPending();
   ASSERT_FALSE(file_util::PathExists(temp_file_))
       << temp_file_.value() << " not removed.";
 }
@@ -391,12 +384,6 @@ TEST_F(URLFetcherTempFileTest, CanTakeOwnershipOfFile) {
   CreateFetcher(test_server.GetURL(kTestServerFilePrefix + kFileToFetch));
 
   MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
-
-  ASSERT_TRUE(file_util::PathExists(temp_file_))
-      << temp_file_.value() << " not found.";
-
-  // Deleting the fetcher should remove the file.
-  delete fetcher_;
 
   MessageLoop::current()->RunAllPending();
   ASSERT_FALSE(file_util::PathExists(temp_file_))
@@ -645,6 +632,8 @@ void URLFetcherTempFileTest::OnURLFetchComplete(const URLFetcher* source) {
       take_ownership_of_temp_file_, &temp_file_));
 
   EXPECT_TRUE(file_util::ContentsEqual(expected_file_, temp_file_));
+
+  delete fetcher_;
 
   io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
