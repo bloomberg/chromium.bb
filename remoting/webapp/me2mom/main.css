@@ -46,6 +46,13 @@ h1 {
   border-radius: 2px;
 }
 
+.remoting_body {
+  -webkit-user-select: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
 .status_msg {
   margin: 5px;
 }
