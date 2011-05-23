@@ -306,7 +306,7 @@ cr.define('options', function() {
         $('extensions-item').className = "sync-item-hide";
       }
       if (args.typedUrlsRegistered) {
-        $('typedUrls-checkbox').checked = args.syncTypedUrls;
+        $('typed-urls-checkbox').checked = args.syncTypedUrls;
         $('omnibox-item').className = "sync-item-show";
       } else {
         $('omnibox-item').className = "sync-item-hide";
