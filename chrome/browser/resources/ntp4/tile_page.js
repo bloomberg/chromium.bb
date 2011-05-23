@@ -99,6 +99,13 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragMove_: function(e) {
+      if (e.view != window || (e.pageX == 0 && e.pageY == 0)) {
+        // attribute hidden seems to be overridden by display.
+        this.dragClone.classList.add('hidden');
+        return;
+      }
+
+      this.dragClone.classList.remove('hidden');
       this.dragClone.style.left = (e.pageX - this.dragOffsetX) + 'px';
       this.dragClone.style.top = (e.pageY - this.dragOffsetY) + 'px';
     },
@@ -175,12 +182,14 @@ cr.define('ntp4', function() {
      * @param {Event} e The transition end event.
      */
     onDragCloneTransitionEnd_: function(e) {
-      var clone = this.dragClone;
-      this.dragClone = null;
+      if (e.propertyName == 'left') {
+        var clone = this.dragClone;
+        this.dragClone = null;
 
-      clone.parentNode.removeChild(clone);
-      this.eventTracker.remove(clone, 'webkitTransitionEnd');
-      this.classList.remove('dragging');
+        clone.parentNode.removeChild(clone);
+        this.eventTracker.remove(clone, 'webkitTransitionEnd');
+        this.classList.remove('dragging');
+      }
     }
   };
 

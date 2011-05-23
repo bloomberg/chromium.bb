@@ -24,6 +24,10 @@ body {
   -webkit-user-select: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
 #card-slider-frame {
   /* Must match #footer height. */
   bottom: 50px;
