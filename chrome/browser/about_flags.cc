@@ -325,6 +325,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kRestrictInstantToSearch)
   },
+  {
+    "indexeddb-use-leveldb",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_INDEXEDDB_USE_LEVELDB_NAME,
+    IDS_FLAGS_INDEXEDDB_USE_LEVELDB_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kLevelDBIndexedDatabase)
+  },
 };
 
 const Experiment* experiments = kExperiments;

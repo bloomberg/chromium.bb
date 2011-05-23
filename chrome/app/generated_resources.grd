@@ -4272,6 +4272,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_DESCRIPTION" desc="Description for the flag to restrict Instant to search">
         Restrict Instant to loading only search pages.
       </message>
+      <message name="IDS_FLAGS_INDEXEDDB_USE_LEVELDB_NAME" desc="Title for the flag to use the LevelDB back-end for IndexedDB">
+        IndexedDB use LevelDB.
+      </message>
+      <message name="IDS_FLAGS_INDEXEDDB_USE_LEVELDB_DESCRIPTION" desc="Description for the flag to use the LevelDB back-end for IndexedDB">
+        Enable the experimental LevelDB back-end for IndexedDB.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
