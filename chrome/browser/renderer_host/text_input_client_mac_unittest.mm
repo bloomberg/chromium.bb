@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/common/text_input_client_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
@@ -99,32 +98,6 @@ TEST_F(TextInputClientMacTest, GetCharacterIndex) {
 }
 
 TEST_F(TextInputClientMacTest, TimeoutCharacterIndex) {
-  NSUInteger index = service()->GetCharacterIndexAtPoint(
-      widget(), gfx::Point(2, 2));
-  EXPECT_EQ(1U, ipc_sink().message_count());
-  EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
-      TextInputClientMsg_CharacterIndexForPoint::ID));
-  EXPECT_EQ(NSNotFound, index);
-}
-
-TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
-  ScopedTestingThread thread(this);
-  const NSUInteger kPreviousValue = 42;
-  const size_t kNotFoundValue = static_cast<size_t>(-1);
-
-  // Set an arbitrary value to ensure the index is not |NSNotFound|.
-  PostTask(base::Bind(&TextInputClientMac::SetCharacterIndexAndSignal,
-      base::Unretained(service()), kPreviousValue));
-
-  scoped_refptr<TextInputClientMessageFilter> filter(
-      new TextInputClientMessageFilter(widget()->process()->id()));
-  scoped_ptr<IPC::Message> message(
-      new TextInputClientReplyMsg_GotCharacterIndexForPoint(
-          widget()->routing_id(), kNotFoundValue));
-  bool message_ok = true;
-  PostTask(base::Bind(&TextInputClientMessageFilter::OnMessageReceived,
-                      filter.get(), *message, &message_ok));
-
   NSUInteger index = service()->GetCharacterIndexAtPoint(
       widget(), gfx::Point(2, 2));
   EXPECT_EQ(1U, ipc_sink().message_count());
