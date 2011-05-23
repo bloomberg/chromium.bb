@@ -176,6 +176,9 @@ const char* GetenvBeforeMain(const char* name) {
 // in their first character!  If that assumption is violated, we'll
 // still get a profile, but one with an unexpected name.
 // TODO(csilvers): set an envvar instead when we can do it reliably.
+//
+// In Chromium this hack is intentionally disabled, because the path is not
+// re-initialized upon fork.
 bool GetUniquePathFromEnv(const char* env_name, char* path) {
   char* envval = getenv(env_name);
   if (envval == NULL || *envval == '\0')
@@ -185,7 +188,9 @@ bool GetUniquePathFromEnv(const char* env_name, char* path) {
              envval[0] & 127, envval+1, (unsigned int)(getpid()));
   } else {
     snprintf(path, PATH_MAX, "%s", envval);
+#if 0
     envval[0] |= 128;                     // set high bit for kids to see
+#endif
   }
   return true;
 }
