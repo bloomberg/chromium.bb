@@ -227,9 +227,8 @@ const char* kSecurityPsk = "psk";
 const char* kSecurityNone = "none";
 
 // Flimflam L2TPIPsec property names.
-const char* kL2TPIPSecCACertProperty = "L2TPIPsec.CACert";
-const char* kL2TPIPSecCertProperty = "L2TPIPsec.Cert";
-const char* kL2TPIPSecKeyProperty = "L2TPIPsec.Key";
+const char* kL2TPIPSecCACertNSSProperty = "L2TPIPsec.CACertNSS";
+const char* kL2TPIPSecClientCertIDProperty = "L2TPIPsec.ClientCertID";
 const char* kL2TPIPSecPSKProperty = "L2TPIPsec.PSK";
 const char* kL2TPIPSecUserProperty = "L2TPIPsec.User";
 const char* kL2TPIPSecPasswordProperty = "L2TPIPsec.Password";
@@ -472,9 +471,8 @@ enum PropertyIndex {
   PROPERTY_INDEX_IMEI,
   PROPERTY_INDEX_IMSI,
   PROPERTY_INDEX_IS_ACTIVE,
-  PROPERTY_INDEX_L2TPIPSEC_CA_CERT,
-  PROPERTY_INDEX_L2TPIPSEC_CERT,
-  PROPERTY_INDEX_L2TPIPSEC_KEY,
+  PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS,
+  PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID,
   PROPERTY_INDEX_L2TPIPSEC_PASSWORD,
   PROPERTY_INDEX_L2TPIPSEC_PSK,
   PROPERTY_INDEX_L2TPIPSEC_USER,
@@ -563,9 +561,8 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kImeiProperty, PROPERTY_INDEX_IMEI },
   { kImsiProperty, PROPERTY_INDEX_IMSI },
   { kIsActiveProperty, PROPERTY_INDEX_IS_ACTIVE },
-  { kL2TPIPSecCACertProperty, PROPERTY_INDEX_L2TPIPSEC_CA_CERT },
-  { kL2TPIPSecCertProperty, PROPERTY_INDEX_L2TPIPSEC_CERT },
-  { kL2TPIPSecKeyProperty, PROPERTY_INDEX_L2TPIPSEC_KEY },
+  { kL2TPIPSecCACertNSSProperty, PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS },
+  { kL2TPIPSecClientCertIDProperty, PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID },
   { kL2TPIPSecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
   { kL2TPIPSecPSKProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
   { kL2TPIPSecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
@@ -1310,14 +1307,12 @@ bool VirtualNetwork::ParseProviderValue(int index, const Value* value) {
       }
       break;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT:
-      return value->GetAsString(&ca_cert_);
+    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS:
+      return value->GetAsString(&ca_cert_nss_);
     case PROPERTY_INDEX_L2TPIPSEC_PSK:
       return value->GetAsString(&psk_passphrase_);
-    case PROPERTY_INDEX_L2TPIPSEC_CERT:
-      return value->GetAsString(&user_cert_);
-    case PROPERTY_INDEX_L2TPIPSEC_KEY:
-      return value->GetAsString(&user_cert_key_);
+    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID:
+      return value->GetAsString(&client_cert_id_);
     case PROPERTY_INDEX_L2TPIPSEC_USER:
       return value->GetAsString(&username_);
     case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
@@ -1360,7 +1355,7 @@ void VirtualNetwork::ParseInfo(const DictionaryValue* info) {
   VLOG(1) << "VPN: " << name()
           << " Type: " << ProviderTypeToString(provider_type());
   if (provider_type_ == PROVIDER_TYPE_L2TP_IPSEC_PSK) {
-    if (!user_cert_.empty())
+    if (!client_cert_id_.empty())
       provider_type_ = PROVIDER_TYPE_L2TP_IPSEC_USER_CERT;
   }
 }
@@ -1375,7 +1370,7 @@ bool VirtualNetwork::NeedMoreInfoToConnect() const {
       break;
     case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
     case PROVIDER_TYPE_OPEN_VPN:
-      if (user_cert_.empty())
+      if (client_cert_id_.empty())
         return true;
       break;
     case PROVIDER_TYPE_MAX:
@@ -1384,8 +1379,8 @@ bool VirtualNetwork::NeedMoreInfoToConnect() const {
   return false;
 }
 
-void VirtualNetwork::SetCACert(const std::string& ca_cert) {
-  SetStringProperty(kL2TPIPSecCACertProperty, ca_cert, &ca_cert_);
+void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
+  SetStringProperty(kL2TPIPSecCACertNSSProperty, ca_cert_nss, &ca_cert_nss_);
 }
 
 void VirtualNetwork::SetPSKPassphrase(const std::string& psk_passphrase) {
@@ -1393,12 +1388,8 @@ void VirtualNetwork::SetPSKPassphrase(const std::string& psk_passphrase) {
                            &psk_passphrase_);
 }
 
-void VirtualNetwork::SetUserCert(const std::string& user_cert) {
-  SetStringProperty(kL2TPIPSecCertProperty, user_cert, &user_cert_);
-}
-
-void VirtualNetwork::SetUserCertKey(const std::string& key) {
-  SetStringProperty(kL2TPIPSecKeyProperty, key, &user_cert_key_);
+void VirtualNetwork::SetClientCertID(const std::string& cert_id) {
+  SetStringProperty(kL2TPIPSecClientCertIDProperty, cert_id, &client_cert_id_);
 }
 
 void VirtualNetwork::SetUsername(const std::string& username) {
@@ -2977,6 +2968,27 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                           this);
   }
 
+  virtual void ConnectToVirtualNetworkCert(
+      const std::string& service_name,
+      const std::string& server_hostname,
+      const std::string& client_cert_id,
+      const std::string& username,
+      const std::string& user_passphrase) {
+    if (!EnsureCrosLoaded())
+      return;
+    // Store the connection data to be used by the callback.
+    connect_data_.service_name = service_name;
+    connect_data_.server_hostname = server_hostname;
+    connect_data_.vpn_client_cert_pkcs11_id = client_cert_id;
+    connect_data_.psk_username = username;
+    connect_data_.passphrase = user_passphrase;
+    RequestVirtualNetwork(service_name.c_str(),
+                          server_hostname.c_str(),
+                          kProviderL2tpIpsec,
+                          VPNServiceUpdateAndConnect,
+                          this);
+  }
+
   // Callback
   static void VPNServiceUpdateAndConnect(void* object,
                                          const char* service_path,
@@ -3008,9 +3020,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     vpn->set_added(true);
     if (!data.server_hostname.empty())
       vpn->set_server_hostname(data.server_hostname);
-    vpn->SetCACert("");
-    vpn->SetUserCert("");
-    vpn->SetUserCertKey("");
+    vpn->SetCACertNSS("");
+    vpn->SetClientCertID(data.vpn_client_cert_pkcs11_id);
     vpn->SetPSKPassphrase(data.psk_key);
     vpn->SetUsername(data.psk_username);
     vpn->SetUserPassphrase(data.passphrase);
@@ -4468,6 +4479,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     std::string psk_key;
     std::string psk_username;
     std::string server_hostname;
+    std::string vpn_client_cert_pkcs11_id;
   };
   ConnectData connect_data_;
 
@@ -4612,6 +4624,12 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       const std::string& service_name,
       const std::string& server,
       const std::string& psk,
+      const std::string& username,
+      const std::string& user_passphrase) {}
+  virtual void ConnectToVirtualNetworkCert(
+      const std::string& service_name,
+      const std::string& server_hostname,
+      const std::string& client_cert_id,
       const std::string& username,
       const std::string& user_passphrase) {}
   virtual void SignalCellularPlanPayment() {}

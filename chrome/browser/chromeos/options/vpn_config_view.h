@@ -68,6 +68,9 @@ class VPNConfigView : public ChildNetworkConfigView,
   // Returns true if the provider type requires a user certificate.
   bool UserCertRequired() const;
 
+  // Returns true if there is at least one user certificate installed.
+  bool HaveUserCerts() const;
+
   // Get text from input field.
   const std::string GetTextFromField(views::Textfield* textfield,
                                      bool trim_whitespace) const;

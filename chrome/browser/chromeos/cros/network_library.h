@@ -434,20 +434,18 @@ class VirtualNetwork : public Network {
 
   const std::string& server_hostname() const { return server_hostname_; }
   ProviderType provider_type() const { return provider_type_; }
-  const std::string& ca_cert() const { return ca_cert_; }
+  const std::string& ca_cert_nss() const { return ca_cert_nss_; }
   const std::string& psk_passphrase() const { return psk_passphrase_; }
-  const std::string& user_cert() const { return user_cert_; }
-  const std::string& user_cert_key() const { return user_cert_key_; }
+  const std::string& client_cert_id() const { return client_cert_id_; }
   const std::string& username() const { return username_; }
   const std::string& user_passphrase() const { return user_passphrase_; }
 
   bool NeedMoreInfoToConnect() const;
 
   // Public setters.
-  void SetCACert(const std::string& ca_cert);
+  void SetCACertNSS(const std::string& ca_cert_nss);
   void SetPSKPassphrase(const std::string& psk_passphrase);
-  void SetUserCert(const std::string& user_cert);
-  void SetUserCertKey(const std::string& key);
+  void SetClientCertID(const std::string& cert_id);
   void SetUsername(const std::string& username);
   void SetUserPassphrase(const std::string& user_passphrase);
 
@@ -467,17 +465,14 @@ class VirtualNetwork : public Network {
   void set_provider_type(ProviderType provider_type) {
     provider_type_ = provider_type;
   }
-  void set_ca_cert(const std::string& ca_cert) {
-    ca_cert_ = ca_cert;
+  void set_ca_cert_nss(const std::string& ca_cert_nss) {
+    ca_cert_nss_ = ca_cert_nss;
   }
   void set_psk_passphrase(const std::string& psk_passphrase) {
     psk_passphrase_ = psk_passphrase;
   }
-  void set_user_cert(const std::string& user_cert) {
-    user_cert_ = user_cert;
-  }
-  void set_user_cert_key(const std::string& key) {
-    user_cert_key_ = key;
+  void set_client_cert_id(const std::string& client_cert_id) {
+    client_cert_id_ = client_cert_id;
   }
   void set_username(const std::string& username) {
     username_ = username;
@@ -488,10 +483,11 @@ class VirtualNetwork : public Network {
 
   std::string server_hostname_;
   ProviderType provider_type_;
-  std::string ca_cert_;
+  // NSS nickname for server CA certificate.
+  std::string ca_cert_nss_;
   std::string psk_passphrase_;
-  std::string user_cert_;
-  std::string user_cert_key_;
+  // PKCS#11 ID for client certificate.
+  std::string client_cert_id_;
   std::string username_;
   std::string user_passphrase_;
 
@@ -1102,6 +1098,16 @@ class NetworkLibrary {
       const std::string& service_name,
       const std::string& server_hostname,
       const std::string& psk,
+      const std::string& username,
+      const std::string& user_passphrase) = 0;
+
+  // Connect to a virtual network with user certificate information.
+  // TODO(jamescook): Convert both this and above to take a struct of
+  // configuration information.
+  virtual void ConnectToVirtualNetworkCert(
+      const std::string& service_name,
+      const std::string& server_hostname,
+      const std::string& client_cert_id,
       const std::string& username,
       const std::string& user_passphrase) = 0;
 

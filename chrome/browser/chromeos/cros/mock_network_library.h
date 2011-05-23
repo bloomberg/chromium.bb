@@ -114,6 +114,11 @@ class MockNetworkLibrary : public NetworkLibrary {
                                                 const std::string&,
                                                 const std::string&,
                                                 const std::string&));
+  MOCK_METHOD5(ConnectToVirtualNetworkCert, void(const std::string&,
+                                                 const std::string&,
+                                                 const std::string&,
+                                                 const std::string&,
+                                                 const std::string&));
   MOCK_METHOD0(SignalCellularPlanPayment, void(void));
   MOCK_METHOD0(HasRecentCellularPlanPayment, bool(void));
 

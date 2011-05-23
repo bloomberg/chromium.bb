@@ -109,10 +109,11 @@ class UserCertComboboxModel : public ui::ComboboxModel {
     return !user_certs_.empty();
   }
 
+  // Gets PKCS#11 certificate ID, or empty string on failure.
   std::string GetCertID(int index) {
     if (0 <= index && index < static_cast<int>(user_certs_.size())) {
-      // TODO(jamescook): Return the proper ID for flimflam, perhaps PKCS#11?
-      return "/tmp/ca.pem";
+      net::X509Certificate* cert = user_certs_[index].get();
+      return x509_certificate_model::GetPkcs11Id(cert->os_cert_handle());
     }
     return std::string();
   }
@@ -148,7 +149,7 @@ bool VPNConfigView::CanLogin() {
   if (service_path_.empty() &&
       (GetService().empty() || GetServer().empty()))
     return false;
-  if (UserCertRequired() && GetUserCertID().empty())
+  if (UserCertRequired() && !HaveUserCerts())
     return false;
   if (GetUsername().empty())
     return false;
@@ -157,7 +158,7 @@ bool VPNConfigView::CanLogin() {
 
 void VPNConfigView::UpdateErrorLabel() {
   std::string error_msg;
-  if (UserCertRequired() && GetUserCertID().empty())
+  if (UserCertRequired() && !HaveUserCerts())
     error_msg = l10n_util::GetStringUTF8(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PLEASE_INSTALL_USER_CERT);
   if (!service_path_.empty()) {
@@ -184,6 +185,12 @@ void VPNConfigView::UpdateErrorLabel() {
 bool VPNConfigView::UserCertRequired() const {
   return provider_type_ == VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT
       || provider_type_ == VirtualNetwork::PROVIDER_TYPE_OPEN_VPN;
+}
+
+bool VPNConfigView::HaveUserCerts() const {
+  UserCertComboboxModel* model = static_cast<UserCertComboboxModel*>(
+      user_cert_combobox_->model());
+  return model->HaveCerts();
 }
 
 void VPNConfigView::ContentsChanged(views::Textfield* sender,
@@ -246,9 +253,16 @@ bool VPNConfigView::Login() {
                                          GetUsername(),
                                          GetUserPassphrase());
         break;
-      case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT: {
+        cros->ConnectToVirtualNetworkCert(GetService(),
+                                          GetServer(),
+                                          GetUserCertID(),
+                                          GetUsername(),
+                                          GetUserPassphrase());
+        break;
+      }
       case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN:
-        // TODO(stevenjb): Add support for OpenVPN and user certs.
+        // TODO(stevenjb): Add support for OpenVPN.
         LOG(WARNING) << "Unsupported provider type: " << provider_type_;
         break;
       case VirtualNetwork::PROVIDER_TYPE_MAX:
@@ -265,12 +279,12 @@ bool VPNConfigView::Login() {
       case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
         vpn->SetPSKPassphrase(GetPSKPassphrase());
         break;
-      case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT: {
+        vpn->SetClientCertID(GetUserCertID());
+        break;
+      }
       case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN: {
-        // TODO(jamescook): Figure out if flimflam consumes a cert path,
-        // PKCS#11 ID or other identifier.  Then do something like:
-        // vpn->SetUserCertID(GetUserCertID());
-        LOG(WARNING) << "VPN user certs not yet supported.";
+        LOG(WARNING) << "OpenVPN not yet supported.";
         break;
       }
       case VirtualNetwork::PROVIDER_TYPE_MAX:
@@ -444,14 +458,14 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   user_cert_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT)));
   layout->AddView(user_cert_label_);
-  user_cert_combobox_ = new views::Combobox(new UserCertComboboxModel());
+  UserCertComboboxModel* user_cert_model = new UserCertComboboxModel();
+  user_cert_combobox_ = new views::Combobox(user_cert_model);
   user_cert_combobox_->set_listener(this);
-  if (vpn && !vpn->user_cert().empty()) {
-    string16 user_cert = UTF8ToUTF16(vpn->user_cert());
-    for (int i = 0; i < user_cert_combobox_->model()->GetItemCount(); ++i) {
-      // TODO(jamescook):  Select the proper certificate based on the
-      // appropriate property from flimflam, perhaps PKCS#11 ID.
-      if (user_cert_combobox_->model()->GetItemAt(i) == user_cert) {
+  if (vpn && !vpn->client_cert_id().empty()) {
+    // Select the current user certificate in the combobox.
+    for (int i = 0; i < user_cert_model->GetItemCount(); ++i) {
+      std::string cert_id = user_cert_model->GetCertID(i);
+      if (cert_id == vpn->client_cert_id()) {
         user_cert_combobox_->SetSelectedItem(i);
         break;
       }
@@ -513,12 +527,12 @@ void VPNConfigView::EnableControls() {
       psk_passphrase_textfield_->SetEnabled(false);
       user_cert_label_->SetEnabled(true);
       // Only enable the combobox if the user actually has a cert to select.
-      bool have_cert = !GetUserCertID().empty();
-      user_cert_combobox_->SetEnabled(have_cert);
+      user_cert_combobox_->SetEnabled(HaveUserCerts());
       break;
     }
     default:
       NOTREACHED();
+      break;
   }
 }
 
