@@ -57,22 +57,6 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
   return FALSE;
 }
 
-gfx::NativeView GetHiddenTabHostWindow() {
-  static views::Widget* widget = NULL;
-
-  if (!widget) {
-    widget = new views::Widget;
-    // We don't want this widget to be closed automatically, this causes
-    // problems in tests that close the last non-secondary window.
-    widget->set_is_secondary_widget(false);
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    widget->Init(params);
-  }
-
-  return static_cast<views::NativeWidgetGtk*>(widget->native_widget())->
-      window_contents();
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,9 +114,6 @@ void NativeTabContentsViewGtk::InitNativeTabContentsView() {
 }
 
 void NativeTabContentsViewGtk::Unparent() {
-  // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
-  // with an external tab container.
-  NativeWidget::ReparentNativeView(GetNativeView(), GetHiddenTabHostWindow());
 }
 
 RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(

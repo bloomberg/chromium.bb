@@ -897,8 +897,6 @@ void NativeWidgetGtk::SetSize(const gfx::Size& size) {
     if (GTK_IS_VIEWS_FIXED(parent)) {
       gtk_views_fixed_set_widget_size(widget_, size.width(), size.height());
     } else {
-      DCHECK(GTK_IS_FIXED(parent))
-          << "Parent of NativeWidgetGtk has to be Fixed or ViewsFixed";
       gtk_widget_set_size_request(widget_, size.width(), size.height());
     }
   } else {
