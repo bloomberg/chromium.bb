@@ -1575,4 +1575,38 @@
    fun:MessageLoop::RunInternal
    fun:MessageLoop::RunHandler
 }
-
+{
+   bug_83561a
+   Heapcheck:Leak
+   fun:CancelableTask* NewRunnableMethod
+   fun:net::HostResolverImpl::Job::DoLookup
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:base::::WorkerThread::ThreadMain
+}
+{
+   bug_83561b
+   Heapcheck:Leak
+   fun:ChromeTestSuite::Initialize
+   fun:::UnitTestTestSuite::Initialize
+   fun:base::TestSuite::Run
+}
+{
+   bug_83561c
+   Heapcheck:Leak
+   ...
+   fun:net::HostResolverImpl::Resolve
+   fun:net::SingleRequestHostResolver::Resolve
+   fun:net::TransportConnectJob::DoResolveHost
+   fun:net::TransportConnectJob::DoLoop
+   fun:net::TransportConnectJob::ConnectInternal
+   fun:net::ConnectJob::Connect
+   fun:net::internal::ClientSocketPoolBaseHelper::RequestSocketInternal
+   fun:net::internal::ClientSocketPoolBaseHelper::RequestSocket
+   fun:net::ClientSocketPoolBase::RequestSocket
+   fun:net::TransportClientSocketPool::RequestSocket
+   fun:net::ClientSocketHandle::Init
+   fun:net::::InitSocketPoolHelper
+   fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
+   fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
+}
