@@ -137,6 +137,7 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       has_stopped_loading_(false),
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_started_(false),
+      prerendering_has_been_cancelled_(false),
       child_id_(-1),
       route_id_(-1),
       starting_page_id_(-1) {
@@ -366,6 +367,9 @@ FinalStatus PrerenderContents::final_status() const {
 
 PrerenderContents::~PrerenderContents() {
   DCHECK(final_status_ != FINAL_STATUS_MAX);
+  DCHECK(prerendering_has_been_cancelled_ ||
+         final_status_ == FINAL_STATUS_USED ||
+         final_status_ == FINAL_STATUS_CONTROL_GROUP);
 
   // If we haven't even started prerendering, we were just in the control
   // group, which means we do not want to record the status.
@@ -712,8 +716,11 @@ void PrerenderContents::DidStopLoading() {
 }
 
 void PrerenderContents::Destroy(FinalStatus final_status) {
-  if (prerender_manager_->IsPendingDelete(this))
+  if (prerendering_has_been_cancelled_)
     return;
+
+  prerendering_has_been_cancelled_ = true;
+  prerender_manager_->MoveEntryToPendingDelete(this);
 
   if (child_id_ != -1 && route_id_ != -1) {
     // Cancel the prerender in the PrerenderTracker.  This is needed
@@ -732,9 +739,8 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
       NOTREACHED();
     }
   }
-
-  prerender_manager_->MoveEntryToPendingDelete(this);
   set_final_status(final_status);
+
   // We may destroy the PrerenderContents before we have initialized the
   // RenderViewHost. Otherwise set the Observer's PrerenderContents to NULL to
   // avoid any more messages being sent.

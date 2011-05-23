@@ -66,7 +66,7 @@ class TestPrerenderManager : public PrerenderManager {
 
   virtual ~TestPrerenderManager() {
     if (next_prerender_contents()) {
-      next_prerender_contents()->set_final_status(
+      next_prerender_contents_.release()->Destroy(
           FINAL_STATUS_MANAGER_SHUTDOWN);
     }
     // Set the final status for all PrerenderContents with an expected final

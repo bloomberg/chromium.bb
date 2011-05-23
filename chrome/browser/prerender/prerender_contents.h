@@ -339,6 +339,10 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   bool prerendering_has_started_;
 
+  // Tracks whether or not prerendering has been cancelled by calling Destroy.
+  // Used solely to prevent double deletion.
+  bool prerendering_has_been_cancelled_;
+
   // Time at which we started to load the URL.  This is used to compute
   // the time elapsed from initiating a prerender until the time the
   // (potentially only partially) prerendered page is shown to the user.

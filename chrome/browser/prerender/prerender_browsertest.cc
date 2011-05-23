@@ -89,7 +89,7 @@ class TestPrerenderContents : public PrerenderContents {
         " when testing URL " << prerender_url().path();
     // Prerendering RenderViewHosts should be hidden before the first
     // navigation, so this should be happen for every PrerenderContents for
-    // while a RenderViewHost is created, regardless of whether or not it's
+    // which a RenderViewHost is created, regardless of whether or not it's
     // used.
     if (new_render_view_host_) {
       EXPECT_TRUE(was_hidden_);
@@ -519,9 +519,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIframeDelayLoadPlugin) {
 // Renders a page that contains a prerender link to a page that contains an
 // iframe with a source that requires http authentication. This should not
 // prerender successfully.
-// Flaky, and crbug.com was down when discovered, so no crbug entry.
+// Flaky:  http://crbug.com/82913.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderHttpAuthentication) {
+                       FLAKY_PrerenderHttpAuthentication) {
   PrerenderTestURL("files/prerender/prerender_http_auth_container.html",
                    FINAL_STATUS_AUTH_NEEDED,
                    1);
