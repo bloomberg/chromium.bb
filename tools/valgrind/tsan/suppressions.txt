@@ -132,6 +132,14 @@
   fun:syncable::BaseTransaction::NotifyTransactionChangingAndEnding
 }
 
+{
+  bug_83564
+  ThreadSanitizer:Race
+  fun:base::Thread::message_loop
+  fun:BrowserThread::IsMessageLoopValid
+  fun:ThreadWatcherList::StartWatchingAll
+}
+
 ############################
 # Benign races in Chromium
 {
