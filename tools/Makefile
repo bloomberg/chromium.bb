@@ -374,20 +374,93 @@ binutils: BUILD/stamp-$(CROSSARCH)-binutils
 # Builds the cross gcc used to build the libraries.
 ##################################################################
 
+GCC_SRC_DIR=$(abspath SRC/gcc)
+
+GMP_DIR=$(abspath BUILD/.gcc-extra-install-gmp)
+MPFR_DIR=$(abspath BUILD/.gcc-extra-install-mpfr)
+PPL_DIR=$(abspath BUILD/.gcc-extra-install-ppl)
+CLOOG_DIR=$(abspath BUILD/.gcc-extra-install-cloog-ppl)
+
+
+GCC_CONFIGURE_FLAGS = \
+    --disable-decimal-float \
+    --disable-libgomp \
+    --disable-libmudflap \
+    --disable-libssp \
+    --disable-libstdcxx-pch \
+    --target=$(CROSSARCH) \
+    --with-gmp=$(GMP_DIR) \
+    --with-mpfr=$(MPFR_DIR) \
+    --with-ppl=$(PPL_DIR) \
+    --with-host-libstdcxx="-lpwl -lstdc++ -lm" \
+    --with-cloog=$(CLOOG_DIR) \
+    --disable-ppl-version-check
+
+ifdef MULTILIB
+ifeq ($(MULTILIB),no)
+GCC_CONFIGURE_FLAGS += --disable-multilib
+else
+$(error MULTILIB: Bad value)
+endif
+endif
+
+
+GCC_CC = gcc -m$(HOST_TOOLCHAIN_BITS)
+
+GCC_CFLAGS = -O2 $(CFLAGS)
+
+GCC_DEFINES = \
+    -Dinhibit_libc \
+    -D__gthr_posix_h \
+    -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
+    -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)
+
+GCC_LDFLAGS = -s $(LDFLAGS)
+
+
+GCC_CFLAGS_FOR_TARGET = -O2 -g
+
+
+GCC_CFLAGS_FOR_TARGET-nolibc =
+GCC_CONFIGURE_FLAGS-nolibc = --disable-shared \
+			     --disable-threads \
+			     --enable-languages="c" \
+			     --without-headers
+
+# The newlib-based build of the GCC target libraries (libstdc++ et al)
+# gets used in irt.nexe, which must not use direct register access for
+# TLS.  src/untrusted/irt/nacl.scons:run_irt_tls_test ensures that no
+# such accesses leaked into that binary.  The pregcc build does not
+# produce target libraries that are linked into anything, and the glibc
+# build is not used for building irt.nexe, so they do not need this option.
+GCC_CFLAGS_FOR_TARGET-newlib = -mtls-use-call
+GCC_CONFIGURE_FLAGS-newlib = --disable-shared \
+			     --enable-languages="c,c++,objc" \
+			     --enable-threads=nacl \
+			     --enable-tls \
+			     --with-newlib
+
+GCC_CFLAGS_FOR_TARGET-glibc =
+GCC_CONFIGURE_FLAGS-glibc = --enable-shared \
+			    --enable-languages="c,c++,objc,obj-c++,fortran" \
+			    --enable-threads=posix \
+			    --enable-tls
+
+
 BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
-	PATH=$(BUILDPATH) $(MAKE) \
-	    -C BUILD/build-pregcc-$(CROSSARCH) \
-	    -f ../../Makefile.gcc \
-	    prefix=$(SDKROOT) \
-	    srcdir=../../SRC/gcc \
-	    target=$(CROSSARCH) \
-	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
-	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
-	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
-	    MULTILIB=$(MULTILIB) \
-	    configure-gcc-with-nolibc
+	cd BUILD/build-pregcc-$(CROSSARCH) && \
+	PATH=$(BUILDPATH) \
+	$(GCC_SRC_DIR)/configure \
+	    CC="$(GCC_CC)" \
+	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
+	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
+	    --prefix=$(SDKROOT) \
+	    $(GCC_CONFIGURE_FLAGS) \
+	    $(GCC_CONFIGURE_FLAGS-nolibc)
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-pregcc-$(CROSSARCH) \
 	    all-gcc all-target-libgcc
@@ -440,17 +513,16 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 	    done
 	rm -rf $(PREGCC_BUILD_DIR)
 	mkdir $(PREGCC_BUILD_DIR)
-	$(MAKE) \
-	    -C $(PREGCC_BUILD_DIR) \
-	    -f ../../Makefile.gcc \
-	    prefix=$(PREGCC_PREFIX) \
-	    srcdir=../../SRC/gcc \
-	    target=$(CROSSARCH) \
-	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
-	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
-	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
-	    MULTILIB=$(MULTILIB) \
-	    configure-gcc-with-nolibc
+	cd $(PREGCC_BUILD_DIR) && \
+	$(GCC_SRC_DIR)/configure \
+	    CC="$(GCC_CC)" \
+	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
+	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
+	    --prefix=$(PREGCC_PREFIX) \
+	    $(GCC_CONFIGURE_FLAGS) \
+	    $(GCC_CONFIGURE_FLAGS-nolibc)
 	$(MAKE) \
 	    -C $(PREGCC_BUILD_DIR) \
 	    all-gcc \
@@ -686,17 +758,17 @@ ifeq ($(CROSSARCH), nacl64)
 	    BUILD/build-full-gcc-$(CROSSARCH)/nacl
 endif
 endif
-	PATH=$(BUILDPATH) $(MAKE) \
-	    -C BUILD/build-full-gcc-$(CROSSARCH) \
-	    -f ../../Makefile.gcc \
-	    prefix=$(SDKROOT) \
-	    srcdir=../../SRC/gcc \
-	    target=$(CROSSARCH) \
-	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
-	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
-	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
-	    MULTILIB=$(MULTILIB) \
-	    configure-gcc-with-glibc
+	cd BUILD/build-full-gcc-$(CROSSARCH) && \
+	PATH=$(BUILDPATH) \
+	$(GCC_SRC_DIR)/configure \
+	    CC="$(GCC_CC)" \
+	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-glibc)" \
+	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-glibc)" \
+	    --prefix=$(SDKROOT) \
+	    $(GCC_CONFIGURE_FLAGS) \
+	    $(GCC_CONFIGURE_FLAGS-glibc)
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    all
@@ -722,17 +794,17 @@ ifeq ($(CYGWIN17), 1)
 	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
 	    BUILD/build-gcc-$(CROSSARCH)/$(CROSSARCH)
 endif
-	PATH=$(BUILDPATH) $(MAKE) \
-	    -C BUILD/build-gcc-$(CROSSARCH) \
-	    -f ../../Makefile.gcc \
-	    prefix=$(SDKROOT) \
-	    srcdir=../../SRC/gcc \
-	    target=$(CROSSARCH) \
-	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
-	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
-	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
-	    MULTILIB=$(MULTILIB) \
-	    configure-gcc-with-newlib
+	cd BUILD/build-gcc-$(CROSSARCH) && \
+	PATH=$(BUILDPATH) \
+	$(GCC_SRC_DIR)/configure \
+	    CC="$(GCC_CC)" \
+	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-newlib)" \
+	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-newlib)" \
+	    --prefix=$(SDKROOT) \
+	    $(GCC_CONFIGURE_FLAGS) \
+	    $(GCC_CONFIGURE_FLAGS-newlib)
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-gcc-$(CROSSARCH) \
 	    all
