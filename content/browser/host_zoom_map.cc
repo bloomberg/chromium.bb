@@ -15,10 +15,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -26,30 +23,11 @@
 using WebKit::WebView;
 
 HostZoomMap::HostZoomMap(Profile* profile)
-    : profile_(profile),
-      updating_preferences_(false) {
-  Load();
-  default_zoom_level_ =
-      profile_->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
-  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
-                 Source<Profile>(profile));
-  // Don't observe pref changes (e.g. from sync) in Incognito; once we create
-  // the incognito window it should have no further connection to the main
-  // profile/prefs.
-  if (!profile_->IsOffTheRecord()) {
-    pref_change_registrar_.Init(profile_->GetPrefs());
-    pref_change_registrar_.Add(prefs::kPerHostZoomLevels, this);
-    pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
-  }
+    : profile_(profile), default_zoom_level_(0.0) {
 
   registrar_.Add(
       this, NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
       NotificationService::AllSources());
-}
-
-void HostZoomMap::Load() {
-  if (!profile_)
-    return;
 
   base::AutoLock auto_lock(lock_);
   host_zoom_levels_.clear();
@@ -70,15 +48,6 @@ void HostZoomMap::Load() {
   }
 }
 
-// static
-void HostZoomMap::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDoublePref(prefs::kDefaultZoomLevel,
-                            0.0,
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kPerHostZoomLevels,
-                                PrefService::UNSYNCABLE_PREF);
-}
-
 double HostZoomMap::GetZoomLevel(const GURL& url) const {
   std::string host(net::GetHostOrSpecFromURL(url));
   base::AutoLock auto_lock(lock_);
@@ -88,8 +57,6 @@ double HostZoomMap::GetZoomLevel(const GURL& url) const {
 
 void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!profile_)
-    return;
 
   std::string host(net::GetHostOrSpecFromURL(url));
 
@@ -110,19 +77,14 @@ void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
   if (profile_->IsOffTheRecord())
     return;
 
-  updating_preferences_ = true;
-  {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kPerHostZoomLevels);
-    DictionaryValue* host_zoom_dictionary = update.Get();
-    if (level == default_zoom_level_) {
-      host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
-    } else {
-      host_zoom_dictionary->SetWithoutPathExpansion(
-          host, Value::CreateDoubleValue(level));
-    }
+  DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kPerHostZoomLevels);
+  DictionaryValue* host_zoom_dictionary = update.Get();
+  if (level == default_zoom_level_) {
+    host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
+  } else {
+    host_zoom_dictionary->SetWithoutPathExpansion(
+        host, Value::CreateDoubleValue(level));
   }
-  updating_preferences_ = false;
 }
 
 double HostZoomMap::GetTemporaryZoomLevel(int render_process_id,
@@ -141,8 +103,6 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
                                         int render_view_id,
                                         double level) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!profile_)
-    return;
 
   {
     base::AutoLock auto_lock(lock_);
@@ -173,16 +133,6 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
                                          NotificationService::NoDetails());
 }
 
-void HostZoomMap::Shutdown() {
-  if (!profile_)
-    return;
-
-  registrar_.RemoveAll();
-  if (!profile_->IsOffTheRecord())
-    pref_change_registrar_.RemoveAll();
-  profile_ = NULL;
-}
-
 void HostZoomMap::Observe(
     NotificationType type,
     const NotificationSource& source,
@@ -190,10 +140,6 @@ void HostZoomMap::Observe(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (type.value) {
-    case NotificationType::PROFILE_DESTROYED:
-      // If the profile is going away, we need to stop using it.
-      Shutdown();
-      break;
     case NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
       base::AutoLock auto_lock(lock_);
       int render_view_id = Source<RenderViewHost>(source)->routing_id();
@@ -208,24 +154,10 @@ void HostZoomMap::Observe(
       }
       break;
     }
-    case NotificationType::PREF_CHANGED: {
-      // If we are updating our own preference, don't reload.
-      if (!updating_preferences_) {
-        std::string* name = Details<std::string>(details).ptr();
-        if (prefs::kPerHostZoomLevels == *name)
-          Load();
-        else if (prefs::kDefaultZoomLevel == *name) {
-          default_zoom_level_ =
-              profile_->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
-        }
-      }
-      break;
-    }
     default:
       NOTREACHED() << "Unexpected preference observed.";
   }
 }
 
 HostZoomMap::~HostZoomMap() {
-  Shutdown();
 }

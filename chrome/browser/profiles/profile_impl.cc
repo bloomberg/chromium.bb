@@ -320,6 +320,7 @@ void ProfileImpl::DoFinalInit() {
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
   pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
+  pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
 
   // It would be nice to use PathService for fetching this directory, but
   // the cache directory depends on the profile directory, which isn't available
@@ -945,8 +946,11 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
 }
 
 HostZoomMap* ProfileImpl::GetHostZoomMap() {
-  if (!host_zoom_map_)
+  if (!host_zoom_map_) {
     host_zoom_map_ = new HostZoomMap(this);
+    host_zoom_map_->set_default_zoom_level(
+        GetPrefs()->GetDouble(prefs::kDefaultZoomLevel));
+  }
   return host_zoom_map_.get();
 }
 
@@ -1359,6 +1363,9 @@ void ProfileImpl::Observe(NotificationType type,
       } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
         ProfileManager* profile_manager = g_browser_process->profile_manager();
         profile_manager->RegisterProfileName(this);
+      } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
+          GetHostZoomMap()->set_default_zoom_level(
+              prefs->GetDouble(prefs::kDefaultZoomLevel));
       }
       break;
     }

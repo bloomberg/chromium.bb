@@ -141,7 +141,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ProfileImpl::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);
   HostContentSettingsMap::RegisterUserPrefs(user_prefs);
-  HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
