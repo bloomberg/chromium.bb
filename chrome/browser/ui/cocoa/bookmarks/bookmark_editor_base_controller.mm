@@ -85,7 +85,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
         importing_(false)
   { }
 
-  virtual void Loaded(BookmarkModel* model) {
+  virtual void Loaded(BookmarkModel* model) OVERRIDE{
     [controller_ modelChangedPreserveSelection:YES];
   }
 
@@ -93,14 +93,14 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) {
+                                 int new_index) OVERRIDE {
     if (!importing_ && new_parent->GetChild(new_index)->is_folder())
       [controller_ modelChangedPreserveSelection:YES];
   }
 
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) {
+                                 int index) OVERRIDE {
     if (!importing_ && parent->GetChild(index)->is_folder())
       [controller_ modelChangedPreserveSelection:YES];
   }
@@ -108,36 +108,37 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) {
+                                   const BookmarkNode* node) OVERRIDE {
     [controller_ nodeRemoved:node fromParent:parent];
     if (node->is_folder())
       [controller_ modelChangedPreserveSelection:NO];
   }
 
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {
+                                   const BookmarkNode* node) OVERRIDE {
     if (!importing_ && node->is_folder())
       [controller_ modelChangedPreserveSelection:YES];
   }
 
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {
+  virtual void BookmarkNodeChildrenReordered(
+      BookmarkModel* model,
+      const BookmarkNode* node) OVERRIDE {
     if (!importing_)
       [controller_ modelChangedPreserveSelection:YES];
   }
 
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE {
     // I care nothing for these 'favicons': I only show folders.
   }
 
-  virtual void BookmarkImportBeginning(BookmarkModel* model) {
+  virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE {
     importing_ = true;
   }
 
   // Invoked after a batch import finishes.  This tells observers to update
   // themselves if they were waiting for the update to finish.
-  virtual void BookmarkImportEnding(BookmarkModel* model) {
+  virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE {
     importing_ = false;
     [controller_ modelChangedPreserveSelection:YES];
   }

@@ -492,8 +492,8 @@ void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
   SetChevronState();
 }
 
-void BookmarkBarGtk::BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                               const BookmarkNode* node) {
+void BookmarkBarGtk::BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                                const BookmarkNode* node) {
   BookmarkNodeChanged(model, node);
 }
 

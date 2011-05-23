@@ -49,9 +49,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   void Popup(GtkWidget* widget, gint button_type, guint32 timestamp);
 
   // Overridden from BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged();
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node);
+  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE;
 
   // Overridden from BookmarkContextMenuController::Delegate:
   virtual void WillExecuteCommand();

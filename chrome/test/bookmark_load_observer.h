@@ -15,26 +15,27 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
  public:
   BookmarkLoadObserver();
   virtual ~BookmarkLoadObserver();
-  virtual void Loaded(BookmarkModel* model);
 
+  virtual void Loaded(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
-    const BookmarkNode* old_parent,
-    int old_index,
-    const BookmarkNode* new_parent,
-    int new_index) {}
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) OVERRIDE {}
   virtual void BookmarkNodeAdded(BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index) {}
+                                 const BookmarkNode* parent,
+                                 int index)  OVERRIDE{}
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
-    const BookmarkNode* parent,
-    int old_index,
-    const BookmarkNode* node) {}
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) OVERRIDE {}
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-    const BookmarkNode* node) {}
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-    const BookmarkNode* node) {}
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-    const BookmarkNode* node) {}
+                                   const BookmarkNode* node) OVERRIDE {}
+  virtual void BookmarkNodeChildrenReordered(
+      BookmarkModel* model,
+      const BookmarkNode* node) OVERRIDE {}
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);

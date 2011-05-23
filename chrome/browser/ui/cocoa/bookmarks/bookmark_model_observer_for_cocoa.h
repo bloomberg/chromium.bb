@@ -44,36 +44,37 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
                                 SEL selector);
   virtual ~BookmarkModelObserverForCocoa();
 
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index);
+                                 int new_index) OVERRIDE;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node);
+                                   const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node);
-  virtual void BookmarkImportBeginning(BookmarkModel* model);
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE;
 
   // Some notifications we don't care about, but by being pure virtual
   // in the base class we must implement them.
-  virtual void Loaded(BookmarkModel* model) {
+  virtual void Loaded(BookmarkModel* model) OVERRIDE {
   }
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) {
+                                 int index) OVERRIDE {
   }
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE {
   }
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {
+  virtual void BookmarkNodeChildrenReordered(
+      BookmarkModel* model,
+      const BookmarkNode* node) OVERRIDE {
   }
 
-  virtual void BookmarkImportEnding(BookmarkModel* model) {
+  virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE {
   }
 
  private:

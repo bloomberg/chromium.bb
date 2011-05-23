@@ -247,8 +247,9 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
   }
 }
 
-void BookmarkChangeProcessor::BookmarkNodeFaviconLoaded(BookmarkModel* model,
-      const BookmarkNode* node) {
+void BookmarkChangeProcessor::BookmarkNodeFaviconChanged(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
   DCHECK(running());
   BookmarkNodeChanged(model, node);
 }

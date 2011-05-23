@@ -369,7 +369,7 @@ TEST_F(BookmarkMenuBridgeTest, TestFaviconLoading) {
   NSMenuItem* item = [menu itemWithTitle:@"Test Item"];
   EXPECT_TRUE([item image]);
   [item setImage:nil];
-  bridge_->BookmarkNodeFaviconLoaded(model, node);
+  bridge_->BookmarkNodeFaviconChanged(model, node);
   EXPECT_TRUE([item image]);
 }
 

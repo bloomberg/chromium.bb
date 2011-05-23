@@ -49,8 +49,8 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
                                    const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE;
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE;

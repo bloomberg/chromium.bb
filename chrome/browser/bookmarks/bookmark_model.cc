@@ -512,7 +512,7 @@ bool BookmarkModel::IsBookmarkedNoLock(const GURL& url) {
 void BookmarkModel::FaviconLoaded(const BookmarkNode* node) {
   // Send out notification to the observer.
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkNodeFaviconLoaded(this, node));
+                    BookmarkNodeFaviconChanged(this, node));
 }
 
 void BookmarkModel::RemoveNode(BookmarkNode* node,
@@ -794,7 +794,7 @@ void BookmarkModel::Observe(NotificationType type,
           node->InvalidateFavicon();
           CancelPendingFaviconLoadRequests(node);
           FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                            BookmarkNodeChanged(this, node));
+                            BookmarkNodeFaviconChanged(this, node));
         }
       }
       break;

@@ -113,7 +113,7 @@ void BookmarkMenuController::BookmarkModelChanged() {
   gtk_menu_popdown(GTK_MENU(menu_));
 }
 
-void BookmarkMenuController::BookmarkNodeFaviconLoaded(
+void BookmarkMenuController::BookmarkNodeFaviconChanged(
     BookmarkModel* model, const BookmarkNode* node) {
   std::map<const BookmarkNode*, GtkWidget*>::iterator it =
       node_to_menu_widget_map_.find(node);

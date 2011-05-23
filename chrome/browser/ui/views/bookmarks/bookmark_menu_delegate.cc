@@ -264,7 +264,7 @@ int BookmarkMenuDelegate::GetMaxWidthForMenu(MenuItemView* menu) {
 void BookmarkMenuDelegate::BookmarkModelChanged() {
 }
 
-void BookmarkMenuDelegate::BookmarkNodeFaviconLoaded(
+void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
     BookmarkModel* model, const BookmarkNode* node) {
   NodeToMenuIDMap::iterator menu_pair = node_to_menu_id_map_.find(node);
   if (menu_pair == node_to_menu_id_map_.end())

@@ -108,9 +108,9 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   int GetMaxWidthForMenu(views::MenuItemView* menu);
 
   // BookmarkModelObserver methods.
-  virtual void BookmarkModelChanged();
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node);
+  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE;
 
   // BookmarkContextMenu::Observer methods.
   virtual void WillRemoveBookmarks(

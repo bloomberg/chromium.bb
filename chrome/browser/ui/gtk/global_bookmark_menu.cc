@@ -271,8 +271,8 @@ void GlobalBookmarkMenu::BookmarkNodeChanged(BookmarkModel* model,
     ConfigureMenuItem(node, item);
 }
 
-void GlobalBookmarkMenu::BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                                   const BookmarkNode* node) {
+void GlobalBookmarkMenu::BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                                    const BookmarkNode* node) {
   GtkWidget* item = MenuItemForNode(node);
   if (item)
     ConfigureMenuItem(node, item);

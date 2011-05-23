@@ -89,7 +89,7 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
   }
 
 
-  void Loaded(BookmarkModel* model) {
+  void Loaded(BookmarkModel* model) OVERRIDE {
     // We never load from the db, so that this should never get invoked.
     NOTREACHED();
   }
@@ -98,14 +98,14 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) {
+                                 int new_index) OVERRIDE {
     moved_count++;
     observer_details.Set(old_parent, new_parent, old_index, new_index);
   }
 
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) {
+                                 int index) OVERRIDE {
     added_count++;
     observer_details.Set(parent, NULL, index, -1);
   }
@@ -113,24 +113,25 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) {
+                                   const BookmarkNode* node) OVERRIDE {
     removed_count++;
     observer_details.Set(parent, NULL, old_index, -1);
   }
 
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {
+                                   const BookmarkNode* node) OVERRIDE {
     changed_count++;
     observer_details.Set(node, NULL, -1, -1);
   }
 
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {
+  virtual void BookmarkNodeChildrenReordered(
+      BookmarkModel* model,
+      const BookmarkNode* node) OVERRIDE {
     reordered_count_++;
   }
 
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE {
     // We never attempt to load favicons, so that this method never
     // gets invoked.
   }
@@ -723,7 +724,7 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest,
   }
 
   // BookmarkModelObserver methods.
-  virtual void Loaded(BookmarkModel* model) {
+  virtual void Loaded(BookmarkModel* model) OVERRIDE {
     // Balances the call in BlockTillLoaded.
     MessageLoop::current()->Quit();
   }
@@ -731,20 +732,21 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) {}
+                                 int new_index) OVERRIDE {}
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) {}
+                                 int index) OVERRIDE {}
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) {}
+                                   const BookmarkNode* node) OVERRIDE {}
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {}
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {}
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {}
+                                   const BookmarkNode* node) OVERRIDE {}
+  virtual void BookmarkNodeChildrenReordered(
+      BookmarkModel* model,
+      const BookmarkNode* node) OVERRIDE {}
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE {}
 
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;

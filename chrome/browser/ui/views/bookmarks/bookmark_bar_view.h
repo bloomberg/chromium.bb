@@ -232,8 +232,8 @@ class BookmarkBarView : public DetachableToolbarView,
                                    const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) OVERRIDE;
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE;
 
   // DragController:
   virtual void WriteDragDataForView(views::View* sender,

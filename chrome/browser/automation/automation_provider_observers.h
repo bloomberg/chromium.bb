@@ -860,26 +860,28 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
                                           BookmarkModel* model);
   virtual ~AutomationProviderBookmarkModelObserver();
 
-  virtual void Loaded(BookmarkModel* model);
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
+  // BookmarkModelObserver:
+  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) {}
+                                 int new_index) OVERRIDE {}
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) {}
+                                 int index) OVERRIDE {}
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) {}
+                                   const BookmarkNode* node) OVERRIDE {}
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {}
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {}
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {}
+                                   const BookmarkNode* node) OVERRIDE {}
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE {}
+  virtual void BookmarkNodeChildrenReordered(
+      BookmarkModel* model,
+      const BookmarkNode* node) OVERRIDE {}
 
  private:
   // Reply to the automation message with the given success value,

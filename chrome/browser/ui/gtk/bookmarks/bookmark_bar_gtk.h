@@ -206,31 +206,31 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // Invoked when the bookmark model has finished loading. Creates a button
   // for each of the children of the root node from the model.
-  virtual void Loaded(BookmarkModel* model);
+  virtual void Loaded(BookmarkModel* model) OVERRIDE;
 
   // Invoked when the model is being deleted.
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
 
   // Invoked when a node has moved.
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index);
+                                 int new_index) OVERRIDE;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index);
+                                 int index) OVERRIDE;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node);
+                                   const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node);
+                                   const BookmarkNode* node) OVERRIDE;
   // Invoked when a favicon has finished loading.
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node);
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node);
+                                             const BookmarkNode* node) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

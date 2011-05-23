@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,13 +40,13 @@ class BookmarkModelObserver {
                                    int old_index,
                                    const BookmarkNode* node) = 0;
 
-  // Invoked when the title, url or favicon of a node has changed.
+  // Invoked when the title or url of a node changes.
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) = 0;
 
-  // Invoked when a favicon has finished loading.
-  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) = 0;
+  // Invoked when a favicon has been loaded or changed.
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) = 0;
 
   // Invoked when the children (just direct children, not descendants) of
   // |node| have been reordered in some way, such as sorted.
