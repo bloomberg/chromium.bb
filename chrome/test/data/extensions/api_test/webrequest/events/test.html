@@ -104,6 +104,16 @@ function checkExpectations() {
   eventsCaptured();
 }
 
+// Simple check to see that we have a User-Agent header, and that it contains
+// an expected value. This is a basic check that the request headers are valid.
+function checkUserAgent(headers) {
+  for (var i in headers) {
+    if (headers[i].name.toLowerCase() == "user-agent")
+      return headers[i].value.toLowerCase().indexOf("chrome") != -1;
+  }
+  return false;
+}
+
 function captureEvent(name, details) {
   // Ignore system-level requests like safebrowsing updates and favicon fetches
   // since they are unpredictable.
@@ -123,7 +133,7 @@ function captureEvent(name, details) {
   delete details.requestId;
   delete details.timeStamp;
   if (details.requestHeaders) {
-    details.requestHeadersExist = true;
+    details.requestHeadersValid = checkUserAgent(details.requestHeaders);
     delete details.requestHeaders;
   }
   if (details.responseHeaders) {
@@ -263,7 +273,7 @@ runTests([
           event: "onBeforeSendHeaders",
           details: {
             url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
-            requestHeadersExist: true
+            requestHeadersValid: true
           }
         },
         { label: "onRequestSent-1",
@@ -271,7 +281,7 @@ runTests([
           details: {
             url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
             ip: "127.0.0.1",
-            requestHeadersExist: true
+            requestHeadersValid: true
           }
         },
         { label: "onBeforeRedirect",
@@ -297,7 +307,7 @@ runTests([
           event: "onBeforeSendHeaders",
           details: {
             url: URL_HTTP_SIMPLE_LOAD,
-            requestHeadersExist: true
+            requestHeadersValid: true
           }
         },
         { label: "onRequestSent-2",
@@ -305,7 +315,7 @@ runTests([
           details: {
             url: URL_HTTP_SIMPLE_LOAD,
             ip: "127.0.0.1",
-            requestHeadersExist: true
+            requestHeadersValid: true
           }
         },
         { label: "onResponseStarted",

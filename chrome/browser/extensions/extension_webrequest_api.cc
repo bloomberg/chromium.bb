@@ -161,7 +161,7 @@ ListValue* GetRequestHeadersList(const net::HttpRequestHeaders* headers) {
     for (net::HttpRequestHeaders::Iterator it(*headers); it.GetNext(); ) {
       DictionaryValue* header = new DictionaryValue();
       header->SetString(keys::kHeaderNameKey, it.name());
-      header->SetString(keys::kHeaderValueKey, it.name());
+      header->SetString(keys::kHeaderValueKey, it.value());
       headers_value->Append(header);
     }
   }
