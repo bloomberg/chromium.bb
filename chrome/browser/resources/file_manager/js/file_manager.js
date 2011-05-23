@@ -518,18 +518,20 @@ FileManager.prototype = {
     // Always sharing the data model between the detail/thumb views confuses
     // them.  Instead we maintain this bogus data model, and hook it up to the
     // view that is not in use.
-    this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
+    this.emptyDataModel_ = new cr.ui.table.TableDataModel([]);
 
-    this.dataModel_ = new cr.ui.ArrayDataModel([]);
+    this.dataModel_ = new cr.ui.table.TableDataModel([]);
     this.dataModel_.sort('name');
+    this.dataModel_.addEventListener('sorted',
+                                this.onDataModelSorted_.bind(this));
     this.dataModel_.prepareSort = this.prepareSort_.bind(this);
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
         this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
         this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      this.selectionModelClass_ = cr.ui.ListSingleSelectionModel;
+      this.selectionModelClass_ = cr.ui.table.TableSingleSelectionModel;
     } else {
-      this.selectionModelClass_ = cr.ui.ListSelectionModel;
+      this.selectionModelClass_ = cr.ui.table.TableSelectionModel;
     }
 
     this.initTable_();
@@ -1424,6 +1426,16 @@ FileManager.prototype = {
   };
 
   /**
+   * Invoked by the table dataModel after a sort completes.
+   *
+   * We use this hook to make sure selected files stay visible after a sort.
+   */
+  FileManager.prototype.onDataModelSorted_ = function() {
+    var i = this.currentList_.selectionModel.leadIndex;
+    this.currentList_.scrollIntoView(i);
+  }
+
+  /**
    * Update the selection summary UI when the selection summarization completes.
    */
   FileManager.prototype.onSelectionSummarized_ = function() {
@@ -1556,6 +1568,9 @@ FileManager.prototype = {
 
     function onReadSome(entries) {
       if (entries.length == 0) {
+        if (self.dataModel_.sortStatus.field != 'name')
+          self.dataModel_.updateIndex(0);
+
         if (opt_callback)
           opt_callback();
         return;
@@ -1601,6 +1616,7 @@ FileManager.prototype = {
     var spliceArgs = [].slice.call(this.rootEntries_);
     spliceArgs.unshift(0, 0);  // index, deleteCount
     self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
+    self.dataModel_.updateIndex(0);
 
     if (opt_callback)
       opt_callback();
