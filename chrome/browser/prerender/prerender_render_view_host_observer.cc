@@ -34,6 +34,17 @@ bool PrerenderRenderViewHostObserver::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PrerenderRenderViewHostObserver, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  // If this was a DidStartProvisionalLoadForFrame message, we don't want to
+  // to consume it, so return false;
+  if (handled)
+    return false;
+
+  // The following messages we do want to consume.
+  handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PrerenderRenderViewHostObserver, message)
     IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerenderForHTML5Media,
                         OnMaybeCancelPrerenderForHTML5Media)

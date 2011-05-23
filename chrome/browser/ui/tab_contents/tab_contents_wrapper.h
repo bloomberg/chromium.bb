@@ -166,6 +166,10 @@ class TabContentsWrapper : public TabContentsObserver,
     return translate_tab_helper_.get();
   }
 
+  prerender::PrerenderObserver* prerender_observer() {
+    return prerender_observer_.get();
+  }
+
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:

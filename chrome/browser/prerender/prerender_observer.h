@@ -36,6 +36,9 @@ class PrerenderObserver : public TabContentsObserver {
                                          bool has_opener_set,
                                          const GURL& url);
 
+  // Called when this prerendered TabContents has just been swapped in.
+  void PrerenderSwappedIn();
+
  private:
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager();

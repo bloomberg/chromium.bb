@@ -44,10 +44,6 @@ void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           bool has_opener_set,
                                                           const GURL& url) {
-  // Don't include prerendered pages in the PPLT metric until after they are
-  // swapped in.
-  if (IsPrerendering())
-    return;
   if (is_main_frame) {
     // Record the beginning of a new PPLT navigation.
     pplt_load_start_ = base::TimeTicks::Now();
@@ -57,11 +53,9 @@ void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
 void PrerenderObserver::DidStopLoading() {
   // Don't include prerendered pages in the PPLT metric until after they are
   // swapped in.
-  if (IsPrerendering())
-    return;
 
   // Compute the PPLT metric and report it in a histogram, if needed.
-  if (!pplt_load_start_.is_null()) {
+  if (!pplt_load_start_.is_null() && !IsPrerendering()) {
     PrerenderManager::RecordPerceivedPageLoadTime(
         base::TimeTicks::Now() - pplt_load_start_, tab_contents());
   }
@@ -90,6 +84,19 @@ bool PrerenderObserver::IsPrerendering() {
   if (!prerender_manager)
     return false;
   return prerender_manager->IsTabContentsPrerendering(tab_contents());
+}
+
+void PrerenderObserver::PrerenderSwappedIn() {
+  // Ensure we are not prerendering any more.
+  DCHECK(!IsPrerendering());
+  if (pplt_load_start_.is_null()) {
+    // If we have already finished loading, report a 0 PPLT.
+    PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta(),
+                                                  tab_contents());
+  } else {
+    // If we have not finished loading yet, rebase the start time to now.
+    pplt_load_start_ = base::TimeTicks::Now();
+  }
 }
 
 }  // namespace prerender
