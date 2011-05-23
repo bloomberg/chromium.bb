@@ -36,8 +36,9 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
  protected:
   explicit DownloadShelfContextMenu(BaseDownloadItemModel* download_model);
 
-  ui::SimpleMenuModel* GetInProgressMenuModel();
-  ui::SimpleMenuModel* GetFinishedMenuModel();
+  // Returns the correct menu model depending whether the download item is
+  // completed or not.
+  ui::SimpleMenuModel* GetMenuModel();
 
   // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
@@ -50,6 +51,9 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
 
  private:
+  ui::SimpleMenuModel* GetInProgressMenuModel();
+  ui::SimpleMenuModel* GetFinishedMenuModel();
+
   // We show slightly different menus if the download is in progress vs. if the
   // download has finished.
   scoped_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;

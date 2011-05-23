@@ -17,46 +17,9 @@ DownloadShelfContextMenu::DownloadShelfContextMenu(
       download_item_(download_model->download()) {
 }
 
-ui::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel() {
-  if (in_progress_download_menu_model_.get())
-    return in_progress_download_menu_model_.get();
-
-  in_progress_download_menu_model_.reset(new ui::SimpleMenuModel(this));
-
-  in_progress_download_menu_model_->AddCheckItemWithStringId(
-      OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
-  in_progress_download_menu_model_->AddCheckItemWithStringId(
-      ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
-  in_progress_download_menu_model_->AddSeparator();
-  in_progress_download_menu_model_->AddItemWithStringId(
-      TOGGLE_PAUSE, IDS_DOWNLOAD_MENU_PAUSE_ITEM);
-  in_progress_download_menu_model_->AddItemWithStringId(
-      SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
-  in_progress_download_menu_model_->AddSeparator();
-  in_progress_download_menu_model_->AddItemWithStringId(
-      CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
-
-  return in_progress_download_menu_model_.get();
-}
-
-ui::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel() {
-  if (finished_download_menu_model_.get())
-    return finished_download_menu_model_.get();
-
-  finished_download_menu_model_.reset(new ui::SimpleMenuModel(this));
-
-  finished_download_menu_model_->AddItemWithStringId(
-      OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN);
-  finished_download_menu_model_->AddCheckItemWithStringId(
-      ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
-  finished_download_menu_model_->AddSeparator();
-  finished_download_menu_model_->AddItemWithStringId(
-      SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
-  finished_download_menu_model_->AddSeparator();
-  finished_download_menu_model_->AddItemWithStringId(
-      CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
-
-  return finished_download_menu_model_.get();
+ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
+  return download_item_->IsComplete() ? GetFinishedMenuModel()
+                                      : GetInProgressMenuModel();
 }
 
 bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
@@ -139,11 +102,53 @@ string16 DownloadShelfContextMenu::GetLabelForCommandId(int command_id) const {
     case TOGGLE_PAUSE: {
       if (download_item_->is_paused())
         return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_RESUME_ITEM);
-      else
-        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_PAUSE_ITEM);
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_PAUSE_ITEM);
     }
     default:
       NOTREACHED();
+      break;
   }
   return string16();
+}
+
+ui::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel() {
+  if (in_progress_download_menu_model_.get())
+    return in_progress_download_menu_model_.get();
+
+  in_progress_download_menu_model_.reset(new ui::SimpleMenuModel(this));
+
+  in_progress_download_menu_model_->AddCheckItemWithStringId(
+      OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
+  in_progress_download_menu_model_->AddCheckItemWithStringId(
+      ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
+  in_progress_download_menu_model_->AddSeparator();
+  in_progress_download_menu_model_->AddItemWithStringId(
+      TOGGLE_PAUSE, IDS_DOWNLOAD_MENU_PAUSE_ITEM);
+  in_progress_download_menu_model_->AddItemWithStringId(
+      SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
+  in_progress_download_menu_model_->AddSeparator();
+  in_progress_download_menu_model_->AddItemWithStringId(
+      CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
+
+  return in_progress_download_menu_model_.get();
+}
+
+ui::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel() {
+  if (finished_download_menu_model_.get())
+    return finished_download_menu_model_.get();
+
+  finished_download_menu_model_.reset(new ui::SimpleMenuModel(this));
+
+  finished_download_menu_model_->AddItemWithStringId(
+      OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN);
+  finished_download_menu_model_->AddCheckItemWithStringId(
+      ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
+  finished_download_menu_model_->AddSeparator();
+  finished_download_menu_model_->AddItemWithStringId(
+      SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
+  finished_download_menu_model_->AddSeparator();
+  finished_download_menu_model_->AddItemWithStringId(
+      CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
+
+  return finished_download_menu_model_.get();
 }

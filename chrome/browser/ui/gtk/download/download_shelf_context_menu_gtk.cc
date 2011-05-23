@@ -20,10 +20,7 @@ DownloadShelfContextMenuGtk::~DownloadShelfContextMenuGtk() {}
 
 void DownloadShelfContextMenuGtk::Popup(GtkWidget* widget,
                                         GdkEventButton* event) {
-  if (download_item()->IsComplete())
-    menu_.reset(new MenuGtk(this, GetFinishedMenuModel()));
-  else
-    menu_.reset(new MenuGtk(this, GetInProgressMenuModel()));
+  menu_.reset(new MenuGtk(this, GetMenuModel()));
 
   if (widget)
     menu_->PopupForWidget(widget, event->button, event->time);

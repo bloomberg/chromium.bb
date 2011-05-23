@@ -20,10 +20,7 @@ DownloadShelfContextMenuView::DownloadShelfContextMenuView(
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
 void DownloadShelfContextMenuView::Run(const gfx::Point& point) {
-  if (download_item()->IsComplete())
-    menu_.reset(new views::Menu2(GetFinishedMenuModel()));
-  else
-    menu_.reset(new views::Menu2(GetInProgressMenuModel()));
+  menu_.reset(new views::Menu2(GetMenuModel()));
 
   // The menu's alignment is determined based on the UI layout.
   views::Menu2::Alignment alignment;
