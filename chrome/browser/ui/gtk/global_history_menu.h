@@ -11,6 +11,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
+#include "chrome/browser/ui/gtk/global_menu_owner.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -25,7 +27,8 @@ class TopSites;
 typedef struct _GdkPixbuf GdkPixbuf;
 
 // Controls the History menu.
-class GlobalHistoryMenu : public NotificationObserver,
+class GlobalHistoryMenu : public GlobalMenuOwner,
+                          public NotificationObserver,
                           public TabRestoreServiceObserver {
  public:
   explicit GlobalHistoryMenu(Browser* browser);
@@ -33,7 +36,7 @@ class GlobalHistoryMenu : public NotificationObserver,
 
   // Takes the history menu we need to modify based on the tab restore/most
   // visited state.
-  void Init(GtkWidget* history_menu);
+  virtual void Init(GtkWidget* history_menu, GtkWidget* history_menu_item);
 
  private:
   class HistoryItem;
@@ -100,19 +103,25 @@ class GlobalHistoryMenu : public NotificationObserver,
 
   CHROMEGTK_CALLBACK_0(GlobalHistoryMenu, void, OnRecentlyClosedItemActivated);
 
+  // Listen for the first menu show command so we can then connect to the
+  // TabRestoreService. With how the global menus work, I'd prefer to register
+  // with the TabRestoreService as soon as we're constructed, but this breaks
+  // unit tests which test the service (because they force different
+  // construction ordering while us connecting to the TabRestoreService loads
+  // data now!)
+  CHROMEGTK_CALLBACK_0(GlobalHistoryMenu, void, OnMenuActivate);
+
   Browser* browser_;
   Profile* profile_;
+
+  // The history menu. We keep this since we need to rewrite parts of it
+  // periodically.
+  OwnedWidgetGtk history_menu_;
 
   history::TopSites* top_sites_;
   CancelableRequestConsumer top_sites_consumer_;
 
-  NotificationRegistrar registrar_;
-
   GdkPixbuf* default_favicon_;
-
-  // The history menu. We keep this since we need to rewrite parts of it
-  // periodically.
-  GtkWidget* history_menu_;
 
   TabRestoreService* tab_restore_service_;  // weak
 
@@ -121,6 +130,8 @@ class GlobalHistoryMenu : public NotificationObserver,
 
   // Maps HistoryItems to favicon request Handles.
   CancelableRequestConsumerTSimple<HistoryItem*> favicon_consumer_;
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_GLOBAL_HISTORY_MENU_H_

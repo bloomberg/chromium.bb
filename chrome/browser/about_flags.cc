@@ -290,15 +290,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kPpapiFlashInProcess)
   },
-#if defined(TOOLKIT_GTK)
-  {
-    "global-gnome-menu",
-    IDS_FLAGS_LINUX_GLOBAL_MENUBAR_NAME,
-    IDS_FLAGS_LINUX_GLOBAL_MENUBAR_DESCRIPTION,
-    kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kGlobalGnomeMenu)
-  },
-#endif
   {
     "enable-vpn",
     IDS_FLAGS_ENABLE_VPN_NAME,

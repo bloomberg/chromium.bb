@@ -1611,10 +1611,8 @@ void BrowserWindowGtk::InitWidgets() {
   // fool the Unity desktop, which will mirror the contents of the first
   // GtkMenuBar it sees into the global menu bar. (It doesn't seem to check the
   // visibility of the GtkMenuBar, so we can just permanently hide it.)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGlobalGnomeMenu)) {
-    global_menu_bar_.reset(new GlobalMenuBar(browser_.get()));
-    gtk_container_add(GTK_CONTAINER(window_vbox_), global_menu_bar_->widget());
-  }
+  global_menu_bar_.reset(new GlobalMenuBar(browser_.get()));
+  gtk_container_add(GTK_CONTAINER(window_vbox_), global_menu_bar_->widget());
 
   // The window container draws the custom browser frame.
   window_container_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);

@@ -1132,11 +1132,6 @@ const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 const char kKioskMode[]                     = "kiosk";
 #endif
 
-// Enables the experimental global gnome menu.
-#if defined(TOOLKIT_GTK)
-extern const char kGlobalGnomeMenu[]        = "global-gnome-menu";
-#endif
-
 // Enables debug paint in views framework. Enabling this causes the damaged
 // region being painted to flash in red.
 #if defined(TOOLKIT_VIEWS)

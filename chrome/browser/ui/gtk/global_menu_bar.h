@@ -17,6 +17,7 @@
 
 class Browser;
 struct GlobalMenuBarCommand;
+class GlobalMenuOwner;
 
 typedef struct _GtkAccelGroup GtkAccelGroup;
 typedef struct _GtkWidget GtkWidget;
@@ -48,9 +49,10 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   typedef std::map<int, GtkWidget*> CommandIDMenuItemMap;
 
   // Helper function that builds the data.
-  GtkWidget* BuildGtkMenuFrom(int menu_str_id,
-                              std::map<int, GtkWidget*>* id_to_menu_item,
-                              GlobalMenuBarCommand* commands);
+  void BuildGtkMenuFrom(int menu_str_id,
+                        std::map<int, GtkWidget*>* id_to_menu_item,
+                        GlobalMenuBarCommand* commands,
+                        GlobalMenuOwner* owner);
 
   // Builds an individual menu item.
   GtkWidget* BuildMenuItem(int string_id,

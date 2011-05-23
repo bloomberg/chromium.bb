@@ -10,6 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/ui/gtk/global_menu_owner.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -28,14 +30,15 @@ typedef struct _GtkWidget GtkWidget;
 // need to update the menu in the background (instead of building it on showing
 // and not updating it if the model changes). I'm not even thinking about
 // making these draggable since these items aren't displayed in our process.
-class GlobalBookmarkMenu : public NotificationObserver,
+class GlobalBookmarkMenu : public GlobalMenuOwner,
+                           public NotificationObserver,
                            public BookmarkModelObserver {
  public:
   explicit GlobalBookmarkMenu(Browser* browser);
   virtual ~GlobalBookmarkMenu();
 
   // Takes the bookmark menu we need to modify based on bookmark state.
-  void Init(GtkWidget* bookmark_menu);
+  virtual void Init(GtkWidget* bookmark_menu, GtkWidget* bookmark_menu_item);
 
  private:
   // Schedules the menu to be rebuilt. The mac version sets a boolean and
@@ -111,7 +114,7 @@ class GlobalBookmarkMenu : public NotificationObserver,
   GdkPixbuf* default_favicon_;
   GdkPixbuf* default_folder_;
 
-  GtkWidget* bookmark_menu_;
+  OwnedWidgetGtk bookmark_menu_;
 
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched

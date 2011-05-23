@@ -68,8 +68,9 @@ GlobalBookmarkMenu::~GlobalBookmarkMenu() {
   profile_->GetBookmarkModel()->RemoveObserver(this);
 }
 
-void GlobalBookmarkMenu::Init(GtkWidget* bookmark_menu) {
-  bookmark_menu_ = bookmark_menu;
+void GlobalBookmarkMenu::Init(GtkWidget* bookmark_menu,
+                              GtkWidget* bookmark_menu_item) {
+  bookmark_menu_.Own(bookmark_menu);
 
   EnsureMenuItemFunctions();
   if (gtk_menu_item_set_label_sym) {
@@ -88,8 +89,6 @@ void GlobalBookmarkMenu::RebuildMenuInFuture() {
 }
 
 void GlobalBookmarkMenu::RebuildMenu() {
-
-
   BookmarkModel* model = profile_->GetBookmarkModel();
   DCHECK(model);
   DCHECK(model->IsLoaded());
@@ -98,8 +97,8 @@ void GlobalBookmarkMenu::RebuildMenu() {
 
   const BookmarkNode* bar_node = model->GetBookmarkBarNode();
   if (bar_node->child_count()) {
-    AddBookmarkMenuItem(bookmark_menu_, gtk_separator_menu_item_new());
-    AddNodeToMenu(bar_node, bookmark_menu_);
+    AddBookmarkMenuItem(bookmark_menu_.get(), gtk_separator_menu_item_new());
+    AddNodeToMenu(bar_node, bookmark_menu_.get());
   }
 
   // Only display the other bookmarks folder in the menu if it has items in it.
@@ -108,7 +107,7 @@ void GlobalBookmarkMenu::RebuildMenu() {
     GtkWidget* submenu = gtk_menu_new();
     AddNodeToMenu(other_node, submenu);
 
-    AddBookmarkMenuItem(bookmark_menu_, gtk_separator_menu_item_new());
+    AddBookmarkMenuItem(bookmark_menu_.get(), gtk_separator_menu_item_new());
 
     GtkWidget* menu_item = gtk_image_menu_item_new_with_label(
         l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME).c_str());
@@ -117,7 +116,7 @@ void GlobalBookmarkMenu::RebuildMenu() {
         GTK_IMAGE_MENU_ITEM(menu_item),
         gtk_image_new_from_pixbuf(default_folder_));
 
-    AddBookmarkMenuItem(bookmark_menu_, menu_item);
+    AddBookmarkMenuItem(bookmark_menu_.get(), menu_item);
   }
 }
 
@@ -205,7 +204,7 @@ GtkWidget* GlobalBookmarkMenu::MenuItemForNode(const BookmarkNode* node) {
 void GlobalBookmarkMenu::ClearBookmarkMenu() {
   bookmark_nodes_.clear();
 
-  gtk_container_foreach(GTK_CONTAINER(bookmark_menu_),
+  gtk_container_foreach(GTK_CONTAINER(bookmark_menu_.get()),
                         &ClearBookmarkItemCallback,
                         NULL);
 }

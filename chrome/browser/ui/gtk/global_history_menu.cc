@@ -113,8 +113,15 @@ GlobalHistoryMenu::~GlobalHistoryMenu() {
   menu_item_history_map_.clear();
 }
 
-void GlobalHistoryMenu::Init(GtkWidget* history_menu) {
-  history_menu_ = history_menu;
+void GlobalHistoryMenu::Init(GtkWidget* history_menu,
+                             GtkWidget* history_menu_item) {
+  history_menu_.Own(history_menu);
+
+  // We have to connect to |history_menu_item|'s "activate" signal instead of
+  // |history_menu|'s "show" signal because we are not supposed to modify the
+  // menu during "show"
+  g_signal_connect(history_menu_item, "activate",
+                   G_CALLBACK(OnMenuActivateThunk), this);
 
   default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
 
@@ -127,17 +134,6 @@ void GlobalHistoryMenu::Init(GtkWidget* history_menu) {
       // ourself.
       registrar_.Add(this, NotificationType::TOP_SITES_CHANGED,
                      Source<history::TopSites>(top_sites_));
-    }
-
-    tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile_);
-    if (tab_restore_service_) {
-      tab_restore_service_->LoadTabsFromLastSession();
-      tab_restore_service_->AddObserver(this);
-
-      // If LoadTabsFromLastSession doesn't load tabs, it won't call
-      // TabRestoreServiceChanged(). This ensures that all new windows after
-      // the first one will have their menus populated correctly.
-      TabRestoreServiceChanged(tab_restore_service_);
     }
 
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -155,10 +151,10 @@ void GlobalHistoryMenu::GetTopSitesData() {
 
 void GlobalHistoryMenu::OnTopSitesReceived(
     const history::MostVisitedURLList& visited_list) {
-  ClearMenuSection(history_menu_, GlobalMenuBar::TAG_MOST_VISITED);
+  ClearMenuSection(history_menu_.get(), GlobalMenuBar::TAG_MOST_VISITED);
 
   int index = GetIndexOfMenuItemWithTag(
-      history_menu_,
+      history_menu_.get(),
       GlobalMenuBar::TAG_MOST_VISITED_HEADER) + 1;
 
   for (size_t i = 0; i < visited_list.size() && i < kMostVisitedCount; ++i) {
@@ -170,12 +166,12 @@ void GlobalHistoryMenu::OnTopSitesReceived(
     item->title = visited.title;
     item->url = visited.url;
 
-    // The TopSites system doesn't give us icons; it gives us chrome:// urls to
-    // icons so fetch the icons normally.
+    // The TopSites system doesn't give us icons; it gives us chrome:// urls
+    // to icons so fetch the icons normally.
     GetFaviconForHistoryItem(item);
 
     AddHistoryItemToMenu(item,
-                         history_menu_,
+                         history_menu_.get(),
                          GlobalMenuBar::TAG_MOST_VISITED,
                          index++);
   }
@@ -375,7 +371,8 @@ void GlobalHistoryMenu::Observe(NotificationType type,
     // we'll update on the next menu change event.
     default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
   } else if (type.value == NotificationType::TOP_SITES_CHANGED) {
-    GetTopSitesData();
+    if (Source<history::TopSites>(source).ptr() == top_sites_)
+      GetTopSitesData();
   } else {
     NOTREACHED();
   }
@@ -384,12 +381,12 @@ void GlobalHistoryMenu::Observe(NotificationType type,
 void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
   const TabRestoreService::Entries& entries = service->entries();
 
-  ClearMenuSection(history_menu_, GlobalMenuBar::TAG_RECENTLY_CLOSED);
+  ClearMenuSection(history_menu_.get(), GlobalMenuBar::TAG_RECENTLY_CLOSED);
 
   // We'll get the index the "Recently Closed" header. (This can vary depending
   // on the number of "Most Visited" items.
   int index = GetIndexOfMenuItemWithTag(
-      history_menu_,
+      history_menu_.get(),
       GlobalMenuBar::TAG_RECENTLY_CLOSED_HEADER) + 1;
 
   unsigned int added_count = 0;
@@ -477,7 +474,7 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
                         GINT_TO_POINTER(GlobalMenuBar::TAG_RECENTLY_CLOSED));
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(parent_item), submenu);
 
-      gtk_menu_shell_insert(GTK_MENU_SHELL(history_menu_), parent_item,
+      gtk_menu_shell_insert(GTK_MENU_SHELL(history_menu_.get()), parent_item,
                             index++);
       ++added_count;
     } else if (entry->type == TabRestoreService::TAB) {
@@ -486,7 +483,7 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
       HistoryItem* item = HistoryItemForTab(*tab);
       if (item) {
         AddHistoryItemToMenu(item,
-                             history_menu_,
+                             history_menu_.get(),
                              GlobalMenuBar::TAG_RECENTLY_CLOSED,
                              index++);
         ++added_count;
@@ -516,5 +513,20 @@ void GlobalHistoryMenu::OnRecentlyClosedItemActivated(GtkWidget* sender) {
     DCHECK(item->url.is_valid());
     browser_->OpenURL(item->url, GURL(), disposition,
                       PageTransition::AUTO_BOOKMARK);
+  }
+}
+
+void GlobalHistoryMenu::OnMenuActivate(GtkWidget* sender) {
+  if (!tab_restore_service_) {
+    tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile_);
+    if (tab_restore_service_) {
+      tab_restore_service_->LoadTabsFromLastSession();
+      tab_restore_service_->AddObserver(this);
+
+      // If LoadTabsFromLastSession doesn't load tabs, it won't call
+      // TabRestoreServiceChanged(). This ensures that all new windows after
+      // the first one will have their menus populated correctly.
+      TabRestoreServiceChanged(tab_restore_service_);
+    }
   }
 }
