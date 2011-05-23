@@ -113,7 +113,7 @@ void NaCl::Time::Explode(bool is_local, Exploded* exploded) const {
   SYSTEMTIME st;
   if (!success || !FileTimeToSystemTime(&ft, &st)) {
     // NOTREACHED() << "Unable to convert time, don't know why";
-    ZeroMemory(exploded, sizeof(exploded));
+    ZeroMemory(exploded, sizeof(*exploded));
     return;
   }
 
