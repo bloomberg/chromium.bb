@@ -99,6 +99,11 @@ class ConfigurationPolicyPrefKeeper
   bool ApplyFileSelectionDialogsPolicy(ConfigurationPolicyType policy,
                                        Value* value);
 
+  // Processes default search provider policies. Returns true if the specified
+  // policy is a default search provider related policy. In that case,
+  // ApplyDefaultSearchPolicy takes ownership of |value|.
+  bool ApplyDefaultSearchPolicy(ConfigurationPolicyType policy, Value* value);
+
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
   void EnsureStringPrefExists(const std::string& path);
@@ -286,7 +291,7 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kDefaultSearchProviderInstantURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderIconURL,
     prefs::kDefaultSearchProviderIconURL },
-  { Value::TYPE_STRING, kPolicyDefaultSearchProviderEncodings,
+  { Value::TYPE_LIST, kPolicyDefaultSearchProviderEncodings,
     prefs::kDefaultSearchProviderEncodings },
 };
 
@@ -341,8 +346,7 @@ void ConfigurationPolicyPrefKeeper::Apply(ConfigurationPolicyType policy,
   if (ApplyFileSelectionDialogsPolicy(policy, value))
     return;
 
-  if (ApplyPolicyFromMap(policy, value, kDefaultSearchPolicyMap,
-                         arraysize(kDefaultSearchPolicyMap)))
+  if (ApplyDefaultSearchPolicy(policy, value))
     return;
 
   if (ApplyPolicyFromMap(policy, value, kSimplePolicyMap,
@@ -372,7 +376,7 @@ bool ConfigurationPolicyPrefKeeper::ApplyPolicyFromMap(
   for (int current = 0; current < size; ++current) {
     if (map[current].policy_type == policy) {
       DCHECK_EQ(map[current].value_type, value->GetType())
-          << "mismatch in provided and expected policy value for preferences"
+          << "mismatch in provided and expected policy value for preferences "
           << map[current].preference_path << ". expected = "
           << map[current].value_type << ", actual = "<< value->GetType();
       prefs_.SetValue(map[current].preference_path, value);
@@ -471,6 +475,48 @@ bool ConfigurationPolicyPrefKeeper::ApplyFileSelectionDialogsPolicy(
     return true;
   }
   // We are not interested in this policy.
+  return false;
+}
+
+bool ConfigurationPolicyPrefKeeper::ApplyDefaultSearchPolicy(
+    ConfigurationPolicyType policy,
+    Value* value) {
+  // The DefaultSearchProviderEncodings policy has type list, but the related
+  // preference has type string. Convert one into the other here, using
+  // ';' as a separator.
+  if (policy == kPolicyDefaultSearchProviderEncodings) {
+    ListValue* list;
+    if (!value->GetAsList(&list)) {
+      NOTREACHED()
+          << "mismatch in provided and expected policy value for preferences "
+          << prefs::kDefaultSearchProviderEncodings << ". expected = "
+          << Value::TYPE_LIST << ", actual = "<< value->GetType();
+      return false;
+    }
+    ListValue::const_iterator iter(list->begin());
+    ListValue::const_iterator end(list->end());
+    std::string encodings;
+    for (; iter != end; ++iter) {
+      std::string s;
+      if ((*iter)->GetAsString(&s)) {
+        if (!encodings.empty())
+          encodings.push_back(';');
+        encodings.append(s);
+      } else {
+        NOTREACHED();
+      }
+    }
+    // We own |value|.
+    delete value;
+    prefs_.SetValue(prefs::kDefaultSearchProviderEncodings,
+                    Value::CreateStringValue(encodings));
+    return true;
+  }
+
+  if (ApplyPolicyFromMap(policy, value, kDefaultSearchPolicyMap,
+                         arraysize(kDefaultSearchPolicyMap))) {
+    return true;
+  }
   return false;
 }
 
@@ -683,7 +729,7 @@ void ConfigurationPolicyPrefKeeper::ApplyProxySettings() {
     std::string string_mode;
     CHECK(proxy_policies_[kPolicyProxyMode]->GetAsString(&string_mode));
     if (!ProxyPrefs::StringToProxyMode(string_mode, &mode)) {
-      LOG(WARNING) << "A centrally-administered policy specifies a value for"
+      LOG(WARNING) << "A centrally-administered policy specifies a value for "
                    << "the ProxyMode policy that isn't recognized.";
       return;
     }
@@ -897,7 +943,7 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kDefaultSearchProviderInstantURL },
     { kPolicyDefaultSearchProviderIconURL, Value::TYPE_STRING,
       key::kDefaultSearchProviderIconURL },
-    { kPolicyDefaultSearchProviderEncodings, Value::TYPE_STRING,
+    { kPolicyDefaultSearchProviderEncodings, Value::TYPE_LIST,
       key::kDefaultSearchProviderEncodings },
     { kPolicyProxyMode, Value::TYPE_STRING, key::kProxyMode },
     { kPolicyProxyServerMode, Value::TYPE_INTEGER, key::kProxyServerMode },

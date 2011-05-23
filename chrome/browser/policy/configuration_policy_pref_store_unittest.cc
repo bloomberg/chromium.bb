@@ -555,7 +555,9 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
   const char* const icon_url = "http://test.com/icon.jpg";
   const char* const name = "MyName";
   const char* const keyword = "MyKeyword";
-  const char* const encodings = "UTF-16;UTF-8";
+  ListValue* encodings = new ListValue();
+  encodings->Append(Value::CreateStringValue("UTF-16"));
+  encodings->Append(Value::CreateStringValue("UTF-8"));
   MockConfigurationPolicyProvider provider;
   provider.AddPolicy(kPolicyDefaultSearchProviderEnabled,
                      Value::CreateBooleanValue(true));
@@ -569,8 +571,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
                      Value::CreateStringValue(suggest_url));
   provider.AddPolicy(kPolicyDefaultSearchProviderIconURL,
                      Value::CreateStringValue(icon_url));
-  provider.AddPolicy(kPolicyDefaultSearchProviderEncodings,
-                     Value::CreateStringValue(encodings));
+  provider.AddPolicy(kPolicyDefaultSearchProviderEncodings, encodings);
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
       new ConfigurationPolicyPrefStore(&provider));
@@ -598,7 +599,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
 
   EXPECT_EQ(PrefStore::READ_OK,
             store->GetValue(prefs::kDefaultSearchProviderEncodings, &value));
-  EXPECT_TRUE(StringValue(encodings).Equals(value));
+  EXPECT_TRUE(StringValue("UTF-16;UTF-8").Equals(value));
 }
 
 // Checks that if the default search policy is missing, that no elements of the
@@ -608,7 +609,9 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MissingUrl) {
   const char* const icon_url = "http://test.com/icon.jpg";
   const char* const name = "MyName";
   const char* const keyword = "MyKeyword";
-  const char* const encodings = "UTF-16;UTF-8";
+  ListValue* encodings = new ListValue();
+  encodings->Append(Value::CreateStringValue("UTF-16"));
+  encodings->Append(Value::CreateStringValue("UTF-8"));
   MockConfigurationPolicyProvider provider;
   provider.AddPolicy(kPolicyDefaultSearchProviderEnabled,
                      Value::CreateBooleanValue(true));
@@ -620,8 +623,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MissingUrl) {
                      Value::CreateStringValue(suggest_url));
   provider.AddPolicy(kPolicyDefaultSearchProviderIconURL,
                      Value::CreateStringValue(icon_url));
-  provider.AddPolicy(kPolicyDefaultSearchProviderEncodings,
-                     Value::CreateStringValue(encodings));
+  provider.AddPolicy(kPolicyDefaultSearchProviderEncodings, encodings);
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
       new ConfigurationPolicyPrefStore(&provider));
@@ -648,7 +650,9 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
   const char* const icon_url = "http://test.com/icon.jpg";
   const char* const name = "MyName";
   const char* const keyword = "MyKeyword";
-  const char* const encodings = "UTF-16;UTF-8";
+  ListValue* encodings = new ListValue();
+  encodings->Append(Value::CreateStringValue("UTF-16"));
+  encodings->Append(Value::CreateStringValue("UTF-8"));
   MockConfigurationPolicyProvider provider;
   provider.AddPolicy(kPolicyDefaultSearchProviderEnabled,
                      Value::CreateBooleanValue(true));
@@ -662,8 +666,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
                      Value::CreateStringValue(suggest_url));
   provider.AddPolicy(kPolicyDefaultSearchProviderIconURL,
                      Value::CreateStringValue(icon_url));
-  provider.AddPolicy(kPolicyDefaultSearchProviderEncodings,
-                     Value::CreateStringValue(encodings));
+  provider.AddPolicy(kPolicyDefaultSearchProviderEncodings, encodings);
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
       new ConfigurationPolicyPrefStore(&provider));

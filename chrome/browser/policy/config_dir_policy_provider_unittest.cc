@@ -258,7 +258,7 @@ INSTANTIATE_TEST_CASE_P(
         ValueTestParams::ForStringPolicy(
             kPolicyDefaultSearchProviderIconURL,
             key::kDefaultSearchProviderIconURL),
-        ValueTestParams::ForStringPolicy(
+        ValueTestParams::ForListPolicy(
             kPolicyDefaultSearchProviderEncodings,
             key::kDefaultSearchProviderEncodings),
         ValueTestParams::ForStringPolicy(
