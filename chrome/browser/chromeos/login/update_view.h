@@ -17,7 +17,6 @@ class Throbber;
 namespace chromeos {
 
 class ScreenObserver;
-class UpdateController;
 
 // View for the network selection/initial welcome screen.
 class UpdateView : public views::View {
@@ -28,11 +27,6 @@ class UpdateView : public views::View {
   void Init();
   void Reset();
   void UpdateLocalizedStrings();
-
-  // Sets update controller.
-  void set_controller(UpdateController* controller) {
-    controller_ = controller;
-  }
 
   // Advances view's progress bar. Maximum progress is 100.
   void AddProgress(int progress);
@@ -80,8 +74,6 @@ class UpdateView : public views::View {
 
   // Notifications receiver.
   chromeos::ScreenObserver* observer_;
-  // Update controller.
-  chromeos::UpdateController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateView);
 };

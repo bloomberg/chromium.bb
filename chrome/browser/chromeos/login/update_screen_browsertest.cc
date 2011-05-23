@@ -70,7 +70,17 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .Times(AnyNumber());
   }
 
+  virtual void SetUpOnMainThread() {
+    mock_screen_observer_.reset(new MockScreenObserver());
+    ASSERT_TRUE(controller() != NULL);
+    controller()->set_observer(mock_screen_observer_.get());
+    update_screen_ = controller()->GetUpdateScreen();
+    ASSERT_TRUE(update_screen_ != NULL);
+    ASSERT_EQ(controller()->current_screen(), update_screen_);
+  }
+
   virtual void TearDownInProcessBrowserTestFixture() {
+    controller()->set_observer(NULL);
     cros_mock_->test_api()->SetUpdateLibrary(NULL, true);
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
@@ -79,90 +89,69 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   MockUpdateLibrary* mock_update_library_;
   MockNetworkLibrary* mock_network_library_;
 
+  scoped_ptr<MockScreenObserver> mock_screen_observer_;
+  UpdateScreen* update_screen_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenTest);
 };
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestBasic) {
-  ASSERT_TRUE(controller() != NULL);
-  scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
-  controller()->set_observer(mock_screen_observer.get());
-  UpdateScreen* update_screen = controller()->GetUpdateScreen();
-  ASSERT_TRUE(update_screen != NULL);
-  ASSERT_EQ(controller()->current_screen(), update_screen);
-  UpdateView* update_view = update_screen->view();
-  ASSERT_TRUE(update_view != NULL);
-  controller()->set_observer(NULL);
+  ASSERT_TRUE(update_screen_->actor_.get() != NULL);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestNoUpdate) {
-  ASSERT_TRUE(controller() != NULL);
-  scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
-  controller()->set_observer(mock_screen_observer.get());
-  UpdateScreen* update_screen = controller()->GetUpdateScreen();
-  ASSERT_TRUE(update_screen != NULL);
-  ASSERT_EQ(controller()->current_screen(), update_screen);
-
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_IDLE;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  EXPECT_CALL(*mock_screen_observer, OnExit(ScreenObserver::UPDATE_NOUPDATE))
+  EXPECT_CALL(*mock_screen_observer_, OnExit(ScreenObserver::UPDATE_NOUPDATE))
       .Times(1);
-  update_screen->UpdateStatusChanged(mock_update_library_);
-
-  controller()->set_observer(NULL);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
-  ASSERT_TRUE(controller() != NULL);
-  scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
-  controller()->set_observer(mock_screen_observer.get());
-  UpdateScreen* update_screen = controller()->GetUpdateScreen();
-  ASSERT_TRUE(update_screen != NULL);
-  ASSERT_EQ(controller()->current_screen(), update_screen);
-  update_screen->SetAllUpdatesCritical(true);
+  update_screen_->is_ignore_update_deadlines_ = true;
 
   UpdateLibrary::Status status;
-
   status.status = UPDATE_STATUS_UPDATE_AVAILABLE;
   status.new_version = "latest and greatest";
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  update_screen->UpdateStatusChanged(mock_update_library_);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 
   status.status = UPDATE_STATUS_DOWNLOADING;
   status.download_progress = 0.0;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  update_screen->UpdateStatusChanged(mock_update_library_);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 
   status.download_progress = 0.5;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  update_screen->UpdateStatusChanged(mock_update_library_);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 
   status.download_progress = 1.0;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  update_screen->UpdateStatusChanged(mock_update_library_);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 
   status.status = UPDATE_STATUS_VERIFYING;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  update_screen->UpdateStatusChanged(mock_update_library_);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 
   status.status = UPDATE_STATUS_FINALIZING;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  update_screen->UpdateStatusChanged(mock_update_library_);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 
   status.status = UPDATE_STATUS_UPDATED_NEED_REBOOT;
   EXPECT_CALL(*mock_update_library_, status())
@@ -170,9 +159,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
       .WillRepeatedly(ReturnRef(status));
   EXPECT_CALL(*mock_update_library_, RebootAfterUpdate())
       .Times(1);
-  update_screen->UpdateStatusChanged(mock_update_library_);
-
-  controller()->set_observer(NULL);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 }
 
 static void RequestUpdateCheckFail(UpdateCallback callback, void* userdata) {
@@ -180,18 +167,11 @@ static void RequestUpdateCheckFail(UpdateCallback callback, void* userdata) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
-  ASSERT_TRUE(controller() != NULL);
-  scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
-  controller()->set_observer(mock_screen_observer.get());
-  UpdateScreen* update_screen = controller()->GetUpdateScreen();
-  ASSERT_TRUE(update_screen != NULL);
-  ASSERT_EQ(controller()->current_screen(), update_screen);
-
   // First, cancel the update that is already in progress.
-  EXPECT_CALL(*mock_screen_observer,
+  EXPECT_CALL(*mock_screen_observer_,
               OnExit(ScreenObserver::UPDATE_NOUPDATE))
       .Times(1);
-  update_screen->CancelUpdate();
+  update_screen_->CancelUpdate();
 
   // Run UpdateScreen::StartUpdate() again, but CheckForUpdate() will fail
   // issuing the update check this time.
@@ -202,62 +182,41 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
   EXPECT_CALL(*mock_update_library_, RequestUpdateCheck(_,_))
       .Times(1)
       .WillOnce(Invoke(RequestUpdateCheckFail));
-  EXPECT_CALL(*mock_screen_observer,
+  EXPECT_CALL(*mock_screen_observer_,
               OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);
-  update_screen->StartUpdate();
-
-  controller()->set_observer(NULL);
+  update_screen_->StartUpdate();
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
-  ASSERT_TRUE(controller() != NULL);
-  scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
-  controller()->set_observer(mock_screen_observer.get());
-  UpdateScreen* update_screen = controller()->GetUpdateScreen();
-  ASSERT_TRUE(update_screen != NULL);
-  ASSERT_EQ(controller()->current_screen(), update_screen);
-
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_ERROR;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  EXPECT_CALL(*mock_screen_observer,
+  EXPECT_CALL(*mock_screen_observer_,
               OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);
-  update_screen->UpdateStatusChanged(mock_update_library_);
-
-  controller()->set_observer(NULL);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
-  ASSERT_TRUE(controller() != NULL);
-  scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
-  controller()->set_observer(mock_screen_observer.get());
-  UpdateScreen* update_screen = controller()->GetUpdateScreen();
-  ASSERT_TRUE(update_screen != NULL);
-  ASSERT_EQ(controller()->current_screen(), update_screen);
-
   UpdateLibrary::Status status;
-
   status.status = UPDATE_STATUS_UPDATE_AVAILABLE;
   status.new_version = "latest and greatest";
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  update_screen->UpdateStatusChanged(mock_update_library_);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 
   status.status = UPDATE_STATUS_ERROR;
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
-  EXPECT_CALL(*mock_screen_observer,
+  EXPECT_CALL(*mock_screen_observer_,
               OnExit(ScreenObserver::UPDATE_ERROR_UPDATING))
       .Times(1);
-  update_screen->UpdateStatusChanged(mock_update_library_);
-
-  controller()->set_observer(NULL);
+  update_screen_->UpdateStatusChanged(mock_update_library_);
 }
 
 }  // namespace chromeos

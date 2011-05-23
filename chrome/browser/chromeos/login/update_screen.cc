@@ -9,9 +9,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/chromeos/login/update_view.h"
+#include "chrome/browser/chromeos/login/update_screen_actor.h"
+#include "chrome/browser/chromeos/login/views_update_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "content/browser/browser_thread.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -34,10 +37,19 @@ const int kUpdateScreenHeight = 305;
 
 const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
 
+// Invoked from call to RequestUpdateCheck upon completion of the DBus call.
+void StartUpdateCallback(void* user_data,
+                         UpdateResult result,
+                         const char* msg) {
+  if (result != chromeos::UPDATE_RESULT_SUCCESS) {
+    DCHECK(user_data);
+    UpdateScreen* screen = static_cast<UpdateScreen*>(user_data);
+    if (UpdateScreen::HasInstance(screen))
+      screen->ExitUpdate(UpdateScreen::REASON_UPDATE_INIT_FAILED);
+  }
+}
+
 }  // anonymous namespace
-
-namespace chromeos {
-
 
 // static
 UpdateScreen::InstanceSet& UpdateScreen::GetInstanceSet() {
@@ -53,29 +65,29 @@ bool UpdateScreen::HasInstance(UpdateScreen* inst) {
   return (found != instance_set.end());
 }
 
+
 UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
-    : DefaultViewScreen<chromeos::UpdateView>(delegate,
-                                              kUpdateScreenWidth,
-                                              kUpdateScreenHeight),
-      checking_for_update_(true),
+    : WizardScreen(delegate),
       reboot_check_delay_(0),
+      is_checking_for_update_(true),
       is_downloading_update_(false),
-      is_all_updates_critical_(true) { // See http://crosbug.com/10068
+      is_ignore_update_deadlines_(true),  // See http://crosbug.com/10068
+      is_shown_(false),
+      actor_(new ViewsUpdateScreenActor(delegate,
+                                        kUpdateScreenWidth,
+                                        kUpdateScreenHeight)) {
   GetInstanceSet().insert(this);
 }
 
 UpdateScreen::~UpdateScreen() {
-  // Remove pointer to this object from view.
-  if (view())
-    view()->set_controller(NULL);
   CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
   GetInstanceSet().erase(this);
 }
 
 void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
   UpdateStatusOperation status = library->status().status;
-  if (checking_for_update_ && status > UPDATE_STATUS_CHECKING_FOR_UPDATE) {
-    checking_for_update_ = false;
+  if (is_checking_for_update_ && status > UPDATE_STATUS_CHECKING_FOR_UPDATE) {
+    is_checking_for_update_ = false;
   }
 
   switch (status) {
@@ -85,7 +97,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       break;
     case UPDATE_STATUS_UPDATE_AVAILABLE:
       MakeSureScreenIsShown();
-      view()->SetProgress(kBeforeDownloadProgress);
+      actor_->SetProgress(kBeforeDownloadProgress);
       if (!HasCriticalUpdate()) {
         LOG(INFO) << "Noncritical update available: "
                   << library->status().new_version;
@@ -111,27 +123,27 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
                       << library->status().new_version;
           }
         }
-        view()->ShowCurtain(false);
+        actor_->ShowCurtain(false);
         int download_progress = static_cast<int>(
             library->status().download_progress * kDownloadProgressIncrement);
-        view()->SetProgress(kBeforeDownloadProgress + download_progress);
+        actor_->SetProgress(kBeforeDownloadProgress + download_progress);
       }
       break;
     case UPDATE_STATUS_VERIFYING:
       MakeSureScreenIsShown();
-      view()->SetProgress(kBeforeVerifyingProgress);
+      actor_->SetProgress(kBeforeVerifyingProgress);
       break;
     case UPDATE_STATUS_FINALIZING:
       MakeSureScreenIsShown();
-      view()->SetProgress(kBeforeFinalizingProgress);
+      actor_->SetProgress(kBeforeFinalizingProgress);
       break;
     case UPDATE_STATUS_UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
       // Make sure that first OOBE stage won't be shown after reboot.
       WizardController::MarkOobeCompleted();
-      view()->SetProgress(kProgressComplete);
+      actor_->SetProgress(kProgressComplete);
       if (HasCriticalUpdate()) {
-        view()->ShowCurtain(false);
+        actor_->ShowCurtain(false);
         VLOG(1) << "Initiate reboot after update";
         CrosLibrary::Get()->GetUpdateLibrary()->RebootAfterUpdate();
         reboot_timer_.Start(base::TimeDelta::FromSeconds(reboot_check_delay_),
@@ -152,29 +164,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
   }
 }
 
-namespace {
-// Invoked from call to RequestUpdateCheck upon completion of the DBus call.
-void StartUpdateCallback(void* user_data,
-                         UpdateResult result,
-                         const char* msg) {
-  if (result != UPDATE_RESULT_SUCCESS) {
-    DCHECK(user_data);
-    UpdateScreen* screen = static_cast<UpdateScreen*>(user_data);
-    if (UpdateScreen::HasInstance(screen))
-      screen->ExitUpdate(UpdateScreen::REASON_UPDATE_INIT_FAILED);
-  }
-}
-}  // namespace
-
 void UpdateScreen::StartUpdate() {
-  // Reset view if view was created.
-  if (view()) {
-    view()->Reset();
-    view()->set_controller(this);
-    is_downloading_update_ = false;
-    view()->SetProgress(kBeforeUpdateCheckProgress);
-  }
-
   if (!CrosLibrary::Get()->EnsureLoaded()) {
     LOG(ERROR) << "Error loading CrosLibrary";
     ExitUpdate(REASON_UPDATE_INIT_FAILED);
@@ -187,17 +177,22 @@ void UpdateScreen::StartUpdate() {
 }
 
 void UpdateScreen::CancelUpdate() {
-  // Screen has longer lifetime than it's view.
-  // View is deleted after wizard proceeds to the next screen.
-  if (view())
-    ExitUpdate(REASON_UPDATE_CANCELED);
+  ExitUpdate(REASON_UPDATE_CANCELED);
 }
 
 void UpdateScreen::Show() {
-  DefaultViewScreen<UpdateView>::Show();
-  view()->set_controller(this);
-  is_downloading_update_ = false;
-  view()->SetProgress(kBeforeUpdateCheckProgress);
+  is_shown_ = true;
+  actor_->Show();
+  actor_->SetProgress(kBeforeUpdateCheckProgress);
+}
+
+void UpdateScreen::Hide() {
+  actor_->Hide();
+  is_shown_ = false;
+}
+
+gfx::Size UpdateScreen::GetScreenSize() const {
+  return gfx::Size(kUpdateScreenWidth, kUpdateScreenHeight);
 }
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
@@ -205,7 +200,7 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
 
-  switch(reason) {
+  switch (reason) {
     case REASON_UPDATE_CANCELED:
       observer->OnExit(ScreenObserver::UPDATE_NOUPDATE);
       break;
@@ -230,7 +225,7 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
             break;
           case UPDATE_STATUS_ERROR:
           case UPDATE_STATUS_REPORTING_ERROR_EVENT:
-            observer->OnExit(checking_for_update_ ?
+            observer->OnExit(is_checking_for_update_ ?
                 ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE :
                 ScreenObserver::UPDATE_ERROR_UPDATING);
             break;
@@ -247,13 +242,12 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   MakeSureScreenIsShown();
-  view()->ShowManualRebootInfo();
+  actor_->ShowManualRebootInfo();
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {
-  if (!view()) {
+  if (!is_shown_)
     delegate()->ShowCurrentScreen();
-  }
 }
 
 void UpdateScreen::SetRebootCheckDelay(int seconds) {
@@ -264,7 +258,7 @@ void UpdateScreen::SetRebootCheckDelay(int seconds) {
 }
 
 bool UpdateScreen::HasCriticalUpdate() {
-  if (is_all_updates_critical_)
+  if (is_ignore_update_deadlines_)
     return true;
 
   std::string deadline;
@@ -280,10 +274,6 @@ bool UpdateScreen::HasCriticalUpdate() {
   // TODO(dpolukhin): Analyze file content. Now we can just assume that
   // if the file exists and not empty, there is critical update.
   return true;
-}
-
-void UpdateScreen::SetAllUpdatesCritical(bool is_critical) {
-  is_all_updates_critical_ = is_critical;
 }
 
 }  // namespace chromeos
