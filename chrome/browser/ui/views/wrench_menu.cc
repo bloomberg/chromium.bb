@@ -438,8 +438,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
     UpdateZoomControls();
 
-    registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
-                   Source<Profile>(menu->browser_->profile()));
+    registrar_.Add(
+        this, NotificationType::ZOOM_LEVEL_CHANGED,
+        Source<HostZoomMap>(menu->browser_->profile()->GetHostZoomMap()));
   }
 
   gfx::Size GetPreferredSize() {

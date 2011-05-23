@@ -484,7 +484,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual HostZoomMap* GetHostZoomMap() {
     if (!host_zoom_map_)
-      host_zoom_map_ = new HostZoomMap(this);
+      host_zoom_map_ = new HostZoomMap();
     return host_zoom_map_.get();
   }
 

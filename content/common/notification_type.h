@@ -1259,7 +1259,9 @@ class NotificationType {
     BOOKMARK_CONTEXT_MENU_SHOWN,
 #endif
 
-    // Sent when the zoom level changes. The source is the profile.
+    // Sent when the zoom level changes. The source is the HostZoomMap.  The
+    // details is a string of the hostname for which the zoom changed.  In case
+    // of a temporary zoom level change, the details is an empty string.
     ZOOM_LEVEL_CHANGED,
 
     // Sent when the tab's closeable state has changed due to increase/decrease

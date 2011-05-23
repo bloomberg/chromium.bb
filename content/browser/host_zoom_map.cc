@@ -8,10 +8,6 @@
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -22,30 +18,10 @@
 
 using WebKit::WebView;
 
-HostZoomMap::HostZoomMap(Profile* profile)
-    : profile_(profile), default_zoom_level_(0.0) {
-
+HostZoomMap::HostZoomMap() : default_zoom_level_(0.0) {
   registrar_.Add(
       this, NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
       NotificationService::AllSources());
-
-  base::AutoLock auto_lock(lock_);
-  host_zoom_levels_.clear();
-  const DictionaryValue* host_zoom_dictionary =
-      profile_->GetPrefs()->GetDictionary(prefs::kPerHostZoomLevels);
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (host_zoom_dictionary != NULL) {
-    for (DictionaryValue::key_iterator i(host_zoom_dictionary->begin_keys());
-         i != host_zoom_dictionary->end_keys(); ++i) {
-      const std::string& host(*i);
-      double zoom_level = 0;
-
-      bool success = host_zoom_dictionary->GetDoubleWithoutPathExpansion(
-          host, &zoom_level);
-      DCHECK(success);
-      host_zoom_levels_[host] = zoom_level;
-    }
-  }
 }
 
 double HostZoomMap::GetZoomLevel(const GURL& url) const {
@@ -69,22 +45,8 @@ void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
   }
 
   NotificationService::current()->Notify(NotificationType::ZOOM_LEVEL_CHANGED,
-                                         Source<Profile>(profile_),
-                                         NotificationService::NoDetails());
-
-  // If we're in incognito mode, don't persist changes to the prefs.  We'll keep
-  // them in memory only so they will be forgotten on exiting incognito.
-  if (profile_->IsOffTheRecord())
-    return;
-
-  DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kPerHostZoomLevels);
-  DictionaryValue* host_zoom_dictionary = update.Get();
-  if (level == default_zoom_level_) {
-    host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
-  } else {
-    host_zoom_dictionary->SetWithoutPathExpansion(
-        host, Value::CreateDoubleValue(level));
-  }
+                                         Source<HostZoomMap>(this),
+                                         Details<const std::string>(&host));
 }
 
 double HostZoomMap::GetTemporaryZoomLevel(int render_process_id,
@@ -129,7 +91,7 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
   }
 
   NotificationService::current()->Notify(NotificationType::ZOOM_LEVEL_CHANGED,
-                                         Source<Profile>(profile_),
+                                         Source<HostZoomMap>(this),
                                          NotificationService::NoDetails());
 }
 

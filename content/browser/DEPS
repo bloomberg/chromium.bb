@@ -55,7 +55,6 @@ include_rules = [
 
   "+chrome/browser/prefs/pref_change_registrar.h",
   "+chrome/browser/prefs/pref_service.h",
-  "+chrome/browser/prefs/scoped_user_pref_update.h",
   "+chrome/common/pref_names.h",
 
   # http://crbug.com/77090

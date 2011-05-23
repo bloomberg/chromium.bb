@@ -29,7 +29,6 @@
 struct FontDescriptor;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
-class HostZoomMap;
 class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
@@ -180,16 +179,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // in the renderer on POSIX due to the sandbox.
   void OnAllocateSharedMemoryBuffer(uint32 buffer_size,
                                     base::SharedMemoryHandle* handle);
-  void OnDidZoomURL(const IPC::Message& message,
-                    double zoom_level,
-                    bool remember,
-                    const GURL& url);
-  void UpdateHostZoomLevelsOnUIThread(double zoom_level,
-                                      bool remember,
-                                      const GURL& url,
-                                      int render_process_id,
-                                      int render_view_id);
-
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
   // Browser side transport DIB allocation
@@ -253,9 +242,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // A cache of notifications preferences which is used to handle
   // Desktop Notifications permission messages.
   scoped_refptr<NotificationsPrefsCache> notification_prefs_;
-
-  // Handles zoom-related messages.
-  scoped_refptr<HostZoomMap> host_zoom_map_;
 
   // Whether this process is used for incognito tabs.
   bool incognito_;

@@ -52,6 +52,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -947,9 +948,28 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
 
 HostZoomMap* ProfileImpl::GetHostZoomMap() {
   if (!host_zoom_map_) {
-    host_zoom_map_ = new HostZoomMap(this);
+    host_zoom_map_ = new HostZoomMap();
     host_zoom_map_->set_default_zoom_level(
         GetPrefs()->GetDouble(prefs::kDefaultZoomLevel));
+
+    const DictionaryValue* host_zoom_dictionary =
+        prefs_->GetDictionary(prefs::kPerHostZoomLevels);
+    // Careful: The returned value could be NULL if the pref has never been set.
+    if (host_zoom_dictionary != NULL) {
+      for (DictionaryValue::key_iterator i(host_zoom_dictionary->begin_keys());
+           i != host_zoom_dictionary->end_keys(); ++i) {
+        const std::string& host(*i);
+        double zoom_level = 0;
+
+        bool success = host_zoom_dictionary->GetDoubleWithoutPathExpansion(
+            host, &zoom_level);
+        DCHECK(success);
+        host_zoom_map_->SetZoomLevel(GURL(host), zoom_level);
+      }
+    }
+
+    registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
+                 Source<HostZoomMap>(host_zoom_map_));
   }
   return host_zoom_map_.get();
 }
@@ -1374,6 +1394,21 @@ void ProfileImpl::Observe(NotificationType type,
       registrar_.Remove(this, NotificationType::BOOKMARK_MODEL_LOADED,
                         Source<Profile>(this));
       break;
+    case NotificationType::ZOOM_LEVEL_CHANGED: {
+      const std::string& host = *(Details<const std::string>(details).ptr());
+      if (!host.empty()) {
+        double level = host_zoom_map_->GetZoomLevel(GURL(host));
+        DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
+        DictionaryValue* host_zoom_dictionary = update.Get();
+        if (level == host_zoom_map_->default_zoom_level()) {
+          host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
+        } else {
+          host_zoom_dictionary->SetWithoutPathExpansion(
+              host, Value::CreateDoubleValue(level));
+        }
+      }
+      break;
+    }
     default:
       NOTREACHED();
   }

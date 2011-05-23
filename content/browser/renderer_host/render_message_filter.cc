@@ -28,7 +28,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
-#include "content/browser/host_zoom_map.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -292,7 +291,6 @@ RenderMessageFilter::RenderMessageFilter(
       notification_prefs_(
           DesktopNotificationServiceFactory::GetForProfile(profile)->
               prefs_cache()),
-      host_zoom_map_(profile->GetHostZoomMap()),
       incognito_(profile->IsOffTheRecord()),
       webkit_context_(profile->GetWebKitContext()),
       render_process_id_(render_process_id) {
@@ -375,7 +373,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
@@ -672,40 +669,6 @@ void RenderMessageFilter::OnAllocateSharedMemoryBuffer(
     return;
   }
   shared_buf.GiveToProcess(peer_handle(), handle);
-}
-
-void RenderMessageFilter::OnDidZoomURL(const IPC::Message& message,
-                                       double zoom_level,
-                                       bool remember,
-                                       const GURL& url) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-          &RenderMessageFilter::UpdateHostZoomLevelsOnUIThread,
-          zoom_level, remember, url, render_process_id_, message.routing_id()));
-}
-
-void RenderMessageFilter::UpdateHostZoomLevelsOnUIThread(
-    double zoom_level,
-    bool remember,
-    const GURL& url,
-    int render_process_id,
-    int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (remember) {
-    host_zoom_map_->SetZoomLevel(url, zoom_level);
-    // Notify renderers from this profile.
-    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
-         !i.IsAtEnd(); i.Advance()) {
-      RenderProcessHost* render_process_host = i.GetCurrentValue();
-      if (render_process_host->profile() == profile_) {
-        render_process_host->Send(
-            new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
-      }
-    }
-  } else {
-    host_zoom_map_->SetTemporaryZoomLevel(
-        render_process_id, render_view_id, zoom_level);
-  }
 }
 
 net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(

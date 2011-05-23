@@ -21,7 +21,6 @@
 #include "content/common/notification_registrar.h"
 
 class GURL;
-class Profile;
 
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
@@ -30,7 +29,7 @@ class HostZoomMap :
     public base::RefCountedThreadSafe<HostZoomMap,
                                       BrowserThread::DeleteOnUIThread> {
  public:
-  explicit HostZoomMap(Profile* profile);
+  HostZoomMap();
 
   // Returns the zoom level for a given url. The zoom level is determined by
   // the host portion of the URL, or (in the absence of a host) the complete
@@ -69,6 +68,7 @@ class HostZoomMap :
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  double default_zoom_level() const { return default_zoom_level_; }
   void set_default_zoom_level(double level) { default_zoom_level_ = level; }
 
  private:
@@ -78,9 +78,6 @@ class HostZoomMap :
   typedef std::map<std::string, double> HostZoomLevels;
 
   ~HostZoomMap();
-
-  // The profile we're associated with.
-  Profile* profile_;
 
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;

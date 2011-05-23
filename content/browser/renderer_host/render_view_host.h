@@ -444,6 +444,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
   void OnScriptEvalResponse(int id, const ListValue& result);
+  void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
 
 #if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);

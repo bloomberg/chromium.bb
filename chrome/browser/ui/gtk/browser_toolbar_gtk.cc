@@ -223,7 +223,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
   registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
-                 Source<Profile>(browser_->profile()));
+      Source<HostZoomMap>(browser_->profile()->GetHostZoomMap()));
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);

@@ -230,7 +230,7 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
   tabstrip_model_->AddObserver(this);
 
   registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
-                 Source<Profile>(browser_->profile()));
+                 Source<HostZoomMap>(browser_->profile()->GetHostZoomMap()));
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
 }
