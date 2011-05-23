@@ -50,6 +50,7 @@ cr.define('options', function() {
 
       var cookiesList = $('cookies-list');
       options.CookiesList.decorate(cookiesList);
+      window.addEventListener('resize', this.handleResize_.bind(this));
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
     },
@@ -83,18 +84,35 @@ cr.define('options', function() {
 
     /**
      * Handler for OptionsPage's visible property change event.
-     * @private
      * @param {Event} e Property change event.
+     * @private
      */
     handleVisibleChange_: function(e) {
       if (!this.visible)
         return;
+      // Resize the cookies list whenever the options page becomes visible.
+      this.handleResize_(null);
       if (!this.initialized_) {
         this.initialized_ = true;
         this.searchCookie();
       } else {
         $('cookies-list').redraw();
       }
+    },
+
+    /**
+     * Handler for when the window changes size. Resizes the cookies list to
+     * match the window height.
+     * @param {?Event} e Window resize event, or null if called directly.
+     * @private
+     */
+    handleResize_: function(e) {
+      if (!this.visible)
+        return;
+      var cookiesList = $('cookies-list');
+      // 25 pixels from the window bottom seems like a visually pleasing amount.
+      var height = window.innerHeight - cookiesList.offsetTop - 25;
+      cookiesList.style.height = height + 'px';
     },
   };
 
