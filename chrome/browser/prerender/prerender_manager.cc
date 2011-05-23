@@ -544,6 +544,12 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     return false;
   }
 
+  if (prerender_contents->starting_page_id() <=
+      tab_contents->GetMaxPageID()) {
+    prerender_contents.release()->Destroy(FINAL_STATUS_PAGE_ID_CONFLICT);
+    return false;
+  }
+
   // If we are just in the control group (which can be detected by noticing
   // that prerendering hasn't even started yet), record that |tab_contents| now
   // would be showing a prerendered contents, but otherwise, don't do anything.

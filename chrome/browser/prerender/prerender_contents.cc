@@ -138,7 +138,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_started_(false),
       child_id_(-1),
-      route_id_(-1) {
+      route_id_(-1),
+      starting_page_id_(-1) {
   DCHECK(prerender_manager != NULL);
 }
 
@@ -262,11 +263,12 @@ void PrerenderContents::StartPrerendering(
     // So that history merging will work, get the max page ID
     // of the old page, and add a safety margin of 10 to it (for things
     // such as redirects).
-    int32 max_page_id = source_tc->GetMaxPageID();
-    if (max_page_id != -1) {
-      prerender_contents_->controller().set_max_restored_page_id(
-          max_page_id + 10);
-    }
+    starting_page_id_ = source_tc->GetMaxPageID();
+    if (starting_page_id_ < 0)
+      starting_page_id_ = 0;
+    starting_page_id_ += kPrerenderPageIdOffset;
+    prerender_contents_->controller().set_max_restored_page_id(
+        starting_page_id_);
 
     tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
     new_contents->set_delegate(tab_contents_delegate_.get());
