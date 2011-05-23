@@ -46,14 +46,12 @@ include_rules = [
 
   "+chrome/browser/net/load_timing_observer.h",
   "+chrome/browser/net/predictor_api.h",
-  "+chrome/browser/net/url_request_tracking.h",
 
   "+chrome/browser/notifications/desktop_notification_service.h",
   "+chrome/browser/notifications/desktop_notification_service_factory.h",
   "+chrome/browser/notifications/notifications_prefs_cache.h",
 
   "+chrome/browser/platform_util.h",
-
 
   "+chrome/browser/prefs/pref_change_registrar.h",
   "+chrome/browser/prefs/pref_service.h",

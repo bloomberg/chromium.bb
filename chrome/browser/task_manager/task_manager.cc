@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
@@ -29,6 +28,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/result_codes.h"
 #include "grit/app_resources.h"
@@ -827,7 +827,11 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
 
   // Get the origin PID of the request's originator.  This will only be set for
   // plugins - for renderer or browser initiated requests it will be zero.
-  int origin_pid = chrome_browser_net::GetOriginPIDForRequest(&request);
+  int origin_pid = 0;
+  const ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(&request);
+  if (info)
+    origin_pid = info->origin_pid();
 
   // This happens in the IO thread, post it to the UI thread.
   BrowserThread::PostTask(

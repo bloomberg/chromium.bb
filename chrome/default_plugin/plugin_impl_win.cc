@@ -342,7 +342,7 @@ void PluginInstallerImpl::DownloadPlugin() {
 
   if (!plugin_download_url_for_display_) {
     ChildThread::current()->Send(new PluginProcessHostMsg_DownloadUrl(
-        plugin_download_url_, ::GetCurrentProcessId(), hwnd()));
+        plugin_download_url_, hwnd()));
   } else {
     default_plugin::g_browser->geturl(instance(),
                                       plugin_download_url_.c_str(),

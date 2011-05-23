@@ -24,7 +24,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -592,6 +591,7 @@ void ResourceDispatcherHost::BeginRequest(
           process_type,
           child_id,
           route_id,
+          request_data.origin_pid,
           request_id,
           request_data.resource_type,
           upload_size,
@@ -600,8 +600,6 @@ void ResourceDispatcherHost::BeginRequest(
           request_data.has_user_gesture,
           &resource_context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
-  chrome_browser_net::SetOriginPIDForRequest(
-      request_data.origin_pid, request);
 
   if (request->url().SchemeIs(chrome::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
@@ -737,6 +735,7 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                ChildProcessInfo::RENDER_PROCESS,
                                                child_id,
                                                route_id,
+                                               0,
                                                request_id_,
                                                ResourceType::SUB_RESOURCE,
                                                0,         // upload_size

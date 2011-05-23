@@ -8,19 +8,16 @@
 #include <windows.h>
 
 #include "base/file_util.h"
-#include "chrome/browser/net/url_request_tracking.h"
 #include "net/base/io_buffer.h"
 
 PluginDownloadUrlHelper::PluginDownloadUrlHelper(
     const std::string& download_url,
-    int source_child_unique_id,
     gfx::NativeWindow caller_window,
     PluginDownloadUrlHelper::DownloadDelegate* delegate)
     : download_file_request_(NULL),
       download_file_buffer_(new net::IOBuffer(kDownloadFileBufferSize)),
       download_file_caller_window_(caller_window),
       download_url_(download_url),
-      download_source_child_unique_id_(source_child_unique_id),
       delegate_(delegate) {
   memset(download_file_buffer_->data(), 0, kDownloadFileBufferSize);
   download_file_.reset(new net::FileStream());
@@ -36,8 +33,6 @@ PluginDownloadUrlHelper::~PluginDownloadUrlHelper() {
 void PluginDownloadUrlHelper::InitiateDownload(
     net::URLRequestContext* request_context) {
   download_file_request_ = new net::URLRequest(GURL(download_url_), this);
-  chrome_browser_net::SetOriginPIDForRequest(
-      download_source_child_unique_id_, download_file_request_);
   download_file_request_->set_context(request_context);
   download_file_request_->Start();
 }

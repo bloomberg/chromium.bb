@@ -98,9 +98,8 @@ IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
                      HWND /* window */,
                      HWND /* parent */)
 
-IPC_MESSAGE_CONTROL3(PluginProcessHostMsg_DownloadUrl,
+IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_DownloadUrl,
                      std::string /* URL */,
-                     int /* process id */,
                      HWND /* caller window */)
 #endif
 

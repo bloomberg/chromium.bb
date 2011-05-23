@@ -39,6 +39,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       ChildProcessInfo::ProcessType process_type,
       int child_id,
       int route_id,
+      int origin_pid,
       int request_id,
       ResourceType::Type resource_type,
       uint64 upload_size,
@@ -84,6 +85,10 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // The IPC route identifier for this request (this identifies the RenderView
   // or like-thing in the renderer that the request gets routed to).
   int route_id() const { return route_id_; }
+
+  // The pid of the originating process, if the request is sent on behalf of a
+  // another process.  Otherwise it is 0.
+  int origin_pid() const { return origin_pid_; }
 
   // Unique identifier for this resource request.
   int request_id() const { return request_id_; }
@@ -196,6 +201,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   ChildProcessInfo::ProcessType process_type_;
   int child_id_;
   int route_id_;
+  int origin_pid_;
   int request_id_;
   int pending_data_count_;
   bool is_download_;

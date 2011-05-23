@@ -250,7 +250,7 @@ class PluginInstallerDownloadTest
   void Start() {
     initial_download_path_ = PluginTest::GetTestUrl("flash.html", false);
     download_helper_ = new PluginDownloadUrlHelper(
-        initial_download_path_.spec(), base::GetCurrentProcId(), NULL,
+        initial_download_path_.spec(), NULL,
         static_cast<PluginDownloadUrlHelper::DownloadDelegate*>(this));
     download_helper_->InitiateDownload(new TestURLRequestContext);
 

@@ -41,10 +41,9 @@ bool ChromePluginMessageFilter::Send(IPC::Message* message) {
 
 #if defined(OS_WIN)
 void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
-                                              int source_pid,
                                               gfx::NativeWindow caller_window) {
   PluginDownloadUrlHelper* download_url_helper =
-      new PluginDownloadUrlHelper(url, source_pid, caller_window, NULL);
+      new PluginDownloadUrlHelper(url, caller_window, NULL);
   download_url_helper->InitiateDownload(
       Profile::GetDefaultRequestContext()->GetURLRequestContext());
 }

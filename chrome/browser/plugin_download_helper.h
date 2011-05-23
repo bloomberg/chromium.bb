@@ -32,7 +32,7 @@ class PluginDownloadUrlHelper : public net::URLRequest::Delegate {
   };
 
   PluginDownloadUrlHelper(const std::string& download_url,
-                          int source_pid, gfx::NativeWindow caller_window,
+                          gfx::NativeWindow caller_window,
                           PluginDownloadUrlHelper::DownloadDelegate* delegate);
   ~PluginDownloadUrlHelper();
 
@@ -66,7 +66,6 @@ class PluginDownloadUrlHelper : public net::URLRequest::Delegate {
   gfx::NativeWindow download_file_caller_window_;
 
   std::string download_url_;
-  int download_source_child_unique_id_;
 
   PluginDownloadUrlHelper::DownloadDelegate* delegate_;
 
