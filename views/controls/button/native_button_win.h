@@ -97,7 +97,7 @@ class NativeCheckboxWin : public NativeButtonWin {
 // A View that hosts a native Windows radio button.
 class NativeRadioButtonWin : public NativeCheckboxWin {
  public:
-  explicit NativeRadioButtonWin(RadioButton* radio_button);
+  explicit NativeRadioButtonWin(NativeRadioButton* radio_button);
   virtual ~NativeRadioButtonWin();
 
  protected:

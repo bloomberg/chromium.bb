@@ -542,7 +542,7 @@
           70
         </message>
         <message name="IDS_PASSWORD_CHANGED_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-          14
+          16
         </message>
       </if>
 

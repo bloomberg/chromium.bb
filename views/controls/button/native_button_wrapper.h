@@ -12,7 +12,7 @@ namespace views {
 
 class Checkbox;
 class NativeButtonBase;
-class RadioButton;
+class NativeRadioButton;
 class View;
 
 // A specialization of NativeControlWrapper that hosts a platform-native button.
@@ -71,7 +71,7 @@ class NativeButtonWrapper {
       NativeButtonBase* button);
   static NativeButtonWrapper* CreateCheckboxWrapper(Checkbox* checkbox);
   static NativeButtonWrapper* CreateRadioButtonWrapper(
-      RadioButton* radio_button);
+      NativeRadioButton* radio_button);
 
  protected:
   virtual ~NativeButtonWrapper() {}

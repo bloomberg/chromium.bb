@@ -242,7 +242,7 @@ void NativeCheckboxWin::NativeControlCreated(HWND control_hwnd) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeRadioButtonWin, public:
 
-NativeRadioButtonWin::NativeRadioButtonWin(RadioButton* radio_button)
+NativeRadioButtonWin::NativeRadioButtonWin(NativeRadioButton* radio_button)
     : NativeCheckboxWin(radio_button) {
 }
 
@@ -283,7 +283,7 @@ NativeButtonWrapper* NativeButtonWrapper::CreateCheckboxWrapper(
 
 // static
 NativeButtonWrapper* NativeButtonWrapper::CreateRadioButtonWrapper(
-    RadioButton* radio_button) {
+    NativeRadioButton* radio_button) {
   return new NativeRadioButtonWin(radio_button);
 }
 

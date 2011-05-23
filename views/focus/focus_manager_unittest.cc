@@ -874,10 +874,11 @@ class TestCheckbox : public Checkbox {
   }
 };
 
-class TestRadioButton : public RadioButton {
+class TestRadioButton : public NativeRadioButton {
  public:
-  explicit TestRadioButton(const std::wstring& text) : RadioButton(text, 1) {
-  };
+  explicit TestRadioButton(const std::wstring& text)
+      : NativeRadioButton(text, 1) {
+  }
   virtual gfx::NativeView TestGetNativeControlView() {
     return native_wrapper_->GetTestingHandle();
   }

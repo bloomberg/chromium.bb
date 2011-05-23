@@ -86,7 +86,7 @@ class NativeCheckboxGtk : public NativeButtonGtk {
 // A View that hosts a native Gtk radio button.
 class NativeRadioButtonGtk : public NativeCheckboxGtk {
  public:
-  explicit NativeRadioButtonGtk(RadioButton* radio_button);
+  explicit NativeRadioButtonGtk(NativeRadioButton* radio_button);
   virtual ~NativeRadioButtonGtk();
 
  protected:
@@ -100,7 +100,7 @@ class NativeRadioButtonGtk : public NativeCheckboxGtk {
   static void CallToggled(GtkButton* widget, NativeRadioButtonGtk* button);
 
   // Return RadioButton we are bound to.
-  RadioButton* radio_button();
+  NativeRadioButton* radio_button();
   // Set the gtk radio button's group to that of given wrapper's gruop.
   void SetGroupFrom(NativeButtonWrapper* wrapper);
   // Invoked when the radio button's state is changed.

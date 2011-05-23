@@ -184,15 +184,15 @@ void NativeCheckboxGtk::UpdateChecked() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-NativeRadioButtonGtk::NativeRadioButtonGtk(RadioButton* radio_button)
+NativeRadioButtonGtk::NativeRadioButtonGtk(NativeRadioButton* radio_button)
     : NativeCheckboxGtk(radio_button) {
 }
 
 NativeRadioButtonGtk::~NativeRadioButtonGtk() {
 }
 
-RadioButton* NativeRadioButtonGtk::radio_button() {
-  return static_cast<RadioButton*>(native_button_);
+NativeRadioButton* NativeRadioButtonGtk::radio_button() {
+  return static_cast<NativeRadioButton*>(native_button_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ void NativeRadioButtonGtk::ViewHierarchyChanged(bool is_add,
            i != other.end();
            ++i) {
         if (*i != native_button_) {
-          if ((*i)->GetClassName() != RadioButton::kViewClassName) {
+          if ((*i)->GetClassName() != NativeRadioButton::kViewClassName) {
             NOTREACHED() << "radio-button has same group as other non "
                 "radio-button views.";
             continue;
@@ -265,7 +265,7 @@ void NativeRadioButtonGtk::ViewHierarchyChanged(bool is_add,
           // A button without wrapper will be added to the group in
           // its own ViewHierachyChanged.
           NativeButtonWrapper* wrapper =
-              static_cast<RadioButton*>(*i)->native_wrapper();
+              static_cast<NativeRadioButton*>(*i)->native_wrapper();
           if (wrapper) {
             SetGroupFrom(wrapper);
             break;
@@ -303,7 +303,7 @@ NativeButtonWrapper* NativeButtonWrapper::CreateCheckboxWrapper(
 
 // static
 NativeButtonWrapper* NativeButtonWrapper::CreateRadioButtonWrapper(
-    RadioButton* radio_button) {
+    NativeRadioButton* radio_button) {
   return new NativeRadioButtonGtk(radio_button);
 }
 

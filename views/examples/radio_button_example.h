@@ -11,8 +11,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "views/controls/button/radio_button.h"
-#include "views/controls/button/text_button.h"
 #include "views/examples/example_base.h"
+
+namespace events {
+class TextButton;
+}
 
 namespace examples {
 
@@ -32,12 +35,15 @@ class RadioButtonExample : public ExampleBase,
                              const views::Event& event) OVERRIDE;
 
   // Two groups of 3 radio buttons.
+  views::NativeRadioButton* native_radio_buttons_[3];
   views::RadioButton* radio_buttons_[3];
-  views::RadioButtonNt* radio_buttons_nt_[3];
 
   // Control button to select radio buttons, and show the status of buttons.
   views::TextButton* select_;
   views::TextButton* status_;
+
+  // The number of times the button is pressed.
+  int count_;
 
   DISALLOW_COPY_AND_ASSIGN(RadioButtonExample);
 };
