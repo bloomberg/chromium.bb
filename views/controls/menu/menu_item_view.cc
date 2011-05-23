@@ -90,7 +90,9 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       submenu_(NULL),
       has_mnemonics_(false),
       show_mnemonics_(false),
-      has_icons_(false) {
+      has_icons_(false),
+      top_margin_(-1),
+      bottom_margin_(-1) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes supplies a
   // NULL delegate.
   Init(NULL, 0, SUBMENU, delegate);
@@ -507,7 +509,9 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       submenu_(NULL),
       has_mnemonics_(false),
       show_mnemonics_(false),
-      has_icons_(false) {
+      has_icons_(false),
+      top_margin_(-1),
+      bottom_margin_(-1) {
   Init(parent, command, type, NULL);
 }
 
@@ -701,6 +705,9 @@ void MenuItemView::DestroyAllMenuHosts() {
 }
 
 int MenuItemView::GetTopMargin() {
+  if (top_margin_ >= 0)
+    return top_margin_;
+
   MenuItemView* root = GetRootMenuItem();
   return root && root->has_icons_
       ? MenuConfig::instance().item_top_margin :
@@ -708,6 +715,9 @@ int MenuItemView::GetTopMargin() {
 }
 
 int MenuItemView::GetBottomMargin() {
+  if (bottom_margin_ >= 0)
+    return bottom_margin_;
+
   MenuItemView* root = GetRootMenuItem();
   return root && root->has_icons_
       ? MenuConfig::instance().item_bottom_margin :
