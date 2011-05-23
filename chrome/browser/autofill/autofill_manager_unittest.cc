@@ -1879,16 +1879,15 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   AutofillProfile *work_profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000002");
   ASSERT_TRUE(work_profile != NULL);
-  string16 saved_phone = work_profile->GetInfo(PHONE_HOME_NUMBER);
 
   GUIDPair guid(work_profile->guid(), 0);
   GUIDPair empty(std::string(), 0);
 
-  char test_data[] = "1234567890123456";
+  char test_data[] = "16505554567890123456";
   for (int i = arraysize(test_data) - 1; i >= 0; --i) {
     test_data[i] = 0;
     SCOPED_TRACE(StringPrintf("Testing phone: %s", test_data));
-    work_profile->SetInfo(PHONE_HOME_NUMBER, ASCIIToUTF16(test_data));
+    work_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16(test_data));
     // The page ID sent to the AutofillManager from the RenderView, used to send
     // an IPC message back to the renderer.
     int page_id = 100 - i;
@@ -1899,17 +1898,15 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
     FormData results;
     EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
 
-    if (i != 7) {
-      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[2].value);
-      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[3].value);
+    if (i != 11) {
+      // The only parsable phone is 16505554567.
+      EXPECT_EQ(string16(), results.fields[2].value);
+      EXPECT_EQ(string16(), results.fields[3].value);
     } else {
-      // The only size that is parsed and split, right now is 7:
-      EXPECT_EQ(ASCIIToUTF16("123"), results.fields[2].value);
+      EXPECT_EQ(ASCIIToUTF16("555"), results.fields[2].value);
       EXPECT_EQ(ASCIIToUTF16("4567"), results.fields[3].value);
     }
   }
-
-  work_profile->SetInfo(PHONE_HOME_NUMBER, saved_phone);
 }
 
 // Test that we can still fill a form when a field has been removed from it.

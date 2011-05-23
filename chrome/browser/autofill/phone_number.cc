@@ -5,10 +5,13 @@
 #include "chrome/browser/autofill/phone_number.h"
 
 #include "base/basictypes.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/autofill/phone_number_i18n.h"
 
 namespace {
 
@@ -32,7 +35,13 @@ const int kAutofillPhoneLength = arraysize(kAutofillPhoneTypes);
 
 }  // namespace
 
-PhoneNumber::PhoneNumber() {}
+PhoneNumber::PhoneNumber()
+    : phone_group_(AutofillType::NO_GROUP) {
+}
+
+PhoneNumber::PhoneNumber(AutofillType::FieldTypeGroup phone_group)
+    : phone_group_(phone_group) {
+}
 
 PhoneNumber::PhoneNumber(const PhoneNumber& number) : FormGroup() {
   *this = number;
@@ -43,10 +52,8 @@ PhoneNumber::~PhoneNumber() {}
 PhoneNumber& PhoneNumber::operator=(const PhoneNumber& number) {
   if (this == &number)
     return *this;
-  country_code_ = number.country_code_;
-  city_code_ = number.city_code_;
   number_ = number.number_;
-  extension_ = number.extension_;
+  phone_group_ = number.phone_group_;
   return *this;
 }
 
@@ -54,194 +61,247 @@ void PhoneNumber::GetMatchingTypes(const string16& text,
                                    FieldTypeSet* matching_types) const {
   string16 stripped_text(text);
   StripPunctuation(&stripped_text);
-  if (!Validate(stripped_text))
+
+  string16 number;
+  string16 city_code;
+  string16 country_code;
+  // Full number - parse it, split it and re-combine into canonical form.
+  if (!autofill_i18n::ParsePhoneNumber(
+          number_, locale_, &country_code, &city_code, &number))
     return;
 
-  if (IsNumber(stripped_text))
+  if (IsNumber(stripped_text, number))
     matching_types->insert(GetNumberType());
 
-  if (IsCityCode(stripped_text))
+  if (stripped_text == city_code)
     matching_types->insert(GetCityCodeType());
 
-  if (IsCountryCode(stripped_text))
+  if (stripped_text == country_code)
     matching_types->insert(GetCountryCodeType());
 
-  if (IsCityAndNumber(stripped_text))
+  city_code.append(number);
+  if (stripped_text == city_code)
     matching_types->insert(GetCityAndNumberType());
 
-  if (IsWholeNumber(stripped_text))
+  // Whole number is compared to unfiltered text - it would be parsed for phone
+  // comparision (e.g. 1-800-FLOWERS and 18003569377 are the same)
+  if (IsWholeNumber(text))
     matching_types->insert(GetWholeNumberType());
 }
 
-void PhoneNumber::GetNonEmptyTypes(FieldTypeSet* non_empty_typess) const {
-  DCHECK(non_empty_typess);
+void PhoneNumber::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
+  DCHECK(non_empty_types);
 
-  if (!number().empty())
-    non_empty_typess->insert(GetNumberType());
+  if (number_.empty())
+    return;
 
-  if (!city_code().empty())
-    non_empty_typess->insert(GetCityCodeType());
+  non_empty_types->insert(GetWholeNumberType());
 
-  if (!country_code().empty())
-    non_empty_typess->insert(GetCountryCodeType());
+  string16 number;
+  string16 city_code;
+  string16 country_code;
+  // Full number - parse it, split it and re-combine into canonical form.
+  if (!autofill_i18n::ParsePhoneNumber(
+          number_, locale_, &country_code, &city_code, &number))
+    return;
 
-  if (!CityAndNumber().empty())
-    non_empty_typess->insert(GetCityAndNumberType());
+  non_empty_types->insert(GetNumberType());
 
-  if (!WholeNumber().empty())
-    non_empty_typess->insert(GetWholeNumberType());
+  if (!city_code.empty()) {
+    non_empty_types->insert(GetCityCodeType());
+    non_empty_types->insert(GetCityAndNumberType());
+  }
+
+  if (!country_code.empty())
+    non_empty_types->insert(GetCountryCodeType());
 }
 
 string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
+  if (type == GetWholeNumberType())
+    return number_;
+
+  string16 number;
+  string16 city_code;
+  string16 country_code;
+  // Full number - parse it, split it and re-combine into canonical form.
+  if (!autofill_i18n::ParsePhoneNumber(
+          number_, locale_, &country_code, &city_code, &number))
+    return string16();
+
   if (type == GetNumberType())
-    return number();
+    return number;
 
   if (type == GetCityCodeType())
-    return city_code();
+    return city_code;
 
   if (type == GetCountryCodeType())
-    return country_code();
+    return country_code;
 
+  city_code.append(number);
   if (type == GetCityAndNumberType())
-    return CityAndNumber();
-
-  if (type == GetWholeNumberType())
-    return WholeNumber();
+    return city_code;
 
   return string16();
 }
 
 void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
-  string16 number(value);
-  StripPunctuation(&number);
-  if (!Validate(number))
-    return;
-
   FieldTypeSubGroup subgroup = AutofillType(type).subgroup();
-  if (subgroup == AutofillType::PHONE_NUMBER)
-    set_number(number);
-  else if (subgroup == AutofillType::PHONE_CITY_CODE)
-    set_city_code(number);
-  else if (subgroup == AutofillType::PHONE_COUNTRY_CODE)
-    set_country_code(number);
-  else if (subgroup == AutofillType::PHONE_CITY_AND_NUMBER ||
-           subgroup == AutofillType::PHONE_WHOLE_NUMBER)
-    set_whole_number(number);
+  FieldTypeGroup group = AutofillType(type).group();
+  if (phone_group_ == AutofillType::NO_GROUP)
+    phone_group_ = group;  // First call on empty phone - set the group.
+  if (subgroup == AutofillType::PHONE_NUMBER) {
+    // Should not be set directly.
+    NOTREACHED();
+  } else if (subgroup == AutofillType::PHONE_CITY_CODE) {
+    // Should not be set directly.
+    NOTREACHED();
+  } else if (subgroup == AutofillType::PHONE_COUNTRY_CODE) {
+    // Should not be set directly.
+    NOTREACHED();
+  } else if (subgroup == AutofillType::PHONE_CITY_AND_NUMBER ||
+             subgroup == AutofillType::PHONE_WHOLE_NUMBER) {
+    number_ = value;
+    StripPunctuation(&number_);
+  } else {
+    NOTREACHED();
+  }
+}
+
+bool PhoneNumber::NormalizePhone() {
+  bool success = true;
+  // Empty number does not need normalization.
+  if (number_.empty())
+    return true;
+
+  string16 number;
+  string16 city_code;
+  string16 country_code;
+  // Full number - parse it, split it and re-combine into canonical form.
+  if (!autofill_i18n::ParsePhoneNumber(
+          number_, locale_, &country_code, &city_code, &number) ||
+      !autofill_i18n::ConstructPhoneNumber(
+          country_code, city_code, number,
+          locale_,
+          (country_code.empty() ?
+              autofill_i18n::NATIONAL : autofill_i18n::INTERNATIONAL),
+          &number_)) {
+    // Parsing failed -  do not store phone.
+    number_.clear();
+    success = false;
+  }
+  number_ = autofill_i18n::NormalizePhoneNumber(number_);
+  return success;
+}
+
+void PhoneNumber::set_locale(const std::string& locale) {
+  locale_ = locale;
+}
+
+AutofillFieldType PhoneNumber::GetNumberType() const {
+  if (phone_group_ == AutofillType::PHONE_HOME)
+    return PHONE_HOME_NUMBER;
+  else if (phone_group_ == AutofillType::PHONE_FAX)
+    return PHONE_FAX_NUMBER;
   else
     NOTREACHED();
+  return UNKNOWN_TYPE;
 }
 
-// Static.
-bool PhoneNumber::ParsePhoneNumber(const string16& value,
-                                   string16* number,
-                                   string16* city_code,
-                                   string16* country_code) {
-  DCHECK(number);
-  DCHECK(city_code);
-  DCHECK(country_code);
+AutofillFieldType PhoneNumber::GetCityCodeType() const {
+  if (phone_group_ == AutofillType::PHONE_HOME)
+    return PHONE_HOME_CITY_CODE;
+  else if (phone_group_ == AutofillType::PHONE_FAX)
+    return PHONE_FAX_CITY_CODE;
+  else
+    NOTREACHED();
+  return UNKNOWN_TYPE;
+}
 
-  // Make a working copy of value.
-  string16 working = value;
+AutofillFieldType PhoneNumber::GetCountryCodeType() const {
+  if (phone_group_ == AutofillType::PHONE_HOME)
+    return PHONE_HOME_COUNTRY_CODE;
+  else if (phone_group_ == AutofillType::PHONE_FAX)
+    return PHONE_FAX_COUNTRY_CODE;
+  else
+    NOTREACHED();
+  return UNKNOWN_TYPE;
+}
 
-  *number = string16();
-  *city_code = string16();
-  *country_code = string16();
+AutofillFieldType PhoneNumber::GetCityAndNumberType() const {
+  if (phone_group_ == AutofillType::PHONE_HOME)
+    return PHONE_HOME_CITY_AND_NUMBER;
+  else if (phone_group_ == AutofillType::PHONE_FAX)
+    return PHONE_FAX_CITY_AND_NUMBER;
+  else
+    NOTREACHED();
+  return UNKNOWN_TYPE;
+}
 
-  // First remove any punctuation.
-  StripPunctuation(&working);
+AutofillFieldType PhoneNumber::GetWholeNumberType() const {
+  if (phone_group_ == AutofillType::PHONE_HOME)
+    return PHONE_HOME_WHOLE_NUMBER;
+  else if (phone_group_ == AutofillType::PHONE_FAX)
+    return PHONE_FAX_WHOLE_NUMBER;
+  else
+    NOTREACHED();
+  return UNKNOWN_TYPE;
+}
 
-  if (working.size() < kPhoneNumberLength)
+bool PhoneNumber::PhoneCombineHelper::SetInfo(AutofillFieldType field_type,
+                                              const string16& value) {
+  PhoneNumber temp(phone_group_);
+
+  if (field_type == temp.GetCountryCodeType()) {
+    country_ = value;
+    return true;
+  } else if (field_type == temp.GetCityCodeType()) {
+    city_ = value;
+    return true;
+  } else if (field_type == temp.GetCityAndNumberType()) {
+    phone_ = value;
+    return true;
+  } else if (field_type == temp.GetNumberType()) {
+    phone_.append(value);
+    return true;
+  } else {
     return false;
-
-  // Treat the last 7 digits as the number.
-  *number = working.substr(working.size() - kPhoneNumberLength,
-                           kPhoneNumberLength);
-  working.resize(working.size() - kPhoneNumberLength);
-  if (working.size() < kPhoneCityCodeLength)
-    return true;
-
-  // Treat the next three digits as the city code.
-  *city_code = working.substr(working.size() - kPhoneCityCodeLength,
-                              kPhoneCityCodeLength);
-  working.resize(working.size() - kPhoneCityCodeLength);
-  if (working.empty())
-    return true;
-
-  // Treat any remaining digits as the country code.
-  *country_code = working;
-  return true;
+  }
 }
 
-string16 PhoneNumber::WholeNumber() const {
-  string16 whole_number;
-  if (!country_code_.empty())
-    whole_number.append(country_code_);
-
-  if (!city_code_.empty())
-    whole_number.append(city_code_);
-
-  if (!number_.empty())
-    whole_number.append(number_);
-
-  return whole_number;
+bool PhoneNumber::PhoneCombineHelper::ParseNumber(const std::string& locale,
+                                                  string16* value) {
+  DCHECK(value);
+  return autofill_i18n::ConstructPhoneNumber(
+      country_, city_, phone_,
+      locale,
+      (country_.empty() ?
+          autofill_i18n::NATIONAL : autofill_i18n::INTERNATIONAL),
+      value);
 }
 
-void PhoneNumber::set_number(const string16& number) {
-  string16 digits(number);
-  StripPunctuation(&digits);
-  number_ = digits;
-}
-
-void PhoneNumber::set_whole_number(const string16& whole_number) {
-  string16 number, city_code, country_code;
-  ParsePhoneNumber(whole_number, &number, &city_code, &country_code);
-  set_number(number);
-  set_city_code(city_code);
-  set_country_code(country_code);
-}
-
-bool PhoneNumber::IsNumber(const string16& text) const {
-  // TODO(isherman): This will need to be updated once we add support for
+bool PhoneNumber::IsNumber(const string16& text, const string16& number) const {
+  // TODO(georgey): This will need to be updated once we add support for
   // international phone numbers.
   const size_t kPrefixLength = 3;
   const size_t kSuffixLength = 4;
 
-  if (text == number_)
+  if (text == number)
     return true;
-  if (text.length() == kPrefixLength && StartsWith(number_, text, true))
+  if (text.length() == kPrefixLength && StartsWith(number, text, true))
     return true;
-  if (text.length() == kSuffixLength && EndsWith(number_, text, true))
+  if (text.length() == kSuffixLength && EndsWith(number, text, true))
     return true;
 
   return false;
 }
 
-bool PhoneNumber::IsCityCode(const string16& text) const {
-  return text == city_code_;
-}
-
-bool PhoneNumber::IsCountryCode(const string16& text) const {
-  return text == country_code_;
-}
-
-bool PhoneNumber::IsCityAndNumber(const string16& text) const {
-  return text == CityAndNumber();
-}
-
 bool PhoneNumber::IsWholeNumber(const string16& text) const {
-  return text == WholeNumber();
-}
-
-bool PhoneNumber::Validate(const string16& number) const {
-  for (size_t i = 0; i < number.length(); ++i) {
-    if (!IsAsciiDigit(number[i]))
-      return false;
-  }
-
-  return true;
+  return autofill_i18n::ComparePhones(text, number_, locale_) ==
+         autofill_i18n::PHONES_EQUAL;
 }
 
 // Static.
 void PhoneNumber::StripPunctuation(string16* number) {
   RemoveChars(*number, kPhoneNumberSeparators, number);
 }
+

@@ -189,10 +189,6 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
     ABPerson* me,
     NSString* addressLabelRaw,
     AutofillProfile* profile) {
-  string16 number;
-  string16 city_code;
-  string16 country_code;
-
   ABMultiValue* phoneNumbers = [me valueForProperty:kABPhoneProperty];
   for (NSUInteger k = 0, phoneCount = [phoneNumbers count];
        k < phoneCount; k++) {
@@ -202,40 +198,25 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
         [phoneLabelRaw isEqualToString:kABPhoneHomeLabel]) {
       string16 homePhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
-      PhoneNumber::ParsePhoneNumber(
-          homePhone, &number, &city_code, &country_code);
-      profile->SetInfo(PHONE_HOME_NUMBER, number);
-      profile->SetInfo(PHONE_HOME_CITY_CODE, city_code);
-      profile->SetInfo(PHONE_HOME_COUNTRY_CODE, country_code);
+      profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, homePhone);
     } else if ([addressLabelRaw isEqualToString:kABAddressHomeLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneHomeFAXLabel]) {
       string16 homeFax = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
-      PhoneNumber::ParsePhoneNumber(homeFax,
-          &number, &city_code, &country_code);
-      profile->SetInfo(PHONE_FAX_NUMBER, number);
-      profile->SetInfo(PHONE_FAX_CITY_CODE, city_code);
-      profile->SetInfo(PHONE_FAX_COUNTRY_CODE, country_code);
+      profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, homeFax);
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkLabel]) {
       string16 workPhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
-      PhoneNumber::ParsePhoneNumber(workPhone,
-          &number, &city_code, &country_code);
-      profile->SetInfo(PHONE_HOME_NUMBER, number);
-      profile->SetInfo(PHONE_HOME_CITY_CODE, city_code);
-      profile->SetInfo(PHONE_HOME_COUNTRY_CODE, country_code);
+      profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, workPhone);
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkFAXLabel]) {
       string16 workFax = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
-      PhoneNumber::ParsePhoneNumber(workFax,
-          &number, &city_code, &country_code);
-      profile->SetInfo(PHONE_FAX_NUMBER, number);
-      profile->SetInfo(PHONE_FAX_CITY_CODE, city_code);
-      profile->SetInfo(PHONE_FAX_COUNTRY_CODE, country_code);
+      profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, workFax);
     }
   }
+  profile->NormalizePhones();
 }
 
 }  // namespace

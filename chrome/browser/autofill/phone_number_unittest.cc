@@ -3,126 +3,160 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/home_phone_number.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/autofill/phone_number_i18n.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Tests the phone number parser.
-TEST(PhoneNumberTest, Parser) {
-  string16 number;
-  string16 city_code;
-  string16 country_code;
+TEST(PhoneNumberTest, Matcher) {
+  // Set phone number so country_code == 1, city_code = 650, number = 2345678.
+  string16 phone(ASCIIToUTF16("1 [650] 234-5678"));
+  PhoneNumber phone_number(AutofillType::PHONE_HOME);
+  phone_number.SetInfo(PHONE_HOME_WHOLE_NUMBER, phone);
+  phone_number.set_locale(std::string("US"));
+  phone_number.NormalizePhone();
 
-  // Test for empty string.  Should give back empty strings.
-  string16 phone0;
-  PhoneNumber::ParsePhoneNumber(phone0, &number, &city_code, &country_code);
-  EXPECT_EQ(string16(), number);
-  EXPECT_EQ(string16(), city_code);
-  EXPECT_EQ(string16(), country_code);
+  FieldTypeSet matching_types;
+  phone_number.GetMatchingTypes(ASCIIToUTF16(""), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("1"), &matching_types);
+  EXPECT_EQ(1U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_COUNTRY_CODE) !=
+              matching_types.end());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("16"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  phone_number.GetMatchingTypes(ASCIIToUTF16("165"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  phone_number.GetMatchingTypes(ASCIIToUTF16("1650"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  phone_number.GetMatchingTypes(ASCIIToUTF16("16502"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  phone_number.GetMatchingTypes(ASCIIToUTF16("165023"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  phone_number.GetMatchingTypes(ASCIIToUTF16("1650234"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("16502345678"), &matching_types);
+  EXPECT_EQ(1U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_WHOLE_NUMBER) !=
+              matching_types.end());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("650"), &matching_types);
+  EXPECT_EQ(1U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_CODE) !=
+              matching_types.end());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("2345678"), &matching_types);
+  EXPECT_EQ(1U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("234"), &matching_types);
+  EXPECT_EQ(1U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("5678"), &matching_types);
+  EXPECT_EQ(1U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("2345"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("6502345678"), &matching_types);
+  EXPECT_EQ(2U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_AND_NUMBER) !=
+              matching_types.end());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_WHOLE_NUMBER) !=
+              matching_types.end());
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("(650)2345678"), &matching_types);
+  EXPECT_EQ(2U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_AND_NUMBER) !=
+              matching_types.end());
+  EXPECT_TRUE(matching_types.find(PHONE_HOME_WHOLE_NUMBER) !=
+              matching_types.end());
 
-  // Test for string with less than 7 digits.  Should give back empty strings.
-  string16 phone1(ASCIIToUTF16("1234"));
-  PhoneNumber::ParsePhoneNumber(phone1, &number, &city_code, &country_code);
-  EXPECT_EQ(string16(), number);
-  EXPECT_EQ(string16(), city_code);
-  EXPECT_EQ(string16(), country_code);
+  string16 fax(ASCIIToUTF16("+1(650)650-5678"));
+  PhoneNumber fax_number;
+  fax_number.set_locale(std::string("US"));
+  fax_number.SetInfo(PHONE_FAX_WHOLE_NUMBER, fax);
 
-  // Test for string with exactly 7 digits.  Should give back only phone number.
-  string16 phone2(ASCIIToUTF16("1234567"));
-  PhoneNumber::ParsePhoneNumber(phone2, &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("1234567"), number);
-  EXPECT_EQ(string16(), city_code);
-  EXPECT_EQ(string16(), country_code);
+  matching_types.clear();
+  fax_number.GetMatchingTypes(ASCIIToUTF16("16506505678"), &matching_types);
+  EXPECT_EQ(1U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_FAX_WHOLE_NUMBER) !=
+              matching_types.end());
 
-  // Test for string with exactly 7 digits and separators.  Should give back
-  // only phone number.
-  string16 phone_separator2(ASCIIToUTF16("123-4567"));
-  PhoneNumber::ParsePhoneNumber(phone_separator2,
-      &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("1234567"), number);
-  EXPECT_EQ(string16(), city_code);
-  EXPECT_EQ(string16(), country_code);
-
-  // Test for string with greater than 7 digits but less than 10 digits.
-  // Should give back only phone number.
-  string16 phone3(ASCIIToUTF16("123456789"));
-  PhoneNumber::ParsePhoneNumber(phone3, &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("3456789"), number);
-  EXPECT_EQ(string16(), city_code);
-  EXPECT_EQ(string16(), country_code);
-
-  // Test for string with greater than 7 digits but less than 10 digits and
-  // separators.
-  // Should give back only phone number.
-  string16 phone_separator3(ASCIIToUTF16("12.345-6789"));
-  PhoneNumber::ParsePhoneNumber(phone3, &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("3456789"), number);
-  EXPECT_EQ(string16(), city_code);
-  EXPECT_EQ(string16(), country_code);
-
-  // Test for string with exactly 10 digits.
-  // Should give back phone number and city code.
-  string16 phone4(ASCIIToUTF16("1234567890"));
-  PhoneNumber::ParsePhoneNumber(phone4, &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("123"), city_code);
-  EXPECT_EQ(string16(), country_code);
-
-  // Test for string with exactly 10 digits and separators.
-  // Should give back phone number and city code.
-  string16 phone_separator4(ASCIIToUTF16("(123) 456-7890"));
-  PhoneNumber::ParsePhoneNumber(phone_separator4,
-      &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("123"), city_code);
-  EXPECT_EQ(string16(), country_code);
-
-  // Test for string with over 10 digits.
-  // Should give back phone number, city code, and country code.
-  string16 phone5(ASCIIToUTF16("011234567890"));
-  PhoneNumber::ParsePhoneNumber(phone5, &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("123"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("01"), country_code);
-
-  // Test for string with over 10 digits with separator characters.
-  // Should give back phone number, city code, and country code.
-  string16 phone6(ASCIIToUTF16("(01) 123-456.7890"));
-  PhoneNumber::ParsePhoneNumber(phone6, &number, &city_code, &country_code);
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("123"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("01"), country_code);
+  matching_types.clear();
+  fax_number.GetMatchingTypes(ASCIIToUTF16("650"), &matching_types);
+  EXPECT_EQ(2U, matching_types.size());
+  EXPECT_TRUE(matching_types.find(PHONE_FAX_CITY_CODE) !=
+              matching_types.end());
+  EXPECT_TRUE(matching_types.find(PHONE_FAX_NUMBER) !=
+              matching_types.end());
 }
 
-TEST(PhoneNumberTest, Matcher) {
-  // Set phone number so country_code == 12, city_code = 123, number = 1234567.
-  string16 phone(ASCIIToUTF16("121231234567"));
-  HomePhoneNumber phone_number;
-  phone_number.set_whole_number(phone);
+TEST(PhoneNumberTest, PhoneCombineHelper) {
+  PhoneNumber::PhoneCombineHelper number1(AutofillType::PHONE_HOME);
+  EXPECT_FALSE(number1.SetInfo(ADDRESS_BILLING_CITY,
+                               ASCIIToUTF16("1")));
+  EXPECT_FALSE(number1.SetInfo(PHONE_FAX_COUNTRY_CODE,
+                               ASCIIToUTF16("1")));
+  EXPECT_TRUE(number1.SetInfo(PHONE_HOME_COUNTRY_CODE,
+                              ASCIIToUTF16("1")));
+  EXPECT_TRUE(number1.SetInfo(PHONE_HOME_CITY_CODE,
+                              ASCIIToUTF16("650")));
+  EXPECT_TRUE(number1.SetInfo(PHONE_HOME_NUMBER,
+                              ASCIIToUTF16("2345678")));
+  string16 parsed_phone;
+  EXPECT_TRUE(number1.ParseNumber("US", &parsed_phone));
+  // International format as it has a country code.
+  EXPECT_EQ(ASCIIToUTF16("+1 650-234-5678"), parsed_phone);
 
-  EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16("")));
-  EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16("1")));
-  EXPECT_TRUE(phone_number.IsCountryCode(ASCIIToUTF16("12")));
-  EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16("123")));
+  PhoneNumber::PhoneCombineHelper number2(AutofillType::PHONE_FAX);
+  EXPECT_FALSE(number2.SetInfo(PHONE_HOME_COUNTRY_CODE,
+                               ASCIIToUTF16("1")));
+  EXPECT_TRUE(number2.SetInfo(PHONE_FAX_COUNTRY_CODE,
+                              ASCIIToUTF16("1")));
+  EXPECT_TRUE(number2.SetInfo(PHONE_FAX_CITY_CODE,
+                              ASCIIToUTF16("650")));
+  EXPECT_TRUE(number2.SetInfo(PHONE_FAX_NUMBER,
+                              ASCIIToUTF16("2345679")));
+  EXPECT_TRUE(number2.ParseNumber("US", &parsed_phone));
+  // International format as it has a country code.
+  EXPECT_EQ(ASCIIToUTF16("+1 650-234-5679"), parsed_phone);
 
-  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("")));
-  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("1")));
-  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("12")));
-  EXPECT_TRUE(phone_number.IsCityCode(ASCIIToUTF16("123")));
-  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("1234")));
+  PhoneNumber::PhoneCombineHelper number3(AutofillType::PHONE_HOME);
+  EXPECT_TRUE(number3.SetInfo(PHONE_HOME_CITY_CODE,
+                              ASCIIToUTF16("650")));
+  EXPECT_TRUE(number3.SetInfo(PHONE_HOME_NUMBER,
+                              ASCIIToUTF16("2345680")));
+  EXPECT_TRUE(number3.ParseNumber("US", &parsed_phone));
+  // National format as it does not have a country code.
+  EXPECT_EQ(ASCIIToUTF16("(650) 234-5680"), parsed_phone);
 
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("1")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("12")));
-  EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16("123")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("1234")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("12345")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("123456")));
-  EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16("1234567")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("234567")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("34567")));
-  EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16("4567")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("567")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("67")));
-  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("7")));
+  PhoneNumber::PhoneCombineHelper number4(AutofillType::PHONE_HOME);
+  EXPECT_TRUE(number4.SetInfo(PHONE_HOME_CITY_CODE,
+                              ASCIIToUTF16("123")));  // Incorrect city code.
+  EXPECT_TRUE(number4.SetInfo(PHONE_HOME_NUMBER,
+                              ASCIIToUTF16("2345680")));
+  EXPECT_FALSE(number4.ParseNumber("US", &parsed_phone));
+  EXPECT_EQ(string16(), parsed_phone);
+
+  PhoneNumber::PhoneCombineHelper number5(AutofillType::PHONE_HOME);
+  EXPECT_TRUE(number5.SetInfo(PHONE_HOME_CITY_AND_NUMBER,
+                              ASCIIToUTF16("6502345681")));
+  EXPECT_TRUE(number5.ParseNumber("US", &parsed_phone));
+  EXPECT_EQ(ASCIIToUTF16("(650) 234-5681"), parsed_phone);
+
+  PhoneNumber::PhoneCombineHelper number6(AutofillType::PHONE_HOME);
+  EXPECT_TRUE(number6.SetInfo(PHONE_HOME_CITY_CODE,
+                              ASCIIToUTF16("650")));
+  EXPECT_TRUE(number6.SetInfo(PHONE_HOME_NUMBER,
+                              ASCIIToUTF16("234")));
+  EXPECT_TRUE(number6.SetInfo(PHONE_HOME_NUMBER,
+                              ASCIIToUTF16("5682")));
+  EXPECT_TRUE(number6.ParseNumber("US", &parsed_phone));
+  EXPECT_EQ(ASCIIToUTF16("(650) 234-5682"), parsed_phone);
 }

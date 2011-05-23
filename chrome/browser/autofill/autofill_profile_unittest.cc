@@ -39,7 +39,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile00;
   autofill_test::SetProfileInfo(&profile00, "", "Mitchell", "",
       "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA", "91601", "US",
-      "12345678910", "01987654321");
+      "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile00));
   string16 summary00 = profile00.Label();
   EXPECT_EQ(ASCIIToUTF16("Hollywood, CA"), summary00);
@@ -48,7 +48,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile1;
   autofill_test::SetProfileInfo(&profile1, "", "Mitchell", "",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910", "01987654321");
+      "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile1));
   string16 summary1 = profile1.Label();
   EXPECT_EQ(ASCIIToUTF16("123 Zoo St., Hollywood"), summary1);
@@ -57,7 +57,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile2;
   autofill_test::SetProfileInfo(&profile2, "", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910", "01987654321");
+      "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile2));
   string16 summary2 = profile2.Label();
   // Summary does include full name which is empty if the first name is empty.
@@ -67,7 +67,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile3;
   autofill_test::SetProfileInfo(&profile3, "", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-      "Hollywood", "CA", "91601", "US", "12345678910", "01987654321");
+      "Hollywood", "CA", "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile3));
   string16 summary3 = profile3.Label();
   EXPECT_EQ(ASCIIToUTF16("123 Zoo St., Hollywood"), summary3);
@@ -76,7 +76,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile4;
   autofill_test::SetProfileInfo(&profile4, "Marion", "Mitchell", "",
       "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA", "91601", "US",
-      "12345678910", "01987654321");
+      "16505678910", "01987654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile4));
   string16 summary4 = profile4.Label();
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell, Hollywood"), summary4);
@@ -85,7 +85,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile5;
   autofill_test::SetProfileInfo(&profile5, "Marion", "Mitchell", "",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910", "01987654321");
+      "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile5));
   string16 summary5 = profile5.Label();
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell, 123 Zoo St."), summary5);
@@ -94,7 +94,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile6;
   autofill_test::SetProfileInfo(&profile6, "Marion", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910", "01987654321");
+      "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile6));
   string16 summary6 = profile6.Label();
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison, Hollywood"),
@@ -104,7 +104,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile7;
   autofill_test::SetProfileInfo(&profile7, "Marion", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-      "Hollywood", "CA", "91601", "US", "12345678910", "01987654321");
+      "Hollywood", "CA", "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile7));
   string16 summary7 = profile7.Label();
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison, 123 Zoo St."),
@@ -115,7 +115,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   AutofillProfile profile7a;
   autofill_test::SetProfileInfo(&profile7a, "Marion", "Mitchell",
     "Morrison", "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
-    "Hollywood", "CA", "91601", "US", "12345678910", "01987654321");
+    "Hollywood", "CA", "91601", "US", "16505678910", "78127654321");
   std::vector<AutofillProfile*> profiles;
   profiles.push_back(&profile7);
   profiles.push_back(&profile7a);
@@ -143,8 +143,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
       "Elysium", "CA",
       "91111",
       "US",
-      "11111111111",
-      "22222222222");
+      "16502111111",
+      "16502222222");
   profiles.push_back(new AutofillProfile);
   autofill_test::SetProfileInfo(
       profiles[1],
@@ -182,8 +182,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
       "Elysium", "CA",
       "91111",
       "US",
-      "11111111111",
-      "22222222222");
+      "16502111111",
+      "16502222222");
   EXPECT_TRUE(AutofillProfile::AdjustInferredLabels(&profiles));
 
   // Profile 0 and 2 inferred label now includes an e-mail.
@@ -210,17 +210,17 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
       "Elysium", "CA",
       "91111",
       "US",
-      "11111111111",
-      "33333333333");  // Fax is different
+      "16502111111",
+      "16503333333");  // Fax is different
 
   EXPECT_TRUE(AutofillProfile::AdjustInferredLabels(&profiles));
 
   // Profile 0 and 2 inferred label now includes a fax number.
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., fax:#22222222222"),
+  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., fax:#16502222222"),
             profiles[0]->Label());
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."),
             profiles[1]->Label());
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., fax:#33333333333"),
+  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., fax:#16503333333"),
             profiles[2]->Label());
 
   profiles.push_back(new AutofillProfile);
@@ -236,22 +236,22 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
       "Elysium", "CA",
       "91111",
       "US",
-      "44444444444",  // Phone is different for some.
-      "33333333333");  // Fax is different for some.
+      "16504444444",  // Phone is different for some.
+      "16503333333");  // Fax is different for some.
 
   EXPECT_TRUE(AutofillProfile::AdjustInferredLabels(&profiles));
 
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., 11111111111,"
-                         " fax:#22222222222"),
+  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., 16502111111,"
+                         " fax:#16502222222"),
             profiles[0]->Label());
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."),
             profiles[1]->Label());
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., 11111111111,"
-                         " fax:#33333333333"),
+  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., 16502111111,"
+                         " fax:#16503333333"),
             profiles[2]->Label());
   // This one differs from other ones by unique phone, so no need for extra
   // information.
-  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., 44444444444"),
+  EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., 16504444444"),
             profiles[3]->Label());
 
   profiles.push_back(new AutofillProfile);
@@ -267,21 +267,21 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
       "Elysium", "CA",
       "91111",
       "US",
-      "44444444444",  // Phone is different for some.
-      "33333333333");  // Fax is different for some.
+      "16504444444",  // Phone is different for some.
+      "16503333333");  // Fax is different for some.
 
   EXPECT_TRUE(AutofillProfile::AdjustInferredLabels(&profiles));
 
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., johndoe@hades.com,"
-                         " 11111111111, fax:#22222222222"),
+                         " 16502111111, fax:#16502222222"),
             profiles[0]->Label());
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."),
             profiles[1]->Label());
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., johndoe@hades.com,"
-                         " 11111111111, fax:#33333333333"),
+                         " 16502111111, fax:#16503333333"),
             profiles[2]->Label());
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., johndoe@hades.com,"
-                         " 44444444444, fax:#33333333333"),
+                         " 16504444444, fax:#16503333333"),
             profiles[3]->Label());
   // This one differs from other ones by unique e-mail, so no need for extra
   // information.
@@ -308,8 +308,8 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
                                 "Elysium", "CA",
                                 "91111",
                                 "US",
-                                "11111111111",
-                                "22222222222");
+                                "16502111111",
+                                "16502222222");
   profiles.push_back(new AutofillProfile);
   autofill_test::SetProfileInfo(profiles[1],
                                 "Jane",
@@ -754,7 +754,7 @@ TEST(AutofillProfileTest, MultiValuePhone) {
   AutofillProfile p2 = p;
   EXPECT_EQ(0, p.Compare(p2));
   EXPECT_EQ(0, p.CompareMulti(p2));
-  const string16 kNoOne(ASCIIToUTF16("4151110000"));
+  const string16 kNoOne(ASCIIToUTF16("4152110000"));
   set_values[1] = kNoOne;
   p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
   p.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
@@ -777,8 +777,8 @@ TEST(AutofillProfileTest, MultiValuePhone) {
 
 TEST(AutofillProfileTest, MultiValueFax) {
   AutofillProfile p;
-  const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
-  const string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
+  const string16 kJohnDoe(ASCIIToUTF16("4152112222"));
+  const string16 kJohnPDoe(ASCIIToUTF16("4153113333"));
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);

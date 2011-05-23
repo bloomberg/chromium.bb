@@ -330,9 +330,9 @@ void PhoneField::SetPhoneType(PhoneType phone_type) {
   // Field types are different as well, so we create a temporary phone number,
   // to get relevant field types.
   if (phone_type == HOME_PHONE)
-    number_.reset(new HomePhoneNumber);
+    number_.reset(new PhoneNumber(AutofillType::PHONE_HOME));
   else
-    number_.reset(new FaxNumber);
+    number_.reset(new PhoneNumber(AutofillType::PHONE_FAX));
   phone_type_ = phone_type;
 }
 

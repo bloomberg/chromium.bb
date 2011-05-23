@@ -15,6 +15,7 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -225,6 +226,11 @@ bool PersonalDataManager::ImportFormData(
   // Detect and discard forms with multiple fields of the same type.
   std::set<AutofillFieldType> types_seen;
 
+  // We only set complete phone, so aggregate phone parts in these vars and set
+  // complete at the end.
+  PhoneNumber::PhoneCombineHelper home(AutofillType::PHONE_HOME);
+  PhoneNumber::PhoneCombineHelper fax(AutofillType::PHONE_FAX);
+
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutofillField* field = form.field(i);
     string16 value = CollapseWhitespace(field->value, false);
@@ -262,51 +268,12 @@ bool PersonalDataManager::ImportFormData(
       }
       ++importable_credit_card_fields;
     } else {
-      // In the case of a phone number, if the whole phone number was entered
-      // into a single field, then parse it and set the sub components.
-      if (AutofillType(field_type).subgroup() ==
-              AutofillType::PHONE_WHOLE_NUMBER) {
-        string16 number;
-        string16 city_code;
-        string16 country_code;
-        PhoneNumber::ParsePhoneNumber(value,
-                                      &number,
-                                      &city_code,
-                                      &country_code);
-        if (number.empty())
-          continue;
-
-        if (group == AutofillType::PHONE_HOME) {
-          imported_profile->SetInfo(PHONE_HOME_COUNTRY_CODE, country_code);
-          imported_profile->SetInfo(PHONE_HOME_CITY_CODE, city_code);
-          imported_profile->SetInfo(PHONE_HOME_NUMBER, number);
-        } else if (group == AutofillType::PHONE_FAX) {
-          imported_profile->SetInfo(PHONE_FAX_COUNTRY_CODE, country_code);
-          imported_profile->SetInfo(PHONE_FAX_CITY_CODE, city_code);
-          imported_profile->SetInfo(PHONE_FAX_NUMBER, number);
-        }
-
-        continue;
-      }
-
-      // Phone and fax numbers can be split across multiple fields, so we
-      // might have already stored the prefix, and now be at the suffix.
-      // If so, combine them to form the full number.
-      if (group == AutofillType::PHONE_HOME ||
-          group == AutofillType::PHONE_FAX) {
-        AutofillFieldType number_type = PHONE_HOME_NUMBER;
-        if (group == AutofillType::PHONE_FAX)
-          number_type = PHONE_FAX_NUMBER;
-
-        string16 stored_number = imported_profile->GetInfo(number_type);
-        if (stored_number.size() ==
-                static_cast<size_t>(PhoneNumber::kPrefixLength) &&
-            value.size() == static_cast<size_t>(PhoneNumber::kSuffixLength)) {
-          value = stored_number + value;
-        }
-      }
-
-      imported_profile->SetInfo(field_type, value);
+      // We need to store phone data in the variables, before building the whole
+      // number at the end. The rest of the fields are set "as is".
+      // If the fields are not the phone fields in question both home.SetInfo()
+      // and fax.SetInfo() are going to return false.
+      if (!home.SetInfo(field_type, value) && !fax.SetInfo(field_type, value))
+        imported_profile->SetInfo(field_type, value);
 
       // Reject profiles with invalid country information.
       if (field_type == ADDRESS_HOME_COUNTRY &&
@@ -315,6 +282,33 @@ bool PersonalDataManager::ImportFormData(
         break;
       }
     }
+  }
+
+  // Build phone numbers if they are from parts.
+  if (imported_profile.get()) {
+    string16 constructed_number;
+    if (!home.empty()) {
+      if (!home.ParseNumber(imported_profile->CountryCode(),
+                            &constructed_number)) {
+        imported_profile.reset();
+      } else {
+        imported_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number);
+      }
+    }
+    if (!fax.empty()) {
+      if (!fax.ParseNumber(imported_profile->CountryCode(),
+                           &constructed_number)) {
+        imported_profile.reset();
+      } else {
+        imported_profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, constructed_number);
+      }
+    }
+  }
+  // Normalize phone numbers.
+  if (imported_profile.get()) {
+    // Reject profile if even one of the phones is invalid.
+    if (!imported_profile->NormalizePhones())
+      imported_profile.reset();
   }
 
   // Reject the profile if minimum address and validation requirements are not

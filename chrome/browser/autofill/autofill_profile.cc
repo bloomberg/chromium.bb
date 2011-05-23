@@ -15,8 +15,8 @@
 #include "chrome/browser/autofill/address.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/contact_info.h"
-#include "chrome/browser/autofill/fax_number.h"
-#include "chrome/browser/autofill/home_phone_number.h"
+#include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -117,13 +117,14 @@ const string16 MultiString(const AutofillProfile& p, AutofillFieldType type) {
 template <class T>
 void CopyValuesToItems(AutofillFieldType type,
                        const std::vector<string16>& values,
-                       std::vector<T>* form_group_items) {
+                       std::vector<T>* form_group_items,
+                       const T& prototype) {
   form_group_items->resize(values.size());
   for (size_t i = 0; i < form_group_items->size(); ++i)
     (*form_group_items)[i].SetInfo(type, CollapseWhitespace(values[i], false));
   // Must have at least one (possibly empty) element.
   if (form_group_items->empty())
-    form_group_items->resize(1);
+    form_group_items->resize(1, prototype);
 }
 
 template <class T>
@@ -174,18 +175,42 @@ void CollapseCompoundFieldTypes(FieldTypeSet* type_set) {
   std::swap(*type_set, collapsed_set);
 }
 
+class FindByPhone {
+ public:
+  FindByPhone(const string16& phone, const std::string& country_code)
+      : phone_(phone),
+        country_code_(country_code) {
+  }
+
+  bool operator()(const string16& phone) {
+    return autofill_i18n::PhoneNumbersMatch(phone, phone_, country_code_);
+  }
+
+  bool operator()(const string16* phone) {
+    return autofill_i18n::PhoneNumbersMatch(*phone, phone_, country_code_);
+  }
+
+ private:
+  string16 phone_;
+  std::string country_code_;
+};
+
 }  // namespace
 
 AutofillProfile::AutofillProfile(const std::string& guid)
-    : guid_(guid), name_(1), email_(1), home_number_(1), fax_number_(1) {
+    : guid_(guid),
+      name_(1),
+      email_(1),
+      home_number_(1, PhoneNumber(AutofillType::PHONE_HOME)),
+      fax_number_(1, PhoneNumber(AutofillType::PHONE_FAX)) {
 }
 
 AutofillProfile::AutofillProfile()
     : guid_(guid::GenerateGUID()),
       name_(1),
       email_(1),
-      home_number_(1),
-      fax_number_(1) {
+      home_number_(1, PhoneNumber(AutofillType::PHONE_HOME)),
+      fax_number_(1, PhoneNumber(AutofillType::PHONE_FAX)) {
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
@@ -246,16 +271,22 @@ void AutofillProfile::SetMultiInfo(AutofillFieldType type,
                                    const std::vector<string16>& values) {
   switch (AutofillType(type).group()) {
     case AutofillType::NAME:
-      CopyValuesToItems(type, values, &name_);
+      CopyValuesToItems(type, values, &name_, NameInfo());
       break;
     case AutofillType::EMAIL:
-      CopyValuesToItems(type, values, &email_);
+      CopyValuesToItems(type, values, &email_, EmailInfo());
       break;
     case AutofillType::PHONE_HOME:
-      CopyValuesToItems(type, values, &home_number_);
+      CopyValuesToItems(type,
+                        values,
+                        &home_number_,
+                        PhoneNumber(AutofillType::PHONE_HOME));
       break;
     case AutofillType::PHONE_FAX:
-      CopyValuesToItems(type, values, &fax_number_);
+      CopyValuesToItems(type,
+                        values,
+                        &fax_number_,
+                        PhoneNumber(AutofillType::PHONE_FAX));
       break;
     default:
       if (values.size() == 1) {
@@ -463,6 +494,22 @@ const string16 AutofillProfile::PrimaryValue() const {
          GetInfo(ADDRESS_HOME_CITY);
 }
 
+bool AutofillProfile::NormalizePhones() {
+  // Successful either if nothing to parse, or everything is parsed correctly.
+  bool success = true;
+  for (size_t i = 0; i < home_number_.size(); ++i) {
+    home_number_[i].set_locale(CountryCode());
+    if (!home_number_[i].NormalizePhone())
+      success = false;
+  }
+  for (size_t i = 0; i < fax_number_.size(); ++i) {
+    fax_number_[i].set_locale(CountryCode());
+    if (!fax_number_[i].NormalizePhone())
+      success = false;
+  }
+  return success;
+}
+
 void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
   FieldTypeSet field_types;
   profile.GetNonEmptyTypes(&field_types);
@@ -478,18 +525,37 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
       profile.GetMultiInfo(*iter, &new_values);
       std::vector<string16> existing_values;
       GetMultiInfo(*iter, &existing_values);
+      FieldTypeGroup group = AutofillType(*iter).group();
       for (std::vector<string16>::iterator value_iter = new_values.begin();
            value_iter != new_values.end(); ++value_iter) {
         // Don't add duplicates.
-        if (std::find(existing_values.begin(), existing_values.end(),
-                      *value_iter) == existing_values.end()) {
-          existing_values.insert(existing_values.end(), *value_iter);
+        if (group == AutofillType::PHONE_HOME ||
+            group == AutofillType::PHONE_FAX) {
+          AddPhoneIfUnique(*value_iter, &existing_values);
+        } else {
+          if (std::find(existing_values.begin(), existing_values.end(),
+                        *value_iter) == existing_values.end()) {
+            existing_values.insert(existing_values.end(), *value_iter);
+          }
         }
       }
       SetMultiInfo(*iter, existing_values);
     } else {
       SetInfo(*iter, profile.GetInfo(*iter));
     }
+  }
+}
+
+void AutofillProfile::AddPhoneIfUnique(const string16& phone,
+                                       std::vector<string16>* existing_phones) {
+  DCHECK(existing_phones);
+  // Phones allow "fuzzy" matching, so "1-800-FLOWERS", "18003569377",
+  // "(800)356-9377" and "356-9377" are considered the same.
+  std::vector<string16>::const_iterator phone_iter;
+  if (std::find_if(existing_phones->begin(), existing_phones->end(),
+                   FindByPhone(phone, CountryCode())) ==
+      existing_phones->end()) {
+    existing_phones->push_back(phone);
   }
 }
 

@@ -19,6 +19,8 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/sync/util/data_encryption.h"
 
 using base::win::RegKey;
@@ -131,6 +133,10 @@ bool ImportSingleProfile(FormGroup* profile,
 
   bool has_non_empty_fields = false;
 
+  // Phones need to be rebuilt.
+  PhoneNumber::PhoneCombineHelper home(AutofillType::PHONE_HOME);
+  PhoneNumber::PhoneCombineHelper fax(AutofillType::PHONE_FAX);
+
   for (uint32 value_index = 0; value_index < key->ValueCount(); ++value_index) {
     std::wstring value_name;
     if (key->ReadName(value_index, &value_name) != ERROR_SUCCESS)
@@ -144,9 +150,21 @@ bool ImportSingleProfile(FormGroup* profile,
       if (it->second == CREDIT_CARD_NUMBER) {
         field_value = DecryptCCNumber(field_value);
       }
-      profile->SetInfo(it->second, field_value);
+      // We need to store phone data in the variables, before building the whole
+      // number at the end. The rest of the fields are set "as is".
+      if (!home.SetInfo(it->second, field_value) &&
+          !fax.SetInfo(it->second, field_value)) {
+        profile->SetInfo(it->second, field_value);
+      }
     }
   }
+  // Now re-construct the phones if needed.
+  string16 constructed_number;
+  if (!home.empty() && home.ParseNumber(std::string("US"), &constructed_number))
+    profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number);
+  if (!fax.empty() && fax.ParseNumber(std::string("US"), &constructed_number))
+    profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, constructed_number);
+
   return has_non_empty_fields;
 }
 
@@ -219,15 +237,6 @@ bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
     AutofillProfile profile;
     if (ImportSingleProfile(&profile, &key, reg_to_field)) {
       // Combine phones into whole phone #.
-      string16 phone;
-      phone = profile.GetInfo(PHONE_HOME_COUNTRY_CODE);
-      phone.append(profile.GetInfo(PHONE_HOME_CITY_CODE));
-      phone.append(profile.GetInfo(PHONE_HOME_NUMBER));
-      profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, phone);
-      phone = profile.GetInfo(PHONE_FAX_COUNTRY_CODE);
-      phone.append(profile.GetInfo(PHONE_FAX_CITY_CODE));
-      phone.append(profile.GetInfo(PHONE_FAX_NUMBER));
-      profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, phone);
       profiles->push_back(profile);
     }
   }

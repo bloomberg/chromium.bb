@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "third_party/libphonenumber/cpp/src/phonenumberutil.h"
 
 namespace {
@@ -16,8 +17,8 @@ namespace {
 std::string SanitizeLocaleCode(const std::string& locale_code) {
   if (locale_code.length() == 2)
     return locale_code;
-  // Use USA for incomplete locales.
-  return std::string("US");
+  return AutofillCountry::CountryCodeForLocale(
+      AutofillCountry::ApplicationLocale());
 }
 
 i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat UtilsTypeToPhoneLibType(
@@ -160,6 +161,12 @@ bool ConstructPhoneNumber(const string16& country_code,
   i18n::phonenumbers::PhoneNumberUtil::ValidationResult validation =
       phone_util->IsPossibleNumberWithReason(i18n_number);
   if (validation != i18n::phonenumbers::PhoneNumberUtil::IS_POSSIBLE)
+    return false;
+
+  // This verifies that number has a valid area code (that in some cases could
+  // be empty) for parsed country code. Also verifies that this is a valid
+  // number (in US 1234567 is not valid, because numbers do not start with 1).
+  if (!phone_util->IsValidNumber(i18n_number))
     return false;
 
   std::string formatted_number;

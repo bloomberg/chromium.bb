@@ -889,7 +889,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   form1.fields.push_back(field);
   // Phone gets updated.
   autofill_test::CreateTestFormField(
-      "Phone:", "phone", "4445556666", "text", &field);
+      "Phone:", "phone", "6505556666", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
@@ -907,7 +907,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   AutofillProfile expected;
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "1600 Pennsylvania Avenue",
-      "Suite A", "San Francisco", "California", "94102", NULL, "4445556666",
+      "Suite A", "San Francisco", "California", "94102", NULL, "4085556666",
       NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
   ASSERT_EQ(1U, results1.size());
@@ -945,7 +945,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   form2.fields.push_back(field);
   // Phone gets updated.
   autofill_test::CreateTestFormField(
-      "Phone:", "phone", "1231231234", "text", &field);
+      "Phone:", "phone", "6502231234", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);
@@ -964,7 +964,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   // Add multi-valued phone number to expectation.  Also, country gets added.
   std::vector<string16> values;
   expected.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
-  values.push_back(ASCIIToUTF16("1231231234"));
+  values.push_back(ASCIIToUTF16("6502231234"));
   expected.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
   expected.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
   ASSERT_EQ(1U, results2.size());
@@ -1632,7 +1632,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   autofill_test::SetProfileInfo(&profile0,
       "Marion", NULL, "Morrison",
       "johnwayne@me.xyz", NULL, "123 Zoo St.", NULL, "Hollywood", "CA",
-      "91601", "US", "2345678910", NULL);
+      "91601", "US", "14155678910", NULL);
 
   personal_data_->AddProfile(profile0);
 
@@ -1642,7 +1642,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   MessageLoop::current()->Run();
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_EQ(13U, non_empty_types.size());
+  EXPECT_EQ(14U, non_empty_types.size());
   EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
   EXPECT_TRUE(non_empty_types.count(NAME_LAST));
   EXPECT_TRUE(non_empty_types.count(NAME_FULL));
@@ -1653,6 +1653,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_ZIP));
   EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_COUNTRY));
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_COUNTRY_CODE));
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_CODE));
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_AND_NUMBER));
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_WHOLE_NUMBER));
@@ -1662,13 +1663,13 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   autofill_test::SetProfileInfo(&profile1,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
-      "US", "19482937549", "13502849239");
+      "US", "16502937549", "14082849239");
 
   AutofillProfile profile2;
   autofill_test::SetProfileInfo(&profile2,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "19482937549", "13502849239");
+      "32801", "US", "16502937549", "14152849239");
 
   personal_data_->AddProfile(profile1);
   personal_data_->AddProfile(profile2);

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_PHONE_NUMBER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -17,7 +18,8 @@
 class PhoneNumber : public FormGroup {
  public:
   PhoneNumber();
-  explicit PhoneNumber(const PhoneNumber& number);
+  explicit PhoneNumber(AutofillType::FieldTypeGroup phone_group);
+  PhoneNumber(const PhoneNumber& number);
   virtual ~PhoneNumber();
 
   PhoneNumber& operator=(const PhoneNumber& number);
@@ -29,15 +31,9 @@ class PhoneNumber : public FormGroup {
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
 
-  // Parses |value| to extract the components of a phone number.  |number|
-  // returns the trailing 7 digits, |city_code| returns the next 3 digits, and
-  // |country_code| returns any remaining digits.
-  // Separator characters are stripped before parsing the digits.
-  // Returns true if parsing was successful, false otherwise.
-  static bool ParsePhoneNumber(const string16& value,
-                               string16* number,
-                               string16* city_code,
-                               string16* country_code);
+  // Validates |number_| and translates it into digits-only format.
+  // Locale must be set.
+  bool NormalizePhone();
 
   // Size and offset of the prefix and suffix portions of phone numbers.
   static const int kPrefixOffset = 0;
@@ -45,53 +41,55 @@ class PhoneNumber : public FormGroup {
   static const int kSuffixOffset = 3;
   static const int kSuffixLength = 4;
 
+  // Sets locale for normalizing phone numbers. Must be called if you get
+  // normalized number or use NormalizePhone() function;
+  // Setting it to "", actually sets it to default locale - "US".
+  void set_locale(const std::string& locale);
+
   // The following functions should return the field type for each part of the
   // phone number.  Currently, these are either fax or home phone number types.
-  virtual AutofillFieldType GetNumberType() const = 0;
-  virtual AutofillFieldType GetCityCodeType() const = 0;
-  virtual AutofillFieldType GetCountryCodeType() const = 0;
-  virtual AutofillFieldType GetCityAndNumberType() const = 0;
-  virtual AutofillFieldType GetWholeNumberType() const = 0;
+  AutofillFieldType GetNumberType() const;
+  AutofillFieldType GetCityCodeType() const;
+  AutofillFieldType GetCountryCodeType() const;
+  AutofillFieldType GetCityAndNumberType() const;
+  AutofillFieldType GetWholeNumberType() const;
+
+  // The class used to combine home phone or fax parts into a whole number.
+  class PhoneCombineHelper {
+   public:
+    explicit PhoneCombineHelper(AutofillType::FieldTypeGroup phone_group)
+        : phone_group_(phone_group) { }
+    // Sets PHONE_HOME/FAX_CITY_CODE, PHONE_HOME/FAX_COUNTRY_CODE,
+    // PHONE_HOME/FAX_CITY_AND_NUMBER, PHONE_HOME/FAX_NUMBER and returns true.
+    // For all other field types returs false.
+    bool SetInfo(AutofillFieldType type, const string16& value);
+    // Returns true if parsing was successful, false otherwise.
+    bool ParseNumber(const std::string& locale, string16* value);
+
+    bool empty() const { return phone_.empty(); }
+   private:
+    string16 country_;
+    string16 city_;
+    string16 phone_;
+    AutofillType::FieldTypeGroup phone_group_;
+  };
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PhoneNumberTest, Matcher);
 
-  const string16& country_code() const { return country_code_; }
-  const string16& city_code() const { return city_code_; }
-  const string16& number() const { return number_; }
-  const string16& extension() const { return extension_; }
-  string16 CityAndNumber() const { return city_code_ + number_; }
-
-  // Returns the entire phone number as a string, without punctuation.
-  virtual string16 WholeNumber() const;
-
-  void set_country_code(const string16& country_code) {
-    country_code_ = country_code;
-  }
-  void set_city_code(const string16& city_code) { city_code_ = city_code; }
-  void set_number(const string16& number);
-  void set_extension(const string16& extension) { extension_ = extension; }
-  void set_whole_number(const string16& whole_number);
-
   // The numbers will be digits only (no punctuation), so any call to the IsX()
   // functions should first call StripPunctuation on the text.
-  bool IsNumber(const string16& text) const;
-  bool IsCityCode(const string16& text) const;
-  bool IsCountryCode(const string16& text) const;
-  bool IsCityAndNumber(const string16& text) const;
+  bool IsNumber(const string16& text, const string16& number) const;
   bool IsWholeNumber(const string16& text) const;
 
-  // Verifies that |number| is a valid phone number.
-  bool Validate(const string16& number) const;
-
-  // Removes any punctuation characters from |number|.
   static void StripPunctuation(string16* number);
 
+  // Phone group -  currently it is PHONE_HOME and PHONE_FAX.
+  AutofillType::FieldTypeGroup phone_group_;
+  // Locale for phone normalizing.
+  std::string locale_;
   // The pieces of the phone number.
-  string16 country_code_;
-  string16 city_code_;  // city or area code.
   string16 number_;
-  string16 extension_;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_PHONE_NUMBER_H_
