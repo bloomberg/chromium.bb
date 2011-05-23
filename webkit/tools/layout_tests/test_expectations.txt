@@ -29,3 +29,6 @@ BUG_RICOW : ietestcenter/Javascript/15.4.4.14-5-28.html = TEXT
 BUG_RICOW : ietestcenter/Javascript/15.4.4.15-5-28.html = TEXT
 BUG_RICOW : ietestcenter/Javascript/15.5.4.20-1-1.html = TEXT
 BUG_RICOW : ietestcenter/Javascript/15.5.4.20-1-2.html = TEXT
+
+// Temporary until expectations are updated after execScript removal.
+BUGAGER : fast/dom/prototype-inheritance.html = PASS TEXT
