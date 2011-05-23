@@ -458,14 +458,15 @@ void URLFetcher::Delegate::OnURLFetchComplete(
 
 // TODO(skerner): This default implementation will be removed, and the
 // method made pure virtual, once all users of URLFetcher are updated
-// to not expect response data as a string argument.
+// to not expect response data as a string argument.  Once this is removed,
+// the method URLFetcher::GetResponseStringRef() can be removed as well.
+// crbug.com/83592 tracks this.
 void URLFetcher::Delegate::OnURLFetchComplete(const URLFetcher* source) {
   // A delegate that did not override this method is using the old
   // parameter list to OnURLFetchComplete(). If a user asked to save
   // the response to a file, they must use the new parameter list,
   // in which case we can not get here.
-  std::string data;
-  CHECK(source->GetResponseAsString(&data));
+  CHECK(source->response_destination_ == STRING);
 
   // To avoid updating all callers, thunk to the old prototype for now.
   OnURLFetchComplete(source,
@@ -473,7 +474,7 @@ void URLFetcher::Delegate::OnURLFetchComplete(const URLFetcher* source) {
                      source->status(),
                      source->response_code(),
                      source->cookies(),
-                     data);
+                     source->GetResponseStringRef());
 }
 
 // static
@@ -976,6 +977,11 @@ bool URLFetcher::GetResponseAsString(std::string* out_response_string) const {
 
   *out_response_string = core_->data_;
   return true;
+}
+
+const std::string& URLFetcher::GetResponseStringRef() const {
+  CHECK(response_destination_ == STRING);
+  return core_->data_;
 }
 
 bool URLFetcher::GetResponseAsFilePath(bool take_ownership,

@@ -269,6 +269,12 @@ class URLFetcher {
   // Used by tests.
   const std::string& upload_data() const;
 
+  // Return a reference to the string data fetched.  Response type must
+  // be STRING, or this will CHECK.  This method exists to support the
+  // old signiture to OnURLFetchComplete(), and will be removed as part
+  // of crbug.com/83592 .
+  const std::string& GetResponseStringRef() const;
+
  private:
   friend class URLFetcherTest;
   friend class TestURLFetcher;
