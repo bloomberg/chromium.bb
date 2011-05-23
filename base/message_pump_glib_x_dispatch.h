@@ -5,6 +5,7 @@
 #ifndef BASE_MESSAGE_PUMP_GLIB_X_DISPATCH_H
 #define BASE_MESSAGE_PUMP_GLIB_X_DISPATCH_H
 
+#include "base/base_api.h"
 #include "base/message_pump.h"
 #include "base/message_pump_glib.h"
 
@@ -31,7 +32,7 @@ class MessagePumpGlibXDispatcher : public MessagePumpForUI::Dispatcher {
   virtual DispatchStatus DispatchX(XEvent* xevent) = 0;
 };
 
-class MessagePumpXObserver : public MessagePumpForUI::Observer {
+class BASE_API MessagePumpXObserver : public MessagePumpForUI::Observer {
  public:
   // This method is called before processing an XEvent. If the method returns
   // true, it indicates the event has already been handled, so the event is not
