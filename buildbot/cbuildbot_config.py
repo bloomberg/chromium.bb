@@ -46,7 +46,9 @@ vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
 quick_vm -- If vm_tests is true, run a minimal au test harness suite.
 
 fast -- Use parallel_emerge for faster (but slightly more risky) builds.
-usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
+usepkg_chroot -- Use binary packages for make_chroot. (emerge --usepkg)
+usepkg_setup_board -- Use binary packages for setup_board. (emerge --usepkg)
+usepkg_build_packages -- Use binary packages for build_packages.
 
 chroot_replace -- wipe and replace chroot, but not source.
 
@@ -96,7 +98,9 @@ default = {
   'useflags' : None,
   'chromeos_official' : False,
   'fast' : True,
-  'usepkg' : True,
+  'usepkg_chroot' : True,
+  'usepkg_setup_board' : True,
+  'usepkg_build_packages' : True,
 
   'chroot_replace' : False,
 
@@ -141,7 +145,10 @@ arm = {
 full = {
   # Full builds are test build to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
-  'usepkg' : False,
+
+  'usepkg_chroot' : False,
+  'usepkg_setup_board' : False,
+  'usepkg_build_packages' : False,
   'chroot_replace' : True,
 
   'quick_unit' : False,
@@ -173,6 +180,7 @@ release = {
   'upload_symbols' : True,
 
   'fast' : False,
+
   # --official
   # --officialversion
 }

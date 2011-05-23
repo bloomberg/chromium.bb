@@ -366,13 +366,13 @@ class BuildBoardStage(BuilderStage):
           buildroot=self._build_root,
           replace=self._build_config['chroot_replace'],
           fast=self._build_config['fast'],
-          usepkg=self._build_config['usepkg'])
+          usepkg=self._build_config['usepkg_chroot'])
 
     if not os.path.isdir(board_path):
       commands.SetupBoard(self._build_root,
                           board=self._build_config['board'],
                           fast=self._build_config['fast'],
-                          usepkg=self._build_config['usepkg'])
+                          usepkg=self._build_config['usepkg_setup_board'])
 
 
 class UprevStage(BuilderStage):
@@ -417,7 +417,7 @@ class BuildTargetStage(BuilderStage):
                    emptytree=emptytree,
                    build_autotest=build_autotest,
                    fast=self._build_config['fast'],
-                   usepkg=self._build_config['usepkg'],
+                   usepkg=self._build_config['usepkg_build_packages'],
                    extra_env=env)
 
     if self._prebuilt_type == 'full':

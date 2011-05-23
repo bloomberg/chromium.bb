@@ -329,14 +329,14 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         replace=self.build_config['chroot_replace'],
                         fast=self.build_config['fast'],
-                        usepkg=self.build_config['usepkg'])
+                        usepkg=self.build_config['usepkg_chroot'])
 
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
                         board=self.build_config['board'],
                         fast=self.build_config['fast'],
-                        usepkg=self.build_config['usepkg'])
+                        usepkg=self.build_config['usepkg_setup_board'])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -509,7 +509,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     self.build_config['vm_tests'] = False
     self.build_config['build_type'] = 'binary'
-    self.build_config['usepkg'] = False
+    self.build_config['usepkg_chroot'] = False
     self.build_config['fast'] = False
 
     self.options.prebuilts = True
@@ -531,7 +531,9 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['vm_tests'] = True
     self.options.tests = True
     self.build_config['build_type'] = 'full'
-    self.build_config['usepkg'] = True
+    self.build_config['usepkg_chroot'] = True
+    self.build_config['usepkg_setup_board'] = True
+    self.build_config['usepkg_build_packages'] = True
     self.build_config['fast'] = True
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
