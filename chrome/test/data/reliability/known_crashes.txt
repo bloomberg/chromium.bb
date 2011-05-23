@@ -171,3 +171,6 @@ PREFIX: webcore::implicitanimation::~implicitanimation___webcore::implicitanimat
 
 # 21054
 REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
+
+# 83657
+PREFIX: base::internal::lockimpl::lock___extensioncontentsettingsstore::geteffectivecontentsetting___content_settings::extensionprovider::getcontentsetting
