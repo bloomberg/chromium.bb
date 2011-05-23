@@ -438,6 +438,9 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // The context we use for OpenGL rendering.
   RendererGLContext* context_;
+  // The GLES2Implementation we use for OpenGL rendering.
+  gpu::gles2::GLES2Implementation* gl_;
+
   // If rendering directly to WebView, weak pointer to it.
   WebKit::WebView* web_view_;
 #if defined(OS_MACOSX)
