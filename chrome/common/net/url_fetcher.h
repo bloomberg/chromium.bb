@@ -263,6 +263,12 @@ class URLFetcher {
   static void CancelAll();
 
  protected:
+  // How should the response be stored?
+  enum ResponseDestinationType {
+    STRING,  // Default: In a std::string
+    TEMP_FILE  // Write to a temp file
+  };
+
   // Returns the delegate.
   Delegate* delegate() const;
 
@@ -275,15 +281,12 @@ class URLFetcher {
   // of crbug.com/83592 .
   const std::string& GetResponseStringRef() const;
 
+  void SetResponseDestinationForTesting(ResponseDestinationType);
+  ResponseDestinationType GetResponseDestinationForTesting() const;
+
  private:
   friend class URLFetcherTest;
   friend class TestURLFetcher;
-
-  // How should the response be stored?
-  enum ResponseDestinationType {
-    STRING,  // Default: In a std::string
-    TEMP_FILE  // Write to a temp file
-  };
 
   // Only used by URLFetcherTest, returns the number of URLFetcher::Core objects
   // actively running.
@@ -303,9 +306,6 @@ class URLFetcher {
   base::TimeDelta backoff_delay_;
   // Maximum retries allowed.
   int max_retries_;
-
-  // Where should responses be saved?
-  ResponseDestinationType response_destination_;
 
   static bool g_interception_enabled;
 
