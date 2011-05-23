@@ -4616,6 +4616,24 @@
    fun:_ZN13BrowserThread14PostTaskHelperENS_2IDERKN15tracked_objects8LocationEP4Taskxb
    fun:_ZN13BrowserThread8PostTaskENS_2IDERKN15tracked_objects8LocationEP4Task
 }
+{
+   bug_83626a
+   Memcheck:Cond
+   fun:_ZNK2v88internal9SparseSet8ContainsEi
+   fun:_ZN2v88internal9SparseSet3AddEi
+   ...
+   fun:_ZN2v88internal20HGlobalValueNumberer41CollectSideEffectsOnPathsToDominatedBlockEPNS0_11HBasicBlockES3_
+   fun:_ZN2v88internal20HGlobalValueNumberer12AnalyzeBlockEPNS0_11HBasicBlockEPNS0_9HValueMapE
+}
+{
+   bug_83626b
+   Memcheck:Value4
+   fun:_ZNK2v88internal9SparseSet8ContainsEi
+   fun:_ZN2v88internal9SparseSet3AddEi
+   ...
+   fun:_ZN2v88internal20HGlobalValueNumberer41CollectSideEffectsOnPathsToDominatedBlockEPNS0_11HBasicBlockES3_
+   fun:_ZN2v88internal20HGlobalValueNumberer12AnalyzeBlockEPNS0_11HBasicBlockEPNS0_9HValueMapE
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
