@@ -2,19 +2,18 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10F2521</string>
-		<string key="IBDocument.InterfaceBuilderVersion">823</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.SystemVersion">10J869</string>
+		<string key="IBDocument.InterfaceBuilderVersion">851</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">823</string>
+			<string key="NS.object.0">851</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1"/>
+			<integer value="106"/>
 			<integer value="89"/>
-			<integer value="66"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -60,11 +59,13 @@
 							<int key="NSvFlags">274</int>
 							<string key="NSFrameSize">{750, 600}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<string key="NSClassName">FastResizeView</string>
 						</object>
 					</object>
 					<string key="NSFrameSize">{750, 600}</string>
 					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{400, 272}</string>
@@ -75,41 +76,28 @@
 				<int key="NSvFlags">266</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<object class="NSPopUpButton" id="895566939">
+					<object class="NSButton" id="1069275088">
 						<reference key="NSNextResponder" ref="1029219716"/>
 						<int key="NSvFlags">-2147483383</int>
 						<string key="NSFrame">{{375, 11}, {100, 26}}</string>
 						<reference key="NSSuperview" ref="1029219716"/>
 						<bool key="NSEnabled">YES</bool>
-						<object class="NSPopUpButtonCell" key="NSCell" id="263458182">
-							<int key="NSCellFlags">-2076049856</int>
-							<int key="NSCellFlags2">2048</int>
+						<object class="NSButtonCell" key="NSCell" id="88631848">
+							<int key="NSCellFlags">-2080244224</int>
+							<int key="NSCellFlags2">134217728</int>
+							<string key="NSContents"/>
 							<object class="NSFont" key="NSSupport" id="944571928">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">13</double>
 								<int key="NSfFlags">1044</int>
 							</object>
-							<reference key="NSControlView" ref="895566939"/>
-							<int key="NSButtonFlags">109199615</int>
-							<int key="NSButtonFlags2">129</int>
+							<reference key="NSControlView" ref="1069275088"/>
+							<int key="NSButtonFlags">139215103</int>
+							<int key="NSButtonFlags2">134</int>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
 							<int key="NSPeriodicInterval">75</int>
-							<nil key="NSMenuItem"/>
-							<bool key="NSMenuItemRespectAlignment">YES</bool>
-							<object class="NSMenu" key="NSMenu" id="605455716">
-								<string key="NSTitle">OtherViews</string>
-								<object class="NSMutableArray" key="NSMenuItems">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-								</object>
-								<reference key="NSMenuFont" ref="944571928"/>
-							</object>
-							<int key="NSSelectedIndex">-1</int>
-							<int key="NSPreferredEdge">1</int>
-							<bool key="NSUsesItemFromMenu">YES</bool>
-							<bool key="NSAltersState">YES</bool>
-							<int key="NSArrowPosition">2</int>
 						</object>
 					</object>
 					<object class="NSButton" id="131944810">
@@ -200,9 +188,9 @@
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">profileMenuButton</string>
 						<reference key="source" ref="1029219716"/>
-						<reference key="destination" ref="895566939"/>
+						<reference key="destination" ref="1069275088"/>
 					</object>
-					<int key="connectionID">105</int>
+					<int key="connectionID">108</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -257,7 +245,7 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="131944810"/>
-							<reference ref="895566939"/>
+							<reference ref="1069275088"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">TabBar</string>
@@ -290,30 +278,18 @@
 						<reference key="parent" ref="1006"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">99</int>
-						<reference key="object" ref="895566939"/>
+						<int key="objectID">106</int>
+						<reference key="object" ref="1069275088"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="263458182"/>
+							<reference ref="88631848"/>
 						</object>
 						<reference key="parent" ref="1029219716"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">100</int>
-						<reference key="object" ref="263458182"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="605455716"/>
-						</object>
-						<reference key="parent" ref="895566939"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">101</int>
-						<reference key="object" ref="605455716"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-						</object>
-						<reference key="parent" ref="263458182"/>
+						<int key="objectID">107</int>
+						<reference key="object" ref="88631848"/>
+						<reference key="parent" ref="1069275088"/>
 					</object>
 				</object>
 			</object>
@@ -332,9 +308,11 @@
 					<string>1.editorWindowContentRectSynchronizationRect</string>
 					<string>1.windowTemplate.hasMinSize</string>
 					<string>1.windowTemplate.minSize</string>
-					<string>100.IBPluginDependency</string>
-					<string>101.IBEditorWindowLastContentRect</string>
-					<string>101.IBPluginDependency</string>
+					<string>106.CustomClassName</string>
+					<string>106.IBPluginDependency</string>
+					<string>106.IBViewBoundsToFrameTransform</string>
+					<string>107.CustomClassName</string>
+					<string>107.IBPluginDependency</string>
 					<string>2.IBPluginDependency</string>
 					<string>2.IBViewIntegration.shadowBlurRadius</string>
 					<string>2.IBViewIntegration.shadowColor</string>
@@ -351,25 +329,26 @@
 					<string>84.IBPluginDependency</string>
 					<string>89.IBEditorWindowLastContentRect</string>
 					<string>89.IBPluginDependency</string>
-					<string>99.CustomClassName</string>
-					<string>99.IBPluginDependency</string>
-					<string>99.IBViewBoundsToFrameTransform</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{466, 698}, {750, 600}}</string>
+					<string>{{466, 406}, {750, 600}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{466, 698}, {750, 600}}</string>
+					<string>{{466, 406}, {750, 600}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
 					<boolean value="YES"/>
 					<string>{400, 250}</string>
+					<string>ProfileMenuButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{960, 598}, {110, 4}}</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAABDk4AAwcgAAA</bytes>
+					</object>
+					<string>ClickHoldButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<real value="0.0"/>
@@ -392,11 +371,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{329, 611}, {236, 393}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>ProfileMenuButton</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABDvYAAwgwAAA</bytes>
-					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -415,7 +389,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">105</int>
+			<int key="maxID">108</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -463,6 +437,25 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">ClickHoldButtonCell</string>
+					<string key="superclassName">ImageButtonCell</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">clickHoldTarget_</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">clickHoldTarget_</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">clickHoldTarget_</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/clickhold_button_cell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">FastResizeView</string>
 					<string key="superclassName">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -498,10 +491,44 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">ImageButtonCell</string>
+					<string key="superclassName">NSButtonCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/image_button_cell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">MenuButton</string>
+					<string key="superclassName">ToolbarButton</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">attachedMenu</string>
+						<string key="NS.object.0">NSMenu</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">attachedMenu</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">attachedMenu</string>
+							<string key="candidateClassName">NSMenu</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/menu_button.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/renderer_host/accelerated_plugin_view_mac.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -560,7 +587,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ProfileMenuButton</string>
-					<string key="superclassName">NSPopUpButton</string>
+					<string key="superclassName">MenuButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/profile_menu_button.h</string>
@@ -661,15 +688,12 @@
 						<string key="minorKey">browser/ui/cocoa/tabs/tab_window_controller.h</string>
 					</object>
 				</object>
-			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
-					<string key="className">ImageButtonCell</string>
-					<string key="superclassName">NSButtonCell</string>
+					<string key="className">ToolbarButton</string>
+					<string key="superclassName">NSButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../browser/ui/cocoa/image_button_cell.h</string>
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/toolbar/toolbar_button.h</string>
 					</object>
 				</object>
 			</object>
@@ -765,14 +789,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="290621974">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSMenu.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSMenuItemCell</string>
-					<string key="superclassName">NSButtonCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSMenuItemCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1269,22 +1285,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">SecurityInterface.framework/Headers/SFChooseIdentityPanel.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSPopUpButton</string>
-					<string key="superclassName">NSButton</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSPopUpButton.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSPopUpButtonCell</string>
-					<string key="superclassName">NSMenuItemCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSPopUpButtonCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

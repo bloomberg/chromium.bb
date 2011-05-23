@@ -10,12 +10,13 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 
 class ProfileMenuModel;
 
 // PopUp button that shows the multiprofile menu.
-@interface ProfileMenuButton : NSPopUpButton {
+@interface ProfileMenuButton : MenuButton {
  @private
   BOOL shouldShowProfileDisplayName_;
   scoped_nsobject<NSTextFieldCell> textFieldCell_;
@@ -37,10 +38,6 @@ class ProfileMenuModel;
 - (NSSize)desiredControlSize;
 // Gets the minimum size that the control should be resized to.
 - (NSSize)minControlSize;
-
-// Public for testing.
-- (void)   mouseDown:(NSEvent*)event
-  withShowMenuTarget:(id)target;
 
 @end
 

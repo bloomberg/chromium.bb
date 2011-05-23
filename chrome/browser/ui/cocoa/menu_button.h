@@ -43,6 +43,10 @@
 // menu will only be opened when clicked and held.
 @property(assign, nonatomic) BOOL openMenuOnClick;
 
+// Returns the rectangle that menus are anchored at. Can be overridden by
+// subclasses, returns -bounds by default.
+- (NSRect)menuRect;
+
 @end  // @interface MenuButton
 
 // Available for subclasses.
