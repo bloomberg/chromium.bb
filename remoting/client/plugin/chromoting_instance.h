@@ -19,6 +19,7 @@
 #include "ppapi/cpp/var.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
+#include "remoting/client/plugin/pepper_client_logger.h"
 #include "remoting/protocol/connection_to_host.h"
 
 class MessageLoop;
@@ -85,7 +86,8 @@ class ChromotingInstance : public pp::Instance {
   // Called by ChromotingScriptableObject to set scale-to-fit.
   void SetScaleToFit(bool scale_to_fit);
 
-  void LogDebugInfo(const std::string& info);
+  void Log(int severity, const char* format, ...);
+  void VLog(int verboselevel, const char* format, ...);
 
   // Return statistics record by ChromotingClient.
   // If no connection is currently active then NULL will be returned.
@@ -117,6 +119,8 @@ class ChromotingInstance : public pp::Instance {
   // jingle_glue objects. This is used when if we start a sandboxed jingle
   // connection.
   scoped_refptr<PepperXmppProxy> xmpp_proxy_;
+
+  PepperClientLogger logger_;
 
   // JavaScript interface to control this instance.
   // This wraps a ChromotingScriptableObject in a pp::Var.

@@ -5,6 +5,7 @@
 #include "remoting/client/plugin/pepper_view.h"
 
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/point.h"
@@ -53,13 +54,15 @@ void PepperView::Paint() {
   // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
   // is wrong.
   if (is_static_fill_) {
-    LOG(ERROR) << "Static filling " << static_fill_color_;
+    instance_->Log(logging::LOG_INFO,
+                   "Static filling %08x", static_fill_color_);
     pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
                         pp::Size(host_width_, host_height_),
                         false);
     if (image.is_null()) {
-      LOG(ERROR) << "Unable to allocate image of size: "
-                 << host_width_ << "x" << host_height_;
+      instance_->Log(logging::LOG_ERROR,
+                     "Unable to allocate image of size: %dx%d",
+                     host_width_, host_height_);
       return;
     }
 
@@ -95,12 +98,13 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   const int kBytesPerPixel = GetBytesPerPixel(media::VideoFrame::RGB32);
 
   if (!backing_store_.get() || backing_store_->is_null()) {
-    LOG(ERROR) << "Backing store is not available.";
+    instance_->Log(logging::LOG_ERROR, "Backing store is not available.");
     return;
   }
   if (DoScaling()) {
     if (!scaled_backing_store_.get() || scaled_backing_store_->is_null()) {
-      LOG(ERROR) << "Scaled backing store is not available.";
+      instance_->Log(logging::LOG_ERROR,
+                     "Scaled backing store is not available.");
     }
   }
 
@@ -341,7 +345,7 @@ void PepperView::ResizeInternals() {
                                pp::Size(host_width_, host_height_),
                                false);
   if (!instance_->BindGraphics(graphics2d_)) {
-    LOG(ERROR) << "Couldn't bind the device context.";
+    instance_->Log(logging::LOG_ERROR, "Couldn't bind the device context.");
     return;
   }
 
@@ -441,7 +445,7 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
   DCHECK(CurrentlyOnPluginThread());
 
   if (frame) {
-    LOG(WARNING) << "Frame released.";
+    instance_->Log(logging::LOG_WARNING, "Frame released.");
     frame->Release();
   }
 }

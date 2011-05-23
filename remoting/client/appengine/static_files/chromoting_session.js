@@ -19,6 +19,7 @@ chromoting.connectMethod = 'sandboxed';
 // to the plugin.
 function feedIq() {
   var xhr = new XMLHttpRequest();
+  addToDebugLog("xmpp proxy: " + chromoting.httpXmppProxy);
   xhr.open("GET", chromoting.httpXmppProxy + '/readIq?host_jid=' +
            encodeURIComponent(document.hostjid), true);
   xhr.withCredentials = true;
@@ -42,6 +43,7 @@ function feedIq() {
 
 function registerConnection() {
   var xhr = new XMLHttpRequest();
+  addToDebugLog("xmpp proxy: " + chromoting.httpXmppProxy);
   xhr.open("POST", chromoting.httpXmppProxy + '/newConnection', true);
   xhr.withCredentials = true;
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');

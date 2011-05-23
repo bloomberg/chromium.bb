@@ -30,6 +30,7 @@ class NotifyResolutionRequest;
 }  // namespace protocol
 
 class ClientContext;
+class ClientLogger;
 class InputHandler;
 class RectangleUpdateDecoder;
 
@@ -45,6 +46,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    ChromotingView* view,
                    RectangleUpdateDecoder* rectangle_decoder,
                    InputHandler* input_handler,
+                   ClientLogger* logger,
                    Task* client_done);
   virtual ~ChromotingClient();
 
@@ -117,6 +119,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   ChromotingView* view_;
   RectangleUpdateDecoder* rectangle_decoder_;
   InputHandler* input_handler_;
+  ClientLogger* logger_;
 
   // If non-NULL, this is called when the client is done.
   Task* client_done_;

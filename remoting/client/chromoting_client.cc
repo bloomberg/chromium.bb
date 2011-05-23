@@ -8,6 +8,7 @@
 #include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
+#include "remoting/client/client_logger.h"
 #include "remoting/client/input_handler.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -21,6 +22,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ChromotingView* view,
                                    RectangleUpdateDecoder* rectangle_decoder,
                                    InputHandler* input_handler,
+                                   ClientLogger* logger,
                                    Task* client_done)
     : config_(config),
       context_(context),
@@ -28,6 +30,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
       view_(view),
       rectangle_decoder_(rectangle_decoder),
       input_handler_(input_handler),
+      logger_(logger),
       client_done_(client_done),
       state_(CREATED),
       packet_being_processed_(false),
@@ -182,18 +185,18 @@ void ChromotingClient::DispatchPacket() {
 }
 
 void ChromotingClient::OnConnectionOpened(protocol::ConnectionToHost* conn) {
-  VLOG(1) << "ChromotingClient::OnConnectionOpened";
+  logger_->VLog(1, "ChromotingClient::OnConnectionOpened");
   Initialize();
   SetConnectionState(CONNECTED);
 }
 
 void ChromotingClient::OnConnectionClosed(protocol::ConnectionToHost* conn) {
-  VLOG(1) << "ChromotingClient::OnConnectionClosed";
+  logger_->VLog(1, "ChromotingClient::OnConnectionClosed");
   SetConnectionState(DISCONNECTED);
 }
 
 void ChromotingClient::OnConnectionFailed(protocol::ConnectionToHost* conn) {
-  VLOG(1) << "ChromotingClient::OnConnectionFailed";
+  logger_->VLog(1, "ChromotingClient::OnConnectionFailed");
   SetConnectionState(FAILED);
 }
 
@@ -261,7 +264,7 @@ void ChromotingClient::Initialize() {
   // Resize the window.
   int width = config->initial_resolution().width;
   int height = config->initial_resolution().height;
-  VLOG(1) << "Initial screen geometry: " << width << "x" << height;
+  logger_->VLog(1, "Initial screen geometry: %dx%d", width, height);
 
   // TODO(ajwong): What to do here?  Does the decoder actually need to request
   // the right frame size?  This is mainly an optimization right?
@@ -279,6 +282,7 @@ void ChromotingClient::Initialize() {
 // ClientStub control channel interface.
 void ChromotingClient::NotifyResolution(
     const protocol::NotifyResolutionRequest* msg, Task* done) {
+  logger_->Log(logging::LOG_INFO, "NotifyResolution change");
   NOTIMPLEMENTED();
   done->Run();
   delete done;
@@ -293,6 +297,8 @@ void ChromotingClient::BeginSessionResponse(
                           msg, done));
     return;
   }
+
+  logger_->Log(logging::LOG_INFO, "BeginSessionResponse received");
 
   // Inform the connection that the client has been authenticated. This will
   // enable the communication channels.

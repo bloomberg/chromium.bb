@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,6 +11,7 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/client_context.h"
+#include "remoting/client/client_logger.h"
 #include "remoting/client/client_util.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/x11_view.h"
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
   remoting::X11InputHandler input_handler(&context, &connection, &view);
   remoting::ChromotingClient client(
       config, &context, &connection, &view, rectangle_decoder, &input_handler,
-      NewRunnableFunction(&ClientQuit, &ui_loop));
+      new remoting::ClientLogger(), NewRunnableFunction(&ClientQuit, &ui_loop));
 
   // Run the client on a new MessageLoop until
   context.Start();

@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/task.h"
@@ -24,6 +25,7 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
+#include "remoting/client/plugin/pepper_client_logger.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator_session.h"
 #include "remoting/client/plugin/pepper_view.h"
@@ -47,7 +49,8 @@ const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
-      initialized_(false) {
+      initialized_(false),
+      logger_(this) {
 }
 
 ChromotingInstance::~ChromotingInstance() {
@@ -68,7 +71,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   CHECK(!initialized_);
   initialized_ = true;
 
-  VLOG(1) << "Started ChromotingInstance::Init";
+  logger_.VLog(1, "Started ChromotingInstance::Init");
 
   // Start all the threads.
   context_.Start();
@@ -86,7 +89,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   // If we don't have socket dispatcher for IPC (e.g. P2P API is
   // disabled), then JingleClient will try to use physical sockets.
   if (socket_dispatcher) {
-    VLOG(1) << "Creating IpcNetworkManager and IpcPacketSocketFactory.";
+    logger_.VLog(1, "Creating IpcNetworkManager and IpcPacketSocketFactory.");
     network_manager = new IpcNetworkManager(socket_dispatcher);
     socket_factory = new IpcPacketSocketFactory(socket_dispatcher);
   }
@@ -112,20 +115,22 @@ bool ChromotingInstance::Init(uint32_t argc,
 void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(CurrentlyOnPluginThread());
 
-  LogDebugInfo(base::StringPrintf("Connecting to %s as %s",
-                                  config.host_jid.c_str(),
-                                  config.username.c_str()).c_str());
+  logger_.Log(logging::LOG_INFO, "Connecting to %s as %s",
+               config.host_jid.c_str(),
+               config.username.c_str());
   client_.reset(new ChromotingClient(config,
                                      &context_,
                                      host_connection_.get(),
                                      view_proxy_,
                                      rectangle_decoder_.get(),
                                      input_handler_.get(),
+                                     &logger_,
                                      NULL));
 
   // Kick off the connection.
   client_->Start();
 
+  logger_.Log(logging::LOG_INFO, "Connection status: Initializing");
   GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
                                            QUALITY_UNKNOWN);
 }
@@ -138,7 +143,7 @@ void ChromotingInstance::ConnectSandboxed(const std::string& your_jid,
   // ClientConfig.
   DCHECK(CurrentlyOnPluginThread());
 
-  LogDebugInfo("Attempting sandboxed connection");
+  logger_.Log(logging::LOG_INFO, "Attempting sandboxed connection.");
 
   // Setup the XMPP Proxy.
   ChromotingScriptableObject* scriptable_object = GetScriptableObject();
@@ -155,6 +160,7 @@ void ChromotingInstance::ConnectSandboxed(const std::string& your_jid,
                                      view_proxy_,
                                      rectangle_decoder_.get(),
                                      input_handler_.get(),
+                                     &logger_,
                                      NULL));
 
   // Kick off the connection.
@@ -167,7 +173,7 @@ void ChromotingInstance::ConnectSandboxed(const std::string& your_jid,
 void ChromotingInstance::Disconnect() {
   DCHECK(CurrentlyOnPluginThread());
 
-  LogDebugInfo("Disconnecting from host");
+  logger_.Log(logging::LOG_INFO, "Disconnecting from host.");
   if (client_.get()) {
     client_->Stop();
   }
@@ -181,8 +187,9 @@ void ChromotingInstance::ViewChanged(const pp::Rect& position,
 
   // TODO(ajwong): This is going to be a race condition when the view changes
   // and we're in the middle of a Paint().
-  VLOG(1) << "ViewChanged " << position.x() << "," << position.y() << ","
-          << position.width() << "," << position.height();
+  logger_.VLog(1, "ViewChanged: %d,%d %dx%d",
+                position.x(), position.y(),
+                position.width(), position.height());
 
   view_->SetViewport(position.x(), position.y(),
                      position.width(), position.height());
@@ -226,9 +233,9 @@ bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
 
     case PP_INPUTEVENT_TYPE_KEYDOWN:
     case PP_INPUTEVENT_TYPE_KEYUP:
-      VLOG(3) << "PP_INPUTEVENT_TYPE_KEY"
-                << (event.type==PP_INPUTEVENT_TYPE_KEYDOWN ? "DOWN" : "UP")
-                << " key=" << event.u.key.key_code;
+      logger_.VLog(3, "PP_INPUTEVENT_TYPE_KEY%s key=%d",
+                    (event.type==PP_INPUTEVENT_TYPE_KEYDOWN ? "DOWN" : "UP"),
+                    event.u.key.key_code);
       pih->HandleKeyEvent(event.type == PP_INPUTEVENT_TYPE_KEYDOWN,
                           event.u.key);
       return true;
@@ -251,7 +258,8 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
     DCHECK(so != NULL);
     return static_cast<ChromotingScriptableObject*>(so);
   }
-  LOG(ERROR) << "Unable to get ScriptableObject for Chromoting plugin.";
+  logger_.Log(logging::LOG_ERROR,
+               "Unable to get ScriptableObject for Chromoting plugin.");
   return NULL;
 }
 
@@ -259,7 +267,8 @@ void ChromotingInstance::SubmitLoginInfo(const std::string& username,
                                          const std::string& password) {
   if (host_connection_->state() !=
       protocol::ConnectionToHost::STATE_CONNECTED) {
-    LogDebugInfo("Client not connected or already authenticated.");
+    logger_.Log(logging::LOG_INFO,
+                 "Client not connected or already authenticated.");
     return;
   }
 
@@ -278,8 +287,18 @@ void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
   view_proxy_->SetScaleToFit(scale_to_fit);
 }
 
-void ChromotingInstance::LogDebugInfo(const std::string& info) {
-  GetScriptableObject()->LogDebugInfo(info);
+void ChromotingInstance::Log(int severity, const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  logger_.va_Log(severity, format, ap);
+  va_end(ap);
+}
+
+void ChromotingInstance::VLog(int verboselevel, const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  logger_.va_VLog(verboselevel, format, ap);
+  va_end(ap);
 }
 
 pp::Var ChromotingInstance::GetInstanceObject() {
