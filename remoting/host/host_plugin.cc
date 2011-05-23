@@ -9,15 +9,22 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stringize_macros.h"
 #include "base/task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif
+#include "media/base/media.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_config.h"
@@ -384,6 +391,29 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
   std::string auth_token = StringFromNPVariant(args[1]);
   if (auth_token.empty()) {
     SetException("connect: bad auth_token argument");
+    return false;
+  }
+
+  // TODO(wez): Load the media libraries to get the VP8 encoder.
+  // This won't be needed once we link libvpx in statically.
+  FilePath media_path;
+#if defined(OS_MACOSX)
+  // MainAppBundlePath returns the Chromium Helper bundle, which in dev builds
+  // sits alongside the Framework bundle, which contains the Libraries we need.
+  media_path = base::mac::MainAppBundlePath();
+  media_path = media_path.DirName();
+  media_path =
+      media_path.Append(FILE_PATH_LITERAL("Chromium Framework.framework"));
+  media_path =
+      media_path.Append(FILE_PATH_LITERAL("Libraries"));
+#else
+  if (!PathService::Get(base::DIR_EXE, &media_path)) {
+    SetException("Failed to find media path");
+    return false;
+  }
+#endif
+  if (!media::InitializeMediaLibrary(media_path)) {
+    SetException("Failed to load media library");
     return false;
   }
 
