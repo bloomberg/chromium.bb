@@ -370,6 +370,15 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // model is loaded.
   void NotifyObservers();
 
+  // Removes from the vector any template URL that was created because of
+  // policy.  These TemplateURLs are freed and removed from the database.
+  // Sets default_search_provider to NULL if it was one of them, unless it is
+  // the same as the current default from preferences and it is managed.
+  void RemoveProvidersCreatedByPolicy(
+      std::vector<TemplateURL*>* template_urls,
+      const TemplateURL** default_search_provider,
+      const TemplateURL* default_from_prefs);
+
   NotificationRegistrar registrar_;
 
   // Mapping from keyword to the TemplateURL.

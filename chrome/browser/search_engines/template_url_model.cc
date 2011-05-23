@@ -39,40 +39,38 @@
 using base::Time;
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
 
+namespace {
+
 // String in the URL that is replaced by the search term.
-static const char kSearchTermParameter[] = "{searchTerms}";
+const char kSearchTermParameter[] = "{searchTerms}";
 
 // String in Initializer that is replaced with kSearchTermParameter.
-static const char kTemplateParameter[] = "%s";
+const char kTemplateParameter[] = "%s";
 
 // Term used when generating a search url. Use something obscure so that on
 // the rare case the term replaces the URL it's unlikely another keyword would
 // have the same url.
-static const char kReplacementTerm[] = "blah.blah.blah.blah.blah";
+const char kReplacementTerm[] = "blah.blah.blah.blah.blah";
 
-
-// Removes from the vector any template URL that was created because of
-// policy.  These TemplateURLs are freed.
-// Sets default_search_provider to NULL if it was one of them.
-static void RemoveProvidersCreatedByPolicy(
-    std::vector<TemplateURL*>* template_urls,
-    const TemplateURL** default_search_provider) {
-  DCHECK(template_urls);
-  DCHECK(default_search_provider);
-  for (std::vector<TemplateURL*>::iterator i = template_urls->begin();
-      i != template_urls->end(); ) {
-    TemplateURL* template_url = *i;
-    if (template_url->created_by_policy()) {
-      if (*default_search_provider &&
-          (*default_search_provider)->id() == template_url->id())
-        *default_search_provider = NULL;
-      i = template_urls->erase(i);
-      delete template_url;
-    } else {
-      ++i;
-    }
-  }
+bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
+                               const TemplateURL* url2) {
+  if (url1 == url2)
+    return true;
+  return NULL != url1 &&
+      NULL != url2 &&
+      url1->short_name() == url2->short_name() &&
+      url1->keyword() == url2->keyword() &&
+      TemplateURLRef::SameUrlRefs(url1->url(), url2->url()) &&
+      TemplateURLRef::SameUrlRefs(url1->suggestions_url(),
+                                  url2->suggestions_url()) &&
+      url1->GetFaviconURL() == url2->GetFaviconURL() &&
+      url1->safe_for_autoreplace() == url2->safe_for_autoreplace() &&
+      url1->show_in_default_list() == url2->show_in_default_list() &&
+      url1->input_encodings() == url2->input_encodings();
 }
+
+}  // namespace
+
 
 class TemplateURLModel::LessWithPrefix {
  public:
@@ -485,28 +483,39 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
 
   bool database_specified_a_default = NULL != default_search_provider;
 
-  // Remove entries that were created because of policy as they may have
-  // changed since the database was saved.
-  RemoveProvidersCreatedByPolicy(&template_urls, &default_search_provider);
-
   // Check if default search provider is now managed.
   scoped_ptr<TemplateURL> default_from_prefs;
   LoadDefaultSearchProviderFromPrefs(&default_from_prefs,
                                      &is_default_search_managed_);
 
+  // Remove entries that were created because of policy as they may have
+  // changed since the database was saved.
+  RemoveProvidersCreatedByPolicy(&template_urls,
+                                 &default_search_provider,
+                                 default_from_prefs.get());
+
   if (is_default_search_managed_) {
     SetTemplateURLs(template_urls);
-    // Set the default.  AddNoNotify will take ownership of default_from_prefs
-    // so it is safe to release.  If it's null, there's no ownership to worry
-    // about :-)
-    TemplateURL* managed_default = default_from_prefs.release();
-    if (managed_default) {
-      managed_default->set_created_by_policy(true);
-      managed_default->set_id(0);
-      AddNoNotify(managed_default);
+
+    if (TemplateURLsHaveSamePrefs(default_search_provider,
+                                  default_from_prefs.get())) {
+      // The value from the preferences was previously stored in the database.
+      // Reuse it.
+    } else {
+      // The value from the preferences takes over.
+      //
+      // AddNoNotify will take ownership of default_from_prefs so it is safe to
+      // release. If it's null, there's no ownership to worry about :-)
+      TemplateURL* managed_default = default_from_prefs.release();
+      if (managed_default) {
+        managed_default->set_created_by_policy(true);
+        managed_default->set_id(0);
+        AddNoNotify(managed_default);
+        default_search_provider = managed_default;
+      }
     }
     // Note that this saves the default search provider to prefs.
-    SetDefaultSearchProviderNoNotify(managed_default);
+    SetDefaultSearchProviderNoNotify(default_search_provider);
   } else {
     // If we had a managed default, replace it with the first provider of
     // the list.
@@ -880,24 +889,6 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   (*default_provider)->set_show_in_default_list(true);
   return true;
 }
-
-static bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
-                                      const TemplateURL* url2) {
-  if (url1 == url2)
-    return true;
-  return NULL != url1 &&
-      NULL != url2 &&
-      url1->short_name() == url2->short_name() &&
-      url1->keyword() == url2->keyword() &&
-      TemplateURLRef::SameUrlRefs(url1->url(), url2->url()) &&
-      TemplateURLRef::SameUrlRefs(url1->suggestions_url(),
-                                  url2->suggestions_url()) &&
-      url1->GetFaviconURL() == url2->GetFaviconURL() &&
-      url1->safe_for_autoreplace() == url2->safe_for_autoreplace() &&
-      url1->show_in_default_list() == url2->show_in_default_list() &&
-      url1->input_encodings() == url2->input_encodings();
-}
-
 
 bool TemplateURLModel::CanReplaceKeywordForHost(
     const std::string& host,
@@ -1281,4 +1272,51 @@ void TemplateURLModel::NotifyObservers() {
 
   FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
                     OnTemplateURLModelChanged());
+}
+
+// |template_urls| are the TemplateURLs loaded from the database.
+// |default_search_provider| points to one of them, if it was set in the db.
+// |default_from_prefs| is the default search provider from the preferences.
+// Check |is_default_search_managed_| to determine if it was set by policy.
+//
+// This function removes from the vector and the database all the TemplateURLs
+// that were set by policy, unless it is the current default search provider
+// and matches what is set by a managed preference.
+void TemplateURLModel::RemoveProvidersCreatedByPolicy(
+    std::vector<TemplateURL*>* template_urls,
+    const TemplateURL** default_search_provider,
+    const TemplateURL* default_from_prefs) {
+  DCHECK(template_urls);
+  DCHECK(default_search_provider);
+  for (std::vector<TemplateURL*>::iterator i = template_urls->begin();
+      i != template_urls->end(); ) {
+    TemplateURL* template_url = *i;
+    if (template_url->created_by_policy()) {
+      if (template_url == *default_search_provider &&
+          is_default_search_managed_ &&
+          TemplateURLsHaveSamePrefs(template_url,
+                                    default_from_prefs)) {
+        // If the database specified a default search provider that was set
+        // by policy, and the default search provider from the preferences
+        // is also set by policy and they are the same, keep the entry in the
+        // database and the |default_search_provider|.
+        ++i;
+        continue;
+      }
+
+      // The database loaded a managed |default_search_provider|, but it has
+      // been updated in the prefs. Remove it from the database, and update the
+      // |default_search_provider| pointer here.
+      if (*default_search_provider &&
+          (*default_search_provider)->id() == template_url->id())
+        *default_search_provider = NULL;
+
+      i = template_urls->erase(i);
+      if (service_.get())
+        service_->RemoveKeyword(*template_url);
+      delete template_url;
+    } else {
+      ++i;
+    }
+  }
 }
