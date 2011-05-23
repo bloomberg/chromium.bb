@@ -546,9 +546,9 @@ void FileSystemOperation::OpenFile(const GURL& path,
   }
   if (file_flags &
       (base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_OPEN_ALWAYS |
-       base::PLATFORM_FILE_CREATE_ALWAYS |
+       base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_TRUNCATED |
        base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-       base::PLATFORM_FILE_DELETE_ON_CLOSE | base::PLATFORM_FILE_TRUNCATE |
+       base::PLATFORM_FILE_DELETE_ON_CLOSE |
        base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
     if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
         &type, &virtual_path, &file_system_file_util)) {

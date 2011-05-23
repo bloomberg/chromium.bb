@@ -209,12 +209,12 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       base::PLATFORM_FILE_CREATE |
       base::PLATFORM_FILE_OPEN_ALWAYS |
       base::PLATFORM_FILE_CREATE_ALWAYS |
+      base::PLATFORM_FILE_OPEN_TRUNCATED |
       base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_EXCLUSIVE_READ |
       base::PLATFORM_FILE_EXCLUSIVE_WRITE |
       base::PLATFORM_FILE_ASYNC |
-      base::PLATFORM_FILE_TRUNCATE |
       base::PLATFORM_FILE_WRITE_ATTRIBUTES);
 
   // Note: When we create the BrowserRenderProcessHost, it's technically

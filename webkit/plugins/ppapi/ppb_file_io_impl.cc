@@ -16,6 +16,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
@@ -176,28 +177,6 @@ const PPB_FileIOTrusted_Dev ppb_fileiotrusted = {
   &WillSetLength
 };
 
-int PlatformFileErrorToPepperError(base::PlatformFileError error_code) {
-  switch (error_code) {
-    case base::PLATFORM_FILE_OK:
-      return PP_OK;
-    case base::PLATFORM_FILE_ERROR_EXISTS:
-      return PP_ERROR_FILEEXISTS;
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-      return PP_ERROR_FILENOTFOUND;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-      return PP_ERROR_NOACCESS;
-    case base::PLATFORM_FILE_ERROR_NO_MEMORY:
-      return PP_ERROR_NOMEMORY;
-    case base::PLATFORM_FILE_ERROR_NO_SPACE:
-      return PP_ERROR_NOSPACE;
-    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
-      NOTREACHED();
-      return PP_ERROR_FAILED;
-    default:
-      return PP_ERROR_FAILED;
-  }
-}
-
 }  // namespace
 
 PPB_FileIO_Impl::PPB_FileIO_Impl(PluginInstance* instance)
@@ -235,24 +214,9 @@ int32_t PPB_FileIO_Impl::Open(PPB_FileRef_Impl* file_ref,
     return rv;
 
   int flags = 0;
-  if (open_flags & PP_FILEOPENFLAG_READ)
-    flags |= base::PLATFORM_FILE_READ;
-  if (open_flags & PP_FILEOPENFLAG_WRITE) {
-    flags |= base::PLATFORM_FILE_WRITE;
-    flags |= base::PLATFORM_FILE_WRITE_ATTRIBUTES;
-  }
+  if (!PepperFileOpenFlagsToPlatformFileFlags(open_flags, &flags))
+    return PP_ERROR_BADARGUMENT;
 
-  if (open_flags & PP_FILEOPENFLAG_TRUNCATE) {
-    DCHECK(open_flags & PP_FILEOPENFLAG_WRITE);
-    flags |= base::PLATFORM_FILE_TRUNCATE;
-  } else if (open_flags & PP_FILEOPENFLAG_CREATE) {
-    if (open_flags & PP_FILEOPENFLAG_EXCLUSIVE)
-      flags |= base::PLATFORM_FILE_CREATE;
-    else
-      flags |= base::PLATFORM_FILE_OPEN_ALWAYS;
-  } else {
-    flags |= base::PLATFORM_FILE_OPEN;
-  }
   file_system_type_ = file_ref->GetFileSystemType();
   switch (file_system_type_) {
     case PP_FILESYSTEMTYPE_EXTERNAL:

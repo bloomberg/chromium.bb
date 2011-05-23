@@ -12,8 +12,8 @@
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/error_util.h"
 #include "webkit/plugins/ppapi/file_path.h"
+#include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -28,34 +28,6 @@ namespace webkit {
 namespace ppapi {
 
 namespace {
-
-// TODO(viettrungluu): The code below is duplicated in ppb_file_io_impl.cc
-// (where it's incorrect to boot).
-// Returns |true| if okay.
-bool ConvertFromPPFileOpenFlags(int32_t pp_open_flags, int* flags_out) {
-  int flags = 0;
-  if (pp_open_flags & PP_FILEOPENFLAG_READ)
-    flags |= base::PLATFORM_FILE_READ;
-  if (pp_open_flags & PP_FILEOPENFLAG_WRITE) {
-    flags |= base::PLATFORM_FILE_WRITE;
-    flags |= base::PLATFORM_FILE_WRITE_ATTRIBUTES;
-  }
-  if (pp_open_flags & PP_FILEOPENFLAG_TRUNCATE) {
-    if (!(pp_open_flags & PP_FILEOPENFLAG_WRITE))
-      return false;
-    flags |= base::PLATFORM_FILE_TRUNCATE;
-  }
-  if (pp_open_flags & PP_FILEOPENFLAG_CREATE) {
-    if (pp_open_flags & PP_FILEOPENFLAG_EXCLUSIVE)
-      flags |= base::PLATFORM_FILE_CREATE;
-    else
-      flags |= base::PLATFORM_FILE_OPEN_ALWAYS;
-  } else {
-    flags |= base::PLATFORM_FILE_OPEN;
-  }
-  *flags_out = flags;
-  return true;
-}
 
 void FreeDirContents(PP_Instance instance, PP_DirContents_Dev* contents) {
   DCHECK(contents);
@@ -84,7 +56,7 @@ int32_t OpenModuleLocalFile(PP_Instance pp_instance,
                             int32_t mode,
                             PP_FileHandle* file) {
   int flags = 0;
-  if (!path || !ConvertFromPPFileOpenFlags(mode, &flags) || !file)
+  if (!path || !PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
     return PP_ERROR_BADARGUMENT;
 
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
@@ -239,7 +211,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
                         int32_t mode,
                         PP_FileHandle* file) {
   int flags = 0;
-  if (!ConvertFromPPFileOpenFlags(mode, &flags) || !file)
+  if (!PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
     return PP_ERROR_BADARGUMENT;
 
   scoped_refptr<PPB_FileRef_Impl> file_ref(

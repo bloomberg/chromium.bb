@@ -29,6 +29,34 @@ std::string ReportMismatch(const std::string& method_name,
       expected_result + "' expected.";
 }
 
+std::string ReportOpenError(int32_t open_flags) {
+  static const char* kFlagNames[] = {
+    "PP_FILEOPENFLAG_READ",
+    "PP_FILEOPENFLAG_WRITE",
+    "PP_FILEOPENFLAG_CREATE",
+    "PP_FILEOPENFLAG_TRUNCATE",
+    "PP_FILEOPENFLAG_EXCLUSIVE"
+  };
+
+  std::string result = "FileIO:Open had unexpected behavior with flags: ";
+  bool first_flag = true;
+  for (int32_t mask = 1, index = 0; mask <= PP_FILEOPENFLAG_EXCLUSIVE;
+       mask <<= 1, ++index) {
+    if (mask & open_flags) {
+      if (first_flag) {
+        first_flag = false;
+      } else {
+        result += " | ";
+      }
+      result += kFlagNames[index];
+    }
+  }
+  if (first_flag)
+    result += "[None]";
+
+  return result;
+}
+
 int32_t ReadEntireFile(PP_Instance instance,
                        pp::FileIO_Dev* file_io,
                        int32_t offset,
@@ -103,22 +131,87 @@ std::string TestFileIO::TestOpen() {
   if (rv != PP_OK)
     return ReportError("FileSystem::Open", rv);
 
-  pp::FileIO_Dev file_io(instance_);
-  rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileIO::Open", rv);
+  std::string result;
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_READ,
+      DONT_CREATE_IF_DOESNT_EXIST | OPEN_IF_EXISTS | DONT_TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
 
-  // Try opening a file that doesn't exist.
-  pp::FileRef_Dev nonexistent_file_ref(file_system, "/nonexistent_file");
-  pp::FileIO_Dev nonexistent_file_io(instance_);
-  rv = nonexistent_file_io.Open(
-      nonexistent_file_ref, PP_FILEOPENFLAG_READ, callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_ERROR_FILENOTFOUND)
-    return ReportError("FileIO::Open", rv);
+  // Test the behavior of the power set of
+  //   { PP_FILEOPENFLAG_CREATE,
+  //     PP_FILEOPENFLAG_TRUNCATE,
+  //     PP_FILEOPENFLAG_EXCLUSIVE }.
+
+  // First of all, none of them are specificed.
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE,
+      DONT_CREATE_IF_DOESNT_EXIST | OPEN_IF_EXISTS | DONT_TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE,
+      CREATE_IF_DOESNT_EXIST | OPEN_IF_EXISTS | DONT_TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_EXCLUSIVE,
+      DONT_CREATE_IF_DOESNT_EXIST | OPEN_IF_EXISTS | DONT_TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_TRUNCATE,
+      DONT_CREATE_IF_DOESNT_EXIST | OPEN_IF_EXISTS | TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE |
+      PP_FILEOPENFLAG_EXCLUSIVE,
+      CREATE_IF_DOESNT_EXIST | DONT_OPEN_IF_EXISTS | DONT_TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_TRUNCATE,
+      CREATE_IF_DOESNT_EXIST | OPEN_IF_EXISTS | TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_EXCLUSIVE |
+      PP_FILEOPENFLAG_TRUNCATE,
+      DONT_CREATE_IF_DOESNT_EXIST | OPEN_IF_EXISTS | TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE |
+      PP_FILEOPENFLAG_EXCLUSIVE | PP_FILEOPENFLAG_TRUNCATE,
+      CREATE_IF_DOESNT_EXIST | DONT_OPEN_IF_EXISTS | DONT_TRUNCATE_IF_EXISTS);
+  if (!result.empty())
+    return result;
+
+  // Invalid combination: PP_FILEOPENFLAG_TRUNCATE without
+  // PP_FILEOPENFLAG_WRITE.
+  result = MatchOpenExpectations(
+      &file_system,
+      PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_TRUNCATE,
+      INVALID_FLAG_COMBINATION);
+  if (!result.empty())
+    return result;
 
   PASS();
 }
@@ -137,6 +230,7 @@ std::string TestFileIO::TestReadWriteSetLength() {
   pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref,
                     PP_FILEOPENFLAG_CREATE |
+                    PP_FILEOPENFLAG_TRUNCATE |
                     PP_FILEOPENFLAG_READ |
                     PP_FILEOPENFLAG_WRITE,
                     callback);
@@ -250,7 +344,9 @@ std::string TestFileIO::TestTouchQuery() {
   pp::FileRef_Dev file_ref(file_system, "/file_touch");
   pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref,
-                    PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_WRITE,
+                    PP_FILEOPENFLAG_CREATE |
+                    PP_FILEOPENFLAG_TRUNCATE |
+                    PP_FILEOPENFLAG_WRITE,
                     callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
@@ -494,6 +590,96 @@ std::string TestFileIO::TestAbortCalls() {
   // crbug.com/69457
 
   PASS();
+}
+
+std::string TestFileIO::MatchOpenExpectations(pp::FileSystem_Dev* file_system,
+                                              size_t open_flags,
+                                              size_t expectations) {
+  std::string bad_argument =
+      "TestFileIO::MatchOpenExpectations has invalid input arguments.";
+  bool invalid_combination = !!(expectations & INVALID_FLAG_COMBINATION);
+  if (invalid_combination) {
+    if (expectations != INVALID_FLAG_COMBINATION)
+      return bad_argument;
+  } else {
+    // Validate that one and only one of <some_expectation> and
+    // DONT_<some_expectation> is specified.
+    for (size_t remains = expectations, end = END_OF_OPEN_EXPECATION_PAIRS;
+         end != 0; remains >>= 2, end >>= 2) {
+      if (!!(remains & 1) == !!(remains & 2))
+        return bad_argument;
+    }
+  }
+  bool create_if_doesnt_exist = !!(expectations & CREATE_IF_DOESNT_EXIST);
+  bool open_if_exists = !!(expectations & OPEN_IF_EXISTS);
+  bool truncate_if_exists = !!(expectations & TRUNCATE_IF_EXISTS);
+
+  TestCompletionCallback callback(instance_->pp_instance());
+  pp::FileRef_Dev existent_file_ref(
+      *file_system, "/match_open_expectation_existent_non_empty_file");
+  pp::FileRef_Dev nonexistent_file_ref(
+      *file_system, "/match_open_expectation_nonexistent_file");
+
+  // Setup files for test.
+  {
+    int32_t rv = existent_file_ref.Delete(callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+      return ReportError("FileRef::Delete", rv);
+
+    rv = nonexistent_file_ref.Delete(callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+      return ReportError("FileRef::Delete", rv);
+
+    pp::FileIO_Dev existent_file_io(instance_);
+    rv = existent_file_io.Open(existent_file_ref,
+                               PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_WRITE,
+                               callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK)
+      return ReportError("FileIO::Open", rv);
+
+    rv = WriteEntireBuffer(instance_->pp_instance(), &existent_file_io, 0,
+                           "foobar");
+    if (rv != PP_OK)
+      return ReportError("FileIO::Write", rv);
+  }
+
+  pp::FileIO_Dev existent_file_io(instance_);
+  int32_t rv = existent_file_io.Open(existent_file_ref, open_flags, callback);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if ((invalid_combination && rv == PP_OK) ||
+      (!invalid_combination && ((rv == PP_OK) != open_if_exists))) {
+    return ReportOpenError(open_flags);
+  }
+
+  if (!invalid_combination && open_if_exists) {
+    PP_FileInfo_Dev info;
+    rv = existent_file_io.Query(&info, callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK)
+      return ReportError("FileIO::Query", rv);
+
+    if (truncate_if_exists != (info.size == 0))
+      return ReportOpenError(open_flags);
+  }
+
+  pp::FileIO_Dev nonexistent_file_io(instance_);
+  rv = nonexistent_file_io.Open(nonexistent_file_ref, open_flags, callback);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if ((invalid_combination && rv == PP_OK) ||
+      (!invalid_combination && ((rv == PP_OK) != create_if_doesnt_exist))) {
+    return ReportOpenError(open_flags);
+  }
+
+  return std::string();
 }
 
 // TODO(viettrungluu): Test Close(). crbug.com/69457

@@ -325,7 +325,9 @@ std::string TestFileRef::TestQueryAndTouchFile() {
   pp::FileRef_Dev file_ref(file_system, "/file_touch");
   pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref,
-                    PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_WRITE,
+                    PP_FILEOPENFLAG_CREATE |
+                    PP_FILEOPENFLAG_TRUNCATE |
+                    PP_FILEOPENFLAG_WRITE,
                     callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();

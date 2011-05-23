@@ -30,9 +30,9 @@ const int kReadPermissions = base::PLATFORM_FILE_OPEN |
 const int kWritePermissions = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_CREATE |
                               base::PLATFORM_FILE_CREATE_ALWAYS |
+                              base::PLATFORM_FILE_OPEN_TRUNCATED |
                               base::PLATFORM_FILE_WRITE |
                               base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-                              base::PLATFORM_FILE_TRUNCATE |
                               base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
 PepperFileMessageFilter::PepperFileMessageFilter(int child_id,

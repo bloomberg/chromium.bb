@@ -9,7 +9,7 @@
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "webkit/plugins/ppapi/callbacks.h"
-#include "webkit/plugins/ppapi/error_util.h"
+#include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"

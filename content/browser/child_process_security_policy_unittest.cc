@@ -286,14 +286,14 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
 
   p->GrantPermissionsForFile(kRendererID, file,
                              base::PLATFORM_FILE_OPEN |
+                             base::PLATFORM_FILE_OPEN_TRUNCATED |
                              base::PLATFORM_FILE_READ |
-                             base::PLATFORM_FILE_WRITE |
-                             base::PLATFORM_FILE_TRUNCATE);
+                             base::PLATFORM_FILE_WRITE);
   EXPECT_TRUE(p->HasPermissionsForFile(kRendererID, file,
                                        base::PLATFORM_FILE_OPEN |
+                                       base::PLATFORM_FILE_OPEN_TRUNCATED |
                                        base::PLATFORM_FILE_READ |
-                                       base::PLATFORM_FILE_WRITE |
-                                       base::PLATFORM_FILE_TRUNCATE));
+                                       base::PLATFORM_FILE_WRITE));
   EXPECT_TRUE(p->HasPermissionsForFile(kRendererID, file,
                                        base::PLATFORM_FILE_OPEN |
                                        base::PLATFORM_FILE_READ));
@@ -301,9 +301,9 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
                                         base::PLATFORM_FILE_CREATE));
   EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, file,
                                         base::PLATFORM_FILE_CREATE |
+                                        base::PLATFORM_FILE_OPEN_TRUNCATED |
                                         base::PLATFORM_FILE_READ |
-                                        base::PLATFORM_FILE_WRITE |
-                                        base::PLATFORM_FILE_TRUNCATE));
+                                        base::PLATFORM_FILE_WRITE));
   p->Remove(kRendererID);
 
   // Grant permissions for the directory the file is in.
