@@ -126,7 +126,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     // temporary and persistent filesystem.
     return file_system_context_->path_manager()->sandbox_provider()->
         GetBaseDirectoryForOriginAndType(
-            GURL(origin_url), QuotaStorageTypeToFileSystemType(type));
+            GURL(origin_url), QuotaStorageTypeToFileSystemType(type), true);
   }
 
   bool CreateFileSystemDirectory(const char* dir_name,

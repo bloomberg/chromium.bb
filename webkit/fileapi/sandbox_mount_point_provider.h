@@ -96,20 +96,19 @@ class SandboxMountPointProvider
   // specified by |origin_url|.
   // (The path is similar to the origin's root path but doesn't contain
   // the 'unique' and 'type' part.)
-  // This method is portable and can be called on any thread.
-  // TODO(ericu) obfuscated version for quota integration.
-  FilePath GetBaseDirectoryForOrigin(const GURL& origin_url) const;
+  // This method can only be called on the file thread.
+  FilePath GetBaseDirectoryForOrigin(const GURL& origin_url, bool create) const;
 
   // Gets a base directory path of the sandboxed filesystem that is
   // specified by |origin_url| and |type|.
   // (The path is similar to the origin's root path but doesn't contain
   // the 'unique' part.)
   // Returns an empty path if the given type is invalid.
-  // This method is portable and can be called on any thread.
-  // TODO(ericu) obfuscated version for quota integration.
+  // This method can only be called on the file thread.
   FilePath GetBaseDirectoryForOriginAndType(
       const GURL& origin_url,
-      fileapi::FileSystemType type) const;
+      fileapi::FileSystemType type,
+      bool create) const;
 
   FileSystemFileUtil* GetFileSystemFileUtil();
 
@@ -160,9 +159,6 @@ class SandboxMountPointProvider
   FilePath GetUsageCachePathForOriginAndType(
       const GURL& origin_url,
       fileapi::FileSystemType type) const;
-
-  FilePath GetFileSystemRootPathOnFileThread(
-      const GURL& origin_url, FileSystemType type, bool create);
 
   class GetFileSystemRootPathTask;
 

@@ -19,7 +19,14 @@ namespace fileapi {
 // the browser's FILE thread.  The constructor may be used on any thread.
 class FileSystemOriginDatabase {
  public:
-  typedef std::pair<std::string, FilePath> OriginRecord;
+  struct OriginRecord {
+    std::string origin;
+    FilePath path;
+
+    OriginRecord();
+    OriginRecord(const std::string& origin, const FilePath& path);
+    ~OriginRecord();
+  };
 
   // Only one instance of FileSystemOriginDatabase should exist for a given path
   // at a given time.

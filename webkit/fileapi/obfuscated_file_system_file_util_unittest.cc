@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <set>
 #include <string>
 
@@ -14,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 using namespace fileapi;
@@ -93,6 +95,20 @@ const MigrationTestCaseRecord kMigrationTestCases[] = {
   {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 3"), 50},
 };
 
+struct OriginEnumerationTestRecord {
+  std::string origin_url;
+  bool has_temporary;
+  bool has_persistent;
+};
+
+const OriginEnumerationTestRecord kOriginEnumerationTestRecords[] = {
+  {"http://example.com", false, true},
+  {"http://example1.com", true, false},
+  {"https://example1.com", true, true},
+  {"file://", false, true},
+  {"http://example.com:8000", false, true},
+};
+
 }  // namespace (anonymous)
 
 // TODO(ericu): The vast majority of this and the other FSFU subclass tests
@@ -101,7 +117,10 @@ const MigrationTestCaseRecord kMigrationTestCases[] = {
 // implementation would need to be written per-subclass.
 class ObfuscatedFileSystemFileUtilTest : public testing::Test {
  public:
-  ObfuscatedFileSystemFileUtilTest() {
+  ObfuscatedFileSystemFileUtilTest()
+      : origin_(GURL("http://www.example.com")),
+        type_(kFileSystemTypeTemporary),
+        test_helper_(origin_, type_) {
   }
 
   void SetUp() {
@@ -109,17 +128,16 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
     obfuscated_file_system_file_util_ =
         new ObfuscatedFileSystemFileUtil(data_dir_.path());
+    test_helper_.SetUp(data_dir_.path(),
+                       false, // incognito
+                       false, // unlimited quota
+                       NULL, // quota::QuotaManagerProxy
+                       obfuscated_file_system_file_util_.get());
   }
 
   FileSystemOperationContext* NewContext() {
-    FileSystemOperationContext *context =
-        new FileSystemOperationContext(NULL, NULL);
-    context->set_src_origin_url(GURL("http://example.com"));
-    context->set_dest_origin_url(GURL("http://example.com"));
-    context->set_src_type(kFileSystemTypeTemporary);
-    context->set_dest_type(kFileSystemTypeTemporary);
+    FileSystemOperationContext* context = test_helper_.NewOperationContext();
     context->set_allowed_bytes_growth(1024 * 1024);
-
     return context;
   }
 
@@ -129,6 +147,14 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
   const FilePath& test_directory() const {
     return data_dir_.path();
+  }
+
+  const GURL& origin_url() const {
+    return origin_;
+  }
+
+  fileapi::FileSystemType type() const {
+    return type_;
   }
 
   int64 GetSize(const FilePath& path) {
@@ -317,6 +343,9 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
  private:
   ScopedTempDir data_dir_;
   scoped_refptr<ObfuscatedFileSystemFileUtil> obfuscated_file_system_file_util_;
+  GURL origin_;
+  fileapi::FileSystemType type_;
+  FileSystemTestOriginHelper test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileSystemFileUtilTest);
 };
@@ -813,13 +842,11 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestMigration) {
     }
   }
 
-  const GURL origin_url("http://example.com");
-  fileapi::FileSystemType type = kFileSystemTypeTemporary;
-  EXPECT_TRUE(ofsfu()->MigrateFromOldSandbox(origin_url, type, root_path));
+  EXPECT_TRUE(ofsfu()->MigrateFromOldSandbox(origin_url(), type(), root_path));
 
   FilePath new_root =
     test_directory().AppendASCII("000").Append(
-        ofsfu()->GetDirectoryNameForType(type)).AppendASCII("Legacy");
+        ofsfu()->GetDirectoryNameForType(type())).AppendASCII("Legacy");
   for (size_t i = 0; i < arraysize(kMigrationTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Validating kMigrationTestPath " << i);
     const MigrationTestCaseRecord& test_case = kMigrationTestCases[i];
@@ -850,4 +877,72 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestMigration) {
       EXPECT_FALSE(ofsfu_file_info.is_directory);
     }
   }
+}
+
+TEST_F(ObfuscatedFileSystemFileUtilTest, TestOriginEnumerator) {
+  scoped_ptr<ObfuscatedFileSystemFileUtil::AbstractOriginEnumerator>
+      enumerator(ofsfu()->CreateOriginEnumerator());
+  EXPECT_TRUE(enumerator.get());
+  EXPECT_EQ(GURL(), enumerator->Next());
+  EXPECT_FALSE(enumerator->HasFileSystemType(kFileSystemTypeTemporary));
+  EXPECT_FALSE(enumerator->HasFileSystemType(kFileSystemTypePersistent));
+
+  std::set<GURL> origins_expected;
+
+  for (size_t i = 0; i < arraysize(kOriginEnumerationTestRecords); ++i) {
+    SCOPED_TRACE(testing::Message() <<
+        "Validating kOriginEnumerationTestRecords " << i);
+    const OriginEnumerationTestRecord& record =
+        kOriginEnumerationTestRecords[i];
+    GURL origin_url(record.origin_url);
+    origins_expected.insert(origin_url);
+    if (record.has_temporary) {
+      scoped_ptr<FileSystemOperationContext> context(NewContext());
+      context->set_src_origin_url(origin_url);
+      context->set_src_type(kFileSystemTypeTemporary);
+      bool created = false;
+      ASSERT_EQ(base::PLATFORM_FILE_OK,
+                ofsfu()->EnsureFileExists(context.get(),
+                    FilePath().AppendASCII("file"), &created));
+      EXPECT_TRUE(created);
+    }
+    if (record.has_persistent) {
+      scoped_ptr<FileSystemOperationContext> context(NewContext());
+      context->set_src_origin_url(origin_url);
+      context->set_src_type(kFileSystemTypePersistent);
+      bool created = false;
+      ASSERT_EQ(base::PLATFORM_FILE_OK,
+                ofsfu()->EnsureFileExists(context.get(),
+                    FilePath().AppendASCII("file"), &created));
+      EXPECT_TRUE(created);
+    }
+  }
+  enumerator.reset(ofsfu()->CreateOriginEnumerator());
+  EXPECT_TRUE(enumerator.get());
+  std::set<GURL> origins_found;
+  GURL origin;
+  while (!(origin = enumerator->Next()).is_empty()) {
+    origins_found.insert(origin);
+    SCOPED_TRACE(testing::Message() << "Handling " << origin.spec());
+    bool found = false;
+    for (size_t i = 0; !found && i < arraysize(kOriginEnumerationTestRecords);
+        ++i) {
+      const OriginEnumerationTestRecord& record =
+          kOriginEnumerationTestRecords[i];
+      if (GURL(record.origin_url) != origin)
+        continue;
+      found = true;
+      EXPECT_EQ(record.has_temporary,
+          enumerator->HasFileSystemType(kFileSystemTypeTemporary));
+      EXPECT_EQ(record.has_persistent,
+          enumerator->HasFileSystemType(kFileSystemTypePersistent));
+    }
+    EXPECT_TRUE(found);
+  }
+
+  std::set<GURL> diff;
+  std::set_symmetric_difference(origins_expected.begin(),
+      origins_expected.end(), origins_found.begin(), origins_found.end(),
+      inserter(diff, diff.begin()));
+  EXPECT_TRUE(diff.empty());
 }

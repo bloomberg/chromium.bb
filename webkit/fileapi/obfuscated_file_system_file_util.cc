@@ -5,6 +5,7 @@
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 #include <queue>
+#include <vector>
 
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -18,12 +19,12 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
-// TODO(ericu): Every instance of FileSystemFileUtil in this file should switch
-// to QuotaFileUtil as soon as I sort out FileSystemPathManager's and
-// SandboxMountPointProvider's lookups of the root path for a filesystem.
+// TODO(ericu): Make deleting an origin [or a type under the origin, if it's the
+// last type] remove the origin from origin_database_ as well.
 namespace {
 
 const int64 kFlushDelaySeconds = 10 * 60;  // 10 minutes
@@ -102,7 +103,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateOrOpen(
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
-  return FileSystemFileUtil::GetInstance()->CreateOrOpen(
+  return QuotaFileUtil::GetInstance()->CreateOrOpen(
       context, data_path, file_flags, file_handle, created);
 }
 
@@ -183,7 +184,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::GetFileInfo(
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), local_info.data_path);
-  return FileSystemFileUtil::GetInstance()->GetFileInfo(
+  return QuotaFileUtil::GetInstance()->GetFileInfo(
       context, data_path, file_info, platform_file_path);
 }
 
@@ -330,7 +331,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
     if (overwrite) {
       FilePath dest_data_path = DataPathToLocalPath(context->src_origin_url(),
         context->src_type(), dest_file_info.data_path);
-      return FileSystemFileUtil::GetInstance()->CopyOrMoveFile(context,
+      return QuotaFileUtil::GetInstance()->CopyOrMoveFile(context,
           src_data_path, dest_data_path, copy);
     } else {
       FileId dest_parent_id;
@@ -351,8 +352,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
       FilePath dest_data_path = DataPathToLocalPath(context->src_origin_url(),
         context->src_type(), dest_file_info.data_path);
       if (base::PLATFORM_FILE_OK !=
-          FileSystemFileUtil::GetInstance()->DeleteFile(
-              context, dest_data_path))
+          QuotaFileUtil::GetInstance()->DeleteFile(context, dest_data_path))
         LOG(WARNING) << "Leaked a backing file.";
       return base::PLATFORM_FILE_OK;
     } else {
@@ -394,7 +394,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::DeleteFile(
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
   if (base::PLATFORM_FILE_OK !=
-      FileSystemFileUtil::GetInstance()->DeleteFile(context, data_path))
+      QuotaFileUtil::GetInstance()->DeleteFile(context, data_path))
     LOG(WARNING) << "Leaked a backing file.";
   return base::PLATFORM_FILE_OK;
 }
@@ -443,7 +443,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::Touch(
     }
     FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
       context->src_type(), file_info.data_path);
-    return FileSystemFileUtil::GetInstance()->Touch(
+    return QuotaFileUtil::GetInstance()->Touch(
         context, data_path, last_access_time, last_modified_time);
   }
   FileId parent_id;
@@ -461,7 +461,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::Touch(
 
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
-  return FileSystemFileUtil::GetInstance()->Touch(context, data_path,
+  return QuotaFileUtil::GetInstance()->Touch(context, data_path,
     last_access_time, last_modified_time);
 }
 
@@ -474,7 +474,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::Truncate(
           virtual_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  return FileSystemFileUtil::GetInstance()->Truncate(
+  return QuotaFileUtil::GetInstance()->Truncate(
       context, local_path, length);
 }
 
@@ -603,6 +603,60 @@ class ObfuscatedFileSystemFileEnumerator
   FileSystemDirectoryDatabase* db_;
 };
 
+class ObfuscatedFileSystemOriginEnumerator
+    : public ObfuscatedFileSystemFileUtil::AbstractOriginEnumerator {
+ public:
+  typedef FileSystemOriginDatabase::OriginRecord OriginRecord;
+  ObfuscatedFileSystemOriginEnumerator(
+      FileSystemOriginDatabase* origin_database,
+      const FilePath& base_path)
+      : base_path_(base_path) {
+    if (origin_database)
+      origin_database->ListAllOrigins(&origins_);
+  }
+
+  ~ObfuscatedFileSystemOriginEnumerator() {}
+
+  // Returns the next origin.  Returns empty if there are no more origins.
+  virtual GURL Next() OVERRIDE {
+    OriginRecord record;
+    if (!origins_.empty()) {
+      record = origins_.back();
+      origins_.pop_back();
+    }
+    current_ = record;
+    return GetOriginURLFromIdentifier(record.origin);
+  }
+
+  // Returns the current origin's information.
+  virtual bool HasFileSystemType(FileSystemType type) const OVERRIDE {
+    if (current_.path.empty())
+      return false;
+    FilePath::StringType type_string =
+        ObfuscatedFileSystemFileUtil::GetDirectoryNameForType(type);
+    if (type_string.empty()) {
+      NOTREACHED();
+      return false;
+    }
+    FilePath path = base_path_.Append(current_.path).Append(type_string);
+    return file_util::DirectoryExists(path);
+  }
+
+ private:
+  std::vector<OriginRecord> origins_;
+  OriginRecord current_;
+  FilePath base_path_;
+};
+
+ObfuscatedFileSystemFileUtil::AbstractOriginEnumerator*
+ObfuscatedFileSystemFileUtil::CreateOriginEnumerator() {
+  std::vector<FileSystemOriginDatabase::OriginRecord> origins;
+
+  InitOriginDatabase(false);
+  return new ObfuscatedFileSystemOriginEnumerator(
+      origin_database_.get(), file_system_directory_);
+}
+
 FileSystemFileUtil::AbstractFileEnumerator*
 ObfuscatedFileSystemFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
@@ -633,7 +687,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
 
   path = path.AppendASCII(StringPrintf("%02" PRIu64, directory_number));
   PlatformFileError error;
-  error = FileSystemFileUtil::GetInstance()->CreateDirectory(
+  error = QuotaFileUtil::GetInstance()->CreateDirectory(
       context, path, false /* exclusive */, false /* recursive */);
   if (base::PLATFORM_FILE_OK != error)
     return error;
@@ -645,17 +699,17 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
   if (!source_path.empty()) {
     DCHECK(!file_flags);
     DCHECK(!handle);
-    error = FileSystemFileUtil::GetInstance()->CopyOrMoveFile(
+    error = QuotaFileUtil::GetInstance()->CopyOrMoveFile(
       context, source_path, path, true /* copy */);
     created = true;
   } else {
     if (handle) {
-      error = FileSystemFileUtil::GetInstance()->CreateOrOpen(
+      error = QuotaFileUtil::GetInstance()->CreateOrOpen(
         context, path, file_flags, handle, &created);
       // If this succeeds, we must close handle on any subsequent error.
     } else {
       DCHECK(!file_flags);  // file_flags is only used by CreateOrOpen.
-      error = FileSystemFileUtil::GetInstance()->EnsureFileExists(
+      error = QuotaFileUtil::GetInstance()->EnsureFileExists(
           context, path, &created);
     }
   }
@@ -666,7 +720,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
     NOTREACHED();
     if (handle) {
       base::ClosePlatformFile(*handle);
-      FileSystemFileUtil::GetInstance()->DeleteFile(context, path);
+      QuotaFileUtil::GetInstance()->DeleteFile(context, path);
     }
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -675,7 +729,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
   if (!db->AddFileInfo(*file_info, &file_id)) {
     if (handle)
       base::ClosePlatformFile(*handle);
-    FileSystemFileUtil::GetInstance()->DeleteFile(context, path);
+    QuotaFileUtil::GetInstance()->DeleteFile(context, path);
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
 
@@ -710,32 +764,28 @@ FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOriginAndType(
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return FilePath();
   }
-  return origin_dir.Append(type_string);
+  FilePath path = origin_dir.Append(type_string);
+  if (!file_util::DirectoryExists(path) &&
+      (!create || !file_util::CreateDirectory(path)))
+    return FilePath();
+  return path;
 }
 
 FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
     const GURL& origin, bool create) {
-  if (!origin_database_.get()) {
-    if (!create && !file_util::DirectoryExists(file_system_directory_)) {
-      return FilePath();
-    }
-    if (!file_util::CreateDirectory(file_system_directory_)) {
-      LOG(WARNING) << "Failed to create FileSystem directory: " <<
-          file_system_directory_.value();
-      return FilePath();
-    }
-    origin_database_.reset(
-        new FileSystemOriginDatabase(
-            file_system_directory_.AppendASCII(kOriginDatabaseName)));
-  }
+  if (!InitOriginDatabase(create))
+    return FilePath();
   FilePath directory_name;
-  // TODO(ericu): This should probably be using GetOriginIdentifierFromURL from
-  // sandbox_mount_point_provider.cc, instead of just using origin.spec().
-  if (!create && !origin_database_->HasOriginPath(origin.spec()))
+  std::string id = GetOriginIdentifierFromURL(origin);
+  if (!create && !origin_database_->HasOriginPath(id))
     return FilePath();
-  if (!origin_database_->GetPathForOrigin(origin.spec(), &directory_name))
+  if (!origin_database_->GetPathForOrigin(id, &directory_name))
     return FilePath();
-  return file_system_directory_.Append(directory_name);
+  FilePath path = file_system_directory_.Append(directory_name);
+  if (!file_util::DirectoryExists(path) &&
+      (!create || !file_util::CreateDirectory(path)))
+    return FilePath();
+  return path;
 }
 
 bool ObfuscatedFileSystemFileUtil::MigrateFromOldSandbox(
@@ -800,8 +850,9 @@ bool ObfuscatedFileSystemFileUtil::MigrateFromOldSandbox(
   return file_util::Move(src_root, legacy_dest_dir);
 }
 
+// static
 FilePath::StringType ObfuscatedFileSystemFileUtil::GetDirectoryNameForType(
-    FileSystemType type) const {
+    FileSystemType type) {
   switch (type) {
     case kFileSystemTypeTemporary:
       return kTemporaryDirectoryName;
@@ -844,9 +895,7 @@ FileSystemDirectoryDatabase* ObfuscatedFileSystemFileUtil::GetDirectoryDatabase(
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return NULL;
   }
-  // TODO(ericu): This should probably be using GetOriginIdentifierFromURL from
-  // sandbox_mount_point_provider.cc, instead of just using origin.spec().
-  std::string key = origin.spec() + type_string;
+  std::string key = GetOriginIdentifierFromURL(origin) + type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end())
     return iter->second;
@@ -889,9 +938,7 @@ bool ObfuscatedFileSystemFileUtil::DestroyDirectoryDatabase(
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return true;
   }
-  // TODO(ericu): This should probably be using GetOriginIdentifierFromURL from
-  // sandbox_mount_point_provider.cc, instead of just using origin.spec().
-  std::string key = origin.spec() + type_string;
+  std::string key = GetOriginIdentifierFromURL(origin) + type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end())
     directories_.erase(iter);
@@ -903,6 +950,22 @@ bool ObfuscatedFileSystemFileUtil::DestroyDirectoryDatabase(
     return true;
   path = path.AppendASCII(kDirectoryDatabaseName);
   return FileSystemDirectoryDatabase::DestroyDatabase(path);
+}
+
+bool ObfuscatedFileSystemFileUtil::InitOriginDatabase(bool create) {
+  if (!origin_database_.get()) {
+    if (!create && !file_util::DirectoryExists(file_system_directory_))
+      return false;
+    if (!file_util::CreateDirectory(file_system_directory_)) {
+      LOG(WARNING) << "Failed to create FileSystem directory: " <<
+          file_system_directory_.value();
+      return false;
+    }
+    origin_database_.reset(
+        new FileSystemOriginDatabase(
+            file_system_directory_.AppendASCII(kOriginDatabaseName)));
+  }
+  return true;
 }
 
 }  // namespace fileapi

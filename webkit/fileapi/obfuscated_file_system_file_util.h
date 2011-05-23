@@ -123,15 +123,12 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
 
   // Gets the topmost directory specific to this origin and type.  This will
   // contain both the directory database's files and all the backing file
-  // subdirectories.  If we decide to migrate in-place, without moving old files
-  // that were created by LocalFileSystemFileUtil, not all backing files will
-  // actually be in this directory.
+  // subdirectories.
   FilePath GetDirectoryForOriginAndType(
       const GURL& origin, FileSystemType type, bool create);
 
   // Gets the topmost directory specific to this origin.  This will
-  // contain both the filesystem type subdirectories.  See previous comment
-  // about migration; TODO(ericu): implement migration and fix these comments.
+  // contain both the filesystem type subdirectories.
   FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
 
   // This will migrate a filesystem from the old passthrough sandbox into the
@@ -147,7 +144,28 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   bool MigrateFromOldSandbox(
       const GURL& origin, FileSystemType type, const FilePath& root);
 
-  FilePath::StringType GetDirectoryNameForType(FileSystemType type) const;
+  // TODO(ericu): This doesn't really feel like it belongs in this class.
+  // The previous version lives in FileSystemPathManager, but perhaps
+  // SandboxMountPointProvider would be better?
+  static FilePath::StringType GetDirectoryNameForType(FileSystemType type);
+
+  // Origin enumerator interface.
+  // An instance of this interface is assumed to be called on the file thread.
+  class AbstractOriginEnumerator {
+   public:
+    virtual ~AbstractOriginEnumerator() {}
+
+    // Returns the next origin.  Returns empty if there are no more origins.
+    virtual GURL Next() = 0;
+
+    // Returns the current origin's information.
+    virtual bool HasFileSystemType(FileSystemType type) const = 0;
+  };
+
+  // This method and all methods of its returned class must be called only on
+  // the FILE thread.  The caller is responsible for deleting the returned
+  // object.
+  AbstractOriginEnumerator* CreateOriginEnumerator();
 
  protected:
   virtual AbstractFileEnumerator* CreateFileEnumerator(
@@ -195,6 +213,7 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   void MarkUsed();
   void DropDatabases();
   bool DestroyDirectoryDatabase(const GURL& origin, FileSystemType type);
+  bool InitOriginDatabase(bool create);
 
   typedef std::map<std::string, FileSystemDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;

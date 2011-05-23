@@ -80,7 +80,7 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
 
   // Delete the upper level directory.
   FilePath path_for_origin =
-      sandbox_provider()->GetBaseDirectoryForOrigin(origin_url);
+      sandbox_provider()->GetBaseDirectoryForOrigin(origin_url, false);
   if (!file_util::PathExists(path_for_origin))
     return true;
   return file_util::Delete(path_for_origin, true /* recursive */);

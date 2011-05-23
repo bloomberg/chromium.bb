@@ -9,8 +9,12 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/fileapi/file_system_types.h"
 
 namespace fileapi {
@@ -149,6 +153,28 @@ quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
     default:
       return quota::kStorageTypeUnknown;
   }
+}
+
+// TODO(kinuko): Merge these two methods (conversion methods between
+// origin url <==> identifier) with the ones in the database module.
+std::string GetOriginIdentifierFromURL(const GURL& url) {
+  WebKit::WebSecurityOrigin web_security_origin =
+      WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));
+  return web_security_origin.databaseIdentifier().utf8();
+}
+
+GURL GetOriginURLFromIdentifier(const std::string& origin_identifier) {
+  WebKit::WebSecurityOrigin web_security_origin =
+      WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+          UTF8ToUTF16(origin_identifier));
+  GURL origin_url(web_security_origin.toString());
+
+  // We need this work-around for file:/// URIs as
+  // createFromDatabaseIdentifier returns empty origin_url for them.
+  if (origin_url.spec().empty() &&
+      origin_identifier.find("file__") == 0)
+    return GURL("file:///");
+  return origin_url;
 }
 
 }  // namespace fileapi

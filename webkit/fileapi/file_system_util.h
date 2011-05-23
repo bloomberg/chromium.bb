@@ -33,6 +33,9 @@ FileSystemType QuotaStorageTypeToFileSystemType(
 
 quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type);
 
+std::string GetOriginIdentifierFromURL(const GURL& url);
+GURL GetOriginURLFromIdentifier(const std::string& origin_identifier);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_

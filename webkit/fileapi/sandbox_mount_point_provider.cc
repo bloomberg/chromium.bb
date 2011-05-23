@@ -13,12 +13,8 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
@@ -61,28 +57,6 @@ inline std::string FilePathStringToASCII(
 #elif defined(OS_POSIX)
   return path_string;
 #endif
-}
-
-// TODO(kinuko): Merge these two methods (conversion methods between
-// origin url <==> identifier) with the ones in the database module.
-std::string GetOriginIdentifierFromURL(const GURL& url) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));
-  return web_security_origin.databaseIdentifier().utf8();
-}
-
-GURL GetOriginURLFromIdentifier(const std::string& origin_identifier) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-          UTF8ToUTF16(origin_identifier));
-  GURL origin_url(web_security_origin.toString());
-
-  // We need this work-around for file:/// URIs as
-  // createFromDatabaseIdentifier returns empty origin_url for them.
-  if (origin_url.spec().empty() &&
-      origin_identifier.find("file__") == 0)
-    return GURL("file:///");
-  return origin_url;
 }
 
 FilePath::StringType CreateUniqueDirectoryName(const GURL& origin_url) {
@@ -138,6 +112,28 @@ FilePath GetFileSystemRootPathOnFileThreadHelper(
   return root;
 }
 
+class ObfuscatedOriginEnumerator
+    : public fileapi::SandboxMountPointProvider::OriginEnumerator {
+ public:
+  explicit ObfuscatedOriginEnumerator(
+      fileapi::ObfuscatedFileSystemFileUtil* file_util) {
+    enum_.reset(file_util->CreateOriginEnumerator());
+  }
+  virtual ~ObfuscatedOriginEnumerator() {}
+
+  virtual GURL Next() OVERRIDE {
+    return enum_->Next();
+  }
+
+  virtual bool HasFileSystemType(fileapi::FileSystemType type) const OVERRIDE {
+    return enum_->HasFileSystemType(type);
+  }
+
+ private:
+  scoped_ptr<fileapi::ObfuscatedFileSystemFileUtil::AbstractOriginEnumerator>
+      enum_;
+};
+
 class SandboxOriginEnumerator
     : public fileapi::SandboxMountPointProvider::OriginEnumerator {
  public:
@@ -150,7 +146,7 @@ class SandboxOriginEnumerator
     current_ = enumerator_.Next();
     if (current_.empty())
       return GURL();
-    return GetOriginURLFromIdentifier(
+    return fileapi::GetOriginURLFromIdentifier(
         FilePathStringToASCII(current_.BaseName().value()));
   }
 
@@ -265,21 +261,6 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback_;
 };
 
-FilePath SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const GURL& origin_url, FileSystemType type, bool create) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
-    return sandbox_file_util_->GetDirectoryForOriginAndType(
-        origin_url, type, create);
-
-  std::string name;
-  FilePath origin_base_path;
-  if (!GetOriginBasePathAndName(origin_url, &origin_base_path, type, &name))
-    return FilePath();
-
-  return GetFileSystemRootPathOnFileThreadHelper(
-      origin_url, origin_base_path, create);
-}
-
 bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
     const {
   if (filename.value().empty())
@@ -320,6 +301,8 @@ std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
 
 SandboxMountPointProvider::OriginEnumerator*
 SandboxMountPointProvider::CreateOriginEnumerator() const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
+    return new ObfuscatedOriginEnumerator(sandbox_file_util_.get());
   return new SandboxOriginEnumerator(base_path_);
 }
 
@@ -329,6 +312,18 @@ void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
   scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback(callback_ptr);
   ObfuscatedFileSystemFileUtil* file_util = NULL;
   FilePath origin_base_path;
+
+  if (path_manager_->is_incognito()) {
+    // TODO(kinuko): return an isolated temporary directory.
+    callback->Run(false, FilePath(), std::string());
+    return;
+  }
+
+  if (!path_manager_->IsAllowedScheme(origin_url)) {
+    callback->Run(false, FilePath(), std::string());
+    return;
+  }
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag)) {
     file_util = sandbox_file_util_.get();
   } else {
@@ -353,31 +348,54 @@ FilePath
 SandboxMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
     const GURL& origin_url, FileSystemType type, const FilePath& unused,
     bool create) {
-  return GetFileSystemRootPathOnFileThread(origin_url, type, create);
+  if (path_manager_->is_incognito())
+    // TODO(kinuko): return an isolated temporary directory.
+    return FilePath();
+
+  if (!path_manager_->IsAllowedScheme(origin_url))
+    return FilePath();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
+    return sandbox_file_util_->GetDirectoryForOriginAndType(
+        origin_url, type, create);
+
+  std::string name;
+  FilePath origin_base_path;
+  if (!GetOriginBasePathAndName(origin_url, &origin_base_path, type, &name))
+    return FilePath();
+
+  return GetFileSystemRootPathOnFileThreadHelper(
+      origin_url, origin_base_path, create);
 }
 
 FilePath SandboxMountPointProvider::GetBaseDirectoryForOrigin(
-    const GURL& origin_url) const {
+    const GURL& origin_url, bool create) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
+    return sandbox_file_util_->GetDirectoryForOrigin(
+      origin_url, create);
   return base_path_.AppendASCII(GetOriginIdentifierFromURL(origin_url));
 }
 
 // Needed for the old way of doing things.
 FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
-    const GURL& origin_url, fileapi::FileSystemType type) const {
+    const GURL& origin_url, fileapi::FileSystemType type, bool create) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
+    return sandbox_file_util_->GetDirectoryForOriginAndType(
+      origin_url, type, create);
   std::string type_string =
       FileSystemPathManager::GetFileSystemTypeString(type);
   if (type_string.empty()) {
     LOG(WARNING) << "Unknown filesystem type is requested:" << type;
     return FilePath();
   }
-  return GetBaseDirectoryForOrigin(origin_url).AppendASCII(type_string);
+  return GetBaseDirectoryForOrigin(origin_url, create).AppendASCII(type_string);
 }
 
 bool SandboxMountPointProvider::DeleteOriginDataOnFileThread(
     QuotaManagerProxy* proxy, const GURL& origin_url,
     fileapi::FileSystemType type) {
-  FilePath path_for_origin = GetBaseDirectoryForOriginAndType(origin_url,
-                                                              type);
+  FilePath path_for_origin =
+      GetBaseDirectoryForOriginAndType(origin_url, type, false);
   if (!file_util::PathExists(path_for_origin))
     return true;
 
@@ -425,7 +443,8 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
     const GURL& origin_url, fileapi::FileSystemType type) {
   DCHECK(type == fileapi::kFileSystemTypeTemporary ||
          type == fileapi::kFileSystemTypePersistent);
-  FilePath base_path = GetBaseDirectoryForOriginAndType(origin_url, type);
+  FilePath base_path =
+      GetBaseDirectoryForOriginAndType(origin_url, type, false);
   if (!file_util::DirectoryExists(base_path))
     return 0;
 
@@ -512,16 +531,7 @@ bool SandboxMountPointProvider::GetOriginBasePathAndName(
     FileSystemType type,
     std::string* name) {
 
-//  TODO(ericu): Put the incognito and allowed scheme checks somewhere in the
-//  obfuscated code as well.
-  if (path_manager_->is_incognito())
-    // TODO(kinuko): return an isolated temporary directory.
-    return false;
-
-  if (!path_manager_->IsAllowedScheme(origin_url))
-    return false;
-
-  *origin_base_path = GetBaseDirectoryForOriginAndType(origin_url, type);
+  *origin_base_path = GetBaseDirectoryForOriginAndType(origin_url, type, false);
   if (origin_base_path->empty())
     return false;
 
@@ -536,7 +546,8 @@ bool SandboxMountPointProvider::GetOriginBasePathAndName(
 
 FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type) const {
-  FilePath base_path = GetBaseDirectoryForOriginAndType(origin_url, type);
+  FilePath base_path =
+      GetBaseDirectoryForOriginAndType(origin_url, type, false);
   return base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
 }
 

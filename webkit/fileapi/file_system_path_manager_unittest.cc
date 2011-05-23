@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"  // TODO(ericu): Remove this.
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
@@ -25,6 +26,9 @@
 
 namespace fileapi {
 namespace {
+
+// TODO(ericu): Remove this.
+static const char kObfuscationFlag[] = "use-obfuscated-file-system";
 
 // PS stands for path separator.
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
@@ -292,9 +296,13 @@ TEST_F(FileSystemPathManagerTest, GetRootPathCreateAndExamine) {
                             true /* create */, &root_path));
 
     if (kRootPathTestCases[i].type != fileapi::kFileSystemTypeExternal) {
-      FilePath expected = file_system_path().AppendASCII(
-          kRootPathTestCases[i].expected_path);
-      EXPECT_EQ(expected.value(), root_path.DirName().value());
+      // TODO(ericu): Put this test back, with new expectations, when we've
+      // switched over to the obfuscated filesystem.
+      if (!CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag)) {
+        FilePath expected = file_system_path().AppendASCII(
+            kRootPathTestCases[i].expected_path);
+        EXPECT_EQ(expected.value(), root_path.DirName().value());
+      }
       EXPECT_TRUE(file_util::DirectoryExists(root_path));
     } else {
       // External file system root path is virtual one and does not match
@@ -395,7 +403,10 @@ TEST_F(FileSystemPathManagerTest, GetRootPathFileURIWithAllowFlag) {
     if (kRootPathFileURITestCases[i].type != fileapi::kFileSystemTypeExternal) {
       FilePath expected = file_system_path().AppendASCII(
           kRootPathFileURITestCases[i].expected_path);
-      EXPECT_EQ(expected.value(), root_path.DirName().value());
+      // TODO(ericu): Put this test back, with new expectations, when we've
+      // switched over to the obfuscated filesystem.
+      if (!CommandLine::ForCurrentProcess()->HasSwitch(kObfuscationFlag))
+        EXPECT_EQ(expected.value(), root_path.DirName().value());
       EXPECT_TRUE(file_util::DirectoryExists(root_path));
     } else {
       EXPECT_EQ(external_file_path_root().value(), root_path.value());

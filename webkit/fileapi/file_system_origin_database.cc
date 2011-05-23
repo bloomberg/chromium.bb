@@ -31,6 +31,17 @@ const char* LastPathKey() {
 
 namespace fileapi {
 
+FileSystemOriginDatabase::OriginRecord::OriginRecord() {
+}
+
+FileSystemOriginDatabase::OriginRecord::OriginRecord(
+    const std::string& origin_in, const FilePath& path_in)
+    : origin(origin_in), path(path_in) {
+}
+
+FileSystemOriginDatabase::OriginRecord::~OriginRecord() {
+}
+
 FileSystemOriginDatabase::FileSystemOriginDatabase(const FilePath& path) {
 #if defined(OS_POSIX)
   path_ = path.value();
