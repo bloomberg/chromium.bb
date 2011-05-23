@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/common/content_client.h"
 #include "content/common/plugin_messages.h"
+#include "content/common/url_constants.h"
 #include "content/plugin/npobject_proxy.h"
 #include "content/plugin/npobject_util.h"
 #include "content/plugin/plugin_channel.h"
@@ -289,9 +290,9 @@ void WebPluginProxy::HandleURLRequest(const char* url,
         webkit::npapi::WebPluginDelegateImpl::
             PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS) {
       GURL request_url(url);
-      if (!request_url.SchemeIs("http") &&
-          !request_url.SchemeIs("https") &&
-          !request_url.SchemeIs("ftp")) {
+      if (!request_url.SchemeIs(chrome::kHttpScheme) &&
+          !request_url.SchemeIs(chrome::kHttpsScheme) &&
+          !request_url.SchemeIs(chrome::kFtpScheme)) {
         return;
       }
     }

@@ -22,6 +22,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/cross_site_request_manager.h"
+#include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -234,7 +235,7 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
   }
   const GURL& url = params.url;
   if (!delegate_->IsExternalTabContainer() &&
-      (url.SchemeIs("http") || url.SchemeIs("https")))
+      (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme)))
     chrome_browser_net::PreconnectUrlAndSubresources(url);
 }
 
@@ -672,6 +673,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
@@ -1252,6 +1254,28 @@ void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
       NotificationType::EXECUTE_JAVASCRIPT_RESULT,
       Source<RenderViewHost>(this),
       Details<std::pair<int, Value*> >(&details));
+}
+
+void RenderViewHost::OnDidZoomURL(double zoom_level,
+                                  bool remember,
+                                  const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  HostZoomMap* host_zoom_map = process()->profile()->GetHostZoomMap();
+  if (remember) {
+    host_zoom_map->SetZoomLevel(url, zoom_level);
+    // Notify renderers from this profile.
+    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance()) {
+      RenderProcessHost* render_process_host = i.GetCurrentValue();
+      if (render_process_host->profile() == process()->profile()) {
+        render_process_host->Send(
+            new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
+      }
+    }
+  } else {
+    host_zoom_map->SetTemporaryZoomLevel(
+        process()->id(), routing_id(), zoom_level);
+  }
 }
 
 #if defined(OS_MACOSX)

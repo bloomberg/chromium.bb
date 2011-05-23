@@ -667,8 +667,8 @@ void PrerenderContents::OnUpdateFaviconURL(
 }
 
 bool PrerenderContents::AddAliasURL(const GURL& url) {
-  if (!url.SchemeIs("http")) {
-    if (url.SchemeIs("https"))
+  if (!url.SchemeIs(chrome::kHttpScheme)) {
+    if (url.SchemeIs(chrome::kHttpsScheme))
       Destroy(FINAL_STATUS_HTTPS);
     else
       Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);

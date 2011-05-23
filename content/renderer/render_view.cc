@@ -4105,7 +4105,7 @@ bool RenderView::IsNonLocalTopLevelNavigation(
   // 2. The origin of the url and the opener is the same in which case the
   //    opener relationship is maintained.
   // 3. Reloads/form submits/back forward navigations
-  if (!url.SchemeIs("http") && !url.SchemeIs("https"))
+  if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
     return false;
 
   // Not interested in reloads/form submits/resubmits/back forward navigations.

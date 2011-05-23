@@ -26,8 +26,8 @@ void TabContentsObserver::Registrar::Observe(TabContents* tab) {
 }
 
 void TabContentsObserver::NavigateToPendingEntry(
-      const GURL& url,
-      NavigationController::ReloadType reload_type) {
+    const GURL& url,
+    NavigationController::ReloadType reload_type) {
 }
 
 void TabContentsObserver::DidNavigateMainFramePostCommit(
