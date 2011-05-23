@@ -416,6 +416,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
                  '--key', key.upper()])
   elif category == 'binary':
     cmd.extend(['--sync-binhost-conf',
+                '--sync-host',
                 '--key', _PREFLIGHT_BINHOST])
   else:
     assert category == 'full'
