@@ -28,13 +28,13 @@ class PrerenderTracker {
 
   // Attempts to set the status of the specified RenderViewHost to
   // FINAL_STATUS_USED.  Returns true on success.  Returns false if it has
-  // already been cancelled for any reason, or is no longer prerendering.
+  // already been cancelled for any reason or is no longer prerendering.
   // Can only be called only on the IO thread.  This method will not call
   // PrerenderContents::set_final_status() on the corresponding
   // PrerenderContents.
   //
-  // If it returns true, all subsequent calls to TryCancel for the RenderView
-  // will return false.
+  // If it returns true, all subsequent calls to TryCancel and TryUse for the
+  // RenderView will return false.
   bool TryUse(int child_id, int route_id);
 
   // Attempts to cancel prerendering by the specified RenderView, setting the
@@ -65,7 +65,8 @@ class PrerenderTracker {
   bool GetFinalStatus(int child_id, int route_id,
                       FinalStatus* final_status) const;
 
- protected:
+ private:
+  friend struct DefaultSingletonTraits<PrerenderTracker>;
   friend class PrerenderContents;
 
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerUsed);
@@ -73,19 +74,6 @@ class PrerenderTracker {
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerCancelledOnIO);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerCancelledFast);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerMultiple);
-
-  // Must be called when a RenderView starts prerendering, before the first
-  // navigation starts to avoid any races.
-  void OnPrerenderingStarted(int child_id, int route_id,
-                             PrerenderManager* prerender_manager);
-
-  // Must be called when a RenderView stops prerendering, either because the
-  // RenderView was used or prerendering was cancelled and it is being
-  // destroyed.
-  void OnPrerenderingFinished(int child_id, int route_id);
-
- private:
-  friend struct DefaultSingletonTraits<PrerenderTracker>;
 
   typedef std::pair<int, int> ChildRouteIdPair;
 
@@ -97,13 +85,31 @@ class PrerenderTracker {
   PrerenderTracker();
   ~PrerenderTracker();
 
+  // Must be called when a RenderView starts prerendering, before the first
+  // navigation starts to avoid any races.
+  void OnPrerenderingStarted(int child_id, int route_id,
+                             PrerenderManager* prerender_manager);
+
+  // Must be called when a RenderView stops prerendering, either because the
+  // RenderView was used or prerendering was cancelled and it is being
+  // destroyed.
+  void OnPrerenderingFinished(int child_id, int route_id);
+
   // Attempts to set the FinalStatus of the specified RenderView to
-  // |final_status|.  If the FinalStatus of the RenderView has already been
-  // set, does nothing.  Returns the resulting FinalStatus of that RenderView,
-  // regardless of success or failure.  If the RenderView isn't currently
-  // prerendering, returns FINAL_STATUS_MAX.
-  FinalStatus SetFinalStatus(int child_id, int route_id,
-                             FinalStatus final_status);
+  // |desired_final_status|.  If non-NULL, |actual_final_status| is set to the
+  // FinalStatus of the RenderView.
+  //
+  // If the FinalStatus of the RenderView is successfully set, returns true and
+  // sets |actual_final_status| to |desired_final_status|.
+  //
+  // If the FinalStatus of the RenderView was already set, returns false and
+  // sets |actual_final_status| to the actual FinalStatus of the RenderView.
+  //
+  // If the RenderView is not a prerendering RenderView, returns false and sets
+  // |actual_final_status| to FINAL_STATUS_MAX.
+  bool SetFinalStatus(int child_id, int route_id,
+                      FinalStatus desired_final_status,
+                      FinalStatus* actual_final_status);
 
   // Add/remove the specified pair to |possibly_prerendering_io_thread_set_| on
   // the IO Thread.
