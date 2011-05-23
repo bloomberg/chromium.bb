@@ -87,6 +87,18 @@ void TestURLFetcherFactory::RemoveFetcherFromMap(int id) {
   fetchers_.erase(i);
 }
 
+const GURL& TestURLFetcher::url() const {
+  return fake_url_;
+}
+
+const net::URLRequestStatus& TestURLFetcher::status() const {
+  return fake_status_;
+}
+
+int TestURLFetcher::response_code() const {
+  return fake_response_code_;
+}
+
 // This class is used by the FakeURLFetcherFactory below.
 class FakeURLFetcher : public URLFetcher {
  public:

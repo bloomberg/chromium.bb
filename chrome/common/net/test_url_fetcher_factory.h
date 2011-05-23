@@ -76,15 +76,15 @@ class TestURLFetcher : public URLFetcher {
   Delegate* delegate() const { return URLFetcher::delegate(); }
 
   void set_url(const GURL& url) { fake_url_ = url; }
-  const GURL& url() const { return fake_url_; }
+  virtual const GURL& url() const;
 
   void set_status(const net::URLRequestStatus& status);
-  const net::URLRequestStatus& status() const { return fake_status_; }
+  virtual const net::URLRequestStatus& status() const;
 
   void set_response_code(int response_code) {
     fake_response_code_ = response_code;
   }
-  virtual int response_code() const { return fake_response_code_; }
+  virtual int response_code() const;
 
   // Set string data.
   void SetResponseString(const std::string& response);
