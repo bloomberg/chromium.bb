@@ -232,18 +232,12 @@ TEST_F(HostContentSettingsMapTest, Observer) {
   EXPECT_FALSE(observer.last_update_all_types);
   EXPECT_EQ(2, observer.counter);
 
-  host_content_settings_map->ResetToDefaults();
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_TRUE(observer.last_update_all_types);
-  EXPECT_EQ(3, observer.counter);
-
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(host_content_settings_map, observer.last_notifier);
   EXPECT_TRUE(observer.last_update_all);
   EXPECT_FALSE(observer.last_update_all_types);
-  EXPECT_EQ(4, observer.counter);
+  EXPECT_EQ(3, observer.counter);
 }
 
 TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {

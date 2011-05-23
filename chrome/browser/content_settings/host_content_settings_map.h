@@ -150,12 +150,6 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void SetBlockThirdPartyCookies(bool block);
 
-  bool GetBlockNonsandboxedPlugins() const {
-    return block_nonsandboxed_plugins_;
-  }
-
-  void SetBlockNonsandboxedPlugins(bool block);
-
   // Resets all settings levels.
   //
   // This should only be called on the UI thread.
@@ -174,12 +168,6 @@ class HostContentSettingsMap
   friend class DeleteTask<HostContentSettingsMap>;
 
   ~HostContentSettingsMap();
-
-  // Informs observers that content settings have changed. Make sure that
-  // |lock_| is not held when calling this, as listeners will usually call one
-  // of the GetSettings functions in response, which would then lead to a
-  // mutex deadlock.
-  void NotifyObservers(const ContentSettingsDetails& details);
 
   void UnregisterObservers();
 
@@ -214,7 +202,6 @@ class HostContentSettingsMap
   // Misc global settings.
   bool block_third_party_cookies_;
   bool is_block_third_party_cookies_managed_;
-  bool block_nonsandboxed_plugins_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };

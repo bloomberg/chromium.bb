@@ -644,9 +644,6 @@ const char kContentSettingsPatterns[] = "profile.content_settings.patterns";
 // regardless of other content settings.
 const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
 
-// Boolean that is true if non-sandboxed plug-ins should be blocked.
-const char kBlockNonsandboxedPlugins[] = "profile.block_nonsandboxed_plugins";
-
 // Boolean that is true when all locally stored site data (e.g. cookies, local
 // storage, etc..) should be deleted on exit.
 const char kClearSiteDataOnExit[] = "profile.clear_site_data_on_exit";
