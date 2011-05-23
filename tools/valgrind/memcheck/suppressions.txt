@@ -3865,9 +3865,9 @@
    bug_75023
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN*TabContentsView*CreateView*
+   fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
    ...
-   fun:_ZN18TabContentsView*CreateView*
+   fun:_ZN*TabContentsView*CreateView*
    fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
    fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
    fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
