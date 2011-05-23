@@ -1290,17 +1290,18 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
     chrome_flags += ('--register-pepper-plugins=%s;application/x-nacl' %
                      GetPPAPIPluginPath(env['TRUSTED_ENV']))
     chrome_flags += ' --no-sandbox'
-
-    # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
-    env['ENV']['NACL_SEL_LDR'] = GetSelLdr(env)
-    if env.Bit('irt'):
-      env['ENV']['NACL_IRT_LIBRARY'] = env.GetIrtNexe()
-
-    # Enable experimental JavaScript APIs.
-    env['ENV']['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
   else:
     chrome_flags += '--enable-nacl'
 
+  osenv = []
+  if not env.Bit('disable_dynamic_plugin_loading'):
+    # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
+    osenv.append('NACL_SEL_LDR=%s' % GetSelLdr(env))
+    if env.Bit('irt'):
+      osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
+
+    # Enable experimental JavaScript APIs.
+    osenv.append('NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1')
   # Construct a relative path to the staging directory from where pyauto's HTTP
   # server should serve files. The relative path is the portion of $STAGING_DIR
   # that follows $MAIN_DIR, prefixed with 'native_client'.
@@ -1319,7 +1320,8 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
                          # Set to 'huge' so that the browser tester's timeout
                          # takes precedence over the default of the test_suite.
                          size='huge',
-                         capture_output=False)
+                         capture_output=False,
+                         osenv=osenv)
 
   if not env.Bit('disable_dynamic_plugin_loading'):
     # Add explicit dependencies on sel_ldr and the PPAPI plugin.
