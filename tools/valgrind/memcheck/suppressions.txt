@@ -4559,7 +4559,6 @@
    ...
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
    fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
 }
 {
    bug_82719
