@@ -61,7 +61,7 @@ class UIPerfTestUtils:
     Args:
       measurement: measurement string (such as a parameter list).
       modifier: modifier string (such as a file name).
-      trace: trace string (not currently used).
+      trace: trace string used for PerfBot graph name (such as 't' or 't_ref').
       values: list of values that displayed as "[value1,value2....]".
       units: units of values such as "sec" or "msec".
 

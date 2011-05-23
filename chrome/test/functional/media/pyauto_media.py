@@ -24,6 +24,9 @@ idea).
 
 import os
 import sys
+import tempfile
+
+from media_test_env_names import MediaTestEnvNames
 
 
 def _SetupPaths():
@@ -34,6 +37,15 @@ def _SetupPaths():
   sys.path.append(os.path.normpath(os.path.join(
       media_dir, os.pardir, os.pardir, os.pardir, os.pardir,
       'third_party', 'psutil')))
+  # Setting PYTHONPATH for reference build.
+  if os.getenv(MediaTestEnvNames.REFERENCE_BUILD_ENV_NAME):
+    reference_build_dir = os.getenv(
+        MediaTestEnvNames.REFERENCE_BUILD_DIR_ENV_NAME,
+        # TODO(imasaki@): Change the following default value.
+        # Default directory is just for testing so the correct directory
+        # must be set in the build script.
+        os.path.join(tempfile.gettempdir(), 'chrome-media-test'))
+    sys.path.insert(0, reference_build_dir)
 
 _SetupPaths()
 

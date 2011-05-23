@@ -74,19 +74,15 @@ class MediaTestBase(pyauto.PyUITest):
         MediaTestEnvNames.PLAYER_HTML_URL_NICKNAME_ENV_NAME,
         self.DEFAULT_PLAYER_HTML_URL_NICKNAME)
     extra_nickname = os.getenv(MediaTestEnvNames.EXTRA_NICKNAME_ENV_NAME, '')
+
+    tag = os.getenv(MediaTestEnvNames.MEDIA_TAG_ENV_NAME,
+                    self.DEFAULT_MEDIA_TAG_NAME)
+    query_dictionary = {'tag': tag, 'media': media_filename}
     # This parameter tricks the media cache into thinking
     # it's a new file every time.
     # However, it looks like does not make much difference in
     # performance.
-    add_t_parameter = os.getenv(
-        MediaTestEnvNames.ADD_T_PARAMETER_ENV_NAME) in ('Y', 'y')
-    # Print only playback time data.
-    print_only_time = os.getenv(
-        MediaTestEnvNames.PRINT_ONLY_TIME_ENV_NAME) in ('Y', 'y')
-    tag = os.getenv(MediaTestEnvNames.MEDIA_TAG_ENV_NAME,
-                    self.DEFAULT_MEDIA_TAG_NAME)
-    query_dictionary = {'tag': tag, 'media': media_filename}
-    if add_t_parameter:
+    if os.getenv(MediaTestEnvNames.ADD_T_PARAMETER_ENV_NAME):
       query_dictionary['t'] = 'dummy'
     query_str = '&'.join(
         [k + '=' + str(v) for (k, v) in query_dictionary.items()])
@@ -168,9 +164,8 @@ class MediaTestBase(pyauto.PyUITest):
     """
     self.media_filename = os.getenv(MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME,
                                     self.DEFAULT_MEDIA_FILENAME)
-    self.remove_first_result = (
-        os.getenv(MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME)
-        in ('Y', 'y'))
+    self.remove_first_result = os.getenv(
+        MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME)
     self.number_of_runs = int(os.getenv(MediaTestEnvNames.N_RUNS_ENV_NAME,
                                         self.DEFAULT_NUMBER_OF_RUNS))
     self.url, self.parameter_str = self._GetMediaURLAndParameterString(
@@ -193,6 +188,8 @@ class MediaTestBase(pyauto.PyUITest):
       run_counter: counter for each run.
     """
     self.start = time.time()
+    if os.getenv(MediaTestEnvNames.REFERENCE_BUILD_ENV_NAME):
+      self.current_trace_type = 't_ref'
 
   def PostEachRunProcess(self, run_counter):
     """A method to execute after each run.

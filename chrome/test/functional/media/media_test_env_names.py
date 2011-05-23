@@ -25,15 +25,13 @@ class MediaTestEnvNames:
   # Use this when you want to add extra information in the result output.
   EXTRA_NICKNAME_ENV_NAME = 'EXTRA_NICKNAME'
 
-  # Use this when you do not want to report the first result output.
-  # First result includes time to start up the browser.
+  # Define this environment variable when you do not want to report
+  # the first result output. First result includes time to start up the browser.
   REMOVE_FIRST_RESULT_ENV_NAME = 'REMOVE_FIRST_RESULT'
 
-  # Add t=Data() parameter in query string to disable media cache.
+  # Add t=Data() parameter in query string to disable media cache
+  # if this environment is defined.
   ADD_T_PARAMETER_ENV_NAME = 'ADD_T_PARAMETER'
-
-  # Print out only playback time information.
-  PRINT_ONLY_TIME_ENV_NAME = 'PRINT_ONLY_TIME'
 
   # Define the number of tries.
   N_RUNS_ENV_NAME = 'N_RUNS'
@@ -55,3 +53,10 @@ class MediaTestEnvNames:
 
   # Define the test scenario, which contains operations during tests.
   TEST_SCENARIO_ENV_NAME = 'TEST_SCENARIO'
+
+  # Define this environment variable if we want to run test using binaries of
+  # reference build, otherwise do not define this variable.
+  REFERENCE_BUILD_ENV_NAME = 'REFERENCE_BUILD'
+
+  # Define the path to the directory that contains binaries of reference build.
+  REFERENCE_BUILD_DIR_ENV_NAME = 'REFERENCE_BUILD_DIR'
