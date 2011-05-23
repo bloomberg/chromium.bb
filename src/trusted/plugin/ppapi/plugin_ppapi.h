@@ -41,6 +41,8 @@ class Zoom_Dev;
 
 namespace plugin {
 
+class Manifest;
+
 // Encapsulates a PPAPI NaCl plugin.
 class PluginPpapi : public pp::Instance, public Plugin {
  public:
@@ -172,19 +174,18 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Callback used when getting the manifest file as a local file descriptor.
   void NaClManifestFileDidOpen(int32_t pp_error);
 
-  // Parses the JSON in |manifest_json| and retains a scriptable object in
-  // |manifest_object_| for use by subsequent resource lookups.
-  // On success, |true| is returned and |manifest_object_| is updated to
-  // contain a scriptable object that is used by SelectNexeURLFromManifest.
-  // On failure, |false| is returned, and |manifest_object_| is unchanged.
+  // Parses the JSON in |manifest_json| and retains a Manifest in
+  // |manifest_| for use by subsequent resource lookups.
+  // On success, |true| is returned and |manifest_| is updated to
+  // contain a Manifest that is used by SelectNexeURLFromManifest.
+  // On failure, |false| is returned, and |manifest_| is unchanged.
   bool SetManifestObject(const nacl::string& manifest_json,
                          nacl::string* error_string);
 
   // Determines the URL of the nexe module appropriate for the NaCl sandbox
   // implemented by the installed sel_ldr.  The URL is determined from the
-  // scriptable object in |manifest_object_|.  On success, |true| is returned
-  // and |result| is set to the URL to use for the nexe.  On failure, |false|
-  // is returned.
+  // Manifest in |manifest_|.  On success, |true| is returned and |result| is
+  // set to the URL to use for the nexe.  On failure, |false| is returned.
   bool SelectNexeURLFromManifest(nacl::string* result,
                                  nacl::string* error_string);
 
@@ -208,7 +209,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
   static bool SetAsyncCallback(void* obj, SrpcParams* params);
 
   // The manifest dictionary.  Used for looking up resources to be loaded.
-  pp::Var manifest_object_;
+  nacl::scoped_ptr<Manifest> manifest_;
   // URL processing interface for use in looking up resources in manifests.
   const pp::URLUtil_Dev* url_util_;
 

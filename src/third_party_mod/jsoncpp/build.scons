@@ -1,0 +1,22 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+env.Append(
+    CPPPATH=['include'])
+
+
+# normally comment out -- uncomment out to test the pedantic removal
+# check below.
+#if env.Bit('linux') or env.Bit('mac'):
+#  env.FilterOut(CCFLAGS=['-pedantic'])
+#  env.FilterOut(CCFLAGS=['-Wall'])
+
+jsoncpp_inputs = ['src/lib_json/json_writer.cpp',
+                  'src/lib_json/json_value.cpp',
+                  'src/lib_json/json_reader.cpp']
+
+env.DualLibrary('jsoncpp', jsoncpp_inputs)

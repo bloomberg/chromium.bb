@@ -31,6 +31,7 @@
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/ppapi/async_receive.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
+#include "native_client/src/trusted/plugin/ppapi/manifest.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -82,10 +83,6 @@ const char* const kDataUriScheme = "data";
 
 // The key used to find the dictionary nexe URLs in the manifest file.
 const char* const kNexesKey = "nexes";
-// The top level dictionary entries valid in the manifest file.
-const char* kManifestTopLevelProperties[] = { kNexesKey };
-// The dictionary entries valid under the kNexesKey entry of the manifest.
-const char* kManifestNexesISAProperties[] = { "x86-32", "x86-64", "arm" };
 
 bool UrlAsNaClDesc(void* obj, SrpcParams* params) {
   // TODO(sehr,polina): this API should take a selector specify which of
@@ -120,14 +117,14 @@ const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
 
-static const PPB_UMA_Private* GetUMAInterface() {
+const PPB_UMA_Private* GetUMAInterface() {
   pp::Module *module = pp::Module::Get();
   CHECK(module);
   return reinterpret_cast<const PPB_UMA_Private*>(
       module->GetBrowserInterface(PPB_UMA_PRIVATE_INTERFACE));
 }
 
-static void HistogramTimeSmall(const std::string& name, int64_t ms) {
+void HistogramTimeSmall(const std::string& name, int64_t ms) {
   if (ms < 0) return;
 
   const PPB_UMA_Private* ptr = GetUMAInterface();
@@ -139,7 +136,7 @@ static void HistogramTimeSmall(const std::string& name, int64_t ms) {
                             kTimeSmallBuckets);
 }
 
-static void HistogramSizeKB(const std::string& name, int32_t sample) {
+void HistogramSizeKB(const std::string& name, int32_t sample) {
   if (sample < 0) return;
 
   const PPB_UMA_Private* ptr = GetUMAInterface();
@@ -151,13 +148,41 @@ static void HistogramSizeKB(const std::string& name, int32_t sample) {
                              kSizeKBBuckets);
 }
 
-static void HistogramEnumeration(const std::string& name,
-                                 int32_t sample,
-                                 int32_t boundary) {
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
+void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
+  enum NaClOSArch {
+    kNaClLinux32 = 0,
+    kNaClLinux64,
+    kNaClLinuxArm,
+    kNaClMac32,
+    kNaClMac64,
+    kNaClMacArm,
+    kNaClWin32,
+    kNaClWin64,
+    kNaClWinArm,
+    kNaClOSArchMax
+  };
 
-  ptr->HistogramEnumeration(pp::Var(name).pp_var(), sample, boundary);
+  NaClOSArch os_arch = kNaClOSArchMax;
+#if NACL_LINUX
+  os_arch = kNaClLinux32;
+#elif NACL_OSX
+  os_arch = kNaClMac32;
+#elif NACL_WINDOWS
+  os_arch = kNaClWin32;
+#endif
+
+  if (sandbox_isa == "x86-64")
+    os_arch = static_cast<NaClOSArch>(os_arch + 1);
+  if (sandbox_isa == "arm")
+    os_arch = static_cast<NaClOSArch>(os_arch + 2);
+
+  if (os_arch < kNaClOSArchMax) {
+    const PPB_UMA_Private* ptr = GetUMAInterface();
+    if (ptr == NULL) return;
+    ptr->HistogramEnumeration(pp::Var("NaCl.OSArch").pp_var(),
+                              os_arch,
+                              kNaClOSArchMax);
+  }
 }
 
 // Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
@@ -356,82 +381,6 @@ class ZoomAdapter : public pp::Zoom_Dev {
   NACL_DISALLOW_COPY_AND_ASSIGN(ZoomAdapter);
 };
 
-bool FindMatchingProperty(nacl::string property_name,
-                          const char** valid_names,
-                          size_t valid_name_count) {
-  for (size_t i = 0; i < valid_name_count; ++i) {
-    if (property_name == valid_names[i]) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// TODO(sehr,polina): Replace this by the Chrome JSON schema validator.
-bool ValidateManifestObject(pp::Var manifest_candidate,
-                            nacl::string* error_string) {
-  pp::Var exception;
-  if (error_string == NULL) {
-    return false;
-  }
-  // Check that there are no unrecognized top-level elements of the manifest.
-  // TODO(sehr,polina): replace this when the manifest spec is extended.
-  std::vector<pp::Var> top_level_properties;
-  manifest_candidate.GetAllPropertyNames(&top_level_properties, &exception);
-  if (!exception.is_undefined()) {
-      *error_string = "manifest properties could not be read.";
-      return false;
-  }
-  for (size_t i = 0; i < top_level_properties.size(); ++i) {
-    if (!top_level_properties[i].is_string()) {
-      *error_string = "manifest has a non-string top-level property.";
-      return false;
-    }
-    nacl::string property_name = top_level_properties[i].AsString();
-    if (!FindMatchingProperty(property_name,
-                              kManifestTopLevelProperties,
-                              NACL_ARRAY_SIZE(kManifestTopLevelProperties))) {
-      *error_string =
-          nacl::string("manifest has unrecognized top-level property \"") +
-          property_name + "\".";
-      return false;
-    }
-  }
-  // Check that the manifest file has the "nexes" property, and that property
-  // is itself an object.
-  pp::Var nexes_dict = manifest_candidate.GetProperty(kNexesKey, &exception);
-  if (!exception.is_undefined() || !nexes_dict.is_object()) {
-    *error_string =
-        nacl::string("manifest did not have a \"") + kNexesKey +"\" property";
-    return false;
-  }
-  // Check that nexes_dict only contains sandbox ISAs that will be recognized.
-  std::vector<pp::Var> nexe_properties;
-  nexes_dict.GetAllPropertyNames(&nexe_properties, &exception);
-  if (!exception.is_undefined()) {
-      *error_string =
-          nacl::string("could not read manifest \"") + kNexesKey +"\" property";
-      return false;
-  }
-  for (size_t i = 0; i < nexe_properties.size(); ++i) {
-    if (!nexe_properties[i].is_string()) {
-      *error_string = "manifest sandbox ISA property name was not a string.";
-      return false;
-    }
-    nacl::string property_name = nexe_properties[i].AsString();
-    if (!FindMatchingProperty(property_name,
-                              kManifestNexesISAProperties,
-                              NACL_ARRAY_SIZE(kManifestNexesISAProperties))) {
-      *error_string =
-          nacl::string("manifest has unrecognized sandbox ISA property \"") +
-          property_name + "\".";
-      return false;
-    }
-  }
-  // TODO(sehr,polina): Add other manifest schema checks here.
-  return true;
-}
-
 }  // namespace
 
 const char* const PluginPpapi::kNaClMIMEType = "application/x-nacl";
@@ -498,6 +447,7 @@ PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
 // failure. Note that module loading functions will log their own errors.
 bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("PluginPpapi::Init (argc=%"NACL_PRIu32")\n", argc));
+  HistogramEnumerateOsArch(GetSandboxISA());
   init_time_ = NaClGetTimeOfDayMicroseconds();
 
   BrowserInterface* browser_interface =
@@ -1045,90 +995,22 @@ bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
   if (error_string == NULL) {
     return false;
   }
-  // Parse the JSON via the browser.
-  pp::Var exception;
-  pp::Var json_parser = GetWindowObject().GetProperty("JSON", &exception);
-  if (!exception.is_undefined()) {
-    *error_string = "could not get window.JSON object.";
+  manifest_.reset(
+      new Manifest(url_util_, manifest_base_url(), GetSandboxISA()));
+  if (!manifest_->Init(manifest_json, error_string)) {
     return false;
   }
-  pp::Var manifest_candidate =
-      json_parser.Call("parse", manifest_json, &exception);
-  if (!exception.is_undefined()) {
-    *error_string = "manifest JSON parsing failed.";
-    return false;
-  }
-  // Parse has ensured the string was valid JSON.  Check also that it has
-  // the "nexes" property.
-  if (!ValidateManifestObject(manifest_candidate, error_string)) {
-    return false;
-  }
-  manifest_object_ = manifest_candidate;
   return true;
 }
-
-enum NaClOSArch {
-  kNaClLinux32 = 0,
-  kNaClLinux64,
-  kNaClLinuxArm,
-  kNaClMac32,
-  kNaClMac64,
-  kNaClMacArm,
-  kNaClWin32,
-  kNaClWin64,
-  kNaClWinArm,
-  kNaClOSArchMax
-};
 
 bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
                                             nacl::string* error_string) {
   const nacl::string sandbox_isa(GetSandboxISA());
   PLUGIN_PRINTF(("PluginPpapi::SelectNexeURLFromManifest(): sandbox='%s'.\n",
        sandbox_isa.c_str()));
-  if (result == NULL || error_string == NULL)
+  if (result == NULL || error_string == NULL || manifest_ == NULL)
     return false;
-  pp::Var exception;
-  pp::Var nexes_dict = manifest_object_.GetProperty(kNexesKey, &exception);
-  // Look for a key with the same name as the ISA string.
-  if (!exception.is_undefined() || !nexes_dict.HasProperty(sandbox_isa)) {
-    *error_string = "could not find isa \"" + sandbox_isa + "\" in manifest.";
-    return false;
-  }
-  pp::Var nexe_url = nexes_dict.GetProperty(sandbox_isa);
-  if (!nexe_url.is_string()) {
-    *error_string = "isa \"" + sandbox_isa + "\" in manifest is not a string.";
-    return false;
-  }
-  // The contents of the manifest are resolved relative to the manifest URL.
-  CHECK(url_util_ != NULL);
-  pp::Var resolved_url =
-      url_util_->ResolveRelativeToURL(pp::Var(manifest_base_url()), nexe_url);
-  if (!resolved_url.is_string()) {
-    *error_string =
-        "could not resolve nexe url \"" + nexe_url.AsString() +
-        "\" relative to manifest base url \"" + manifest_base_url().c_str() +
-        "\".";
-    return false;
-  }
-  *result = resolved_url.AsString();
-
-
-  NaClOSArch os_arch = kNaClOSArchMax;
-#if NACL_LINUX
-  os_arch = kNaClLinux32;
-#elif NACL_OSX
-  os_arch = kNaClMac32;
-#elif NACL_WINDOWS
-  os_arch = kNaClWin32;
-#endif
-
-  if (sandbox_isa == "x86-64") os_arch = static_cast<NaClOSArch>(os_arch + 1);
-  if (sandbox_isa == "arm") os_arch = static_cast<NaClOSArch>(os_arch + 2);
-
-  if (os_arch < kNaClOSArchMax)
-    HistogramEnumeration("NaCl.OSArch", os_arch, kNaClOSArchMax);
-
-  return true;
+  return manifest_->GetNexeURL(result, error_string);
 }
 
 

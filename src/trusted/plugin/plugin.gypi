@@ -37,6 +37,7 @@
       'ppapi/async_receive.cc',
       'ppapi/browser_interface_ppapi.cc',
       'ppapi/plugin_ppapi.cc',
+      'ppapi/manifest.cc',
       'ppapi/module_ppapi.cc',
       'ppapi/file_downloader.cc',
       'ppapi/scriptable_handle_ppapi.cc',

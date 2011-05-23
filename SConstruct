@@ -1912,6 +1912,7 @@ base_env.Append(
     'src/shared/srpc/build.scons',
     'src/shared/utils/build.scons',
     'src/third_party_mod/gtest/build.scons',
+    'src/third_party_mod/jsoncpp/build.scons',
     'src/tools/validator_tools/build.scons',
     'src/trusted/debug_stub/build.scons',
     'src/trusted/desc/build.scons',
