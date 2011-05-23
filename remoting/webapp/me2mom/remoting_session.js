@@ -15,7 +15,8 @@ remoting.scaleToFit = false;
 
 // Default to trying to sandboxed connections.
 remoting.connectMethod = 'sandboxed';
-remoting.httpXmppProxy = 'https://chromoting-httpxmpp-dev.corp.google.com';
+remoting.httpXmppProxy =
+    'https://chromoting-httpxmpp-oauth2-dev.corp.google.com';
 
 // This executes a poll loop on the server for more Iq packets, and feeds them
 // to the plugin.
@@ -67,7 +68,7 @@ function registerConnection() {
   }
   xhr.send('host_jid=' + encodeURIComponent(remoting.hostjid) +
            '&username=' + encodeURIComponent(remoting.username) +
-           '&password=' + encodeURIComponent(remoting.xmppAuthToken));
+           '&password=' + encodeURIComponent(remoting.oauth2.getAccessToken()));
   setClientStateMessage('Connecting');
 }
 
