@@ -164,32 +164,25 @@ class CBuildBotTest(mox.MoxTestBase):
     commands._RepoSync(self._buildroot, retries=2)
     self.mox.VerifyAll()
 
-  def testBuildMinimal(self):
-    """Base case where Build is called with minimal options."""
+  def testBuildIncremental(self):
+    """Base case where Build is called."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(['./build_packages', '--nowithautotest', '--nousepkg'],
-                        cwd=mox.StrContains(buildroot),
-                        enter_chroot=True,
-                        extra_env={})
+    cros_lib.RunCommand(mox.IgnoreArg(), cwd=mox.StrContains(buildroot),
+        enter_chroot=True, extra_env=mox.IgnoreArg())
     self.mox.ReplayAll()
-    commands.Build(buildroot=buildroot,
-                   emptytree=False,
-                   build_autotest=False,
-                   usepkg=False)
+    commands.Build(buildroot, False)
     self.mox.VerifyAll()
 
-  def testBuildMaximum(self):
-    """Base case where Build is called with all options (except extra_evn)."""
+  def testBuildClobber(self):
+    """Base case where Build with emptytree is called."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(['./build_packages'],
-                        cwd=mox.StrContains(buildroot),
-                        enter_chroot=True,
-                        extra_env={'EXTRA_BOARD_FLAGS': '--emptytree'})
+    cros_lib.RunCommand(
+      mox.IgnoreArg(),
+      cwd=mox.StrContains(buildroot),
+      enter_chroot=True,
+      extra_env=mox.ContainsKeyValue('EXTRA_BOARD_FLAGS', '--emptytree'))
     self.mox.ReplayAll()
-    commands.Build(buildroot=buildroot,
-                   emptytree=True,
-                   build_autotest=True,
-                   usepkg=True)
+    commands.Build(buildroot, True)
     self.mox.VerifyAll()
 
   def testBuildWithEnv(self):
@@ -203,11 +196,7 @@ class CBuildBotTest(mox.MoxTestBase):
       extra_env=mox.And(
         mox.ContainsKeyValue('A', 'Av'), mox.ContainsKeyValue('B', 'Bv')))
     self.mox.ReplayAll()
-    commands.Build(buildroot=buildroot,
-                   emptytree=True,
-                   build_autotest=False,
-                   usepkg=False,
-                   extra_env=extra)
+    commands.Build(buildroot, True, extra_env=extra)
     self.mox.VerifyAll()
 
   def testLegacyArchiveBuildMinimal(self):

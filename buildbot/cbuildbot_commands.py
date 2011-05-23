@@ -147,38 +147,26 @@ def IncrementalCheckout(buildroot, retries=_DEFAULT_RETRIES):
   _RepoSync(buildroot, retries)
 
 
-def MakeChroot(buildroot, replace, fast, usepkg):
+def MakeChroot(buildroot, replace=False):
   """Wrapper around make_chroot."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./make_chroot']
-
-  if not usepkg:
-    cmd.append('--nousepkg')
-
-  if fast:
-    cmd.append('--fast')
-
+  cmd = ['./make_chroot', '--fast']
   if replace:
     cmd.append('--replace')
 
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
 
-def SetupBoard(buildroot, board, fast, usepkg):
+def SetupBoard(buildroot, board='x86-generic'):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./setup_board', '--default', '--board=%s' % board]
-
-  if not usepkg:
-    cmd.append('--nousepkg')
-
-  if fast:
-    cmd.append('--fast')
-
-  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_lib.OldRunCommand(
+      ['./setup_board', '--fast', '--default', '--board=%s' % board], cwd=cwd,
+      enter_chroot=True)
 
 
-def Build(buildroot, emptytree, build_autotest, usepkg, extra_env=None):
+def Build(buildroot, emptytree, build_autotest=True, usepkg=True,
+          extra_env=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages']

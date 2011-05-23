@@ -293,16 +293,10 @@ class BuildBoardTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
-    commands.MakeChroot(buildroot=self.build_root,
-                        fast=True,
-                        replace=True,
-                        usepkg=False)
+    commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
                                self.build_config['board'])).AndReturn(False)
-    commands.SetupBoard(self.build_root,
-                        board=self.build_config['board'],
-                        fast=True,
-                        usepkg=False)
+    commands.SetupBoard(self.build_root, board=self.build_config['board'])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -326,17 +320,10 @@ class BuildBoardTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(False)
-    commands.MakeChroot(buildroot=self.build_root,
-                        replace=self.build_config['chroot_replace'],
-                        fast=self.build_config['fast'],
-                        usepkg=self.build_config['usepkg'])
-
+    commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
                                self.build_config['board'])).AndReturn(False)
-    commands.SetupBoard(self.build_root,
-                        board=self.build_config['board'],
-                        fast=self.build_config['fast'],
-                        usepkg=self.build_config['usepkg'])
+    commands.SetupBoard(self.build_root, board=self.build_config['board'])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -510,7 +497,6 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['vm_tests'] = False
     self.build_config['build_type'] = 'binary'
     self.build_config['usepkg'] = False
-    self.build_config['fast'] = False
 
     self.options.prebuilts = True
     self.options.tests = False
@@ -532,19 +518,15 @@ class BuildTargetStageTest(AbstractStageTest):
     self.options.tests = True
     self.build_config['build_type'] = 'full'
     self.build_config['usepkg'] = True
-    self.build_config['fast'] = True
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
     stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
     stages.BuilderStage.old_binhost = 'old.com'
 
-    commands.Build(self.build_root,
-                   build_autotest=True,
-                   emptytree=True,
-                   usepkg=True,
-                   fast=True,
-                   extra_env=proper_env)
+    commands.Build(
+        self.build_root, True, build_autotest=True, usepkg=True,
+        extra_env=proper_env)
 
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
@@ -564,12 +546,8 @@ class BuildTargetStageTest(AbstractStageTest):
     stages.BuilderStage.old_binhost = 'new.com'
     self.build_config['useflags'] = None
 
-    commands.Build(self.build_root,
-                   build_autotest=mox.IgnoreArg(),
-                   emptytree=mox.IgnoreArg(),
-                   fast=mox.IgnoreArg(),
-                   usepkg=mox.IgnoreArg(),
-                   extra_env={})
+    commands.Build(self.build_root, False, build_autotest=False, usepkg=False,
+        extra_env={})
     commands.BuildImage(self.build_root, extra_env={})
 
     self.mox.ReplayAll()
@@ -583,12 +561,9 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['useflags'] = ['BAKER']
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
-    commands.Build(self.build_root,
-                   build_autotest=mox.IgnoreArg(),
-                   emptytree=False,
-                   fast=mox.IgnoreArg(),
-                   usepkg=mox.IgnoreArg(),
-                   extra_env=proper_env)
+    commands.Build(
+        self.build_root, False,
+        build_autotest=False, usepkg=False, extra_env=proper_env)
 
     commands.BuildImage(self.build_root, extra_env=proper_env)
 
