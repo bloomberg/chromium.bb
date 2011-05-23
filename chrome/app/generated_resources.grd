@@ -5571,8 +5571,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_FAILED" desc="Message to display when print preview fails.">
         Print preview failed.
       </message>
-      <message name="IDS_PRINT_PREVIEW_INITIATOR_TAB_CLOSED" desc="Message to display when print preview fails, because the user closed the tab that initiated the print preview before the preview was generated.">
-        Print preview failed because the page you are trying to print has been closed. Please click &lt;a href="<ph name="INITIATOR_TAB_URL">$1<ex>http://www.google.com</ex></ph>"&gt;here&lt;/a&gt; to reopen the page and try printing again.
+      <message name="IDS_PRINT_PREVIEW_INITIATOR_TAB_CLOSED" desc="Error message displayed when print preview fails because the user closed the tab that initiated the print preview.">
+        Print preview failed because the page you were trying to print has been closed.
+      </message>
+      <message name="IDS_PRINT_PREVIEW_REOPEN_PAGE" desc="Text for button displayed when print preview fails because the user closed the tab that initiated the print preview. Clicking the button reopens the page that was closed.">
+        Reopen the page
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_BUTTON" desc="Print button.">
         Print

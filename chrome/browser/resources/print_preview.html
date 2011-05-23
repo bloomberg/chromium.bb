@@ -115,11 +115,16 @@
   </div>
   <div id="mainview">
     <div id="dancing-dots" class="invisible">
-      <div id="dancing-dots-text" class="messages">
-        <span id="loading" i18n-content="loading"></span>
-        <span><span>.</span><span>.</span><span>.</span></span>
+      <div id="messages">
+        <div id="dancing-dots-text">
+          <span id="loading" i18n-content="loading"></span>
+          <span><span>.</span><span>.</span><span>.</span></span>
+        </div>
+        <div id="error-text" class="hidden"></div>
+        <br>
+        <button id="reopen-page" class="hidden"
+            i18n-content="reopenPage"></button>
       </div>
-      <div id="error-text" class="messages hidden"></div>
     </div>
   </div>
   <object id="dummy-viewer" type="application/pdf"

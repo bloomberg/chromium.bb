@@ -671,7 +671,7 @@ select {
   pointer-events: none;
 }
 
-.messages {
+#messages {
   color: #404040;
   font-size: 15px;
   left: 25%;

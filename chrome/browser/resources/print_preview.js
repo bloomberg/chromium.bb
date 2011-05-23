@@ -47,7 +47,7 @@ function onLoad() {
   $('cancel-button').addEventListener('click', handleCancelButtonClick);
 
   if (!checkCompatiblePluginExists()) {
-    displayErrorMessage(localStrings.getString('noPlugin'));
+    displayErrorMessage(localStrings.getString('noPlugin'), false);
     $('mainview').parentElement.removeChild($('dummy-viewer'));
     return;
   }
@@ -101,8 +101,10 @@ function showSystemDialog() {
  * @param {string} initiatorTabURL The URL of the initiator tab.
  */
 function onInitiatorTabClosed(initiatorTabURL) {
-  displayErrorMessage(localStrings.getStringF('initiatorTabClosed',
-                                              initiatorTabURL));
+  $('reopen-page').addEventListener('click', function() {
+      window.location = initiatorTabURL;
+  });
+  displayErrorMessage(localStrings.getString('initiatorTabClosed'), true);
 }
 
 /**
@@ -383,14 +385,21 @@ function setColor(color) {
 
 /**
  * Display an error message in the center of the preview area.
- * @param (string) errorMessage The error message to be displayed.
+ * @param {string} errorMessage The error message to be displayed.
+ * @param {boolean} showButton Indivates whether the "Reopen the page" button
+ * should be displayed.
  */
-function displayErrorMessage(errorMessage) {
+function displayErrorMessage(errorMessage, showButton) {
   isPreviewStillLoading = false;
   $('dancing-dots').classList.remove('invisible');
   $('dancing-dots-text').classList.add('hidden');
   $('error-text').innerHTML = errorMessage;
   $('error-text').classList.remove('hidden');
+  if (showButton)
+    $('reopen-page').classList.remove('hidden');
+  else
+    $('reopen-page').classList.add('hidden');
+
   setControlsDisabled(true);
 
   var pdfViewer = $('pdf-viewer');
@@ -403,7 +412,7 @@ function displayErrorMessage(errorMessage) {
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  displayErrorMessage(localStrings.getString('previewFailed'));
+  displayErrorMessage(localStrings.getString('previewFailed'), false);
 }
 
 /**
