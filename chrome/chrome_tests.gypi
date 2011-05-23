@@ -3049,7 +3049,7 @@
         'test/sync/engine/test_id_factory.h',
         'test/sync/engine/test_syncable_utils.cc',
         'test/sync/engine/test_syncable_utils.h',
-        'test/sync/sessions/test_scoped_session_change_listener.h',
+        'test/sync/sessions/test_scoped_session_event_listener.h',
       ],
       'include_dirs': [
         '..',
