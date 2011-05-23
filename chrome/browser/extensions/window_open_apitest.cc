@@ -100,6 +100,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenFocus) {
 }
 #endif
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
+  ASSERT_TRUE(RunExtensionTest("window_open/argument_overflow")) << message_;
+}
+
 class WindowOpenPanelTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);

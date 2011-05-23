@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,7 @@ chromeHidden.JSONSchemaValidator.messages = {
   numberFiniteNotNan: "Value must not be *.",
   numberMinValue: "Value must not be less than *.",
   numberMaxValue: "Value must not be greater than *.",
+  numberIntValue: "Value must fit in a 32-bit signed integer.",
   numberMaxDecimal: "Value must not have more than * decimal places.",
   invalidType: "Expected '*' but got '*'.",
   invalidChoice: "Value does not match any valid type choices.",
@@ -409,6 +410,10 @@ chromeHidden.JSONSchemaValidator.prototype.validateNumber = function(
 
   if (schema.maximum && instance > schema.maximum)
     this.addError(path, "numberMaxValue", [schema.maximum]);
+
+  // Check for integer values outside of -2^31..2^31-1.
+  if (schema.type === "integer" && (instance | 0) !== instance)
+    this.addError(path, "numberIntValue", []);
 
   if (schema.maxDecimal && instance * Math.pow(10, schema.maxDecimal) % 1)
     this.addError(path, "numberMaxDecimal", [schema.maxDecimal]);

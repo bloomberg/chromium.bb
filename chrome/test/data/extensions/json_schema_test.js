@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -419,6 +419,25 @@ function testNumber() {
                  [formatError("numberFiniteNotNan", ["-Infinity"]),
                   formatError("numberMinValue", [schema.minimum])
                  ]);
+}
+
+function testIntegerBounds() {
+  assertValid("Number",           0, {type:"integer"});
+  assertValid("Number",          -1, {type:"integer"});
+  assertValid("Number",  2147483647, {type:"integer"});
+  assertValid("Number", -2147483648, {type:"integer"});
+  assertNotValid("Number",           0.5, {type:"integer"},
+                 [formatError("numberIntValue", [])]);
+  assertNotValid("Number", 10000000000,   {type:"integer"},
+                 [formatError("numberIntValue", [])]);
+  assertNotValid("Number",  2147483647.5, {type:"integer"},
+                 [formatError("numberIntValue", [])]);
+  assertNotValid("Number",  2147483648,   {type:"integer"},
+                 [formatError("numberIntValue", [])]);
+  assertNotValid("Number",  2147483649,   {type:"integer"},
+                 [formatError("numberIntValue", [])]);
+  assertNotValid("Number", -2147483649,   {type:"integer"},
+                 [formatError("numberIntValue", [])]);
 }
 
 function testType() {
