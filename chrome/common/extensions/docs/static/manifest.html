@@ -298,8 +298,9 @@ or packaged app can use.
 <p class="note">
 <strong>Note:</strong>
 Hosted apps can use the
-"background", "geolocation", "notifications", and "unlimitedStorage" permissions,
-but not any other permissions listed in this table.
+"background", "clipboardRead", "clipboardWrite", "geolocation", "notifications",
+and "unlimitedStorage" permissions, but not any other permissions listed in this
+table.
 </p>
 
 <table>
@@ -364,6 +365,19 @@ but not any other permissions listed in this table.
        you declare the "chrome://favicon/" permission
        and use HTML code like this:
        <pre>&lt;img src="chrome://favicon/http://www.google.com/"></pre>
+       </td>
+</tr>
+<tr>
+  <td> "clipboardRead" </td>
+  <td> Required if the extension uses
+       <code>document.execCommand('paste')</code>. </td>
+</tr>
+<tr>
+  <td> "clipboardWrite" </td>
+  <td> Indicates the app or extension uses
+       <code>document.execCommand('copy')</code> or
+       <code>document.execCommand('cut')</code>. This permission is <b>required
+       for hosted apps</b>; it's recommended for extensions and packaged apps.
        </td>
 </tr>
 <tr>
