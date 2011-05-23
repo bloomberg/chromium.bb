@@ -4585,6 +4585,7 @@
    bug_83343
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN13ThreadWatcher13StartWatchingERKN13BrowserThread2IDERKSsRKN4base9TimeDeltaES9_
    fun:_ZN17ThreadWatcherList16StartWatchingAllEv
    fun:_Z18DispatchToFunctionIPFvvEEvT_RK6Tuple0
