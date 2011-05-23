@@ -19,7 +19,7 @@
           'HAVE_STRNLEN',
         ],
       }],
-      ['OS=="linux"', {
+      ['os_posix == 1 and OS != "mac"', {
         'cflags': [
           '-fPIC',
         ],

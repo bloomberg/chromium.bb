@@ -15,7 +15,7 @@
     ]
   },
   'conditions': [
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+    ['os_posix == 1 and OS != "mac"', {
       # On Linux, we implicitly already depend on expat via fontconfig;
       # let's not pull it in twice.
       'targets': [

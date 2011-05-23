@@ -5,7 +5,7 @@
 {
   'variables': {
     'conditions': [
-      ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+      ['os_posix == 1 and OS != "mac"', {
         'os_include': 'linux'
       }],
       ['OS=="mac"', {'os_include': 'mac'}],
@@ -21,8 +21,7 @@
     {
       'target_name': 'libxslt',
       'conditions': [
-        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") '
-         'and use_system_libxml', {
+        ['os_posix == 1 and OS != "mac" and use_system_libxml', {
           'type': 'settings',
           'direct_dependent_settings': {
             'cflags': [
@@ -37,7 +36,7 @@
               '<!@(pkg-config --libs-only-l libxslt)',
             ],
           },
-        }, { # else: OS != "linux" or ! use_system_libxml
+        }, { # else: os_posix != 1 or OS == "mac" or ! use_system_libxml
           'type': 'static_library',
           'msvs_guid': 'FC0E1FD0-5DD7-4041-A1C9-CD3C376E4EED',
           'sources': [

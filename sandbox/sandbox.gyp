@@ -126,7 +126,7 @@
     ],
   },
   'conditions': [
-    [ 'OS=="freebsd" or OS=="openbsd"', {
+    [ 'os_posix == 1 and OS != "mac" and OS != "linux"', {
       # GYP requires that each file have at least one target defined.
       'targets': [
         {

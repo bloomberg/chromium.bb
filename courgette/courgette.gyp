@@ -106,7 +106,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
+        [ 'toolkit_uses_gtk == 1', {
           'dependencies': [
             # Workaround for gyp bug 69.
             # Needed to handle the #include chain:
@@ -132,7 +132,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
+        [ 'toolkit_uses_gtk == 1', {
           'dependencies': [
             # Workaround for gyp bug 69.
             # Needed to handle the #include chain:

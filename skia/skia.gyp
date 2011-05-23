@@ -724,7 +724,7 @@
             ['exclude', '_mac\\.(cc|cpp|mm?)$'],
             ['exclude', '/mac/'] ],
         }],
-        [ 'OS != "linux" and OS != "freebsd" and OS != "openbsd" and OS != "solaris"', {
+        [ 'toolkit_uses_gtk == 0', {
           'sources/': [ ['exclude', '_(linux|gtk)\\.(cc|cpp)$'] ],
           'sources!': [
             '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
@@ -760,7 +760,7 @@
             'SK_RESTRICT=',
           ],
         }],
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
+        [ 'toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gdk',
             '../build/linux/system.gyp:fontconfig',
@@ -891,7 +891,7 @@
         '../third_party/skia/src/core',
       ],
       'conditions': [
-        [ '(OS == "linux" or OS == "freebsd" or OS == "openbsd") and target_arch != "arm"', {
+        [ 'os_posix == 1 and OS != "mac" and target_arch != "arm"', {
           'cflags': [
             '-msse2',
           ],

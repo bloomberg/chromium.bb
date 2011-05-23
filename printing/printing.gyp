@@ -89,7 +89,7 @@
         ],
       },
       'conditions': [
-        ['OS!="linux" and OS!="freebsd" and OS!="openbsd"',{
+        ['toolkit_uses_gtk == 0',{
             'sources/': [['exclude', '_cairo\\.cc$']]
         }],
         ['OS!="mac"', {'sources/': [['exclude', '_mac\\.(cc|mm?)$']]}],
@@ -97,7 +97,7 @@
           }, {  # else: OS=="win"
             'sources/': [['exclude', '_posix\\.cc$']]
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk == 1', {
           'sources': [
             'metafile_skia_wrapper.cc',
             'metafile_skia_wrapper.h',
@@ -172,21 +172,19 @@
         'units_unittest.cc',
       ],
       'conditions': [
-        ['OS!="linux"', {'sources/': [['exclude', '_cairo_unittest\\.cc$']]}],
+        ['toolkit_uses_gtk == 0', {'sources/': [['exclude', '_cairo_unittest\\.cc$']]}],
         ['OS!="mac"', {'sources/': [['exclude', '_mac_unittest\\.(cc|mm?)$']]}],
         ['OS!="win"', {'sources/': [['exclude', '_win_unittest\\.cc$']]
           }, {  # else: OS=="win"
             'sources/': [['exclude', '_cairo_unittest\\.cc$']]
           }
         ],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
-            'dependencies': [
-              '../build/linux/system.gyp:gtk',
-           ],
-        }],
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
           'conditions': [
-            ['linux_use_tcmalloc==1', {
+            ['linux_use_tcmalloc == 1', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
               ],

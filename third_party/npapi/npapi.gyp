@@ -26,7 +26,7 @@
         'bindings/npruntime.h',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['use_x11 == 1', {
           'sources': [
             'bindings/npapi_x11.h',
           ],

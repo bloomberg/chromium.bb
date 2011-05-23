@@ -21,7 +21,7 @@
         'plugin_extension': 'plugin',
         'plugin_prefix': '',
       }],
-      ['OS=="linux"', {
+      ['os_posix == 1 and OS != "mac"', {
         'plugin_extension': 'so',
         'plugin_prefix': 'lib',
       }],
@@ -46,7 +46,7 @@
   },
 
   'conditions': [
-    ['OS=="linux" or OS=="mac"', {
+    ['os_posix == 1', {
       'targets': [
         # Simple webserver for testing remoting client plugin.
         {
@@ -60,7 +60,7 @@
     }],
 
     # TODO(hclam): Enable this target for mac.
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+    ['use_x11 == 1', {
 
       'targets': [
         {
@@ -345,7 +345,7 @@
         'host/user_authenticator_win.cc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -575,7 +575,7 @@
         '..',
       ],
       'conditions': [
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
+        [ 'os_posix == 1 and OS != "mac"', {
           'cflags': [
             '-msse2',
           ],
@@ -670,7 +670,7 @@
         'run_all_unittests.cc',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../app/app.gyp:app_base',
             # Needed for the following #include chain:

@@ -72,7 +72,7 @@
             'OSX',
           ],
         }],
-        ['OS=="linux" or OS=="mac" or OS=="freebsd" or OS=="openbsd"', {
+        ['os_posix == 1', {
           'defines': [
             'POSIX',
           ],
@@ -116,7 +116,7 @@
           'OSX',
         ],
       }],
-      ['OS=="linux" or OS=="mac" or OS=="freebsd" or OS=="openbsd"', {
+      ['os_posix == 1', {
         'defines': [
           'POSIX',
         ],
@@ -324,7 +324,7 @@
             'source/talk/base/winping.h',
           ],
         }],
-        ['OS=="linux" or OS=="mac" or OS=="freebsd" or OS=="openbsd"', {
+        ['os_posix == 1', {
           'sources': [
             'source/talk/base/sslstreamadapter.cc',
             'source/talk/base/sslstreamadapter.h',

@@ -31,7 +31,7 @@
             ],
           },
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+        ['os_posix == 1 and OS != "mac"', {
           'product_name': 'ppapi_example',
           'type': 'shared_library',
           'cflags': ['-fvisibility=hidden'],
