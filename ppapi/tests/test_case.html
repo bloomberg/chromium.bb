@@ -72,14 +72,15 @@ onload = function() {
   document.title = 'Test ' + testcase;
   var obj;
   if (mode == "nacl") {
-    obj = document.createElement("OBJECT");
+    obj = document.createElement("EMBED");
+    obj.setAttribute("src", "test_case.nmf");
     obj.setAttribute("type", "application/x-nacl");
-    obj.setAttribute("nacl", "test_case.nmf");
     obj.setAttribute("mode", mode);
   } else {
     var mimeType = "application/x-ppapi-tests";
     if (mimeType in navigator.mimeTypes) {
       obj = document.createElement("EMBED");
+      obj.setAttribute("src", "http://a.b.c/test");
       obj.setAttribute("type", mimeType);
     } else {
       document.getElementById("console").innerHTML =
@@ -90,7 +91,6 @@ onload = function() {
   if (obj) {
     obj.setAttribute("id", "plugin");
     obj.setAttribute("testcase", testcase);
-    obj.setAttribute("src", "http://a.b.c/test");
     document.getElementById("container").appendChild(obj);
   }
 }

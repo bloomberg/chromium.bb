@@ -18,7 +18,7 @@ const PPB_Testing_Dev* GetTestingInterface() {
 
 std::string ReportError(const char* method, int32_t error) {
   char error_as_string[12];
-  sprintf(error_as_string, "%d", error);
+  sprintf(error_as_string, "%d", static_cast<int>(error));
   std::string result = method + std::string(" failed with error: ") +
       error_as_string;
   if (error == PP_ERROR_NOSPACE)

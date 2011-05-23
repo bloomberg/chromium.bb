@@ -2,6 +2,6 @@
   "nexes": {
     "x86-64": "ppapi_tests_x86-64.nexe",
     "x86-32": "ppapi_tests_x86-32.nexe",
-    "arm"   : "ppapi_tests_arm.nexe",
+    "arm"   : "ppapi_tests_arm.nexe"
   }
 }
