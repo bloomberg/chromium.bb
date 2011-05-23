@@ -20,9 +20,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/platform_file.h"
 #include "base/time.h"
 
+class FilePath;
 class GURL;
+
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
 
 namespace net {
 class HostPortPair;
@@ -44,14 +50,15 @@ typedef std::vector<std::string> ResponseCookies;
 // Finally, start the request:
 //   fetcher->Start();
 //
+//
 // The object you supply as a delegate must inherit from URLFetcher::Delegate;
-// when the fetch is completed, OnURLFetchComplete() will be called with the
-// resulting status and (if applicable) HTTP response code.  From that point
-// until the original URLFetcher instance is destroyed, you may examine the
-// provided status and data for the URL.  (You should copy these objects if you
-// need them to live longer than the URLFetcher instance.)  If the URLFetcher
-// instance is destroyed before the callback happens, the fetch will be
-// canceled and no callback will occur.
+// when the fetch is completed, OnURLFetchComplete() will be called with a
+// pointer to the URLFetcher.  From that point until the original URLFetcher
+// instance is destroyed, you may use accessor methods to see the result of
+// the fetch. You should copy these objects if you need them to live longer
+// than the URLFetcher instance. If the URLFetcher instance is destroyed
+// before the callback happens, the fetch will be canceled and no callback
+// will occur.
 //
 // You may create the URLFetcher instance on any thread; OnURLFetchComplete()
 // will be called back on the same thread you use to create the instance.
@@ -68,18 +75,25 @@ class URLFetcher {
     HEAD,
   };
 
+  // Imposible http response code. Used to signal that no http response code
+  // was received.
+  static const int kInvalidHttpResponseCode;
+
   class Delegate {
    public:
-    // This will be called when the URL has been fetched, successfully or not.
-    // |response_code| is the HTTP response code (200, 404, etc.) if
-    // applicable.  |url|, |status| and |data| are all valid until the
-    // URLFetcher instance is destroyed.
+    // TODO(skerner): This will be removed in favor of the |source|-only
+    // version below. Leaving this for now to make the initial code review
+    // easy to read.
     virtual void OnURLFetchComplete(const URLFetcher* source,
                                     const GURL& url,
                                     const net::URLRequestStatus& status,
                                     int response_code,
                                     const net::ResponseCookies& cookies,
-                                    const std::string& data) = 0;
+                                    const std::string& data);
+
+    // This will be called when the URL has been fetched, successfully or not.
+    // Use accessor methods on |source| to get the results.
+    virtual void OnURLFetchComplete(const URLFetcher* source);
 
    protected:
     virtual ~Delegate() {}
@@ -183,6 +197,12 @@ class URLFetcher {
   }
 #endif  // defined(UNIT_TEST)
 
+  // By default, the response is saved in a string. Call this method to save the
+  // response to a temporary file instead. Must be called before Start().
+  // |file_message_loop_proxy| will be used for all file operations.
+  void SaveResponseToTemporaryFile(
+      scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
+
   // Retrieve the response headers from the request.  Must only be called after
   // the OnURLFetchComplete callback has run.
   virtual net::HttpResponseHeaders* response_headers() const;
@@ -202,10 +222,37 @@ class URLFetcher {
   virtual void Start();
 
   // Return the URL that this fetcher is processing.
-  const GURL& url() const;
+  virtual const GURL& url() const;
+
+  // The status of the URL fetch.
+  virtual const net::URLRequestStatus& status() const;
+
+  // The http response code received. Will return
+  // URLFetcher::kInvalidHttpResponseCode if an error prevented any response
+  // from being received.
+  virtual int response_code() const;
+
+  // Cookies recieved.
+  virtual const net::ResponseCookies& cookies() const;
+
+  // Return true if any file system operation failed.  If so, set |error_code|
+  // to the error code. File system errors are only possible if user called
+  // SaveResponseToTemporaryFile().
+  virtual bool FileErrorOccurred(base::PlatformFileError* out_error_code) const;
 
   // Reports that the received content was malformed.
   void ReceivedContentWasMalformed();
+
+  // Get the response as a string. Return false if the fetcher was not
+  // set to store the response as a string.
+  virtual bool GetResponseAsString(std::string* out_response_string) const;
+
+  // Get the path to the file containing the response body. Returns false
+  // if the response body was not saved to a file. If take_ownership is
+  // true, caller takes responsibility for the temp file, and it will not
+  // be removed once the URLFetcher is destroyed.
+  virtual bool GetResponseAsFilePath(bool take_ownership,
+                                     FilePath* out_response_path) const;
 
   // Cancels all existing URLFetchers.  Will notify the URLFetcher::Delegates.
   // Note that any new URLFetchers created while this is running will not be
@@ -224,13 +271,19 @@ class URLFetcher {
 
  private:
   friend class URLFetcherTest;
+  friend class TestURLFetcher;
+
+  // How should the response be stored?
+  enum ResponseDestinationType {
+    STRING,  // Default: In a std::string
+    TEMP_FILE  // Write to a temp file
+  };
 
   // Only used by URLFetcherTest, returns the number of URLFetcher::Core objects
   // actively running.
   static int GetNumFetcherCores();
 
   class Core;
-
   scoped_refptr<Core> core_;
 
   static Factory* factory_;
@@ -244,6 +297,9 @@ class URLFetcher {
   base::TimeDelta backoff_delay_;
   // Maximum retries allowed.
   int max_retries_;
+
+  // Where should responses be saved?
+  ResponseDestinationType response_destination_;
 
   static bool g_interception_enabled;
 

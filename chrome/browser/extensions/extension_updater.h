@@ -28,7 +28,6 @@
 class Extension;
 class ExtensionPrefs;
 class ExtensionUpdaterTest;
-class ExtensionUpdaterFileHandler;
 class PrefService;
 class Profile;
 class SafeManifestParser;
@@ -236,22 +235,18 @@ class ExtensionUpdater : public URLFetcher::Delegate {
   base::TimeDelta DetermineFirstCheckDelay();
 
   // URLFetcher::Delegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // These do the actual work when a URL fetch completes.
   virtual void OnManifestFetchComplete(const GURL& url,
                                        const net::URLRequestStatus& status,
                                        int response_code,
                                        const std::string& data);
-  virtual void OnCRXFetchComplete(const GURL& url,
+
+  virtual void OnCRXFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
                                   const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const std::string& data);
+                                  int response_code);
 
   // Called when a crx file has been written into a temp file, and is ready
   // to be installed.
@@ -348,8 +343,6 @@ class ExtensionUpdater : public URLFetcher::Delegate {
   ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
   Profile* profile_;
-
-  scoped_refptr<ExtensionUpdaterFileHandler> file_handler_;
   bool blacklist_checks_enabled_;
 
   // The ids of extensions that have in-progress update checks.

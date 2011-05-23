@@ -26,6 +26,7 @@ using base::TimeDelta;
 namespace {
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
+const std::string kTestServerFilePrefix = "files/";
 
 class CurriedTask : public Task {
  public:
@@ -305,6 +306,94 @@ class URLFetcherMultipleAttemptTest : public URLFetcherTest {
   std::string data_;
 };
 
+class URLFetcherTempFileTest : public URLFetcherTest {
+ public:
+  URLFetcherTempFileTest()
+      : take_ownership_of_temp_file_(false) {
+  }
+
+  // URLFetcher::Delegate
+  virtual void OnURLFetchComplete(const URLFetcher* source);
+
+  virtual void CreateFetcher(const GURL& url);
+
+ protected:
+  FilePath expected_file_;
+  FilePath temp_file_;
+
+  // Set by the test. Used in OnURLFetchComplete() to decide if
+  // the URLFetcher should own the temp file, so that we can test
+  // disowning prevents the file from being deleted.
+  bool take_ownership_of_temp_file_;
+};
+
+void URLFetcherTempFileTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_->set_request_context(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
+
+  // Use the IO message loop to do the file operations in this test.
+  fetcher_->SaveResponseToTemporaryFile(io_message_loop_proxy());
+  fetcher_->Start();
+}
+
+TEST_F(URLFetcherTempFileTest, SmallGet) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  // Get a small file.
+  const char* kFileToFetch = "simple.html";
+  expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
+  CreateFetcher(test_server.GetURL(kTestServerFilePrefix + kFileToFetch));
+
+  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+  ASSERT_TRUE(file_util::PathExists(temp_file_))
+      << temp_file_.value() << " not found.";
+
+  // Deleting the fetcher should remove the file.
+  delete fetcher_;
+
+  MessageLoop::current()->RunAllPending();
+  ASSERT_FALSE(file_util::PathExists(temp_file_))
+      << temp_file_.value() << " not removed.";
+}
+
+TEST_F(URLFetcherTempFileTest, LargeGet) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  // Get a file large enough to require more than one read into
+  // URLFetcher::Core's IOBuffer.
+  const char* kFileToFetch = "animate1.gif";
+  expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
+  CreateFetcher(test_server.GetURL(kTestServerFilePrefix + kFileToFetch));
+
+  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+}
+
+TEST_F(URLFetcherTempFileTest, CanTakeOwnershipOfFile) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  // Get a small file.
+  const char* kFileToFetch = "simple.html";
+  expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
+  CreateFetcher(test_server.GetURL(kTestServerFilePrefix + kFileToFetch));
+
+  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+  ASSERT_TRUE(file_util::PathExists(temp_file_))
+      << temp_file_.value() << " not found.";
+
+  // Deleting the fetcher should remove the file.
+  delete fetcher_;
+
+  MessageLoop::current()->RunAllPending();
+  ASSERT_FALSE(file_util::PathExists(temp_file_))
+      << temp_file_.value() << " not removed.";
+}
+
 // Wrapper that lets us call CreateFetcher() on a thread of our choice.  We
 // could make URLFetcherTest refcounted and use PostTask(FROM_HERE.. ) to call
 // CreateFetcher() directly, but the ownership of the URLFetcherTest is a bit
@@ -539,6 +628,18 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
   }
 }
 
+void URLFetcherTempFileTest::OnURLFetchComplete(const URLFetcher* source) {
+  EXPECT_TRUE(source->status().is_success());
+  EXPECT_EQ(source->response_code(), 200);
+
+  EXPECT_TRUE(source->GetResponseAsFilePath(
+      take_ownership_of_temp_file_, &temp_file_));
+
+  EXPECT_TRUE(file_util::ContentsEqual(expected_file_, temp_file_));
+
+  io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
+
 TEST_F(URLFetcherTest, SameThreadsTest) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
@@ -705,7 +806,7 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
   GURL url(test_server.GetURL("files/server-unavailable.html"));
 
   // Registers an entry for test url. The backoff time is calculated by:
-  //     new_backoff = 2.0 * old_backoff + 0
+  //     new_backoff = 2.0 * old_backoff +0
   // The initial backoff is 2 seconds and maximum backoff is 4 seconds.
   // Maximum retries allowed is set to 2.
   net::URLRequestThrottlerManager* manager =

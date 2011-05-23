@@ -30,6 +30,38 @@ void TestURLFetcher::AppendChunkToUpload(const std::string& data,
   chunks_.push_back(data);
 }
 
+void TestURLFetcher::set_status(const net::URLRequestStatus& status) {
+  fake_status_ = status;
+}
+
+void TestURLFetcher::SetResponseString(const std::string& response) {
+  response_destination_ = STRING;
+  fake_response_string_ = response;
+}
+
+void TestURLFetcher::SetResponseFilePath(const FilePath& path) {
+  response_destination_ = TEMP_FILE;
+  fake_response_file_path_ = path;
+}
+
+bool TestURLFetcher::GetResponseAsString(
+    std::string* out_response_string) const {
+  if (response_destination_ != STRING)
+    return false;
+
+  *out_response_string = fake_response_string_;
+  return true;
+}
+
+bool TestURLFetcher::GetResponseAsFilePath(
+    bool take_ownership, FilePath* out_response_path) const {
+  if (response_destination_ != TEMP_FILE)
+    return false;
+
+  *out_response_path = fake_response_file_path_;
+  return true;
+}
+
 TestURLFetcherFactory::TestURLFetcherFactory() {}
 
 TestURLFetcherFactory::~TestURLFetcherFactory() {}

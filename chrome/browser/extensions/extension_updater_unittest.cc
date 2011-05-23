@@ -577,9 +577,12 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url1, net::URLRequestStatus(), 200, net::ResponseCookies(),
-        invalid_xml);
+
+    fetcher->set_url(url1);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(invalid_xml);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     // Now that the first request is complete, make sure the second one has
     // been started.
@@ -595,9 +598,12 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url2, net::URLRequestStatus(), 200, net::ResponseCookies(),
-        kValidXml);
+
+    fetcher->set_url(url2);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(kValidXml);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     // This should run the manifest parsing, then we want to make sure that our
     // service was called with GetExtensionById with the matching id from
@@ -653,13 +659,16 @@ class ExtensionUpdaterTest : public testing::Test {
     }
 
     // Call back the ExtensionUpdater with a 200 response and some test data
-    std::string extension_data("whatever");
+    FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, test_url, net::URLRequestStatus(), 200, net::ResponseCookies(),
-        extension_data);
+
+    fetcher->set_url(test_url);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseFilePath(extension_file_path);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     file_thread.Stop();
     ui_loop.RunAllPending();
@@ -670,16 +679,13 @@ class ExtensionUpdaterTest : public testing::Test {
     FilePath tmpfile_path = service->install_path();
     EXPECT_FALSE(tmpfile_path.empty());
     EXPECT_EQ(test_url, service->download_url());
-    std::string file_contents;
-    EXPECT_TRUE(file_util::ReadFileToString(tmpfile_path, &file_contents));
-    EXPECT_TRUE(extension_data == file_contents);
+    EXPECT_EQ(extension_file_path, tmpfile_path);
 
     // The FILE thread is needed for |service|'s cleanup,
     // because of ImportantFileWriter.
     file_thread.Start();
     service.reset();
 
-    file_util::Delete(tmpfile_path, false);
     URLFetcher::set_factory(NULL);
   }
 
@@ -703,19 +709,23 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string id = "com.google.crx.blacklist";
 
     std::string hash =
-      "2CE109E9D0FAF820B2434E166297934E6177B65AB9951DBC3E204CAD4689B39C";
+        "2CE109E9D0FAF820B2434E166297934E6177B65AB9951DBC3E204CAD4689B39C";
 
     std::string version = "0.0.1";
     updater.FetchUpdatedExtension(id, test_url, hash, version);
 
-    // Call back the ExtensionUpdater with a 200 response and some test data
+    // Call back the ExtensionUpdater with a 200 response and some test data.
     std::string extension_data("aaabbb");
+
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, test_url, net::URLRequestStatus(), 200, net::ResponseCookies(),
-        extension_data);
+
+    fetcher->set_url(test_url);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(extension_data);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     message_loop.RunAllPending();
 
@@ -761,13 +771,18 @@ class ExtensionUpdaterTest : public testing::Test {
     updater.FetchUpdatedExtension(id2, url2, hash2, version2);
 
     // Make the first fetch complete.
-    std::string extension_data1("whatever");
+    FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
+
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url1, net::URLRequestStatus(), 200, net::ResponseCookies(),
-        extension_data1);
+
+    fetcher->set_url(url1);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseFilePath(extension_file_path);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+
     message_loop.RunAllPending();
 
     // Expect that the service was asked to do an install with the right data.
@@ -776,28 +791,26 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ(id1, service.extension_id());
     EXPECT_EQ(url1, service.download_url());
     message_loop.RunAllPending();
-    file_util::Delete(tmpfile_path, false);
 
     // Make sure the second fetch finished and asked the service to do an
     // update.
-    std::string extension_data2("whatever2");
+    FilePath extension_file_path2(FILE_PATH_LITERAL("/whatever2"));
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url2, net::URLRequestStatus(), 200, net::ResponseCookies(),
-        extension_data2);
+
+    fetcher->set_url(url2);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseFilePath(extension_file_path2);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
     message_loop.RunAllPending();
     EXPECT_EQ(id2, service.extension_id());
     EXPECT_EQ(url2, service.download_url());
     EXPECT_FALSE(service.install_path().empty());
 
     // Make sure the correct crx contents were passed for the update call.
-    std::string file_contents;
-    EXPECT_TRUE(file_util::ReadFileToString(service.install_path(),
-                                            &file_contents));
-    EXPECT_TRUE(extension_data2 == file_contents);
-    file_util::Delete(service.install_path(), false);
+    EXPECT_EQ(extension_file_path2, service.install_path());
   }
 
   // Test requests to both a Google server and a non-google server. This allows
@@ -867,11 +880,14 @@ class ExtensionUpdaterTest : public testing::Test {
       factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     fetched_urls.push_back(fetcher->original_url());
-    fetcher->delegate()->OnURLFetchComplete(
-      fetcher, fetched_urls[0], net::URLRequestStatus(), 500,
-      net::ResponseCookies(), "");
-    fetcher =
-      factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
+
+    fetcher->set_url(fetched_urls[0]);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(500);
+    fetcher->SetResponseString("");
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+    fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     fetched_urls.push_back(fetcher->original_url());
 
     // The urls could have been fetched in either order, so use the host to

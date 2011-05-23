@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "chrome/common/net/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 #include "googleurl/src/gurl.h"
 
 // TestURLFetcher and TestURLFetcherFactory are used for testing consumers of
@@ -74,11 +75,43 @@ class TestURLFetcher : public URLFetcher {
   // Returns the delegate installed on the URLFetcher.
   Delegate* delegate() const { return URLFetcher::delegate(); }
 
+  void set_url(const GURL& url) { fake_url_ = url; }
+  const GURL& url() const { return fake_url_; }
+
+  void set_status(const net::URLRequestStatus& status);
+  const net::URLRequestStatus& status() const { return fake_status_; }
+
+  void set_response_code(int response_code) {
+    fake_response_code_ = response_code;
+  }
+  virtual int response_code() const { return fake_response_code_; }
+
+  // Set string data.
+  void SetResponseString(const std::string& response);
+
+  // Set File data.
+  void SetResponseFilePath(const FilePath& path);
+
+  // Override response access functions to return fake data.
+  virtual bool GetResponseAsString(std::string* out_response_string) const;
+  virtual bool GetResponseAsFilePath(bool take_ownership,
+                                     FilePath* out_response_path) const;
+
  private:
   const int id_;
   const GURL original_url_;
   std::list<std::string> chunks_;
   bool did_receive_last_chunk_;
+
+  // User can use set_* methods to provide values returned by getters.
+  // Setting the real values is not possible, because the real class
+  // has no setters. The data is a private member of a class defined
+  // in a .cc file, so we can't get at it with friendship.
+  GURL fake_url_;
+  net::URLRequestStatus fake_status_;
+  int fake_response_code_;
+  std::string fake_response_string_;
+  FilePath fake_response_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcher);
 };
