@@ -78,11 +78,13 @@ cr.define('options', function() {
           OptionsPage.navigateToPage('changePicture');
         };
         chrome.send('loadAccountPicture');
-      }
 
-      if (cr.commandLine.options['--bwsi']) {
-        // Disable the screen lock checkbox for the guest mode.
-        $('enable-screen-lock').disabled = true;
+        if (cr.commandLine.options['--bwsi']) {
+          // Disable the screen lock checkbox and change-picture-button in
+          // guest mode.
+          $('enable-screen-lock').disabled = true;
+          $('change-picture-button').disabled = true;
+        }
       }
 
       if (PersonalOptions.disablePasswordManagement()) {
@@ -91,6 +93,16 @@ cr.define('options', function() {
         $('passwords-offersave').value = false;
         $('passwords-neversave').value = true;
         $('manage-passwords').disabled = true;
+      }
+
+      if (PersonalOptions.disableAutofillManagement()) {
+        $('autofill-settings').disabled = true;
+
+        // Disable and turn off autofill.
+        var autofillEnabled = $('autofill-enabled');
+        autofillEnabled.disabled = true;
+        autofillEnabled.checked = false;
+        cr.dispatchSimpleEvent(autofillEnabled, 'change');
       }
     },
 
@@ -211,6 +223,14 @@ cr.define('options', function() {
    * @return {boolean} True if password management should be disabled.
    */
   PersonalOptions.disablePasswordManagement = function() {
+    return cr.commandLine.options['--bwsi'];
+  };
+
+  /**
+   * Returns whether the user should be able to manage autofill settings.
+   * @return {boolean} True if password management should be disabled.
+   */
+  PersonalOptions.disableAutofillManagement = function() {
     return cr.commandLine.options['--bwsi'];
   };
 
