@@ -20,6 +20,7 @@
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gl/gl_context_stub.h"
+#include "ui/gfx/gl/gl_surface_stub.h"
 
 namespace gpu {
 namespace gles2 {
@@ -255,6 +256,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
+  gfx::GLSurfaceStub* surface_;
   gfx::GLContextStub* context_;
   scoped_ptr<GLES2Decoder> decoder_;
 

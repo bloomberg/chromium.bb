@@ -27,6 +27,7 @@
 
 namespace gfx {
 class GLContext;
+class GLSurface;
 }
 
 namespace gpu {
@@ -136,8 +137,9 @@ class GpuScheduler : public CommandBufferEngine {
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 
  protected:
-  // Perform common initialization. Takes ownership of GLContext.
+  // Perform common initialization. Takes ownership of GLSurface and GLContext.
   bool InitializeCommon(
+      gfx::GLSurface* surface,
       gfx::GLContext* context,
       const gfx::Size& size,
       const gles2::DisallowedExtensions& disallowed_extensions,

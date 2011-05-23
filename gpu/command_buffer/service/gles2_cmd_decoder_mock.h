@@ -14,8 +14,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/size.h"
 
-namespace gpu {
+namespace gfx {
 class GLContext;
+class GLSurface;
+}
+
+namespace gpu {
 
 namespace gles2 {
 
@@ -25,8 +29,9 @@ class MockGLES2Decoder : public GLES2Decoder {
   MockGLES2Decoder();
   virtual ~MockGLES2Decoder();
 
-  MOCK_METHOD7(Initialize,
-               bool(gfx::GLContext* context,
+  MOCK_METHOD8(Initialize,
+               bool(gfx::GLSurface* surface,
+                    gfx::GLContext* context,
                     const gfx::Size& size,
                     const DisallowedExtensions& disallowed_extensions,
                     const char* allowed_extensions,
@@ -39,6 +44,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());
+  MOCK_METHOD0(GetGLSurface, gfx::GLSurface*());
   MOCK_METHOD0(GetGLContext, gfx::GLContext*());
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
   MOCK_METHOD1(SetResizeCallback, void(Callback1<gfx::Size>::Type*));

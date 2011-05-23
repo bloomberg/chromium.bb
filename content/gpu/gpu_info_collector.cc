@@ -18,13 +18,7 @@
 
 namespace {
 
-// This creates an offscreen GL context for gl queries.  Returned GLContext
-// should be deleted in FinalizeGLContext.
-gfx::GLContext* InitializeGLContext() {
-  if (!gfx::GLSurface::InitializeOneOff()) {
-    LOG(ERROR) << "gfx::GLContext::InitializeOneOff() failed";
-    return NULL;
-  }
+gfx::GLSurface* InitializeGLSurface() {
   scoped_ptr<gfx::GLSurface> surface(gfx::GLSurface::CreateOffscreenGLSurface(
       gfx::Size(1, 1)));
   if (!surface.get()) {
@@ -32,15 +26,19 @@ gfx::GLContext* InitializeGLContext() {
     return NULL;
   }
 
-  scoped_ptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(
-      surface.release(),
-      NULL));
+  return surface.release();
+}
+
+gfx::GLContext* InitializeGLContext(gfx::GLSurface* surface) {
+
+  scoped_ptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(NULL,
+                                                                     surface));
   if (!context.get()) {
     LOG(ERROR) << "gfx::GLContext::CreateGLContext failed";
     return NULL;
   }
 
-  if (!context->MakeCurrent()) {
+  if (!context->MakeCurrent(surface)) {
     LOG(ERROR) << "gfx::GLContext::MakeCurrent() failed";
     return NULL;
   }
@@ -81,7 +79,16 @@ namespace gpu_info_collector {
 bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  scoped_ptr<gfx::GLContext> context(InitializeGLContext());
+  if (!gfx::GLSurface::InitializeOneOff()) {
+    LOG(ERROR) << "gfx::GLContext::InitializeOneOff() failed";
+    return false;
+  }
+
+  scoped_ptr<gfx::GLSurface> surface(InitializeGLSurface());
+  if (!surface.get())
+    return false;
+
+  scoped_ptr<gfx::GLContext> context(InitializeGLContext(surface.get()));
   if (!context.get())
     return false;
 

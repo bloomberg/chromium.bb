@@ -20,34 +20,26 @@
 
 namespace gfx {
 
-GLContext* GLContext::CreateGLContext(GLSurface* compatible_surface,
-                                      GLContext* shared_context) {
-  scoped_ptr<GLSurface> surface(compatible_surface);
-
+GLContext* GLContext::CreateGLContext(GLContext* shared_context,
+                                      GLSurface* compatible_surface) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_ptr<GLContextOSMesa> context(
-          new GLContextOSMesa(static_cast<GLSurfaceOSMesa*>(
-              surface.release())));
-      if (!context->Initialize(OSMESA_RGBA, shared_context))
+      scoped_ptr<GLContextOSMesa> context(new GLContextOSMesa);
+      if (!context->Initialize(shared_context, compatible_surface))
         return NULL;
 
       return context.release();
     }
     case kGLImplementationEGLGLES2: {
-      scoped_ptr<GLContextEGL> context(
-          new GLContextEGL(static_cast<GLSurfaceEGL*>(
-              surface.release())));
-      if (!context->Initialize(shared_context))
+      scoped_ptr<GLContextEGL> context(new GLContextEGL);
+      if (!context->Initialize(shared_context, compatible_surface))
         return NULL;
 
       return context.release();
     }
     case kGLImplementationDesktopGL: {
-      scoped_ptr<GLContextWGL> context(
-          new GLContextWGL(static_cast<GLSurfaceWGL*>(
-              surface.release())));
-      if (!context->Initialize(shared_context))
+      scoped_ptr<GLContextWGL> context(new GLContextWGL);
+      if (!context->Initialize(shared_context, compatible_surface))
         return NULL;
 
       return context.release();

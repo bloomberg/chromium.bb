@@ -39,7 +39,7 @@ bool GpuScheduler::Initialize(
 
   // Create a GLContext and attach the surface.
   scoped_ptr<gfx::GLContext> context(
-      gfx::GLContext::CreateGLContext(surface.release(), parent_context));
+      gfx::GLContext::CreateGLContext(parent_context, surface.get()));
   if (!context.get()) {
     LOG(ERROR) << "CreateGLContext failed.\n";
     Destroy();
@@ -66,7 +66,8 @@ bool GpuScheduler::Initialize(
     }
   }
 
-  return InitializeCommon(context.release(),
+  return InitializeCommon(surface.release(),
+                          context.release(),
                           size,
                           disallowed_extensions,
                           allowed_extensions,
@@ -87,7 +88,7 @@ void GpuScheduler::Destroy() {
 uint64 GpuScheduler::SetWindowSizeForIOSurface(const gfx::Size& size) {
   // This is called from an IPC handler, so it's undefined which context is
   // current. Make sure the right one is.
-  decoder_->GetGLContext()->MakeCurrent();
+  decoder_->GetGLContext()->MakeCurrent(decoder_->GetGLSurface());
 
   ResizeOffscreenFrameBuffer(size);
   decoder_->UpdateOffscreenFrameBufferSize();
@@ -143,7 +144,7 @@ void GpuScheduler::DidDestroySurface() {
 void GpuScheduler::WillSwapBuffers() {
   DCHECK(decoder_.get());
   DCHECK(decoder_->GetGLContext());
-  DCHECK(decoder_->GetGLContext()->IsCurrent());
+  DCHECK(decoder_->GetGLContext()->IsCurrent(decoder_->GetGLSurface()));
 
   ++swap_buffers_count_;
 

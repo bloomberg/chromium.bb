@@ -82,7 +82,7 @@ bool GLSurface::InitializeOneOff() {
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::PluginWindowHandle window)
-  : GLSurfaceOSMesa(gfx::Size()),
+  : GLSurfaceOSMesa(OSMESA_RGBA, gfx::Size()),
     window_(window),
     device_context_(NULL) {
   DCHECK(window);
@@ -105,7 +105,6 @@ void NativeViewGLSurfaceOSMesa::Destroy() {
   if (window_ && device_context_)
     ReleaseDC(window_, device_context_);
 
-  window_ = NULL;
   device_context_ = NULL;
 
   GLSurfaceOSMesa::Destroy();
@@ -205,7 +204,8 @@ GLSurface* GLSurface::CreateViewGLSurface(gfx::PluginWindowHandle window) {
 GLSurface* GLSurface::CreateOffscreenGLSurface(const gfx::Size& size) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa(size));
+      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
+                                                              size));
       if (!surface->Initialize())
         return NULL;
 

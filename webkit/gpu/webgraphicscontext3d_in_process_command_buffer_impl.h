@@ -19,6 +19,7 @@
 #endif
 namespace gfx {
 class GLContext;
+class GLSurface;
 }
 
 using WebKit::WGC3Dchar;
@@ -464,6 +465,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl : public WebGraphicsContext
   std::set<WGC3Denum> synthetic_errors_set_;
 
   scoped_ptr<gfx::GLContext> gl_context_;
+  scoped_ptr<gfx::GLSurface> gl_surface_;
 
   ShaderSourceMap shader_source_map_;
 

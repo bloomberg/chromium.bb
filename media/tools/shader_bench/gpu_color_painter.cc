@@ -113,5 +113,5 @@ void GPUColorWithLuminancePainter::Paint(
   }
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  context()->SwapBuffers();
+  surface()->SwapBuffers();
 }

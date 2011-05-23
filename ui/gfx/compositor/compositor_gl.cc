@@ -62,6 +62,7 @@ class CompositorGL : public Compositor {
   virtual void NotifyEnd() OVERRIDE;
 
   // The GL context used for compositing.
+  scoped_ptr<gfx::GLSurface> gl_surface_;
   scoped_ptr<gfx::GLContext> gl_context_;
   gfx::Size size_;
 
@@ -193,9 +194,8 @@ void TextureGL::Draw(const ui::Transform& transform) {
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
     : started_(false) {
-  scoped_ptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateViewGLSurface(widget));
-  gl_context_.reset(gfx::GLContext::CreateGLContext(surface.release(), NULL)),
+  gl_surface_.reset(gfx::GLSurface::CreateViewGLSurface(widget));
+  gl_context_.reset(gfx::GLContext::CreateGLContext(NULL, gl_surface.get())),
   gl_context_->MakeCurrent();
   glColorMask(true, true, true, true);
   glEnable(GL_BLEND);
@@ -220,7 +220,7 @@ Texture* CompositorGL::CreateTexture() {
 
 void CompositorGL::NotifyStart() {
   started_ = true;
-  gl_context_->MakeCurrent();
+  gl_context_->MakeCurrent(gl_surface_.get());
   glViewport(0, 0,
              gl_context_->GetSize().width(), gl_context_->GetSize().height());
 
@@ -234,7 +234,7 @@ void CompositorGL::NotifyStart() {
 
 void CompositorGL::NotifyEnd() {
   DCHECK(started_);
-  gl_context_->SwapBuffers();
+  gl_surface_->SwapBuffers();
   started_ = false;
 }
 
@@ -267,6 +267,7 @@ class CompositorGL : public Compositor {
   void RestoreTransform() OVERRIDE;
 
   // The GL context used for compositing.
+  scoped_ptr<gfx::GLSurface> gl_surface_;
   scoped_ptr<gfx::GLContext> gl_context_;
 
   // Keep track of whether compositing has started or not.
@@ -277,19 +278,18 @@ class CompositorGL : public Compositor {
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
     : started_(false) {
-  scoped_ptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateViewGLSurface(widget));
-  gl_context_.reset(gfx::GLContext::CreateGLContext(surface.release(), NULL));
+  gl_surface_.reset(gfx::GLSurface::CreateViewGLSurface(widget));
+  gl_context_.reset(gfx::GLContext::CreateGLContext(NULL, gl_surface_.get()));
 }
 
 void CompositorGL::NotifyStart() {
   started_ = true;
-  gl_context_->MakeCurrent();
+  gl_context_->MakeCurrent(gl_surface_.get());
 }
 
 void CompositorGL::NotifyEnd() {
   DCHECK(started_);
-  gl_context_->SwapBuffers();
+  gl_surface_->SwapBuffers();
   started_ = false;
 }
 

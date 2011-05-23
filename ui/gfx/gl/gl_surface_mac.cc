@@ -80,7 +80,8 @@ GLSurface* GLSurface::CreateViewGLSurface(gfx::PluginWindowHandle window) {
 GLSurface* GLSurface::CreateOffscreenGLSurface(const gfx::Size& size) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa(size));
+      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
+                                                              size));
       if (!surface->Initialize())
         return NULL;
 

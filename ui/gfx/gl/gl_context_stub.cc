@@ -12,28 +12,30 @@ GLContextStub::GLContextStub() {
 GLContextStub::~GLContextStub() {
 }
 
-bool GLContextStub::MakeCurrent() {
+bool GLContextStub::Initialize(GLContext* shared_context,
+                               GLSurface* compatible_surface) {
   return true;
 }
 
-bool GLContextStub::IsCurrent() {
+void GLContextStub::Destroy() {
+}
+
+bool GLContextStub::MakeCurrent(GLSurface* surface) {
   return true;
 }
 
-bool GLContextStub::IsOffscreen() {
-  return false;
+void GLContextStub::ReleaseCurrent(GLSurface* surface) {
 }
 
-bool GLContextStub::SwapBuffers() {
+bool GLContextStub::IsCurrent(GLSurface* surface) {
   return true;
-}
-
-gfx::Size GLContextStub::GetSize() {
-  return size_;
 }
 
 void* GLContextStub::GetHandle() {
   return NULL;
+}
+
+void GLContextStub::SetSwapInterval(int interval) {
 }
 
 std::string GLContextStub::GetExtensions() {

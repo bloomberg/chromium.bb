@@ -10,16 +10,18 @@
 
 namespace gfx {
 
-GLContextCGL::GLContextCGL(GLSurfaceCGL* surface)
-  : surface_(surface),
-    context_(NULL) {
+GLContextCGL::GLContextCGL()
+  : context_(NULL) {
 }
 
 GLContextCGL::~GLContextCGL() {
   Destroy();
 }
 
-bool GLContextCGL::Initialize(GLContext* shared_context) {
+bool GLContextCGL::Initialize(GLContext* shared_context,
+                              GLSurface* compatible_surface) {
+  DCHECK(compatible_surface);
+
   CGLError res = CGLCreateContext(
       static_cast<CGLPixelFormatObj>(GLSurfaceCGL::GetPixelFormat()),
       shared_context ?
@@ -41,12 +43,13 @@ void GLContextCGL::Destroy() {
   }
 }
 
-bool GLContextCGL::MakeCurrent() {
-  if (IsCurrent())
+bool GLContextCGL::MakeCurrent(GLSurface* surface) {
+  DCHECK(context_);
+  if (IsCurrent(surface))
     return true;
 
   if (CGLSetPBuffer(static_cast<CGLContextObj>(context_),
-                    static_cast<CGLPBufferObj>(surface_->GetHandle()),
+                    static_cast<CGLPBufferObj>(surface->GetHandle()),
                     0,
                     0,
                     0) != kCGLNoError) {
@@ -64,23 +67,33 @@ bool GLContextCGL::MakeCurrent() {
   return true;
 }
 
-bool GLContextCGL::IsCurrent() {
-  return CGLGetCurrentContext() == context_;
+void GLContextCGL::ReleaseCurrent(GLSurface* surface) {
+  if (!IsCurrent(surface))
+    return;
+
+  CGLSetCurrentContext(NULL);
+  CGLSetPBuffer(static_cast<CGLContextObj>(context_), NULL, 0, 0, 0);
 }
 
-bool GLContextCGL::IsOffscreen() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->IsOffscreen();
-}
+bool GLContextCGL::IsCurrent(GLSurface* surface) {
+  if (CGLGetCurrentContext() != context_)
+    return false;
 
-bool GLContextCGL::SwapBuffers() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->SwapBuffers();
-}
+  if (surface) {
+    CGLPBufferObj current_surface = NULL;
+    GLenum face;
+    GLint level;
+    GLint screen;
+    CGLGetPBuffer(static_cast<CGLContextObj>(context_),
+                  &current_surface,
+                  &face,
+                  &level,
+                  &screen);
+    if (current_surface != surface->GetHandle())
+      return false;
+  }
 
-gfx::Size GLContextCGL::GetSize() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->GetSize();
+  return true;
 }
 
 void* GLContextCGL::GetHandle() {
@@ -88,7 +101,7 @@ void* GLContextCGL::GetHandle() {
 }
 
 void GLContextCGL::SetSwapInterval(int interval) {
-  DCHECK(IsCurrent());
+  DCHECK(IsCurrent(NULL));
   NOTREACHED() << "Attempt to call SetSwapInterval on a GLContextCGL.";
 }
 

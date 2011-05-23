@@ -8,7 +8,9 @@
 
 namespace gfx {
 
-GLSurfaceOSMesa::GLSurfaceOSMesa(const gfx::Size& size) : size_(size) {
+GLSurfaceOSMesa::GLSurfaceOSMesa(unsigned format, const gfx::Size& size)
+    : format_(format),
+      size_(size) {
 }
 
 GLSurfaceOSMesa::~GLSurfaceOSMesa() {
@@ -61,6 +63,10 @@ gfx::Size GLSurfaceOSMesa::GetSize() {
 
 void* GLSurfaceOSMesa::GetHandle() {
   return buffer_.get();
+}
+
+unsigned GLSurfaceOSMesa::GetFormat() {
+  return format_;
 }
 
 void GLSurfaceOSMesa::AllocateBuffer(const Size& size) {

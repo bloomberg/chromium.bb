@@ -7,35 +7,31 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface_wgl.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
+
+class GLSurface;
 
 // This class is a wrapper around a GL context.
 class GLContextWGL : public GLContext {
  public:
-  explicit GLContextWGL(GLSurfaceWGL* surface);
+  GLContextWGL();
   virtual ~GLContextWGL();
 
-  // Initializes the GL context.
-  bool Initialize(GLContext* shared_context);
-
   // Implement GLContext.
+  virtual bool Initialize(GLContext* shared_context,
+                          GLSurface* compatible_surface);
   virtual void Destroy();
-  virtual bool MakeCurrent();
-  virtual bool IsCurrent();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
+  virtual bool MakeCurrent(GLSurface* surface);
+  virtual void ReleaseCurrent(GLSurface* surface);
+  virtual bool IsCurrent(GLSurface* surface);
   virtual void* GetHandle();
   virtual void SetSwapInterval(int interval);
   virtual std::string GetExtensions();
 
  private:
-  scoped_ptr<GLSurfaceWGL> surface_;
   HGLRC context_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextWGL);

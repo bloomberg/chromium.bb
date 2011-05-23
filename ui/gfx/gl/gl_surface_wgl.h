@@ -17,6 +17,8 @@ class GLSurfaceWGL : public GLSurface {
   virtual ~GLSurfaceWGL();
 
   static bool InitializeOneOff();
+  static HDC GetDisplay();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceWGL);
 };

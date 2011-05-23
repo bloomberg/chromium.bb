@@ -16,21 +16,18 @@ class GLContextStub : public GLContext {
   GLContextStub();
   virtual ~GLContextStub();
 
-  void SetSize(const gfx::Size& size) { size_ = size; }
-
   // Implement GLContext.
-  virtual void Destroy() {}
-  virtual bool MakeCurrent();
-  virtual bool IsCurrent();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
+  virtual bool Initialize(GLContext* shared_context,
+                          GLSurface* compatible_surface);
+  virtual void Destroy();
+  virtual bool MakeCurrent(GLSurface* surface);
+  virtual void ReleaseCurrent(GLSurface* surface);
+  virtual bool IsCurrent(GLSurface* surface);
   virtual void* GetHandle();
-  virtual void SetSwapInterval(int interval) {}
+  virtual void SetSwapInterval(int interval);
   virtual std::string GetExtensions();
 
  private:
-  gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(GLContextStub);
 };
 

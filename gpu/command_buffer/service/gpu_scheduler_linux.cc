@@ -48,14 +48,15 @@ bool GpuScheduler::Initialize(
 
   // Create a GLContext and attach the surface.
   scoped_ptr<gfx::GLContext> context(
-      gfx::GLContext::CreateGLContext(surface.release(), parent_context));
+      gfx::GLContext::CreateGLContext(parent_context, surface.get()));
   if (!context.get()) {
     LOG(ERROR) << "CreateGLContext failed.\n";
     Destroy();
     return false;
   }
 
-  return InitializeCommon(context.release(),
+  return InitializeCommon(surface.release(),
+                          context.release(),
                           size,
                           disallowed_extensions,
                           allowed_extensions,

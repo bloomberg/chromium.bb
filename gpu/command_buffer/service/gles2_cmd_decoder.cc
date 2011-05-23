@@ -38,6 +38,7 @@
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -671,7 +672,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual const char* GetCommandName(unsigned int command_id) const;
 
   // Overridden from GLES2Decoder.
-  virtual bool Initialize(gfx::GLContext* context,
+  virtual bool Initialize(gfx::GLSurface* surface,
+                          gfx::GLContext* context,
                           const gfx::Size& size,
                           const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,
@@ -684,6 +686,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual bool MakeCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
+  virtual gfx::GLSurface* GetGLSurface() { return surface_.get(); }
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
 
   virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
@@ -1337,6 +1340,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   #undef GLES2_CMD_OP
 
   // The GL context this decoder renders to on behalf of the client.
+  scoped_ptr<gfx::GLSurface> surface_;
   scoped_ptr<gfx::GLContext> context_;
 
   // The ContextGroup for this decoder uses to track resources.
@@ -1827,6 +1831,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
 }
 
 bool GLES2DecoderImpl::Initialize(
+    gfx::GLSurface* surface,
     gfx::GLContext* context,
     const gfx::Size& size,
     const DisallowedExtensions& disallowed_extensions,
@@ -1836,6 +1841,11 @@ bool GLES2DecoderImpl::Initialize(
     uint32 parent_client_texture_id) {
   DCHECK(context);
   DCHECK(!context_.get());
+
+  // Take ownership of the GLSurface. TODO(apatrick): the decoder should not
+  // own the surface. It should be possible to freely switch the surface the
+  // context renders to.
+  surface_.reset(surface);
 
   // Take ownership of the GLContext.
   context_.reset(context);
@@ -1895,7 +1905,7 @@ bool GLES2DecoderImpl::Initialize(
   glActiveTexture(GL_TEXTURE0);
   CHECK_GL_ERROR();
 
-  if (context_->IsOffscreen()) {
+  if (surface_->IsOffscreen()) {
     ContextCreationAttribParser attrib_parser;
     if (!attrib_parser.Parse(attribs))
       return false;
@@ -2203,7 +2213,7 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
 // }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
-  return context_.get() ? context_->MakeCurrent() : false;
+  return context_.get() ? context_->MakeCurrent(surface_.get()) : false;
 }
 
 void GLES2DecoderImpl::RestoreCurrentRenderbufferBindings() {
@@ -2274,7 +2284,7 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
   } else if (offscreen_target_frame_buffer_.get()) {
     return offscreen_size_;
   } else {
-    return context_->GetSize();
+    return surface_->GetSize();
   }
 }
 
@@ -2768,7 +2778,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
     }
     info->MarkAsValid();
   } else {
-    service_id = context_->GetBackingFrameBufferObject();
+    service_id = 0;
   }
 
   if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER_EXT) {
@@ -6384,7 +6394,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     }
   } else {
     TRACE_EVENT1("gpu", "GLContext::SwapBuffers", "frame", this_frame_number);
-    if (!context_->SwapBuffers()) {
+    if (!surface_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;
     }

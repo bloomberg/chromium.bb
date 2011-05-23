@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/gl/gl_context_wgl.h"
+#include "ui/gfx/gl/gl_surface_wgl.h"
 
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -12,6 +12,7 @@ namespace gfx {
 
 static ATOM g_class_registration;
 static HWND g_window;
+HDC g_display_dc;
 static int g_pixel_format = 0;
 
 const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
@@ -111,43 +112,39 @@ bool GLSurfaceWGL::InitializeOneOff() {
     return false;
   }
 
-  HDC temporary_dc = GetDC(g_window);
+  g_display_dc = GetDC(g_window);
 
-  g_pixel_format = ChoosePixelFormat(temporary_dc,
+  g_pixel_format = ChoosePixelFormat(g_display_dc,
                                      &kPixelFormatDescriptor);
 
   if (g_pixel_format == 0) {
     LOG(ERROR) << "Unable to get the pixel format for GL context.";
-    ReleaseDC(g_window, temporary_dc);
     UnregisterClass(reinterpret_cast<wchar_t*>(g_class_registration),
                     module_handle);
     return false;
   }
 
-  if (!SetPixelFormat(temporary_dc,
+  if (!SetPixelFormat(g_display_dc,
                       g_pixel_format,
                       &kPixelFormatDescriptor)) {
     LOG(ERROR) << "Unable to set the pixel format for temporary GL context.";
-    ReleaseDC(g_window, temporary_dc);
     UnregisterClass(reinterpret_cast<wchar_t*>(g_class_registration),
                     module_handle);
     return false;
   }
 
   // Create a temporary GL context to bind to extension entry points.
-  HGLRC gl_context = wglCreateContext(temporary_dc);
+  HGLRC gl_context = wglCreateContext(g_display_dc);
   if (!gl_context) {
     LOG(ERROR) << "Failed to create temporary context.";
-    ReleaseDC(g_window, temporary_dc);
     UnregisterClass(reinterpret_cast<wchar_t*>(g_class_registration),
                     module_handle);
     return false;
   }
 
-  if (!wglMakeCurrent(temporary_dc, gl_context)) {
+  if (!wglMakeCurrent(g_display_dc, gl_context)) {
     LOG(ERROR) << "Failed to make temporary GL context current.";
     wglDeleteContext(gl_context);
-    ReleaseDC(g_window, temporary_dc);
     UnregisterClass(reinterpret_cast<wchar_t*>(g_class_registration),
                     module_handle);
     return false;
@@ -160,10 +157,13 @@ bool GLSurfaceWGL::InitializeOneOff() {
 
   wglMakeCurrent(NULL, NULL);
   wglDeleteContext(gl_context);
-  ReleaseDC(g_window, temporary_dc);
 
   initialized = true;
   return true;
+}
+
+HDC GLSurfaceWGL::GetDisplay() {
+  return g_display_dc;
 }
 
 NativeViewGLSurfaceWGL::NativeViewGLSurfaceWGL(gfx::PluginWindowHandle window)
@@ -287,21 +287,11 @@ bool PbufferGLSurfaceWGL::Initialize() {
     return false;
   }
 
-  // Create a temporary device context for the display. The pbuffer will be
-  // compatible with it.
-  HDC temporary_dc = GetDC(g_window);
-  if (!temporary_dc) {
-    LOG(ERROR) << "Unable to get device context.";
-    return false;
-  }
-
   const int kNoAttributes[] = { 0 };
-  pbuffer_ = wglCreatePbufferARB(temporary_dc,
+  pbuffer_ = wglCreatePbufferARB(g_display_dc,
                                  g_pixel_format,
                                  size_.width(), size_.height(),
                                  kNoAttributes);
-
-  ReleaseDC(g_window, temporary_dc);
 
   if (!pbuffer_) {
     LOG(ERROR) << "Unable to create pbuffer.";

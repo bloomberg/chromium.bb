@@ -9,6 +9,7 @@ extern "C" {
 #include "ui/gfx/gl/gl_context_glx.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -33,19 +34,20 @@ bool IsCompositingWindowManagerActive(Display* display) {
 
 }  // namespace anonymous
 
-GLContextGLX::GLContextGLX(GLSurfaceGLX* surface)
-  : surface_(surface),
-    context_(NULL) {
+GLContextGLX::GLContextGLX()
+  : context_(NULL) {
 }
 
 GLContextGLX::~GLContextGLX() {
   Destroy();
 }
 
-bool GLContextGLX::Initialize(GLContext* shared_context) {
+bool GLContextGLX::Initialize(GLContext* shared_context,
+                              GLSurface* compatible_surface) {
+  GLSurfaceGLX* surface_glx = static_cast<GLSurfaceGLX*>(compatible_surface);
   context_ = glXCreateNewContext(
       GLSurfaceGLX::GetDisplay(),
-      static_cast<GLXFBConfig>(surface_->GetConfig()),
+      static_cast<GLXFBConfig>(surface_glx->GetConfig()),
       GLX_RGBA_TYPE,
       static_cast<GLXContext>(
           shared_context ? shared_context->GetHandle() : NULL),
@@ -67,15 +69,15 @@ void GLContextGLX::Destroy() {
   }
 }
 
-bool GLContextGLX::MakeCurrent() {
-  if (IsCurrent()) {
+bool GLContextGLX::MakeCurrent(GLSurface* surface) {
+  DCHECK(context_);
+  if (IsCurrent(surface))
     return true;
-  }
 
   if (!glXMakeContextCurrent(
       GLSurfaceGLX::GetDisplay(),
-      reinterpret_cast<GLXDrawable>(surface_->GetHandle()),
-      reinterpret_cast<GLXDrawable>(surface_->GetHandle()),
+      reinterpret_cast<GLXDrawable>(surface->GetHandle()),
+      reinterpret_cast<GLXDrawable>(surface->GetHandle()),
       static_cast<GLXContext>(context_))) {
     Destroy();
     LOG(ERROR) << "Couldn't make context current.";
@@ -85,27 +87,25 @@ bool GLContextGLX::MakeCurrent() {
   return true;
 }
 
-bool GLContextGLX::IsCurrent() {
-  // TODO(apatrick): When surface is split from context, cannot use surface_
-  // here.
-  return glXGetCurrentDrawable() ==
-      reinterpret_cast<GLXDrawable>(surface_->GetHandle()) &&
-      glXGetCurrentContext() == static_cast<GLXContext>(context_);
+void GLContextGLX::ReleaseCurrent(GLSurface* surface) {
+  if (!IsCurrent(surface))
+    return;
+
+  glXMakeContextCurrent(GLSurfaceGLX::GetDisplay(), 0, 0, NULL);
 }
 
-bool GLContextGLX::IsOffscreen() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->IsOffscreen();
-}
+bool GLContextGLX::IsCurrent(GLSurface* surface) {
+  if (glXGetCurrentContext() != static_cast<GLXContext>(context_))
+    return false;
 
-bool GLContextGLX::SwapBuffers() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->SwapBuffers();
-}
+  if (surface) {
+    if (glXGetCurrentDrawable() !=
+        reinterpret_cast<GLXDrawable>(surface->GetHandle())) {
+      return false;
+    }
+  }
 
-gfx::Size GLContextGLX::GetSize() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->GetSize();
+  return true;
 }
 
 void* GLContextGLX::GetHandle() {
@@ -113,7 +113,7 @@ void* GLContextGLX::GetHandle() {
 }
 
 void GLContextGLX::SetSwapInterval(int interval) {
-  DCHECK(IsCurrent());
+  DCHECK(IsCurrent(NULL));
   if (HasExtension("GLX_EXT_swap_control") && glXSwapIntervalEXT) {
     // Only enable vsync if we aren't using a compositing window
     // manager. At the moment, compositing window managers don't
@@ -122,14 +122,14 @@ void GLContextGLX::SetSwapInterval(int interval) {
     if (!IsCompositingWindowManagerActive(GLSurfaceGLX::GetDisplay())) {
       glXSwapIntervalEXT(
           GLSurfaceGLX::GetDisplay(),
-          reinterpret_cast<GLXDrawable>(surface_->GetHandle()),
+          glXGetCurrentDrawable(),
           interval);
     }
   }
 }
 
 std::string GLContextGLX::GetExtensions() {
-  DCHECK(IsCurrent());
+  DCHECK(IsCurrent(NULL));
   const char* extensions = glXQueryExtensionsString(
       GLSurfaceGLX::GetDisplay(),
       0);

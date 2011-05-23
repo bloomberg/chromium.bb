@@ -1645,7 +1645,7 @@ TEST_F(GLES2DecoderTest, ReadPixels) {
     31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32, 37, 32, 34,
   };
 
-  context_->SetSize(gfx::Size(INT_MAX, INT_MAX));
+  surface_->SetSize(gfx::Size(INT_MAX, INT_MAX));
 
   ReadPixelsEmulator emu(
       kWidth, kHeight, kBytesPerPixel, kSrcPixels, kSrcPixels, kPackAlignment);
@@ -1691,7 +1691,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
     31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32,
   };
 
-  context_->SetSize(gfx::Size(INT_MAX, INT_MAX));
+  surface_->SetSize(gfx::Size(INT_MAX, INT_MAX));
 
   ReadPixelsEmulator emu(
       kWidth, kHeight, kBytesPerPixel, kSrcPixels, kExpectedPixels,

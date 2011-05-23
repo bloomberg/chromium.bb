@@ -4,31 +4,32 @@
 
 #include <GL/osmesa.h>
 
-#include <algorithm>
+#include "ui/gfx/gl/gl_context_osmesa.h"
 
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_context_osmesa.h"
+#include "ui/gfx/gl/gl_surface_osmesa.h"
 
 namespace gfx {
 
-GLContextOSMesa::GLContextOSMesa(GLSurfaceOSMesa* surface)
-    : surface_(surface),
-      context_(NULL)
-{
+GLContextOSMesa::GLContextOSMesa()
+    : context_(NULL) {
 }
 
 GLContextOSMesa::~GLContextOSMesa() {
   Destroy();
 }
 
-bool GLContextOSMesa::Initialize(GLuint format, GLContext* shared_context) {
+bool GLContextOSMesa::Initialize(GLContext* shared_context,
+                                 GLSurface* compatible_surface) {
   DCHECK(!context_);
 
   OSMesaContext shared_handle = NULL;
   if (shared_context)
     shared_handle = static_cast<OSMesaContext>(shared_context->GetHandle());
 
+  GLuint format =
+      static_cast<GLSurfaceOSMesa*>(compatible_surface)->GetFormat();
   context_ = OSMesaCreateContextExt(format,
                                     24,  // depth bits
                                     8,  // stencil bits
@@ -47,22 +48,20 @@ void GLContextOSMesa::Destroy() {
     OSMesaDestroyContext(static_cast<OSMesaContext>(context_));
     context_ = NULL;
   }
-
-  if (surface_.get()) {
-    surface_->Destroy();
-    surface_.reset();
-  }
 }
 
-bool GLContextOSMesa::MakeCurrent() {
+bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
   DCHECK(context_);
 
-  gfx::Size size = surface_->GetSize();
+  gfx::Size size = surface->GetSize();
 
   if (!OSMesaMakeCurrent(static_cast<OSMesaContext>(context_),
-                         surface_->GetHandle(),
+                         surface->GetHandle(),
                          GL_UNSIGNED_BYTE,
-                         size.width(), size.height())) {
+                         size.width(),
+                         size.height())) {
+    LOG(ERROR) << "OSMesaMakeCurrent failed.";
+    Destroy();
     return false;
   }
 
@@ -72,24 +71,29 @@ bool GLContextOSMesa::MakeCurrent() {
   return true;
 }
 
-bool GLContextOSMesa::IsCurrent() {
+void GLContextOSMesa::ReleaseCurrent(GLSurface* surface) {
+  if (!IsCurrent(surface))
+    return;
+
+  OSMesaMakeCurrent(NULL, NULL, GL_UNSIGNED_BYTE, 0, 0);
+}
+
+bool GLContextOSMesa::IsCurrent(GLSurface* surface) {
   DCHECK(context_);
-  return context_ == OSMesaGetCurrentContext();
-}
+  if (context_ != OSMesaGetCurrentContext())
+    return false;
 
-bool GLContextOSMesa::IsOffscreen() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->IsOffscreen();
-}
+  if (surface) {
+    GLint width;
+    GLint height;
+    GLint format;
+    void* buffer = NULL;
+    OSMesaGetColorBuffer(context_, &width, &height, &format, &buffer);
+    if (buffer != surface->GetHandle())
+      return false;
+  }
 
-bool GLContextOSMesa::SwapBuffers() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->SwapBuffers();
-}
-
-gfx::Size GLContextOSMesa::GetSize() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->GetSize();
+  return true;
 }
 
 void* GLContextOSMesa::GetHandle() {
@@ -97,7 +101,7 @@ void* GLContextOSMesa::GetHandle() {
 }
 
 void GLContextOSMesa::SetSwapInterval(int interval) {
-  DCHECK(IsCurrent());
+  DCHECK(IsCurrent(NULL));
   NOTREACHED() << "Attempt to call SetSwapInterval on an GLContextOSMesa.";
 }
 

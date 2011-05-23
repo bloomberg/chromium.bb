@@ -9,13 +9,12 @@
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface_wgl.h"
 
 namespace gfx {
 
-GLContextWGL::GLContextWGL(GLSurfaceWGL* surface)
-    : surface_(surface),
-      context_(NULL) {
-  DCHECK(surface);
+GLContextWGL::GLContextWGL()
+    : context_(NULL) {
 }
 
 GLContextWGL::~GLContextWGL() {
@@ -28,7 +27,7 @@ std::string GLContextWGL::GetExtensions() {
     // able to use surface_ here. Either use a display device context or the
     // surface that was passed to MakeCurrent.
     const char* extensions = wglGetExtensionsStringARB(
-        static_cast<HDC>(surface_->GetHandle()));
+        GLSurfaceWGL::GetDisplay());
     if (extensions) {
       return GLContext::GetExtensions() + " " + extensions;
     }
@@ -37,12 +36,15 @@ std::string GLContextWGL::GetExtensions() {
   return GLContext::GetExtensions();
 }
 
-bool GLContextWGL::Initialize(GLContext* shared_context) {
+bool GLContextWGL::Initialize(GLContext* shared_context,
+                              GLSurface* compatible_surface) {
+  GLSurfaceWGL* surface_wgl = static_cast<GLSurfaceWGL*>(compatible_surface);
+
   // TODO(apatrick): When contexts and surfaces are separated, we won't be
   // able to use surface_ here. Either use a display device context or a
   // surface that the context is compatible with not necessarily limited to
   // rendering to.
-  context_ = wglCreateContext(static_cast<HDC>(surface_->GetHandle()));
+  context_ = wglCreateContext(static_cast<HDC>(surface_wgl->GetHandle()));
   if (!context_) {
     LOG(ERROR) << "Failed to create GL context.";
     Destroy();
@@ -67,20 +69,14 @@ void GLContextWGL::Destroy() {
     wglDeleteContext(context_);
     context_ = NULL;
   }
-
-  if (surface_.get()) {
-    surface_->Destroy();
-    surface_.reset();
-  }
 }
 
-bool GLContextWGL::MakeCurrent() {
-  if (IsCurrent()) {
+bool GLContextWGL::MakeCurrent(GLSurface* surface) {
+  DCHECK(context_);
+  if (IsCurrent(surface))
     return true;
-  }
 
-  if (!wglMakeCurrent(static_cast<HDC>(surface_->GetHandle()),
-      context_)) {
+  if (!wglMakeCurrent(static_cast<HDC>(surface->GetHandle()), context_)) {
     LOG(ERROR) << "Unable to make gl context current.";
     return false;
   }
@@ -88,24 +84,23 @@ bool GLContextWGL::MakeCurrent() {
   return true;
 }
 
-bool GLContextWGL::IsCurrent() {
-  return wglGetCurrentDC() == surface_->GetHandle() &&
-      wglGetCurrentContext() == context_;
+void GLContextWGL::ReleaseCurrent(GLSurface* surface) {
+  if (!IsCurrent(surface))
+    return;
+
+  wglMakeCurrent(NULL, NULL);
 }
 
-bool GLContextWGL::IsOffscreen() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->IsOffscreen();
-}
+bool GLContextWGL::IsCurrent(GLSurface* surface) {
+  if (wglGetCurrentContext() != context_)
+    return false;
 
-bool GLContextWGL::SwapBuffers() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->SwapBuffers();
-}
+  if (surface) {
+    if (wglGetCurrentDC() != surface->GetHandle())
+      return false;
+  }
 
-gfx::Size GLContextWGL::GetSize() {
-  // TODO(apatrick): remove this from GLContext interface.
-  return surface_->GetSize();
+  return true;
 }
 
 void* GLContextWGL::GetHandle() {
@@ -113,7 +108,7 @@ void* GLContextWGL::GetHandle() {
 }
 
 void GLContextWGL::SetSwapInterval(int interval) {
-  DCHECK(IsCurrent());
+  DCHECK(IsCurrent(NULL));
   if (HasExtension("WGL_EXT_swap_control") && wglSwapIntervalEXT) {
     wglSwapIntervalEXT(interval);
   }

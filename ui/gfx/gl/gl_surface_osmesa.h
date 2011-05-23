@@ -17,7 +17,7 @@ namespace gfx {
 // surfaces can be resized and resizing preserves the contents.
 class GLSurfaceOSMesa : public GLSurface {
  public:
-  explicit GLSurfaceOSMesa(const gfx::Size& size);
+  explicit GLSurfaceOSMesa(unsigned format, const gfx::Size& size);
   virtual ~GLSurfaceOSMesa();
 
   // Resize the back buffer, preserving the old content. Does nothing if the
@@ -32,9 +32,13 @@ class GLSurfaceOSMesa : public GLSurface {
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
 
+  // Get the surface's format.
+  unsigned GetFormat();
+
  private:
   void AllocateBuffer(const Size& size);
 
+  unsigned format_;
   gfx::Size size_;
   scoped_array<int32> buffer_;
 

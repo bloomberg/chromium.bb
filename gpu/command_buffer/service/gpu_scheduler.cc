@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 using ::base::SharedMemory;
 
@@ -52,6 +53,7 @@ GpuScheduler::~GpuScheduler() {
 }
 
 bool GpuScheduler::InitializeCommon(
+    gfx::GLSurface* surface,
     gfx::GLContext* context,
     const gfx::Size& size,
     const gles2::DisallowedExtensions& disallowed_extensions,
@@ -61,12 +63,12 @@ bool GpuScheduler::InitializeCommon(
     uint32 parent_texture_id) {
   DCHECK(context);
 
-  if (!context->MakeCurrent())
+  if (!context->MakeCurrent(surface))
     return false;
 
   // Do not limit to a certain number of commands before scheduling another
   // update when rendering onscreen.
-  if (!context->IsOffscreen())
+  if (!surface->IsOffscreen())
     commands_per_update_ = INT_MAX;
 
   // Map the ring buffer and create the parser.
@@ -84,7 +86,10 @@ bool GpuScheduler::InitializeCommon(
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
-  if (!decoder_->Initialize(context,
+  // TODO(apatrick): The GpuScheduler should know nothing about the surface the
+  // decoder is rendering to. Get rid of the surface parameter.
+  if (!decoder_->Initialize(surface,
+                            context,
                             size,
                             disallowed_extensions,
                             allowed_extensions,

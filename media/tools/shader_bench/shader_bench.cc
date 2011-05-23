@@ -135,8 +135,8 @@ int main(int argc, char** argv) {
   scoped_ptr<media::Window> window(new media::Window(width, height));
   gfx::GLSurface* surface =
       gfx::GLSurface::CreateViewGLSurface(window->PluginWindow());
-  gfx::GLContext* context = gfx::GLContext::CreateGLContext(surface, NULL);
-  context->MakeCurrent();
+  gfx::GLContext* context = gfx::GLContext::CreateGLContext(NULL, surface);
+  context->MakeCurrent(surface);
   // This sets D3DPRESENT_INTERVAL_IMMEDIATE on Windows.
   context->SetSwapInterval(0);
 
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < kNumPainters; i++) {
     scoped_ptr<GPUPainter> painter(painters[i].painter);
     painter->LoadFrames(&frames);
-    painter->SetGLContext(context);
+    painter->SetGLContext(surface, context);
     painter->Initialize(width, height);
     printf("Running %s tests...", painters[i].name);
     RunTest(window.get(), painter.get());

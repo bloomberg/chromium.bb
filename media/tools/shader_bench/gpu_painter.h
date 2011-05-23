@@ -9,6 +9,7 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 // Class that renders video frames to a window via GPU.
 class GPUPainter : public Painter {
@@ -17,10 +18,11 @@ class GPUPainter : public Painter {
   virtual ~GPUPainter();
 
   // Returns a reference to the GL context.
+  gfx::GLSurface* surface() const { return surface_; }
   gfx::GLContext* context() const { return context_; }
 
   // Sets context for subsequent gl calls in this painter.
-  virtual void SetGLContext(gfx::GLContext* context);
+  virtual void SetGLContext(gfx::GLSurface* surface, gfx::GLContext* context);
 
   // Creates shader program into given context, from the vertex and fragment
   // shader source code. Returns the id of the shader program.
@@ -34,6 +36,7 @@ class GPUPainter : public Painter {
   GLuint LoadShader(unsigned type, const char* shader_source);
 
   // Reference to the gl context.
+  gfx::GLSurface* surface_;
   gfx::GLContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUPainter);

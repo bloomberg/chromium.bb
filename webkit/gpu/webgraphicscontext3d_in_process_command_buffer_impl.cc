@@ -133,13 +133,29 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
   // and from there to the window, and WebViewImpl::paint already
   // correctly handles the case where the compositor is active but
   // the output needs to go to a WebCanvas.
-  scoped_ptr<gfx::GLSurface> surface(gfx::GLSurface::CreateOffscreenGLSurface(
-      gfx::Size(1, 1)));
-  if (!surface->Initialize())
-    return false;
+  gl_surface_.reset(gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
 
-  gl_context_.reset(gfx::GLContext::CreateGLContext(surface.release(),
-                                                    share_context));
+  if (!gl_surface_.get()) {
+    if (!is_gles2_)
+      return false;
+
+    // Embedded systems have smaller limit on number of GL contexts. Sometimes
+    // failure of GL context creation is because of existing GL contexts
+    // referenced by JavaScript garbages. Collect garbage and try again.
+    // TODO: Besides this solution, kbr@chromium.org suggested: upon receiving
+    // a page unload event, iterate down any live WebGraphicsContext3D instances
+    // and force them to drop their contexts, sending a context lost event if
+    // necessary.
+    webView->mainFrame()->collectGarbage();
+
+    gl_surface_.reset(gfx::GLSurface::CreateOffscreenGLSurface(
+        gfx::Size(1, 1)));
+    if (!gl_surface_.get())
+      return false;
+  }
+
+  gl_context_.reset(gfx::GLContext::CreateGLContext(share_context,
+                                                    gl_surface_.get()));
   if (!gl_context_.get()) {
     if (!is_gles2_)
       return false;
@@ -153,11 +169,8 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     // necessary.
     webView->mainFrame()->collectGarbage();
 
-    surface.reset(gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
-
-    gl_context_.reset(gfx::GLContext::CreateGLContext(
-        surface.release(),
-        share_context));
+    gl_context_.reset(gfx::GLContext::CreateGLContext(share_context,
+                                                      gl_surface_.get()));
     if (!gl_context_.get())
       return false;
   }
@@ -175,7 +188,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
   if (render_directly_to_web_view)
     attributes_.antialias = false;
 
-  if (!gl_context_->MakeCurrent()) {
+  if (!gl_context_->MakeCurrent(gl_surface_.get())) {
     gl_context_.reset();
     return false;
   }
@@ -270,7 +283,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::ResolveMultisampledFramebuf
 }
 
 bool WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent() {
-  return gl_context_->MakeCurrent();
+  return gl_context_->MakeCurrent(gl_surface_.get());
 }
 
 int WebGraphicsContext3DInProcessCommandBufferImpl::width() {

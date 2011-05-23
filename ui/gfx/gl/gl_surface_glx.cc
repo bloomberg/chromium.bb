@@ -270,6 +270,7 @@ bool PbufferGLSurfaceGLX::Initialize() {
     GLX_BUFFER_SIZE, 32,
     GLX_ALPHA_SIZE, 8,
     GLX_BLUE_SIZE, 8,
+    GLX_GREEN_SIZE, 8,
     GLX_RED_SIZE, 8,
     GLX_DEPTH_SIZE, 16,  // TODO(apatrick): support optional depth buffer
     GLX_STENCIL_SIZE, 8,

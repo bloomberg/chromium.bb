@@ -35,15 +35,14 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
     return false;
 
-  scoped_ptr<gfx::GLSurface> surface(gfx::GLSurface::CreateOffscreenGLSurface(
-      gfx::Size(1, 1)));
-  if (!surface.get()) {
+  gl_surface_.reset(gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
+  if (!gl_surface_.get()) {
     Destroy();
     return false;
   }
 
-  gl_context_.reset(gfx::GLContext::CreateGLContext(surface.release(),
-                                                    share_context));
+  gl_context_.reset(gfx::GLContext::CreateGLContext(share_context,
+                                                    gl_surface_.get()));
   if (!gl_context_.get()) {
     Destroy();
     return false;
@@ -67,9 +66,8 @@ void AcceleratedSurface::Destroy() {
   }
   transport_dib_.reset();
 
-  if (gl_context_.get())
-    gl_context_->Destroy();
   gl_context_.reset();
+  gl_surface_.reset();
 }
 
 // Call after making changes to the surface which require a visual update.
@@ -199,11 +197,11 @@ bool AcceleratedSurface::SetupFrameBufferObject(GLenum target) {
 bool AcceleratedSurface::MakeCurrent() {
   if (!gl_context_.get())
     return false;
-  return gl_context_->MakeCurrent();
+  return gl_context_->MakeCurrent(gl_surface_.get());
 }
 
 void AcceleratedSurface::Clear(const gfx::Rect& rect) {
-  DCHECK(gl_context_->IsCurrent());
+  DCHECK(gl_context_->IsCurrent(gl_surface_.get()));
   glClearColor(0, 0, 0, 0);
   glViewport(0, 0, rect.width(), rect.height());
   glMatrixMode(GL_PROJECTION);
@@ -334,7 +332,7 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   }
 
   if (allocate_fbo_) {
-    DCHECK(gl_context_->IsCurrent());
+    DCHECK(gl_context_->IsCurrent(gl_surface_.get()));
     // Set up the render buffers and reserve enough space on the card for the
     // framebuffer texture.
     GLenum target = GL_TEXTURE_RECTANGLE_ARB;

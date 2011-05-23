@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,13 +25,16 @@ static const float kTextureCoords[8] = {
 static const unsigned int kErrorSize = 4096;
 
 GPUPainter::GPUPainter()
-    : context_(NULL) {
+    : surface_(NULL),
+      context_(NULL) {
 }
 
 GPUPainter::~GPUPainter() {
 }
 
-void GPUPainter::SetGLContext(gfx::GLContext* context) {
+void GPUPainter::SetGLContext(gfx::GLSurface* surface,
+                              gfx::GLContext* context) {
+  surface_ = surface;
   context_ = context;
 }
 

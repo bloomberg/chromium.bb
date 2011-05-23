@@ -17,6 +17,7 @@
 
 namespace gfx {
 class GLContext;
+class GLSurface;
 }
 
 namespace gpu {
@@ -55,6 +56,7 @@ class GLES2Decoder : public CommonDecoder {
   // decoder with a frame buffer that can be referenced from the parent.
   // Takes ownership of GLContext.
   // Parameters:
+  //  surface: the GL surface to render to.
   //  context: the GL context to render to.
   //  size: the size if the GL context is offscreen.
   //  allowed_extensions: A string in the same format as
@@ -66,7 +68,8 @@ class GLES2Decoder : public CommonDecoder {
   //      parent's namespace.
   // Returns:
   //   true if successful.
-  virtual bool Initialize(gfx::GLContext* context,
+  virtual bool Initialize(gfx::GLSurface* surface,
+                          gfx::GLContext* context,
                           const gfx::Size& size,
                           const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,
@@ -90,6 +93,9 @@ class GLES2Decoder : public CommonDecoder {
 
   // Gets the GLES2 Util which holds info.
   virtual GLES2Util* GetGLES2Util() = 0;
+
+  // Gets the associated GLSurface.
+  virtual gfx::GLSurface* GetGLSurface() = 0;
 
   // Gets the associated GLContext.
   virtual gfx::GLContext* GetGLContext() = 0;

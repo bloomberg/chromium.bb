@@ -414,8 +414,8 @@ void GpuCommandBufferStub::ViewResized() {
   // Recreate the view surface to match the window size. TODO(apatrick): this is
   // likely not necessary on all platforms.
   gfx::GLContext* context = scheduler_->decoder()->GetGLContext();
-  context->ReleaseCurrent();
-  gfx::GLSurface* surface = context->GetSurface();
+  gfx::GLSurface* surface = scheduler_->decoder()->GetGLSurface();
+  context->ReleaseCurrent(surface);
   if (surface) {
     surface->Destroy();
     surface->Initialize();

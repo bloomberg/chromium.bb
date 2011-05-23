@@ -33,7 +33,9 @@ namespace gpu {
 namespace gles2 {
 
 GLES2DecoderTestBase::GLES2DecoderTestBase()
-    : client_buffer_id_(100),
+    : surface_(NULL),
+      context_(NULL),
+      client_buffer_id_(100),
       client_framebuffer_id_(101),
       client_program_id_(102),
       client_renderbuffer_id_(103),
@@ -126,12 +128,14 @@ void GLES2DecoderTestBase::InitDecoder(
   shared_memory_id_ = kSharedMemoryId;
   shared_memory_base_ = buffer.ptr;
 
+  surface_ = new gfx::GLSurfaceStub;
+  surface_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
+
   context_ = new gfx::GLContextStub;
-  context_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
   decoder_->Initialize(
-      context_, context_->GetSize(), DisallowedExtensions(),
+      surface_, context_, surface_->GetSize(), DisallowedExtensions(),
       NULL, std::vector<int32>(), NULL, 0);
   decoder_->set_engine(engine_.get());
 

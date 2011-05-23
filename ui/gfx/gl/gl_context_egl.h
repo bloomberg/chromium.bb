@@ -8,43 +8,32 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/size.h"
 
 typedef void* EGLContext;
 
 namespace gfx {
 
-class GLSurfaceEGL;
+class GLSurface;
 
 // Encapsulates an EGL OpenGL ES context.
 class GLContextEGL : public GLContext {
  public:
-  // Takes ownership of surface. TODO(apatrick): separate notion of surface
-  // from context.
-  explicit GLContextEGL(GLSurfaceEGL* surface);
-
+  GLContextEGL();
   virtual ~GLContextEGL();
 
-  // Initialize an EGL context.
-  bool Initialize(GLContext* shared_context);
-
   // Implement GLContext.
+  virtual bool Initialize(GLContext* shared_context,
+                          GLSurface* compatible_surface);
   virtual void Destroy();
-  virtual bool MakeCurrent();
-  virtual void ReleaseCurrent();
-  virtual bool IsCurrent();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual GLSurface* GetSurface();
+  virtual bool MakeCurrent(GLSurface* surface);
+  virtual void ReleaseCurrent(GLSurface* surface);
+  virtual bool IsCurrent(GLSurface* surface);
   virtual void* GetHandle();
   virtual void SetSwapInterval(int interval);
   virtual std::string GetExtensions();
 
  private:
-  scoped_ptr<GLSurfaceEGL> surface_;
   EGLContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextEGL);
