@@ -279,8 +279,9 @@ static const uint8_t iadrmasks[8] = {0x01, 0x02, 0x04, 0x08,
 
 /* forward declarations, needed for registration */
 static Bool ValidateInst(const NCDecoderInst *dinst);
-static void ValidateInstReplacement(const NCDecoderInst *dinst_old,
-                                    const NCDecoderInst *dinst_new);
+static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
+                                    NCDecoderInst *dinst_old,
+                                    NCDecoderInst *dinst_new);
 
 /*
  * NCValidateInit: Initialize NaCl validator internal state
@@ -787,8 +788,8 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
  * one of the individual jumps must be validated in isolation with
  * ValidateIndirect5() before this is called.
  */
-void ValidateIndirect5Replacement(const struct NCDecoderInst *dinst_old,
-                                  const struct NCDecoderInst *dinst_new) {
+static void ValidateIndirect5Replacement(NCDecoderInst *dinst_old,
+                                         NCDecoderInst *dinst_new) {
   do {
     /* check that the and-guard is 3 bytes and bit-for-bit identical */
     NCDecoderInst *andinst_old = PreviousInst(dinst_old, 1);
@@ -815,16 +816,9 @@ void ValidateIndirect5Replacement(const struct NCDecoderInst *dinst_old,
  * Check that mstate_new is a valid replacement instruction for mstate_old.
  * Note that mstate_old was validated when it was inserted originally.
  */
-static void ValidateInstReplacement(const NCDecoderInst *dinst_old,
-                                    const NCDecoderInst *dinst_new) {
-  /* Location/length must match */
-  if (dinst_old->inst.bytes.length != dinst_new->inst.bytes.length
-    || dinst_old->vpc != dinst_new->vpc) {
-    BadInstructionError(dinst_new,
-                        "New instruction does not match old instruction size");
-    Stats_BadInstLength(VALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
-  }
-
+static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
+                                    NCDecoderInst *dinst_old,
+                                    NCDecoderInst *dinst_new) {
   /* Only validate individual instructions that have changed. */
   if (memcmp(dinst_old->inst.bytes.byte,
              dinst_new->inst.bytes.byte,
@@ -843,6 +837,26 @@ static void ValidateInstReplacement(const NCDecoderInst *dinst_old,
     /* Verify that nacljmps never change */
     ValidateIndirect5Replacement(dinst_old, dinst_new);
   }
+  return TRUE;
+}
+
+/* Create the decoder state for the validator state, using the
+ * given parameters.
+ */
+static void NCValidateDStateInit(NCValidatorState *vstate,
+                                 uint8_t *mbase, NaClPcAddress vbase,
+                                 NaClMemorySize sz) {
+  /* TODO(karl): Refactor this so that NCValidatorState properly
+   * inherits from NCDecoderState. This means refactoring the
+   * API to have a constructor that does the following.
+   */
+  NCDecoderState* dstate = &vstate->dstate;
+  NCDecoderStateConstruct(dstate, mbase, vbase, sz,
+                          vstate->inst_buffer, kNCValidatorInstBufferSize);
+  dstate->action_fn = ValidateInst;
+  dstate->new_segment_fn = (NCDecoderStateMethod) Stats_NewSegment;
+  dstate->segmentation_error_fn = (NCDecoderStateMethod) Stats_SegFault;
+  dstate->internal_error_fn = (NCDecoderStateMethod) Stats_InternalError;
 }
 
 void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
@@ -853,44 +867,55 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
     Stats_SegFault(vstate);
     return;
   } else {
-    /* TODO(karl): Refactor this so that NCValidatorState properly
-     * inherits from NCDecoderState. This means refactoring the
-     * API to have a constructor that does the following.
-     */
-    NCDecoderState* dstate = &vstate->dstate;
-    NCDecoderStateConstruct(dstate, mbase, vbase, sz,
-                            vstate->inst_buffer, kNCValidatorInstBufferSize);
-    dstate->action_fn = ValidateInst;
-    dstate->new_segment_fn = (NCDecoderStateMethod) Stats_NewSegment;
-    dstate->segmentation_error_fn = (NCDecoderStateMethod) Stats_SegFault;
-    dstate->internal_error_fn = (NCDecoderStateMethod) Stats_InternalError;
-
-    NCDecoderStateDecode(dstate);
-    NCDecoderStateDestruct(dstate);
+    NCValidateDStateInit(vstate, mbase, vbase, sz);
+    NCDecoderStateDecode(&vstate->dstate);
+    NCDecoderStateDestruct(&vstate->dstate);
   }
 }
 
-/*
- * (Same as NCValidateSegment, but operates on a pair of instructions.)
- * Validates that instructions at mbase_new may replace mbase_old.
- */
-void NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
-                           NaClPcAddress vbase, size_t sz,
-                           struct NCValidatorState *vstate) {
-  NCDecoderState dstate_old;
-  NCDecoderInst inst_buffer_old[kNCValidatorInstBufferSize];
+int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
+                          NaClPcAddress vbase, size_t sz,
+                          uint8_t alignment) {
+  /* TODO(karl): Refactor to use inheritance from NCDecoderStatePair? */
+  NCDecoderStatePair pair;
+  NCValidatorState* new_vstate;
+  NCValidatorState* old_vstate;
+
+  int result = 0;
+
+  /* Verify that we actually have a segment to walk. */
   if (sz == 0) {
-    ValidatePrintError(0, "Bad text segment (zero size)", vstate);
-    Stats_SegFault(vstate);
-    return;
+    printf("VALIDATOR: %"NACL_PRIxNaClPcAddress
+           ": Bad text segment (zero size)\n", vbase);
+    return 0;
   }
-  NCDecodeSegmentPairUsing(mbase_old, mbase_new, vbase, sz,
-                           &dstate_old, inst_buffer_old,
-                           kNCValidatorInstBufferSize,
-                           &vstate->dstate, vstate->inst_buffer,
-                           kNCValidatorInstBufferSize,
-                           (NCDecoderPairAction) ValidateInstReplacement,
-                           (NCDecoderStateMethod) Stats_NewSegment,
-                           (NCDecoderStateMethod) Stats_SegFault,
-                           (NCDecoderStateMethod) Stats_InternalError);
+
+  old_vstate = NCValidateInit(vbase, vbase + sz, alignment);
+  if (old_vstate != NULL) {
+    NCValidateDStateInit(old_vstate, mbase_old, vbase, sz);
+    new_vstate = NCValidateInit(vbase, vbase + sz, alignment);
+    if (new_vstate != NULL) {
+      NCValidateDStateInit(new_vstate, mbase_new, vbase, sz);
+
+      NCDecoderStatePairConstruct(&pair,
+                                  &old_vstate->dstate,
+                                  &new_vstate->dstate);
+      pair.action_fn = ValidateInstReplacement;
+      if (NCDecoderStatePairDecode(&pair)) {
+        result = 1;
+      } else {
+        ValidatePrintError(vbase, "Replacement not applied!\n", new_vstate);
+      }
+      if (NCValidateFinish(new_vstate)) {
+        /* Errors occurred during validation. */
+        result = 0;
+      }
+      NCDecoderStatePairDestruct(&pair);
+      NCDecoderStateDestruct(&new_vstate->dstate);
+      NCValidateFreeState(&new_vstate);
+    }
+    NCDecoderStateDestruct(&new_vstate->dstate);
+    NCValidateFreeState(&new_vstate);
+  }
+  return result;
 }

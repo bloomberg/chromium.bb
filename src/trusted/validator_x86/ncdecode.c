@@ -100,6 +100,24 @@ static void NullDecoderMethod(struct NCDecoderState* dstate) {
   UNREFERENCED_PARAMETER(dstate);
 }
 
+/* API to virtual methods of a decoder state. */
+static void NCDecoderStateNewSegment(NCDecoderState* tthis) {
+  (tthis->new_segment_fn)(tthis);
+}
+
+static Bool NCDecoderStateApplyAction(NCDecoderState* tthis,
+                                      NCDecoderInst* dinst) {
+  return (tthis->action_fn)(dinst);
+}
+
+static void NCDecoderStateSegmentationError(NCDecoderState* tthis) {
+  (tthis->segmentation_error_fn)(tthis);
+}
+
+static void NCDecoderStateInternalError(NCDecoderState* tthis) {
+  (tthis->internal_error_fn)(tthis);
+}
+
 /* Error Condition Handling */
 static void ErrorSegmentation(NCDecoderInst* dinst) {
   NCDecoderState* dstate = dinst->dstate;
@@ -107,7 +125,7 @@ static void ErrorSegmentation(NCDecoderInst* dinst) {
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
-  dstate->segmentation_error_fn(dstate);
+  NCDecoderStateSegmentationError(dstate);
 }
 
 static void ErrorInternal(NCDecoderInst* dinst) {
@@ -116,7 +134,7 @@ static void ErrorInternal(NCDecoderInst* dinst) {
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
-  dstate->internal_error_fn(dstate);
+  NCDecoderStateInternalError(dstate);
 }
 
 /* Defines how to handle errors found while parsing the memory segment. */
@@ -474,28 +492,6 @@ void NCDecoderStateDestruct(NCDecoderState* this) {
   /* Currently, there is nothing to do. */
 }
 
-/* Initialize the ring buffer used to store decoded instructions. Returns
- * The address of the initial instruction to be decoded.
- *
- * mbase: The actual address in memory of the instructions being iterated.
- * vbase: The virtual address instructions will be executed from.
- * decodebuffer: Ring buffer containing kDecodeBufferSize elements (output)
- * mstate: Current instruction pointer into the ring buffer (output)
- */
-static NCDecoderInst* InitDecoderState(uint8_t* mbase, NaClPcAddress vbase,
-                                       NaClMemorySize size,
-                                       NCDecoderState* dstate,
-                                       NCDecoderInst* inst_buffer,
-                                       size_t inst_buffer_size,
-                                       NCDecoderStateMethod segmentationerror,
-                                       NCDecoderStateMethod internalerror) {
-  NCDecoderStateConstruct(dstate, mbase, vbase, size, inst_buffer,
-                          inst_buffer_size);
-  dstate->segmentation_error_fn = segmentationerror;
-  dstate->internal_error_fn = internalerror;
-  return &dstate->inst_buffer[dstate->cur_inst_index];
-}
-
 /* Modify the current instruction pointer to point to the next instruction
  * in the ring buffer.  Reset the state of that next instruction.
  */
@@ -592,7 +588,7 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
   DEBUG( printf("DecodeSegment(%p[%"NACL_PRIxNaClPcAddress
                 "-%"NACL_PRIxNaClPcAddress"])\n",
                 (void*) this->memory.mpc, this->vbase, vlimit) );
-  (this->new_segment_fn)(this);
+  NCDecoderStateNewSegment(this);
   dinst->inst_count = 1;
   while (dinst->vpc < vlimit) {
     ConsumeNextInstruction(dinst);
@@ -604,86 +600,104 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
       ErrorSegmentation(dinst);
       break;
     }
-    if (!(this->action_fn)(dinst)) return FALSE;
+    if (!NCDecoderStateApplyAction(this, dinst)) return FALSE;
     /* get ready for next round */
     dinst = IncrementInst(dinst);
   }
   return TRUE;
 }
 
-/* The actual decoder -- decodes two instruction segments in parallel */
-void NCDecodeSegmentPairUsing(
-    uint8_t* mbase_old, uint8_t* mbase_new,
-    NaClPcAddress vbase, NaClMemorySize size,
-    NCDecoderState* dstate_old,
-    NCDecoderInst* inst_buffer_old,
-    size_t inst_buffer_size_old,
-    NCDecoderState* dstate_new,
-    NCDecoderInst* inst_buffer_new,
-    size_t inst_buffer_size_new,
-    NCDecoderPairAction action,
-    NCDecoderStateMethod newsegment,
-    NCDecoderStateMethod segmentationerror,
-    NCDecoderStateMethod internalerror) {
-
-  const NaClPcAddress vlimit = vbase + size;
-  NCDecoderInst* dinst_old;
-  NCDecoderInst* dinst_new;
-  NaClPcAddress newpc_old;
-  NaClPcAddress newpc_new;
-
-
-  dinst_old = InitDecoderState(mbase_old, vbase, size, dstate_old,
-                               inst_buffer_old, inst_buffer_size_old,
-                               segmentationerror, internalerror);
-  dinst_new = InitDecoderState(mbase_new, vbase, size, dstate_new,
-                               inst_buffer_new, inst_buffer_size_new,
-                               segmentationerror, internalerror);
-
-  DEBUG( printf("DecodeSegmentPair(%"NACL_PRIxNaClPcAddress
-                "-%"NACL_PRIxNaClPcAddress")\n",
-                vbase, vlimit) );
-  newsegment(dstate_new);
-  while (dinst_old->vpc < vlimit && dinst_new->vpc < vlimit) {
-    ConsumeNextInstruction(dinst_old);
-    ConsumeNextInstruction(dinst_new);
-    newpc_old = dinst_old->vpc + dinst_old->inst.bytes.length;
-    newpc_new = dinst_new->vpc + dinst_old->inst.bytes.length;
-
-    if (newpc_old != newpc_new) {
-      fprintf(stdout, "misaligned replacement code "
-              "%"NACL_PRIxNaClPcAddress" != %"NACL_PRIxNaClPcAddress"\n",
-              newpc_old, newpc_new);
-      ErrorSegmentation(dinst_new);
-      break;
-    }
-
-    if (newpc_new > vlimit) {
-      fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
-              newpc_new, vlimit);
-      ErrorSegmentation(dinst_new);
-      break;
-    }
-
-    action(dinst_old, dinst_new);
-
-    /* get ready for next round */
-    dinst_old = IncrementInst(dinst_old);
-    dinst_new = IncrementInst(dinst_new);
-  }
+/* Default action for a decoder state pair. */
+static Bool NullNCDecoderStatePairAction(struct NCDecoderStatePair* tthis,
+                                         NCDecoderInst* old_inst,
+                                         NCDecoderInst* new_inst) {
+  return TRUE;
 }
 
-/* The actual decoder -- decodes two instruction segments in parallel */
-void NCDecodeSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
-                         NaClPcAddress vbase, NaClMemorySize size,
-                         NCDecoderPairAction action) {
-  NCDecoderState dstate_old;
-  NCDecoderState dstate_new;
-  NCDecoderInst inst_buffer_old;
-  NCDecoderInst inst_buffer_new;
-  NCDecodeSegmentPairUsing(mbase_old, mbase_new, vbase, size,
-                           &dstate_old, &inst_buffer_old, 1,
-                           &dstate_new, &inst_buffer_new, 1,
-                           action, NullDecoderMethod, NullDecoderMethod,
-                           NullDecoderMethod);
+void NCDecoderStatePairConstruct(NCDecoderStatePair* tthis,
+                                 NCDecoderState* old_dstate,
+                                 NCDecoderState* new_dstate) {
+  tthis->old_dstate = old_dstate;
+  tthis->new_dstate = new_dstate;
+  tthis->action_fn = NullNCDecoderStatePairAction;
+}
+
+void NCDecoderStatePairDestruct(NCDecoderStatePair* tthis) {
+}
+
+Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
+  NCDecoderInst* old_dinst =
+      &tthis->old_dstate->inst_buffer[tthis->old_dstate->cur_inst_index];
+  NCDecoderInst* new_dinst =
+      &tthis->new_dstate->inst_buffer[tthis->new_dstate->cur_inst_index];
+  NaClPcAddress new_vlimit;
+
+  /* Verify that the size of the code segments is the same, and has not
+   * been changed.
+   */
+  if (tthis->old_dstate->size != tthis->new_dstate->size) {
+    /* If sizes differ, then they can't be the same, except for some
+     * (constant-sized) changes. Hence fail to decode.
+     */
+    ErrorSegmentation(new_dinst);
+    return FALSE;
+  }
+
+  /* Since the sizes of the segments are the same, only one limit
+   * needs to be checked. Hence, we will track the limit of the new
+   * decoder state.
+   */
+  new_vlimit = tthis->new_dstate->vbase + tthis->new_dstate->size;
+  DEBUG( printf("NCDecoderStatePairDecode(%"NACL_PRIxNaClPcAddress
+                ", %"NACL_PRIxNaClPcAddress
+                "-%"NACL_PRIxNaClPcAddress")\n",
+                tthis->old_dstate->vbase, tthis->new_dstate->vbase,
+                new_vlimit));
+
+  /* Initialize decoder statements for decoding segment, by calling
+   * the corresponding virtual in the decoder.
+   */
+  NCDecoderStateNewSegment(tthis->old_dstate);
+  NCDecoderStateNewSegment(tthis->new_dstate);
+
+  /* Walk through both instruction segments, checking that
+   * they decode similarly.
+   */
+  while (new_dinst->vpc < new_vlimit) {
+
+    ConsumeNextInstruction(old_dinst);
+    ConsumeNextInstruction(new_dinst);
+
+
+    /* Verify that the instruciton lengths match. */
+    if (old_dinst->inst.bytes.length !=
+        new_dinst->inst.bytes.length) {
+      ErrorInternal(new_dinst);
+      return FALSE;
+    }
+
+    /* Verify that we haven't walked past the end of the segment
+     * in either decoder state.
+     *
+     * Note: Since instruction lengths are the same, and the
+     * segment lengths are the same, if overflow occurs on one
+     * segment, it must occur on the other.
+     */
+    if (tthis->new_dstate->memory.overflow_count) {
+      ErrorSegmentation(new_dinst);
+      return FALSE;
+    }
+
+    /* Apply the action to the instructions, and continue
+     * only if the action succeeds.
+     */
+    if (! (tthis->action_fn)(tthis, old_dinst, new_dinst)) {
+      return FALSE;
+    }
+
+    /* Move to next instruction. */
+    old_dinst = IncrementInst(old_dinst);
+    new_dinst = IncrementInst(new_dinst);
+  }
+  return TRUE;
 }

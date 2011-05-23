@@ -120,7 +120,7 @@ static void* valloc(size_t s) {
 /* this is global to prevent a (very smart) compiler from optimizing it out */
 void* g_squashybuffer = NULL;
 
-static void SerializeAllProcessors() {
+static Bool SerializeAllProcessors() {
   /*
    * We rely on the OS mprotect() call to issue interprocessor interrupts,
    * which will cause other processors to execute an IRET, which is
@@ -139,11 +139,11 @@ static void SerializeAllProcessors() {
     size = si.dwPageSize;
     g_squashybuffer = valloc(size);
   }
-  CHECK(0 != size);
-  CHECK(NULL != g_squashybuffer);
+  if (size == 0) return FALSE;
+  if (NULL == g_squashybuffer) return FALSE;
   prot = (prot == prot_a ? prot_b : prot_a);
   rv = VirtualProtect(g_squashybuffer, size, prot, &oldprot);
-  CHECK(rv);
+  if (!rv) return FALSE;
 #else
   static const int prot_a = PROT_READ|PROT_WRITE|PROT_EXEC;
   static const int prot_b = PROT_NONE;
@@ -154,21 +154,22 @@ static void SerializeAllProcessors() {
     size = sysconf(_SC_PAGE_SIZE);
     g_squashybuffer = valloc(size);
   }
-  CHECK(0 != size);
-  CHECK(NULL != g_squashybuffer);
+  if (size == 0) return FALSE;
+  if (NULL != g_squashybuffer) return FALSE;
   prot = (prot == prot_a ? prot_b : prot_a);
   rv = mprotect(g_squashybuffer, size, prot);
-  CHECK(rv == 0);
+  if (rv) return FALSE;
 #endif
+  return TRUE;
 }
 
 /*
  * Copy a single instruction, avoiding the possibility of other threads
  * executing a partially changed instruction.
  */
-void CopyInstructionInternal(uint8_t *dst,
-                             uint8_t *src,
-                             uint8_t sz) {
+static Bool CopyInstructionInternal(uint8_t *dst,
+                                    uint8_t *src,
+                                    uint8_t sz) {
   intptr_t offset = 0;
   uint8_t *firstbyte_p = dst;
 
@@ -179,7 +180,7 @@ void CopyInstructionInternal(uint8_t *dst,
 
   if (sz == 0) {
     /* instructions are identical, we are done */
-    return;
+    return TRUE;
   }
 
   while (sz > 0 && dst[sz-1] == src[sz-1]) {
@@ -205,7 +206,7 @@ void CopyInstructionInternal(uint8_t *dst,
     uint8_t firstbyte = firstbyte_p[0];
     firstbyte_p[0] = kNaClFullStop;
 
-    SerializeAllProcessors();
+    if (!SerializeAllProcessors()) return FALSE;
 
     /* copy the rest of instruction */
     if (dst == firstbyte_p) {
@@ -220,6 +221,7 @@ void CopyInstructionInternal(uint8_t *dst,
     /* flip first byte back */
     firstbyte_p[0] = firstbyte;
   }
+  return TRUE;
 }
 
 #if NACL_TARGET_SUBARCH == 32
@@ -228,26 +230,36 @@ void CopyInstructionInternal(uint8_t *dst,
  * Copy a single instruction, avoiding the possibility of other threads
  * executing a partially changed instruction.
  */
-void CopyInstruction(const NCDecoderInst *dinst_old,
-                     const NCDecoderInst *dinst_new) {
+static Bool CopyInstruction(NCDecoderStatePair* tthis,
+                            NCDecoderInst *dinst_old,
+                            NCDecoderInst *dinst_new) {
   NCRemainingMemory* mem_old = &dinst_old->dstate->memory;
   NCRemainingMemory* mem_new = &dinst_new->dstate->memory;
-  CHECK(mem_old->read_length == mem_new->read_length);
 
-  CopyInstructionInternal(mem_old->mpc,
-                          mem_new->mpc,
-                          mem_old->read_length);
+  return CopyInstructionInternal(mem_old->mpc,
+                                 mem_new->mpc,
+                                 mem_old->read_length);
 }
 
 int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
                size_t sz, int bundle_size) {
-  /* TODO(karl): The current implementation dies with runtime
-   * errors if something goes wrong. Fix so that NCDecodeSegmentPair
-   * returns a status value, so that the proper value can be
-   * returned by this routine.
-   */
-  NCDecodeSegmentPair(dst, src, vbase, sz, CopyInstruction);
-  return 1;
+  NCDecoderState dst_dstate;
+  NCDecoderInst  dst_inst;
+  NCDecoderState src_dstate;
+  NCDecoderInst  src_inst;
+  NCDecoderStatePair pair;
+  int result = 0;
+
+  NCDecoderStateConstruct(&dst_dstate, dst, vbase, sz, &dst_inst, 1);
+  NCDecoderStateConstruct(&src_dstate, src, vbase, sz, &src_inst, 1);
+  NCDecoderStatePairConstruct(&pair, &dst_dstate, &src_dstate);
+  pair.action_fn = CopyInstruction;
+  if (NCDecoderStatePairDecode(&pair)) result = 1;
+  NCDecoderStatePairDestruct(&pair);
+  NCDecoderStateDestruct(&src_dstate);
+  NCDecoderStateDestruct(&dst_dstate);
+
+  return result;
 }
 
 #elif NACL_TARGET_SUBARCH == 64
@@ -257,19 +269,28 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
   NaClSegment segment_old, segment_new;
   NaClInstIter *iter_old, *iter_new;
   NaClInstState *istate_old, *istate_new;
+  int still_good = 1;
 
   NaClSegmentInitialize(dst, vbase, size, &segment_old);
   NaClSegmentInitialize(src, vbase, size, &segment_new);
 
   iter_old = NaClInstIterCreate(&segment_old);
   iter_new = NaClInstIterCreate(&segment_new);
-  while (NaClInstIterHasNext(iter_old) &&
-         NaClInstIterHasNext(iter_new)) {
+  while (1) {
     /* March over every instruction, which means NaCl pseudo-instructions are
      * treated as multiple instructions.  Checks in NaClValidateCodeReplacement
      * guarantee that only valid replacements will happen, and no pseudo-
      * instructions should be touched.
      */
+    if (!(NaClInstIterHasNext(iter_old) && NaClInstIterHasNext(iter_new))) {
+      if (NaClInstIterHasNext(iter_old) || NaClInstIterHasNext(iter_new)) {
+        NaClLog(LOG_ERROR,
+                "Segment replacement: copy failed: iterators "
+                "length mismatch\n");
+        still_good = 0;
+      }
+      break;
+    }
     istate_old = NaClInstIterGetState(iter_old);
     istate_new = NaClInstIterGetState(iter_new);
     if (istate_old->bytes.length != istate_new->bytes.length ||
@@ -280,24 +301,28 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
        */
       NaClLog(LOG_ERROR,
               "Segment replacement: copied instructions misaligned\n");
-      return 0;
+      still_good = 0;
+      break;
     }
     /* Replacing all modified instructions at once could yield a speedup here
      * as every time we modify instructions we must serialize all processors
      * twice.  Re-evaluate if code modification performance is an issue.
      */
-    CopyInstructionInternal(iter_old->memory.mpc,
-                            iter_new->memory.mpc,
-                            iter_old->memory.read_length);
+    if (!CopyInstructionInternal(iter_old->memory.mpc,
+                                 iter_new->memory.mpc,
+                                 iter_old->memory.read_length)) {
+      NaClLog(LOG_ERROR,
+              "Segment replacement: copy failed: unable to copy instruction\n");
+      still_good = 0;
+      break;
+    }
     NaClInstIterAdvance(iter_old);
     NaClInstIterAdvance(iter_new);
   }
 
-  CHECK(!NaClInstIterHasNext(iter_old) && !NaClInstIterHasNext(iter_new));
-
   NaClInstIterDestroy(iter_old);
   NaClInstIterDestroy(iter_new);
-  return 1;
+  return still_good;
 }
 
 #else

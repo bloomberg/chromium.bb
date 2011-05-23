@@ -485,47 +485,77 @@ extern Bool NCDecoderStateDecode(NCDecoderState* tthis);
  */
 extern void NCDecoderStateDestruct(NCDecoderState* tthis);
 
-typedef void (*NCDecoderPairAction)(const struct NCDecoderInst* dinst_old,
-                                    const struct NCDecoderInst* dinst_new);
+struct NCDecoderStatePair;
 
-/* Walk two instruction segments at once. This function requires identical
- * instruction boundaries. Uses the functions passed as parameters
- * newsegment, segmentationerror, and internalerror to the last invocation of
- * NCDecodeRegisterCallbacks. If NCDecodeRegisterCallbacks was never called,
- * this function will use internal defaults for the corresponding functions.
+/* Models a method that does a compare/update on a pair of instructions from
+ * the pairwise instruction decoder. Returns true if the action succeeded.
+ */
+typedef Bool (*NCDecoderStatePairAction)(struct NCDecoderStatePair* tthis,
+                                         struct NCDecoderInst* dinst_old,
+                                         struct NCDecoderInst* dinst_new);
+
+/* Models decoding a pair of instruction segments, compariing/updating
+ * them as appropriate. Assumes that two instruction segments are the same,
+ * except for some (constant-sized) changes. At the instruction level,
+ * the instruction lengths are assumed to be the same. Typically, this is
+ * because the one instruction segment was an updated version of a
+ * previous instruction segment.
+ *
+ * Typical use is:
+ *
+ * NCDecoderState dstate_old;
+ * NCDecoderState dstate_new;
+ * NCDecoderStatePair dstate_pair;
+ * ... Code that constructs dstate_old and dstate_new.
+ * NCDecoderStatePair Construct(&dstate_pair, &dstate_old, &dstate_new);
+ * NCDecoderStatePairDecode(&dstate_pair);
+ * NCDecoderStatePairDestruct(&dstate_pair);
+ */
+typedef struct NCDecoderStatePair {
+  /* PROTECTED: */
+
+  /* The old decoder state. */
+  NCDecoderState* old_dstate;
+
+  /* The new decoder state. */
+  NCDecoderState* new_dstate;
+
+  /* The (virtual method) action to apply to each instruction. */
+  NCDecoderStatePairAction action_fn;
+} NCDecoderStatePair;
+
+/*
+ * Construct a decoder state pair.
  *
  * Parameters are:
- *   mbase_old - The beging of the old memory segment to decode.
- *   mbase_new - The beging of the new memory segment to decode.
- *   vbase - The (virtual) base address of the memory segments
- *       (must be the same for the old and new memory segments).
- *   size - The number of bytes in the memory segments
- *       (must be the same for the old and new memory segments).
- *   action - Action function to apply to the decoded instructions
- *       in both the old and new memory segments.
+ *    tthis - The decoder state pair to construct.
+ *    old_dstate - A constructed old decoder state to use.
+ *    new_dstate - A constructed new decoder state to use.
+ *
+ * Note: Constructors of subclasses of NCDecoderStatePair should
+ * call this constructor first, to initialize the decoder pair fields.
  */
-extern void NCDecodeSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
-                                NaClPcAddress vbase, NaClMemorySize size,
-                                NCDecoderPairAction action);
+extern void NCDecoderStatePairConstruct(NCDecoderStatePair* tthis,
+                                        NCDecoderState* old_dstate,
+                                        NCDecoderState* new_dstate);
 
-/* Same as NCDecodeSegmentPair, but uses the decoder state and
- * given callbacks for the decoding, rather than the
- * global bindings defined by the last call to
- * NCDecodeRegisterCallbacks.
+/*
+ * Decode the memory segments in each instruction state, applying
+ * the appropriate action on each instruction till either:
+ * (1) The instruction lengths differ.
+ * (2) The action returns false.
+ * Returns true if no instruction lengths differ, and the action
+ * returns true for all found instructions.
  */
-extern void NCDecodeSegmentPairUsing(
-    uint8_t* mbase_old, uint8_t* mbase_new,
-    NaClPcAddress vbase, NaClMemorySize size,
-    NCDecoderState* dstate_old,
-    NCDecoderInst* inst_buffer_old,
-    size_t inst_buffer_size_old,
-    NCDecoderState* dstate_new,
-    NCDecoderInst* inst_buffer_new,
-    size_t inst_buffer_size_new,
-    NCDecoderPairAction action,
-    NCDecoderStateMethod newsegment,
-    NCDecoderStateMethod segmentationerror,
-    NCDecoderStateMethod internalerror);
+extern Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis);
+
+/*
+ * Destruct a decoder state pair.
+ *
+ * Note: Destructors of subclasses of NCDecoderStatePair should
+ * call this distructor last, after the subinstance has been destructed.
+ */
+extern void NCDecoderStatePairDestruct(NCDecoderStatePair* tthis);
 
 EXTERN_C_END
 

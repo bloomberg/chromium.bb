@@ -101,11 +101,11 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
 /* Validate a segment for dynamic code replacement */
 /* This routine checks that the code found at mbase_old
  * can be dynamically replaced with the code at mbase_new
- * safely.
+ * safely. Returns non-zero if successful.
  */
-void NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
-                           NaClPcAddress vbase, size_t sz,
-                           struct NCValidatorState *vstate);
+int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
+                          NaClPcAddress vbase, size_t sz,
+                          uint8_t alignment);
 
 /* Check targets and alignment. Returns non-zero if there are */
 /* safety issues, else returns 1                              */

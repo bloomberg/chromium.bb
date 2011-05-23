@@ -56,8 +56,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
 int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
-  struct NCValidatorState *vstate;
-  int validator_result = 0;
   NaClCPUData cpu_data;
 
   NaClCPUDataGet(&cpu_data);
@@ -76,14 +74,8 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
     return LOAD_BAD_FILE;
   }
 
-  vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
-  if (vstate == NULL) {
-    return LOAD_BAD_FILE;
-  }
-  NCValidateSegmentPair(data_old, data_new, guest_addr, size, vstate);
-  validator_result = NCValidateFinish(vstate);
-  NCValidateFreeState(&vstate);
-  if (validator_result != 0) {
+  if (!NCValidateSegmentPair(data_old, data_new, guest_addr, size,
+                             nap->bundle_size)) {
     return LOAD_VALIDATION_FAILED;
   }
   return LOAD_OK;
