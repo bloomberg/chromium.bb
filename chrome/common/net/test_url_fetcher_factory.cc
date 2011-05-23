@@ -35,18 +35,18 @@ void TestURLFetcher::set_status(const net::URLRequestStatus& status) {
 }
 
 void TestURLFetcher::SetResponseString(const std::string& response) {
-  SetResponseDestinationForTesting(STRING);
+  response_destination_ = STRING;
   fake_response_string_ = response;
 }
 
 void TestURLFetcher::SetResponseFilePath(const FilePath& path) {
-  SetResponseDestinationForTesting(TEMP_FILE);
+  response_destination_ = TEMP_FILE;
   fake_response_file_path_ = path;
 }
 
 bool TestURLFetcher::GetResponseAsString(
     std::string* out_response_string) const {
-  if (GetResponseDestinationForTesting() != STRING)
+  if (response_destination_ != STRING)
     return false;
 
   *out_response_string = fake_response_string_;
@@ -55,7 +55,7 @@ bool TestURLFetcher::GetResponseAsString(
 
 bool TestURLFetcher::GetResponseAsFilePath(
     bool take_ownership, FilePath* out_response_path) const {
-  if (GetResponseDestinationForTesting() != TEMP_FILE)
+  if (response_destination_ != TEMP_FILE)
     return false;
 
   *out_response_path = fake_response_file_path_;
