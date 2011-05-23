@@ -680,22 +680,34 @@ cr.define('ntp4', function() {
     $('themecss').href = 'chrome://theme/css/newtab.css?' + Date.now();
     if (typeof hasAttribution != 'undefined')
       document.documentElement.setAttribute('hasattribution', hasAttribution);
+    updateLogo();
     updateAttribution();
   }
 
   /**
    * Sets the proper image for the logo at the bottom left.
    */
-  function updateAttribution() {
-    // Default value for standard NTP with no theme attribution or custom logo.
+  function updateLogo() {
     var imageId = 'IDR_PRODUCT_LOGO';
-    // Theme attribution always overrides custom logos.
-    if (document.documentElement.getAttribute('hasattribution') == 'true')
-      imageId = 'IDR_THEME_NTP_ATTRIBUTION';
-    else if (document.documentElement.getAttribute('customlogo') == 'true')
+    if (document.documentElement.getAttribute('customlogo') == 'true')
       imageId = 'IDR_CUSTOM_PRODUCT_LOGO';
 
-    $('attribution-img').src = 'chrome://theme/' + imageId + '?' + Date.now();
+    $('logo-img').src = 'chrome://theme/' + imageId + '?' + Date.now();
+  }
+
+  /**
+   * Attributes the attribution image at the bottom left.
+   */
+  function updateAttribution() {
+    var attribution = $('attribution');
+    if (document.documentElement.getAttribute('hasattribution') == 'true') {
+      $('attribution-img').src =
+          'chrome://theme/IDR_THEME_NTP_ATTRIBUTION?' + Date.now();
+      attribution.hidden = false;
+    } else {
+      attribution.hidden = true;
+    }
+
   }
 
   function setRecentlyClosedTabs(dataItems) {
