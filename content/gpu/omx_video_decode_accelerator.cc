@@ -294,7 +294,7 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffer(
   }
 
   assigned_picture_buffers_.insert(
-      assigned_picture_buffers_.begin(),
+      assigned_picture_buffers_.end(),
       picture_buffers.begin(),
       picture_buffers.end());
 
@@ -396,6 +396,7 @@ bool OmxVideoDecodeAccelerator::Flush(
   flush_done_callback_ = callback;
 
   OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
+  free_input_buffers_.pop();
   omx_buffer->nFilledLen = 0;
   omx_buffer->nAllocLen = omx_buffer->nFilledLen;
   omx_buffer->nFlags |= OMX_BUFFERFLAG_EOS;
@@ -529,7 +530,6 @@ void OmxVideoDecodeAccelerator::OnPortCommandFlush(OMX_STATETYPE state) {
     OutputPicture output_picture = output_pictures_[i];
     client_->DismissPictureBuffer(output_picture.first);
   }
-  output_pictures_.clear();
 }
 
 void OmxVideoDecodeAccelerator::OnStateChangeExecutingToIdle(
@@ -669,7 +669,7 @@ void OmxVideoDecodeAccelerator::FreeInputBuffers() {
   // Calls to OMX to free buffers.
   OMX_ERRORTYPE result;
   OMX_BUFFERHEADERTYPE* omx_buffer;
-  for (int i = 0; i < input_buffer_count_; ++i) {
+  while (!free_input_buffers_.empty()) {
     omx_buffer = free_input_buffers_.front();
     free_input_buffers_.pop();
     result = OMX_FreeBuffer(component_handle_, input_port_, omx_buffer);
@@ -855,6 +855,8 @@ bool OmxVideoDecodeAccelerator::CanFillBuffer() {
   // has not been reached.
   OMX_ERRORTYPE result;
   OMX_STATETYPE il_state;
+  if (client_state_ == OMX_StateLoaded)
+    return false;
   result = OMX_GetState(component_handle_, &il_state);
   if (result != OMX_ErrorNone) {
     LOG(ERROR) << "SendCommand(OMX_CommandPortDisable) failed";
