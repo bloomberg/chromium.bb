@@ -126,104 +126,44 @@ test_specs = [ (0x10000,       'no'),
                ( 0x8000,      'large'),
                (0x10000 - 28, 'too_small') ]
 
-rwdata_addr = None  # none for now
-
-
-def CreateSegmentPosAndSizeCheckingCommands(out,
-                                            code_pos=None,
-                                            code_size=None,
-                                            ro_pos=None,
-                                            ro_size=None,
-                                            rw_pos=None):
-  '''
-  The string magic below crafts command lines using tools/elf_checker.py
-  for checking various program header properties of nexes
-  d=0x70000000 is a big enough number so that addr % d == addr
-  for all addresses we expect to encounter
-
-  To see the actual segments including the "-f" value, run:
-  readelf  -l <nexe>
-  '''
-  # note: LARGE_NUM was picked so that pos mod LARGE_NUM = pos
-  #       for all pos we expect to deal with
-  large_num = 0x70000000
-  cmd_prefix = ('${PYTHON} ${SCONSTRUCT_DIR}/tools/elf_checker.py '
-                '-s load -d 0x%x ' % large_num)
-
-  cmd_suffix = ' ${SOURCES} >> %s' % out
-
-  cmd_code_pos = cmd_prefix + '-a vaddr -f 5 -r 0x%x' + cmd_suffix
-  cmd_code_size= cmd_prefix + '-a memsz -f 5 -r 0x%x' + cmd_suffix
-  cmd_ro_pos = cmd_prefix + '-a vaddr -f 4 -r 0x%x' + cmd_suffix
-  cmd_ro_size = cmd_prefix + '-a memsz -f 4 -r 0x%x' + cmd_suffix
-  cmd_rw_pos = cmd_prefix + '-a vaddr -f 6 -r 0x%x' + cmd_suffix
-
-  commands = []
-  commands.append('echo "start pos/size checking" > %s' % out)
-  if code_pos is not None: commands.append(cmd_code_pos % code_pos)
-  if code_size is not None: commands.append(cmd_code_size % code_size)
-  if ro_pos is not None: commands.append(cmd_ro_pos % ro_pos)
-  if ro_size is not None: commands.append(cmd_ro_size % ro_size)
-  if rw_pos is not None: commands.append(cmd_rw_pos % rw_pos)
-  return commands
-
-
+rwdata_address = None  # none for now
 
 for text_end, variant in test_specs:
-  for rodata_addr, rodata_size, name_modifier in [(None, 0, ''),
-                                                  (0, 12, '_ro'),
-                                                  (0x100000, 12, '_ro_dyn') ]:
+  for rodata_address, name_modifier in [ (None, ''),
+                                         (0, '_ro'),
+                                         (0x100000, '_ro_dyn') ]:
     # rodata_address is None when no .rodata section should appear
     # in the generated nexe, and is 0 when it should appear in the
     # natural location (as defined by the linker script); when it
     # has a non-zero numeric value, then the .rodata section is
     # forced to start at that address.
-    if rodata_addr == 0:
-      rodata_addr = NaturalRodataStart(text_end)
+    if rodata_address == 0:
+      rodata_address = NaturalRodataStart(text_end)
     # rodata_address is None or a non-zero integer
 
-    break_addr = ExpectedBreak(text_end,
-                               rodata_addr,
-                               rwdata_addr,
-                               RWDATA_SIZE)
+    break_address = ExpectedBreak(text_end,
+                                  rodata_address,
+                                  rwdata_address,
+                                  RWDATA_SIZE)
 
     defines=[]
     for (symbol, value) in [('TEXT_EXTEND', text_end),
-                            ('EXPECTED_BREAK', break_addr),
-                            ('EXPECTED_RODATA', rodata_addr),
-                            ('EXPECTED_RWDATA', rwdata_addr)]:
+                            ('EXPECTED_BREAK', break_address),
+                            ('EXPECTED_RODATA', rodata_address),
+                            ('EXPECTED_RWDATA', rwdata_address)]:
       if value is not None:
         defines += [[symbol, str(value)]]
 
-    asm_env = NewAsmEnv(env, defines, rodata_addr, rwdata_addr)
+    asm_env = NewAsmEnv(env, defines, rodata_address, rwdata_address)
 
     base_name = 'nacl_text_' + variant + '_pad' + name_modifier + '_test'
     obj = asm_env.ComponentObject(base_name + '.o', nacl_text_pad_asm)
+    nexe_name = base_name + '.nexe'
 
-    nexe = asm_env.ComponentProgram(base_name + '.nexe', [obj])
+    asm_env.ComponentProgram(nexe_name, [obj])
 
     node = env.CommandSelLdrTestNacl(base_name + '.out',
-                                     command=[nexe])
+                                     command=[env.File(nexe_name)])
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_sled_tests'],
                            'run_' + base_name)
-
-    # NOTE: The linker no longer seems to allow us to generate the too_small
-    #       gap of size 28, so these tests are a litte less useful
-    #       than they used to be when we could test that the sel_ldr
-    #       actually rejects images with a too_small gap.
-    if text_end == 0x10000 - 28:
-      if asm_env.Bit('target_arm'):
-        text_end = 0xfff0
-      else:
-        text_end = 0x10000
-    commands = CreateSegmentPosAndSizeCheckingCommands(base_name,
-                                                       START_OF_TEXT,
-                                                       text_end,
-                                                       rodata_addr,
-                                                       rodata_size,
-                                                       None)
-
-    # Run the checks as part of the tes suite sel_ldr_sled_tests
-    node = env.Command(base_name + '_info', nexe, commands)
-    env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_sled_tests'])
