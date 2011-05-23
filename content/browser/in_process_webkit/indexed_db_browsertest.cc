@@ -49,7 +49,18 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
   }
 };
 
+class IndexedDBLevelDBBrowserTest : public IndexedDBBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kLevelDBIndexedDatabase);
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBLevelDBBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 
