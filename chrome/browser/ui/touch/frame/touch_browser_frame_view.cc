@@ -65,6 +65,9 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
   registrar_.Add(this,
                  NotificationType::TAB_CONTENTS_DESTROYED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::HIDE_KEYBOARD_INVOKED,
+                 NotificationService::AllSources());
 
   browser_view->browser()->tabstrip_model()->AddObserver(this);
 
@@ -275,6 +278,14 @@ void TouchBrowserFrameView::Observe(NotificationType type,
         Source<TabContents>(source).ptr()->property_bag());
   } else if (type == NotificationType::PREF_CHANGED) {
     OpaqueBrowserFrameView::Observe(type, source, details);
+  } else if (type == NotificationType::HIDE_KEYBOARD_INVOKED) {
+    TabContents* tab_contents =
+        browser_view()->browser()->GetSelectedTabContents();
+    if (tab_contents) {
+      GetFocusedStateAccessor()->SetProperty(tab_contents->property_bag(),
+                                             false);
+    }
+    UpdateKeyboardAndLayout(false);
   }
 }
 

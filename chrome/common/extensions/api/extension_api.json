@@ -2419,6 +2419,19 @@
         ]
       },
       {
+        "name": "hideKeyboard",
+        "type": "function",
+        "description": "Hide the keyboard UI.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "sendHandwritingStroke",
         "type": "function",
         "description": "Send a handwriting event to Chrome.",

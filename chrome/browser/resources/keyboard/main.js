@@ -413,7 +413,7 @@ HideKeyboardKey.prototype = {
     this.sizeElement(mode, height);
 
     this.modeElements_[mode].onclick = function() {
-      // TODO(bryeung): need a way to cancel the keyboard
+      chrome.experimental.input.hideKeyboard();
     };
 
     return this.modeElements_[mode];

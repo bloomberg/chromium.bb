@@ -274,6 +274,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SendKeyboardEventInputFunction>();
 #endif
 
+#if defined(TOUCH_UI)
+  RegisterFunction<HideKeyboardFunction>();
+#endif
+
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
   // IME
   RegisterFunction<CandidateClickedInputUiFunction>();

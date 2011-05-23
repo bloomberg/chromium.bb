@@ -16,6 +16,10 @@
 #include "views/ime/input_method.h"
 #include "views/widget/widget.h"
 
+#if defined(TOUCH_UI)
+#include "content/common/notification_service.h"
+#endif
+
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
@@ -124,6 +128,16 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   return true;
 }
+
+#if defined(TOUCH_UI)
+bool HideKeyboardFunction::RunImpl() {
+  NotificationService::current()->Notify(
+      NotificationType::HIDE_KEYBOARD_INVOKED,
+      Source<HideKeyboardFunction>(this),
+      NotificationService::NoDetails());
+  return true;
+}
+#endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 // TODO(yusukes): This part should be moved to extension_input_api_chromeos.cc.

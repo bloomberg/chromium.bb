@@ -1298,6 +1298,11 @@ class NotificationType {
     // Sent when a new web store promo has been loaded.
     WEB_STORE_PROMO_LOADED,
 
+#if defined(TOUCH_UI)
+    // Sent when an API for hiding the keyboard is invoked from JavaScript code.
+    HIDE_KEYBOARD_INVOKED,
+#endif
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

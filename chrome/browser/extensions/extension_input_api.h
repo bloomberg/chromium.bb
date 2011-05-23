@@ -33,6 +33,14 @@ class SendKeyboardEventInputFunction : public InputFunction {
   views::Widget* GetTopLevelWidget();
 };
 
+#if defined(TOUCH_UI)
+class HideKeyboardFunction : public AsyncExtensionFunction {
+ public:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.hideKeyboard");
+};
+#endif
+
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 // Note that this experimental APIs are currently only available for
 // TOUCH_UI version of Chrome OS. Please also note that the version of Chrome
