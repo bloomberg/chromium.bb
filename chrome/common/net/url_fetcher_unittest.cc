@@ -315,6 +315,15 @@ class URLFetcherTempFileTest : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source);
 
+  // This obsolete signature should not be used, but must be present
+  // to make clang happy.
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const net::URLRequestStatus& status,
+                                  int response_code,
+                                  const net::ResponseCookies& cookies,
+                                  const std::string& data);
+
   virtual void CreateFetcher(const GURL& url);
 
  protected:
@@ -639,6 +648,17 @@ void URLFetcherTempFileTest::OnURLFetchComplete(const URLFetcher* source) {
 
   io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
+
+void URLFetcherTempFileTest::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const net::ResponseCookies& cookies,
+    const std::string& data) {
+  NOTREACHED();
+}
+
 
 TEST_F(URLFetcherTest, SameThreadsTest) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
