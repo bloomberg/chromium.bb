@@ -244,7 +244,6 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
-  bool first_login = !UserManager::Get()->IsKnownUser(username_);
   // Change the proxy configuration service of the default request context to
   // use the preference configuration from the logged-in profile. This ensures
   // that requests done through the default context use the proxy configuration
@@ -320,7 +319,7 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
 
   RespectLocalePreference(profile);
 
-  if (first_login) {
+  if (UserManager::Get()->current_user_is_new()) {
     SetFirstLoginPrefs(profile->GetPrefs());
   }
 
