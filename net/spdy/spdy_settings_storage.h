@@ -21,13 +21,18 @@ class NET_TEST SpdySettingsStorage {
   SpdySettingsStorage();
   ~SpdySettingsStorage();
 
-  // Get a copy of the SpdySettings stored for a host.
+  // Gets a copy of the SpdySettings stored for a host.
   // If no settings are stored, returns an empty set of settings.
+  // NOTE: Since settings_map_ may be cleared, don't store the address of the
+  // return value.
   const spdy::SpdySettings& Get(const HostPortPair& host_port_pair) const;
 
-  // Save settings for a host.
+  // Saves settings for a host.
   void Set(const HostPortPair& host_port_pair,
            const spdy::SpdySettings& settings);
+
+  // Clears out the settings_map_ object.
+  void Clear();
 
  private:
   typedef std::map<HostPortPair, spdy::SpdySettings> SettingsMap;
