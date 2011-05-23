@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/syncable_service.h"
+#include "chrome/browser/sync/api/sync_change_processor.h"
 
-SyncableService::SyncableService() {}
-
-SyncableService::~SyncableService() {}
+SyncChangeProcessor::~SyncChangeProcessor() {}

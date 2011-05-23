@@ -212,8 +212,6 @@ PrefService::~PrefService() {
   pref_value_store_.reset();
   user_pref_store_ = NULL;
   default_store_ = NULL;
-  if (pref_sync_associator_.get())
-    pref_sync_associator_->DisassociateModels();
   pref_sync_associator_.reset();
 }
 

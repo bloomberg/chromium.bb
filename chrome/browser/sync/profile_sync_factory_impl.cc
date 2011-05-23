@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/app_change_processor.h"
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
 #include "chrome/browser/sync/glue/app_model_associator.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/glue/syncable_service_adapter.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/theme_change_processor.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
@@ -39,7 +41,6 @@
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
-#include "chrome/browser/sync/syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -274,9 +275,14 @@ ProfileSyncFactoryImpl::CreatePreferenceSyncComponents(
     UnrecoverableErrorHandler* error_handler) {
   SyncableService* pref_sync_service =
       profile_->GetPrefs()->GetSyncableService();
+  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =
-      new GenericChangeProcessor(pref_sync_service, error_handler);
-  return SyncComponents(pref_sync_service, change_processor);
+      new GenericChangeProcessor(pref_sync_service, error_handler, user_share);
+  browser_sync::SyncableServiceAdapter* sync_service_adapter =
+      new browser_sync::SyncableServiceAdapter(syncable::PREFERENCES,
+                                               pref_sync_service,
+                                               change_processor);
+  return SyncComponents(sync_service_adapter, change_processor);
 }
 
 ProfileSyncFactory::SyncComponents

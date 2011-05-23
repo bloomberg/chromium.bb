@@ -60,7 +60,7 @@ class ChangeProcessor {
 
   bool running() { return running_; }
   UnrecoverableErrorHandler* error_handler();
-  sync_api::UserShare* share_handle();
+  virtual sync_api::UserShare* share_handle();
 
  private:
   bool running_;  // True if we have been told it is safe to process changes.

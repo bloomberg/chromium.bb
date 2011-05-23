@@ -14,28 +14,18 @@
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/sync/syncable_service.h"
-#include "chrome/browser/sync/unrecoverable_error_handler.h"
+#include "chrome/browser/sync/api/syncable_service.h"
+#include "chrome/browser/sync/api/sync_data.h"
 
-class Profile;
-class ProfileSyncService;
+namespace sync_pb {
+class PreferenceSpecifics;
+}
+
 class Value;
 
-namespace sync_api {
-class WriteNode;
-class WriteTransaction;
-}
-
-namespace browser_sync {
-class ChangeProcessor;
-class GenericChangeProcessor;
-}
-
-// Contains all model association related logic:
-// * Algorithm to associate preferences model and sync model.
-// TODO(sync): Rewrite to use change processor instead of transactions.
-// TODO(sync): Merge this into PrefService. We don't actually need the id_map
-// mapping since the sync node tags are the same as the pref names.
+// Contains all preference sync related logic.
+// TODO(sync): Merge this into PrefService once we separate the profile
+// PrefService from the local state PrefService.
 class PrefModelAssociator
     : public SyncableService,
       public base::NonThreadSafe {
@@ -44,32 +34,34 @@ class PrefModelAssociator
   virtual ~PrefModelAssociator();
 
   // SyncableService implementation.
-  virtual bool AssociateModels() OVERRIDE;
-  virtual bool DisassociateModels() OVERRIDE;
-  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
-  virtual void AbortAssociation() OVERRIDE;  // Not implemented.
-  virtual bool CryptoReadyIfNecessary() OVERRIDE;
-  virtual void ApplyChangesFromSync(
-      const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count) OVERRIDE;
-  virtual void SetupSync(
-      ProfileSyncService* sync_service,
-      browser_sync::GenericChangeProcessor* change_processor) OVERRIDE;
+  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
+  virtual void ProcessSyncChanges(const SyncChangeList& change_list) OVERRIDE;
+  virtual bool MergeDataAndStartSyncing(
+      syncable::ModelType type,
+      const SyncDataList& initial_sync_data,
+      SyncChangeProcessor* sync_processor) OVERRIDE;
+  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
-  // Returns the list of preference names that should be monitored for changes.
-  // Only preferences that are registered will be in this list.
+  // Returns the list of preference names that are registered as syncable, and
+  // hence should be monitored for changes.
+  std::set<std::string> registered_preferences() const;
+
+  // Returns the list of preferences actually being synced (which is a subset
+  // of those registered as syncable).
   std::set<std::string> synced_preferences() const;
 
   // Register a preference with the specified name for syncing. We do not care
   // about the type at registration time, but when changes arrive from the
   // syncer, we check if they can be applied and if not drop them.
+  // Note: This should only be called at profile startup time (before sync
+  // begins).
   virtual void RegisterPref(const char* name);
 
   // Returns true if the specified preference is registered for syncing.
   virtual bool IsPrefRegistered(const char* name);
 
-  // Process a local preference change.
+  // Process a local preference change. This can trigger new SyncChanges being
+  // sent to the syncer.
   virtual void ProcessPrefChange(const std::string& name);
 
   // Merges the value of local_pref into the supplied server_value and returns
@@ -80,71 +72,83 @@ class PrefModelAssociator
   static Value* MergePreference(const PrefService::Preference& local_pref,
                                 const Value& server_value);
 
-  // Writes the value of pref into the specified node. Returns true
-  // upon success.
-  static bool WritePreferenceToNode(const std::string& name,
-                                    const Value& value,
-                                    sync_api::WriteNode* node);
+  // Fills |sync_data| with a sync representation of the preference data
+  // provided.
+  static bool CreatePrefSyncData(const std::string& name,
+                                 const Value& value,
+                                 SyncData* sync_data);
 
   // Extract preference value and name from sync specifics.
   Value* ReadPreferenceSpecifics(
       const sync_pb::PreferenceSpecifics& specifics,
       std::string* name);
 
-  // Returns the sync id for the given preference name, or sync_api::kInvalidId
-  // if the preference name is not associated to any sync id.
-  int64 GetSyncIdFromChromeId(const std::string& node_id);
  protected:
   friend class ProfileSyncServicePreferenceTest;
+
+  typedef std::map<std::string, SyncData> SyncDataMap;
 
   // For testing.
   PrefModelAssociator();
 
-  // Create an association for a given preference. A sync node is created if
-  // necessary and the value is read from or written to the node as appropriate.
-  bool InitPrefNodeAndAssociate(sync_api::WriteTransaction* trans,
-                                const sync_api::BaseNode& root,
-                                const PrefService::Preference* pref);
+  // Create an association for a given preference. If |sync_pref| is valid,
+  // signifying that sync has data for this preference, we reconcile their data
+  // with ours and append a new UPDATE SyncChange to |sync_changes|. If
+  // sync_pref is not set, we append an ADD SyncChange to |sync_changes| with
+  // the current preference data.
+  // Note: We do not modify the sync data for preferences that are either
+  // controlled by policy (are not user modifiable) or have their default value
+  // (are not user controlled).
+  void InitPrefAndAssociate(const SyncData& sync_pref,
+                            const std::string& pref_name,
+                            SyncChangeList* sync_changes);
 
-  // Associates the given preference name with the given sync id.
-  void Associate(const PrefService::Preference* node, int64 sync_id);
-
-  // Remove the association that corresponds to the given sync id.
-  void Disassociate(int64 sync_id);
-
-  // Returns whether a node with the given permanent tag was found and update
-  // |sync_id| with that node's id.
-  bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
-
-  // Perform any additional operations that need to happen after a preference
-  // has been updated.
+  // Perform any additional local operations that need to happen after a
+  // preference has been updated.
   void SendUpdateNotificationsIfNecessary(const std::string& pref_name);
-
-  typedef std::map<std::string, int64> PreferenceNameToSyncIdMap;
-  typedef std::map<int64, std::string> SyncIdToPreferenceNameMap;
 
   static Value* MergeListValues(const Value& from_value, const Value& to_value);
   static Value* MergeDictionaryValues(const Value& from_value,
                                       const Value& to_value);
 
-  PrefService* pref_service_;
-  ProfileSyncService* sync_service_;
-
   // Do we have an active association between the preferences and sync models?
-  // Set by AssociateModels, reset by DisassociateModels.
+  // Set when start syncing, reset in StopSyncing. While this is not set, we
+  // ignore any local preference changes (when we start syncing we will look
+  // up the most recent values anyways).
   bool models_associated_;
 
   // Whether we're currently processing changes from the syncer. While this is
-  // true, we ignore any pref changes, since we triggered them.
+  // true, we ignore any local preference changes, since we triggered them.
   bool processing_syncer_changes_;
 
-  PreferenceNameToSyncIdMap id_map_;
-  SyncIdToPreferenceNameMap id_map_inverse_;
-  std::set<std::string> synced_preferences_;
+  // A set of preference names.
+  typedef std::set<std::string> PreferenceSet;
 
-  // TODO(zea): Get rid of this and use one owned by the PSS.
-  // We create, but don't own this (will be destroyed by data type controller).
-  browser_sync::GenericChangeProcessor* change_processor_;
+  // All preferences that have registered as being syncable with this profile.
+  PreferenceSet registered_preferences_;
+
+  // The preferences we are currently actually syncing (i.e. those the server
+  // is aware of). This is a subset of |registered_preferences_|, but excludes
+  // those with default values or not modifiable by the user (for example due
+  // to being controlled by policy)
+  PreferenceSet synced_preferences_;
+
+  // We keep track of the most recent sync data we've received those
+  // preferences registered as syncable but not in our synced_preferences_ list.
+  // These are used if at a later time the preference in question should be
+  // synced (for example the pref policy changes), and we need to get the
+  // most recent sync data.
+  // TODO(zea): See if we can get rid of the difference between
+  // synced_preferences_ and registered_preferences_ by always updating the
+  // local user pref store with pref data and letting the PrefStoreKeeper
+  // handle ensuring the appropriate policy value is used.
+  SyncDataMap untracked_pref_sync_data_;
+
+  // The PrefService we are syncing to.
+  PrefService* pref_service_;
+
+  // Sync's SyncChange handler. We push all our changes through this.
+  SyncChangeProcessor* sync_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };

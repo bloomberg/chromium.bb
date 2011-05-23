@@ -254,6 +254,8 @@ class BaseNode {
   // data.  Can only be called if GetModelType() == SESSIONS.
   const sync_pb::SessionSpecifics& GetSessionSpecifics() const;
 
+  const sync_pb::EntitySpecifics& GetEntitySpecifics() const;
+
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
 
@@ -424,6 +426,9 @@ class WriteNode : public BaseNode {
   // Set the session specifics (windows, tabs, navigations etc.).
   // Should only be called if GetModelType() == SESSIONS.
   void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
+
+  // Generic set specifics method. Will extract the model type from |specifics|.
+  void SetEntitySpecifics(const sync_pb::EntitySpecifics& specifics);
 
   // Resets the EntitySpecifics for this node based on the unencrypted data.
   // Will encrypt if necessary.

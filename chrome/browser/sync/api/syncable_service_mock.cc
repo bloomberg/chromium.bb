@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/syncable_service_mock.h"
+#include "chrome/browser/sync/api/syncable_service_mock.h"
 
 SyncableServiceMock::SyncableServiceMock() {}
 

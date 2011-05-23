@@ -409,13 +409,6 @@ const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
   return *password_data_;
 }
 
-const sync_pb::PreferenceSpecifics& BaseNode::GetPreferenceSpecifics() const {
-  DCHECK_EQ(syncable::PREFERENCES, GetModelType());
-  const sync_pb::EntitySpecifics& unencrypted =
-      GetUnencryptedSpecifics(GetEntry());
-  return unencrypted.GetExtension(sync_pb::preference);
-}
-
 const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
   DCHECK_EQ(syncable::THEMES, GetModelType());
   const sync_pb::EntitySpecifics& unencrypted =
@@ -442,6 +435,12 @@ const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
   const sync_pb::EntitySpecifics& unencrypted =
       GetUnencryptedSpecifics(GetEntry());
   return unencrypted.GetExtension(sync_pb::session);
+}
+
+const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted;
 }
 
 syncable::ModelType BaseNode::GetModelType() const {
@@ -600,12 +599,6 @@ void WriteNode::SetPasswordSpecifics(
   PutPasswordSpecificsAndMarkForSyncing(new_value);
 }
 
-void WriteNode::SetPreferenceSpecifics(
-    const sync_pb::PreferenceSpecifics& new_value) {
-  DCHECK_EQ(syncable::PREFERENCES, GetModelType());
-  PutPreferenceSpecificsAndMarkForSyncing(new_value);
-}
-
 void WriteNode::SetThemeSpecifics(
     const sync_pb::ThemeSpecifics& new_value) {
   DCHECK_EQ(syncable::THEMES, GetModelType());
@@ -616,6 +609,17 @@ void WriteNode::SetSessionSpecifics(
     const sync_pb::SessionSpecifics& new_value) {
   DCHECK_EQ(syncable::SESSIONS, GetModelType());
   PutSessionSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::SetEntitySpecifics(
+    const sync_pb::EntitySpecifics& new_value) {
+  syncable::ModelType specifics_type =
+      syncable::GetModelTypeFromSpecifics(new_value);
+  DCHECK_EQ(specifics_type, GetModelType());
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::ResetFromSpecifics() {
@@ -629,14 +633,6 @@ void WriteNode::PutPasswordSpecificsAndMarkForSyncing(
     const sync_pb::PasswordSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::password)->CopyFrom(new_value);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
-}
-
-void WriteNode::PutPreferenceSpecificsAndMarkForSyncing(
-    const sync_pb::PreferenceSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::preference)->CopyFrom(new_value);
-  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 

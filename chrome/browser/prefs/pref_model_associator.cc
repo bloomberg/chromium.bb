@@ -9,70 +9,65 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
 
 using syncable::PREFERENCES;
 
 PrefModelAssociator::PrefModelAssociator()
-    : pref_service_(NULL),
-      sync_service_(NULL),
-      models_associated_(false),
+    : models_associated_(false),
       processing_syncer_changes_(false),
-      change_processor_(NULL) {
+      pref_service_(NULL),
+      sync_processor_(NULL) {
 }
 
 PrefModelAssociator::PrefModelAssociator(
     PrefService* pref_service)
-    : pref_service_(pref_service),
-      sync_service_(NULL),
-      models_associated_(false),
+    : models_associated_(false),
       processing_syncer_changes_(false),
-      change_processor_(NULL) {
+      pref_service_(pref_service),
+      sync_processor_(NULL) {
   DCHECK(CalledOnValidThread());
 }
 
 PrefModelAssociator::~PrefModelAssociator() {
   DCHECK(CalledOnValidThread());
-  change_processor_ = NULL;
-  sync_service_ = NULL;
+  sync_processor_ = NULL;
   pref_service_ = NULL;
 }
 
-bool PrefModelAssociator::InitPrefNodeAndAssociate(
-    sync_api::WriteTransaction* trans,
-    const sync_api::BaseNode& root,
-    const PrefService::Preference* pref) {
-  DCHECK(pref);
+void PrefModelAssociator::InitPrefAndAssociate(
+    const SyncData& sync_pref,
+    const std::string& pref_name,
+    SyncChangeList* sync_changes) {
+  const PrefService::Preference* pref =
+      pref_service_->FindPreference(pref_name.c_str());
+  VLOG(1) << "Associating preference " << pref_name;
+  if (!pref->IsUserModifiable()) {
+    // This preference is controlled by policy. We don't need sync it, but if
+    // there is sync data we want to track it for possible future use.
+    if (sync_pref.IsValid())
+      untracked_pref_sync_data_[pref_name] = sync_pref;
+    return;
+  }
 
   base::JSONReader reader;
-  std::string tag = pref->name();
-  sync_api::WriteNode node(trans);
-  if (node.InitByClientTagLookup(PREFERENCES, tag)) {
-    // The server has a value for the preference.
-    const sync_pb::PreferenceSpecifics& preference(
-        node.GetPreferenceSpecifics());
-    DCHECK_EQ(tag, preference.name());
-
-    if (!pref->IsUserModifiable()) {
-      Associate(pref, node.GetId());
-      return true;
-    }
+  if (sync_pref.IsValid()) {
+    // The server has a value for the preference, we have to reconcile it with
+    // ours.
+    const sync_pb::PreferenceSpecifics& preference =
+        sync_pref.GetSpecifics().GetExtension(sync_pb::preference);
+    DCHECK_EQ(pref->name(), preference.name());
 
     scoped_ptr<Value> value(
         reader.JsonToValue(preference.value(), false, false));
-    std::string pref_name = preference.name();
     if (!value.get()) {
       LOG(ERROR) << "Failed to deserialize preference value: "
                  << reader.GetErrorMessage();
-      return false;
+      return;
     }
 
     // Merge the server value of this preference with the local value.
@@ -92,137 +87,88 @@ bool PrefModelAssociator::InitPrefNodeAndAssociate(
 
     SendUpdateNotificationsIfNecessary(pref_name);
 
-    // If the merge resulted in an updated value, write it back to
-    // the sync node.
-    if (!value->Equals(new_value.get()) &&
-        !WritePreferenceToNode(pref->name(), *new_value, &node)) {
-      return false;
+    // If the merge resulted in an updated value, inform the syncer.
+    if (!value->Equals(new_value.get())) {
+      SyncData sync_data;
+      if (!CreatePrefSyncData(pref->name(), *new_value, &sync_data)) {
+        LOG(ERROR) << "Failed to update preference.";
+        return;
+      }
+      sync_changes->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
     }
-    Associate(pref, node.GetId());
   } else if (pref->IsUserControlled()) {
-    // The server doesn't have a value, but we have a user-controlled value,
-    // so we push it to the server.
-    sync_api::WriteNode write_node(trans);
-    if (!write_node.InitUniqueByCreation(PREFERENCES, root, tag)) {
-      LOG(ERROR) << "Failed to create preference sync node.";
-      return false;
+    // The server does not know about this preference and should be added
+    // to the syncer's database.
+    SyncData sync_data;
+    if (!CreatePrefSyncData(pref->name(), *pref->GetValue(), &sync_data)) {
+      LOG(ERROR) << "Failed to update preference.";
+      return;
     }
-
-    // Update the sync node with the local value for this preference.
-    if (!WritePreferenceToNode(pref->name(), *pref->GetValue(), &write_node))
-      return false;
-
-    Associate(pref, write_node.GetId());
+    sync_changes->push_back(SyncChange(SyncChange::ACTION_ADD, sync_data));
   } else {
-    // This preference is handled by policy, not the user, and therefore
-    // we do not associate it.
+    // This pref has a default value, we can ignore it. Once it gets changed,
+    // we'll send the new custom value to the syncer.
+    return;
   }
 
-  return true;
+  // Make sure we add it to our list of synced preferences so we know what
+  // the server is aware of.
+  synced_preferences_.insert(pref_name);
+  return;
 }
 
-bool PrefModelAssociator::AssociateModels() {
+bool PrefModelAssociator::MergeDataAndStartSyncing(
+    syncable::ModelType type,
+    const SyncDataList& initial_sync_data,
+    SyncChangeProcessor* sync_processor) {
+  DCHECK_EQ(type, PREFERENCES);
   DCHECK(CalledOnValidThread());
+  DCHECK(!sync_processor_);
+  sync_processor_ = sync_processor;
 
-  int64 root_id;
-  if (!GetSyncIdForTaggedNode(syncable::ModelTypeToRootTag(PREFERENCES),
-                              &root_id)) {
-    LOG(ERROR) << "Server did not create the top-level preferences node. We "
-               << "might be running against an out-of-date server.";
-    return false;
+  SyncChangeList new_changes;
+  std::set<std::string> remaining_preferences = registered_preferences_;
+
+  // Go through and check for all preferences we care about that sync already
+  // knows about.
+  for (SyncDataList::const_iterator sync_iter = initial_sync_data.begin();
+       sync_iter != initial_sync_data.end();
+       ++sync_iter) {
+    DCHECK_EQ(PREFERENCES, sync_iter->GetDataType());
+    std::string sync_pref_name = sync_iter->GetSpecifics().
+        GetExtension(sync_pb::preference).name();
+    if (remaining_preferences.count(sync_pref_name) == 0) {
+      // We're not syncing this preference locally, ignore the sync data.
+      // TODO(zea): Eventually we want to be able to have the syncable service
+      // reconstruct all sync data for it's datatype (therefore having
+      // GetAllSyncData be a complete representation). We should store this data
+      // somewhere, even if we don't use it.
+      continue;
+    }
+
+    remaining_preferences.erase(sync_pref_name);
+    InitPrefAndAssociate(*sync_iter, sync_pref_name, &new_changes);
   }
 
-  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
-  sync_api::ReadNode root(&trans);
-  if (!root.InitByIdLookup(root_id)) {
-    LOG(ERROR) << "Server did not create the top-level preferences node. We "
-               << "might be running against an out-of-date server.";
-    return false;
+  // Go through and build sync data for any remaining preferences.
+  for (std::set<std::string>::iterator pref_name_iter =
+          remaining_preferences.begin();
+       pref_name_iter != remaining_preferences.end();
+       ++pref_name_iter) {
+    InitPrefAndAssociate(SyncData(), *pref_name_iter, &new_changes);
   }
 
-  for (std::set<std::string>::iterator it = synced_preferences_.begin();
-       it != synced_preferences_.end(); ++it) {
-    std::string name = *it;
-    const PrefService::Preference* pref =
-        pref_service_->FindPreference(name.c_str());
-    VLOG(1) << "Associating preference " << name;
-    DCHECK(pref);
-    if (!pref->IsUserModifiable())
-      continue;  // We don't sync preferences the user cannot change.
-    InitPrefNodeAndAssociate(&trans, root, pref);
-  }
+  // Push updates to sync.
+  sync_processor_->ProcessSyncChanges(new_changes);
   models_associated_ = true;
   return true;
 }
 
-bool PrefModelAssociator::DisassociateModels() {
-  id_map_.clear();
-  id_map_inverse_.clear();
+void PrefModelAssociator::StopSyncing(syncable::ModelType type) {
+  DCHECK_EQ(type, PREFERENCES);
   models_associated_ = false;
-  return true;
-}
-
-bool PrefModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  *has_nodes = false;
-  int64 preferences_sync_id;
-  if (!GetSyncIdForTaggedNode(syncable::ModelTypeToRootTag(PREFERENCES),
-                              &preferences_sync_id)) {
-    LOG(ERROR) << "Server did not create the top-level preferences node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
-
-  sync_api::ReadNode preferences_node(&trans);
-  if (!preferences_node.InitByIdLookup(preferences_sync_id)) {
-    LOG(ERROR) << "Server did not create the top-level preferences node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-
-  // The sync model has user created nodes if the preferences folder has any
-  // children.
-  *has_nodes = sync_api::kInvalidId != preferences_node.GetFirstChildId();
-  return true;
-}
-
-int64 PrefModelAssociator::GetSyncIdFromChromeId(
-    const std::string& preference_name) {
-  PreferenceNameToSyncIdMap::const_iterator iter =
-      id_map_.find(preference_name);
-  return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
-}
-
-void PrefModelAssociator::Associate(
-    const PrefService::Preference* preference, int64 sync_id) {
-  DCHECK(CalledOnValidThread());
-
-  std::string name = preference->name();
-  DCHECK_NE(sync_api::kInvalidId, sync_id);
-  DCHECK_EQ(0U, id_map_.count(name));
-  DCHECK_EQ(0U, id_map_inverse_.count(sync_id));
-  id_map_[name] = sync_id;
-  id_map_inverse_[sync_id] = name;
-}
-
-void PrefModelAssociator::Disassociate(int64 sync_id) {
-  DCHECK(CalledOnValidThread());
-  SyncIdToPreferenceNameMap::iterator iter = id_map_inverse_.find(sync_id);
-  if (iter == id_map_inverse_.end())
-    return;
-  id_map_.erase(iter->second);
-  id_map_inverse_.erase(iter);
-}
-
-bool PrefModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
-                                                 int64* sync_id) {
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
-  sync_api::ReadNode sync_node(&trans);
-  if (!sync_node.InitByTagLookup(tag.c_str()))
-    return false;
-  *sync_id = sync_node.GetId();
-  return true;
+  sync_processor_ = NULL;
+  untracked_pref_sync_data_.clear();
 }
 
 Value* PrefModelAssociator::MergePreference(
@@ -244,23 +190,25 @@ Value* PrefModelAssociator::MergePreference(
   return server_value.DeepCopy();
 }
 
-bool PrefModelAssociator::WritePreferenceToNode(
+bool PrefModelAssociator::CreatePrefSyncData(
     const std::string& name,
     const Value& value,
-    sync_api::WriteNode* node) {
+    SyncData* sync_data) {
   std::string serialized;
+  // TODO(zea): consider JSONWriter::Write since you don't have to check
+  // failures to deserialize.
   JSONStringValueSerializer json(&serialized);
   if (!json.Serialize(value)) {
     LOG(ERROR) << "Failed to serialize preference value.";
     return false;
   }
 
-  sync_pb::PreferenceSpecifics preference;
-  preference.set_name(name);
-  preference.set_value(serialized);
-  node->SetPreferenceSpecifics(preference);
-  // TODO(viettrungluu): eliminate conversion (it's temporary)
-  node->SetTitle(UTF8ToWide(name));
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::PreferenceSpecifics* pref_specifics = specifics.MutableExtension(
+      sync_pb::preference);
+  pref_specifics->set_name(name);
+  pref_specifics->set_value(serialized);
+  *sync_data = SyncData::CreateLocalData(name, specifics);
   return true;
 }
 
@@ -334,51 +282,58 @@ void PrefModelAssociator::SendUpdateNotificationsIfNecessary(
   }
 }
 
-// Not implemented.
-void PrefModelAssociator::AbortAssociation() {}
-
-bool PrefModelAssociator::CryptoReadyIfNecessary() {
-  // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
-  syncable::ModelTypeSet encrypted_types;
-  sync_service_->GetEncryptedDataTypes(&encrypted_types);
-  return encrypted_types.count(PREFERENCES) == 0 ||
-         sync_service_->IsCryptographerReady(&trans);
+// Note: This will build a model of all preferences registered as syncable
+// with user controlled data. We do not track any information for preferences
+// not registered locally as syncable and do not inform the syncer of
+// non-user controlled preferences.
+SyncDataList PrefModelAssociator::GetAllSyncData(syncable::ModelType type)
+    const {
+  DCHECK_EQ(PREFERENCES, type);
+  SyncDataList current_data;
+  for (PreferenceSet::const_iterator iter = synced_preferences_.begin();
+       iter != synced_preferences_.end();
+       ++iter) {
+    std::string name = *iter;
+    const PrefService::Preference* pref =
+      pref_service_->FindPreference(name.c_str());
+    SyncData sync_data;
+    if (!CreatePrefSyncData(name, *pref->GetValue(), &sync_data))
+      continue;
+    current_data.push_back(sync_data);
+  }
+  for (SyncDataMap::const_iterator iter = untracked_pref_sync_data_.begin();
+       iter != untracked_pref_sync_data_.end();
+       ++iter) {
+    current_data.push_back(iter->second);
+  }
+  return current_data;
 }
 
-void PrefModelAssociator::SetupSync(
-    ProfileSyncService* sync_service,
-    browser_sync::GenericChangeProcessor* change_processor) {
-  sync_service_ = sync_service;
-  change_processor_ = change_processor;
-}
-
-void PrefModelAssociator::ApplyChangesFromSync(
-    const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
+void PrefModelAssociator::ProcessSyncChanges(
+    const SyncChangeList& change_list) {
   if (!models_associated_)
     return;
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
-  for (int i = 0; i < change_count; ++i) {
-    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
-        changes[i].action) {
-      // We never delete preferences.
-      NOTREACHED();
-    }
+  SyncChangeList::const_iterator iter;
+  for (iter = change_list.begin(); iter != change_list.end(); ++iter) {
+    DCHECK_EQ(PREFERENCES, iter->sync_data().GetDataType());
 
-    sync_api::ReadNode node(trans);
-    if (!node.InitByIdLookup(changes[i].id)) {
-      LOG(ERROR) << "Preference node lookup failed.";
-      return;
-    }
-    DCHECK(PREFERENCES == node.GetModelType());
     std::string name;
     sync_pb::PreferenceSpecifics pref_specifics =
-        node.GetPreferenceSpecifics();
+        iter->sync_data().GetSpecifics().GetExtension(sync_pb::preference);
     scoped_ptr<Value> value(ReadPreferenceSpecifics(pref_specifics,
                                                     &name));
+
+    if (iter->change_type() == SyncChange::ACTION_DELETE) {
+      // We never delete preferences.
+      NOTREACHED() << "Attempted to process sync delete change for " << name
+                   << ". Skipping.";
+      continue;
+    }
+
     // Skip values we can't deserialize.
+    // TODO(zea): consider taking some further action such as erasing the bad
+    // data.
     if (!value.get())
       continue;
 
@@ -394,23 +349,20 @@ void PrefModelAssociator::ApplyChangesFromSync(
         pref_service_->FindPreference(pref_name);
     DCHECK(pref);
     if (!pref->IsUserModifiable()) {
+      // This preference is controlled by policy, ignore for now, but keep
+      // the data around for possible later use.
+      untracked_pref_sync_data_[name] = iter->sync_data();
       continue;
     }
 
-    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
-        changes[i].action) {
-      pref_service_->ClearPref(pref_name);
-    } else {
-      pref_service_->Set(pref_name, *value);
+    pref_service_->Set(pref_name, *value);
 
-      // If this is a newly added node, associate.
-      if (sync_api::SyncManager::ChangeRecord::ACTION_ADD ==
-          changes[i].action) {
-        Associate(pref, changes[i].id);
-      }
-
-      SendUpdateNotificationsIfNecessary(name);
+    // If this is a newly added node, associate.
+    if (iter->change_type() == SyncChange::ACTION_ADD) {
+      synced_preferences_.insert(name);
     }
+
+    SendUpdateNotificationsIfNecessary(name);
   }
 }
 
@@ -429,18 +381,21 @@ Value* PrefModelAssociator::ReadPreferenceSpecifics(
   return value.release();
 }
 
+std::set<std::string> PrefModelAssociator::registered_preferences() const {
+  return registered_preferences_;
+}
 
 std::set<std::string> PrefModelAssociator::synced_preferences() const {
   return synced_preferences_;
 }
 
 void PrefModelAssociator::RegisterPref(const char* name) {
-  DCHECK(!models_associated_ && synced_preferences_.count(name) == 0);
-  synced_preferences_.insert(name);
+  DCHECK(!models_associated_ && registered_preferences_.count(name) == 0);
+  registered_preferences_.insert(name);
 }
 
 bool PrefModelAssociator::IsPrefRegistered(const char* name) {
-  return synced_preferences_.count(name) > 0;
+  return registered_preferences_.count(name) > 0;
 }
 
 void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
@@ -448,7 +403,7 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     return;  // These are changes originating from us, ignore.
 
   // We only process changes if we've already associated models.
-  if (!sync_service_ || !models_associated_)
+  if (!models_associated_)
     return;
 
   const PrefService::Preference* preference =
@@ -456,50 +411,48 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
   if (!IsPrefRegistered(name.c_str()))
     return;  // We are not syncing this preference.
 
-  // The preference does not have a node. This can happen if the preference
-  // held the default value at association time. Create one and associate.
-  int64 root_id;
-  if (!GetSyncIdForTaggedNode(syncable::ModelTypeToRootTag(PREFERENCES),
-                              &root_id)) {
-    LOG(ERROR) << "Server did not create the top-level preferences node. We "
-               << "might be running against an out-of-date server.";
-    return;
-  }
+  SyncChangeList changes;
 
-  int64 sync_id = GetSyncIdFromChromeId(name);
   if (!preference->IsUserModifiable()) {
-    // If the preference is not currently user modifiable, disassociate, so that
-    // if it becomes user modifiable me pick up the server value.
-    Disassociate(sync_id);
+    // If the preference is not currently user modifiable, back up the
+    // previously synced value and remove it from our list of synced prefs.
+    if (synced_preferences_.count(name) > 0) {
+      synced_preferences_.erase(name);
+      SyncData sync_data;
+      if (!CreatePrefSyncData(name, *preference->GetValue(), &sync_data)) {
+        LOG(ERROR) << "Failed to update preference.";
+        return;
+      }
+      untracked_pref_sync_data_[name] = sync_data;
+    }
     return;
   }
 
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
-  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
 
-  // Since we don't create sync nodes for preferences that are not under control
-  // of the user or still have their default value, this changed preference may
-  // not have a sync node yet. If so, we create a node. Similarly, a preference
-  // may become user-modifiable (e.g. due to laxer policy configuration), in
-  // which case we also need to create a sync node and associate it.
-  if (sync_id == sync_api::kInvalidId) {
-    sync_api::ReadNode root(&trans);
-    if (!root.InitByIdLookup(root_id)) {
-      LOG(ERROR) << "Server did not create the top-level preferences node. We "
-                 << "might be running against an out-of-date server.";
-      return;
+  if (synced_preferences_.count(name) == 0) {
+    // This is a preference that changed locally but we were not syncing. This
+    // happens when a preference was previously not user modifiable but now is,
+    // or if it had a default value but the user set a custom one. We now care
+    // about the preference and must inform the syncer, as well as update our
+    // own internal tracking.
+    if (untracked_pref_sync_data_.count(name) > 0) {
+      // We have sync data for this preference, merge it (this only happens
+      // when we went from policy-controlled to user controlled. Default values
+      // are always overwritten by syncer values).
+      InitPrefAndAssociate(untracked_pref_sync_data_[name], name, &changes);
+      untracked_pref_sync_data_.erase(name);
+    } else {
+      InitPrefAndAssociate(SyncData(), name, &changes);
     }
-    InitPrefNodeAndAssociate(&trans, root, preference);
   } else {
-    sync_api::WriteNode node(&trans);
-    if (!node.InitByIdLookup(sync_id)) {
-      LOG(ERROR) << "Preference node lookup failed.";
+    // We're already syncing this preference, we just need to update the data.
+    SyncData sync_data;
+    if (!CreatePrefSyncData(name, *preference->GetValue(), &sync_data)) {
+      LOG(ERROR) << "Failed to update preference.";
       return;
     }
-
-    if (!WritePreferenceToNode(name, *preference->GetValue(), &node)) {
-      LOG(ERROR) << "Failed to update preference node.";
-      return;
-    }
+    changes.push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   }
+  sync_processor_->ProcessSyncChanges(changes);
 }
