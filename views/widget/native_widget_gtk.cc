@@ -28,6 +28,7 @@
 #include "views/views_delegate.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/view_storage.h"
+#include "views/ime/input_method_gtk.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
@@ -46,8 +47,6 @@
 
 #if defined(HAVE_IBUS)
 #include "views/ime/input_method_ibus.h"
-#else
-#include "views/ime/input_method_gtk.h"
 #endif
 
 using ui::OSExchangeData;
