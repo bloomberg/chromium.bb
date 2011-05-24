@@ -258,6 +258,34 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
   IN_PROC_BROWSER_TEST_(test_fixture, test_name, test_fixture,\
                     ::testing::internal::GetTypeId<test_fixture>())
 
+#define IN_PROC_BROWSER_TEST_P(test_case_name, test_name) \
+  class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) \
+      : public test_case_name { \
+   public: \
+    GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {} \
+   protected: \
+    virtual void RunTestOnMainThread(); \
+   private: \
+    virtual void TestBody() {} \
+    static int AddToRegistry() { \
+      ::testing::UnitTest::GetInstance()->parameterized_test_registry(). \
+          GetTestCasePatternHolder<test_case_name>(\
+              #test_case_name, __FILE__, __LINE__)->AddTestPattern(\
+                  #test_case_name, \
+                  #test_name, \
+                  new ::testing::internal::TestMetaFactory< \
+                      GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>()); \
+      return 0; \
+    } \
+    static int gtest_registering_dummy_; \
+    GTEST_DISALLOW_COPY_AND_ASSIGN_(\
+        GTEST_TEST_CLASS_NAME_(test_case_name, test_name)); \
+  }; \
+  int GTEST_TEST_CLASS_NAME_(test_case_name, \
+                             test_name)::gtest_registering_dummy_ = \
+      GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::AddToRegistry(); \
+  void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
+
 #endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #endif  // CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_

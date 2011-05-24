@@ -622,6 +622,8 @@ int main(int argc, char** argv) {
       "--single-process (to do the above, and also run Chrome in single-\n"
       "process mode).\n");
 
+  testing::InitGoogleTest(&argc, argv);
+
   // Make sure the entire browser code is loaded into memory. Reading it
   // from disk may be slow on a busy bot, and can easily exceed the default
   // timeout causing flaky test failures. Use an empty test that only starts

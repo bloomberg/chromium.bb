@@ -2456,6 +2456,7 @@
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
         'test/gpu/gpu_browsertest.cc',
+        'test/in_process_browser_test_browsertest.cc',
         'test/out_of_proc_test_runner.cc',
         'test/render_view_test.cc',
         'test/render_view_test.h',
