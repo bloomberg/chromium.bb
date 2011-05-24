@@ -5,9 +5,26 @@ UNINITIALIZED READ
 *!deflate_*
 *!MOZ_Z_deflate
 
+# http://code.google.com/p/drmemory/issues/detail?id=406
+# TODO(timurrrr): check if these frames change when NT_SYMBOLS are present.
 LEAK
 ADVAPI32.dll!WmiOpenBlock
 ADVAPI32.dll!WmiOpenBlock
+
+# Reports from Sophos antivirus
+UNINITIALIZED READ
+...
+sophos*.dll!*
+
+LEAK
+...
+sophos*.dll!*
+
+# Leaks inside GoogleDesktop
+# TODO(timurrrr): How/why does it inject itself into the binaries? WTF?
+LEAK
+...
+GoogleDesktop*.DLL!*
 
 ############################
 # Suppress some false reports due to bugs in Dr.Memory like wrong analysis
@@ -181,29 +198,11 @@ UNINITIALIZED READ
 ...
 msvcrt.dll!_RTDynamicCast 
 
-# http://code.google.com/p/drmemory/issues/detail?id=52
+# http://code.google.com/p/drmemory/issues/detail?id=53
 UNINITIALIZED READ
 ADVAPI32.dll!WmiMofEnumerateResourcesA
 ADVAPI32.dll!WmiMofEnumerateResourcesA
 ADVAPI32.dll!Sta*TraceW
-
-# http://code.google.com/p/drmemory/issues/detail?id=55
-UNADDRESSABLE ACCESS
-ntdll.dll!Rtl*CriticalSection*
-
-UNADDRESSABLE ACCESS
-*!Send
-
-UNADDRESSABLE ACCESS
-...
-*!tracked_objects::Tracked::Tracked
-
-UNADDRESSABLE ACCESS
-*!Pickle::Pickle
-
-UNADDRESSABLE ACCESS
-...
-*!IPC::Channel*::*Message*
 
 # http://code.google.com/p/drmemory/issues/detail?id=58
 UNINITIALIZED READ
@@ -245,10 +244,6 @@ WS2_32.dll!*
 UNINITIALIZED READ
 ...
 ADVAPI32.dll!SetSecurityDescriptorDacl
-
-UNINITIALIZED READ
-...
-ADVAPI32.dll!Reg*Value*
 
 UNINITIALIZED READ
 ...
@@ -296,15 +291,6 @@ UNINITIALIZED READ
 ntdll.dll!RtlConvertUlongToLargeInteger
 ntdll.dll!RtlConvertUlongToLargeInteger
 ntdll.dll!KiUserExceptionDispatcher
-
-# http://code.google.com/p/drmemory/issues/detail?id=304
-UNINITIALIZED READ
-...
-*!_nh_malloc_dbg_impl
-
-UNADDRESSABLE ACCESS
-...
-*!_nh_malloc_dbg_impl
 
 # http://code.google.com/p/drmemory/issues/detail?id=305
 LEAK
@@ -357,15 +343,24 @@ IMM32.dll!*
 ntdll.dll!LdrInitializeThunk
 ntdll.dll!LdrShutdownThread
 
+# http://code.google.com/p/drmemory/issues/detail?id=412
+UNINITIALIZED READ
+...
+ADVAPI32.dll!Reg*Value*
+
+UNINITIALIZED READ
+...
+ADVAPI32.dll!Crypt*
+
+UNINITIALIZED READ
+...
+RPCRT4.dll!NdrClientCall2
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
 ...
 *!win_util::GetLogonSessionOnlyDACL
-
-UNINITIALIZED READ
-...
-ADVAPI32.dll!Crypt*
 
 UNINITIALIZED READ
 ...
@@ -426,10 +421,6 @@ UNINITIALIZED READ
 
 UNINITIALIZED READ
 *!NdrSimpleStructFree
-
-UNINITIALIZED READ
-...
-*!NdrClientCall2
 
 UNINITIALIZED READ
 ntdll.dll!RtlpNtOpenKey
