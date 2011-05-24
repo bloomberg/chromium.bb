@@ -114,21 +114,13 @@ cr.define('options', function() {
                         function() { chrome.send('stopSyncing'); });
     },
 
-    setElementVisible_: function(element, visible) {
-      element.hidden = !visible;
-      if (visible)
-        element.classList.remove('hidden');
-      else
-        element.classList.add('hidden');
-    },
-
     setSyncEnabled_: function(enabled) {
       this.syncEnabled = enabled;
     },
 
     setSyncSetupCompleted_: function(completed) {
       this.syncSetupCompleted = completed;
-      this.setElementVisible_($('customize-sync'), completed);
+      $('customize-sync').hidden = !completed;
       $('privacy-dashboard-link').hidden = !completed;
     },
 
@@ -157,11 +149,11 @@ cr.define('options', function() {
 
       // link-button does is not zero-area when the contents of the button are
       // empty, so explicitly hide the element.
-      this.setElementVisible_($('sync-action-link'), status.length != 0);
+      $('sync-action-link').hidden = !status.length;
     },
 
     setProfilesSectionVisible_: function(visible) {
-      this.setElementVisible_($('profiles-create'), visible);
+      $('profiles-create').hidden = !visible;
     },
 
     setNewProfileButtonEnabled_: function(enabled) {
@@ -173,7 +165,7 @@ cr.define('options', function() {
     },
 
     setStartStopButtonVisible_: function(visible) {
-      this.setElementVisible_($('start-stop-sync'), visible);
+      $('start-stop-sync').hidden = !visible;
     },
 
     setStartStopButtonEnabled_: function(enabled) {
@@ -195,7 +187,7 @@ cr.define('options', function() {
     },
 
     hideSyncSection_: function() {
-      this.setElementVisible_($('sync-section'), false);
+      $('sync-section').hidden = true;
     },
 
     /**

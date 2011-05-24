@@ -89,7 +89,7 @@ cr.define('options', function() {
 
         // Show experimental features if enabled.
         if (templateData.experimentalSpellCheckFeatures == 'true') {
-          $('auto-spell-correction-option').classList.remove('hidden');
+          $('auto-spell-correction-option').hidden = false;
         }
       }
     },
@@ -330,7 +330,7 @@ cr.define('options', function() {
         if (cr.commandLine.options['--bwsi']) {
           // In the guest mode for ChromeOS, changing UI language does not make
           // sense because it does not take effect after browser restart.
-          uiLanguageButton.className = 'hidden';
+          uiLanguageButton.hidden = true;
         } else {
           uiLanguageButton.textContent =
               localStrings.getString('display_in_this_language');

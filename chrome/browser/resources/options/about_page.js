@@ -54,8 +54,8 @@ cr.define('options', function() {
       };
 
       $('moreInfoButton').onclick = function(event) {
-        $('aboutPageLessInfo').classList.add('hidden');
-        $('aboutPageMoreInfo').classList.remove('hidden');
+        $('aboutPageLessInfo').hidden = true;
+        $('aboutPageMoreInfo').hidden = false;
       };
 
       if (!AccountsOptions.currentUserIsOwner()) {

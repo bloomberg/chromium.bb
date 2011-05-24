@@ -60,7 +60,7 @@ cr.define('options.passwordManager', function() {
       // The show/hide button.
       if (showPasswords) {
         var button = this.ownerDocument.createElement('button');
-        button.classList.add('hidden');
+        button.hidden = true;
         button.classList.add('password-button');
         button.textContent = localStrings.getString('passwordShowButton');
         button.addEventListener('click', this.onClick_, true);
@@ -81,10 +81,10 @@ cr.define('options.passwordManager', function() {
         return;
       if (this.selected) {
         input.classList.remove('inactive-password');
-        button.classList.remove('hidden');
+        button.hidden = false;
       } else {
         input.classList.add('inactive-password');
-        button.classList.add('hidden');
+        button.hidden = true;
       }
     },
 

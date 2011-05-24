@@ -99,7 +99,7 @@ cr.define('options', function() {
         document.querySelector('div[contentType=' + type + ']' +
                                ' list[mode=otr]');
 
-    exceptionsList.parentNode.classList.remove('hidden');
+    exceptionsList.parentNode.hidden = false;
     exceptionsList.setExceptions(list);
   };
 

@@ -101,7 +101,8 @@ cr.define('options', function() {
       this.itemsChild = this.ownerDocument.createElement('div');
       this.itemsChild.className = 'cookie-items';
       this.infoChild = this.ownerDocument.createElement('div');
-      this.infoChild.className = 'cookie-details hidden';
+      this.infoChild.className = 'cookie-details';
+      this.infoChild.hidden = true;
       var remove = this.ownerDocument.createElement('button');
       remove.textContent = localStrings.getString('remove_cookie');
       remove.onclick = this.removeCookie_.bind(this);
@@ -237,7 +238,7 @@ cr.define('options', function() {
     updateItems_: function() {
       this.disableAnimation_();
       this.itemsChild.textContent = '';
-      this.infoChild.classList.add('hidden');
+      this.infoChild.hidden = true;
       this.selectedIndex_ = -1;
       this.itemList_ = [];
       if (this.origin)
@@ -294,7 +295,7 @@ cr.define('options', function() {
       if (itemIndex < 0 || itemIndex >= this.itemList_.length) {
         this.selectedIndex_ = -1;
         this.disableAnimation_();
-        this.infoChild.classList.add('hidden');
+        this.infoChild.hidden = true;
         this.enableAnimation_();
         return;
       }
@@ -304,7 +305,7 @@ cr.define('options', function() {
       this.disableAnimation_();
       this.itemList_[itemIndex].node.setDetailText(this.infoChild,
                                                    this.list.infoNodes);
-      this.infoChild.classList.remove('hidden');
+      this.infoChild.hidden = false;
       this.enableAnimation_();
       // If we're near the bottom of the list this may cause the list item to go
       // beyond the end of the visible area. Fix it after the animation is done.

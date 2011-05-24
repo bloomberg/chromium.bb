@@ -400,11 +400,11 @@ cr.define('options', function() {
         self.setCheckboxesToKeepEverythingSynced_(syncAll);
       };
 
-      $('sync-setup-configure').classList.remove('hidden');
+      $('sync-setup-configure').hidden = false;
 
       if (args) {
         if (!args['encryptionEnabled'])
-          $('customize-sync-encryption').classList.add('hidden');
+          $('customize-sync-encryption').hidden = true;
         this.setCheckboxesAndErrors_(args);
 
         // Whether to display the 'Sync everything' confirmation page or the
@@ -469,7 +469,7 @@ cr.define('options', function() {
       // Hide an existing visible overlay.
       var overlay = $('sync-setup-overlay');
       for (var i = 0; i < overlay.children.length; i++)
-        overlay.children[i].classList.add('hidden');
+        overlay.children[i].hidden = true;
 
       this.setInputElementsDisabledState_(false);
 
@@ -493,7 +493,7 @@ cr.define('options', function() {
     },
 
     showPassphrase_: function(args) {
-      $('sync-setup-passphrase').classList.remove('hidden');
+      $('sync-setup-passphrase').hidden = false;
 
       $('passphrase-rejected-body').style.display = "none";
       $('normal-body').style.display = "none";
@@ -558,7 +558,7 @@ cr.define('options', function() {
     },
 
     showGaiaLogin_: function(args) {
-      $('sync-setup-login').classList.remove('hidden');
+      $('sync-setup-login').hidden = false;
 
       document.getElementById('gaia-email').disabled = false;
       document.getElementById('gaia-passwd').disabled = false;
@@ -695,7 +695,7 @@ cr.define('options', function() {
       if (!$('cancel-warning-box').hidden) {
         chrome.send('SyncSetupPassphraseCancel', ['']);
         return true;
-      } else if (!$('sync-setup-passphrase').classList.contains('hidden')) {
+      } else if (!$('sync-setup-passphrase').hidden) {
         // The Passphrase page is showing, and the use has pressed escape.
         // Activate the cancel logic in this case.
         this.showCancelWarning_();

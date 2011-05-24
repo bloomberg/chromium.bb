@@ -128,7 +128,7 @@ cr.define('options', function() {
       // Check if we are in the guest mode.
       if (cr.commandLine.options['--bwsi']) {
         // Hide the startup section.
-        $('startupSection').classList.add('hidden');
+        $('startupSection').hidden = true;
       } else {
         // Initialize control enabled states.
         Preferences.getInstance().addEventListener('session.restore_on_startup',

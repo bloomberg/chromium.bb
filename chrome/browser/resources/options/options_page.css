@@ -394,7 +394,6 @@ div.radio {
 }
 
 /* [hidden] does display:none, but its priority is too low in some cases. */
-.hidden,
 [hidden] {
   display: none !important;
 }

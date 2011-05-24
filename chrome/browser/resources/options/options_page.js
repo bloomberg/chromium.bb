@@ -848,12 +848,12 @@ cr.define('options', function() {
 
       this.setContainerVisibility_(visible);
       if (visible) {
-        this.pageDiv.classList.remove('hidden');
+        this.pageDiv.hidden = false;
 
         if (this.tab)
           this.tab.classList.add('navbar-item-selected');
       } else {
-        this.pageDiv.classList.add('hidden');
+        this.pageDiv.hidden = true;
 
         if (this.tab)
           this.tab.classList.remove('navbar-item-selected');

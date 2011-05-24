@@ -249,7 +249,7 @@ cr.define('options', function() {
         if (active) {
           // When search is active, remove the 'hidden' tag.  This tag may have
           // been added by the OptionsPage.
-          page.pageDiv.classList.remove('hidden');
+          page.pageDiv.hidden = false;
         }
       }
 

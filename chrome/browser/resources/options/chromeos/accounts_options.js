@@ -45,7 +45,7 @@ cr.define('options', function() {
           options.accounts.UserList.decorate(userList);
         }
       } else {
-        $('ownerOnlyWarning').classList.remove('hidden');
+        $('ownerOnlyWarning').hidden = false;
       }
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
