@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_video_service.h"
 #include "content/common/gpu/transport_texture.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -184,6 +185,9 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
         OnDestroyCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenSurface,
+                        OnCreateOffscreenSurface)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySurface, OnDestroySurface)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateVideoDecoder,
         OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
@@ -246,6 +250,36 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
   if (router_.ResolveRoute(route_id)) {
     router_.RemoveRoute(route_id);
     stubs_.Remove(route_id);
+  }
+#endif
+}
+
+void GpuChannel::OnCreateOffscreenSurface(const gfx::Size& size,
+                                          int* route_id) {
+  *route_id = MSG_ROUTING_NONE;
+
+#if defined(ENABLE_GPU)
+  scoped_ptr<gfx::GLSurface> surface(
+       gfx::GLSurface::CreateOffscreenGLSurface(size));
+  if (!surface.get())
+    return;
+
+  *route_id = GenerateRouteID();
+
+  scoped_ptr<GpuSurfaceStub> stub (new GpuSurfaceStub(this,
+                                                      *route_id,
+                                                      surface.release()));
+
+  router_.AddRoute(*route_id, stub.get());
+  surfaces_.AddWithID(stub.release(), *route_id);
+#endif
+}
+
+void GpuChannel::OnDestroySurface(int route_id) {
+#if defined(ENABLE_GPU)
+  if (router_.ResolveRoute(route_id)) {
+    router_.RemoveRoute(route_id);
+    surfaces_.Remove(route_id);
   }
 #endif
 }

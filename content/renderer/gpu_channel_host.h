@@ -20,6 +20,7 @@
 #include "ui/gfx/size.h"
 
 class CommandBufferProxy;
+class GpuSurfaceProxy;
 class GURL;
 class GpuVideoServiceHost;
 class TransportTextureService;
@@ -84,6 +85,12 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
+
+  // Create a surface in the GPU process. Returns null on failure.
+  GpuSurfaceProxy* CreateOffscreenSurface(const gfx::Size& size);
+
+  // Destroy a surface in the GPU process.
+  void DestroySurface(GpuSurfaceProxy* surface);
 
   GpuVideoServiceHost* gpu_video_service_host() {
     return gpu_video_service_host_.get();

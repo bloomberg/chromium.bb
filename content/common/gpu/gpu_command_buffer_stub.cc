@@ -25,10 +25,6 @@
 
 using gpu::Buffer;
 
-#if defined(OS_WIN)
-#define kCompositorWindowOwner L"CompositorWindowOwner"
-#endif  // defined(OS_WIN)
-
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
     gfx::PluginWindowHandle handle,

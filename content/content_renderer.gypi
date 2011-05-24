@@ -46,6 +46,8 @@
         'renderer/geolocation_dispatcher.h',
         'renderer/gpu_channel_host.cc',
         'renderer/gpu_channel_host.h',
+        'renderer/gpu_surface_proxy.cc',
+        'renderer/gpu_surface_proxy.h',
         'renderer/gpu_video_decode_accelerator_host.cc',
         'renderer/gpu_video_decode_accelerator_host.h',
         'renderer/gpu_video_service_host.cc',

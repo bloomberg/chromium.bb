@@ -307,6 +307,15 @@ IPC_SYNC_MESSAGE_CONTROL4_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
+// Create a surface for offscreen rendering.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateOffscreenSurface,
+                            gfx::Size, /* size */
+                            int /* route_id */)
+
+// Destroy a surface by routing id.
+IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroySurface,
+                     int /* route_id */)
+
 // Create hardware video decoder && associate it with the output |decoder_id|;
 // We need this to be control message because we had to map the GpuChannel and
 // |decoder_id|.

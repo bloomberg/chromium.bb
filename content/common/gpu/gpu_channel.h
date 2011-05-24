@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "content/common/gpu/gpu_surface_stub.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
@@ -112,6 +113,10 @@ class GpuChannel : public IPC::Channel::Listener,
       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
 
+  void OnCreateOffscreenSurface(const gfx::Size& size,
+                                int* route_id);
+  void OnDestroySurface(int route_id);
+
   void OnCreateVideoDecoder(int32 decoder_host_id,
                             const std::vector<uint32>& configs);
   void OnDestroyVideoDecoder(int32 decoder_id);
@@ -139,6 +144,10 @@ class GpuChannel : public IPC::Channel::Listener,
 #if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
+
+  typedef IDMap<GpuSurfaceStub, IDMapOwnPointer> SurfaceMap;
+  SurfaceMap surfaces_;
+
   std::set<int32> latched_routes_;
 #endif  // defined (ENABLE_GPU)
 
