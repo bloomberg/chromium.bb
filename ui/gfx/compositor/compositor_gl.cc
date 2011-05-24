@@ -195,8 +195,8 @@ void TextureGL::Draw(const ui::Transform& transform) {
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
     : started_(false) {
   gl_surface_.reset(gfx::GLSurface::CreateViewGLSurface(widget));
-  gl_context_.reset(gfx::GLContext::CreateGLContext(NULL, gl_surface.get())),
-  gl_context_->MakeCurrent();
+  gl_context_.reset(gfx::GLContext::CreateGLContext(NULL, gl_surface_.get())),
+  gl_context_->MakeCurrent(gl_surface_.get());
   glColorMask(true, true, true, true);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -206,11 +206,11 @@ CompositorGL::~CompositorGL() {
 }
 
 void CompositorGL::MakeCurrent() {
-  gl_context_->MakeCurrent();
+  gl_context_->MakeCurrent(gl_surface_.get());
 }
 
 gfx::Size CompositorGL::GetSize() {
-  return gl_context_->GetSize();
+  return gl_surface_->GetSize();
 }
 
 Texture* CompositorGL::CreateTexture() {
@@ -222,7 +222,7 @@ void CompositorGL::NotifyStart() {
   started_ = true;
   gl_context_->MakeCurrent(gl_surface_.get());
   glViewport(0, 0,
-             gl_context_->GetSize().width(), gl_context_->GetSize().height());
+             gl_surface_->GetSize().width(), gl_surface_->GetSize().height());
 
   // Clear to 'psychedelic' purple to make it easy to spot un-rendered regions.
   glClearColor(223.0 / 255, 0, 1, 1);
