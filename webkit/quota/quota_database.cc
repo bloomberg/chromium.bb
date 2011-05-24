@@ -215,12 +215,6 @@ bool QuotaDatabase::RegisterOrigins(const std::set<GURL>& origins,
   if (!LazyOpen(true))
     return false;
 
-  sql::Transaction transaction(db_.get());
-  if (!transaction.Begin())
-    return false;
-
-  sql::Statement statement;
-
   typedef std::set<GURL>::const_iterator itr_type;
   for (itr_type itr = origins.begin(), end = origins.end();
        itr != end; ++itr) {
@@ -228,6 +222,7 @@ bool QuotaDatabase::RegisterOrigins(const std::set<GURL>& origins,
         "INSERT OR IGNORE INTO OriginLastAccessTable"
         " (used_count, last_access_time, origin, type)"
         " VALUES (?, ?, ?, ?)";
+    sql::Statement statement;
     if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
       return false;
 
@@ -239,7 +234,8 @@ bool QuotaDatabase::RegisterOrigins(const std::set<GURL>& origins,
       return false;
   }
 
-  return transaction.Commit();
+  ScheduleCommit();
+  return true;
 }
 
 bool QuotaDatabase::DeleteHostQuota(
@@ -515,4 +511,74 @@ bool QuotaDatabase::ResetSchema() {
   return LazyOpen(true);
 }
 
+bool QuotaDatabase::DumpQuotaTable(QuotaTableCallback* callback) {
+  scoped_ptr<QuotaTableCallback> callback_deleter(callback);
+  if (!LazyOpen(true))
+    return false;
+
+  const char* kSql = "SELECT * FROM HostQuotaTable";
+  sql::Statement statement;
+  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
+    return false;
+
+  while (statement.Step()) {
+    QuotaTableEntry entry = {
+      statement.ColumnString(0),
+      static_cast<StorageType>(statement.ColumnInt(1)),
+      statement.ColumnInt64(2)
+    };
+
+    if (!callback->Run(entry))
+      return true;
+  }
+
+  return statement.Succeeded();
+}
+
+bool QuotaDatabase::DumpLastAccessTimeTable(
+    LastAccessTimeTableCallback* callback) {
+  scoped_ptr<LastAccessTimeTableCallback> callback_deleter(callback);
+
+  if (!LazyOpen(true))
+    return false;
+
+  const char* kSql = "SELECT * FROM OriginLastAccessTable";
+  sql::Statement statement;
+  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
+    return false;
+
+  while (statement.Step()) {
+    LastAccessTimeTableEntry entry = {
+      GURL(statement.ColumnString(0)),
+      static_cast<StorageType>(statement.ColumnInt(1)),
+      statement.ColumnInt(2),
+      base::Time::FromInternalValue(statement.ColumnInt64(3))
+    };
+
+    if (!callback->Run(entry))
+      return true;
+  }
+
+  return statement.Succeeded();
+}
+
+bool operator<(const QuotaDatabase::QuotaTableEntry& lhs,
+               const QuotaDatabase::QuotaTableEntry& rhs) {
+  if (lhs.host < rhs.host) return true;
+  if (rhs.host < lhs.host) return false;
+  if (lhs.type < rhs.type) return true;
+  if (rhs.type < lhs.type) return false;
+  return lhs.quota < rhs.quota;
+}
+
+bool operator<(const QuotaDatabase::LastAccessTimeTableEntry& lhs,
+               const QuotaDatabase::LastAccessTimeTableEntry& rhs) {
+  if (lhs.origin < rhs.origin) return true;
+  if (rhs.origin < lhs.origin) return false;
+  if (lhs.type < rhs.type) return true;
+  if (rhs.type < lhs.type) return false;
+  if (lhs.used_count < rhs.used_count) return true;
+  if (rhs.used_count < lhs.used_count) return false;
+  return lhs.last_access_time < rhs.last_access_time;
+}
 }  // quota namespace

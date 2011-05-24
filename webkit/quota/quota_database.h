@@ -9,10 +9,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_types.h"
 
 namespace sql {
@@ -66,6 +69,27 @@ class QuotaDatabase {
   bool SetOriginDatabaseBootstrapped(bool bootstrap_flag);
 
  private:
+  struct QuotaTableEntry {
+    std::string host;
+    StorageType type;
+    int64 quota;
+  };
+  friend bool operator <(const QuotaTableEntry& lhs,
+                         const QuotaTableEntry& rhs);
+
+  struct LastAccessTimeTableEntry {
+    GURL origin;
+    StorageType type;
+    int used_count;
+    base::Time last_access_time;
+  };
+  friend bool operator <(const LastAccessTimeTableEntry& lhs,
+                         const LastAccessTimeTableEntry& rhs);
+
+  typedef base::Callback<bool (const QuotaTableEntry&)> QuotaTableCallback;
+  typedef base::Callback<bool (const LastAccessTimeTableEntry&)>
+      LastAccessTimeTableCallback;
+
   // For long-running transactions support.  We always keep a transaction open
   // so that multiple transactions can be batched.  They are flushed
   // with a delay after a modification has been made.  We support neither
@@ -81,6 +105,11 @@ class QuotaDatabase {
   bool EnsureDatabaseVersion();
   bool CreateSchema();
   bool ResetSchema();
+
+  // |callback| may return false to stop reading data
+  bool DumpQuotaTable(QuotaTableCallback* callback);
+  bool DumpLastAccessTimeTable(LastAccessTimeTableCallback* callback);
+
 
   FilePath db_file_path_;
 
