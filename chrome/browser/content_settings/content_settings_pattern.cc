@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_pattern_parser.h"
 #include "chrome/common/url_constants.h"
+#include "net/base/dns_util.h"
 #include "net/base/net_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
@@ -122,7 +123,8 @@ void ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   // Canonicalize the host part.
   const std::string host(parts->host);
   url_canon::CanonHostInfo host_info;
-  const std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
+  std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
+  canonicalized_host = net::TrimEndingDot(canonicalized_host);
 
   parts->host = "";
   if ((host.find('*') == std::string::npos) &&
@@ -301,7 +303,7 @@ bool ContentSettingsPattern::Matches(
   }
 
   // Match the host part.
-  const std::string host(url.host());
+  const std::string host(net::TrimEndingDot(url.host()));
   if (!parts_.has_domain_wildcard) {
     if (parts_.host != host)
       return false;

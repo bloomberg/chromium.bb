@@ -137,6 +137,20 @@ TEST(ContentSettingsPatternTest, Wildcard) {
                 ContentSettingsPattern::Wildcard()));
 }
 
+TEST(ContentSettingsPatternTest, TrimEndingDotFromHost) {
+  EXPECT_TRUE(Pattern("www.example.com").IsValid());
+  EXPECT_TRUE(Pattern("www.example.com").Matches(
+      GURL("http://www.example.com")));
+  EXPECT_TRUE(Pattern("www.example.com").Matches(
+      GURL("http://www.example.com.")));
+
+  EXPECT_TRUE(Pattern("www.example.com.").IsValid());
+  EXPECT_STREQ("www.example.com",
+               Pattern("www.example.com.").ToString().c_str());
+
+  EXPECT_TRUE(Pattern("www.example.com.") == Pattern("www.example.com"));
+}
+
 TEST(ContentSettingsPatternTest, FromString_WithNoWildcards) {
   // HTTP patterns with default port.
   EXPECT_TRUE(Pattern("http://www.example.com:80").IsValid());
