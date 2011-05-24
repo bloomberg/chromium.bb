@@ -116,7 +116,7 @@ echo @@@BUILD_STEP plugin_compile@@@
 setlocal
 call vcvarsall.bat x86 && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
- %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS% plugin
+ %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-32 plugin
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
 :NoNeedForPlugin
@@ -130,19 +130,8 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
 
-if "%TOOLCHAIN%" neq "glibc" goto AfterDynamicLibraryBrowserTests
-:: TODO(bradchen): fix this test for 64-bit Windows. Current failure seems to 
-:: be some sort of race.
-if %BITS% equ 64 goto AfterDynamicLibraryBrowserTests
-echo @@@BUILD_STEP dynamic_library_browser_tests@@@
-setlocal
-call vcvarsall.bat %VCBITS% && call scons.bat ^
- DOXYGEN=..\third_party\doxygen\win\doxygen ^
- %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc ^
- dynamic_library_browser_tests platform=x86-%BITS%
-if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
-endlocal
-:AfterDynamicLibraryBrowserTests
+:: TODO(bradchen): add dynamic_library_browser_tests
+::  when DSOs are added to Windows toolchain build
 
 if "%TOOLCHAIN%" equ "glibc" goto AfterTests
 echo @@@BUILD_STEP medium_tests@@@
