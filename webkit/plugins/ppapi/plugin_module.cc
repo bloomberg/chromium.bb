@@ -229,12 +229,20 @@ const PPB_Testing_Dev testing_interface = {
   &GetLiveObjectsForInstance
 };
 
+// Return the part of the interface name before the ';' separator.
+// If there is no ';', just returns the whole string.
+std::string GetInterfacePrefix(const std::string& interface_string) {
+  size_t separator_pos = interface_string.find_first_of(';');
+  return interface_string.substr(0, separator_pos);
+}
+
 // GetInterface ----------------------------------------------------------------
 
 const void* GetInterface(const char* name) {
   // All interfaces should be used on the main thread.
   DCHECK(IsMainThread());
 
+  std::string name_prefix(GetInterfacePrefix(name));
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
   if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)
@@ -293,8 +301,8 @@ const void* GetInterface(const char* name) {
     return PPB_ImageData_Impl::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
     return PPB_ImageData_Impl::GetTrustedInterface();
-  if (strcmp(name, PPB_INSTANCE_INTERFACE) == 0)
-    return PluginInstance::GetInterface();
+  if (name_prefix == GetInterfacePrefix(PPB_INSTANCE_INTERFACE))
+    return PluginInstance::GetInterface(name);
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return PluginInstance::GetPrivateInterface();
   if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
@@ -488,15 +496,26 @@ PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
 }
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
-  const PPP_Instance* plugin_instance_interface =
-      reinterpret_cast<const PPP_Instance*>(GetPluginInterface(
-          PPP_INSTANCE_INTERFACE));
-  if (!plugin_instance_interface) {
+  PluginInstance* instance(NULL);
+  const void* plugin_instance_if = GetPluginInterface(PPP_INSTANCE_INTERFACE);
+  if (plugin_instance_if) {
+    instance = new PluginInstance(delegate, this,
+        PluginInstance::new_instance_interface<PPP_Instance>(
+            plugin_instance_if));
+  } else {
+    // If the current interface is not supported, try retrieving older versions.
+    const void* instance_if_0_4 =
+        GetPluginInterface(PPP_INSTANCE_INTERFACE_0_4);
+    if (instance_if_0_4) {
+      instance = new PluginInstance(delegate, this,
+          PluginInstance::new_instance_interface<PPP_Instance_0_4>(
+              instance_if_0_4));
+    }
+  }
+  if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
   }
-  PluginInstance* instance = new PluginInstance(delegate, this,
-                                                plugin_instance_interface);
   if (out_of_process_proxy_.get())
     out_of_process_proxy_->AddInstance(instance->pp_instance());
   return instance;

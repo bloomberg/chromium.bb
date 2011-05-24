@@ -23,6 +23,7 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppp_instance.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
@@ -38,7 +39,6 @@ struct PPB_Fullscreen_Dev;
 struct PPB_Messaging;
 struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
-struct PPP_Instance;
 struct PPP_Instance_Private;
 struct PPP_Messaging;
 struct PPP_Pdf;
@@ -80,14 +80,19 @@ class Resource;
 // ResourceTracker.
 class PluginInstance : public base::RefCounted<PluginInstance> {
  public:
+  struct PPP_Instance_Combined;
+
   PluginInstance(PluginDelegate* delegate,
                  PluginModule* module,
-                 const PPP_Instance* instance_interface);
+                 PPP_Instance_Combined* instance_interface);
 
   // Delete should be called by the WebPlugin before this destructor.
   ~PluginInstance();
 
-  static const PPB_Instance* GetInterface();
+  // Return a PPB_Instance interface compatible with the given interface name,
+  // if one is available.  Returns NULL if the requested interface is
+  // not supported.
+  static const void* GetInterface(const char* if_name);
   static const PPB_Instance_Private* GetPrivateInterface();
 
   // Returns a pointer to the interface implementing PPB_Find that is
@@ -265,6 +270,21 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
     return fullscreen_container_;
   }
 
+  // TODO(dmichael): Remove this when all plugins are ported to use scripting
+  //                 from private interfaces.
+  struct PPP_Instance_Combined : public PPP_Instance_0_5 {
+    PPP_Instance_Combined(const PPP_Instance_0_5& instance_if);
+    PPP_Instance_Combined(const PPP_Instance_0_4& instance_if);
+
+    struct PP_Var (*GetInstanceObject_0_4)(PP_Instance instance);
+  };
+  template <class InterfaceType>
+  static PPP_Instance_Combined* new_instance_interface(
+      const void* interface_object) {
+    return new PPP_Instance_Combined(
+        *static_cast<const InterfaceType*>(interface_object));
+  }
+
  private:
   bool LoadFindInterface();
   bool LoadMessagingInterface();
@@ -319,7 +339,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
-  const PPP_Instance* instance_interface_;
+  scoped_ptr<PPP_Instance_Combined> instance_interface_;
 
   PP_Instance pp_instance_;
 

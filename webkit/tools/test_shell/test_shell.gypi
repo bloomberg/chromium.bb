@@ -338,6 +338,11 @@
         'chromium_code': 1,
       },
       'msvs_guid': 'E6766F81-1FCD-4CD7-BC16-E36964A14867',
+      #TODO(dmichael): Remove this #define once all plugins are ported from
+      #                PPP_Instance and PPB_Instance scripting functions.
+      'defines': [
+        'PPAPI_INSTANCE_REMOVE_SCRIPTING',
+      ],
       'dependencies': [
         'test_shell_common',
         '<(DEPTH)/base/base.gyp:test_support_base',

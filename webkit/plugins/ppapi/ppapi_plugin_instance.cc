@@ -208,11 +208,16 @@ PP_Var ExecuteScript(PP_Instance instance_id,
 }
 
 const PPB_Instance ppb_instance = {
+  &BindGraphics,
+  &IsFullFrame
+};
+
+const PPB_Instance_0_4 ppb_instance_0_4 = {
   &GetWindowObject,
   &GetOwnerElementObject,
   &BindGraphics,
   &IsFullFrame,
-  &ExecuteScript,
+  &ExecuteScript
 };
 
 const PPB_Instance_Private ppb_instance_private = {
@@ -336,7 +341,7 @@ const PPB_Zoom_Dev ppb_zoom = {
 
 PluginInstance::PluginInstance(PluginDelegate* delegate,
                                PluginModule* module,
-                               const PPP_Instance* instance_interface)
+                               PPP_Instance_Combined* instance_interface)
     : delegate_(delegate),
       module_(module),
       instance_interface_(instance_interface),
@@ -388,8 +393,13 @@ PluginInstance::~PluginInstance() {
 }
 
 // static
-const PPB_Instance* PluginInstance::GetInterface() {
-  return &ppb_instance;
+const void* PluginInstance::GetInterface(const char* if_name) {
+  if (strcmp(if_name, PPB_INSTANCE_INTERFACE) == 0) {
+    return &ppb_instance;
+  } else if (strcmp(if_name, PPB_INSTANCE_INTERFACE_0_4) == 0) {
+    return &ppb_instance_0_4;
+  }
+  return NULL;
 }
 
 // static
@@ -752,13 +762,15 @@ PP_Var PluginInstance::GetInstanceObject() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
 
-  // Try the private interface first.  If it is not supported, we fall back to
-  // the primary PPP_Instance interface.
+  // Try the private interface first. If it is not supported, we fall back to
+  // looking in the older version of the PPP_Instance interface for
+  // GetInstanceObject. If all that fails, return an undefined Var.
   // TODO(dmichael): Remove support for PPP_Instance.GetInstanceObject
-  if (LoadPrivateInterface()) {
+  if (LoadPrivateInterface())
     return plugin_private_interface_->GetInstanceObject(pp_instance());
-  }
-  return instance_interface_->GetInstanceObject(pp_instance());
+  else if (instance_interface_->GetInstanceObject_0_4)
+    return instance_interface_->GetInstanceObject_0_4(pp_instance());
+  return PP_MakeUndefined();
 }
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
@@ -931,6 +943,23 @@ bool PluginInstance::LoadFindInterface() {
   }
 
   return !!plugin_find_interface_;
+}
+
+PluginInstance::PPP_Instance_Combined::PPP_Instance_Combined(
+    const PPP_Instance_0_5& instance_if)
+    : PPP_Instance_0_5(instance_if),
+      GetInstanceObject_0_4(NULL) {}
+
+PluginInstance::PPP_Instance_Combined::PPP_Instance_Combined(
+    const PPP_Instance_0_4& instance_if)
+    : PPP_Instance_0_5(),  // Zero-initialize.
+      GetInstanceObject_0_4(instance_if.GetInstanceObject) {
+  DidCreate = instance_if.DidCreate;
+  DidDestroy = instance_if.DidDestroy;
+  DidChangeView = instance_if.DidChangeView;
+  DidChangeFocus = instance_if.DidChangeFocus;
+  HandleInputEvent = instance_if.HandleInputEvent;
+  HandleDocumentLoad = instance_if.HandleDocumentLoad;
 }
 
 bool PluginInstance::LoadMessagingInterface() {

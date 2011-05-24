@@ -13,7 +13,14 @@
 struct PP_InputEvent;
 struct PP_Var;
 
-#define PPP_INSTANCE_INTERFACE "PPP_Instance;0.4"
+#define PPP_INSTANCE_INTERFACE_0_4 "PPP_Instance;0.4"
+#define PPP_INSTANCE_INTERFACE_0_5 "PPP_Instance;0.5"
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_0_5
+#else
+#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_0_4
+#endif
+
 
 /**
  * @file
@@ -33,7 +40,11 @@ struct PP_Var;
  * events.
  */
 
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 struct PPP_Instance {
+#else
+struct PPP_Instance_0_5 {
+#endif
   /**
    * This value represents a pointer to a function that is called when a new
    * module is instantiated on the web page. The identifier of the new
@@ -159,26 +170,37 @@ struct PPP_Instance {
    * @return PP_TRUE if the data was handled, PP_FALSE otherwise.
    */
   PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
+};
 
-  /**
-   * This value represents a pointer to a function that returns a Var
-   * representing the scriptable object for the given instance. Normally
-   * this will be a PPP_Class object that exposes certain methods the page
-   * may want to call.
-   *
-   * On Failure, the returned var should be a "void" var.
-   *
-   * The returned PP_Var should have a reference added for the caller, which
-   * will be responsible for Release()ing that reference.
-   *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
-   * @return A PP_Var containing scriptable object.
-   */
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+struct PPP_Instance_0_4 {
+#else
+struct PPP_Instance {
+#endif
+  PP_Bool (*DidCreate)(PP_Instance instance,
+                       uint32_t argc,
+                       const char* argn[],
+                       const char* argv[]);
+  void (*DidDestroy)(PP_Instance instance);
+  void (*DidChangeView)(PP_Instance instance,
+                        const struct PP_Rect* position,
+                        const struct PP_Rect* clip);
+  void (*DidChangeFocus)(PP_Instance instance, PP_Bool has_focus);
+  PP_Bool (*HandleInputEvent)(PP_Instance instance,
+                              const struct PP_InputEvent* event);
+  PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
   struct PP_Var (*GetInstanceObject)(PP_Instance instance);
 };
+
 /**
  * @}
  */
+
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+typedef struct PPP_Instance PPP_Instance_0_5;
+#else
+typedef struct PPP_Instance PPP_Instance_0_4;
+#endif
 
 #endif  /* PPAPI_C_PPP_INSTANCE_H_ */
 

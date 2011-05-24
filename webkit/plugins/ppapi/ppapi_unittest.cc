@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,18 +55,13 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
   return PP_FALSE;
 }
 
-PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
-  return PP_MakeUndefined();
-}
-
 static PPP_Instance mock_instance_interface = {
   &Instance_DidCreate,
   &Instance_DidDestroy,
   &Instance_DidChangeView,
   &Instance_DidChangeFocus,
   &Instance_HandleInputEvent,
-  &Instance_HandleDocumentLoad,
-  &Instance_GetInstanceObject
+  &Instance_HandleDocumentLoad
 };
 
 }  // namespace
@@ -95,7 +90,7 @@ void PpapiUnittest::SetUp() {
 
   // Initialize the mock instance.
   instance_ = new PluginInstance(delegate_.get(), module(),
-      static_cast<const PPP_Instance*>(
+      PluginInstance::new_instance_interface<PPP_Instance>(
           GetMockInterface(PPP_INSTANCE_INTERFACE)));
 }
 
