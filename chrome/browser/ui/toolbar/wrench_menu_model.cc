@@ -47,11 +47,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
@@ -333,12 +328,7 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
   if (command_id == IDC_UPGRADE_DIALOG) {
-#if defined(OS_CHROMEOS)
-    return (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->status().status
-            == chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT);
-#else
     return UpgradeDetector::GetInstance()->notify_upgrade();
-#endif
   } else if (command_id == IDC_VIEW_INCOMPATIBILITIES) {
 #if defined(OS_WIN)
     EnumerateModulesModel* loaded_modules =

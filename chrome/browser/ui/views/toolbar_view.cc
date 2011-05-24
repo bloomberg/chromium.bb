@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/event_utils.h"
+#include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
@@ -36,12 +37,6 @@
 #include "views/widget/tooltip_manager.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
-#endif
-#include "chrome/browser/ui/views/wrench_menu.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
@@ -619,12 +614,7 @@ void ToolbarView::RemovePaneFocus() {
 // ToolbarView, private:
 
 bool ToolbarView::IsUpgradeRecommended() {
-#if defined(OS_CHROMEOS)
-  return (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->status().status ==
-          chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT);
-#else
   return (UpgradeDetector::GetInstance()->notify_upgrade());
-#endif
 }
 
 bool ToolbarView::ShouldShowIncompatibilityWarning() {

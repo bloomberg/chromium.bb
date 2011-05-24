@@ -35,6 +35,11 @@
 #include "base/version.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/update_library.h"
+#endif
+
 namespace {
 
 // How long (in milliseconds) to wait (each cycle) before checking whether
@@ -205,6 +210,13 @@ UpgradeDetector* UpgradeDetector::GetInstance() {
 }
 
 void UpgradeDetector::CheckForUpgrade() {
+#if defined(OS_CHROMEOS)
+  // For ChromeOS, check update library status to detect upgrade.
+  if (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->status().status ==
+      chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+    UpgradeDetected();
+  }
+#else
   method_factory_.RevokeAll();
   Task* callback_task =
       method_factory_.NewRunnableMethod(&UpgradeDetector::UpgradeDetected);
@@ -215,6 +227,7 @@ void UpgradeDetector::CheckForUpgrade() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           new DetectUpgradeTask(callback_task,
                                                 &is_unstable_channel_));
+#endif
 }
 
 void UpgradeDetector::UpgradeDetected() {

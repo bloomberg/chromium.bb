@@ -8,8 +8,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace chromeos {
 
@@ -91,15 +89,6 @@ class UpdateLibraryImpl : public UpdateLibrary {
 
     status_ = status;
     FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(this));
-
-    // If the update is ready to install, send a notification so that Chrome
-    // can update the UI.
-    if (status_.status == UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-      NotificationService::current()->Notify(
-          NotificationType::UPGRADE_RECOMMENDED,
-          Source<UpdateLibrary>(this),
-          NotificationService::NoDetails());
-    }
   }
 
   ObserverList<Observer> observers_;
