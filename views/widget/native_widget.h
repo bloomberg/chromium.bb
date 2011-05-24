@@ -124,6 +124,7 @@ class NativeWidget {
 
  protected:
   friend class Widget;
+  friend class NativeWidgetViews;
 
   // Returns a handle for the underlying native widget that can be used for
   // accelerated drawing.

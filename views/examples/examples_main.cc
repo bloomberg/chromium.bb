@@ -21,6 +21,7 @@
 #include "views/examples/message_box_example.h"
 #include "views/examples/native_theme_button_example.h"
 #include "views/examples/native_theme_checkbox_example.h"
+#include "views/examples/native_widget_views_example.h"
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 #include "views/examples/single_split_view_example.h"
@@ -109,6 +110,10 @@ void ExamplesMain::Run() {
   examples::NativeThemeButtonExample native_theme_button_example(this);
   tabbed_pane->AddTab(native_theme_button_example.GetExampleTitle(),
                       native_theme_button_example.GetExampleView());
+
+  examples::NativeWidgetViewsExample native_widget_views_example(this);
+  tabbed_pane->AddTab(native_widget_views_example.GetExampleTitle(),
+                      native_widget_views_example.GetExampleView());
 
   examples::TextfieldExample textfield_example(this);
   tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
