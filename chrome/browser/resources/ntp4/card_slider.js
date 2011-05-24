@@ -273,6 +273,21 @@ var CardSlider = (function() {
     },
 
     /**
+     * Selects a card from the stack. Passes through to selectCard.
+     * @param {Node} newCard The card that should be selected.
+     * @param {boolean=} opt_animate Whether to animate.
+     */
+    selectCardByValue: function(newCard, opt_animate) {
+      for (var i = 0; i < this.cards_.length; i++) {
+        if (newCard == this.cards_[i]) {
+          this.selectCard(i, opt_animate);
+          return;
+        }
+      }
+      assert(false);
+    },
+
+    /**
      * Centers the view on the card denoted by this.currentCard. Can either
      * animate to that card or snap to it.
      * @param {boolean=} opt_animate If true will animate transition from

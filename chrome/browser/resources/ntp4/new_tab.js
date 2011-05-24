@@ -79,12 +79,6 @@ cr.define('ntp4', function() {
   var DEFAULT_TRANSITION_TIME = 500;
 
   /**
-   * All the Grabber objects currently in use on the page
-   * @type {Array.<Grabber>}
-   */
-  var grabbers = [];
-
-  /**
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function initialize() {
@@ -217,29 +211,13 @@ cr.define('ntp4', function() {
    *        applications.
    */
   function getAppsCallback(data) {
-    // Clean up any existing grabber objects - cancelling any outstanding drag.
-    // Ideally an async app update wouldn't disrupt an active drag but
-    // that would require us to re-use existing elements and detect how the apps
-    // have changed, which would be a lot of work.
-    // Note that we have to explicitly clean up the grabber objects so they stop
-    // listening to events and break the DOM<->JS cycles necessary to enable
-    // collection of all these objects.
-    grabbers.forEach(function(g) {
-      // Note that this may raise DRAG_END/RELEASE events to clean up an
-      // oustanding drag.
-      g.dispose();
-    });
-    assert(!draggingAppContainer && !draggingAppOriginalPosition &&
-           !draggingAppOriginalPage);
-    grabbers = [];
-
     // Clear any existing apps pages and dots.
     // TODO(rbyers): It might be nice to preserve animation of dots after an
     // uninstall. Could we re-use the existing page and dot elements?  It seems
     // unfortunate to have Chrome send us the entire apps list after an
     // uninstall.
-    for (var i = 0; i < appsPages.length; i++) {
-      var page = appsPages[i];
+    while (appsPages.length > 0) {
+      var page = appsPages[0];
       var dot = page.navigationDot;
 
       page.tearDown();
@@ -344,7 +322,6 @@ cr.define('ntp4', function() {
     pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
-    var dotCount = dots.length;
     var newDot = dotTemplate.cloneNode(true);
     newDot.querySelector('span').textContent = page.pageName;
     if (opt_animate)
@@ -353,7 +330,7 @@ cr.define('ntp4', function() {
     page.navigationDot = newDot;
 
     newDot.showPage = function() {
-      cardSlider.selectCard(dotCount, true);
+      cardSlider.selectCardByValue(page, true);
     };
     function switchPage(e) {
       newDot.showPage();
