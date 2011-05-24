@@ -4638,7 +4638,7 @@
    bug_83638
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN43DownloadManagerTest_*_Test8TestBodyEv
+   fun:*DownloadManagerTest_*_Test8TestBodyEv
    fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 
