@@ -60,10 +60,12 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
   }
 }
 
-void ProfileWriter::AddBookmarkEntry(
-    const std::vector<BookmarkEntry>& bookmark,
-    const string16& first_folder_name,
-    int options) {
+void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+                                 const string16& first_folder_name,
+                                 int options) {
+  if (bookmarks.empty())
+    return;
+
   BookmarkModel* model = profile_->GetBookmarkModel();
   DCHECK(model->IsLoaded());
 
@@ -73,13 +75,11 @@ void ProfileWriter::AddBookmarkEntry(
 
   bool show_bookmark_toolbar = false;
   std::set<const BookmarkNode*> folders_added_to;
-  bool import_mode = false;
-  if (bookmark.size() > 1) {
-    model->BeginImportMode();
-    import_mode = true;
-  }
-  for (std::vector<BookmarkEntry>::const_iterator it = bookmark.begin();
-       it != bookmark.end(); ++it) {
+
+  model->BeginImportMode();
+
+  for (std::vector<BookmarkEntry>::const_iterator it = bookmarks.begin();
+       it != bookmarks.end(); ++it) {
     // Don't insert this url if it isn't valid.
     if (!it->is_folder && !it->url.is_valid())
       continue;
@@ -105,17 +105,16 @@ void ProfileWriter::AddBookmarkEntry(
 
       for (int index = 0; index < parent->child_count(); ++index) {
         const BookmarkNode* node = parent->GetChild(index);
-        if ((node->type() == BookmarkNode::BOOKMARK_BAR ||
-             node->type() == BookmarkNode::FOLDER) &&
-            node->GetTitle() == folder_name) {
+        if (node->is_folder() && node->GetTitle() == folder_name) {
           child = node;
           break;
         }
       }
-      if (child == NULL)
+      if (!child)
         child = model->AddFolder(parent, parent->child_count(), folder_name);
       parent = child;
     }
+
     folders_added_to.insert(parent);
     if (it->is_folder) {
       model->AddFolder(parent, parent->child_count(), it->title);
@@ -130,18 +129,15 @@ void ProfileWriter::AddBookmarkEntry(
       show_bookmark_toolbar = true;
   }
 
-  // Reset the date modified time of the folders we added to. We do this to
-  // make sure the 'recently added to' combobox in the bubble doesn't get random
-  // folders.
+  // In order to keep the imported-to folders from appearing in the 'recently
+  // added to' combobox, reset their modified times.
   for (std::set<const BookmarkNode*>::const_iterator i =
-          folders_added_to.begin();
+           folders_added_to.begin();
        i != folders_added_to.end(); ++i) {
     model->ResetDateFolderModified(*i);
   }
 
-  if (import_mode) {
-    model->EndImportMode();
-  }
+  model->EndImportMode();
 
   if (show_bookmark_toolbar && !(options & BOOKMARK_BAR_DISABLED))
     ShowBookmarkBar();

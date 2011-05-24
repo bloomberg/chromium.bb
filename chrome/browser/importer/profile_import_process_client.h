@@ -32,8 +32,8 @@ struct PasswordForm;
 // process in order to get results back from the process host. The
 // ProfileImportProcessHost calls the client's functions on the thread passed to
 // it when it's created.
-class ProfileImportProcessClient :
-    public base::RefCountedThreadSafe<ProfileImportProcessClient> {
+class ProfileImportProcessClient
+    : public base::RefCountedThreadSafe<ProfileImportProcessClient> {
  public:
   ProfileImportProcessClient();
 
@@ -56,10 +56,9 @@ class ProfileImportProcessClient :
 
   virtual void OnHomePageImportReady(const GURL& home_page);
 
-  virtual void OnBookmarksImportStart(
-      const string16& first_folder_name,
-      int options,
-      size_t total_bookmarks_count);
+  virtual void OnBookmarksImportStart(const string16& first_folder_name,
+                                      int options,
+                                      size_t total_bookmarks_count);
   virtual void OnBookmarksImportGroup(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks);
 

@@ -33,10 +33,10 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
  public:
   // Used to identify how the bookmarks are added.
   enum BookmarkOptions {
-    // Indicates the bookmark should only be added if unique. Uniqueness
-    // is done by title, url and path. That is, if this is passed to
-    // AddBookmarkEntry the bookmark is added only if there is no other
-    // URL with the same url, path and title.
+    // Indicates the bookmark should only be added if unique. Uniqueness is done
+    // by title, url and path. That is, if this is passed to AddBookmarks, the
+    // bookmark is added only if there is no other URL with the same url, path
+    // and title.
     ADD_IF_UNIQUE = 1 << 0,
 
     // Indicates the bookmarks should be added to the bookmark bar.
@@ -90,9 +90,9 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   // If |options| contains ADD_IF_UNIQUE, then the bookmark is added only
   // if another bookmarks does not exist with the same title, path and
   // url.
-  virtual void AddBookmarkEntry(const std::vector<BookmarkEntry>& bookmark,
-                                const string16& first_folder_name,
-                                int options);
+  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmark,
+                            const string16& first_folder_name,
+                            int options);
 
   virtual void AddFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicons);

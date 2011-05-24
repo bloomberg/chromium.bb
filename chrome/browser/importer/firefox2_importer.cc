@@ -330,7 +330,7 @@ void Firefox2Importer::ImportBookmarks() {
       options |= ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
     if (bookmark_bar_disabled())
       options |= ProfileWriter::BOOKMARK_BAR_DISABLED;
-    bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);
+    bridge_->AddBookmarks(bookmarks, first_folder_name, options);
   }
   if (!parsing_bookmarks_html_file_ && !template_urls.empty() &&
       !cancelled()) {
@@ -338,9 +338,8 @@ void Firefox2Importer::ImportBookmarks() {
   } else {
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
-  if (!favicons.empty()) {
+  if (!favicons.empty())
     bridge_->SetFavicons(favicons);
-  }
 }
 
 void Firefox2Importer::ImportPasswords() {

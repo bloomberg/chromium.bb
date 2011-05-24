@@ -294,7 +294,7 @@ void Firefox3Importer::ImportBookmarks() {
     int options = 0;
     if (import_to_bookmark_bar())
       options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
-    bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);
+    bridge_->AddBookmarks(bookmarks, first_folder_name, options);
   }
   if (!template_urls.empty() && !cancelled()) {
     bridge_->SetKeywords(template_urls, -1, false);

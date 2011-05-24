@@ -189,8 +189,8 @@ void ExternalProcessImporterClient::OnBookmarksImportGroup(
   bookmarks_.insert(bookmarks_.end(), bookmarks_group.begin(),
                     bookmarks_group.end());
   if (bookmarks_.size() == total_bookmarks_count_) {
-    bridge_->AddBookmarkEntries(bookmarks_, bookmarks_first_folder_name_,
-                                bookmarks_options_);
+    bridge_->AddBookmarks(bookmarks_, bookmarks_first_folder_name_,
+                          bookmarks_options_);
   }
 }
 

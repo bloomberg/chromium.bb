@@ -22,7 +22,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
  public:
   ImporterBridge();
 
-  virtual void AddBookmarkEntries(
+  virtual void AddBookmarks(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
       const string16& first_folder_name,
       int options) = 0;
