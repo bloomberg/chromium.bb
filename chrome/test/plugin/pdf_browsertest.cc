@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
 // Flaky as per http://crbug.com/74548.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =
