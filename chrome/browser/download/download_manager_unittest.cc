@@ -172,29 +172,21 @@ const struct {
   // Safe download, download finishes BEFORE file name determined.
   // Renamed twice (linear path through UI).  Crdownload file does not need
   // to be deleted.
-  { FILE_PATH_LITERAL("foo.zip"),
-    false, false, true, 2, },
+  { FILE_PATH_LITERAL("foo.zip"), false, false, true, 2, },
   // Dangerous download (file is dangerous or download URL is not safe or both),
   // download finishes BEFORE file name determined. Needs to be renamed only
   // once.
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    true, false, true, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    false, true, true, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    true, true, true, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, false, true, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), false, true, true, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, true, true, 1, },
   // Safe download, download finishes AFTER file name determined.
   // Needs to be renamed twice.
-  { FILE_PATH_LITERAL("foo.zip"),
-    false, false, false, 2, },
+  { FILE_PATH_LITERAL("foo.zip"), false, false, false, 2, },
   // Dangerous download, download finishes AFTER file name determined.
   // Needs to be renamed only once.
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    true, false, false, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    false, true, false, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    true, true, false, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, false, false, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), false, true, false, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, true, false, 1, },
 };
 
 class MockDownloadFile : public DownloadFile {
@@ -341,8 +333,6 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     info->download_id = static_cast<int>(i);
     info->prompt_user_for_save_location = false;
     info->url_chain.push_back(GURL());
-    info->is_dangerous_file = kDownloadRenameCases[i].is_dangerous_file;
-    info->is_dangerous_url = kDownloadRenameCases[i].is_dangerous_url;
     const FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
     MockDownloadFile* download_file(
@@ -367,6 +357,12 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
               2, new_path))));
     }
     download_manager_->CreateDownloadItem(info.get());
+    DownloadItem* download = GetActiveDownloadItem(i);
+    ASSERT_TRUE(download != NULL);
+    if (kDownloadRenameCases[i].is_dangerous_file)
+      download->MarkFileDangerous();
+    if (kDownloadRenameCases[i].is_dangerous_url)
+      download->MarkUrlDangerous();
 
     int32* id_ptr = new int32;
     *id_ptr = i;  // Deleted in FileSelected().
@@ -400,8 +396,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
-  info->is_dangerous_file = false;
-  info->is_dangerous_url = false;
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
 
@@ -467,8 +461,6 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
-  info->is_dangerous_file = false;
-  info->is_dangerous_url = false;
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
 
@@ -547,8 +539,6 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
-  info->is_dangerous_file = false;
-  info->is_dangerous_url = false;
 
   download_manager_->CreateDownloadItem(info.get());
 

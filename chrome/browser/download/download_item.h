@@ -277,6 +277,7 @@ class DownloadItem {
   // Why |safety_state_| is not SAFE.
   DangerType GetDangerType() const;
   bool IsDangerous() const;
+  void MarkFileDangerous();
   void MarkUrlDangerous();
 
   bool auto_opened() { return auto_opened_; }

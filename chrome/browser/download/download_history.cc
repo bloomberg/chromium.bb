@@ -39,6 +39,25 @@ void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
   hs->CleanUpInProgressEntries();
 }
 
+void DownloadHistory::CheckVisitedReferrerBefore(
+    int32 download_id,
+    const GURL& referrer_url,
+    VisitedBeforeDoneCallback* callback) {
+  DCHECK(callback);
+
+  if (referrer_url.is_valid()) {
+    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    if (hs) {
+      HistoryService::Handle handle = hs->GetVisitCountToHost(referrer_url,
+          &history_consumer_,
+          NewCallback(this, &DownloadHistory::OnGotVisitCountToHost));
+      visited_before_requests_[handle] = std::make_pair(download_id, callback);
+      return;
+    }
+  }
+  callback->Run(download_id, false);
+}
+
 void DownloadHistory::AddEntry(
     DownloadItem* download_item,
     HistoryService::DownloadCreateCallback* callback) {
@@ -52,7 +71,6 @@ void DownloadHistory::AddEntry(
   // handles, so we use a negative value. Eventually, they could overlap, but
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
-  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (download_item->is_otr() || download_item->is_extension_install() ||
       download_item->is_temporary() || !hs) {
@@ -74,7 +92,6 @@ void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
   if (download_item->db_handle() <= kUninitializedHandle)
     return;
 
-  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
@@ -90,7 +107,6 @@ void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,
   if (download_item->db_handle() <= kUninitializedHandle)
     return;
 
-  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->UpdateDownloadPath(new_path, download_item->db_handle());
@@ -101,7 +117,6 @@ void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
   if (download_item->db_handle() <= kUninitializedHandle)
     return;
 
-  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->RemoveDownload(download_item->db_handle());
@@ -109,7 +124,6 @@ void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
 
 void DownloadHistory::RemoveEntriesBetween(const base::Time remove_begin,
                                            const base::Time remove_end) {
-  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->RemoveDownloadsBetween(remove_begin, remove_end);
@@ -117,4 +131,18 @@ void DownloadHistory::RemoveEntriesBetween(const base::Time remove_begin,
 
 int64 DownloadHistory::GetNextFakeDbHandle() {
   return next_fake_db_handle_--;
+}
+
+void DownloadHistory::OnGotVisitCountToHost(HistoryService::Handle handle,
+                                            bool found_visits,
+                                            int count,
+                                            base::Time first_visit) {
+  VisitedBeforeRequestsMap::iterator request =
+      visited_before_requests_.find(handle);
+  DCHECK(request != visited_before_requests_.end());
+  int32 download_id = request->second.first;
+  VisitedBeforeDoneCallback* callback = request->second.second;
+  visited_before_requests_.erase(request);
+  callback->Run(download_id, found_visits && count &&
+      (first_visit.LocalMidnight() < base::Time::Now().LocalMidnight()));
 }

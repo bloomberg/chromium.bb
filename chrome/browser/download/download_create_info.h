@@ -95,12 +95,6 @@ struct DownloadCreateInfo {
   // default location.
   bool prompt_user_for_save_location;
 
-  // Whether this download file is potentially dangerous (ex: exe, dll, ...).
-  bool is_dangerous_file;
-
-  // If safebrowsing believes this URL leads to malware.
-  bool is_dangerous_url;
-
   // The original name for a dangerous download.
   FilePath original_name;
 

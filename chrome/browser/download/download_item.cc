@@ -149,8 +149,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                            bool is_otr)
     : state_info_(info.original_name, info.save_info.file_path,
                   info.has_user_gesture, info.prompt_user_for_save_location,
-                  info.path_uniquifier, info.is_dangerous_file,
-                  info.is_dangerous_url, info.is_extension_install),
+                  info.path_uniquifier, false, false,
+                  info.is_extension_install),
       process_handle_(info.process_handle),
       download_id_(info.download_id),
       full_path_(info.path),
@@ -170,8 +170,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
-      safety_state_(GetSafetyState(info.is_dangerous_file,
-                                   info.is_dangerous_url)),
+      safety_state_(SAFE),
       auto_opened_(false),
       is_otr_(is_otr),
       is_temporary_(!info.save_info.file_path.empty()),
@@ -541,8 +540,16 @@ bool DownloadItem::IsDangerous() const {
   return GetDangerType() != DownloadItem::NOT_DANGEROUS;
 }
 
+void DownloadItem::MarkFileDangerous() {
+  state_info_.is_dangerous_file = true;
+  safety_state_ = GetSafetyState(state_info_.is_dangerous_file,
+                                 state_info_.is_dangerous_url);
+}
+
 void DownloadItem::MarkUrlDangerous() {
   state_info_.is_dangerous_url = true;
+  safety_state_ = GetSafetyState(state_info_.is_dangerous_file,
+                                 state_info_.is_dangerous_url);
 }
 
 DownloadHistoryInfo DownloadItem::GetHistoryInfo() const {

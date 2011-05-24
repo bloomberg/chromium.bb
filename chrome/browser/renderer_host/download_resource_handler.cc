@@ -105,8 +105,6 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
 
   info->prompt_user_for_save_location =
       save_as_ && save_info_.file_path.empty();
-  info->is_dangerous_file = false;
-  info->is_dangerous_url = false;
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
   BrowserThread::PostTask(

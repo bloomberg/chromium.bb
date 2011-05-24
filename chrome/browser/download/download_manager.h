@@ -204,8 +204,6 @@ class DownloadManager
 
   Profile* profile() { return profile_; }
 
-  DownloadHistory* download_history() { return download_history_.get(); }
-
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 
   // Creates the download item.  Must be called on the UI thread.
@@ -232,13 +230,19 @@ class DownloadManager
   // user action initiated the download, and whether the user has explicitly
   // marked the file type as "auto open".
   bool IsDangerous(const DownloadItem& download,
-                   const DownloadStateInfo& state);
+                   const DownloadStateInfo& state,
+                   bool visited_referrer_before);
 
   // Called when the user has validated the download of a dangerous file.
   void DangerousDownloadValidated(DownloadItem* download);
 
   // Callback function after url is checked with safebrowsing service.
   void CheckDownloadUrlDone(int32 download_id, bool is_dangerous_url);
+
+  // Callback function after we check whether the referrer URL has been visited
+  // before today.
+  void CheckVisitedReferrerBeforeDone(int32 download_id,
+                                      bool visited_referrer_before);
 
   // Callback function after download file hash is checked with safebrowsing
   // service.

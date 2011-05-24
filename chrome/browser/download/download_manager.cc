@@ -280,10 +280,23 @@ void DownloadManager::CheckDownloadUrlDone(int32 download_id,
   if (is_dangerous_url)
     download->MarkUrlDangerous();
 
-  DownloadStateInfo state = download->state_info();
+  download_history_->CheckVisitedReferrerBefore(download_id,
+      download->referrer_url(),
+      NewCallback(this, &DownloadManager::CheckVisitedReferrerBeforeDone));
+}
+
+void DownloadManager::CheckVisitedReferrerBeforeDone(
+    int32 download_id,
+    bool visited_referrer_before) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
 
   // Check whether this download is for an extension install or not.
   // Allow extensions to be explicitly saved.
+  DownloadStateInfo state = download->state_info();
   if (!state.prompt_user_for_save_location) {
     if (UserScript::IsURLUserScript(download->GetURL(),
         download->mime_type()) ||
@@ -331,8 +344,10 @@ void DownloadManager::CheckDownloadUrlDone(int32 download_id,
     state.suggested_path = state.force_file_name;
   }
 
-  if (!state.prompt_user_for_save_location && state.force_file_name.empty())
-    state.is_dangerous_file = IsDangerous(*download, state);
+  if (!state.prompt_user_for_save_location && state.force_file_name.empty()) {
+    state.is_dangerous_file =
+        IsDangerous(*download, state, visited_referrer_before);
+  }
 
   // We need to move over to the download thread because we don't want to stat
   // the suggested path on the UI thread.
@@ -343,7 +358,7 @@ void DownloadManager::CheckDownloadUrlDone(int32 download_id,
       NewRunnableMethod(
           this,
           &DownloadManager::CheckIfSuggestedPathExists,
-          download_id,
+          download->id(),
           state,
           download_prefs()->download_path()));
 }
@@ -437,8 +452,8 @@ void DownloadManager::CheckIfSuggestedPathExists(int32 download_id,
                         state));
 }
 
-void DownloadManager::OnPathExistenceAvailable(
-    int32 download_id, DownloadStateInfo new_state) {
+void DownloadManager::OnPathExistenceAvailable(int32 download_id,
+                                               DownloadStateInfo new_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = GetActiveDownloadItem(download_id);
@@ -1037,7 +1052,8 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 
 // TODO(phajdan.jr): This is apparently not being exercised in tests.
 bool DownloadManager::IsDangerous(const DownloadItem& download,
-                                  const DownloadStateInfo& state) {
+                                  const DownloadStateInfo& state,
+                                  bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool auto_open = ShouldOpenFileBasedOnExtension(state.suggested_path);
@@ -1048,7 +1064,7 @@ bool DownloadManager::IsDangerous(const DownloadItem& download,
     return !(auto_open && state.has_user_gesture);
 
   if (danger_level == download_util::AllowOnUserGesture &&
-      !state.has_user_gesture)
+      (!state.has_user_gesture || !visited_referrer_before))
     return true;
 
   if (state.is_extension_install) {

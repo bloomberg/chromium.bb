@@ -28,8 +28,6 @@ DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
       has_user_gesture(has_user_gesture),
       db_handle(0),
       prompt_user_for_save_location(false),
-      is_dangerous_file(false),
-      is_dangerous_url(false),
       is_extension_install(false) {
 }
 
@@ -42,8 +40,6 @@ DownloadCreateInfo::DownloadCreateInfo()
       has_user_gesture(false),
       db_handle(0),
       prompt_user_for_save_location(false),
-      is_dangerous_file(false),
-      is_dangerous_url(false),
       is_extension_install(false) {
 }
 
