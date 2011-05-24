@@ -17,8 +17,7 @@
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
@@ -79,6 +78,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
+  history_tab_helper_.reset(new HistoryTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
@@ -297,11 +297,9 @@ void TabContentsWrapper::RenderViewGone() {
 bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabContentsWrapper, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnThumbnail)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
@@ -424,29 +422,6 @@ void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
 ////////////////////////////////////////////////////////////////////////////////
 // Internal helpers
 
-void TabContentsWrapper::OnPageContents(const GURL& url,
-                                        int32 page_id,
-                                        const string16& contents) {
-  // Don't index any https pages. People generally don't want their bank
-  // accounts, etc. indexed on their computer, especially since some of these
-  // things are not marked cachable.
-  // TODO(brettw) we may want to consider more elaborate heuristics such as
-  // the cachability of the page. We may also want to consider subframes (this
-  // test will still index subframes if the subframe is SSL).
-  // TODO(zelidrag) bug chromium-os:2808 - figure out if we want to reenable
-  // content indexing for chromeos in some future releases.
-#if !defined(OS_CHROMEOS)
-  if (!url.SchemeIsSecure()) {
-    Profile* p = profile();
-    if (p && !p->IsOffTheRecord()) {
-      HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
-      if (hs)
-        hs->SetPageContents(url, contents);
-    }
-  }
-#endif
-}
-
 void TabContentsWrapper::OnJSOutOfMemory() {
   AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
       NULL, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true));
@@ -471,18 +446,6 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
       new RegisterProtocolHandlerInfoBarDelegate(tab_contents(), registry,
                                                  handler));
   }
-}
-
-void TabContentsWrapper::OnThumbnail(const GURL& url,
-                                     const ThumbnailScore& score,
-                                     const SkBitmap& bitmap) {
-  if (profile()->IsOffTheRecord())
-    return;
-
-  // Tell History about this thumbnail
-  history::TopSites* ts = profile()->GetTopSites();
-  if (ts)
-    ts->SetPageThumbnail(url, bitmap, score);
 }
 
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {

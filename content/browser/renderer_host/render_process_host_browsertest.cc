@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"

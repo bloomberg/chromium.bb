@@ -8,11 +8,13 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/sessions/session_service_test_helper.h"
+//  These are only used for commented out tests.  If someone wants to enable
+//  them, they should be moved to chrome first.
+//  #include "chrome/browser/history/history.h"
+//  #include "chrome/browser/profiles/profile_manager.h"
+//  #include "chrome/browser/sessions/session_service.h"
+//  #include "chrome/browser/sessions/session_service_factory.h"
+//  #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/test_notification_tracker.h"
@@ -37,100 +39,6 @@ using base::Time;
 class NavigationControllerTest : public RenderViewHostTestHarness {
  public:
   NavigationControllerTest() {}
-};
-
-// NavigationControllerHistoryTest ---------------------------------------------
-
-class NavigationControllerHistoryTest : public NavigationControllerTest {
- public:
-  NavigationControllerHistoryTest()
-      : url0("http://foo1"),
-        url1("http://foo1"),
-        url2("http://foo1"),
-        profile_manager_(NULL) {
-  }
-
-  virtual ~NavigationControllerHistoryTest() {
-    // Prevent our base class from deleting the profile since profile's
-    // lifetime is managed by profile_manager_.
-    STLDeleteElements(&windows_);
-  }
-
-  // testing::Test overrides.
-  virtual void SetUp() {
-    NavigationControllerTest::SetUp();
-
-    // Force the session service to be created.
-    SessionService* service = new SessionService(profile());
-    SessionServiceFactory::SetForTestProfile(profile(), service);
-    service->SetWindowType(window_id, Browser::TYPE_TABBED);
-    service->SetWindowBounds(window_id, gfx::Rect(0, 1, 2, 3), false);
-    service->SetTabIndexInWindow(window_id,
-                                 controller().session_id(), 0);
-    controller().SetWindowID(window_id);
-
-    session_helper_.set_service(service);
-  }
-
-  virtual void TearDown() {
-    // Release profile's reference to the session service. Otherwise the file
-    // will still be open and we won't be able to delete the directory below.
-    session_helper_.ReleaseService(); // profile owns this
-    SessionServiceFactory::SetForTestProfile(profile(), NULL);
-
-    // Make sure we wait for history to shut down before continuing. The task
-    // we add will cause our message loop to quit once it is destroyed.
-    HistoryService* history =
-        profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-    if (history) {
-      history->SetOnBackendDestroyTask(new MessageLoop::QuitTask);
-      MessageLoop::current()->Run();
-    }
-
-    // Do normal cleanup before deleting the profile directory below.
-    NavigationControllerTest::TearDown();
-
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
-  }
-
-  // Deletes the current profile manager and creates a new one. Indirectly this
-  // shuts down the history database and reopens it.
-  void ReopenDatabase() {
-    session_helper_.set_service(NULL);
-    SessionServiceFactory::SetForTestProfile(profile(), NULL);
-
-    SessionService* service = new SessionService(profile());
-    SessionServiceFactory::SetForTestProfile(profile(), service);
-    session_helper_.set_service(service);
-  }
-
-  void GetLastSession() {
-    SessionServiceFactory::GetForProfile(profile())->TabClosed(
-        controller().window_id(), controller().session_id(), false);
-
-    ReopenDatabase();
-    Time close_time;
-
-    session_helper_.ReadWindows(&windows_);
-  }
-
-  CancelableRequestConsumer consumer;
-
-  // URLs for testing.
-  const GURL url0;
-  const GURL url1;
-  const GURL url2;
-
-  std::vector<SessionWindow*> windows_;
-
-  SessionID window_id;
-
-  SessionServiceTestHelper session_helper_;
-
- private:
-  ProfileManager* profile_manager_;
-  FilePath test_dir_;
 };
 
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
@@ -2165,6 +2073,100 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.
+
+// NavigationControllerHistoryTest ---------------------------------------------
+
+class NavigationControllerHistoryTest : public NavigationControllerTest {
+ public:
+  NavigationControllerHistoryTest()
+      : url0("http://foo1"),
+        url1("http://foo1"),
+        url2("http://foo1"),
+        profile_manager_(NULL) {
+  }
+
+  virtual ~NavigationControllerHistoryTest() {
+    // Prevent our base class from deleting the profile since profile's
+    // lifetime is managed by profile_manager_.
+    STLDeleteElements(&windows_);
+  }
+
+  // testing::Test overrides.
+  virtual void SetUp() {
+    NavigationControllerTest::SetUp();
+
+    // Force the session service to be created.
+    SessionService* service = new SessionService(profile());
+    SessionServiceFactory::SetForTestProfile(profile(), service);
+    service->SetWindowType(window_id, Browser::TYPE_TABBED);
+    service->SetWindowBounds(window_id, gfx::Rect(0, 1, 2, 3), false);
+    service->SetTabIndexInWindow(window_id,
+                                 controller().session_id(), 0);
+    controller().SetWindowID(window_id);
+
+    session_helper_.set_service(service);
+  }
+
+  virtual void TearDown() {
+    // Release profile's reference to the session service. Otherwise the file
+    // will still be open and we won't be able to delete the directory below.
+    session_helper_.ReleaseService(); // profile owns this
+    SessionServiceFactory::SetForTestProfile(profile(), NULL);
+
+    // Make sure we wait for history to shut down before continuing. The task
+    // we add will cause our message loop to quit once it is destroyed.
+    HistoryService* history =
+        profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
+    if (history) {
+      history->SetOnBackendDestroyTask(new MessageLoop::QuitTask);
+      MessageLoop::current()->Run();
+    }
+
+    // Do normal cleanup before deleting the profile directory below.
+    NavigationControllerTest::TearDown();
+
+    ASSERT_TRUE(file_util::Delete(test_dir_, true));
+    ASSERT_FALSE(file_util::PathExists(test_dir_));
+  }
+
+  // Deletes the current profile manager and creates a new one. Indirectly this
+  // shuts down the history database and reopens it.
+  void ReopenDatabase() {
+    session_helper_.set_service(NULL);
+    SessionServiceFactory::SetForTestProfile(profile(), NULL);
+
+    SessionService* service = new SessionService(profile());
+    SessionServiceFactory::SetForTestProfile(profile(), service);
+    session_helper_.set_service(service);
+  }
+
+  void GetLastSession() {
+    SessionServiceFactory::GetForProfile(profile())->TabClosed(
+        controller().window_id(), controller().session_id(), false);
+
+    ReopenDatabase();
+    Time close_time;
+
+    session_helper_.ReadWindows(&windows_);
+  }
+
+  CancelableRequestConsumer consumer;
+
+  // URLs for testing.
+  const GURL url0;
+  const GURL url1;
+  const GURL url2;
+
+  std::vector<SessionWindow*> windows_;
+
+  SessionID window_id;
+
+  SessionServiceTestHelper session_helper_;
+
+ private:
+  ProfileManager* profile_manager_;
+  FilePath test_dir_;
+};
 
 // A basic test case. Navigates to a single url, and make sure the history
 // db matches.

@@ -36,9 +36,6 @@ include_rules = [
 
   "+chrome/browser/external_protocol_handler.h",
 
-  # http://crbug.com/76794
-  "+chrome/browser/history/history.h",
-
   "+chrome/browser/load_from_memory_cache_details.h",
   "+chrome/browser/load_notification_details.h",
 
@@ -106,16 +103,10 @@ include_rules = [
   "+chrome/common/security_style.h",
 
   # ONLY USED BY TESTS
-  "+chrome/browser/chromeos/cros/mock_network_library.h",
   "+chrome/browser/net/url_request_failed_dns_job.h",
   "+chrome/browser/net/url_request_mock_http_job.h",
-  "+chrome/browser/profiles/profile_manager.h",
-  "+chrome/browser/sessions/session_service.h",
-  "+chrome/browser/sessions/session_service_factory.h",
-  "+chrome/browser/sessions/session_service_test_helper.h",
   "+chrome/browser/ui/browser.h",
   "+chrome/browser/ui/cocoa/find_pasteboard.h",
-  "+chrome/browser/ui/tab_contents/tab_contents_wrapper.h",
   "+chrome/common/net/test_url_fetcher_factory.h",
   "+chrome/common/url_constants.h",
 ]

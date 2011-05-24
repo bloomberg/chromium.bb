@@ -1159,6 +1159,8 @@
         'browser/history/history_publisher.h',
         'browser/history/history_publisher_none.cc',
         'browser/history/history_publisher_win.cc',
+        'browser/history/history_tab_helper.cc',
+        'browser/history/history_tab_helper.h',
         'browser/history/history_types.cc',
         'browser/history/history_types.h',
         'browser/history/in_memory_database.cc',

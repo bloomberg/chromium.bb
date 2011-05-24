@@ -17,7 +17,6 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -46,6 +45,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/tab_contents/title_updated_details.h"
 #include "content/browser/user_metrics.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/bindings_policy.h"
@@ -215,7 +215,6 @@ TabContents::TabContents(Profile* profile,
       load_state_(net::LOAD_STATE_IDLE),
       upload_size_(0),
       upload_position_(0),
-      received_page_title_(false),
       displayed_insecure_content_(false),
       capturing_contents_(false),
       is_being_destroyed_(false),
@@ -804,26 +803,6 @@ void TabContents::SystemDragEnded() {
     delegate()->DragEnded();
 }
 
-void TabContents::UpdateHistoryForNavigation(
-    scoped_refptr<history::HistoryAddPageArgs> add_page_args) {
-  if (profile()->IsOffTheRecord())
-    return;
-
-  // Add to history service.
-  HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-  if (hs)
-    hs->AddPage(*add_page_args);
-}
-
-void TabContents::UpdateHistoryPageTitle(const NavigationEntry& entry) {
-  if (profile()->IsOffTheRecord())
-    return;
-
-  HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-  if (hs)
-    hs->SetPageTitle(entry.virtual_url(), entry.title());
-}
-
 double TabContents::GetZoomLevel() const {
   HostZoomMap* zoom_map = profile()->GetHostZoomMap();
   if (!zoom_map)
@@ -1170,9 +1149,6 @@ void TabContents::DidNavigateMainFramePostCommit(
     UpdateTargetURL(details.entry->page_id(), GURL());
   }
 
-  // Allow the new page to set the title again.
-  received_page_title_ = false;
-
   if (!details.is_in_page) {
     // Once the main frame is navigated, we're no longer considered to have
     // displayed insecure content.
@@ -1262,31 +1238,6 @@ void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
   }
 }
 
-scoped_refptr<history::HistoryAddPageArgs>
-TabContents::CreateHistoryAddPageArgs(
-    const GURL& virtual_url,
-    const NavigationController::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
-  scoped_refptr<history::HistoryAddPageArgs> add_page_args(
-      new history::HistoryAddPageArgs(
-          params.url, base::Time::Now(), this, params.page_id, params.referrer,
-          params.redirects, params.transition, history::SOURCE_BROWSED,
-          details.did_replace_entry));
-  if (PageTransition::IsMainFrame(params.transition) &&
-      virtual_url != params.url) {
-    // Hack on the "virtual" URL so that it will appear in history. For some
-    // types of URLs, we will display a magic URL that is different from where
-    // the page is actually navigated. We want the user to see in history what
-    // they saw in the URL bar, so we add the virtual URL as a redirect.  This
-    // only applies to the main frame, as the virtual URL doesn't apply to
-    // sub-frames.
-    add_page_args->url = virtual_url;
-    if (!add_page_args->redirects.empty())
-      add_page_args->redirects.back() = virtual_url;
-  }
-  return add_page_args;
-}
-
 bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
                                       const std::wstring& title) {
   // For file URLs without a title, use the pathname instead. In the case of a
@@ -1307,18 +1258,15 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
 
   entry->set_title(final_title);
 
-  if (!received_page_title_) {
-    UpdateHistoryPageTitle(*entry);
-    received_page_title_ = explicit_set;
-  }
-
   // Lastly, set the title for the view.
   view_->SetPageTitle(UTF16ToWideHack(final_title));
+
+  TitleUpdatedDetails details(entry, explicit_set);
 
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_TITLE_UPDATED,
       Source<TabContents>(this),
-      NotificationService::NoDetails());
+      Details<TitleUpdatedDetails>(&details));
 
   return true;
 }
@@ -1513,22 +1461,6 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                       DidCommitProvisionalLoadForFrame(params.frame_id,
                       is_main_frame, params.url, transition_type));
-  }
-
-  // Update history. Note that this needs to happen after the entry is complete,
-  // which WillNavigate[Main,Sub]Frame will do before this function is called.
-  if (params.should_update_history) {
-    // Most of the time, the displayURL matches the loaded URL, but for about:
-    // URLs, we use a data: URL as the real value.  We actually want to save the
-    // about: URL to the history db and keep the data: URL hidden. This is what
-    // the TabContents' URL getter does.
-    scoped_refptr<history::HistoryAddPageArgs> add_page_args(
-        CreateHistoryAddPageArgs(GetURL(), details, params));
-    if (!delegate() ||
-        delegate()->ShouldAddNavigationToHistory(*add_page_args,
-                                                 details.type)) {
-      UpdateHistoryForNavigation(add_page_args);
-    }
   }
 
   if (!did_navigate)

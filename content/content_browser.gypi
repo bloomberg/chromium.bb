@@ -315,6 +315,7 @@
         'browser/tab_contents/tab_contents_observer.h',
         'browser/tab_contents/tab_contents_view.cc',
         'browser/tab_contents/tab_contents_view.h',
+        'browser/tab_contents/title_updated_details.h',
         'browser/trace_controller.cc',
         'browser/trace_controller.h',
         'browser/trace_message_filter.cc',

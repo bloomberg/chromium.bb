@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_marshaling.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -313,14 +314,17 @@ void InstantLoader::TabContentsDelegateImpl::SetLastHistoryURLAndPrune(
 
 void InstantLoader::TabContentsDelegateImpl::CommitHistory(
     bool supports_instant) {
-  TabContents* tab = loader_->preview_contents()->tab_contents();
+  TabContentsWrapper* tab = loader_->preview_contents();
   if (tab->profile()->IsOffTheRecord())
     return;
 
-  for (size_t i = 0; i < add_page_vector_.size(); ++i)
-    tab->UpdateHistoryForNavigation(add_page_vector_[i].get());
+  for (size_t i = 0; i < add_page_vector_.size(); ++i) {
+    tab->history_tab_helper()->UpdateHistoryForNavigation(
+      add_page_vector_[i].get());
+  }
 
-  NavigationEntry* active_entry = tab->controller().GetActiveEntry();
+  NavigationEntry* active_entry =
+      tab->tab_contents()->controller().GetActiveEntry();
   if (!active_entry) {
     // It appears to be possible to get here with no active entry. This seems
     // to be possible with an auth dialog, but I can't narrow down the
@@ -329,7 +333,7 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
     NOTREACHED();
     return;
   }
-  tab->UpdateHistoryPageTitle(*active_entry);
+  tab->history_tab_helper()->UpdateHistoryPageTitle(*active_entry);
 
   FaviconService* favicon_service =
       tab->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);

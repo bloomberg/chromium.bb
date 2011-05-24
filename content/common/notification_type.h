@@ -329,8 +329,8 @@ class NotificationType {
     TAB_CONTENTS_DISCONNECTED,
 
     // This notification is sent after TabContents' title is updated. The source
-    // is a Source<TabContents> with a pointer to the TabContents. No details
-    // are expected.
+    // is a Source<TabContents> with a pointer to the TabContents. The details
+    // is a Details<TitleUpdatedDetails> that contains more information.
     TAB_CONTENTS_TITLE_UPDATED,
 
     // This message is sent when a new InfoBar has been added to a TabContents.

@@ -38,6 +38,7 @@ class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
 class InfoBarDelegate;
+class HistoryTabHelper;
 class NavigationController;
 class OmniboxSearchHint;
 class PasswordManager;
@@ -141,7 +142,7 @@ class TabContentsWrapper : public TabContentsObserver,
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
 
   FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
-
+  HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
   PasswordManager* password_manager() { return password_manager_.get(); }
 
   printing::PrintViewManager* print_view_manager() {
@@ -205,16 +206,10 @@ class TabContentsWrapper : public TabContentsObserver,
   // Internal helpers ----------------------------------------------------------
 
   // Message handlers.
-  void OnPageContents(const GURL& url,
-                      int32 page_id,
-                      const string16& contents);
   void OnJSOutOfMemory();
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
                                  const string16& title);
-  void OnThumbnail(const GURL& url,
-                   const ThumbnailScore& score,
-                   const SkBitmap& bitmap);
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
 
@@ -248,6 +243,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
+  scoped_ptr<HistoryTabHelper> history_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,
   // per documentation in password_manager.h.

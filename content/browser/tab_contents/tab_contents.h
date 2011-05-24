@@ -39,10 +39,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace history {
-class HistoryAddPageArgs;
-}
-
 class Extension;
 class LoadNotificationDetails;
 class Profile;
@@ -471,15 +467,6 @@ class TabContents : public PageNavigator,
   virtual void SetBookmarkDragDelegate(
       RenderViewHostDelegate::BookmarkDrag* bookmark_drag);
 
-  // Updates history with the specified navigation. This is called by
-  // OnMsgNavigate to update history state.
-  void UpdateHistoryForNavigation(
-      scoped_refptr<history::HistoryAddPageArgs> add_page_args);
-
-  // Sends the page title to the history service. This is called when we receive
-  // the page title and we know we want to update history.
-  void UpdateHistoryPageTitle(const NavigationEntry& entry);
-
   // Gets the zoom level for this tab.
   double GetZoomLevel() const;
 
@@ -550,9 +537,6 @@ class TabContents : public PageNavigator,
 
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
-
-  // Used to access the CreateHistoryAddPageArgs member function.
-  friend class ExternalTabContainer;
 
   // Add all the TabContentObservers.
   void AddObservers();
@@ -632,13 +616,6 @@ class TabContents : public PageNavigator,
   // renderers max page id.
   void UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
                                   RenderViewHost* rvh);
-
-  // Returns the history::HistoryAddPageArgs to use for adding a page to
-  // history.
-  scoped_refptr<history::HistoryAddPageArgs> CreateHistoryAddPageArgs(
-      const GURL& virtual_url,
-      const NavigationController::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
 
   // Saves the given title to the navigation entry and does associated work. It
   // will update history and the view for the new title, and also synthesize
@@ -830,12 +807,6 @@ class TabContents : public PageNavigator,
   uint64 upload_position_;
 
   // Data for current page -----------------------------------------------------
-
-  // Whether we have a (non-empty) title for the current page.
-  // Used to prevent subsequent title updates from affecting history. This
-  // prevents some weirdness because some AJAXy apps use titles for status
-  // messages.
-  bool received_page_title_;
 
   // When a navigation occurs, we record its contents MIME type. It can be
   // used to check whether we can do something for some special contents.
