@@ -16,6 +16,8 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -172,18 +174,24 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
     return;
   }
 
-  int version = 0;
-  std::string error_msg;
-  if (!SendGetChromeDriverAutomationVersion(
-          automation(), &version, &error_msg)) {
-    *error = CreateChromeError(error_msg);
+  bool has_automation_version = false;
+  *error = CompareVersion(730, 0, &has_automation_version);
+  if (*error)
     return;
-  }
-  if (version > automation::kChromeDriverAutomationVersion) {
-    *error = new Error(
-        kUnknownError,
-        "ChromeDriver is not compatible with this version of Chrome.");
-    return;
+  if (has_automation_version) {
+    int version = 0;
+    std::string error_msg;
+    if (!SendGetChromeDriverAutomationVersion(
+            automation(), &version, &error_msg)) {
+      *error = CreateChromeError(error_msg);
+      return;
+    }
+    if (version > automation::kChromeDriverAutomationVersion) {
+      *error = new Error(
+          kUnknownError,
+          "ChromeDriver is not compatible with this version of Chrome.");
+      return;
+    }
   }
 }
 
@@ -266,6 +274,10 @@ void Automation::MouseDrag(int tab_id,
 void Automation::MouseButtonUp(int tab_id,
                                const gfx::Point& p,
                                Error** error) {
+  *error = CheckAdvancedInteractionsSupported();
+  if (*error)
+    return;
+
   int windex = 0, tab_index = 0;
   *error = GetIndicesForTab(tab_id, &windex, &tab_index);
   if (*error)
@@ -281,6 +293,10 @@ void Automation::MouseButtonUp(int tab_id,
 void Automation::MouseButtonDown(int tab_id,
                                  const gfx::Point& p,
                                  Error** error) {
+  *error = CheckAdvancedInteractionsSupported();
+  if (*error)
+    return;
+
   int windex = 0, tab_index = 0;
   *error = GetIndicesForTab(tab_id, &windex, &tab_index);
   if (*error)
@@ -296,6 +312,10 @@ void Automation::MouseButtonDown(int tab_id,
 void Automation::MouseDoubleClick(int tab_id,
                                   const gfx::Point& p,
                                   Error** error) {
+  *error = CheckAdvancedInteractionsSupported();
+  if (*error)
+    return;
+
   int windex = 0, tab_index = 0;
   *error = GetIndicesForTab(tab_id, &windex, &tab_index);
   if (*error)
@@ -514,6 +534,10 @@ void Automation::CloseTab(int tab_id, Error** error) {
 }
 
 void Automation::GetAppModalDialogMessage(std::string* message, Error** error) {
+  *error = CheckAlertsSupported();
+  if (*error)
+    return;
+
   std::string error_msg;
   if (!SendGetAppModalDialogMessageJSONRequest(
           automation(), message, &error_msg)) {
@@ -522,6 +546,10 @@ void Automation::GetAppModalDialogMessage(std::string* message, Error** error) {
 }
 
 void Automation::AcceptOrDismissAppModalDialog(bool accept, Error** error) {
+  *error = CheckAlertsSupported();
+  if (*error)
+    return;
+
   std::string error_msg;
   if (!SendAcceptOrDismissAppModalDialogJSONRequest(
           automation(), accept, &error_msg)) {
@@ -531,6 +559,10 @@ void Automation::AcceptOrDismissAppModalDialog(bool accept, Error** error) {
 
 void Automation::AcceptPromptAppModalDialog(const std::string& prompt_text,
                                             Error** error) {
+  *error = CheckAlertsSupported();
+  if (*error)
+    return;
+
   std::string error_msg;
   if (!SendAcceptPromptAppModalDialogJSONRequest(
           automation(), prompt_text, &error_msg)) {
@@ -570,6 +602,55 @@ Error* Automation::GetIndicesForTab(
 
 Error* Automation::CreateChromeError(const std::string& message) {
   return new Error(kUnknownError, "Internal Chrome error: " + message);
+}
+
+Error* Automation::CompareVersion(int client_build_no,
+                                  int client_patch_no,
+                                  bool* is_newer_or_equal) {
+  std::string version = automation()->server_version();
+  std::vector<std::string> split_version;
+  base::SplitString(version, '.', &split_version);
+  if (split_version.size() != 4) {
+    return new Error(
+        kUnknownError, "Browser version has unrecognized format: " + version);
+  }
+  int build_no, patch_no;
+  if (!base::StringToInt(split_version[2], &build_no) ||
+      !base::StringToInt(split_version[3], &patch_no)) {
+    return new Error(
+        kUnknownError, "Browser version has unrecognized format: " + version);
+  }
+  if (build_no < client_build_no)
+    *is_newer_or_equal = false;
+  else if (build_no > client_build_no)
+    *is_newer_or_equal = true;
+  else
+    *is_newer_or_equal = patch_no >= client_patch_no;
+  return NULL;
+}
+
+Error* Automation::CheckVersion(int client_build_no,
+                                int client_patch_no,
+                                const std::string& error_msg) {
+  bool version_is_ok = false;
+  Error* error = CompareVersion(
+      client_build_no, client_patch_no, &version_is_ok);
+  if (error)
+    return error;
+  if (!version_is_ok)
+    return new Error(kUnknownError, error_msg);
+  return NULL;
+}
+
+Error* Automation::CheckAlertsSupported() {
+  return CheckVersion(
+      768, 0, "Alerts are not supported for this version of Chrome");
+}
+
+Error* Automation::CheckAdvancedInteractionsSupported() {
+  const char* message =
+      "Advanced user interactions are not supported for this version of Chrome";
+  return CheckVersion(750, 0, message);
 }
 
 }  // namespace webdriver

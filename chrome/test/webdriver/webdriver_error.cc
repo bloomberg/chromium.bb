@@ -72,6 +72,10 @@ std::string Error::ToString() const {
   if (details_.length()) {
     error += details_;
   }
+
+  // Only include a stacktrace on Linux. Windows and Mac have all symbols
+  // stripped in release builds.
+#if defined(OS_LINUX)
   size_t count = 0;
   trace_.Addresses(&count);
   if (count > 0) {
@@ -80,6 +84,7 @@ std::string Error::ToString() const {
     error += "\n";
     error += ostream.str();
   }
+#endif
   return error;
 }
 

@@ -231,7 +231,6 @@ int main(int argc, char *argv[]) {
   // Parse command line flags.
   std::string port = "9515";
   std::string root;
-  FilePath chrome_dir;
   std::string url_base;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
@@ -240,26 +239,12 @@ int main(int argc, char *argv[]) {
   // requests.
   if (cmd_line->HasSwitch("root"))
     root = cmd_line->GetSwitchValueASCII("root");
-  if (cmd_line->HasSwitch("chrome-dir"))
-    chrome_dir = cmd_line->GetSwitchValuePath("chrome-dir");
   if (cmd_line->HasSwitch("url-base"))
     url_base = cmd_line->GetSwitchValueASCII("url-base");
 
   webdriver::SessionManager* manager = webdriver::SessionManager::GetInstance();
   manager->set_port(port);
   manager->set_url_base(url_base);
-  if (!chrome_dir.empty()) {
-    if (!file_util::DirectoryExists(chrome_dir)) {
-      std::cout << "Given Chrome directory is inaccessible or does not exist: "
-                << chrome_dir.value() << std::endl;
-#if defined(OS_WIN)
-      return ERROR_PATH_NOT_FOUND;
-#else
-      return ENOENT;
-#endif
-    }
-    manager->set_chrome_dir(chrome_dir);
-  }
 
   // Initialize SHTTPD context.
   // Listen on port 9515 or port specified on command line.
@@ -284,9 +269,6 @@ int main(int argc, char *argv[]) {
 
   if (root.length()) {
     VLOG(1) << "Serving files from the current working directory";
-  }
-  if (!chrome_dir.empty()) {
-    VLOG(1) << "Using Chrome inside directory: " << chrome_dir.value();
   }
 
   // Run until we receive command to shutdown.

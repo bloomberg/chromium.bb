@@ -77,14 +77,6 @@ std::string SessionManager::url_base() const {
   return url_base_;
 }
 
-void SessionManager::set_chrome_dir(const FilePath& chrome_dir) {
-  chrome_dir_ = chrome_dir;
-}
-
-FilePath SessionManager::chrome_dir() const {
-  return chrome_dir_;
-}
-
 SessionManager::SessionManager() : port_(""), url_base_("") {}
 
 SessionManager::~SessionManager() {}

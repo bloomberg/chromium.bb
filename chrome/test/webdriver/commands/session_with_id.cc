@@ -51,9 +51,14 @@ void SessionWithID::ExecuteGet(Response* const response) {
   temp_value->SetBoolean("javascriptEnabled", true);
 
   // Custom non-standard session info.
-  temp_value->SetString("chrome.chromedriverVersion", "1.0");
-  temp_value->SetString("chrome.automationVersion", chrome::kChromeVersion);
-  temp_value->SetBoolean("chrome.nativeEvents", session_->use_native_events());
+  temp_value->SetWithoutPathExpansion(
+      "chrome.chromedriverVersion", Value::CreateStringValue("1.0"));
+  temp_value->SetWithoutPathExpansion(
+      "chrome.automationVersion",
+      Value::CreateStringValue(chrome::kChromeVersion));
+  temp_value->SetWithoutPathExpansion(
+      "chrome.nativeEvents",
+      Value::CreateBooleanValue(session_->use_native_events()));
 
   response->SetValue(temp_value);
 }

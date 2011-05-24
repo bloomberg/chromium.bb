@@ -59,6 +59,18 @@ def GetFileURLForPath(path):
     return 'file://' + quoted_path
 
 
+def IsWindows():
+  return sys.platform == 'cygwin' or sys.platform.startswith('win')
+
+
+def IsLinux():
+  return sys.platform.startswith('linux')
+
+
+def IsMac():
+  return sys.platform.startswith('darwin')
+
+
 class Request(urllib2.Request):
   """Extends urllib2.Request to support all HTTP request types."""
 
@@ -188,68 +200,77 @@ class NativeInputTest(unittest.TestCase):
   def setUp(self):
     self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
     self._capabilities = DesiredCapabilities.CHROME
-    self._capabilities["chrome"] = { "nativeEvents" : True }
+    self._capabilities['chrome.nativeEvents'] = True
 
   def tearDown(self):
     self._launcher.Kill()
 
-  def testCanStartsWithNativeEvents(self):
+  def testCanStartWithNativeEvents(self):
     driver = WebDriver(self._launcher.GetURL(), self._capabilities)
-    self.assertTrue(driver.capabilities["chrome"].has_key("nativeEvents"))
-    self.assertTrue(driver.capabilities["chrome"]["nativeEvents"])
+    self.assertTrue(driver.capabilities.has_key('chrome.nativeEvents'))
+    self.assertTrue(driver.capabilities['chrome.nativeEvents'])
 
   # Flaky on windows. See crbug.com/80295.
   def DISABLED_testSendKeysNative(self):
     driver = WebDriver(self._launcher.GetURL(), self._capabilities)
     driver.get(self._launcher.GetURL() + '/test_page.html')
     # Find the text input.
-    q = driver.find_element_by_name("key_input_test")
+    q = driver.find_element_by_name('key_input_test')
     # Send some keys.
-    q.send_keys("tokyo")
-    #TODO(timothe): change to .text when beta 4 wrappers are out.
-    self.assertEqual(q.value, "tokyo")
+    q.send_keys('tokyo')
+    self.assertEqual(q.text, 'tokyo')
 
   # Needs to run on a machine with an IME installed.
   def DISABLED_testSendKeysNativeProcessedByIME(self):
     driver = WebDriver(self._launcher.GetURL(), self.capabilities)
     driver.get(self._launcher.GetURL() + '/test_page.html')
-    q = driver.find_element_by_name("key_input_test")
+    q = driver.find_element_by_name('key_input_test')
     # Send key combination to turn IME on.
     q.send_keys(Keys.F7)
-    q.send_keys("toukyou")
+    q.send_keys('toukyou')
     # Now turning it off.
     q.send_keys(Keys.F7)
     self.assertEqual(q.value, "\xe6\x9d\xb1\xe4\xba\xac")
 
 
-class CommandLineOptionsTest(unittest.TestCase):
-  """ Tests ability to add command line flags when startinfg chrome."""
+class DesiredCapabilitiesTest(unittest.TestCase):
 
   def setUp(self):
     self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
-    self._driver = None
 
   def tearDown(self):
-    self._driver.quit()
     self._launcher.Kill()
 
-  def sendFlag(self):
-    flags = {"enable-file-cookie" : ""}
-    args = {}
-    args.update(DesiredCapabilities.CHROME)
-    args.update({"chrome" : {"customSwitches":flags}})
-    # make sure enable cookie is not already enabled
-    self.__driver = WebDriver(self._launcher.GetURL(),
-                              DesiredCapabilities.CHROME)
-    self.__driver.get("about:version")
-    s = self.__driver.get_page_source()
-    self.assertEqual(-1, s.find("enable-file-cookie"))
-    self.__driver.close()
-    # relaunch with added flags
-    self.__driver = WebDriver(self._launcher.GetURL(), args)
-    self.__driver.get("about:version")
-    s = self.__driver.get_page_source()
-    self.assertNotEqual(-1, s.find("enable-file-cookie"))
+  def testCustomSwitches(self):
+    switches = ['enable-file-cookie', 'homepage=about:memory']
+    capabilities = {'chrome.switches': switches}
+
+    driver = WebDriver(self._launcher.GetURL(), capabilities)
+    url = driver.current_url
+    self.assertTrue('memory' in url,
+                    'URL does not contain with "memory":' + url)
+    driver.get('about:version')
+    self.assertNotEqual(-1, driver.page_source.find('enable-file-cookie'))
+
+  def testBinary(self):
+    binary_path = ChromeDriverLauncher.LocateExe()
+    self.assertNotEquals(None, binary_path)
+    if IsWindows():
+      chrome_name = 'chrome.exe'
+    elif IsMac():
+      chrome_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
+      if not os.path.exists(os.path.join(binary_path, chrome_name)):
+        chrome_name = 'Chromium.app/Contents/MacOS/Chromium'
+    elif IsLinux():
+      chrome_name = 'chrome'
+    else:
+      self.fail('Unrecognized platform: ' + sys.platform)
+    binary_path = os.path.join(os.path.dirname(binary_path), chrome_name)
+    self.assertTrue(os.path.exists(binary_path),
+                    'Binary not found: ' + binary_path)
+    capabilities = {'chrome.binary': binary_path}
+
+    driver = WebDriver(self._launcher.GetURL(), capabilities)
 
 
 class CookieTest(unittest.TestCase):
@@ -320,7 +341,8 @@ class SessionTest(unittest.TestCase):
 
   def testCreatingSessionShouldRedirectToCorrectURL(self):
     request_url = self._launcher.GetURL() + '/session'
-    response = SendRequest(request_url, method='POST', data='{}')
+    response = SendRequest(request_url, method='POST',
+                           data='{"desiredCapabilities": {}}')
     self.assertEquals(200, response.code)
     self.session_url = response.geturl()  # TODO(jleyba): verify this URL?
 
@@ -438,7 +460,8 @@ class UrlBaseTest(unittest.TestCase):
 
   def testCreatingSessionShouldRedirectToCorrectURL(self):
     request_url = self._launcher.GetURL() + '/session'
-    response = SendRequest(request_url, method='POST', data='{}')
+    response = SendRequest(request_url, method='POST',
+                           data='{"desiredCapabilities":{}}')
     self.assertEquals(200, response.code)
     self.session_url = response.geturl()  # TODO(jleyba): verify this URL?
 
