@@ -13,8 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
-#include "webkit/quota/quota_types.h"
 
 namespace quota {
 class QuotaManagerProxy;
@@ -63,9 +61,6 @@ class FileSystemTestOriginHelper {
 
   const GURL& origin() const { return origin_; }
   FileSystemType type() const { return type_; }
-  quota::StorageType storage_type() const {
-    return FileSystemTypeToQuotaStorageType(type_);
-  }
   FileSystemFileUtil* file_util() { return file_util_; }
 
  private:
