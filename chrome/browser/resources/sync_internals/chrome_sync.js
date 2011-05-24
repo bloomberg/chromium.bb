@@ -150,4 +150,21 @@ for (var i = 0; i < syncFunctions.length; ++i) {
   chrome.sync[syncFunction] = makeSyncFunction(syncFunction);
 }
 
+/**
+ * Returns an object which measures elapsed time.
+ */
+chrome.sync.makeTimer = function() {
+  var start = new Date();
+
+  return {
+    /**
+     * @return {number} The number of seconds since the timer was
+     * created.
+     */
+    get elapsedSeconds() {
+      return ((new Date()).getTime() - start.getTime()) / 1000.0;
+    }
+  };
+};
+
 })();

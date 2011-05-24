@@ -4,8 +4,10 @@
 <!-- If you change the title, make sure you also update
 chrome/test/functional/special_tabs.py. -->
 <title>Sync Internals</title>
+<link rel="stylesheet" href="chrome://resources/css/list.css">
 <link rel="stylesheet" href="chrome://resources/css/tabs.css">
 <link rel="stylesheet" href="chrome://resources/css/tree.css">
+<link rel="stylesheet" href="sync_search.css">
 <link rel="stylesheet" href="sync_node_browser.css">
 
 <script src="chrome://resources/css/tree.css.js"></script>
@@ -15,11 +17,21 @@ chrome/test/functional/special_tabs.py. -->
 <script src="chrome://resources/js/cr/ui.js"></script>
 <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/cr/ui/splitter.js"></script>
+
+<!-- List stuff. -->
+<script src="chrome://resources/js/cr/ui/array_data_model.js"></script>
+<script src="chrome://resources/js/cr/ui/list_item.js"></script>
+<script src="chrome://resources/js/cr/ui/list_selection_controller.js"></script>
+<script src="chrome://resources/js/cr/ui/list_selection_model.js"></script>
+<script src="chrome://resources/js/cr/ui/list.js"></script>
+
 <script src="chrome://resources/js/cr/ui/tabs.js"></script>
 <script src="chrome://resources/js/cr/ui/tree.js"></script>
+<script src="chrome://resources/js/util.js"></script>
 <script src="chrome_sync.js"></script>
 <script src="sync_log.js"></script>
 <script src="sync_node_browser.js"></script>
+<script src="sync_search.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
@@ -38,6 +50,7 @@ chrome/test/functional/special_tabs.py. -->
     <tab>Notifications</tab>
     <tab>Events</tab>
     <tab>Sync Node Browser</tab>
+    <tab>Search</tab>
   </tabs>
   <tabpanels>
     <tabpanel>
@@ -55,10 +68,20 @@ chrome/test/functional/special_tabs.py. -->
     <tabpanel>
       <include src="sync_node_browser.html" />
     </tabpanel>
+    <tabpanel>
+      <include src="search.html" />
+    </tabpanel>
   </tabpanels>
 </tabbox>
 
 <script>
+// Allow platform specific CSS rules.
+//
+// TODO(akalin): BMM and options page does something similar, too.
+// Move this to util.js.
+if (cr.isWindows)
+  document.documentElement.setAttribute('os', 'win');
+
 cr.ui.decorate('tabbox', cr.ui.TabBox);
 </script>
 
