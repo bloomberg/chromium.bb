@@ -4626,3 +4626,12 @@
    fun:call_init
    fun:_dl_init
 }
+{
+   bug_todo_getdelim2
+   Memcheck:Leak
+   fun:malloc
+   fun:getdelim
+   obj:/lib/libselinux.so.1
+   obj:/lib/libselinux.so.1
+   obj:/lib/libselinux.so.1
+}
