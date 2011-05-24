@@ -49,50 +49,67 @@ def DemangleFunc(fun_name):
 ADDRESS_BASE = 16
 ADDRESS_DIGIT = '[a-f0-9]'
 
+def GetUntrustedBase(sel_ldr_log_fd):
+  """ Parse the sel_ldr debug output to find the base of the untrusted memory
+      region.
+      Returns the base address. """
+  untrusted_base = None
+  for line in sel_ldr_log_fd:
+    # base is the mem start addr printed by sel_ldr
+    if line.find('mem start addr') != -1:
+      fields = line.split()
+      untrusted_base = int(fields[-1], ADDRESS_BASE)
+      break
+
+  assert untrusted_base is not None, "Couldn't parse untrusted base"
+  Debug("untrusted_base = %s" % hex(untrusted_base))
+  return untrusted_base
+
 #--------------- Parse Oprofile Log ---------------
 
-def CheckIfInSelLdrRegion(line, cur_sel_ldr_offset):
+def CheckIfInSelLdrRegion(line, cur_range_base):
   """ Checks if we are reading the part of the oprofile --details log
       pertaining to the untrusted sandbox in sel_ldr's address space.
-      Returns the offset of that memory region or None. """
+      Returns the base of that memory region or None. """
   fields = line.split()
-  # cur_sel_ldr_offset should be set if we are already parsing the
+  # cur_range_base should be set if we are already parsing the
   # untrusted sandbox section of the log.
-  if cur_sel_ldr_offset:
+  if cur_range_base:
     # Check if we are exiting the untrusted sandbox section of the log.
     # The header of a new non-untrusted-sandbox section should look like:
     # 00000000 samples  pct  foo.so  foo.so /path-to/foo.so
     if len(fields) >= 6:
       Debug('Likely exiting sel_ldr section to a new section: %s' % fields[3])
-      return None
+      # Check if the next section is also a sel_ldr region
+      return CheckIfInSelLdrRegion(line, None)
     else:
-      return cur_sel_ldr_offset
+      return cur_range_base
   else:
     # Check if we are entering the untrusted-sandbox section of the log.
     # The header of such a section should look like:
     #
-    # 00000000 samples pct anon (tgid:22067 range:0x7fa5000OFFSET-0x7fa5000END)
+    # 00000000 samples pct anon (tgid:22067 range:0xBASE-0xEND)
     #   sel_ldr  anon (tgid:22067 range:...)
     #
     # I.e., 10 fields...
-    if len(fields) == 10 and fields[3] == 'anon' and fields[6] == 'sel_ldr':
+    if len(fields) == 10 and fields[6] == 'sel_ldr':
       Debug('Likely starting sel_ldr section: %s %s' % (fields[3], fields[6]))
       range_token = fields[9]
-      range_re = re.compile('range:0x7' + ADDRESS_DIGIT + '{3}(\d+)-0x7')
+      range_re = re.compile('range:0x(' + ADDRESS_DIGIT + '+)-0x')
       match = range_re.search(range_token)
       if match:
-        off_str = match.group(1)
-        off = int(off_str, ADDRESS_BASE)
-        Debug('Likely offset is %s' % hex(off))
-        return off
+        range_str = match.group(1)
+        range_base = int(range_str, ADDRESS_BASE)
+        Debug('Likely range base is %s' % hex(range_base))
+        return range_base
       else:
-        Debug("Couldn't parse offset for: " + str(fields))
+        Debug("Couldn't parse range base for: " + str(fields))
         return None
     else:
       return None
 
 
-def UpdateAddrEventMap(line, sel_ldr_offset, addr_to_event):
+def UpdateAddrEventMap(line, sel_ldr_range_base, untrusted_base, addr_to_event):
   """ Add an event count to the addr_to_event map if the line of data looks
       like an event count. Example:
 
@@ -102,7 +119,12 @@ def UpdateAddrEventMap(line, sel_ldr_offset, addr_to_event):
   """
   fields = line.split()
   if len(fields) == 3:
-    address = sel_ldr_offset + int(fields[0], ADDRESS_BASE)
+    # deal with numbers like fffffff484494ca5 which are actually negative
+    address = int(fields[0], ADDRESS_BASE)
+    if address > 0x8000000000000000:
+      address = -((0xffffffffffffffff - address) + 1)
+
+    address = address + sel_ldr_range_base - untrusted_base
     sample_count = int(fields[1])
     cur = addr_to_event.get(address, 0)
     addr_to_event[address] = cur + sample_count
@@ -131,7 +153,7 @@ def CheckTrustedRecord(line, trusted_events, filter_events):
     return False
 
   if (filter_events and not (image_name.endswith('sel_ldr')
-                            or image_name == 'llc'
+                            or image_name.startswith('llc')
                             or image_name.endswith('.so')
                             or image_name == 'no-vmlinux'
                             or image_name == 'chrome')):
@@ -146,19 +168,23 @@ def CheckTrustedRecord(line, trusted_events, filter_events):
   trusted_events[key] = trusted_events.get(key, sample_count)
   return True
 
-def GetAddressToEventSelLdr(fd, filter_events):
+def GetAddressToEventSelLdr(fd, filter_events, untrusted_base):
   """ Returns 2 maps: addr_to_event: address (int) -> event count (int)
   and trusted_events: func (str) - > event count (int)"""
   addr_to_event = {}
   trusted_events = {}
-  sel_ldr_offset = None
+  sel_ldr_range_base = None
   for line in fd:
-    CheckTrustedRecord(line, trusted_events, filter_events)
-    sel_ldr_offset = CheckIfInSelLdrRegion(line, sel_ldr_offset)
-    if sel_ldr_offset:
-      # If we've parsed the header of the region and know the untrusted
-      # sandbox's offset, start picking up event counts.
-      UpdateAddrEventMap(line, sel_ldr_offset, addr_to_event)
+
+    sel_ldr_range_base = CheckIfInSelLdrRegion(line, sel_ldr_range_base)
+    if sel_ldr_range_base and untrusted_base:
+      # If we've parsed the header of the region and know the base of
+      # this range, (and we know the base of the untrusted memory)
+      # start picking up event counts.
+      UpdateAddrEventMap(line, sel_ldr_range_base, untrusted_base,
+                         addr_to_event)
+    else:
+      CheckTrustedRecord(line, trusted_events, filter_events)
   fd.seek(0) # Reset for future use...
   return addr_to_event, trusted_events
 
@@ -378,10 +404,11 @@ def PrintAnnotatedAssembly(fd_in, address_to_events, fd_out):
 def main(argv):
   try:
     opts, args = getopt.getopt(argv[1:],
-                               'l:s:o:f',
+                               'l:s:o:m:f',
                                ['oprofilelog=',
                                 'assembly=',
                                 'output=',
+                                'memmap=',
                                 ])
     assembly_file = None
     assembly_fd = None
@@ -389,6 +416,8 @@ def main(argv):
     oprof_fd = None
     output = sys.stdout
     out_name = None
+    mapfile_name = None
+    mapfile_fd = None
     filter_events = False
     for o, a in opts:
       if o in ('-l', '--oprofilelog'):
@@ -400,16 +429,30 @@ def main(argv):
       elif o in ('-o', '--output'):
         out_name = a
         output = open(out_name, 'w')
+      elif o in ('-m', '--memmap'):
+        mapfile_name = a
+        try:
+          mapfile_fd = open(mapfile_name, 'r')
+        except IOError:
+          pass
       elif o == '-f':
         filter_events = True
       else:
         assert False, 'unhandled option'
+
+    untrusted_base = None
+    if mapfile_fd:
+      Debug('Parsing sel_ldr output for untrusted memory base: %s' %
+            mapfile_name)
+      untrusted_base = GetUntrustedBase(mapfile_fd)
+    else:
+      assert False, 'Need sel_ldr output for untrusted memory base'
     if assembly_file and oprof_log:
       Debug('Parsing assembly file of nexe: %s' % assembly_file)
       assembly_ranges = GetAssemblyRanges(assembly_fd)
       Debug('Parsing oprofile log: %s' % oprof_log)
       address_to_events, trusted_events = GetAddressToEventSelLdr(oprof_fd,
-                                                                  filter_events)
+                                            filter_events, untrusted_base)
       Debug('Printing the top functions (most events)')
       PrintTopFunctions(assembly_ranges, address_to_events, trusted_events)
       Debug('Printing annotated assembly to %s (or stdout)' % out_name)
