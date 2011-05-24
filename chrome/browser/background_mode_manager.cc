@@ -13,7 +13,6 @@
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -396,22 +395,6 @@ void BackgroundModeManager::ExecuteCommand(int item) {
       // not be visible).
       DCHECK(IsBackgroundModePrefEnabled());
       DCHECK(BrowserList::WillKeepAlive());
-      if (BrowserList::size() == 0) {
-        // There are no windows open - unchecking this will exit Chrome. Warn
-        // the user.
-        string16 tab_title = l10n_util::GetStringFUTF16(IDS_OPTIONS_TAB_TITLE,
-            l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
-            l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
-
-        if (!platform_util::SimpleYesNoBox(
-                NULL,
-                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                l10n_util::GetStringFUTF16(
-                    IDS_CONFIRM_EXIT_BACKGROUND_MODE_BODY,
-                    tab_title))) {
-          return;
-        }
-      }
 
       // Set the background mode pref to "disabled" - the resulting notification
       // will result in a call to DisableBackgroundMode().
