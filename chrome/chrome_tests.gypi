@@ -1924,6 +1924,7 @@
         '../content/browser/gpu/gpu_blacklist_unittest.cc',
         '../content/browser/in_process_webkit/webkit_context_unittest.cc',
         '../content/browser/in_process_webkit/webkit_thread_unittest.cc',
+        '../content/browser/media_stream/video_capture_manager_unittest.cc',
         '../content/browser/plugin_service_unittest.cc',
         '../content/browser/renderer_host/audio_renderer_host_unittest.cc',
         '../content/browser/renderer_host/render_view_host_unittest.cc',
