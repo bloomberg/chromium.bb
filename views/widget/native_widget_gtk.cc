@@ -44,9 +44,10 @@
 #endif
 #endif
 
-#if defined(TOUCH_UI) && defined(HAVE_IBUS)
+#if defined(HAVE_IBUS)
 #include "views/ime/input_method_ibus.h"
-#else
+#endif
+#if !defined(TOUCH_UI)
 #include "views/ime/input_method_gtk.h"
 #endif
 
@@ -619,11 +620,14 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   // already created at this point.
   // TODO(suzhe): Always enable input method when we start to use
   // RenderWidgetHostViewViews in normal ChromeOS.
-#if defined(TOUCH_UI) && defined(HAVE_IBUS)
-  if (!child_) {
-    input_method_.reset(new InputMethodIBus(this));
-#else
   if (!child_ && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+#if defined(TOUCH_UI)
+    input_method_.reset(new InputMethodIBus(this));
+#elif defined(HAVE_IBUS)
+    input_method_.reset(InputMethodIBus::IsInputMethodIBusEnabled() ?
+                        static_cast<InputMethod*>(new InputMethodIBus(this)) :
+                        static_cast<InputMethod*>(new InputMethodGtk(this)));
+#else
     input_method_.reset(new InputMethodGtk(this));
 #endif
     input_method_->Init(GetWidget());

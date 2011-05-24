@@ -41,6 +41,14 @@ class InputMethodIBus : public InputMethodBase {
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
 
+  // Returns true when
+  // 1) built with GYP_DEFINES="touchui=1" or,
+  // 2) enabled by SetEnabledInputMethodIBus or,
+  // 3) enabled by command line flag "--enable-inputmethod-ibus"
+  static bool IsInputMethodIBusEnabled();
+  // Enable/Disable InputMethodIBus
+  static void SetEnableInputMethodIBus(bool enabled);
+
  private:
   // A class to hold all data related to a key event being processed by the
   // input method but still has no result back yet.

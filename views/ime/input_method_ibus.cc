@@ -14,6 +14,7 @@
 #include <X11/Xutil.h>
 #endif
 
+#include "base/command_line.h"
 #include "base/basictypes.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
@@ -30,6 +31,9 @@
 #endif
 
 namespace {
+
+// A global flag to switch the InputMethod implementation to InputMethodIBus
+bool inputmethod_ibus_enabled = false;
 
 // Converts ibus key state flags to Views event flags.
 int ViewsFlagsFromIBusState(guint32 state) {
@@ -125,6 +129,9 @@ void ExtractCompositionTextFromIBusPreedit(IBusText* text,
         0, length, SK_ColorBLACK, false /* thick */));
   }
 }
+
+// A switch to enable InputMethodIBus
+const char kEnableInputMethodIBusSwitch[] = "enable-inputmethod-ibus";
 
 }  // namespace
 
@@ -407,6 +414,22 @@ base::i18n::TextDirection InputMethodIBus::GetInputTextDirection() {
 
 bool InputMethodIBus::IsActive() {
   return context_ != NULL;
+}
+
+// static
+bool InputMethodIBus::IsInputMethodIBusEnabled() {
+#if defined(TOUCH_UI)
+  return true;
+#else
+  return inputmethod_ibus_enabled ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableInputMethodIBusSwitch);
+#endif
+}
+
+// static
+void InputMethodIBus::SetEnableInputMethodIBus(bool enabled) {
+  inputmethod_ibus_enabled = enabled;
 }
 
 void InputMethodIBus::FocusedViewWillChange() {
