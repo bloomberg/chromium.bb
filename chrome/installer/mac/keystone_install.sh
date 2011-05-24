@@ -379,6 +379,15 @@ ksadmin_supports_brandpath_brandkey() {
   # return value.
 }
 
+# Returns 0 (true) if ksadmin supports --version-path and --version-key.
+ksadmin_supports_versionpath_versionkey() {
+  # --version-path and --version-key were introduced in Keystone 1.0.9.2318.
+  is_ksadmin_version_ge 1.0.9.2318
+
+  # The return value of is_ksadmin_version_ge is used as this function's
+  # return value.
+}
+
 usage() {
   echo "usage: ${ME} update_dmg_mount_point" >& 2
 }
@@ -1073,6 +1082,13 @@ main() {
     ksadmin_args+=(
       --brand-path "${ksadmin_brand_plist_path}"
       --brand-key "${ksadmin_brand_key}"
+    )
+  fi
+
+  if ksadmin_supports_versionpath_versionkey; then
+    ksadmin_args+=(
+      --version-path "${installed_app_plist_path}"
+      --version-key "${KS_VERSION_KEY}"
     )
   fi
 
