@@ -167,6 +167,9 @@ void CloudPolicyController::OnDeviceTokenChanged() {
 }
 
 void CloudPolicyController::OnCredentialsChanged() {
+  notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
+                    CloudPolicySubsystem::NO_DETAILS,
+                    PolicyNotifier::POLICY_CONTROLLER);
   effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms_;
   SetState(STATE_TOKEN_UNAVAILABLE);
 }
@@ -235,10 +238,13 @@ void CloudPolicyController::FetchToken() {
   std::string machine_model = identity_strategy_->GetMachineModel();
   em::DeviceRegisterRequest_Type policy_type =
       identity_strategy_->GetPolicyRegisterType();
-  if (identity_strategy_->GetCredentials(&username, &auth_token) &&
-      CanBeInManagedDomain(username)) {
-    token_fetcher_->FetchToken(auth_token, device_id, policy_type,
-                               machine_id, machine_model);
+  if (identity_strategy_->GetCredentials(&username, &auth_token)) {
+    if (CanBeInManagedDomain(username)) {
+      token_fetcher_->FetchToken(auth_token, device_id, policy_type,
+                                 machine_id, machine_model);
+    } else {
+      SetState(STATE_TOKEN_UNMANAGED);
+    }
   }
 }
 
