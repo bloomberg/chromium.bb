@@ -13,11 +13,6 @@ var totalPageCount = -1;
 // requested more often than necessary.
 var previouslySelectedPages = [];
 
-// The previously selected layout mode. It is used in order to prevent the
-// preview from updating when the user clicks on the already selected layout
-// mode.
-var previouslySelectedLayout = null;
-
 // Timer id of the page range textfield. It is used to reset the timer whenever
 // needed.
 var timerId;
@@ -25,18 +20,15 @@ var timerId;
 // Store the last selected printer index.
 var lastSelectedPrinterIndex = 0;
 
-// Indicates whether a preview has been requested but not received yet.
-var isPreviewStillLoading = true;
-
-// Currently selected printer capabilities.
-var printerCapabilities;
-
 // Used to disable some printing options when the preview is not modifiable.
 var previewModifiable = false;
 
 // Destination list special value constants.
 const PRINT_TO_PDF = 'Print To PDF';
 const MANAGE_PRINTERS = 'Manage Printers';
+
+// State of the print preview settings.
+var printSettings = new PrintSettings();
 
 /**
  * Window onload handler, sets up the page and starts print preview by getting
@@ -55,30 +47,76 @@ function onLoad() {
 
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
-  $('print-button').addEventListener('click', printFile);
-  $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
-  $('copies').addEventListener('input', copiesFieldChanged);
-  $('print-pages').addEventListener('click', handleIndividualPagesCheckbox);
-  $('individual-pages').addEventListener('blur', function() {
-      clearTimeout(timerId);
-      onPageSelectionMayHaveChanged();
-  });
-  $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
-  $('individual-pages').addEventListener('input', resetPageRangeFieldTimer);
-  $('two-sided').addEventListener('click', handleTwoSidedClick)
-  $('landscape').addEventListener('click', onLayoutModeToggle);
-  $('portrait').addEventListener('click', onLayoutModeToggle);
-  $('color').addEventListener('click', function() { setColor(true); });
-  $('bw').addEventListener('click', function() { setColor(false); });
-  $('printer-list').addEventListener(
-      'change', updateControlsWithSelectedPrinterCapabilities);
-  $('increment').addEventListener('click',
-                                  function() { onCopiesButtonsClicked(1); });
-  $('decrement').addEventListener('click',
-                                  function() { onCopiesButtonsClicked(-1); });
   $('controls').onsubmit = function() { return false; };
   $('dancing-dots').classList.remove('invisible');
   chrome.send('getPrinters');
+}
+
+/**
+ * Adds event listeners to the settings controls.
+ */
+function addEventListeners() {
+  $('print-button').onclick = printFile;
+
+  // Controls that require preview rendering.
+  $('all-pages').onclick = onPageSelectionMayHaveChanged;
+  $('print-pages').onclick = handleIndividualPagesCheckbox;
+  var individualPages = $('individual-pages');
+  individualPages.onblur = function() {
+      clearTimeout(timerId);
+      onPageSelectionMayHaveChanged();
+  };
+  individualPages.onfocus = addTimerToPageRangeField;
+  individualPages.oninput = resetPageRangeFieldTimer;
+  $('landscape').onclick = onLayoutModeToggle;
+  $('portrait').onclick = onLayoutModeToggle;
+  $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
+
+  // Controls that dont require preview rendering.
+  $('copies').oninput = function() {
+    copiesFieldChanged();
+    updatePrintButtonState();
+    updatePrintSummary();
+  };
+  $('two-sided').onclick = handleTwoSidedClick;
+  $('color').onclick = function() { setColor(true); };
+  $('bw').onclick = function() { setColor(false); };
+  $('increment').onclick = function() {
+    onCopiesButtonsClicked(1);
+    updatePrintButtonState();
+    updatePrintSummary();
+  };
+  $('decrement').onclick = function() {
+    onCopiesButtonsClicked(-1);
+    updatePrintButtonState();
+    updatePrintSummary();
+  };
+}
+
+/**
+ * Removes event listeners from the settings controls.
+ */
+function removeEventListeners() {
+  // Controls that require preview rendering.
+  $('print-button').disabled = true;
+  $('all-pages').onclick = null;
+  $('print-pages').onclick = null;
+  var individualPages = $('individual-pages');
+  individualPages.onblur = null;
+  individualPages.onfocus = null;
+  individualPages.oninput = null;
+  clearTimeout(timerId);
+  $('landscape').onclick = null;
+  $('portrait').onclick = null;
+  $('printer-list').onchange = null;
+
+  // Controls that dont require preview rendering.
+  $('copies').oninput = copiesFieldChanged;
+  $('two-sided').onclick = null;
+  $('color').onclick = null;
+  $('bw').onclick = null;
+  $('increment').onclick = function() { onCopiesButtonsClicked(1); };
+  $('decrement').onclick = function() { onCopiesButtonsClicked(-1); };
 }
 
 /**
@@ -141,11 +179,6 @@ function updateControlsWithSelectedPrinterCapabilities() {
  * @param {Object} settingInfo printer setting information.
  */
 function updateWithPrinterCapabilities(settingInfo) {
-  printerCapabilities = settingInfo;
-
-  if (isPreviewStillLoading)
-    return;
-
   var disableColorOption = settingInfo.disableColorOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
   var colorOption = $('color');
@@ -246,8 +279,8 @@ function isColor() {
  * @return {boolean} true if collate setting is enabled and checked.
  */
 function isCollated() {
-  var collateField = $('collate');
-  return !collateField.disabled && collateField.checked;
+  return !$('collate-option').classList.contains('hidden') &&
+      $('collate').checked;
 }
 
 /**
@@ -325,6 +358,7 @@ function printFile() {
   $('print-button').classList.add('loading');
   $('cancel-button').classList.add('loading');
   $('print-summary').innerHTML = localStrings.getString('printing');
+  removeEventListeners();
 
   if (getSelectedPrinterName() != PRINT_TO_PDF) {
     window.setTimeout(function() { chrome.send('print', [getSettingsJSON()]); },
@@ -337,8 +371,8 @@ function printFile() {
  * Asks the browser to generate a preview PDF based on current print settings.
  */
 function requestPrintPreview() {
-  isPreviewStillLoading = true;
-  setControlsDisabled(true);
+  removeEventListeners();
+  printSettings.save();
   $('dancing-dots').classList.remove('invisible');
   chrome.send('getPreview', [getSettingsJSON()]);
 }
@@ -409,7 +443,6 @@ function setColor(color) {
  * should be displayed.
  */
 function displayErrorMessage(errorMessage, showButton) {
-  isPreviewStillLoading = false;
   $('dancing-dots').classList.remove('invisible');
   $('dancing-dots-text').classList.add('hidden');
   $('error-text').innerHTML = errorMessage;
@@ -444,7 +477,6 @@ function onPDFLoad() {
     $('pdf-viewer').fitToHeight();
 
   $('dancing-dots').classList.add('invisible');
-  setControlsDisabled(false);
 
   if (!previewModifiable) {
     $('landscape').disabled = true;
@@ -452,7 +484,6 @@ function onPDFLoad() {
   }
 
   updateCopiesButtonsState();
-  updateWithPrinterCapabilities(printerCapabilities);
 }
 
 /**
@@ -465,6 +496,9 @@ function onPDFLoad() {
  *
  */
 function updatePrintPreview(pageCount, jobTitle, modifiable) {
+  var tempPrintSettings = new PrintSettings();
+  tempPrintSettings.save();
+
   previewModifiable = modifiable;
 
   if (totalPageCount == -1)
@@ -474,15 +508,31 @@ function updatePrintPreview(pageCount, jobTitle, modifiable) {
     for (var i = 0; i < totalPageCount; i++)
       previouslySelectedPages.push(i+1);
 
-  if (previouslySelectedLayout == null)
-    previouslySelectedLayout = $('portrait');
+  if (printSettings.deviceName != tempPrintSettings.deviceName) {
+    updateControlsWithSelectedPrinterCapabilities();
+    return;
+  } else if (printSettings.isLandscape != tempPrintSettings.isLandscape) {
+    setDefaultValuesAndRegeneratePreview();
+    return;
+  } else if (getSelectedPagesValidityLevel() == 1) {
+    var currentlySelectedPages = getSelectedPagesSet();
+    if (!areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
+      previouslySelectedPages = currentlySelectedPages;
+      requestPrintPreview();
+      return;
+    }
+  }
+
+  if (getSelectedPagesValidityLevel() != 1)
+    pageRangesFieldChanged();
 
   // Update the current tab title.
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   createPDFPlugin();
-  isPreviewStillLoading = false;
   updatePrintSummary();
+  updatePrintButtonState();
+  addEventListeners();
 }
 
 /**
@@ -552,9 +602,15 @@ window.addEventListener('DOMContentLoaded', onLoad);
  */
 function copiesFieldChanged() {
   updateCopiesButtonsState();
-  updatePrintButtonState();
-  $('collate-option').hidden = getCopies() <= 1;
-  updatePrintSummary();
+  // TODO: change the following if else to
+  // $('collate-option').hidden = getCopies() <= 1;
+  // once the span[hidden] {display: none;} rule is applied correctly and also
+  // update isCollated() function. Currently it is not reducing the size of the
+  // span to 0x0.
+  if (getCopies() <= 1)
+    $('collate-option').classList.add('hidden');
+  else
+    $('collate-option').classList.remove('hidden');
 }
 
 /**
@@ -692,14 +748,10 @@ function handleIndividualPagesCheckbox() {
  * Even if they are still valid the content of these pages will be different.
  */
 function onLayoutModeToggle() {
-  var currentlySelectedLayout = $('portrait').checked ? $('portrait') :
-      $('landscape');
-
   // If the chosen layout is same as before, nothing needs to be done.
-  if (previouslySelectedLayout == currentlySelectedLayout)
+  if (printSettings.isLandscape == isLandscape())
     return;
 
-  previouslySelectedLayout = currentlySelectedLayout;
   $('individual-pages').classList.remove('invalid');
   setDefaultValuesAndRegeneratePreview();
 }
@@ -708,9 +760,7 @@ function onLayoutModeToggle() {
  * Sets the default values and sends a request to regenerate preview data.
  */
 function setDefaultValuesAndRegeneratePreview() {
-  $('individual-pages').value = '';
   hideInvalidHint($('individual-pages-hint'));
-  $('all-pages').checked = true;
   totalPageCount = -1;
   previouslySelectedPages.length = 0;
   requestPrintPreview();
@@ -927,3 +977,18 @@ function onCopiesButtonsClicked(sign) {
   copiesFieldChanged();
 }
 
+/**
+ * Class that represents the state of the print settings.
+ */
+function PrintSettings() {
+  this.deviceName = '';
+  this.isLandscape = '';
+}
+
+/**
+ * Takes a snapshot of the print settings.
+ */
+PrintSettings.prototype.save = function() {
+  this.deviceName = getSelectedPrinterName();
+  this.isLandscape = isLandscape();
+}

@@ -606,7 +606,6 @@ body #individual-pages {
 #collate-option {
  -webkit-transition: opacity 200ms, -webkit-transform 200ms;
  -webkit-padding-start: 5px;
- display: inline-block;
  opacity: 1;
 }
 
