@@ -7,10 +7,15 @@
 #pragma once
 
 #include "base/base_api.h"
+#include "base/debug/alias.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
 #include "base/tracked.h"
 #include "base/tuple.h"
+
+namespace base {
+const size_t kDeadTask = 0xDEAD7A53;
+}
 
 // Task ------------------------------------------------------------------------
 //
@@ -325,6 +330,7 @@ class RunnableMethod : public CancelableTask {
 
   ~RunnableMethod() {
     ReleaseCallee();
+    obj_ = reinterpret_cast<T*>(base::kDeadTask);
   }
 
   virtual void Run() {
@@ -452,9 +458,18 @@ class RunnableFunction : public Task {
   }
 
   ~RunnableFunction() {
+    function_ = reinterpret_cast<Function>(base::kDeadTask);
   }
 
   virtual void Run() {
+    // TODO(apatrick): Remove this ASAP. This ensures that the function pointer
+    // is available in minidumps for the purpose of diagnosing
+    // http://crbug.com/81449.
+    Function function = function_;
+    base::debug::Alias(&function);
+    Params params = params_;
+    base::debug::Alias(&params);
+
     if (function_)
       DispatchToFunction(function_, params_);
   }
