@@ -208,6 +208,9 @@ SkColor GetAverageColorOfFavicon(SkBitmap* favicon, SkAlpha alpha) {
 
   SkAutoLockPixels favicon_lock(*favicon);
   SkColor* pixels = static_cast<SkColor*>(favicon->getPixels());
+  if (!pixels)
+    return SkColorSetARGB(alpha, 0, 0, 0);
+
   // Assume ARGB_8888 format.
   DCHECK(favicon->getConfig() == SkBitmap::kARGB_8888_Config);
   SkColor* current_color = pixels;
@@ -241,6 +244,9 @@ SkColor GetAverageColorOfFavicon(SkBitmap* favicon, SkAlpha alpha) {
 
 void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]) {
   SkAutoLockPixels bitmap_lock(*bitmap);
+  if (!bitmap->getPixels())
+    return;
+
   // Assume ARGB_8888 format.
   DCHECK(bitmap->getConfig() == SkBitmap::kARGB_8888_Config);
 
