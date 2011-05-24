@@ -174,3 +174,9 @@ REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
 
 # 83657
 PREFIX: base::internal::lockimpl::lock___extensioncontentsettingsstore::geteffectivecontentsetting___content_settings::extensionprovider::getcontentsetting
+
+# 83674
+PREFIX: webcore::cssstyleselector::loadpendingimages___webcore::cssstyleselector::styleforelement___webcore::node::styleforrenderer
+
+# 83676
+PREFIX: webcore::renderstyle::haspseudostyle___webcore::cssstyleselector::styleforelement___webcore::node::styleforrenderer
