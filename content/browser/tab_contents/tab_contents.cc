@@ -22,7 +22,6 @@
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
@@ -760,14 +759,6 @@ void TabContents::WillClose(ConstrainedWindow* window) {
       child_windows_[0]->ShowConstrainedWindow();
     BlockTabContent(true);
   }
-}
-
-void TabContents::EmailPageLocation() {
-  std::string title = EscapeQueryParamValue(UTF16ToUTF8(GetTitle()), false);
-  std::string page_url = EscapeQueryParamValue(GetURL().spec(), false);
-  std::string mailto = std::string("mailto:?subject=Fwd:%20") +
-      title + "&body=%0A%0A" + page_url;
-  platform_util::OpenExternal(GURL(mailto));
 }
 
 bool TabContents::IsActiveEntry(int32 page_id) {

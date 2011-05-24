@@ -396,10 +396,6 @@ class TabContents : public PageNavigator,
     suppress_javascript_messages_ = suppress_javascript_messages;
   }
 
-  // Tells the user's email client to open a compose window containing the
-  // current page's URL.
-  void EmailPageLocation();
-
   // Returns true if the active NavigationEntry's page_id equals page_id.
   bool IsActiveEntry(int32 page_id);
 
