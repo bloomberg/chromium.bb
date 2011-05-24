@@ -135,8 +135,12 @@ void NetworkConfigView::ShowAdvancedView() {
   gfx::Size size = views::Window::GetLocalizedContentsSize(
       IDS_JOIN_WIFI_NETWORK_DIALOG_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES);
-  gfx::Rect bounds(size.width(), size.height());
-  // Window is automatically centered.
+  // Get the new bounds with desired size at the same center point.
+  gfx::Rect bounds = window()->GetBounds();
+  int horiz_padding = bounds.width() - size.width();
+  int vert_padding = bounds.height() - size.height();
+  bounds.Inset(horiz_padding / 2, vert_padding / 2,
+               horiz_padding / 2, vert_padding / 2);
   window()->SetWindowBounds(bounds, GetNativeWindow());
   Layout();
   child_config_view_->InitFocus();
