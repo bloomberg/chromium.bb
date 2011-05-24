@@ -47,6 +47,7 @@
       'databases',
       'downloads',
       'find_in_page',
+      '-find_in_page.FindMatchTests.testSearchInPDF',  # crbug.com/83763
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       'execute_javascript',
