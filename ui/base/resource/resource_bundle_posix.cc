@@ -4,6 +4,9 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
@@ -112,7 +115,14 @@ std::string ResourceBundle::LoadLocaleResources(
     const std::string& pref_locale) {
   DCHECK(!locale_resources_data_) << "locale.pak already loaded";
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
-  FilePath locale_file_path = GetLocaleFilePath(app_locale);
+  FilePath locale_file_path;
+  CommandLine *command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalePak)) {
+    locale_file_path =
+      command_line->GetSwitchValuePath(switches::kLocalePak);
+  } else {
+    locale_file_path = GetLocaleFilePath(app_locale);
+  }
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
     NOTREACHED();
