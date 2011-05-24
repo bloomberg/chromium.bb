@@ -18,6 +18,7 @@
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/ocmock_extensions.h"
 
 using ::testing::Return;
 using ::testing::ReturnArg;
@@ -110,9 +111,6 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
                   action:@selector(goFish:)
            keyEquivalent:@""];
 
-  // For OCMOCK_VALUE().
-  BOOL yes = YES;
-
   // So that we don't have to mock the observer.
   [editor_ setEditable:NO];
 
@@ -120,7 +118,7 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
   // propagated back.
   {
     id delegate = [OCMockObject mockForClass:[AutocompleteTextField class]];
-    [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
+    [[[delegate stub] andReturnBool:YES]
       isKindOfClass:[AutocompleteTextField class]];
     [[[delegate expect] andReturn:menu.get()] decorationMenuForEvent:event];
     [editor_ setDelegate:delegate];
@@ -135,7 +133,7 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
   // returned.
   {
     id delegate = [OCMockObject mockForClass:[AutocompleteTextField class]];
-    [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
+    [[[delegate stub] andReturnBool:YES]
       isKindOfClass:[AutocompleteTextField class]];
     [[[delegate expect] andReturn:nil] decorationMenuForEvent:event];
     [editor_ setDelegate:delegate];

@@ -23,6 +23,10 @@
             'gtest_support.h',
             'gtest_support.mm',
 
+            # Some extra features to make using OCMock easier.
+            'ocmock_extensions.h',
+            'ocmock_extensions.mm',
+
             # OCMock sources.
             'OCMock/NSInvocation+OCMAdditions.h',
             'OCMock/OCMObserverRecorder.m',
