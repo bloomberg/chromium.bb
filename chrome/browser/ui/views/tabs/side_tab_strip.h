@@ -44,7 +44,6 @@ class SideTabStrip : public BaseTabStrip, public views::ButtonListener {
  protected:
   // BaseTabStrip overrides:
   virtual BaseTab* CreateTab() OVERRIDE;
-  virtual bool IgnoreTitlePrefixEliding(BaseTab* tab) OVERRIDE;
   virtual void GenerateIdealBounds() OVERRIDE;
   virtual void StartInsertTabAnimation(int model_index) OVERRIDE;
   virtual void AnimateToIdealBounds() OVERRIDE;

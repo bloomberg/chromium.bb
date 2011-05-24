@@ -111,11 +111,6 @@ class MenuDelegate;
 
 // Update the title color to match the tabs current state.
 - (void)updateTitleColor;
-
-// Sets the maximum number of characters that can be truncated from the
-// beginning of the title. This is used to remove a common prefix among multiple
-// tabs.
-- (void)setTitleCommonPrefixLength:(NSUInteger)length;
 @end
 
 @interface TabController(TestingAPI)

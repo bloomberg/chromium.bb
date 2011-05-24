@@ -6,7 +6,6 @@
 
 TabRendererData::TabRendererData()
     : network_state(NETWORK_STATE_NONE),
-      common_prefix_length(0),
       loading(false),
       crashed_status(base::TERMINATION_STATUS_STILL_RUNNING),
       incognito(false),
@@ -26,7 +25,6 @@ bool TabRendererData::Equals(const TabRendererData& data) {
       network_state == data.network_state &&
       title == data.title &&
       url == data.url &&
-      common_prefix_length == data.common_prefix_length &&
       loading == data.loading &&
       crashed_status == data.crashed_status &&
       incognito == data.incognito &&

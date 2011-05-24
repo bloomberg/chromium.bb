@@ -42,9 +42,6 @@ struct TabRendererData {
   NetworkState network_state;
   string16 title;
   GURL url;
-  // Identifies the number of chars at the beginning of the string
-  // that are common to other tab titles.
-  size_t common_prefix_length;
   bool loading;
   base::TerminationStatus crashed_status;
   bool incognito;

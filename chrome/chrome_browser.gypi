@@ -2877,8 +2877,6 @@
         'browser/ui/tabs/hover_tab_selector.h',
         'browser/ui/tabs/tab_menu_model.cc',
         'browser/ui/tabs/tab_menu_model.h',
-        'browser/ui/title_prefix_matcher.cc',
-        'browser/ui/title_prefix_matcher.h',
         'browser/ui/toolbar/back_forward_menu_model.cc',
         'browser/ui/toolbar/back_forward_menu_model.h',
         'browser/ui/toolbar/encoding_menu_controller.cc',
