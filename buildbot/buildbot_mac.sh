@@ -88,8 +88,14 @@ echo @@@BUILD_STEP small_tests@@@
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc small_tests platform=x86-${BITS} ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
-# TODO(bradchen): add dynamic_library_browser_tests when DSOs
-# are added to the Mac toolchain build
+if [[ $TOOLCHAIN = glibc ]]; then
+echo @@@BUILD_STEP dynamic_library_browser_tests${BITS}@@@
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    browser_headless=1 \
+    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
+    dynamic_library_browser_tests ||
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+fi
 
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
