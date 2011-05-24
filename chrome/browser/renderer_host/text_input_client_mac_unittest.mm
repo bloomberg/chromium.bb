@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/common/text_input_client_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
@@ -17,6 +18,8 @@
 #include "testing/gtest_mac.h"
 
 namespace {
+
+const int64 kTaskDelayMs = 200;
 
 // This test does not test the WebKit side of the dictionary system (which
 // performs the actual data fetching), but rather this just tests that the
@@ -37,9 +40,8 @@ class TextInputClientMacTest : public testing::Test {
 
   // Helper method to post a task on the testing thread's MessageLoop after
   // a short delay.
-  void PostTask(const base::Closure& task) {
-    const int64 kTaskDelayMs = 200;
-    thread_.message_loop()->PostDelayedTask(FROM_HERE, task, kTaskDelayMs);
+  void PostTask(const base::Closure& task, const int64 delay = kTaskDelayMs) {
+    thread_.message_loop()->PostDelayedTask(FROM_HERE, task, delay);
   }
 
   RenderWidgetHost* widget() {
@@ -104,6 +106,41 @@ TEST_F(TextInputClientMacTest, TimeoutCharacterIndex) {
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_CharacterIndexForPoint::ID));
   EXPECT_EQ(NSNotFound, index);
+}
+
+TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
+  ScopedTestingThread thread(this);
+  const NSUInteger kPreviousValue = 42;
+  const size_t kNotFoundValue = static_cast<size_t>(-1);
+
+  // Set an arbitrary value to ensure the index is not |NSNotFound|.
+  PostTask(base::Bind(&TextInputClientMac::SetCharacterIndexAndSignal,
+      base::Unretained(service()), kPreviousValue));
+
+  scoped_refptr<TextInputClientMessageFilter> filter(
+      new TextInputClientMessageFilter(widget()->process()->id()));
+  scoped_ptr<IPC::Message> message(
+      new TextInputClientReplyMsg_GotCharacterIndexForPoint(
+          widget()->routing_id(), kNotFoundValue));
+  bool message_ok = true;
+  // Set |WTF::notFound| to the index |kTaskDelayMs| after the previous
+  // setting.
+  PostTask(base::Bind(&TextInputClientMessageFilter::OnMessageReceived,
+                      filter.get(), *message, &message_ok),
+           kTaskDelayMs * 2);
+
+  NSUInteger index = service()->GetCharacterIndexAtPoint(
+      widget(), gfx::Point(2, 2));
+  EXPECT_EQ(kPreviousValue, index);
+  index = service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
+  EXPECT_EQ(NSNotFound, index);
+
+  EXPECT_EQ(2U, ipc_sink().message_count());
+  for (size_t i = 0; i < ipc_sink().message_count(); ++i) {
+    const IPC::Message* ipc_message = ipc_sink().GetMessageAt(i);
+    EXPECT_EQ(ipc_message->type(),
+              TextInputClientMsg_CharacterIndexForPoint::ID);
+  }
 }
 
 TEST_F(TextInputClientMacTest, GetRectForRange) {
