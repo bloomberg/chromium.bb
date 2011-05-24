@@ -214,7 +214,7 @@ void DrawTextAndClearBackground(skia::BitmapPlatformDevice& bmp_device,
       // on a white background the luminosity must be inverted.
       BYTE alpha = 0xFF - color_utils::GetLuminanceForColor(color);
       *bmp.getAddr32(x, y) = SkPreMultiplyColor(
-          SkColorSetARGB(alpha, text_color_r, text_color_b, text_color_g));
+          SkColorSetARGB(alpha, text_color_r, text_color_g, text_color_b));
     }
   }
 
