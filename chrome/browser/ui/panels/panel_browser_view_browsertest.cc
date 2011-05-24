@@ -13,10 +13,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/button/image_button.h"
-#include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
-#include "views/controls/menu/menu_2.h"
-
 
 class PanelBrowserViewTest : public InProcessBrowserTest {
  public:
@@ -27,6 +24,35 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
   }
 
  protected:
+  class MockMouseWatcher : public PanelBrowserFrameView::MouseWatcher {
+   public:
+    explicit MockMouseWatcher(PanelBrowserFrameView* view)
+        : PanelBrowserFrameView::MouseWatcher(view),
+          is_cursor_in_view_(false) {
+    }
+
+    virtual bool IsCursorInViewBounds() const {
+      return is_cursor_in_view_;
+    }
+
+    void MoveMouse(bool is_cursor_in_view) {
+      is_cursor_in_view_ = is_cursor_in_view;
+
+#if defined(OS_WIN)
+      MSG msg;
+      msg.message = WM_MOUSEMOVE;
+      DidProcessMessage(msg);
+#else
+      GdkEvent event;
+      event.type = GDK_MOTION_NOTIFY;
+      DidProcessEvent(&event);
+#endif
+    }
+
+   private:
+    bool is_cursor_in_view_;
+  };
+
   PanelBrowserView* CreatePanelBrowserView(const std::string& panel_name) {
     Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                    panel_name,
@@ -35,20 +61,6 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     panel_browser->window()->Show();
     return static_cast<PanelBrowserView*>(
         static_cast<Panel*>(panel_browser->window())->browser_window());
-  }
-
-  void ValidateOptionsMenuItems(
-      ui::SimpleMenuModel* options_menu_contents, size_t count, int* ids) {
-    ASSERT_TRUE(options_menu_contents);
-    EXPECT_EQ(static_cast<int>(count), options_menu_contents->GetItemCount());
-    for (size_t i = 0; i < count; ++i) {
-      if (ids[i] == -1) {
-        EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
-                  options_menu_contents->GetTypeAt(i));
-      } else {
-        EXPECT_EQ(ids[i] , options_menu_contents->GetCommandIdAt(i));
-      }
-    }
   }
 
   void ValidateDragging(PanelBrowserView** browser_views,
@@ -155,7 +167,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   // These controls should be visible.
   EXPECT_TRUE(frame_view->title_icon_->IsVisible());
   EXPECT_TRUE(frame_view->title_label_->IsVisible());
-  EXPECT_TRUE(frame_view->info_button_->IsVisible());
   EXPECT_TRUE(frame_view->close_button_->IsVisible());
 
   // Validate their layouts.
@@ -188,6 +199,37 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_INACTIVE);
   gfx::Font title_label_font2 = frame_view->title_label_->font();
   EXPECT_NE(title_label_font1.GetStyle(), title_label_font2.GetStyle());
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideInfoButton) {
+  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
+  PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
+
+  // Create and hook up the MockMouseWatcher so that we can simulate if the
+  // mouse is over the panel.
+  MockMouseWatcher* mouse_watcher = new MockMouseWatcher(frame_view);
+  frame_view->set_mouse_watcher(mouse_watcher);
+
+  // When the panel is created, it is active. Since we cannot programatically
+  // bring the panel back to active state once it is deactivated, we have to
+  // test the cases that the panel is active first.
+  EXPECT_TRUE(browser_view->panel()->IsActive());
+
+  // When the panel is active, the info button should always be visible.
+  mouse_watcher->MoveMouse(true);
+  EXPECT_TRUE(frame_view->info_button_->IsVisible());
+  mouse_watcher->MoveMouse(false);
+  EXPECT_TRUE(frame_view->info_button_->IsVisible());
+
+  // When the panel is inactive, the info button is active per the mouse over
+  // the panel or not.
+  browser_view->panel()->Deactivate();
+  EXPECT_FALSE(browser_view->panel()->IsActive());
+
+  mouse_watcher->MoveMouse(true);
+  EXPECT_TRUE(frame_view->info_button_->IsVisible());
+  mouse_watcher->MoveMouse(false);
+  EXPECT_FALSE(frame_view->info_button_->IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {

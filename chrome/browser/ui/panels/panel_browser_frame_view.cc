@@ -21,6 +21,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
 #include "views/painter.h"
+#include "views/screen.h"
 #include "views/window/window.h"
 #include "views/window/window_shape.h"
 
@@ -129,6 +130,60 @@ void EnsureResourcesInitialized() {
 
 } // namespace
 
+// PanelBrowserFrameView::MouseWatcher -----------------------------------------
+
+PanelBrowserFrameView::MouseWatcher::MouseWatcher(PanelBrowserFrameView* view)
+    : view_(view),
+      is_mouse_within_(false) {
+  MessageLoopForUI::current()->AddObserver(this);
+}
+
+PanelBrowserFrameView::MouseWatcher::~MouseWatcher() {
+  MessageLoopForUI::current()->RemoveObserver(this);
+}
+
+bool PanelBrowserFrameView::MouseWatcher::IsCursorInViewBounds() const {
+  gfx::Point cursor_point = views::Screen::GetCursorScreenPoint();
+  return view_->browser_view_->GetBounds().Contains(cursor_point.x(),
+                                                    cursor_point.y());
+}
+
+#if defined(OS_WIN)
+void PanelBrowserFrameView::MouseWatcher::DidProcessMessage(const MSG& msg) {
+  switch (msg.message) {
+    case WM_MOUSEMOVE:
+    case WM_NCMOUSEMOVE:
+    case WM_MOUSELEAVE:
+    case WM_NCMOUSELEAVE:
+      HandleGlobalMouseMoveEvent();
+      break;
+    default:
+      break;
+  }
+}
+#else
+void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
+  switch (event->type) {
+    case GDK_MOTION_NOTIFY:
+    case GDK_LEAVE_NOTIFY:
+      HandleGlobalMouseMoveEvent();
+      break;
+    default:
+      break;
+  }
+}
+#endif
+
+void PanelBrowserFrameView::MouseWatcher::HandleGlobalMouseMoveEvent() {
+  bool is_mouse_within = IsCursorInViewBounds();
+  if (is_mouse_within == is_mouse_within_)
+    return;
+  is_mouse_within_ = is_mouse_within;
+  view_->OnMouseEnterOrLeaveWindow(is_mouse_within_);
+}
+
+// PanelBrowserFrameView -------------------------------------------------------
+
 PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                                              PanelBrowserView* browser_view)
     : BrowserNonClientFrameView(),
@@ -153,9 +208,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_ABOUT_PANEL)));
   info_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_ABOUT_PANEL));
-  // TODO(jianli): Hide info button by default and show it when mouse is over
-  // panel.
-  // info_button_->SetVisible(false);
+  info_button_->SetVisible(false);
   AddChildView(info_button_);
 
   close_button_ = new views::ImageButton(this);
@@ -178,6 +231,8 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   title_label_ = new views::Label(std::wstring());
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(title_label_);
+
+  mouse_watcher_.reset(new MouseWatcher(this));
 }
 
 PanelBrowserFrameView::~PanelBrowserFrameView() {
@@ -479,5 +534,16 @@ void PanelBrowserFrameView::UpdateTitleBar() {
 }
 
 void PanelBrowserFrameView::OnActivationChanged(bool active) {
+  UpdateInfoButtonVisibility(active, mouse_watcher_->IsCursorInViewBounds());
   SchedulePaint();
+}
+
+void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
+  UpdateInfoButtonVisibility(browser_view_->panel()->IsActive(),
+                             mouse_entered);
+}
+
+void PanelBrowserFrameView::UpdateInfoButtonVisibility(bool active,
+                                                       bool cursor_in_view) {
+  info_button_->SetVisible(active || cursor_in_view);
 }

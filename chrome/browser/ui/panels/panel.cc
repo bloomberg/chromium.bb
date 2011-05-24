@@ -78,11 +78,11 @@ void Panel::Close() {
 }
 
 void Panel::Activate() {
-  NOTIMPLEMENTED();
+  browser_window_->Activate();
 }
 
 void Panel::Deactivate() {
-  NOTIMPLEMENTED();
+  browser_window_->Deactivate();
 }
 
 bool Panel::IsActive() const {
