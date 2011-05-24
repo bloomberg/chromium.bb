@@ -476,6 +476,18 @@ class TestingAutomationProvider : public AutomationProvider,
                                    DictionaryValue* args,
                                    IPC::Message* reply_message);
 
+  // Get info about preferences stored in Local State.
+  // Uses the JSON interface for input/output.
+  void GetLocalStatePrefsInfo(Browser* browser,
+                              DictionaryValue* args,
+                              IPC::Message* reply_message);
+
+  // Set local state prefs.
+  // Uses the JSON interface for input/output.
+  void SetLocalStatePrefs(Browser* browser,
+                          DictionaryValue* args,
+                          IPC::Message* reply_message);
+
   // Get info about preferences.
   // Uses the JSON interface for input/output.
   void GetPrefsInfo(Browser* browser,

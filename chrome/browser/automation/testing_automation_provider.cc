@@ -2311,6 +2311,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["PerformActionOnSearchEngine"] =
       &TestingAutomationProvider::PerformActionOnSearchEngine;
 
+  browser_handler_map["GetLocalStatePrefsInfo"] =
+      &TestingAutomationProvider::GetLocalStatePrefsInfo;
+  browser_handler_map["SetLocalStatePrefs"] =
+      &TestingAutomationProvider::SetLocalStatePrefs;
   browser_handler_map["GetPrefsInfo"] =
       &TestingAutomationProvider::GetPrefsInfo;
   browser_handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
@@ -3126,6 +3130,48 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
     AutomationJSONReply(this, reply_message)
         .SendError(StringPrintf("Invalid action: %s", action.c_str()));
   }
+}
+
+// Sample json input: { "command": "GetLocalStatePrefsInfo" }
+// Refer chrome/test/pyautolib/prefs_info.py for sample json output.
+void TestingAutomationProvider::GetLocalStatePrefsInfo(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  DictionaryValue* items = g_browser_process->local_state()->
+      GetPreferenceValues();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->Set("prefs", items);  // return_value owns items.
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+// Sample json input: { "command": "SetLocalStatePrefs", "path": path,
+//                      "value": value }
+void TestingAutomationProvider::SetLocalStatePrefs(Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string path;
+  Value* val;
+  AutomationJSONReply reply(this, reply_message);
+  if (args->GetString("path", &path) && args->Get("value", &val)) {
+    PrefService* pref_service = g_browser_process->local_state();
+    const PrefService::Preference* pref =
+        pref_service->FindPreference(path.c_str());
+    if (!pref) {  // Not a registered pref.
+      reply.SendError("pref not registered.");
+      return;
+    } else if (pref->IsManaged()) {  // Do not attempt to change a managed pref.
+      reply.SendError("pref is managed. cannot be changed.");
+      return;
+    } else {  // Set the pref.
+      pref_service->Set(path.c_str(), *val);
+    }
+  } else {
+    reply.SendError("no pref path or value given.");
+    return;
+  }
+
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetPrefsInfo" }

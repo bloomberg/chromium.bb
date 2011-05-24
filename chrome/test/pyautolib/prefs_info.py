@@ -6,7 +6,8 @@
 
 """Python representation for Chromium Preferences.
 
-Obtain one of these from PyUITestSuite::GetPrefsInfo() call.
+Obtain one of these from a call to PyUITest::GetPrefsInfo() or
+PyUITest::GetLocalStatePrefsInfo().
 
 Example:
 class MyTest(pyauto.PyUITest):

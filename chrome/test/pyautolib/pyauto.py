@@ -816,6 +816,51 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                 'action': 'default'}
     self._GetResultFromJSONRequest(cmd_dict)
 
+
+  def GetLocalStatePrefsInfo(self):
+    """Return info about preferences.
+
+    This represents a snapshot of the local state preferences. If you expect
+    local state preferences to have changed, you need to call this method again
+    to get a fresh snapshot.
+
+    Returns:
+      an instance of prefs_info.PrefsInfo
+    """
+    return prefs_info.PrefsInfo(
+        self._SendJSONRequest(0,
+                              json.dumps({'command': 'GetLocalStatePrefsInfo'}),
+                              self.action_max_timeout_ms()))
+
+  def SetLocalStatePrefs(self, path, value):
+    """Set local state preference for the given path.
+
+    Preferences are stored by Chromium as a hierarchical dictionary.
+    dot-separated paths can be used to refer to a particular preference.
+    example: "session.restore_on_startup"
+
+    Some preferences are managed, that is, they cannot be changed by the
+    user. It's up to the user to know which ones can be changed. Typically,
+    the options available via Chromium preferences can be changed.
+
+    Args:
+      path: the path the preference key that needs to be changed
+            example: "session.restore_on_startup"
+            One of the equivalent names in chrome/common/pref_names.h could
+            also be used.
+      value: the value to be set. It could be plain values like int, bool,
+             string or complex ones like list.
+             The user has to ensure that the right value is specified for the
+             right key. It's useful to dump the preferences first to determine
+             what type is expected for a particular preference path.
+    """
+    cmd_dict = {
+      'command': 'SetLocalStatePrefs',
+      'path': path,
+      'value': value,
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
+
   def GetPrefsInfo(self):
     """Return info about preferences.
 
