@@ -598,7 +598,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
       false);
   old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
                                                 new_tab_contents);
-  prerender_contents->CommitHistory(new_tab_contents->tab_contents());
+  prerender_contents->CommitHistory(new_tab_contents);
 
   GURL icon_url = prerender_contents->icon_url();
   if (!icon_url.is_empty()) {

@@ -13,6 +13,7 @@
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_marshaling.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_render_widget_host_view.h"
@@ -107,10 +108,10 @@ class PrerenderContents::TabContentsDelegateImpl
     return false;
   }
   // Commits the History of Pages to the given TabContents.
-  void CommitHistory(TabContents* tc) {
-    DCHECK(tc != NULL);
+  void CommitHistory(TabContentsWrapper* tab) {
     for (size_t i = 0; i < add_page_vector_.size(); ++i)
-      tc->UpdateHistoryForNavigation(add_page_vector_[i].get());
+      tab->history_tab_helper()->UpdateHistoryForNavigation(
+          add_page_vector_[i].get());
   }
 
  private:
@@ -832,9 +833,9 @@ const RenderViewHost* PrerenderContents::render_view_host() const {
   return render_view_host_;
 }
 
-void PrerenderContents::CommitHistory(TabContents* tc) {
+void PrerenderContents::CommitHistory(TabContentsWrapper* tab) {
   if (tab_contents_delegate_.get())
-    tab_contents_delegate_->CommitHistory(tc);
+    tab_contents_delegate_->CommitHistory(tab);
 }
 
 }  // namespace prerender

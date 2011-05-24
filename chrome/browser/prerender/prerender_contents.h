@@ -252,7 +252,7 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   // Applies all the URL history encountered during prerendering to the
   // new tab.
-  void CommitHistory(TabContents* tc);
+  void CommitHistory(TabContentsWrapper* tab);
 
   int32 starting_page_id() { return starting_page_id_; }
 
