@@ -10,6 +10,10 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 
+#if NACL_OSX
+#include <crt_externs.h>
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -31,6 +35,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
+#include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -192,9 +197,21 @@ int main(int  argc,
   int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
   struct NaClPerfCounter        time_all_main;
+  const char                    **envp;
+  struct NaClEnvCleanser        env_cleanser;
 
 
   const char* sandbox_fd_string;
+
+#if NACL_OSX
+  /* Mac dynamic libraries cannot access the environ variable directly. */
+  envp = (const char **) *_NSGetEnviron();
+#else
+  /* Overzealous code style check is overzealous. */
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+  extern char **environ;
+  envp = (const char **) environ;
+#endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || NACL_SANDBOX_FIXED_AT_ZERO == 1
   /*
@@ -794,6 +811,12 @@ int main(int  argc,
     NaClLog(LOG_FATAL, "Adding env_vars NULL terminator failed\n");
   }
 
+  NaClEnvCleanserCtor(&env_cleanser, 0);
+  if (!NaClEnvCleanserInit(&env_cleanser, envp,
+          (char const *const *)env_vars.ptr_array)) {
+    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
+  }
+
   /*
    * only nap->ehdrs.e_entry is usable, no symbol table is
    * available.
@@ -801,10 +824,13 @@ int main(int  argc,
   if (!NaClCreateMainThread(nap,
                             argc - optind,
                             argv + optind,
-                            (const char **) env_vars.ptr_array)) {
+                            NaClEnvCleanserEnvironment(&env_cleanser))) {
     fprintf(stderr, "creating main thread failed\n");
     goto done;
   }
+
+  NaClEnvCleanserDtor(&env_cleanser);
+
   NaClPerfCounterMark(&time_all_main, "CreateMainThread");
   NaClPerfCounterIntervalLast(&time_all_main);
   DynArrayDtor(&env_vars);

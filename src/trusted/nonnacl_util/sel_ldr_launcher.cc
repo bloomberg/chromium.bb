@@ -84,7 +84,6 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
 }
 
 bool SelLdrLauncher::LoadModule(NaClSrpcChannel* command, DescWrapper* nexe) {
-
   NaClLog(4, "Entered SelLdrLauncher::LoadModule\n");
   NaClSrpcResultCodes rpc_result = NaClSrpcInvokeBySignature(command,
                                                              "load_module:hs:",
@@ -222,6 +221,7 @@ SelLdrLauncher::StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
 }
 
 #ifdef NACL_STANDALONE
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 extern "C" char **environ;
 
 static char **GetEnviron() {
@@ -261,8 +261,8 @@ void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
   // TODO(mseaborn): Tidy this up so that we do not need a conditional.
 #ifdef NACL_STANDALONE
   struct NaClEnvCleanser env_cleanser;
-  NaClEnvCleanserCtor(&env_cleanser);
-  if (!NaClEnvCleanserInit(&env_cleanser, GetEnviron())) {
+  NaClEnvCleanserCtor(&env_cleanser, 1);
+  if (!NaClEnvCleanserInit(&env_cleanser, GetEnviron(), NULL)) {
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }
   for (const char* const* env = NaClEnvCleanserEnvironment(&env_cleanser);

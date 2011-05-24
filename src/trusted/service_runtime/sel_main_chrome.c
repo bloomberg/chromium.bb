@@ -250,8 +250,8 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
    */
   nap->enable_debug_stub = debug;
 
-  NaClEnvCleanserCtor(&env_cleanser);
-  if (!NaClEnvCleanserInit(&env_cleanser, envp)) {
+  NaClEnvCleanserCtor(&env_cleanser, 1);
+  if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }
 

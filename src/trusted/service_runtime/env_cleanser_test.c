@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -41,6 +41,8 @@ static char const *const kMurkyEnv[] = {
   "LANG=en_us.UTF-8",
   "LC_MEASUREMENT=en_US.UTF-8",
   "LD_LIBRARY_PATH=.:/usr/bsy/lib",
+  "NACLENV_LD_PRELOAD=libvalgrind.so",
+  "NACLENV_SHELL=/bin/sh",
   NULL,
 };
 
@@ -49,6 +51,14 @@ static char const *const kFilteredEnv[] = {
   "LC_MEASUREMENT=en_US.UTF-8",
   "LC_PAPER=en_US.UTF-8@legal",
   "LC_TIME=%a, %B %d, %Y",
+  "LD_PRELOAD=libvalgrind.so",
+  "SHELL=/bin/sh",
+  NULL,
+};
+
+static char const *const kFilteredEnvWithoutWhitelist[] = {
+  "LD_PRELOAD=libvalgrind.so",
+  "SHELL=/bin/sh",
   NULL,
 };
 
@@ -150,8 +160,8 @@ int main() {
   }
 
   printf("\nEnvironment Filtering\n");
-  NaClEnvCleanserCtor(&nec);
-  if (!NaClEnvCleanserInit(&nec, kMurkyEnv)) {
+  NaClEnvCleanserCtor(&nec, 1);
+  if (!NaClEnvCleanserInit(&nec, kMurkyEnv, NULL)) {
     printf("FAILED: NaClEnvCleanser Init failed\n");
     ++errors;
   } else {
@@ -163,6 +173,26 @@ int main() {
       PrintStrTbl("Original environment", kMurkyEnv);
       PrintStrTbl("Filtered environment", NaClEnvCleanserEnvironment(&nec));
       PrintStrTbl("Expected environment", kFilteredEnv);
+    } else {
+      printf("OK\n");
+    }
+  }
+  NaClEnvCleanserDtor(&nec);
+
+  printf("\nEnvironment Filtering (without whitelist)\n");
+  NaClEnvCleanserCtor(&nec, 0);
+  if (!NaClEnvCleanserInit(&nec, kMurkyEnv, NULL)) {
+    printf("FAILED: NaClEnvCleanser Init failed\n");
+    ++errors;
+  } else {
+    if (!StrTblsHaveSameEntries(NaClEnvCleanserEnvironment(&nec),
+                                kFilteredEnvWithoutWhitelist)) {
+      printf("ERROR: filtered env wrong\n");
+      ++errors;
+
+      PrintStrTbl("Original environment", kMurkyEnv);
+      PrintStrTbl("Filtered environment", NaClEnvCleanserEnvironment(&nec));
+      PrintStrTbl("Expected environment", kFilteredEnvWithoutWhitelist);
     } else {
       printf("OK\n");
     }

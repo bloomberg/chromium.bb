@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -14,7 +14,15 @@
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser_test.h"
 
-void NaClEnvCleanserCtor(struct NaClEnvCleanser *self) {
+/*
+ * Everything that starts with this prefix is allowed (but the prefix is
+ * stripped away).
+*/
+#define NACL_ENV_PREFIX "NACLENV_"
+#define NACL_ENV_PREFIX_LENGTH 8
+
+void NaClEnvCleanserCtor(struct NaClEnvCleanser *self, int with_whitelist) {
+  self->with_whitelist = with_whitelist;
   self->cleansed_environ = (char const **) NULL;
 }
 
@@ -65,6 +73,12 @@ static int EnvCmp(void const *vleft, void const *vright) {
   return (0xff & cleft) - (0xff & cright);
 }
 
+int NaClEnvIsPassThroughVar(char const *env_entry) {
+  return strlen(env_entry) > NACL_ENV_PREFIX_LENGTH &&
+      0 == strncmp(env_entry, NACL_ENV_PREFIX,
+          NACL_ENV_PREFIX_LENGTH);
+}
+
 int NaClEnvInWhitelist(char const *env_entry) {
   return NULL != bsearch((void const *) &env_entry,
                          (void const *) kNaClEnvWhitelist,
@@ -80,7 +94,8 @@ int NaClEnvInWhitelist(char const *env_entry) {
  *
  * May return false on errors, e.g., out-of-memory.
  */
-int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp) {
+int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp,
+    char const * const *extra_env) {
   char const *const *p;
   size_t num_env = 0;
   size_t ptr_bytes = 0;
@@ -99,7 +114,8 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp) {
     return 1;
   }
   for (p = envp; NULL != *p; ++p) {
-    if (!NaClEnvInWhitelist(*p)) {
+    if (!(self->with_whitelist && NaClEnvInWhitelist(*p)) &&
+        !NaClEnvIsPassThroughVar(*p)) {
       continue;
     }
     if (num_env == kMaxSize) {
@@ -107,6 +123,16 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp) {
       return 0;
     }
     ++num_env;
+  }
+
+  if (extra_env) {
+    for (p = extra_env; NULL != *p; ++p) {
+      if (num_env == kMaxSize) {
+        /* would overflow */
+        return 0;
+      }
+      ++num_env;
+    }
   }
 
   /* pointer table -- NULL pointer terminated */
@@ -122,11 +148,20 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp) {
 
   /* this assumes no other thread is tweaking envp */
   for (env = 0, p = envp; NULL != *p; ++p) {
-    if (!NaClEnvInWhitelist(*p)) {
+    if (NaClEnvIsPassThroughVar(*p)) {
+      ptr_tbl[env] = *p + NACL_ENV_PREFIX_LENGTH;
+    } else if (self->with_whitelist && NaClEnvInWhitelist(*p)) {
+      ptr_tbl[env] = *p;
+    } else {
       continue;
     }
-    ptr_tbl[env] = *p;
     ++env;
+  }
+  if (extra_env) {
+    for (p = extra_env; NULL != *p; ++p) {
+      ptr_tbl[env] = *p;
+      ++env;
+    }
   }
   if (num_env != env) {
     free((void *) ptr_tbl);

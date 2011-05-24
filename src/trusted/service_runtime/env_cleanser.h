@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -19,10 +19,11 @@ EXTERN_C_BEGIN
 
 struct NaClEnvCleanser {
   /* private */
+  int with_whitelist;
   char const **cleansed_environ;
 };
 
-void NaClEnvCleanserCtor(struct NaClEnvCleanser *self);
+void NaClEnvCleanserCtor(struct NaClEnvCleanser *self, int with_whitelist);
 
 /*
  * Initializes the NaClEnvCleanser.  Filters the environment at envp
@@ -31,7 +32,8 @@ void NaClEnvCleanserCtor(struct NaClEnvCleanser *self);
  * NaClEnvCleanser object, and should not change between the call to
  * NaClEnvCleanserInit and to NaClEnvCleanserDtor.
  */
-int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp);
+int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp,
+    char const *const *extra_env);
 
 /*
  * Returns the filtered environment.
