@@ -1279,6 +1279,9 @@ const char kCarrierDealPromoShown[] =
 // Whether there is a Flash version installed that supports clearing LSO data.
 const char kClearPluginLSODataEnabled[] = "browser.clear_lso_data_enabled";
 
+// String which specifies where to store the disk cache.
+const char kDiskCacheDir[] = "browser.disk_cache_dir";
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

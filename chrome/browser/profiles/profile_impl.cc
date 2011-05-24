@@ -153,6 +153,12 @@ void GetCacheParameters(ContextType type, FilePath* cache_path,
     *cache_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
         switches::kDiskCacheDir);
   }
+#if !defined(OS_CHROMEOS)
+  // And if a policy is set this should have even higher precedence.
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs && prefs->IsManagedPreference(prefs::kDiskCacheDir))
+    *cache_path = prefs->GetFilePath(prefs::kDiskCacheDir);
+#endif
 
   const char* arg = kNormalContext == type ? switches::kDiskCacheSize :
                                              switches::kMediaCacheSize;

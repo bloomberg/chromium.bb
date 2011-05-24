@@ -368,6 +368,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kEditBookmarksEnabled),
         ValueTestParams::ForListPolicy(
             kPolicyDisabledSchemes,
-            key::kDisabledSchemes)));
+            key::kDisabledSchemes),
+        ValueTestParams::ForStringPolicy(
+            kPolicyDiskCacheDir,
+            key::kDiskCacheDir)));
 
 }  // namespace policy

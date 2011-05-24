@@ -92,6 +92,11 @@ class ConfigurationPolicyPrefKeeper
   // ownership of |value| in the case that the policy is recognized.
   bool ApplyDownloadDirPolicy(ConfigurationPolicyType policy, Value* value);
 
+  // Processes disk cache directory policy. Returns true if the specified policy
+  // is the right one. ApplyDiskCacheDirPolicy assumes the
+  // ownership of |value| in the case that the policy is recognized.
+  bool ApplyDiskCacheDirPolicy(ConfigurationPolicyType policy, Value* value);
+
   // Processes file-selection dialogs policy. Returns true if the specified
   // policy is the file-selection dialogs policy.
   // ApplyFileSelectionDialogsPolicy assumes the ownership of |value| in the
@@ -343,6 +348,9 @@ void ConfigurationPolicyPrefKeeper::Apply(ConfigurationPolicyType policy,
   if (ApplyDownloadDirPolicy(policy, value))
     return;
 
+  if (ApplyDiskCacheDirPolicy(policy, value))
+    return;
+
   if (ApplyFileSelectionDialogsPolicy(policy, value))
     return;
 
@@ -450,6 +458,26 @@ bool ConfigurationPolicyPrefKeeper::ApplyDownloadDirPolicy(
     prefs_.SetValue(prefs::kPromptForDownload,
                     Value::CreateBooleanValue(false));
 #endif  // !defined(OS_CHROMEOS)
+    delete value;
+    return true;
+  }
+  // We are not interested in this policy.
+  return false;
+}
+
+bool ConfigurationPolicyPrefKeeper::ApplyDiskCacheDirPolicy(
+    ConfigurationPolicyType policy,
+    Value* value) {
+  // Replace the policy string which might contain some user variables to an
+  // expanded string.
+  if (policy == kPolicyDiskCacheDir) {
+    FilePath::StringType string_value;
+    bool result = value->GetAsString(&string_value);
+    DCHECK(result);
+    FilePath::StringType expanded_value =
+        policy::path_parser::ExpandPathVariables(string_value);
+    prefs_.SetValue(prefs::kDiskCacheDir,
+                    Value::CreateStringValue(expanded_value));
     delete value;
     return true;
   }
@@ -1063,6 +1091,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kEditBookmarksEnabled },
     { kPolicyAllowFileSelectionDialogs, Value::TYPE_BOOLEAN,
       key::kAllowFileSelectionDialogs },
+    { kPolicyDiskCacheDir, Value::TYPE_STRING,
+      key::kDiskCacheDir },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

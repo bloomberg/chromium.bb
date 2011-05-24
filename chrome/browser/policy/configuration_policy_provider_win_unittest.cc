@@ -500,6 +500,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kAllowFileSelectionDialogs),
         PolicyTestParams::ForListPolicy(
             kPolicyDisabledSchemes,
-            key::kDisabledSchemes)));
+            key::kDisabledSchemes),
+        PolicyTestParams::ForStringPolicy(
+            kPolicyDiskCacheDir,
+            key::kDiskCacheDir)));
 
 }  // namespace policy

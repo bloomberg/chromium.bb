@@ -485,6 +485,8 @@ extern const char kCarrierDealPromoShown[];
 
 extern const char kClearPluginLSODataEnabled[];
 
+extern const char kDiskCacheDir[];
+
 extern const char kRegisteredBackgroundContents[];
 
 extern const char kAuthSchemes[];

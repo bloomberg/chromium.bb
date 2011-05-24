@@ -126,7 +126,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyAuthNegotiateDelegateWhitelist,
                     prefs::kAuthNegotiateDelegateWhitelist),
         TypeAndName(kPolicyGSSAPILibraryName,
-                    prefs::kGSSAPILibraryName)));
+                    prefs::kGSSAPILibraryName),
+        TypeAndName(kPolicyDiskCacheDir,
+                    prefs::kDiskCacheDir)));
 
 #if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
