@@ -17,6 +17,8 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "ui/base/animation/throb_animation.h"
 
+class PrefService;
+
 namespace gfx {
 class Canvas;
 }
@@ -59,6 +61,8 @@ class NetworkMenuButton : public StatusAreaButton,
  public:
   explicit NetworkMenuButton(StatusAreaHost* host);
   virtual ~NetworkMenuButton();
+
+  static void RegisterPrefs(PrefService* local_state);
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation);

@@ -482,11 +482,6 @@ const char kShowPlanNotifications[] =
 const char kShow3gPromoNotification[] =
     "settings.internet.mobile.show_3g_promo_notification";
 
-// An integer pref which shows number of times carrier deal promo
-// notification has been shown to user.
-const char kCarrierDealPromoShown[] =
-    "settings.internet.mobile.carrier_deal_promo_shown";
-
 // Map of timestamps of the last used file browser tasks.
 const char kLastUsedFileBrowserHandlers[] =
     "filebrowser.handler.lastused";
@@ -1274,6 +1269,11 @@ const char kSignedSettingsTempStorage[] = "signed_settings_temp_storage";
 // The hardware keyboard layout of the device. This should look like
 // "xkb:us::eng".
 const char kHardwareKeyboardLayout[] = "intl.hardware_keyboard";
+
+// An integer pref which shows number of times carrier deal promo
+// notification has been shown to user.
+const char kCarrierDealPromoShown[] =
+    "settings.internet.mobile.carrier_deal_promo_shown";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

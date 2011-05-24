@@ -48,13 +48,8 @@ bool GetBooleanPref(const char* pref_name) {
   return prefs->GetBoolean(pref_name);
 }
 
-int GetIntegerPref(const char* pref_name) {
-  Browser* browser = BrowserList::GetLastActive();
-  // Default to "safe" value.
-  if (!browser || !browser->profile())
-    return kNotificationCountPrefDefault;
-
-  PrefService* prefs = browser->profile()->GetPrefs();
+int GetIntegerLocalPref(const char* pref_name) {
+  PrefService* prefs = g_browser_process->local_state();
   return prefs->GetInteger(pref_name);
 }
 
@@ -67,12 +62,8 @@ void SetBooleanPref(const char* pref_name, bool value) {
   prefs->SetBoolean(pref_name, value);
 }
 
-void SetIntegerPref(const char* pref_name, int value) {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser || !browser->profile())
-    return;
-
-  PrefService* prefs = browser->profile()->GetPrefs();
+void SetIntegerLocalPref(const char* pref_name, int value) {
+  PrefService* prefs = g_browser_process->local_state();
   prefs->SetInteger(pref_name, value);
 }
 
@@ -85,15 +76,15 @@ bool ShouldShow3gPromoNotification() {
 void SetShow3gPromoNotification(bool value) {
   SetBooleanPref(prefs::kShow3gPromoNotification, value);
 }
+
 // Returns prefs::kCarrierDealPromoShown which is number of times
-// carrier deal notification has been shown to user or -1
-// if there's no active browser.
+// carrier deal notification has been shown to users on this machine.
 int GetCarrierDealPromoShown() {
-  return GetIntegerPref(prefs::kCarrierDealPromoShown);
+  return GetIntegerLocalPref(prefs::kCarrierDealPromoShown);
 }
 
 void SetCarrierDealPromoShown(int value) {
-  SetIntegerPref(prefs::kCarrierDealPromoShown, value);
+  SetIntegerLocalPref(prefs::kCarrierDealPromoShown, value);
 }
 
 }  // namespace
@@ -138,6 +129,12 @@ NetworkMenuButton::~NetworkMenuButton() {
     netlib->RemoveNetworkDeviceObserver(cellular_device_path_, this);
   if (mobile_data_bubble_)
     mobile_data_bubble_->Close();
+}
+
+// static
+void NetworkMenuButton::RegisterPrefs(PrefService* local_state) {
+  // Carrier deal notification shown count defaults to 0.
+  local_state->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -183,11 +183,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              true,
                              PrefService::UNSYNCABLE_PREF);
 
-  // Carrier deal notification shown count defaults to 0.
-  prefs->RegisterIntegerPref(prefs::kCarrierDealPromoShown,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-
   // The map of timestamps of the last used file browser handlers.
   prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers,
                                 PrefService::UNSYNCABLE_PREF);
