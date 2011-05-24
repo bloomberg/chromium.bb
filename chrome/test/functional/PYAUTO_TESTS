@@ -33,6 +33,8 @@
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
+      # crbug.com/83686
+      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       'bookmark_bar',
       'bookmarks',
       'browser',
