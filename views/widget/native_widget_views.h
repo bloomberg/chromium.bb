@@ -2,26 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_WIDGET_NATIVE_WIDGET_WIN_H_
-#define VIEWS_WIDGET_NATIVE_WIDGET_WIN_H_
+#ifndef VIEWS_WIDGET_NATIVE_WIDGET_VIEWS_H_
+#define VIEWS_WIDGET_NATIVE_WIDGET_VIEWS_H_
 #pragma once
 
 #include "base/message_loop.h"
 #include "views/widget/native_widget.h"
 
 namespace views {
+namespace internal {
+class NativeWidgetView;
+}
 
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetViews
+//
+//  A NativeWidget implementation that uses another View as its native widget.
+//
 class NativeWidgetViews : public NativeWidget {
  public:
-  explicit NativeWidgetViews(internal::NativeWidgetDelegate* delegate);
+  NativeWidgetViews(View* host, internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetViews();
 
   // TODO(beng): remove.
   View* GetView();
 
- private:
-  class NativeWidgetView;
+  internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
+ private:
   // Overridden from NativeWidget:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
@@ -72,7 +80,9 @@ class NativeWidgetViews : public NativeWidget {
 
   internal::NativeWidgetDelegate* delegate_;
 
-  NativeWidgetView* view_;
+  internal::NativeWidgetView* view_;
+
+  View* host_view_;
 
   // The following factory is used for calls to close the NativeWidgetViews
   // instance.
@@ -83,4 +93,4 @@ class NativeWidgetViews : public NativeWidget {
 
 }
 
-#endif  // VIEWS_WIDGET_NATIVE_WIDGET_WIN_H_
+#endif  // VIEWS_WIDGET_NATIVE_WIDGET_VIEWS_H_

@@ -362,6 +362,8 @@
         'widget/native_widget_delegate.h',
         'widget/native_widget_gtk.cc',
         'widget/native_widget_gtk.h',
+        'widget/native_widget_view.cc',
+        'widget/native_widget_view.h',
         'widget/native_widget_views.cc',
         'widget/native_widget_views.h',
         'widget/native_widget_win.cc',

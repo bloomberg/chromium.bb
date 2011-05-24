@@ -27,6 +27,7 @@ namespace views {
 class View;
 
 namespace internal {
+class NativeWidgetView;
 class RootView;
 }
 
@@ -234,6 +235,7 @@ class MouseEvent : public LocatedEvent {
   }
 
  private:
+  friend class internal::NativeWidgetView;
   friend class internal::RootView;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
@@ -377,6 +379,7 @@ class MouseWheelEvent : public MouseEvent {
 
  private:
   friend class internal::RootView;
+  friend class internal::NativeWidgetView;
 
   MouseWheelEvent(const MouseWheelEvent& model, View* root)
       : MouseEvent(model, root),

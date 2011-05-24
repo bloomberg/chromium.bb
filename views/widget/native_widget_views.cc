@@ -4,34 +4,19 @@
 
 #include "views/widget/native_widget_views.h"
 
-#include "ui/gfx/canvas.h"
 #include "views/view.h"
+#include "views/widget/native_widget_view.h"
 
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetViews::NativeWidgetView:
-
-class NativeWidgetViews::NativeWidgetView : public View {
- public:
-  NativeWidgetView() {}
-  virtual ~NativeWidgetView() {}
-
-  // Overridden from View:
-  virtual void OnPaint(gfx::Canvas* canvas) {
-    canvas->FillRectInt(SK_ColorRED, 0, 0, width(), height());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NativeWidgetView);
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetViews, public:
 
-NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
+NativeWidgetViews::NativeWidgetViews(View* host,
+                                     internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       view_(NULL),
+      host_view_(host),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
 }
 
@@ -46,7 +31,8 @@ View* NativeWidgetViews::GetView() {
 // NativeWidgetViews, NativeWidget implementation:
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
-  view_ = new NativeWidgetView;
+  view_ = new internal::NativeWidgetView(this);
+  host_view_->AddChildView(view_);
 
   // TODO(beng): handle parenting.
   // TODO(beng): SetInitParams().
