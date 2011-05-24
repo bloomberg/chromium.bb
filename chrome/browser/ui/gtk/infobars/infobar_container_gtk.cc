@@ -176,7 +176,7 @@ void InfoBarContainerGtk::ShowArrowForDelegate(InfoBarDelegate* delegate,
 }
 
 void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
-  InfoBar* infobar = delegate->CreateInfoBar();
+  InfoBar* infobar = delegate->CreateInfoBar(tab_contents_);
   infobar->set_container(this);
   infobar->SetThemeProvider(GtkThemeService::GetFrom(profile_));
   gtk_box_pack_start(GTK_BOX(widget()), infobar->widget(),

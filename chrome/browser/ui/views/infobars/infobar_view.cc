@@ -56,8 +56,8 @@ const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
 const int InfoBarView::kHorizontalPadding = 6;
 
-InfoBarView::InfoBarView(InfoBarDelegate* delegate)
-    : InfoBar(delegate),
+InfoBarView::InfoBarView(TabContentsWrapper* owner, InfoBarDelegate* delegate)
+    : InfoBar(owner, delegate),
       icon_(NULL),
       close_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),

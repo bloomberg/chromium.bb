@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_H_
-#define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
+#define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,6 +13,7 @@
 
 class InfoBarContainer;
 class InfoBarDelegate;
+class TabContentsWrapper;
 
 namespace ui {
 class SlideAnimation;
@@ -20,7 +21,7 @@ class SlideAnimation;
 
 class InfoBar : public ui::AnimationDelegate {
  public:
-  explicit InfoBar(InfoBarDelegate* delegate);
+  InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate);
   virtual ~InfoBar();
 
   // Platforms must define these.
@@ -96,6 +97,7 @@ class InfoBar : public ui::AnimationDelegate {
   // delete us) and closes the delegate.
   void MaybeDelete();
 
+  TabContentsWrapper* owner_;  // TODO(pkasting): Transition to using this.
   InfoBarDelegate* delegate_;
   InfoBarContainer* container_;
   scoped_ptr<ui::SlideAnimation> animation_;
@@ -112,4 +114,4 @@ class InfoBar : public ui::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_

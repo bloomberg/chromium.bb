@@ -180,7 +180,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
 }
 
 - (void)addInfoBar:(InfoBarDelegate*)delegate animate:(BOOL)animate {
-  scoped_ptr<InfoBar> infobar(delegate->CreateInfoBar());
+  scoped_ptr<InfoBar> infobar(delegate->CreateInfoBar(currentTabContents_));
   InfoBarController* controller = infobar->controller();
   [controller setContainerController:self];
   [[controller animatableView] setResizeDelegate:self];

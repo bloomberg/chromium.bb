@@ -12,14 +12,15 @@
 
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
-  return new ConfirmInfoBar(this);
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+  return new ConfirmInfoBar(owner, this);
 }
 
 // ConfirmInfoBar -------------------------------------------------------------
 
-ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
-    : InfoBarView(delegate),
+ConfirmInfoBar::ConfirmInfoBar(TabContentsWrapper* owner,
+                               ConfirmInfoBarDelegate* delegate)
+    : InfoBarView(owner, delegate),
       label_(NULL),
       ok_button_(NULL),
       cancel_button_(NULL),

@@ -16,6 +16,8 @@ class ExtensionInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
+class TabContents;
+class TabContentsWrapper;
 class ThemeInstalledInfoBarDelegate;
 class TranslateInfoBarDelegate;
 
@@ -41,14 +43,14 @@ class InfoBarDelegate {
 
   // Called to create the InfoBar. Implementation of this method is
   // platform-specific.
-  virtual InfoBar* CreateInfoBar() = 0;
+  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) = 0;
 
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
-  // TabContents when determining whether or not a delegate should be added
-  // because a matching one already exists. If this function returns true, the
-  // TabContents will not add the new delegate because it considers one to
-  // already be present.
+  // TabContentsWrapper when determining whether or not a delegate should be
+  // added because a matching one already exists. If this function returns true,
+  // the TabContentsWrapper will not add the new delegate because it considers
+  // one to already be present.
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
   // Returns true if the InfoBar should be closed automatically after the page

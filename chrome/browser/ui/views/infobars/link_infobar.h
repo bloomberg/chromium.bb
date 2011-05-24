@@ -17,7 +17,7 @@ class LinkInfoBarDelegate;
 class LinkInfoBar : public InfoBarView,
                     public views::LinkListener {
  public:
-  explicit LinkInfoBar(LinkInfoBarDelegate* delegate);
+  LinkInfoBar(TabContentsWrapper* owner, LinkInfoBarDelegate* delegate);
 
  private:
   virtual ~LinkInfoBar();

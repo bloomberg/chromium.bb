@@ -13,7 +13,7 @@
 
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   return new ConfirmInfoBarGtk(this);
 }
 

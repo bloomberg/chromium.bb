@@ -20,7 +20,8 @@ class MenuButton;
 class BeforeTranslateInfoBar : public TranslateInfoBarBase,
                                public views::ViewMenuDelegate {
  public:
-  explicit BeforeTranslateInfoBar(TranslateInfoBarDelegate* delegate);
+  BeforeTranslateInfoBar(TabContentsWrapper* owner,
+                         TranslateInfoBarDelegate* delegate);
 
  private:
   virtual ~BeforeTranslateInfoBar();

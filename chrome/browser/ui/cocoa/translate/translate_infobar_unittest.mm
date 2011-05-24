@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/translate/translate_infobar_base.h"
 #import "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "content/browser/site_instance.h"
 #import "content/browser/tab_contents/tab_contents.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -68,7 +69,7 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
 class TranslationInfoBarTest : public CocoaTest {
  public:
   BrowserTestHelper browser_helper_;
-  scoped_ptr<TabContents> tab_contents;
+  scoped_ptr<TabContentsWrapper> tab_contents;
   scoped_ptr<MockTranslateInfoBarDelegate> infobar_delegate;
   scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
 
@@ -77,12 +78,8 @@ class TranslationInfoBarTest : public CocoaTest {
   // the test.
   virtual void SetUp() {
     CocoaTest::SetUp();
-   tab_contents.reset(
-        new TabContents(browser_helper_.profile(),
-                        NULL,
-                        MSG_ROUTING_NONE,
-                        NULL,
-                        NULL));
+   tab_contents.reset(new TabContentsWrapper(new TabContents(
+       browser_helper_.profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
     CreateInfoBar();
   }
 
@@ -94,11 +91,12 @@ class TranslationInfoBarTest : public CocoaTest {
     TranslateErrors::Type error = TranslateErrors::NONE;
     if (type == TranslateInfoBarDelegate::TRANSLATION_ERROR)
       error = TranslateErrors::NETWORK;
-    infobar_delegate.reset(
-        new MockTranslateInfoBarDelegate(type, error, tab_contents.get()));
+    infobar_delegate.reset(new MockTranslateInfoBarDelegate(type, error,
+        tab_contents->tab_contents()));
     [[infobar_controller view] removeFromSuperview];
     scoped_ptr<InfoBar> infobar(
-        static_cast<InfoBarDelegate*>(infobar_delegate.get())->CreateInfoBar());
+        static_cast<InfoBarDelegate*>(infobar_delegate.get())->
+            CreateInfoBar(tab_contents.get()));
     infobar_controller.reset(
         reinterpret_cast<TranslateInfoBarControllerBase*>(
             infobar->controller()));

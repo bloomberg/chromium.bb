@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/infobars/infobar.h"
+#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
+
+#include "chrome/browser/tab_contents/infobar.h"
 
 #include <cmath>
 
-#include "ui/base/animation/slide_animation.h"
+#include "chrome/browser/tab_contents/infobar_container.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/ui/views/infobars/infobar_container.h"
+#include "ui/base/animation/slide_animation.h"
 
-InfoBar::InfoBar(InfoBarDelegate* delegate)
-    : delegate_(delegate),
+InfoBar::InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate)
+    : owner_(owner),
+      delegate_(delegate),
       container_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
       arrow_height_(0),
@@ -19,6 +22,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
       arrow_half_width_(0),
       bar_height_(0),
       bar_target_height_(kDefaultBarTargetHeight) {
+  DCHECK(owner != NULL);
   DCHECK(delegate != NULL);
   animation_->SetTweenType(ui::Tween::LINEAR);
 }
@@ -95,7 +99,7 @@ void InfoBar::RecalculateHeights(bool force_notify) {
   // scaling each of these with the square root of the animation value causes a
   // linear animation of the area, which matches the perception of the animation
   // of the bar portion.
-  double scale_factor = sqrt(animation()->GetCurrentValue());
+  double scale_factor = sqrt(animation_->GetCurrentValue());
   arrow_height_ = static_cast<int>(arrow_target_height_ * scale_factor);
   if (animation_->is_animating()) {
     arrow_half_width_ = static_cast<int>(std::min(arrow_target_height_,
@@ -116,8 +120,7 @@ void InfoBar::RecalculateHeights(bool force_notify) {
   if (arrow_height_)
     arrow_height_ += kSeparatorLineHeight;
 
-  bar_height_ =
-      static_cast<int>(bar_target_height_ * animation()->GetCurrentValue());
+  bar_height_ = animation_->CurrentValueBetween(0, bar_target_height_);
 
   // Don't re-layout if nothing has changed, e.g. because the animation step was
   // not large enough to actually change the heights by at least a pixel.
@@ -141,3 +144,5 @@ void InfoBar::MaybeDelete() {
     delegate_ = NULL;
   }
 }
+
+#endif  // TOOLKIT_VIEWS

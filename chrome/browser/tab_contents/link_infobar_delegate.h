@@ -12,6 +12,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 class TabContents;
+class TabContentsWrapper;
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a LinkInfoBar.
@@ -37,7 +38,7 @@ class LinkInfoBarDelegate : public InfoBarDelegate {
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar() OVERRIDE;
+  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) OVERRIDE;
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(LinkInfoBarDelegate);

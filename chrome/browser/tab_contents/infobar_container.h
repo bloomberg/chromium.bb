@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
-#define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_CONTAINER_H_
+#define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_CONTAINER_H_
 #pragma once
 
 #include <vector>
@@ -15,7 +15,6 @@
 
 class InfoBar;
 class InfoBarDelegate;
-class TabContents;
 class TabContentsWrapper;
 
 // InfoBarContainer is a cross-platform base class to handle the visibility-
@@ -47,9 +46,9 @@ class InfoBarContainer : public NotificationObserver {
   explicit InfoBarContainer(Delegate* delegate);
   virtual ~InfoBarContainer();
 
-  // Changes the TabContents for which this container is showing infobars.  This
-  // will remove all current infobars from the container, add the infobars from
-  // |contents|, and show them all.  |contents| may be NULL.
+  // Changes the TabContentsWrapper for which this container is showing
+  // infobars.  This will remove all current infobars from the container, add
+  // the infobars from |contents|, and show them all.  |contents| may be NULL.
   void ChangeTabContents(TabContentsWrapper* contents);
 
   // Returns the amount by which to overlap the toolbar above, and, when
@@ -73,9 +72,9 @@ class InfoBarContainer : public NotificationObserver {
   // anything necessary to respond, e.g. re-layout.
   void OnInfoBarStateChanged(bool is_animating);
 
-  // Removes the specified InfoBarDelegate from the selected TabContents.  This
-  // will notify us back and cause us to close the InfoBar.  This is called from
-  // the InfoBar's close button handler.
+  // Removes the specified InfoBarDelegate from the selected TabContentsWrapper.
+  // This will notify us back and cause us to close the InfoBar.  This is called
+  // from the InfoBar's close button handler.
   void RemoveDelegate(InfoBarDelegate* delegate);
 
   // Called by |infobar| to request that it be removed from the container, as it
@@ -105,8 +104,8 @@ class InfoBarContainer : public NotificationObserver {
                        const NotificationDetails& details) OVERRIDE;
 
   // Removes an InfoBar for the specified delegate, in response to a
-  // notification from the selected TabContents. The InfoBar's disappearance
-  // will be animated if |use_animation| is true.
+  // notification from the selected TabContentsWrapper. The InfoBar's
+  // disappearance will be animated if |use_animation| is true.
   void RemoveInfoBar(InfoBarDelegate* delegate, bool use_animation);
 
   // Adds |infobar| to this container and calls Show() on it.  |animate| is
@@ -133,4 +132,4 @@ class InfoBarContainer : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_CONTAINER_H_

@@ -13,8 +13,9 @@
 #include "views/controls/menu/menu_2.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
+    TabContentsWrapper* owner,
     TranslateInfoBarDelegate* delegate)
-    : TranslateInfoBarBase(delegate),
+    : TranslateInfoBarBase(owner, delegate),
       label_1_(NULL),
       label_2_(NULL),
       language_menu_button_(NULL),

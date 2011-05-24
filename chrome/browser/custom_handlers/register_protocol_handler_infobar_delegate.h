@@ -10,7 +10,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
-class SkBitmap;
 class ProtocolHandlerRegistry;
 class TabContents;
 

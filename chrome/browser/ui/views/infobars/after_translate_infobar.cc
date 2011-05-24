@@ -13,8 +13,9 @@
 #include "views/controls/menu/menu_2.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
+    TabContentsWrapper* owner,
     TranslateInfoBarDelegate* delegate)
-    : TranslateInfoBarBase(delegate),
+    : TranslateInfoBarBase(owner, delegate),
       label_1_(NULL),
       label_2_(NULL),
       label_3_(NULL),

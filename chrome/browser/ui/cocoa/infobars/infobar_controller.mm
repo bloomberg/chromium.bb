@@ -506,13 +506,13 @@ const float kAnimateCloseDuration = 0.12;
 //////////////////////////////////////////////////////////////////////////
 // CreateInfoBar() implementations
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
+InfoBar* LinkInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   LinkInfoBarController* controller =
       [[LinkInfoBarController alloc] initWithDelegate:this];
   return new InfoBar(controller);
 }
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   ConfirmInfoBarController* controller =
       [[ConfirmInfoBarController alloc] initWithDelegate:this];
   return new InfoBar(controller);

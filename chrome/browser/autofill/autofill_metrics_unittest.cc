@@ -182,28 +182,51 @@ class TestFormStructure : public FormStructure {
 
 class AutofillMetricsTest : public TabContentsWrapperTestHarness {
  public:
-  AutofillMetricsTest() {}
-  virtual ~AutofillMetricsTest() {
-    // Order of destruction is important as AutofillManager relies on
-    // PersonalDataManager to be around when it gets destroyed.
-    autofill_manager_.reset(NULL);
-    test_personal_data_ = NULL;
-  }
+  AutofillMetricsTest();
+  virtual ~AutofillMetricsTest();
 
-  virtual void SetUp() {
-    TabContentsWrapperTestHarness::SetUp();
-    test_personal_data_ = new TestPersonalDataManager();
-    autofill_manager_.reset(new TestAutofillManager(contents_wrapper(),
-                                                    test_personal_data_.get()));
-  }
+  virtual void SetUp();
 
  protected:
+  AutofillCCInfoBarDelegate* CreateDelegate(MockAutofillMetrics* metric_logger,
+                                            CreditCard** created_card);
+
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_refptr<TestPersonalDataManager> test_personal_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetricsTest);
 };
+
+AutofillMetricsTest::AutofillMetricsTest() {
+}
+
+AutofillMetricsTest::~AutofillMetricsTest() {
+  // Order of destruction is important as AutofillManager relies on
+  // PersonalDataManager to be around when it gets destroyed.
+  autofill_manager_.reset(NULL);
+  test_personal_data_ = NULL;
+}
+
+void AutofillMetricsTest::SetUp() {
+  TabContentsWrapperTestHarness::SetUp();
+  test_personal_data_ = new TestPersonalDataManager();
+  autofill_manager_.reset(new TestAutofillManager(contents_wrapper(),
+                                                  test_personal_data_.get()));
+}
+
+AutofillCCInfoBarDelegate* AutofillMetricsTest::CreateDelegate(
+    MockAutofillMetrics* metric_logger,
+    CreditCard** created_card) {
+  EXPECT_CALL(*metric_logger,
+              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
+  // The delegate created below will take ownership of this object.
+  CreditCard* credit_card = new CreditCard();
+  if (created_card)
+    *created_card = credit_card;
+  return new AutofillCCInfoBarDelegate(contents(), credit_card,
+      test_personal_data_.get(), metric_logger);
+}
 
 // Test that we log quality metrics appropriately.
 TEST_F(AutofillMetricsTest, QualityMetrics) {
@@ -893,76 +916,46 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
 // Test that credit card infobar metrics are logged correctly.
 TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
   MockAutofillMetrics metric_logger;
-  CreditCard* credit_card;
-  AutofillCCInfoBarDelegate* infobar;
   ::testing::InSequence dummy;
 
   // Accept the infobar.
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
-  credit_card = new CreditCard();
-  infobar = new AutofillCCInfoBarDelegate(contents(),
-                                          credit_card,
-                                          test_personal_data_.get(),
-                                          &metric_logger);
-
-  EXPECT_CALL(*test_personal_data_.get(), SaveImportedCreditCard(*credit_card));
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_ACCEPTED))
-      .Times(1);
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED))
-      .Times(0);
-  EXPECT_TRUE(infobar->Accept());
-  infobar->InfoBarClosed();
+  {
+    CreditCard* credit_card;
+    scoped_ptr<InfoBarDelegate> infobar(CreateDelegate(&metric_logger,
+                                                       &credit_card));
+    EXPECT_CALL(*test_personal_data_.get(),
+                SaveImportedCreditCard(*credit_card));
+    EXPECT_CALL(metric_logger,
+        LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_ACCEPTED)).Times(1);
+    EXPECT_CALL(metric_logger,
+        LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED)).Times(0);
+    EXPECT_TRUE(static_cast<ConfirmInfoBarDelegate*>(infobar.get())->Accept());
+  }
 
   // Cancel the infobar.
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
-  credit_card = new CreditCard();
-  infobar = new AutofillCCInfoBarDelegate(contents(),
-                                          credit_card,
-                                          test_personal_data_.get(),
-                                          &metric_logger);
-
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_DENIED))
-      .Times(1);
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED))
-      .Times(0);
-  EXPECT_TRUE(infobar->Cancel());
-  infobar->InfoBarClosed();
+  {
+    scoped_ptr<InfoBarDelegate> infobar(CreateDelegate(&metric_logger, NULL));
+    EXPECT_CALL(metric_logger,
+        LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_DENIED)).Times(1);
+    EXPECT_CALL(metric_logger,
+        LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED)).Times(0);
+    EXPECT_TRUE(static_cast<ConfirmInfoBarDelegate*>(infobar.get())->Cancel());
+  }
 
   // Dismiss the infobar.
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
-  credit_card = new CreditCard();
-  infobar = new AutofillCCInfoBarDelegate(contents(),
-                                          credit_card,
-                                          test_personal_data_.get(),
-                                          &metric_logger);
-
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_DENIED))
-      .Times(1);
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED))
-      .Times(0);
-  infobar->InfoBarDismissed();
-  infobar->InfoBarClosed();
+  {
+    scoped_ptr<InfoBarDelegate> infobar(CreateDelegate(&metric_logger, NULL));
+    EXPECT_CALL(metric_logger,
+        LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_DENIED)).Times(1);
+    EXPECT_CALL(metric_logger,
+        LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED)).Times(0);
+    infobar->InfoBarDismissed();
+  }
 
   // Ignore the infobar.
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
-  credit_card = new CreditCard();
-  infobar = new AutofillCCInfoBarDelegate(contents(),
-                                          credit_card,
-                                          test_personal_data_.get(),
-                                          &metric_logger);
-
-  EXPECT_CALL(metric_logger,
-              LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED))
-      .Times(1);
-  infobar->InfoBarClosed();
+  {
+    scoped_ptr<InfoBarDelegate> infobar(CreateDelegate(&metric_logger, NULL));
+    EXPECT_CALL(metric_logger,
+        LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED)).Times(1);
+  }
 }

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/infobars/infobar_container.h"
+#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
 
+#include "chrome/browser/tab_contents/infobar_container.h"
+
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/views/infobars/infobar.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "ui/base/animation/slide_animation.h"
@@ -31,8 +33,8 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
   while (!infobars_.empty()) {
     InfoBar* infobar = infobars_.front();
     // NULL the container pointer first so that if the infobar is currently
-    // animating, OnInfoBarAnimated() won't get called; we'll manually trigger
-    // this once for the whole set of changes below.  This also prevents
+    // animating, OnInfoBarStateChanged() won't get called; we'll manually
+    // trigger this once for the whole set of changes below.  This also prevents
     // InfoBar::MaybeDelete() from calling RemoveInfoBar() a second time if the
     // infobar happens to be at zero height (dunno if this can actually happen).
     infobar->set_container(NULL);
@@ -49,11 +51,12 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
                    tc_source);
 
-    for (size_t i = 0; i < contents->infobar_count(); ++i) {
+    for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarAnimated() for each infobar.
-      AddInfoBar(tab_contents_->GetInfoBarDelegateAt(i)->CreateInfoBar(), false,
-                 NO_CALLBACK);
+      AddInfoBar(
+          tab_contents_->GetInfoBarDelegateAt(i)->CreateInfoBar(tab_contents_),
+          false, NO_CALLBACK);
     }
   }
 
@@ -120,8 +123,9 @@ void InfoBarContainer::Observe(NotificationType type,
                                const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
-      AddInfoBar(Details<InfoBarDelegate>(details)->CreateInfoBar(), true,
-                 WANT_CALLBACK);
+      AddInfoBar(
+          Details<InfoBarDelegate>(details)->CreateInfoBar(tab_contents_), true,
+          WANT_CALLBACK);
       break;
 
     case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED:
@@ -132,7 +136,8 @@ void InfoBarContainer::Observe(NotificationType type,
       typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarPair;
       InfoBarPair* infobar_pair = Details<InfoBarPair>(details).ptr();
       RemoveInfoBar(infobar_pair->first, false);
-      AddInfoBar(infobar_pair->second->CreateInfoBar(), false, WANT_CALLBACK);
+      AddInfoBar(infobar_pair->second->CreateInfoBar(tab_contents_), false,
+                 WANT_CALLBACK);
       break;
     }
 
@@ -196,3 +201,5 @@ int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
       (InfoBar::kDefaultArrowTargetHeight - top_arrow_target_height_) *
           first_infobar_animation->GetCurrentValue());
 }
+
+#endif  // TOOLKIT_VIEWS

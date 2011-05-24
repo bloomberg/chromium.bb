@@ -88,6 +88,6 @@ void ExtensionInfoBarGtk::OnExtensionPreferredSizeChanged(
   // of the content.
 }
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar() {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   return new ExtensionInfoBarGtk(this);
 }

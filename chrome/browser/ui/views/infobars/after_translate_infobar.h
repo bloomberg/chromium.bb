@@ -20,7 +20,8 @@ class MenuButton;
 class AfterTranslateInfoBar : public TranslateInfoBarBase,
                               public views::ViewMenuDelegate {
  public:
-  explicit AfterTranslateInfoBar(TranslateInfoBarDelegate* delegate);
+  AfterTranslateInfoBar(TabContentsWrapper* owner,
+                        TranslateInfoBarDelegate* delegate);
 
  private:
   virtual ~AfterTranslateInfoBar();

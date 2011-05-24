@@ -35,11 +35,12 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   virtual bool NeedElevation(InfoBarButton button) const;
 
   // Called when the OK button is pressed. If the function returns true, the
-  // InfoBarDelegate should be removed from the associated TabContents.
+  // InfoBarDelegate should be removed from the associated TabContentsWrapper.
   virtual bool Accept();
 
   // Called when the Cancel button is pressed.  If the function returns true,
-  // the InfoBarDelegate should be removed from the associated TabContents.
+  // the InfoBarDelegate should be removed from the associated
+  // TabContentsWrapper.
   virtual bool Cancel();
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
@@ -60,7 +61,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar() OVERRIDE;
+  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) OVERRIDE;
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() OVERRIDE;
 

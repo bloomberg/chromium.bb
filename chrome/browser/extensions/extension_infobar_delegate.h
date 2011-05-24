@@ -11,7 +11,7 @@
 class Browser;
 class Extension;
 class ExtensionHost;
-class TabContents;
+class TabContentsWrapper;
 
 // The InfobarDelegate for creating and managing state for the ExtensionInfobar
 // plus monitor when the extension goes away.
@@ -43,7 +43,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   virtual ~ExtensionInfoBarDelegate();
 
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar() OVERRIDE;
+  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) OVERRIDE;
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;

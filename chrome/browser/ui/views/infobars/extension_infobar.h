@@ -13,6 +13,7 @@
 #include "views/controls/menu/view_menu_delegate.h"
 
 class ExtensionContextMenuModel;
+class TabContentsWrapper;
 namespace views {
 class MenuButton;
 class Menu2;
@@ -24,7 +25,8 @@ class ExtensionInfoBar : public InfoBarView,
                          public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::ViewMenuDelegate {
  public:
-  explicit ExtensionInfoBar(ExtensionInfoBarDelegate* delegate);
+  ExtensionInfoBar(TabContentsWrapper* owner,
+                   ExtensionInfoBarDelegate* delegate);
 
  private:
   virtual ~ExtensionInfoBar();

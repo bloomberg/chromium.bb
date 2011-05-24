@@ -67,7 +67,7 @@ class TestInfoBarDelegate : public InfoBarDelegate {
   virtual ~TestInfoBarDelegate();
 
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar();
+  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner);
 
   GoogleURLTracker* google_url_tracker_;
   GURL new_google_url_;
@@ -83,7 +83,7 @@ TestInfoBarDelegate::TestInfoBarDelegate(GoogleURLTracker* google_url_tracker,
 TestInfoBarDelegate::~TestInfoBarDelegate() {
 }
 
-InfoBar* TestInfoBarDelegate::CreateInfoBar() {
+InfoBar* TestInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   return NULL;
 }
 

@@ -9,7 +9,7 @@
 
 // LinkInfoBarDelegate ---------------------------------------------------------
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
+InfoBar* LinkInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   return new LinkInfoBarGtk(this);
 }
 

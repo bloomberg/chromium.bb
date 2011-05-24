@@ -218,7 +218,7 @@ void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
 }
 
 // TranslateInfoBarDelegate specific method:
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:

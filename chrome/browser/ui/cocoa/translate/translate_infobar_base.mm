@@ -109,7 +109,7 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 }  // namespace TranslateInfoBarUtilities
 
 // TranslateInfoBarDelegate views specific method:
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   TranslateInfoBarControllerBase* infobar_controller = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:
