@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/global_bookmark_menu.h"
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -22,8 +23,6 @@
 #include "ui/gfx/gtk_util.h"
 
 namespace {
-
-const int kMaxChars = 50;
 
 // We need to know whether we're using a newer GTK at run time because we need
 // to prevent.
@@ -111,6 +110,7 @@ void GlobalBookmarkMenu::RebuildMenu() {
 
     GtkWidget* menu_item = gtk_image_menu_item_new_with_label(
         l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME).c_str());
+    gtk_util::SetAlwaysShowImage(menu_item);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
     gtk_image_menu_item_set_image(
         GTK_IMAGE_MENU_ITEM(menu_item),
@@ -140,6 +140,7 @@ void GlobalBookmarkMenu::AddNodeToMenu(const BookmarkNode* node,
     for (int i = 0; i < child_count; i++) {
       const BookmarkNode* child = node->GetChild(i);
       GtkWidget* item = gtk_image_menu_item_new();
+      gtk_util::SetAlwaysShowImage(item);
       ConfigureMenuItem(child, item);
       bookmark_nodes_[child] = item;
 
@@ -165,16 +166,15 @@ void GlobalBookmarkMenu::ConfigureMenuItem(const BookmarkNode* node,
   // display any visible widgets in older systems that don't have a global menu
   // bar.
   if (gtk_menu_item_set_label_sym) {
-    string16 elided_name =
-        l10n_util::TruncateString(node->GetTitle(), kMaxChars);
-    gtk_menu_item_set_label_sym(GTK_MENU_ITEM(menu_item),
-                                UTF16ToUTF8(elided_name).c_str());
+    gtk_menu_item_set_label_sym(
+        GTK_MENU_ITEM(menu_item),
+        bookmark_utils::BuildMenuLabelFor(node).c_str());
   }
 
   if (node->is_url()) {
-    std::string tooltip = gtk_util::BuildTooltipTitleFor(node->GetTitle(),
-                                                         node->GetURL());
-    gtk_widget_set_tooltip_markup(menu_item, tooltip.c_str());
+    gtk_widget_set_tooltip_markup(
+        menu_item,
+        bookmark_utils::BuildTooltipFor(node).c_str());
   }
 
   const SkBitmap& bitmap = profile_->GetBookmarkModel()->GetFavicon(node);

@@ -469,6 +469,7 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
       // Create the menu item parent. Unlike mac, it's can't be activated.
       GtkWidget* parent_item = gtk_image_menu_item_new_with_label(
           title.c_str());
+      gtk_util::SetAlwaysShowImage(parent_item);
       gtk_widget_show(parent_item);
       g_object_set_data(G_OBJECT(parent_item), "type-tag",
                         GINT_TO_POINTER(GlobalMenuBar::TAG_RECENTLY_CLOSED));

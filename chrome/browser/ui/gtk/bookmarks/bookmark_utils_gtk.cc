@@ -34,6 +34,9 @@ const int kBitsInAByte = 8;
 // Maximum number of characters on a bookmark button.
 const size_t kMaxCharsOnAButton = 15;
 
+// Maximum number of characters on a menu label.
+const int kMaxCharsOnAMenuLabel = 50;
+
 // Padding between the chrome button highlight border and the contents (favicon,
 // text).
 const int kButtonPaddingTop = 0;
@@ -243,6 +246,21 @@ std::string BuildTooltipFor(const BookmarkNode* node) {
     return std::string();
 
   return gtk_util::BuildTooltipTitleFor(node->GetTitle(), node->GetURL());
+}
+
+std::string BuildMenuLabelFor(const BookmarkNode* node) {
+  // This breaks on word boundaries. Ideally we would break on character
+  // boundaries.
+  std::string elided_name = UTF16ToUTF8(
+      l10n_util::TruncateString(node->GetTitle(), kMaxCharsOnAMenuLabel));
+
+  if (elided_name.empty()) {
+    elided_name = UTF16ToUTF8(l10n_util::TruncateString(
+        UTF8ToUTF16(node->GetURL().possibly_invalid_spec()),
+        kMaxCharsOnAMenuLabel));
+  }
+
+  return elided_name;
 }
 
 const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {

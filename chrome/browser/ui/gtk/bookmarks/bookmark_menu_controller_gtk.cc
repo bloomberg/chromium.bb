@@ -153,12 +153,8 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
   for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
 
-    // This breaks on word boundaries. Ideally we would break on character
-    // boundaries.
-    string16 elided_name = l10n_util::TruncateString(node->GetTitle(),
-                                                     kMaxChars);
-    GtkWidget* menu_item =
-        gtk_image_menu_item_new_with_label(UTF16ToUTF8(elided_name).c_str());
+    GtkWidget* menu_item = gtk_image_menu_item_new_with_label(
+        bookmark_utils::BuildMenuLabelFor(node).c_str());
     g_object_set_data(G_OBJECT(menu_item), "bookmark-node", AsVoid(node));
     SetImageMenuItem(menu_item, node, profile_->GetBookmarkModel());
     gtk_util::SetAlwaysShowImage(menu_item);

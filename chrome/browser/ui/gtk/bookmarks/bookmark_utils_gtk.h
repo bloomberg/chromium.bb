@@ -48,6 +48,9 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 // Returns the tooltip.
 std::string BuildTooltipFor(const BookmarkNode* node);
 
+// Returns the label that should be in pull down menus.
+std::string BuildMenuLabelFor(const BookmarkNode* node);
+
 // Returns the "bookmark-node" property of |widget| casted to the correct type.
 const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget);
 
