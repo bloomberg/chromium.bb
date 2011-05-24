@@ -634,6 +634,7 @@ std::string DownloadItem::DebugString(bool verbose) const {
     description += base::StringPrintf(
         " db_handle = %" PRId64
         " total_bytes = %" PRId64
+        " received_bytes = %" PRId64
         " is_paused = %c"
         " is_extension_install = %c"
         " is_otr = %c"
@@ -643,6 +644,7 @@ std::string DownloadItem::DebugString(bool verbose) const {
         " full_path = \"%" PRFilePath "\"",
         db_handle(),
         total_bytes(),
+        received_bytes(),
         is_paused() ? 'T' : 'F',
         is_extension_install() ? 'T' : 'F',
         is_otr() ? 'T' : 'F',

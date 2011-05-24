@@ -72,7 +72,7 @@ void SocketStreamDispatcherHost::OnSentData(net::SocketStream* socket,
   DVLOG(1) << "SocketStreamDispatcherHost::OnSentData socket_id=" << socket_id
            << " amount_sent=" << amount_sent;
   if (socket_id == content_common::kNoSocketId) {
-    LOG(ERROR) << "NoSocketId in OnReceivedData";
+    LOG(ERROR) << "NoSocketId in OnSentData";
     return;
   }
   if (!Send(new SocketStreamMsg_SentData(socket_id, amount_sent))) {

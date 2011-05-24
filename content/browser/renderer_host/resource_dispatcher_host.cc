@@ -1478,7 +1478,10 @@ void ResourceDispatcherHost::ResumeRequest(const GlobalRequestID& request_id) {
   if (!info->is_paused())
     return;
 
-  VLOG(1) << "Resuming: " << i->second->url().spec();
+  VLOG(1) << "Resuming: \"" << i->second->url().spec() << "\""
+          << " paused_read_bytes = " << info->paused_read_bytes()
+          << " called response started = " << info->called_on_response_started()
+          << " started reading = " << info->has_started_reading();
 
   info->set_is_paused(false);
 
@@ -1526,7 +1529,8 @@ bool ResourceDispatcherHost::Read(net::URLRequest* request, int* bytes_read) {
 void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
                                              int bytes_read) {
   DCHECK(request);
-  VLOG(1) << "OnReadCompleted: " << request->url().spec();
+  VLOG(1) << "OnReadCompleted: \"" << request->url().spec() << "\""
+          << " bytes_read = " << bytes_read;
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
   // bytes_read == -1 always implies an error, so we want to skip the
@@ -1544,7 +1548,8 @@ void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
 
   if (PauseRequestIfNeeded(info)) {
     info->set_paused_read_bytes(bytes_read);
-    VLOG(1) << "OnReadCompleted pausing: " << request->url().spec();
+    VLOG(1) << "OnReadCompleted pausing: \"" << request->url().spec() << "\""
+            << " bytes_read = " << bytes_read;
     return;
   }
 
@@ -1560,6 +1565,9 @@ void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
         // Force the next CompleteRead / Read pair to run as a separate task.
         // This avoids a fast, large network request from monopolizing the IO
         // thread and starving other IO operations from running.
+        VLOG(1) << "OnReadCompleted postponing: \""
+                << request->url().spec() << "\""
+                << " bytes_read = " << bytes_read;
         info->set_paused_read_bytes(bytes_read);
         info->set_is_paused(true);
         GlobalRequestID id(info->child_id(), info->request_id());
@@ -1574,8 +1582,9 @@ void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
 
   if (PauseRequestIfNeeded(info)) {
     info->set_paused_read_bytes(bytes_read);
-    VLOG(1) << "OnReadCompleted (CompleteRead) pausing: "
-            << request->url().spec();
+    VLOG(1) << "OnReadCompleted (CompleteRead) pausing: \""
+            << request->url().spec() << "\""
+            << " bytes_read = " << bytes_read;
     return;
   }
 

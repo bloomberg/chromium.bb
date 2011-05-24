@@ -449,7 +449,6 @@ FilePath SafeBrowsingDatabase::CsdWhitelistDBFilename(
 }
 
 SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
-  DVLOG(3) << "Get store for list: " << list_id;
   if (list_id == safe_browsing_util::PHISH ||
       list_id == safe_browsing_util::MALWARE) {
     return browse_store_.get();
