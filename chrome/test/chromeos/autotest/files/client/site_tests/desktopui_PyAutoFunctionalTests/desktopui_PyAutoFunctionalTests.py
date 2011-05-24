@@ -9,7 +9,7 @@ import shutil
 import subprocess
 
 from autotest_lib.client.bin import utils
-from autotest_lib.client.cros import constants, chrome_test, cros_ui
+from autotest_lib.client.cros import constants, chrome_test, cros_ui, login
 
 
 class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
@@ -26,10 +26,6 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
         deps_dir = os.path.join(self.autodir, 'deps')
         subprocess.check_call(['chown', '-R', 'chronos', self.cr_source_dir])
 
-        # Setup /tmp/disable_chrome_restart
-        if not os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
-            open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
-
         # Setup suid python binary which can enable chrome testing interface
         suid_python = os.path.join(self.test_binary_dir, 'suid-python')
         py_path = subprocess.Popen(['which', 'python'],
@@ -43,35 +39,28 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
         os.chown(suid_python, 0, 0)
         os.chmod(suid_python, 04755)
 
-    def _session_manager_ready(self, old_pid):
-        pgrep_process = subprocess.Popen(["pgrep", "session_manager"],
-                                        stdout=subprocess.PIPE)
-        new_pid = pgrep_process.communicate()[0].strip()
-        if not new_pid or old_pid == new_pid:
-            return False
+        # chronos should own the current dir
+        chronos_id = pwd.getpwnam('chronos')
+        os.chown(os.getcwd(), chronos_id.pw_uid, chronos_id.pw_gid)
 
-        try:
-            bus = dbus.SystemBus()
-            proxy = bus.get_object('org.chromium.SessionManager',
-                                   '/org/chromium/SessionManager')
-            dbus.Interface(proxy, 'org.chromium.SessionManagerInterface')
-        except dbus.DBusException:
-            return False
-        return True
-
-    def run_once(self):
-        # Make sure Chrome minidumps are written locally.
+        # Make sure Chrome minidumps are written locally
         minidumps_file = '/mnt/stateful_partition/etc/enable_chromium_minidumps'
         if not os.path.exists(minidumps_file):
             open(minidumps_file, 'w').close()
-            pgrep_process = subprocess.Popen(["pgrep", "session_manager"],
-                                            stdout=subprocess.PIPE)
-            old_pid = pgrep_process.communicate()[0].strip()
-            subprocess.call(['pkill', constants.SESSION_MANAGER])
-            utils.poll_for_condition(
-                lambda: self._session_manager_ready(old_pid), timeout=20)
+            # Allow browser restart by its babysitter (session_manager)
+            if os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
+                os.remove(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
+            login.nuke_login_manager()
         assert os.path.exists(minidumps_file)
 
+        # Setup /tmp/disable_chrome_restart
+        # Disallow further browser restart by its babysitter
+        if not os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
+            open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
+        assert os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
+
+    def run_once(self):
+        """Run pyauto functional tests."""
         # Enable chrome testing interface and Login
         deps_dir = os.path.join(self.autodir, 'deps')
         pyautolib_dir = os.path.join(self.cr_source_dir,
@@ -82,9 +71,7 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
                 os.path.join(pyautolib_dir, 'chromeos', 'chromeos_utils.py'))
         utils.system(login_cmd)
 
-        # Run pyauto tests in the "FULL" suite
-        chronos_id = pwd.getpwnam('chronos')
-        os.chown(os.getcwd(), chronos_id.pw_uid, chronos_id.pw_gid)
+        # Run pyauto tests "FULL" suite
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/'
             'pyauto_functional.py --suite=FULL -v' % deps_dir)
