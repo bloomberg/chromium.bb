@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,8 +17,7 @@ if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
-from chromite.lib.binpkg import (GrabLocalPackageIndex, GrabRemotePackageIndex,
-                                 PackageIndex)
+from chromite.lib.binpkg import (GrabLocalPackageIndex, GrabRemotePackageIndex)
 """
 This script is used to upload host prebuilts as well as board BINHOSTS.
 
@@ -80,10 +79,6 @@ class UnknownBoardFormat(Exception):
   """Raised when a function finds an unknown board format."""
   pass
 
-class GitPushFailed(Exception):
-  """Raised when a git push failed after retry."""
-  pass
-
 
 def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   """Update the key in file with the value passed.
@@ -131,47 +126,6 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   new_file_fh.close()
 
 
-def RevGitPushWithRetry(tracking_branch, cwd, retries=5):
-  """Repo sync and then push git changes in flight.
-
-    Args:
-      tracking_branch: Branch to rebase against.
-      cwd: Directory to push in.
-      retries: The number of times to retry before giving up, default: 5
-
-    Raises:
-      GitPushFailed if push was unsuccessful after retries
-  """
-  for retry in range(1, retries + 1):
-    try:
-      cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=cwd)
-      cros_build_lib.RunCommand(['git', 'rebase', tracking_branch], cwd=cwd)
-      cros_build_lib.RunCommand(['git', 'push'], cwd=cwd)
-      break
-    except cros_build_lib.RunCommandError:
-      if retry < retries:
-        print 'Error pushing changes trying again (%s/%s)' % (retry, retries)
-        time.sleep(5 * retry)
-  else:
-    raise GitPushFailed('Failed to push change after %s retries' % retries)
-
-
-def _GetTrackingBranch(branch, cwd):
-  """Get the tracking branch for the specified branch / directory.
-
-  Args:
-    branch: Branch to examine for tracking branch.
-    cwd: Directory to look in.
-  """
-  info = {}
-  for key in ('remote', 'merge'):
-    cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
-    info[key] = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                                          cwd=cwd).output.strip()
-  assert info["merge"].startswith("refs/heads/")
-  return info["merge"].replace("refs/heads", info["remote"])
-
-
 def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
   """Update and push the git file.
 
@@ -190,12 +144,11 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
   git_ssh_config_cmd = [
       'git',
       'config',
-      'url.ssh://gerrit.chromium.org:29418.insteadof',
+      'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
       'http://git.chromium.org']
   cros_build_lib.RunCommand(git_ssh_config_cmd, cwd=cwd)
   cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=cwd)
   cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'], cwd=cwd)
-  tracking_branch = _GetTrackingBranch(prebuilt_branch, cwd=cwd)
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
   try:
@@ -204,7 +157,7 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
                               cwd=cwd)
     cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
     cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
-    RevGitPushWithRetry(tracking_branch, cwd, retries)
+    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd=cwd)
   finally:
     cros_build_lib.RunCommand(['git', 'checkout', commit], cwd=cwd)
     cros_build_lib.RunCommand(['repo', 'abandon', 'prebuilt_branch', '.'],
@@ -444,7 +397,7 @@ def UpdateBinhostConfFile(path, key, value):
     config_file = file(path, 'w')
     config_file.close()
   UpdateLocalFile(path, value, key)
-  cros_build_lib.RunCommand(['git', 'add', filename],  cwd=cwd)
+  cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
   description = 'Update %s=%s in %s' % (key, value, filename)
   cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
 

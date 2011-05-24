@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,10 +18,10 @@ import sys
 
 if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
-  sys.path.append(constants.CROSUTILS_LIB_DIR)
 
-import chromite.buildbot.cbuildbot_commands as commands
-from cros_build_lib import Info, RunCommand, Warning, Die
+from chromite.buildbot import cbuildbot_commands as commands
+from chromite.lib import cros_build_lib
+
 
 
 # TODO(sosa): Remove during OO refactor.
@@ -59,7 +59,7 @@ def BestEBuild(ebuilds):
 def _Print(message):
   """Verbose print function."""
   if VERBOSE:
-    Info(message)
+    cros_build_lib.Info(message)
 
 
 def CleanStalePackages(board, package_atoms):
@@ -69,17 +69,19 @@ def CleanStalePackages(board, package_atoms):
     package_atoms: The actual package atom to unmerge.
   """
   if package_atoms:
-    Info('Cleaning up stale packages %s.' % package_atoms)
+    cros_build_lib.Info('Cleaning up stale packages %s.' % package_atoms)
     unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
     unmerge_board_cmd.extend(package_atoms)
-    RunCommand(unmerge_board_cmd)
+    cros_build_lib.RunCommand(unmerge_board_cmd)
 
     unmerge_host_cmd = ['sudo', 'emerge', '--unmerge']
     unmerge_host_cmd.extend(package_atoms)
-    RunCommand(unmerge_host_cmd)
+    cros_build_lib.RunCommand(unmerge_host_cmd)
 
-  RunCommand(['eclean-%s' % board, '-d', 'packages'], redirect_stderr=True)
-  RunCommand(['sudo', 'eclean', '-d', 'packages'], redirect_stderr=True)
+  cros_build_lib.RunCommand(['eclean-%s' % board, '-d', 'packages'],
+                            redirect_stderr=True)
+  cros_build_lib.RunCommand(['sudo', 'eclean', '-d', 'packages'],
+                            redirect_stderr=True)
 
 
 class _BlackListManager(object):
@@ -146,19 +148,22 @@ def _FindUprevCandidates(files, blacklist):
   # If we found a workon ebuild in this directory, apply some sanity checks.
   if workon_dir:
     if len(unstable_ebuilds) > 1:
-      Die('Found multiple unstable ebuilds in %s' % os.path.dirname(path))
+      cros_build_lib.Die('Found multiple unstable ebuilds in %s' %
+                         os.path.dirname(path))
     if len(stable_ebuilds) > 1:
       stable_ebuilds = [BestEBuild(stable_ebuilds)]
 
       # Print a warning if multiple stable ebuilds are found in the same
       # directory. Storing multiple stable ebuilds is error-prone because
       # the older ebuilds will not get rev'd.
-      Warning('Found multiple stable ebuilds in %s' % os.path.dirname(path))
+      cros_build_lib.Warning('Found multiple stable ebuilds in %s' %
+                             os.path.dirname(path))
 
     if not unstable_ebuilds:
-      Die('Missing 9999 ebuild in %s' % os.path.dirname(path))
+      cros_build_lib.Die('Missing 9999 ebuild in %s' % os.path.dirname(path))
     if not stable_ebuilds:
-      Warning('Missing stable ebuild in %s' % os.path.dirname(path))
+      cros_build_lib.Warning('Missing stable ebuild in %s' %
+                             os.path.dirname(path))
       return unstable_ebuilds[0]
 
   if stable_ebuilds:
@@ -221,10 +226,10 @@ def _PrintUsageAndDie(error_message=''):
   for command in commands:
     command_usage += '  %s: %s\n' % (command, COMMAND_DICTIONARY[command])
   commands_str = '|'.join(commands)
-  Warning('Usage: %s FLAGS [%s]\n\n%s' % (sys.argv[0], commands_str,
-                                          command_usage))
+  cros_build_lib.Warning('Usage: %s FLAGS [%s]\n\n%s' % (
+      sys.argv[0], commands_str, command_usage))
   if error_message:
-    Die(error_message)
+    cros_build_lib.Die(error_message)
   else:
     sys.exit(1)
 
@@ -276,42 +281,27 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   Raises:
       OSError: Error occurred while pushing.
   """
-  num_retries = 5
-
   # Sanity check to make sure we're on a stabilizing branch before pushing.
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch):
-    Info('Not work found to push.  Exiting')
+    cros_build_lib.Info('Not work found to push.  Exiting')
     return
 
   description = _SimpleRunCommand('git log --format=format:%s%n%n%b ' +
                                   tracking_branch + '..')
   description = 'Marking set of ebuilds as stable\n\n%s' % description
-  Info('Using description %s' % description)
+  cros_build_lib.Info('Using description %s' % description)
   merge_branch_name = 'merge_branch'
-  for push_try in range(num_retries + 1):
-    try:
-      merge_branch = GitBranch(merge_branch_name, tracking_branch)
-      if merge_branch.Exists():
-        merge_branch.Delete()
-      _SimpleRunCommand('repo sync .')
-      merge_branch.CreateBranch()
-      if not merge_branch.Exists():
-        Die('Unable to create merge branch.')
-      _SimpleRunCommand('git merge --squash %s' % stable_branch)
-      _SimpleRunCommand('git commit -m "%s"' % description)
-      _SimpleRunCommand('git config push.default tracking')
-      if dryrun:
-        _SimpleRunCommand('git push --dry-run')
-      else:
-        _SimpleRunCommand('git push')
-
-      break
-    except:
-      if push_try < num_retries:
-        Warning('Failed to push change, performing retry (%s/%s)' % (
-            push_try + 1, num_retries))
-      else:
-        raise
+  merge_branch = GitBranch(merge_branch_name, tracking_branch)
+  if merge_branch.Exists():
+    merge_branch.Delete()
+  _SimpleRunCommand('repo sync .')
+  merge_branch.CreateBranch()
+  if not merge_branch.Exists():
+    cros_build_lib.Die('Unable to create merge branch.')
+  _SimpleRunCommand('git merge --squash %s' % stable_branch)
+  _SimpleRunCommand('git commit -m "%s"' % description)
+  _SimpleRunCommand('git config push.default tracking')
+  cros_build_lib.GitPushWithRetry(merge_branch_name, cwd='.', dryrun=dryrun)
 
 
 class GitBranch(object):
@@ -402,7 +392,7 @@ class EBuild(object):
     srcdir = os.path.join(srcroot, dir, subdir)
 
     if not os.path.isdir(srcdir):
-      Die('Cannot find commit id for %s' % self.ebuild_path)
+      cros_build_lib.Die('Cannot find commit id for %s' % self.ebuild_path)
 
     # Verify that we're grabbing the commit id from the right project name.
     # NOTE: chromeos-kernel has the wrong project name, so it fails this
@@ -412,13 +402,13 @@ class EBuild(object):
            'git config --get remote.cros-internal.projectname )') % srcdir
     actual_project = _SimpleRunCommand(cmd).rstrip()
     if project not in (actual_project, 'chromeos-kernel'):
-      Die('Project name mismatch for %s (%s != %s)' % (unstable_ebuild, project,
-          actual_project))
+      cros_build_lib.Die('Project name mismatch for %s (%s != %s)' % (
+          unstable_ebuild, project, actual_project))
 
     # Get commit id.
     output = _SimpleRunCommand('cd %s && git rev-parse HEAD' % srcdir)
     if not output:
-      Die('Missing commit id for %s' % self.ebuild_path)
+      cros_build_lib.Die('Missing commit id for %s' % self.ebuild_path)
     return output.rstrip()
 
 
@@ -507,7 +497,7 @@ class EBuildStableMarker(object):
     unstable_ebuild_path = ('%s-9999.ebuild' %
                             self._ebuild.ebuild_path_no_version)
     if not os.path.exists(unstable_ebuild_path):
-      Die('Missing unstable ebuild: %s' % unstable_ebuild_path)
+      cros_build_lib.Die('Missing unstable ebuild: %s' % unstable_ebuild_path)
 
     self.MarkAsStable(unstable_ebuild_path, new_stable_ebuild_path,
                       'CROS_WORKON_COMMIT', commit_id, redirect_file)
@@ -536,7 +526,7 @@ class EBuildStableMarker(object):
     Raises:
         OSError: Error occurred while committing.
     """
-    Info('Committing changes with commit message: %s' % message)
+    cros_build_lib.Info('Committing changes with commit message: %s' % message)
     git_commit_cmd = 'git commit -am "%s"' % message
     _SimpleRunCommand(git_commit_cmd)
 
@@ -578,10 +568,10 @@ def main(argv):
     overlays = {}
     for path in options.overlays.split(':'):
       if command != 'clean' and not os.path.isdir(path):
-        Die('Cannot find overlay: %s' % path)
+        cros_build_lib.Die('Cannot find overlay: %s' % path)
       overlays[path] = []
   else:
-    Warning('Missing --overlays argument')
+    cros_build_lib.Warning('Missing --overlays argument')
     overlays = {
       '%s/private-overlays/chromeos-overlay' % options.srcroot: [],
       '%s/third_party/chromiumos-overlay' % options.srcroot: []
@@ -596,7 +586,7 @@ def main(argv):
 
   for overlay, ebuilds in overlays.items():
     if not os.path.isdir(overlay):
-      Warning("Skipping %s" % overlay)
+      cros_build_lib.Warning("Skipping %s" % overlay)
       continue
 
     # TODO(davidjames): Currently, all code that interacts with git depends on
@@ -612,7 +602,8 @@ def main(argv):
       work_branch = GitBranch(STABLE_BRANCH_NAME, tracking_branch)
       work_branch.CreateBranch()
       if not work_branch.Exists():
-        Die('Unable to create stabilizing branch in %s' % overlay)
+        cros_build_lib.Die('Unable to create stabilizing branch in %s' %
+                           overlay)
 
       # Contains the array of packages we actually revved.
       revved_packages = []
@@ -629,7 +620,7 @@ def main(argv):
             revved_packages.append(ebuild.package)
             new_package_atoms.append('=%s' % new_package)
         except (OSError, IOError):
-          Warning('Cannot rev %s\n' % ebuild.package,
+          cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package,
                   'Note you will have to go into %s '
                   'and reset the git repo yourself.' % overlay)
           raise

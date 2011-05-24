@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +17,8 @@ import unittest
 
 import constants
 sys.path.append(constants.SOURCE_ROOT)
-sys.path.append(constants.CROSUTILS_LIB_DIR)
+from chromite.lib import cros_build_lib
+
 import cros_mark_as_stable
 
 
@@ -26,7 +27,7 @@ class NonClassTests(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
     self._branch = 'test_branch'
-    self._tracking_branch = 'cros/test'
+    self._tracking_branch = 'cros/master'
 
   def testPushChange(self):
     git_log = 'Marking test_one as stable\nMarking test_two as stable\n'
@@ -34,6 +35,7 @@ class NonClassTests(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable, '_DoWeHaveLocalCommits')
     self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'CreateBranch')
     self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'Exists')
+    self.mox.StubOutWithMock(cros_build_lib, 'GitPushWithRetry')
 
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, self._tracking_branch).AndReturn(True)
@@ -48,7 +50,7 @@ class NonClassTests(mox.MoxTestBase):
     cros_mark_as_stable._SimpleRunCommand('git commit -m "%s"' %
                                           fake_description)
     cros_mark_as_stable._SimpleRunCommand('git config push.default tracking')
-    cros_mark_as_stable._SimpleRunCommand('git push')
+    cros_build_lib.GitPushWithRetry('merge_branch', cwd='.', dryrun=False)
     self.mox.ReplayAll()
     cros_mark_as_stable.PushChange(self._branch, self._tracking_branch, False)
     self.mox.VerifyAll()
@@ -147,7 +149,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
-    self.mox.StubOutWithMock(cros_mark_as_stable, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(os, 'unlink')
     self.m_ebuild = self.mox.CreateMock(cros_mark_as_stable.EBuild)
     self.m_ebuild.is_stable = True
@@ -227,7 +229,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable.fileinput, 'input')
     self.mox.StubOutWithMock(cros_mark_as_stable.os.path, 'exists')
     self.mox.StubOutWithMock(cros_mark_as_stable.shutil, 'copyfile')
-    self.mox.StubOutWithMock(cros_mark_as_stable, 'Die')
+    self.mox.StubOutWithMock(cros_build_lib, 'Die')
     self.mox.StubOutWithMock(filecmp, 'cmp')
     m_file = self.mox.CreateMock(file)
 
@@ -243,7 +245,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
 
     ebuild_9999 = self.m_ebuild.ebuild_path_no_version + '-9999.ebuild'
     cros_mark_as_stable.os.path.exists(ebuild_9999).AndReturn(False)
-    cros_mark_as_stable.Die("Missing unstable ebuild: %s" % ebuild_9999)
+    cros_build_lib.Die("Missing unstable ebuild: %s" % ebuild_9999)
     cros_mark_as_stable.shutil.copyfile(ebuild_9999, revved_ebuild_path)
     cros_mark_as_stable.fileinput.input(revved_ebuild_path,
                                         inplace=1).AndReturn(mock_file)
@@ -282,7 +284,7 @@ class BuildEBuildDictionaryTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(cros_mark_as_stable.os, 'walk')
-    self.mox.StubOutWithMock(cros_mark_as_stable, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.package = 'chromeos-base/test_package'
     self.root = '/overlay/chromeos-base/test_package'
     self.package_path = self.root + '/test_package-0.0.1.ebuild'

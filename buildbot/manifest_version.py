@@ -119,11 +119,8 @@ def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
   try:
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
-
-    push_cmd = ['git', 'push', '--verbose']
-    if dry_run: push_cmd.append('--dry-run')
-    cros_lib.RunCommand(push_cmd, cwd=git_repo)
-  except cros_lib.RunCommandError, e:
+    cros_lib.GitPushWithRetry(_PUSH_BRANCH, cwd=git_repo, dryrun=dry_run)
+  except cros_lib.GitPushFailed, e:
     err_msg = 'Failed to commit to %s' % e.message
     logging.error(err_msg)
     git_status = cros_lib.RunCommand(['git', 'status'], cwd=git_repo)
