@@ -443,6 +443,7 @@ void FilterDisabledTests() {
 
     // Tests chrome's network stack's cache (might not apply to CF).
     "URLRequestTestHTTP.VaryHeader",
+    "URLRequestTestHTTP.GetZippedTest",
 
     // I suspect we can only get this one to work (if at all) on IE8 and
     // later by using the new INTERNET_OPTION_SUPPRESS_BEHAVIOR flags
