@@ -147,7 +147,7 @@ full = {
   # so use settings to build from scratch, and archive the results.
 
   'usepkg_chroot' : False,
-  'usepkg_setup_board' : True,
+  'usepkg_setup_board' : False,
   'usepkg_build_packages' : False,
   'chroot_replace' : True,
 
@@ -191,8 +191,6 @@ official = {
 
   'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
-
-  'usepkg_setup_board' : False,
 
   'gs_path' : None,
 

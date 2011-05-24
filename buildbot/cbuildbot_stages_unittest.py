@@ -302,7 +302,7 @@ class BuildBoardTest(AbstractStageTest):
     commands.SetupBoard(self.build_root,
                         board=self.build_config['board'],
                         fast=True,
-                        usepkg=True)
+                        usepkg=False)
 
     self.mox.ReplayAll()
     self.RunStage()
