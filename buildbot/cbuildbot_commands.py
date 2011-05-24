@@ -496,10 +496,15 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   else:
     gsutil_archive = buildconfig['gs_path']
 
+  # Create the output directory, and set the right permissions
+  to_dir = '/var/www/archive/' + bot_id
+  if not os.path.exists(to_dir):
+    os.makedirs(to_dir, mode=755)
+
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./archive_build.sh',
          '--build_number', str(buildnumber),
-         '--to', '/var/www/archive/' + bot_id,
+         '--to', to_dir,
          '--keep_max', str(keep_max),
          '--board', buildconfig['board'],
          ]

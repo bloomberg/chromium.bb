@@ -326,12 +326,14 @@ class CBuildBotTest(mox.MoxTestBase):
     buildconfig['useflags'] = None
     buildconfig['archive_build_debug'] = False
 
+    self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(socket, 'gethostname')
 
     output_obj = cros_lib.CommandResult()
     output_obj.output = ('archive to dir: /var/archive/dir \n'
-                         'CROS_ARCHIVE_URL=http://gs/archive/url \n'
-                         )
+                         'CROS_ARCHIVE_URL=http://gs/archive/url \n')
+
+    os.path.exists('/var/www/archive/bot_id').AndReturn(True)
 
     cros_lib.RunCommand(['./archive_build.sh',
                          '--build_number', '4',
@@ -374,10 +376,14 @@ class CBuildBotTest(mox.MoxTestBase):
     buildconfig['useflags'] = ['use_a', 'use_b']
     buildconfig['archive_build_debug'] = True
 
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(socket, 'gethostname')
+
     output_obj = cros_lib.CommandResult()
     output_obj.output = ('archive to dir: /var/archive/dir \n'
-                         'CROS_ARCHIVE_URL=http://gs/archive/url \n'
-                         )
+                         'CROS_ARCHIVE_URL=http://gs/archive/url \n')
+
+    os.path.exists('/var/www/archive/bot_id').AndReturn(True)
 
     cros_lib.RunCommand(['./archive_build.sh',
                          '--build_number', '4',
