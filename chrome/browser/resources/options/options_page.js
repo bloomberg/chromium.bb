@@ -687,6 +687,15 @@ cr.define('options', function() {
     if (!topPage || topPage.isOverlay || !topPage.parentPage)
       return;
 
+    // Do nothing if the client coordinates are not within the source element.
+    // This occurs if the user toggles a checkbox by pressing spacebar.
+    // This is a workaround to prevent keyboard events from closing the window.
+    // See: crosbug.com/15678
+    if (event.clientX == -document.body.scrollLeft &&
+        event.clientY == -document.body.scrollTop) {
+      return;
+    }
+
     // Don't interfere with navbar clicks.
     if ($('navbar').contains(event.target))
       return;
