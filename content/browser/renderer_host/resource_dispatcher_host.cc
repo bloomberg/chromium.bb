@@ -437,9 +437,7 @@ void ResourceDispatcherHost::BeginRequest(
           child_id, route_id);
 
   // Handle a PREFETCH resource type. If prefetch is disabled, squelch the
-  // request. If prerendering is enabled, trigger a prerender for the URL
-  // and abort the request, to prevent double-gets. Otherwise, do a normal
-  // prefetch.
+  // request.  Otherwise, do a normal request to warm the cache.
   if (request_data.resource_type == ResourceType::PREFETCH) {
     // All PREFETCH requests should be GETs, but be defensive about it.
     if (request_data.method != "GET") {
@@ -450,20 +448,26 @@ void ResourceDispatcherHost::BeginRequest(
       AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
       return;
     }
+    // Otherwise, treat like a normal request, and fall-through.
+  }
+
+  // Handle a PRERENDER motivated request. Very similar to rel=prefetch, these
+  // rel=prerender requests instead launch an early render of the entire page.
+  if (request_data.resource_type == ResourceType::PRERENDER) {
     if (prerender::PrerenderManager::IsPrerenderingPossible()) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(prerender::HandlePrefetchTag,
+          NewRunnableFunction(prerender::HandleTag,
                               resource_context.prerender_manager(),
                               child_id,
                               route_id,
                               request_data.url,
                               referrer,
                               is_prerendering));
-      AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
-      return;
     }
-    // Otherwise, treat like a normal request, and fall-through.
+    // Prerendering or not, this request should stop.
+    AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
+    return;
   }
 
   // Abort any prerenders that spawn requests that use invalid HTTP methods.
@@ -524,7 +528,7 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   if (is_prerendering)
-    load_flags |= net::LOAD_PRERENDER;
+    load_flags |= net::LOAD_PRERENDERING;
 
   if (sync_result)
     load_flags |= net::LOAD_IGNORE_LIMITS;
@@ -1981,7 +1985,7 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
   // * How useful is the page to the user if this resource is not loaded yet.
 
   // Prerender-motivated requests should be made at IDLE.
-  if (load_flags & net::LOAD_PRERENDER)
+  if (load_flags & net::LOAD_PRERENDERING)
     return net::IDLE;
 
   switch (type) {
@@ -2021,9 +2025,11 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
     case ResourceType::FAVICON:
       return net::LOWEST;
 
-    // Prefetches are at a lower priority than even LOWEST, since they
-    // are not even required for rendering of the current page.
+    // Prefetches and prerenders are at a lower priority than even
+    // LOWEST, since they are not even required for rendering of the
+    // current page.
     case ResourceType::PREFETCH:
+    case ResourceType::PRERENDER:
       return net::IDLE;
 
     default:

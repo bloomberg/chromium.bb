@@ -11,7 +11,7 @@
   }
 
   function JsOpenLinkInNewWindow() {
-    window.open("REPLACE_WITH_PREFETCH_URL");
+    window.open("REPLACE_WITH_PRERENDER_URL");
     return true;
   }
 </script>
@@ -19,9 +19,9 @@
 </head>
 <body>
 <script>
-  document.write('<link rel="prefetch" href="REPLACE_WITH_PREFETCH_URL"/>');
+  document.write('<link rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
 </script>
 <a target="_blank" id="toClick"
-   href="REPLACE_WITH_PREFETCH_URL">Link To Click</a>
+   href="REPLACE_WITH_PRERENDER_URL">Link To Click</a>
 </body>
 </html>

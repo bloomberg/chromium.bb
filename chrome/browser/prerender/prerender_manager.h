@@ -40,7 +40,7 @@ namespace prerender {
 
 // Adds either a preload or a pending preload to the PrerenderManager.
 // Must be called on the UI thread.
-void HandlePrefetchTag(
+void HandleTag(
     const base::WeakPtr<PrerenderManager>& prerender_manager,
     int render_process_id,
     int render_view_id,
@@ -153,8 +153,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool IsPrerenderingPossible();
   static bool IsControlGroup();
 
-  // Records that a prefetch tag has been observed.
-  void RecordPrefetchTagObserved();
+  // Records that a prerender tag has been observed.
+  void RecordTagObserved();
 
   // Query the list of current prerender pages to see if the given tab contents
   // is prerendering a page.
@@ -243,7 +243,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
           const std::pair<int, int>& child_route_id_pair);
 
   // Returns whether the PrerenderManager is currently within the prerender
-  // window - effectively, up to 30 seconds after a prefetch tag has been
+  // window - effectively, up to 30 seconds after a prerender tag has been
   // observed.
   bool WithinWindow() const;
 
@@ -300,10 +300,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   static PrerenderManagerMode mode_;
 
-  // The time when we last saw a prefetch request coming from a renderer.
+  // The time when we last saw a prerender request coming from a renderer.
   // This is used to record perceived PLT's for a certain amount of time
-  // from the point that we last saw a <link rel=prefetch> tag.
-  base::TimeTicks last_prefetch_seen_time_;
+  // from the point that we last saw a <link rel=prerender> tag.
+  base::TimeTicks last_prerender_seen_time_;
 
   // A count of how many prerenders we do per session. Initialized to 0 then
   // incremented and emitted to a histogram on each successful prerender.

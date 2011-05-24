@@ -2572,7 +2572,10 @@ void RenderView::willSendRequest(
 
   if (top_data_source) {
     NavigationState* state = NavigationState::FromDataSource(top_data_source);
-    if (state && request.targetType() == WebURLRequest::TargetIsPrefetch)
+    // TODO(gavinp): separate out prefetching and prerender field trials
+    // if the rel=prerender rel type is sticking around.
+    if (state && (request.targetType() == WebURLRequest::TargetIsPrefetch ||
+                  request.targetType() == WebURLRequest::TargetIsPrerender))
       state->set_was_prefetcher(true);
   }
 

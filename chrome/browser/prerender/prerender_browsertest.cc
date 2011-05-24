@@ -363,7 +363,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
     std::vector<net::TestServer::StringPair> replacement_text;
     replacement_text.push_back(
-        make_pair("REPLACE_WITH_PREFETCH_URL", dest_url_.spec()));
+        make_pair("REPLACE_WITH_PRERENDER_URL", dest_url_.spec()));
     std::string replacement_path;
     ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
         "files/prerender/prerender_loader.html",
@@ -462,7 +462,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 };
 
 // Checks that a page is correctly prerendered in the case of a
-// <link rel=prefetch> tag and then loaded into a tab in response to a
+// <link rel=prerender> tag and then loaded into a tab in response to a
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("files/prerender/prerender_page.html");
 }
 
-// Checks that a prefetch for an https will prevent a prerender from happening.
+// Checks that a prerender for an https will prevent a prerender from happening.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
   net::TestServer https_server(net::TestServer::TYPE_HTTPS,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));

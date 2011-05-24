@@ -121,6 +121,9 @@ void ParamTraits<ResourceType::Type>::Log(const param_type& p, std::string* l) {
     case ResourceType::PREFETCH:
       type = "PREFETCH";
       break;
+    case ResourceType::PRERENDER:
+      type = "PRERENDER";
+      break;
     case ResourceType::FAVICON:
       type = "FAVICON";
       break;

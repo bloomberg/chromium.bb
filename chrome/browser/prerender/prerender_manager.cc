@@ -167,7 +167,7 @@ struct PrerenderManager::PendingContentsData {
   GURL referrer_;
 };
 
-void HandlePrefetchTag(
+void HandleTag(
     const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
     int render_process_id,
     int render_view_id,
@@ -178,7 +178,7 @@ void HandlePrefetchTag(
   PrerenderManager* prerender_manager = prerender_manager_weak_ptr.get();
   if (!prerender_manager || !prerender_manager->is_enabled())
     return;
-  prerender_manager->RecordPrefetchTagObserved();
+  prerender_manager->RecordTagObserved();
 
   std::pair<int, int> child_route_id_pair = std::make_pair(render_process_id,
                                                            render_view_id);
@@ -818,13 +818,13 @@ PrerenderManager::PendingContentsData*
   return NULL;
 }
 
-void PrerenderManager::RecordPrefetchTagObserved() {
+void PrerenderManager::RecordTagObserved() {
   DCHECK(CalledOnValidThread());
 
   // If we observe multiple tags within the 30 second window, we will still
   // reset the window to begin at the most recent occurrence, so that we will
   // always be in a window in the 30 seconds from each occurrence.
-  last_prefetch_seen_time_ = base::TimeTicks::Now();
+  last_prerender_seen_time_ = base::TimeTicks::Now();
 }
 
 void PrerenderManager::RemovePendingPreload(PrerenderContents* entry) {
@@ -844,10 +844,10 @@ void PrerenderManager::RemovePendingPreload(PrerenderContents* entry) {
 
 bool PrerenderManager::WithinWindow() const {
   DCHECK(CalledOnValidThread());
-  if (last_prefetch_seen_time_.is_null())
+  if (last_prerender_seen_time_.is_null())
     return false;
   base::TimeDelta elapsed_time =
-      base::TimeTicks::Now() - last_prefetch_seen_time_;
+      base::TimeTicks::Now() - last_prerender_seen_time_;
   return elapsed_time <= base::TimeDelta::FromSeconds(kWindowDurationSeconds);
 }
 

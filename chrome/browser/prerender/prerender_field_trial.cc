@@ -92,12 +92,12 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
             PrerenderManager::PRERENDER_MODE_DISABLED);
       } else if (trial_group == kPrerenderExperiment1Group ||
                  trial_group == kPrerenderExperiment2Group) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(true);
+        ResourceDispatcherHost::set_is_prefetch_enabled(false);
         PrerenderManager::SetMode(
             PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
       } else if (trial_group == kPrerenderControl1Group ||
                  trial_group == kPrerenderControl2Group) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(true);
+        ResourceDispatcherHost::set_is_prefetch_enabled(false);
         PrerenderManager::SetMode(
             PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
       } else {
@@ -110,7 +110,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
       break;
     case PRERENDER_OPTION_ENABLED:
-      ResourceDispatcherHost::set_is_prefetch_enabled(true);
+      ResourceDispatcherHost::set_is_prefetch_enabled(false);
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
       break;
     case PRERENDER_OPTION_PREFETCH_ONLY:

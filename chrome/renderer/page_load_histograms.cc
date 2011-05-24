@@ -306,6 +306,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   // Histograms to determine if content prefetching has an impact on PLT.
+  // TODO(gavinp): Right now the prerendering and the prefetching field trials
+  // are mixed together.  If we continue to launch prerender with
+  // link rel=prerender, then we should separate them.
   static const bool prefetching_fieldtrial =
       base::FieldTrialList::TrialExists("Prefetch");
   if (prefetching_fieldtrial) {
