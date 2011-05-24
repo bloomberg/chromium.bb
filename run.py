@@ -127,7 +127,14 @@ def main(argv):
 
   # Read ELF Info
   if not bypass_readelf:
-    (arch, is_dynamic) = ReadELFInfo(nexe)
+    (arch, is_dynamic, is_glibc_static) = ReadELFInfo(nexe)
+
+  # Add default sel_ldr options
+  if not env.paranoid:
+    sel_ldr_options += ['-S', '-a']
+    # X86-64 glibc static has validation problems without stub out (-s)
+    if arch == 'x86-64' and is_glibc_static:
+      sel_ldr_options += ['-s']
 
   # Tell the user
   if is_dynamic:
@@ -300,8 +307,6 @@ def ArgSplit(argv):
   if not nexe:
     Fatal("No nexe given!")
 
-  if not env.paranoid:
-    sel_ldr_options += [ '-S', '-a' ]
   nexe_params = argv[i+1:]
 
   return sel_ldr_options, nexe, nexe_params
@@ -363,18 +368,22 @@ def FindReadElf():
 
 
 def ReadELFInfo(f):
-  """ Returns: (arch, is_dynamic) """
+  """ Returns: (arch, is_dynamic, is_glibc_static) """
 
   readelf = env.readelf
   readelf_out = Run([readelf, '-lh', f], capture = True)
 
   machine_line = None
   is_dynamic = False
+  is_glibc_static = False
   for line in readelf_out.split('\n'):
-    if line.strip().startswith('Machine:'):
+    line = line.strip()
+    if line.startswith('Machine:'):
       machine_line = line
-    if line.strip().startswith('DYNAMIC'):
+    if line.startswith('DYNAMIC'):
       is_dynamic = True
+    if '__libc_atexit' in line:
+      is_glibc_static = True
 
   if not machine_line:
     Fatal('Script error: readelf output did not make sense!')
@@ -388,7 +397,7 @@ def ReadELFInfo(f):
   else:
     Fatal("%s: Unknown machine type", f)
 
-  return (arch, is_dynamic)
+  return (arch, is_dynamic, is_glibc_static)
 
 
 def GetSconsOS():
