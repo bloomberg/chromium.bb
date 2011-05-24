@@ -90,9 +90,11 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
     }
   }
 
+  std::string host;
   NotificationService::current()->Notify(NotificationType::ZOOM_LEVEL_CHANGED,
                                          Source<HostZoomMap>(this),
-                                         NotificationService::NoDetails());
+                                         Details<const std::string>(&host));
+
 }
 
 void HostZoomMap::Observe(
