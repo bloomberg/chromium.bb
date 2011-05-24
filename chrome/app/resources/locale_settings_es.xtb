@@ -22,6 +22,7 @@
 <translation id="IDS_IMPORT_DIALOG_HEIGHT_LINES">14</translation>
 <translation id="IDS_ABOUT_DIALOG_WIDTH_CHARS">90</translation>
 <translation id="IDS_ABOUT_DIALOG_MINIMUM_HEIGHT_LINES">4</translation>
+<translation id="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS">96</translation>
 <translation id="IDS_FONTSLANG_DIALOG_WIDTH_CHARS">99</translation>
 <translation id="IDS_FONTSLANG_DIALOG_HEIGHT_LINES">26</translation>
 <translation id="IDS_PAGEINFO_DIALOG_WIDTH_CHARS">70</translation>

@@ -133,7 +133,7 @@ void NetworkConfigView::ShowAdvancedView() {
   AddChildView(child_config_view_);
   // Resize the window to be able to hold the new widgets.
   gfx::Size size = views::Window::GetLocalizedContentsSize(
-      IDS_JOIN_WIFI_NETWORK_DIALOG_WIDTH_CHARS,
+      IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES);
   // Get the new bounds with desired size at the same center point.
   gfx::Rect bounds = window()->GetBounds();
