@@ -290,9 +290,27 @@
             <span id="aborted-text" i18n-content="abortedError"
                 class="sync-error-hide"></span>
           </div>
+          <div id="customize-sync-encryption">
+            <hr>
+            <h4 i18n-content="encryptedDataTypesTitle"></h4>
+            <div class="sync-customize-section-container">
+              <div>
+                <input id="encrypt-sensitive-option" name="encrypt" type="radio"
+                    value="sensitive">
+                <label for="encrypt-sensitive-option"
+                    i18n-content="encryptSensitiveOption"></label>
+              </div>
+              <div>
+                <input id="encrypt-all-option" name="encrypt" type="radio"
+                    value="all">
+                <label for="encrypt-all-option" i18n-content="encryptAllOption">
+                </label>
+              </div>
+            </div>
+          </div>
           <hr>
           <h4 i18n-content="passphraseSectionTitle"></h4>
-          <div id="sync-passphrase-container">
+          <div class="sync-customize-section-container">
             <div id="passphrase-encryption-message"
                 i18n-content="passphraseEncryptionMessage"></div>
             <div>

@@ -502,6 +502,9 @@ const char kEnableSync[]                    = "enable-sync";
 // Enable syncing browser autofill.
 const char kEnableSyncAutofill[]            = "enable-sync-autofill";
 
+// Enable sync encryption options.
+const char kEnableSyncEncryption[]          = "enable-sync-encryption";
+
 // Enable syncing browser sessions.
 const char kEnableSyncSessions[]            = "enable-sync-sessions";
 

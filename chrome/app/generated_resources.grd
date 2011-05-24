@@ -8966,9 +8966,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Encryption tab of the configure sync dialog -->
-      <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
-        Encryption passphrase
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE" desc="Title of the section containing the data types to encrypt.">
+          Encrypted data types
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE" desc="In title case: the title of the section containing the data types to encrypt.">
+          Encrypted Data Types
+        </message>
+      </if>
+      <message name="IDS_SYNC_ENCRYPT_SENSITIVE_DATA" desc="Text of the radio that when selected causes sync to encrypt sensitive data.">
+        Encrypt sensitive data (passwords)
       </message>
+      <message name="IDS_SYNC_ENCRYPT_ALL_DATA" desc="Text of the radio that when selected causes sync to encrypt all data.">
+        Encrypt all data
+      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
+          Encryption passphrase
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="In title case: the title of the section containing sync passphrase preferences.">
+          Encryption Passphrase
+        </message>
+      </if>
       <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt your data using either your Google password or your own passphrase.
       </message>

@@ -63,7 +63,7 @@ cr.define('options', function() {
         return false;
       };
       $('google-option').onchange = $('explicit-option').onchange = function() {
-        self.onRadioChange_();
+        self.onPassphraseRadioChanged_();
       };
       $('choose-datatypes-cancel').onclick = $('sync-setup-cancel').onclick =
           $('confirm-everything-cancel').onclick = function() {
@@ -127,7 +127,18 @@ cr.define('options', function() {
       chrome.send('SyncSetupPassphrase', [result]);
     },
 
-    getRadioCheckedValue_: function() {
+    getEncryptionRadioCheckedValue_: function() {
+      var f = $('choose-data-types-form');
+      for (var i = 0; i < f.encrypt.length; ++i) {
+        if (f.encrypt[i].checked) {
+          return f.encrypt[i].value;
+        }
+      }
+
+      return undefined;
+    },
+
+    getPassphraseRadioCheckedValue_: function() {
       var f = $('choose-data-types-form');
       for (var i = 0; i < f.option.length; ++i) {
         if (f.option[i].checked) {
@@ -138,8 +149,14 @@ cr.define('options', function() {
       return undefined;
     },
 
-    onRadioChange_: function() {
-      var visible = this.getRadioCheckedValue_() == "explicit";
+    disableEncryptionRadioGroup_: function() {
+      var f = $('choose-data-types-form');
+      for (var i = 0; i < f.encrypt.length; ++i)
+        f.encrypt[i].disabled = true;
+    },
+
+    onPassphraseRadioChanged_: function() {
+      var visible = this.getPassphraseRadioCheckedValue_() == "explicit";
       $('sync-custom-passphrase').hidden = !visible;
     },
 
@@ -200,7 +217,8 @@ cr.define('options', function() {
       mismatchError.style.display = "none";
 
       var f = $('choose-data-types-form');
-      if (this.getRadioCheckedValue_() != "explicit" || f.option[0].disabled)
+      if (this.getPassphraseRadioCheckedValue_() != "explicit" ||
+          f.option[0].disabled)
         return true;
 
       var customPassphrase = $('custom-passphrase');
@@ -244,6 +262,8 @@ cr.define('options', function() {
 
       var syncAll =
         document.getElementById('sync-select-datatypes').selectedIndex == 0;
+      var usePassphrase = this.getPassphraseRadioCheckedValue_() == 'explicit';
+      var encryptAllData = this.getEncryptionRadioCheckedValue_() == 'all';
 
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
@@ -258,7 +278,8 @@ cr.define('options', function() {
           "syncTypedUrls": syncAll || $('typed-urls-checkbox').checked,
           "syncApps": syncAll || $('apps-checkbox').checked,
           "syncSessions": syncAll || $('sessions-checkbox').checked,
-          "usePassphrase": (this.getRadioCheckedValue_() == 'explicit'),
+          "encryptAllData": encryptAllData,
+          "usePassphrase": usePassphrase,
           "passphrase": $('custom-passphrase').value
       });
       chrome.send('SyncSetupConfigure', [result]);
@@ -333,8 +354,17 @@ cr.define('options', function() {
       }
     },
 
-    setEncryptionCheckboxes_: function(args) {
-      if (args["usePassphrase"]) {
+    setEncryptionRadios_: function(args) {
+      if (args['encryptAllData']) {
+        $('encrypt-all-option').checked = true;
+        this.disableEncryptionRadioGroup_();
+      } else {
+        $('encrypt-sensitive-option').checked = true;
+      }
+    },
+
+    setPassphraseRadios_: function(args) {
+      if (args['usePassphrase']) {
         $('explicit-option').checked = true;
 
         // The passphrase, once set, cannot be unset, but we show a reset link.
@@ -356,7 +386,8 @@ cr.define('options', function() {
 
     setCheckboxesAndErrors_: function(args) {
       this.setChooseDataTypesCheckboxes_(args);
-      this.setEncryptionCheckboxes_(args);
+      this.setEncryptionRadios_(args);
+      this.setPassphraseRadios_(args);
       this.setErrorState_(args);
     },
 
@@ -372,6 +403,8 @@ cr.define('options', function() {
       $('sync-setup-configure').classList.remove('hidden');
 
       if (args) {
+        if (!args['encryptionEnabled'])
+          $('customize-sync-encryption').classList.add('hidden');
         this.setCheckboxesAndErrors_(args);
 
         // Whether to display the 'Sync everything' confirmation page or the

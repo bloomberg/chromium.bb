@@ -149,6 +149,7 @@ extern const char kEnableSearchProviderApiV2[];
 extern const char kEnableSnapStart[];
 extern const char kEnableSync[];
 extern const char kEnableSyncAutofill[];
+extern const char kEnableSyncEncryption[];
 extern const char kEnableSyncPreferences[];
 extern const char kEnableSyncSessions[];
 extern const char kEnableSyncTypedUrls[];

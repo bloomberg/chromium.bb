@@ -121,6 +121,10 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
     config->data_types.insert(syncable::APPS);
 
   // Encryption settings.
+  if (!result->GetBoolean("encryptAllData", &config->encrypt_all))
+    return false;
+
+  // Passphrase settings.
   if (!result->GetBoolean("usePassphrase", &config->use_secondary_passphrase))
     return false;
   if (config->use_secondary_passphrase &&
@@ -244,6 +248,9 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "sectionExplicitMessagePrefix", IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX },
     { "sectionExplicitMessagePostfix",
         IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX },
+    { "encryptedDataTypesTitle", IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE },
+    { "encryptSensitiveOption", IDS_SYNC_ENCRYPT_SENSITIVE_DATA },
+    { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

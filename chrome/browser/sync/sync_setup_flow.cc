@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
@@ -15,8 +16,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -134,6 +137,15 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
   args->SetBoolean("syncApps",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncApps));
+  args->SetBoolean("encryptionEnabled",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSyncEncryption));
+
+  syncable::ModelTypeSet encrypted_types;
+  service->GetEncryptedDataTypes(&encrypted_types);
+  bool encrypt_all =
+      encrypted_types.upper_bound(syncable::PASSWORDS) != encrypted_types.end();
+  args->SetBoolean("encryptAllData", encrypt_all);
 
   // Load the parameters for the encryption tab.
   args->SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
@@ -219,6 +231,12 @@ void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
 void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // Go to the "loading..." screen.
   Advance(SyncSetupWizard::SETTING_UP);
+
+  if (configuration.encrypt_all) {
+    syncable::ModelTypeSet data_types;
+    service_->GetRegisteredDataTypes(&data_types);
+    service_->EncryptDataTypes(data_types);
+  }
 
   // If we are activating the passphrase, we need to have one supplied.
   DCHECK(service_->IsUsingSecondaryPassphrase() ||

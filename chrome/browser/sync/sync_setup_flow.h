@@ -28,6 +28,7 @@ struct SyncConfiguration {
   SyncConfiguration();
   ~SyncConfiguration();
 
+  bool encrypt_all;
   bool sync_everything;
   syncable::ModelTypeSet data_types;
   bool use_secondary_passphrase;
