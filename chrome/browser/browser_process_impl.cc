@@ -1017,7 +1017,11 @@ bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
       switches::kDisableClientSidePhishingDetection) &&
       resource_dispatcher_host()->safe_browsing_service() &&
       resource_dispatcher_host()->safe_browsing_service()->CanReportStats() &&
-      (channel == "beta" || channel == "dev" || channel == "canary");
+      // TODO(noelutz): use platform_util::GetChannel() once it has been
+      // pushed to the release branch.
+      (channel == "beta" || channel == "dev" || channel == "canary" ||
+       channel == "beta-m" || channel == "dev-m" || channel == "canary-m");
+
 #endif
 }
 
