@@ -54,15 +54,21 @@ for arg; do
   fi
 done
 
-has_unsupported=no
-readonly collect2out="/tmp/$(basename "$0")_collect2.$$.tmp"
-readonly warning="warning: sigaction is not implemented and will always fail"
-
 # Run the real collect2 binary with processed arguments.
-${GLIBC_TST_COLLECT2} "${args[@]}" 2>&1 | tee "$collect2out"
-if grep "$warning" "$collect2out" >/dev/null; then
-  has_unsupported=yes
+readonly collect2out="/tmp/$(basename "$0").$$.tmp"
+"${GLIBC_TST_COLLECT2}" "${args[@]}" 2>&1 | tee "$collect2out"
+
+# Detect if there was an unsupported symbol in the collect2 output.
+unsup_msg=none
+readonly unsup_msg_file="/tmp/$(basename "$0")unsup.$$.tmp"
+readonly unsup_regex="\\(sigaction\\|pthread_cancel\\)"
+readonly w0="warning: warning: "
+readonly w1=" is not implemented and will always fail"
+if sed 's/.*'"$w0$unsup_regex$w1/__\1__/" "$collect2out" | \
+     grep __"$unsup_regex"__ >"$unsup_msg_file"; then
+  unsup_msg="$(cat "$unsup_msg_file" | tail -1)"
 fi
+/bin/rm -f "$unsup_msg_file"
 /bin/rm -f "$collect2out"
 
 # Replace the output file with a bash script that launches the loader.
@@ -74,9 +80,9 @@ if [ "$?" = "0" ] ; then
 
   # Generate no-op binaries if link-time warnings gave a hint that the test does
   # not make sense in Native Client.
-  if [[ "$has_unsupported" = "yes" ]]; then
+  if [[ "$unsup_msg" != "none" ]]; then
     echo "#!/bin/bash" > "$outfile"
-    echo "echo __sigaction__ $outfile EXCLUDED_IN_NACL 1>&2" >> "$outfile"
+    echo "echo $unsup_msg $outfile EXCLUDED_IN_NACL 1>&2" >> "$outfile"
     echo "exit 115" >> "$outfile"
     chmod a+x "$outfile"
     exit 0

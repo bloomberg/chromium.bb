@@ -257,7 +257,6 @@ nptl/tst-tls4modb
 ############################################
 nptl/tst-mutex6
 nptl/tst-mutexpi6
-nptl/tst-mutexpi8
 rt/tst-clock
 rt/tst-timer
 rt/tst-timer2
@@ -271,12 +270,7 @@ nptl/tst-exit3
 ############################################
 # Flaky tests.
 ############################################
-nptl/tst-cancel7
 nptl/tst-mutexpi2
-nptl/tst-cancelx7
-nptl/tst-cancel18
-nptl/tst-cancelx18
-nptl/tst-cancel25
 nptl/tst-cond14
 nptl/tst-stdio1
 posix/tst-fnmatch
