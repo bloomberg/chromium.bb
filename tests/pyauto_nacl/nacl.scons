@@ -128,13 +128,7 @@ env.AddNodeToTestSuite(node,
 node = env.PyAutoTester(
     'pyauto_multiple_nexes.out',
     env.File('multiple_nexes.py'),
-    files=[env.File('${STAGING_DIR}/nacltest.js')] +
-           basic_object_files +
-           ppapi_core_files +
-           ppapi_file_system_files +
-           ppapi_geturl_files +
-           ppapi_progress_events_files +
-           ppapi_test_example_files
+    files=core_test_files
 )
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
