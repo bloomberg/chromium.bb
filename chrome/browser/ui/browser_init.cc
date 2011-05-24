@@ -1048,10 +1048,6 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   // Unsupported flags for which to display a warning that "stability and
   // security will suffer".
   static const char* kBadFlags[] = {
-    // Warn when accelerated 2d canvas is enabled as its presence can
-    // affect stability and rendering correctness of certain pages.
-    // TODO(vangelis): Remove when accelerated 2d canvas is enabled by default.
-    switches::kEnableAccelerated2dCanvas,
     // These imply disabling the sandbox.
     switches::kSingleProcess,
     switches::kNoSandbox,

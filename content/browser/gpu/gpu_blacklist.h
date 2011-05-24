@@ -89,7 +89,7 @@ class GpuBlacklist {
   // }
   Value* GetFeatureStatus(bool gpu_access_allowed,
                           bool disable_accelerated_compositing,
-                          bool enable_accelerated_2D_canvas,
+                          bool disable_accelerated_2D_canvas,
                           bool disable_experimental_webgl,
                           bool disable_multisampling) const;
 

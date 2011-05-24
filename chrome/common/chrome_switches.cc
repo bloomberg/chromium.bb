@@ -169,6 +169,9 @@ const char kDeviceManagementUrl[]           = "device-management-url";
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
+// Disable gpu-accelerated 2d canvas.
+const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
+
 // Disables the hardware acceleration of 3D CSS and animation.
 const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
 
@@ -363,9 +366,6 @@ const char kDomAutomationController[]       = "dom-automation";
 // logging to be enabled to really do anything).  Used by developers and test
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
-
-// Enable gpu-accelerated 2d canvas.
-const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
 // Enables the hardware acceleration of plugins.
 const char kEnableAcceleratedPlugins[]      = "enable-accelerated-plugins";
