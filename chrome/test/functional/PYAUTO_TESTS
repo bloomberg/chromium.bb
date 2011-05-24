@@ -63,7 +63,7 @@
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
       'passwords',
-      'pdf',
+      '-pdf',  # crbug.com/83763
       'plugins',
       'plugins_check',
       'popups',
