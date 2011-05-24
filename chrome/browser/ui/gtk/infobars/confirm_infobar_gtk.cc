@@ -20,7 +20,8 @@ InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 // ConfirmInfoBarGtk -----------------------------------------------------------
 
 ConfirmInfoBarGtk::ConfirmInfoBarGtk(ConfirmInfoBarDelegate* delegate)
-    : InfoBar(delegate) {
+    : InfoBar(delegate),
+      size_group_(NULL) {
   confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE,
                                                  kEndOfLabelSpacing);
   // This alignment allocates the confirm hbox only as much space as it
@@ -59,12 +60,19 @@ ConfirmInfoBarGtk::ConfirmInfoBarGtk(ConfirmInfoBarDelegate* delegate)
 }
 
 ConfirmInfoBarGtk::~ConfirmInfoBarGtk() {
+  if (size_group_)
+    g_object_unref(size_group_);
 }
 
 void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
   if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
+    if (!size_group_)
+      size_group_ = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+
     GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
         delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
+    gtk_size_group_add_widget(size_group_, button);
+
     gtk_util::CenterWidgetInHBox(confirm_hbox_, button, true, 0);
     g_signal_connect(button, "clicked",
                      G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?

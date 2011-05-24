@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
+typedef struct _GtkSizeGroup GtkSizeGroup;
 typedef struct _GtkWidget GtkWidget;
 
 // An infobar that shows a message, up to two optional buttons, and an optional,
@@ -32,6 +33,8 @@ class ConfirmInfoBarGtk : public InfoBar {
   CHROMEGTK_CALLBACK_0(ConfirmInfoBarGtk, void, OnLinkClicked);
 
   GtkWidget* confirm_hbox_;
+
+  GtkSizeGroup* size_group_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBarGtk);
 };
