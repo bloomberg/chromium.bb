@@ -431,8 +431,6 @@
           'sources/': [
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
             ['exclude', 'controls/menu/native_menu_gtk.cc'],
-            ['exclude', 'ime/input_method_gtk.cc'],
-            ['exclude', 'ime/input_method_gtk.h'],
           ],
           'conditions': [
             ['"<!@(<(pkg-config) --atleast-version=2.0 inputproto || echo $?)"!=""', {
