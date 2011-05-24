@@ -595,6 +595,44 @@ class HostNPPlugin {
   }
 
   bool Init(int16 argc, char** argn, char** argv, NPSavedData* saved) {
+#if defined(OS_MACOSX)
+    // Use the modern CoreGraphics and Cocoa models when available, since
+    // QuickDraw and Carbon are deprecated.
+    // The drawing and event models don't change anything for this plugin, since
+    // none of the functions affected by the models actually do anything.
+    // This does however keep the plugin from breaking when Chromium eventually
+    // drops support for QuickDraw and Carbon, and it also keeps the browser
+    // from sending Null Events once a second to support old Carbon based
+    // timers.
+    // Chromium should always be supporting the newer models.
+
+    // Sanity check to see if Chromium supports the CoreGraphics drawing model.
+    NPBool supports_core_graphics = false;
+    NPError err = g_npnetscape_funcs->getvalue(instance_,
+                                               NPNVsupportsCoreGraphicsBool,
+                                               &supports_core_graphics);
+    if (err == NPERR_NO_ERROR && supports_core_graphics) {
+      // Switch to CoreGraphics drawing model.
+      g_npnetscape_funcs->setvalue(instance_, NPPVpluginDrawingModel,
+          reinterpret_cast<void*>(NPDrawingModelCoreGraphics));
+    } else {
+      LOG(ERROR) << "No Core Graphics support";
+      return false;
+    }
+
+    // Sanity check to see if Chromium supports the Cocoa event model.
+    NPBool supports_cocoa = false;
+    err = g_npnetscape_funcs->getvalue(instance_, NPNVsupportsCocoaBool,
+                                       &supports_cocoa);
+    if (err == NPERR_NO_ERROR && supports_cocoa) {
+      // Switch to Cocoa event model.
+      g_npnetscape_funcs->setvalue(instance_, NPPVpluginEventModel,
+          reinterpret_cast<void*>(NPEventModelCocoa));
+    } else {
+      LOG(ERROR) << "No Cocoa Event Model support";
+      return false;
+    }
+#endif  // OS_MACOSX
     return true;
   }
 
