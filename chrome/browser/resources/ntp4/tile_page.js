@@ -456,7 +456,7 @@ cr.define('ntp4', function() {
       var offTheRight = col == layout.numRowTiles ||
           (col == layout.numRowTiles - 1 && tile.hasDoppleganger());
       var offTheLeft = col == -1 || (col == 0 && tile.hasDoppleganger());
-      if (this.dragEnters_ > 0 && (offTheRight || offTheLeft)) {
+      if (this.isCurrentDragTarget_ && (offTheRight || offTheLeft)) {
         var sign = offTheRight ? 1 : -1;
         tile.showDoppleganger(-layout.numRowTiles * layout.colWidth * sign,
                               layout.rowHeight * sign);
@@ -515,7 +515,7 @@ cr.define('ntp4', function() {
      * @private
      */
     updateMask_: function() {
-      if (this.dragEnters_ == 0) {
+      if (!this.isCurrentDragTarget_) {
         this.style.WebkitMaskBoxImage = '';
         return;
       }
@@ -700,17 +700,17 @@ cr.define('ntp4', function() {
       this.isCurrentDragTarget_ = false;
 
       var index = this.currentDropIndex_;
-      if ((index == this.dragItemIndex_) && this.withinPageDrag_)
-        return;
-
-      var adjustedIndex = this.currentDropIndex_ +
-          (index > this.dragItemIndex_ ? 1 : 0);
-      if (TilePage.currentlyDraggingTile) {
-        this.tileGrid_.insertBefore(
-            TilePage.currentlyDraggingTile,
-            this.tileElements_[adjustedIndex]);
-      } else {
-        this.addOutsideData(e.dataTransfer, adjustedIndex);
+      // Only change data if this was not a 'null drag'.
+      if (!((index == this.dragItemIndex_) && this.withinPageDrag_)) {
+        var adjustedIndex = this.currentDropIndex_ +
+            (index > this.dragItemIndex_ ? 1 : 0);
+        if (TilePage.currentlyDraggingTile) {
+          this.tileGrid_.insertBefore(
+              TilePage.currentlyDraggingTile,
+              this.tileElements_[adjustedIndex]);
+        } else {
+          this.addOutsideData(e.dataTransfer, adjustedIndex);
+        }
       }
 
       this.classList.remove('animating-tile-page');
