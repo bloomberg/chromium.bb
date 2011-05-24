@@ -100,8 +100,6 @@ const int kTabStripIndent = 1;
 const int kVerticalTabBorderInset = 3;
 // Y position for profile tag inside the frame.
 const int kProfileTagYPosition = 1;
-// Offset y position of profile button and tag by this amount when maximized.
-const int kProfileElementMaximizedYOffset = 6;
 
 // Converts |bounds| from |src|'s coordinate system to |dst|, and checks if
 // |pt| is contained within.
@@ -1184,11 +1182,10 @@ void OpaqueBrowserFrameView::LayoutProfileTag() {
           profile_button_->GetPreferredSize().width();
   // Adjust for different default font sizes on different Windows platforms.
   int y_tag = profile_button_->font().GetHeight() < 14 ? 2 : 0;
-  int y_maximized_offset = frame_->IsMaximized() ?
-      kProfileElementMaximizedYOffset : 0;
+  int maximized = frame_->IsMaximized();
   profile_button_->SetBounds(
       x_tag,
-      y_tag + y_maximized_offset,
+      maximized ? 0 : y_tag,
       profile_button_->GetPreferredSize().width(),
       profile_button_->GetPreferredSize().height());
 
@@ -1196,10 +1193,9 @@ void OpaqueBrowserFrameView::LayoutProfileTag() {
     profile_tag_->SetVisible(true);
     profile_tag_->SetBounds(
         x_tag,
-        kProfileTagYPosition + y_maximized_offset,
+        maximized ? 0 : kProfileTagYPosition,
         profile_button_->GetPreferredSize().width(),
         ProfileTagView::kProfileTagHeight);
-    profile_tag_->SetVisible(true);
   } else {
     profile_tag_->SetVisible(false);
   }
