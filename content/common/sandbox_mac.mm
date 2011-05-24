@@ -385,13 +385,15 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
 }
 
 // Retrieve OS X version, output parameters are self explanatory.
-void GetOSVersion(bool* snow_leopard_or_higher) {
+void GetOSVersion(bool* snow_leopard_or_higher, bool* lion_or_higher) {
   int32 major_version, minor_version, bugfix_version;
   base::SysInfo::OperatingSystemVersionNumbers(&major_version,
                                                &minor_version,
                                                &bugfix_version);
   *snow_leopard_or_higher =
       (major_version > 10 || (major_version == 10 && minor_version >= 6));
+  *lion_or_higher =
+      (major_version > 10 || (major_version == 10 && minor_version >= 7));
 }
 
 // static
@@ -505,7 +507,8 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
   }
 
   bool snow_leopard_or_higher;
-  GetOSVersion(&snow_leopard_or_higher);
+  bool lion_or_higher;
+  GetOSVersion(&snow_leopard_or_higher, &lion_or_higher);
 
   // Without this, the sandbox will print a message to the system log every
   // time it denies a request.  This floods the console with useless spew. The
@@ -528,9 +531,14 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
       SandboxSubstring(home_dir_canonical.value(),
           SandboxSubstring::LITERAL);
 
+  if (lion_or_higher) {
+    // >=10.7 Sandbox rules.
+    [tokens_to_remove addObject:@";10.7_OR_ABOVE"];
+  }
+
   if (snow_leopard_or_higher) {
-    // 10.6-only Sandbox rules.
-    [tokens_to_remove addObject:@";10.6_ONLY"];
+    // >=10.6 Sandbox rules.
+    [tokens_to_remove addObject:@";10.6_OR_ABOVE"];
   } else {
     // Sandbox rules only for versions before 10.6.
     [tokens_to_remove addObject:@";BEFORE_10.6"];
