@@ -5356,7 +5356,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Site
       </message>
       <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
-        Pattern
+        Hostname Pattern
       </message>
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
         Behavior
@@ -5392,7 +5392,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         [*.]example.com
       </message>
       <message name="IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS" desc="Placeholder text before the user adds a new exception" >
-        Add a new exception pattern
+        Add a new hostname pattern
       </message>
       <message name="IDS_EXCEPTIONS_NOT_SET_BUTTON" desc="A label to display in the exception page's action column when a site's content setting has not yet been set for a given domain.">
         Not set
@@ -5423,7 +5423,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception editor dialogs -->
       <message name="IDS_EXCEPTION_EDITOR_PATTERN_TITLE" desc="Title of the pattern field in the exception editor">
-        Pattern:
+        Hostname Pattern:
       </message>
       <message name="IDS_EXCEPTION_EDITOR_OTR_TITLE" desc="Title of the incognito checkbox in the exception editor">
         Only apply to this incognito session
