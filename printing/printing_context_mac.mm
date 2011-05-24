@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsexception_enabler.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
 #include "printing/print_settings_initializer_mac.h"
@@ -36,6 +38,15 @@ void PrintingContextMac::AskUserForSettings(gfx::NativeView parent_view,
                                             int max_pages,
                                             bool has_selection,
                                             PrintSettingsCallback* callback) {
+  // Third-party print drivers seem to be an area prone to raising exceptions.
+  // This will allow exceptions to be raised, but does not handle them.  The
+  // NSPrintPanel appears to have appropriate NSException handlers.
+  base::mac::ScopedNSExceptionEnabler enabler;
+
+  // Exceptions can also happen when the NSPrintPanel is being
+  // deallocated, so it must be autoreleased within this scope.
+  base::mac::ScopedNSAutoreleasePool pool;
+
   DCHECK([NSThread isMainThread]);
 
   // We deliberately don't feed max_pages into the dialog, because setting
