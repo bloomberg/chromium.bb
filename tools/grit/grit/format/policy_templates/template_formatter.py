@@ -94,7 +94,10 @@ class TemplateFormatter(interface.ItemFormatter):
     if (isinstance(item, structure.StructureNode) and
         item.attrs['type'] == 'policy_template_metafile'):
       assert self._policy_data == None
-      json_text = item.gatherer.Translate(self._lang)
+      json_text = item.gatherer.Translate(
+          self._lang,
+          pseudo_if_not_available=item.PseudoIsAllowed(),
+          fallback_to_english=item.ShouldFallbackToEnglish())
       self._policy_data = eval(json_text)
     for child in item.children:
       self._ParseGritNodes(child)

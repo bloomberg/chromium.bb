@@ -16,6 +16,7 @@ class PolicyTemplateGenerator:
   '''
 
   def _ImportMessage(self, msg_txt):
+    msg_txt = msg_txt.decode('utf-8')
     # Replace the placeholder of app name.
     msg_txt = msg_txt.replace('$1', self._config['app_name'])
     msg_txt = msg_txt.replace('$2', self._config['os_name'])

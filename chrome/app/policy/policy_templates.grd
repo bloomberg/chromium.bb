@@ -6,18 +6,230 @@ templates and will be translated for each locale. -->
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
   <outputs>
-    <output filename="app/policy/windows/admx/chrome.admx" type="admx" lang="en" />
-    <output filename="app/policy/windows/admx/en-US/chrome.adml" type="adml" lang="en" />
-    <output filename="app/policy/common/html/chrome_policy_list.html" type="doc" lang="en" />
-    <output filename="app/policy/windows/adm/en-US/chrome.adm" type="adm" lang="en" />
     <output filename="app/policy/linux/examples/chrome.json" type="json" lang="en" />
     <output filename="app/policy/windows/examples/chrome.reg" type="reg" lang="en" />
+    <output filename="app/policy/windows/admx/chrome.admx" type="admx" lang="en" />
+
+    <output filename="app/policy/windows/admx/am/chrome.adml" type="adml" lang="am" />
+    <output filename="app/policy/windows/admx/ar/chrome.adml" type="adml" lang="ar" />
+    <output filename="app/policy/windows/admx/bg/chrome.adml" type="adml" lang="bg" />
+    <output filename="app/policy/windows/admx/bn/chrome.adml" type="adml" lang="bn" />
+    <output filename="app/policy/windows/admx/ca/chrome.adml" type="adml" lang="ca" />
+    <output filename="app/policy/windows/admx/cs/chrome.adml" type="adml" lang="cs" />
+    <output filename="app/policy/windows/admx/da/chrome.adml" type="adml" lang="da" />
+    <output filename="app/policy/windows/admx/de/chrome.adml" type="adml" lang="de" />
+    <output filename="app/policy/windows/admx/el/chrome.adml" type="adml" lang="el" />
+    <output filename="app/policy/windows/admx/en-GB/chrome.adml" type="adml" lang="en-GB" />
+    <output filename="app/policy/windows/admx/en-US/chrome.adml" type="adml" lang="en" />
+    <output filename="app/policy/windows/admx/es/chrome.adml" type="adml" lang="es" />
+    <output filename="app/policy/windows/admx/es-419/chrome.adml" type="adml" lang="es-419" />
+    <output filename="app/policy/windows/admx/et/chrome.adml" type="adml" lang="et" />
+    <output filename="app/policy/windows/admx/fa/chrome.adml" type="adml" lang="fa" />
+    <output filename="app/policy/windows/admx/fi/chrome.adml" type="adml" lang="fi" />
+    <output filename="app/policy/windows/admx/fil/chrome.adml" type="adml" lang="fil" />
+    <output filename="app/policy/windows/admx/fr/chrome.adml" type="adml" lang="fr" />
+    <output filename="app/policy/windows/admx/gu/chrome.adml" type="adml" lang="gu" />
+    <output filename="app/policy/windows/admx/he/chrome.adml" type="adml" lang="he" />
+    <output filename="app/policy/windows/admx/hi/chrome.adml" type="adml" lang="hi" />
+    <output filename="app/policy/windows/admx/hr/chrome.adml" type="adml" lang="hr" />
+    <output filename="app/policy/windows/admx/hu/chrome.adml" type="adml" lang="hu" />
+    <output filename="app/policy/windows/admx/id/chrome.adml" type="adml" lang="id" />
+    <output filename="app/policy/windows/admx/it/chrome.adml" type="adml" lang="it" />
+    <output filename="app/policy/windows/admx/ja/chrome.adml" type="adml" lang="ja" />
+    <output filename="app/policy/windows/admx/kn/chrome.adml" type="adml" lang="kn" />
+    <output filename="app/policy/windows/admx/ko/chrome.adml" type="adml" lang="ko" />
+    <output filename="app/policy/windows/admx/lt/chrome.adml" type="adml" lang="lt" />
+    <output filename="app/policy/windows/admx/lv/chrome.adml" type="adml" lang="lv" />
+    <output filename="app/policy/windows/admx/ml/chrome.adml" type="adml" lang="ml" />
+    <output filename="app/policy/windows/admx/mr/chrome.adml" type="adml" lang="mr" />
+    <output filename="app/policy/windows/admx/nl/chrome.adml" type="adml" lang="nl" />
+    <output filename="app/policy/windows/admx/nb/chrome.adml" type="adml" lang="no" />
+    <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
+    <output filename="app/policy/windows/admx/pl/chrome.adml" type="adml" lang="pl" />
+    <output filename="app/policy/windows/admx/pt-BR/chrome.adml" type="adml" lang="pt-BR" />
+    <output filename="app/policy/windows/admx/pt-PT/chrome.adml" type="adml" lang="pt-PT" />
+    <output filename="app/policy/windows/admx/ro/chrome.adml" type="adml" lang="ro" />
+    <output filename="app/policy/windows/admx/ru/chrome.adml" type="adml" lang="ru" />
+    <output filename="app/policy/windows/admx/sk/chrome.adml" type="adml" lang="sk" />
+    <output filename="app/policy/windows/admx/sl/chrome.adml" type="adml" lang="sl" />
+    <output filename="app/policy/windows/admx/sr/chrome.adml" type="adml" lang="sr" />
+    <output filename="app/policy/windows/admx/sv/chrome.adml" type="adml" lang="sv" />
+    <output filename="app/policy/windows/admx/sw/chrome.adml" type="adml" lang="sw" />
+    <output filename="app/policy/windows/admx/ta/chrome.adml" type="adml" lang="ta" />
+    <output filename="app/policy/windows/admx/te/chrome.adml" type="adml" lang="te" />
+    <output filename="app/policy/windows/admx/th/chrome.adml" type="adml" lang="th" />
+    <output filename="app/policy/windows/admx/tr/chrome.adml" type="adml" lang="tr" />
+    <output filename="app/policy/windows/admx/uk/chrome.adml" type="adml" lang="uk" />
+    <output filename="app/policy/windows/admx/vi/chrome.adml" type="adml" lang="vi" />
+    <output filename="app/policy/windows/admx/zh-CN/chrome.adml" type="adml" lang="zh-CN" />
+    <output filename="app/policy/windows/admx/zh-TW/chrome.adml" type="adml" lang="zh-TW" />
+
+    <output filename="app/policy/windows/adm/am/chrome.adm" type="adm" lang="am" />
+    <output filename="app/policy/windows/adm/ar/chrome.adm" type="adm" lang="ar" />
+    <output filename="app/policy/windows/adm/bg/chrome.adm" type="adm" lang="bg" />
+    <output filename="app/policy/windows/adm/bn/chrome.adm" type="adm" lang="bn" />
+    <output filename="app/policy/windows/adm/ca/chrome.adm" type="adm" lang="ca" />
+    <output filename="app/policy/windows/adm/cs/chrome.adm" type="adm" lang="cs" />
+    <output filename="app/policy/windows/adm/da/chrome.adm" type="adm" lang="da" />
+    <output filename="app/policy/windows/adm/de/chrome.adm" type="adm" lang="de" />
+    <output filename="app/policy/windows/adm/el/chrome.adm" type="adm" lang="el" />
+    <output filename="app/policy/windows/adm/en-GB/chrome.adm" type="adm" lang="en-GB" />
+    <output filename="app/policy/windows/adm/en-US/chrome.adm" type="adm" lang="en" />
+    <output filename="app/policy/windows/adm/es/chrome.adm" type="adm" lang="es" />
+    <output filename="app/policy/windows/adm/es-419/chrome.adm" type="adm" lang="es-419" />
+    <output filename="app/policy/windows/adm/et/chrome.adm" type="adm" lang="et" />
+    <output filename="app/policy/windows/adm/fa/chrome.adm" type="adm" lang="fa" />
+    <output filename="app/policy/windows/adm/fi/chrome.adm" type="adm" lang="fi" />
+    <output filename="app/policy/windows/adm/fil/chrome.adm" type="adm" lang="fil" />
+    <output filename="app/policy/windows/adm/fr/chrome.adm" type="adm" lang="fr" />
+    <output filename="app/policy/windows/adm/gu/chrome.adm" type="adm" lang="gu" />
+    <output filename="app/policy/windows/adm/he/chrome.adm" type="adm" lang="he" />
+    <output filename="app/policy/windows/adm/hi/chrome.adm" type="adm" lang="hi" />
+    <output filename="app/policy/windows/adm/hr/chrome.adm" type="adm" lang="hr" />
+    <output filename="app/policy/windows/adm/hu/chrome.adm" type="adm" lang="hu" />
+    <output filename="app/policy/windows/adm/id/chrome.adm" type="adm" lang="id" />
+    <output filename="app/policy/windows/adm/it/chrome.adm" type="adm" lang="it" />
+    <output filename="app/policy/windows/adm/ja/chrome.adm" type="adm" lang="ja" />
+    <output filename="app/policy/windows/adm/kn/chrome.adm" type="adm" lang="kn" />
+    <output filename="app/policy/windows/adm/ko/chrome.adm" type="adm" lang="ko" />
+    <output filename="app/policy/windows/adm/lt/chrome.adm" type="adm" lang="lt" />
+    <output filename="app/policy/windows/adm/lv/chrome.adm" type="adm" lang="lv" />
+    <output filename="app/policy/windows/adm/ml/chrome.adm" type="adm" lang="ml" />
+    <output filename="app/policy/windows/adm/mr/chrome.adm" type="adm" lang="mr" />
+    <output filename="app/policy/windows/adm/nl/chrome.adm" type="adm" lang="nl" />
+    <output filename="app/policy/windows/adm/nb/chrome.adm" type="adm" lang="no" />
+    <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
+    <output filename="app/policy/windows/adm/pl/chrome.adm" type="adm" lang="pl" />
+    <output filename="app/policy/windows/adm/pt-BR/chrome.adm" type="adm" lang="pt-BR" />
+    <output filename="app/policy/windows/adm/pt-PT/chrome.adm" type="adm" lang="pt-PT" />
+    <output filename="app/policy/windows/adm/ro/chrome.adm" type="adm" lang="ro" />
+    <output filename="app/policy/windows/adm/ru/chrome.adm" type="adm" lang="ru" />
+    <output filename="app/policy/windows/adm/sk/chrome.adm" type="adm" lang="sk" />
+    <output filename="app/policy/windows/adm/sl/chrome.adm" type="adm" lang="sl" />
+    <output filename="app/policy/windows/adm/sr/chrome.adm" type="adm" lang="sr" />
+    <output filename="app/policy/windows/adm/sv/chrome.adm" type="adm" lang="sv" />
+    <output filename="app/policy/windows/adm/sw/chrome.adm" type="adm" lang="sw" />
+    <output filename="app/policy/windows/adm/ta/chrome.adm" type="adm" lang="ta" />
+    <output filename="app/policy/windows/adm/te/chrome.adm" type="adm" lang="te" />
+    <output filename="app/policy/windows/adm/th/chrome.adm" type="adm" lang="th" />
+    <output filename="app/policy/windows/adm/tr/chrome.adm" type="adm" lang="tr" />
+    <output filename="app/policy/windows/adm/uk/chrome.adm" type="adm" lang="uk" />
+    <output filename="app/policy/windows/adm/vi/chrome.adm" type="adm" lang="vi" />
+    <output filename="app/policy/windows/adm/zh-CN/chrome.adm" type="adm" lang="zh-CN" />
+    <output filename="app/policy/windows/adm/zh-TW/chrome.adm" type="adm" lang="zh-TW" />
+
+    <output filename="app/policy/common/html/am/chrome_policy_list.html" type="doc" lang="am" />
+    <output filename="app/policy/common/html/ar/chrome_policy_list.html" type="doc" lang="ar" />
+    <output filename="app/policy/common/html/bg/chrome_policy_list.html" type="doc" lang="bg" />
+    <output filename="app/policy/common/html/bn/chrome_policy_list.html" type="doc" lang="bn" />
+    <output filename="app/policy/common/html/ca/chrome_policy_list.html" type="doc" lang="ca" />
+    <output filename="app/policy/common/html/cs/chrome_policy_list.html" type="doc" lang="cs" />
+    <output filename="app/policy/common/html/da/chrome_policy_list.html" type="doc" lang="da" />
+    <output filename="app/policy/common/html/de/chrome_policy_list.html" type="doc" lang="de" />
+    <output filename="app/policy/common/html/el/chrome_policy_list.html" type="doc" lang="el" />
+    <output filename="app/policy/common/html/en-GB/chrome_policy_list.html" type="doc" lang="en-GB" />
+    <output filename="app/policy/common/html/en-US/chrome_policy_list.html" type="doc" lang="en" />
+    <output filename="app/policy/common/html/es/chrome_policy_list.html" type="doc" lang="es" />
+    <output filename="app/policy/common/html/es-419/chrome_policy_list.html" type="doc" lang="es-419" />
+    <output filename="app/policy/common/html/et/chrome_policy_list.html" type="doc" lang="et" />
+    <output filename="app/policy/common/html/fa/chrome_policy_list.html" type="doc" lang="fa" />
+    <output filename="app/policy/common/html/fi/chrome_policy_list.html" type="doc" lang="fi" />
+    <output filename="app/policy/common/html/fil/chrome_policy_list.html" type="doc" lang="fil" />
+    <output filename="app/policy/common/html/fr/chrome_policy_list.html" type="doc" lang="fr" />
+    <output filename="app/policy/common/html/gu/chrome_policy_list.html" type="doc" lang="gu" />
+    <output filename="app/policy/common/html/he/chrome_policy_list.html" type="doc" lang="he" />
+    <output filename="app/policy/common/html/hi/chrome_policy_list.html" type="doc" lang="hi" />
+    <output filename="app/policy/common/html/hr/chrome_policy_list.html" type="doc" lang="hr" />
+    <output filename="app/policy/common/html/hu/chrome_policy_list.html" type="doc" lang="hu" />
+    <output filename="app/policy/common/html/id/chrome_policy_list.html" type="doc" lang="id" />
+    <output filename="app/policy/common/html/it/chrome_policy_list.html" type="doc" lang="it" />
+    <output filename="app/policy/common/html/ja/chrome_policy_list.html" type="doc" lang="ja" />
+    <output filename="app/policy/common/html/kn/chrome_policy_list.html" type="doc" lang="kn" />
+    <output filename="app/policy/common/html/ko/chrome_policy_list.html" type="doc" lang="ko" />
+    <output filename="app/policy/common/html/lt/chrome_policy_list.html" type="doc" lang="lt" />
+    <output filename="app/policy/common/html/lv/chrome_policy_list.html" type="doc" lang="lv" />
+    <output filename="app/policy/common/html/ml/chrome_policy_list.html" type="doc" lang="ml" />
+    <output filename="app/policy/common/html/mr/chrome_policy_list.html" type="doc" lang="mr" />
+    <output filename="app/policy/common/html/nl/chrome_policy_list.html" type="doc" lang="nl" />
+    <output filename="app/policy/common/html/nb/chrome_policy_list.html" type="doc" lang="no" />
+    <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
+    <output filename="app/policy/common/html/pl/chrome_policy_list.html" type="doc" lang="pl" />
+    <output filename="app/policy/common/html/pt-BR/chrome_policy_list.html" type="doc" lang="pt-BR" />
+    <output filename="app/policy/common/html/pt-PT/chrome_policy_list.html" type="doc" lang="pt-PT" />
+    <output filename="app/policy/common/html/ro/chrome_policy_list.html" type="doc" lang="ro" />
+    <output filename="app/policy/common/html/ru/chrome_policy_list.html" type="doc" lang="ru" />
+    <output filename="app/policy/common/html/sk/chrome_policy_list.html" type="doc" lang="sk" />
+    <output filename="app/policy/common/html/sl/chrome_policy_list.html" type="doc" lang="sl" />
+    <output filename="app/policy/common/html/sr/chrome_policy_list.html" type="doc" lang="sr" />
+    <output filename="app/policy/common/html/sv/chrome_policy_list.html" type="doc" lang="sv" />
+    <output filename="app/policy/common/html/sw/chrome_policy_list.html" type="doc" lang="sw" />
+    <output filename="app/policy/common/html/ta/chrome_policy_list.html" type="doc" lang="ta" />
+    <output filename="app/policy/common/html/te/chrome_policy_list.html" type="doc" lang="te" />
+    <output filename="app/policy/common/html/th/chrome_policy_list.html" type="doc" lang="th" />
+    <output filename="app/policy/common/html/tr/chrome_policy_list.html" type="doc" lang="tr" />
+    <output filename="app/policy/common/html/uk/chrome_policy_list.html" type="doc" lang="uk" />
+    <output filename="app/policy/common/html/vi/chrome_policy_list.html" type="doc" lang="vi" />
+    <output filename="app/policy/common/html/zh-CN/chrome_policy_list.html" type="doc" lang="zh-CN" />
+    <output filename="app/policy/common/html/zh-TW/chrome_policy_list.html" type="doc" lang="zh-TW" />
 
     <if expr="os == 'darwin'">
       <output filename="app/policy/mac/app-Manifest.plist" type="plist" lang="en" />
+
       <!-- The following directory names use Mac language codes (en instead of en-US,
            underscores instead of dashes. (As described in build/apply_locales.py -->
+      <output filename="app/policy/mac/strings/am.lproj/Localizable.strings" type="plist_strings" lang="am" />
+      <output filename="app/policy/mac/strings/ar.lproj/Localizable.strings" type="plist_strings" lang="ar" />
+      <output filename="app/policy/mac/strings/bg.lproj/Localizable.strings" type="plist_strings" lang="bg" />
+      <output filename="app/policy/mac/strings/bn.lproj/Localizable.strings" type="plist_strings" lang="bn" />
+      <output filename="app/policy/mac/strings/ca.lproj/Localizable.strings" type="plist_strings" lang="ca" />
+      <output filename="app/policy/mac/strings/cs.lproj/Localizable.strings" type="plist_strings" lang="cs" />
+      <output filename="app/policy/mac/strings/da.lproj/Localizable.strings" type="plist_strings" lang="da" />
+      <output filename="app/policy/mac/strings/de.lproj/Localizable.strings" type="plist_strings" lang="de" />
+      <output filename="app/policy/mac/strings/el.lproj/Localizable.strings" type="plist_strings" lang="el" />
+      <output filename="app/policy/mac/strings/en_GB.lproj/Localizable.strings" type="plist_strings" lang="en-GB" />
       <output filename="app/policy/mac/strings/en.lproj/Localizable.strings" type="plist_strings" lang="en" />
+      <output filename="app/policy/mac/strings/es.lproj/Localizable.strings" type="plist_strings" lang="es" />
+      <output filename="app/policy/mac/strings/es_419.lproj/Localizable.strings" type="plist_strings" lang="es-419" />
+      <output filename="app/policy/mac/strings/et.lproj/Localizable.strings" type="plist_strings" lang="et" />
+      <output filename="app/policy/mac/strings/fa.lproj/Localizable.strings" type="plist_strings" lang="fa" />
+      <output filename="app/policy/mac/strings/fi.lproj/Localizable.strings" type="plist_strings" lang="fi" />
+      <output filename="app/policy/mac/strings/fil.lproj/Localizable.strings" type="plist_strings" lang="fil" />
+      <output filename="app/policy/mac/strings/fr.lproj/Localizable.strings" type="plist_strings" lang="fr" />
+      <output filename="app/policy/mac/strings/gu.lproj/Localizable.strings" type="plist_strings" lang="gu" />
+      <output filename="app/policy/mac/strings/he.lproj/Localizable.strings" type="plist_strings" lang="he" />
+      <output filename="app/policy/mac/strings/hi.lproj/Localizable.strings" type="plist_strings" lang="hi" />
+      <output filename="app/policy/mac/strings/hr.lproj/Localizable.strings" type="plist_strings" lang="hr" />
+      <output filename="app/policy/mac/strings/hu.lproj/Localizable.strings" type="plist_strings" lang="hu" />
+      <output filename="app/policy/mac/strings/id.lproj/Localizable.strings" type="plist_strings" lang="id" />
+      <output filename="app/policy/mac/strings/it.lproj/Localizable.strings" type="plist_strings" lang="it" />
+      <output filename="app/policy/mac/strings/ja.lproj/Localizable.strings" type="plist_strings" lang="ja" />
+      <output filename="app/policy/mac/strings/kn.lproj/Localizable.strings" type="plist_strings" lang="kn" />
+      <output filename="app/policy/mac/strings/ko.lproj/Localizable.strings" type="plist_strings" lang="ko" />
+      <output filename="app/policy/mac/strings/lt.lproj/Localizable.strings" type="plist_strings" lang="lt" />
+      <output filename="app/policy/mac/strings/lv.lproj/Localizable.strings" type="plist_strings" lang="lv" />
+      <output filename="app/policy/mac/strings/ml.lproj/Localizable.strings" type="plist_strings" lang="ml" />
+      <output filename="app/policy/mac/strings/mr.lproj/Localizable.strings" type="plist_strings" lang="mr" />
+      <output filename="app/policy/mac/strings/nl.lproj/Localizable.strings" type="plist_strings" lang="nl" />
+      <output filename="app/policy/mac/strings/nb.lproj/Localizable.strings" type="plist_strings" lang="no" />
+      <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
+      <output filename="app/policy/mac/strings/pl.lproj/Localizable.strings" type="plist_strings" lang="pl" />
+      <output filename="app/policy/mac/strings/pt_BR.lproj/Localizable.strings" type="plist_strings" lang="pt-BR" />
+      <output filename="app/policy/mac/strings/pt_PT.lproj/Localizable.strings" type="plist_strings" lang="pt-PT" />
+      <output filename="app/policy/mac/strings/ro.lproj/Localizable.strings" type="plist_strings" lang="ro" />
+      <output filename="app/policy/mac/strings/ru.lproj/Localizable.strings" type="plist_strings" lang="ru" />
+      <output filename="app/policy/mac/strings/sk.lproj/Localizable.strings" type="plist_strings" lang="sk" />
+      <output filename="app/policy/mac/strings/sl.lproj/Localizable.strings" type="plist_strings" lang="sl" />
+      <output filename="app/policy/mac/strings/sr.lproj/Localizable.strings" type="plist_strings" lang="sr" />
+      <output filename="app/policy/mac/strings/sv.lproj/Localizable.strings" type="plist_strings" lang="sv" />
+      <output filename="app/policy/mac/strings/sw.lproj/Localizable.strings" type="plist_strings" lang="sw" />
+      <output filename="app/policy/mac/strings/ta.lproj/Localizable.strings" type="plist_strings" lang="ta" />
+      <output filename="app/policy/mac/strings/te.lproj/Localizable.strings" type="plist_strings" lang="te" />
+      <output filename="app/policy/mac/strings/th.lproj/Localizable.strings" type="plist_strings" lang="th" />
+      <output filename="app/policy/mac/strings/tr.lproj/Localizable.strings" type="plist_strings" lang="tr" />
+      <output filename="app/policy/mac/strings/uk.lproj/Localizable.strings" type="plist_strings" lang="uk" />
+      <output filename="app/policy/mac/strings/vi.lproj/Localizable.strings" type="plist_strings" lang="vi" />
+      <output filename="app/policy/mac/strings/zh_CN.lproj/Localizable.strings" type="plist_strings" lang="zh-CN" />
+      <output filename="app/policy/mac/strings/zh_TW.lproj/Localizable.strings" type="plist_strings" lang="zh-TW" />
    </if>
 
   </outputs>
@@ -74,10 +286,8 @@ templates and will be translated for each locale. -->
     <file path="policy_templates_zh-CN.xtb" lang="zh-CN" />
     <file path="policy_templates_zh-TW.xtb" lang="zh-TW" />
   </translations>
-  <!-- TODO(gfeher): set allow_pseudo="false" before release -->
-  <release seq="1" allow_pseudo="true">
-
-    <structures>
+  <release seq="1" allow_pseudo="false">
+    <structures fallback_to_english="true">
       <!-- List of policies and placeholder texts. This item should precede any
       message definitions. -->
       <structure name="IDD_POLICY_SOURCE_FILE" file="policy_templates.json" type="policy_template_metafile" />

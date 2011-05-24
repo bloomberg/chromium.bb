@@ -44,7 +44,7 @@
                   'action_name': 'pack_templates',
                   'variables': {
                     'zip_script':
-                        'tools/build/win/make_zip_with_relative_entries.py'
+                        'tools/build/win/make_policy_zip.py'
                   },
                   'inputs': [
                     '<(version_path)',
@@ -57,10 +57,24 @@
                   'action': [
                     'python',
                     '<(zip_script)',
+                    '--output',
                     '<@(_outputs)',
-                    '<(grit_out_dir)/app/policy',
-                    '<@(template_files)',
-                    '<(version_path)'
+                    '--basedir', '<(grit_out_dir)/app/policy',
+                    # The list of files in the destination zip is derived from
+                    # the list of output nodes in the following grd file.
+                    # This whole trickery is necessary because we cannot pass
+                    # the entire list of file names as command line arguments,
+                    # because they would exceed the length limit on Windows.
+                    '--grd_input',
+                    '<(grit_grd_file)',
+                    '--grd_strip_path_prefix',
+                    'app/policy',
+                    '--extra_input',
+                    'VERSION',
+                    # Module to be used to process grd_input'.
+                    '--grit_info',
+                    '<(DEPTH)/tools/grit/grit_info.py',
+                    '<@(grit_defines)',
                   ],
                   'message': 'Packing generated templates into <(_outputs)',
                 }
@@ -121,17 +135,14 @@
                 # Directory to collect the Localizable.strings files before
                 # they are copied to the bundle.
                 'output_path': '<(INTERMEDIATE_DIR)/app_manifest',
-                # TODO(gfeher): replace this with <(locales) when we have real
-                # translations
-                'available_locales': 'en',
               },
               'inputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) -d \'<(input_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
+                '>!@(<(apply_locales_cmd) -d \'<(input_path)/ZZLOCALE.lproj/Localizable.strings\' <(locales))',
               ],
               'outputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
+                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/Localizable.strings\' <(locales))',
               ],
               'action': [
                 'cp', '-R',
