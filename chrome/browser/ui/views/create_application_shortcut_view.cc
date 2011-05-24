@@ -187,7 +187,7 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
   inner_paint.setAntiAlias(true);
   inner_paint.setARGB(0xFF, 0xF8, 0xF8, 0xF8);
   canvas->AsCanvasSkia()->drawRoundRect(
-      inner_rect, SkDoubleToScalar(1.5), SkDoubleToScalar(1.5), inner_paint);
+      inner_rect, SkIntToScalar(1.5), SkIntToScalar(1.5), inner_paint);
 }
 
 }  // namespace
