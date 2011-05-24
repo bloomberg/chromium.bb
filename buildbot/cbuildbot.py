@@ -96,6 +96,9 @@ def RunBuildStages(bot_id, options, build_config):
       if options.tests:
         stages.TestStage(bot_id, options, build_config).Run()
 
+      if options.remote_test_status:
+          stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
+
       # Control master / slave logic here.
       if build_config['master']:
         if cbuildbot_comm.HaveSlavesCompleted(cbuildbot_config.config):
@@ -203,6 +206,8 @@ def main():
   parser.add_option('--notests', action='store_false', dest='tests',
                     default=True,
                     help='Override values from buildconfig and run no tests.')
+  parser.add_option('--remoteteststatus', dest='remote_test_status',
+                    default=None, help='List of remote jobs to check status')
   parser.add_option('--resume', action='store_true',
                     default=False,
                     help='Skip stages already successfully completed.')

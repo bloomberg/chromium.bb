@@ -473,6 +473,20 @@ class TestStage(BuilderStage):
             self._build_root, test_results_dir)
 
 
+class RemoteTestStatusStage(BuilderStage):
+  """Stage that performs testing steps."""
+  def _PerformStage(self):
+    test_status_cmd = ['./crostools/get_test_status.py',
+                       '--board=%s' % self._build_config['board'],
+                       '--build=%s' % self._options.buildnumber]
+    for job in self._options.remote_test_status.split(','):
+      result = cros_lib.RunCommand(
+          test_status_cmd + ['--category=%s' % job],
+          redirect_stdout=True, print_cmd=False)
+      # Emit annotations for buildbot status updates.
+      print result.output
+
+
 class ArchiveStage(BuilderStage):
   """Archives build and test artifacts for developer consumption."""
   def _PerformStage(self):
