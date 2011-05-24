@@ -108,5 +108,4 @@ include_rules = [
   "+chrome/browser/ui/browser.h",
   "+chrome/browser/ui/cocoa/find_pasteboard.h",
   "+chrome/common/net/test_url_fetcher_factory.h",
-  "+chrome/common/url_constants.h",
 ]

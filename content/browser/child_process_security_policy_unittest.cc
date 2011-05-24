@@ -7,8 +7,9 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/common/test_url_constants.h"
+#include "content/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,17 +119,17 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:CrASh")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("abOuT:cAChe")));
 
-  p->GrantRequestURL(kRendererID, GURL(chrome::kAboutMemoryURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kAboutMemoryURL)));
+  p->GrantRequestURL(kRendererID, GURL(chrome::kTestMemoryURL));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestMemoryURL)));
 
   p->GrantRequestURL(kRendererID, GURL(chrome::kAboutCrashURL));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kAboutCrashURL)));
 
-  p->GrantRequestURL(kRendererID, GURL(chrome::kAboutCacheURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kAboutCacheURL)));
+  p->GrantRequestURL(kRendererID, GURL(chrome::kTestCacheURL));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestCacheURL)));
 
-  p->GrantRequestURL(kRendererID, GURL(chrome::kAboutHangURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kAboutHangURL)));
+  p->GrantRequestURL(kRendererID, GURL(chrome::kTestHangURL));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestHangURL)));
 
   p->Remove(kRendererID);
 }

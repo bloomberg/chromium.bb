@@ -12,10 +12,11 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "content/common/test_url_constants.h"
+#include "content/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -384,7 +385,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteFailedRequest) {
   ASSERT_TRUE(tab.get());
 
   // Visit another URL first to trigger a cross-site navigation.
-  GURL url(chrome::kChromeUINewTabURL);
+  GURL url(chrome::kTestNewTabURL);
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
 
   // Visit a URL that fails without calling ResourceDispatcherHost::Read.
