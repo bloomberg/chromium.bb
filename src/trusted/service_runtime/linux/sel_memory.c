@@ -79,14 +79,9 @@ int NaCl_page_alloc_intern(void   **p,
   NaClLog(4,
           "sel_memory: NaCl_page_alloc_intern:"
           " mmap(%p, %"NACL_PRIxS", %#x, %#x, %d, %"NACL_PRIdNACL_OFF64")\n",
-          *p, size, PROT_EXEC | PROT_READ | PROT_WRITE, map_flags, -1,
+          *p, size, PROT_NONE, map_flags, -1,
           (nacl_abi_off64_t) 0);
-  addr = mmap(*p,
-              size,
-              PROT_EXEC | PROT_READ | PROT_WRITE,
-              map_flags,
-              -1,
-              (off_t) 0);
+  addr = mmap(*p, size, PROT_NONE, map_flags, -1, (off_t) 0);
   if (MAP_FAILED == addr) {
     addr = NULL;
   }
@@ -158,7 +153,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
 
   mem_ptr = mmap((void *) 0,
            request_sz,
-           PROT_EXEC | PROT_READ | PROT_WRITE,
+           PROT_NONE,
            MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE,
            -1,
            (off_t) 0);

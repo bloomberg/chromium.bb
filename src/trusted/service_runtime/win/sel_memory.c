@@ -102,23 +102,16 @@ int   NaCl_page_alloc(void    **p,
        attempt_count < NACL_MEMORY_ALLOC_RETRY_MAX;
        ++attempt_count) {
 
-    addr = VirtualAlloc(NULL,
-                        num_bytes,
-                        MEM_RESERVE,
-                        PAGE_EXECUTE_READWRITE);
+    addr = VirtualAlloc(NULL, num_bytes, MEM_RESERVE, PAGE_NOACCESS);
     if (addr == NULL) {
       NaClLog(0,
-              ("NaCl_page_alloc:"
-               "  VirtualAlloc(*,0x%"NACL_PRIxS","
-               "MEM_COMMIT,PAGE_EXECUTE_READWRITE)"
-               " failed\n"),
+              "NaCl_page_alloc: VirtualAlloc(*,0x%"NACL_PRIxS") failed\n",
               num_bytes);
       return -ENOMEM;
     }
     NaClLog(3,
             ("NaCl_page_alloc:"
-             "  VirtualAlloc(*,0x%"NACL_PRIxS","
-             "MEM_COMMIT,PAGE_EXECUTE_READWRITE)"
+             "  VirtualAlloc(*,0x%"NACL_PRIxS")"
              " succeeded, 0x%016"NACL_PRIxPTR","
              " releasing and re-allocating in 64K chunks....\n"),
             num_bytes, (uintptr_t) addr);
@@ -134,7 +127,7 @@ int   NaCl_page_alloc(void    **p,
       if (NULL == VirtualAlloc(chunk,
                                NACL_MAP_PAGESIZE,
                                MEM_COMMIT | MEM_RESERVE,
-                               PAGE_EXECUTE_READWRITE)) {
+                               PAGE_NOACCESS)) {
         NaClLog(0, ("NaCl_page_alloc: re-allocation failed at "
                     "0x%016"NACL_PRIxPTR","
                     " error %d\n"),

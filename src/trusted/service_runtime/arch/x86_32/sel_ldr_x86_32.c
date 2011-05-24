@@ -48,6 +48,16 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
     goto cleanup;
   }
 
+  if (0 != (error = NaCl_mprotect(thunk_addr,
+                                  NACL_MAP_PAGESIZE,
+                                  PROT_READ | PROT_WRITE))) {
+    NaClLog(LOG_INFO,
+            "NaClMakePcrelThunk::NaCl_mprotect failed, errno %d\n",
+            -error);
+    retval = 0;
+    goto cleanup;
+  }
+
   patch_rel32[0] = ((uintptr_t) &NaClPcrelThunk_end) - 4;
 
   patch_abs32[0].target = ((uintptr_t) &NaClPcrelThunk_dseg_patch) - 4;

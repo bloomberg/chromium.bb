@@ -157,13 +157,6 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
           start_addr, region_size,
           start_addr + region_size);
   if (0 != region_size) {
-    /*
-     * Even though memory was mapped as read+execute in nacl_text.c,
-     * 64-bit Windows Vista requires an explicit separate
-     * VirtualProtect() call to mark the memory region as executable.
-     * This is not required in Linux, Mac OS X or 32-bit Windows
-     * Vista.
-     */
     err = NaCl_mprotect((void *) start_addr,
                         region_size,
                         PROT_READ | PROT_EXEC);
