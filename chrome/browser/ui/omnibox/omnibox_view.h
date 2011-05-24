@@ -15,8 +15,11 @@
 #include <string>
 
 #include "base/string16.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "content/common/page_transition_types.h"
+#include "content/common/url_constants.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -183,6 +186,10 @@ class OmniboxView {
   // Performs the drop of a drag and drop operation on the view.
   virtual int OnPerformDrop(const views::DropTargetEvent& event) = 0;
 #endif
+
+  // Returns a string with any leading javascript schemas stripped from the
+  // input text.
+  static string16 StripJavascriptSchemas(const string16& text);
 
   virtual ~OmniboxView() {}
 };

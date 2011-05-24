@@ -958,8 +958,10 @@ int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
     GURL url;
     string16 title;
     if (data.GetURLAndTitle(&url, &title)) {
-      SetUserText(UTF8ToWide(url.spec()));
-      model()->AcceptInput(CURRENT_TAB, true);
+      string16 text(StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
+      SetUserText(text);
+      if (url.spec().length() == text.length())
+        model()->AcceptInput(CURRENT_TAB, true);
       return CopyOrLinkDragOperation(event.source_operations());
     }
   } else if (data.HasString()) {
@@ -2356,14 +2358,13 @@ string16 OmniboxViewWin::GetClipboardText() const {
                                    ui::Clipboard::BUFFER_STANDARD)) {
     string16 text;
     clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
-
     // Note: Unlike in the find popup and textfield view, here we completely
     // remove whitespace strings containing newlines.  We assume users are
     // most likely pasting in URLs that may have been split into multiple
     // lines in terminals, email programs, etc., and so linebreaks indicate
     // completely bogus whitespace that would just cause the input to be
     // invalid.
-    return CollapseWhitespace(text, true);
+    return CollapseWhitespace(StripJavascriptSchemas(text), true);
   }
 
   // Try bookmark format.
@@ -2380,7 +2381,7 @@ string16 OmniboxViewWin::GetClipboardText() const {
     // pass resulting url string through GURL to normalize
     GURL url(url_str);
     if (url.is_valid())
-      return UTF8ToWide(url.spec());
+      return StripJavascriptSchemas(UTF8ToUTF16(url.spec()));
   }
 
   return string16();

@@ -9,7 +9,9 @@
 #include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/singleton.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -757,6 +759,11 @@ class NotificationBridge : public NotificationObserver {
   GURL url(URLFixerUpper::FixupURL(
       base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
 
+  if (url.SchemeIs(chrome::kJavaScriptScheme)) {
+    browser_->window()->GetLocationBar()->location_entry()->SetUserText(
+        OmniboxView::StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
+    return;
+  }
   browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
                                               PageTransition::TYPED);
 }

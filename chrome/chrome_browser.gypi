@@ -2835,6 +2835,7 @@
         'browser/ui/omnibox/location_bar.h',
         'browser/ui/omnibox/location_bar_util.cc',
         'browser/ui/omnibox/location_bar_util.h',
+        'browser/ui/omnibox/omnibox_view.cc',
         'browser/ui/omnibox/omnibox_view.h',
         'browser/ui/options/options_util.cc',
         'browser/ui/options/options_util.h',
