@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
@@ -12,203 +12,113 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/ocmock_extensions.h"
 
 namespace {
-  const CGFloat kFakeIndicatorPos = 7.0;
-};
 
-// Fake DraggingInfo, fake BookmarkBarController, fake NSPasteboard...
-@interface FakeDraggingInfo : NSObject {
- @public
-  BOOL dragButtonToPong_;
-  BOOL dragURLsPong_;
-  BOOL dragBookmarkDataPong_;
-  BOOL dropIndicatorShown_;
-  BOOL draggingEnteredCalled_;
-  // Only mock one type of drag data at a time.
-  NSString* dragDataType_;
-}
-@property (readwrite) BOOL dropIndicatorShown;
-@property (readwrite) BOOL draggingEnteredCalled;
-@property (copy) NSString* dragDataType;
-@end
-
-@implementation FakeDraggingInfo
-
-@synthesize dropIndicatorShown = dropIndicatorShown_;
-@synthesize draggingEnteredCalled = draggingEnteredCalled_;
-@synthesize dragDataType = dragDataType_;
-
-- (id)init {
-  if ((self = [super init])) {
-    dropIndicatorShown_ = YES;
-  }
-  return self;
-}
-
-- (void)dealloc {
-  [dragDataType_ release];
-  [super dealloc];
-}
-
-- (void)reset {
-  [dragDataType_ release];
-  dragDataType_ = nil;
-  dragButtonToPong_ = NO;
-  dragURLsPong_ = NO;
-  dragBookmarkDataPong_ = NO;
-  dropIndicatorShown_ = YES;
-  draggingEnteredCalled_ = NO;
-}
-
-// NSDragInfo mocking functions.
-
-- (id)draggingPasteboard {
-  return self;
-}
-
-// So we can look local.
-- (id)draggingSource {
-  return self;
-}
-
-- (NSDragOperation)draggingSourceOperationMask {
-  return NSDragOperationCopy | NSDragOperationMove;
-}
-
-- (NSPoint)draggingLocation {
-  return NSMakePoint(10, 10);
-}
-
-// NSPasteboard mocking functions.
-
-- (BOOL)containsURLData {
-  NSArray* urlTypes = [URLDropTargetHandler handledDragTypes];
-  if (dragDataType_)
-    return [urlTypes containsObject:dragDataType_];
-  return NO;
-}
-
-- (NSData*)dataForType:(NSString*)type {
-  if (dragDataType_ && [dragDataType_ isEqualToString:type])
-    return [NSData data];  // Return something, anything.
-  return nil;
-}
-
-// Fake a controller for callback ponging
-
-- (BOOL)dragButton:(BookmarkButton*)button to:(NSPoint)point copy:(BOOL)copy {
-  dragButtonToPong_ = YES;
-  return YES;
-}
-
-- (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point {
-  dragURLsPong_ = YES;
-  return YES;
-}
-
-- (void)getURLs:(NSArray**)outUrls
-    andTitles:(NSArray**)outTitles
-    convertingFilenames:(BOOL)convertFilenames {
-}
-
-- (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info {
-  dragBookmarkDataPong_ = YES;
-  return NO;
-}
-
-// Confirm the pongs.
-
-- (BOOL)dragButtonToPong {
-  return dragButtonToPong_;
-}
-
-- (BOOL)dragURLsPong {
-  return dragURLsPong_;
-}
-
-- (BOOL)dragBookmarkDataPong {
-  return dragBookmarkDataPong_;
-}
-
-- (CGFloat)indicatorPosForDragToPoint:(NSPoint)point {
-  return kFakeIndicatorPos;
-}
-
-- (BOOL)shouldShowIndicatorShownForPoint:(NSPoint)point {
-  return dropIndicatorShown_;
-}
-
-- (BOOL)draggingAllowed:(id<NSDraggingInfo>)info {
-  return YES;
-}
-
-- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
-  draggingEnteredCalled_ = YES;
-  return NSDragOperationNone;
-}
-
-@end
-
-namespace {
+// Some values used for mocks and fakes.
+const CGFloat kFakeIndicatorPos = 7.0;
+const NSPoint kPoint = {10, 10};
 
 class BookmarkBarFolderViewTest : public CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
     view_.reset([[BookmarkBarFolderView alloc] init]);
+    mock_controller_.reset([GetMockController(YES) retain]);
+    [view_ awakeFromNib];
+    [view_ setController:mock_controller_];
   }
 
+  virtual void TearDown() {
+    [mock_controller_ verify];
+    CocoaTest::TearDown();
+  }
+
+  id GetFakePasteboardForType(NSString* dataType) {
+    id pasteboard = [OCMockObject mockForClass:[NSPasteboard class]];
+    [[[pasteboard stub] andReturn:[NSData data]] dataForType:dataType];
+    [[[pasteboard stub] andReturn:nil] dataForType:OCMOCK_ANY];
+    [[[pasteboard stub] andReturnBool:YES] containsURLData];
+    [[pasteboard stub] getURLs:[OCMArg setTo:nil]
+                     andTitles:[OCMArg setTo:nil]
+           convertingFilenames:YES];
+    return pasteboard;
+  }
+
+  id GetFakeDragInfoForType(NSString* dataType) {
+    id drag_info = [OCMockObject mockForProtocol:@protocol(NSDraggingInfo)];
+    id pasteboard = GetFakePasteboardForType(dataType);
+    [[[drag_info stub] andReturn:pasteboard] draggingPasteboard];
+    [[[drag_info stub] andReturnNSPoint:kPoint]
+     draggingLocation];
+    [[[drag_info stub] andReturn:drag_info]
+     draggingSource];
+    [[[drag_info stub]
+      andReturnUnsignedInteger:NSDragOperationCopy | NSDragOperationMove]
+     draggingSourceOperationMask];
+    return drag_info;
+  }
+
+  id GetMockController(BOOL show_indicator) {
+    id mock_controller
+        = [OCMockObject mockForClass:[BookmarkBarFolderController class]];
+   [[[mock_controller stub] andReturnBool:YES]
+     draggingAllowed:OCMOCK_ANY];
+    [[[mock_controller stub] andReturnBool:show_indicator]
+     shouldShowIndicatorShownForPoint:kPoint];
+    [[[mock_controller stub] andReturnFloat:kFakeIndicatorPos]
+     indicatorPosForDragToPoint:kPoint];
+    return mock_controller;
+  }
+
+  scoped_nsobject<id> mock_controller_;
   scoped_nsobject<BookmarkBarFolderView> view_;
 };
 
 TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDrop) {
-  [view_ awakeFromNib];
-  scoped_nsobject<FakeDraggingInfo> info([[FakeDraggingInfo alloc] init]);
-  [view_ setController:info.get()];
-  [info reset];
+  id drag_info = GetFakeDragInfoForType(kBookmarkButtonDragType);
+  [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
+   draggingEntered:drag_info];
+  [[[mock_controller_ expect] andReturnBool:NO] dragBookmarkData:drag_info];
+  [[[mock_controller_ expect] andReturnBool:YES] dragButton:OCMOCK_ANY
+                                                         to:kPoint
+                                                       copy:NO];
 
-  [info setDragDataType:kBookmarkButtonDragType];
-  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
-  EXPECT_TRUE([info dragButtonToPong]);
-  EXPECT_FALSE([info dragURLsPong]);
-  EXPECT_TRUE([info dragBookmarkDataPong]);
+  EXPECT_EQ([view_ draggingEntered:drag_info], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:drag_info]);
 }
 
 TEST_F(BookmarkBarFolderViewTest, URLDragAndDrop) {
-  [view_ awakeFromNib];
-  scoped_nsobject<FakeDraggingInfo> info([[FakeDraggingInfo alloc] init]);
-  [view_ setController:info.get()];
-  [info reset];
-
   NSArray* dragTypes = [URLDropTargetHandler handledDragTypes];
   for (NSString* type in dragTypes) {
-    [info setDragDataType:type];
-    EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-    EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
-    EXPECT_FALSE([info dragButtonToPong]);
-    EXPECT_TRUE([info dragURLsPong]);
-    EXPECT_TRUE([info dragBookmarkDataPong]);
-    [info reset];
+    id drag_info = GetFakeDragInfoForType(type);
+    [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
+     draggingEntered:drag_info];
+    [[[mock_controller_ expect] andReturnBool:NO] dragBookmarkData:drag_info];
+    [[[mock_controller_ expect] andReturnBool:YES] addURLs:OCMOCK_ANY
+                                                withTitles:OCMOCK_ANY
+                                                        at:kPoint];
+    EXPECT_EQ([view_ draggingEntered:drag_info], NSDragOperationMove);
+    EXPECT_TRUE([view_ performDragOperation:drag_info]);
+    [mock_controller_ verify];
   }
 }
 
 TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDropIndicator) {
-  [view_ awakeFromNib];
-  scoped_nsobject<FakeDraggingInfo> info([[FakeDraggingInfo alloc] init]);
-  [view_ setController:info.get()];
-  [info reset];
-
-  [info setDragDataType:kBookmarkButtonDragType];
-  EXPECT_FALSE([info draggingEnteredCalled]);
-  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-  EXPECT_TRUE([info draggingEnteredCalled]);  // Ensure controller pinged.
+  id drag_info = GetFakeDragInfoForType(kBookmarkButtonDragType);
+  [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
+   draggingEntered:drag_info];
+  EXPECT_EQ([view_ draggingEntered:drag_info], NSDragOperationMove);
+  [mock_controller_ verify];
   EXPECT_TRUE([view_ dropIndicatorShown]);
   EXPECT_EQ([view_ dropIndicatorPosition], kFakeIndicatorPos);
-
-  [info setDropIndicatorShown:NO];
-  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  mock_controller_.reset([GetMockController(NO) retain]);
+  [view_ setController:mock_controller_];
+  [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
+   draggingEntered:drag_info];
+  EXPECT_EQ([view_ draggingEntered:drag_info], NSDragOperationMove);
   EXPECT_FALSE([view_ dropIndicatorShown]);
 }
 

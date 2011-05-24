@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,14 +16,13 @@
   CGFloat dropIndicatorPosition_;  // y position
   // The following |controller_| is weak; used for testing only. See the imple-
   // mentation comment for - (id<BookmarkButtonControllerProtocol>)controller.
-  BookmarkBarFolderController* controller_;
+  id<BookmarkButtonControllerProtocol> controller_;
 }
-// Return the controller that owns this view.
-- (id<BookmarkButtonControllerProtocol>)controller;
+@property(readonly, assign) id<BookmarkButtonControllerProtocol> controller;
 @end
 
 @interface BookmarkBarFolderView()  // TestingOrInternalAPI
 @property(assign) BOOL dropIndicatorShown;
 @property(readonly) CGFloat dropIndicatorPosition;
-- (void)setController:(id)controller;
+@property(assign) id<BookmarkButtonControllerProtocol> controller;
 @end

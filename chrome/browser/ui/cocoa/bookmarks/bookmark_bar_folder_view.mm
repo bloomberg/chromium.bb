@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 
 @synthesize dropIndicatorShown = dropIndicatorShown_;
 @synthesize dropIndicatorPosition = dropIndicatorPosition_;
+@synthesize controller = controller_;
 
 - (void)awakeFromNib {
   NSArray* types = [NSArray arrayWithObjects:
@@ -36,10 +37,6 @@
   // When needed for testing, set the local data member |controller_| to
   // the test controller.
   return controller_ ? controller_ : [[self window] windowController];
-}
-
-- (void)setController:(id)controller {
-  controller_ = controller;
 }
 
 - (void)drawRect:(NSRect)rect {
