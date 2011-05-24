@@ -297,6 +297,8 @@ class Profile {
   virtual WebDataService* GetWebDataServiceWithoutCreating() = 0;
 
   // Returns the PasswordStore for this profile. This is owned by the Profile.
+  // This may return NULL if the implementation is unable to create a
+  // password store (e.g. a corrupt database).
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences
