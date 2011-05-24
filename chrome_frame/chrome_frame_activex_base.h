@@ -24,6 +24,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "grit/chrome_frame_resources.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/com_message_event.h"
@@ -351,6 +352,11 @@ END_MSG_MAP()
           chrome_frame::GetMiniContextMenuData(cmd, params, &referrer, &url);
           DoFileDownloadInIE(UTF8ToWide(url.spec()).c_str());
           return true;
+        }
+
+        case IDC_PRINT: {
+          automation_client_->PrintTab();
+          break;
         }
       }
     }
