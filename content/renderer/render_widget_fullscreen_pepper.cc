@@ -59,8 +59,13 @@ class PepperWidget : public WebWidget {
     widget_->Invalidate();
   }
 
+#ifndef WEBWIDGET_HAS_ANIMATE_CHANGES
   virtual void animate() {
   }
+#else
+  virtual void animate(double frameBeginTime) {
+  }
+#endif
 
   virtual void layout() {
   }
