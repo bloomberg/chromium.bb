@@ -398,12 +398,10 @@ void ExtensionFunctionDispatcher::ResetFunctions() {
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(Profile* profile,
                                                          Delegate* delegate)
   : profile_(profile),
-    delegate_(delegate),
-    ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
+    delegate_(delegate) {
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
-  peer_->dispatcher_ = NULL;
 }
 
 Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
@@ -482,7 +480,7 @@ void ExtensionFunctionDispatcher::Dispatch(
   scoped_refptr<ExtensionFunction> function(
       FactoryRegistry::GetInstance()->NewFunction(params.name));
   function->SetRenderViewHost(render_view_host);
-  function->set_dispatcher_peer(peer_);
+  function->set_dispatcher(AsWeakPtr());
   function->set_profile(profile_);
   function->set_extension_id(extension->id());
   function->SetArgs(&params.arguments);

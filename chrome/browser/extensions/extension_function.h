@@ -81,11 +81,12 @@ class ExtensionFunction
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const {}
 
-  void set_dispatcher_peer(ExtensionFunctionDispatcher::Peer* peer) {
-    peer_ = peer;
+  void set_dispatcher(
+      const base::WeakPtr<ExtensionFunctionDispatcher>& dispatcher) {
+    dispatcher_ = dispatcher;
   }
   ExtensionFunctionDispatcher* dispatcher() const {
-    return peer_->dispatcher_;
+    return dispatcher_.get();
   }
 
   void set_request_id(int request_id) { request_id_ = request_id; }
@@ -135,8 +136,8 @@ class ExtensionFunction
   // shutdown when there are no active windows.
   Browser* GetCurrentBrowser();
 
-  // The peer to the dispatcher that will service this extension function call.
-  scoped_refptr<ExtensionFunctionDispatcher::Peer> peer_;
+  // The dispatcher that will service this extension function call.
+  base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
 
   // The RenderViewHost we will send responses too.
   RenderViewHost* render_view_host_;

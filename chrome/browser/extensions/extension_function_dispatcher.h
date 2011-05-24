@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -38,7 +38,8 @@ typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 // we can gracefully handle cases like TabContents, where the RVH, extension,
 // and URL can all change over the lifetime of the tab. Instead, these items
 // are all passed into each request.
-class ExtensionFunctionDispatcher {
+class ExtensionFunctionDispatcher
+    : public base::SupportsWeakPtr<ExtensionFunctionDispatcher> {
  public:
   class Delegate {
    public:
@@ -58,20 +59,6 @@ class ExtensionFunctionDispatcher {
 
    protected:
     virtual ~Delegate() {}
-  };
-
-  // The peer object allows us to notify ExtensionFunctions when we are
-  // destroyed.
-  // TODO: this should use WeakPtr
-  struct Peer : public base::RefCounted<Peer> {
-    explicit Peer(ExtensionFunctionDispatcher* dispatcher)
-        : dispatcher_(dispatcher) {}
-    ExtensionFunctionDispatcher* dispatcher_;
-
-   private:
-    friend class base::RefCounted<Peer>;
-
-    ~Peer() {}
   };
 
   // Gets a list of all known extension function names.
@@ -118,8 +105,6 @@ class ExtensionFunctionDispatcher {
   Profile* profile_;
 
   Delegate* delegate_;
-
-  scoped_refptr<Peer> peer_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_DISPATCHER_H_
