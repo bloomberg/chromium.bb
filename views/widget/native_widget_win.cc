@@ -1146,8 +1146,11 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
 }
 
 gfx::AcceleratedWidget NativeWidgetWin::GetAcceleratedWidget() {
-  // TODO(sky):
+#if defined(VIEWS_COMPOSITOR)
   return gfx::kNullAcceleratedWidget;
+#else
+  return hwnd();
+#endif
 }
 
 void NativeWidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
