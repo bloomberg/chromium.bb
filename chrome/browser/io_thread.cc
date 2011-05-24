@@ -48,6 +48,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/dns_cert_provenance_checker.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(USE_NSS)

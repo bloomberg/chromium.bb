@@ -34,7 +34,6 @@ namespace base {
 class WaitableEvent;
 }
 namespace net {
-class DnsCertProvenanceChecker;
 class NetworkDelegate;
 }
 
