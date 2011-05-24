@@ -78,8 +78,6 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT));
   localized_strings->SetString(std::string("pageRangeRadio"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO));
-  localized_strings->SetString(std::string("invalidPageRange"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_INVALID_PAGE_RANGE));
   localized_strings->SetString(std::string("printToPDF"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PRINT_TO_PDF));
   localized_strings->SetString(std::string("printPreviewTitleFormat"),

@@ -616,7 +616,7 @@ function updatePrintSummary() {
   }
 
   if (getSelectedPagesValidityLevel() != 1) {
-    printSummary.innerHTML = localStrings.getString('invalidPageRange');
+    printSummary.innerHTML = '';
     return;
   }
 
