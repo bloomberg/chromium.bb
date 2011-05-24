@@ -179,8 +179,6 @@ release = {
   'push_image' : True,
   'upload_symbols' : True,
 
-  'fast' : False,
-
   # --official
   # --officialversion
 }
