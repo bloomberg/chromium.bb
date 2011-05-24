@@ -284,6 +284,19 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(
         lambda: self._GotContentHistory('British throne', url)))
 
+  def testOmniboxSearchHistory(self):
+    """Verify Page navigation/search from omnibox are added to the history."""
+    url = self.GetFileURLForDataPath('title2.html')
+    self.NavigateToURL(url)
+    self.AppendTab(pyauto.GURL('about:blank'))
+    self.SetOmniboxText('java')
+    self.WaitUntilOmniboxQueryDone()
+    self.OmniboxAcceptInput()
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(2, len(history))
+    self.assertEqual(url, history[1]['url'])
+    self.assertEqual('java - Google Search', history[0]['title'])
+
   def _VerifyHasBookmarkResult(self, matches):
     """Verify that we have a bookmark result."""
     matches_starred = [result for result in matches if result['starred']]
