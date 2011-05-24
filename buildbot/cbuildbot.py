@@ -23,64 +23,10 @@ if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
 import chromite.buildbot.cbuildbot_comm as cbuildbot_comm
+import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_config as cbuildbot_config
 import chromite.buildbot.cbuildbot_stages as stages
 import chromite.lib.cros_build_lib as cros_lib
-
-
-class BranchError(Exception):
-  pass
-
-
-def _RunCommandInFileDir(cmd):
-  """Runs the command in the directory where this file is located."""
-  working_dir = os.path.dirname(os.path.realpath(__file__))
-  return cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=working_dir).output
-
-
-def _GetManifestBranch():
-  """Returns the manifest branch"""
-  branches = _RunCommandInFileDir(['git', 'branch', '-r'])
-  m = re.search(r'^\s*m/(\S+)', branches, re.M)
-  return m.group(1)
-
-
-def _GetTrackingBranch():
-  """Returns the tracking branch to build and test.
-
-  Looks at the current branch of chromite that the user has checked out.  If
-  the repo is on detached head, it assumes (and checks that) the user is using
-  the manifest branch.
-
-  Raises:
-    BranchError if 1) the detached HEAD is not the tip of the manifest branch,
-    or 2) the current branch is not tracking a remote branch.
-  """
-  ERROR_MSG = ('Current branch needs to either track an upstream branch, or\n'
-              'be a detached head checkout of manifest branch cros/%s.')
-
-  try:
-    current_branch = _RunCommandInFileDir(['git', 'symbolic-ref', 'HEAD'])
-    current_branch = current_branch.replace('refs/heads/', '').strip()
-  except cros_lib.RunCommandError:
-    # Check if detached head is of manifest branch.
-    manifest_branch = _GetManifestBranch()
-    hash_detached = _RunCommandInFileDir(['git', 'rev-parse', 'HEAD']).strip()
-    cmd = ['git', 'rev-parse', 'cros/' + manifest_branch]
-    hash_manifest = _RunCommandInFileDir(cmd).strip()
-    if hash_manifest != hash_detached:
-      raise BranchError(ERROR_MSG % manifest_branch)
-    return manifest_branch
-
-  cfg_option = 'branch.' + current_branch + '.%s'
-  cmd = ['git', 'config', cfg_option % 'merge']
-
-  try:
-    upstream = _RunCommandInFileDir(cmd).strip()
-  except cros_lib.RunCommandError:
-    raise BranchError(ERROR_MSG % _GetManifestBranch())
-
-  return upstream.replace('refs/heads/', '')
 
 
 def _GetConfig(config_name, options):
@@ -112,13 +58,25 @@ def RunBuildStages(bot_id, options, build_config):
     os.environ['CHROMEOS_OFFICIAL'] = '1'
 
   try:
-    stages.BuilderStage.SetTrackingBranch(_GetTrackingBranch())
+    tracking_branch = commands.GetChromiteTrackingBranch()
+    stages.BuilderStage.SetTrackingBranch(tracking_branch)
 
     if options.sync:
       if build_config['manifest_version']:
         stages.ManifestVersionedSyncStage(bot_id, options, build_config).Run()
       else:
         stages.SyncStage(bot_id, options, build_config).Run()
+
+    if not options.clobber:
+      # If we are doing an incremental checkout, make sure we are running on a
+      # buildroot checked out to same branch as chromite.  Use
+      # <build_root>/src/scripts as the spot check.
+      buildroot_repo = os.path.join(options.buildroot, 'src', 'scripts')
+      manifest_branch = commands.GetManifestBranch(buildroot_repo)
+      if manifest_branch != tracking_branch:
+        cros_lib.Die('Chromite is not on same branch as buildroot checkout\n' +
+                     'Chromite is on branch %s.\n' % tracking_branch +
+                     'Buildroot checked out to %s\n' % manifest_branch)
 
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()

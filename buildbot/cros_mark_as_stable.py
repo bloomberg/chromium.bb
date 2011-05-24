@@ -6,6 +6,7 @@
 
 """This module uprevs a given package's ebuild to the next revision."""
 
+import constants
 import filecmp
 import fileinput
 import optparse
@@ -16,10 +17,12 @@ import subprocess
 import sys
 
 if __name__ == '__main__':
-  import constants
+  sys.path.append(constants.SOURCE_ROOT)
   sys.path.append(constants.CROSUTILS_LIB_DIR)
 
+import chromite.buildbot.cbuildbot_commands as commands
 from cros_build_lib import Info, RunCommand, Warning, Die
+
 
 # TODO(sosa): Remove during OO refactor.
 VERBOSE = False
@@ -555,8 +558,6 @@ def main(argv):
   parser.add_option('-r', '--srcroot',
                     default='%s/trunk/src' % os.environ['HOME'],
                     help='Path to root src directory.')
-  parser.add_option('-t', '--tracking_branch', default='master',
-                     help='Used with commit to specify branch to track.')
   parser.add_option('--verbose', action='store_true',
                     help='Prints out debug info.')
   (options, args) = parser.parse_args()
@@ -590,6 +591,9 @@ def main(argv):
     blacklist = _BlackListManager()
     _BuildEBuildDictionary(overlays, options.all, package_list, blacklist)
 
+  file_dir = os.path.dirname(os.path.realpath(__file__))
+  tracking_branch = 'remotes/m/%s' % commands.GetManifestBranch(file_dir)
+
   for overlay, ebuilds in overlays.items():
     if not os.path.isdir(overlay):
       Warning("Skipping %s" % overlay)
@@ -599,7 +603,6 @@ def main(argv):
     # the cwd being set to the overlay directory. We should instead pass in
     # this parameter so that we don't need to modify the cwd globally.
     os.chdir(overlay)
-    tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
 
     if command == 'clean':
       Clean(tracking_branch)

@@ -289,7 +289,7 @@ class SyncStage(BuilderStage):
                             url=self._build_config['git_url'])
     else:
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                              self._tracking_branch, BuilderStage.rev_overlays)
+                              BuilderStage.rev_overlays)
       BuilderStage.old_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
       commands.IncrementalCheckout(self._build_root)
 
@@ -328,7 +328,6 @@ class ManifestVersionedSyncStage(BuilderStage):
     repo_directory = os.path.join(self._build_root, '.repo')
     if os.path.exists(repo_directory):
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                              self._tracking_branch,
                               BuilderStage.rev_overlays)
       shutil.rmtree(repo_directory)
 
@@ -390,7 +389,6 @@ class UprevStage(BuilderStage):
     # Perform other uprevs.
     if self._build_config['uprev']:
       commands.UprevPackages(self._build_root,
-                             self._tracking_branch,
                              self._build_config['board'],
                              BuilderStage.rev_overlays)
     elif self._options.chrome_rev and not chrome_atom_to_build:
@@ -502,6 +500,7 @@ class PushChangesStage(BuilderStage):
           self._build_config['rev_overlays'], [BuilderStage.new_binhost],
           self._prebuilt_type, self._options.chrome_rev)
 
-    commands.UprevPush(self._build_root, self._tracking_branch,
-                       self._build_config['board'], BuilderStage.push_overlays,
+    commands.UprevPush(self._build_root,
+                       self._build_config['board'],
+                       BuilderStage.push_overlays,
                        self._options.debug)

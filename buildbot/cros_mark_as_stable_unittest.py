@@ -16,6 +16,7 @@ import tempfile
 import unittest
 
 import constants
+sys.path.append(constants.SOURCE_ROOT)
 sys.path.append(constants.CROSUTILS_LIB_DIR)
 import cros_mark_as_stable
 

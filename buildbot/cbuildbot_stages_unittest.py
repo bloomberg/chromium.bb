@@ -157,7 +157,6 @@ class SyncStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.PreFlightRinse(self.build_root, self.build_config['board'],
-                            self.TRACKING_BRANCH,
                             [self.overlay])
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.BuilderStage._GetPortageEnvVar(stages._FULL_BINHOST)
@@ -462,8 +461,9 @@ class UprevStageTest(AbstractStageTest):
     self.build_config['uprev'] = True
 
     commands.UprevPackages(
-        self.build_root, self.TRACKING_BRANCH,
-        self.build_config['board'], [self.overlay])
+        self.build_root,
+        self.build_config['board'],
+        [self.overlay])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -490,8 +490,9 @@ class UprevStageTest(AbstractStageTest):
         self.build_config['board']).AndReturn(None)
 
     commands.UprevPackages(
-        self.build_root, self.TRACKING_BRANCH,
-        self.build_config['board'], [self.overlay])
+        self.build_root,
+        self.build_config['board'],
+        [self.overlay])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -671,8 +672,9 @@ class PushChangesStageTest(AbstractStageTest):
         self.options.chrome_rev)
 
     commands.UprevPush(
-        self.build_root, self.TRACKING_BRANCH,
-        self.build_config['board'], [self.overlay],
+        self.build_root,
+        self.build_config['board'],
+        [self.overlay],
         self.options.debug)
 
     self.mox.ReplayAll()
@@ -690,8 +692,9 @@ class PushChangesStageTest(AbstractStageTest):
         self.options.chrome_rev)
 
     commands.UprevPush(
-        self.build_root, self.TRACKING_BRANCH,
-        self.build_config['board'], [self.overlay],
+        self.build_root,
+        self.build_config['board'],
+        [self.overlay],
         self.options.debug)
 
     self.mox.ReplayAll()
@@ -703,8 +706,9 @@ class PushChangesStageTest(AbstractStageTest):
     self.build_config['build_type'] = 'full'
 
     commands.UprevPush(
-        self.build_root, self.TRACKING_BRANCH,
-        self.build_config['board'], [self.overlay],
+        self.build_root,
+        self.build_config['board'],
+        [self.overlay],
         self.options.debug)
 
     self.mox.ReplayAll()

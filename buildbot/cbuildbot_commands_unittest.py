@@ -18,6 +18,7 @@ sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.lib.cros_build_lib as cros_lib
 
+
 class CBuildBotTest(mox.MoxTestBase):
 
   def setUp(self):
@@ -25,7 +26,6 @@ class CBuildBotTest(mox.MoxTestBase):
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.tracking_branch = 'cros/master'
     self._test_repos = [['kernel', 'third_party/kernel/files'],
                         ['login_manager', 'platform/login_manager']
                        ]
@@ -46,6 +46,104 @@ class CBuildBotTest(mox.MoxTestBase):
     self._chroot_overlays = [
         cros_lib.ReinterpretPathForChroot(p) for p in self._overlays
     ]
+    self._CWD = os.path.dirname(os.path.realpath(__file__))
+
+  def testGetManifestBranch(self):
+    """Verify function for getting the chromite manifest branch."""
+    CWD = 'somedir'
+    self.mox.StubOutWithMock(commands, 'RunCommandInDir')
+    output = ('cros/11.1.241.B\n'
+              'cros/master\n'
+              'm/11.1.241.B -> cros/11.1.241.B')
+
+    commands.RunCommandInDir(mox.In('branch'), CWD).AndReturn(output)
+
+    self.mox.ReplayAll()
+    manifest_branch = commands.GetManifestBranch(CWD)
+    self.mox.VerifyAll()
+    self.assertEquals(manifest_branch, '11.1.241.B')
+
+  def testGetChromiteTrackingBranchSuccess(self):
+    """Verify getting the tracking branch from the current branch."""
+    self.mox.StubOutWithMock(commands, 'RunCommandInDir')
+    commands.RunCommandInDir(
+        mox.In('symbolic-ref'),
+        mox.StrContains('chromite/buildbot')).AndReturn('refs/heads/tracking')
+    commands.RunCommandInDir(
+        mox.In('branch.tracking.merge'),
+        mox.StrContains('chromite/buildbot')).AndReturn('refs/heads/master')
+
+    self.mox.ReplayAll()
+    upstream_branch = commands.GetChromiteTrackingBranch()
+    self.mox.VerifyAll()
+    self.assertEquals(upstream_branch, 'master')
+
+  def testGetChromiteTrackingBranchDetachedHeadSuccess(self):
+    """Case where repo is on detached head of manifest branch."""
+    self.mox.StubOutWithMock(commands, 'RunCommandInDir')
+    self.mox.StubOutWithMock(commands, 'GetManifestBranch')
+    error = cros_lib.RunCommandError('error', 'command')
+
+    commands.RunCommandInDir(
+        mox.In('symbolic-ref'),
+        mox.StrContains('chromite/buildbot')).AndRaise(error)
+
+    (commands.GetManifestBranch(mox.StrContains('chromite/buildbot'))
+        .AndReturn('master'))
+    commands.RunCommandInDir(
+        mox.In('rev-parse') and mox.In('HEAD'),
+        mox.StrContains('chromite/buildbot')).AndReturn('A2564A5B')
+    commands.RunCommandInDir(
+        mox.In('rev-parse') and mox.In('cros/master'),
+        mox.StrContains('chromite/buildbot')).AndReturn('A2564A5B')
+
+    self.mox.ReplayAll()
+    upstream_branch = commands.GetChromiteTrackingBranch()
+    self.mox.VerifyAll()
+    self.assertEquals(upstream_branch, 'master')
+
+  def testGetChromiteTrackingBranchDetachedHeadFailure(self):
+    """Case where repo is on detached head, but not of manifest branch."""
+    self.mox.StubOutWithMock(commands, 'RunCommandInDir')
+    self.mox.StubOutWithMock(commands, 'GetManifestBranch')
+    error = cros_lib.RunCommandError('error', 'command')
+
+    commands.RunCommandInDir(
+        mox.In('symbolic-ref'),
+        mox.StrContains('chromite/buildbot')).AndRaise(error)
+
+    (commands.GetManifestBranch(mox.StrContains('chromite/buildbot'))
+        .AndReturn('master'))
+    commands.RunCommandInDir(
+        mox.In('rev-parse') and mox.In('HEAD'),
+        mox.StrContains('chromite/buildbot')).AndReturn('A2564A5B')
+    commands.RunCommandInDir(
+        mox.In('rev-parse') and mox.In('cros/master'),
+        mox.StrContains('chromite/buildbot')).AndReturn('BD3445CC')
+
+    self.mox.ReplayAll()
+    self.assertRaises(commands.BranchError, commands.GetChromiteTrackingBranch)
+    self.mox.VerifyAll()
+
+  def testGetChromiteTrackingBranchNoUpstream(self):
+    """Case where current branch is not tracking a remote branch."""
+    self.mox.StubOutWithMock(commands, 'RunCommandInDir')
+    self.mox.StubOutWithMock(commands, 'GetManifestBranch')
+    error = cros_lib.RunCommandError('error', 'command')
+
+    CWD = 'somedir'
+    commands.RunCommandInDir(
+        mox.In('symbolic-ref'),
+        mox.StrContains('chromite/buildbot')).AndReturn('refs/heads/tracking')
+    commands.RunCommandInDir(
+        mox.In('branch.tracking.merge'),
+        mox.StrContains('chromite/buildbot')).AndRaise(error)
+    (commands.GetManifestBranch(mox.StrContains('chromite/buildbot'))
+        .AndReturn('master'))
+
+    self.mox.ReplayAll()
+    self.assertRaises(commands.BranchError, commands.GetChromiteTrackingBranch)
+    self.mox.VerifyAll()
 
   def testArchiveTestResults(self):
     """Test if we can archive the latest results dir to Google Storage."""
@@ -79,15 +177,15 @@ class CBuildBotTest(mox.MoxTestBase):
         ['../../chromite/buildbot/cros_mark_as_stable', '--all',
          '--board=%s' % self._test_board,
          '--overlays=%s' % ':'.join(self._chroot_overlays),
-         '--tracking_branch=cros/master',
          '--drop_file=%s' % cros_lib.ReinterpretPathForChroot(drop_file),
          'commit'],
         cwd='%s/src/scripts' % self._buildroot,
         enter_chroot=True)
 
     self.mox.ReplayAll()
-    commands.UprevPackages(self._buildroot, self.tracking_branch,
-                            self._test_board, self._overlays)
+    commands.UprevPackages(self._buildroot,
+                            self._test_board,
+                            self._overlays)
     self.mox.VerifyAll()
 
   def testUploadPublicPrebuilts(self):

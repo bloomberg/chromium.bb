@@ -23,7 +23,7 @@ _FULL_BINHOST = 'FULL_BINHOST'
 
 # =========================== Command Helpers =================================
 
-def _GitCleanup(buildroot, board, tracking_branch, overlays):
+def _GitCleanup(buildroot, board, overlays):
   """Clean up git branch after previous uprev attempt."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   if os.path.exists(cwd):
@@ -31,7 +31,7 @@ def _GitCleanup(buildroot, board, tracking_branch, overlays):
         ['../../chromite/buildbot/cros_mark_as_stable', '--srcroot=..',
          '--board=%s' % board,
          '--overlays=%s' % ':'.join(overlays),
-         '--tracking_branch=%s' % tracking_branch, 'clean'
+         'clean'
         ], cwd=cwd, error_ok=True)
 
 
@@ -98,10 +98,64 @@ def _WipeOldOutput(buildroot):
   cros_lib.OldRunCommand(['rm', '-rf', 'src/build/images'], cwd=buildroot)
 
 # =========================== Main Commands ===================================
+def RunCommandInDir(cmd, dir):
+  """Runs the command in the directory where this file is located."""
+  return cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=dir).output
 
-def PreFlightRinse(buildroot, board, tracking_branch, overlays):
+
+def GetManifestBranch(repo_dir):
+  """Returns the manifest branch that repo_dir is checked out to."""
+  branches = RunCommandInDir(['git', 'branch', '-r'], repo_dir)
+  m = re.search(r'^\s*m/(\S+)', branches, re.M)
+  return m.group(1)
+
+
+class BranchError(Exception):
+  pass
+
+
+def GetChromiteTrackingBranch():
+  """Returns the tracking branch to build and test.
+
+  Looks at the current branch of chromite that the user has checked out.  If
+  the repo is on detached head, it assumes (and checks that) the user is using
+  the manifest branch.
+
+  Raises:
+    BranchError if 1) the detached HEAD is not the tip of the manifest branch,
+    or 2) the current branch is not tracking a remote branch.
+  """
+  ERROR_MSG = ('Current branch needs to either track an upstream branch, or\n'
+              'be a detached head checkout of manifest branch cros/%s.')
+  cwd = os.path.dirname(os.path.realpath(__file__))
+
+  try:
+    current_branch = RunCommandInDir(['git', 'symbolic-ref', 'HEAD'], cwd)
+    current_branch = current_branch.replace('refs/heads/', '').strip()
+  except cros_lib.RunCommandError:
+    # Check if detached head is of manifest branch.
+    manifest_branch = GetManifestBranch(cwd)
+    hash_detached = RunCommandInDir(['git', 'rev-parse', 'HEAD'], cwd).strip()
+    cmd = ['git', 'rev-parse', 'cros/' + manifest_branch]
+    hash_manifest = RunCommandInDir(cmd, cwd).strip()
+    if hash_manifest != hash_detached:
+      raise BranchError(ERROR_MSG % manifest_branch)
+    return manifest_branch
+
+  cfg_option = 'branch.' + current_branch + '.%s'
+  cmd = ['git', 'config', cfg_option % 'merge']
+
+  try:
+    upstream = RunCommandInDir(cmd, cwd).strip()
+  except cros_lib.RunCommandError:
+    raise BranchError(ERROR_MSG % GetManifestBranch(cwd))
+
+  return upstream.replace('refs/heads/', '')
+
+
+def PreFlightRinse(buildroot, board, overlays):
   """Cleans up any leftover state from previous runs."""
-  _GitCleanup(buildroot, board, tracking_branch, overlays)
+  _GitCleanup(buildroot, board, overlays)
   _CleanUpMountPoints(buildroot)
   cros_lib.OldRunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
 
@@ -347,7 +401,7 @@ def MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
     return chrome_atom
 
 
-def UprevPackages(buildroot, tracking_branch, board, overlays):
+def UprevPackages(buildroot, board, overlays):
   """Uprevs non-browser chromium os packages that have changed."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   chroot_overlays = [
@@ -356,20 +410,18 @@ def UprevPackages(buildroot, tracking_branch, board, overlays):
       ['../../chromite/buildbot/cros_mark_as_stable', '--all',
        '--board=%s' % board,
        '--overlays=%s' % ':'.join(chroot_overlays),
-       '--tracking_branch=%s' % tracking_branch,
        '--drop_file=%s' % cros_lib.ReinterpretPathForChroot(
            _PACKAGE_FILE % {'buildroot': buildroot}),
        'commit'], cwd=cwd, enter_chroot=True)
 
 
-def UprevPush(buildroot, tracking_branch, board, overlays, dryrun):
+def UprevPush(buildroot, board, overlays, dryrun):
   """Pushes uprev changes to the main line."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['../../chromite/buildbot/cros_mark_as_stable',
          '--srcroot=%s' % os.path.join(buildroot, 'src'),
          '--board=%s' % board,
-         '--overlays=%s' % ':'.join(overlays),
-         '--tracking_branch=%s' % tracking_branch
+         '--overlays=%s' % ':'.join(overlays)
         ]
   if dryrun:
     cmd.append('--dryrun')
