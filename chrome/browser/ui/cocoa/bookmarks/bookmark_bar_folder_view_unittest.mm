@@ -15,6 +15,31 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 
+// Allows us to verify BookmarkBarFolderView.
+@interface BookmarkBarFolderView(TestingAPI)
+
+@property(readonly, nonatomic) BOOL dropIndicatorShown;
+@property(readonly, nonatomic) CGFloat dropIndicatorPosition;
+@property(assign, nonatomic) id<BookmarkButtonControllerProtocol> controller;
+
+@end
+
+@implementation BookmarkBarFolderView(TestingAPI)
+
+-(void)setController:(id<BookmarkButtonControllerProtocol>)controller {
+  controller_ = controller;
+}
+
+-(BOOL)dropIndicatorShown {
+  return dropIndicatorShown_;
+}
+
+-(CGFloat)dropIndicatorPosition {
+  return dropIndicatorPosition_;
+}
+
+@end
+
 namespace {
 
 // Some values used for mocks and fakes.

@@ -11,11 +11,13 @@
 
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
-@implementation BookmarkBarFolderView
+@interface BookmarkBarFolderView()
 
-@synthesize dropIndicatorShown = dropIndicatorShown_;
-@synthesize dropIndicatorPosition = dropIndicatorPosition_;
-@synthesize controller = controller_;
+@property(readonly, nonatomic) id<BookmarkButtonControllerProtocol> controller;
+
+@end
+
+@implementation BookmarkBarFolderView
 
 - (void)awakeFromNib {
   NSArray* types = [NSArray arrayWithObjects:

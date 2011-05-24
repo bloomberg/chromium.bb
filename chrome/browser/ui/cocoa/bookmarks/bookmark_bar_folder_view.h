@@ -18,11 +18,4 @@
   // mentation comment for - (id<BookmarkButtonControllerProtocol>)controller.
   id<BookmarkButtonControllerProtocol> controller_;
 }
-@property(readonly, assign) id<BookmarkButtonControllerProtocol> controller;
-@end
-
-@interface BookmarkBarFolderView()  // TestingOrInternalAPI
-@property(assign) BOOL dropIndicatorShown;
-@property(readonly) CGFloat dropIndicatorPosition;
-@property(assign) id<BookmarkButtonControllerProtocol> controller;
 @end
