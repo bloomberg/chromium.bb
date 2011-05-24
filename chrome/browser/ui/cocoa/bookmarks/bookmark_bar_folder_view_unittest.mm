@@ -20,7 +20,8 @@
 
 @property(readonly, nonatomic) BOOL dropIndicatorShown;
 @property(readonly, nonatomic) CGFloat dropIndicatorPosition;
-@property(assign, nonatomic) id<BookmarkButtonControllerProtocol> controller;
+
+-(void)setController:(id<BookmarkButtonControllerProtocol>)controller;
 
 @end
 
