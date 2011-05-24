@@ -82,6 +82,7 @@ class NetworkMenuButton : public StatusAreaButton,
 
  protected:
   // NetworkMenu implementation:
+  virtual views::MenuButton* GetMenuButton();
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void OpenButtonOptions();
   virtual bool ShouldOpenButtonOptions() const;

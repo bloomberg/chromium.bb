@@ -193,6 +193,10 @@ bool NetworkMenuButton::IsBrowserMode() const {
   return host_->GetScreenMode() == StatusAreaHost::kBrowserMode;
 }
 
+views::MenuButton* NetworkMenuButton::GetMenuButton() {
+  return this;
+}
+
 gfx::NativeWindow NetworkMenuButton::GetNativeWindow() const {
   return host_->GetNativeWindow();
 }

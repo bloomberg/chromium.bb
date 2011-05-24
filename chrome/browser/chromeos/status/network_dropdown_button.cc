@@ -140,4 +140,8 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   UpdateMenu();
 }
 
+views::MenuButton* NetworkDropdownButton::GetMenuButton() {
+  return this;
+}
+
 }  // namespace chromeos
