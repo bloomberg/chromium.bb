@@ -26,6 +26,19 @@ void StringToNetAddress(const std::string& str, PP_Flash_NetAddress* addr) {
   memcpy(addr->data, str.data(), addr->size);
 }
 
+class AbortCallbackTask : public Task {
+ public:
+  AbortCallbackTask(PP_CompletionCallback callback)
+      : callback_(callback) {}
+
+  virtual void Run() {
+    PP_RunCompletionCallback(&callback_, PP_ERROR_ABORTED);
+  }
+
+ private:
+  PP_CompletionCallback callback_;
+};
+
 class FlashNetConnector : public PluginResource {
  public:
   FlashNetConnector(const HostResource& resource)
@@ -35,8 +48,10 @@ class FlashNetConnector : public PluginResource {
         remote_addr_out_(NULL) {
   }
   ~FlashNetConnector() {
-    if (callback_.func)
-      PP_RunCompletionCallback(&callback_, PP_ERROR_ABORTED);
+    if (callback_.func) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+                                       new AbortCallbackTask(callback_));
+    }
   }
 
   // Resource overrides.
