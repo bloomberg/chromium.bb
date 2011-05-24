@@ -185,6 +185,12 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
     return;
   }
 
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    gpu_feature_flags_ = gpu_blacklist->DetermineGpuFeatureFlags(
+        GpuBlacklist::kOsAny, NULL, gpu_info_);
+  }
+
   uint32 max_entry_id = gpu_blacklist->max_entry_id();
   if (!gpu_feature_flags_.flags()) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
