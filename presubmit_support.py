@@ -869,11 +869,13 @@ def ListRelevantPresubmitFiles(files, root):
 
 class GetTrySlavesExecuter(object):
   @staticmethod
-  def ExecPresubmitScript(script_text, presubmit_path):
+  def ExecPresubmitScript(script_text, presubmit_path, project):
     """Executes GetPreferredTrySlaves() from a single presubmit script.
 
     Args:
       script_text: The text of the presubmit script.
+      presubmit_path: Project script to run.
+      project: Project name to pass to presubmit script for bot selection.
 
     Return:
       A list of try slaves.
@@ -886,7 +888,10 @@ class GetTrySlavesExecuter(object):
 
     function_name = 'GetPreferredTrySlaves'
     if function_name in context:
-      result = eval(function_name + '()', context)
+      try:
+        result = eval(function_name + '(' + repr(project) + ')', context)
+      except TypeError:
+        result = eval(function_name + '()', context)
       if not isinstance(result, types.ListType):
         raise PresubmitFailure(
             'Presubmit functions must return a list, got a %s instead: %s' %
@@ -905,6 +910,7 @@ class GetTrySlavesExecuter(object):
 def DoGetTrySlaves(changed_files,
                    repository_root,
                    default_presubmit,
+                   project,
                    verbose,
                    output_stream):
   """Get the list of try servers from the presubmit scripts.
@@ -913,6 +919,7 @@ def DoGetTrySlaves(changed_files,
     changed_files: List of modified files.
     repository_root: The repository root.
     default_presubmit: A default presubmit script to execute in any case.
+    project: Optional name of a project used in selecting trybots.
     verbose: Prints debug info.
     output_stream: A stream to write debug output to.
 
@@ -928,14 +935,16 @@ def DoGetTrySlaves(changed_files,
     if verbose:
       output_stream.write("Running default presubmit script.\n")
     fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
-    results += executer.ExecPresubmitScript(default_presubmit, fake_path)
+    results += executer.ExecPresubmitScript(
+        default_presubmit, fake_path, project)
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
       output_stream.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
-    results += executer.ExecPresubmitScript(presubmit_script, filename)
+    results += executer.ExecPresubmitScript(
+        presubmit_script, filename, project)
 
   slaves = list(set(results))
   if slaves and verbose:
