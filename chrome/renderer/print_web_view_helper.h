@@ -21,12 +21,6 @@ struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPage_Params;
 struct PrintMsg_PrintPages_Params;
 
-#if defined(USE_X11)
-namespace skia {
-class VectorCanvas;
-}
-#endif
-
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
 // Do not serve any events in the time between construction and destruction of
@@ -53,6 +47,8 @@ class PrepareFrameAndViewForPrint {
     return print_canvas_size_;
   }
 
+  void FinishPrinting();
+
  private:
   WebKit::WebFrame* frame_;
   WebKit::WebView* web_view_;
@@ -61,6 +57,7 @@ class PrepareFrameAndViewForPrint {
   gfx::Size prev_scroll_offset_;
   int expected_pages_count_;
   bool use_browser_overlays_;
+  bool finished_;
 
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
@@ -165,8 +162,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
                          WebKit::WebFrame* frame,
-                         printing::Metafile* metafile,
-                         scoped_ptr<skia::VectorCanvas>* canvas);
+                         printing::Metafile* metafile);
 #else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,

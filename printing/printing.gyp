@@ -38,6 +38,8 @@
         'image.h',
         'metafile.h',
         'metafile_impl.h',
+        'metafile_skia_wrapper.h',
+        'metafile_skia_wrapper.cc',
         'page_number.cc',
         'page_number.h',
         'page_overlays.cc',
@@ -98,10 +100,6 @@
             'sources/': [['exclude', '_posix\\.cc$']]
         }],
         ['toolkit_uses_gtk == 1', {
-          'sources': [
-            'metafile_skia_wrapper.cc',
-            'metafile_skia_wrapper.h',
-          ],
           'dependencies': [
             # For FT_Init_FreeType and friends.
             '../build/linux/system.gyp:freetype2',
@@ -110,8 +108,10 @@
           ],
         }],
         ['OS=="mac"',
-          {'sources/': [['exclude', 'pdf_metafile_skia\\.(cc|h)$']]}
-        ],
+          {'sources/': [
+            ['exclude', 'pdf_metafile_skia\\.(cc|h)$'],
+            ['exclude', 'metafile_skia_wrapper\\.(cc|h)$'],
+        ]}],
         ['OS=="win"', {
           'defines': [
             # PRINT_BACKEND_AVAILABLE disables the default dummy implementation

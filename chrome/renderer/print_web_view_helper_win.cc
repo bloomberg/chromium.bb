@@ -11,9 +11,11 @@
 #include "chrome/common/print_messages.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
+#include "printing/metafile_skia_wrapper.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/point.h"
@@ -154,17 +156,23 @@ bool PrintWebViewHelper::CreatePreviewDocument(
         break;
       float scale_factor = shrink;
       RenderPage(print_params, &scale_factor,
-          static_cast<int>(params.pages[i]), true, frame, &metafile);
+                 static_cast<int>(params.pages[i]), true, frame, &metafile);
     }
   }
+
+  // Ensure that printing has finished before we start cleaning up and
+  // allocating buffers; this causes prep_frame_view to flush anything pending
+  // into the metafile. Then we can get the final size and copy it into a
+  // shared segment.
+  prep_frame_view.FinishPrinting();
+
+  if (!metafile->FinishDocument())
+    NOTREACHED();
 
   // Calculate the time taken to render the requested page for preview and add
   // the net time in the histogram.
   UMA_HISTOGRAM_TIMES("PrintPreview.RenderTime",
                       base::TimeTicks::Now() - begin_time);
-
-  if (!metafile->FinishDocument())
-    NOTREACHED();
 
   // Get the size of the compiled metafile.
   uint32 buf_size = metafile->GetDataSize();
@@ -223,9 +231,16 @@ void PrintWebViewHelper::RenderPage(
   skia::PlatformDevice* device = (*metafile)->StartPageForVectorCanvas(
       page_size, content_area, frame->getPrintPageShrink(page_number));
   DCHECK(device);
-  skia::VectorCanvas canvas(device);
+  // The printPage method may take a reference to the canvas we pass down, so it
+  // can't be a stack object.
+  SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
+  canvas->unref();  // SkRefPtr and new both took a reference.
+  if (is_preview) {
+    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(),
+                                                       metafile->get());
+  }
 
-  float webkit_scale_factor = frame->printPage(page_number, &canvas);
+  float webkit_scale_factor = frame->printPage(page_number, canvas.get());
   if (*scale_factor <= 0 || webkit_scale_factor <= 0) {
     NOTREACHED() << "Printing page " << page_number << " failed.";
   } else {

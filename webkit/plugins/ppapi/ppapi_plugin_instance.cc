@@ -67,7 +67,7 @@
 #include "printing/metafile_impl.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
 #endif
@@ -353,9 +353,6 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       plugin_selection_interface_(NULL),
       plugin_zoom_interface_(NULL),
       checked_for_plugin_messaging_interface_(false),
-#if defined(OS_LINUX)
-      canvas_(NULL),
-#endif  // defined(OS_LINUX)
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
@@ -388,9 +385,6 @@ PluginInstance::~PluginInstance() {
   module_->InstanceDeleted(this);
 
   ResourceTracker::Get()->InstanceDeleted(pp_instance_);
-#if defined(OS_LINUX)
-  ranges_.clear();
-#endif  // defined(OS_LINUX)
 }
 
 // static
@@ -1125,10 +1119,10 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
-#if defined(OS_LINUX)
+#if WEBKIT_USING_SKIA
   canvas_ = NULL;
   ranges_.clear();
-#endif  // defined(OS_LINUX)
+#endif  // WEBKIT_USING_SKIA
   return num_pages;
 }
 
@@ -1136,13 +1130,17 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
   DCHECK(plugin_print_interface_.get());
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
-#if defined(OS_LINUX)
-  ranges_.push_back(page_range);
-  canvas_ = canvas;
-  return true;
-#else
-  return PrintPageHelper(&page_range, 1, canvas);
-#endif  // defined(OS_LINUX)
+#if WEBKIT_USING_SKIA
+  // The canvas only has a metafile on it for print preview.
+  if (printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas)) {
+    ranges_.push_back(page_range);
+    canvas_ = canvas;
+    return true;
+  } else
+#endif  // WEBKIT_USING_SKIA
+  {
+    return PrintPageHelper(&page_range, 1, canvas);
+  }
 }
 
 bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
@@ -1171,13 +1169,12 @@ bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
 void PluginInstance::PrintEnd() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
-#if defined(OS_LINUX)
-  // This hack is here because all pages need to be written to PDF at once.
+#if WEBKIT_USING_SKIA
   if (!ranges_.empty())
-    PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_);
+    PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_.get());
   canvas_ = NULL;
   ranges_.clear();
-#endif  // defined(OS_LINUX)
+#endif  // WEBKIT_USING_SKIA
 
   DCHECK(plugin_print_interface_.get());
   if (plugin_print_interface_.get())
@@ -1321,31 +1318,39 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
     CGContextRestoreGState(canvas);
   }
 #elif defined(OS_WIN)
-  // On Windows, we now need to render the PDF to the DC that backs the
-  // supplied canvas.
-  HDC dc = skia::BeginPlatformPaint(canvas);
-  gfx::Size size_in_pixels;
-  size_in_pixels.set_width(
-      printing::ConvertUnit(current_print_settings_.printable_area.size.width,
-                            static_cast<int>(printing::kPointsPerInch),
-                            current_print_settings_.dpi));
-  size_in_pixels.set_height(
-      printing::ConvertUnit(current_print_settings_.printable_area.size.height,
-                            static_cast<int>(printing::kPointsPerInch),
-                            current_print_settings_.dpi));
-  // We need to render using the actual printer DPI (rendering to a smaller
-  // set of pixels leads to a blurry output). However, we need to counter the
-  // scaling up that will happen in the browser.
-  XFORM xform = {0};
-  xform.eM11 = xform.eM22 = static_cast<float>(printing::kPointsPerInch) /
-      static_cast<float>(current_print_settings_.dpi);
-  ModifyWorldTransform(dc, &xform, MWT_LEFTMULTIPLY);
+  printing::Metafile* metafile =
+    printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+  if (metafile) {
+    // We only have a metafile when doing print preview, so we just want to
+    // pass the PDF off to preview.
+    ret = metafile->InitFromData(buffer->mapped_buffer(), buffer->size());
+  } else {
+    // On Windows, we now need to render the PDF to the DC that backs the
+    // supplied canvas.
+    HDC dc = skia::BeginPlatformPaint(canvas);
+    gfx::Size size_in_pixels;
+    size_in_pixels.set_width(printing::ConvertUnit(
+        current_print_settings_.printable_area.size.width,
+        static_cast<int>(printing::kPointsPerInch),
+        current_print_settings_.dpi));
+    size_in_pixels.set_height(printing::ConvertUnit(
+        current_print_settings_.printable_area.size.height,
+        static_cast<int>(printing::kPointsPerInch),
+        current_print_settings_.dpi));
+    // We need to render using the actual printer DPI (rendering to a smaller
+    // set of pixels leads to a blurry output). However, we need to counter the
+    // scaling up that will happen in the browser.
+    XFORM xform = {0};
+    xform.eM11 = xform.eM22 = static_cast<float>(printing::kPointsPerInch) /
+        static_cast<float>(current_print_settings_.dpi);
+    ModifyWorldTransform(dc, &xform, MWT_LEFTMULTIPLY);
 
-  ret = render_proc(buffer->mapped_buffer(), buffer->size(), 0, dc,
-                    current_print_settings_.dpi, current_print_settings_.dpi,
-                    0, 0, size_in_pixels.width(),
-                    size_in_pixels.height(), true, false, true, true);
-  skia::EndPlatformPaint(canvas);
+    ret = render_proc(buffer->mapped_buffer(), buffer->size(), 0, dc,
+                      current_print_settings_.dpi, current_print_settings_.dpi,
+                      0, 0, size_in_pixels.width(),
+                      size_in_pixels.height(), true, false, true, true);
+    skia::EndPlatformPaint(canvas);
+  }
 #endif  // defined(OS_WIN)
 
   return ret;

@@ -24,6 +24,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -375,20 +376,21 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // to keep the pixels valid until CGContextEndPage is called. We use this
   // variable to hold on to the pixels.
   scoped_refptr<PPB_ImageData_Impl> last_printed_page_;
-#elif defined(OS_LINUX)
-  // On Linux, all pages need to be written to a PDF file in one shot. However,
-  // when users print only a subset of all the pages, it is impossible to know
-  // if a call to PrintPage() is the last call. Thus in PrintPage(), just store
-  // the page number in |ranges_|.
+#endif  // defined(OS_MACOSX)
+#if WEBKIT_USING_SKIA
+  // When printing to PDF (print preview, Linux) the entire document goes into
+  // one metafile.  However, when users print only a subset of all the pages,
+  // it is impossible to know if a call to PrintPage() is the last call.
+  // Thus in PrintPage(), just store the page number in |ranges_|.
   // The hack is in PrintEnd(), where a valid |canvas_| is preserved in
   // PrintWebViewHelper::PrintPages. This makes it possible to generate the
   // entire PDF given the variables below:
   //
   // The most recently used WebCanvas, guaranteed to be valid.
-  WebKit::WebCanvas* canvas_;
+  SkRefPtr<WebKit::WebCanvas> canvas_;
   // An array of page ranges.
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
-#endif  // defined(OS_LINUX)
+#endif  // WEBKIT_USING_SKIA
 
   // The plugin print interface.  This nested struct adds functions needed for
   // backwards compatibility.

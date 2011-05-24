@@ -14,6 +14,7 @@
 #include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "skia/ext/vector_canvas.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/point.h"
 
@@ -156,42 +157,32 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      int* page_count,
                                      printing::Metafile* metafile) {
   PrintMsg_Print_Params printParams = params.params;
-  scoped_ptr<skia::VectorCanvas> canvas;
 
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
 
-  {
-    // Hack - when |prep_frame_view| goes out of scope, PrintEnd() gets called.
-    // Doing this before closing |metafile| below ensures
-    // webkit::ppapi::PluginInstance::PrintEnd() has a valid canvas/metafile to
-    // save the final output to. See pepper_plugin_instance.cc for the whole
-    // story.
-    PrepareFrameAndViewForPrint prep_frame_view(printParams,
-                                                frame,
-                                                node,
-                                                frame->view());
-    *page_count = prep_frame_view.GetExpectedPageCount();
-    if (send_expected_page_count) {
-      Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                                    printParams.document_cookie,
-                                                    *page_count));
-    }
-    if (!*page_count)
-      return false;
+  PrepareFrameAndViewForPrint prep_frame_view(printParams, frame, node,
+                                              frame->view());
+  *page_count = prep_frame_view.GetExpectedPageCount();
+  if (send_expected_page_count) {
+    Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                                  printParams.document_cookie,
+                                                  *page_count));
+  }
+  if (!*page_count)
+    return false;
 
-    PrintMsg_PrintPage_Params page_params;
-    page_params.params = printParams;
-    const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
-    if (params.pages.empty()) {
-      for (int i = 0; i < *page_count; ++i) {
-        page_params.page_number = i;
-        PrintPageInternal(page_params, canvas_size, frame, metafile, &canvas);
-      }
-    } else {
-      for (size_t i = 0; i < params.pages.size(); ++i) {
-        page_params.page_number = params.pages[i];
-        PrintPageInternal(page_params, canvas_size, frame, metafile, &canvas);
-      }
+  PrintMsg_PrintPage_Params page_params;
+  page_params.params = printParams;
+  const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
+  if (params.pages.empty()) {
+    for (int i = 0; i < *page_count; ++i) {
+      page_params.page_number = i;
+      PrintPageInternal(page_params, canvas_size, frame, metafile);
+    }
+  } else {
+    for (size_t i = 0; i < params.pages.size(); ++i) {
+      page_params.page_number = params.pages[i];
+      PrintPageInternal(page_params, canvas_size, frame, metafile);
     }
   }
 
@@ -204,8 +195,7 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame,
-    printing::Metafile* metafile,
-    scoped_ptr<skia::VectorCanvas>* canvas) {
+    printing::Metafile* metafile) {
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;
@@ -235,11 +225,13 @@ void PrintWebViewHelper::PrintPageInternal(
   if (!device)
     return;
 
-  canvas->reset(new skia::VectorCanvas(device));
-  printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas->get(), metafile);
-  frame->printPage(params.page_number, canvas->get());
+  // The printPage method take a reference to the canvas we pass down, so it
+  // can't be a stack object.
+  SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
+  canvas->unref();  // SkRefPtr and new both took a reference.
+  printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
+  frame->printPage(params.page_number, canvas.get());
 
-  // TODO(myhuang): We should handle transformation for paper margins.
   // TODO(myhuang): We should render the header and the footer.
 
   // Done printing. Close the device context to retrieve the compiled metafile.

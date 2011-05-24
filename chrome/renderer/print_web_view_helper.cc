@@ -75,8 +75,11 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     WebFrame* frame,
     WebNode* node,
     WebView* web_view)
-        : frame_(frame), web_view_(web_view), expected_pages_count_(0),
-          use_browser_overlays_(true) {
+        : frame_(frame),
+          web_view_(web_view),
+          expected_pages_count_(0),
+          use_browser_overlays_(true),
+          finished_(false) {
   int dpi = GetDPI(&print_params);
   print_canvas_size_.set_width(
       ConvertUnit(print_params.printable_size.width(), dpi,
@@ -110,12 +113,18 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
 }
 
 PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
-  frame_->printEnd();
-  web_view_->resize(prev_view_size_);
-  if (WebFrame* web_frame = web_view_->mainFrame())
-    web_frame->setScrollOffset(prev_scroll_offset_);
+  FinishPrinting();
 }
 
+void PrepareFrameAndViewForPrint::FinishPrinting() {
+  if (!finished_) {
+    finished_ = true;
+    frame_->printEnd();
+    web_view_->resize(prev_view_size_);
+    if (WebFrame* web_frame = web_view_->mainFrame())
+      web_frame->setScrollOffset(prev_scroll_offset_);
+  }
+}
 
 PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
