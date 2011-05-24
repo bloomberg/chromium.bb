@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestCloseOpen) {
 }
 
 // TODO(lipalani): http://crbug.com/83123
-IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestScrollBalloonToVisible) {
+IN_PROC_BROWSER_TEST_F(NotificationTest, DISABLED_TestScrollBalloonToVisible) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
   NotificationPanelTester* tester = panel->GetTester();
