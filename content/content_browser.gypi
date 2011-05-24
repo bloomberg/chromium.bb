@@ -165,6 +165,7 @@
         'browser/in_process_webkit/webkit_context.h',
         'browser/in_process_webkit/webkit_thread.cc',
         'browser/in_process_webkit/webkit_thread.h',
+        'browser/load_notification_details.h',
         'browser/mime_registry_message_filter.cc',
         'browser/mime_registry_message_filter.h',
         'browser/ppapi_plugin_process_host.cc',

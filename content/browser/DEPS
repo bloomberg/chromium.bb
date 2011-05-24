@@ -37,7 +37,6 @@ include_rules = [
   "+chrome/browser/external_protocol_handler.h",
 
   "+chrome/browser/load_from_memory_cache_details.h",
-  "+chrome/browser/load_notification_details.h",
 
   "+chrome/browser/mach_broker_mac.h",
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 // page load that has been completed.  It was created to let the MetricsService
 // log page load metrics.
 
-#ifndef CHROME_BROWSER_LOAD_NOTIFICATION_DETAILS_H__
-#define CHROME_BROWSER_LOAD_NOTIFICATION_DETAILS_H__
+#ifndef CONTENT_BROWSER_LOAD_NOTIFICATION_DETAILS_H_
+#define CONTENT_BROWSER_LOAD_NOTIFICATION_DETAILS_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -38,15 +38,24 @@ class LoadNotificationDetails {
   NavigationController* controller() const { return controller_; }
 
  private:
-  GURL url_;           // the URL loaded
-  base::TimeDelta load_time_;               // length of time the page load took
-  int session_index_;  // index of the load within the tab session
-  PageTransition::Type origin_;       // type of action that caused the load
-  NavigationController* controller_;  // tells us which tab the load was in
+  // The URL loaded.
+  GURL url_;
+
+  // The length of time the page load took.
+  base::TimeDelta load_time_;
+
+  // The index of the load within the tab session.
+  int session_index_;
+
+  // The type of action that caused the load.
+  PageTransition::Type origin_;
+
+  // The NavigationController for the load.
+  NavigationController* controller_;
 
   LoadNotificationDetails() {}
 
   DISALLOW_COPY_AND_ASSIGN(LoadNotificationDetails);
 };
 
-#endif  // CHROME_BROWSER_LOAD_NOTIFICATION_DETAILS_H__
+#endif  // CONTENT_BROWSER_LOAD_NOTIFICATION_DETAILS_H_
