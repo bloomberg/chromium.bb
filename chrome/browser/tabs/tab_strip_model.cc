@@ -182,8 +182,8 @@ TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
   // selected contents as selection changing.
   if (active_index() == index) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabSelectedAt(old_contents, new_contents, active_index(),
-                                    false));
+                      ActiveTabChanged(old_contents, new_contents,
+                                       active_index(), false));
   }
   return old_contents;
 }
@@ -254,8 +254,8 @@ void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
   }
   if (old_contents != new_contents || had_multi) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabSelectedAt(old_contents, new_contents,
-                                    active_index(), user_gesture));
+                      ActiveTabChanged(old_contents, new_contents,
+                                       active_index(), user_gesture));
   }
 }
 
@@ -1220,8 +1220,8 @@ void TabStripModel::NotifyTabSelectedIfChanged(TabContentsWrapper* old_contents,
   }
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabSelectedAt(last_selected_contents, new_contents,
-                                  active_index(), user_gesture));
+                    ActiveTabChanged(last_selected_contents, new_contents,
+                                     active_index(), user_gesture));
 }
 
 void TabStripModel::NotifySelectionChanged(int old_selected_index) {
@@ -1232,7 +1232,7 @@ void TabStripModel::NotifySelectionChanged(int old_selected_index) {
       active_index() == TabStripSelectionModel::kUnselectedIndex ?
       NULL : GetTabContentsAt(active_index());
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabSelectedAt(old_tab, new_tab, active_index(), true));
+                    ActiveTabChanged(old_tab, new_tab, active_index(), true));
 }
 
 void TabStripModel::SelectRelativeTab(bool next) {

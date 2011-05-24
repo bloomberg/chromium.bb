@@ -217,10 +217,10 @@ bool TouchBrowserFrameView::HitTest(const gfx::Point& point) const {
   return false;
 }
 
-void TouchBrowserFrameView::TabSelectedAt(TabContentsWrapper* old_contents,
-                                          TabContentsWrapper* new_contents,
-                                          int index,
-                                          bool user_gesture) {
+void TouchBrowserFrameView::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                             TabContentsWrapper* new_contents,
+                                             int index,
+                                             bool user_gesture) {
   if (new_contents == old_contents)
     return;
 

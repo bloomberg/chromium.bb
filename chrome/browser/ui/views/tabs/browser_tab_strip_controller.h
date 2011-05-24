@@ -71,10 +71,10 @@ class BrowserTabStripController : public TabStripController,
                              bool active) OVERRIDE;
   virtual void TabDetachedAt(TabContentsWrapper* contents,
                              int model_index) OVERRIDE;
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* contents,
-                             int model_index,
-                             bool user_gesture) OVERRIDE;
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* contents,
+                                int model_index,
+                                bool user_gesture) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_model_index,
                         int to_model_index) OVERRIDE;
@@ -136,4 +136,3 @@ class BrowserTabStripController : public TabStripController,
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
-

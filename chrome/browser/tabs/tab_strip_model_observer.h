@@ -72,14 +72,12 @@ class TabStripModelObserver {
   // was done by a user input event (e.g. clicking on a tab, keystroke) or as a
   // side-effect of some other function.
   //
-  // TODO(sky): consider not overloading this. Instead rename this to
-  // TabActivatedAt (or something) and have TabSelectionChanged as well.
-  // TabSelectedAt. This requires renaming everyone to use new terms instead of
-  // selection.
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index,
-                             bool user_gesture);
+  // TODO(dpapad): Add TabSelectionChanged method for when the selected tabs
+  // change.
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture);
 
   // The specified TabContents at |from_index| was moved to |to_index|.
   virtual void TabMoved(TabContentsWrapper* contents,

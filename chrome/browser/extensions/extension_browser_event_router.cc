@@ -344,7 +344,7 @@ void ExtensionBrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   UnregisterForTabNotifications(contents->tab_contents());
 }
 
-void ExtensionBrowserEventRouter::TabSelectedAt(
+void ExtensionBrowserEventRouter::ActiveTabChanged(
     TabContentsWrapper* old_contents,
     TabContentsWrapper* new_contents,
     int index,

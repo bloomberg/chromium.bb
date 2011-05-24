@@ -731,10 +731,10 @@ class Browser : public TabHandlerDelegate,
                             int index);
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
   virtual void TabDeselected(TabContentsWrapper* contents);
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index,
-                             bool user_gesture);
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture);
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);

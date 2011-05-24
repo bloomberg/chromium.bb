@@ -106,7 +106,7 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
   return selected_index;
 }
 
-void TabStripModelOrderController::TabSelectedAt(
+void TabStripModelOrderController::ActiveTabChanged(
     TabContentsWrapper* old_contents,
     TabContentsWrapper* new_contents,
     int index,

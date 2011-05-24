@@ -1014,10 +1014,10 @@ void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   GetTabAt(index)->set_closing(true);
 }
 
-void TabStripGtk::TabSelectedAt(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
-                                int index,
-                                bool user_gesture) {
+void TabStripGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                   TabContentsWrapper* new_contents,
+                                   int index,
+                                   bool user_gesture) {
   DCHECK(index >= 0 && index < static_cast<int>(GetTabCount()));
 
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are

@@ -1268,8 +1268,8 @@ class NotificationBridge : public NotificationObserver {
   DCHECK_EQ(oldContents->tab_contents(), [oldController tabContents]);
 
   // Simply create a new TabContentsController for |newContents| and place it
-  // into the array, replacing |oldContents|.  A TabSelectedAt notification will
-  // follow, at which point we will install the new view.
+  // into the array, replacing |oldContents|.  A ActiveTabChanged notification
+  // will follow, at which point we will install the new view.
   scoped_nsobject<TabContentsController> newController(
       [[TabContentsController alloc]
           initWithContents:newContents->tab_contents()

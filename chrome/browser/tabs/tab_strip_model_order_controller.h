@@ -43,10 +43,10 @@ class TabStripModelOrderController : public TabStripModelObserver {
   int DetermineNewSelectedIndex(int removed_index) const;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index,
-                             bool user_gesture);
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture);
 
  private:
   // Returns a valid index to be selected after the tab at |removing_index| is

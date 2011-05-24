@@ -88,10 +88,10 @@ class CompactLocationBarViewHost : public DropdownBarHost,
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContentsWrapper* contents,
                             int index) OVERRIDE;
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index,
-                             bool user_gesture) OVERRIDE;
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index) OVERRIDE;

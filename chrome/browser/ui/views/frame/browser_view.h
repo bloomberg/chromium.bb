@@ -356,10 +356,10 @@ class BrowserView : public BrowserBubbleHost,
   // Overridden from TabStripModelObserver:
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
   virtual void TabDeselected(TabContentsWrapper* contents) OVERRIDE;
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index,
-                             bool user_gesture) OVERRIDE;
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
@@ -540,7 +540,7 @@ class BrowserView : public BrowserBubbleHost,
   void UpdateAcceleratorMetrics(const views::Accelerator& accelerator,
                                 int command_id);
 
-  // Invoked from TabSelectedAt or when instant is made active.  If
+  // Invoked from ActiveTabChanged or when instant is made active.  If
   // |change_tab_contents| is true, |new_contents| is added to the view
   // hierarchy, if |change_tab_contents| is false, it's assumed |new_contents|
   // has already been added to the view hierarchy.

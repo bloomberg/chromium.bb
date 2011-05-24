@@ -65,10 +65,10 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
   virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
 
   // Overrridden from TabStripModelObserver.
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index,
-                             bool user_gesture);
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture);
 
   // Overridden from NotificationObserver.
   virtual void Observe(NotificationType type,

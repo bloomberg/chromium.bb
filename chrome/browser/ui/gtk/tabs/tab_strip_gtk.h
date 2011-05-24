@@ -107,10 +107,10 @@ class TabStripGtk : public TabStripModelObserver,
                              int index,
                              bool foreground);
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* contents,
-                             int index,
-                             bool user_gesture);
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* contents,
+                                int index,
+                                bool user_gesture);
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);

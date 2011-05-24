@@ -340,10 +340,11 @@ void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,
   tabstrip_->RemoveTabAt(model_index);
 }
 
-void BrowserTabStripController::TabSelectedAt(TabContentsWrapper* old_contents,
-                                              TabContentsWrapper* contents,
-                                              int model_index,
-                                              bool user_gesture) {
+void BrowserTabStripController::ActiveTabChanged(
+    TabContentsWrapper* old_contents,
+    TabContentsWrapper* contents,
+    int model_index,
+    bool user_gesture) {
   tabstrip_->SelectTabAt(model_->GetIndexOfTabContents(old_contents),
                          model_index);
 }

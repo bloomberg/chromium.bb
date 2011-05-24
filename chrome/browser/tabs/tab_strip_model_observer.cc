@@ -21,10 +21,10 @@ void TabStripModelObserver::TabDetachedAt(TabContentsWrapper* contents,
 void TabStripModelObserver::TabDeselected(TabContentsWrapper* contents) {
 }
 
-void TabStripModelObserver::TabSelectedAt(TabContentsWrapper* old_contents,
-                                          TabContentsWrapper* new_contents,
-                                          int index,
-                                          bool user_gesture) {
+void TabStripModelObserver::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                             TabContentsWrapper* new_contents,
+                                             int index,
+                                             bool user_gesture) {
 }
 
 void TabStripModelObserver::TabMoved(TabContentsWrapper* contents,

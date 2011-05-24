@@ -303,10 +303,11 @@ void CompactLocationBarViewHost::TabClosingAt(TabStripModel* tab_strip_model,
   Hide(false);
 }
 
-void CompactLocationBarViewHost::TabSelectedAt(TabContentsWrapper* old_contents,
-                                               TabContentsWrapper* new_contents,
-                                               int index,
-                                               bool user_gesture) {
+void CompactLocationBarViewHost::ActiveTabChanged(
+    TabContentsWrapper* old_contents,
+    TabContentsWrapper* new_contents,
+    int index,
+    bool user_gesture) {
   current_tab_model_index_ = index;
   if (new_contents && new_contents->tab_contents()->is_loading()) {
     Show(false);

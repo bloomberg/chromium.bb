@@ -2891,10 +2891,10 @@ void Browser::TabDeselected(TabContentsWrapper* contents) {
   window_->GetLocationBar()->SaveStateToContents(contents->tab_contents());
 }
 
-void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
-                            TabContentsWrapper* new_contents,
-                            int index,
-                            bool user_gesture) {
+void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
+                               TabContentsWrapper* new_contents,
+                               int index,
+                               bool user_gesture) {
   if (old_contents == new_contents)
     return;
 

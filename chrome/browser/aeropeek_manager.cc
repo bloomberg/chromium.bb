@@ -848,7 +848,7 @@ void AeroPeekWindow::OnActivate(UINT action,
     return;
 
   // Ask Chrome to activate the tab associated with this thumbnail window.
-  // Since TabStripModel calls AeroPeekManager::TabSelectedAt() when it
+  // Since TabStripModel calls AeroPeekManager::ActiveTabChanged() when it
   // finishes activating the tab. We will move the tab focus of AeroPeek there.
   if (delegate_)
     delegate_->ActivateTab(tab_id_);
@@ -1111,10 +1111,10 @@ void AeroPeekManager::TabDetachedAt(TabContentsWrapper* contents, int index) {
   DeleteAeroPeekWindowForTab(contents);
 }
 
-void AeroPeekManager::TabSelectedAt(TabContentsWrapper* old_contents,
-                                    TabContentsWrapper* new_contents,
-                                    int index,
-                                    bool user_gesture) {
+void AeroPeekManager::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                       TabContentsWrapper* new_contents,
+                                       int index,
+                                       bool user_gesture) {
   if (old_contents == new_contents)
     return;
 
@@ -1144,7 +1144,7 @@ void AeroPeekManager::TabReplacedAt(TabStripModel* tab_strip_model,
   CreateAeroPeekWindowIfNecessary(new_contents,
                                   (index == tab_strip_model->active_index()));
   // We don't need to update the selection as if |new_contents| is selected the
-  // TabStripModel will send TabSelectedAt.
+  // TabStripModel will send ActiveTabChanged.
 }
 
 void AeroPeekManager::TabMoved(TabContentsWrapper* contents,
@@ -1185,7 +1185,7 @@ void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
 void AeroPeekManager::ActivateTab(int tab_id) {
   // Ask TabStrip to activate this tab.
   // We don't have to update thumbnails now since TabStrip will call
-  // TabSelectedAt() when it actually activates this tab.
+  // ActiveTabChanged() when it actually activates this tab.
   TabContents* contents = GetTabContents(tab_id);
   if (contents && contents->delegate())
     contents->delegate()->ActivateContents(contents);

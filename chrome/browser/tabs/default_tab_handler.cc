@@ -162,14 +162,14 @@ void DefaultTabHandler::TabDeselected(TabContentsWrapper* contents) {
   delegate_->AsBrowser()->TabDeselected(contents);
 }
 
-void DefaultTabHandler::TabSelectedAt(TabContentsWrapper* old_contents,
-                                      TabContentsWrapper* new_contents,
-                                      int index,
-                                      bool user_gesture) {
-  delegate_->AsBrowser()->TabSelectedAt(old_contents,
-                                        new_contents,
-                                        index,
-                                        user_gesture);
+void DefaultTabHandler::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                         TabContentsWrapper* new_contents,
+                                         int index,
+                                         bool user_gesture) {
+  delegate_->AsBrowser()->ActiveTabChanged(old_contents,
+                                           new_contents,
+                                           index,
+                                           user_gesture);
 }
 
 void DefaultTabHandler::TabMoved(TabContentsWrapper* contents,
@@ -202,4 +202,3 @@ void DefaultTabHandler::TabStripEmpty() {
 TabHandler* TabHandler::CreateTabHandler(TabHandlerDelegate* delegate) {
   return new DefaultTabHandler(delegate);
 }
-

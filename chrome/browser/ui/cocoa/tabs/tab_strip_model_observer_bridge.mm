@@ -48,7 +48,7 @@ void TabStripModelObserverBridge::TabDetachedAt(TabContentsWrapper* contents,
   }
 }
 
-void TabStripModelObserverBridge::TabSelectedAt(
+void TabStripModelObserverBridge::ActiveTabChanged(
     TabContentsWrapper* old_contents,
     TabContentsWrapper* new_contents,
     int index,

@@ -344,10 +344,10 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s->foreground = foreground;
     states_.push_back(s);
   }
-  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index,
-                             bool user_gesture) {
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture) {
     State* s = new State(new_contents, index, SELECT);
     s->src_contents = old_contents;
     s->user_gesture = user_gesture;
@@ -2183,7 +2183,7 @@ TEST_F(TabStripModelTest, CloseSelectedTabs) {
 
 // Verifies that if we change the selection from a multi selection to a single
 // selection, but not in a way that changes the selected_index that
-// TabSelectedAt is still invoked.
+// ActiveTabChanged is still invoked.
 TEST_F(TabStripModelTest, MultipleToSingle) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel strip(&delegate, profile());

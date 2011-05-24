@@ -1171,10 +1171,10 @@ void BrowserWindowGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   contents_container_->DetachTab(contents);
 }
 
-void BrowserWindowGtk::TabSelectedAt(TabContentsWrapper* old_contents,
-                                     TabContentsWrapper* new_contents,
-                                     int index,
-                                     bool user_gesture) {
+void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                        TabContentsWrapper* new_contents,
+                                        int index,
+                                        bool user_gesture) {
   if (old_contents == new_contents)
     return;
 
