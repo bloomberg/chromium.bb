@@ -24,7 +24,6 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 
-#define OSX_BLEMISH_HEURISTIC 1
 /*
  * TODO(bsy,bradnelson): remove SIGPIPE_FIX.  It is needed for future
  * testing because our test framework appears to not see the SIGPIPE
@@ -52,9 +51,9 @@
  */
 #define SIGPIPE_ALT_FIX       1
 
-#if OSX_BLEMISH_HEURISTIC || SIGPIPE_ALT_FIX
+#if SIGPIPE_ALT_FIX
 # include <signal.h>
-#endif  // OSX_BLEMISH_HEURISTIC || SIGPIPE_ALT_FIX
+#endif  SIGPIPE_ALT_FIX
 
 #include <algorithm>
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
@@ -63,13 +62,11 @@ namespace nacl {
 
 namespace {
 
-#if OSX_BLEMISH_HEURISTIC
 // The number of recvmsg retries to perform to determine --
 // heuristically, unfortunately -- if the remote end of the socketpair
 // had actually closed.  This is a (new) hacky workaround for an OSX
 // blemish that replaces the older, buggier workaround.
 const int kRecvMsgRetries = 8;
-#endif
 
 // The maximum number of IOVec elements sent by SendDatagram(). Plus one for
 // NaClInternalHeader with the descriptor data bytes.
@@ -85,27 +82,6 @@ struct Header {
   // The total number of handles to be transferred with IMC datagram.
   size_t handle_count;
 };
-
-#if !OSX_BLEMISH_HEURISTIC
-// A ControlBlock entry is allocated for each socket descriptor created by
-// socketpair() to amend the undesirable OS X behavior described in Close()
-// function.
-struct ControlBlock {
-  // The file descriptor number of the other end of the socket pair.
-  int pair_fd;
-  // true if this descriptor has been closed.
-  bool closed;
-  // true if this descriptor has been transferred.
-  bool transferred;
-};
-
-// The maximum number of I/O descriptors to manage with the IMC library;
-// Note the typical sysconf(_SC_OPEN_MAX) value is 256 on OS X.
-const int kMaxHandles = 2048;
-
-// The global ControlBlock table indexed by the I/O descriptor number.
-ControlBlock control_table[kMaxHandles];
-#endif  // !OSX_BLEMISH_HEURISTIC
 
 
 // Gets an array of file descriptors stored in msg.
@@ -145,20 +121,6 @@ bool SkipFile(int handle, size_t length) {
   return true;
 }
 
-#if !OSX_BLEMISH_HEURISTIC
-// Returns true if handle is the one end of a socket pair.
-bool IsSocketPair(Handle handle) {
-  if (handle < 0 || kMaxHandles <= handle) {
-    return false;
-  }
-  int pair_fd = control_table[handle].pair_fd;
-  if (pair_fd == handle || pair_fd < 0 || kMaxHandles <= pair_fd) {
-    return false;
-  }
-  return control_table[pair_fd].pair_fd == handle;
-}
-#endif  // !OSX_BLEMISH_HEURISTIC
-
 #if SIGPIPE_ALT_FIX
 // TODO(kbr): move this to an Init() function so it isn't called all
 // the time.
@@ -195,14 +157,6 @@ int SendDatagramTo(const MessageHeader* message, int flags,
 int SocketPair(Handle pair[2]) {
   int result = socketpair(AF_UNIX, SOCK_STREAM, 0, pair);
   if (result == 0) {
-#if !OSX_BLEMISH_HEURISTIC
-    if (kMaxHandles <= pair[0] || kMaxHandles <= pair[1]) {
-      close(pair[0]);
-      close(pair[1]);
-      errno = EMFILE;
-      return -1;
-    }
-#endif
 #if SIGPIPE_ALT_FIX
     if (!IgnoreSIGPIPE()) {
       close(pair[0]);
@@ -221,46 +175,11 @@ int SocketPair(Handle pair[2]) {
       return -1;
     }
 #endif
-#if !OSX_BLEMISH_HEURISTIC
-    // Allocates two control blocks that refer each other.
-    ControlBlock* block;
-    block = &control_table[pair[0]];
-    block->pair_fd = pair[1];
-    block->closed = block->transferred = false;
-    block = &control_table[pair[1]];
-    block->pair_fd = pair[0];
-    block->closed = block->transferred = false;
-#endif  // !OSX_BLEMISH_HEURISTIC
   }
   return result;
 }
 
 int Close(Handle handle) {
-#if !OSX_BLEMISH_HEURISTIC
-  if (IsSocketPair(handle)) {
-    // In OS X, after a process closes one end of a socket pair which has been
-    // transferred to the other process, the socket the remote process has
-    // received is treated as if it is closed, and read() returns immediately
-    // with zero if there is no data while it can still receive incoming data.
-    // To amend this behavior, we do not close transferred socket pair handles
-    // until both ends are closed
-    // TODO(shiki): Make this code block thread-safe, and make it sure it will
-    // be safe to kill a thread that is executing in IMC code.
-    ControlBlock* block = &control_table[handle];
-    ControlBlock* pair = &control_table[block->pair_fd];
-    block->closed = true;
-    if (pair->pair_fd == handle) {
-      if (pair->closed) {
-        pair->pair_fd = -1;
-        close(block->pair_fd);
-      } else if (block->transferred) {
-        // Close this handle when the other end is closed.
-        return 0;
-      }
-    }
-    block->pair_fd = -1;
-  }
-#endif  // !OSX_BLEMISH_HEURISTIC
   return close(handle);
 }
 
@@ -336,15 +255,6 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
     errno = EMSGSIZE;
     return -1;
   }
-#if !OSX_BLEMISH_HEURISTIC
-  if (0 < message->handle_count && message->handles != NULL) {
-    for (size_t i = 0; i < message->handle_count; ++i) {
-      if (IsSocketPair(message->handles[i])) {
-        control_table[message->handles[i]].transferred = true;
-      }
-    }
-  }
-#endif
   return result - sizeof header;
 }
 
@@ -395,7 +305,6 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
     msg.msg_controllen = 0;
   }
   msg.msg_flags = 0;
-#if OSX_BLEMISH_HEURISTIC
   int count;
   int retry_count;
   for (retry_count = 0; retry_count < kRecvMsgRetries; ++retry_count) {
@@ -408,10 +317,6 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
     printf("OSX_BLEMISH_HEURISTIC: retry_count = %d, count = %d\n",
            retry_count, count);
   }
-#else
-  int count = recvmsg(handle, &msg,
-                      (flags & kDontWait) ? MSG_DONTWAIT : 0);
-#endif
   size_t handle_count = 0;
   if (0 < count) {
     handle_count = GetRights(&msg, message->handles);
@@ -474,7 +379,6 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   msg.msg_control = 0;
   msg.msg_controllen = 0;
   msg.msg_flags = 0;
-#if OSX_BLEMISH_HEURISTIC
   for (retry_count = 0; retry_count < kRecvMsgRetries; ++retry_count) {
     // We have to pass MSG_WAITALL here, because we have already consumed
     // the header.  If we returned EAGAIN here, subsequent calls would read
@@ -487,9 +391,6 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
     printf("OSX_BLEMISH_HEURISTIC (2): retry_count = %d, count = %d\n",
            retry_count, count);
   }
-#else  // OSX_BLEMISH_HEURISTIC
-  count = recvmsg(handle, &msg, MSG_WAITALL);
-#endif  // OSX_BLEMISH_HEURISTIC
   if (0 < count) {
     // If the caller requested fewer bytes than the message contained, we need
     // to read the remaining bytes, discard them, and report message truncated.
