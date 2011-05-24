@@ -55,7 +55,7 @@ function registerConnection() {
 
         chromoting.plugin.sendIq = sendIq;
         // TODO:(jamiewalch): Pass in the correct nonce.
-        chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid, '');
+        chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid);
         // TODO(ajwong): This should just be feedIq();
         window.setTimeout(feedIq, 1000);
       } else {
@@ -67,7 +67,7 @@ function registerConnection() {
   }
   xhr.send('host_jid=' + encodeURIComponent(chromoting.hostjid) +
            '&username=' + encodeURIComponent(chromoting.username) +
-           '&password=' + encodeURIComponent(chromoting.xmppAuthToken));
+           '&password=' + encodeURIComponent(chromoting.talkToken));
   setClientStateMessage("Connecting")
 }
 
@@ -102,7 +102,7 @@ function init() {
   chromoting.username = document.username;
   chromoting.hostname = document.hostname;
   chromoting.hostjid = document.hostjid;
-  chromoting.xmppAuthToken = document.xmppAuthToken;
+  chromoting.talkToken = document.talkToken;
   chromoting.connectMethod = document.connectMethod;
 
   // Only allow https connections to the httpXmppProxy unless we're running in
@@ -134,7 +134,7 @@ function init() {
     } else {
       // TODO:(jamiewalch): Pass in the correct nonce.
       plugin.connect(chromoting.username, chromoting.hostjid,
-                     chromoting.xmppAuthToken, '');
+                     chromoting.talkToken, '');
     }
   } else {
     addToDebugLog('ERROR: chromoting plugin not loaded');

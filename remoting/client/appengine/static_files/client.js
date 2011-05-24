@@ -171,6 +171,23 @@ function appendHostLinks(hostlist) {
   }
 }
 
+function openSession(hostname, hostjid, method) {
+  var proxy = document.getElementById('oauth2_proxy').value;
+  var token_type = 'oauth2';
+  if (document.getElementById('use_clientlogin').checked) {
+    proxy = document.getElementById('clientlogin_proxy').value;
+    token_type = 'clientlogin';
+  }
+
+  var url = 'session?hostname=' + encodeURIComponent(hostname)
+      + '&hostjid=' + encodeURIComponent(hostjid)
+      + '&http_xmpp_proxy=' + encodeURIComponent(proxy)
+      + '&token_type=' + encodeURIComponent(token_type) +
+        '&connect_method=' + encodeURIComponent(method);
+
+  window.open(url);
+}
+
 // Create a single host description element.
 function addHostInfo(host) {
   var hostEntry = document.createElement('div');
@@ -189,21 +206,17 @@ function addHostInfo(host) {
 
     connect.setAttribute('type', 'button');
     connect.setAttribute('value', 'Connect');
-    connect.setAttribute('onclick', "window.open('session?hostname=" +
-        encodeURIComponent(host.hostName) +
-        "&hostjid=" + encodeURIComponent(host.jabberId) +
-        "');");
+    connect.setAttribute('onclick',
+        "openSession('" + host.hostName + "', "
+        + "'" + host.jabberId + "', 'direct');");
     span.appendChild(connect);
 
     var connectSandboxed = document.createElement('input');
     connectSandboxed.setAttribute('type', 'button');
     connectSandboxed.setAttribute('value', 'Connect Sandboxed');
     connectSandboxed.setAttribute('onclick',
-        "window.open('session?hostname=" + encodeURIComponent(host.hostName) +
-        "&hostjid=" + encodeURIComponent(host.jabberId) +
-        "&http_xmpp_proxy=" + encodeURIComponent(
-            document.getElementById('http_xmpp_proxy').value) +
-        "&connect_method=sandboxed');");
+        "openSession('" + host.hostName + "', "
+        + "'" + host.jabberId + "', 'sandboxed');");
     span.appendChild(connectSandboxed);
 
     hostEntry.appendChild(span);

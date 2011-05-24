@@ -43,7 +43,7 @@ class NotAuthenticated(Exception):
   pass
 
 
-class XmppToken(db.Model):
+class ClientLoginToken(db.Model):
   auth_token = db.StringProperty()
 
 
@@ -61,7 +61,7 @@ def HasOAuth2Tokens(throws=True):
   return False;
 
 
-def GetAccessToken(throws=True):
+def GetOAuth2AccessToken(throws=True):
   oauth2_tokens = OAuth2Tokens.get_or_insert(GetUserId())
 
   if not oauth2_tokens.refresh_token:
@@ -93,8 +93,8 @@ def GetAccessToken(throws=True):
   return oauth2_tokens.access_token
 
 
-def GetXmppToken(throws=True):
-  """Retrieves the XMPP for Chromoting.
+def GetClientLoginToken(throws=True):
+  """Retrieves the ClientLogin for Chromoting.
 
   Args:
     throws: bool (optional) Default is True. Throws if no token.
@@ -102,15 +102,15 @@ def GetXmppToken(throws=True):
   Returns:
     The auth token for the current user.
   """
-  xmpp_token = XmppToken.get_or_insert(GetUserId())
-  if throws and not xmpp_token.auth_token:
+  clientlogin_token = ClientLoginToken.get_or_insert(GetUserId())
+  if throws and not clientlogin_token.auth_token:
     raise NotAuthenticated()
-  return xmpp_token.auth_token
+  return clientlogin_token.auth_token
 
 
-def ClearXmppToken():
+def ClearClientLoginToken():
   """Clears all Chromoting ClientLogin token state from the datastore."""
-  db.delete(db.Key.from_path('XmppToken', GetUserId()))
+  db.delete(db.Key.from_path('ClientLoginToken', GetUserId()))
 
 
 def ClearOAuth2Token():
@@ -137,7 +137,7 @@ def GetUserId():
   return user.user_id()
 
 
-class XmppAuthHandler(webapp.RequestHandler):
+class ClientLoginAuthHandler(webapp.RequestHandler):
   """Prompts Google Accounts credentials and retrieves a ClientLogin token.
 
   This class takes the user's plaintext username and password, and then
@@ -151,7 +151,7 @@ class XmppAuthHandler(webapp.RequestHandler):
   """
   @login_required
   def get(self):
-    ClearXmppToken()
+    ClearClientLoginToken()
     path = os.path.join(os.path.dirname(__file__), 'client_login.html')
     self.response.out.write(template.render(path, {}))
 
@@ -178,17 +178,18 @@ class XmppAuthHandler(webapp.RequestHandler):
       self.response.set_status(result.status_code)
       return
 
-    xmpp_token = XmppToken(key_name = GetUserId())
-    xmpp_token.auth_token = re.search("Auth=(.*)", result.content).group(1)
-    xmpp_token.put()
+    clientlogin_token = ClientLoginToken(key_name = GetUserId())
+    clientlogin_token.auth_token = re.search(
+        "Auth=(.*)", result.content).group(1)
+    clientlogin_token.put()
     self.redirect('/')
 
 
-class ClearXmppTokenHandler(webapp.RequestHandler):
-  """Endpoint for dropping the user's Xmpp token."""
+class ClearClientLoginTokenHandler(webapp.RequestHandler):
+  """Endpoint for dropping the user's ClientLogin token."""
   @login_required
   def get(self):
-    ClearXmppToken()
+    ClearClientLoginToken()
     self.redirect('/')
 
 
@@ -248,8 +249,8 @@ class OAuth2ReturnHandler(webapp.RequestHandler):
 def main():
   application = webapp.WSGIApplication(
       [
-      ('/auth/xmpp_auth', XmppAuthHandler),
-      ('/auth/clear_xmpp_token', ClearXmppTokenHandler),
+      ('/auth/clientlogin_auth', ClientLoginAuthHandler),
+      ('/auth/clear_clientlogin_token', ClearClientLoginTokenHandler),
       ('/auth/clear_oauth2_token', ClearOAuth2TokenHandler),
       ('/auth/oauth2_return', OAuth2ReturnHandler)
       ],

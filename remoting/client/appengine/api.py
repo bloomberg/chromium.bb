@@ -17,19 +17,6 @@ from google.appengine.ext.webapp.util import login_required
 import auth
 
 
-class GetXmppTokenHandler(webapp.RequestHandler):
-  """Retrieves the user's XMPP token."""
-  @login_required
-  def get(self):
-    try:
-      self.response.headers['Content-Type'] = 'application/json'
-      self.response.out.write(
-          json.dumps({'xmpp_token': auth.GetXmppToken().token}))
-    except auth.NotAuthenticated:
-      self.response.out.write('User has not authenticated')
-      self.set_status(400)
-
-
 class GetHostListHandler(webapp.RequestHandler):
   """Proxies the host-list handlers on the Chromoting directory."""
   @login_required
@@ -43,7 +30,7 @@ class GetHostListHandler(webapp.RequestHandler):
     result = urlfetch.fetch(
         url = 'https://www.googleapis.com/chromoting/v1/@me/hosts',
         method = urlfetch.GET,
-        headers = {'Authorization': 'OAuth ' + auth.GetAccessToken()})
+        headers = {'Authorization': 'OAuth ' + auth.GetOAuth2AccessToken()})
     self.response.set_status(result.status_code)
     for i in result.headers:
       self.response.headers[i] = result.headers[i]
@@ -53,7 +40,6 @@ class GetHostListHandler(webapp.RequestHandler):
 def main():
   application = webapp.WSGIApplication(
       [
-      ('/api/get_xmpp_token', GetXmppTokenHandler),
       ('/api/get_host_list', GetHostListHandler)
       ],
       debug=True)

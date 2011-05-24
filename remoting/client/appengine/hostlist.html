@@ -24,10 +24,39 @@ found in the LICENSE file.
         <div id="mainview-content">
           <div class="page">
             <section>
-              <h3>Http Xmpp Proxy</h3>
-              <input type="text" id="http_xmpp_proxy"
-                     value="https://chromoting-httpxmpp-dev.corp.google.com"
-                     size="50" />
+              <h3>Http Xmpp Proxy Config </h3>
+              <div>
+                <table>
+                  <tr>
+                    <td align="right">
+                      <label for="clientlogin_proxy">Client Login Proxy</label>
+                    </td>
+                    <td><input type="text" name="clientlogin_proxy" id="clientlogin_proxy"
+                      value="https://chromoting-httpxmpp-dev.corp.google.com"
+                      size="60" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="right">
+                      <label for="oauth2_proxy">OAuth2 Proxy</label>
+                    </td>
+                    <td><input type="text" name="oauth2_proxy" id="oauth2_proxy"
+                      value="https://chromoting-httpxmpp-oauth2-dev.corp.google.com"
+                      size="60" />
+                    </td>
+                  </tr>
+                </table>
+                <div>
+                  <input type="radio" name="token_type" id="use_oauth2"
+                         value="oauth2" checked>
+                  <label for="use_oauth2">Use OAuth2</label>
+                  </input>
+                  <input type="radio" name="token_type" id="use_clientlogin"
+                         value="clientlogin">
+                  <label for="use_clientlogin">Use Client Login</label>
+                  </input>
+                </div>
+              </div>
             </section>
             <section>
               <h3>Host List</h3>
@@ -66,18 +95,18 @@ found in the LICENSE file.
               </div>
             </section>
             <section>
-              <h3>Xmpp Token</h3>
+              <h3>Client Login Token</h3>
               <div>
-{% ifnotequal xmpp_token None %}
+{% ifnotequal clientlogin_token None %}
                 <div>Token Authenticated</div>
                 <button id="subitem"
-                   onclick="window.location='/auth/clear_xmpp_token'">
+                   onclick="window.location='/auth/clear_clientlogin_token'">
                    Clear Token
                 </button>
 {% else %}
                 <div class="error-msg">Token Not Authenticated</div>
                 <button id="subitem"
-                   onclick="window.location='/auth/xmpp_auth'">
+                   onclick="window.location='/auth/clientlogin_auth'">
                   Authenticate Token
                 </button>
 {% endifnotequal %}
