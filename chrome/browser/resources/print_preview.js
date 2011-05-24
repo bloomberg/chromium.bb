@@ -290,12 +290,8 @@ function getDuplexMode() {
  * @return {string} JSON string with print job settings.
  */
 function getSettingsJSON() {
-  var printerList = $('printer-list')
-  var selectedPrinter = printerList.selectedIndex;
-  var deviceName = '';
-  if (selectedPrinter >= 0)
-    deviceName = printerList.options[selectedPrinter].value;
   var printAll = $('all-pages').checked;
+  var deviceName = getSelectedPrinterName();
   var printToPDF = (deviceName == PRINT_TO_PDF);
 
   return JSON.stringify({'deviceName': deviceName,
@@ -310,10 +306,31 @@ function getSettingsJSON() {
 }
 
 /**
+ * Returns the name of the selected printer or the empty string if no
+ * printer is selected.
+ */
+function getSelectedPrinterName() {
+  var printerList = $('printer-list')
+  var selectedPrinter = printerList.selectedIndex;
+  var deviceName = '';
+  if (selectedPrinter >= 0)
+    deviceName = printerList.options[selectedPrinter].value;
+  return deviceName;
+}
+
+/**
  * Asks the browser to print the preview PDF based on current print settings.
  */
 function printFile() {
-  chrome.send('print', [getSettingsJSON()]);
+  $('print-button').classList.add('loading');
+  $('cancel-button').classList.add('loading');
+  $('print-summary').innerHTML = localStrings.getString('printing');
+
+  if (getSelectedPrinterName() != PRINT_TO_PDF) {
+    window.setTimeout(function() { chrome.send('print', [getSettingsJSON()]); },
+                      1000);
+  } else
+    chrome.send('print', [getSettingsJSON()]);
 }
 
 /**
@@ -338,12 +355,14 @@ function setPrinters(printers, defaultPrinterIndex) {
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
                              i == defaultPrinterIndex, false);
   }
-  addDestinationListOption('','',false, true);
+
+  if (printers.length != 0)
+    addDestinationListOption('', '', false, true);
 
   // Adding option for saving PDF to disk.
   addDestinationListOption(localStrings.getString('printToPDF'),
                            PRINT_TO_PDF, false, false);
-  addDestinationListOption('','',false, true);
+  addDestinationListOption('', '', false, true);
 
   // Add an option to manage printers.
   addDestinationListOption(localStrings.getString('managePrinters'),

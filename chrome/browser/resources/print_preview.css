@@ -216,6 +216,10 @@ button {
   text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
 }
 
+button.loading {
+  cursor: progress;
+}
+
 button.default {
   -webkit-padding-end: 21px;
   -webkit-padding-start: 21px;
@@ -506,6 +510,8 @@ select {
   border: 1px solid #a0a0a0;
   font-size: 13px;
   font-weight: 400;
+  margin-bottom: 0;
+  margin-top: 0;
   outline: 0;
   padding-bottom: 3px;
   padding-top: 3px;

@@ -47,6 +47,8 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PRINT_BUTTON));
   localized_strings->SetString(std::string("cancelButton"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_CANCEL_BUTTON));
+  localized_strings->SetString(std::string("printing"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PRINTING));
 
   localized_strings->SetString(std::string("destinationLabel"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_DESTINATION_LABEL));
