@@ -2236,7 +2236,9 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   # Make sure static libraries don't declare dependencies on other static
   # libraries, but that linkables depend on all unlinked static libraries
   # that they need so that their link steps will be correct.
-  AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes)
+  gii = generator_input_info
+  if gii['generator_wants_static_library_dependencies_adjusted']:
+    AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes)
 
   # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:

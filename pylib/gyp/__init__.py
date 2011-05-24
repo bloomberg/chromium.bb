@@ -77,6 +77,9 @@ def Load(build_files, format, default_variables={},
         getattr(generator, 'generator_extra_sources_for_rules', []),
     'generator_supports_multiple_toolsets':
         getattr(generator, 'generator_supports_multiple_toolsets', False),
+    'generator_wants_static_library_dependencies_adjusted':
+        getattr(generator,
+                'generator_wants_static_library_dependencies_adjusted', True)
   }
 
   # Process the input specific to this generator.
