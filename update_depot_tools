@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,9 +17,24 @@ then
     base_dir=`cd "$base_dir" && pwd -P`
 fi
 
+# Test if this script is running under a MSys install.  If it is, we will
+# hardcode the paths to SVN and Git where possible.
+OUTPUT="$(uname | grep 'MINGW')"
+MINGW=$?
+
+SVN="svn"
+if [ -d "$base_dir/svn_bin" -a $MINGW = 0 ]; then
+  SVN="$base_dir/svn_bin/svn.exe"
+fi
+
+GIT="git"
+if [ -d "$base_dir/git_bin" -a $MINGW = 0 ]; then
+  GIT="$base_dir/git_bin/bin/git.exe"
+fi
+
 # Test git and git --version.
 function test_git {
-  local GITV="$(git --version)" || {
+  local GITV="$("$GIT" --version)" || {
     echo "git isn't installed, please install it"
     exit 1
   }
@@ -34,7 +49,7 @@ function test_git {
 
 # Test git svn and git svn --version.
 function test_git_svn {
-  local GITV="$(git svn --version)" || {
+  local GITV="$("$GIT" svn --version)" || {
     echo "git-svn isn't installed, please install it"
     exit 1
   }
@@ -50,7 +65,7 @@ function test_git_svn {
 
 # Get the current SVN revision.
 get_svn_revision() {
-  LANGUAGE=C svn info "$base_dir" | \
+  LANGUAGE=C "$SVN" info "$base_dir" | \
       awk -F': ' '{ if ($1 == "Last Changed Rev") { print $2 }}'
 }
 
@@ -60,7 +75,7 @@ then
   cd $base_dir
   test_git_svn
   # work around a git-svn --quiet bug
-  OUTPUT=`git svn rebase -q -q`
+  OUTPUT=`"$GIT" svn rebase -q -q`
   if [[ ! "$OUTPUT" == *Current.branch* ]]; then
     echo $OUTPUT 1>&2
   fi
@@ -73,7 +88,7 @@ then
   # Update the bootstrap directory to stay up-to-date with the latest
   # depot_tools.
   BEFORE_REVISION=$(get_svn_revision)
-  svn -q up "$base_dir"
+  "$SVN" -q up "$base_dir"
   AFTER_REVISION=$(get_svn_revision)
   if [[ "$BEFORE_REVISION" != "$AFTER_REVISION" ]]; then
     echo "Depot Tools has been updated to revision $AFTER_REVISION." 1>&2
