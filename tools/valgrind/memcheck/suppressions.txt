@@ -3716,11 +3716,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_72538
-   Memcheck:Cond
-   fun:_ZN2v88internal11StackTracer5TraceEPNS0_10TickSampleE
-}
-{
    bug_72544
    Memcheck:Leak
    fun:malloc
@@ -3812,33 +3807,6 @@
    fun:_ZN7WebCore21npObjectMethodHandlerERKN2v89ArgumentsE
    fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_*BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
    obj:*
-}
-{
-   bug_73722a
-   Memcheck:Cond
-   fun:_ZN2v88internal10StackFrame11ComputeType*
-}
-{
-   bug_73722b
-   Memcheck:Cond
-   fun:_ZN2v88internal18StackFrameIterator12SingletonForENS0_10StackFrame4TypeE
-}
-{
-   bug_73722c
-   Memcheck:Addr4
-   ...
-   fun:_ZN2v88internal10StackFrame11ComputeType*
-   fun:_ZN2v88internal18StackFrameIterator5ResetEv
-}
-{
-   bug_73722d
-   Memcheck:Value4
-   fun:_ZN2v88internal18StackFrameIterator12SingletonForENS0_10StackFrame4TypeE
-}
-{
-   bug_73722e
-   Memcheck:Addr4
-   fun:_ZNK2v88internal13StandardFrame13GetExpressionEi
 }
 {
    bug_73828
@@ -4559,11 +4527,6 @@
    ...
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
    fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
-}
-{
-   bug_82719
-   Memcheck:Cond
-   fun:_ZN2v88internal22SafeStackFrameIterator18ExitFrameValidator9IsValidFPEPh
 }
 {
    bug_82770a
