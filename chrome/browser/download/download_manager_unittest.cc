@@ -302,34 +302,28 @@ TEST_F(DownloadManagerTest, StartDownload) {
                       kStartDownloadCases[i].prompt_for_download);
 
     SelectFileObserver observer(download_manager_);
-    DownloadCreateInfo* info = new DownloadCreateInfo;
+    // Normally, the download system takes ownership of info, and is
+    // responsible for deleting it.  In these unit tests, however, we
+    // don't call the function that deletes it, so we do so ourselves.
+    scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
     info->download_id = static_cast<int>(i);
     info->prompt_user_for_save_location = kStartDownloadCases[i].save_as;
     info->url_chain.push_back(GURL(kStartDownloadCases[i].url));
     info->mime_type = kStartDownloadCases[i].mime_type;
-    download_manager_->CreateDownloadItem(info);
+    download_manager_->CreateDownloadItem(info.get());
 
-    DownloadFile* download_file(new DownloadFile(info, download_manager_));
+    DownloadFile* download_file(
+        new DownloadFile(info.get(), download_manager_));
     AddDownloadToFileManager(info->download_id, download_file);
     download_file->Initialize(false);
     download_manager_->StartDownload(info->download_id);
     message_loop_.RunAllPending();
 
-    // NOTE: At this point, |ContinueDownloadWithPath| will have been run if
-    // we don't need to prompt the user, so |info| could have been destructed.
-    // This means that we can't check any of its values.
-    // However, SelectFileObserver will have recorded any attempt to open the
+    // SelectFileObserver will have recorded any attempt to open the
     // select file dialog.
+    // Note that DownloadManager::FileSelectionCanceled() is never called.
     EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
               observer.ShowedFileDialogForId(i));
-
-    // If the Save As dialog pops up, it never reached
-    // DownloadManager::ContinueDownloadWithPath(), and never deleted info or
-    // completed.  This cleans up info.
-    // Note that DownloadManager::FileSelectionCanceled() is never called.
-    if (observer.ShowedFileDialogForId(i)) {
-      delete info;
-    }
   }
 }
 
@@ -340,8 +334,10 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
   using ::testing::Return;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDownloadRenameCases); ++i) {
-    // |info| will be destroyed in download_manager_.
-    DownloadCreateInfo* info(new DownloadCreateInfo);
+    // Normally, the download system takes ownership of info, and is
+    // responsible for deleting it.  In these unit tests, however, we
+    // don't call the function that deletes it, so we do so ourselves.
+    scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
     info->download_id = static_cast<int>(i);
     info->prompt_user_for_save_location = false;
     info->url_chain.push_back(GURL());
@@ -350,7 +346,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     const FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
     MockDownloadFile* download_file(
-        new MockDownloadFile(info, download_manager_));
+        new MockDownloadFile(info.get(), download_manager_));
     AddDownloadToFileManager(info->download_id, download_file);
 
     // |download_file| is owned by DownloadFileManager.
@@ -370,7 +366,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
               download_file, &MockDownloadFile::TestMultipleRename,
               2, new_path))));
     }
-    download_manager_->CreateDownloadItem(info);
+    download_manager_->CreateDownloadItem(info.get());
 
     int32* id_ptr = new int32;
     *id_ptr = i;  // Deleted in FileSelected().
@@ -397,8 +393,10 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   using ::testing::Invoke;
   using ::testing::Return;
 
-  // |info| will be destroyed in download_manager_.
-  DownloadCreateInfo* info(new DownloadCreateInfo);
+  // Normally, the download system takes ownership of info, and is
+  // responsible for deleting it.  In these unit tests, however, we
+  // don't call the function that deletes it, so we do so ourselves.
+  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
@@ -408,7 +406,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
 
   MockDownloadFile* download_file(
-      new MockDownloadFile(info, download_manager_));
+      new MockDownloadFile(info.get(), download_manager_));
   AddDownloadToFileManager(info->download_id, download_file);
 
   // |download_file| is owned by DownloadFileManager.
@@ -417,7 +415,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(true));
 
-  download_manager_->CreateDownloadItem(info);
+  download_manager_->CreateDownloadItem(info.get());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -462,8 +460,10 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   using ::testing::Invoke;
   using ::testing::Return;
 
-  // |info| will be destroyed in download_manager_.
-  DownloadCreateInfo* info(new DownloadCreateInfo);
+  // Normally, the download system takes ownership of info, and is
+  // responsible for deleting it.  In these unit tests, however, we
+  // don't call the function that deletes it, so we do so ourselves.
+  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
@@ -473,7 +473,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
 
   MockDownloadFile* download_file(
-      new MockDownloadFile(info, download_manager_));
+      new MockDownloadFile(info.get(), download_manager_));
   AddDownloadToFileManager(info->download_id, download_file);
 
   // |download_file| is owned by DownloadFileManager.
@@ -482,7 +482,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
 
   EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(true));
 
-  download_manager_->CreateDownloadItem(info);
+  download_manager_->CreateDownloadItem(info.get());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -540,15 +540,17 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   EXPECT_NE(0, uniquifier);
   download_util::AppendNumberToPath(&unique_new_path, uniquifier);
 
-  // |info| will be destroyed in download_manager_.
-  DownloadCreateInfo* info(new DownloadCreateInfo);
+  // Normally, the download system takes ownership of info, and is
+  // responsible for deleting it.  In these unit tests, however, we
+  // don't call the function that deletes it, so we do so ourselves.
+  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
   info->is_dangerous_file = false;
   info->is_dangerous_url = false;
 
-  download_manager_->CreateDownloadItem(info);
+  download_manager_->CreateDownloadItem(info.get());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -561,7 +563,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   // name has been chosen, so we need to initialize the download file
   // properly.
   DownloadFile* download_file(
-      new DownloadFile(info, download_manager_));
+      new DownloadFile(info.get(), download_manager_));
   download_file->Rename(cr_path);
   // This creates the .crdownload version of the file.
   download_file->Initialize(false);
