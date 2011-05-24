@@ -132,6 +132,12 @@ void *__nacl_tls_tdb_start(void* combined_area);
  * from the template (ELF image .tdata) and zeroing the TLS BSS area. */
 void __nacl_tls_data_bss_initialize_from_template(void* combined_area);
 
+/*
+ * Fill in the memory of the size __nacl_tls_combined_size returned.
+ * Returns the pointer that should go in the thread register.
+ */
+void *__nacl_tls_initialize_memory(void *combined_area);
+
 /* Read the per-thread pointer.  */
 void *__nacl_read_tp(void);
 
