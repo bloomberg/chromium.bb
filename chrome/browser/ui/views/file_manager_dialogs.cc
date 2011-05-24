@@ -86,6 +86,7 @@ void FileManagerDialog::ListenerDestroyed() {
 
 void FileManagerDialog::ExtensionDialogIsClosing(ExtensionDialog* dialog) {
   owner_window_ = NULL;
+  FileDialogFunction::Callback::Remove(tab_id_);
 }
 
 void FileManagerDialog::SelectFileImpl(
