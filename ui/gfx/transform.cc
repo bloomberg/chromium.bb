@@ -4,6 +4,8 @@
 
 #include "ui/gfx/transform.h"
 
+#include <cmath>
+
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -71,7 +73,8 @@ bool Transform::HasChange() const {
 bool Transform::TransformPoint(gfx::Point* point) {
   SkPoint skp;
   matrix_.mapXY(SkIntToScalar(point->x()), SkIntToScalar(point->y()), &skp);
-  point->SetPoint(static_cast<int>(skp.fX), static_cast<int>(skp.fY));
+  point->SetPoint(static_cast<int>(std::floor(skp.fX)),
+                  static_cast<int>(std::floor(skp.fY)));
   return true;
 }
 
@@ -81,7 +84,8 @@ bool Transform::TransformPointReverse(gfx::Point* point) {
   if (matrix_.invert(&inverse)) {
     SkPoint skp;
     inverse.mapXY(SkIntToScalar(point->x()), SkIntToScalar(point->y()), &skp);
-    point->SetPoint(static_cast<int>(skp.fX), static_cast<int>(skp.fY));
+    point->SetPoint(static_cast<int>(std::floor(skp.fX)),
+                    static_cast<int>(std::floor(skp.fY)));
     return true;
   }
   return false;

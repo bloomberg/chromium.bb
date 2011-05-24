@@ -1979,6 +1979,15 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
   }
+
+  // Conversions from top_view to child with a value that should be negative.
+  // This ensures we don't round up with negative numbers.
+  {
+    gfx::Point point(6, 18);
+    View::ConvertPointToView(&top_view, child, &point);
+    EXPECT_EQ(-1, point.x());
+    EXPECT_EQ(-1, point.y());
+  }
 }
 
 TEST_F(ViewTest, Contains) {
