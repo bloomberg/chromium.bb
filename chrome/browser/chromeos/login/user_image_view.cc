@@ -30,7 +30,7 @@ namespace {
 // after the user image selection screen is initialized. This makes sure that
 // user policy network requests are made while the system is idle waiting for
 // user input.
-const int kPolicyServiceInitializationDelayMilliseconds = 400;
+const int64 kPolicyServiceInitializationDelayMilliseconds = 400;
 
 // Margin in pixels from the left and right borders of screen's contents.
 const int kHorizontalMargin = 10;

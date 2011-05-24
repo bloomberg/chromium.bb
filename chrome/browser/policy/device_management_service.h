@@ -58,7 +58,7 @@ class DeviceManagementService : public URLFetcher::Delegate {
   virtual DeviceManagementBackend* CreateBackend();
 
   // Schedules a task to run |Initialize| after |delay_milliseconds| had passed.
-  void ScheduleInitialization(int delay_milliseconds);
+  void ScheduleInitialization(int64 delay_milliseconds);
 
   // Makes the service stop all requests and drop the reference to the request
   // context.

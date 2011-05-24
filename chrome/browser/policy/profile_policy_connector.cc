@@ -24,7 +24,7 @@ const FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Device Management");
 const FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
 const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
 
-const int kServiceInitializationStartupDelay = 2000;
+const int64 kServiceInitializationStartupDelay = 2000;
 
 }  // namespace
 
@@ -64,7 +64,7 @@ ProfilePolicyConnector::~ProfilePolicyConnector() {
 }
 
 void ProfilePolicyConnector::ScheduleServiceInitialization(
-    int delay_milliseconds) {
+    int64 delay_milliseconds) {
   if (cloud_policy_subsystem_.get())
     cloud_policy_subsystem_->ScheduleServiceInitialization(delay_milliseconds);
 }

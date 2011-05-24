@@ -71,7 +71,7 @@ class BrowserPolicyConnector {
 
   // Schedules initialization of the policy backend service, if the service is
   // already constructed.
-  void ScheduleServiceInitialization(int delay_milliseconds);
+  void ScheduleServiceInitialization(int64 delay_milliseconds);
 
  private:
   friend class ::TestingBrowserProcess;

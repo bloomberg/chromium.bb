@@ -25,7 +25,7 @@
 namespace {
 
 // Default refresh rate.
-const int kDefaultPolicyRefreshRateMs = 3 * 60 * 60 * 1000;  // 3 hours.
+const int64 kDefaultPolicyRefreshRateMs = 3 * 60 * 60 * 1000;  // 3 hours.
 
 // Refresh rate sanity interval bounds.
 const int64 kPolicyRefreshRateMinMs = 30 * 60 * 1000;  // 30 minutes
@@ -88,7 +88,7 @@ void CloudPolicySubsystem::OnIPAddressChanged() {
 
 void CloudPolicySubsystem::Initialize(
     PrefService* prefs,
-    int delay_milliseconds) {
+    int64 delay_milliseconds) {
   DCHECK(!prefs_);
   prefs_ = prefs;
 
@@ -178,7 +178,7 @@ void CloudPolicySubsystem::Observe(NotificationType type,
 }
 
 void CloudPolicySubsystem::ScheduleServiceInitialization(
-    int delay_milliseconds) {
+    int64 delay_milliseconds) {
   if (device_management_service_.get())
     device_management_service_->ScheduleInitialization(delay_milliseconds);
 }

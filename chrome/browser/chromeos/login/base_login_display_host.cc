@@ -43,7 +43,7 @@ namespace {
 // The delay of triggering initialization of the device policy subsystem
 // after the login screen is initialized. This makes sure that device policy
 // network requests are made while the system is idle waiting for user input.
-const int kPolicyServiceInitializationDelayMilliseconds = 100;
+const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
 
 // Determines the hardware keyboard from the given locale code
 // and the OEM layout information, and saves it to "Locale State".

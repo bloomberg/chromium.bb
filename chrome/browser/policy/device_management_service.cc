@@ -117,7 +117,7 @@ DeviceManagementBackend* DeviceManagementService::CreateBackend() {
   return new DeviceManagementBackendImpl(this);
 }
 
-void DeviceManagementService::ScheduleInitialization(int delay_milliseconds) {
+void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
   if (initialized_)
     return;
   CancelableTask* initialization_task = method_factory_.NewRunnableMethod(

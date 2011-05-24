@@ -30,7 +30,7 @@ class ProfilePolicyConnector : public ProfileKeyedService {
 
   // Schedules initialization of the policy backend service if the service is
   // already constructed.
-  void ScheduleServiceInitialization(int delay_milliseconds);
+  void ScheduleServiceInitialization(int64 delay_milliseconds);
 
   // Initializes the context. Should be called only after the profile's request
   // context is up.

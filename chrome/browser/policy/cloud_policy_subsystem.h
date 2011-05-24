@@ -77,7 +77,7 @@ class CloudPolicySubsystem
 
   // Initializes the subsystem.The first network request will only be made
   // after |delay_milliseconds|.
-  void Initialize(PrefService* prefs, int delay_milliseconds);
+  void Initialize(PrefService* prefs, int64 delay_milliseconds);
 
   // Shuts the subsystem down. This must be called before threading and network
   // infrastructure goes away.
@@ -98,7 +98,7 @@ class CloudPolicySubsystem
   static void RegisterPrefs(PrefService* pref_service);
 
   // Schedule initialization of the policy backend service.
-  void ScheduleServiceInitialization(int delay_milliseconds);
+  void ScheduleServiceInitialization(int64 delay_milliseconds);
 
  private:
   // Updates the policy controller with a new refresh rate value.
