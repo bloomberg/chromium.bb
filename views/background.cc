@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,9 +75,17 @@ void Background::SetNativeControlColor(SkColor color) {
   color_ = color;
 #if defined(OS_WIN)
   DeleteObject(native_control_brush_);
-  native_control_brush_ = CreateSolidBrush(skia::SkColorToCOLORREF(color));
+  native_control_brush_ = NULL;
 #endif
 }
+
+#if defined(OS_WIN)
+HBRUSH Background::GetNativeControlBrush() const {
+  if (!native_control_brush_)
+    native_control_brush_ = CreateSolidBrush(skia::SkColorToCOLORREF(color_));
+  return native_control_brush_;
+}
+#endif
 
 //static
 Background* Background::CreateSolidBackground(const SkColor& color) {

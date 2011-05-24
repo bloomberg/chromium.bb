@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,14 +84,14 @@ class Background {
   // TODO(port): Make GetNativeControlBrush portable (currently uses HBRUSH).
 
   // Get the brush that was specified by SetNativeControlColor
-  HBRUSH GetNativeControlBrush() const { return native_control_brush_; };
+  HBRUSH GetNativeControlBrush() const;
 #endif  // defined(OS_WIN)
 
  private:
   SkColor color_;
 #if defined(OS_WIN)
   // TODO(port): Create portable replacement for HBRUSH.
-  HBRUSH native_control_brush_;
+  mutable HBRUSH native_control_brush_;
 #endif  // defined(OS_WIN)
 
   DISALLOW_COPY_AND_ASSIGN(Background);
