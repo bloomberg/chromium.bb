@@ -22,17 +22,20 @@
 /*
  * These macros parameterize the dlmalloc code the way we want it.
  * See dlmalloc/malloc.c for the details.
+ *
+ * We of course do not lack <time.h>, but this prevents malloc from calling
+ * time() in its initialization, which is a dependency we want to avoid.
  */
+#define LACKS_TIME_H            1
 #define USE_LOCKS               1
 #define USE_SPIN_LOCKS          1
-#define USE_GCC_SPIN_LOCKS      1
 #define HAVE_MORECORE           0
 #define HAVE_MMAP               1
 #define HAVE_MREMAP             0
 #define NO_MALLINFO             1
 #define NO_MALLOC_STATS         1
 
-#include "native_client/src/third_party_mod/dlmalloc/malloc.c"
+#include "native_client/src/third_party/dlmalloc/malloc.c"
 
 /*
  * Crufty newlib internals use these entry points rather than the standard ones.
