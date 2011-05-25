@@ -4598,6 +4598,21 @@
    fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvRKN4base9TimeTicksEjE6Tuple2IS4_jEED0Ev
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
 }
+{
+   bug_83949
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13P2PSocketHost6CreateEPN3IPC7Message6SenderEii13P2PSocketType
+   fun:_ZN23P2PSocketDispatcherHost14OnCreateSocketERKN3IPC7MessageE13P2PSocketTypeiRKN3net10IPEndPointES8_
+   fun:_ZN3IPC16MessageWithTupleI6Tuple4I13P2PSocketTypeiN3net10IPEndPointES4_EE8DispatchI23P2PSocketDispatcherHostS8_S2_iRKS4_SA_EEbPKNS_7MessageEPT_PT0_MSE_FvRSC_T1_T2_T3_T4_E
+   fun:_ZN23P2PSocketDispatcherHost17OnMessageReceivedERKN3IPC7MessageEPb
+   fun:_ZN20BrowserMessageFilter15DispatchMessageERKN3IPC7MessageE
+   fun:_ZN20BrowserMessageFilter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context10TryFiltersERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
