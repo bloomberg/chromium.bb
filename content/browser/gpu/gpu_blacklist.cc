@@ -660,23 +660,10 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
     os = GetOsType();
   scoped_ptr<Version> my_os_version;
   if (os_version == NULL) {
-    std::string version_string;
-#if defined(OS_MACOSX)
-    // Seems like base::SysInfo::OperatingSystemVersion() returns the wrong
-    // version in MacOsx.
-    int32 version_major, version_minor, version_bugfix;
-    base::SysInfo::OperatingSystemVersionNumbers(
-        &version_major, &version_minor, &version_bugfix);
-    version_string = base::StringPrintf("%d.%d.%d",
-                                        version_major,
-                                        version_minor,
-                                        version_bugfix);
-#else
-    version_string = base::SysInfo::OperatingSystemVersion();
+    std::string version_string = base::SysInfo::OperatingSystemVersion();
     size_t pos = version_string.find_first_not_of("0123456789.");
     if (pos != std::string::npos)
       version_string = version_string.substr(0, pos);
-#endif
     my_os_version.reset(Version::GetVersionFromString(version_string));
     os_version = my_os_version.get();
   }
