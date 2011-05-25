@@ -16,7 +16,6 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_EXTENSION_APP_PROVIDER_H_
 #pragma once
 
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -34,8 +33,8 @@ class ExtensionAppProvider : public AutocompleteProvider,
   ExtensionAppProvider(ACProviderListener* listener, Profile* profile);
 
   // Only used for testing.
-  void AddExtensionAppForTesting(const std::string& app_name,
-                                 const std::string url);
+  void AddExtensionAppForTesting(const string16& app_name,
+                                 const string16& url);
 
   // AutocompleteProvider implementation:
   virtual void Start(const AutocompleteInput& input,
@@ -43,7 +42,7 @@ class ExtensionAppProvider : public AutocompleteProvider,
 
  private:
   // An ExtensionApp is a pair of Extension Name and the Launch URL.
-  typedef std::pair<std::string, std::string> ExtensionApp;
+  typedef std::pair<string16, string16> ExtensionApp;
   typedef std::vector<ExtensionApp> ExtensionApps;
 
   virtual ~ExtensionAppProvider();
@@ -53,16 +52,6 @@ class ExtensionAppProvider : public AutocompleteProvider,
 
   // Register for install/uninstall notification so we can update our cache.
   void RegisterForNotifications();
-
-  // Highlights a certain part of a match string within a certain match class.
-  // |input| is the input we got from the user, |match_class| is the
-  // AutoComplete match classification that keeps track of the highlighting
-  // values, and |iter| is the location of the user input found within
-  // |match_string|.
-  void HighlightMatch(const AutocompleteInput& input,
-                      ACMatchClassifications* match_class,
-                      std::string::const_iterator iter,
-                      const std::string& match_string);
 
   // Calculate the relevance of the match.
   int CalculateRelevance(AutocompleteInput::Type type,

@@ -44,9 +44,9 @@ void ExtensionAppProviderTest::SetUp() {
   app_provider_ = new ExtensionAppProvider(NULL, profile_.get());
 
   struct ExtensionApps {
-    std::string app_name;
-    std::string url;
-    std::string title;
+    const char* app_name;
+    const char* url;
+    const char* title;
     int typed_count;
   } kExtensionApps[] = {
     {"COYB", "http://asdf/", "COYB", 7},
@@ -57,8 +57,9 @@ void ExtensionAppProviderTest::SetUp() {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExtensionApps); ++i) {
     // Populate the Extension Apps list.
-    app_provider_->AddExtensionAppForTesting(kExtensionApps[i].app_name,
-                                            kExtensionApps[i].url);
+    app_provider_->AddExtensionAppForTesting(
+        ASCIIToUTF16(kExtensionApps[i].app_name),
+        ASCIIToUTF16(kExtensionApps[i].url));
 
     // Populate the InMemoryDatabase.
     history::URLRow info(GURL(kExtensionApps[i].url));

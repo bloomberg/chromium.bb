@@ -23,9 +23,8 @@ ExtensionAppProvider::ExtensionAppProvider(ACProviderListener* listener,
   RefreshAppList();
 }
 
-void ExtensionAppProvider::AddExtensionAppForTesting(
-    const std::string& app_name,
-    const std::string url) {
+void ExtensionAppProvider::AddExtensionAppForTesting(const string16& app_name,
+                                                     const string16& url) {
   extension_apps_.push_back(std::make_pair(app_name, url));
 }
 
@@ -37,46 +36,43 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
     return;
 
   if (!input.text().empty()) {
-    std::string input_utf8 = UTF16ToUTF8(input.text());
     for (ExtensionApps::const_iterator app = extension_apps_.begin();
          app != extension_apps_.end(); ++app) {
       // See if the input matches this extension application.
-      const std::string& name = app->first;
-      const std::string& url = app->second;
-      std::string::const_iterator name_iter =
-          std::search(name.begin(),
-                      name.end(),
-                      input_utf8.begin(),
-                      input_utf8.end(),
-                      base::CaseInsensitiveCompare<char>());
-      std::string::const_iterator url_iter =
-          std::search(url.begin(),
-                      url.end(),
-                      input_utf8.begin(),
-                      input_utf8.end(),
-                      base::CaseInsensitiveCompare<char>());
-
+      const string16& name = app->first;
+      string16::const_iterator name_iter = std::search(name.begin(), name.end(),
+          input.text().begin(), input.text().end(),
+          base::CaseInsensitiveCompare<char16>());
       bool matches_name = name_iter != name.end();
+      const string16& url = app->second;
+      string16::const_iterator url_iter = std::search(url.begin(), url.end(),
+          input.text().begin(), input.text().end(),
+          base::CaseInsensitiveCompare<char16>());
       bool matches_url = url_iter != url.end() &&
                          input.type() != AutocompleteInput::FORCED_QUERY;
+
       if (matches_name || matches_url) {
         // We have a match, might be a partial match.
         // TODO(finnur): Figure out what type to return here, might want to have
         // the extension icon/a generic icon show up in the Omnibox.
         AutocompleteMatch match(this, 0, false,
                                 AutocompleteMatch::EXTENSION_APP);
-        match.fill_into_edit = UTF8ToUTF16(url);
+        match.fill_into_edit = url;
         match.destination_url = GURL(url);
         match.inline_autocomplete_offset = string16::npos;
-        match.contents = UTF8ToUTF16(name);
-        HighlightMatch(input, &match.contents_class, name_iter, name);
-        match.description = UTF8ToUTF16(url);
-        HighlightMatch(input, &match.description_class, url_iter, url);
+        match.contents = name;
+        AutocompleteMatch::ClassifyLocationInString(
+            matches_name ? (name_iter - name.begin()) : string16::npos,
+            input.text().length(), name.length(), ACMatchClassification::NONE,
+            &match.contents_class);
+        match.description = url;
+        AutocompleteMatch::ClassifyLocationInString(
+            matches_url ? (url_iter - url.begin()) : string16::npos,
+            input.text().length(), url.length(), ACMatchClassification::URL,
+            &match.description_class);
         match.relevance = CalculateRelevance(input.type(),
-                                             input.text().length(),
-                                             matches_name ?
-                                                 name.length() : url.length(),
-                                             GURL(url));
+            input.text().length(), matches_name ? name.length() : url.length(),
+            match.destination_url);
         matches_.push_back(match);
       }
     }
@@ -100,8 +96,8 @@ void ExtensionAppProvider::RefreshAppList() {
         continue;
 
       extension_apps_.push_back(
-          std::make_pair((*app)->name(),
-                         (*app)->GetFullLaunchURL().spec()));
+          std::make_pair(UTF8ToUTF16((*app)->name()),
+                         UTF8ToUTF16((*app)->GetFullLaunchURL().spec())));
     }
   }
 }
@@ -117,26 +113,6 @@ void ExtensionAppProvider::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   RefreshAppList();
-}
-
-void ExtensionAppProvider::HighlightMatch(const AutocompleteInput& input,
-                                          ACMatchClassifications* match_class,
-                                          std::string::const_iterator iter,
-                                          const std::string& match_string) {
-  size_t pos = iter - match_string.begin();
-  bool match_found = iter != match_string.end();
-  if (!match_found || pos > 0) {
-    match_class->push_back(
-        ACMatchClassification(0, ACMatchClassification::DIM));
-  }
-  if (match_found) {
-    match_class->push_back(
-        ACMatchClassification(pos, ACMatchClassification::MATCH));
-    if (pos + input.text().length() < match_string.length()) {
-      match_class->push_back(ACMatchClassification(pos + input.text().length(),
-                                ACMatchClassification::DIM));
-    }
-  }
 }
 
 int ExtensionAppProvider::CalculateRelevance(AutocompleteInput::Type type,
