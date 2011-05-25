@@ -1272,7 +1272,7 @@
    fun:_ZN12_GLOBAL__N_131MenuButtonTest_OpenOnClick_Test8TestBodyEv
 }
 {
-   bug_73036a
+   bug_73036
    Memcheck:Leak
    fun:malloc_zone_calloc
    fun:_internal_class_createInstanceFromZone
@@ -1282,66 +1282,6 @@
    fun:_class_initialize
    fun:_class_lookupMethodAndLoadCache
    fun:objc_msgSend
-   fun:-[NSView addTrackingRect:owner:userData:assumeInside:]
-   fun:-[NSThemeFrame _updateMouseTracking]
-   fun:-[NSThemeFrame _tileTitlebarAndRedisplay:]
-   fun:-[NSThemeFrame _updateButtons]
-   fun:-[NSThemeFrame initWithFrame:styleMask:owner:]
-   fun:-[NSGrayFrame initWithFrame:styleMask:owner:]
-   fun:-[NSWindow _commonInitFrame:styleMask:backing:defer:]
-   fun:-[NSWindow _initContent:styleMask:backing:defer:contentView:]
-   fun:-[NSWindow initWithContentRect:styleMask:backing:defer:]
-   fun:-[FramedBrowserWindow initWithContentRect:styleMask:backing:defer:]
-   fun:-[NSWindowTemplate nibInstantiate]
-   fun:-[NSIBObjectData instantiateObject:]
-   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
-   fun:loadNib
-}
-{
-   bug_73036b
-   Memcheck:Leak
-   fun:malloc_zone_calloc
-   fun:_internal_class_createInstanceFromZone
-   fun:NSAllocateObject
-   fun:+[NSHashTable alloc]
-   fun:+[NSTrackingArea initialize]
-   fun:_class_initialize
-   fun:_class_lookupMethodAndLoadCache
-   fun:objc_msgSend
-   fun:-[NSView addTrackingRect:owner:userData:assumeInside:]
-   fun:-[NSCell(NSPrivate_CellMouseTracking) _setMouseTrackingInRect:ofView:]
-   fun:-[NSButtonCell _setMouseTrackingInRect:ofView:]
-   fun:-[NSControl _setMouseTrackingForCell:]
-   fun:-[NSButton(NSButtonBorder) _setMouseTrackingForCell:]
-   fun:-[NSButtonCell setControlView:]
-   fun:-[NSControl initWithCoder:]
-   fun:-[NSButton initWithCoder:]
-   fun:_decodeObjectBinary
-   fun:-[NSKeyedUnarchiver _decodeArrayOfObjectsForKey:]
-   fun:-[NSArray(NSArray) initWithCoder:]
-   fun:_decodeObjectBinary
-   fun:_decodeObject
-   fun:-[NSView initWithCoder:]
-}
-{
-   bug_73275
-   Memcheck:Leak
-   fun:malloc_zone_calloc
-   fun:_internal_class_createInstanceFromZone
-   fun:NSAllocateObject
-   fun:+[NSHashTable alloc]
-   fun:+[NSTrackingArea initialize]
-   fun:_class_initialize
-   fun:_class_lookupMethodAndLoadCache
-   fun:objc_msgSend
-   fun:-[TabContentsViewCocoa initWithTabContentsViewMac:]
-   fun:_ZN18TabContentsViewMac10CreateViewERKN3gfx4SizeE
-   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
-   fun:_ZN15TestTabContentsC2EP7ProfileP12SiteInstance
-   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
-   fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
-   fun:_ZN25RenderViewHostTestHarness5SetUpEv
-   fun:_ZN30AutocompleteHistoryManagerTest5SetUpEv
 }
 {
    bug_73299_b
@@ -1641,32 +1581,6 @@
    fun:_ZN2ui12_GLOBAL__N_120LoadResourcesDataPakE8FilePath
    fun:_ZN2ui14ResourceBundle19LoadCommonResourcesEv
    fun:_ZN2ui14ResourceBundle18InitSharedInstanceERKSs
-}
-{
-   bug_80050
-   Memcheck:Leak
-   fun:malloc_zone_calloc
-   fun:_internal_class_createInstanceFromZone
-   fun:NSAllocateObject
-   fun:+[NSHashTable alloc]
-   fun:+[NSTrackingArea initialize]
-   fun:_class_initialize
-   fun:_class_lookupMethodAndLoadCache
-   fun:objc_msgSend
-   fun:-[NSView addTrackingRect:owner:userData:assumeInside:]
-   fun:-[NSCell(NSPrivate_CellMouseTracking) _setMouseTrackingInRect:ofView:]
-   fun:-[NSButtonCell _setMouseTrackingInRect:ofView:]
-   fun:-[NSControl _setMouseTrackingForCell:]
-   fun:-[NSButton(NSButtonBorder) _setMouseTrackingForCell:]
-   fun:-[NSButtonCell setControlView:]
-   fun:-[NSControl initWithCoder:]
-   fun:-[NSButton initWithCoder:]
-   fun:-[NSClassSwapper initWithCoder:]
-   fun:_decodeObjectBinary
-   fun:-[NSKeyedUnarchiver _decodeArrayOfObjectsForKey:]
-   fun:-[NSArray(NSArray) initWithCoder:]
-   fun:_decodeObjectBinary
-   fun:_decodeObject
 }
 {
    bug_80239
