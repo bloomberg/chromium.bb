@@ -58,6 +58,9 @@
           ]
         },
       }],
+      ['target_base=="nacl_cpuid_lib_base"', {
+        'sources': ['nacl_cpuid.c'],
+      }],
       ['target_base=="ncvalidate_sfi"', {
         # we depend on ncvalidate build to generate the headers
         'sources': [ 'ncvalidate_iter.c',
@@ -86,6 +89,14 @@
     ],
   },
   'targets': [
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'nacl_cpuid_lib',
+      'type': 'static_library',
+      'variables': {
+        'target_base': 'nacl_cpuid_lib_base',
+      },
+    },
     # ----------------------------------------------------------------------
     {
       'target_name': 'nchelper',
@@ -171,6 +182,15 @@
             'win_target': 'x64',
           },
           'hard_dependency': 1,
+        },
+        # ----------------------------------------------------------------------
+        {
+          'target_name': 'nacl_cpuid_lib64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'nacl_cpuid_lib_base',
+            'win_target': 'x64',
+          },
         },
         # ----------------------------------------------------------------------
         {

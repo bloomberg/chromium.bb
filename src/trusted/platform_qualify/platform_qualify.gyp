@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 {
   'variables': {
@@ -77,6 +77,14 @@
       'variables': {
         'target_base': 'pqlib',
       },
+      'conditions': [
+        ['target_arch=="ia32" or target_arch=="x64"', {
+          'dependencies': [
+          # For nacl_cpuid used by nacl_cpuwhitelist.
+          '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nacl_cpuid_lib',
+          ],
+        }],
+      ],
     },
   ],
   'conditions': [
@@ -89,6 +97,10 @@
             'target_base': 'pqlib',
             'win_target': 'x64',
           },
+          'dependencies': [
+            # For nacl_cpuid used by nacl_cpuwhitelist.
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nacl_cpuid_lib64',
+          ],
         },
       ],
     }],
