@@ -179,7 +179,7 @@ void WebWidgetHost::Paint() {
 
   // make sure webkit draws into our bitmap, not the window
   CGContextRef bitmap_context =
-      skia::GetBitmapContext(skia::GetTopDevice(*canvas_));
+      canvas_->getTopPlatformDevice().GetBitmapContext();
   [NSGraphicsContext setCurrentContext:
       [NSGraphicsContext graphicsContextWithGraphicsPort:bitmap_context
                                                  flipped:YES]];
@@ -221,8 +221,8 @@ void WebWidgetHost::Paint() {
     int bitmap_width = CGBitmapContextGetWidth(bitmap_context);
     CGRect bitmap_rect = { { 0, 0 },
                            { bitmap_width, bitmap_height } };
-    skia::DrawToNativeContext(canvas_.get(), context, 0,
-        client_rect.height() - bitmap_height, &bitmap_rect);
+    canvas_->getTopPlatformDevice().DrawToContext(
+        context, 0, client_rect.height() - bitmap_height, &bitmap_rect);
 
     [view_ unlockFocus];
   }

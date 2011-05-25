@@ -253,8 +253,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
     int height = [image size].height;
 
     gfx::CanvasSkia canvas(width, height, false);
-    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-    CGContextRef gc = scoped_platform_paint.GetPlatformSurface();
+    CGContextRef gc = canvas.beginPlatformPaint();
     NSGraphicsContext* cocoa_gc =
         [NSGraphicsContext graphicsContextWithGraphicsPort:gc flipped:NO];
     [NSGraphicsContext setCurrentContext:cocoa_gc];
@@ -263,6 +262,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
             operation:NSCompositeCopy
              fraction:1.0];
     [NSGraphicsContext restoreGraphicsState];
+    canvas.endPlatformPaint();
     return canvas.ExtractBitmap();
   }
   return SkBitmap();

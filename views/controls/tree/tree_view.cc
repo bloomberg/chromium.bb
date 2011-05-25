@@ -755,7 +755,7 @@ LRESULT CALLBACK TreeView::TreeWndProc(HWND window,
       if (canvas.isEmpty())
         return 0;
 
-      HDC dc = skia::BeginPlatformPaint(&canvas);
+      HDC dc = canvas.beginPlatformPaint();
       if (base::i18n::IsRTL()) {
         // gfx::CanvasSkia ends up configuring the DC with a mode of
         // GM_ADVANCED. For some reason a graphics mode of ADVANCED triggers
@@ -789,7 +789,7 @@ LRESULT CALLBACK TreeView::TreeWndProc(HWND window,
         // over we copy the right bits.
         SetViewportOrgEx(dc, 0, 0, NULL);
       }
-      skia::EndPlatformPaint(&canvas);
+      canvas.endPlatformPaint();
       return 0;
     }
 

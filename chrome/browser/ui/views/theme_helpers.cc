@@ -9,6 +9,7 @@
 #include <atltheme.h>
 
 #include "base/logging.h"
+#include "skia/ext/bitmap_platform_device_win.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas_skia.h"
 
@@ -31,10 +32,10 @@ void GetRebarGradientColors(int width, int x1, int x2,
   // On Windows XP+, if using a Theme, we can ask the theme to render the
   // gradient for us.
   if (!theme.IsThemeNull()) {
-    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-    HDC dc = scoped_platform_paint.GetPlatformSurface();
+    HDC dc = canvas.beginPlatformPaint();
     RECT rect = { 0, 0, width, 1 };
     theme.DrawThemeBackground(dc, 0, 0, &rect, NULL);
+    canvas.endPlatformPaint();
   } else {
     // On Windows 2000 or Windows XP+ with the Classic theme selected, we need
     // to build our own gradient using system colors.
@@ -63,12 +64,11 @@ void GetRebarGradientColors(int width, int x1, int x2,
   // Extract the color values from the selected pixels
   // The | in the following operations forces the alpha to 0xFF. This is
   // needed as windows sets the alpha to 0 when it renders.
-  SkDevice* device = skia::GetTopDevice(canvas);
-  const SkBitmap& bitmap = device->accessBitmap(false);
-  SkAutoLockPixels lock(bitmap);
-
-  *c1 = 0xFF000000 | bitmap.getColor(x1, 0);
-  *c2 = 0xFF000000 | bitmap.getColor(x2, 0);
+  skia::BitmapPlatformDevice& device =
+      static_cast<skia::BitmapPlatformDevice&>(
+          canvas.getTopPlatformDevice());
+  *c1 = 0xFF000000 | device.getColorAt(x1, 0);
+  *c2 = 0xFF000000 | device.getColorAt(x2, 0);
 }
 
 void GetDarkLineColor(SkColor* dark_color) {

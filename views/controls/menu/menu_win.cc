@@ -188,10 +188,9 @@ class MenuHostWindow : public ui::WindowImpl {
         gfx::CanvasSkia canvas(data->icon.width(), data->icon.height(), false);
         canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
         canvas.DrawBitmapInt(data->icon, 0, 0);
-        skia::DrawToNativeContext(
-            &canvas, hDC, lpdis->rcItem.left + kItemLeftMargin,
-            lpdis->rcItem.top + (lpdis->rcItem.bottom - lpdis->rcItem.top -
-                data->icon.height()) / 2, NULL);
+        canvas.getTopPlatformDevice().drawToHDC(hDC, lpdis->rcItem.left +
+            kItemLeftMargin, lpdis->rcItem.top + (lpdis->rcItem.bottom -
+                lpdis->rcItem.top - data->icon.height()) / 2, NULL);
       }
 
     } else {

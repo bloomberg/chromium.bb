@@ -123,14 +123,14 @@ bool BackingStoreMac::CopyFromBackingStore(const gfx::Rect& rect,
   if (!output->initialize(rect.width(), rect.height(), true))
     return false;
 
-  skia::ScopedPlatformPaint scoped_platform_paint(output);
-  CGContextRef temp_context = scoped_platform_paint.GetPlatformSurface();
+  CGContextRef temp_context = output->beginPlatformPaint();
   CGContextSaveGState(temp_context);
   CGContextTranslateCTM(temp_context, 0.0, size().height());
   CGContextScaleCTM(temp_context, 1.0, -1.0);
   CGContextDrawLayerAtPoint(temp_context, CGPointMake(rect.x(), rect.y()),
                             cg_layer());
   CGContextRestoreGState(temp_context);
+  output->endPlatformPaint();
   return true;
 }
 

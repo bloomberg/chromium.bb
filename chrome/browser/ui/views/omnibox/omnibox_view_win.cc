@@ -2315,7 +2315,7 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
   }
 
   // Now copy what we drew to the target HDC.
-  skia::DrawToNativeContext(&canvas, hdc,
+  canvas.getTopPlatformDevice().drawToHDC(hdc,
       scheme_rect.left + canvas_paint_clip_rect.left - canvas_clip_rect.left,
       std::max(scheme_rect.top, client_rect.top) + canvas_paint_clip_rect.top -
           canvas_clip_rect.top, &canvas_paint_clip_rect);

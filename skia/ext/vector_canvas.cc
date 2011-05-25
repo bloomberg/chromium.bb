@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "skia/ext/vector_canvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 
 namespace skia {
 
-VectorCanvas::VectorCanvas(SkDevice* device)
+VectorCanvas::VectorCanvas(PlatformDevice* device)
     : PlatformCanvas(device->getDeviceFactory()) {
   setDevice(device)->unref(); // Created with refcount 1, and setDevice refs.
 }
@@ -31,7 +30,7 @@ SkDrawFilter* VectorCanvas::setDrawFilter(SkDrawFilter* filter) {
 }
 
 bool VectorCanvas::IsTopDeviceVectorial() const {
-  return IsVectorial(GetTopDevice(*this));
+  return getTopPlatformDevice().IsVectorial();
 }
 
 }  // namespace skia

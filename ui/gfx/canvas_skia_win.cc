@@ -138,7 +138,7 @@ int ComputeFormatFlags(int flags, const string16& text) {
 // Changes the alpha of the given bitmap.
 // If |fade_to_right| is true then the rect fades from opaque to clear,
 // otherwise the rect fades from clear to opaque.
-void FadeBitmapRect(SkDevice& bmp_device,
+void FadeBitmapRect(skia::BitmapPlatformDevice& bmp_device,
                     const gfx::Rect& rect,
                     bool fade_to_right) {
   SkBitmap bmp = bmp_device.accessBitmap(true);
@@ -164,14 +164,14 @@ void FadeBitmapRect(SkDevice& bmp_device,
 // this function draws black on white. It then uses the intensity of black
 // to determine how much alpha to use. The text is drawn in |gfx_text_rect| and
 // clipped to |gfx_draw_rect|.
-void DrawTextAndClearBackground(SkDevice& bmp_device,
+void DrawTextAndClearBackground(skia::BitmapPlatformDevice& bmp_device,
                                 HFONT font,
                                 COLORREF text_color,
                                 const string16& text,
                                 int flags,
                                 const gfx::Rect& gfx_text_rect,
                                 const gfx::Rect& gfx_draw_rect) {
-  HDC hdc = skia::BeginPlatformPaint(&bmp_device);
+  HDC hdc = bmp_device.BeginPlatformPaint();
 
   // Clear the background by filling with white.
   HBRUSH fill_brush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
@@ -218,14 +218,14 @@ void DrawTextAndClearBackground(SkDevice& bmp_device,
     }
   }
 
-  skia::EndPlatformPaint(&bmp_device);
+  bmp_device.EndPlatformPaint();
 }
 
 // Draws the given text with a fade out gradient. |bmp_device| is a bitmap
 // that is used to temporary drawing. The text is drawn in |text_rect| and
 // clipped to |draw_rect|.
 void DrawTextGradientPart(HDC hdc,
-                          SkDevice& bmp_device,
+                          skia::BitmapPlatformDevice& bmp_device,
                           const string16& text,
                           const SkColor& color,
                           HFONT font,
@@ -238,11 +238,11 @@ void DrawTextGradientPart(HDC hdc,
   FadeBitmapRect(bmp_device, draw_rect, fade_to_right);
   BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
 
-  HDC bmp_hdc = skia::BeginPlatformPaint(&bmp_device);
+  HDC bmp_hdc = bmp_device.BeginPlatformPaint();
   AlphaBlend(hdc, draw_rect.x(), draw_rect.y(), draw_rect.width(),
              draw_rect.height(), bmp_hdc, draw_rect.x(), draw_rect.y(),
              draw_rect.width(), draw_rect.height(), blend);
-  skia::EndPlatformPaint(&bmp_device);
+  bmp_device.EndPlatformPaint();
 }
 
 enum PrimarySide {
@@ -347,20 +347,16 @@ void CanvasSkia::DrawStringInt(const string16& text,
   const int kMaxStringLength = 32768 - 1;  // So the trailing \0 fits in 32K.
   string16 clamped_string(text.substr(0, kMaxStringLength));
 
-  HDC dc;
-  HFONT old_font;
-  {
-    skia::ScopedPlatformPaint scoped_platform_paint(this);
-    dc = scoped_platform_paint.GetPlatformSurface();
-    SetBkMode(dc, TRANSPARENT);
-    old_font = (HFONT)SelectObject(dc, font);
-    COLORREF brush_color = RGB(SkColorGetR(color), SkColorGetG(color),
-                               SkColorGetB(color));
-    SetTextColor(dc, brush_color);
+  HDC dc = beginPlatformPaint();
+  SetBkMode(dc, TRANSPARENT);
+  HFONT old_font = (HFONT)SelectObject(dc, font);
+  COLORREF brush_color = RGB(SkColorGetR(color), SkColorGetG(color),
+                             SkColorGetB(color));
+  SetTextColor(dc, brush_color);
 
-    int f = ComputeFormatFlags(flags, clamped_string);
-    DoDrawText(dc, clamped_string, &text_bounds, f);
-  }
+  int f = ComputeFormatFlags(flags, clamped_string);
+  DoDrawText(dc, clamped_string, &text_bounds, f);
+  endPlatformPaint();
 
   // Restore the old font. This way we don't have to worry if the caller
   // deletes the font and the DC lives longer.
@@ -369,8 +365,8 @@ void CanvasSkia::DrawStringInt(const string16& text,
   // Windows will have cleared the alpha channel of the text we drew. Assume
   // we're drawing to an opaque surface, or at least the text rect area is
   // opaque.
-  skia::MakeOpaque(this, clip.fLeft, clip.fTop, clip.width(),
-                   clip.height());
+  getTopPlatformDevice().makeOpaque(clip.fLeft, clip.fTop,
+                                    clip.width(), clip.height());
 }
 
 void CanvasSkia::DrawStringInt(const string16& text,
@@ -434,11 +430,11 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   // opaque. We have to do this first since pixelShouldGetHalo will check for
   // 0 to see if a pixel has been modified to transparent, and black text that
   // Windows draw will look transparent to it!
-  skia::MakeOpaque(&text_canvas, 0, 0, w + 2, h + 2);
+  text_canvas.getTopPlatformDevice().makeOpaque(0, 0, w + 2, h + 2);
 
   uint32_t halo_premul = SkPreMultiplyColor(halo_color);
   SkBitmap& text_bitmap = const_cast<SkBitmap&>(
-      skia::GetTopDevice(text_canvas)->accessBitmap(true));
+      text_canvas.getTopPlatformDevice().accessBitmap(true));
   for (int cur_y = 0; cur_y < h + 2; cur_y++) {
     uint32_t* text_row = text_bitmap.getAddr32(0, cur_y);
     for (int cur_x = 0; cur_x < w + 2; cur_x++) {
@@ -557,23 +553,21 @@ void CanvasSkia::DrawFadeTruncatingString(
   text_rect.set_width(text_rect.width() + offset_x);
 
   // Create a temporary bitmap to draw the gradient to.
-  scoped_ptr<SkDevice> gradient_bitmap(
+  scoped_ptr<skia::BitmapPlatformDevice> gradient_bitmap(
       skia::BitmapPlatformDevice::create(
           display_rect.width(), display_rect.height(), false, NULL));
   DCHECK(gradient_bitmap.get());
 
-  {
-    skia::ScopedPlatformPaint scoped_platform_paint(this);
-    HDC hdc = scoped_platform_paint.GetPlatformSurface();
-    if (is_truncating_head)
-      DrawTextGradientPart(hdc, *gradient_bitmap, text, color,
-                           font.GetNativeFont(), text_rect, head_part, is_rtl,
-                           flags);
-    if (is_truncating_tail)
-      DrawTextGradientPart(hdc, *gradient_bitmap, text, color,
-                           font.GetNativeFont(), text_rect, tail_part, !is_rtl,
-                           flags);
-  }
+  HDC hdc = beginPlatformPaint();
+  if (is_truncating_head)
+    DrawTextGradientPart(hdc, *gradient_bitmap, text, color,
+                         font.GetNativeFont(), text_rect, head_part, is_rtl,
+                         flags);
+  if (is_truncating_tail)
+    DrawTextGradientPart(hdc, *gradient_bitmap, text, color,
+                         font.GetNativeFont(), text_rect, tail_part, !is_rtl,
+                         flags);
+  endPlatformPaint();
 
   // Draw the solid part.
   save(kClip_SaveFlag);

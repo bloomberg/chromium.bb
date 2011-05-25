@@ -1466,8 +1466,7 @@ bool PluginInstance::DrawJPEGToPlatformDC(
     return false;
   }
 
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-  HDC dc = scoped_platform_paint.GetPlatformSurface();
+  HDC dc = skia::BeginPlatformPaint(canvas);
   // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
   // to the EMF, the EnumEnhMetaFile call fails in the browser
   // process. The failure also happens if we output nothing here.
@@ -1486,6 +1485,7 @@ bool PluginInstance::DrawJPEGToPlatformDC(
                 &compressed_image.front(),
                 reinterpret_cast<const BITMAPINFO*>(&bmi),
                 DIB_RGB_COLORS, SRCCOPY);
+  skia::EndPlatformPaint(canvas);
   return true;
 }
 #endif  // OS_WIN

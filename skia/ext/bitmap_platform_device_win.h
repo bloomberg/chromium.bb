@@ -69,20 +69,23 @@ class SK_API BitmapPlatformDevice : public PlatformDevice {
   // See warning for copy constructor above.
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
-  // PlatformDevice overrides
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
   // bitmap DC is lazy created.
   virtual PlatformSurface BeginPlatformPaint();
   virtual void EndPlatformPaint();
 
-  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
-  virtual void MakeOpaque(int x, int y, int width, int height);
-  virtual bool IsVectorial() { return false; }
-
   // Loads the given transform and clipping region into the HDC. This is
   // overridden from SkDevice.
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&);
+
+  virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect);
+  virtual void makeOpaque(int x, int y, int width, int height);
+  virtual bool IsVectorial() { return false; }
+
+  // Returns the color value at the specified location. This does not
+  // consider any transforms that may be set on the device.
+  SkColor getColorAt(int x, int y);
 
  protected:
   // Flushes the Windows device context so that the pixel data can be accessed

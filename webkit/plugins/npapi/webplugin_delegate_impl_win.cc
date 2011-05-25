@@ -465,9 +465,9 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
                                   const gfx::Rect& rect) {
   if (windowless_) {
-    skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-    HDC hdc = scoped_platform_paint.GetPlatformSurface();
+    HDC hdc = skia::BeginPlatformPaint(canvas);
     WindowlessPaint(hdc, rect);
+    skia::EndPlatformPaint(canvas);
   }
 }
 

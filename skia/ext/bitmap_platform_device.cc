@@ -40,7 +40,7 @@ bool Constrain(int available_size, int* position, int *size) {
 
 namespace skia {
 
-void BitmapPlatformDevice::MakeOpaque(int x, int y, int width, int height) {
+void BitmapPlatformDevice::makeOpaque(int x, int y, int width, int height) {
   const SkBitmap& bitmap = accessBitmap(true);
   SkASSERT(bitmap.config() == SkBitmap::kARGB_8888_Config);
 

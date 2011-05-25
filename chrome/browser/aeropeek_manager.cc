@@ -1244,7 +1244,7 @@ bool AeroPeekManager::GetTabPreview(int tab_id, SkBitmap* preview) {
                                            &canvas))
     return false;
 
-  const SkBitmap& bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
+  const SkBitmap& bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
   bitmap.copyTo(preview, SkBitmap::kARGB_8888_Config);
   return true;
 }

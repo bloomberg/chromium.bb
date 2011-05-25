@@ -246,7 +246,7 @@ void Control::draw() {
   // Indents for the the slider track.
   const int kSliderIndent = 2;
 
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
+  skia::BeginPlatformPaint(canvas_);
   switch (type_) {
     case kUnknown_Type:
       NOTREACHED();
@@ -391,6 +391,7 @@ void Control::draw() {
   }
 
   markState();
+  skia::EndPlatformPaint(canvas_);
 }
 
 // Because rendering a text field is dependent on input
@@ -400,7 +401,7 @@ void Control::drawTextField(bool draw_edges, bool fill_content_area,
                             SkColor color) {
   SkPaint paint;
 
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
+  skia::BeginPlatformPaint(canvas_);
   if (fill_content_area) {
     paint.setColor(color);
     paint.setStyle(SkPaint::kFill_Style);
@@ -413,13 +414,14 @@ void Control::drawTextField(bool draw_edges, bool fill_content_area,
   }
 
   markState();
+  skia::EndPlatformPaint(canvas_);
 }
 
 void
 Control::drawProgressBar(const SkIRect& fill_rect) {
   SkPaint paint;
 
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
+  skia::BeginPlatformPaint(canvas_);
   paint.setColor(bg_color_);
   paint.setStyle(SkPaint::kFill_Style);
   canvas_->drawIRect(irect_, paint);
@@ -432,6 +434,7 @@ Control::drawProgressBar(const SkIRect& fill_rect) {
   canvas_->drawIRect(tofill, paint);
 
   markState();
+  skia::EndPlatformPaint(canvas_);
 }
 
 }  // namespace TestShellWebTheme

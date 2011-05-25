@@ -69,7 +69,7 @@ bool Image::LoadMetafile(const Metafile& metafile) {
   DCHECK(bitmap);
   DCHECK(SelectObject(hdc, bitmap));
 
-  skia::InitializeDC(hdc);
+  skia::PlatformDevice::InitializeDC(hdc);
 
   bool success = metafile.Playback(hdc, NULL);
 

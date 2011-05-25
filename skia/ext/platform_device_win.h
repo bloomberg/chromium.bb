@@ -18,9 +18,6 @@ class SkRegion;
 
 namespace skia {
 
-// Initializes the default settings and colors in a device context.
-SK_API void InitializeDC(HDC context);
-
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface Windows can also write
 // to. It also provides functionality to play well with GDI drawing functions.
@@ -43,17 +40,19 @@ class SK_API PlatformDevice : public SkDevice {
   // be more efficient if you don't free it until after this call so it doesn't
   // have to be created twice.  If src_rect is null, then the entirety of the
   // source device will be copied.
-  virtual void DrawToNativeContext(HDC dc, int x, int y,
-                                   const RECT* src_rect) = 0;
+  virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect) = 0;
 
   // Sets the opacity of each pixel in the specified region to be opaque.
-  virtual void MakeOpaque(int x, int y, int width, int height) { }
+  virtual void makeOpaque(int x, int y, int width, int height) { }
 
   // Returns if the preferred rendering engine is vectorial or bitmap based.
   virtual bool IsVectorial() = 0;
 
   // Returns if GDI is allowed to render text to this device.
   virtual bool IsNativeFontRenderingAllowed() { return true; }
+
+  // Initializes the default settings and colors in a device context.
+  static void InitializeDC(HDC context);
 
   // Loads a SkPath into the GDI context. The path can there after be used for
   // clipping or as a stroke.

@@ -375,7 +375,7 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
   // it and copy each row out, only up to the pixels we're actually
   // using.  This code assumes a visual mode where a pixel is
   // represented using a 32-bit unsigned int, with a byte per component.
-  SkBitmap bitmap = skia::GetTopDevice(*output)->accessBitmap(true);
+  SkBitmap bitmap = output->getTopPlatformDevice().accessBitmap(true);
   for (int y = 0; y < height; y++) {
     const uint32* src_row = reinterpret_cast<uint32*>(
         &image->data[image->bytes_per_line * y]);

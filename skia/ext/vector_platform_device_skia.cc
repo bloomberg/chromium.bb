@@ -209,10 +209,10 @@ void VectorPlatformDeviceSkia::drawDevice(const SkDraw& draw,
 }
 
 #if defined(OS_WIN)
-void VectorPlatformDeviceSkia::DrawToNativeContext(HDC dc,
-                                                   int x,
-                                                   int y,
-                                                   const RECT* src_rect) {
+void VectorPlatformDeviceSkia::drawToHDC(HDC dc,
+                                         int x,
+                                         int y,
+                                         const RECT* src_rect) {
   SkASSERT(false);
 }
 #endif

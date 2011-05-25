@@ -62,8 +62,9 @@ class CanvasPaintT : public T {
     if (!isEmpty()) {
       restoreToCount(1);
       // Commit the drawing to the screen
-      skia::DrawToNativeContext(this, paint_dc_, ps_.rcPaint.left,
-                                ps_.rcPaint.top, NULL);
+      getTopPlatformDevice().drawToHDC(paint_dc_,
+                                       ps_.rcPaint.left, ps_.rcPaint.top,
+                                       NULL);
     }
     if (for_paint_)
       EndPaint(hwnd_, &ps_);

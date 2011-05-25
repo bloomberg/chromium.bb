@@ -178,8 +178,8 @@ bool PPB_Scrollbar_Impl::Paint(const PP_Rect* rect, PPB_ImageData_Impl* image) {
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() == base::win::VERSION_XP) {
-    skia::MakeOpaque(canvas, gfx_rect.x(), gfx_rect.y(),
-                     gfx_rect.width(), gfx_rect.height());
+    canvas->getTopPlatformDevice().makeOpaque(
+        gfx_rect.x(), gfx_rect.y(), gfx_rect.width(), gfx_rect.height());
   }
 #endif
 

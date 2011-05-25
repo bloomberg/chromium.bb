@@ -132,8 +132,7 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra) const {
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-  HDC hdc = scoped_platform_paint.GetPlatformSurface();
+  HDC hdc = skia::BeginPlatformPaint(canvas);
 
   switch (part) {
     case kCheckbox:
@@ -213,6 +212,8 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       // unsupported parts will DCHECK here.
       DCHECK(false);
   }
+
+  skia::EndPlatformPaint(canvas);
 }
 
 HRESULT NativeThemeWin::PaintScrollbarArrow(

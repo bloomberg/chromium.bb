@@ -61,16 +61,18 @@ class BitmapPlatformDevice : public PlatformDevice {
   // See warning for copy constructor above.
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
-  // PlatformDevice overrides
   virtual CGContextRef GetBitmapContext();
-  virtual void DrawToNativeContext(CGContextRef context, int x, int y,
-                                   const CGRect* src_rect);
-  virtual void MakeOpaque(int x, int y, int width, int height);
-  virtual bool IsVectorial();
-
-  // SkDevice overrides
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&);
+
+  virtual void DrawToContext(CGContextRef context, int x, int y,
+                             const CGRect* src_rect);
+  virtual void makeOpaque(int x, int y, int width, int height);
+  virtual bool IsVectorial();
+
+  // Returns the color value at the specified location. This does not
+  // consider any transforms that may be set on the device.
+  SkColor getColorAt(int x, int y);
 
  protected:
   // Reference counted data that can be shared between multiple devices. This

@@ -1205,7 +1205,7 @@ bool CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
   VLOG(1) << "captureVisibleTab() got image from backing store.";
 
   SendResultFromBitmap(
-      skia::GetTopDevice(temp_canvas)->accessBitmap(false));
+      temp_canvas.getTopPlatformDevice().accessBitmap(false));
   return true;
 }
 

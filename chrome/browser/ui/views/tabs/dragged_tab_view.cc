@@ -135,7 +135,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   gfx::Size ps = GetPreferredSize();
   gfx::CanvasSkia scale_canvas(ps.width(), ps.height(), false);
   SkBitmap& bitmap_device = const_cast<SkBitmap&>(
-      skia::GetTopDevice(scale_canvas)->accessBitmap(true));
+      scale_canvas.getTopPlatformDevice().accessBitmap(true));
   bitmap_device.eraseARGB(0, 0, 0, 0);
 
   int tab_height = renderer_bounds_.back().height();

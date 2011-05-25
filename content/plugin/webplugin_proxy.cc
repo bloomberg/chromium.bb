@@ -371,7 +371,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
     // into (which is windowless_canvas_) so it can do blending. So we copy the
     // background bitmap into the windowless_canvas_.
     const SkBitmap& background_bitmap =
-        skia::GetTopDevice(*background_canvas_)->accessBitmap(false);
+        background_canvas_->getTopPlatformDevice().accessBitmap(false);
     windowless_canvas_->drawBitmap(background_bitmap, 0, 0);
   } else {
     // In non-transparent mode, the plugin doesn't care what's underneath, so we

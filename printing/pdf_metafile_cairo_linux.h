@@ -36,10 +36,9 @@ class PdfMetafileCairo : public Metafile {
   //  continues on the surface returned by a previous call to Init().
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
-  virtual SkDevice* StartPageForVectorCanvas(
+  virtual skia::PlatformDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size, const gfx::Rect& content_area,
       const float& scale_factor);
-
   virtual bool StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
                          const float& scale_factor);

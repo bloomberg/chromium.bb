@@ -106,4 +106,12 @@ bool PlatformCanvas::initialize(int width,
       width, height, is_opaque, shared_section));
 }
 
+HDC PlatformCanvas::beginPlatformPaint() const {
+  return getTopPlatformDevice().BeginPlatformPaint();
+}
+
+void PlatformCanvas::endPlatformPaint() const {
+  return getTopPlatformDevice().EndPlatformPaint();
+}
+
 }  // namespace skia

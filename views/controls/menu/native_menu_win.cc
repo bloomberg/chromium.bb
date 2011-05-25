@@ -250,8 +250,8 @@ class NativeMenuWin::MenuHostWindow {
         gfx::CanvasSkia canvas(icon.width(), icon.height(), false);
         canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
         canvas.DrawBitmapInt(icon, 0, 0);
-        skia::DrawToNativeContext(
-            &canvas, dc, draw_item_struct->rcItem.left + kItemLeftMargin,
+        canvas.getTopPlatformDevice().drawToHDC(dc,
+            draw_item_struct->rcItem.left + kItemLeftMargin,
             draw_item_struct->rcItem.top + (draw_item_struct->rcItem.bottom -
                 draw_item_struct->rcItem.top - icon.height()) / 2, NULL);
       } else if (type == ui::MenuModel::TYPE_CHECK &&
@@ -283,7 +283,7 @@ class NativeMenuWin::MenuHostWindow {
             &canvas, NativeTheme::kMenuCheck, state, bounds, extra);
 
         // Draw checkbox to menu.
-        skia::DrawToNativeContext(&canvas, dc,
+        canvas.getTopPlatformDevice().drawToHDC(dc,
             draw_item_struct->rcItem.left + kItemLeftMargin,
             draw_item_struct->rcItem.top + (draw_item_struct->rcItem.bottom -
                 draw_item_struct->rcItem.top - config.check_height) / 2, NULL);

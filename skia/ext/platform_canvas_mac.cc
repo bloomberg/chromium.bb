@@ -4,7 +4,7 @@
 
 #include "skia/ext/platform_canvas.h"
 
-#include "skia/ext/bitmap_platform_device.h"
+#include "skia/ext/bitmap_platform_device_mac.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 namespace skia {
@@ -47,6 +47,14 @@ bool PlatformCanvas::initialize(CGContextRef context,
                                 bool is_opaque) {
   return initializeWithDevice(BitmapPlatformDevice::Create(
       context, width, height, is_opaque));
+}
+
+CGContextRef PlatformCanvas::beginPlatformPaint() const {
+  return getTopPlatformDevice().BeginPlatformPaint();
+}
+
+void PlatformCanvas::endPlatformPaint() const {
+  getTopPlatformDevice().EndPlatformPaint();
 }
 
 }  // namespace skia

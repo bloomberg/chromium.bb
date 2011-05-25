@@ -655,8 +655,7 @@ SkBitmap TabRendererGtk::PaintBitmap() {
 cairo_surface_t* TabRendererGtk::PaintToSurface() {
   gfx::CanvasSkia canvas(width(), height(), false);
   Paint(&canvas);
-  return cairo_surface_reference(cairo_get_target(
-      skia::BeginPlatformPaint(&canvas)));
+  return cairo_surface_reference(cairo_get_target(canvas.beginPlatformPaint()));
 }
 
 void TabRendererGtk::SchedulePaint() {

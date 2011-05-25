@@ -98,7 +98,7 @@ void PrintedDocument::RenderPrintedPage(
   // the device context.
   int saved_state = SaveDC(context);
   DCHECK_NE(saved_state, 0);
-  skia::InitializeDC(context);
+  skia::PlatformDevice::InitializeDC(context);
   {
     // Save the state (again) to apply the necessary world transformation.
     int saved_state = SaveDC(context);

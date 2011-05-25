@@ -106,7 +106,7 @@ void* PPB_ImageData_Impl::Map() {
       return NULL;
   }
   const SkBitmap& bitmap =
-      skia::GetTopDevice(*mapped_canvas_)->accessBitmap(true);
+      mapped_canvas_->getTopPlatformDevice().accessBitmap(true);
 
   // Our platform bitmaps are set to opaque by default, which we don't want.
   const_cast<SkBitmap&>(bitmap).setIsOpaque(false);
@@ -129,7 +129,7 @@ int PPB_ImageData_Impl::GetSharedMemoryHandle(uint32* byte_count) const {
 const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
   if (!mapped_canvas_.get())
     return NULL;
-  return &skia::GetTopDevice(*mapped_canvas_)->accessBitmap(false);
+  return &mapped_canvas_->getTopPlatformDevice().accessBitmap(false);
 }
 
 void PPB_ImageData_Impl::Swap(PPB_ImageData_Impl* other) {

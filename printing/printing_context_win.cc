@@ -17,7 +17,7 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
-#include "skia/ext/platform_device.h"
+#include "skia/ext/platform_device_win.h"
 
 using base::Time;
 
@@ -549,7 +549,7 @@ bool PrintingContextWin::InitializeSettings(const DEVMODE& dev_mode,
                                             const PRINTPAGERANGE* ranges,
                                             int number_ranges,
                                             bool selection_only) {
-  skia::InitializeDC(context_);
+  skia::PlatformDevice::InitializeDC(context_);
   DCHECK(GetDeviceCaps(context_, CLIPCAPS));
   DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_STRETCHDIB);
   DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_BITMAP64);

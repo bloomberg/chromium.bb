@@ -88,7 +88,7 @@ class BitmapPlatformDevice : public PlatformDevice {
   static BitmapPlatformDevice* Create(int width, int height,
                                       bool is_opaque, uint8_t* data);
 
-  virtual void MakeOpaque(int x, int y, int width, int height);
+  virtual void makeOpaque(int x, int y, int width, int height);
 
   // Overridden from SkDevice:
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,

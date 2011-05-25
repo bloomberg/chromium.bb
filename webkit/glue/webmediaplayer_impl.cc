@@ -687,8 +687,8 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 
   // Copy the frame rendered to our temporary skia canvas onto the passed in
   // canvas.
-  skia::DrawToNativeContext(skia_canvas_.get(), canvas, 0, 0,
-                            &normalized_cgrect);
+  skia_canvas_->getTopPlatformDevice().DrawToContext(canvas, 0, 0,
+                                                     &normalized_cgrect);
 
   CGContextRestoreGState(canvas);
 #else

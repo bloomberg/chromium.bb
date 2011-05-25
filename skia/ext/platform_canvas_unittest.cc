@@ -31,8 +31,8 @@ namespace {
 bool VerifyRect(const PlatformCanvas& canvas,
                 uint32_t canvas_color, uint32_t rect_color,
                 int x, int y, int w, int h) {
-  SkDevice* device = skia::GetTopDevice(canvas);
-  const SkBitmap& bitmap = device->accessBitmap(false);
+  PlatformDevice& device = canvas.getTopPlatformDevice();
+  const SkBitmap& bitmap = device.accessBitmap(false);
   SkAutoLockPixels lock(bitmap);
 
   // For masking out the alpha values.
@@ -70,8 +70,8 @@ bool IsOfColor(const SkBitmap& bitmap, int x, int y, uint32_t color) {
 bool VerifyRoundedRect(const PlatformCanvas& canvas,
                        uint32_t canvas_color, uint32_t rect_color,
                        int x, int y, int w, int h) {
-  SkDevice* device = skia::GetTopDevice(canvas);
-  const SkBitmap& bitmap = device->accessBitmap(false);
+  PlatformDevice& device = canvas.getTopPlatformDevice();
+  const SkBitmap& bitmap = device.accessBitmap(false);
   SkAutoLockPixels lock(bitmap);
 
   // Check corner points first. They should be of canvas_color.
@@ -103,8 +103,7 @@ bool VerifyCanvasColor(const PlatformCanvas& canvas, uint32_t canvas_color) {
 
 #if defined(OS_WIN)
 void DrawNativeRect(PlatformCanvas& canvas, int x, int y, int w, int h) {
-  skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-  HDC dc = scoped_platform_paint.GetPlatformSurface();
+  HDC dc = canvas.beginPlatformPaint();
 
   RECT inner_rc;
   inner_rc.left = x;
@@ -112,18 +111,21 @@ void DrawNativeRect(PlatformCanvas& canvas, int x, int y, int w, int h) {
   inner_rc.right = x + w;
   inner_rc.bottom = y + h;
   FillRect(dc, &inner_rc, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+
+  canvas.endPlatformPaint();
 }
 #elif defined(OS_MACOSX)
 void DrawNativeRect(PlatformCanvas& canvas, int x, int y, int w, int h) {
-  skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-  CGContextRef context = scoped_platform_paint.GetPlatformSurface();
-
+  CGContextRef context = canvas.beginPlatformPaint();
+  
   CGRect inner_rc = CGRectMake(x, y, w, h);
   // RGBA opaque black
   CGColorRef black = CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0);
   CGContextSetFillColorWithColor(context, black);
   CGColorRelease(black);
   CGContextFillRect(context, inner_rc);
+  
+  canvas.endPlatformPaint();
 }
 #else
 void DrawNativeRect(PlatformCanvas& canvas, int x, int y, int w, int h) {
@@ -242,7 +244,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, 0, 0, 100, 100);
+    canvas.getTopPlatformDevice().makeOpaque(0, 0, 100, 100);
 #endif
   }
   EXPECT_TRUE(VerifyBlackRect(canvas, kLayerX, kLayerY, kLayerW, kLayerH));
@@ -253,7 +255,8 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    canvas.getTopPlatformDevice().makeOpaque(kInnerX, kInnerY,
+                                             kInnerW, kInnerH);
 #endif
   }
   EXPECT_TRUE(VerifyBlackRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH));
@@ -266,7 +269,8 @@ TEST(PlatformCanvas, FillLayer) {
     AddClip(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    canvas.getTopPlatformDevice().makeOpaque(
+        kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
     canvas.restore();
   }
@@ -280,7 +284,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, 0, 0, 100, 100);
+    canvas.getTopPlatformDevice().makeOpaque(0, 0, 100, 100);
 #endif
   }
   canvas.restore();
@@ -301,7 +305,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, 0, 0, 100, 100);
+    canvas.getTopPlatformDevice().makeOpaque(0, 0, 100, 100);
 #endif
   }
   canvas.restore();
@@ -316,7 +320,8 @@ TEST(PlatformCanvas, TranslateLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    canvas.getTopPlatformDevice().makeOpaque(kInnerX, kInnerY,
+                                             kInnerW, kInnerH);
 #endif
   }
   canvas.restore();
@@ -331,7 +336,8 @@ TEST(PlatformCanvas, TranslateLayer) {
     canvas.translate(1, 1);
     DrawNativeRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    canvas.getTopPlatformDevice().makeOpaque(kInnerX, kInnerY,
+                                             kInnerW, kInnerH);
 #endif
   }
   canvas.restore();
@@ -349,7 +355,8 @@ TEST(PlatformCanvas, TranslateLayer) {
     AddClip(canvas, kInnerX + 1, kInnerY + 1, kInnerW - 1, kInnerH - 1);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, kLayerX, kLayerY, kLayerW, kLayerH);
+    canvas.getTopPlatformDevice().makeOpaque(kLayerX, kLayerY,
+                                             kLayerW, kLayerH);
 #endif
   }
   canvas.restore();
@@ -377,7 +384,8 @@ TEST(PlatformCanvas, TranslateLayer) {
 
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, kLayerX, kLayerY, kLayerW, kLayerH);
+    canvas.getTopPlatformDevice().makeOpaque(kLayerX, kLayerY,
+                                             kLayerW, kLayerH);
 #endif
   }
   canvas.restore();

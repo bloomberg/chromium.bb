@@ -20,7 +20,7 @@ namespace {
 template<int w, int h>
 void SetToCanvas(skia::PlatformCanvas* canvas, uint8 values[h][w]) {
   SkBitmap& bitmap = const_cast<SkBitmap&>(
-      skia::GetTopDevice(*canvas)->accessBitmap(true));
+      canvas->getTopPlatformDevice().accessBitmap(true));
   SkAutoLockPixels lock(bitmap);
   ASSERT_EQ(w, bitmap.width());
   ASSERT_EQ(h, bitmap.height());
@@ -40,7 +40,7 @@ void SetToCanvas(skia::PlatformCanvas* canvas, uint8 values[h][w]) {
 template<int w, int h>
 void VerifyCanvasValues(skia::PlatformCanvas* canvas, uint8 values[h][w]) {
   SkBitmap& bitmap = const_cast<SkBitmap&>(
-      skia::GetTopDevice(*canvas)->accessBitmap(true));
+      canvas->getTopPlatformDevice().accessBitmap(true));
   SkAutoLockPixels lock(bitmap);
   ASSERT_EQ(w, bitmap.width());
   ASSERT_EQ(h, bitmap.height());

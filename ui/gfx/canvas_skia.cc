@@ -324,11 +324,11 @@ void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
 }
 
 gfx::NativeDrawingContext CanvasSkia::BeginPlatformPaint() {
-  return skia::BeginPlatformPaint(this);
+  return beginPlatformPaint();
 }
 
 void CanvasSkia::EndPlatformPaint() {
-  skia::EndPlatformPaint(this);
+  endPlatformPaint();
 }
 
 void CanvasSkia::Transform(const ui::Transform& transform) {

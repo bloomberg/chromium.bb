@@ -103,11 +103,11 @@ class ThumbnailGeneratorTest : public testing::Test {
         transport_dib_->GetPlatformCanvas(kBitmapWidth, kBitmapHeight));
     switch (type) {
       case TRANSPORT_BLACK:
-        skia::GetTopDevice(*canvas)->accessBitmap(true).eraseARGB(
+        canvas->getTopPlatformDevice().accessBitmap(true).eraseARGB(
             0xFF, 0, 0, 0);
         break;
       case TRANSPORT_WHITE:
-        skia::GetTopDevice(*canvas)->accessBitmap(true).eraseARGB(
+        canvas->getTopPlatformDevice().accessBitmap(true).eraseARGB(
             0xFF, 0xFF, 0xFF, 0xFF);
         break;
       case TRANSPORT_OTHER:
@@ -211,7 +211,7 @@ TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_SingleColor) {
   // Fill all pixesl in black.
   canvas.FillRectInt(kBlack, 0, 0, kSize.width(), kSize.height());
 
-  SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
+  SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
   // The thumbnail should deserve the highest boring score.
   EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(&bitmap));
 }
@@ -227,7 +227,7 @@ TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
   // Fill the left half pixels in white.
   canvas.FillRectInt(kWhite, 0, 0, kSize.width() / 2, kSize.height());
 
-  SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
+  SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
   ASSERT_EQ(kSize.width(), bitmap.width());
   ASSERT_EQ(kSize.height(), bitmap.height());
   // The thumbnail should be less boring because two colors are used.
@@ -237,7 +237,7 @@ TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
 TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
   // The input bitmap is vertically long.
   gfx::CanvasSkia canvas(40, 90, true);
-  const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
 
   // The desired size is square.
   ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
@@ -253,7 +253,7 @@ TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
 TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
   // The input bitmap is horizontally long.
   gfx::CanvasSkia canvas(90, 40, true);
-  const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
 
   // The desired size is square.
   ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
@@ -269,7 +269,7 @@ TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
 TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
   // The input bitmap is square.
   gfx::CanvasSkia canvas(40, 40, true);
-  const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
 
   // The desired size is square.
   ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
@@ -285,7 +285,7 @@ TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
 TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NonSquareOutput) {
   // The input bitmap is square.
   gfx::CanvasSkia canvas(40, 40, true);
-  const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
 
   // The desired size is horizontally long.
   ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
