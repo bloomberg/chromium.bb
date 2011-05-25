@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "content/renderer/render_view.h"
-#include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -53,12 +52,11 @@ SkBitmap GrabPhishingThumbnail(RenderView* render_view,
   view->paint(webkit_glue::ToWebCanvas(&canvas),
               WebRect(0, 0, view_size.width(), view_size.height()));
 
-  skia::BitmapPlatformDevice& device =
-      static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
+  SkDevice* device = skia::GetTopDevice(canvas);
 
   // Now resize the thumbnail to the right size.  Note: it is important that we
   // use this resize algorithm here.
-  const SkBitmap& bitmap = device.accessBitmap(false);
+  const SkBitmap& bitmap = device->accessBitmap(false);
   SkBitmap thumbnail = skia::ImageOperations::Resize(
       bitmap,
       skia::ImageOperations::RESIZE_LANCZOS3,

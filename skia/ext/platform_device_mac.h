@@ -17,6 +17,10 @@ class SkRegion;
 
 namespace skia {
 
+// Returns the CGContext that backing the SkDevice.  Forwards to the bound
+// PlatformDevice.  Returns NULL if no PlatformDevice is bound.
+CGContextRef GetBitmapContext(SkDevice* device);
+
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface CoreGraphics can also
 // write to. It also provides functionality to play well with CG drawing
@@ -37,8 +41,11 @@ class PlatformDevice : public SkDevice {
   // context, it will be more efficient if you don't free it until after this
   // call so it doesn't have to be created twice.  If src_rect is null, then
   // the entirety of the source device will be copied.
-  virtual void DrawToContext(CGContextRef context, int x, int y,
-                             const CGRect* src_rect) = 0;
+  virtual void DrawToNativeContext(CGContextRef context, int x, int y,
+                                   const CGRect* src_rect) = 0;
+
+  // Sets the opacity of each pixel in the specified region to be opaque.
+  virtual void MakeOpaque(int x, int y, int width, int height) { }
 
   // Returns if the preferred rendering engine is vectorial or bitmap based.
   virtual bool IsVectorial() = 0;

@@ -97,7 +97,7 @@ void* ImageData::Map() {
       return NULL;
   }
   const SkBitmap& bitmap =
-      mapped_canvas_->getTopPlatformDevice().accessBitmap(true);
+      skia::GetTopDevice(*mapped_canvas_)->accessBitmap(true);
 
   bitmap.lockPixels();
   return bitmap.getAddr(0, 0);

@@ -25,9 +25,7 @@ class Rect;
 class Size;
 }
 
-namespace skia {
-class PlatformDevice;
-}
+class SkDevice;
 
 #if defined(OS_CHROMEOS)
 namespace base {
@@ -56,7 +54,7 @@ class Metafile {
   // This method calls StartPage and then returns an appropriate
   // VectorPlatformDevice implementation bound to the context created by
   // StartPage or NULL on error.
-  virtual skia::PlatformDevice* StartPageForVectorCanvas(
+  virtual SkDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
       const float& scale_factor) = 0;

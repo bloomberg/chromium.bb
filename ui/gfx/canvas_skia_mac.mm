@@ -48,7 +48,8 @@ void CanvasSkia::DrawStringInt(const string16& text,
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
-  CGContextRef context = beginPlatformPaint();
+  skia::ScopedPlatformPaint scoped_platform_paint(this);
+  CGContextRef context = scoped_platform_paint.GetPlatformSurface();
   CGContextSaveGState(context);
 
   NSColor* ns_color = [NSColor colorWithDeviceRed:SkColorGetR(color) / 255.0
@@ -83,7 +84,6 @@ void CanvasSkia::DrawStringInt(const string16& text,
       CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL));
   CTFrameDraw(frame, context);
   CGContextRestoreGState(context);
-  endPlatformPaint();
 }
 
 ui::TextureID CanvasSkia::GetTextureID() {

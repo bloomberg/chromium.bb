@@ -403,7 +403,7 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
   return res;
 }
 
-skia::PlatformDevice* Emf::StartPageForVectorCanvas(
+SkDevice* Emf::StartPageForVectorCanvas(
     const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
   if (!StartPage(page_size, content_area, scale_factor))

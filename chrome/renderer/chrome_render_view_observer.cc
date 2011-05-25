@@ -26,7 +26,6 @@
 #include "content/renderer/content_renderer_client.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/data_url.h"
-#include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
@@ -595,10 +594,9 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
   if (!PaintViewIntoCanvas(view, canvas))
     return false;
 
-  skia::BitmapPlatformDevice& device =
-      static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
+  SkDevice* device = skia::GetTopDevice(canvas);
 
-  const SkBitmap& src_bmp = device.accessBitmap(false);
+  const SkBitmap& src_bmp = device->accessBitmap(false);
 
   SkRect dest_rect = { 0, 0, SkIntToScalar(w), SkIntToScalar(h) };
   float dest_aspect = dest_rect.width() / dest_rect.height();
@@ -633,7 +631,7 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
   score->at_top = (view->mainFrame()->scrollOffset().height == 0);
 
   SkBitmap subset;
-  device.accessBitmap(false).extractSubset(&subset, src_rect);
+  device->accessBitmap(false).extractSubset(&subset, src_rect);
 
   // First do a fast downsample by powers of two to get close to the final size.
   SkBitmap downsampled_subset =
@@ -659,10 +657,9 @@ bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
   if (!PaintViewIntoCanvas(view, canvas))
     return false;
 
-  skia::BitmapPlatformDevice& device =
-      static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
+  SkDevice* device = skia::GetTopDevice(canvas);
 
-  const SkBitmap& bitmap = device.accessBitmap(false);
+  const SkBitmap& bitmap = device->accessBitmap(false);
   if (!bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config))
     return false;
 

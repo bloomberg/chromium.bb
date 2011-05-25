@@ -403,7 +403,7 @@ WebCanvas* ToWebCanvas(skia::PlatformCanvas* canvas) {
 #if WEBKIT_USING_SKIA
   return canvas;
 #elif WEBKIT_USING_CG
-  return canvas->getTopPlatformDevice().GetBitmapContext();
+  return skia::GetBitmapContext(skia::GetTopDevice(*canvas));
 #else
   NOTIMPLEMENTED();
   return NULL;

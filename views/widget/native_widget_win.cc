@@ -1120,13 +1120,13 @@ void NativeWidgetWin::RedrawLayeredWindowContents() {
   GetWindowRect(&wr);
   SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
   POINT position = {wr.left, wr.top};
-  HDC dib_dc = layered_window_contents_->beginPlatformPaint();
+  HDC dib_dc = skia::BeginPlatformPaint(layered_window_contents_.get());
   POINT zero = {0, 0};
   BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
   UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
                       RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   invalid_rect_.SetRect(0, 0, 0, 0);
-  layered_window_contents_->endPlatformPaint();
+  skia::EndPlatformPaint(layered_window_contents_.get());
 }
 
 void NativeWidgetWin::ClientAreaSizeChanged() {

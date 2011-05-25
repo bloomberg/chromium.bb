@@ -36,7 +36,7 @@ bool PdfMetafileSkia::InitFromData(const void* src_buffer,
   return data_->pdf_stream_.write(src_buffer, src_buffer_size);
 }
 
-skia::PlatformDevice* PdfMetafileSkia::StartPageForVectorCanvas(
+SkDevice* PdfMetafileSkia::StartPageForVectorCanvas(
     const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
   DCHECK(data_->current_page_.get() == NULL);

@@ -251,13 +251,13 @@ void WebWidgetHost::Paint() {
   // Scroll the canvas if necessary
   scroll_rect_ = client_rect.Intersect(scroll_rect_);
   if (!scroll_rect_.IsEmpty()) {
-    HDC hdc = canvas_->beginPlatformPaint();
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas_.get());
+    HDC hdc = scoped_platform_paint.GetPlatformSurface();
 
     RECT damaged_rect, r = scroll_rect_.ToRECT();
     ScrollDC(hdc, scroll_dx_, scroll_dy_, NULL, &r, NULL, &damaged_rect);
 
     PaintRect(gfx::Rect(damaged_rect));
-    canvas_->endPlatformPaint();
   }
   ResetScrollRect();
 
@@ -279,10 +279,8 @@ void WebWidgetHost::Paint() {
   // Paint to the screen
   PAINTSTRUCT ps;
   BeginPaint(view_, &ps);
-  canvas_->getTopPlatformDevice().drawToHDC(ps.hdc,
-                                            ps.rcPaint.left,
-                                            ps.rcPaint.top,
-                                            &ps.rcPaint);
+  skia::DrawToNativeContext(canvas_.get(), ps.hdc, ps.rcPaint.left,
+                            ps.rcPaint.top, &ps.rcPaint);
   EndPaint(view_, &ps);
 
   // Draw children

@@ -728,7 +728,9 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
 
   // We're using the native OS APIs from here on out.
 #if WEBKIT_USING_SKIA
-  gfx::NativeDrawingContext context = skia::BeginPlatformPaint(canvas);
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
+  gfx::NativeDrawingContext context =
+      scoped_platform_paint.GetPlatformSurface();
 #elif WEBKIT_USING_CG
   gfx::NativeDrawingContext context = canvas;
 #endif
@@ -764,10 +766,6 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
     invalidate_pending_ = false;
     Send(new PluginMsg_DidPaint(instance_id_));
   }
-
-#if WEBKIT_USING_SKIA
-  skia::EndPlatformPaint(canvas);
-#endif
 }
 
 bool WebPluginDelegateProxy::BackgroundChanged(
@@ -850,8 +848,10 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   int page_start_x = content_rect.x() - context_offset_x;
   int page_start_y = content_rect.y() - context_offset_y;
 
-  CGContextRef bg_context =
-      background_store_canvas_->getTopPlatformDevice().GetBitmapContext();
+  skia::ScopedPlatformPaint scoped_platform_paint(
+      background_store_canvas_.get());
+  CGContextRef bg_context = scoped_platform_paint.GetPlatformSurface();
+
   DCHECK_EQ(CGBitmapContextGetBitsPerPixel(context),
             CGBitmapContextGetBitsPerPixel(bg_context));
   const unsigned char* bg_bytes = static_cast<const unsigned char*>(
@@ -869,9 +869,10 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   int page_start_x = static_cast<int>(page_x_double);
   int page_start_y = static_cast<int>(page_y_double);
 
-  skia::PlatformDevice& device =
-      background_store_canvas_->getTopPlatformDevice();
-  cairo_surface_t* bg_surface = cairo_get_target(device.BeginPlatformPaint());
+  skia::ScopedPlatformPaint scoped_platform_paint(
+      background_store_canvas_.get());
+  cairo_surface_t* bg_surface =cairo_get_target(
+      scoped_platform_paint.GetPlatformSurface());
   DCHECK_EQ(cairo_surface_get_type(bg_surface), CAIRO_SURFACE_TYPE_IMAGE);
   DCHECK_EQ(cairo_image_surface_get_format(bg_surface), CAIRO_FORMAT_ARGB32);
   cairo_surface_flush(bg_surface);

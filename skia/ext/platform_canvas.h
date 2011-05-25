@@ -63,30 +63,6 @@ class SK_API PlatformCanvas : public SkCanvas {
 
   // Shared --------------------------------------------------------------------
 
-  // These calls should surround calls to platform drawing routines, the
-  // surface returned here can be used with the native platform routines
-  //
-  // Call endPlatformPaint when you are done and want to use Skia operations
-  // after calling the platform-specific beginPlatformPaint; this will
-  // synchronize the bitmap to OS if necessary.
-  PlatformDevice::PlatformSurface beginPlatformPaint() const;
-  void endPlatformPaint() const;
-
-  // Returns the platform device pointer of the topmost rect with a non-empty
-  // clip. In practice, this is usually either the top layer or nothing, since
-  // we usually set the clip to new layers when we make them.
-  //
-  // If there is no layer that is not all clipped out, this will return a
-  // dummy device so callers do not have to check. If you are concerned about
-  // performance, check the clip before doing any painting.
-  //
-  // This is different than SkCanvas' getDevice, because that returns the
-  // bottommost device.
-  //
-  // Danger: the resulting device should not be saved. It will be invalidated
-  // by the next call to save() or restore().
-  PlatformDevice& getTopPlatformDevice() const;
-
   // Return the stride (length of a line in bytes) for the given width. Because
   // we use 32-bits per pixel, this will be roughly 4*width. However, for
   // alignment reasons we may wish to increase that.
@@ -109,10 +85,25 @@ class SK_API PlatformCanvas : public SkCanvas {
   // CoreGraphics.
   virtual SkDevice* setBitmapDevice(const SkBitmap& bitmap);
 
-  // Disallow copy and assign.
+  // Disallow copy and assign
   PlatformCanvas(const PlatformCanvas&);
   PlatformCanvas& operator=(const PlatformCanvas&);
 };
+
+// Returns the SkDevice pointer of the topmost rect with a non-empty
+// clip. In practice, this is usually either the top layer or nothing, since
+// we usually set the clip to new layers when we make them.
+//
+// If there is no layer that is not all clipped out, this will return a
+// dummy device so callers do not have to check. If you are concerned about
+// performance, check the clip before doing any painting.
+//
+// This is different than SkCanvas' getDevice, because that returns the
+// bottommost device.
+//
+// Danger: the resulting device should not be saved. It will be invalidated
+// by the next call to save() or restore().
+SkDevice* GetTopDevice(const SkCanvas& canvas);
 
 // Creates a canvas with raster bitmap backing.
 // Set is_opaque if you are going to erase the bitmap and not use
@@ -124,17 +115,44 @@ SK_API SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque);
 // return NULL PlatformSurface.
 SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
 
+// Draws into the a native platform surface, |context|.  Forwards to
+// DrawToNativeContext on a PlatformDevice instance bound to the top device.
+// If no PlatformDevice instance is bound, is a no-operation.
+SK_API void DrawToNativeContext(SkCanvas* canvas, PlatformSurface context,
+                                int x, int y, const PlatformRect* src_rect);
+
+// Sets the opacity of each pixel in the specified region to be opaque.
+SK_API void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height);
+
 // These calls should surround calls to platform drawing routines, the
 // surface returned here can be used with the native platform routines.
 //
 // Call EndPlatformPaint when you are done and want to use skia operations
 // after calling the platform-specific BeginPlatformPaint; this will
 // synchronize the bitmap to OS if necessary.
-//
-// Note: These functions will eventually replace
-// PlatformCanvas::beginPlatformPaint and PlatformCanvas::endPlatformPaint.
-SK_API PlatformDevice::PlatformSurface BeginPlatformPaint(SkCanvas* canvas);
+SK_API PlatformSurface BeginPlatformPaint(SkCanvas* canvas);
 SK_API void EndPlatformPaint(SkCanvas* canvas);
+
+// Helper class for pairing calls to BeginPlatformPaint and EndPlatformPaint.
+// Upon construction invokes BeginPlatformPaint, and upon destruction invokes
+// EndPlatformPaint.
+class ScopedPlatformPaint {
+ public:
+  explicit ScopedPlatformPaint(SkCanvas* canvas) : canvas_(canvas) {
+    platform_surface_ = BeginPlatformPaint(canvas);
+  }
+  ~ScopedPlatformPaint() { EndPlatformPaint(canvas_); }
+
+  // Returns the PlatformSurface to use for native platform drawing calls.
+  PlatformSurface GetPlatformSurface() { return platform_surface_; }
+ private:
+  SkCanvas* canvas_;
+  PlatformSurface platform_surface_;
+
+  // Disallow copy and assign
+  ScopedPlatformPaint(const ScopedPlatformPaint&);
+  ScopedPlatformPaint& operator=(const ScopedPlatformPaint&);
+};
 
 }  // namespace skia
 

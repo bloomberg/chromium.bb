@@ -388,10 +388,10 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   gfx::CanvasSkia canvas(gdk_pixbuf_get_width(pixbuf.get()),
                          gdk_pixbuf_get_height(pixbuf.get()),
                          false);
-  cairo_t* context = canvas.beginPlatformPaint();
+  skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+  cairo_t* context = scoped_platform_paint.GetPlatformSurface();
   gdk_cairo_set_source_pixbuf(context, pixbuf.get(), 0.0, 0.0);
   cairo_paint(context);
-  canvas.endPlatformPaint();
   return canvas.ExtractBitmap();
 }
 

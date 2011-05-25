@@ -92,7 +92,7 @@ class CanvasPaintT : public T {
     T::translate(-SkDoubleToScalar(rectangle_.origin.x),
                  -SkDoubleToScalar(rectangle_.origin.y));
 
-    context_ = T::getTopPlatformDevice().GetBitmapContext();
+    context_ = GetBitmapContext(GetTopDevice(*this));
   }
 
   CGContext* context_;

@@ -84,7 +84,7 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
                           const SkPaint&);
 
 #if defined(OS_WIN)
-  virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect);
+  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
 #endif
 
  protected:

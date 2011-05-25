@@ -110,9 +110,9 @@ void NativeViewPhotoboothWin::PaintScreenshotIntoCanvas(
          SRCCOPY);
   // Windows screws up the alpha channel on all text it draws, and so we need
   // to call makeOpaque _after_ the blit to correct for this.
-  canvas->AsCanvasSkia()->getTopPlatformDevice().makeOpaque(
-      target_bounds.x(), target_bounds.y(), target_bounds.width(),
-      target_bounds.height());
+  skia::MakeOpaque(canvas->AsCanvasSkia(), target_bounds.x(),
+                   target_bounds.y(), target_bounds.width(),
+                   target_bounds.height());
   ReleaseDC(current_hwnd_, source_dc);
   canvas->EndPlatformPaint();
 }

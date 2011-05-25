@@ -208,7 +208,7 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
       text_height_(0) {
   DCHECK(!bounds_.IsEmpty());
 
-  cr_ = canvas_->beginPlatformPaint();
+  cr_ = skia::BeginPlatformPaint(canvas_);
   layout_ = pango_cairo_create_layout(cr_);
 
   SetupPangoLayout(layout_, text, font, bounds_.width(), flags_);
@@ -246,8 +246,10 @@ DrawStringContext::~DrawStringContext() {
   }
   cairo_restore(cr_);
 
+  skia::EndPlatformPaint(canvas_);
+
   g_object_unref(layout_);
-  // NOTE: beginPlatformPaint returned its surface, we shouldn't destroy it.
+  // NOTE: BeginPlatformPaint returned its surface, we shouldn't destroy it.
 }
 
 void DrawStringContext::Draw(const SkColor& text_color) {
@@ -266,32 +268,33 @@ void DrawStringContext::DrawWithHalo(const SkColor& text_color,
   text_canvas.FillRectInt(static_cast<SkColor>(0),
       0, 0, bounds_.width() + 2, bounds_.height() + 2);
 
-  cairo_t* text_cr = text_canvas.beginPlatformPaint();
+  {
+    skia::ScopedPlatformPaint scoped_platform_paint(&text_canvas);
+    cairo_t* text_cr = scoped_platform_paint.GetPlatformSurface();
 
-  cairo_move_to(text_cr, 2, 1);
-  pango_cairo_layout_path(text_cr, layout_);
+    cairo_move_to(text_cr, 2, 1);
+    pango_cairo_layout_path(text_cr, layout_);
 
-  cairo_set_source_rgba(text_cr,
-                        SkColorGetR(halo_color) / 255.0,
-                        SkColorGetG(halo_color) / 255.0,
-                        SkColorGetB(halo_color) / 255.0,
-                        SkColorGetA(halo_color) / 255.0);
-  cairo_set_line_width(text_cr, 2.0);
-  cairo_set_line_join(text_cr, CAIRO_LINE_JOIN_ROUND);
-  cairo_stroke_preserve(text_cr);
+    cairo_set_source_rgba(text_cr,
+                          SkColorGetR(halo_color) / 255.0,
+                          SkColorGetG(halo_color) / 255.0,
+                          SkColorGetB(halo_color) / 255.0,
+                          SkColorGetA(halo_color) / 255.0);
+    cairo_set_line_width(text_cr, 2.0);
+    cairo_set_line_join(text_cr, CAIRO_LINE_JOIN_ROUND);
+    cairo_stroke_preserve(text_cr);
 
-  cairo_set_operator(text_cr, CAIRO_OPERATOR_SOURCE);
-  cairo_set_source_rgba(text_cr,
-                        SkColorGetR(text_color) / 255.0,
-                        SkColorGetG(text_color) / 255.0,
-                        SkColorGetB(text_color) / 255.0,
-                        SkColorGetA(text_color) / 255.0);
-  cairo_fill(text_cr);
-
-  text_canvas.endPlatformPaint();
+    cairo_set_operator(text_cr, CAIRO_OPERATOR_SOURCE);
+    cairo_set_source_rgba(text_cr,
+                          SkColorGetR(text_color) / 255.0,
+                          SkColorGetG(text_color) / 255.0,
+                          SkColorGetB(text_color) / 255.0,
+                          SkColorGetA(text_color) / 255.0);
+    cairo_fill(text_cr);
+  }
 
   const SkBitmap& text_bitmap = const_cast<SkBitmap&>(
-      text_canvas.getTopPlatformDevice().accessBitmap(false));
+      skia::GetTopDevice(text_canvas)->accessBitmap(false));
   canvas_->DrawBitmapInt(text_bitmap, text_x_ - 1, text_y_ - 1);
 }
 
@@ -379,7 +382,8 @@ void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
     return;
   }
 
-  cairo_t* cr = beginPlatformPaint();
+  skia::ScopedPlatformPaint scoped_platform_paint(this);
+  cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
   gdk_cairo_set_source_pixbuf(cr, pixbuf, x, y);
   cairo_paint(cr);
 }

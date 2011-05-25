@@ -35,7 +35,7 @@ class PdfMetafileCg : public Metafile, public base::ThreadChecker {
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
   // Not implemented on mac.
-  virtual skia::PlatformDevice* StartPageForVectorCanvas(
+  virtual SkDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size, const gfx::Rect& content_area,
       const float& scale_factor);
   virtual bool StartPage(const gfx::Size& page_size,

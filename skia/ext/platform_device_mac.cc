@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/bitmap_platform_device_mac.h"
+#include "skia/ext/platform_device.h"
+#include "skia/ext/bitmap_platform_device.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #include "skia/ext/skia_utils_mac.h"
@@ -13,28 +14,17 @@
 
 namespace skia {
 
-namespace {
+CGContextRef GetBitmapContext(SkDevice* device) {
+  PlatformDevice* platform_device = GetPlatformDevice(device);
+  if (platform_device)
+    return platform_device->GetBitmapContext();
 
-// Constrains position and size to fit within available_size.
-bool constrain(int available_size, int* position, int *size) {
-  if (*position < 0) {
-    *size += *position;
-    *position = 0;
-  }
-  if (*size > 0 && *position < available_size) {
-    int overflow = (*position + *size) - available_size;
-    if (overflow > 0) {
-      *size -= overflow;
-    }
-    return true;
-  }
-  return false;
+  return NULL;
 }
-
-} // namespace
 
 PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
     : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
+  SetPlatformDevice(this, this);
 }
 
 bool PlatformDevice::IsNativeFontRenderingAllowed() {
