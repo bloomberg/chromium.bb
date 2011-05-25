@@ -15,6 +15,7 @@
 #include "content/renderer/render_thread.h"
 
 using media::BitstreamBuffer;
+using media::VideoDecodeAcceleratorCallback;
 
 PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
     VideoDecodeAccelerator::Client* client)
