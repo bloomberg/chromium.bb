@@ -1020,9 +1020,6 @@ const char kDOMLogin[]                      = "dom-login";
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";
 
-// Enables VPN support on ChromeOS.
-const char kEnableVPN[]                     = "enable-vpn";
-
 // Enable the redirection of viewable document requests to the Google
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";
