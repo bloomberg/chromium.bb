@@ -399,7 +399,7 @@ bool ChromeFrameNPAPI::Invoke(NPObject* header, NPIdentifier name,
                               const NPVariant* args, uint32_t arg_count,
                               NPVariant* result) {
   ChromeFrameNPAPI* plugin_instance = ChromeFrameInstanceFromNPObject(header);
-  if (!plugin_instance && (plugin_instance->automation_client_.get()))
+  if (!plugin_instance || !plugin_instance->automation_client_.get())
     return false;
 
   bool success = false;
