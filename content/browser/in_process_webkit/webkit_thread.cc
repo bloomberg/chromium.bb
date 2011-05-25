@@ -8,6 +8,7 @@
 #include "content/browser/in_process_webkit/browser_webkitclient_impl.h"
 #include "content/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/glue/webkit_glue.h"
 
 WebKitThread::WebKitThread() {
@@ -50,6 +51,10 @@ void WebKitThread::InternalWebKitThread::Init() {
   webkit_glue::EnableWebCoreLogChannels(
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWebCoreLogChannels));
+  // Exercise WebSecurityOrigin to get its underlying statics initialized.
+  // TODO(michaeln): remove this when the following is landed.
+  // https://bugs.webkit.org/show_bug.cgi?id=61145
+  WebKit::WebSecurityOrigin::create(GURL("http://chromium.org"));
 
   // If possible, post initialization tasks to this thread (rather than doing
   // them now) so we don't block the UI thread any longer than we have to.
