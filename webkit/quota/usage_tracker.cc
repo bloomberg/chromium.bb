@@ -175,7 +175,7 @@ UsageTracker::UsageTracker(const QuotaClientList& clients, StorageType type)
       iter != clients.end();
       ++iter) {
     client_tracker_map_.insert(std::make_pair(
-        (*iter)->id(), new ClientUsageTracker(this, *iter)));
+        (*iter)->id(), new ClientUsageTracker(this, *iter, type)));
   }
 }
 
@@ -193,7 +193,7 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
 void UsageTracker::GetGlobalUsage(UsageCallback* callback) {
   if (client_tracker_map_.size() == 0) {
     // No clients registered.
-    callback->Run(0);
+    callback->Run(type_, 0);
     delete callback;
     return;
   }
@@ -215,7 +215,7 @@ void UsageTracker::GetHostUsage(
     const std::string& host, HostUsageCallback* callback) {
   if (client_tracker_map_.size() == 0) {
     // No clients registered.
-    callback->Run(host, 0);
+    callback->Run(host, type_, 0);
     delete callback;
     return;
   }
@@ -250,22 +250,27 @@ void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
   }
 }
 
-void UsageTracker::DidGetClientGlobalUsage(int64 usage) {
+void UsageTracker::DidGetClientGlobalUsage(StorageType type,
+                                           int64 usage) {
+  DCHECK_EQ(type, type_);
   global_usage_.usage += usage;
   if (--global_usage_.pending_clients == 0) {
     // All the clients have returned their usage data.  Dispatches the
     // pending callbacks.
-    global_usage_callbacks_.Run(global_usage_.usage);
+    global_usage_callbacks_.Run(type, global_usage_.usage);
   }
 }
 
-void UsageTracker::DidGetClientHostUsage(const std::string& host, int64 usage) {
+void UsageTracker::DidGetClientHostUsage(const std::string& host,
+                                         StorageType type,
+                                         int64 usage) {
+  DCHECK_EQ(type, type_);
   TrackingInfo& info = outstanding_host_usage_[host];
   info.usage += usage;
   if (--info.pending_clients == 0) {
     // All the clients have returned their usage data.  Dispatches the
     // pending callbacks.
-    host_usage_callbacks_.Run(host, host, info.usage);
+    host_usage_callbacks_.Run(host, host, type, info.usage);
     outstanding_host_usage_.erase(host);
   }
 }
@@ -273,9 +278,10 @@ void UsageTracker::DidGetClientHostUsage(const std::string& host, int64 usage) {
 // ClientUsageTracker ----------------------------------------------------
 
 ClientUsageTracker::ClientUsageTracker(
-    UsageTracker* tracker, QuotaClient* client)
+    UsageTracker* tracker, QuotaClient* client, StorageType type)
     : tracker_(tracker),
       client_(client),
+      type_(type),
       global_usage_(0),
       global_usage_retrieved_(false),
       global_usage_task_(NULL) {
@@ -288,7 +294,7 @@ ClientUsageTracker::~ClientUsageTracker() {
 
 void ClientUsageTracker::GetGlobalUsage(UsageCallback* callback) {
   if (global_usage_retrieved_) {
-    callback->Run(global_usage_);
+    callback->Run(type_, global_usage_);
     delete callback;
     return;
   }
@@ -303,7 +309,7 @@ void ClientUsageTracker::GetHostUsage(
   std::map<std::string, int64>::iterator found = host_usage_map_.find(host);
   if (found != host_usage_map_.end()) {
     // TODO(kinuko): Drop host_usage_map_ cache periodically.
-    callback->Run(host, found->second);
+    callback->Run(host, type_, found->second);
     delete callback;
     return;
   }
@@ -313,8 +319,8 @@ void ClientUsageTracker::GetHostUsage(
   if (global_usage_task_)
     return;
   GatherHostUsageTask* task = new GatherHostUsageTask(tracker_, client_, host);
-  task->Start();
   host_usage_tasks_[host] = task;
+  task->Start();
 }
 
 void ClientUsageTracker::DetermineOriginsToGetUsage(
@@ -376,7 +382,7 @@ void ClientUsageTracker::DidGetGlobalUsage(
 
   // Dispatches the global usage callback.
   DCHECK(global_usage_callback_.HasCallbacks());
-  global_usage_callback_.Run(global_usage_);
+  global_usage_callback_.Run(type_, global_usage_);
 
   // Dispatches host usage callbacks.
   for (HostUsageCallbackMap::iterator iter = host_usage_callbacks_.Begin();
@@ -385,9 +391,9 @@ void ClientUsageTracker::DidGetGlobalUsage(
     std::map<std::string, int64>::iterator found  =
         host_usage_map_.find(iter->first);
     if (found == host_usage_map_.end())
-      iter->second.Run(iter->first, 0);
+      iter->second.Run(iter->first, type_, 0);
     else
-      iter->second.Run(iter->first, found->second);
+      iter->second.Run(iter->first, type_, found->second);
   }
   host_usage_callbacks_.Clear();
 }
@@ -407,7 +413,7 @@ void ClientUsageTracker::DidGetHostUsage(
   }
 
   // Dispatches the host usage callback.
-  host_usage_callbacks_.Run(host, host, host_usage_map_[host]);
+  host_usage_callbacks_.Run(host, host, type_, host_usage_map_[host]);
 }
 
 }  // namespace quota

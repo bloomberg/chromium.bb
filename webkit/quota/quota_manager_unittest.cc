@@ -99,6 +99,8 @@ class QuotaManagerTest : public testing::Test {
 
   void GetPersistentHostQuota(const std::string& host) {
     quota_status_ = kQuotaStatusUnknown;
+    host_.clear();
+    type_ = kStorageTypeUnknown;
     quota_ = -1;
     quota_manager_->GetPersistentHostQuota(host,
         callback_factory_.NewCallback(
@@ -107,6 +109,8 @@ class QuotaManagerTest : public testing::Test {
 
   void SetPersistentHostQuota(const std::string& host, int64 new_quota) {
     quota_status_ = kQuotaStatusUnknown;
+    host_.clear();
+    type_ = kStorageTypeUnknown;
     quota_ = -1;
     quota_manager_->SetPersistentHostQuota(host, new_quota,
         callback_factory_.NewCallback(
@@ -114,6 +118,7 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void GetGlobalUsage(StorageType type) {
+    type_ = kStorageTypeUnknown;
     usage_ = -1;
     quota_manager_->GetGlobalUsage(type,
         callback_factory_.NewCallback(
@@ -121,6 +126,8 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void GetHostUsage(const std::string& host, StorageType type) {
+    host_.clear();
+    type_ = kStorageTypeUnknown;
     usage_ = -1;
     quota_manager_->GetHostUsage(host, type,
         callback_factory_.NewCallback(
@@ -206,8 +213,11 @@ class QuotaManagerTest : public testing::Test {
     quota_ = quota;
   }
 
-  void DidGetQuota(QuotaStatusCode status, int64 quota) {
+  void DidGetQuota(QuotaStatusCode status,
+                   StorageType type,
+                   int64 quota) {
     quota_status_ = status;
+    type_ = type;
     quota_ = quota;
   }
 
@@ -217,17 +227,25 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DidGetHostQuota(QuotaStatusCode status,
-                       const std::string& host, int64 quota) {
+                       const std::string& host,
+                       StorageType type,
+                       int64 quota) {
     quota_status_ = status;
     host_ = host;
+    type_ = type;
     quota_ = quota;
   }
 
-  void DidGetGlobalUsage(int64 usage) {
+  void DidGetGlobalUsage(StorageType type, int64 usage) {
+    type_ = type;
     usage_ = usage;
   }
 
-  void DidGetHostUsage(const std::string&, int64 usage) {
+  void DidGetHostUsage(const std::string& host,
+                       StorageType type,
+                       int64 usage) {
+    host_ = host;
+    type_ = type;
     usage_ = usage;
   }
 
@@ -264,6 +282,8 @@ class QuotaManagerTest : public testing::Test {
   }
 
   QuotaStatusCode status() const { return quota_status_; }
+  const std::string& host() const { return host_; }
+  StorageType type() const { return type_; }
   int64 usage() const { return usage_; }
   int64 quota() const { return quota_; }
   int64 available_space() const { return available_space_; }
@@ -278,6 +298,7 @@ class QuotaManagerTest : public testing::Test {
 
   QuotaStatusCode quota_status_;
   std::string host_;
+  StorageType type_;
   int64 usage_;
   int64 quota_;
   int64 available_space_;
@@ -387,6 +408,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
   // This time explicitly sets a temporary global quota.
   SetTemporaryGlobalQuota(100);
   MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kStorageTypeTemporary, type());
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(100, quota());
 
@@ -553,6 +575,8 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
 
   GetPersistentHostQuota("foo.com");
   MessageLoop::current()->RunAllPending();
+  EXPECT_EQ("foo.com", host());
+  EXPECT_EQ(kStorageTypePersistent, type());
   EXPECT_EQ(0, quota());
 
   SetPersistentHostQuota("foo.com", 100);

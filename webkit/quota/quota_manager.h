@@ -9,6 +9,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -215,8 +216,9 @@ class QuotaManager : public QuotaTaskObserver,
       int64 available_space);
   void DidGetGlobalQuotaForEviction(
       QuotaStatusCode status,
+      StorageType type,
       int64 quota);
-  void DidGetGlobalUsageForEviction(int64 usage);
+  void DidGetGlobalUsageForEviction(StorageType type, int64 usage);
 
   // QuotaEvictionHandler.
   virtual void GetLRUOrigin(
@@ -230,7 +232,7 @@ class QuotaManager : public QuotaTaskObserver,
       GetUsageAndQuotaForEvictionCallback* callback) OVERRIDE;
 
   void DidInitializeTemporaryGlobalQuota(int64 quota);
-  void DidRunInitialGetTemporaryGlobalUsage(int64 usage);
+  void DidRunInitialGetTemporaryGlobalUsage(StorageType type, int64 usage);
   void DidGetDatabaseLRUOrigin(const GURL& origin);
 
   void DeleteOnCorrectThread() const;

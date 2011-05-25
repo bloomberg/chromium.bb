@@ -8,6 +8,8 @@
 
 #include <list>
 #include <map>
+#include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -51,10 +53,12 @@ class UsageTracker : public QuotaTaskObserver {
   typedef std::map<QuotaClient::ID, ClientUsageTracker*> ClientTrackerMap;
 
   friend class ClientUsageTracker;
-  void DidGetClientGlobalUsage(int64 usage);
-  void DidGetClientHostUsage(const std::string& host, int64 usage);
+  void DidGetClientGlobalUsage(StorageType type, int64 usage);
+  void DidGetClientHostUsage(const std::string& host,
+                             StorageType type,
+                             int64 usage);
 
-  StorageType type_;
+  const StorageType type_;
   ClientTrackerMap client_tracker_map_;
   TrackingInfo global_usage_;
   std::map<std::string, TrackingInfo> outstanding_host_usage_;
@@ -70,7 +74,9 @@ class UsageTracker : public QuotaTaskObserver {
 // usage data.  An instance of this class is created per client.
 class ClientUsageTracker {
  public:
-  ClientUsageTracker(UsageTracker* tracking_info, QuotaClient* client);
+  ClientUsageTracker(UsageTracker* tracking_info,
+                     QuotaClient* client,
+                     StorageType type);
   ~ClientUsageTracker();
 
   void GetGlobalUsage(UsageCallback* callback);
@@ -92,6 +98,7 @@ class ClientUsageTracker {
 
   UsageTracker* tracker_;
   QuotaClient* client_;
+  const StorageType type_;
   std::set<GURL> cached_origins_;
 
   int64 global_usage_;
