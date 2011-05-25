@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,11 @@ string16 DatabaseUtil::GetOriginIdentifier(const GURL& url) {
 GURL DatabaseUtil::GetOriginFromIdentifier(const string16& origin_identifier) {
   GURL origin(WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
       origin_identifier).toString());
-  DCHECK(origin == origin.GetOrigin());
+  // We need this work-around for file:/// URIs as
+  // createFromDatabaseIdentifier returns empty origin url for them.
+  if (origin.spec().empty() &&
+      origin_identifier.find(ASCIIToUTF16("file__")) == 0)
+    return GURL("file:///");
   return origin;
 }
 

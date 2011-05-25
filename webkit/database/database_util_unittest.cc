@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,11 @@ static void TestVfsFilePath(bool expected_result,
   EXPECT_EQ(ASCIIToUTF16(expected_sqlite_suffix), sqlite_suffix);
 }
 
+static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
+  string16 id = DatabaseUtil::GetOriginIdentifier(origin_url);
+  return DatabaseUtil::GetOriginFromIdentifier(id);
+}
+
 namespace webkit_database {
 
 // Test DatabaseUtil::CrackVfsFilePath on various inputs.
@@ -40,6 +45,13 @@ TEST(DatabaseUtilTest, CrackVfsFilePathTest) {
   TestVfsFilePath(false, "origin#db_name/suffix");
   TestVfsFilePath(false, "/db_name#");
   TestVfsFilePath(false, "/db_name#suffix");
+}
+
+TEST(DatabaseUtilTest, OriginIdentifiers) {
+  const GURL kFileOrigin(GURL("file:///").GetOrigin());
+  const GURL kHttpOrigin(GURL("http://bar/").GetOrigin());
+  EXPECT_EQ(kFileOrigin, ToAndFromOriginIdentifier(kFileOrigin));
+  EXPECT_EQ(kHttpOrigin, ToAndFromOriginIdentifier(kHttpOrigin));
 }
 
 }  // namespace webkit_database
