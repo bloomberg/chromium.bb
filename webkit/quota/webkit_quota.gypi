@@ -21,6 +21,8 @@
         'quota_manager.h',
         'quota_task.cc',
         'quota_task.h',
+        'quota_temporary_storage_evictor.cc',
+        'quota_temporary_storage_evictor.h',
         'quota_types.h',
         'special_storage_policy.cc',
         'special_storage_policy.h',

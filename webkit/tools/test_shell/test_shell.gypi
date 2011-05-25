@@ -438,6 +438,7 @@
         '../../quota/mock_storage_client.h',
         '../../quota/quota_database_unittest.cc',
         '../../quota/quota_manager_unittest.cc',
+        '../../quota/quota_temporary_storage_evictor_unittest.cc',
         '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
         '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
         'event_listener_unittest.cc',

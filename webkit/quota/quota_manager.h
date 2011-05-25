@@ -38,6 +38,8 @@ class QuotaManagerProxy;
 // An interface called by QuotaTemporaryStorageEvictor.
 class QuotaEvictionHandler {
  public:
+  virtual ~QuotaEvictionHandler() {}
+
   typedef Callback1<const GURL&>::Type GetLRUOriginCallback;
   typedef Callback1<QuotaStatusCode>::Type EvictOriginDataCallback;
   typedef Callback4<QuotaStatusCode,
@@ -59,9 +61,6 @@ class QuotaEvictionHandler {
 
   virtual void GetUsageAndQuotaForEviction(
       GetUsageAndQuotaForEvictionCallback* callback) = 0;
-
- protected:
-  virtual ~QuotaEvictionHandler() {}
 };
 
 // The quota manager class.  This class is instantiated per profile and
