@@ -97,6 +97,9 @@
       # crbug.com/67588
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       '-prefs.PrefsTest.testDownloadDirPref',
+      # crbug.com/83820
+      '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
     ],
 
     'mac': [
