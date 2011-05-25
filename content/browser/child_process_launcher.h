@@ -60,10 +60,6 @@ class ChildProcessLauncher {
   // this after the process has started.
   void SetProcessBackgrounded(bool background);
 
-  // Controls whether the child process should be terminated on browser
-  // shutdown.
-  void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
-
  private:
   class Context;
 

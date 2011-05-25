@@ -44,8 +44,7 @@ class ChildProcessLauncher::Context
   Context()
       : client_(NULL),
         client_thread_id_(BrowserThread::UI),
-        starting_(true),
-        terminate_child_on_shutdown_(true)
+        starting_(true)
 #if defined(OS_LINUX)
         , zygote_(false)
 #endif
@@ -86,10 +85,6 @@ class ChildProcessLauncher::Context
     // client_ would be used.
     CHECK(BrowserThread::CurrentlyOn(client_thread_id_));
     client_ = NULL;
-  }
-
-  void set_terminate_child_on_shutdown(bool terminate_on_shutdown) {
-    terminate_child_on_shutdown_ = terminate_on_shutdown;
   }
 
  private:
@@ -215,9 +210,6 @@ class ChildProcessLauncher::Context
     if (!process_.handle())
       return;
 
-    if (!terminate_child_on_shutdown_)
-      return;
-
     // On Posix, EnsureProcessTerminated can lead to 2 seconds of sleep!  So
     // don't this on the UI/IO threads.
     BrowserThread::PostTask(
@@ -265,9 +257,6 @@ class ChildProcessLauncher::Context
   BrowserThread::ID client_thread_id_;
   base::Process process_;
   bool starting_;
-  // Controls whether the child process should be terminated on browser
-  // shutdown. Default behavior is to terminate the child.
-  bool terminate_child_on_shutdown_;
 
 #if defined(OS_LINUX)
   bool zygote_;
@@ -344,10 +333,3 @@ void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
           &ChildProcessLauncher::Context::SetProcessBackgrounded,
           background));
 }
-
-void ChildProcessLauncher::SetTerminateChildOnShutdown(
-  bool terminate_on_shutdown) {
-  if (context_)
-    context_->set_terminate_child_on_shutdown(terminate_on_shutdown);
-}
-

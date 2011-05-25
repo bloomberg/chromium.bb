@@ -109,11 +109,6 @@ void BrowserChildProcessHost::ForceShutdown() {
   ChildProcessHost::ForceShutdown();
 }
 
-void BrowserChildProcessHost::SetTerminateChildOnShutdown(
-  bool terminate_on_shutdown) {
-  child_process_->SetTerminateChildOnShutdown(terminate_on_shutdown);
-}
-
 void BrowserChildProcessHost::Notify(NotificationType type) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
