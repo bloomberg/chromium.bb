@@ -166,7 +166,7 @@ TEST(URLRequestJobFactoryTest, InterceptorDoesntInterceptUnknownProtocols) {
   URLRequestJobFactory job_factory;
   request_context->set_job_factory(&job_factory);
   DummyInterceptor* interceptor = new DummyInterceptor;
-  job_factory.AddInterceptor(new DummyInterceptor);
+  job_factory.AddInterceptor(interceptor);
   TestURLRequest request(GURL("foo://bar"), &delegate);
   request.set_context(request_context);
   request.Start();
