@@ -73,6 +73,39 @@ class AutofillTest(pyauto.PyUITest):
                      self.GetAutofillProfile()['credit_cards'],
                      msg='Autofill credit card data does not match.')
 
+  def testSegmentNumbersNotSupportedInDOMUI(self):
+    """Test segmented phone/fax numbers no longer supported in DOM UI.
+
+    Phone and fax |COUNTRY_CODE| and |CITY_CODE| are only supported when
+    aggregating a web form and no longer processed in parts through the DOM UI
+    (when adding profiles through prefs settings).
+    """
+    profile_input = [{'NAME_FIRST': 'John',
+                     'NAME_LAST': 'Doe',
+                     'ADDRESS_HOME_LINE1': '123 H St.',
+                     'ADDRESS_HOME_CITY': 'San Jose',
+                     'ADDRESS_HOME_STATE': 'CA',
+                     'ADDRESS_HOME_ZIP': '95110',
+                     'ADDRESS_HOME_COUNTRY': 'China',
+                     'PHONE_HOME_COUNTRY_CODE': '86',
+                     'PHONE_HOME_CITY_CODE': '108',
+                     'PHONE_HOME_NUMBER': '8828000',
+                     'PHONE_FAX_COUNTRY_CODE': '86',
+                     'PHONE_FAX_CITY_CODE': '108',
+                     'PHONE_FAX_NUMBER': '8828000'}]
+
+    profile_expected = [{'NAME_FIRST': 'John',
+                        'NAME_LATE': 'Doe',
+                        'ADDRESS_HOME_LINE1': '123 H St.',
+                        'ADDRESS_HOME_CITY': 'San Jose',
+                        'ADDRESS_HOME_STATE': 'CA',
+                        'ADDRESS_HOME_ZIP': '95110',
+                        'ADDRESS_HOME_COUNTRY': 'China'}]
+
+    self.FillAutofillProfile(profiles=profile_input)
+    self.assertEqual(profile_expected, self.GetAutofillProfile()['profiles'],
+                     msg='Segmented phone/fax numbers supported in DOM UI.')
+
   def testGetProfilesEmpty(self):
     """Test getting profiles when none have been filled."""
     profile = self.GetAutofillProfile()

@@ -28,13 +28,15 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
+      # crbug.com/83655
+      '-autofill.AutofillTest.testAutofillInvalid',
       # crbug.com/77113 - M13 feature.
       '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
-      # crbug.com/83686
-      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
+      # crbug.com/83686 - M13 feature.
+      '-autofill.AutofillTest.testSegmentNumbersNotSupportedInDOMUI',
       'bookmark_bar',
       'bookmarks',
       'browser',
