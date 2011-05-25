@@ -148,8 +148,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void QueryRedirectsTo(scoped_refptr<QueryRedirectsRequest> request,
                         const GURL& url);
 
-  void GetVisitCountToHost(scoped_refptr<GetVisitCountToHostRequest> request,
-                           const GURL& url);
+  void GetVisibleVisitCountToHost(
+      scoped_refptr<GetVisibleVisitCountToHostRequest> request,
+      const GURL& url);
 
   // TODO(Nik): remove. Use QueryMostVisitedURLs instead.
   void QueryTopURLsAndRedirects(

@@ -330,15 +330,17 @@ class HistoryService : public CancelableRequestProvider,
   typedef Callback4<Handle,
                     bool,        // Were we able to determine the # of visits?
                     int,         // Number of visits.
-                    base::Time>::Type  // Time of first visit. Only first bool
+                    base::Time>::Type  // Time of first visit. Only set if bool
                                        // is true and int is > 0.
-      GetVisitCountToHostCallback;
+      GetVisibleVisitCountToHostCallback;
 
-  // Requests the number of visits to all urls on the scheme/host/post
-  // identified by url. This is only valid for http and https urls.
-  Handle GetVisitCountToHost(const GURL& url,
-                             CancelableRequestConsumerBase* consumer,
-                             GetVisitCountToHostCallback* callback);
+  // Requests the number of user-visible visits (i.e. no redirects or subframes)
+  // to all urls on the same scheme/host/port as |url|.  This is only valid for
+  // HTTP and HTTPS URLs.
+  Handle GetVisibleVisitCountToHost(
+      const GURL& url,
+      CancelableRequestConsumerBase* consumer,
+      GetVisibleVisitCountToHostCallback* callback);
 
   // Called when QueryTopURLsAndRedirects completes. The vector contains a list
   // of the top |result_count| URLs.  For each of these URLs, there is an entry

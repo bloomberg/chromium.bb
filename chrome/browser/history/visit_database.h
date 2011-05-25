@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,13 +134,15 @@ class VisitDatabase {
                           VisitID* from_visit,
                           GURL* from_url);
 
-  // Returns the number of visits to all urls on the scheme/host/post
-  // identified by url. This is only valid for http and https urls (all other
-  // schemes are ignored and false is returned).
-  // count is set to the number of visits, first_visit is set to the first time
-  // the host was visited. Returns true on success.
-  bool GetVisitCountToHost(const GURL& url, int* count,
-                           base::Time* first_visit);
+  // Gets the number of user-visible visits to all URLs on the same
+  // scheme/host/port as |url|, as well as the time of the earliest visit.
+  // "User-visible" is defined as in GetVisibleVisitsInRange() above, i.e.
+  // excluding redirects and subframes.
+  // This function is only valid for HTTP and HTTPS URLs; all other schemes
+  // cause the function to return false.
+  bool GetVisibleVisitCountToHost(const GURL& url,
+                                  int* count,
+                                  base::Time* first_visit);
 
   // Get the time of the first item in our database.
   bool GetStartDate(base::Time* first_visit);

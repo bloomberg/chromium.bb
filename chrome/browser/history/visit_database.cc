@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -432,9 +432,9 @@ bool VisitDatabase::GetRedirectToVisit(VisitID to_visit,
   return true;
 }
 
-bool VisitDatabase::GetVisitCountToHost(const GURL& url,
-                                        int* count,
-                                        base::Time* first_visit) {
+bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
+                                               int* count,
+                                               base::Time* first_visit) {
   if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
     return false;
 
@@ -445,24 +445,29 @@ bool VisitDatabase::GetVisitCountToHost(const GURL& url,
   // The query becomes:
   // 'url >= http://google.com/' and url < http://google.com0'.
   // 0 is used as it is one character greater than '/'.
-  GURL search_url(url);
-  const std::string host_query_min = search_url.GetOrigin().spec();
-
+  const std::string host_query_min = url.GetOrigin().spec();
   if (host_query_min.empty())
     return false;
 
-  std::string host_query_max = host_query_min;
-  host_query_max[host_query_max.size() - 1] = '0';
-
+  // We also want to restrict ourselves to main frame navigations that are not
+  // in the middle of redirect chains, hence the transition checks.
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT MIN(v.visit_time), COUNT(*) "
       "FROM visits v INNER JOIN urls u ON v.url = u.id "
-      "WHERE (u.url >= ? AND u.url < ?)"));
+      "WHERE u.url >= ? AND u.url < ? "
+      "AND (transition & ?) != 0 "
+      "AND (transition & ?) NOT IN (?, ?, ?)"));
   if (!statement)
     return false;
 
   statement.BindString(0, host_query_min);
-  statement.BindString(1, host_query_max);
+  statement.BindString(1,
+      host_query_min.substr(0, host_query_min.size() - 1) + '0');
+  statement.BindInt(2, PageTransition::CHAIN_END);
+  statement.BindInt(3, PageTransition::CORE_MASK);
+  statement.BindInt(4, PageTransition::AUTO_SUBFRAME);
+  statement.BindInt(5, PageTransition::MANUAL_SUBFRAME);
+  statement.BindInt(6, PageTransition::KEYWORD_GENERATED);
 
   if (!statement.Step()) {
     // We've never been to this page before.

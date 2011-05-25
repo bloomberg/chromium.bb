@@ -31,8 +31,8 @@ typedef CancelableRequest1<HistoryService::QueryRedirectsCallback,
                            history::RedirectList>
     QueryRedirectsRequest;
 
-typedef CancelableRequest<HistoryService::GetVisitCountToHostCallback>
-    GetVisitCountToHostRequest;
+typedef CancelableRequest<HistoryService::GetVisibleVisitCountToHostCallback>
+    GetVisibleVisitCountToHostRequest;
 
 typedef CancelableRequest1<HistoryService::QueryTopURLsAndRedirectsCallback,
                            Tuple2<std::vector<GURL>,

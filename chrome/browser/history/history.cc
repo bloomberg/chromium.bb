@@ -593,12 +593,12 @@ HistoryService::Handle HistoryService::QueryRedirectsTo(
       new history::QueryRedirectsRequest(callback), to_url);
 }
 
-HistoryService::Handle HistoryService::GetVisitCountToHost(
+HistoryService::Handle HistoryService::GetVisibleVisitCountToHost(
     const GURL& url,
     CancelableRequestConsumerBase* consumer,
-    GetVisitCountToHostCallback* callback) {
-  return Schedule(PRIORITY_UI, &HistoryBackend::GetVisitCountToHost, consumer,
-      new history::GetVisitCountToHostRequest(callback), url);
+    GetVisibleVisitCountToHostCallback* callback) {
+  return Schedule(PRIORITY_UI, &HistoryBackend::GetVisibleVisitCountToHost,
+      consumer, new history::GetVisibleVisitCountToHostRequest(callback), url);
 }
 
 HistoryService::Handle HistoryService::QueryTopURLsAndRedirects(

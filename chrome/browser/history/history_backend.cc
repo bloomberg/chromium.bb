@@ -1312,16 +1312,16 @@ void HistoryBackend::QueryRedirectsTo(
       request->handle(), url, success, &request->value));
 }
 
-void HistoryBackend::GetVisitCountToHost(
-    scoped_refptr<GetVisitCountToHostRequest> request,
+void HistoryBackend::GetVisibleVisitCountToHost(
+    scoped_refptr<GetVisibleVisitCountToHostRequest> request,
     const GURL& url) {
   if (request->canceled())
     return;
   int count = 0;
   Time first_visit;
-  const bool success = (db_.get() && db_->GetVisitCountToHost(url, &count,
-                                                              &first_visit));
-  request->ForwardResult(GetVisitCountToHostRequest::TupleType(
+  const bool success = db_.get() &&
+      db_->GetVisibleVisitCountToHost(url, &count, &first_visit);
+  request->ForwardResult(GetVisibleVisitCountToHostRequest::TupleType(
       request->handle(), success, count, first_visit));
 }
 

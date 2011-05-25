@@ -24,10 +24,10 @@ DownloadHistory::DownloadHistory(Profile* profile)
 }
 
 DownloadHistory::~DownloadHistory() {
-  // For any outstanding requests to HistoryService::GetVisitCountToHost(),
-  // since they'll be cancelled and thus not call back to
-  // OnGotVisitCountToHost(), we need to delete the associated
-  // VisitedBeforeDoneCallbacks.
+  // For any outstanding requests to
+  // HistoryService::GetVisibleVisitCountToHost(), since they'll be cancelled
+  // and thus not call back to OnGotVisitCountToHost(), we need to delete the
+  // associated VisitedBeforeDoneCallbacks.
   for (VisitedBeforeRequestsMap::iterator i(visited_before_requests_.begin());
        i != visited_before_requests_.end(); ++i)
     delete i->second.second;
@@ -55,9 +55,9 @@ void DownloadHistory::CheckVisitedReferrerBefore(
   if (referrer_url.is_valid()) {
     HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (hs) {
-      HistoryService::Handle handle = hs->GetVisitCountToHost(referrer_url,
-          &history_consumer_,
-          NewCallback(this, &DownloadHistory::OnGotVisitCountToHost));
+      HistoryService::Handle handle =
+          hs->GetVisibleVisitCountToHost(referrer_url, &history_consumer_,
+              NewCallback(this, &DownloadHistory::OnGotVisitCountToHost));
       visited_before_requests_[handle] = std::make_pair(download_id, callback);
       return;
     }
