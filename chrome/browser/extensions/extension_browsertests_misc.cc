@@ -197,10 +197,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
 }
 
-// Flaky crash on Mac debug. http://crbug.com/45079
-#if defined(OS_MACOSX)
-#define PageActionRefreshCrash PageActionRefreshCrash
-#endif
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   base::TimeTicks start_time = base::TimeTicks::Now();
