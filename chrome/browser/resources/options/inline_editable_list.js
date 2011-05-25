@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,8 +72,8 @@ cr.define('options', function() {
       DeletableItem.prototype.decorate.call(this);
 
       this.editFields_ = [];
-      this.addEventListener('mousedown', this.handleMouseDown_.bind(this));
-      this.addEventListener('keydown', this.handleKeyDown_.bind(this));
+      this.addEventListener('mousedown', this.handleMouseDown_);
+      this.addEventListener('keydown', this.handleKeyDown_);
       this.addEventListener('leadChange', this.handleLeadChange_);
     },
 
@@ -327,6 +327,21 @@ cr.define('options', function() {
       }
     },
   };
+
+  /**
+   * Takes care of committing changes to inline editable list items when the
+   * window loses focus.
+   */
+  function handleWindowBlurs() {
+    window.addEventListener('blur', function(e) {
+      var itemAncestor = findAncestor(document.activeElement, function(node) {
+        return node instanceof InlineEditableItem;
+      });
+      if (itemAncestor);
+        document.activeElement.blur();
+    });
+  }
+  handleWindowBlurs();
 
   var InlineEditableItemList = cr.ui.define('list');
 

@@ -345,19 +345,6 @@ cr.define('options.contentSettings', function() {
       this.mode = this.getAttribute('mode');
 
       var exceptionList = this;
-      function handleBlur(e) {
-        // When the blur event happens we do not know who is getting focus so we
-        // delay this a bit until we know if the new focus node is outside the
-        // list.
-        var doc = e.target.ownerDocument;
-        window.setTimeout(function() {
-          var activeElement = doc.activeElement;
-          if (!exceptionList.contains(activeElement))
-            exceptionList.selectionModel.unselectAll();
-        }, 50);
-      }
-
-      this.addEventListener('blur', handleBlur, true);
 
       // Whether the exceptions in this list allow an 'Ask every time' option.
       this.enableAskOption = (this.contentType == 'plugins' &&
