@@ -42,7 +42,7 @@ const char kSupportPageAttr[] = "support_page";
 
 const char kAcceptedManifestVersion[] = "1.0";
 
-const char kHwid[] = "hwid";
+const char kHardwareClass[] = "hardware_class";
 
 // Carrier deals attributes.
 const char kCarrierDealsAttr[] = "carrier_deals";
@@ -172,7 +172,7 @@ void StartupCustomizationDocument::Init(SystemAccess* system_access) {
   root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
   std::string hwid;
-  if (system_access->GetMachineStatistic(kHwid, &hwid)) {
+  if (system_access->GetMachineStatistic(kHardwareClass, &hwid)) {
     ListValue* hwid_list = NULL;
     if (root_->GetList(kHwidMapAttr, &hwid_list)) {
       for (size_t i = 0; i < hwid_list->GetSize(); ++i) {

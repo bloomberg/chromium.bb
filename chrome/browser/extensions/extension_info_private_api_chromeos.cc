@@ -14,6 +14,9 @@ using chromeos::NetworkLibrary;
 
 namespace {
 
+// Name of machine statistic property with HWID.
+const char kHardwareClass[] = "hardware_class";
+
 // Key which corresponds to the HWID setting.
 const char kPropertyHWID[] = "hwid";
 
@@ -49,7 +52,7 @@ bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
   value->clear();
   if (property_name == kPropertyHWID) {
     chromeos::SystemAccess* system = chromeos::SystemAccess::GetInstance();
-    system->GetMachineStatistic(kPropertyHWID, value);
+    system->GetMachineStatistic(kHardwareClass, value);
   } else if (property_name == kPropertyHomeProvider) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();

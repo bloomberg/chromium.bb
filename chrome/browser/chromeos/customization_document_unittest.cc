@@ -120,7 +120,7 @@ TEST(StartupCustomizationDocumentTest, Basic) {
   EXPECT_CALL(mock_system_access, GetMachineStatistic(_, NotNull()))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(mock_system_access,
-      GetMachineStatistic(std::string("hwid"), NotNull()))
+      GetMachineStatistic(std::string("hardware_class"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Mario 12345")),
                           Return(true)));
   StartupCustomizationDocument customization(&mock_system_access,
@@ -148,7 +148,7 @@ TEST(StartupCustomizationDocumentTest, Basic) {
 TEST(StartupCustomizationDocumentTest, VPD) {
   MockSystemAccess mock_system_access;
   EXPECT_CALL(mock_system_access,
-      GetMachineStatistic(std::string("hwid"), NotNull()))
+      GetMachineStatistic(std::string("hardware_class"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Mario 12345")),
                           Return(true)));
   EXPECT_CALL(mock_system_access,

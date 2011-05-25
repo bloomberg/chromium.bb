@@ -41,10 +41,6 @@ const char* kMachineOSInfoTool[] = { "cat", "/etc/lsb-release" };
 const char kMachineOSInfoEq[] = "=";
 const char kMachineOSInfoDelim[] = "\n";
 
-// Command to get  HWID and key.
-const char kHwidKey[] = "hwid";
-const char* kHwidTool[] = { "cat", "/sys/devices/platform/chromeos_acpi/HWID" };
-
 // Command to get VPD info and key/value delimiters.
 const char* kVpdTool[] = { "cat", "/var/log/vpd_2.0.txt" };
 const char kVpdEq[] = "=";
@@ -203,7 +199,6 @@ void SystemAccessImpl::UpdateMachineStatistics() {
                                      kMachineOSInfoTool,
                                      kMachineOSInfoEq,
                                      kMachineOSInfoDelim);
-  parser.GetSingleValueFromTool(arraysize(kHwidTool), kHwidTool, kHwidKey);
   parser.ParseNameValuePairsFromTool(
       arraysize(kVpdTool), kVpdTool, kVpdEq, kVpdDelim);
 }
