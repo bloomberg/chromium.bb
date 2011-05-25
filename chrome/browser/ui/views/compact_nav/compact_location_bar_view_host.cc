@@ -90,6 +90,9 @@ MouseObserver::MouseObserver(CompactLocationBarViewHost* host,
     : host_(host),
       browser_view_(view),
       observing_(false) {
+  DCHECK(host_);
+  DCHECK(browser_view_);
+  DCHECK(browser_view_->GetWidget());
   top_level_window_ = browser_view_->GetWidget()->GetNativeView();
 }
 
@@ -163,8 +166,10 @@ bool MouseObserver::HitContentArea(int x, int y) {
   if (HitOnScreen(host_->view(), p)) {
     return false;
   }
-  // Treat the bookmark as a content area when it in detached mode.
-  if (browser_view_->GetBookmarkBarView()->IsDetached() &&
+  // Treat the bookmark as a content area when it in detached mode. We must
+  // check the view itself as it can be NULL for example in popup windows.
+  if (browser_view_->GetBookmarkBarView() &&
+      browser_view_->GetBookmarkBarView()->IsDetached() &&
       browser_view_->IsBookmarkBarVisible() &&
       HitOnScreen(browser_view_->GetBookmarkBarView(), p)) {
     return true;
