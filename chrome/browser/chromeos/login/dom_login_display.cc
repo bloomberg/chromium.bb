@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/login/dom_login_display.h"
 
-#include "chrome/browser/chromeos/frame/dom_browser.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "views/widget/widget.h"
 
 namespace {
 const char kLoginURL[] = "chrome://login";
@@ -18,8 +18,8 @@ namespace chromeos {
 // DOMLoginDisplay, public: ---------------------------------------------------
 
 DOMLoginDisplay::~DOMLoginDisplay() {
-  if (login_screen_)
-    login_screen_->CloseWindow();
+  if (webui_login_window_)
+    webui_login_window_->Close();
 }
 
 // DOMLoginDisplay, Singleton implementation: ----------------------------------
@@ -31,9 +31,24 @@ DOMLoginDisplay* DOMLoginDisplay::GetInstance() {
 
 // LoginDisplay implementation: ------------------------------------------------
 
+// static
+views::Widget* DOMLoginDisplay::GetLoginWindow() {
+  return DOMLoginDisplay::GetInstance()->LoginWindow();
+}
+
+views::Widget* DOMLoginDisplay::LoginWindow() {
+  return webui_login_window_;
+}
+
 void DOMLoginDisplay::Destroy() {
   background_bounds_ = gfx::Rect();
   delegate_ = NULL;
+
+  if (webui_login_window_)
+    webui_login_window_->Close();
+
+  webui_login_window_ = NULL;
+  webui_login_view_ = NULL;
 }
 
 void DOMLoginDisplay::Init(const std::vector<UserManager::User>& users,
@@ -45,10 +60,11 @@ void DOMLoginDisplay::Init(const std::vector<UserManager::User>& users,
 
   // TODO(rharrison): Add mechanism to pass in the show_guest and show_new_user
   // values.
-  login_screen_ = DOMBrowser::CreateForDOM(ProfileManager::GetDefaultProfile());
-  login_screen_->AddSelectedTabWithURL(GURL(kLoginURL),
-                                       PageTransition::START_PAGE);
-  login_screen_->window()->Show();
+  webui_login_window_ = WebUILoginView::CreateWindowContainingView(
+      background_bounds_,
+      GURL(kLoginURL),
+      &webui_login_view_);
+  webui_login_window_->Show();
 }
 
 void DOMLoginDisplay::OnBeforeUserRemoved(const std::string& username) {
@@ -104,6 +120,8 @@ void DOMLoginDisplay::LoginAsGuest() {
 DOMLoginDisplay::DOMLoginDisplay()
     : LoginDisplay(NULL, gfx::Rect()),
       LoginUIHandlerDelegate(),
-      login_screen_(NULL) {}
+      webui_login_view_(NULL),
+      webui_login_window_(NULL) {
+}
 
 }  // namespace chromeos

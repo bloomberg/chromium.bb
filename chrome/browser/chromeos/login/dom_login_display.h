@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
 
 namespace gfx {
@@ -48,6 +49,12 @@ class DOMLoginDisplay : public LoginDisplay,
   // Singleton implementation:
   static DOMLoginDisplay* GetInstance();
 
+  // Wrapper used to help in routing keyboard key presses into the login
+  // screen. This gets the Login Window widget from the Singleton, so that other
+  // classes don't need to know we are a Singleton
+  static views::Widget* GetLoginWindow();
+  views::Widget* LoginWindow();
+
   // LoginDisplay implementation:
   virtual void Destroy() OVERRIDE;
   virtual void Init(const std::vector<UserManager::User>& users,
@@ -76,7 +83,8 @@ class DOMLoginDisplay : public LoginDisplay,
   std::vector<UserManager::User> users_;
 
   // Container of the screen we are displaying
-  DOMBrowser* login_screen_;
+  WebUILoginView* webui_login_view_;  // Owned by webui_login_window_
+  views::Widget* webui_login_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMLoginDisplay);
 };

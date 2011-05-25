@@ -42,11 +42,6 @@
 #include "views/screen.h"
 #include "views/window/window.h"
 
-// X Windows headers have "#define Status int". That interferes with
-// NetworkLibrary header which defines enum "Status".
-#include <X11/cursorfont.h>  // NOLINT
-#include <X11/Xcursor/Xcursor.h>  // NOLINT
-
 using views::Widget;
 
 namespace {
@@ -72,17 +67,6 @@ int GetStepId(size_t step) {
   }
 }
 
-// This gets rid of the ugly X default cursor.
-static void ResetXCursor() {
-  // TODO(sky): nuke this once new window manager is in place.
-  Display* display = ui::GetXDisplay();
-  Cursor cursor = XCreateFontCursor(display, XC_left_ptr);
-  XID root_window = ui::GetX11RootWindow();
-  XSetWindowAttributes attr;
-  attr.cursor = cursor;
-  XChangeWindowAttributes(display, root_window, CWCursor, &attr);
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -96,7 +80,6 @@ BackgroundView::BackgroundView()
       boot_times_label_(NULL),
       progress_bar_(NULL),
       shutdown_button_(NULL),
-      did_paint_(false),
 #if defined(OFFICIAL_BUILD)
       is_official_build_(true),
 #else
@@ -143,8 +126,6 @@ views::Widget* BackgroundView::CreateWindowContainingView(
     const gfx::Rect& bounds,
     const GURL& background_url,
     BackgroundView** view) {
-  ResetXCursor();
-
   Widget* window = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = bounds;
@@ -227,14 +208,6 @@ bool BackgroundView::ScreenSaverEnabled() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BackgroundView protected:
-
-void BackgroundView::OnPaint(gfx::Canvas* canvas) {
-  views::View::OnPaint(canvas);
-  if (!did_paint_) {
-    did_paint_ = true;
-    UpdateWindowType();
-  }
-}
 
 void BackgroundView::Layout() {
   const int kCornerPadding = 5;
@@ -416,7 +389,6 @@ void BackgroundView::InitProgressBar() {
 
 void BackgroundView::UpdateWindowType() {
   std::vector<int> params;
-  params.push_back(did_paint_ ? 1 : 0);
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(GetNativeWindow()),
       WM_IPC_WINDOW_LOGIN_BACKGROUND,

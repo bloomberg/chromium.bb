@@ -11,9 +11,11 @@ namespace chromeos {
 // DOMLoginDisplayHost -------------------------------------------------------
 
 DOMLoginDisplayHost::DOMLoginDisplayHost(const gfx::Rect& background_bounds)
-    : BaseLoginDisplayHost(background_bounds) {}
+    : BaseLoginDisplayHost(background_bounds) {
+}
 
-DOMLoginDisplayHost::~DOMLoginDisplayHost() {}
+DOMLoginDisplayHost::~DOMLoginDisplayHost() {
+}
 
 // LoginDisplayHost implementation -----------------------------------------
 
@@ -29,17 +31,23 @@ gfx::NativeWindow DOMLoginDisplayHost::GetNativeWindow() const {
   return NULL;
 }
 
-void DOMLoginDisplayHost::SetOobeProgress(BackgroundView::LoginStep step) {}
+void DOMLoginDisplayHost::SetOobeProgress(BackgroundView::LoginStep step) {
+}
 
-void DOMLoginDisplayHost::SetOobeProgressBarVisible(bool visible) {}
+void DOMLoginDisplayHost::SetOobeProgressBarVisible(bool visible) {
+}
 
-void DOMLoginDisplayHost::SetShutdownButtonEnabled(bool enable) {}
+void DOMLoginDisplayHost::SetShutdownButtonEnabled(bool enable) {
+}
 
-void DOMLoginDisplayHost::SetStatusAreaEnabled(bool enable) {}
+void DOMLoginDisplayHost::SetStatusAreaEnabled(bool enable) {
+}
 
-void DOMLoginDisplayHost::SetStatusAreaVisible(bool visible) {}
+void DOMLoginDisplayHost::SetStatusAreaVisible(bool visible) {
+}
 
-void DOMLoginDisplayHost::ShowBackground() {}
+void DOMLoginDisplayHost::ShowBackground() {
+}
 
 }  // namespace chromeos
 

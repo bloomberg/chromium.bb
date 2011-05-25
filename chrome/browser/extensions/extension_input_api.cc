@@ -23,6 +23,7 @@
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/login/dom_login_display.h"
 #endif
 
 namespace {
@@ -64,6 +65,12 @@ void InputFunction::Run() {
 }
 
 views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+  views::Widget* login_window = chromeos::DOMLoginDisplay::GetLoginWindow();
+  if (login_window)
+    return login_window;
+#endif
+
   Browser* browser = GetCurrentBrowser();
   if (!browser)
     return NULL;

@@ -103,7 +103,6 @@ class BackgroundView : public views::View,
 
  protected:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
@@ -169,11 +168,6 @@ class BackgroundView : public views::View,
   BootTimesLoader boot_times_loader_;
   // Used to request the boot times.
   CancelableRequestConsumer boot_times_consumer_;
-
-  // Has Paint been invoked once? The value of this is passed to the window
-  // manager.
-  // TODO(sky): nuke this when the wm knows when chrome has painted.
-  bool did_paint_;
 
   // True if running official BUILD.
   bool is_official_build_;

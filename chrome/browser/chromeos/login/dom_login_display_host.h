@@ -9,7 +9,6 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
-#include "ui/gfx/rect.h"
 
 namespace gfx {
 class Rect;
