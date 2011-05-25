@@ -16,17 +16,19 @@ bool MenuModel::IsVisibleAt(int index) const {
 
 bool MenuModel::GetModelAndIndexForCommandId(int command_id,
                                              MenuModel** model, int* index) {
-  int item_count = (*model)->GetItemCount();
+  const int item_count = (*model)->GetItemCount();
+  const int index_offset = (*model)->GetFirstItemIndex(NULL);
   for (int i = 0; i < item_count; ++i) {
-    if ((*model)->GetTypeAt(i) == TYPE_SUBMENU) {
-      MenuModel* submenu_model = (*model)->GetSubmenuModelAt(i);
+    const int candidate_index = i + index_offset;
+    if ((*model)->GetTypeAt(candidate_index) == TYPE_SUBMENU) {
+      MenuModel* submenu_model = (*model)->GetSubmenuModelAt(candidate_index);
       if (GetModelAndIndexForCommandId(command_id, &submenu_model, index)) {
         *model = submenu_model;
         return true;
       }
     }
-    if ((*model)->GetCommandIdAt(i) == command_id) {
-      *index = i;
+    if ((*model)->GetCommandIdAt(candidate_index) == command_id) {
+      *index = candidate_index;
       return true;
     }
   }

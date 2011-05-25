@@ -562,8 +562,10 @@ void MenuItemView::Init(MenuItemView* parent,
   SetID(kMenuItemViewID);
   has_icons_ = false;
 
+  // Don't request enabled status from the root menu item as it is just
+  // a container for real items.
   MenuDelegate* root_delegate = GetDelegate();
-  if (root_delegate)
+  if (parent && root_delegate)
     SetEnabled(root_delegate->IsCommandEnabled(command));
 }
 

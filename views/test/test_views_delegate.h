@@ -51,6 +51,10 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual void AddRef() OVERRIDE {}
   virtual void ReleaseRef() OVERRIDE {}
 
+  virtual int GetDispositionForEvent(int event_flags) OVERRIDE {
+    return 0;
+  }
+
  private:
   mutable scoped_ptr<ui::Clipboard> clipboard_;
 

@@ -101,6 +101,10 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
     MessageLoopForUI::current()->Quit();
   }
 
+  virtual int GetDispositionForEvent(int event_flags) OVERRIDE {
+    return 0;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewsDelegateImpl);
 };

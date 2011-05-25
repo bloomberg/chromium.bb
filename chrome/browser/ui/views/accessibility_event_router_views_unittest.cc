@@ -65,6 +65,10 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
   virtual void AddRef() {}
   virtual void ReleaseRef() {}
 
+  virtual int GetDispositionForEvent(int event_flags) OVERRIDE {
+    return 0;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(AccessibilityViewsDelegate);
 };
 

@@ -44,7 +44,8 @@ class MenuModel {
 
   // Returns the index of the first item. This is 0 for most menus except the
   // system menu on Windows. |native_menu| is the menu to locate the start index
-  // within. It is guaranteed to be reset to a clean default state.
+  // within. It is guaranteed to be reset to a clean default state.  Some
+  // callers of this method may pass NULL for native_menu.
   // IMPORTANT: If the model implementation returns something _other_ than 0
   //            here, it must offset the values for |index| it passes to the
   //            methods below by this number - this is NOT done automatically!

@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
+#include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -144,4 +145,8 @@ void ChromeViewsDelegate::AddRef() {
 
 void ChromeViewsDelegate::ReleaseRef() {
   g_browser_process->ReleaseModule();
+}
+
+int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
+  return event_utils::DispositionFromEventFlags(event_flags);
 }

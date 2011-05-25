@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,9 @@ class ViewsDelegate {
   // ensure we don't attempt to exit while a menu is showing.
   virtual void AddRef() = 0;
   virtual void ReleaseRef() = 0;
+
+  // Converts views::Event::flags to a WindowOpenDisposition.
+  virtual int GetDispositionForEvent(int event_flags) = 0;
 
   // The active ViewsDelegate used by the views system.
   static ViewsDelegate* views_delegate;
