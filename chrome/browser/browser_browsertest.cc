@@ -490,8 +490,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
 
+#if defined(OS_MAC)
+// http://crbug.com/83828. On Mac 10.6, the failure rate is 14%
+#define MAYBE_FaviconChange FLAKY_FaviconChange
+#else
+#define MAYBE_FaviconChange FaviconChange
+#endif
 // Test that an icon can be changed from JS.
-IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconChange) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   static const FilePath::CharType* kFile =
       FILE_PATH_LITERAL("onload_change_favicon.html");
   GURL file_url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
