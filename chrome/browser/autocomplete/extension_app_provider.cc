@@ -61,13 +61,13 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
         match.destination_url = GURL(url);
         match.inline_autocomplete_offset = string16::npos;
         match.contents = name;
-        AutocompleteMatch::ClassifyLocationInString(
-            matches_name ? (name_iter - name.begin()) : string16::npos,
+        AutocompleteMatch::ClassifyLocationInString(matches_name ?
+            static_cast<size_t>(name_iter - name.begin()) : string16::npos,
             input.text().length(), name.length(), ACMatchClassification::NONE,
             &match.contents_class);
         match.description = url;
-        AutocompleteMatch::ClassifyLocationInString(
-            matches_url ? (url_iter - url.begin()) : string16::npos,
+        AutocompleteMatch::ClassifyLocationInString(matches_url ?
+            static_cast<size_t>(url_iter - url.begin()) : string16::npos,
             input.text().length(), url.length(), ACMatchClassification::URL,
             &match.description_class);
         match.relevance = CalculateRelevance(input.type(),
