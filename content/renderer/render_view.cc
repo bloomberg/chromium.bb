@@ -3878,6 +3878,7 @@ void RenderView::OnWasHidden() {
   if (webview()) {
     webview()->settings()->setMinimumTimerInterval(
         webkit_glue::kBackgroundTabTimerInterval);
+    webview()->setVisibilityState(WebKit::WebPageVisibilityStateHidden, false);
   }
 
 #if defined(OS_MACOSX)
@@ -3896,6 +3897,7 @@ void RenderView::OnWasRestored(bool needs_repainting) {
   if (webview()) {
     webview()->settings()->setMinimumTimerInterval(
         webkit_glue::kForegroundTabTimerInterval);
+    webview()->setVisibilityState(WebKit::WebPageVisibilityStateVisible, false);
   }
 
 #if defined(OS_MACOSX)
@@ -4094,6 +4096,13 @@ void RenderView::registerProtocolHandler(const WebString& scheme,
                                               UTF16ToUTF8(scheme),
                                               absolute_url,
                                               title));
+}
+
+WebKit::WebPageVisibilityState RenderView::visibilityState() const {
+  if (is_hidden())
+    return WebKit::WebPageVisibilityStateHidden;
+  else
+    return WebKit::WebPageVisibilityStateVisible;
 }
 
 bool RenderView::IsNonLocalTopLevelNavigation(
