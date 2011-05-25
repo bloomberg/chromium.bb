@@ -34,9 +34,3 @@ extern char template_func_external_jump_target;
 extern char template_func_external_jump_target_end;
 extern char template_func_external_jump_target_replace;
 extern char template_func_external_jump_target_replace_end;
-
-/*
- * The end of the text segment, the dynamic code resion starts at the
- * next page.
- */
-extern char etext[];

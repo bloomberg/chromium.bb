@@ -14,12 +14,8 @@ extern char _etext[];
 #define DYNAMIC_CODE_ALIGN(addr)   \
     ((((uintptr_t) (addr)) + DYNAMIC_CODE_PAGE_SIZE - 1) & \
      ~(DYNAMIC_CODE_PAGE_SIZE - 1))
-/*
- * The first page of dynamic code is unusable, so we use the second page.
- * See issue http://code.google.com/p/nativeclient/issues/detail?id=1143
- */
-#define DYNAMIC_CODE_SEGMENT_START \
-    (DYNAMIC_CODE_ALIGN(_etext) + DYNAMIC_CODE_PAGE_SIZE)
+
+#define DYNAMIC_CODE_SEGMENT_START (DYNAMIC_CODE_ALIGN(_etext))
 
 /*
  * DYNAMIC_CODE_SEGMENT_ENDS also exists, is defined by nacl.scons.

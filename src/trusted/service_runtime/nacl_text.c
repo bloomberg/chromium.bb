@@ -504,28 +504,19 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
                                        uint32_t offset,
                                        uint32_t size) {
   /*
-   * The nap->* variables used in this function can be in 3 states:
+   * The nap->* variables used in this function can be in two states:
    *
    * 1)
-   * nap->dynamic_mapcache_offset = nap->dynamic_mapcache_size
-   *                                            = nap->dynamic_mapcache_ret = 0
+   * nap->dynamic_mapcache_size == 0
+   * nap->dynamic_mapcache_ret == 0
    *
    * Initial state, nothing is cached.
    *
    * 2)
-   * nap->dynamic_mapcache_offset != 0
    * nap->dynamic_mapcache_size != 0
-   * !NaClPtrIsNegError(nap->dynamic_mapcache_ret)
+   * nap->dynamic_mapcache_ret != 0
    *
    * We have a cached mmap result stored, that must be unmapped.
-   *
-   * 3)
-   * nap->dynamic_mapcache_offset != 0
-   * nap->dynamic_mapcache_size != 0
-   * NaClPtrIsNegError(nap->dynamic_mapcache_ret)
-   *
-   * The last mmap was an error, cache the error but don't unmap on next call.
-   *
    */
   struct NaClDescEffectorShm shm_effector;
   struct NaClDesc            *shm = nap->text_shm;
@@ -542,8 +533,7 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
     /*
      * cache miss, first clear the old cache if needed
      */
-    if (nap->dynamic_mapcache_size > 0
-               && !NaClPtrIsNegErrno(&nap->dynamic_mapcache_ret)) {
+    if (nap->dynamic_mapcache_size > 0) {
       if (0 != (*((struct NaClDescVtbl const *) shm->base.vtbl)->
             UnmapUnsafe)(shm,
                          (struct NaClDescEffector*) &shm_effector,
@@ -552,16 +542,16 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
         NaClLog(LOG_FATAL, "CachedMapWritableText: Failed to unmap\n");
         return -NACL_ABI_EFAULT;
       }
+      nap->dynamic_mapcache_offset = 0;
+      nap->dynamic_mapcache_size = 0;
+      nap->dynamic_mapcache_ret = 0;
     }
 
     /*
      * update that cached version
      */
-    nap->dynamic_mapcache_offset = offset;
-    nap->dynamic_mapcache_size = size;
     if (size > 0) {
-      CHECK(offset > 0);
-      nap->dynamic_mapcache_ret = (*((struct NaClDescVtbl const *)
+      uintptr_t mapping = (*((struct NaClDescVtbl const *)
             shm->base.vtbl)->
               Map)(shm,
                    (struct NaClDescEffector*) &shm_effector,
@@ -570,12 +560,12 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
                    NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                    NACL_ABI_MAP_SHARED,
                    offset);
-    } else {
-      /*
-       * if size is 0, just clear cache
-       */
-      CHECK(0 == offset);
-      nap->dynamic_mapcache_ret = 0;
+      if (NaClPtrIsNegErrno(&mapping)) {
+        return 0;
+      }
+      nap->dynamic_mapcache_offset = offset;
+      nap->dynamic_mapcache_size = size;
+      nap->dynamic_mapcache_ret = mapping;
     }
   }
   return nap->dynamic_mapcache_ret;
@@ -610,7 +600,7 @@ static INLINE int NaclTextMapWrapper(struct NaClApp *nap,
   mmap_ret = CachedMapWritableText(nap,
                                    shm_map_offset,
                                    shm_map_size);
-  if (NaClPtrIsNegErrno(&mmap_ret)) {
+  if (0 == mmap_ret) {
     return 0;
   }
   mmap_result = (uint8_t *) mmap_ret;

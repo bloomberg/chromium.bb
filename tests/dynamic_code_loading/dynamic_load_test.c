@@ -167,27 +167,6 @@ void test_loading_zero_size() {
   assert(rc == 0);
 }
 
-/* Check that we can load code at the very beginning of the dynamic section. */
-void test_loading_code_on_first_dynamic_page() {
-  const unsigned int kPageMask = 0xFFFF;
-  void *load_area = (void*)((uintptr_t)(etext + kPageMask) & ~kPageMask);
-  uint8_t buf[BUF_SIZE];
-  int rc;
-  int (*func)();
-
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
-
-  rc = nacl_load_code(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  assert(memcmp(load_area, buf, sizeof(buf)) == 0);
-  /* Need double cast otherwise gcc complains with "ISO C forbids
-     conversion of object pointer to function pointer type
-     [-pedantic]". */
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-}
-
 /* In general, the failure tests don't check that loading fails for
    the reason we expect.  TODO(mseaborn): We could do this by
    comparing with expected log output. */
@@ -355,14 +334,15 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
 int TestMain() {
+  /*
+   * This should come first, so that we test loading code into the first page.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=1143
+   */
   RUN_TEST(test_loading_code);
+
   RUN_TEST(test_loading_code_non_page_aligned);
   RUN_TEST(test_loading_large_chunk);
   RUN_TEST(test_loading_zero_size);
-  /* TODO(elijahtaylor): enable this test after this is fixed:
-   * http://code.google.com/p/nativeclient/issues/detail?id=1143
-   */
-  /* RUN_TEST(test_loading_code_on_first_dynamic_page); */
   RUN_TEST(test_fail_on_validation_error);
   RUN_TEST(test_fail_on_non_bundle_aligned_dest_addresses);
   RUN_TEST(test_fail_on_load_to_static_code_area);
