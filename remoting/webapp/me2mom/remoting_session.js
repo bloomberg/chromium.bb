@@ -307,8 +307,22 @@ function updateStatusBarStats() {
   var videoDecodeLatency = remoting.plugin.videoDecodeLatency;
   var videoRenderLatency = remoting.plugin.videoRenderLatency;
 
+  var units = '';
+  if (videoBandwidth < 1024) {
+    units = 'Bps';
+  } else if (videoBandwidth < 1048576) {
+    units = 'KBps';
+    videoBandwidth = videoBandwidth / 1024;
+  } else if (videoBandwidth < 1073741824) {
+    units = 'MBps';
+    videoBandwidth = videoBandwidth / 1048576;
+  } else {
+    units = 'GBps';
+    videoBandwidth = videoBandwidth / 1073741824;
+  }
+
   setClientStateMessage(
-      'Video stats: bandwidth: ' + videoBandwidth.toFixed(2) + 'Kbps' +
+      'Video stats: bandwidth: ' + videoBandwidth.toFixed(2) + units +
       ', Latency: capture: ' + videoCaptureLatency.toFixed(2) + 'ms' +
       ', encode: ' + videoEncodeLatency.toFixed(2) + 'ms' +
       ', decode: ' + videoDecodeLatency.toFixed(2) + 'ms' +
