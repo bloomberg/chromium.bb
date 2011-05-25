@@ -53,6 +53,7 @@ class GpuVideoDecodeAcceleratorHost : public IPC::Channel::Listener,
     uint32 num_requested_buffers, const gfx::Size& buffer_size, int32 mem_type);
   void OnDismissPictureBuffer(int32 picture_buffer_id);
   void OnCreateDone(int32 decoder_id);
+  void OnInitializeDone();
   void OnPictureReady(int32 picture_buffer_id,
                       int32 bitstream_buffer_id,
                       const gfx::Size& visible_size,

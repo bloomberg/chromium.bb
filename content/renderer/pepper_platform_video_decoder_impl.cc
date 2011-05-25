@@ -51,9 +51,6 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {
 
   // Set a callback to ensure decoder is only initialized after channel is
   // connected and GpuVidoServiceHost message filter is added to channel.
-  //
-  // TODO(vrk): Initialize should take a callback to be called (on the
-  // renderer's thread) when initialization is completed.
   base::Closure initialize = base::Bind(
       &PlatformVideoDecoderImpl::InitializeDecoder,
       base::Unretained(this),
@@ -137,6 +134,10 @@ void PlatformVideoDecoderImpl::DismissPictureBuffer(int32 picture_buffer_id) {
 
 void PlatformVideoDecoderImpl::PictureReady(const media::Picture& picture) {
   client_->PictureReady(picture);
+}
+
+void PlatformVideoDecoderImpl::NotifyInitializeDone() {
+  client_->NotifyInitializeDone();
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfBitstreamBuffer(

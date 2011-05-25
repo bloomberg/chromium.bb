@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_7 "PPB_VideoDecoder(Dev);0.7"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_7
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_8 "PPB_VideoDecoder(Dev);0.8"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_8
 
 // Video decoder interface.
 //
@@ -131,10 +131,12 @@ struct PPB_VideoDecoder_Dev {
   // Parameters:
   //   |instance| pointer to the plugin instance.
   //   |dec_config| the configuration which to use to initialize the decoder.
+  //   |callback| called after initialize is complete.
   //
   // The created decoder is returned as PP_Resource. NULL means failure.
   PP_Resource (*Create)(PP_Instance instance,
-                        PP_VideoConfigElement* dec_config);
+                        PP_VideoConfigElement* dec_config,
+                        struct PP_CompletionCallback callback);
 
   // Tests whether |resource| is a video decoder created through Create
   // function of this interface.

@@ -26,6 +26,7 @@ template <> const char* interface_name<PPB_VideoDecoder_Dev>() {
 
 VideoDecoder::VideoDecoder(const Instance* /* instance */,
                            const std::vector<uint32_t>& /* config */,
+                           CompletionCallback /* callback */,
                            Client* client)
     : client_(client) {
   if (!has_interface<PPB_VideoDecoder_Dev>())

@@ -46,6 +46,8 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
                         OnProvidePictureBuffer)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_CreateDone,
                         OnCreateDone)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_InitializeDone,
+                        OnInitializeDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_PictureReady,
                         OnPictureReady)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_FlushDone,
@@ -173,6 +175,10 @@ void GpuVideoDecodeAcceleratorHost::OnCreateDone(int32 decoder_id) {
       decoder_id_, configs_))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_Initialize) failed";
   }
+}
+
+void GpuVideoDecodeAcceleratorHost::OnInitializeDone() {
+  client_->NotifyInitializeDone();
 }
 
 void GpuVideoDecodeAcceleratorHost::OnPictureReady(

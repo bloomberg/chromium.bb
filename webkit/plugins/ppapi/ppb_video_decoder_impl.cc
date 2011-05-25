@@ -44,7 +44,8 @@ PP_Bool GetConfigs(PP_Instance instance_id,
 }
 
 PP_Resource Create(PP_Instance instance_id,
-                   PP_VideoConfigElement* decoder_config) {
+                   PP_VideoConfigElement* decoder_config,
+                   PP_CompletionCallback callback) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
@@ -52,8 +53,10 @@ PP_Resource Create(PP_Instance instance_id,
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
 
-  if (!decoder->Init(const_cast<PP_VideoConfigElement*>(decoder_config)))
+  if (!decoder->Init(
+      const_cast<PP_VideoConfigElement*>(decoder_config), callback)) {
     return 0;
+  }
 
   return decoder->GetReference();
 }
@@ -212,7 +215,8 @@ bool PPB_VideoDecoder_Impl::GetConfigs(
   return true;
 }
 
-bool PPB_VideoDecoder_Impl::Init(PP_VideoConfigElement* decoder_config) {
+bool PPB_VideoDecoder_Impl::Init(PP_VideoConfigElement* decoder_config,
+                                 PP_CompletionCallback callback) {
   if (!instance())
     return false;
 
@@ -223,6 +227,8 @@ bool PPB_VideoDecoder_Impl::Init(PP_VideoConfigElement* decoder_config) {
   // TODO(vrk): Validate configs before copy.
   CopyToConfigList(decoder_config, &copied);
   platform_video_decoder_->Initialize(copied);
+
+  initialization_callback_ = callback;
 
   return platform_video_decoder_.get()? true : false;
 }
@@ -389,6 +395,15 @@ void PPB_VideoDecoder_Impl::NotifyFlushDone() {
   // Call the callback that was stored to be called when Flush is done.
   PP_CompletionCallback callback = PP_BlockUntilComplete();
   std::swap(callback, flush_callback_);
+  PP_RunCompletionCallback(&callback, PP_OK);
+}
+
+void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
+  if (initialization_callback_.func == NULL)
+    return;
+
+  PP_CompletionCallback callback = PP_BlockUntilComplete();
+  std::swap(callback, initialization_callback_);
   PP_RunCompletionCallback(&callback, PP_OK);
 }
 

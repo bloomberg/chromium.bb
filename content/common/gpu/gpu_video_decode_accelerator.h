@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_
-#define CONTENT_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef CONTENT_COMMON_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_
+#define CONTENT_COMMON_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <vector>
 
@@ -34,6 +34,7 @@ class GpuVideoDecodeAccelerator
       media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
+  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void NotifyEndOfStream() OVERRIDE;
   virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
@@ -77,4 +78,4 @@ class GpuVideoDecodeAccelerator
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };
 
-#endif  // CONTENT_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // CONTENT_COMMON_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_

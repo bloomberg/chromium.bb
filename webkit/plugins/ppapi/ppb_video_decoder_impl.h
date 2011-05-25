@@ -46,7 +46,7 @@ class PPB_VideoDecoder_Impl : public Resource,
                   PP_VideoConfigElement* matching_configs,
                   uint32_t matching_configs_size,
                   uint32_t* num_of_matching_configs);
-  bool Init(PP_VideoConfigElement* dec_config);
+  bool Init(PP_VideoConfigElement* dec_config, PP_CompletionCallback callback);
   bool Decode(PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
               PP_CompletionCallback callback);
   void AssignGLESBuffers(uint32_t no_of_buffers,
@@ -64,6 +64,7 @@ class PPB_VideoDecoder_Impl : public Resource,
       media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
+  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void NotifyEndOfStream() OVERRIDE;
   virtual void NotifyError(
       media::VideoDecodeAccelerator::Error error) OVERRIDE;
@@ -79,6 +80,7 @@ class PPB_VideoDecoder_Impl : public Resource,
   // Factory to produce our callbacks.
   base::ScopedCallbackFactory<PPB_VideoDecoder_Impl> callback_factory_;
 
+  PP_CompletionCallback initialization_callback_;
   PP_CompletionCallback abort_callback_;
   PP_CompletionCallback flush_callback_;
   PP_CompletionCallback bitstream_buffer_callback_;

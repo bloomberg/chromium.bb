@@ -29,7 +29,7 @@ void TestVideoDecoder::QuitMessageLoop() {
 
 std::string TestVideoDecoder::TestCreate() {
   PP_Resource decoder = video_decoder_interface_->Create(
-      instance_->pp_instance(), NULL);
+      instance_->pp_instance(), NULL, PP_MakeCompletionCallback(NULL, NULL));
   if (decoder == 0) {
     return "Error creating the decoder";
   }

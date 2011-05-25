@@ -173,6 +173,11 @@ void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
   }
 }
 
+void GpuVideoDecodeAccelerator::NotifyInitializeDone() {
+  if (!Send(new AcceleratedVideoDecoderHostMsg_InitializeDone(route_id_)))
+    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_InitializeDone) failed";
+}
+
 void GpuVideoDecodeAccelerator::NotifyFlushDone() {
   if (!Send(new AcceleratedVideoDecoderHostMsg_FlushDone(route_id_)))
     LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_FlushDone) failed";

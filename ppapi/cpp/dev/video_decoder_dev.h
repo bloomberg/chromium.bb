@@ -54,10 +54,11 @@ class VideoDecoder : public Resource {
   // Parameters:
   //  |instance| is the pointer to the plug-in instance.
   //  |config| is the configuration on which the decoder should be initialized.
+  //  |callback| will be called when decoder is initialized.
   //  |client| is the pointer to the client object. Ownership of the object is
   //  not transferred and it must outlive the lifetime of this class.
   VideoDecoder(const Instance* instance, const std::vector<uint32_t>& config,
-               Client* client);
+               CompletionCallback callback, Client* client);
   ~VideoDecoder();
 
   // GetConfigs returns supported configurations that are subsets of given
