@@ -17,6 +17,9 @@ MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model)
   DCHECK(menu_model);
 }
 
+MenuModelAdapter::~MenuModelAdapter() {
+}
+
 void MenuModelAdapter::BuildMenu(MenuItemView* menu) {
   DCHECK(menu);
 

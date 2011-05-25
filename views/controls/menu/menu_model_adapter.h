@@ -25,6 +25,7 @@ class MenuModelAdapter : public MenuDelegate {
   // must ensure it exists for the lifetime of the adapter.  The
   // base_id argument is the command id for the first menu item.
   explicit MenuModelAdapter(ui::MenuModel* menu_model);
+  virtual ~MenuModelAdapter();
 
   // Populate a MenuItemView menu with the ui::MenuModel items
   // (including submenus).

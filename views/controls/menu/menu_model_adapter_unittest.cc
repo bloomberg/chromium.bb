@@ -26,6 +26,9 @@ class MenuModelBase : public ui::MenuModel {
                                        last_activation_(-1) {
   }
 
+  virtual ~MenuModelBase() {
+  }
+
   // ui::MenuModel implementation:
 
   virtual bool HasIcons() const OVERRIDE {
@@ -157,6 +160,9 @@ class SubmenuModel : public MenuModelBase {
     items_.push_back(Item(TYPE_COMMAND, "submenu item 1", NULL));
   }
 
+  virtual ~SubmenuModel() {
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SubmenuModel);
 };
@@ -171,6 +177,9 @@ class RootModel : public MenuModelBase {
     items_.push_back(Item(TYPE_SEPARATOR, "", NULL));
     items_.push_back(Item(TYPE_SUBMENU, "submenu 3", submenu_model_.get()));
     items_.push_back(Item(TYPE_RADIO, "radio 4", NULL));
+  }
+
+  virtual ~RootModel() {
   }
 
  private:
