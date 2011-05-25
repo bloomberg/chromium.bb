@@ -72,6 +72,8 @@
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
       '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
+      # crbug.com/83827
+      '-popups.PopupsTest.testUnblockedPopupShowsInHistory',
       'prefs',
       'search_engines',
       'shortcuts',
