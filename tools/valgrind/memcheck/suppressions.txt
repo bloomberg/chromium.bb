@@ -4633,6 +4633,39 @@
    fun:_ZN3net17UDPSocketLibevent15DidCompleteReadEv
    fun:_ZN3net17UDPSocketLibevent11ReadWatcher28OnFileCanReadWithoutBlockingEi
 }
+{
+   bug_83944_a
+   Memcheck:Leak
+   ...
+   fun:_ZN7fileapi23FileSystemOperationTest5SetUpEv
+}
+{
+   bug_83944_b
+   Memcheck:Addr1
+   fun:bcmp
+   fun:_ZNKSs7compareERKSs
+   fun:_ZSteqIcSt11char_traitsIcESaIcEEbRKSbIT_T0_T1_ES8_
+   fun:_ZNK4GURLeqERKS_
+   fun:_ZNSt4listI4GURLSaIS0_EE6removeERKS0_
+   fun:_ZN5quota12_GLOBAL__N_124MockQuotaEvictionHandler19EnsureOriginRemovedERK4GURL
+   fun:_ZN5quota12_GLOBAL__N_124MockQuotaEvictionHandler15EvictOriginDataERK4GURLNS_11StorageTypeEP14CallbackRunnerI6Tuple1INS_15QuotaStatusCodeEEE
+   fun:_ZN5quota28QuotaTemporaryStorageEvictor14OnGotLRUOriginERK4GURL
+   fun:_Z16DispatchToMethodIN5quota28QuotaTemporaryStorageEvictorEMS1_FvRK4GURLES4_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN4base21ScopedCallbackFactoryIN5quota28QuotaTemporaryStorageEvictorEE12CallbackImplIMS2_FvRK4GURLE6Tuple1IS7_EE13RunWithParamsERKSB_
+}
+{
+   bug_83944_c
+   Memcheck:Addr4
+   fun:_ZNKSs7compareERKSs
+   fun:_ZSteqIcSt11char_traitsIcESaIcEEbRKSbIT_T0_T1_ES8_
+   fun:_ZNK4GURLeqERKS_
+   fun:_ZNSt4listI4GURLSaIS0_EE6removeERKS0_
+   fun:_ZN5quota12_GLOBAL__N_124MockQuotaEvictionHandler19EnsureOriginRemovedERK4GURL
+   fun:_ZN5quota12_GLOBAL__N_124MockQuotaEvictionHandler15EvictOriginDataERK4GURLNS_11StorageTypeEP14CallbackRunnerI6Tuple1INS_15QuotaStatusCodeEEE
+   fun:_ZN5quota28QuotaTemporaryStorageEvictor14OnGotLRUOriginERK4GURL
+   fun:_Z16DispatchToMethodIN5quota28QuotaTemporaryStorageEvictorEMS1_FvRK4GURLES4_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN4base21ScopedCallbackFactoryIN5quota28QuotaTemporaryStorageEvictorEE12CallbackImplIMS2_FvRK4GURLE6Tuple1IS7_EE13RunWithParamsERKSB_
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
