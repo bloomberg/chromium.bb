@@ -188,6 +188,7 @@ arna.no, 0
 arpa, 0
 arq.br, 0
 art.br, 0
+art.do, 0
 art.dz, 0
 art.ht, 0
 art.museum, 0
@@ -267,6 +268,7 @@ axis.museum, 0
 az, 0
 az.us, 0
 b.bg, 0
+b.br, 0
 b.se, 0
 ba, 0
 ba.it, 0
@@ -645,6 +647,8 @@ co.me, 0
 co.mu, 0
 co.mw, 0
 co.na, 0
+co.nl, 0
+co.no, 0
 co.pl, 0
 co.pn, 0
 co.pw, 0
@@ -694,9 +698,11 @@ com.cn, 0
 com.co, 0
 com.cu, 0
 com.dm, 0
+com.do, 0
 com.dz, 0
 com.ec, 0
 com.ee, 0
+com.eg, 0
 com.es, 0
 com.fr, 0
 com.ge, 0
@@ -875,7 +881,7 @@ dm, 0
 dn.ua, 0
 dnepropetrovsk.ua, 0
 dni.us, 0
-do, 2
+do, 0
 dolls.museum, 0
 donetsk.ua, 0
 donna.no, 0
@@ -925,9 +931,11 @@ edu.cn, 0
 edu.co, 0
 edu.cu, 0
 edu.dm, 0
+edu.do, 0
 edu.dz, 0
 edu.ec, 0
 edu.ee, 0
+edu.eg, 0
 edu.es, 0
 edu.ge, 0
 edu.gh, 0
@@ -1005,7 +1013,7 @@ educational.museum, 0
 educator.aero, 0
 edunet.tn, 0
 ee, 0
-eg, 2
+eg, 0
 egersund.no, 0
 egyptian.museum, 0
 ehime.jp, 2
@@ -1024,6 +1032,7 @@ elverum.no, 0
 embaixada.st, 0
 embroidery.museum, 0
 emergency.aero, 0
+emp.br, 0
 en.it, 0
 encyclopedic.museum, 0
 enebakk.no, 0
@@ -1059,6 +1068,7 @@ etnedal.no, 0
 eu, 0
 eu.com, 0
 eu.int, 0
+eun.eg, 0
 evenassi.no, 0
 evenes.no, 0
 evje-og-hornnes.no, 0
@@ -1258,6 +1268,7 @@ go.tz, 0
 go.ug, 0
 gob.bo, 0
 gob.cl, 0
+gob.do, 0
 gob.ec, 0
 gob.es, 0
 gob.hn, 0
@@ -1308,9 +1319,11 @@ gov.co, 0
 gov.cu, 0
 gov.cx, 0
 gov.dm, 0
+gov.do, 0
 gov.dz, 0
 gov.ec, 0
 gov.ee, 0
+gov.eg, 0
 gov.ge, 0
 gov.gg, 0
 gov.gh, 0
@@ -1382,6 +1395,7 @@ gov.to, 0
 gov.tt, 0
 gov.tw, 0
 gov.ua, 0
+gov.uk, 1
 gov.vc, 0
 gov.vn, 0
 gov.ws, 0
@@ -2153,7 +2167,9 @@ mil.br, 0
 mil.by, 0
 mil.cn, 0
 mil.co, 0
+mil.do, 0
 mil.ec, 0
+mil.eg, 0
 mil.ge, 0
 mil.gh, 0
 mil.hn, 0
@@ -2213,6 +2229,7 @@ mobi.gp, 0
 mobi.na, 0
 mobi.tt, 0
 mod.gi, 0
+mod.uk, 1
 modalen.no, 0
 modelling.aero, 0
 modena.it, 0
@@ -2290,6 +2307,7 @@ nalchik.ru, 0
 namdalseid.no, 0
 name, 0
 name.az, 0
+name.eg, 0
 name.hr, 0
 name.jo, 0
 name.mk, 0
@@ -2373,8 +2391,10 @@ net.cn, 0
 net.co, 0
 net.cu, 0
 net.dm, 0
+net.do, 0
 net.dz, 0
 net.ec, 0
+net.eg, 0
 net.ge, 0
 net.gg, 0
 net.gn, 0
@@ -2470,6 +2490,7 @@ nic.im, 0
 nic.in, 0
 nic.tj, 0
 nic.tr, 1
+nic.uk, 1
 niepce.museum, 0
 nieruchomosci.pl, 0
 niigata.jp, 2
@@ -2636,9 +2657,11 @@ org.cn, 0
 org.co, 0
 org.cu, 0
 org.dm, 0
+org.do, 0
 org.dz, 0
 org.ec, 0
 org.ee, 0
+org.eg, 0
 org.es, 0
 org.ge, 0
 org.gg, 0
@@ -2837,6 +2860,7 @@ podhale.pl, 0
 podlasie.pl, 0
 pol.dz, 0
 pol.ht, 0
+police.uk, 1
 polkowice.pl, 0
 poltava.ua, 0
 pomorskie.pl, 0
@@ -2978,6 +3002,7 @@ r.bg, 0
 r.se, 0
 ra.it, 0
 rade.no, 0
+radio.br, 0
 radom.pl, 0
 radoy.no, 0
 ragusa.it, 0
@@ -3144,6 +3169,7 @@ schokoladen.museum, 0
 school.museum, 0
 school.na, 0
 schweiz.museum, 0
+sci.eg, 0
 science-fiction.museum, 0
 science.museum, 0
 scienceandhistory.museum, 0
@@ -3224,6 +3250,7 @@ skydiving.aero, 0
 sl, 0
 slask.pl, 0
 slattum.no, 0
+sld.do, 0
 sld.pa, 0
 slg.br, 0
 slupsk.pl, 0
@@ -3374,6 +3401,7 @@ tas.edu.au, 0
 tas.gov.au, 0
 tatarstan.ru, 0
 taxi.aero, 0
+taxi.br, 0
 tc, 0
 tcm.museum, 0
 td, 0
@@ -3385,6 +3413,7 @@ telekommunikation.museum, 0
 television.museum, 0
 tempio-olbia.it, 0
 tempioolbia.it, 0
+teo.br, 0
 teramo.it, 0
 terni.it, 0
 ternopil.ua, 0
@@ -3481,7 +3510,6 @@ trysil.no, 0
 ts.it, 0
 tsaritsyn.ru, 0
 tsk.ru, 0
-tsk.tr, 1
 tt, 0
 tula.ru, 0
 tur.br, 0
@@ -3679,6 +3707,7 @@ watch-and-clock.museum, 0
 watchandclock.museum, 0
 waw.pl, 0
 web.co, 0
+web.do, 0
 web.id, 0
 web.lk, 0
 web.nf, 0
@@ -3711,8 +3740,12 @@ wy.us, 0
 x.bg, 0
 x.se, 0
 xj.cn, 0
+xn--3e0b707e, 0
+xn--45brj9c, 0
+xn--54b7fta0cc, 0
 xn--55qx5d.cn, 0
 xn--55qx5d.hk, 0
+xn--90a3ac, 0
 xn--9dbhblg6di.museum, 0
 xn--andy-ira.no, 0
 xn--aroport-bya.ci, 0
@@ -3753,10 +3786,12 @@ xn--fiqz9s, 0
 xn--fjord-lra.no, 0
 xn--fl-zia.no, 0
 xn--flor-jra.no, 0
+xn--fpcrj9c3d, 0
 xn--frde-gra.no, 0
 xn--frna-woa.no, 0
 xn--frya-hra.no, 0
 xn--fzc2c9e2c, 0
+xn--gecrj9c, 0
 xn--ggaviika-8ya47h.no, 0
 xn--gildeskl-g0a.no, 0
 xn--givuotna-8ya.no, 0
@@ -3766,6 +3801,7 @@ xn--gmq050i.hk, 0
 xn--gmqw5a.hk, 0
 xn--h-2fa.no, 0
 xn--h1aegh.museum, 0
+xn--h2brj9c, 0
 xn--hbmer-xqa.no, 0
 xn--hcesuolo-7ya35b.no, 0
 xn--hery-ira.nordland.no, 0
@@ -3781,6 +3817,7 @@ xn--hylandet-54a.no, 0
 xn--indery-fya.no, 0
 xn--io0a7i.cn, 0
 xn--io0a7i.hk, 0
+xn--j1amh, 0
 xn--j6w193g, 0
 xn--jlster-bya.no, 0
 xn--jrpeland-54a.no, 0
@@ -3806,6 +3843,7 @@ xn--lcvr32d.hk, 0
 xn--ldingen-q1a.no, 0
 xn--leagaviika-52b.no, 0
 xn--lesund-hua.no, 0
+xn--lgbbat1ad8j, 0
 xn--lgrd-poac.no, 0
 xn--lhppi-xqa.no, 0
 xn--linds-pra.no, 0
@@ -3818,11 +3856,21 @@ xn--lten-gra.no, 0
 xn--lury-ira.no, 0
 xn--mely-ira.no, 0
 xn--merker-kua.no, 0
+xn--mgb2ddes, 0
+xn--mgb9awbf, 0
+xn--mgba3a4f16a, 0
 xn--mgba3a4f16a.ir, 0
+xn--mgba3a4fra, 0
 xn--mgba3a4fra.ir, 0
 xn--mgbaam7a8h, 0
 xn--mgbayh7gpa, 0
+xn--mgbbh1a71e, 0
+xn--mgbc0a9azcg, 0
+xn--mgberp4a5d4a87g, 0
 xn--mgberp4a5d4ar, 0
+xn--mgbqly7c0a67fbc, 0
+xn--mgbqly7cvafr, 0
+xn--mgbtf8fl, 0
 xn--mjndalen-64a.no, 0
 xn--mk0axi.hk, 0
 xn--mlatvuopmi-s4a.no, 0
@@ -3836,6 +3884,8 @@ xn--mtta-vrjjat-k7af.no, 0
 xn--muost-0qa.no, 0
 xn--mxtq1m.hk, 0
 xn--nmesjevuemie-tcba.no, 0
+xn--nnx388a, 0
+xn--node, 0
 xn--nry-yla5g.no, 0
 xn--nttery-byae.no, 0
 xn--nvuotna-hwa.no, 0
@@ -3843,6 +3893,7 @@ xn--o3cw4h, 0
 xn--od0alg.cn, 0
 xn--od0alg.hk, 0
 xn--od0aq3b.hk, 0
+xn--ogbpf8fl, 0
 xn--oppegrd-ixa.no, 0
 xn--ostery-fya.no, 0
 xn--osyro-wua.no, 0
@@ -3868,6 +3919,7 @@ xn--rsta-fra.no, 0
 xn--ryken-vua.no, 0
 xn--ryrvik-bya.no, 0
 xn--s-1fa.no, 0
+xn--s9brj9c, 0
 xn--sandnessjen-ogb.no, 0
 xn--sandy-yua.no, 0
 xn--seral-lra.no, 0
@@ -3923,6 +3975,7 @@ xn--wcvs22d.hk, 0
 xn--wgbh1c, 0
 xn--wgbl6a, 0
 xn--xkc2al3hye2a, 0
+xn--xkc2dl3a5ee0h, 0
 xn--yer-zna.no, 0
 xn--yfro4i67o, 0
 xn--ygarden-p1a.no, 0
@@ -3930,6 +3983,7 @@ xn--ygbi2ammx, 0
 xn--ystre-slidre-ujb.no, 0
 xn--zf0ao64a.tw, 0
 xn--zf0avx.hk, 0
+xxx, 0
 xz.cn, 0
 y.bg, 0
 y.se, 0
