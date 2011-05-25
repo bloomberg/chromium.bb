@@ -63,7 +63,6 @@
         '../third_party/skia/gpu/include/GrGLConfig_chrome.h',
         '../third_party/skia/gpu/include/GrGLIndexBuffer.h',
         '../third_party/skia/gpu/include/GrGLInterface.h',
-        '../third_party/skia/gpu/include/GrGLPlatformIncludes.h',
         '../third_party/skia/gpu/include/GrGLTexture.h',
         '../third_party/skia/gpu/include/GrGLVertexBuffer.h',
         '../third_party/skia/gpu/include/GrGlyph.h',

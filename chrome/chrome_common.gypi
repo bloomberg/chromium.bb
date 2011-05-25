@@ -186,7 +186,7 @@
         'common/extensions/extension_unpacker.cc',
         'common/extensions/extension_unpacker.h',
         'common/extensions/file_browser_handler.cc',
-        'common/extensions/file_browser_hanlder.h',
+        'common/extensions/file_browser_handler.h',
         'common/extensions/update_manifest.cc',
         'common/extensions/update_manifest.h',
         'common/extensions/url_pattern.cc',

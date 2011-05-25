@@ -120,7 +120,7 @@
         'common/gpu/gpu_info.cc',
         'common/gpu/gpu_info.h',
         'common/gpu/gpu_messages.h',
-        'common/gpu/gpu_process_launch_casues.h',
+        'common/gpu/gpu_process_launch_causes.h',
         'common/gpu/gpu_surface_stub.cc',
         'common/gpu/gpu_surface_stub.h',
         'common/gpu/gpu_video_decode_accelerator.cc',

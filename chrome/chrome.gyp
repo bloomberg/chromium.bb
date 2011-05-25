@@ -762,7 +762,6 @@
         'browser/sync/notifier/sync_notifier.h',
         'browser/sync/notifier/sync_notifier_factory.h',
         'browser/sync/notifier/sync_notifier_factory.cc',
-        'browser/sync/notifier/sync_notifier_callback.h',
       ],
       'include_dirs': [
         '..',
