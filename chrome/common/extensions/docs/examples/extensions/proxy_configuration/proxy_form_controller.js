@@ -100,7 +100,9 @@ ProxyFormController.WrappedProxyConfig;
  * @static
  */
 ProxyFormController.getPersistedSettings = function() {
-  var result = JSON.parse(window.localStorage['proxyConfig']);
+  var result = null;
+  if (window.localStorage['proxyConfig'] !== undefined)
+    result = JSON.parse(window.localStorage['proxyConfig']);
   return result ? result : null;
 };
 
@@ -353,7 +355,8 @@ ProxyFormController.prototype = {
   },
 
   /**
-   * Handles the response from 'proxy.settings.get' for regular settings.
+   * Handles the response from 'proxy.settings.get' for regular
+   * settings.
    *
    * @param {ProxyFormController.WrappedProxyConfig} c The proxy data and
    *     extension's level of control thereof.
@@ -370,7 +373,8 @@ ProxyFormController.prototype = {
   },
 
   /**
-   * Handles the response from 'proxy.settings.get' for incognito settings.
+   * Handles the response from 'proxy.settings.get' for incognito
+   * settings.
    *
    * @param {ProxyFormController.WrappedProxyConfig} c The proxy data and
    *     extension's level of control thereof.
@@ -505,7 +509,7 @@ ProxyFormController.prototype = {
       this.config_.regular = this.generateProxyConfig_();
 
     chrome.experimental.proxy.settings.set(
-        {value: this.config_.regular, incognito: false},
+        {value: this.config_.regular, scope: 'regular'},
         this.callbackForRegularSettings_.bind(this));
   },
 
@@ -521,9 +525,10 @@ ProxyFormController.prototype = {
       return;
     }
     if (this.config_.incognito) {
-      chrome.experimental.proxy.settings.set(
-          {value: this.config_.incognito, incognito: true},
-          this.callbackForIncognitoSettings_.bind(this));
+      // TODO(battre): change incognito value once available
+      // chrome.experimental.proxy.settings.set(
+      //     {value: this.config_.incognito, scope: 'incognito'},
+      //     this.callbackForIncognitoSettings_.bind(this));
     } else {
       ProxyFormController.setPersistedSettings(this.config_);
       this.generateAlert_(chrome.i18n.getMessage('successfullySetProxy'));

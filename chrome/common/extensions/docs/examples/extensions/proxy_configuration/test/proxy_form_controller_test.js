@@ -136,9 +136,8 @@ var proxyform = new Test.Unit.Runner({
   },
 
   // On instantiation, ProxyFormController should read the current state
-  // from `chrome.experimental.getCurrentProxySettings`, and react
-  // accordingly.  Let's see if that happens with the next four sets of
-  // assertsions.
+  // from `chrome.experimental.proxy.get`, and react accordingly.
+  // Let's see if that happens with the next four sets of assertsions.
   testSetupFormSystem: function() {
     chrome.experimental.proxy.settings.get = mockFunctionFactory({
       value: {mode: 'system'},

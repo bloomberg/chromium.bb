@@ -35,6 +35,8 @@ chrome.test.runTests([
       'value':true
     }, chrome.test.callbackPass());
   },
+  // TODO(battre): re-enable when incognito is available again.
+  /*
   function changeIncognitoOnly() {
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': false,
@@ -46,6 +48,7 @@ chrome.test.runTests([
       'incognito': true
     }, chrome.test.callbackPass());
   },
+  */
   function changeDefaultOnly() {
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': false,
@@ -55,6 +58,8 @@ chrome.test.runTests([
       'value': false
     }, chrome.test.callbackPass());
   },
+  // TODO(battre): re-enable when incognito is available again.
+  /*
   function changeIncognitoOnlyBack() {
     // Change the incognito setting back to true so that we get an event when
     // clearing the value.
@@ -78,6 +83,7 @@ chrome.test.runTests([
       'incognito': true
     }, chrome.test.callbackPass());
   },
+  */
   function clearDefault() {
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': false,

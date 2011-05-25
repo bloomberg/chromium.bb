@@ -218,7 +218,7 @@ var config = {
   }
 };
 chrome.experimental.proxy.settings.set(
-    {'value': config, 'incognito': false},
+    {value: config, scope: 'regular'},
     function() {});
 </pre>
 
@@ -238,7 +238,7 @@ var config = {
   }
 };
 chrome.experimental.proxy.settings.set(
-    {'value': config, 'incognito': false},
+    {value: config, scope: 'regular'},
     function() {});
 </pre>
 

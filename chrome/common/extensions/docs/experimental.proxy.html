@@ -563,7 +563,7 @@ apply to regular and incognito windows.
   }
 };
 chrome.experimental.proxy.settings.set(
-    {'value': config, 'incognito': false},
+    {value: config, scope: 'regular'},
     function() {});
 </pre>
 
@@ -582,7 +582,7 @@ The following code sets a custom pac script.
   }
 };
 chrome.experimental.proxy.settings.set(
-    {'value': config, 'incognito': false},
+    {value: config, scope: 'regular'},
     function() {});
 </pre>
 

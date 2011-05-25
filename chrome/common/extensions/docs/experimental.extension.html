@@ -585,7 +585,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>What setting to clear.</dd>
+          <dd>What preference to clear.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -602,14 +602,14 @@
               <div>
                 <div>
           <dt>
-            <var>incognito</var>
+            <var>scope</var>
               <em>
 
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -618,8 +618,8 @@
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>boolean</span>
-                        <span style="display: none; "></span>
+                        <span>string</span>
+                        <span>["regular"]</span>
                       </span>
                     </span>
                   )
@@ -630,7 +630,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to clear the setting for the incognito session only (default false).</dd>
+          <dd>Where to clear the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1464,14 +1464,14 @@
               </div><div>
                 <div>
           <dt>
-            <var>incognito</var>
+            <var>scope</var>
               <em>
 
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1480,8 +1480,8 @@
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>boolean</span>
-                        <span style="display: none; "></span>
+                        <span>string</span>
+                        <span>["regular"]</span>
                       </span>
                     </span>
                   )
@@ -1492,7 +1492,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to modify the setting for the incognito session only (default false).</dd>
+          <dd>Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

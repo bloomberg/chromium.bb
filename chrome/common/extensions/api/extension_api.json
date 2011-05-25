@@ -5382,10 +5382,11 @@
                     "description": "The value of the preference. <br>Note that every preference has a specific value type, which is described together with the preference. An extension should <em>not</em> set a preference value of a different type.",
                     "type": "any"
                   },
-                  "incognito": {
-                    "type": "boolean",
+                  "scope": {
+                    "type": "string",
+                    "enum": ["regular"],
                     "optional": true,
-                    "description": "Whether to modify the setting for the incognito session only (default false)."
+                    "description": "Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere)."
                   }
                 }
               },
@@ -5406,12 +5407,13 @@
               {
                 "name": "details",
                 "type": "object",
-                "description": "What setting to clear.",
+                "description": "What preference to clear.",
                 "properties": {
-                  "incognito": {
-                    "type": "boolean",
+                  "scope": {
+                    "type": "string",
+                    "enum": ["regular"],
                     "optional": true,
-                    "description": "Whether to clear the setting for the incognito session only (default false)."
+                    "description": "Where to clear the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere)."
                   }
                 }
               },

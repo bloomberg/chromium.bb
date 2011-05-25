@@ -40,12 +40,12 @@ chrome.test.runTests([
   },
   function setIndividualProxies() {
     chrome.experimental.proxy.settings.set(
-        {'value': config, 'incognito': false},
+        {'value': config, 'scope': 'regular'},
         chrome.test.callbackPass());
   },
   function clearProxies() {
     chrome.experimental.proxy.settings.clear(
-        {'incognito': false},
+        {'scope': 'regular'},
         chrome.test.callbackPass());
   }
 ]);

@@ -38,7 +38,8 @@ const char kIncognitoSpecific[] = "incognitoSpecific";
 const char kLevelOfControl[] = "levelOfControl";
 const char kValue[] = "value";
 
-const char kOnPrefChangeFormat[] = "experimental.preferences.%s.onChange";
+const char kOnPrefChangeFormat[] =
+    "experimental.preferences.%s.onChange";
 
 const char kIncognitoErrorMessage[] =
     "You do not have permission to access incognito preferences.";
@@ -346,8 +347,10 @@ bool SetPreferenceFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(details->Get(kValue, &value));
 
   bool incognito = false;
-  if (details->HasKey(kIncognito))
-    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
+
+  // TODO(battre): enable incognito preferences again.
+  // if (details->HasKey(kIncognito))
+  //   EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
 
   if (incognito && !include_incognito()) {
     error_ = kIncognitoErrorMessage;
@@ -395,8 +398,10 @@ bool ClearPreferenceFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
   bool incognito = false;
-  if (details->HasKey(kIncognito))
-    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
+
+  // TODO(battre): enable incognito preferences again.
+  // if (details->HasKey(kIncognito))
+  //   EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
 
   // We don't check incognito permissions here, as an extension should be always
   // allowed to clear its own settings.

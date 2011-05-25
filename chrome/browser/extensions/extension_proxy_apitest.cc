@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,8 +190,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
 }
 
 // Tests setting values only for incognito mode
+// TODO(battre): re-enable when incognito is supported again
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-    ProxyFixedIndividualIncognitoOnly) {
+    DISABLED_ProxyFixedIndividualIncognitoOnly) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -216,8 +217,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 }
 
 // Tests setting values also for incognito mode
+// TODO(battre): re-enable when incognito is supported again
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-    ProxyFixedIndividualIncognitoAlso) {
+    DISABLED_ProxyFixedIndividualIncognitoAlso) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

@@ -1561,7 +1561,7 @@
         "test\/proxy_form_controller_test.js",
         "test\/unittest.css"
       ],
-      "source_hash": "7b3ff4599334eaa9f50aa70940bb5dead970665f",
+      "source_hash": "d4a52c15b1e5c8be5b26fe9305cf4aae0f2b0cc3",
       "zip_path": "examples\/extensions\/proxy_configuration.zip"
     },
     {
