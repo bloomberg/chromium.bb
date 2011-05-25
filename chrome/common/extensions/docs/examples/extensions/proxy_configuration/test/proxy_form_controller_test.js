@@ -62,13 +62,13 @@ var proxyform = new Test.Unit.Runner({
          settings: {
            get: mockFunctionFactory({
                   value: {mode: 'system' },
-                  levelOfControl: 'ControllableByThisExtension' }),
+                  levelOfControl: 'controllable_by_this_extension' }),
            clear: mockFunctionFactory({
                     value: {mode: 'system' },
-                    levelOfControl: 'ControllableByThisExtension' }),
+                    levelOfControl: 'controllable_by_this_extension' }),
            set: mockFunctionFactory({
                   value: {mode: 'system' },
-                  levelOfControl: 'ControllableByThisExtension' })
+                  levelOfControl: 'controllable_by_this_extension' })
         }
       }
     };
@@ -141,7 +141,7 @@ var proxyform = new Test.Unit.Runner({
   testSetupFormSystem: function() {
     chrome.proxy.settings.get = mockFunctionFactory({
       value: {mode: 'system'},
-      levelOfControl: 'ControllableByThisExtension'
+      levelOfControl: 'controllable_by_this_extension'
     });
 
     fixture.innerHTML = baselineHTML;
@@ -160,7 +160,7 @@ var proxyform = new Test.Unit.Runner({
   testSetupFormDirect: function() {
     chrome.proxy.settings.get =
         mockFunctionFactory({value: {mode: 'direct'},
-             levelOfControl: 'ControllableByThisExtension'}, true);
+             levelOfControl: 'controllable_by_this_extension'}, true);
 
     fixture.innerHTML = baselineHTML;
     this.controller_ = new ProxyFormController('proxyForm');
@@ -178,7 +178,7 @@ var proxyform = new Test.Unit.Runner({
   testSetupFormPac: function() {
     chrome.proxy.settings.get =
         mockFunctionFactory({value: {mode: 'pac_script' },
-             levelOfControl: 'ControllableByThisExtension'});
+             levelOfControl: 'controllable_by_this_extension'});
 
     fixture.innerHTML = baselineHTML;
     this.controller_ = new ProxyFormController('proxyForm');
@@ -196,7 +196,7 @@ var proxyform = new Test.Unit.Runner({
   testSetupFormFixed: function() {
     chrome.proxy.settings.get =
         mockFunctionFactory({value: {mode: 'fixed_servers' },
-             levelOfControl: 'ControllableByThisExtension'});
+             levelOfControl: 'controllable_by_this_extension'});
 
     fixture.innerHTML = baselineHTML;
     this.controller_ = new ProxyFormController('proxyForm');

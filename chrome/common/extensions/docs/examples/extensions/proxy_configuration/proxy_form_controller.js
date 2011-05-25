@@ -76,10 +76,10 @@ ProxyFormController.WindowTypes = {
  * @enum {string}
  */
 ProxyFormController.LevelOfControl = {
-  NOT_CONTROLLABLE: 'NotControllable',
-  OTHER_EXTENSION: 'ControlledByOtherExtension',
-  AVAILABLE: 'ControllableByThisExtension',
-  CONTROLLING: 'ControlledByThisExtension'
+  NOT_CONTROLLABLE: 'not_controllable',
+  OTHER_EXTENSION: 'controlled_by_other_extension',
+  AVAILABLE: 'controllable_by_this_extension',
+  CONTROLLING: 'controlled_by_this_extension'
 };
 
 /**

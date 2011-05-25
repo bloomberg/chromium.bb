@@ -13,11 +13,11 @@
   },
   "errorNoExtensionAccess": {
     "message": "Sorry. This browser's proxy settings cannot be controlled via extensions.",
-    "description": "Error message displayed when `levelOfControl` is 'NotControllable'."
+    "description": "Error message displayed when `levelOfControl` is 'not_controllable'."
   },
   "errorOtherExtensionControls": {
     "message": "Sorry. This browser's proxy settings are being controlled by another extension. Please visit chrome://extensions for details.",
-    "description": "Error message displayed when `levelOfControl` is 'ControlledByOtherExtensions'."
+    "description": "Error message displayed when `levelOfControl` is 'controlled_by_other_extensions'."
   },
   "errorSettingRegularProxy": {
     "message": "Setting regular proxy settings failed.  Sorry!",

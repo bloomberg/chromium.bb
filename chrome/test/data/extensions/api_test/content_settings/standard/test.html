@@ -13,14 +13,14 @@ chrome.test.runTests([
     cs.misc.blockThirdPartyCookies.get(
         {}, 
         expect({ 'value': true,
-                 'levelOfControl': "ControllableByThisExtension" },
+                 'levelOfControl': "controllable_by_this_extension" },
                "third-party cookies should be blocked"));
   },
   function getEnableReferrers() {
     cs.misc.enableReferrers.get(
         {},
         expect({ 'value': false,
-                 'levelOfControl': "ControllableByThisExtension" },
+                 'levelOfControl': "controllable_by_this_extension" },
                "referrers should be disabled"));
   },
   function setBlockThirdPartyCookies() {

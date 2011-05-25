@@ -5353,9 +5353,9 @@
                         "type": "any"
                       },
                       "levelOfControl": {
-                        "description": "One of<br><var>NotControllable</var>: cannot be controlled by any extension<br><var>ControlledByOtherExtensions</var>: controlled by extensions with higher precedence<br><var>ControllableByThisExtension</var>: can be controlled by this extension<br><var>ControlledByThisExtension</var>: controlled by this extension",
+                        "description": "One of<br><var>not_controllable</var>: cannot be controlled by any extension<br><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence<br><var>controllable_by_this_extension</var>: can be controlled by this extension<br><var>controlled_by_this_extension</var>: controlled by this extension",
                         "type": "string",
-                        "enum": ["NotControllable", "ControlledByOtherExtensions", "ControllableByThisExtension", "ControlledByThisExtension"]
+                        "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]
                       },
                       "incognitoSpecific": {
                         "description": "Whether the effective value is specific to the incognito session.<br>This property will <em>only</em> be present if the <var>incognito</var> property in the <var>details</var> parameter of <code>get()</code> was true.",
@@ -5441,9 +5441,9 @@
                     "type": "any"
                   },
                   "levelOfControl": {
-                    "description": "One of<br><var>NotControllable</var>: cannot be controlled by any extension<br><var>ControlledByOtherExtensions</var>: controlled by extensions with higher precedence<br><var>ControllableByThisExtension</var>: can be controlled by this extension<br><var>ControlledByThisExtension</var>: controlled by this extension",
+                    "description": "One of<br><var>not_controllable</var>: cannot be controlled by any extension<br><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence<br><var>controllable_by_this_extension</var>: can be controlled by this extension<br><var>controlled_by_this_extension</var>: controlled by this extension",
                     "type": "string",
-                    "enum": ["NotControllable", "ControlledByOtherExtensions", "ControllableByThisExtension", "ControlledByThisExtension"]
+                    "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]
                   },
                   "incognitoSpecific": {
                     "description": "Whether the value that has changed is specific to the incognito session.<br>This property will <em>only</em> be present if the user has enabled the extension in incognito mode.",

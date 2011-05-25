@@ -47,7 +47,7 @@ chrome.test.runTests([
     chrome.proxy.settings.get(
         {'incognito': false},
         expect({ 'value': configExpected,
-                 'levelOfControl': "ControlledByThisExtension" },
+                 'levelOfControl': "controlled_by_this_extension" },
                "invalid proxy settings"));
   },
   function verifyIncognito() {
@@ -55,7 +55,7 @@ chrome.test.runTests([
         {'incognito': true},
         expect({ 'value': configExpected,
                  'incognitoSpecific': false,
-                 'levelOfControl': "ControlledByThisExtension" },
+                 'levelOfControl': "controlled_by_this_extension" },
                "invalid proxy settings"));
   }
 ]);

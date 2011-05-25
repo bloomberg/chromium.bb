@@ -29,10 +29,10 @@ struct PrefMappingEntry {
   const char* permission;
 };
 
-const char kNotControllable[] = "NotControllable";
-const char kControlledByOtherExtensions[] = "ControlledByOtherExtensions";
-const char kControllableByThisExtension[] = "ControllableByThisExtension";
-const char kControlledByThisExtension[] = "ControlledByThisExtension";
+const char kNotControllable[] = "not_controllable";
+const char kControlledByOtherExtensions[] = "controlled_by_other_extensions";
+const char kControllableByThisExtension[] = "controllable_by_this_extension";
+const char kControlledByThisExtension[] = "controlled_by_this_extension";
 
 const char kIncognito[] = "incognito";
 const char kIncognitoSpecific[] = "incognitoSpecific";
@@ -389,6 +389,12 @@ bool SetPreferenceFunction::RunImpl() {
       error_ = "Can't modify regular settings from an incognito context.";
       return false;
     }
+  }
+
+  if (scope == extension_prefs_scope::kIncognitoSessionOnly &&
+      !profile_->HasOffTheRecordProfile()) {
+    error_ = kIncognitoSessionOnlyErrorMessage;
+    return false;
   }
 
   if (scope == extension_prefs_scope::kIncognitoSessionOnly &&

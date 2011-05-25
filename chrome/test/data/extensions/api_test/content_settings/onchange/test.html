@@ -24,12 +24,12 @@ chrome.test.runTests([
     // defined should fire two events.
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': true,
-      'levelOfControl': 'ControlledByThisExtension'
+      'levelOfControl': 'controlled_by_this_extension'
     },
     {
       'value': true,
       'incognitoSpecific': false,
-      'levelOfControl': 'ControlledByThisExtension'
+      'levelOfControl': 'controlled_by_this_extension'
     }]);
     cs.misc.blockThirdPartyCookies.set({
       'value':true
@@ -39,7 +39,7 @@ chrome.test.runTests([
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': false,
       'incognitoSpecific': true,
-      'levelOfControl': 'ControlledByThisExtension'
+      'levelOfControl': 'controlled_by_this_extension'
     }]);
     cs.misc.blockThirdPartyCookies.set({
       'value': false,
@@ -49,7 +49,7 @@ chrome.test.runTests([
   function changeDefaultOnly() {
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': false,
-      'levelOfControl': 'ControlledByThisExtension'
+      'levelOfControl': 'controlled_by_this_extension'
     }]);
     cs.misc.blockThirdPartyCookies.set({
       'value': false
@@ -61,7 +61,7 @@ chrome.test.runTests([
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': true,
       'incognitoSpecific': true,
-      'levelOfControl': 'ControlledByThisExtension'
+      'levelOfControl': 'controlled_by_this_extension'
     }]);
     cs.misc.blockThirdPartyCookies.set({
       'value': true,
@@ -72,7 +72,7 @@ chrome.test.runTests([
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': false,
       'incognitoSpecific': false,
-      'levelOfControl': 'ControlledByThisExtension'
+      'levelOfControl': 'controlled_by_this_extension'
     }]);
     cs.misc.blockThirdPartyCookies.clear({
       'scope': 'incognito_persistent'
@@ -81,12 +81,12 @@ chrome.test.runTests([
   function clearDefault() {
     listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
       'value': false,
-      'levelOfControl': 'ControllableByThisExtension'
+      'levelOfControl': 'controllable_by_this_extension'
     },
     {
       'value': false,
       'incognitoSpecific': false,
-      'levelOfControl': 'ControllableByThisExtension'
+      'levelOfControl': 'controllable_by_this_extension'
     }]);
     cs.misc.blockThirdPartyCookies.clear({}, chrome.test.callbackPass());
   }
