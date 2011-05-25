@@ -30,6 +30,8 @@
       'autofill',
       # crbug.com/83655
       '-autofill.AutofillTest.testAutofillInvalid',
+      # crbug.com/83686
+      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       # crbug.com/77113 - M13 feature.
       '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
       # crbug.com/81271
