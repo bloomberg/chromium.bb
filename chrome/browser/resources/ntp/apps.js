@@ -705,11 +705,13 @@ var apps = (function() {
       img.onload = function() { this.loadedImages++; }.bind(this);
       img.src = app['icon_big'];
 
-      var settingsButton = div.appendChild(new cr.ui.ContextMenuButton);
-      settingsButton.className = 'app-settings';
-      settingsButton.title = localStrings.getString('appsettings');
-
-      addContextMenu(div, app);
+      // User cannot change launch options or uninstall component extension.
+      if (!app['is_component']) {
+        var settingsButton = div.appendChild(new cr.ui.ContextMenuButton);
+        settingsButton.className = 'app-settings';
+        settingsButton.title = localStrings.getString('appsettings');
+        addContextMenu(div, app);
+      }
 
       return div;
     },
@@ -728,7 +730,10 @@ var apps = (function() {
       a.className = 'item';
       span.appendChild(a);
 
-      addContextMenu(span, app);
+      // User cannot change launch options or uninstall component extension.
+      if (!app['is_component']) {
+        addContextMenu(span, app);
+      }
 
       return span;
     },
@@ -744,7 +749,10 @@ var apps = (function() {
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
 
-      addContextMenu(a, app);
+      // User cannot change launch options or uninstall component extension.
+      if (!app['is_component']) {
+        addContextMenu(a, app);
+      }
 
       return a;
     },

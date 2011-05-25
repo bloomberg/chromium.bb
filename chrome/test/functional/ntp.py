@@ -19,6 +19,7 @@ class NTPTest(pyauto.PyUITest):
   ]
   if pyauto.PyUITest.IsChromeOS():
     _EXPECTED_DEFAULT_APPS.append({u'name': u'Get Started'})
+    _EXPECTED_DEFAULT_APPS.append({u'name': u'File Manager'})
 
   # Default menu and thumbnail mode preferences are set in
   # ShownSectionsHandler::RegisterUserPrefs.

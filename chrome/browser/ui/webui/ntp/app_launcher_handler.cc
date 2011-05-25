@@ -47,6 +47,8 @@ const char* kPingLaunchAppByID = "record-app-launch-by-id";
 const char* kPingLaunchWebStore = "record-webstore-launch";
 const char* kPingLaunchAppByURL = "record-app-launch-by-url";
 
+const char* kChromeWebStoreUrl = "https://chrome.google.com/webstore";
+
 const UnescapeRule::Type kUnescapeRules =
     UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS;
 
@@ -103,6 +105,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetInteger("launch_type",
       prefs->GetLaunchType(extension->id(),
                                      ExtensionPrefs::LAUNCH_DEFAULT));
+  value->SetBoolean("is_component",
+      extension->location() == Extension::COMPONENT);
 
   int app_launch_index = prefs->GetAppLaunchIndex(extension->id());
   if (app_launch_index == -1) {
@@ -221,9 +225,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   const ExtensionList* extensions = extensions_service_->extensions();
   ExtensionList::const_iterator it;
   for (it = extensions->begin(); it != extensions->end(); ++it) {
-    // Don't include the WebStore and other component apps.
+    // Don't include the WebStore.
     // The WebStore launcher gets special treatment in ntp/apps.js.
-    if ((*it)->is_app() && (*it)->location() != Extension::COMPONENT) {
+    if ((*it)->is_app() &&
+        (*it)->GetFullLaunchURL().spec() != kChromeWebStoreUrl) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
       list->Append(app_info);
@@ -232,7 +237,8 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
   extensions = extensions_service_->disabled_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {
-    if ((*it)->is_app() && (*it)->location() != Extension::COMPONENT) {
+    if ((*it)->is_app() &&
+        (*it)->GetFullLaunchURL().spec() != kChromeWebStoreUrl) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
       list->Append(app_info);
