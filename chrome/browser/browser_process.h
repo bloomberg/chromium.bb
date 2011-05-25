@@ -24,6 +24,7 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 }
 
+class BackgroundModeManager;
 class ChromeNetLog;
 class DevToolsManager;
 class DownloadRequestLimiter;
@@ -39,6 +40,7 @@ class PrefService;
 class ProfileManager;
 class ResourceDispatcherHost;
 class SidebarManager;
+class StatusTray;
 class TabCloseableStateWatcher;
 class ThumbnailGenerator;
 class WatchDogThread;
@@ -202,6 +204,14 @@ class BrowserProcess {
 
   // Returns the object that watches for changes in the closeable state of tab.
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher() = 0;
+
+  // Returns the object that manages background applications.
+  virtual BackgroundModeManager* background_mode_manager() = 0;
+
+  // Returns the StatusTray, which provides an API for displaying status icons
+  // in the system status tray. Returns NULL if status icons are not supported
+  // on this platform (or this is a unit test).
+  virtual StatusTray* status_tray() = 0;
 
   // Returns an object which handles communication with the SafeBrowsing
   // client-side detection servers.

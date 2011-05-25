@@ -86,7 +86,8 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
 }
 
 void BackgroundModeManager::DisplayAppInstalledNotification(
-    const Extension* extension) {
+    const Extension* extension,
+    Profile* profile) {
   // TODO(atwilson): Display a platform-appropriate notification here.
   // http://crbug.com/74970
 }

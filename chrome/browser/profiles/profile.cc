@@ -294,10 +294,6 @@ class OffTheRecordProfileImpl : public Profile,
     return GetOriginalProfile()->GetExtensionService();
   }
 
-  virtual StatusTray* GetStatusTray() {
-    return GetOriginalProfile()->GetStatusTray();
-  }
-
   virtual UserScriptMaster* GetUserScriptMaster() {
     return GetOriginalProfile()->GetUserScriptMaster();
   }

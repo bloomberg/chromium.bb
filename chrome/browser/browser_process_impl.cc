@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/automation/automation_provider_list.h"
+#include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
@@ -55,6 +56,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
+#include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
@@ -637,6 +639,20 @@ TabCloseableStateWatcher* BrowserProcessImpl::tab_closeable_state_watcher() {
   return tab_closeable_state_watcher_.get();
 }
 
+BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!background_mode_manager_.get())
+    CreateBackgroundModeManager();
+  return background_mode_manager_.get();
+}
+
+StatusTray* BrowserProcessImpl::status_tray() {
+  DCHECK(CalledOnValidThread());
+  if (!status_tray_.get())
+    CreateStatusTray();
+  return status_tray_.get();
+}
+
 safe_browsing::ClientSideDetectionService*
     BrowserProcessImpl::safe_browsing_detection_service() {
   DCHECK(CalledOnValidThread());
@@ -987,6 +1003,17 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
   DCHECK(tab_closeable_state_watcher_.get() == NULL);
   tab_closeable_state_watcher_.reset(TabCloseableStateWatcher::Create());
+}
+
+void BrowserProcessImpl::CreateBackgroundModeManager() {
+  DCHECK(background_mode_manager_.get() == NULL);
+  background_mode_manager_.reset(
+      new BackgroundModeManager(CommandLine::ForCurrentProcess()));
+}
+
+void BrowserProcessImpl::CreateStatusTray() {
+  DCHECK(status_tray_.get() == NULL);
+  status_tray_.reset(StatusTray::Create());
 }
 
 void BrowserProcessImpl::CreatePrintPreviewTabController() {
