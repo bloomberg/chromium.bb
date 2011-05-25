@@ -5,6 +5,7 @@
 #include <atlbase.h>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
@@ -168,7 +169,7 @@ void AccessibleContainsAccessible(
     if (child_count == 0)
       continue;
 
-    auto_ptr<VARIANT> child_array(new VARIANT[child_count]);
+    scoped_array<VARIANT> child_array(new VARIANT[child_count]);
     LONG obtained_count = 0;
     hr = AccessibleChildren(
         accessible, 0, child_count, child_array.get(), &obtained_count);
