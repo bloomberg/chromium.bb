@@ -66,8 +66,9 @@ class ExtensionPrefValueMapObserverMock
 };
 
 TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValue) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   EXPECT_EQ("val1", GetValue(kPref1, false));
 };
 
@@ -78,20 +79,21 @@ TEST_F(ExtensionPrefValueMapTest, GetNotSetPrefValue) {
 
 // Make sure the last-installed extension wins for each preference.
 TEST_F(ExtensionPrefValueMapTest, Override) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
 
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
-  epvm_.SetExtensionPref(kExt2, kPref1, false, CreateVal("val2"));
-  epvm_.SetExtensionPref(kExt3, kPref1, false, CreateVal("val3"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
+  epvm_.SetExtensionPref(kExt3, kPref1, kRegular, CreateVal("val3"));
 
-  epvm_.SetExtensionPref(kExt1, kPref2, false, CreateVal("val4"));
-  epvm_.SetExtensionPref(kExt2, kPref2, false, CreateVal("val5"));
+  epvm_.SetExtensionPref(kExt1, kPref2, kRegular, CreateVal("val4"));
+  epvm_.SetExtensionPref(kExt2, kPref2, kRegular, CreateVal("val5"));
 
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val6"));
-  epvm_.SetExtensionPref(kExt1, kPref2, false, CreateVal("val7"));
-  epvm_.SetExtensionPref(kExt1, kPref3, false, CreateVal("val8"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val6"));
+  epvm_.SetExtensionPref(kExt1, kPref2, kRegular, CreateVal("val7"));
+  epvm_.SetExtensionPref(kExt1, kPref3, kRegular, CreateVal("val8"));
 
   EXPECT_EQ("val3", GetValue(kPref1, false));
   EXPECT_EQ("val5", GetValue(kPref2, false));
@@ -99,6 +101,7 @@ TEST_F(ExtensionPrefValueMapTest, Override) {
 }
 
 TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
@@ -110,7 +113,7 @@ TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
   EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt2, kPref1, false));
   EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt3, kPref1, false));
 
-  epvm_.SetExtensionPref(kExt2, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val1"));
 
   EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, false));
   EXPECT_TRUE(epvm_.DoesExtensionControlPref(kExt2, kPref1, false));
@@ -121,14 +124,16 @@ TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
 }
 
 TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValueIncognito) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   EXPECT_EQ("val1", GetValue(kPref1, true));
 }
 
 TEST_F(ExtensionPrefValueMapTest, UninstallOnlyExtension) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.UnregisterExtension(kExt1);
 
   EXPECT_EQ("", GetValue(kPref1, false));
@@ -136,14 +141,15 @@ TEST_F(ExtensionPrefValueMapTest, UninstallOnlyExtension) {
 
 // Tests uninstalling an extension that wasn't winning for any preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallIrrelevantExtension) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(10), true);
 
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
-  epvm_.SetExtensionPref(kExt2, kPref1, false, CreateVal("val2"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
 
-  epvm_.SetExtensionPref(kExt1, kPref2, false, CreateVal("val3"));
-  epvm_.SetExtensionPref(kExt2, kPref2, false, CreateVal("val4"));
+  epvm_.SetExtensionPref(kExt1, kPref2, kRegular, CreateVal("val3"));
+  epvm_.SetExtensionPref(kExt2, kPref2, kRegular, CreateVal("val4"));
 
   epvm_.UnregisterExtension(kExt1);
 
@@ -153,16 +159,17 @@ TEST_F(ExtensionPrefValueMapTest, UninstallIrrelevantExtension) {
 
 // Tests uninstalling an extension that was winning for all preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromTop) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
 
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
-  epvm_.SetExtensionPref(kExt2, kPref1, false, CreateVal("val2"));
-  epvm_.SetExtensionPref(kExt3, kPref1, false, CreateVal("val3"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
+  epvm_.SetExtensionPref(kExt3, kPref1, kRegular, CreateVal("val3"));
 
-  epvm_.SetExtensionPref(kExt1, kPref2, false, CreateVal("val4"));
-  epvm_.SetExtensionPref(kExt3, kPref2, false, CreateVal("val5"));
+  epvm_.SetExtensionPref(kExt1, kPref2, kRegular, CreateVal("val4"));
+  epvm_.SetExtensionPref(kExt3, kPref2, kRegular, CreateVal("val5"));
 
   epvm_.UnregisterExtension(kExt3);
 
@@ -172,20 +179,21 @@ TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromTop) {
 
 // Tests uninstalling an extension that was winning for only some preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromMiddle) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
 
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
-  epvm_.SetExtensionPref(kExt2, kPref1, false, CreateVal("val2"));
-  epvm_.SetExtensionPref(kExt3, kPref1, false, CreateVal("val3"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
+  epvm_.SetExtensionPref(kExt3, kPref1, kRegular, CreateVal("val3"));
 
-  epvm_.SetExtensionPref(kExt1, kPref2, false, CreateVal("val4"));
-  epvm_.SetExtensionPref(kExt2, kPref2, false, CreateVal("val5"));
+  epvm_.SetExtensionPref(kExt1, kPref2, kRegular, CreateVal("val4"));
+  epvm_.SetExtensionPref(kExt2, kPref2, kRegular, CreateVal("val5"));
 
-  epvm_.SetExtensionPref(kExt1, kPref3, false, CreateVal("val6"));
+  epvm_.SetExtensionPref(kExt1, kPref3, kRegular, CreateVal("val6"));
 
-  epvm_.SetExtensionPref(kExt2, kPref4, false, CreateVal("val7"));
+  epvm_.SetExtensionPref(kExt2, kPref4, kRegular, CreateVal("val7"));
 
   epvm_.UnregisterExtension(kExt2);
 
@@ -200,6 +208,7 @@ TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
   using testing::_;
   using testing::Mock;
   using testing::StrEq;
+  using namespace extension_prefs_scope;
 
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
 
@@ -207,22 +216,22 @@ TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
   epvm_.AddObserver(&observer);
 
   EXPECT_CALL(observer, OnPrefValueChanged(std::string(kPref1)));
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   Mock::VerifyAndClearExpectations(&observer);
 
   // Write the same value again.
   EXPECT_CALL(observer, OnPrefValueChanged(std::string(kPref1))).Times(0);
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   Mock::VerifyAndClearExpectations(&observer);
 
   // Override incognito value.
   EXPECT_CALL(observer, OnPrefValueChanged(std::string(kPref1)));
-  epvm_.SetExtensionPref(kExt1, kPref1, true, CreateVal("val2"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val2"));
   Mock::VerifyAndClearExpectations(&observer);
 
   // Override non-incognito value.
   EXPECT_CALL(observer, OnPrefValueChanged(std::string(kPref1)));
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val3"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val3"));
   Mock::VerifyAndClearExpectations(&observer);
 
   // Disable.
@@ -245,24 +254,26 @@ TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
   // Write new value --> no notification after removing observer.
   EXPECT_CALL(observer, OnPrefValueChanged(std::string(kPref1))).Times(0);
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val4"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val4"));
   Mock::VerifyAndClearExpectations(&observer);
 }
 
 // Tests disabling an extension.
 TEST_F(ExtensionPrefValueMapTest, DisableExt) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
 
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionState(kExt1, false);
   EXPECT_EQ("", GetValue(kPref1, false));
 }
 
 // Tests disabling and reenabling an extension.
 TEST_F(ExtensionPrefValueMapTest, ReenableExt) {
+  using namespace extension_prefs_scope;
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
 
-  epvm_.SetExtensionPref(kExt1, kPref1, false, CreateVal("val1"));
+  epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionState(kExt1, false);
   epvm_.SetExtensionState(kExt1, true);
   EXPECT_EQ("val1", GetValue(kPref1, false));
@@ -296,6 +307,7 @@ class ExtensionPrefValueMapTestIncognitoTests
 };
 
 TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
+  using namespace extension_prefs_scope;
   OverrideIncognitoTestCase test = GetParam();
   const char* strings[] = {
       "undefined",
@@ -308,19 +320,19 @@ TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   if (test.val_ext1_regular_) {
-    epvm_.SetExtensionPref(kExt1, kPref1, false,
+    epvm_.SetExtensionPref(kExt1, kPref1, kRegular,
                            CreateVal(strings[test.val_ext1_regular_]));
   }
   if (test.val_ext1_incognito_) {
-    epvm_.SetExtensionPref(kExt1, kPref1, true,
+    epvm_.SetExtensionPref(kExt1, kPref1, kIncognitoPersistent,
                            CreateVal(strings[test.val_ext1_incognito_]));
   }
   if (test.val_ext2_regular_) {
-    epvm_.SetExtensionPref(kExt2, kPref1, false,
+    epvm_.SetExtensionPref(kExt2, kPref1, kRegular,
                            CreateVal(strings[test.val_ext2_regular_]));
   }
   if (test.val_ext2_incognito_) {
-    epvm_.SetExtensionPref(kExt2, kPref1, true,
+    epvm_.SetExtensionPref(kExt2, kPref1, kIncognitoPersistent,
                            CreateVal(strings[test.val_ext2_incognito_]));
   }
   std::string actual;

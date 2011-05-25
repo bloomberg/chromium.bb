@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,7 +36,10 @@ const char kControlledByThisExtension[] = "ControlledByThisExtension";
 
 const char kIncognito[] = "incognito";
 const char kIncognitoSpecific[] = "incognitoSpecific";
+const char kScope[] = "scope";
 const char kLevelOfControl[] = "levelOfControl";
+const char kRegular[] = "regular";
+const char kIncognitoPersistent[] = "incognito_persistent";
 const char kValue[] = "value";
 
 const char kOnPrefChangeFormat[] =
@@ -107,6 +111,16 @@ const char* GetLevelOfControl(
     return kControllableByThisExtension;
 
   return kControlledByOtherExtensions;
+}
+
+bool StringToScope(const std::string& s, extension_prefs_scope::Scope* scope) {
+  if (s == kRegular)
+    *scope = extension_prefs_scope::kRegular;
+  else if (s == kIncognitoPersistent)
+    *scope = extension_prefs_scope::kIncognitoPersistent;
+  else
+    return false;
+  return true;
 }
 
 class PrefMapping {
@@ -346,15 +360,28 @@ bool SetPreferenceFunction::RunImpl() {
   Value* value = NULL;
   EXTENSION_FUNCTION_VALIDATE(details->Get(kValue, &value));
 
-  bool incognito = false;
+  std::string scope_str = kRegular;
+  if (details->HasKey(kScope))
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(kScope, &scope_str));
 
-  // TODO(battre): enable incognito preferences again.
-  // if (details->HasKey(kIncognito))
-  //   EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
+  extension_prefs_scope::Scope scope;
+  EXTENSION_FUNCTION_VALIDATE(StringToScope(scope_str, &scope));
 
-  if (incognito && !include_incognito()) {
-    error_ = kIncognitoErrorMessage;
-    return false;
+  // TODO(battre): add kIncognitoSessionOnly
+  bool incognito = (scope == extension_prefs_scope::kIncognitoPersistent);
+  if (incognito) {
+    // Regular profiles can't access incognito unless include_incognito is true.
+    if (!profile()->IsOffTheRecord() && !include_incognito()) {
+      error_ = kIncognitoErrorMessage;
+      return false;
+    }
+  } else {
+    // Incognito profiles can't access regular mode ever, they only exist in
+    // split mode.
+    if (profile()->IsOffTheRecord()) {
+      error_ = "Can't modify regular settings from an incognito context.";
+      return false;
+    }
   }
 
   std::string browser_pref;
@@ -384,7 +411,7 @@ bool SetPreferenceFunction::RunImpl() {
   }
   prefs->SetExtensionControlledPref(extension_id(),
                                     browser_pref,
-                                    incognito,
+                                    scope,
                                     browserPrefValue);
   return true;
 }
@@ -397,14 +424,26 @@ bool ClearPreferenceFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
-  bool incognito = false;
+  std::string scope_str = kRegular;
+  if (details->HasKey(kScope))
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(kScope, &scope_str));
 
-  // TODO(battre): enable incognito preferences again.
-  // if (details->HasKey(kIncognito))
-  //   EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
+  extension_prefs_scope::Scope scope;
+  EXTENSION_FUNCTION_VALIDATE(StringToScope(scope_str, &scope));
 
-  // We don't check incognito permissions here, as an extension should be always
-  // allowed to clear its own settings.
+  // TODO(battre): add kIncognitoSessionOnly
+  bool incognito = (scope == extension_prefs_scope::kIncognitoPersistent);
+  if (incognito) {
+    // We don't check incognito permissions here, as an extension should be
+    // always allowed to clear its own settings.
+  } else {
+    // Incognito profiles can't access regular mode ever, they only exist in
+    // split mode.
+    if (profile()->IsOffTheRecord()) {
+      error_ = "Can't modify regular settings from an incognito context.";
+      return false;
+    }
+  }
 
   std::string browser_pref;
   std::string permission;
@@ -416,6 +455,6 @@ bool ClearPreferenceFunction::RunImpl() {
     return false;
   }
   ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
-  prefs->RemoveExtensionControlledPref(extension_id(), browser_pref, incognito);
+  prefs->RemoveExtensionControlledPref(extension_id(), browser_pref, scope);
   return true;
 }

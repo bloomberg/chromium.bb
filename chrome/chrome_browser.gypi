@@ -978,6 +978,7 @@
         'browser/extensions/extension_pref_value_map.h',
         'browser/extensions/extension_prefs.cc',
         'browser/extensions/extension_prefs.h',
+        'browser/extensions/extension_prefs_scope.h',
         'browser/extensions/extension_process_manager.cc',
         'browser/extensions/extension_process_manager.h',
         'browser/extensions/extension_processes_api.cc',

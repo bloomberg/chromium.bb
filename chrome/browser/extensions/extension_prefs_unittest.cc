@@ -695,15 +695,18 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
   void InstallExtControlledPref(Extension *ext,
                                 const std::string& key,
                                 Value* val) {
+    using namespace extension_prefs_scope;
     EnsureExtensionInstalled(ext);
-    prefs()->SetExtensionControlledPref(ext->id(), key, false, val);
+    prefs()->SetExtensionControlledPref(ext->id(), key, kRegular, val);
   }
 
   void InstallExtControlledPrefIncognito(Extension *ext,
                                          const std::string& key,
                                          Value* val) {
+    using namespace extension_prefs_scope;
     EnsureExtensionInstalled(ext);
-    prefs()->SetExtensionControlledPref(ext->id(), key, true, val);
+    prefs()->SetExtensionControlledPref(ext->id(), key,
+                                        kIncognitoPersistent, val);
   }
 
   void InstallExtension(Extension *ext) {
@@ -763,12 +766,10 @@ class ExtensionPrefsInstallOneExtension
 };
 TEST_F(ExtensionPrefsInstallOneExtension, ExtensionPrefsInstallOneExtension) {}
 
-// Check that we forget incognito values after a reload.
+// Check that we do not forget persistent incognito values after a reload.
 class ExtensionPrefsInstallIncognito
     : public ExtensionPrefsPreferencesBase {
  public:
-  ExtensionPrefsInstallIncognito() : iteration_(0) {}
-
   virtual void Initialize() {
     InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
     InstallExtControlledPrefIncognito(ext1_, kPref1,
@@ -781,18 +782,11 @@ class ExtensionPrefsInstallIncognito
     // Main pref service shall see only non-incognito settings.
     std::string actual = prefs()->pref_service()->GetString(kPref1);
     EXPECT_EQ("val1", actual);
-    // Incognito pref service shall see incognito values only during first run.
-    // Once the pref service was reloaded, all values shall be discarded.
+    // Incognito pref service shall see incognito values.
     scoped_ptr<PrefService> incog_prefs(prefs_.CreateIncognitoPrefService());
     actual = incog_prefs->GetString(kPref1);
-    if (iteration_ == 0) {
-      EXPECT_EQ("val2", actual);
-    } else {
-      EXPECT_EQ("val1", actual);
-    }
-    ++iteration_;
+    EXPECT_EQ("val2", actual);
   }
-  int iteration_;
 };
 TEST_F(ExtensionPrefsInstallIncognito, ExtensionPrefsInstallOneExtension) {}
 

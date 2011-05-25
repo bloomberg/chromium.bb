@@ -40,8 +40,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
   // Setting an incognito preference should not create an incognito profile.
   EXPECT_FALSE(browser()->profile()->HasOffTheRecordProfile());
 
-  // TODO(battre): re-enable when incognito is available again.
-#if 0
   PrefService* otr_prefs =
       browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
   const PrefService::Preference* pref =
@@ -54,7 +52,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
   ASSERT_TRUE(pref);
   EXPECT_FALSE(pref->IsExtensionControlled());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledContentSettings) {

@@ -25,11 +25,10 @@ chrome.test.runTests([
                  'levelOfControl': "ControllableByThisExtension" },
                "third-party cookies should not be blocked in incognito mode"));
   },
-  // TODO(battre): re-enable when incognito preferences are available again.
-  /*
   function set() {
     cs.misc.blockThirdPartyCookies.set(
-        { 'incognito': true, 'value': true }, chrome.test.callbackPass());
+        { 'scope': 'incognito_persistent', 'value': true },
+        chrome.test.callbackPass());
   },
   function getRegular2() {
     cs.misc.blockThirdPartyCookies.get(
@@ -46,6 +45,5 @@ chrome.test.runTests([
                  'levelOfControl': "ControlledByThisExtension" },
                "third-party cookies should be blocked in incognito mode"));
   },
-  */
 ]);
 </script>

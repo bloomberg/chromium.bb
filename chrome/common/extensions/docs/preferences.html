@@ -715,7 +715,7 @@ considering the preference rules. It is used by Chrome.
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span>["regular"]</span>
+                        <span>["regular", "incognito_persistent"]</span>
                       </span>
                     </span>
                   )
@@ -726,7 +726,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Where to clear the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere).</dd>
+          <dd>Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere), 'incognito_persistent' = preference for incognito profile that sustains browser restarts (overrides regular preferences).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1577,7 +1577,7 @@ considering the preference rules. It is used by Chrome.
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span>["regular"]</span>
+                        <span>["regular", "incognito_persistent"]</span>
                       </span>
                     </span>
                   )
@@ -1588,7 +1588,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere).</dd>
+          <dd>Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere), 'incognito_persistent' = preference for incognito profile that sustains browser restarts (overrides regular preferences).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

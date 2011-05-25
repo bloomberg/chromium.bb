@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
+#include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
@@ -303,12 +304,12 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Takes ownership of |value|.
   void SetExtensionControlledPref(const std::string& extension_id,
                                   const std::string& pref_key,
-                                  bool incognito,
+                                  extension_prefs_scope::Scope scope,
                                   Value* value);
 
   void RemoveExtensionControlledPref(const std::string& extension_id,
                                      const std::string& pref_key,
-                                     bool incognito);
+                                     extension_prefs_scope::Scope scope);
 
   // Returns true if currently no extension with higher precedence controls the
   // preference.
@@ -415,7 +416,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // or creates a new one. All entries in the dictionary contain non-expanded
   // paths.
   const DictionaryValue* GetExtensionControlledPrefs(
-      const std::string& id) const;
+      const std::string& id,
+      bool incognito) const;
 
   // Serializes the data and schedules a persistent save via the |PrefService|.
   // TODO(andybons): Fire an EXTENSION_PREF_CHANGED notification to be more

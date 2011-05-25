@@ -5384,9 +5384,9 @@
                   },
                   "scope": {
                     "type": "string",
-                    "enum": ["regular"],
+                    "enum": ["regular", "incognito_persistent"],
                     "optional": true,
-                    "description": "Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere)."
+                    "description": "Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere), 'incognito_persistent' = preference for incognito profile that sustains browser restarts (overrides regular preferences)."
                   }
                 }
               },
@@ -5411,9 +5411,9 @@
                 "properties": {
                   "scope": {
                     "type": "string",
-                    "enum": ["regular"],
+                    "enum": ["regular", "incognito_persistent"],
                     "optional": true,
-                    "description": "Where to clear the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere)."
+                    "description": "Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere), 'incognito_persistent' = preference for incognito profile that sustains browser restarts (overrides regular preferences)."
                   }
                 }
               },

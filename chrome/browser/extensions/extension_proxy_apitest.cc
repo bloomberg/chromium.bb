@@ -169,9 +169,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
 }
 
 // Tests setting values only for incognito mode
-// TODO(battre): re-enable when incognito is supported again
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-    DISABLED_ProxyFixedIndividualIncognitoOnly) {
+                       ProxyFixedIndividualIncognitoOnly) {
   ASSERT_TRUE(RunExtensionTestIncognito("proxy/individual_incognito_only")) <<
       message_;
   const Extension* extension = GetSingleLoadedExtension();
@@ -193,9 +192,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 }
 
 // Tests setting values also for incognito mode
-// TODO(battre): re-enable when incognito is supported again
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-    DISABLED_ProxyFixedIndividualIncognitoAlso) {
+                       ProxyFixedIndividualIncognitoAlso) {
   ASSERT_TRUE(RunExtensionTestIncognito("proxy/individual_incognito_also")) <<
       message_;
   const Extension* extension = GetSingleLoadedExtension();

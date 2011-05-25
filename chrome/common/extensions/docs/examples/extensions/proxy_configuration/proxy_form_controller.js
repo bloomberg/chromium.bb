@@ -525,10 +525,9 @@ ProxyFormController.prototype = {
       return;
     }
     if (this.config_.incognito) {
-      // TODO(battre): change incognito value once available
-      // chrome.proxy.settings.set(
-      //     {value: this.config_.incognito, scope: 'incognito'},
-      //     this.callbackForIncognitoSettings_.bind(this));
+      chrome.proxy.settings.set(
+          {value: this.config_.incognito, scope: 'incognito_persistent'},
+          this.callbackForIncognitoSettings_.bind(this));
     } else {
       ProxyFormController.setPersistedSettings(this.config_);
       this.generateAlert_(chrome.i18n.getMessage('successfullySetProxy'));
