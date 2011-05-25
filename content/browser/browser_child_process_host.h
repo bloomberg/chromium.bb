@@ -92,6 +92,10 @@ class BrowserChildProcessHost : public ChildProcessHost,
   // the host list. Calls ChildProcessHost::ForceShutdown
   virtual void ForceShutdown();
 
+  // Controls whether the child process should be terminated on browser
+  // shutdown. Default is to always terminate.
+  void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
+
  private:
   // By using an internal class as the ChildProcessLauncher::Client, we can
   // intercept OnProcessLaunched and do our own processing before
