@@ -1,7 +1,7 @@
 /*
- * Copyright 2008  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -116,6 +116,10 @@ static void NaClCalibrateWindowsClockMu(struct NaClTimeState *ntsp) {
   NaClLog(4, "Leaving NaClCalibrateWindowsClockMu\n");
 }
 
+void NaClAllowLowResolutionTimeOfDay() {
+  gNaClTimeState.allow_low_resolution = 1;
+}
+
 void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   TIMECAPS    tc;
   SYSTEMTIME  st;
@@ -125,10 +129,15 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
    * Maximize timer/Sleep resolution.
    */
   timeGetDevCaps(&tc, sizeof tc);
-  ntsp->wPeriodMin = tc.wPeriodMin;
-  ntsp->time_resolution_ns = tc.wPeriodMin * NACL_NANOS_PER_MILLI;
-  NaClLog(0, "NaClTimeInternalInit: timeBeginPeriod(%u)\n", tc.wPeriodMin);
-  timeBeginPeriod(ntsp->wPeriodMin);
+  if (gNaClTimeState.allow_low_resolution) {
+    /* Set resolution to max so we don't over-promise. */
+    ntsp->wPeriodMin = tc.wPeriodMax;
+  } else {
+    ntsp->wPeriodMin = tc.wPeriodMin;
+    timeBeginPeriod(ntsp->wPeriodMin);
+    NaClLog(0, "NaClTimeInternalInit: timeBeginPeriod(%u)\n", ntsp->wPeriodMin);
+  }
+  ntsp->time_resolution_ns = ntsp->wPeriodMin * NACL_NANOS_PER_MILLI;
 
   /*
    * Compute Unix epoch start; calibrate high resolution clock.
@@ -159,7 +168,8 @@ uint64_t NaClTimerResolutionNsInternal(struct NaClTimeState *ntsp) {
 
 void NaClTimeInternalFini(struct NaClTimeState *ntsp) {
   NaClMutexDtor(&ntsp->mu);
-  timeEndPeriod(ntsp->wPeriodMin);
+  if (!gNaClTimeState.allow_low_resolution)
+    timeEndPeriod(ntsp->wPeriodMin);
 }
 
 void NaClTimeInit(void) {

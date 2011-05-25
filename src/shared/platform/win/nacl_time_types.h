@@ -1,7 +1,7 @@
 /*
- * Copyright 2009  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_WIN_NACL_TIME_TYPES_H_
@@ -31,6 +31,7 @@ struct NaClTimeState {
    */
   UINT      wPeriodMin;
   uint64_t  time_resolution_ns;
+  uint32_t  allow_low_resolution;
 
   /*
    * The following are used to provide millisecond resolution

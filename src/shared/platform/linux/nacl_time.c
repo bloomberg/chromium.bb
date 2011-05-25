@@ -1,7 +1,7 @@
 /*
- * Copyright 2008  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -22,6 +22,10 @@
 #define NANOS_PER_UNIT  (1000*1000*1000)
 
 static struct NaClTimeState gNaClTimeState;
+
+void NaClAllowLowResolutionTimeOfDay() {
+/* Always use high resolution timer. */
+}
 
 void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   ntsp->time_resolution_ns = NACL_NANOS_PER_MICRO;

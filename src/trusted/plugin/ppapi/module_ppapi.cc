@@ -1,9 +1,10 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
+#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
@@ -42,6 +43,8 @@ class ModulePpapi : public pp::Module {
         ptr->LaunchSelLdr);
     get_urandom_fd = ptr->UrandomFD;
 
+    // In the plugin, we don't need high resolution time of day.
+    NaClAllowLowResolutionTimeOfDay();
     NaClNrdAllModulesInit();
 
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
