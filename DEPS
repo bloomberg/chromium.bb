@@ -11,7 +11,8 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
-  "tools_rev": "5427",
+  "tools_rev": "5360",
+  "valgrind_rev": "5427",
   "wix_rev": "153",
 }
 
@@ -36,7 +37,7 @@ deps = {
     Var("chromium_trunk") + "/src/gpu/pgl@" + Var("chrome_rev"),
   "native_client/src/third_party/valgrind/bin":
     Var("native_client_trunk") + "/src/third_party/valgrind/bin@" +
-    Var("tools_rev"),
+    Var("valgrind_rev"),
   "net/tools/testserver":
     Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
   "ppapi":
