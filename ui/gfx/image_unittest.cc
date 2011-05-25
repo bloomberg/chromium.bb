@@ -8,7 +8,7 @@
 #include "ui/gfx/image.h"
 #include "ui/gfx/image_unittest_util.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
 #elif defined(OS_MACOSX)

@@ -22,7 +22,9 @@
 // The standard OpenGL native extension headers are also included.
 #if defined(OS_WIN)
 #include <GL/wglext.h>
-#elif defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+#include <OpenGL/OpenGL.h>
+#elif defined(USE_X11)
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
@@ -31,9 +33,6 @@
 #undef Bool
 #undef None
 #undef Status
-
-#elif defined(OS_MACOSX)
-#include <OpenGL/OpenGL.h>
 #endif
 
 #if defined(OS_WIN)
@@ -52,7 +51,7 @@
 typedef struct osmesa_context *OSMesaContext;
 typedef void (*OSMESAproc)();
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
 
 // Forward declare EGL types.
 typedef unsigned int EGLBoolean;
@@ -75,7 +74,7 @@ typedef Pixmap   EGLNativePixmapType;
 typedef Window   EGLNativeWindowType;
 #endif
 
-#endif  // OS_WIN || OS_LINUX
+#endif  // !OS_MACOSX
 
 #include "gl_bindings_autogen_gl.h"
 #include "gl_bindings_autogen_osmesa.h"
@@ -83,7 +82,7 @@ typedef Window   EGLNativeWindowType;
 #if defined(OS_WIN)
 #include "gl_bindings_autogen_egl.h"
 #include "gl_bindings_autogen_wgl.h"
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 #include "gl_bindings_autogen_egl.h"
 #include "gl_bindings_autogen_glx.h"
 #endif

@@ -10,7 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib-object.h>
 #include "ui/gfx/canvas_skia.h"
@@ -30,7 +30,7 @@ namespace internal {
 bool NSImageToSkBitmaps(NSImage* image, std::vector<const SkBitmap*>* bitmaps);
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
   gfx::CanvasSkia canvas(gdk_pixbuf_get_width(pixbuf),
                          gdk_pixbuf_get_height(pixbuf),
@@ -62,7 +62,7 @@ class ImageRep {
     return reinterpret_cast<ImageRepSkia*>(this);
   }
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   ImageRepGdk* AsImageRepGdk() {
     CHECK_EQ(type_, Image::kImageRepGdk);
     return reinterpret_cast<ImageRepGdk*>(this);
@@ -110,7 +110,7 @@ class ImageRepSkia : public ImageRep {
   DISALLOW_COPY_AND_ASSIGN(ImageRepSkia);
 };
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 class ImageRepGdk : public ImageRep {
  public:
   explicit ImageRepGdk(GdkPixbuf* pixbuf)
@@ -207,7 +207,7 @@ Image::Image(const std::vector<const SkBitmap*>& bitmaps)
   AddRepresentation(rep);
 }
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 Image::Image(GdkPixbuf* pixbuf)
     : storage_(new internal::ImageStorage(Image::kImageRepGdk)) {
   internal::ImageRepGdk* rep = new internal::ImageRepGdk(pixbuf);
@@ -243,7 +243,7 @@ Image::operator const SkBitmap&() const {
   return *(this->operator const SkBitmap*());
 }
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 Image::operator GdkPixbuf*() const {
   internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
   return rep->AsImageRepGdk()->pixbuf();
@@ -295,7 +295,7 @@ internal::ImageRep* Image::GetRepresentation(
   // Handle native-to-Skia conversion.
   if (rep_type == Image::kImageRepSkia) {
     internal::ImageRepSkia* rep = NULL;
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
     if (storage_->default_representation_type() == Image::kImageRepGdk) {
       internal::ImageRepGdk* pixbuf_rep = default_rep->AsImageRepGdk();
       rep = new internal::ImageRepSkia(
@@ -318,7 +318,7 @@ internal::ImageRep* Image::GetRepresentation(
   if (default_rep->type() == Image::kImageRepSkia) {
     internal::ImageRepSkia* skia_rep = default_rep->AsImageRepSkia();
     internal::ImageRep* native_rep = NULL;
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
     if (rep_type == Image::kImageRepGdk) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_rep->bitmap());
       native_rep = new internal::ImageRepGdk(pixbuf);

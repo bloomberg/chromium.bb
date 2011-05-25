@@ -10,10 +10,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #if defined(OS_WIN)
 #include "webkit/glue/webthemeengine_impl_win.h"
-#elif defined(OS_LINUX)
-#include "webkit/glue/webthemeengine_impl_linux.h"
 #elif defined(OS_MACOSX)
 #include "webkit/glue/webthemeengine_impl_mac.h"
+#elif defined(OS_POSIX)
+#include "webkit/glue/webthemeengine_impl_linux.h"
 #endif
 
 
@@ -91,10 +91,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;
   int shared_timer_suspended_;  // counter
-
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   WebThemeEngineImpl theme_engine_;
-#endif
 };
 
 }  // namespace webkit_glue

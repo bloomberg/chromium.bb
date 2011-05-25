@@ -142,7 +142,7 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 // Regression test for crbug.com/56298 (pasting empty HTML crashes Linux).
 TEST_F(ClipboardTest, EmptyHTMLTest) {
   Clipboard clipboard;
@@ -239,11 +239,11 @@ TEST_F(ClipboardTest, URLTest) {
   clipboard.ReadAsciiText(Clipboard::BUFFER_STANDARD, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   ascii_text.clear();
   clipboard.ReadAsciiText(Clipboard::BUFFER_SELECTION, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
-#endif  // defined(OS_LINUX)
+#endif
 }
 
 TEST_F(ClipboardTest, SharedBitmapTest) {

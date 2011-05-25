@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "base/third_party/purify/pure.h"
 #endif // QUANTIFY
 
-#if defined(USE_TCMALLOC) && defined(OS_LINUX)
+#if defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "third_party/tcmalloc/chromium/src/google/profiler.h"
 #endif
 
@@ -71,7 +71,7 @@ class ProfilerWrapper : public v8::Extension {
       const v8::Arguments& args) {
 #if defined(QUANTIFY)
     QuantifyStartRecordingData();
-#elif defined(USE_TCMALLOC) && defined(OS_LINUX)
+#elif defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
     ::ProfilerStart("chrome-profile");
 #endif
     return v8::Undefined();
@@ -81,7 +81,7 @@ class ProfilerWrapper : public v8::Extension {
       const v8::Arguments& args) {
 #if defined(QUANTIFY)
     QuantifyStopRecordingData();
-#elif defined(USE_TCMALLOC) && defined(OS_LINUX)
+#elif defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
     ::ProfilerStop();
 #endif
     return v8::Undefined();
@@ -97,7 +97,7 @@ class ProfilerWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> ProfilerFlush(
       const v8::Arguments& args) {
-#if defined(USE_TCMALLOC) && defined(OS_LINUX)
+#if defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
     ::ProfilerFlush();
 #endif
     return v8::Undefined();

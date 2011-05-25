@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ TEST(PluginLibLoading, UnloadAllPlugins) {
   PluginLib::UnloadAllPlugins();
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 
 // Test parsing a simple description: Real Audio.
 TEST(MIMEDescriptionParse, Simple) {
@@ -174,7 +174,7 @@ TEST(PluginDescriptionParse, ExtractVersion) {
   EXPECT_EQ(ASCIIToUTF16("1.9.3"), info.version);
 }
 
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 }  // namespace npapi
 }  // namespace webkit

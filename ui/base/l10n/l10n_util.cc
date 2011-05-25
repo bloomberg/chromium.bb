@@ -320,7 +320,7 @@ bool CheckAndResolveLocale(const std::string& locale,
 // if "foo bar" is RTL. So this function prepends the necessary RLM in such
 // cases.
 void AdjustParagraphDirectionality(string16* paragraph) {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   if (base::i18n::IsRTL() &&
       base::i18n::StringContainsStrongRTLChars(*paragraph)) {
     paragraph->insert(0, 1, static_cast<char16>(base::i18n::kRightToLeftMark));

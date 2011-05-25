@@ -30,7 +30,7 @@ class PPB_Flash_Impl {
                             uint32_t glyph_count,
                             const uint16_t glyph_indices[],
                             const PP_Point glyph_advances[])
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       ;
 #else
       { return PP_FALSE; }

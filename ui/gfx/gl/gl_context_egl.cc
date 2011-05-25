@@ -15,7 +15,7 @@
 // it brings in #defines that cause conflicts.
 #include "ui/gfx/gl/gl_bindings.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 extern "C" {
 #include <X11/Xlib.h>
 }

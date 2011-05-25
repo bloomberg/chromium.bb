@@ -14,7 +14,7 @@
 // it brings in #defines that cause conflicts.
 #include "ui/gfx/gl/gl_bindings.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 extern "C" {
 #include <X11/Xlib.h>
 }
@@ -38,7 +38,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
   if (initialized)
     return true;
 
-#ifdef OS_LINUX
+#if defined(USE_X11)
   EGLNativeDisplayType native_display = XOpenDisplay(NULL);
 #else
   EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;

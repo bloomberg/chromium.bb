@@ -15,7 +15,7 @@ namespace test {
 
 #if defined(OS_MACOSX)
 typedef NSImage* PlatformImage;
-#elif defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#elif defined(TOOLKIT_GTK)
 typedef GdkPixbuf* PlatformImage;
 #else
 typedef const SkBitmap* PlatformImage;

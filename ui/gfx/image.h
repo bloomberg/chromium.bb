@@ -58,7 +58,7 @@ class Image {
   // of bitmaps, one for each resolution.
   explicit Image(const std::vector<const SkBitmap*>& bitmaps);
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // Does not increase |pixbuf|'s reference count; expects to take ownership.
   explicit Image(GdkPixbuf* pixbuf);
 #elif defined(OS_MACOSX)
@@ -81,7 +81,7 @@ class Image {
   // Conversion handlers.
   operator const SkBitmap*() const ;
   operator const SkBitmap&() const;
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   operator GdkPixbuf*() const;
 #elif defined(OS_MACOSX)
   operator NSImage*() const;

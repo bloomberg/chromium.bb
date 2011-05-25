@@ -55,10 +55,10 @@
 #if defined(OS_WIN)
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebThemeEngine.h"
 #include "webkit/tools/test_shell/test_shell_webthemeengine.h"
-#elif defined(OS_LINUX)
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebThemeEngine.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#elif defined(OS_POSIX)
+#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebThemeEngine.h"
 #endif
 
 using WebKit::WebScriptController;
