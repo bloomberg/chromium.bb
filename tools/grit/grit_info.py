@@ -66,7 +66,7 @@ def Inputs(filename, defines):
 
   # Add in the grit source files.  If one of these change, we want to re-run
   # grit.
-  grit_root_dir = os.path.dirname(__file__)
+  grit_root_dir = os.path.relpath(os.path.dirname(__file__), os.getcwd())
   for root, dirs, filenames in os.walk(grit_root_dir):
     grit_src = [os.path.join(root, f) for f in filenames
                 if f.endswith('.py') or f == 'resource_ids']
