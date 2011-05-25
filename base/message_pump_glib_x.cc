@@ -43,6 +43,11 @@ MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
 }
 
 MessagePumpGlibX::~MessagePumpGlibX() {
+  gdk_window_remove_filter(NULL, &GdkEventFilter, this);
+
+  // It is not necessary to reset the GDK event handler using
+  // gdk_event_handler_set since it's done in the destructor for
+  // MessagePumpForUI.
 }
 
 bool MessagePumpGlibX::ShouldCaptureXEvent(XEvent* xev) {
