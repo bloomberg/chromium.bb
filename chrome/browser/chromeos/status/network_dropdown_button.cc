@@ -21,7 +21,7 @@ namespace chromeos {
 // NetworkDropdownButton
 
 // static
-const int NetworkDropdownButton::kThrobDuration = 1000;
+const int NetworkDropdownButton::kThrobDuration = 750;
 
 NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
                                              gfx::NativeWindow parent_window)
@@ -34,7 +34,7 @@ NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       parent_window_(parent_window) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
+  animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
   // The initial state will be updated on Refresh.
   // See network_selection_view.cc.

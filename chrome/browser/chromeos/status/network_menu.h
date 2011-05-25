@@ -166,8 +166,6 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // TODO(chocobo): Add this back when we decide to do colored bars again.
   // static const int kBarsImagesVLowData[];
 
-  // The number of animating images for network connecting.
-  static const int kNumAnimatingImages;
   // Animation images. These are created lazily.
   static SkBitmap kAnimatingImages[];
   static SkBitmap kAnimatingImagesBlack[];

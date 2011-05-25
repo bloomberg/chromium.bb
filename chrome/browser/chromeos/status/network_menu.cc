@@ -33,6 +33,9 @@
 
 namespace {
 
+// Amount to fade icons while connecting.
+const double kConnectingImageAlpha = 0.5;
+
 // Replace '&' in a string with "&&" to allow it to be a menu item label.
 std::string EscapeAmpersands(const std::string& input) {
   std::string str = input;
@@ -1168,13 +1171,10 @@ const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
 #endif
 
 // static
-const int NetworkMenu::kNumAnimatingImages = 10;
+SkBitmap NetworkMenu::kAnimatingImages[kNumBarsImages];
 
 // static
-SkBitmap NetworkMenu::kAnimatingImages[kNumAnimatingImages];
-
-// static
-SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumAnimatingImages];
+SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumBarsImages];
 
 NetworkMenu::NetworkMenu() : min_width_(kDefaultMinimumWidth) {
   main_menu_model_.reset(new MainMenuModel(this));
@@ -1240,27 +1240,32 @@ const SkBitmap* NetworkMenu::IconForNetworkStrength(
 // static
 const SkBitmap* NetworkMenu::IconForNetworkConnecting(double animation_value,
                                                       bool black) {
-  // Draw animation of bars icon fading in and out.
-  // We are fading between 0 bars and a third of the opacity of 4 bars.
-  // Use the current value of the animation to calculate the alpha value
-  // of how transparent the icon is.
-  int index = static_cast<int>(animation_value *
-      nextafter(static_cast<float>(kNumAnimatingImages), 0));
-  index = std::max(std::min(index, kNumAnimatingImages - 1), 0);
-
+  // Fade bars a bit and show the different bar states.
+  const int* source_image_ids = black ? kBarsImagesBlack : kBarsImages;
   SkBitmap* images = black ? kAnimatingImagesBlack : kAnimatingImages;
+  int index = static_cast<int>(animation_value *
+      nextafter(static_cast<float>(kNumBarsImages), 0));
+  index = std::max(std::min(index, kNumBarsImages - 1), 0);
+
   // Lazily cache images.
   if (images[index].empty()) {
-    // Divide index (0-9) by 9 (assume kNumAnimatingImages==10) to get (0.0-1.0)
-    // Then we take a third of that for the alpha value.
-    double alpha = (static_cast<double>(index) / (kNumAnimatingImages - 1)) / 3;
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    images[index] = SkBitmapOperations::CreateBlendedBitmap(
-        *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
-                                   IDR_STATUSBAR_NETWORK_BARS0),
-        *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS4_BLACK :
-                                   IDR_STATUSBAR_NETWORK_BARS4),
-        alpha);
+    SkBitmap source = *rb.GetBitmapNamed(source_image_ids[index]);
+
+    // Create an empty image to fade against.
+    SkBitmap empty_image;
+    empty_image.setConfig(SkBitmap::kARGB_8888_Config,
+                          source.width(),
+                          source.height(),
+                          0);
+    empty_image.allocPixels();
+    empty_image.eraseARGB(0, 0, 0, 0);
+
+    images[index] =
+        SkBitmapOperations::CreateBlendedBitmap(
+            empty_image,
+            source,
+            kConnectingImageAlpha);
   }
   return &images[index];
 }

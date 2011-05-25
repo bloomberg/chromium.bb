@@ -95,7 +95,7 @@ namespace chromeos {
 // NetworkMenuButton
 
 // static
-const int NetworkMenuButton::kThrobDuration = 1000;
+const int NetworkMenuButton::kThrobDuration = 750;
 
 NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
     : StatusAreaButton(host, this),
@@ -108,7 +108,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
+  animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   OnNetworkManagerChanged(network_library);
   network_library->AddNetworkManagerObserver(this);
