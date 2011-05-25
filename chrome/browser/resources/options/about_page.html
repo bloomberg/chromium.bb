@@ -1,4 +1,4 @@
-<div class="page" id="aboutPage" hidden>
+<div id="aboutPage" class="page" hidden>
   <h1 i18n-content="product"></h1>
   <div id="aboutPageLessInfo">
     <section>
@@ -13,8 +13,8 @@
           <span i18n-content="browser_version"></span>
         </div>
         <div>
-          <button class="link-button" id="moreInfoButton"
-                  i18n-content="more_info"></button>
+          <button id="moreInfoButton" class="link-button"
+              i18n-content="more_info"></button>
         </div>
       </div>
     </section>
@@ -28,7 +28,7 @@
           <option value="beta-channel" i18n-content="beta"></option>
           <option value="dev-channel" i18n-content="dev"></option>
         </select>
-        <div hidden id="channelWarningBlock">
+        <div id="channelWarningBlock" hidden>
           <div id="channelWarning" i18n-content="channel_warning_header"></div>
           <div i18n-content="channel_warning_text"></div>
         </div>
@@ -101,7 +101,7 @@
       <div>
         <!-- TODO seanparent: fill in last checked. -->
         <!-- <span i18n-content="last_check"></span> -->
-        <button disabled id="checkNow" i18n-content="check_now"></button>
+        <button id="checkNow" i18n-content="check_now" disabled></button>
       </div>
     </div>
   </section>

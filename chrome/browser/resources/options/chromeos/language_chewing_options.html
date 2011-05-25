@@ -1,4 +1,4 @@
-<div class="page" id="languageChewingPage" hidden>
+<div id="languageChewingPage" class="page" hidden>
   <h1 i18n-content="languageChewingPage"></h1>
   <section>
     <table class="option-control-table">
@@ -17,9 +17,8 @@
          <td class="option-name" colspan="2">
            <div class="checkbox">
              <label>
-               <input id="chewing-add-phrase-direction"
-                   pref="settings.language.chewing_add_phrase_direction"
-                   type="checkbox">
+               <input id="chewing-add-phrase-direction" type="checkbox"
+                   pref="settings.language.chewing_add_phrase_direction">
                <span i18n-content="Chewing_addPhraseDirection"></span>
              </label>
            </div>
@@ -30,9 +29,8 @@
          <td class="option-name" colspan="2">
            <div class="checkbox">
              <label>
-               <input id="chewing-easy-symbol-input"
-                   pref="settings.language.chewing_easy_symbol_input"
-                   type="checkbox">
+               <input id="chewing-easy-symbol-input" type="checkbox"
+                   pref="settings.language.chewing_easy_symbol_input">
                <span i18n-content="Chewing_easySymbolInput"></span>
              </label>
            </div>
@@ -43,9 +41,8 @@
          <td class="option-name" colspan="2">
            <div class="checkbox">
              <label>
-               <input id="chewing-esc-clean-all-buf"
-                   pref="settings.language.chewing_esc_clean_all_buf"
-                   type="checkbox">
+               <input id="chewing-esc-clean-all-buf" type="checkbox"
+                   pref="settings.language.chewing_esc_clean_all_buf">
                <span i18n-content="Chewing_escCleanAllBuf"></span>
              </label>
            </div>
@@ -55,9 +52,8 @@
          <td class="option-name" colspan="2">
            <div class="checkbox">
              <label>
-               <input id="chewing-force-lowercase-english"
-                   pref="settings.language.chewing_force_lowercase_english"
-                   type="checkbox">
+               <input id="chewing-force-lowercase-english" type="checkbox"
+                   pref="settings.language.chewing_force_lowercase_english">
                <span i18n-content="Chewing_forceLowercaseEnglish"></span>
              </label>
            </div>
@@ -68,9 +64,8 @@
          <td class="option-name" colspan="2">
            <div class="checkbox">
              <label>
-               <input id="chewing-plain-zhuyin"
-                   pref="settings.language.chewing_plain_zhuyin"
-                   type="checkbox">
+               <input id="chewing-plain-zhuyin" type="checkbox"
+                   pref="settings.language.chewing_plain_zhuyin">
               <span i18n-content="Chewing_plainZhuyin"></span>
              </label>
            </div>
@@ -81,9 +76,8 @@
          <td class="option-name" colspan="2">
            <div class="checkbox">
              <label>
-               <input id="chewing-phrase-choice-rearward"
-                   pref="settings.language.chewing_phrase_choice_rearward"
-                   type="checkbox">
+               <input id="chewing-phrase-choice-rearward" type="checkbox"
+                   pref="settings.language.chewing_phrase_choice_rearward">
                <span i18n-content="Chewing_phraseChoiceRearward"></span>
              </label>
            </div>
@@ -93,9 +87,8 @@
          <td class="option-name" colspan="2">
            <div class="checkbox">
              <label>
-               <input id="chewing-space-as-selection"
-                   pref="settings.language.chewing_space_as_selection"
-                   type="checkbox">
+               <input id="chewing-space-as-selection" type="checkbox"
+                   pref="settings.language.chewing_space_as_selection">
                <span i18n-content="Chewing_spaceAsSelection"></span>
              </label>
            </div>
@@ -104,47 +97,42 @@
        <tr>
          <td class="option-name" i18n-content="Chewing_maxChiSymbolLen"></td>
          <td class="option-value">
-           <input id="chewing-max-chi-symbol-len" class="control"
+           <input id="chewing-max-chi-symbol-len" class="control" type="range"
               pref="settings.language.chewing_max_chi_symbol_len"
               i18n-values="min:Chewing_maxChiSymbolLenMin;
-                           max:Chewing_maxChiSymbolLenMax"
-              type="range">
+                           max:Chewing_maxChiSymbolLenMax">
            <span id="chewing-max-chi-symbol-len-value"></span>
          </td>
        </tr>
        <tr>
          <td class="option-name" i18n-content="Chewing_candPerPage"></td>
          <td class="option-value">
-           <select id="chewing-cand-per-page" class="control"
+           <select id="chewing-cand-per-page" class="control" dataType="number"
                 pref="settings.language.chewing_cand_per_page"
-                dataType="number"
                 i18n-options="Chewing_candPerPageValue"></select>
          </td>
        </tr>
        <tr>
          <td class="option-name" i18n-content="Chewing_KBType"></td>
          <td class="option-value">
-           <select id="chewing-keyboard-type" class="control"
+           <select id="chewing-keyboard-type" class="control" dataType="string"
                 pref="settings.language.chewing_keyboard_type"
-                dataType="string"
                 i18n-options="Chewing_KBTypeValue"></select>
          </td>
        </tr>
        <tr>
          <td class="option-name" i18n-content="Chewing_selKeys"></td>
          <td class="option-value">
-           <select id="chewing-sel-keys" class="control"
+           <select id="chewing-sel-keys" class="control" dataType="string"
                 pref="settings.language.chewing_sel_keys"
-                dataType="string"
                 i18n-options="Chewing_selKeysValue"></select>
          </td>
        </tr>
        <tr>
          <td class="option-name" i18n-content="Chewing_hsuSelKeyType"></td>
          <td class="option-value">
-           <select id="chewing-sel-key-type" class="control"
+           <select id="chewing-sel-key-type" class="control" dataType="number"
                 pref="settings.language.chewing_hsu_sel_key_type"
-                dataType="number"
                 i18n-options="Chewing_hsuSelKeyTypeValue"></select>
          </td>
        </tr>

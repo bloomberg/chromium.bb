@@ -1,4 +1,4 @@
-<div class="page" id="autofill-edit-address-overlay" hidden>
+<div id="autofill-edit-address-overlay" class="page" hidden>
   <h1 id="autofill-address-title"></h1>
   <div class="content-area">
     <div class="input">
@@ -11,19 +11,19 @@
     <div class="input">
       <label>
         <div><span i18n-content="companyNameLabel"></span></div>
-        <input type="text" class="autofill-form" id="company-name">
+        <input id="company-name" type="text" class="autofill-form">
       </label>
     </div>
     <div class="input">
       <label>
         <div><span i18n-content="addrLine1Label"></span></div>
-        <input type="text" class="autofill-form" id="addr-line-1">
+        <input id="addr-line-1" type="text" class="autofill-form">
       </label>
     </div>
     <div class="input">
       <label>
         <div><span i18n-content="addrLine2Label"></span></div>
-        <input type="text" class="autofill-form" id="addr-line-2">
+        <input id="addr-line-2" type="text" class="autofill-form">
       </label>
     </div>
     <div class="table">
@@ -42,19 +42,21 @@
       </div>
       <div class="row">
         <div class="input cell">
-          <input type="text" class="autofill-form" id="city">
+          <input id="city" type="text" class="autofill-form">
         </div>
         <div class="input cell">
-          <input type="text" class="autofill-form" id="state">
+          <input id="state" type="text" class="autofill-form">
         </div>
         <div class="input cell">
-          <input type="text" class="autofill-form" id="postal-code">
+          <input id="postal-code" type="text" class="autofill-form">
         </div>
       </div>
     </div>
     <div class="input">
       <label>
-        <div><span i18n-content="countryLabel"></span></div>
+        <div>
+          <span i18n-content="countryLabel"></span>
+        </div>
         <select id="country"></select>
       </label>
     </div>
@@ -99,9 +101,9 @@
     </div>
   </div>
   <div class="action-area button-strip">
-    <button type="reset" id="autofill-edit-address-cancel-button"
+    <button id="autofill-edit-address-cancel-button" type="reset"
         i18n-content="cancel"></button>
-    <button type="submit" id="autofill-edit-address-apply-button" disabled
-        i18n-content="ok"></button>
+    <button id="autofill-edit-address-apply-button" type="submit"
+        i18n-content="ok" disabled></button>
   </div>
 </div>

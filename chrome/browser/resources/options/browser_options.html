@@ -19,7 +19,7 @@
       </div>
       <div class="radio">
         <label>
-          <input type="radio" name="startup" id="startupShowPagesButton"
+          <input id="startupShowPagesButton" type="radio" name="startup"
               pref="session.restore_on_startup" value="4"
               metric="Options_Startup_Custom">
           <span id="startupShowPagesLabel"
@@ -42,7 +42,7 @@
     <div>
       <div class="radio">
         <label>
-          <input type="radio" name="homepage" id="homepageUseNTPButton"
+          <input id="homepageUseNTPButton" type="radio" name="homepage"
               value="true" metric="Options_Homepage_IsNewTabPage">
           <span i18n-content="homepageUseNewTab"></span>
         </label>
@@ -50,7 +50,7 @@
       <div id="customHomePageGroup">
         <div class="radio">
           <label>
-            <input type="radio" name="homepage" id="homepageUseURLButton"
+            <input id="homepageUseURLButton" type="radio" name="homepage"
                 value="false" metric="Options_Homepage_IsNewTabPage">
             <span i18n-content="homepageUseURL"></span>
           </label>
@@ -89,10 +89,10 @@
           <button id="defaultSearchManageEnginesButton"
               i18n-content="defaultSearchManageEngines"></button>
         </div>
-        <div class="checkbox" id="instantOption">
+        <div id="instantOption" class="checkbox">
           <label>
             <!-- TODO(estade): metric? -->
-            <input type="checkbox" id="instantEnableCheckbox"
+            <input id="instantEnableCheckbox" type="checkbox"
                 pref="instant.enabled">
             <span i18n-content="instantName"></span>
           </label>
