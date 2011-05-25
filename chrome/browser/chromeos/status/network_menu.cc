@@ -780,19 +780,17 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         SkBitmap(), std::string(), FLAG_DISABLED));
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableVPN)) {
-    // If there's a connected network, add submenu for Private Networks.
-    const Network* connected_network = cros->connected_network();
-    if (connected_network) {
-      menu_items_.push_back(MenuItem());  // Separator
-      menu_items_.push_back(MenuItem(
-          ui::MenuModel::TYPE_SUBMENU,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS),
-          VPNMenuModel::IconForDisplay(connected_network),
-          vpn_menu_model_.get(), FLAG_NONE));
-      vpn_menu_model_->InitMenuItems(
-          is_browser_mode, should_open_button_options);
-    }
+  // If there's a connected network, add submenu for Private Networks.
+  const Network* connected_network = cros->connected_network();
+  if (connected_network) {
+    menu_items_.push_back(MenuItem());  // Separator
+    menu_items_.push_back(MenuItem(
+        ui::MenuModel::TYPE_SUBMENU,
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS),
+        VPNMenuModel::IconForDisplay(connected_network),
+        vpn_menu_model_.get(), FLAG_NONE));
+    vpn_menu_model_->InitMenuItems(
+        is_browser_mode, should_open_button_options);
   }
 
   // Enable / disable wireless.

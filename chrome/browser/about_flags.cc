@@ -296,18 +296,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPpapiFlashInProcess)
   },
   {
-    "enable-vpn",
-    IDS_FLAGS_ENABLE_VPN_NAME,
-    IDS_FLAGS_ENABLE_VPN_DESCRIPTION,
-    kOsCrOS,
-#if defined(OS_CHROMEOS)
-    // The switch exists only on Chrome OS.
-    SINGLE_VALUE_TYPE(switches::kEnableVPN)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     "multi-profiles",
     IDS_FLAGS_MULTI_PROFILES_NAME,
     IDS_FLAGS_MULTI_PROFILES_DESCRIPTION,
