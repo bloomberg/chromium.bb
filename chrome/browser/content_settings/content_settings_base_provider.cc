@@ -7,25 +7,10 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-
-namespace {
-
-// True if a given content settings type requires additional resource
-// identifiers.
-const bool kRequiresResourceIdentifier[CONTENT_SETTINGS_NUM_TYPES] = {
-  false,  // CONTENT_SETTINGS_TYPE_COOKIES
-  false,  // CONTENT_SETTINGS_TYPE_IMAGES
-  false,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
-  true,   // CONTENT_SETTINGS_TYPE_PLUGINS
-  false,  // CONTENT_SETTINGS_TYPE_POPUPS
-  false,  // Not used for Geolocation
-  false,  // Not used for Notifications
-};
-
-}  // namespace
 
 namespace content_settings {
 
@@ -44,16 +29,6 @@ BaseProvider::BaseProvider(bool is_incognito)
 }
 
 BaseProvider::~BaseProvider() {}
-
-bool BaseProvider::RequiresResourceIdentifier(
-    ContentSettingsType content_type) const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableResourceContentSettings)) {
-    return kRequiresResourceIdentifier[content_type];
-  } else {
-    return false;
-  }
-}
 
 bool BaseProvider::AllDefault(
     const ExtendedContentSettings& settings) const {
@@ -238,18 +213,6 @@ void BaseProvider::UpdateContentSettingsMap(
   ExtendedContentSettings& extended_settings =
       (*content_settings_map)[requesting_pattern.ToString()];
   extended_settings.content_settings.settings[content_type] = content_setting;
-}
-
-// static
-ContentSetting BaseProvider::ClickToPlayFixup(ContentSettingsType content_type,
-                                              ContentSetting setting) {
-  if (setting == CONTENT_SETTING_ASK &&
-      content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClickToPlay)) {
-    return CONTENT_SETTING_BLOCK;
-  }
-  return setting;
 }
 
 }  // namespace content_settings

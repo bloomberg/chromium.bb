@@ -36,14 +36,8 @@ typedef std::map<std::string, ExtendedContentSettings> HostContentSettings;
 // classes.
 class BaseProvider : public ProviderInterface {
  public:
-  // Maps CONTENT_SETTING_ASK for the CONTENT_SETTINGS_TYPE_PLUGINS to
-  // CONTENT_SETTING_BLOCK if click-to-play is not enabled.
-  static ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
-                                         ContentSetting setting);
-
   explicit BaseProvider(bool is_otr);
   virtual ~BaseProvider();
-
 
   // Initializes the Provider.
   virtual void Init() = 0;
@@ -72,10 +66,6 @@ class BaseProvider : public ProviderInterface {
   virtual void ResetToDefaults() = 0;
 
  protected:
-  // Returns true if the |content_type| requires a resource identifier.
-  bool RequiresResourceIdentifier(
-      ContentSettingsType content_type) const;
-
   // Returns true if the passed |settings| object contains only
   // CONTENT_SETTING_DEFAULT values.
   bool AllDefault(const ExtendedContentSettings& settings) const;

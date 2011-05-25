@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -277,9 +278,8 @@ void PrefDefaultProvider::GetSettingsFromDictionary(
     settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
 
   settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
-      BaseProvider::ClickToPlayFixup(
-          CONTENT_SETTINGS_TYPE_PLUGINS,
-          settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
+      ClickToPlayFixup(CONTENT_SETTINGS_TYPE_PLUGINS,
+                       settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 }
 
 void PrefDefaultProvider::NotifyObservers(
