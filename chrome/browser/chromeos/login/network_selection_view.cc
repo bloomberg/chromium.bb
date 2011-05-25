@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/keyboard_switch_menu.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
-#include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/views_network_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
 #include "grit/chromium_strings.h"
@@ -104,18 +104,18 @@ class NetworkControlReportOnActivate : public NetworkDropdownButton {
  public:
   NetworkControlReportOnActivate(bool browser_mode,
                                  gfx::NativeWindow parent_window,
-                                 NetworkScreenDelegate* delegate)
+                                 ViewsNetworkScreenActor* actor)
       : NetworkDropdownButton(browser_mode, parent_window),
-        delegate_(delegate) {}
+        actor_(actor) {}
 
   // Overridden from MenuButton:
   virtual bool Activate() {
-    delegate_->ClearErrors();
+    actor_->ClearErrors();
     return MenuButton::Activate();
   }
 
  private:
-  NetworkScreenDelegate* delegate_;
+  ViewsNetworkScreenActor* actor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkControlReportOnActivate);
 };
@@ -127,24 +127,24 @@ class NotifyingMenuButton : public DropDownButton {
                       const std::wstring& text,
                       views::ViewMenuDelegate* menu_delegate,
                       bool show_menu_marker,
-                      NetworkScreenDelegate* delegate)
+                      ViewsNetworkScreenActor* actor)
       : DropDownButton(listener, text, menu_delegate, show_menu_marker),
-        delegate_(delegate) {}
+        actor_(actor) {}
 
   // Overridden from View:
   virtual void OnFocus() OVERRIDE {
-    delegate_->ClearErrors();
+    actor_->ClearErrors();
     GetWidget()->NotifyAccessibilityEvent(
         this, ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
 
  private:
-  NetworkScreenDelegate* delegate_;
+  ViewsNetworkScreenActor* actor_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifyingMenuButton);
 };
 
-NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
+NetworkSelectionView::NetworkSelectionView(ViewsNetworkScreenActor* actor)
     : entire_screen_view_(NULL),
       contents_view_(NULL),
       languages_menubutton_(NULL),
@@ -159,7 +159,7 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       throbber_(CreateDefaultSmoothedThrobber()),
       proxy_settings_link_(NULL),
       show_keyboard_button_(false),
-      delegate_(delegate) {
+      actor_(actor) {
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
@@ -217,7 +217,7 @@ void NetworkSelectionView::AddControlsToLayout(
 }
 
 void NetworkSelectionView::InitLayout() {
-  gfx::Size screen_size = delegate_->size();
+  gfx::Size screen_size = actor_->GetScreenSize();
   const int widest_label = std::max(
       std::max(
           select_language_label_->GetPreferredSize().width(),
@@ -225,9 +225,9 @@ void NetworkSelectionView::InitLayout() {
       select_network_label_->GetPreferredSize().width());
   const int dropdown_width = screen_size.width() - 2 * kBorderSize -
       2 * kPaddingColumnWidth - kMediumPaddingColumnWidth - widest_label;
-  delegate_->language_switch_menu()->SetFirstLevelMenuWidth(
+  actor_->language_switch_menu()->SetFirstLevelMenuWidth(
       dropdown_width - kMenuWidthOffset);
-  delegate_->keyboard_switch_menu()->SetMinimumWidth(
+  actor_->keyboard_switch_menu()->SetMinimumWidth(
       dropdown_width - kMenuWidthOffset);
   network_dropdown_->SetFirstLevelMenuWidth(dropdown_width - kMenuWidthOffset);
 
@@ -296,13 +296,13 @@ void NetworkSelectionView::Init() {
   select_language_label_ = new views::Label();
 
   languages_menubutton_ = new NotifyingMenuButton(
-      NULL, std::wstring(), delegate_->language_switch_menu(), true, delegate_);
+      NULL, std::wstring(), actor_->language_switch_menu(), true, actor_);
   InitMenuButtonProperties(languages_menubutton_);
 
   select_keyboard_label_ = new views::Label();
 
   keyboards_menubutton_ = new DropDownButton(
-      NULL /* listener */, L"", delegate_->keyboard_switch_menu(),
+      NULL /* listener */, L"", actor_->keyboard_switch_menu(),
       true /* show_menu_marker */);
   InitMenuButtonProperties(keyboards_menubutton_);
 
@@ -310,7 +310,7 @@ void NetworkSelectionView::Init() {
 
   network_dropdown_ = new NetworkControlReportOnActivate(false,
                                                          GetNativeWindow(),
-                                                         delegate_);
+                                                         actor_);
   InitMenuButtonProperties(network_dropdown_);
 
   connecting_network_label_ = new views::Label();
@@ -336,10 +336,10 @@ void NetworkSelectionView::UpdateLocalizedStringsAndFonts() {
 
   SetMenuButtonFont(languages_menubutton_, base_font);
   languages_menubutton_->SetText(
-      UTF16ToWide(delegate_->language_switch_menu()->GetCurrentLocaleName()));
+      UTF16ToWide(actor_->language_switch_menu()->GetCurrentLocaleName()));
   SetMenuButtonFont(keyboards_menubutton_, base_font);
   keyboards_menubutton_->SetText(
-      UTF16ToWide(delegate_->keyboard_switch_menu()->GetCurrentKeyboardName()));
+      UTF16ToWide(actor_->keyboard_switch_menu()->GetCurrentKeyboardName()));
   welcome_label_->SetFont(welcome_label_font);
   welcome_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE)));
@@ -373,8 +373,8 @@ void NetworkSelectionView::UpdateLocalizedStringsAndFonts() {
 // views::View: implementation:
 
 bool NetworkSelectionView::OnKeyPressed(const views::KeyEvent&) {
-  if (delegate_->is_error_shown()) {
-    delegate_->ClearErrors();
+  if (actor_->IsErrorShown()) {
+    actor_->ClearErrors();
     return true;
   }
   return false;
@@ -445,7 +445,7 @@ bool NetworkSelectionView::IsContinueEnabled() const {
 ////////////////////////////////////////////////////////////////////////////////
 // views::LinkListener implementation:
 void NetworkSelectionView::LinkClicked(views::Link* source, int) {
-  delegate_->ClearErrors();
+  actor_->ClearErrors();
   if (source == proxy_settings_link_) {
     if (!proxy_settings_dialog_.get()) {
       proxy_settings_dialog_.reset(
@@ -464,7 +464,7 @@ void NetworkSelectionView::RecreateNativeControls() {
   bool is_continue_enabled = IsContinueEnabled();
   delete continue_button_;
   continue_button_ = new login::WideButton(
-      delegate_,
+      actor_,
       UTF16ToWide(
           l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_CONTINUE_BUTTON)));
   continue_button_->SetEnabled(is_continue_enabled);

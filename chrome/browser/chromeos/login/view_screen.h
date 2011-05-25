@@ -27,6 +27,7 @@ class ViewScreen : public WizardScreen {
   virtual gfx::Size GetScreenSize() const { return size_; }
 
   V* view() { return view_; }
+  const V* view() const { return view_; }
 
  protected:
   // Creates view object and adds it to views hierarchy.

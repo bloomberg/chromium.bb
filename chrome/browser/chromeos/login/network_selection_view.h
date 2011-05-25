@@ -31,15 +31,15 @@ class Throbber;
 namespace chromeos {
 
 class NetworkDropdownButton;
-class NetworkScreenDelegate;
 class ScreenObserver;
+class ViewsNetworkScreenActor;
 
 // View for the network selection/initial welcome screen.
 class NetworkSelectionView : public views::View,
                              public views::LinkListener,
                              public LoginHtmlDialog::Delegate {
  public:
-  explicit NetworkSelectionView(NetworkScreenDelegate* delegate);
+  explicit NetworkSelectionView(ViewsNetworkScreenActor* actor);
   virtual ~NetworkSelectionView();
 
   // Initialize view layout.
@@ -119,8 +119,7 @@ class NetworkSelectionView : public views::View,
   views::Link* proxy_settings_link_;
   bool show_keyboard_button_;
 
-  // NetworkScreen delegate.
-  NetworkScreenDelegate* delegate_;
+  ViewsNetworkScreenActor* actor_;
 
   // Id of the network that is in process of connecting.
   string16 network_id_;

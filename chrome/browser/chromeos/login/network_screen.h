@@ -14,36 +14,32 @@
 #include "chrome/browser/chromeos/login/keyboard_switch_menu.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
-#include "chrome/browser/chromeos/login/network_screen_delegate.h"
+#include "chrome/browser/chromeos/login/network_screen_actor.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
-#include "chrome/browser/chromeos/login/view_screen.h"
+#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-
-class WizardScreenDelegate;
 
 namespace chromeos {
 
-class HelpAppLauncher;
-
-class NetworkScreen : public ViewScreen<NetworkSelectionView>,
-                      public MessageBubbleDelegate,
-                      public NetworkScreenDelegate {
+class NetworkScreen : public WizardScreen,
+                      public NetworkLibrary::NetworkManagerObserver,
+                      public NetworkScreenActor::Delegate {
  public:
   explicit NetworkScreen(WizardScreenDelegate* delegate);
   virtual ~NetworkScreen();
 
-  // NetworkScreenDelegate implementation:
-  virtual void ClearErrors();
-  virtual bool is_error_shown();
-  virtual LanguageSwitchMenu* language_switch_menu();
-  virtual KeyboardSwitchMenu* keyboard_switch_menu();
-  virtual gfx::Size size() const;
-
-  // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  // WizardScreen implementation:
+  virtual void Show();
+  virtual void Hide();
+  virtual gfx::Size GetScreenSize() const;
 
   // NetworkLibrary::NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib);
+
+  // NetworkScreenActor::Delegate implementation:
+  virtual void OnContinuePressed();
+
+  NetworkScreenActor* actor() const { return actor_.get(); }
 
  protected:
   // Subscribes NetworkScreen to the network change notification,
@@ -51,17 +47,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   virtual void Refresh();
 
  private:
-  FRIEND_TEST(NetworkScreenTest, Timeout);
-
-  // ViewScreen implementation:
-  virtual void CreateView();
-  virtual NetworkSelectionView* AllocateView();
-
-  // Overridden from views::BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
-  virtual void OnHelpLinkActivated();
+  FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
 
   // Subscribes to network change notifications.
   void SubscribeNetworkNotification();
@@ -97,15 +83,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   // Timer for connection timeout.
   base::OneShotTimer<NetworkScreen> connection_timer_;
 
-  LanguageSwitchMenu language_switch_menu_;
-  KeyboardSwitchMenu keyboard_switch_menu_;
-
-  // Pointer to shown message bubble. We don't need to delete it because
-  // it will be deleted on bubble closing.
-  MessageBubble* bubble_;
-
-  // Help application used for help dialogs.
-  scoped_refptr<HelpAppLauncher> help_app_;
+  scoped_ptr<NetworkScreenActor> actor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

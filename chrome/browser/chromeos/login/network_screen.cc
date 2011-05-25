@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,13 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/views_network_screen_actor.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 
@@ -28,10 +28,6 @@ namespace {
 
 // Time in seconds for connection timeout.
 const int kConnectionTimeoutSec = 15;
-
-// Considering 10px shadow from each side & welcome title height at 30px.
-const int kWelcomeScreenWidth = 580;
-const int kWelcomeScreenHeight = 335;
 
 }  // namespace
 
@@ -41,13 +37,10 @@ namespace chromeos {
 // NetworkScreen, public:
 
 NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate)
-    : ViewScreen<NetworkSelectionView>(delegate,
-                                       kWelcomeScreenWidth,
-                                       kWelcomeScreenHeight),
+    : WizardScreen(delegate),
       is_network_subscribed_(false),
       continue_pressed_(false),
-      bubble_(NULL) {
-  language_switch_menu_.set_menu_alignment(views::Menu2::ALIGN_TOPLEFT);
+      actor_(new ViewsNetworkScreenActor(delegate, this)) {
 }
 
 NetworkScreen::~NetworkScreen() {
@@ -56,86 +49,27 @@ NetworkScreen::~NetworkScreen() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, NetworkScreenDelegate implementation:
+// NetworkScreen, WizardScreen implementation:
 
-void NetworkScreen::ClearErrors() {
-  // bubble_ will be set to NULL in callback.
-  if (bubble_)
-    bubble_->Close();
+void NetworkScreen::Show() {
+  actor_->Show();
+  Refresh();
 }
 
-bool NetworkScreen::is_error_shown() {
-  return bubble_ != NULL;
+void NetworkScreen::Hide() {
+  actor_->Hide();
 }
 
-LanguageSwitchMenu* NetworkScreen::language_switch_menu() {
-  return &language_switch_menu_;
-}
-
-KeyboardSwitchMenu* NetworkScreen::keyboard_switch_menu() {
-  return &keyboard_switch_menu_;
-}
-
-gfx::Size NetworkScreen::size() const {
-  return GetScreenSize();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// views::ButtonListener implementation:
-
-void NetworkScreen::ButtonPressed(views::Button* sender,
-                                  const views::Event& event) {
-  ClearErrors();
-  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-  if (network && network->Connected()) {
-    NotifyOnConnection();
-  } else {
-    continue_pressed_ = true;
-    WaitForConnection(network_id_);
-  }
+gfx::Size NetworkScreen::GetScreenSize() const {
+  // TODO(avayvod): WizardController shouldn't need this info from screens.
+  return actor_->GetScreenSize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkLibrary::NetworkManagerObserver implementation:
+// NetworkScreen, NetworkLibrary::NetworkManagerObserver implementation:
 
 void NetworkScreen::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
   UpdateStatus(network_lib);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, ViewScreen implementation:
-
-void NetworkScreen::CreateView() {
-  language_switch_menu_.InitLanguageMenu();
-  ViewScreen<NetworkSelectionView>::CreateView();
-}
-
-NetworkSelectionView* NetworkScreen::AllocateView() {
-  return new NetworkSelectionView(this);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, views::BubbleDelegate implementation:
-
-void NetworkScreen::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
-  bubble_ = NULL;
-}
-
-bool NetworkScreen::CloseOnEscape() {
-  return true;
-}
-
-bool NetworkScreen::FadeInOnShow() {
-  return false;
-}
-
-void NetworkScreen::OnHelpLinkActivated() {
-  ClearErrors();
-  if (!help_app_.get()) {
-    help_app_ = new HelpAppLauncher(
-        LoginUtils::Get()->GetBackgroundView()->GetNativeWindow());
-  }
-  help_app_->ShowHelpTopic(HelpAppLauncher::HELP_CONNECTIVITY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +79,19 @@ void NetworkScreen::Refresh() {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     SubscribeNetworkNotification();
     OnNetworkManagerChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// NetworkScreen, NetworkScreenActor::Delegate implementation:
+
+void NetworkScreen::OnContinuePressed() {
+  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
+  if (network && network->Connected()) {
+    NotifyOnConnection();
+  } else {
+    continue_pressed_ = true;
+    WaitForConnection(network_id_);
   }
 }
 
@@ -179,33 +126,22 @@ void NetworkScreen::OnConnectionTimeout() {
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
   bool is_connected = network && network->Connected();
 
-  if (!is_connected &&
-      !view()->is_dialog_open() &&
-      !(help_app_.get() && help_app_->is_open())) {
+  if (!is_connected) {
     // Show error bubble.
-    ClearErrors();
-    views::View* network_control = view()->GetNetworkControlView();
-    bubble_ = MessageBubble::Show(
-        network_control->GetWidget(),
-        network_control->GetScreenBounds(),
-        BubbleBorder::LEFT_TOP,
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
-        UTF16ToWide(l10n_util::GetStringFUTF16(
+    actor_->ShowError(
+        l10n_util::GetStringFUTF16(
             IDS_NETWORK_SELECTION_ERROR,
             l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME),
-            network_id_)),
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)),
-        this);
-    network_control->RequestFocus();
+            network_id_));
   }
 }
 
 void NetworkScreen::UpdateStatus(NetworkLibrary* network) {
-  if (!view() || !network)
+  if (!actor_.get() || !network)
     return;
 
   if (network->Connected())
-    ClearErrors();
+    actor_->ClearErrors();
 
   string16 network_name = GetCurrentNetworkName(network);
   if (network->Connected()) {
@@ -229,8 +165,8 @@ void NetworkScreen::StopWaitingForConnection(const string16& network_id) {
   connection_timer_.Stop();
 
   network_id_ = network_id;
-  view()->ShowConnectingStatus(false, network_id_);
-  view()->EnableContinue(is_connected);
+  actor_->ShowConnectingStatus(false, network_id_);
+  actor_->EnableContinue(is_connected);
 }
 
 void NetworkScreen::WaitForConnection(const string16& network_id) {
@@ -242,9 +178,9 @@ void NetworkScreen::WaitForConnection(const string16& network_id) {
   }
 
   network_id_ = network_id;
-  view()->ShowConnectingStatus(continue_pressed_, network_id_);
+  actor_->ShowConnectingStatus(continue_pressed_, network_id_);
 
-  view()->EnableContinue(false);
+  actor_->EnableContinue(false);
 }
 
 }  // namespace chromeos
