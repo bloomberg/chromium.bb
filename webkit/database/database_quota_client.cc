@@ -6,7 +6,10 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
@@ -21,7 +24,7 @@ class DatabaseQuotaClient::HelperTask : public quota::QuotaThreadTask {
  protected:
   HelperTask(
       DatabaseQuotaClient* client,
-      scoped_refptr<base::MessageLoopProxy> db_tracker_thread)
+      base::MessageLoopProxy* db_tracker_thread)
       : QuotaThreadTask(client, db_tracker_thread),
         client_(client), db_tracker_(client->db_tracker_) {
   }
@@ -34,7 +37,7 @@ class DatabaseQuotaClient::GetOriginUsageTask : public HelperTask {
  public:
   GetOriginUsageTask(
       DatabaseQuotaClient* client,
-      scoped_refptr<base::MessageLoopProxy> db_tracker_thread,
+      base::MessageLoopProxy* db_tracker_thread,
       const GURL& origin_url)
       : HelperTask(client, db_tracker_thread),
         origin_url_(origin_url), usage_(0) {
@@ -60,7 +63,7 @@ class DatabaseQuotaClient::GetOriginsTaskBase : public HelperTask {
  protected:
   GetOriginsTaskBase(
       DatabaseQuotaClient* client,
-      scoped_refptr<base::MessageLoopProxy> db_tracker_thread)
+      base::MessageLoopProxy* db_tracker_thread)
       : HelperTask(client, db_tracker_thread) {
   }
 
@@ -86,7 +89,7 @@ class DatabaseQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
  public:
   GetAllOriginsTask(
       DatabaseQuotaClient* client,
-      scoped_refptr<base::MessageLoopProxy> db_tracker_thread)
+      base::MessageLoopProxy* db_tracker_thread)
       : GetOriginsTaskBase(client, db_tracker_thread) {
   }
 
@@ -103,7 +106,7 @@ class DatabaseQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
  public:
   GetOriginsForHostTask(
       DatabaseQuotaClient* client,
-      scoped_refptr<base::MessageLoopProxy> db_tracker_thread,
+      base::MessageLoopProxy* db_tracker_thread,
       const std::string& host)
       : GetOriginsTaskBase(client, db_tracker_thread),
         host_(host) {
@@ -117,6 +120,57 @@ class DatabaseQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
     client_->DidGetOriginsForHost(host_, origins_);
   }
   std::string host_;
+};
+
+class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
+ public:
+  DeleteOriginTask(
+      DatabaseQuotaClient* client,
+      base::MessageLoopProxy* db_tracker_thread,
+      const GURL& origin_url,
+      DeletionCallback* caller_callback)
+      : HelperTask(client, db_tracker_thread),
+        origin_url_(origin_url),
+        result_(quota::kQuotaStatusUnknown),
+        caller_callback_(caller_callback),
+        ALLOW_THIS_IN_INITIALIZER_LIST(completion_callback_(
+            this, &DeleteOriginTask::OnCompletionCallback)) {
+  }
+
+ private:
+  virtual void Completed() OVERRIDE {
+    if (!caller_callback_.get())
+      return;
+    caller_callback_->Run(result_);
+    caller_callback_.reset();
+  }
+
+  virtual void Aborted() OVERRIDE {
+    caller_callback_.reset();
+  }
+
+  virtual bool RunOnTargetThreadAsync() OVERRIDE {
+    AddRef();  // balanced in OnCompletionCallback
+    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url_);
+    int rv = db_tracker_->DeleteDataForOrigin(origin_id, &completion_callback_);
+    if (rv == net::ERR_IO_PENDING)
+      return false;  // we wait for the callback
+    OnCompletionCallback(rv);
+    return false;
+  }
+
+  void OnCompletionCallback(int rv) {
+    if (rv == net::OK)
+      result_ = quota::kQuotaStatusOk;
+    original_message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &DeleteOriginTask::CallCompleted));
+    Release();  // balanced in RunOnTargetThreadAsync
+  }
+
+  const GURL origin_url_;
+  quota::QuotaStatusCode result_;
+  scoped_ptr<DeletionCallback> caller_callback_;
+  net::CompletionCallbackImpl<DeleteOriginTask> completion_callback_;
 };
 
 // DatabaseQuotaClient --------------------------------------------------------
@@ -202,10 +256,21 @@ void DatabaseQuotaClient::GetOriginsForHost(
 
 void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
                                            quota::StorageType type,
-                                           DeletionCallback* callback) {
-  // TODO(tzik): implement me
-  callback->Run(quota::kQuotaErrorNotSupported);
-  delete callback;
+                                           DeletionCallback* callback_ptr) {
+  DCHECK(callback_ptr);
+  DCHECK(db_tracker_.get());
+  scoped_ptr<DeletionCallback> callback(callback_ptr);
+
+  // All databases are in the temp namespace for now, so nothing to delete.
+  if (type != quota::kStorageTypeTemporary) {
+    callback->Run(quota::kQuotaStatusOk);
+    return;
+  }
+
+  scoped_refptr<DeleteOriginTask> task(
+      new DeleteOriginTask(this, db_tracker_thread_,
+                           origin, callback.release()));
+  task->Start();
 }
 
 void DatabaseQuotaClient::DidGetOriginUsage(

@@ -66,8 +66,18 @@ class QuotaThreadTask : public QuotaTask,
  protected:
   virtual ~QuotaThreadTask();
 
-  // Called on the target message loop.
-  virtual void RunOnTargetThread() = 0;
+  // One of the following Run methods should be overriden for execution
+  // on the target thread.
+
+  // A task to invoke the CallCompleted() method on the original thread will
+  // be scheduled immediately upon return from RunOnTargetThread().
+  virtual void RunOnTargetThread();
+
+  // A task to invoke the CallCompleted() method on the original thread will
+  // only be scheduled if RunOnTargetThreadAsync returns true. If false is
+  // returned, the derived class should schedule a task to do so upon actual
+  // completion.
+  virtual bool RunOnTargetThreadAsync();
 
   virtual void Run() OVERRIDE;
   scoped_refptr<base::MessageLoopProxy> target_message_loop() const {

@@ -67,9 +67,17 @@ void QuotaThreadTask::Run() {
 
 void QuotaThreadTask::CallRunOnTargetThread() {
   DCHECK(target_message_loop_->BelongsToCurrentThread());
+  if (RunOnTargetThreadAsync())
+    original_message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &QuotaThreadTask::CallCompleted));
+}
+
+bool QuotaThreadTask::RunOnTargetThreadAsync() {
   RunOnTargetThread();
-  original_message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &QuotaThreadTask::CallCompleted));
+  return true;
+}
+
+void QuotaThreadTask::RunOnTargetThread() {
 }
 
 // QuotaTaskObserver -------------------------------------------------------

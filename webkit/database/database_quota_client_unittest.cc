@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_quota_client.h"
 #include "webkit/database/database_tracker.h"
@@ -25,7 +26,9 @@ static const quota::StorageType kPerm = quota::kStorageTypePersistent;
 class MockDatabaseTracker : public DatabaseTracker {
  public:
   MockDatabaseTracker()
-      : DatabaseTracker(FilePath(), false, NULL, NULL, NULL) {}
+      : DatabaseTracker(FilePath(), false, NULL, NULL, NULL),
+        delete_called_count_(0),
+        async_delete_(false) {}
 
   virtual ~MockDatabaseTracker() {}
 
@@ -63,11 +66,32 @@ class MockDatabaseTracker : public DatabaseTracker {
     return true;
   }
 
+  virtual int DeleteDataForOrigin(
+      const string16& origin_id,
+      net::CompletionCallback* callback) {
+    ++delete_called_count_;
+    if (async_delete()) {
+      base::MessageLoopProxy::CreateForCurrentThread()->PostTask(FROM_HERE,
+          NewRunnableMethod(this,
+              &MockDatabaseTracker::AsyncDeleteDataForOrigin, callback));
+      return net::ERR_IO_PENDING;
+    }
+    return net::OK;
+  }
+
+  void AsyncDeleteDataForOrigin(net::CompletionCallback* callback) {
+    callback->Run(net::OK);
+  }
+
   void AddMockDatabase(const GURL& origin,  const char* name, int size) {
     MockOriginInfo& info = mock_origin_infos_[origin];
     info.set_origin(DatabaseUtil::GetOriginIdentifier(origin));
     info.AddMockDatabase(ASCIIToUTF16(name), size);
   }
+
+  int delete_called_count() { return delete_called_count_; }
+  bool async_delete() { return async_delete_; }
+  void set_async_delete(bool async) { async_delete_ = async; }
 
  private:
   class MockOriginInfo : public OriginInfo {
@@ -83,6 +107,8 @@ class MockDatabaseTracker : public DatabaseTracker {
     }
   };
 
+  int delete_called_count_;
+  bool async_delete_;
   std::map<GURL, MockOriginInfo> mock_origin_infos_;
 };
 
@@ -121,7 +147,7 @@ class DatabaseQuotaClientTest : public testing::Test {
     origins_.clear();
     client->GetOriginsForType(type,
         callback_factory_.NewCallback(
-        &DatabaseQuotaClientTest::OnGetOriginsComplete));
+            &DatabaseQuotaClientTest::OnGetOriginsComplete));
     MessageLoop::current()->RunAllPending();
     return origins_;
   }
@@ -133,9 +159,21 @@ class DatabaseQuotaClientTest : public testing::Test {
     origins_.clear();
     client->GetOriginsForHost(type, host,
         callback_factory_.NewCallback(
-        &DatabaseQuotaClientTest::OnGetOriginsComplete));
+            &DatabaseQuotaClientTest::OnGetOriginsComplete));
     MessageLoop::current()->RunAllPending();
     return origins_;
+  }
+
+  bool DeleteOriginData(
+      quota::QuotaClient* client,
+      quota::StorageType type,
+      const GURL& origin) {
+    delete_status_ = quota::kQuotaStatusUnknown;
+    client->DeleteOriginData(origin, type,
+        callback_factory_.NewCallback(
+            &DatabaseQuotaClientTest::OnDeleteOriginDataComplete));
+    MessageLoop::current()->RunAllPending();
+    return delete_status_ == quota::kQuotaStatusOk;
   }
 
   MockDatabaseTracker* mock_tracker() { return mock_tracker_.get(); }
@@ -150,8 +188,13 @@ class DatabaseQuotaClientTest : public testing::Test {
     origins_ = origins;
   }
 
+  void OnDeleteOriginDataComplete(quota::QuotaStatusCode status) {
+    delete_status_ = status;
+  }
+
   int64 usage_;
   std::set<GURL> origins_;
+  quota::QuotaStatusCode delete_status_;
   scoped_refptr<MockDatabaseTracker> mock_tracker_;
   base::ScopedCallbackFactory<DatabaseQuotaClientTest> callback_factory_;
 };
@@ -213,6 +256,25 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
 
   EXPECT_TRUE(GetOriginsForType(&client, kPerm).empty());
+}
+
+TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
+  DatabaseQuotaClient client(
+      base::MessageLoopProxy::CreateForCurrentThread(),
+      mock_tracker());
+
+  // Perm deletions are short circuited in the Client and
+  // should not reach the DatabaseTracker.
+  EXPECT_TRUE(DeleteOriginData(&client, kPerm, kOriginA));
+  EXPECT_EQ(0, mock_tracker()->delete_called_count());
+
+  mock_tracker()->set_async_delete(false);
+  EXPECT_TRUE(DeleteOriginData(&client, kTemp, kOriginA));
+  EXPECT_EQ(1, mock_tracker()->delete_called_count());
+
+  mock_tracker()->set_async_delete(true);
+  EXPECT_TRUE(DeleteOriginData(&client, kTemp, kOriginA));
+  EXPECT_EQ(2, mock_tracker()->delete_called_count());
 }
 
 }  // namespace webkit_database
