@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -13,7 +13,7 @@
 #include "barebones.h"
 
 /* NOTE: must not be const to prevent llvm optimizations */
-int startval = 20;
+volatile int startval = 20;
 
 
 int global_array_int[100];
@@ -26,13 +26,6 @@ int main(int argc, char* argv[]) {
   int old_startval;
   int i;
   int result;
-
-  argc = argc & 0xf;
-  if (THIS_IS_ALWAYS_FALSE_FOR_SMALL_NUMBERS(argc)) {
-    /* should never happens - but confuses optimizer */
-    myprint("THIS SHOULD NEVER HAPPEN\n");
-    startval = 100;
-  }
 
   /* put ones everywhere (with some precautions to confuse optimizers */
   for (i = 0 ; i < startval; ++i) {
