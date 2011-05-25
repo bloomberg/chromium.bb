@@ -31,7 +31,22 @@ class MessagePumpGlibX : public MessagePumpForUI {
   virtual bool RunOnce(GMainContext* context, bool block);
 
  private:
+  // Some XEvent's can't be directly read from X event queue and will go
+  // through GDK's dispatching process and may get discarded. This function
+  // sets up a filter to intercept those XEvent's we are interested in
+  // and dispatches them so that they won't get lost.
+  static GdkFilterReturn GdkEventFilter(GdkXEvent* gxevent,
+                                        GdkEvent* gevent,
+                                        gpointer data);
+
   static void EventDispatcherX(GdkEvent* event, gpointer data);
+
+  // Decides whether we are interested in processing this XEvent.
+  bool ShouldCaptureXEvent(XEvent* event);
+
+  // Dispatches the XEvent and returns true if we should exit the current loop
+  // of message processing.
+  bool ProcessXEvent(XEvent* event);
 
   // Sends the event to the observers. If an observer returns true, then it does
   // not send the event to any other observers and returns true. Returns false

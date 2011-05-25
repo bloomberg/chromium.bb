@@ -33,6 +33,7 @@ MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
     dispatching_event_(false),
     capture_x_events_(0),
     capture_gdk_events_(0) {
+  gdk_window_add_filter(NULL, &GdkEventFilter, this);
   gdk_event_handler_set(&EventDispatcherX, this, NULL);
 
 #if defined(HAVE_XINPUT2)
@@ -44,50 +45,63 @@ MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
 MessagePumpGlibX::~MessagePumpGlibX() {
 }
 
+bool MessagePumpGlibX::ShouldCaptureXEvent(XEvent* xev) {
+  return capture_x_events_[xev->type]
+#if defined(HAVE_XINPUT2)
+        && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode_)
+#endif
+    ;
+}
+
+
+bool MessagePumpGlibX::ProcessXEvent(XEvent* xev) {
+  bool should_quit = false;
+
+#if defined(HAVE_XINPUT2)
+  bool have_cookie = false;
+  if (xev->type == GenericEvent &&
+      XGetEventData(xev->xgeneric.display, &xev->xcookie)) {
+    have_cookie = true;
+  }
+#endif
+
+  if (!WillProcessXEvent(xev)) {
+    MessagePumpGlibXDispatcher::DispatchStatus status =
+      static_cast<MessagePumpGlibXDispatcher*>
+      (GetDispatcher())->DispatchX(xev);
+
+    if (status == MessagePumpGlibXDispatcher::EVENT_QUIT) {
+      should_quit = true;
+      Quit();
+    } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
+      DLOG(WARNING) << "Event (" << xev->type << ") not handled.";
+    }
+  }
+
+#if defined(HAVE_XINPUT2)
+  if (have_cookie) {
+    XFreeEventData(xev->xgeneric.display, &xev->xcookie);
+  }
+#endif
+
+  return should_quit;
+}
+
 bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   GdkDisplay* gdisp = gdk_display_get_default();
   if (!gdisp || !GetDispatcher())
     return MessagePumpForUI::RunOnce(context, block);
 
   Display* display = GDK_DISPLAY_XDISPLAY(gdisp);
-  bool should_quit = false;
 
   if (XPending(display)) {
     XEvent xev;
     XPeekEvent(display, &xev);
-    if (capture_x_events_[xev.type]
-#if defined(HAVE_XINPUT2)
-        && (xev.type != GenericEvent || xev.xcookie.extension == xiopcode_)
-#endif
-        ) {
+
+    if (ShouldCaptureXEvent(&xev)) {
       XNextEvent(display, &xev);
-
-#if defined(HAVE_XINPUT2)
-      bool have_cookie = false;
-      if (xev.type == GenericEvent &&
-          XGetEventData(xev.xgeneric.display, &xev.xcookie)) {
-        have_cookie = true;
-      }
-#endif
-
-      if (!WillProcessXEvent(&xev)) {
-        MessagePumpGlibXDispatcher::DispatchStatus status =
-            static_cast<MessagePumpGlibXDispatcher*>
-            (GetDispatcher())->DispatchX(&xev);
-
-        if (status == MessagePumpGlibXDispatcher::EVENT_QUIT) {
-          should_quit = true;
-          Quit();
-        } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
-          DLOG(WARNING) << "Event (" << xev.type << ") not handled.";
-        }
-      }
-
-#if defined(HAVE_XINPUT2)
-      if (have_cookie) {
-        XFreeEventData(xev.xgeneric.display, &xev.xcookie);
-      }
-#endif
+      if (ProcessXEvent(&xev))
+        return true;
     } else {
       // TODO(sad): A couple of extra events can still sneak in during this.
       // Those should be sent back to the X queue from the dispatcher
@@ -97,9 +111,6 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
       g_main_context_iteration(context, FALSE);
     }
   }
-
-  if (should_quit)
-    return true;
 
   bool retvalue;
   if (gdksource_) {
@@ -119,6 +130,20 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   }
 
   return retvalue;
+}
+
+GdkFilterReturn MessagePumpGlibX::GdkEventFilter(GdkXEvent* gxevent,
+                                                 GdkEvent* gevent,
+                                                 gpointer data) {
+  MessagePumpGlibX* pump = static_cast<MessagePumpGlibX*>(data);
+  XEvent* xev = static_cast<XEvent*>(gxevent);
+
+  if (pump->ShouldCaptureXEvent(xev) && pump->GetDispatcher()) {
+    pump->ProcessXEvent(xev);
+    return GDK_FILTER_REMOVE;
+  }
+
+  return GDK_FILTER_CONTINUE;
 }
 
 bool MessagePumpGlibX::WillProcessXEvent(XEvent* xevent) {
@@ -143,10 +168,7 @@ void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
   } else if (!pump_x->IsDispatchingEvent()) {
     if (event->type != GDK_NOTHING &&
         pump_x->capture_gdk_events_[event->type]) {
-      // TODO(sad): An X event is caught by the GDK handler. Put it back in the
-      // X queue so that we catch it in the next iteration. When done, the
-      // following DLOG statement will be removed.
-      DLOG(WARNING) << "GDK received an event it shouldn't have";
+      NOTREACHED() << "GDK received an event it shouldn't have";
     }
   }
 
