@@ -1614,6 +1614,5 @@
    bug_83944
    Heapcheck:Leak
    ...
-   fun:fileapi::FileSystemTestOriginHelper::SetUp
    fun:fileapi::FileSystemOperationTest::SetUp
 }
