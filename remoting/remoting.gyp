@@ -234,6 +234,8 @@
       # depend on chromotocol_proto_lib for headers.
       'hard_dependency': 1,
       'sources': [
+        'base/auth_token_util.cc',
+        'base/auth_token_util.h',
         'base/capture_data.cc',
         'base/capture_data.h',
         'base/compound_buffer.cc',
@@ -621,6 +623,7 @@
         '../testing/gmock/include',
       ],
       'sources': [
+        'base/auth_token_util_unittest.cc',
         'base/codec_test.cc',
         'base/codec_test.h',
         'base/compound_buffer_unittest.cc',

@@ -25,6 +25,7 @@
 #include "base/mac/foundation_util.h"
 #endif
 #include "media/base/media.h"
+#include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_config.h"
@@ -58,7 +59,9 @@
 
  attribute Function void onStateChanged();
 
- void connect(string uid, string auth_token);
+ // The |auth_service_with_token| parametershould be in the format
+ // "auth_service:auth_token".  An example would be "oauth2:1/2a3912vd".
+ void connect(string uid, string auth_service_with_token);
  void disconnect();
 */
 
@@ -388,9 +391,13 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
-  std::string auth_token = StringFromNPVariant(args[1]);
+  std::string auth_service_with_token = StringFromNPVariant(args[1]);
+  std::string auth_token;
+  std::string auth_service;
+  remoting::ParseAuthTokenWithService(auth_service_with_token, &auth_token,
+                                      &auth_service);
   if (auth_token.empty()) {
-    SetException("connect: bad auth_token argument");
+    SetException("connect: auth_service_with_token argument has empty token");
     return false;
   }
 
@@ -422,6 +429,7 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
       new remoting::InMemoryHostConfig;
   host_config->SetString(remoting::kXmppLoginConfigPath, uid);
   host_config->SetString(remoting::kXmppAuthTokenConfigPath, auth_token);
+  host_config->SetString(remoting::kXmppAuthServiceConfigPath, auth_service);
 
   // Create an access verifier and fetch the host secret.
   scoped_ptr<remoting::SupportAccessVerifier> access_verifier;

@@ -19,8 +19,10 @@ namespace remoting {
 extern const char kHostEnabledConfigPath[];
 // Login used to authenticate in XMPP network.
 extern const char kXmppLoginConfigPath[];
-// Auth token used to authenticate in XMPP network.
+// Auth token used to authenticate to XMPP network.
 extern const char kXmppAuthTokenConfigPath[];
+// Auth service used to authenticate to XMPP network.
+extern const char kXmppAuthServiceConfigPath[];
 // Unique identifier of the host used to register the host in directory.
 // Normally a random UUID.
 extern const char kHostIdConfigPath[];

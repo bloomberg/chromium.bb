@@ -33,7 +33,16 @@ found in the LICENSE file.
         <input type="text" name="oauth2_code" id="oauth2_code" />
         <input type="submit"/>
       </form>
-      <div id="xmpp_div">
+      <div id="email_div">
+        Current Email: <span id="current_email"></span>
+        <form id='new_email_form' action=""
+          onsubmit="setEmail(this); return false;">
+          <label for="new_email">New Email:</label>
+          <input type="text" name="new_email" id="new_email" />
+          <input type="submit" name="Set E-mail"/>
+        </form>
+      </div>
+      <div id="xmpp_div" style="display:none;">
         XMPP Token: <span id="xmpp_status"></span>
         <button onclick="clearXmpp();" id="xmpp_clear" style="display:none;">
             Clear
@@ -130,7 +139,8 @@ found in the LICENSE file.
           To connect to another computer, enter the access code provided to you
           by that computer's user.
         </p>
-        <form action="" onsubmit="tryConnect(this); return false;">
+        <form action="" onsubmit="tryConnect(this['access_code_entry'].value);
+              return false;">
           <input type="text"
                  id="access_code_entry"/>
           <button type="submit">

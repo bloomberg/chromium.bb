@@ -85,7 +85,10 @@
 //   //
 //   // When using the sandboxed versions, sendIq must be set and responses to
 //   // calls on sendIq must be piped back into onIq().
-//   void connect(string host_jid, string client_jid,
+//   //
+//   // Note that auth_token_with_service should be specified as
+//   // "auth_service:auth_token". For example, "oauth2:5/aBd123".
+//   void connect(string host_jid, string auth_token_with_service,
 //                optional string access_code);
 //   // Non-sandboxed version used for debugging/testing.
 //   // TODO(garykac): Remove this version once we no longer need it.

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "remoting/base/constants.h"
 #include "remoting/client/client_config.h"
 
 using std::string;
@@ -24,6 +25,7 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
   string host_jid;
   string username;
   string auth_token;
+  string auth_service(kChromotingTokenDefaultServiceName);
 
   for (int i = 1; i < argc; i++) {
     std::string arg = argv[i];
@@ -48,6 +50,12 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
         found_auth_token = true;
         auth_token = argv[i];
       }
+    } else if (arg == "--service") {
+      if (++i >= argc) {
+        LOG(WARNING) << "Expected service name to follow --service option";
+      } else {
+        auth_service = argv[i];
+      }
     } else {
       LOG(WARNING) << "Unrecognized option: " << arg;
     }
@@ -66,6 +74,7 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
   config->host_jid = host_jid;
   config->username = username;
   config->auth_token = auth_token;
+  config->auth_service = auth_service;
   return true;
 }
 

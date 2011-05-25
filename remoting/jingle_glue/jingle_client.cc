@@ -114,11 +114,16 @@ void XmppSignalStrategy::OnConnectionStateChanged(
 buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
     const buzz::XmppClientSettings& settings) {
   buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
+  std::string mechanism = notifier::GaiaTokenPreXmppAuth::kDefaultAuthMechanism;
+  if (settings.token_service() == "oauth2") {
+    mechanism = "X-OAUTH2";
+  }
+
   return new notifier::GaiaTokenPreXmppAuth(
       jid.Str(),
       settings.auth_cookie(),
       settings.token_service(),
-      notifier::GaiaTokenPreXmppAuth::kDefaultAuthMechanism);
+      mechanism);
 }
 
 

@@ -27,8 +27,6 @@ extern "C" {
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/jingle_session_manager.h"
 
-using remoting::kChromotingTokenServiceName;
-
 namespace remoting {
 namespace protocol {
 
@@ -93,7 +91,7 @@ class ProtocolTestClient
   virtual ~ProtocolTestClient() {}
 
   void Run(const std::string& username, const std::string& auth_token,
-           const std::string& host_jid);
+           const std::string& auth_service, const std::string& host_jid);
 
   void OnConnectionClosed(ProtocolTestConnection* connection);
 
@@ -223,12 +221,13 @@ void ProtocolTestConnection::HandleReadResult(int result) {
 
 void ProtocolTestClient::Run(const std::string& username,
                              const std::string& auth_token,
+                             const std::string& auth_service,
                              const std::string& host_jid) {
   remoting::JingleThread jingle_thread;
   jingle_thread.Start();
   signal_strategy_.reset(
       new XmppSignalStrategy(&jingle_thread, username, auth_token,
-                             kChromotingTokenServiceName));
+                             auth_service));
   client_ = new JingleClient(&jingle_thread, signal_strategy_.get(),
                              NULL, NULL, NULL, this);
   client_->Init();
@@ -374,9 +373,14 @@ int main(int argc, char** argv) {
     usage(argv[0]);
   std::string auth_token(cmd_line->GetSwitchValueASCII("auth_token"));
 
+  // Default to OAuth2 for the auth token.
+  std::string auth_service("oauth2");
+  if (cmd_line->HasSwitch("auth_service"))
+    auth_service = cmd_line->GetSwitchValueASCII("auth_service");
+
   scoped_refptr<ProtocolTestClient> client(new ProtocolTestClient());
 
-  client->Run(username, auth_token, host_jid);
+  client->Run(username, auth_token, host_jid, auth_service);
 
   return 0;
 }

@@ -55,6 +55,7 @@ MessageLoop* ConnectionToHost::message_loop() {
 
 void ConnectionToHost::Connect(const std::string& username,
                                const std::string& auth_token,
+                               const std::string& auth_service,
                                const std::string& host_jid,
                                const std::string& access_code,
                                HostEventCallback* event_callback,
@@ -67,8 +68,7 @@ void ConnectionToHost::Connect(const std::string& username,
 
   // Initialize |jingle_client_|.
   signal_strategy_.reset(
-      new XmppSignalStrategy(thread_, username, auth_token,
-                             kChromotingTokenServiceName));
+      new XmppSignalStrategy(thread_, username, auth_token, auth_service));
   jingle_client_ =
       new JingleClient(thread_, signal_strategy_.get(),
                        network_manager_.release(), socket_factory_.release(),

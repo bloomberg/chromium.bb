@@ -95,8 +95,10 @@ void ChromotingHost::Start(Task* shutdown_task) {
 
   std::string xmpp_login;
   std::string xmpp_auth_token;
+  std::string xmpp_auth_service;
   if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
-      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
+      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token) ||
+      !config_->GetString(kXmppAuthServiceConfigPath, &xmpp_auth_service)) {
     LOG(ERROR) << "XMPP credentials are not defined in the config.";
     return;
   }
@@ -105,7 +107,7 @@ void ChromotingHost::Start(Task* shutdown_task) {
   signal_strategy_.reset(
       new XmppSignalStrategy(context_->jingle_thread(), xmpp_login,
                              xmpp_auth_token,
-                             kChromotingTokenServiceName));
+                             xmpp_auth_service));
   jingle_client_ = new JingleClient(context_->jingle_thread(),
                                     signal_strategy_.get(),
                                     NULL, NULL, NULL, this);

@@ -32,6 +32,7 @@
 #include "base/threading/thread.h"
 #include "crypto/nss_util.h"
 #include "media/base/media.h"
+#include "remoting/base/constants.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
@@ -52,6 +53,8 @@
 
 using remoting::ChromotingHost;
 using remoting::DesktopEnvironment;
+using remoting::kChromotingTokenDefaultServiceName;
+using remoting::kXmppAuthServiceConfigPath;
 using remoting::protocol::CandidateSessionConfig;
 using remoting::protocol::ChannelConfig;
 using std::string;
@@ -121,6 +124,13 @@ class SimpleHost {
       context.Stop();
       return 1;
     }
+
+    // For the simple host, we assume we always use the ClientLogin token for
+    // chromiumsync because we do not have an HTTP stack with which we can
+    // easily request an OAuth2 access token even if we had a RefreshToken for
+    // the account.
+    config->SetString(kXmppAuthServiceConfigPath,
+                      kChromotingTokenDefaultServiceName);
 
     // Initialize AccessVerifier.
     // TODO(jamiewalch): For the Me2Mom case, the access verifier is passed to

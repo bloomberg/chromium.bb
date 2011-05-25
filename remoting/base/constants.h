@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,9 @@ namespace remoting {
 extern const char kChromotingBotJid[];
 
 // Service name used for authentication.
-extern const char kChromotingTokenServiceName[];
+// TODO(ajwong): Remove this once we've killed off XmppToken usage.
+// BUG:83897
+extern const char kChromotingTokenDefaultServiceName[];
 
 // Namespace used for chromoting XMPP stanzas.
 extern const char kChromotingXmlNamespace[];

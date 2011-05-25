@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "ppapi/cpp/var.h"
+#include "remoting/base/auth_token_util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/plugin/chromoting_instance.h"
@@ -387,7 +388,7 @@ Var ChromotingScriptableObject::DoConnectUnsandboxed(
   // Parameter order is:
   //   host_jid
   //   username
-  //   xmpp_token
+  //   auth_token
   //   access_code (optional)
   unsigned int arg = 0;
   if (!args[arg].is_string()) {
@@ -403,10 +404,15 @@ Var ChromotingScriptableObject::DoConnectUnsandboxed(
   std::string username = args[arg++].AsString();
 
   if (!args[arg].is_string()) {
-    *exception = Var("The auth_token must be a string.");
+    *exception = Var("The auth_token_with_service must be a string.");
     return Var();
   }
-  std::string auth_token = args[arg++].AsString();
+  std::string auth_token_with_service = args[arg++].AsString();
+
+  std::string auth_service;
+  std::string auth_token;
+  ParseAuthTokenWithService(auth_token_with_service, &auth_token,
+                            &auth_service);
 
   std::string access_code;
   if (args.size() > arg) {
@@ -427,8 +433,10 @@ Var ChromotingScriptableObject::DoConnectUnsandboxed(
   config.host_jid = host_jid;
   config.username = username;
   config.auth_token = auth_token;
+  config.auth_service = auth_service;
   config.nonce = access_code;
   VLOG(1) << "host_jid: " << host_jid << ", username: " << username
+          << ", auth_service: " << auth_service
           << ", access_code: " << access_code;
   instance_->Connect(config);
 

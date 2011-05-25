@@ -73,6 +73,7 @@ class ConnectionToHost : public JingleClient::Callback {
   // TODO(ajwong): We need to generalize this API.
   virtual void Connect(const std::string& username,
                        const std::string& auth_token,
+                       const std::string& auth_service,
                        const std::string& host_jid,
                        const std::string& access_code,
                        HostEventCallback* event_callback,

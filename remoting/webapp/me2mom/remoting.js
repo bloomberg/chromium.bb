@@ -31,12 +31,19 @@ function updateAuthStatus_() {
     document.getElementById('xmpp_form').style.display = 'none';
     xmpp_status.innerText = 'OK';
     xmpp_status.style.color = 'green';
-    remoting.xmppAuthToken = remoting.getItem(XMPP_TOKEN_NAME);
   } else {
     document.getElementById('xmpp_clear').style.display = 'none';
     document.getElementById('xmpp_form').style.display = 'inline';
     xmpp_status.innerText = 'Unauthorized';
     xmpp_status.style.color = 'red';
+  }
+  var current_email = document.getElementById('current_email');
+  if (remoting.getItem(XMPP_LOGIN_NAME)) {
+    oauth2_status.style.color = 'green';
+    current_email.innerText = remoting.getItem(XMPP_LOGIN_NAME);
+  } else {
+    oauth2_status.style.color = 'red';
+    current_email.innerText = 'missing e-mail';
   }
 }
 
@@ -139,6 +146,11 @@ function authorizeXmpp(form) {
   xhr.send(post_data);
 }
 
+function setEmail(form) {
+  remoting.setItem(XMPP_LOGIN_NAME, form['new_email'].value);
+  updateAuthStatus_();
+}
+
 function authorizeOAuth2(code) {
   remoting.oauth2.exchangeCodeForToken(code, updateAuthStatus_);
 }
@@ -194,6 +206,17 @@ function setClientMode(mode) {
 }
 
 function tryShare() {
+  if (remoting.oauth2.needsNewAccessToken()) {
+    remoting.oauth2.refreshAccessToken(function() {
+      if (remoting.oauth2.needsNewAccessToken()) {
+        // If we still need it, we're going to infinite loop.
+        throw "Unable to get access token";
+      }
+      tryShare();
+    });
+    return;
+  }
+
   var div = document.getElementById('plugin_wrapper');
   var plugin = document.createElement('embed');
   plugin.setAttribute('type', 'HOST_PLUGIN_MIMETYPE');
@@ -202,7 +225,7 @@ function tryShare() {
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
   plugin.connect(remoting.getItem(XMPP_LOGIN_NAME),
-                 remoting.getItem(XMPP_TOKEN_NAME));
+                 'oauth2:' + remoting.oauth2.getAccessToken());
 }
 
 function onStateChanged_() {
@@ -287,8 +310,19 @@ function resolveSupportId(support_id) {
     xhr.send(null);
 }
 
-function tryConnect(form) {
-  remoting.accessCode = normalizeAccessCode(form['access_code_entry'].value);
+function tryConnect(accessCode) {
+  if (remoting.oauth2.needsNewAccessToken()) {
+    remoting.oauth2.refreshAccessToken(function() {
+      if (remoting.oauth2.needsNewAccessToken()) {
+        // If we still need it, we're going to infinite loop.
+        throw "Unable to get access token";
+      }
+      tryConnect(accessCode);
+    });
+    return;
+  }
+
+  remoting.accessCode = accessCode;
   // TODO(jamiewalch): Since the mapping from (SupportId, HostSecret) to
   // AccessCode is not yet defined, assume it's hyphen-separated for now.
   var parts = remoting.accessCode.split('-');
@@ -296,14 +330,7 @@ function tryConnect(form) {
     showConnectError_(404);
   } else {
     setClientMode('connecting');
-    if (remoting.oauth2.needsNewAccessToken()) {
-      remoting.oauth2.refreshAccessToken(function() {
-        resolveSupportId(parts[0]);
-      });
-      return;
-    } else {
-      resolveSupportId(parts[0]);
-    }
+    resolveSupportId(parts[0]);
   }
 }
 

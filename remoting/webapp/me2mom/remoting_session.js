@@ -146,7 +146,8 @@ function init() {
       registerConnection();
     } else {
       plugin.connectUnsandboxed(remoting.hostjid, remoting.username,
-                                remoting.xmppAuthToken, remoting.accessCode);
+                                'oauth2:' + remoting.oauth2.getAccessToken(),
+                                remoting.accessCode);
     }
   } else {
     addToDebugLog('ERROR: remoting plugin not loaded');
