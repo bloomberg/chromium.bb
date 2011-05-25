@@ -22,7 +22,7 @@ class HistoryTabHelper : public TabContentsObserver,
                          public NotificationObserver {
  public:
   explicit HistoryTabHelper(TabContents* tab_contents);
-  ~HistoryTabHelper();
+  virtual ~HistoryTabHelper();
 
   // Updates history with the specified navigation. This is called by
   // OnMsgNavigate to update history state.
