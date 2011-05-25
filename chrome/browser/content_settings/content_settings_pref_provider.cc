@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
@@ -371,6 +372,11 @@ void PrefProvider::Init() {
 
   // Read exceptions.
   ReadExceptions(false);
+
+  if (!is_incognito()) {
+    UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfExceptions",
+                         host_content_settings()->size());
+  }
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kContentSettingsPatterns, this);
