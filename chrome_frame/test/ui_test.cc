@@ -426,7 +426,7 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
             AccDoDefaultAction(AccObjectMatcher(L"Save", L"push button"))));
 
     EXPECT_CALL(win_observer_mock, OnWindowClose(_))
-        .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 5000));
+        .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 8000));
 
     LaunchIENavigateAndLoop(GetTestUrl(L"save_as_context_menu.html"),
                             kChromeFrameVeryLongNavigationTimeoutInSeconds);
@@ -565,7 +565,7 @@ TEST_F(ContextMenuTest, FLAKY_CFSavePageAs) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=83114
-TEST_F(ContextMenuTest, DISABLED_CFSaveLinkAs) {
+TEST_F(ContextMenuTest, FLAKY_CFSaveLinkAs) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&

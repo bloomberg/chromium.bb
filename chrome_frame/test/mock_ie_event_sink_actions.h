@@ -347,11 +347,11 @@ ACTION_P(VerifySelectedText, expected_text) {
 ACTION_P3(CloseWhenFileSaved, mock, file, timeout_ms) {
   base::Time start = base::Time::Now();
   while (!file_util::PathExists(file)) {
-    base::PlatformThread::Sleep(200);
     if ((base::Time::Now() - start).InMilliseconds() > timeout_ms) {
       ADD_FAILURE() << "File was not saved within timeout";
       break;
     }
+    base::PlatformThread::Sleep(200);
   }
   mock->event_sink()->CloseWebBrowser();
 }
