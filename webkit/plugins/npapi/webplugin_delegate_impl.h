@@ -177,6 +177,12 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Indicates that it's time to send the plugin a null event.
   void FireIdleEvent();
 #endif
+
+  // TODO(caryclark): This is a temporary workaround to allow the Darwin / Skia
+  // port to share code with the Darwin / CG port. Later, this will be removed
+  // and all callers will use the Paint defined above.
+  void CGPaint(CGContextRef context, const gfx::Rect& rect);
+
 #endif  // OS_MACOSX
 
   gfx::PluginWindowHandle windowed_handle() const {

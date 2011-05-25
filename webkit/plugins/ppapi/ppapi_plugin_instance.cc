@@ -78,6 +78,10 @@
 #include "ui/gfx/gdi_util.h"
 #endif
 
+#if defined(OS_MACOSX) && defined(USE_SKIA)
+#include "skia/ext/skia_utils_mac.h"
+#endif
+
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
@@ -1333,18 +1337,24 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   // Create a PDF metafile and render from there into the passed in context.
   if (metafile.InitFromData(buffer->mapped_buffer(), buffer->size())) {
     // Flip the transform.
-    CGContextSaveGState(canvas);
-    CGContextTranslateCTM(canvas, 0,
+#if defined(USE_SKIA)
+    gfx::SkiaBitLocker bit_locker(canvas);
+    CGContextRef cgContext = bit_locker.cgContext();
+#else
+    CGContextRef cgContext = canvas;
+#endif
+    CGContextSaveGState(cgContext);
+    CGContextTranslateCTM(cgContext, 0,
                           current_print_settings_.printable_area.size.height);
-    CGContextScaleCTM(canvas, 1.0, -1.0);
+    CGContextScaleCTM(cgContext, 1.0, -1.0);
     CGRect page_rect;
     page_rect.origin.x = current_print_settings_.printable_area.point.x;
     page_rect.origin.y = current_print_settings_.printable_area.point.y;
     page_rect.size.width = current_print_settings_.printable_area.size.width;
     page_rect.size.height = current_print_settings_.printable_area.size.height;
 
-    ret = metafile.RenderPage(1, canvas, page_rect, true, false, true, true);
-    CGContextRestoreGState(canvas);
+    ret = metafile.RenderPage(1, cgContext, page_rect, true, false, true, true);
+    CGContextRestoreGState(cgContext);
   }
 #elif defined(OS_WIN)
   printing::Metafile* metafile =
@@ -1428,16 +1438,16 @@ bool PluginInstance::PrintRasterOutput(PP_Resource print_output,
     draw_to_canvas = false;
   }
 #endif  // defined(OS_WIN)
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(USE_SKIA)
   draw_to_canvas = false;
   DrawSkBitmapToCanvas(*bitmap, canvas, dest_rect_gfx,
                        current_print_settings_.printable_area.size.height);
   // See comments in the header file.
   last_printed_page_ = image;
-#else  // defined(OS_MACOSX)
+#else  // defined(OS_MACOSX) && !defined(USE_SKIA)
   if (draw_to_canvas)
     canvas->drawBitmapRect(*bitmap, &src_rect, dest_rect);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) && !defined(USE_SKIA)
   return true;
 }
 
@@ -1490,7 +1500,7 @@ bool PluginInstance::DrawJPEGToPlatformDC(
 }
 #endif  // OS_WIN
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(USE_SKIA)
 void PluginInstance::DrawSkBitmapToCanvas(
     const SkBitmap& bitmap, WebKit::WebCanvas* canvas,
     const gfx::Rect& dest_rect,
@@ -1523,7 +1533,7 @@ void PluginInstance::DrawSkBitmapToCanvas(
   CGContextDrawImage(canvas, bounds, image);
   CGContextRestoreGState(canvas);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) && !defined(USE_SKIA)
 
 PPB_Graphics2D_Impl* PluginInstance::bound_graphics_2d() const {
   if (bound_graphics_.get() == NULL)

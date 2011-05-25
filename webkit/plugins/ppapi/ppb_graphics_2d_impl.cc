@@ -426,7 +426,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   ImageDataAutoMapper auto_mapper(image_data_);
   const SkBitmap& backing_bitmap = *image_data_->GetMappedBitmap();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(USE_SKIA)
   SkAutoLockPixels lock(backing_bitmap);
 
   base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(

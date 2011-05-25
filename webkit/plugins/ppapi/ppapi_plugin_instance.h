@@ -312,7 +312,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool DrawJPEGToPlatformDC(const SkBitmap& bitmap,
                             const gfx::Rect& printable_area,
                             WebKit::WebCanvas* canvas);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(USE_SKIA)
   // Draws the given kARGB_8888_Config bitmap to the specified canvas starting
   // at the specified destination rect.
   void DrawSkBitmapToCanvas(const SkBitmap& bitmap, WebKit::WebCanvas* canvas,

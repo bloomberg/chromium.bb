@@ -351,7 +351,10 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
     CGContextClearRect(windowless_context_, rect.ToCGRect());
   }
   CGContextClipToRect(windowless_context_, rect.ToCGRect());
-  delegate_->Paint(windowless_context_, rect);
+  // TODO(caryclark): This is a temporary workaround to allow the Darwin / Skia
+  // port to share code with the Darwin / CG port. All ports will eventually use
+  // the common code below.
+  delegate_->CGPaint(windowless_context_, rect);
   if (windowless_context_.get() == saved_context_weak)
     CGContextRestoreGState(windowless_context_);
 #else

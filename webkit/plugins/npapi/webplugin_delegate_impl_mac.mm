@@ -37,6 +37,10 @@
 #include "webkit/plugins/npapi/quickdraw_drawing_manager_mac.h"
 #endif
 
+#if defined(USE_SKIA)
+#include "skia/ext/skia_utils_mac.h"
+#endif
+
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
@@ -457,7 +461,19 @@ void WebPluginDelegateImpl::UpdateGeometryAndContext(
   UpdateGeometry(window_rect, clip_rect);
 }
 
-void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
+void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
+                                  const gfx::Rect& rect) {
+#if defined(USE_SKIA)
+  gfx::SkiaBitLocker bit_locker(canvas);
+  CGContextRef context = bit_locker.cgContext();
+#else
+  CGContextRef context = canvas;
+#endif
+  CGPaint(context, rect);
+}
+
+void WebPluginDelegateImpl::CGPaint(CGContextRef context,
+                                    const gfx::Rect& rect) {
   WindowlessPaint(context, rect);
 
 #ifndef NP_NO_QUICKDRAW
