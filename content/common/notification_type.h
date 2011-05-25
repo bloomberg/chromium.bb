@@ -820,6 +820,10 @@ class NotificationType {
 
     // Extensions --------------------------------------------------------------
 
+    // Sent when a CrxInstaller finishes. Source is the CrxInstaller that
+    // finished.  No details.
+    CRX_INSTALLER_DONE,
+
     // Sent when the known installed extensions have all been loaded.  In
     // testing scenarios this can happen multiple times if extensions are
     // unloaded and reloaded. The source is a Profile.

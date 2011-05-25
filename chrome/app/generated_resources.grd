@@ -2147,6 +2147,10 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
                desc="Time left until the file download completes and the file is opened.">
         Opening in <ph name="TIME_REMAINING">$1<ex>5 sec</ex></ph>...
       </message>
+      <message name="IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING"
+               desc="Message shown when a CRX has been downloaded and is being unpacked.">
+        Installing...
+      </message>
       <message name="IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE"
          desc="Status that the file download will be opened when the download completes.">
         Opening when complete

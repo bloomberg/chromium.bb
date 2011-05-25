@@ -525,6 +525,8 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
 
   if (client_)
     client_->OnInstallFailure(error);
+
+  NotifyCrxInstallComplete();
 }
 
 void CrxInstaller::ReportSuccessFromFileThread() {
@@ -551,6 +553,20 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   frontend_weak_->OnExtensionInstalled(extension_);
   extension_ = NULL;
 
+  NotifyCrxInstallComplete();
+
   // We're done. We don't post any more tasks to ourselves so we are deleted
   // soon.
+}
+
+void CrxInstaller::NotifyCrxInstallComplete() {
+  // Some users (such as the download shelf) need to know when a
+  // CRXInstaller is done.  Listening for the EXTENSION_* events
+  // is problematic because they don't know anything about the
+  // extension before it is unpacked, so they can not filter based
+  // on the extension.
+  NotificationService::current()->Notify(
+      NotificationType::CRX_INSTALLER_DONE,
+      Source<CrxInstaller>(this),
+      NotificationService::NoDetails());
 }
