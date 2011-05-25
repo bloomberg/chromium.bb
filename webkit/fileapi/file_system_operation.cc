@@ -13,6 +13,7 @@
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
@@ -36,9 +37,6 @@ FileSystemOperation::FileSystemOperation(
 #ifndef NDEBUG
   pending_operation_ = kOperationNone;
 #endif
-  // TODO(dmikurube): Read and set available bytes from the Quota Manager.
-  file_system_operation_context_.set_allowed_bytes_growth(
-      QuotaFileUtil::kNoLimit);
 }
 
 FileSystemOperation::~FileSystemOperation() {
@@ -656,8 +654,9 @@ void FileSystemOperation::DidEnsureFileExistsExclusive(
   if (rv == base::PLATFORM_FILE_OK && !created) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_EXISTS);
     delete this;
-  } else
+  } else {
     DidFinishFileOperation(rv);
+  }
 }
 
 void FileSystemOperation::DidEnsureFileExistsNonExclusive(
@@ -817,6 +816,18 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
   *file_system_file_util =
       file_system_context()->path_manager()->GetFileSystemFileUtil(*type);
   DCHECK(*file_system_file_util);
+
+  // We notify this read access whether the read access succeeds or not.
+  // This must be ok since this is used to let the QM's eviction logic know
+  // someone is interested in reading the origin data and therefore to indicate
+  // that evicting this origin may not be a good idea.
+  FileSystemQuotaUtil* quota_util = file_system_context()->GetQuotaUtil(*type);
+  if (quota_util) {
+    quota_util->NotifyOriginWasAccessedOnIOThread(
+        file_system_context()->quota_manager_proxy(),
+        *origin_url,
+        *type);
+  }
 
   return true;
 }
