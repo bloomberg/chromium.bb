@@ -924,7 +924,18 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
   }
 }
 
-TEST_F(QuotaManagerTest, NotifyAndLRUOrigin) {
+#if defined(OS_WIN)
+// http://crbug.com/83805.  Time is too granular for the LRU tests on
+// Windows, and a new version of SQLite is returning values in a
+// different (implementation-defined and appropriate) order.
+#define MAYBE_NotifyAndLRUOrigin DISABLED_NotifyAndLRUOrigin
+#define MAYBE_GetLRUOriginWithOriginInUse DISABLED_GetLRUOriginWithOriginInUse
+#else
+#define MAYBE_NotifyAndLRUOrigin NotifyAndLRUOrigin
+#define MAYBE_GetLRUOriginWithOriginInUse GetLRUOriginWithOriginInUse
+#endif
+
+TEST_F(QuotaManagerTest, MAYBE_NotifyAndLRUOrigin) {
   static const MockOriginData kData[] = {
     { "http://a.com/",   kStorageTypeTemporary,  0 },
     { "http://a.com:1/", kStorageTypeTemporary,  0 },
@@ -963,7 +974,7 @@ TEST_F(QuotaManagerTest, NotifyAndLRUOrigin) {
   EXPECT_EQ("http://c.com/", lru_origin().spec());
 }
 
-TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
+TEST_F(QuotaManagerTest, MAYBE_GetLRUOriginWithOriginInUse) {
   static const MockOriginData kData[] = {
     { "http://a.com/",   kStorageTypeTemporary,  0 },
     { "http://a.com:1/", kStorageTypeTemporary,  0 },
