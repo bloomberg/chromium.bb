@@ -1,4 +1,4 @@
-#!/bin/bash
+fg#!/bin/bash
 # Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -1918,7 +1918,7 @@ binutils-sb-make() {
   RunWithLog binutils.${arch}.sandboxed.make \
       env -i PATH="/usr/bin:/bin" \
       NACL_SRPC=${build_with_srpc} \
-      make ${MAKE_OPTS} all-gas all-ld
+      make ${MAKE_OPTS} all-ld
 
   ts-touch-commit "${objdir}"
 
@@ -1936,7 +1936,7 @@ binutils-sb-install() {
 
   RunWithLog binutils.${arch}.${mode}.sandboxed.install \
       env -i PATH="/usr/bin:/bin" \
-      make install-gas install-ld
+      make install-ld
 
   spopd
 }
