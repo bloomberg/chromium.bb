@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_VIDEO_DECODER_HOST_H_
-#define CONTENT_RENDERER_GPU_VIDEO_DECODER_HOST_H_
+#ifndef CONTENT_RENDERER_GPU_GPU_VIDEO_DECODER_HOST_H_
+#define CONTENT_RENDERER_GPU_GPU_VIDEO_DECODER_HOST_H_
 
 #include <deque>
 #include <map>
 
 #include "base/memory/singleton.h"
 #include "base/shared_memory.h"
-#include "content/renderer/gpu_channel_host.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 #include "media/video/video_decode_engine.h"
@@ -162,4 +162,4 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoderHost);
 };
 
-#endif  // CONTENT_RENDERER_GPU_VIDEO_DECODER_HOST_H_
+#endif  // CONTENT_RENDERER_GPU_GPU_VIDEO_DECODER_HOST_H_

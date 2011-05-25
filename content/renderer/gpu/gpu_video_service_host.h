@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_VIDEO_SERVICE_HOST_H_
-#define CONTENT_RENDERER_GPU_VIDEO_SERVICE_HOST_H_
+#ifndef CONTENT_RENDERER_GPU_GPU_VIDEO_SERVICE_HOST_H_
+#define CONTENT_RENDERER_GPU_GPU_VIDEO_SERVICE_HOST_H_
 
 #include "base/memory/singleton.h"
-#include "content/renderer/gpu_channel_host.h"
-#include "content/renderer/gpu_video_decoder_host.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
+#include "content/renderer/gpu/gpu_video_decoder_host.h"
 #include "ipc/ipc_channel.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
@@ -74,4 +74,4 @@ class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(GpuVideoServiceHost);
 };
 
-#endif  // CONTENT_RENDERER_GPU_VIDEO_SERVICE_HOST_H_
+#endif  // CONTENT_RENDERER_GPU_GPU_VIDEO_SERVICE_HOST_H_

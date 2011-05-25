@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "content/renderer/transport_texture_host.h"
+#include "content/renderer/gpu/transport_texture_host.h"
 
 // On Mac gl2.h clashes with gpu_messages.h and this problem hasn't been
 // solved yet so exclude building on Mac.
@@ -14,8 +14,8 @@
 
 #include "base/message_loop.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/renderer/renderer_gl_context.h"
-#include "content/renderer/transport_texture_service.h"
+#include "content/renderer/gpu/renderer_gl_context.h"
+#include "content/renderer/gpu/transport_texture_service.h"
 
 TransportTextureHost::TransportTextureHost(MessageLoop* io_message_loop,
                                            MessageLoop* render_message_loop,

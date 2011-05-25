@@ -27,7 +27,7 @@
 #include "content/plugin/npobject_proxy.h"
 #include "content/plugin/npobject_stub.h"
 #include "content/plugin/npobject_util.h"
-#include "content/renderer/command_buffer_proxy.h"
+#include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_thread.h"

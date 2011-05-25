@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu_surface_proxy.h"
+#include "content/renderer/gpu/gpu_surface_proxy.h"
 #include "ui/gfx/size.h"
 
 GpuSurfaceProxy::GpuSurfaceProxy(

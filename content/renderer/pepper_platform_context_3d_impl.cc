@@ -4,10 +4,10 @@
 
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 
-#include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/render_thread.h"
-#include "content/renderer/renderer_gl_context.h"
-#include "content/renderer/gpu_channel_host.h"
+#include "content/renderer/gpu/renderer_gl_context.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
+#include "content/renderer/gpu/command_buffer_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu_video_decode_accelerator_host.h"
+#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
 
 #include "base/logging.h"
 #include "base/shared_memory.h"

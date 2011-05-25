@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu_channel_host.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
 
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/renderer/command_buffer_proxy.h"
-#include "content/renderer/gpu_surface_proxy.h"
-#include "content/renderer/gpu_video_service_host.h"
+#include "content/renderer/gpu/command_buffer_proxy.h"
+#include "content/renderer/gpu/gpu_surface_proxy.h"
+#include "content/renderer/gpu/gpu_video_service_host.h"
+#include "content/renderer/gpu/transport_texture_service.h"
 #include "content/renderer/render_thread.h"
-#include "content/renderer/transport_texture_service.h"
 #include "googleurl/src/gurl.h"
 
 GpuChannelHost::GpuChannelHost()

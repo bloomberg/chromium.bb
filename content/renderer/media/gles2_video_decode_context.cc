@@ -5,8 +5,8 @@
 #include <GLES2/gl2.h>
 
 #include "base/message_loop.h"
+#include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/media/gles2_video_decode_context.h"
-#include "content/renderer/renderer_gl_context.h"
 
 Gles2VideoDecodeContext::Gles2VideoDecodeContext(
     MessageLoop* message_loop, bool memory_mapped, RendererGLContext* context)

@@ -6,7 +6,7 @@
 
 #include "base/task.h"
 #include "content/common/child_process.h"
-#include "content/renderer/renderer_gl_context.h"
+#include "content/renderer/gpu/renderer_gl_context.h"
 #include "media/base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/filter_host.h"

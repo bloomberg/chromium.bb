@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_CHANNEL_HOST_H_
-#define CONTENT_RENDERER_GPU_CHANNEL_HOST_H_
+#ifndef CONTENT_RENDERER_GPU_GPU_CHANNEL_HOST_H_
+#define CONTENT_RENDERER_GPU_GPU_CHANNEL_HOST_H_
 #pragma once
 
 #include <string>
@@ -127,4 +127,4 @@ class GpuChannelHost : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };
 
-#endif  // CONTENT_RENDERER_GPU_CHANNEL_HOST_H_
+#endif  // CONTENT_RENDERER_GPU_GPU_CHANNEL_HOST_H_

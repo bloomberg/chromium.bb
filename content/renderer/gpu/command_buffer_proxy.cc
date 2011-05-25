@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/command_buffer_proxy.h"
+#include "content/renderer/gpu/command_buffer_proxy.h"
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"

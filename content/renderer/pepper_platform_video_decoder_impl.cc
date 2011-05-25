@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/common/child_process.h"
-#include "content/renderer/gpu_channel_host.h"
-#include "content/renderer/gpu_video_decode_accelerator_host.h"
-#include "content/renderer/gpu_video_service_host.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
+#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
+#include "content/renderer/gpu/gpu_video_service_host.h"
 #include "content/renderer/render_thread.h"
 
 using media::BitstreamBuffer;

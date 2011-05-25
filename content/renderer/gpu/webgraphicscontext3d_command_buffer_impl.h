@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
-#define CONTENT_RENDERER_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
+#ifndef CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
+#define CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
 #pragma once
 
 #if defined(ENABLE_GPU)
@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/renderer_gl_context.h"
+#include "content/renderer/gpu/renderer_gl_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -467,4 +467,4 @@ class WebGraphicsContext3DCommandBufferImpl
 };
 
 #endif  // defined(ENABLE_GPU)
-#endif  // CONTENT_RENDERER_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
+#endif  // CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_

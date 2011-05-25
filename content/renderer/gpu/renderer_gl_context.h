@@ -6,8 +6,8 @@
 // and pepper's PGL. This API is used to manage OpenGL RendererGLContexts in the
 // Chrome renderer process in a way that is consistent with other platforms.
 
-#ifndef CONTENT_RENDERER_RENDERER_GL_CONTEXT_H_
-#define CONTENT_RENDERER_RENDERER_GL_CONTEXT_H_
+#ifndef CONTENT_RENDERER_GPU_RENDERER_GL_CONTEXT_H_
+#define CONTENT_RENDERER_GPU_RENDERER_GL_CONTEXT_H_
 #pragma once
 
 #include "base/callback_old.h"
@@ -236,4 +236,4 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   DISALLOW_COPY_AND_ASSIGN(RendererGLContext);
 };
 
-#endif  // CONTENT_RENDERER_RENDERER_GL_CONTEXT_H_
+#endif  // CONTENT_RENDERER_GPU_RENDERER_GL_CONTEXT_H_

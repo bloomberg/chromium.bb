@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu_video_decoder_host.h"
+#include "content/renderer/gpu/gpu_video_decoder_host.h"
 
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/message_router.h"
