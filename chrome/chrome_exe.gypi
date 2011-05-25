@@ -484,7 +484,7 @@
       'conditions': [
         ['OS=="mac"', {
           'copies': [{
-            'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)/<(mac_product_name) Helper.app/Contents/MacOS/',
+            'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)/<(mac_product_name) Framework.framework/Libraries/',
             'files': ['<(PRODUCT_DIR)/osmesa.so'],
           }],
         }],

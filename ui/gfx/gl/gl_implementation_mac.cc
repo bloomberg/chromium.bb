@@ -31,6 +31,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
         return false;
       }
 
+      // osmesa.so is located in:
+      // Contents/Versions/<vers>/Chromium Framework.framework/Libraries
+      module_path = module_path.DirName().Append("Libraries");
+
       // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append("osmesa.so"), NULL);
