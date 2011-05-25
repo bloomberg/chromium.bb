@@ -1203,6 +1203,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Must happen before we try to use a message loop or display any UI.
   InitializeToolkit(parameters);
 
+#if defined(OS_CHROMEOS)
+  // Stub out chromeos implementations. We need to do as early as possible
+  // because it is initialized on first use when it is initialized
+  // SetUseStubImpl doesn't do anything.
+  if (parameters.command_line_.HasSwitch(switches::kStubCros))
+    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+#endif
+
   parts->MainMessageLoopStart();
 
   // WARNING: If we get a WM_ENDSESSION, objects created on the stack here
@@ -1532,10 +1540,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Profile creation ----------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
-  // Stub out chromeos implementations.
-  if (parsed_command_line.HasSwitch(switches::kStubCros))
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
-
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
   chromeos::ScreenLocker::InitClass();
