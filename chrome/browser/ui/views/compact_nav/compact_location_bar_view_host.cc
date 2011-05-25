@@ -365,7 +365,10 @@ void CompactLocationBarViewHost::TabChangedAt(TabContentsWrapper* contents,
 }
 
 void CompactLocationBarViewHost::ActiveTabClicked(int index) {
+  // On active tab click, show the compact location bar and also select all the
+  // contents for quick editing.
   UpdateOnTabChange(index, true);
+  GetCompactLocationBarView()->SetFocusAndSelection(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
