@@ -269,10 +269,10 @@ void ThreadWatcher::GotNoResponse() {
   // Crash the browser if IO thread hasn't responded atleast kUnresponsiveCount
   // times and if the number of other threads is equal to 1. We picked 1 to
   // reduce the number of crashes and to get some sample data.
-  // if (thread_id_ == BrowserThread::IO && no_of_responding_threads == 1) {
-  //   int* crash = NULL;
-  //   CHECK(crash++);
-  // }
+  if (thread_id_ == BrowserThread::IO && no_of_responding_threads == 1) {
+    int* crash = NULL;
+    CHECK(crash++);
+  }
 
   hung_processing_complete_ = true;
 }
