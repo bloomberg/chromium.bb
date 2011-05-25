@@ -544,6 +544,7 @@ class RenderView : public RenderWidget,
       unsigned long long event_id);
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,
                                      const WebKit::WebSize& size);
+  virtual void mayHaveChangedRenderedSize(WebKit::WebFrame* frame);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void reportFindInPageMatchCount(int request_id,
                                           int count,
@@ -1029,6 +1030,10 @@ class RenderView : public RenderWidget,
   // so we must poll it. See also:
   // https://bugs.webkit.org/show_bug.cgi?id=32807.
   base::RepeatingTimer<RenderView> preferred_size_change_timer_;
+
+  // Used to delay determining the preferred size (to avoid intermediate
+  // states for the sizes).
+  base::OneShotTimer<RenderView> check_preferred_size_timer_;
 
 #if defined(OS_MACOSX)
   // Track the fake plugin window handles allocated on the browser side for

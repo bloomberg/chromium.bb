@@ -2718,6 +2718,16 @@ void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
   CheckPreferredSize();
 }
 
+void RenderView::mayHaveChangedRenderedSize(WebFrame* frame) {
+  if (!send_preferred_size_changes_ || !webview())
+    return;
+  // If we hit this code path, then stop the deprecated timer.
+  check_preferred_size_timer_.Stop();
+  preferred_size_change_timer_.Stop();
+  preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
+                                     &RenderView::CheckPreferredSize);
+}
+
 void RenderView::CheckPreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // be put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
