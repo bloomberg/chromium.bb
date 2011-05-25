@@ -139,7 +139,7 @@ class ImageBurnResourceManager
   friend struct DefaultSingletonTraits<ImageBurnResourceManager>;
 
   ImageBurnResourceManager();
-  ~ImageBurnResourceManager();
+  virtual ~ImageBurnResourceManager();
 
   FilePath image_dir_;
   FilePath config_file_path_;

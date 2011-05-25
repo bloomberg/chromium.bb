@@ -228,7 +228,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // Creates a MenuController. If blocking is true, Run blocks the caller
   explicit MenuController(bool blocking);
 
-  ~MenuController();
+  virtual ~MenuController();
 
   // If there is a hot tracked view AcceleratorPressed is invoked on it and
   // true is returned.

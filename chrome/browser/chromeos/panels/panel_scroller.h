@@ -18,7 +18,7 @@ class PanelScrollerHeader;
 class PanelScroller : public views::View, public ui::AnimationDelegate {
  public:
   PanelScroller();
-  ~PanelScroller();
+  virtual ~PanelScroller();
 
   static PanelScroller* CreateWindow();
 
@@ -66,4 +66,3 @@ class PanelScroller : public views::View, public ui::AnimationDelegate {
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_H_
-

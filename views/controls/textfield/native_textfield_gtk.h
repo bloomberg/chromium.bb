@@ -19,7 +19,7 @@ class NativeTextfieldGtk : public NativeControlGtk,
                            public NativeTextfieldWrapper {
  public:
   explicit NativeTextfieldGtk(Textfield* parent);
-  ~NativeTextfieldGtk();
+  virtual ~NativeTextfieldGtk();
 
   // Returns the textfield this NativeTextfieldGtk wraps.
   Textfield* textfield() const { return textfield_; }
