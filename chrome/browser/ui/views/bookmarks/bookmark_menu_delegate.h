@@ -174,6 +174,10 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // Is the menu being shown for a drop?
   bool for_drop_;
 
+  // If non-NULL this is the |parent| passed to Init and is NOT owned by us.
+  views::MenuItemView* parent_menu_item_;
+
+  // Maps from node to menu. This is used if a NULL parent is passed to Init().
   NodeToMenuMap node_to_menu_map_;
 
   // ID of the next menu item.

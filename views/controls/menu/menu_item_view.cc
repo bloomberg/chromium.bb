@@ -37,10 +37,10 @@ class EmptyMenuMenuItem : public MenuItemView {
  public:
   explicit EmptyMenuMenuItem(MenuItemView* parent)
       : MenuItemView(parent, 0, NORMAL) {
-    SetTitle(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU)));
     // Set this so that we're not identified as a normal menu item.
     SetID(kEmptyMenuItemViewID);
+    SetTitle(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU)));
     SetEnabled(false);
   }
 
@@ -738,6 +738,11 @@ int MenuItemView::GetChildPreferredWidth() {
 }
 
 string16 MenuItemView::GetAcceleratorText() {
+  if (GetID() == kEmptyMenuItemViewID) {
+    // Don't query the delegate for menus that represent no children.
+    return string16();
+  }
+
   Accelerator accelerator;
   return (GetDelegate() &&
           GetDelegate()->GetAccelerator(GetCommand(), &accelerator)) ?

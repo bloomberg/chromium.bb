@@ -41,6 +41,7 @@ BookmarkMenuDelegate::BookmarkMenuDelegate(Profile* profile,
       parent_(parent),
       menu_(NULL),
       for_drop_(false),
+      parent_menu_item_(NULL),
       next_menu_id_(first_menu_id),
       real_delegate_(NULL),
       is_mutating_model_(false) {
@@ -59,6 +60,7 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
   profile_->GetBookmarkModel()->AddObserver(this);
   real_delegate_ = real_delegate;
   if (parent) {
+    parent_menu_item_ = parent;
     BuildMenu(node, start_child_index, parent, &next_menu_id_);
     if (show_options == SHOW_OTHER_FOLDER)
       BuildOtherFolderMenu(parent, &next_menu_id_);
@@ -69,6 +71,7 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
 
 void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
                                          int start_index) {
+  DCHECK(!parent_menu_item_);
   if (!node_to_menu_map_[node])
     CreateMenu(node, start_index, HIDE_OTHER_FOLDER);
   menu_ = node_to_menu_map_[node];
@@ -279,6 +282,13 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
       return;
     }
   }
+
+  if (parent_menu_item_) {
+    MenuItemView* menu_item = parent_menu_item_->GetMenuItemByID(
+        menu_pair->second);
+    if (menu_item)
+      menu_item->SetIcon(model->GetFavicon(node));
+  }
 }
 
 void BookmarkMenuDelegate::WillRemoveBookmarks(
@@ -366,7 +376,8 @@ MenuItemView* BookmarkMenuDelegate::GetMenuByID(int id) {
     if (menu)
       return menu;
   }
-  return NULL;
+
+  return parent_menu_item_ ? parent_menu_item_->GetMenuItemByID(id) : NULL;
 }
 
 void BookmarkMenuDelegate::WillRemoveBookmarksImpl(
