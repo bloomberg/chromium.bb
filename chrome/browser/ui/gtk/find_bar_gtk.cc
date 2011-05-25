@@ -65,8 +65,9 @@ const int kBarPaddingRight = 4;
 // images.
 const int kFindBarHeight = 32;
 
-// The width of the text entry field.
-const int kTextEntryWidth = 220;
+// The default width of the findbar dialog. It may get smaller if the window
+// is narrow.
+const int kFindBarWidth = 303;
 
 // The size of the "rounded" corners.
 const int kCornerSize = 3;
@@ -157,15 +158,11 @@ const NineBox* GetDialogBorder() {
 // returns both the event box and the alignment so we can modify it during its
 // lifetime (i.e. during a theme change).
 void BuildBorder(GtkWidget* child,
-                 bool center,
                  int padding_top, int padding_bottom, int padding_left,
                  int padding_right,
                  GtkWidget** ebox, GtkWidget** alignment) {
   *ebox = gtk_event_box_new();
-  if (center)
-    *alignment = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
-  else
-    *alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  *alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(*alignment),
                             padding_top, padding_bottom, padding_left,
                             padding_right);
@@ -230,12 +227,13 @@ void FindBarGtk::InitWidgets() {
   container_ = gtk_util::CreateGtkBorderBin(hbox, NULL,
       kBarPaddingTopBottom, kBarPaddingTopBottom,
       kEntryPaddingLeft, kBarPaddingRight);
+  gtk_widget_set_size_request(container_, kFindBarWidth, -1);
   ViewIDUtil::SetID(container_, VIEW_ID_FIND_IN_PAGE);
   gtk_widget_set_app_paintable(container_, TRUE);
 
   slide_widget_.reset(new SlideAnimatorGtk(container_,
                                            SlideAnimatorGtk::DOWN,
-                                           0, false, false, NULL));
+                                           0, false, true, NULL));
 
   close_button_.reset(CustomDrawButton::CloseButton(theme_service_));
   gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
@@ -265,11 +263,8 @@ void FindBarGtk::InitWidgets() {
   gtk_box_pack_end(GTK_BOX(hbox), find_previous_button_->widget(),
                    FALSE, FALSE, 0);
 
-  // Make a box for the edit and match count widgets. This is fixed size since
-  // we want the widgets inside to resize themselves rather than making the
-  // dialog bigger.
+  // Make a box for the edit and match count widgets.
   GtkWidget* content_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_widget_set_size_request(content_hbox, kTextEntryWidth, -1);
 
   text_entry_ = gtk_entry_new();
   gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), FALSE);
@@ -291,7 +286,7 @@ void FindBarGtk::InitWidgets() {
 
   // This event box is necessary to color in the area above and below the match
   // count label, and is where we draw the entry background onto in GTK mode.
-  BuildBorder(content_hbox, true, 0, 0, 0, 0,
+  BuildBorder(content_hbox, 0, 0, 0, 0,
               &content_event_box_, &content_alignment_);
   gtk_widget_set_app_paintable(content_event_box_, TRUE);
   g_signal_connect(content_event_box_, "expose-event",
@@ -300,9 +295,9 @@ void FindBarGtk::InitWidgets() {
   // This alignment isn't centered and is used for spacing in chrome theme
   // mode. (It's also used in GTK mode for padding because left padding doesn't
   // equal bottom padding naturally.)
-  BuildBorder(content_event_box_, false, 2, 2, 2, 0,
+  BuildBorder(content_event_box_, 2, 2, 2, 0,
               &border_bin_, &border_bin_alignment_);
-  gtk_util::CenterWidgetInHBox(hbox, border_bin_, true, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), border_bin_, TRUE, TRUE, 0);
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -835,10 +830,6 @@ gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
 // Used to handle custom painting of |container_|.
 gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                               FindBarGtk* bar) {
-  GtkRequisition req;
-  gtk_widget_size_request(widget, &req);
-  gtk_widget_set_size_request(bar->widget(), req.width, -1);
-
   if (bar->theme_service_->UsingNativeTheme()) {
     if (bar->container_width_ != widget->allocation.width ||
         bar->container_height_ != widget->allocation.height) {
