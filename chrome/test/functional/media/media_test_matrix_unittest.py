@@ -22,7 +22,7 @@ class MediaTestMatrixTest(unittest.TestCase):
     """
     matrix = MediaTestMatrix()
     # Pyauto.DataDir() method is not used to avoid dependency to pyauto.
-    data_file = os.path.join(os.pardir, 'data', 'media', 'csv',
+    data_file = os.path.join(os.pardir, os.pardir, 'data', 'media', 'csv',
                              'media_matrix_data.csv')
     matrix.ReadData(data_file)
     return matrix
@@ -31,11 +31,11 @@ class MediaTestMatrixTest(unittest.TestCase):
     matrix = self._ReadCSVFile()
     # Get video data only case.
     media_test_matrix_list = matrix.GenerateAllMediaInfosInCompactForm(True)
-    self.assertEqual(len(media_test_matrix_list), 249,
+    self.assertEqual(len(media_test_matrix_list), 240,
                      'total number of elements in the returned list is wrong')
     # Get all media data.
     media_test_matrix_list = matrix.GenerateAllMediaInfosInCompactForm(False)
-    self.assertEqual(len(media_test_matrix_list), 466,
+    self.assertEqual(len(media_test_matrix_list), 449,
                      'total number of elements in the returned list is wrong')
     mobile_test_info = MediaTestMatrix.LookForMediaInfoInCompactFormByNickName(
         media_test_matrix_list, 'mobile0.webm')
@@ -46,11 +46,11 @@ class MediaTestMatrixTest(unittest.TestCase):
     matrix = self._ReadCSVFile()
     # Get video data only case.
     media_test_matrix_list = matrix.GenerateAllMediaInfos(True)
-    self.assertEqual(len(media_test_matrix_list), 249,
+    self.assertEqual(len(media_test_matrix_list), 240,
                      'total number of elements in the returned list is wrong')
     # Get all media data.
     media_test_matrix_list = matrix.GenerateAllMediaInfos(False)
-    self.assertEqual(len(media_test_matrix_list), 466,
+    self.assertEqual(len(media_test_matrix_list), 449,
                      'total number of elements in the returned list is wrong')
     (info, url, link, tag, is_video, nickname) = (
         matrix.GenerateRandomMediaInfo())

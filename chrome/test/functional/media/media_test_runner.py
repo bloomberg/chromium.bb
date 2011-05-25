@@ -93,16 +93,18 @@ def main():
                     default=DEFAULT_MEASURE_INTERVALS,
                     help='Interval for measurement data [defaults to "%d"]' %
                          DEFAULT_MEASURE_INTERVALS)
-  parser.add_option('-o', '--test-one-combination', dest='one_combination',
-                    default=True, # Currently default is True
-                                  # since we want to test only 1 combination.
-                    help='Run only one parameter combination')
+  parser.add_option('-c', '--cache_test', dest='cache_test',
+                    default=False, help='Include cache test',
+                    action='store_true')
+  parser.add_option('-z', '--test-one-video', dest='one_video',
+                    default=False, help='Run only one video',
+                    action='store_true')
   parser.add_option(
       '-w', '--test_scenario_input_filename',
       dest='test_scenario_input_filename',
       default='', help='Test scenario file (CSV form)', metavar='FILE')
   parser.add_option(
-      '-c', '--test_scenario', dest='test_scenario',
+      '-q', '--test_scenario', dest='test_scenario',
       default='', help='Test scenario (action triples delimited by \'|\')')
   parser.add_option('-s', '--suite', dest='suite',
                     help='Suite file')
@@ -174,6 +176,8 @@ def main():
           parent_envs = copy.deepcopy(os.environ)
           if options.input_matrix_filename is None:
             par_filename = os.path.join(os.pardir, filename)
+          else:
+            par_filename = filename
           envs = {
             MediaTestEnvNames.MEDIA_TAG_ENV_NAME: tag,
             MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME: par_filename,
@@ -227,8 +231,10 @@ def main():
             cmd += ' -v'
           proc = Popen(cmd, env=envs, shell=True)
           proc.communicate()
-        if options.one_combination:
-          sys.exit(0)
+        if not options.cache_test:
+          break
+      if options.one_video:
+        break
 
 
 if __name__ == '__main__':

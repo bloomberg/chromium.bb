@@ -57,20 +57,22 @@ class MediaTestMatrix:
     self._tags = {}
     file = open(csv_file, 'rb')
     reader = csv.reader(file)
-    for counter, row in enumerate(reader):
-      if counter == 0:
+    for row_counter, row in enumerate(reader):
+      if row_counter == 0:
         # First row is comment. So, skip it.
         pass
-      elif counter == 1:
+      elif row_counter == 1:
         # Second row is for header (video titles).
-        for title in row[1:]:
-          self._video_titles.append(title)
+        for column_counter, title in enumerate(row[1:]):
+          # Skip the first column since it is for tag ('video' or 'audio').
+          if column_counter > 0:
+            self._video_titles.append(title)
           self._specs[title] = []
       else:
         # Error checking is done here based on the number of titles
-        if len(self._video_titles) != len(row) - 1:
-          print "Row %d should have %d columns but has %d columns" % (counter,
-            len(self._video_titles), len(row))
+        if len(self._video_titles) != len(row) - 2:
+          print "Row %d should have %d columns but has %d columns" % (
+              row_counter, len(self._video_titles), len(row))
           raise csv.Error
         # First column should contain extension.
         self._exts.append(row[0])
@@ -197,7 +199,7 @@ class MediaTestMatrix:
         tag = ['audio', 'video'][is_video]
         if ((not NOT_AVAILABLE_STRING in info) and
             ((not video_only) or (video_only and is_video))):
-          media_infos.append([url, nickname, tag])
+          media_infos.append([tag, url, nickname])
     return media_infos
 
   @staticmethod
@@ -215,6 +217,6 @@ class MediaTestMatrix:
                   (such as bear.webm).
         tag: HTML5 tag for the video/audio.
     """
-    for url, nickname, tag in compact_list:
+    for tag, url, nickname in compact_list:
       if target == nickname:
         return (tag, url, nickname)
