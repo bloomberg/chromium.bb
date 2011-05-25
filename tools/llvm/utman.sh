@@ -526,7 +526,6 @@ everything() {
   hg-update-all
 
   clean-install
-  RecordRevisionInfo
 
   clean-logs
 
@@ -733,6 +732,7 @@ tarball() {
     exit 1
   fi
 
+  RecordRevisionInfo
   local tarball="$1"
   StepBanner "TARBALL" "Creating tar ball ${tarball}"
 
@@ -2452,7 +2452,6 @@ driver-install() {
 ######################################################################
 
 RecordRevisionInfo() {
-  mkdir -p "${INSTALL_ROOT}"
   svn info > "${INSTALL_ROOT}/REV"
 }
 
