@@ -40,6 +40,7 @@ const char kScope[] = "scope";
 const char kLevelOfControl[] = "levelOfControl";
 const char kRegular[] = "regular";
 const char kIncognitoPersistent[] = "incognito_persistent";
+const char kIncognitoSessionOnly[] = "incognito_session_only";
 const char kValue[] = "value";
 
 const char kOnPrefChangeFormat[] =
@@ -47,6 +48,10 @@ const char kOnPrefChangeFormat[] =
 
 const char kIncognitoErrorMessage[] =
     "You do not have permission to access incognito preferences.";
+
+const char kIncognitoSessionOnlyErrorMessage[] =
+    "You cannot set a preference with scope 'incognito_session_only' when no "
+    "incognito window is open.";
 
 const char kPermissionErrorMessage[] =
     "You do not have permission to access the preference '%s'. "
@@ -118,6 +123,8 @@ bool StringToScope(const std::string& s, extension_prefs_scope::Scope* scope) {
     *scope = extension_prefs_scope::kRegular;
   else if (s == kIncognitoPersistent)
     *scope = extension_prefs_scope::kIncognitoPersistent;
+  else if (s == kIncognitoSessionOnly)
+    *scope = extension_prefs_scope::kIncognitoSessionOnly;
   else
     return false;
   return true;
@@ -367,8 +374,8 @@ bool SetPreferenceFunction::RunImpl() {
   extension_prefs_scope::Scope scope;
   EXTENSION_FUNCTION_VALIDATE(StringToScope(scope_str, &scope));
 
-  // TODO(battre): add kIncognitoSessionOnly
-  bool incognito = (scope == extension_prefs_scope::kIncognitoPersistent);
+  bool incognito = (scope == extension_prefs_scope::kIncognitoPersistent ||
+                    scope == extension_prefs_scope::kIncognitoSessionOnly);
   if (incognito) {
     // Regular profiles can't access incognito unless include_incognito is true.
     if (!profile()->IsOffTheRecord() && !include_incognito()) {
@@ -382,6 +389,12 @@ bool SetPreferenceFunction::RunImpl() {
       error_ = "Can't modify regular settings from an incognito context.";
       return false;
     }
+  }
+
+  if (scope == extension_prefs_scope::kIncognitoSessionOnly &&
+      !profile_->HasOffTheRecordProfile()) {
+    error_ = kIncognitoSessionOnlyErrorMessage;
+    return false;
   }
 
   std::string browser_pref;
@@ -431,8 +444,8 @@ bool ClearPreferenceFunction::RunImpl() {
   extension_prefs_scope::Scope scope;
   EXTENSION_FUNCTION_VALIDATE(StringToScope(scope_str, &scope));
 
-  // TODO(battre): add kIncognitoSessionOnly
-  bool incognito = (scope == extension_prefs_scope::kIncognitoPersistent);
+  bool incognito = (scope == extension_prefs_scope::kIncognitoPersistent ||
+                    scope == extension_prefs_scope::kIncognitoSessionOnly);
   if (incognito) {
     // We don't check incognito permissions here, as an extension should be
     // always allowed to clear its own settings.

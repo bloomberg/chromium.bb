@@ -709,6 +709,16 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
                                         kIncognitoPersistent, val);
   }
 
+  void InstallExtControlledPrefIncognitoSessionOnly(
+      Extension *ext,
+      const std::string& key,
+      Value* val) {
+    using namespace extension_prefs_scope;
+    EnsureExtensionInstalled(ext);
+    prefs()->SetExtensionControlledPref(ext->id(), key,
+                                        kIncognitoSessionOnly, val);
+  }
+
   void InstallExtension(Extension *ext) {
     EnsureExtensionInstalled(ext);
   }
@@ -767,7 +777,7 @@ class ExtensionPrefsInstallOneExtension
 TEST_F(ExtensionPrefsInstallOneExtension, ExtensionPrefsInstallOneExtension) {}
 
 // Check that we do not forget persistent incognito values after a reload.
-class ExtensionPrefsInstallIncognito
+class ExtensionPrefsInstallIncognitoPersistent
     : public ExtensionPrefsPreferencesBase {
  public:
   virtual void Initialize() {
@@ -788,7 +798,43 @@ class ExtensionPrefsInstallIncognito
     EXPECT_EQ("val2", actual);
   }
 };
-TEST_F(ExtensionPrefsInstallIncognito, ExtensionPrefsInstallOneExtension) {}
+TEST_F(ExtensionPrefsInstallIncognitoPersistent,
+       ExtensionPrefsInstallOneExtension) {}
+
+// Check that we forget 'session only' incognito values after a reload.
+class ExtensionPrefsInstallIncognitoSessionOnly
+    : public ExtensionPrefsPreferencesBase {
+ public:
+  ExtensionPrefsInstallIncognitoSessionOnly() : iteration_(0) {}
+
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    InstallExtControlledPrefIncognitoSessionOnly(
+        ext1_, kPref1, Value::CreateStringValue("val2"));
+    scoped_ptr<PrefService> incog_prefs(prefs_.CreateIncognitoPrefService());
+    std::string actual = incog_prefs->GetString(kPref1);
+    EXPECT_EQ("val2", actual);
+  }
+  virtual void Verify() {
+    // Main pref service shall see only non-incognito settings.
+    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val1", actual);
+    // Incognito pref service shall see session-only incognito values only
+    // during first run. Once the pref service was reloaded, all values shall be
+    // discarded.
+    scoped_ptr<PrefService> incog_prefs(prefs_.CreateIncognitoPrefService());
+    actual = incog_prefs->GetString(kPref1);
+    if (iteration_ == 0) {
+      EXPECT_EQ("val2", actual);
+    } else {
+      EXPECT_EQ("val1", actual);
+    }
+    ++iteration_;
+  }
+  int iteration_;
+};
+TEST_F(ExtensionPrefsInstallIncognitoSessionOnly,
+       ExtensionPrefsInstallOneExtension) {}
 
 class ExtensionPrefsUninstallExtension
     : public ExtensionPrefsPreferencesBase {
@@ -852,11 +898,19 @@ class ExtensionPrefsNotifyWhenNeeded
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
-    // Change only incognito value.
+    // Change only incognito persistent value.
     EXPECT_CALL(observer, Observe(_, _, _)).Times(0);
     EXPECT_CALL(incognito_observer, Observe(_, _, _));
     InstallExtControlledPrefIncognito(ext1_, kPref1,
         Value::CreateStringValue("chrome://newtab2"));
+    Mock::VerifyAndClearExpectations(&observer);
+    Mock::VerifyAndClearExpectations(&incognito_observer);
+
+    // Change only incognito session-only value.
+    EXPECT_CALL(observer, Observe(_, _, _)).Times(0);
+    EXPECT_CALL(incognito_observer, Observe(_, _, _));
+    InstallExtControlledPrefIncognito(ext1_, kPref1,
+        Value::CreateStringValue("chrome://newtab3"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 

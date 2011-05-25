@@ -281,22 +281,30 @@ TEST_F(ExtensionPrefValueMapTest, ReenableExt) {
 
 struct OverrideIncognitoTestCase {
   OverrideIncognitoTestCase(int val_ext1_regular,
-                            int val_ext1_incognito,
+                            int val_ext1_incognito_pers,
+                            int val_ext1_incognito_sess,
                             int val_ext2_regular,
-                            int val_ext2_incognito,
+                            int val_ext2_incognito_pers,
+                            int val_ext2_incognito_sess,
                             int effective_value_regular,
                             int effective_value_incognito)
       : val_ext1_regular_(val_ext1_regular),
-        val_ext1_incognito_(val_ext1_incognito),
+        val_ext1_incognito_pers_(val_ext1_incognito_pers),
+        val_ext1_incognito_sess_(val_ext1_incognito_sess),
         val_ext2_regular_(val_ext2_regular),
-        val_ext2_incognito_(val_ext2_incognito),
+        val_ext2_incognito_pers_(val_ext2_incognito_pers),
+        val_ext2_incognito_sess_(val_ext2_incognito_sess),
         effective_value_regular_(effective_value_regular),
         effective_value_incognito_(effective_value_incognito) {}
 
+  // pers. = persistent
+  // sess. = session only
   int val_ext1_regular_;           // pref value of extension 1
-  int val_ext1_incognito_;         // pref value of extension 1 incognito
+  int val_ext1_incognito_pers_;    // pref value of extension 1 incognito pers.
+  int val_ext1_incognito_sess_;    // pref value of extension 1 incognito sess.
   int val_ext2_regular_;           // pref value of extension 2
-  int val_ext2_incognito_;         // pref value of extension 2 incognito
+  int val_ext2_incognito_pers_;    // pref value of extension 2 incognito pers.
+  int val_ext2_incognito_sess_;    // pref value of extension 2 incognito sess.
   int effective_value_regular_;    // desired winner regular
   int effective_value_incognito_;  // desired winner incognito
 };
@@ -314,7 +322,9 @@ TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
       "val1",
       "val2",
       "val3",
-      "val4"
+      "val4",
+      "val5",
+      "val6"
   };
 
   epvm_.RegisterExtension(kExt1, CreateTime(10), true);
@@ -323,17 +333,25 @@ TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
     epvm_.SetExtensionPref(kExt1, kPref1, kRegular,
                            CreateVal(strings[test.val_ext1_regular_]));
   }
-  if (test.val_ext1_incognito_) {
+  if (test.val_ext1_incognito_pers_) {
     epvm_.SetExtensionPref(kExt1, kPref1, kIncognitoPersistent,
-                           CreateVal(strings[test.val_ext1_incognito_]));
+                           CreateVal(strings[test.val_ext1_incognito_pers_]));
+  }
+  if (test.val_ext1_incognito_sess_) {
+    epvm_.SetExtensionPref(kExt1, kPref1, kIncognitoSessionOnly,
+                           CreateVal(strings[test.val_ext1_incognito_sess_]));
   }
   if (test.val_ext2_regular_) {
     epvm_.SetExtensionPref(kExt2, kPref1, kRegular,
                            CreateVal(strings[test.val_ext2_regular_]));
   }
-  if (test.val_ext2_incognito_) {
+  if (test.val_ext2_incognito_pers_) {
     epvm_.SetExtensionPref(kExt2, kPref1, kIncognitoPersistent,
-                           CreateVal(strings[test.val_ext2_incognito_]));
+                           CreateVal(strings[test.val_ext2_incognito_pers_]));
+  }
+  if (test.val_ext2_incognito_sess_) {
+    epvm_.SetExtensionPref(kExt2, kPref1, kIncognitoSessionOnly,
+                           CreateVal(strings[test.val_ext2_incognito_sess_]));
   }
   std::string actual;
   EXPECT_EQ(strings[test.effective_value_regular_], GetValue(kPref1, false));
@@ -346,15 +364,20 @@ INSTANTIATE_TEST_CASE_P(
     ExtensionPrefValueMapTestIncognitoTestsInstance,
     ExtensionPrefValueMapTestIncognitoTests,
     testing::Values(
-        // e.g. (1, 0, 0, 4,  1, 4), means:
-        // ext1 regular is set to "val1", ext2 incognito is set to "val4"
+        // e.g. (1, 0, 0,  0, 4, 0,  1, 4), means:
+        // ext1 regular is set to "val1", ext2 incognito persistent is set to
+        // "val4"
         // --> the winning regular value is "val1", the winning incognito
         //     value is "val4".
-        OverrideIncognitoTestCase(1, 0, 0, 0,  1, 1),
-        OverrideIncognitoTestCase(1, 2, 0, 0,  1, 2),
-        OverrideIncognitoTestCase(1, 0, 3, 0,  3, 3),
-        OverrideIncognitoTestCase(1, 0, 0, 4,  1, 4),
-        // The last 3 in the following line is intentional!
-        OverrideIncognitoTestCase(1, 2, 3, 0,  3, 3),
-        OverrideIncognitoTestCase(1, 2, 0, 4,  1, 4),
-        OverrideIncognitoTestCase(1, 2, 3, 4,  3, 4)));
+        OverrideIncognitoTestCase(1, 0, 0,  0, 0, 0,  1, 1),
+        OverrideIncognitoTestCase(1, 2, 0,  0, 0, 0,  1, 2),
+        OverrideIncognitoTestCase(1, 0, 3,  0, 0, 0,  1, 3),
+        OverrideIncognitoTestCase(1, 0, 0,  4, 0, 0,  4, 4),
+        OverrideIncognitoTestCase(1, 0, 0,  0, 5, 0,  1, 5),
+        OverrideIncognitoTestCase(1, 0, 0,  0, 0, 6,  1, 6),
+        // The last 4 in the following line is intentional!
+        OverrideIncognitoTestCase(1, 2, 0,  4, 0, 0,  4, 4),
+        OverrideIncognitoTestCase(1, 2, 0,  0, 5, 0,  1, 5),
+        OverrideIncognitoTestCase(1, 2, 3,  0, 5, 0,  1, 5),
+        OverrideIncognitoTestCase(1, 2, 0,  3, 5, 0,  3, 5),
+        OverrideIncognitoTestCase(1, 2, 0,  3, 5, 6,  3, 6)));

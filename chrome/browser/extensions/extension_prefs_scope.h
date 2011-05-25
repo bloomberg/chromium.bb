@@ -17,7 +17,9 @@ enum Scope {
   // Incognito profile; preference is persisted to disk and remains active
   // after a browser restart.
   kIncognitoPersistent,
-  // TODO(battre): add kIncognitoSession
+  // Incognito profile; preference is kept in memory and deleted when the
+  // incognito session is terminated.
+  kIncognitoSessionOnly
 };
 
 }  // extension_prefs_scope

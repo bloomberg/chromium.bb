@@ -5384,9 +5384,9 @@
                   },
                   "scope": {
                     "type": "string",
-                    "enum": ["regular", "incognito_persistent"],
+                    "enum": ["regular", "incognito_persistent", "incognito_session_only"],
                     "optional": true,
-                    "description": "Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere), 'incognito_persistent' = preference for incognito profile that sustains browser restarts (overrides regular preferences)."
+                    "description": "Where to set the preference (default: regular). One of<br><var>regular</var>: preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: preference for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: preference for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences)."
                   }
                 }
               },
@@ -5411,9 +5411,9 @@
                 "properties": {
                   "scope": {
                     "type": "string",
-                    "enum": ["regular", "incognito_persistent"],
+                    "enum": ["regular", "incognito_persistent", "incognito_session_only"],
                     "optional": true,
-                    "description": "Where to set the preference (default: regular). 'regular' = preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere), 'incognito_persistent' = preference for incognito profile that sustains browser restarts (overrides regular preferences)."
+                    "description": "Where to set the preference (default: regular). One of<br><var>regular</var>: preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: preference for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: preference for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences)."
                   }
                 }
               },

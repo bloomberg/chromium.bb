@@ -712,6 +712,7 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
 
 void ProfileImpl::DestroyOffTheRecordProfile() {
   off_the_record_profile_.reset();
+  extension_pref_value_map_->ClearAllIncognitoSessionOnlyPreferences();
 }
 
 bool ProfileImpl::HasOffTheRecordProfile() {

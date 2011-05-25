@@ -18,6 +18,9 @@ struct ExtensionPrefValueMap::ExtensionEntry {
   // Persistent extension controlled preferences for the incognito profile,
   // empty for regular profile ExtensionPrefStore.
   PrefValueMap incognito_profile_preferences_persistent;
+  // Session only extension controlled preferences for the incognito profile.
+  // These preferences are deleted when the incognito profile is destroyed.
+  PrefValueMap incognito_profile_preferences_session_only;
 };
 
 ExtensionPrefValueMap::ExtensionPrefValueMap() {
@@ -64,6 +67,25 @@ bool ExtensionPrefValueMap::CanExtensionControlPref(
     return true;
 
   return winner->second->install_time <= ext->second->install_time;
+}
+
+void ExtensionPrefValueMap::ClearAllIncognitoSessionOnlyPreferences() {
+  typedef std::set<std::string> KeySet;
+  KeySet deleted_keys;
+
+  ExtensionEntryMap::iterator i;
+  for (i = entries_.begin(); i != entries_.end(); ++i) {
+    PrefValueMap& inc_prefs =
+        i->second->incognito_profile_preferences_session_only;
+    PrefValueMap::iterator j;
+    for (j = inc_prefs.begin(); j != inc_prefs.end(); ++j)
+      deleted_keys.insert(j->first);
+    inc_prefs.Clear();
+  }
+
+  KeySet::iterator k;
+  for (k = deleted_keys.begin(); k != deleted_keys.end(); ++k)
+    NotifyPrefValueChanged(*k);
 }
 
 bool ExtensionPrefValueMap::DoesExtensionControlPref(
@@ -125,6 +147,8 @@ PrefValueMap* ExtensionPrefValueMap::GetExtensionPrefValueMap(
       return &(i->second->regular_profile_preferences);
     case extension_prefs_scope::kIncognitoPersistent:
       return &(i->second->incognito_profile_preferences_persistent);
+    case extension_prefs_scope::kIncognitoSessionOnly:
+      return &(i->second->incognito_profile_preferences_session_only);
   }
   NOTREACHED();
   return NULL;
@@ -140,6 +164,8 @@ const PrefValueMap* ExtensionPrefValueMap::GetExtensionPrefValueMap(
       return &(i->second->regular_profile_preferences);
     case extension_prefs_scope::kIncognitoPersistent:
       return &(i->second->incognito_profile_preferences_persistent);
+    case extension_prefs_scope::kIncognitoSessionOnly:
+      return &(i->second->incognito_profile_preferences_session_only);
   }
   NOTREACHED();
   return NULL;
@@ -158,6 +184,11 @@ void ExtensionPrefValueMap::GetExtensionControlledKeys(
       entry.incognito_profile_preferences_persistent;
   for (i = inc_prefs_pers.begin(); i != inc_prefs_pers.end(); ++i)
     out->insert(i->first);
+
+  const PrefValueMap& inc_prefs_session =
+      entry.incognito_profile_preferences_session_only;
+  for (i = inc_prefs_session.begin(); i != inc_prefs_session.end(); ++i)
+    out->insert(i->first);
 }
 
 const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
@@ -171,11 +202,23 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
 
   const Value* value = NULL;
   const std::string& ext_id = winner->first;
+
+  // First search for incognito session only preferences.
   if (incognito) {
+    const PrefValueMap* prefs = GetExtensionPrefValueMap(
+        ext_id, extension_prefs_scope::kIncognitoSessionOnly);
+    prefs->GetValue(key, &value);
+  }
+
+  // If no incognito session only preference exists, fall back to persistent
+  // incognito preference.
+  if (incognito && !value) {
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
         ext_id, extension_prefs_scope::kIncognitoPersistent);
     prefs->GetValue(key, &value);
   }
+
+  // Finally consider a regular preference.
   if (!value) {
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
         ext_id, extension_prefs_scope::kRegular);
@@ -218,6 +261,15 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
 
     prefs = GetExtensionPrefValueMap(
         ext_id, extension_prefs_scope::kIncognitoPersistent);
+    if (prefs->GetValue(key, &value)) {
+      winner = i;
+      winners_install_time = install_time;
+      if (from_incognito)
+        *from_incognito = true;
+    }
+
+    prefs = GetExtensionPrefValueMap(
+        ext_id, extension_prefs_scope::kIncognitoSessionOnly);
     if (prefs->GetValue(key, &value)) {
       winner = i;
       winners_install_time = install_time;

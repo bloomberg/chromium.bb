@@ -89,6 +89,9 @@ class ExtensionPrefValueMap {
                                const std::string& pref_key,
                                bool incognito) const;
 
+  // Removes all "incognito session only" preference values.
+  void ClearAllIncognitoSessionOnlyPreferences();
+
   // Returns true if an extension identified by |extension_id| controls the
   // preference. This means this extension has set a preference value and no
   // other extension with higher precedence overrides it.

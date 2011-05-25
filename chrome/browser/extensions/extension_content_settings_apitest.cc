@@ -27,14 +27,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kEnableReferrers));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PersistentIncognitoContentSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kBlockThirdPartyCookies, false);
 
-  EXPECT_TRUE(RunExtensionTestIncognito("content_settings/incognito")) <<
+  EXPECT_TRUE(
+      RunExtensionTestIncognito("content_settings/persistent_incognito")) <<
       message_;
 
   // Setting an incognito preference should not create an incognito profile.
@@ -58,7 +59,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledContentSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  EXPECT_FALSE(RunExtensionTest("content_settings/incognito"));
+  EXPECT_FALSE(RunExtensionTest("content_settings/persistent_incognito"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SessionOnlyIncognitoContentSettings) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kBlockThirdPartyCookies, false);
+
+  EXPECT_TRUE(
+      RunExtensionTestIncognito("content_settings/session_only_incognito")) <<
+      message_;
+
+  EXPECT_TRUE(browser()->profile()->HasOffTheRecordProfile());
+
+  PrefService* otr_prefs =
+      browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  const PrefService::Preference* pref =
+      otr_prefs->FindPreference(prefs::kBlockThirdPartyCookies);
+  ASSERT_TRUE(pref);
+  EXPECT_TRUE(pref->IsExtensionControlled());
+  EXPECT_FALSE(otr_prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
+
+  pref = prefs->FindPreference(prefs::kBlockThirdPartyCookies);
+  ASSERT_TRUE(pref);
+  EXPECT_FALSE(pref->IsExtensionControlled());
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettingsClear) {
