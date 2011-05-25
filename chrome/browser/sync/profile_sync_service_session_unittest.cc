@@ -29,7 +29,6 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/browser_with_test_window_test.h"
-#include "chrome/test/file_test_utils.h"
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/testing_profile.h"

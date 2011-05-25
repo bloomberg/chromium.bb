@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/file_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FirefoxProfileLockTest : public testing::Test {
@@ -34,12 +33,8 @@ TEST_F(FirefoxProfileLockTest, LockTest) {
 // Tests basic functionality and verifies that the lock file is deleted after
 // use.
 TEST_F(FirefoxProfileLockTest, ProfileLock) {
-  FilePath test_path;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(
-      FILE_PATH_LITERAL("firefox_profile"), &test_path));
-  FilePath lock_file_path = test_path;
-  FileAutoDeleter deleter(lock_file_path);
-  lock_file_path = lock_file_path.Append(FirefoxProfileLock::kLockFileName);
+  FilePath test_path = temp_dir_.path();
+  FilePath lock_file_path = test_path.Append(FirefoxProfileLock::kLockFileName);
 
   scoped_ptr<FirefoxProfileLock> lock;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock.get());
@@ -70,12 +65,8 @@ TEST_F(FirefoxProfileLockTest, ProfileLock) {
 // If for some reason the lock file is left behind by the previous owner, we
 // should still be able to lock it, at least in the Windows implementation.
 TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
-  FilePath test_path;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(
-      FILE_PATH_LITERAL("firefox_profile"), &test_path));
-  FilePath lock_file_path = test_path;
-  FileAutoDeleter deleter(lock_file_path);
-  lock_file_path = lock_file_path.Append(FirefoxProfileLock::kLockFileName);
+  FilePath test_path = temp_dir_.path();
+  FilePath lock_file_path = test_path.Append(FirefoxProfileLock::kLockFileName);
 
   // Create the orphaned lock file.
   FILE* lock_file = file_util::OpenFile(lock_file_path, "w");
@@ -96,10 +87,7 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
 #if !defined(OS_POSIX)
 // Tests two locks contending for the same lock file.
 TEST_F(FirefoxProfileLockTest, ProfileLockContention) {
-  FilePath test_path;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(
-      FILE_PATH_LITERAL("firefox_profile"), &test_path));
-  FileAutoDeleter deleter(test_path);
+  FilePath test_path = temp_dir_.path();
 
   scoped_ptr<FirefoxProfileLock> lock1;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock1.get());

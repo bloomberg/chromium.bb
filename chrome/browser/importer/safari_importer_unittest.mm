@@ -9,12 +9,12 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/file_test_utils.h"
 #include "testing/platform_test.h"
 
 // In order to test the Safari import functionality effectively, we store a
@@ -157,8 +157,7 @@ TEST_F(SafariImporterTest, CanImport) {
   EXPECT_EQ(items & importer::HOME_PAGE, importer::NONE);
 
   // Check that we don't import anything from a bogus library directory.
-  FilePath fake_library_dir;
-  file_util::CreateNewTempDirectory("FakeSafariLibrary", &fake_library_dir);
-  FileAutoDeleter deleter(fake_library_dir);
-  EXPECT_FALSE(SafariImporter::CanImport(fake_library_dir, &items));
+  ScopedTempDir fake_library_dir;
+  ASSERT_TRUE(fake_library_dir.CreateUniqueTempDir());
+  EXPECT_FALSE(SafariImporter::CanImport(fake_library_dir.path(), &items));
 }

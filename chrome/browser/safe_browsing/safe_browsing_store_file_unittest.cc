@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/callback.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
-#include "chrome/test/file_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -20,19 +20,10 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
   virtual void SetUp() {
     PlatformTest::SetUp();
 
-    FilePath temp_dir;
-    ASSERT_TRUE(file_util::CreateNewTempDirectory(kFolderPrefix, &temp_dir));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_deleter_.reset(new FileAutoDeleter(temp_dir));
-
-    filename_ = temp_dir;
+    filename_ = temp_dir_.path();
     filename_ = filename_.AppendASCII("SafeBrowsingTestStore");
-    file_util::Delete(filename_, false);
-
-    // Make sure an old temporary file isn't hanging around.
-    const FilePath temp_file =
-        SafeBrowsingStoreFile::TemporaryFileForFilename(filename_);
-    file_util::Delete(temp_file, false);
 
     store_.reset(new SafeBrowsingStoreFile());
     store_->Init(filename_, NULL);
@@ -41,7 +32,6 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     if (store_.get())
       store_->Delete();
     store_.reset();
-    file_deleter_.reset();
 
     PlatformTest::TearDown();
   }
@@ -50,7 +40,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     corruption_detected_ = true;
   }
 
-  scoped_ptr<FileAutoDeleter> file_deleter_;
+  ScopedTempDir temp_dir_;
   FilePath filename_;
   scoped_ptr<SafeBrowsingStoreFile> store_;
   bool corruption_detected_;
@@ -60,8 +50,8 @@ TEST_STORE(SafeBrowsingStoreFileTest, store_.get(), filename_);
 
 // Test that Delete() deletes the temporary store, if present.
 TEST_F(SafeBrowsingStoreFileTest, DeleteTemp) {
-    const FilePath temp_file =
-        SafeBrowsingStoreFile::TemporaryFileForFilename(filename_);
+  const FilePath temp_file =
+      SafeBrowsingStoreFile::TemporaryFileForFilename(filename_);
 
   EXPECT_FALSE(file_util::PathExists(filename_));
   EXPECT_FALSE(file_util::PathExists(temp_file));
