@@ -204,29 +204,51 @@ void RenderViewContextMenu::Init() {
   PlatformInit();
 }
 
-static bool ExtensionContextMatch(const ContextMenuParams& params,
-                                  ExtensionMenuItem::ContextList contexts) {
+static bool ExtensionPatternMatch(const URLPatternSet& patterns,
+                                  const GURL& url) {
+  // No patterns means no restriction, so that implicitly matches.
+  if (patterns.is_empty())
+    return true;
+  return patterns.MatchesURL(url);
+}
+
+// static
+bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
+    const ContextMenuParams& params,
+    ExtensionMenuItem::ContextList contexts,
+    const URLPatternSet& target_url_patterns) {
   bool has_link = !params.link_url.is_empty();
   bool has_selection = !params.selection_text.empty();
   bool in_frame = !params.frame_url.is_empty();
 
   if (contexts.Contains(ExtensionMenuItem::ALL) ||
       (has_selection && contexts.Contains(ExtensionMenuItem::SELECTION)) ||
-      (has_link && contexts.Contains(ExtensionMenuItem::LINK)) ||
       (params.is_editable && contexts.Contains(ExtensionMenuItem::EDITABLE)) ||
-      (in_frame && contexts.Contains(ExtensionMenuItem::FRAME))) {
+      (in_frame && contexts.Contains(ExtensionMenuItem::FRAME)))
     return true;
-  }
+
+  if (has_link && contexts.Contains(ExtensionMenuItem::LINK) &&
+      ExtensionPatternMatch(target_url_patterns, params.link_url))
+    return true;
 
   switch (params.media_type) {
     case WebContextMenuData::MediaTypeImage:
-      return contexts.Contains(ExtensionMenuItem::IMAGE);
+      if (contexts.Contains(ExtensionMenuItem::IMAGE) &&
+          ExtensionPatternMatch(target_url_patterns, params.src_url))
+        return true;
+      break;
 
     case WebContextMenuData::MediaTypeVideo:
-      return contexts.Contains(ExtensionMenuItem::VIDEO);
+      if (contexts.Contains(ExtensionMenuItem::VIDEO) &&
+          ExtensionPatternMatch(target_url_patterns, params.src_url))
+        return true;
+      break;
 
     case WebContextMenuData::MediaTypeAudio:
-      return contexts.Contains(ExtensionMenuItem::AUDIO);
+      if (contexts.Contains(ExtensionMenuItem::AUDIO) &&
+          ExtensionPatternMatch(target_url_patterns, params.src_url))
+        return true;
+      break;
 
     default:
       break;
@@ -243,21 +265,14 @@ static bool ExtensionContextMatch(const ContextMenuParams& params,
   return false;
 }
 
-static bool ExtensionPatternMatch(const URLPatternSet& patterns,
-                                  const GURL& url) {
-  // No patterns means no restriction, so that implicitly matches.
-  if (patterns.is_empty())
-    return true;
-  return patterns.MatchesURL(url);
-}
-
 static const GURL& GetDocumentURL(const ContextMenuParams& params) {
   return params.frame_url.is_empty() ? params.page_url : params.frame_url;
 }
 
 // Given a list of items, returns the ones that match given the contents
 // of |params| and the profile.
-static ExtensionMenuItem::List GetRelevantExtensionItems(
+// static
+ExtensionMenuItem::List RenderViewContextMenu::GetRelevantExtensionItems(
     const ExtensionMenuItem::List& items,
     const ContextMenuParams& params,
     Profile* profile,
@@ -267,16 +282,12 @@ static ExtensionMenuItem::List GetRelevantExtensionItems(
        i != items.end(); ++i) {
     const ExtensionMenuItem* item = *i;
 
-    if (!ExtensionContextMatch(params, item->contexts()))
+    if (!ExtensionContextAndPatternMatch(params, item->contexts(),
+        item->target_url_patterns()))
       continue;
 
     const GURL& document_url = GetDocumentURL(params);
     if (!ExtensionPatternMatch(item->document_url_patterns(), document_url))
-      continue;
-
-    const GURL& target_url =
-        params.src_url.is_empty() ? params.link_url : params.src_url;
-    if (!ExtensionPatternMatch(item->target_url_patterns(), target_url))
       continue;
 
     if (item->id().profile == profile || can_cross_incognito)

@@ -1611,6 +1611,7 @@
         'browser/sync/test_profile_sync_service.h',
         'browser/sync/util/cryptographer_unittest.cc',
         'browser/sync/util/nigori_unittest.cc',
+        'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
         'browser/tab_contents/web_contents_unittest.cc',
         'browser/tabs/pinned_tab_codec_unittest.cc',
