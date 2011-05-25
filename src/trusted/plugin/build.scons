@@ -111,7 +111,6 @@ common_libs = [
     'nacl_perf_counter',
     'nacl_base',
     'imc',
-    'weak_ref',
     'platform',
     'platform_qual_lib',
     'reverse_service',

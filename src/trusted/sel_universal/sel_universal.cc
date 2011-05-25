@@ -257,7 +257,7 @@ int raii_main(int argc, char* argv[]) {
       exit(1);
     }
 
-    rev_svc.reset(new nacl::ReverseService(conn_cap.get(), NULL));
+    rev_svc.reset(new nacl::ReverseService(conn_cap.get()));
     if (rev_svc == NULL) {
       NaClLog(LOG_ERROR, "sel_universal: reverse service ctor failed\n");
       exit(1);

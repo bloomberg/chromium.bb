@@ -16,16 +16,12 @@
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/weak_ref/weak_ref.h"
-
-#include "ppapi/c/pp_errors.h"  // for PP_OK
-#include "ppapi/cpp/core.h"  // for pp::
-#include "ppapi/cpp/module.h"  // for pp::Module
 
 namespace nacl {
 class DescWrapper;
 struct SelLdrLauncher;
 }  // namespace
+
 
 namespace plugin {
 
@@ -35,48 +31,6 @@ class Plugin;
 class SocketAddress;
 class SrtSocket;
 class ScriptableHandle;
-class ServiceRuntime;
-
-// a typesafe utility to schedule a completion callback using weak
-// references
-template <typename R> bool WeakRefCompletionCallback(
-    nacl::WeakRefAnchor* anchor,
-    int32_t delay_in_milliseconds,
-    void callback_fn(nacl::WeakRef<R>* weak_data, int32_t err),
-    R* raw_data) {
-  nacl::WeakRef<R>* wp = anchor->MakeWeakRef<R>(raw_data);
-  if (wp == NULL) {
-    return false;
-  }
-  pp::CompletionCallback cc(reinterpret_cast<void (*)(void*, int32_t)>(
-                                callback_fn),
-                            reinterpret_cast<void*>(wp));
-  pp::Module::Get()->core()->CallOnMainThread(
-      delay_in_milliseconds,
-      cc,
-      PP_OK);
-  return true;
-}
-
-class LogToJavaScriptConsoleInterface: public nacl::ReverseInterface {
- public:
-
-  explicit LogToJavaScriptConsoleInterface(
-      nacl::WeakRefAnchor* anchor,
-      Plugin* plugin)
-      : anchor_(anchor),
-        plugin_(plugin) {
-  }
-
-  virtual ~LogToJavaScriptConsoleInterface() {}
-
-  virtual void Log(nacl::string message);
-
- private:
-  nacl::WeakRefAnchor* anchor_;  // holds a ref
-  Plugin* plugin_;  // value may be copied, but should be used only in
-                    // main thread in WeakRef-protected callbacks.
-};
 
 //  ServiceRuntime abstracts a NativeClient sel_ldr instance.
 class ServiceRuntime {
@@ -136,10 +90,6 @@ class ServiceRuntime {
   // TODO(mseaborn): We should not have to work around this.
   nacl::DescWrapper* async_receive_desc_;
   nacl::DescWrapper* async_send_desc_;
-
-  nacl::WeakRefAnchor *anchor_;
-
-  LogToJavaScriptConsoleInterface* log_interface_;
 };
 
 }  // namespace plugin

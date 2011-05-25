@@ -75,7 +75,6 @@
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
             '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
-            '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref',
           ],
 # TODO(noelallen) We will need to put this back in with a new .def file once we need to export symbols
 # to support the plugin as a sandboxed DLL.
@@ -120,7 +119,6 @@
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
             '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
-            '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref',
           ],
           'conditions': [
             ['OS=="mac"', {

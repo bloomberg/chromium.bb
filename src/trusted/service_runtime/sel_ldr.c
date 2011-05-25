@@ -1482,7 +1482,6 @@ struct NaClSimpleRevClientVtbl const kNaClSecureReverseClientVtbl = {
 
 static void WINAPI ReverseTestThread(void *thread_state) {
   struct NaClApp *nap = (struct NaClApp *) thread_state;
-  NaClSrpcError rpc_result;
 
   /* wait for reverse connection */
   NaClLog(1, "ReverseTestThread\n");
@@ -1492,26 +1491,7 @@ static void WINAPI ReverseTestThread(void *thread_state) {
     NaClXCondVarWait(&nap->cv, &nap->mu);
   }
   NaClLog(1, "ReverseTestThread initialized, making rpc\n");
-  rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                         "test:s:", "Hello world");
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    NaClLog(LOG_ERROR,
-            "ReverseTestThread, test:s: rpc_result %d\n",
-            rpc_result);
-  }
-  NaClLog(4,
-          "Hello world should be logged browser side, rpc_result %d.\n",
-          rpc_result);
-  rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                         "revlog:s:",
-                                         ("Log message that should show up"
-                                          " on the JavaScript console"));
-  NaClLog(4, "revlog returned %d.\n", rpc_result);
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    NaClLog(LOG_ERROR,
-            "ReverseTestThread, revlog:s: rpc_result %d\n",
-            rpc_result);
-  }
+  NaClSrpcInvokeBySignature(&nap->reverse_channel, "test:s:", "Hello world");
   NaClXMutexUnlock(&nap->mu);
 }
 

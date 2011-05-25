@@ -1933,7 +1933,6 @@ base_env.Append(
     # TODO: This file has an early out in case we are building for ARM
     #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',
-    'src/trusted/weak_ref/build.scons',
     'tests/ppapi_file_system/build.scons',
     'tests/ppapi_geturl/build.scons',
     'tests/ppapi_messaging/build.scons',
