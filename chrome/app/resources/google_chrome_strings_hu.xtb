@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Ahhoz, hogy a módosítás hatályba lépjen, zárja be az összes Google Chrome ablakot, és indítsa újra az alkalmazást.</translation>
 <translation id="7451721381978275812">Érvénytelen argumentumok. A Google Chrome Frame nem telepíthető készenléti üzemmódban anélkül, hogy a Google Chrome is telepítve lenne.</translation>
 <translation id="5809236835374558741">A számítógépen már megtalálható a Google Chrome Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el, majd töltse le újra a Google Chrome Frame alkalmazást.</translation>
+<translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS"/>nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS"/> is hozzájárult.</translation>
 <translation id="4357846314885556934">A Google Chrome nem működik megfelelően</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">A Google Chrome nem záródott be megfelelően. Kattintson a &quot;Visszaállítás&quot; gombra, ha újra meg szeretné nyitni az oldalakat.</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
-<translation id="6008953001134414503">Kérjük, jelentkezzen ki a Google Chrome operációs rendszerből, majd jelentkezzen be újra, hogy érvénybe lépjenek a változtatások.</translation>
 <translation id="6009537148180854585">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; domaint, de a szerver tanúsítványa hibás. A Google Chrome nem tud hibás tanúsítványt feldolgozni; ennek következtében nem tudja igazolni azt a webhelyet, amelyet el akart érni. A kapcsolat nem biztonságos, ezért nem javasoljuk a továbblépést.</translation>
 <translation id="8738921060445980047">Ismeretlen verzió.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Google Chrome-mal.</translation>
 <translation id="5947389362804196214">A preferenciáit nem sikerült olvasni.\n\nEgyes funkciókat esetleg nem ér el, és a preferenciáiban végrehajtott módosításokat nem menti a rendszer.</translation>
 <translation id="6650142020817594541">Ez a webhely ajánlja a Google Chrome Frame-et (már telepítve van).</translation>
-<translation id="8778247165111716037">A Google Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS"/>nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS"/> is hozzájárult.</translation>
 <translation id="4127951844153999091">Ebben az esetben a tanúsítványban szereplő cím nem egyezik meg azzal a címmel, amelyet a böngészője megpróbált megnyitni. Ennek egyik lehetséges oka, hogy a kommunikációját egy támadó nyomon követi, aki egy másik webhely tanúsítványát mutatja fel, és ez eltéréseket okoz. Másik lehetséges ok, hogy a szervert úgy állították be, hogy több webhelynek (köztük annak, amelyet épp meg szeretett volna látogatni) is ugyanazt a tanúsítványt mutassa fel, holott nem érvényes az ottani összes webhelyre. A Google Chrome megállapította, hogy ezt az oldalt érte el: &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, azonban nem tudja megállíapítani pontosan, hogy ez ugyanaz a webhely-e, mint a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, amelyet megpróbált elérni. Ha folytatja, a Chrome nem ellenőrzi többé a nevek nem egyezését. Általánosságban: ennél a pontnál nem szabad tovább folytatni a műveletet.</translation>
 <translation id="2712549016134575851">A rendszer ütközést észlelt egy másik telepített alkalmazással.</translation>
 <translation id="7018032895891496381">A Google Chrome az alapértelmezett keresőmotort használja, amely jelenleg a(z) <ph name="PAGE_TITLE"/>. Megtartja az alapértelmezett keresőmotort?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Google Chrome plug-in tárhely</translation>
 <translation id="6126631249883707068">Szeretné, hogy a Google Chrome elmentse jelszavát?</translation>
 <translation id="5046764976540625289">Kilépés a Chrome alkalmazásból</translation>
+<translation id="2925521875688282191">Kérjük, jelentkezzen ki a Chrome OS-ből, majd jelentkezzen be újra, hogy érvénybe lépjenek a változtatások.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetböngésző</translation>

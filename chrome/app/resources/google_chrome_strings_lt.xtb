@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Uždarykite visus „Google Chrome“ langus ir paleiskite iš naujo, kad įsigaliotų šis pakeitimas.</translation>
 <translation id="7451721381978275812">Netinkami argumentai. „Google Chrome“ rėmelio negalima įdiegti parengties režimu taip pat neįdiegus „Google Chrome“.</translation>
 <translation id="5809236835374558741">Kompiuteryje jau įdiegta naujesnė „Google Chrome“ rėmelio versija. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ rėmelį ir vėl jį atsisiųskite.</translation>
+<translation id="6368958679917195344">„Chrome“ OS galima naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS"/>atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">„Google Chrome“ veikia netinkamai</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">„Chrome“ OS</translation>
 <translation id="1195935957447623558">„Google Chrome“ išsijungė netinkamai. Jei norite pakartotinai atidaryti puslapius, kurie buvo atidaryti, paspauskite „Atkurti&quot;.</translation>
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
-<translation id="6008953001134414503">Atsijunkite nuo „Google Chrome OS“ ir prisijunkite iš naujo, kad šis keitimas būtų pritaikytas.</translation>
 <translation id="6009537148180854585">Jūs bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serverio pateiktame sertifikate aptikta klaidų. „Google Chrome“ negali naudoti klaidingo sertifikato ir negali patvirtinti svetainės, prie kurios  bandėte prisijungti, tapatybės. Jūsų ryšys nesaugus, todėl tęsti neturėtumėte.</translation>
 <translation id="8738921060445980047">Nežinoma versija.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="5947389362804196214">Jūsų nuostatų negalima nuskaityti.\n\nKai kurios funkcijos gali būti negalimos ir nuostatų pakeitimai nebus išsaugoti.</translation>
 <translation id="6650142020817594541">Šioje svetainėje rekomenduojamas „Google Chrome“ rėmelis (jau įdiegtas).</translation>
-<translation id="8778247165111716037">„Google Chrome“ OS galima naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS"/>atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">Šiuo atveju sertifikate nurodytas adresas neatitinka tinklalapio, į kurį bandė nukreipti jūsų naršyklė, adreso.  Viena iš galimų priežasčių – jūsų perduodamą ryšį perėmė kompiuterių piratas ir pateikė kitos svetainės sertifikatą, siekdamas jus suklaidinti. Kita galima priežastis – serveris nustatytas keletui tinklalapių, įskaitant jūsų lankomą, pateikti tą patį sertifikatą, nors šis sertifikatas ir netinka naudoti su visais šiais tinklalapiais. „Google Chrome“ gali užtikrinti, kad pasiekėte &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, bet negali patikrinti, ar tai yra ta pati svetainė &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kurią norėjote pasiekti. Jei tęsite, „Chrome“ nebetikrins, ar yra ir daugiau neatitikimų pavadinimuose. Paprastai tokiu atveju siūloma toliau nebetęsti.</translation>
 <translation id="2712549016134575851">Aptiktas prieštaravimas su kita įdiegta programa.</translation>
 <translation id="7018032895891496381">„Google Chrome“ naudoja numatytąjį paieškos variklį, kuris šiuo metu nustatytas į·„<ph name="PAGE_TITLE"/>“. Ar norite išlaikyti numatytąjį paieškos variklį?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">„Google Chrome“ papildinio priegloba</translation>
 <translation id="6126631249883707068">Ar norite, kad „Google Chrome“ išsaugotų slaptažodį?</translation>
 <translation id="5046764976540625289">Išeiti iš „Chrome“</translation>
+<translation id="2925521875688282191">Atsijunkite nuo „Chrome OS“ ir prisijunkite iš naujo, kad šis keitimas būtų pritaikytas.</translation>
 <translation id="9039578207253536065">„Google Chrome“ darbuotojas</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Interneto naršyklė</translation>

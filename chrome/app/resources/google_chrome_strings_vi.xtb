@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Hãy đóng tất cả các cửa sổ Google Chrome và khởi chạy lại Google Chrome để thay đổi này có hiệu lực.</translation>
 <translation id="7451721381978275812">Đối số không hợp lệ. Không thể cài đặt Google Chrome Frame ở chế độ sẵn sàng nếu như không đồng thời cài Google Chrome.</translation>
 <translation id="5809236835374558741">Máy tính này đã cài đặt phiên bản Google Chrome Frame mới hơn. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome Frame và tải xuống lại phần mềm.</translation>
+<translation id="6368958679917195344">Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS"/>phần mềm nguồn mở<ph name="END_LINK_CROS_OSS"/> bổ sung.</translation>
 <translation id="4357846314885556934">Google Chrome Hoạt động không đúng</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Hệ điều hành Chrome</translation>
 <translation id="1195935957447623558">GoogleChrome không tắt đúng cách. Để mở lại trang bạn đã mở, hãy nhấp vào Khôi phục.</translation>
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
-<translation id="6008953001134414503">Hãy đăng xuất khỏi Google Chrome OS và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="6009537148180854585">Bạn đã cố truy cập &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, nhưng chứng chỉ mà máy chủ xuất trình có lỗi. Google Chrome không thể sử dụng chứng chỉ có lỗi và không thể xác nhận nhận diện của trang web mà bạn đã cố kết nối. Kết nối không an toàn và bạn không nên tiếp tục.</translation>
 <translation id="8738921060445980047">Phiên bản không xác định.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
 <translation id="5947389362804196214">Không thể đọc tuỳ chọn của bạn.\n\nMột số tính năng có thể không khả dụng và thay đổi cho tuỳ chọn của bạn sẽ không được lưu.</translation>
 <translation id="6650142020817594541">Trang web này khuyến nghị Google Chrome Frame (đã được cài đặt).</translation>
-<translation id="8778247165111716037">Google Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS"/>phần mềm nguồn mở<ph name="END_LINK_CROS_OSS"/> bổ sung.</translation>
 <translation id="4127951844153999091">Trong trường hợp này, địa chỉ được liệt kê trong chứng chỉ không phù hợp với địa chỉ của trang web mà trình duyệt của bạn cố truy cập. Một nguyên nhân có thể xảy ra là giao tiếp của bạn đang bị kẻ tấn công, người đang xuất trình chứng chỉ cho trang web khác, chặn lại và gây ra lỗi không khớp. Một nguyên nhân khác có thể là do máy chủ được thiết lập để trả về cùng một chứng chỉ cho nhiều trang web, kể cả trang web mà bạn cố truy cập, mặc dù chứng chỉ đó không có giá trị cho tất cả trang web đó. Google Chrome có thể chắc chắn rằng bạn đã truy cập &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nhưng không thể xác minh đó là trang web tương tự như &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; mà bạn dự định truy cập. Nếu bạn tiếp tục, Chrome sẽ không kiểm tra thêm bất kỳ sự không phù hợp về tên nào nữa. Nói chung, bạn không nên tiếp tục truy cập trang web.</translation>
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
 <translation id="7018032895891496381">Google Chrome sử dụng công cụ tìm kiếm mặc định của bạn, hiện đang được đặt là <ph name="PAGE_TITLE"/>. Bạn có muốn giữ công cụ tìm kiếm mặc định của mình không?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Máy chủ lưu trữ Trình cắm của Google Chrome</translation>
 <translation id="6126631249883707068">Bạn có muốn Google Chrome lưu mật khẩu không?</translation>
 <translation id="5046764976540625289">Thoát khỏi Chrome</translation>
+<translation id="2925521875688282191">Hãy đăng xuất khỏi Chrome OS và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Trình duyệt Internet</translation>

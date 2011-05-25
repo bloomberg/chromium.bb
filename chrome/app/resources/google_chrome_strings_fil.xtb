@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Pakisara ang lahat ng mga window ng Google Chrome at ilunsad itong muli para magkaroon ng epekto ang pagbabagong ito.</translation>
 <translation id="7451721381978275812">Di-wastong mga argumento. Hindi mai-install ang Google Chrome Frame sa ready mode nang hindi ini-install din ang Google Chrome.</translation>
 <translation id="5809236835374558741">Mayroon nang pinakabagong bersyon ng Google Chrome Frame ang computer na ito. Kung hindi gumagana ang software, mangyaring alisin sa pagkaka-install ang Google Chrome Frame at i-download itong muli.</translation>
+<translation id="6368958679917195344">Ginagawang posible ang Chrome OS ng karagdagang <ph name="BEGIN_LINK_CROS_OSS"/>open source na software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Hindi kumikilos nang tama ang Google Chrome</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Hindi nai-shut down ng wasto ang Google Chrome. Upang muling buksan ang mga pahina na nabuksan mo na, i-click ang Restore.</translation>
 <translation id="2580411288591421699">Hindi ma-install ang parehong bersyon ng Google Chrome na kasalukuyang tumatakbo. Mangyaring isara ang Google Chrome at muling subukan.</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
-<translation id="6008953001134414503">Mangyaring mag-sign out sa Google Chrome OS at mag-sign in muli upang maisagawa ang pagbabagong ito.</translation>
 <translation id="6009537148180854585">Tinatangka mong maabot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit ang sertipiko na ipinakita ng server ay naglalaman ng mga error. Hindi magagamit ng Chrome ang isang sertipiko na may mga error at hindi mapatunayan ang pagkilala ng site na tinangka mong kumunekta sa. Ang iyong koneksyon ay hindi secure at dapat hindi magpatuloy.</translation>
 <translation id="8738921060445980047">Hindi kilalang bersyon.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Ang module na may parehong pangalan ay kilalang salungat sa Google Chrome.</translation>
 <translation id="5947389362804196214">Hindi mabasa ang iyong mga kagustuhan.\n\nMaaaring hindi magamit ang ilang mga tampok at hindi mase-save ang mga pagbabago sa kagustuhan.</translation>
 <translation id="6650142020817594541">Inirerekumenda ng site na ito ang Google Chrome Frame (naka-install na).</translation>
-<translation id="8778247165111716037">Ginagawang posible ang Google Chrome OS ng karagdagang <ph name="BEGIN_LINK_CROS_OSS"/>open source na software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">Dahil dito, ang address ay nakalista sa sertipiko na walang katugmang address ng website na iyong sinubukang i-browse upang pumunta sa. Isang posibleng kadahilanan para sa iyong mga kumonikasyon na iyon na maaaring makuha sa pamamagitan ng isang pag-atake kung sino ang nagpapakita ng isang sertipiko para sa isang magkakaibang website, na dapat magsasanhi ng isang hindi patas. Iba pang posibleng kadahilanan na ang server ay naka-set up upang ibalik ang parehong sertipiko para sa maramihang mga website, kasama ang isang tinatangka mong bisitahin, kahit na ang sertipiko ay hindi wasto para sa lahat ng mga website na iyon. Maaaring sabihin ng Chrome na naabot mo na &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ngunit hindi matukoy na parehong site bilang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; na nilalayon na maabot mo. Kung nagpatuloy ka, ang Chrome ay hindi na susuriin para sa anumang ilang mga hindi tugmang pangalan. Sa pangkalahatan, ito ay pinakamagandang hindi ipagpatuloy lampasan ang puntong ito.</translation>
 <translation id="2712549016134575851">May nakitang salungatan sa isa pang naka-install na application.</translation>
 <translation id="7018032895891496381">Ginagamit ng Google Chrome ang iyong default na search engine, na kasalukuyang nakatakda sa <ph name="PAGE_TITLE"/>. Nais mo bang panatilihin ang iyong default na search engine?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Plug-In Host ng Google Chrome</translation>
 <translation id="6126631249883707068">Nais mo bang i-save ng Google Chrome ang iyong password?</translation>
 <translation id="5046764976540625289">Lumabas sa Chrome</translation>
+<translation id="2925521875688282191">Mangyaring mag-sign out sa Chrome OS at mag-sign in muli upang maganap ang pagbabagong ito.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internet Browser</translation>

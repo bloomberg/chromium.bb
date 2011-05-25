@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">為了讓這項變更生效，請關閉所有 Google Chrome 視窗，並重新啟動瀏覽器。</translation>
 <translation id="7451721381978275812">無效的引數。您必須安裝 Google Chrome，才能在就緒模式中安裝「Google Chrome 內嵌框架」。</translation>
 <translation id="5809236835374558741">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果該軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後重新下載。</translation>
+<translation id="6368958679917195344">「Chrome 作業系統」藉助了其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的相關技術才得以問世。</translation>
 <translation id="4357846314885556934">Google Chrome 反應異常</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome 作業系統</translation>
 <translation id="1195935957447623558">Google Chrome 上次執行時並未正確關閉。如果要重新開啟您之前瀏覽的網頁，請按一下 [還原]。</translation>
 <translation id="2580411288591421699">您無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
-<translation id="6008953001134414503">請先登出「Google Chrome 作業系統」，然後再次登入，這項變更才會生效。</translation>
 <translation id="6009537148180854585">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證包含錯誤資訊。Google Chrome 無法使用含有錯誤資訊的憑證，也無法驗證您要連結的網站的身分。您的連線並不安全，建議您就此停住。</translation>
 <translation id="8738921060445980047">未知版本。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
 <translation id="5947389362804196214">系統無法讀取您的偏好設定。\n\n部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="6650142020817594541">建議您使用「Google Chrome 內嵌框架」(已安裝) 瀏覽這個網站。</translation>
-<translation id="8778247165111716037">「Google Chrome 作業系統」的開發仰賴其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的協助才得以完成。</translation>
 <translation id="4127951844153999091">在這個情況下，憑證所列的網址與瀏覽器嘗試前往的網址不符。憑證不符的其中一個可能原因是，攻擊者欄截了您的通訊，並且出示另一個網站的憑證。另一個可能的原因是，伺服器已設定為不同的網站傳回相同的憑證 (其中包括您嘗試造訪的網站)，即便該憑證並不適用於某些網站。Google Chrome 可以確定您已經到達 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但是無法驗證這與您嘗試前往的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是同一個網站。如果您繼續，Chrome 將不再檢查任何名稱不符的情況。一般而言，建議您就此停住。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
 <translation id="7018032895891496381">Google Chrome 使用您目前預設的搜尋引擎 <ph name="PAGE_TITLE"/>，要保留目前預設的搜尋引擎嗎？</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Google Chrome 外掛程式主控中心</translation>
 <translation id="6126631249883707068">您希望 Google Chrome 儲存密碼嗎？</translation>
 <translation id="5046764976540625289">結束 Chrome</translation>
+<translation id="2925521875688282191">請先登出「Chrome 作業系統」，然後再次登入，這項變更才會生效。</translation>
 <translation id="9039578207253536065">Google Chrome 作業工具</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">網際網路瀏覽器</translation>

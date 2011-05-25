@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Stäng alla fönster i Google Chrome och starta om så att ändringen genomförs.</translation>
 <translation id="7451721381978275812">Ogiltiga argument. Google Chrome Frame kan inte installeras i klarläge utan att Google Chrome också installeras.</translation>
 <translation id="5809236835374558741">Det finns redan en senare version av Google Chrome Frame på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome Frame och hämtar det igen.</translation>
+<translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS"/>öppen källkod<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome uppför sig inte</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome stängdes inte av på rätt sätt. Klicka på Återställ om du åter vill öppna de tidigare öppna sidorna.</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
-<translation id="6008953001134414503">Den här ändringen träder inte i kraft förrän du loggat ut från Google Chrome OS och sedan loggar in igen.</translation>
 <translation id="6009537148180854585">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som servern angav innehåller fel. Google Chrome kan inte använda ett certifikat som innehåller fel och kan inte validera identiteten för webbplatsen som du försöker öppna. Anslutningen är inte säker och du bör inte fortsätta.</translation>
 <translation id="8738921060445980047">Okänd version.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="5947389362804196214">Det går inte att läsa inställningarna.\n\nVissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
 <translation id="6650142020817594541">Webbplatsen rekommenderar Google Chrome Frame (redan installerat)</translation>
-<translation id="8778247165111716037">Google Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS"/>öppen källkod<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">I det här fallet överensstämmer inte adressen i certifikatet med adressen på webbplatsen som webbläsaren försökte besöka. Det kan bero på att kommunikationen har kapats av en bedragare som anger ett certifikat för en annan webbplats, vilket orsakar konflikten. En annan orsak kan vara att servern är inställd för att returnera samma certifikat till flera webbplatser, inklusive den som du försöker besöka, trots att certifikatet inte är giltigt för alla dessa webbplatser. Google Chrome kan intyga att du nått &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan inte bekräfta att det är webbplatsen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; som du vill komma till. Om du fortsätter kommer inte Chrome att söka efter eventuella nya namnkonflikter. I allmänhet är det bäst att inte fortsätta med åtgärden.</translation>
 <translation id="2712549016134575851">En konflikt med ett annat installerat program har upptäckts.</translation>
 <translation id="7018032895891496381">Google Chrome använder din standardsökmotor, som för närvarande är <ph name="PAGE_TITLE"/>. Vill du behålla din standardsökmotor?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Plugin-värd för Google Chrome</translation>
 <translation id="6126631249883707068">Vill du att Google Chrome ska spara ditt lösenord?</translation>
 <translation id="5046764976540625289">Avsluta Chrome</translation>
+<translation id="2925521875688282191">Den här ändringen träder inte i kraft förrän du loggat ut från Chrome OS och sedan loggar in igen.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Webbläsare</translation>

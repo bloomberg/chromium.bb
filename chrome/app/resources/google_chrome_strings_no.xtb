@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">For at endringen skal tre i kraft, må du lukke alle vinduer og starte Google Chrome på nytt.</translation>
 <translation id="7451721381978275812">Ugyldige argumenter. Google Chrome Frame kan ikke installeres i klar modus uten at Chrome Frame også er installert.</translation>
 <translation id="5809236835374558741">Denne datamaskinen har allerede en nyere versjon av Google Chrome Frame. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome Frame og laste det ned på nytt.</translation>
+<translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS"/>tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome oppfører seg på feil måte</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chromes operativsystem</translation>
 <translation id="1195935957447623558">Google Chrome ble ikke avsluttet på riktig måte. Hvis du vil gjenåpne sidene som var åpne, klikker du Gjenopprett.</translation>
 <translation id="2580411288591421699">Google Chrome-versjonen du prøver å installere, kjører allerede. Lukk Google Chrome og forsøk å installere på nytt.</translation>
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
-<translation id="6008953001134414503">For·at·denne·endringen·skal·tre·i·kraft,·må·du·logge deg ut av Google Chrome OS og logge deg inn på nytt.</translation>
 <translation id="6009537148180854585">Du forsøkte å komme til &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men sertifikatet som tjeneren presenterte, inneholder feil. Google Chrome kan ikke bruke et sertifikat med feil, og kan ikke validere identiteten til nettstedet du har forsøkt å koble til. Tilkoblingen er ikke sikker, og du bør ikke fortsette.</translation>
 <translation id="8738921060445980047">Ukjent versjon.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Det er kjent at en modul med samme navn har vært i konflikt med Google Chrome.</translation>
 <translation id="5947389362804196214">Kan ikke lese innstillingene.\n\nEnkelte funksjoner kan være utilgjengelige og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="6650142020817594541">Dette nettstedet anbefaler Google Chrome Frame (allerede installert).</translation>
-<translation id="8778247165111716037">Google Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS"/>programvare med åpen kildekode<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">I dette tilfellet stemmer ikke adressen i sertifikatet med adressen til nettstedet som nettleseren forsøkte å gå til. Én mulig årsak til dette er at kommunikasjonen fra deg fanges opp av en angriper som presenterer et sertifikat for en annet nettsted, slik at nettstedet og sertifikatet ikke stemmer overens. En annen mulig årsak er at tjeneren er konfigurert til å returnere samme sertifikat for flere nettsteder, deriblant nettstedet du forsøker å besøke, selv om sertifikatet ikke er gyldig for alle disse nettstedene. Google Chrome kan si sikkert at du har kommet til &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan ikke verifisere at det er det samme nettstedet som &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, som du mente å komme til. Hvis du fortsetter, vil Chrome ikke se etter flere uoverensstemmelser i forbindelse med navn. Det beste er vanligvis å ikke fortsette videre.</translation>
 <translation id="2712549016134575851">Det er registrert en konflikt med et annet installert program.</translation>
 <translation id="7018032895891496381">Google Chrome bruker din standard søkemotor, som er <ph name="PAGE_TITLE"/>. Vil du beholde denne?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Vert for programtillegg i Google Chrome</translation>
 <translation id="6126631249883707068">Vil du at Google Chrome skal lagre passordet?</translation>
 <translation id="5046764976540625289">Avslutt Chrome</translation>
+<translation id="2925521875688282191">For at denne endringen skal tre i kraft, må du logge av Chrome OS og logge deg inn på nytt.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Nettleser</translation>

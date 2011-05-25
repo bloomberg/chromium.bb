@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Please close all Google Chrome windows and relaunch it for this change to take effect.</translation>
 <translation id="7451721381978275812">Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.</translation>
 <translation id="5809236835374558741">This computer already has a more recent version of Google Chrome Frame. If the software is not working, please uninstall Google Chrome Frame and download it again.</translation>
+<translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome is Misbehaving</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome didn't shut down correctly. To reopen the pages that you had open, click Restore.</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
-<translation id="6008953001134414503">Please sign out of Google Chrome OS and sign in again for this change to take effect.</translation>
 <translation id="6009537148180854585">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Google Chrome cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to. Your connection is not secure and you should not proceed.</translation>
 <translation id="8738921060445980047">Unknown version.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="5947389362804196214">Your preferences cannot be read.\n\nSome features may be unavailable, and changes to preferences won't be saved.</translation>
 <translation id="6650142020817594541">This site recommends Google Chrome Frame (already installed).</translation>
-<translation id="8778247165111716037">Google Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">In this case, the address listed in the certificate does not match the address of the website that your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one that you are attempting to visit, even though that certificate is not valid for all of those websites. Google Chrome can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that it is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chrome will not check for any further name mismatches. In general, it is best not to proceed past this point.</translation>
 <translation id="2712549016134575851">A conflict with another installed application has been detected.</translation>
 <translation id="7018032895891496381">Google Chrome uses your default search engine, which is currently set to <ph name="PAGE_TITLE"/>. Do you want to keep your default search engine?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
 <translation id="5046764976540625289">Exit Chrome</translation>
+<translation id="2925521875688282191">Please sign out of Chrome OS and sign in again for this change to take effect.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internet Browser</translation>

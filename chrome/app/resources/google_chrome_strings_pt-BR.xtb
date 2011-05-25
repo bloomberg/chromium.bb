@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que essa alteração entre em vigor.</translation>
 <translation id="7451721381978275812">Argumentos inválidos. O Frame do Google Chrome não pode ser instalado em modo pronto sem a instalação do Google Chrome.</translation>
 <translation id="5809236835374558741">Este computador já tem uma versão mais recente do Frame do Google Chrome. Se o software não estiver funcionando, desinstale o Frame do Google Chrome e faça o download novamente.</translation>
+<translation id="6368958679917195344">O sistema operacional do Chrome tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="4357846314885556934">O Google Chrome está se comportando de forma inadequada</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Sistema operacional do Google Chrome</translation>
 <translation id="1195935957447623558">O Google Chrome não foi encerrado corretamente. Para reabrir as páginas que você tinha aberto, clique em &quot;Restaurar&quot;.</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome que está em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
-<translation id="6008953001134414503">Saia do Sistema operacional do Google Chrome e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="6009537148180854585">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode usar um certificado com erros e não pode validar a identidade do site ao qual você tentou se conectar. Sua conexão não é segura e você não deve continuar.</translation>
 <translation id="8738921060445980047">Versão desconhecida.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="5947389362804196214">Não foi possível ler as suas preferências.\n\nAlguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
 <translation id="6650142020817594541">O site recomenda o Frame do Google Chrome (já instalado).</translation>
-<translation id="8778247165111716037">O sistema operacional do Google Chrome foi tornado possível devido a um <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="4127951844153999091">Nesse caso, o endereço listado no certificado não corresponde ao endereço do site que seu navegador tentou acessar. Um possível motivo para isso é o fato de suas comunicações serem interceptadas por um invasor que está apresentando um certificado para um site diferente, o que poderia causar uma correspondência incorreta. Outro possível motivo é o fato de o servidor estar configurado para retornar o mesmo certificado para vários sites, incluindo o que você está tentando visitar, mesmo que esse certificado não seja válido para todos os sites. O Google Chrome pode afirmar com certeza que você acessou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não pode confirmar que este é o mesmo site que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, que você pretendia acessar.
 Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta de nomes. Em geral, é melhor não continuar além deste ponto.</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outro aplicativo instalado.</translation>
@@ -81,6 +80,7 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="5318056482164160049">Host do plug-in do Google Chrome</translation>
 <translation id="6126631249883707068">Deseja que o Google Chrome salve a sua senha?</translation>
 <translation id="5046764976540625289">Sair do Chrome</translation>
+<translation id="2925521875688282191">Saia do sistema operacional do Chrome e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="9039578207253536065">Operador do Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>answer=161796</translation>
 <translation id="8865765905101981392">Navegador da internet</translation>

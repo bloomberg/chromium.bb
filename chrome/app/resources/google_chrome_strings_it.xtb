@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Chiudi tutte le finestre di Google Chrome e riavvialo per rendere effettiva la modifica.</translation>
 <translation id="7451721381978275812">Argomenti non validi. Google Chrome Frame non è installabile in modalità Pronto senza installare anche Google Chrome.</translation>
 <translation id="5809236835374558741">In questo computer è già installata una versione più recente di Google Chrome Frame. Se il software non funziona, disinstalla Google Chrome Frame e scaricalo nuovamente.</translation>
+<translation id="6368958679917195344">Chrome OS è reso possibile da <ph name="BEGIN_LINK_CROS_OSS"/>software open source<ph name="END_LINK_CROS_OSS"/> aggiuntivi.</translation>
 <translation id="4357846314885556934">Google Chrome funziona in modo anomalo</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">La sessione di Google Chrome è stata terminata in modo non corretto. Per riaprire le pagine che stavi visualizzando, fai clic su Ripristina.</translation>
 <translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
 <translation id="7747138024166251722">Il programma di installazione non ha creato una directory temporanea. Verifica di disporre di spazio libero sul disco e dell'autorizzazione per l'installazione del software.</translation>
-<translation id="6008953001134414503">Esci da Google Chrome OS e accedi di nuovo per rendere effettiva questa modifica.</translation>
 <translation id="6009537148180854585">Hai tentato di accedere a strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato presentato dal server contiene degli errori. Google Chrome non può utilizzare un certificato in cui sono presenti errori e non è in grado di convalidare l'identità del sito a cui hai tentato di accedere. La connessione non è protetta, ti consigliamo di non procedere.</translation>
 <translation id="8738921060445980047">Versione sconosciuta.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Un modulo con lo stesso nome risulta in conflitto con Google Chrome.</translation>
 <translation id="5947389362804196214">Non è possibile leggere le tue preferenze.\n\nAlcune funzioni potrebbero non essere disponibili e le modifiche alle preferenze non verranno salvate.</translation>
 <translation id="6650142020817594541">Questo sito consiglia Google Chrome Frame (già installato).</translation>
-<translation id="8778247165111716037">Google Chrome OS è reso possibile da <ph name="BEGIN_LINK_CROS_OSS"/>software open source<ph name="END_LINK_CROS_OSS"/> aggiuntivi.</translation>
 <translation id="4127951844153999091">In questo caso l'indirizzo indicato nel certificato non corrisponde all'indirizzo del sito web al quale il tuo browser ha tentato di accedere. Questa mancata corrispondenza può essere dovuta al tentativo da parte di un hacker di presentare un certificato relativo a un altro sito web. È anche possibile che il server sia impostato in modo da restituire lo stesso certificato per più siti web, incluso quello che stai cercando di visitare, malgrado tale certificato non sia valido per tutti i siti. Siamo in grado di garantire che stai comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ma non è possibile verificare che questo sito corrisponda a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Se decidi di procedere, Google Chrome non verificherà eventuali altre mancate corrispondenze. In generale, tuttavia, ti consigliamo di non procedere oltre questo punto.</translation>
 <translation id="2712549016134575851">È stato rilevato un conflitto con un'altra applicazione installata.</translation>
 <translation id="7018032895891496381">Google Chrome utilizza il tuo motore di ricerca predefinito, correntemente impostato su <ph name="PAGE_TITLE"/>. Mantenere il motore di ricerca predefinito?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Host plug-in Google Chrome</translation>
 <translation id="6126631249883707068">Desideri che Google Chrome salvi la tua password?</translation>
 <translation id="5046764976540625289">Esci da Chrome</translation>
+<translation id="2925521875688282191">Esci da Chrome OS e accedi di nuovo per rendere effettiva questa modifica.</translation>
 <translation id="9039578207253536065">Applicazione di lavoro Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser Internet</translation>

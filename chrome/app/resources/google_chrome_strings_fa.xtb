@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">لطفاً همه پنجره های Google Chrome را ببندید و برای اعمال این تغییر، دوباره آن را راه اندازی کنید.</translation>
 <translation id="7451721381978275812">آرگومان های نامعتبر. Google Chrome Frame در حالت آماده بدون نصب Google Chrome امکان پذیر نیست.</translation>
 <translation id="5809236835374558741">این رایانه در حال حاضر دارای نسخه جدیدتری از Google Chrome Frame است. اگر نرم افزار کار نمی کند، لطفاً Google Chrome Frame را حذف نصب کنید و دوباره آن را دانلود کنید.</translation>
+<translation id="6368958679917195344">Chrome OS با یک <ph name="BEGIN_LINK_CROS_OSS"/>نرم افزار منبع آزاد<ph name="END_LINK_CROS_OSS"/> دیگر امکان پذیر است.</translation>
 <translation id="4357846314885556934">Google Chrome درست عمل نمی کند</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">سیستم عامل Chrome</translation>
 <translation id="1195935957447623558">Google Chrome درست بسته نشده است. برای باز کردن مجدد صفحاتی که بازکرده بودید، روی بازیابی کلیک کنید.</translation>
 <translation id="2580411288591421699">نمی توان همان نسخه Google Chrome را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome را ببندید و دوباره سعی کنید.</translation>
 <translation id="7747138024166251722">نصب کننده نتوانست دایرکتوری موقت ایجاد کند. لطفاً فضای خالی دیسک و اجازه نصب نرم افزار را بررسی کنید.</translation>
-<translation id="6008953001134414503">لطفاً برای اعمال این تغییر، از سیستم عامل Google Chrome خارج شده و دوباره به سیستم وارد شوید.</translation>
 <translation id="6009537148180854585">سعی داشتید به &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; برسید، اما گواهی ارائه شده از سوی سرور دارای خطا است. Google Chrome نمی تواند از گواهی دارای خطا استفاده کند و نمی تواند هویت سایتی را تعیین کند که می خواهید به آن وصل شوید. اتصال شما ایمن نیست و نباید ادامه دهید.</translation>
 <translation id="8738921060445980047">نسخه ناشناخته.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">یک مدول با همین نام با Google Chrome تداخل دارد.</translation>
 <translation id="5947389362804196214">موارد برگزیده شما را نمی توان خواند.\n\nبعضی ویژگیها ممکن است در دسترس نباشند و تغییرات موارد برگزیده ذخیره نخواهد شد.</translation>
 <translation id="6650142020817594541">این سایت Google Chrome Frame را توصیه می کند (در حال حاضر نصب است).</translation>
-<translation id="8778247165111716037">Google Chrome OS با <ph name="BEGIN_LINK_CROS_OSS"/>نرم افزار منبع باز<ph name="END_LINK_CROS_OSS"/> دیگری امکان پذیر است.</translation>
 <translation id="4127951844153999091">در این مورد، آدرس لیست شده در گواهی با آدرس وب سایتی که مرورگر شما سعی در باز کردن آن را داشت یکی نیست. یک دلیل آن ممکن است این باشد که مهاجمی از ارتباطات شما جلوگیری می کند، این مهاجم یک گواهی را برای وب سایت دیگری ارائه می دهد و این باعث عدم تطابق می شود. دلیل ممکن دیگر این است که سرور طوری تنظیم شده است که یک گواهی را برای چند وب سایت برمی گرداند از جمله همین وب سایتی که می خواهید بازدید کنید، اما آن گواهی برای همه آن وب سایتها معتبر نیست. Google Chrome اطمینان دارد که به &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; دسترسی داشته اید، اما نمی تواند تأیید کند که این همان سایت &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; است که شما سعی در برقراری ارتباط با آن را داشتید. اگر ادامه دهید، Chrome دیگر عدم تطابق نام ها را بررسی نمی کند. بطور کلی، بهتر است بدون در نظر گرفتن این نکته ادامه ندهید.</translation>
 <translation id="2712549016134575851">تداخلی با یک برنامه کاربردی نصب شده دیگر شناسایی شد.</translation>
 <translation id="7018032895891496381">Google Chrome از موتور جستجوی پیش فرض شما استفاده می کند، که اکنون روی <ph name="PAGE_TITLE"/> تنظیم شده است. آیا می خواهید موتور جستجوی پیش فرض خود را حفظ کنید؟</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">میزبان افزونه Google Chrome</translation>
 <translation id="6126631249883707068">آیا می خواهید Google Chrome رمز ورود شما را ذخیره کند؟</translation>
 <translation id="5046764976540625289">خروج از Chrome</translation>
+<translation id="2925521875688282191">لطفاً برای اعمال این تغییر، از Chrome OS خارج شده و دوباره به سیستم وارد شوید.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">مرورگر اینترنت</translation>

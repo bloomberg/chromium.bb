@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Fermez toutes les fenêtres et relancez Google Chrome afin que cette modification soit prise en compte.</translation>
 <translation id="7451721381978275812">Arguments incorrects. Pour installer Google Chrome Frame en mode Prêt, vous devez également installer Google Chrome.</translation>
 <translation id="5809236835374558741">Une version plus récente de Google Chrome Frame est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, désinstallez le logiciel et téléchargez-le de nouveau.</translation>
+<translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS"/>logiciels Open Source<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome se comporte de façon inattendue.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Google Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome ne s'est pas fermé automatiquement. Pour rouvrir les pages précédemment ouvertes, cliquez sur Rétablir.</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
-<translation id="6008953001134414503">Veuillez vous déconnecter de Google Chrome OS, puis vous reconnecter pour que cette modification soit prise en compte.</translation>
 <translation id="6009537148180854585">Vous avez tenté d'accéder à &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le certificat présenté par le serveur contient des erreurs. Google Chrome ne peut pas utiliser un certificat avec des erreurs et valider l'identité du site auquel vous tentez d'accéder. Ne poursuivez pas, car votre connexion n'est pas sécurisée.</translation>
 <translation id="8738921060445980047">Version inconnue</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Nous avons constaté qu'un module du même nom crée des conflits avec Google Chrome.</translation>
 <translation id="5947389362804196214">Impossible de lire vos préférences.\n\nCertaines fonctionnalités ne seront peut-être pas disponibles et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
 <translation id="6650142020817594541">Ce site recommande Google Chrome Frame (déjà installé).</translation>
-<translation id="8778247165111716037">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS"/>logiciels libres<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">Cela signifie que l'adresse répertoriée dans le certificat ne correspond pas à l'adresse du site Web auquel votre navigateur essaie d'accéder. Votre communication a peut-être été interceptée par un pirate informatique qui présente un certificat correspondant à un site Web différent, provoquant ainsi une incohérence. Il est également possible que le serveur soit configuré pour présenter le même certificat pour plusieurs sites Web, y compris celui auquel vous tentez d'accéder, même si ce certificat n'est pas valide pour chacun de ces sites. Google Chrome peut confirmer que vous êtes sur la page &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mais ne peut pas vérifier que cette page est la même que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, à laquelle vous vouliez accéder. Si vous poursuivez, Chrome ne recherchera plus les incohérences de noms. Il est préférable dans ce cas de ne pas poursuivre.</translation>
 <translation id="2712549016134575851">Détection d'un conflit avec une autre application installée.</translation>
 <translation id="7018032895891496381">Google Chrome utilise votre moteur de recherche par défaut actuel, à savoir <ph name="PAGE_TITLE"/>. Voulez-vous conserver ce moteur de recherche par défaut ?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Hôte du plug-in Google Chrome</translation>
 <translation id="6126631249883707068">Souhaitez-vous que Google Chrome enregistre votre mot de passe ?</translation>
 <translation id="5046764976540625289">Quitter Chrome</translation>
+<translation id="2925521875688282191">Pour que cette modification soit prise en compte, veuillez vous déconnecter de Google Chrome OS, puis vous reconnecter.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Navigateur Internet</translation>

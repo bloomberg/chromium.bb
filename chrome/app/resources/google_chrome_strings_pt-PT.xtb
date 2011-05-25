@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
 <translation id="7451721381978275812">Argumentos inválidos. Não é possível instalar o Google Chrome Frame no modo de prontidão sem instalar o Google Chrome.</translation>
 <translation id="5809236835374558741">Este computador já tem uma versão mais recente do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome Frame e transfira-o de novo.</translation>
+<translation id="6368958679917195344">O SO Chrome é possível através de <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="4357846314885556934">O Google Chrome está a portar-se mal</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">O Google Chrome não foi correctamente encerrado. Para abrir novamente as páginas que estavam abertas, clique em Restaurar.</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
-<translation id="6008953001134414503">Termine sessão no Google Chrome SO e reinicie-a, para que a alteração seja aplicada.</translation>
 <translation id="6009537148180854585">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode utilizar um certificado com erros e não pode validar a identidade do site ao qual tentou ligar-se. A sua ligação não é segura pelo que não deve prosseguir.</translation>
 <translation id="8738921060445980047">Versão desconhecida.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
 <translation id="5947389362804196214">Não é possível ler as suas preferências.\n\nAlgumas funcionalidades poderão estar indisponíveis e as alterações efectuadas às preferências não serão guardadas.</translation>
 <translation id="6650142020817594541">Este Web site recomenda o Google Chrome Frame (já instalado).</translation>
-<translation id="8778247165111716037">O Google Chrome SO é tornado possível através de <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="4127951844153999091">Neste caso, o endereço listado no certificado não corresponde ao endereço do Web site a que o browser tentou aceder. Uma explicação possível reside no facto de as suas comunicações estarem a ser interceptadas por um utilizador mal intencionado que está a apresentar um certificado para um Web site diferente, o que causaria uma incompatibilidade. Outra explicação plausível consiste na possibilidade de o servidor estar configurado para devolver o mesmo certificado para vários Web sites, incluindo aquele que está a tentar visitar, apesar de esse certificado não ser válido para todos esses Web sites. O Google Chrome pode afirmar com certeza que acedeu a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não consegue verificar que se trata do mesmo site que  &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ao qual tentou aceder. Se prosseguir, o Chrome deixará de verificar correspondências de nomes. Em geral, o melhor é não prosseguir para além deste ponto.</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outra aplicação instalada.</translation>
 <translation id="7018032895891496381">O Google Chrome utiliza o motor de pesquisa predefinido, que está actualmente definido como <ph name="PAGE_TITLE"/>. Pretende manter o motor de pesquisa predefinido?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Anfitrião do plug-in do Google Chrome</translation>
 <translation id="6126631249883707068">Pretende que o Google Chrome guarde a sua palavra-passe?</translation>
 <translation id="5046764976540625289">Sair do Chrome</translation>
+<translation id="2925521875688282191">Termine sessão no SO Chrome e reinicie-a, para que a alteração seja aplicada.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser da Internet</translation>

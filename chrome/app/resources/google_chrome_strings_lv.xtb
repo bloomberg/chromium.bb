@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Lai izmaiņas stātos spēkā, aizveriet visus Google Chrome logus un restartējiet pārlūku.</translation>
 <translation id="7451721381978275812">Nederīgi argumenti. Google Chrome Frame nevar instalēt gatavības režīmā, vienlaikus neinstalējot arī Google Chrome.</translation>
 <translation id="5809236835374558741">Šim datoram jau ir instalēta jaunākā Google Chrome Frame versija. Ja programmatūra nedarbojas, atinstalējiet Google Chrome Frame un vēlreiz to lejupielādējiet.</translation>
+<translation id="6368958679917195344">Chrome OS ir kļuvusi iespējama, pateicoties papildu <ph name="BEGIN_LINK_CROS_OSS"/>atklātā pirmkoda programmatūrai<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome nedarbojas atbilstoši</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome netika pareizi izslēgts. Lai no jauna atvērtu iepriekš atvērtās lapas, nospiediet Atjaunot.</translation>
 <translation id="2580411288591421699">Nevar instalēt to pašu Google Chrome versiju, kas jau darbojas. Lūdzu, aizveriet Google Chrome un mēģiniet vēlreiz.</translation>
 <translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>
-<translation id="6008953001134414503">Lai šī izmaiņa stātos spēkā, lūdzu, izrakstieties no Google Chrome OS un vēlreiz pierakstieties tajā.</translation>
 <translation id="6009537148180854585">Jūs mēģinājāt sasniegt &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet servera piedāvātais sertifikāts satur kļūdas. Google Chrome nevar izmantot kļūdainu sertifikātu un nevar novērtēt vietnes identitāti, ar kuru centāties savienoties. Jūsu savienojums nav drošs un jums nevajadzētu turpināt.</translation>
 <translation id="8738921060445980047">Nezināma versija.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Google Chrome.</translation>
 <translation id="5947389362804196214">Jūsu preferences nevar nolasīt.\n\nDažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas.</translation>
 <translation id="6650142020817594541">Šī vietne iesaka Google Chrome Frame (jau instalēta).</translation>
-<translation id="8778247165111716037">Google Chrome OS ir kļuvusi iespējama, pateicoties papildu <ph name="BEGIN_LINK_CROS_OSS"/>atklātā pirmkoda programmatūrai<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">Šādā gadījumā, sertifikātā minētā adrese neatbilst tai tīmekļa lapas adresei, kurai centās piekļūt jūsu pārlūks. Viens iemesls šim ir tas, ka jūsu savienojumus pārtver uzbrucējs, kas piedāvā sertifikātu citai tīmekļa vietnei, kas var radīt neatbilstību. Cits iespējams iemesls ir tas, ka serveris ir iestatīts tā, lai atgrieztu vienu sertifikātu vairākām vietnēm, tai skaitā tām, kuram centāties piekļūt, pat ja sertifikāts nav derīgs šīm tīmekļa vietnēm. Google Chrome var apgalvot, ka esat sasniedzis &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, bet nevar apstiprināt, ka tā ir &lt;strong&gt; vietne<ph name="DOMAIN"/>&lt;/strong&gt;, kuru centāties sasniegt. Ja jūs turpināsiet, Chrome nepārbaudīs tālākas nosaukumu neprecizitātes. Kopumā būtu labāk nedoties tālāk par šo punktu.</translation>
 <translation id="2712549016134575851">Atklāts konflikts ar citu instalētu lietojumprogrammu.</translation>
 <translation id="7018032895891496381">Google Chrome izmanto jūsu noklusējuma meklētājprogrammu — <ph name="PAGE_TITLE"/>. Vai vēlaties turpināt lietot noklusējuma meklētājprogrammu?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Google Chrome spraudņa saimniekdators</translation>
 <translation id="6126631249883707068">Vai vēlaties, lai Google Chrome saglabā jūsu paroli?</translation>
 <translation id="5046764976540625289">Iziet no Chrome</translation>
+<translation id="2925521875688282191">Lai šī izmaiņa stātos spēkā, izrakstieties no Chrome OS un no jauna pierakstieties tajā.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Interneta pārlūkprogramma</translation>

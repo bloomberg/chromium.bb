@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">כדי ששינוי זה ייכנס לתוקף, סגור את כל החלונות של Google Chrome והפעל אותו מחדש.</translation>
 <translation id="7451721381978275812">ארגומנטים לא חוקיים. לא ניתן להתקין את Google Chrome Frame במצב מוכן ללא התקנת Google Chrome.</translation>
 <translation id="5809236835374558741">במחשב זה קיימת כבר גירסה מתקדמת יותר של Google Chrome Frame. אם התוכנה אינה פועלת, הסר את Google Chrome Frame והורד אותו שוב.</translation>
+<translation id="6368958679917195344">השימוש במערכת ההפעלה של Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS"/>תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS"/> נוספת.</translation>
 <translation id="4357846314885556934">Google Chrome לא מתנהג כיאות</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome לא נסגר כראוי. לפתיחה מחדש של הדפים שפתחת, לחץ על 'שחזר'.</translation>
 <translation id="2580411288591421699">אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
-<translation id="6008953001134414503">צא מ-Google Chrome OS והיכנס שוב כדי ששינוי זה ייכנס לתוקף.</translation>
 <translation id="6009537148180854585">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהוצג על ידי השרת מכיל שגיאות. Google Chrome אינו יכול להשתמש באישור המכיל שגיאות ואינו יכול לאמת את זהות האתר שאליו ניסית להתחבר. ההתחברות שלך אינה בטוחה ומומלץ לא להמשיך.</translation>
 <translation id="8738921060445980047">גרסה לא ידועה.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
 <translation id="5947389362804196214">לא היתה אפשרות לקרוא את ההעדפות שלך.\n\nייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="6650142020817594541">אתר זה ממליץ על Google Chrome Frame (כבר מותקן).</translation>
-<translation id="8778247165111716037">השימוש במערכת ההפעלה Google Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS"/>תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">במקרה כזה, הכתובת שמופיעה באישור אינה תואמת לכתובת של האתר שאליו הדפדפן שלך ניסה להגיע. סיבה אפשרית לכך היא שהתכתובות שלך נלכדות על ידי גורם פוגע שמציג אישור עבור אתר שונה, ובעקבות זאת נוצרה אי ההתאמה. סיבה אפשרית נוספת היא שהשרת מוגדר להצגת אותו אישור עבור אתרים מרובים, לרבות האתר שבו אתה מנסה לבקר, גם אם האישור אינו תקף לכל אותם אתרים. Google Chrome יכול לקבוע בוודאות שהגעת ל&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, אך אינו יכול לאמת כי הוא זהה ל-&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, שאליו ניסית להגיע. אם תמשיך, Chrome לא יחפש אי התאמות שמיות נוספות. ככלל, מומלץ לא להמשיך מעבר לנקודה זו.</translation>
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
 <translation id="7018032895891496381">Google Chrome משתמש במנוע חיפוש המוגדר כברירת מחדל, שמוגדר כרגע ל-<ph name="PAGE_TITLE"/>. האם ברצונך לשמור על מנוע החיפוש המוגדר כברירת מחדל?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">מארח הפלאגין של Google Chrome</translation>
 <translation id="6126631249883707068">האם אתה רוצה ש-Google Chrome ישמור את הסיסמה שלך? </translation>
 <translation id="5046764976540625289">צא מ-Chrome</translation>
+<translation id="2925521875688282191">צא ממערכת ההפעלה של Chrome והיכנס שוב כדי ששינוי זה ייכנס לתוקף.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">דפדפן אינטרנט</translation>

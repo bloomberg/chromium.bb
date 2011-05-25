@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Zatvorite sve prozore preglednika Google Chrome i ponovo ga pokrenite kako bi ova promjena stupila na snagu.</translation>
 <translation id="7451721381978275812">Nevažeći argumenti. Google Chrome Frame ne može se instalirati u načinu spremno, a da se ne instalira i Google Chrome.</translation>
 <translation id="5809236835374558741">Ovo računalo već ima noviju verziju programa Google Chrome Frame. Ako softver ne radi, deinstalirajte Google Chrome Frame i ponovno ga preuzmite.</translation>
+<translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS"/>softverom otvorenog koda<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome se čudno ponaša</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome se nije ispravno zatvorio. Da biste ponovno otvorili prije otvorene stranice, kliknite &quot;Vrati&quot;.</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
-<translation id="6008953001134414503">Odjavite se iz Google Chrome OS-a i prijavite se ponovo kako bi promjena počela vrijediti.</translation>
 <translation id="6009537148180854585">Pokušali ste pristupiti domeni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali potvrda koju je prikazao poslužitelj sadrži pogreške. Google Chrome ne može koristiti potvrdu s pogreškama i ne može provjeriti valjanost identiteta web lokacije s kojom ste se pokušali povezati. Vaša veza nije sigurna i ne biste trebali nastaviti.</translation>
 <translation id="8738921060445980047">Nepoznata verzija.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Modul s tim nazivom već je bio u konfliktu s preglednikom Google Chrome.</translation>
 <translation id="5947389362804196214">Vaše postavke nije moguće čitati.\n\nNeke su značajke možda nedostupne i promjene postavki neće biti spremljene.</translation>
 <translation id="6650142020817594541">Ova web-lokacija preporučuje Google Chrome Frame (već instaliran).</translation>
-<translation id="8778247165111716037">Operativni sustav usluge Google Chrome omogućuje se preuzimanjem dodatnog <ph name="BEGIN_LINK_CROS_OSS"/>softvera s otvorenim izvornim kôdom<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">U tom slučaju adresa navedena u potvrdi ne odgovara adresi web lokacije na koju je pokušao otići Vaš preglednik. Jedan od mogućih razloga je taj da Vaše komunikacije presreće napadač koji prikazuje potvrdu za drugu web lokaciju, zbog čega dolazi do nepodudaranja. Drugi je mogući razlog taj što je poslužitelj postavljen tako da vraća istu potvrdu za više web lokacija, uključujući i za onu koju pokušavate posjetiti, iako ta potvrda nije valjana za sve te web lokacije. Google Chrome može sa sigurnošću reći da ste pristupili domeni &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ali ne može provjeriti da je ta web lokacija ista kao &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; kojoj ste htjeli pristupiti. Ako nastavite, Chrome neće provjeravati dodatna nepodudaranja naziva. Općenito govoreći, najbolje je da ne nastavite.</translation>
 <translation id="2712549016134575851">Otkriven je sukob s drugom instaliranom aplikacijom.</translation>
 <translation id="7018032895891496381">Google Chrome koristi vašu zadanu tražilicu koja je trenutno postavljena na <ph name="PAGE_TITLE"/>. Želite li zadržati zadanu tražilicu?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Google Chrome host dodatka</translation>
 <translation id="6126631249883707068">Želite li da vam Google Chrome spremi zaporku?</translation>
 <translation id="5046764976540625289">Zatvori Chrome</translation>
+<translation id="2925521875688282191">Odjavite se iz operativnog sustava Chrome i prijavite se ponovo kako bi promjena počela vrijediti.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetski preglednik</translation>

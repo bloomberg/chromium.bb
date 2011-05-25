@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Zamknij wszystkie okna przeglądarki Google Chrome i uruchom ją ponownie, aby zastosować zmiany.</translation>
 <translation id="7451721381978275812">Nieprawidłowe argumenty. Wtyczki Google Chrome Frame nie można zainstalować w trybie gotowości bez instalowania przeglądarki Google Chrome.</translation>
 <translation id="5809236835374558741">Na tym komputerze jest już zainstalowana nowsza wersja wtyczki Google Chrome Frame. Jeśli oprogramowanie nie działa, odinstaluj wtyczkę Google Chrome Frame i pobierz ją ponownie.</translation>
+<translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS"/>oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome zachowuje się niegrzecznie</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">System operacyjny Chrome</translation>
 <translation id="1195935957447623558">Przeglądarka Chrome nie została poprawnie zamknięta. Aby ponownie otworzyć strony, które były wyświetlone, kliknij przycisk Przywróć.</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
-<translation id="6008953001134414503">Wyloguj się z systemu Google Chrome OS, a następnie zaloguj ponownie, aby zmiana zaczęła obowiązywać.</translation>
 <translation id="6009537148180854585">Podjęto próbę przejścia do witryny &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale certyfikat wyświetlony przez serwer zawiera błędy. Google Chrome nie może użyć certyfikatu z błędami ani zweryfikować tożsamości witryny, z którą miało nastąpić połączenie. Połączenie nie jest bezpieczne i nie należy wykonywać dalszych czynności.</translation>
 <translation id="8738921060445980047">Nieznana wersja.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
 <translation id="5947389362804196214">Nie można odczytać ustawień.\n\nNiektóre funkcje mogą być niedostępne, a zmiany w ustawieniach nie zostaną zapisane.</translation>
 <translation id="6650142020817594541">W tej witrynie jest zalecana wtyczka Google Chrome Frame (już zainstalowana).</translation>
-<translation id="8778247165111716037">Opracowanie systemu Google Chrome OS było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS"/>oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">W tym przypadku adres zawarty w certyfikacie nie jest zgodny z adresem witryny wpisanym w przeglądarce. Jednym z powodów takiej sytuacji może być przechwycenie komunikacji przez intruza, który przedstawia certyfikat innej witryny, co powoduje niezgodność. Inną przyczyną może być konfiguracja serwera zwracająca ten sam certyfikat dla wielu witryn (w tym witryny, którą chcesz wyświetlić) nawet w przypadku, gdy certyfikat nie jest ważny dla wszystkich witryn. Google Chrome może potwierdzić, że otwarty został adres &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nie może zweryfikować, że jest to witryna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, która miała zostać wyświetlona. Jeśli przejdziesz dalej, aplikacja Chrome nie będzie sprawdzać kolejnych niezgodności nazw. Ogólnie nie zalecamy kontynuowania pracy na tej stronie.</translation>
 <translation id="2712549016134575851">Wykryto konflikt z inną zainstalowaną aplikacją.</translation>
 <translation id="7018032895891496381">Przeglądarka Google Chrome korzysta z domyślnej wyszukiwarki, którą jest obecnie <ph name="PAGE_TITLE"/>. Czy chcesz zachować tę domyślną wyszukiwarkę?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Serwer wtyczek przeglądarki Google Chrome</translation>
 <translation id="6126631249883707068">Czy chcesz, aby przeglądarka Google Chrome zapisała hasło?</translation>
 <translation id="5046764976540625289">Zakończ Chrome</translation>
+<translation id="2925521875688282191">Wyloguj się z systemu operacyjnego Chrome, a następnie zaloguj ponownie, aby zmiana zaczęła obowiązywać.</translation>
 <translation id="9039578207253536065">Moduł roboczy Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Przeglądarka internetowa</translation>

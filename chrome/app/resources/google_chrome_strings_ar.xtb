@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">الرجاء إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
 <translation id="7451721381978275812">وسيطات غير صالحة. لا يمكن تثبيت إطار Google Chrome في وضع الاستعداد بدون تثبيت Google Chrome أيضًا.</translation>
 <translation id="5809236835374558741">يوجد في جهاز الكمبيوتر إصدار أحدث من إطار Google Chrome. إذا كان البرنامج لا يعمل، يرجى إزالة إطار Google Chrome وتنزيله مرة أخرى.</translation>
+<translation id="6368958679917195344">أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
 <translation id="4357846314885556934">لا يعمل Google Chrome بشكل صحيح</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">لم يتمّ إغلاق Google Chrome بطريقة صحيحة. لإعادة فتح الصفحات التي سبق فتحها، انقر على زرّ إعادة.</translation>
 <translation id="2580411288591421699">لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
-<translation id="6008953001134414503">الرجاء الخروج من نظام تشغيل Google Chrome ثم تسجيل الدخول حتى يسري مفعول هذا التغيير.</translation>
 <translation id="6009537148180854585">لقد حاولت الوصول إلى الموقع &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، لكنّ الشهادة التي قدّمها الخادم تحتوي على أخطاء. لا يستطيع Google Chrome استخدام شهادة فيها أخطاء، والتحقّق من هوية الموقع المقصود. الاتصال غير آمن ويجب عدم المتابعة.</translation>
 <translation id="8738921060445980047">إصدار غير معروف.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="5947389362804196214">لا يمكن قراءة تفضيلاتك.\n\nقد تكون بعض الميزات غير متاحة كما لن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="6650142020817594541">يوصي هذا الموقع باستخدام إطار Google Chrome (المثبت من قبل).</translation>
-<translation id="8778247165111716037">أصبح نظام التشغيل Google Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج إضافي مفتوح المصدر<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">هذا يعني أنّ العنوان المذكور في الشهادة لا يتطابق  مع عنوان الموقع الذي يحاول المتصفّح دخوله. وقد يعزى ذلك إلى محاولة متسلّل ما اعتراض اتّصالاتك بإرسال شهادة تتعلّق بموقع آخر، ممّا يفسّر حالة عدم التطابق. أو إلى كون الخادم مبرمجاً بحيث يُرجع الشهادة نفسها لعدّة مواقع، من ضمنها الموقع المقصود، حتّى لو لم تكن صالحة للمواقع كلّها.  يؤكّد Google Chrome أنّك وصلت إلى الموقع &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;، ولكن لا يمكنه التحقّق من أنّه هو نفسه الموقع &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;  المقصود. إذا استأنفت البحث، لن يدقّق Google Chrome  في حالات عدم التطابق الأخرى. من المفضّل والحالة هذه التوقّف عند هذا الحدّ وعدم متابعة عملية البحث.</translation>
 <translation id="2712549016134575851">تم اكتشاف تعارض مع تطبيق آخر مثبَّت.</translation>
 <translation id="7018032895891496381">يستخدم Google Chrome محرك البحث الافتراضي، والذي يتم تعيينه حاليًا على <ph name="PAGE_TITLE"/>، فهل تريد بالتأكيد الإبقاء على محرك البحث الافتراضي؟</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">مضيف المكون الإضافي لمتصفح Google Chrome</translation>
 <translation id="6126631249883707068">هل تريد من Google Chrome حفظ كلمة المرور؟</translation>
 <translation id="5046764976540625289">إنهاء Chrome</translation>
+<translation id="2925521875688282191">الرجاء الخروج من نظام التشغيل Chrome ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="9039578207253536065">عامل Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">متصفح الإنترنت</translation>

@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Bu değişikliğin geçerli olması için, lütfen tüm Google Chrome pencerelerini kapatın ve Google Chrome'u yeniden başlatın.</translation>
 <translation id="7451721381978275812">Geçersiz bağımsız değişkenler. Google Chrome Frame, Google Chrome'u da yüklemeden hazır modda yüklenemez.</translation>
 <translation id="5809236835374558741">Bu bilgisayarda Google Chrome Frame'in daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome Frame'i kaldırın ve yeniden indirin.</translation>
+<translation id="6368958679917195344">Chrome OS, ek <ph name="BEGIN_LINK_CROS_OSS"/>açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS"/> yararlanılarak geliştirilmiştir.</translation>
 <translation id="4357846314885556934">Google Chrome Hatalı Çalışıyor</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome, gerektiği gibi kapanmadı. Daha önce açık olan sayfaların tekrar açılması için Geri Yükle'yi tıklayın.</translation>
 <translation id="2580411288591421699">Şu anda çalışmakta olan Google Chrome ile aynı sürüm yüklenemez. Lütfen Google Chrome'u kapatın ve tekrar deneyin.</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>
-<translation id="6008953001134414503">Bu değişikliğin geçerli olabilmesi için lütfen Google Chrome İşletim Sistemi'nden çıkış yapın ve tekrar oturum açın.</translation>
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanına ulaşmayı denediniz, ancak sunucunun sunduğu sertifika hata içeriyor. Google Chrome, hatalı bir sertifika kullanamaz ve bağlanmayı denediğiniz sitenin kimliğini doğrulayamıyor. Bağlantınız güvenli değil. Devam etmemelisiniz.</translation>
 <translation id="8738921060445980047">Bilinmeyen sürüm.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Aynı isme sahip bir modülün Google Chrome'la çakıştığı bilinmektedir.</translation>
 <translation id="5947389362804196214">Tercihleriniz okunamıyor.\n\nBazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="6650142020817594541">Bu site, Google Chrome Frame kullanmanızı tavsiye eder (zaten yüklü).</translation>
-<translation id="8778247165111716037">Google Chrome İşletim Sistemi ek <ph name="BEGIN_LINK_CROS_OSS"/>açık kaynak yazılımları<ph name="END_LINK_CROS_OSS"/> ile hazırlanmıştır.</translation>
 <translation id="4127951844153999091">Bu durumda, sertifikada listelenen adres, tarayıcınızın gitmeye çalıştığı web sitesinin adresiyle eşleşmez. Bunun olası nedenlerinden biri, iletişimlerinizin, farklı bir web sitesine ait sertifikayı sunan bir saldırgan tarafından kesilmesi olabilir, bu da hatalı eşleşmeye yol açabilir. Diğer olası bir nedense, sunucunun, ziyaret etmeye çalıştığınız web sitesi dahil olmak üzere birden çok web sitesi için, bu sertifika söz konusu web sitelerinin tümü için geçerli olmadığı halde, aynı sertifikayı döndürecek şekilde ayarlanmış olmasıdır. Google Chrome, kesin olarak &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etki alanına ulaştığınızı belirtebilir, ancak bunun ulaşmak istediğiniz &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanıyla aynı site olduğunu doğrulayamaz. Devam ederseniz Chrome daha fazla hatalı ad eşleşmesi aramaz. Genellikle bu noktadan sonra ilerlememek en iyisidir.</translation>
 <translation id="2712549016134575851">Yüklü başka bir uygulamayla çakışma tespit edildi.</translation>
 <translation id="7018032895891496381">Google Chrome şu anda <ph name="PAGE_TITLE"/> olarak ayarlanmış olan varsayılan arama motorunuzu kullanır. Varsayılan arama motorunuzun aynı kalmasını istiyor musunuz?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Google Chrome Eklenti Ana Makinesi</translation>
 <translation id="6126631249883707068">Google Chrome'un şifrenizi kaydetmesini istiyor musunuz?</translation>
 <translation id="5046764976540625289">Chrome'dan Çık</translation>
+<translation id="2925521875688282191">Bu değişikliğin geçerli olabilmesi için lütfen Chrome OS'den çıkış yapın ve tekrar oturum açın.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">İnternet Tarayıcı</translation>

@@ -37,13 +37,13 @@
 <translation id="5037239767309817516">Sulje kaikki Chrome-ikkunat ja käynnistä selain uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="7451721381978275812">Virheelliset argumentit. Google Chrome -kehystä ei voi asentaa ilman Google Chromen asennusta.</translation>
 <translation id="5809236835374558741">Tietokoneessa on jo uudempi Google Chrome -kehyksen versio. Jos ohjelma ei toimi, poista Google Chrome -kehyksen asennus ja lataa se uudelleen.</translation>
+<translation id="6368958679917195344">Chrome-käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4357846314885556934">Google Chrome ei toimi</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="4331809312908958774">Chrome-käyttöjärjestelmä</translation>
 <translation id="1195935957447623558">Avaa avoinna olleet sivut uudelleen napsauttamalla Palauta.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
-<translation id="6008953001134414503">Muutos tulee voimaan, kun kirjaudut ulos Google Chrome -käyttöjärjestelmästä ja kirjaudut sitten uudelleen sisään.</translation>
 <translation id="6009537148180854585">Yritit päästä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelimen esittämässä varmenteessa on virheitä. Google Chrome ei voi käyttää virheellistä varmennetta, eikä todentaa haluamasi sivuston identiteettiä.  Yhteytesi ei ole suojattu, eikä sinun tule jatkaa.</translation>
 <translation id="8738921060445980047">Tuntematon versio.</translation>
 <translation id="2485422356828889247">Poista</translation>
@@ -68,7 +68,6 @@
 <translation id="3612333635265770873">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Google Chromen kanssa.</translation>
 <translation id="5947389362804196214">Asetuksiasi ei voi lukea.\n\nKaikkia toimintoja ei voi välttämättä käyttää eikä asetuksiin tehtäviä muutoksia tallenneta.</translation>
 <translation id="6650142020817594541">Tämä sivusto suosittelee käyttämään Google Chrome -kehystä (jo asennettu).</translation>
-<translation id="8778247165111716037">Google Chrome -käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="4127951844153999091">Tällöin varmenteessa mainittu osoite ei vastaa sen sivuston osoitetta, johon selaimesi yritti siirtyä. Yksi mahdollinen syy on, että hyökkääjä on siepannut yhteytesi ja esittää eri sivuston varmenteen. Toinen syy voi olla se, että palvelin on määritetty palauttamaan sama varmenne useille sivustoille, myös sille, johon yrität päästä, vaikka varmenne ei kelpaa kaikissa kyseessä olevissa sivustoissa. <ph name="DOMAIN2"/><ph name="DOMAIN"/> Jos jatkat, Chrome ei tarkista enää muita vastaamattomia nimiä. Yleensä on parempi olla jatkamatta tästä eteenpäin.</translation>
 <translation id="2712549016134575851">Ristiriita toisen asennetun sovelluksen kanssa havaittu.</translation>
 <translation id="7018032895891496381">Google Chrome käyttää oletushakukonettasi, joka on tällä hetkellä <ph name="PAGE_TITLE"/>. Haluatko säilyttää oletushakukoneen samana?</translation>
@@ -80,6 +79,7 @@
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Haluatko, että Google Chrome tallentaa salasanasi?</translation>
 <translation id="5046764976540625289">Poistu Chromesta</translation>
+<translation id="2925521875688282191">Muutos tulee voimaan, kun kirjaudut ulos Chrome -käyttöjärjestelmästä ja kirjaudut sitten uudelleen sisään.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetselain</translation>
