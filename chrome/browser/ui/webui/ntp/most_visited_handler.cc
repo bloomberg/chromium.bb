@@ -353,7 +353,7 @@ void MostVisitedHandler::Observe(NotificationType type,
   DCHECK_EQ(type.value, NotificationType::TOP_SITES_CHANGED);
 
   // Most visited urls changed, query again.
-  HandleGetMostVisited(NULL);
+  StartQueryForMostVisited();
 }
 
 void MostVisitedHandler::BlacklistURL(const GURL& url) {
