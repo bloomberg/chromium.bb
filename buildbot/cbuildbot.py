@@ -10,11 +10,9 @@ Used by Chromium OS buildbot configuration for all Chromium OS builds including
 full and pre-flight-queue builds.
 """
 
-import errno
 import optparse
 import os
 import pprint
-import re
 import sys
 import traceback
 
@@ -31,7 +29,6 @@ import chromite.lib.cros_build_lib as cros_lib
 
 def _GetConfig(config_name, options):
   """Gets the configuration for the build"""
-  build_config = {}
   if not cbuildbot_config.config.has_key(config_name):
     print 'Non-existent configuration specified.'
     print 'Please specify one of:'
@@ -167,9 +164,7 @@ def main():
   # Parse options
   usage = "usage: %prog [options] cbuildbot_config"
   parser = optparse.OptionParser(usage=usage)
-  parser.add_option('-a', '--acl', default='private',
-                    help='ACL to set on GSD archives')
-  parser.add_option('--buildbot', action='store_true', default=False,
+  parser.add_option('--buildbot', action='store_false',  dest='debug',
                     help='This is running on a buildbot')
   parser.add_option('-r', '--buildroot',
                     help='root directory where build occurs', default=".")
@@ -179,14 +174,11 @@ def main():
                     dest='chrome_rev',
                     help=('Chrome_rev of type [tot|latest_release|'
                           'sticky_release]'))
-  parser.add_option('-g', '--gsutil', default='', help='Location of gsutil')
-  parser.add_option('-c', '--gsutil_archive', default='',
-                    help='Datastore archive location')
   parser.add_option('--clobber', action='store_true', dest='clobber',
                     default=False,
                     help='Clobbers an old checkout before syncing')
   parser.add_option('--debug', action='store_true', dest='debug',
-                    default=False,
+                    default=True,
                     help='Override some options to run as a developer.')
   parser.add_option('--dump_config', action='store_true', dest='dump_config',
                     default=False,
