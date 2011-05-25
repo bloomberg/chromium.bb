@@ -40,6 +40,7 @@ class Rect;
 namespace prerender {
 
 class PrerenderManager;
+class PrerenderTracker;
 
 // This class is a peer of TabContents. It can host a renderer, but does not
 // have any visible display. Its navigation is not managed by a
@@ -62,8 +63,11 @@ class PrerenderContents : public RenderViewHostDelegate,
     Factory() {}
     virtual ~Factory() {}
 
+    // Ownership is not transfered through this interface as prerender_manager,
+    // prerender_tracker, and profile are stored as weak pointers.
     virtual PrerenderContents* CreatePrerenderContents(
         PrerenderManager* prerender_manager,
+        PrerenderTracker* prerender_tracker,
         Profile* profile,
         const GURL& url,
         const GURL& referrer) = 0;
@@ -258,6 +262,7 @@ class PrerenderContents : public RenderViewHostDelegate,
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
+                    PrerenderTracker* prerender_tracker,
                     Profile* profile,
                     const GURL& url,
                     const GURL& referrer);
@@ -295,6 +300,9 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;
+
+  // The prerender tracker tracking prerenders.
+  PrerenderTracker* prerender_tracker_;
 
   // The host for our HTML content.
   RenderViewHost* render_view_host_;

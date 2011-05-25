@@ -28,6 +28,7 @@
 #include "ipc/ipc_message.h"
 
 class ChromeNetLog;
+class ChromeResourceDispatcherHostObserver;
 class CommandLine;
 class DevToolsHttpProtocolHandler;
 class DevToolsProtocolHandler;
@@ -110,6 +111,8 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   virtual ChromeNetLog* net_log();
+
+  virtual prerender::PrerenderTracker* prerender_tracker();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable);
@@ -275,6 +278,13 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // Lives here so can safely log events on shutdown.
   scoped_ptr<ChromeNetLog> net_log_;
+
+  // Ordered before resource_dispatcher_host_observer_ due to destruction
+  // ordering.
+  scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
+
+  scoped_ptr<ChromeResourceDispatcherHostObserver>
+      resource_dispatcher_host_observer_;
 
   NotificationRegistrar notification_registrar_;
   scoped_refptr<PluginDataRemover> plugin_data_remover_;

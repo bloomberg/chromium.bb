@@ -32,6 +32,10 @@ namespace policy {
 class BrowserPolicyConnector;
 }
 
+namespace prerender {
+class PrerenderTracker;
+}
+
 namespace ui {
 class Clipboard;
 }
@@ -141,6 +145,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual ChromeNetLog* net_log();
 
+  virtual prerender::PrerenderTracker* prerender_tracker();
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable) {}
 #endif
@@ -165,6 +171,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
+  scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

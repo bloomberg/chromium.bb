@@ -58,6 +58,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace prerender {
+class PrerenderTracker;
+}
+
 namespace printing {
 class BackgroundPrintingManager;
 class PrintJobManager;
@@ -220,6 +224,8 @@ class BrowserProcess {
 #endif
 
   virtual ChromeNetLog* net_log() = 0;
+
+  virtual prerender::PrerenderTracker* prerender_tracker() = 0;
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   // Enable or disable IPC logging for the browser, all processes

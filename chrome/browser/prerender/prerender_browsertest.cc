@@ -70,12 +70,14 @@ class TestPrerenderContents : public PrerenderContents {
  public:
   TestPrerenderContents(
       PrerenderManager* prerender_manager,
+      PrerenderTracker* prerender_tracker,
       Profile* profile,
       const GURL& url,
       const GURL& referrer,
       int number_of_loads,
       FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, profile, url, referrer),
+      : PrerenderContents(prerender_manager, prerender_tracker, profile,
+                          url, referrer),
         number_of_loads_(0),
         expected_number_of_loads_(number_of_loads),
         expected_final_status_(expected_final_status),
@@ -203,6 +205,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager,
+      PrerenderTracker* prerender_tracker,
       Profile* profile,
       const GURL& url,
       const GURL& referrer) OVERRIDE {
@@ -214,7 +217,8 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
     VLOG(1) << "Creating prerender contents for " << url.path() <<
                " with expected final status " << expected_final_status;
     VLOG(1) << expected_final_status_queue_.size() << " left in the queue.";
-    return new TestPrerenderContents(prerender_manager, profile, url,
+    return new TestPrerenderContents(prerender_manager, prerender_tracker,
+                                     profile, url,
                                      referrer, number_of_loads_,
                                      expected_final_status);
   }

@@ -6,6 +6,7 @@
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/test/testing_browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -19,9 +20,11 @@ namespace {
 class DummyPrerenderContents : public PrerenderContents {
  public:
   DummyPrerenderContents(PrerenderManager* prerender_manager,
+                         PrerenderTracker* prerender_tracker,
                          const GURL& url,
                          FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, NULL, url, GURL()),
+      : PrerenderContents(prerender_manager, prerender_tracker, NULL, url,
+                          GURL()),
         has_started_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -56,11 +59,12 @@ class DummyPrerenderContents : public PrerenderContents {
 
 class TestPrerenderManager : public PrerenderManager {
  public:
-  TestPrerenderManager()
-      : PrerenderManager(NULL),
+  explicit TestPrerenderManager(PrerenderTracker* prerender_tracker)
+      : PrerenderManager(NULL, prerender_tracker),
         time_(base::Time::Now()),
         time_ticks_(base::TimeTicks::Now()),
-        next_prerender_contents_(NULL) {
+        next_prerender_contents_(NULL),
+        prerender_tracker_(prerender_tracker) {
     rate_limit_enabled_ = false;
   }
 
@@ -92,7 +96,8 @@ class TestPrerenderManager : public PrerenderManager {
       const GURL& url,
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, url, expected_final_status);
+        new DummyPrerenderContents(this, prerender_tracker_, url,
+                                   expected_final_status);
     SetNextPrerenderContents(prerender_contents);
     return prerender_contents;
   }
@@ -102,7 +107,8 @@ class TestPrerenderManager : public PrerenderManager {
       const std::vector<GURL>& alias_urls,
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, url, expected_final_status);
+        new DummyPrerenderContents(this, prerender_tracker_, url,
+                                   expected_final_status);
     for (std::vector<GURL>::const_iterator it = alias_urls.begin();
          it != alias_urls.end();
          ++it) {
@@ -156,6 +162,8 @@ class TestPrerenderManager : public PrerenderManager {
   // PrerenderContents with an |expected_final_status| of FINAL_STATUS_USED,
   // tracked so they will be automatically deleted.
   ScopedVector<PrerenderContents> used_prerender_contents_;
+
+  PrerenderTracker* prerender_tracker_;
 };
 
 class RestorePrerenderMode {
@@ -173,7 +181,8 @@ class RestorePrerenderMode {
 class PrerenderManagerTest : public testing::Test {
  public:
   PrerenderManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_),
-                           prerender_manager_(new TestPrerenderManager()) {
+                           prerender_manager_(
+                               new TestPrerenderManager(prerender_tracker())) {
   }
 
   TestPrerenderManager* prerender_manager() {
@@ -181,7 +190,12 @@ class PrerenderManagerTest : public testing::Test {
   }
 
  private:
+  PrerenderTracker* prerender_tracker() {
+    return browser_process_.get()->prerender_tracker();
+  }
+
   // Needed to pass PrerenderManager's DCHECKs.
+  ScopedTestingBrowserProcess browser_process_;
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   scoped_ptr<TestPrerenderManager> prerender_manager_;

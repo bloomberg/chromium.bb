@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -206,10 +207,12 @@ void DestroyPreloadForRenderView(
       final_status);
 }
 
-PrerenderManager::PrerenderManager(Profile* profile)
+PrerenderManager::PrerenderManager(Profile* profile,
+                                   PrerenderTracker* prerender_tracker)
     : rate_limit_enabled_(true),
       enabled_(true),
       profile_(profile),
+      prerender_tracker_(prerender_tracker),
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
       max_prerender_memory_mb_(kDefaultMaxPrerenderMemoryMB),
@@ -454,7 +457,7 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
   // Try to set the prerendered page as used, so any subsequent attempts to
   // cancel on other threads will fail.  If this fails because the prerender
   // was already cancelled, possibly on another thread, fail.
-  if (!PrerenderTracker::GetInstance()->TryUse(child_id, route_id))
+  if (!prerender_tracker_->TryUse(child_id, route_id))
     return false;
 
   if (!prerender_contents->load_start_time().is_null())
@@ -566,7 +569,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   // Try to set the prerendered page as used, so any subsequent attempts to
   // cancel on other threads will fail.  If this fails because the prerender
   // was already cancelled, possibly on another thread, fail.
-  if (!PrerenderTracker::GetInstance()->TryUse(child_id, route_id))
+  if (!prerender_tracker_->TryUse(child_id, route_id))
     return false;
 
   if (!prerender_contents->load_start_time().is_null())
@@ -688,7 +691,7 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, profile_, url, referrer);
+      this, prerender_tracker_, profile_, url, referrer);
 }
 
 void PrerenderManager::DeletePendingDeleteEntries() {

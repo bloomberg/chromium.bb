@@ -2,45 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
+
+#include "base/logging.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/resource_context.h"
+#include "content/common/resource_messages.h"
+#include "net/base/load_flags.h"
 
 namespace prerender {
-
-namespace {
-
-void DestroyPreloadForRenderView(
-    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
-    int child_id,
-    int route_id,
-    FinalStatus final_status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrerenderManager* prerender_manager = prerender_manager_weak_ptr.get();
-  if (!prerender_manager)
-    return;
-
-  prerender_manager->DestroyPreloadForChildRouteIdPair(
-      std::make_pair(child_id, route_id),
-      final_status);
-}
-
-}  // namespace
 
 struct RenderViewInfo {
   explicit RenderViewInfo(PrerenderManager* prerender_manager)
       : final_status(FINAL_STATUS_MAX),
         prerender_manager(prerender_manager->AsWeakPtr()) {
   }
+  ~RenderViewInfo() {}
 
   FinalStatus final_status;
   base::WeakPtr<PrerenderManager> prerender_manager;
 };
 
-// static
-PrerenderTracker* PrerenderTracker::GetInstance() {
-  return Singleton<PrerenderTracker>::get();
+PrerenderTracker::PrerenderTracker() {
+}
+
+PrerenderTracker::~PrerenderTracker() {
 }
 
 bool PrerenderTracker::TryUse(int child_id, int route_id) {
@@ -72,15 +60,6 @@ bool PrerenderTracker::TryCancelOnIOThread(
   if (!IsPrerenderingOnIOThread(child_id, route_id))
     return false;
   return TryCancel(child_id, route_id, final_status);
-}
-
-bool PrerenderTracker::IsPrerenderingOnIOThread(int child_id,
-                                                int route_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  ChildRouteIdPair child_route_id_pair(child_id, route_id);
-  return possibly_prerendering_io_thread_set_.end() !=
-         possibly_prerendering_io_thread_set_.find(child_route_id_pair);
 }
 
 bool PrerenderTracker::GetFinalStatus(int child_id, int route_id,
@@ -116,12 +95,6 @@ void PrerenderTracker::OnPrerenderingStarted(
 
   final_status_map_.insert(
       std::make_pair(child_route_id_pair, RenderViewInfo(prerender_manager)));
-}
-
-PrerenderTracker::PrerenderTracker() {
-}
-
-PrerenderTracker::~PrerenderTracker() {
 }
 
 void PrerenderTracker::OnPrerenderingFinished(int child_id, int route_id) {
@@ -180,6 +153,15 @@ bool PrerenderTracker::SetFinalStatus(int child_id, int route_id,
   return false;
 }
 
+bool PrerenderTracker::IsPrerenderingOnIOThread(int child_id,
+                                                int route_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ChildRouteIdPair child_route_id_pair(child_id, route_id);
+  return possibly_prerendering_io_thread_set_.end() !=
+         possibly_prerendering_io_thread_set_.find(child_route_id_pair);
+}
+
 void PrerenderTracker::AddPrerenderOnIOThread(
     const ChildRouteIdPair& child_route_id_pair) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -201,13 +183,15 @@ void PrerenderTracker::RemovePrerenderOnIOThread(
 // static
 void PrerenderTracker::AddPrerenderOnIOThreadTask(
     const ChildRouteIdPair& child_route_id_pair) {
-  GetInstance()->AddPrerenderOnIOThread(child_route_id_pair);
+  g_browser_process->prerender_tracker()->AddPrerenderOnIOThread(
+      child_route_id_pair);
 }
 
 // static
 void PrerenderTracker::RemovePrerenderOnIOThreadTask(
     const ChildRouteIdPair& child_route_id_pair) {
-  GetInstance()->RemovePrerenderOnIOThread(child_route_id_pair);
+  g_browser_process->prerender_tracker()->RemovePrerenderOnIOThread(
+      child_route_id_pair);
 }
 
 }  // namespace prerender

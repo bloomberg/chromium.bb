@@ -53,10 +53,6 @@ include_rules = [
   "+chrome/browser/prefs/pref_service.h",
   "+chrome/common/pref_names.h",
 
-  # http://crbug.com/77090
-  "+chrome/browser/prerender/prerender_manager.h",
-  "+chrome/browser/prerender/prerender_tracker.h",
-
   # http://crbug.com/76788
   "+chrome/browser/profiles/profile.h",
 

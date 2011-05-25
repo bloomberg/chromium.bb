@@ -9,7 +9,7 @@
 #include <map>
 #include <set>
 
-#include "base/memory/singleton.h"
+#include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 
@@ -23,8 +23,8 @@ struct RenderViewInfo;
 // and can be modified on any thread.
 class PrerenderTracker {
  public:
-  // Returns the PrerenderTracker singleton.
-  static PrerenderTracker* GetInstance();
+  PrerenderTracker();
+  ~PrerenderTracker();
 
   // Attempts to set the status of the specified RenderViewHost to
   // FINAL_STATUS_USED.  Returns true on success.  Returns false if it has
@@ -53,22 +53,21 @@ class PrerenderTracker {
   bool TryCancelOnIOThread(int child_id, int route_id,
                            FinalStatus final_status);
 
-  // Returns whether or not a RenderView is prerendering.  Can only be called on
-  // the IO thread.  Does not acquire a lock, so may claim a RenderView that has
-  // been displayed or destroyed is still prerendering.
-  // TODO(mmenke):  Remove external use of this method and make it private.
-  bool IsPrerenderingOnIOThread(int child_id, int route_id) const;
-
   // Gets the FinalStatus of the specified prerendered RenderView.  Returns
   // |true| and sets |final_status| to the status of the RenderView if it
   // is found, returns false otherwise.
   bool GetFinalStatus(int child_id, int route_id,
                       FinalStatus* final_status) const;
 
+  // Returns whether or not a RenderView is prerendering.  Can only be called on
+  // the IO thread.  Does not acquire a lock, so may claim a RenderView that has
+  // been displayed or destroyed is still prerendering.
+  bool IsPrerenderingOnIOThread(int child_id, int route_id) const;
+
  private:
-  friend struct DefaultSingletonTraits<PrerenderTracker>;
   friend class PrerenderContents;
 
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerNull);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerUsed);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerCancelled);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerCancelledOnIO);
@@ -81,9 +80,6 @@ class PrerenderTracker {
   typedef std::map<ChildRouteIdPair, RenderViewInfo> FinalStatusMap;
   // Set of child/route id pairs that may be prerendering.
   typedef std::set<ChildRouteIdPair> PossiblyPrerenderingChildRouteIdPairs;
-
-  PrerenderTracker();
-  ~PrerenderTracker();
 
   // Must be called when a RenderView starts prerendering, before the first
   // navigation starts to avoid any races.

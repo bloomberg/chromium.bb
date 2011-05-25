@@ -38,6 +38,8 @@ struct hash<TabContents*> {
 
 namespace prerender {
 
+class PrerenderTracker;
+
 // Adds either a preload or a pending preload to the PrerenderManager.
 // Must be called on the UI thread.
 void HandleTag(
@@ -47,6 +49,12 @@ void HandleTag(
     const GURL& url,
     const GURL& referrer,
     bool make_pending);
+
+void DestroyPreloadForRenderView(
+    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
+    int child_id,
+    int route_id,
+    FinalStatus final_status);
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages. All methods must be called on the UI thread unless
@@ -65,7 +73,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   };
 
   // Owned by a Profile object for the lifetime of the profile.
-  explicit PrerenderManager(Profile* profile);
+  PrerenderManager(Profile* profile, PrerenderTracker* prerender_tracker);
 
   virtual ~PrerenderManager();
 
@@ -267,6 +275,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool enabled_;
 
   Profile* profile_;
+
+  PrerenderTracker* prerender_tracker_;
 
   base::TimeDelta max_prerender_age_;
   // Maximum amount of memory, in megabytes, that a single PrerenderContents

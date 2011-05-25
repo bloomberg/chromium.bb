@@ -1731,6 +1731,8 @@
         'browser/renderer_host/chrome_render_message_filter.h',
         'browser/renderer_host/chrome_render_view_host_observer.cc',
         'browser/renderer_host/chrome_render_view_host_observer.h',
+        'browser/renderer_host/chrome_resource_dispatcher_host_observer.cc',
+        'browser/renderer_host/chrome_resource_dispatcher_host_observer.h',
         'browser/renderer_host/download_resource_handler.cc',
         'browser/renderer_host/download_resource_handler.h',
         'browser/renderer_host/download_throttling_resource_handler.cc',

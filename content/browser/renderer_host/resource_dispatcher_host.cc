@@ -24,8 +24,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
@@ -280,7 +278,8 @@ ResourceDispatcherHost::ResourceDispatcherHost(
       is_shutdown_(false),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
-      filter_(NULL) {
+      filter_(NULL),
+      observer_(NULL) {
   resource_queue_.Initialize(resource_queue_delegates);
 }
 
@@ -432,52 +431,14 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   const GURL referrer = MaybeStripReferrer(request_data.referrer);
-  const bool is_prerendering =
-      prerender::PrerenderTracker::GetInstance()->IsPrerenderingOnIOThread(
-          child_id, route_id);
 
-  // Handle a PREFETCH resource type. If prefetch is disabled, squelch the
-  // request.  Otherwise, do a normal request to warm the cache.
-  if (request_data.resource_type == ResourceType::PREFETCH) {
-    // All PREFETCH requests should be GETs, but be defensive about it.
-    if (request_data.method != "GET") {
-      AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
-      return;
-    }
-    if (!ResourceDispatcherHost::is_prefetch_enabled()) {
-      AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
-      return;
-    }
-    // Otherwise, treat like a normal request, and fall-through.
-  }
-
-  // Handle a PRERENDER motivated request. Very similar to rel=prefetch, these
-  // rel=prerender requests instead launch an early render of the entire page.
-  if (request_data.resource_type == ResourceType::PRERENDER) {
-    if (prerender::PrerenderManager::IsPrerenderingPossible()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(prerender::HandleTag,
-                              resource_context.prerender_manager(),
-                              child_id,
-                              route_id,
-                              request_data.url,
-                              referrer,
-                              is_prerendering));
-    }
-    // Prerendering or not, this request should stop.
+  // Allow the observer to block/handle the request.
+  if (observer_ && !observer_->ShouldBeginRequest(child_id, route_id,
+                                                  request_data,
+                                                  resource_context,
+                                                  referrer)) {
     AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
     return;
-  }
-
-  // Abort any prerenders that spawn requests that use invalid HTTP methods.
-  if (is_prerendering &&
-      !prerender::PrerenderManager::IsValidHttpMethod(request_data.method)) {
-    if (prerender::PrerenderTracker::GetInstance()->TryCancelOnIOThread(
-            child_id, route_id, prerender::FINAL_STATUS_INVALID_HTTP_METHOD)) {
-      AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
-      return;
-    }
   }
 
   // Construct the event handler.
@@ -527,11 +488,12 @@ void ResourceDispatcherHost::BeginRequest(
     load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
   }
 
-  if (is_prerendering)
-    load_flags |= net::LOAD_PRERENDERING;
-
   if (sync_result)
     load_flags |= net::LOAD_IGNORE_LIMITS;
+
+  // Allow the observer to change the load flags.
+  if (observer_)
+    observer_->MutateLoadFlags(child_id, route_id, &load_flags);
 
   // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
   // allow requesting them if requestor has ReadRawCookies permission.
@@ -2047,7 +2009,6 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
       return net::LOW;
   }
 }
-
 
 // static
 bool ResourceDispatcherHost::is_prefetch_enabled() {

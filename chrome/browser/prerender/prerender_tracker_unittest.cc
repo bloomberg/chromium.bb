@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
+#include "chrome/test/testing_browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +17,8 @@ namespace {
 
 class TestPrerenderManager : public PrerenderManager {
  public:
-  TestPrerenderManager() : PrerenderManager(NULL) {
+  explicit TestPrerenderManager(PrerenderTracker* prerender_tracker) :
+      PrerenderManager(NULL, prerender_tracker) {
     rate_limit_enabled_ = false;
   }
 
@@ -42,7 +44,7 @@ class PrerenderTrackerTest : public testing::Test {
   PrerenderTrackerTest() :
       ui_thread_(BrowserThread::UI, &message_loop_),
       io_thread_(BrowserThread::IO, &message_loop_),
-      prerender_manager_(new TestPrerenderManager()) {
+      prerender_manager_(new TestPrerenderManager(prerender_tracker())) {
   }
 
   TestPrerenderManager* prerender_manager() {
@@ -50,7 +52,7 @@ class PrerenderTrackerTest : public testing::Test {
   }
 
   PrerenderTracker* prerender_tracker() {
-    return PrerenderTracker::GetInstance();
+    return browser_process_.get()->prerender_tracker();
   }
 
   int GetCurrentStatus(int child_id, int route_id) {
@@ -68,6 +70,7 @@ class PrerenderTrackerTest : public testing::Test {
   }
 
  private:
+  ScopedTestingBrowserProcess browser_process_;
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;

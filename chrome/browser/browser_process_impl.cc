@@ -45,10 +45,12 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_observer.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
@@ -694,6 +696,13 @@ ChromeNetLog* BrowserProcessImpl::net_log() {
   return net_log_.get();
 }
 
+prerender::PrerenderTracker* BrowserProcessImpl::prerender_tracker() {
+  if (!prerender_tracker_.get())
+    prerender_tracker_.reset(new prerender::PrerenderTracker);
+
+  return prerender_tracker_.get();
+}
+
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
   webkit_database::DatabaseTracker::ClearLocalState(profile_path);
   BrowsingDataRemover::ClearGearsData(profile_path);
@@ -730,6 +739,11 @@ void BrowserProcessImpl::CreateResourceDispatcherHost() {
   resource_dispatcher_host_.reset(
       new ResourceDispatcherHost(resource_queue_delegates));
   resource_dispatcher_host_->Initialize();
+
+  resource_dispatcher_host_observer_.reset(
+      new ChromeResourceDispatcherHostObserver(prerender_tracker()));
+  resource_dispatcher_host_->set_observer(
+      resource_dispatcher_host_observer_.get());
 }
 
 void BrowserProcessImpl::CreateMetricsService() {

@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
@@ -752,8 +753,10 @@ ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
 prerender::PrerenderManager* TestingProfile::GetPrerenderManager() {
   if (!prerender::PrerenderManager::IsPrerenderingPossible())
     return NULL;
-  if (!prerender_manager_.get())
-    prerender_manager_.reset(new prerender::PrerenderManager(this));
+  if (!prerender_manager_.get()) {
+    prerender_manager_.reset(new prerender::PrerenderManager(
+        this, g_browser_process->prerender_tracker()));
+  }
   return prerender_manager_.get();
 }
 

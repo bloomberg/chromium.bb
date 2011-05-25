@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -234,6 +235,12 @@ bool TestingBrowserProcess::plugin_finder_disabled() const {
 
 ChromeNetLog* TestingBrowserProcess::net_log() {
   return NULL;
+}
+
+prerender::PrerenderTracker* TestingBrowserProcess::prerender_tracker() {
+  if (!prerender_tracker_.get())
+    prerender_tracker_.reset(new prerender::PrerenderTracker());
+  return prerender_tracker_.get();
 }
 
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {

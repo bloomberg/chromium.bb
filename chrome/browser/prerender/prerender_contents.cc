@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -69,9 +70,10 @@ struct PrerenderUrlPredicate {
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
-      PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const GURL& referrer) OVERRIDE {
-    return new PrerenderContents(prerender_manager, profile, url, referrer);
+      PrerenderManager* prerender_manager, PrerenderTracker* prerender_tracker,
+      Profile* profile, const GURL& url, const GURL& referrer) OVERRIDE {
+    return new PrerenderContents(prerender_manager, prerender_tracker, profile,
+                                 url, referrer);
   }
 };
 
@@ -125,10 +127,12 @@ class PrerenderContents::TabContentsDelegateImpl
 };
 
 PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
+                                     PrerenderTracker* prerender_tracker,
                                      Profile* profile,
                                      const GURL& url,
                                      const GURL& referrer)
     : prerender_manager_(prerender_manager),
+      prerender_tracker_(prerender_tracker),
       render_view_host_(NULL),
       prerender_url_(url),
       referrer_(referrer),
@@ -188,8 +192,10 @@ void PrerenderContents::StartPrerenderingOld(
   // Register this with the PrerenderTracker as a prerendering RenderViewHost.
   // This must be done before the Navigate message to catch all resource
   // requests.
-  PrerenderTracker::GetInstance()->OnPrerenderingStarted(child_id_, route_id_,
-                                                         prerender_manager_);
+  prerender_tracker_->OnPrerenderingStarted(
+      child_id_,
+      route_id_,
+      prerender_manager_);
 
   // Close ourselves when the application is shutting down.
   notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
@@ -292,8 +298,10 @@ void PrerenderContents::StartPrerendering(
   // RenderViewHost. This must be done before the Navigate message to catch all
   // resource requests, but as it is on the same thread as the Navigate message
   // (IO) there is no race condition.
-  PrerenderTracker::GetInstance()->OnPrerenderingStarted(child_id_, route_id_,
-                                                         prerender_manager_);
+  prerender_tracker_->OnPrerenderingStarted(
+      child_id_,
+      route_id_,
+      prerender_manager_);
 
   // Close ourselves when the application is shutting down.
   notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
@@ -381,10 +389,8 @@ PrerenderContents::~PrerenderContents() {
   if (render_view_host_)
     render_view_host_->Shutdown();
 
-  if (child_id_ != -1 && route_id_ != -1) {
-    PrerenderTracker::GetInstance()->OnPrerenderingFinished(
-        child_id_, route_id_);
-  }
+  if (child_id_ != -1 && route_id_ != -1)
+    prerender_tracker_->OnPrerenderingFinished(child_id_, route_id_);
 
   // If we still have a TabContents, clean up anything we need to and then
   // destroy it.
@@ -728,15 +734,14 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
     // because destroy may be called directly from the UI thread without calling
     // TryCancel().  This is difficult to completely avoid, since prerendering
     // can be cancelled before a RenderView is created.
-    bool is_cancelled =
-        PrerenderTracker::GetInstance()->TryCancel(child_id_, route_id_,
-                                                   final_status);
+    bool is_cancelled = prerender_tracker_->TryCancel(
+        child_id_, route_id_, final_status);
     CHECK(is_cancelled);
 
     // A different final status may have been set already from another thread.
     // If so, use it instead.
-    if (!PrerenderTracker::GetInstance()->GetFinalStatus(child_id_, route_id_,
-                                                         &final_status)) {
+    if (!prerender_tracker_->GetFinalStatus(child_id_, route_id_,
+                                            &final_status)) {
       NOTREACHED();
     }
   }

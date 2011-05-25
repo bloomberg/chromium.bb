@@ -59,6 +59,24 @@ class DeletableFileReference;
 
 class ResourceDispatcherHost : public net::URLRequest::Delegate {
  public:
+  class Observer {
+   public:
+    // Called when a request begins. Return false to abort the request.
+    virtual bool ShouldBeginRequest(
+        int child_id, int route_id,
+        const ResourceHostMsg_Request& request_data,
+        const content::ResourceContext& resource_context,
+        const GURL& referrer) = 0;
+
+    // Called after the load flags have been set when a request begins. Use it
+    // to add or remove load flags.
+    virtual void MutateLoadFlags(int child_id, int route_id,
+                                 int* load_flags) = 0;
+   protected:
+    Observer() {}
+    virtual ~Observer() {}
+  };
+
   explicit ResourceDispatcherHost(
       const ResourceQueue::DelegateSet& resource_queue_delegates);
   virtual ~ResourceDispatcherHost();
@@ -243,6 +261,10 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // from renderers.
   static bool is_prefetch_enabled();
   static void set_is_prefetch_enabled(bool value);
+
+  // This does not take ownership of the observer. It is expected that the
+  // observer have a longer lifetime than the ResourceDispatcherHost.
+  void set_observer(Observer* observer) { observer_ = observer; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
@@ -476,8 +498,9 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // to the source of the message.
   ResourceMessageFilter* filter_;
 
-  static bool is_prefetch_enabled_;
+  Observer* observer_;
 
+  static bool is_prefetch_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
 };

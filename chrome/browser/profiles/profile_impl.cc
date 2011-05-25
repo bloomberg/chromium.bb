@@ -1645,7 +1645,11 @@ PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
 prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
   if (!prerender::PrerenderManager::IsPrerenderingPossible())
     return NULL;
-  if (!prerender_manager_.get())
-    prerender_manager_.reset(new prerender::PrerenderManager(this));
+  if (!prerender_manager_.get()) {
+    CHECK(g_browser_process->prerender_tracker());
+    prerender_manager_.reset(
+        new prerender::PrerenderManager(
+            this, g_browser_process->prerender_tracker()));
+  }
   return prerender_manager_.get();
 }
