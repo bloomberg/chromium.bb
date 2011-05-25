@@ -65,8 +65,9 @@ check_translation(const char *tableList, const char *str,
       rv = 1;
       outbuf[outlen] = 0;
       printf("Expected: %s\n", expected);
-      printf("Received: %ls\n", outbuf);
-      printf("Expected '%c' but recieved '%c' in index %d\n",
+      printf("Received: ");
+      print_widechars(outbuf, outlen);
+      printf("Diff: Expected '%c' but recieved '%c' in index %d\n",
 	     expected[i], outbuf[i], i);
     }
 

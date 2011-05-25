@@ -1,3 +1,10 @@
+2011-05-25  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/brl_checks.c (check_translation): Print the outbuf using a
+	dedicated function. The normal printf with the %ls modifier
+	doesn't work as outbuf is not really of type wchar_t. Now the
+	received output is correctly printed in the test cases.
+
 2011-05-18  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/braille-patterns.cti: Fix a problem with the definition
