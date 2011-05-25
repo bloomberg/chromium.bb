@@ -27,6 +27,7 @@ namespace {
   BOOL draggingEnteredCalled_;
   // Only mock one type of drag data at a time.
   NSString* dragDataType_;
+  id draggingSource_;
 }
 @property (nonatomic) BOOL dropIndicatorShown;
 @property (nonatomic) BOOL draggingEnteredCalled;
@@ -59,6 +60,11 @@ namespace {
   dragBookmarkDataPong_ = NO;
   dropIndicatorShown_ = YES;
   draggingEnteredCalled_ = NO;
+  draggingSource_ = self;
+}
+
+- (void)setDraggingSource:(id)draggingSource {
+  draggingSource_ = draggingSource;
 }
 
 // NSDragInfo mocking functions.
@@ -69,7 +75,7 @@ namespace {
 
 // So we can look local.
 - (id)draggingSource {
-  return self;
+  return draggingSource_;
 }
 
 - (NSDragOperation)draggingSourceOperationMask {
@@ -182,6 +188,8 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
   [view_ setController:info.get()];
   [info reset];
 
+  scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
+  [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
   EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
@@ -199,7 +207,7 @@ TEST_F(BookmarkBarViewTest, URLDragAndDrop) {
   NSArray* dragTypes = [URLDropTargetHandler handledDragTypes];
   for (NSString* type in dragTypes) {
     [info setDragDataType:type];
-    EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+    EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationCopy);
     EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
     EXPECT_FALSE([info dragButtonToPong]);
     EXPECT_TRUE([info dragURLsPong]);
@@ -212,8 +220,10 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDropIndicator) {
   scoped_nsobject<FakeBookmarkDraggingInfo>
       info([[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
-
   [info reset];
+
+  scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
+  [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
   EXPECT_FALSE([info draggingEnteredCalled]);
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);

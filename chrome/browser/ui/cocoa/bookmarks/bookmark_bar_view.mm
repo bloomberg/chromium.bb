@@ -155,7 +155,8 @@
     }
 
     [controller_ draggingEntered:info];  // allow hover-open to work.
-    return [info draggingSource] ? NSDragOperationMove : NSDragOperationCopy;
+    return [[info draggingSource] isKindOfClass: [BookmarkButton class]] ?
+        NSDragOperationMove : NSDragOperationCopy;
   }
   return NSDragOperationNone;
 }
