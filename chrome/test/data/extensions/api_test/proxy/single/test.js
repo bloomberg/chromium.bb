@@ -22,7 +22,7 @@ chrome.test.runTests([
     };
 
     var config = { rules: rules, mode: "fixed_servers" };
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {'value': config},
         chrome.test.callbackPass());
   }

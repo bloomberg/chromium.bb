@@ -19,7 +19,7 @@ chrome.test.runTests([
       mode: "pac_script",
       pacScript: pacScriptObject
     };
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {'value': config},
         chrome.test.callbackPass());
   }

@@ -103,7 +103,7 @@ Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
       static_cast<const DictionaryValue*>(extension_pref);
 
   // Extract the various pieces of information passed to
-  // chrome.experimental.proxy.settings.set(). Several of these strings will
+  // chrome.proxy.settings.set(). Several of these strings will
   // remain blank no respective values have been passed to set().
   // If a values has been passed to set but could not be parsed, we bail
   // out and return NULL.

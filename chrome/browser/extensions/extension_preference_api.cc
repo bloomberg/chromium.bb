@@ -39,7 +39,7 @@ const char kLevelOfControl[] = "levelOfControl";
 const char kValue[] = "value";
 
 const char kOnPrefChangeFormat[] =
-    "experimental.preferences.%s.onChange";
+    "preferences.%s.onChange";
 
 const char kIncognitoErrorMessage[] =
     "You do not have permission to access incognito preferences.";

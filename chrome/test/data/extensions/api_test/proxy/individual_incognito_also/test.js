@@ -38,7 +38,7 @@ chrome.test.runTests([
     };
 
     var config = { rules: rules, mode: "fixed_servers" };
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {'value': config, 'incognito': false},
         chrome.test.callbackPass());
   },
@@ -68,7 +68,7 @@ chrome.test.runTests([
     };
 
     var config = { rules: rules, mode: "fixed_servers" };
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {'value': config, 'incognito': true},
         chrome.test.callbackPass());
   }

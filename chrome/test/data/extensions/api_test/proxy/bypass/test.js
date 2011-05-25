@@ -39,19 +39,19 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
   function setIndividualProxies() {
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {'value': config},
         chrome.test.callbackPass());
   },
   function verifyRegular() {
-    chrome.experimental.proxy.settings.get(
+    chrome.proxy.settings.get(
         {'incognito': false},
         expect({ 'value': configExpected,
                  'levelOfControl': "ControlledByThisExtension" },
                "invalid proxy settings"));
   },
   function verifyIncognito() {
-    chrome.experimental.proxy.settings.get(
+    chrome.proxy.settings.get(
         {'incognito': true},
         expect({ 'value': configExpected,
                  'incognitoSpecific': false,

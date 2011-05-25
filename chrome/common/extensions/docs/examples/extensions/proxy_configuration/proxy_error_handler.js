@@ -19,12 +19,10 @@
  */
 function ProxyErrorHandler() {
   // Handle proxy error events.
-  chrome.experimental.proxy.onProxyError.addListener(
-      this.handleError_.bind(this));
+  chrome.proxy.onProxyError.addListener(this.handleError_.bind(this));
 
   // Handle message events from popup.
-  chrome.extension.onRequest.addListener(
-      this.handleOnRequest_.bind(this));
+  chrome.extension.onRequest.addListener(this.handleOnRequest_.bind(this));
 };
 
 ///////////////////////////////////////////////////////////////////////////////

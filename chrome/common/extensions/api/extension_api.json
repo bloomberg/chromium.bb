@@ -4194,7 +4194,7 @@
     ]
   },
   {
-    "namespace": "experimental.proxy",
+    "namespace": "proxy",
     "types": [
       {
         "id": "ProxyServer",
@@ -5314,7 +5314,7 @@
     "events": []
   },
   {
-    "namespace": "experimental.extension",
+    "namespace": "preferences",
     "types": [
       {
         "id": "Preference",

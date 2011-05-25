@@ -2,10 +2,8 @@
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.experimental.proxysettings</code> module to manage Chrome's
-proxy settings. This module is still experimental. For information on how to use
-experimental APIs, see the <a href="experimental.html">chrome.experimental.*
-  APIs</a> page.
+Use the <code>chrome.proxy</code> module to manage Chrome's
+proxy settings.
 </p>
 
 <h2 id="manifest">Manifest</h2>
@@ -17,7 +15,7 @@ For example:</p>
   "name": "My extension",
   ...
   <b>"permissions": [
-    "experimental", "proxy"
+    "proxy"
   ]</b>,
   ...
 }</pre>
@@ -25,7 +23,7 @@ For example:</p>
 <h2 id="description">Objects and properties</h2>
 
 <p>
-Proxy settings are defined in a 
+Proxy settings are defined in a
 <a href="#type-ProxyConfig"><code>ProxyConfig</code></a> object. Depending on
 Chrome's proxy settings, the settings may contain
 <a href="#type-ProxyRules"><code>ProxyRules</code></a> or a <a
@@ -140,7 +138,7 @@ Individual servers may be excluded from being proxied with the
   Examples: <code>"127.0.1", "[0:0::1]", "[::1]", "http://[::1]:99"</code></dd>
 
   <dt><code><em>&lt;ip-literal&gt;</em>/<em>&lt;prefix-length-in-bits&gt;</em></code></dt>
-  <dd>Match any URL containing an IP literal within the given range. The IP 
+  <dd>Match any URL containing an IP literal within the given range. The IP
   range is specified using CIDR notation.<br>
   Examples: <code>"192.168.1.1/16", "fefe:13::abc/33"</code></dd>
 
@@ -170,6 +168,7 @@ As the list implies, policies might overrule any changes that you specify with
 the proxy settings API.
 </p>
 
+<!--
 <p>
 Chrome allows using different proxy settings for regular windows and incognito
 windows. The following example illustrates the behavior. Assume that no policy
@@ -195,6 +194,7 @@ precedence over the other extensions. If the extension installed last sets only
 <b>(I)</b>, the settings of regular windows can be defined by more recently
 installed extensions.
 </p>
+-->
 
 
 
@@ -217,7 +217,7 @@ var config = {
     bypassList: ["foobar.com"]
   }
 };
-chrome.experimental.proxy.settings.set(
+chrome.proxy.settings.set(
     {value: config, scope: 'regular'},
     function() {});
 </pre>
@@ -237,7 +237,7 @@ var config = {
           "}"
   }
 };
-chrome.experimental.proxy.settings.set(
+chrome.proxy.settings.set(
     {value: config, scope: 'regular'},
     function() {});
 </pre>
@@ -247,7 +247,7 @@ The next snippet queries the current proxy settings.
 </p>
 
 <pre>
-chrome.experimental.proxy.settings.get(
+chrome.proxy.settings.get(
     {'incognito': false},
     function(config) {console.log(JSON.stringify(config));});
 </pre>
@@ -255,8 +255,8 @@ chrome.experimental.proxy.settings.get(
 <p>
 Note that the <code>value</code> object passed to <code>set()</code> is not
 identical to the <code>value</code> object passed to callback function of
-<code>get()</code>. The latter will contain a <code>rules.httpProxy.port</code>
-element.
+<code>get()</code>. The latter will contain a
+<code>rules.httpProxy.port</code> element.
 </p>
 
 <!-- END AUTHORED CONTENT -->

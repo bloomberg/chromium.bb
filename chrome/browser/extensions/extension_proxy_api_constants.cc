@@ -25,7 +25,7 @@ const char kProxyConfigValue[] = "value";
 const char kProxyEventFatal[] = "fatal";
 const char kProxyEventError[] = "error";
 const char kProxyEventDetails[] = "details";
-const char kProxyEventOnProxyError[] = "experimental.proxy.onProxyError";
+const char kProxyEventOnProxyError[] = "proxy.onProxyError";
 
 const char kPACDataUrlPrefix[] =
     "data:application/x-ns-proxy-autoconfig;base64,";

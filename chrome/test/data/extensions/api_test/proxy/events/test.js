@@ -24,7 +24,7 @@ var expected_events = [
     }
   ];
 
-chrome.experimental.proxy.onProxyError.addListener(function (error) {
+chrome.proxy.onProxyError.addListener(function (error) {
   captured_events.push(error);
   if (captured_events.length < expected_events.length)
     return;
@@ -40,7 +40,7 @@ function pacTest(e) {
       mandatory: false
     }
   };
-  chrome.experimental.proxy.settings.set({'value': config});
+  chrome.proxy.settings.set({'value': config});
 }
 
 var rules = {
@@ -48,7 +48,7 @@ var rules = {
 };
 
 var config = { rules: rules, mode: "fixed_servers" };
-chrome.experimental.proxy.settings.set({'value': config}, function () {
+chrome.proxy.settings.set({'value': config}, function () {
   var req = new XMLHttpRequest();
   req.open("GET", "http://127.0.0.1/", true);
   req.onload = function () {

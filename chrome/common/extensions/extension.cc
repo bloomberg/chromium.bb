@@ -110,6 +110,7 @@ const char kI18NModuleName[] = "i18n";
 const char kOmniboxModuleName[] = "omnibox";
 const char kPageActionModuleName[] = "pageAction";
 const char kPageActionsModuleName[] = "pageActions";
+const char kPreferenceModuleName[] = "preferences";
 const char kTestModuleName[] = "test";
 
 // Names of modules that can be used without listing it in the permissions
@@ -123,6 +124,7 @@ const char* kNonPermissionModuleNames[] = {
   kOmniboxModuleName,
   kPageActionModuleName,
   kPageActionsModuleName,
+  kPreferenceModuleName,
   kTestModuleName
 };
 const size_t kNumNonPermissionModuleNames =

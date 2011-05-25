@@ -186,7 +186,7 @@ ProxyFormController.prototype = {
 
 
   /**
-   * @see http://code.google.com/chrome/extensions/trunk/experimental.proxy.html
+   * @see http://code.google.com/chrome/extensions/trunk/proxy.html
    * @return {?ProxyServer} An object containing the proxy server host, port,
    *     and scheme. If null, there is no single proxy.
    */
@@ -197,7 +197,7 @@ ProxyFormController.prototype = {
 
 
   /**
-   * @see http://code.google.com/chrome/extensions/trunk/experimental.proxy.html
+   * @see http://code.google.com/chrome/extensions/trunk/proxy.html
    * @param {?ProxyServer} data An object containing the proxy server host,
    *     port, and scheme. If null, the single proxy checkbox will be unchecked.
    */
@@ -306,7 +306,7 @@ ProxyFormController.prototype = {
   /**
    * A generic mechanism for setting proxy data.
    *
-   * @see http://code.google.com/chrome/extensions/trunk/experimental.proxy.html
+   * @see http://code.google.com/chrome/extensions/trunk/proxy.html
    * @param {string} type The type of proxy that's being set ("Http",
    *     "Https", etc.).
    * @param {?ProxyServer} data An object containing the proxy server host,
@@ -346,10 +346,10 @@ ProxyFormController.prototype = {
    */
   handleIncognitoAccessResponse_: function(state) {
     this.isAllowedIncognitoAccess_ = state;
-    chrome.experimental.proxy.settings.get({incognito: false},
+    chrome.proxy.settings.get({incognito: false},
         this.handleRegularState_.bind(this));
     if (this.isAllowedIncognitoAccess_) {
-      chrome.experimental.proxy.settings.get({incognito: true},
+      chrome.proxy.settings.get({incognito: true},
           this.handleIncognitoState_.bind(this));
     }
   },
@@ -508,7 +508,7 @@ ProxyFormController.prototype = {
     else
       this.config_.regular = this.generateProxyConfig_();
 
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {value: this.config_.regular, scope: 'regular'},
         this.callbackForRegularSettings_.bind(this));
   },
@@ -526,7 +526,7 @@ ProxyFormController.prototype = {
     }
     if (this.config_.incognito) {
       // TODO(battre): change incognito value once available
-      // chrome.experimental.proxy.settings.set(
+      // chrome.proxy.settings.set(
       //     {value: this.config_.incognito, scope: 'incognito'},
       //     this.callbackForIncognitoSettings_.bind(this));
     } else {
@@ -580,7 +580,7 @@ ProxyFormController.prototype = {
    * Parses the proxy configuration form, and generates a ProxyConfig object
    * that can be passed to `useCustomProxyConfig`.
    *
-   * @see http://code.google.com/chrome/extensions/trunk/experimental.proxy.html
+   * @see http://code.google.com/chrome/extensions/trunk/proxy.html
    * @return {ProxyConfig} The proxy configuration represented by the form.
    * @private
    */

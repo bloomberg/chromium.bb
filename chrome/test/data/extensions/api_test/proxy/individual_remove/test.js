@@ -39,12 +39,12 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
   function setIndividualProxies() {
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {'value': config, 'scope': 'regular'},
         chrome.test.callbackPass());
   },
   function clearProxies() {
-    chrome.experimental.proxy.settings.clear(
+    chrome.proxy.settings.clear(
         {'scope': 'regular'},
         chrome.test.callbackPass());
   }

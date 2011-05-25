@@ -21,7 +21,7 @@
       // incognito settings are wiped on restart.
       var persistedSettings = ProxyFormController.getPersistedSettings();
       if (persistedSettings !== null) {
-        chrome.experimental.proxy.settings.set(
+        chrome.proxy.settings.set(
             {'value': persistedSettings.regular});
       }
     </script>

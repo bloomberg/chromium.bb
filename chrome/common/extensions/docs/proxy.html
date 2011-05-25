@@ -293,7 +293,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.proxy</a>
+                <a href="#apiReference">API reference: chrome.proxy</a>
                 <ol>
                   <li>
                     <a href="#properties">Properties</a>
@@ -349,10 +349,8 @@
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.experimental.proxysettings</code> module to manage Chrome's
-proxy settings. This module is still experimental. For information on how to use
-experimental APIs, see the <a href="experimental.html">chrome.experimental.*
-  APIs</a> page.
+Use the <code>chrome.proxy</code> module to manage Chrome's
+proxy settings.
 </p>
 
 <h2 id="manifest">Manifest</h2>
@@ -364,7 +362,7 @@ For example:</p>
   "name": "My extension",
   ...
   <b>"permissions": [
-    "experimental", "proxy"
+    "proxy"
   ]</b>,
   ...
 }</pre>
@@ -372,7 +370,7 @@ For example:</p>
 <h2 id="description">Objects and properties</h2>
 
 <p>
-Proxy settings are defined in a 
+Proxy settings are defined in a
 <a href="#type-ProxyConfig"><code>ProxyConfig</code></a> object. Depending on
 Chrome's proxy settings, the settings may contain
 <a href="#type-ProxyRules"><code>ProxyRules</code></a> or a <a href="#type-PacScript"><code>PacScript</code></a>.
@@ -486,7 +484,7 @@ Individual servers may be excluded from being proxied with the
   Examples: <code>"127.0.1", "[0:0::1]", "[::1]", "http://[::1]:99"</code></dd>
 
   <dt><code><em>&lt;ip-literal&gt;</em>/<em>&lt;prefix-length-in-bits&gt;</em></code></dt>
-  <dd>Match any URL containing an IP literal within the given range. The IP 
+  <dd>Match any URL containing an IP literal within the given range. The IP
   range is specified using CIDR notation.<br>
   Examples: <code>"192.168.1.1/16", "fefe:13::abc/33"</code></dd>
 
@@ -516,6 +514,7 @@ As the list implies, policies might overrule any changes that you specify with
 the proxy settings API.
 </p>
 
+<!--
 <p>
 Chrome allows using different proxy settings for regular windows and incognito
 windows. The following example illustrates the behavior. Assume that no policy
@@ -524,7 +523,7 @@ regular windows <b>(R)</b> and proxy settings for incognito windows <b>(I)</b>.
 </p>
 
 <p>
-</p><ul>
+<ul>
   <li>If only <b>(R)</b> is set, these settings are effective for both regular
   and incognito windows.</li>
   <li>If only <b>(I)</b> is set, these settings are effective for only incognito
@@ -533,7 +532,7 @@ regular windows <b>(R)</b> and proxy settings for incognito windows <b>(I)</b>.
   <li>If both <b>(R)</b> and <b>(I)</b> are set, the respective settings are
   used for regular and incognito windows.</li>
 </ul>
-<p></p>
+</p>
 
 <p>
 If two extensions want to set proxy settings, the extension installed last takes
@@ -541,6 +540,7 @@ precedence over the other extensions. If the extension installed last sets only
 <b>(I)</b>, the settings of regular windows can be defined by more recently
 installed extensions.
 </p>
+-->
 
 
 
@@ -562,7 +562,7 @@ apply to regular and incognito windows.
     bypassList: ["foobar.com"]
   }
 };
-chrome.experimental.proxy.settings.set(
+chrome.proxy.settings.set(
     {value: config, scope: 'regular'},
     function() {});
 </pre>
@@ -581,7 +581,7 @@ The following code sets a custom pac script.
           "}"
   }
 };
-chrome.experimental.proxy.settings.set(
+chrome.proxy.settings.set(
     {value: config, scope: 'regular'},
     function() {});
 </pre>
@@ -590,7 +590,7 @@ chrome.experimental.proxy.settings.set(
 The next snippet queries the current proxy settings.
 </p>
 
-<pre>chrome.experimental.proxy.settings.get(
+<pre>chrome.proxy.settings.get(
     {'incognito': false},
     function(config) {console.log(JSON.stringify(config));});
 </pre>
@@ -598,8 +598,8 @@ The next snippet queries the current proxy settings.
 <p>
 Note that the <code>value</code> object passed to <code>set()</code> is not
 identical to the <code>value</code> object passed to callback function of
-<code>get()</code>. The latter will contain a <code>rules.httpProxy.port</code>
-element.
+<code>get()</code>. The latter will contain a
+<code>rules.httpProxy.port</code> element.
 </p>
 
 <!-- END AUTHORED CONTENT -->
@@ -608,7 +608,7 @@ element.
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.proxy</h2>
+        <h2>API reference: chrome.proxy</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup">
@@ -620,7 +620,7 @@ element.
               <h4>settings</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.experimental.proxy.</span><span>settings</span>
+                <span>chrome.proxy.</span><span>settings</span>
               </div>
               <div>
           <dt>
@@ -634,7 +634,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.extension.html#type-Preference">Preference</a>
+                        <a href="preferences.html#type-Preference">Preference</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -780,7 +780,7 @@ element.
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.proxy.</span><span>onProxyError</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>));
+                <span class="subdued">chrome.proxy.</span><span>onProxyError</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
@@ -1431,7 +1431,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1499,7 +1499,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1567,7 +1567,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1635,7 +1635,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1703,7 +1703,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -2192,7 +2192,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.proxy.html#type-ProxyRules">ProxyRules</a>
+                        <a href="proxy.html#type-ProxyRules">ProxyRules</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -2260,7 +2260,7 @@ element.
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.proxy.html#type-PacScript">PacScript</a>
+                        <a href="proxy.html#type-PacScript">PacScript</a>
                       </span>
                       <span style="display: none; ">
                         <span>

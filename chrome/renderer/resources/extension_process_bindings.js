@@ -351,7 +351,7 @@ var chrome = chrome || {};
       this.get = function(details, callback) {
         var getSchema = this.parameters.get;
         chromeHidden.validate([details, callback], getSchema);
-        return sendRequest('experimental.preferences.get',
+        return sendRequest('preferences.get',
                            [prefKey, details, callback],
                            extendSchema(getSchema));
       };
@@ -359,19 +359,18 @@ var chrome = chrome || {};
         var setSchema = this.parameters.set.slice();
         setSchema[0].properties.value = valueSchema;
         chromeHidden.validate([details, callback], setSchema);
-        return sendRequest('experimental.preferences.set',
+        return sendRequest('preferences.set',
                            [prefKey, details, callback],
                            extendSchema(setSchema));
       };
       this.clear = function(details, callback) {
         var clearSchema = this.parameters.clear;
         chromeHidden.validate([details, callback], clearSchema);
-        return sendRequest('experimental.preferences.clear',
+        return sendRequest('preferences.clear',
                            [prefKey, details, callback],
                            extendSchema(clearSchema));
       };
-      this.onChange = new chrome.Event('experimental.preferences.'
-          + prefKey + '.onChange');
+      this.onChange = new chrome.Event('preferences.' + prefKey + '.onChange');
     };
     customBindings['Preference'].prototype = new CustomBindingsObject();
   }

@@ -66,21 +66,21 @@ class GetPreferenceFunction : public SyncExtensionFunction {
  public:
   virtual ~GetPreferenceFunction();
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.preferences.get")
+  DECLARE_EXTENSION_FUNCTION_NAME("preferences.get")
 };
 
 class SetPreferenceFunction : public SyncExtensionFunction {
  public:
   virtual ~SetPreferenceFunction();
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.preferences.set")
+  DECLARE_EXTENSION_FUNCTION_NAME("preferences.set")
 };
 
 class ClearPreferenceFunction : public SyncExtensionFunction {
  public:
   virtual ~ClearPreferenceFunction();
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.preferences.clear")
+  DECLARE_EXTENSION_FUNCTION_NAME("preferences.clear")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_H__

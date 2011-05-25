@@ -31,12 +31,12 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
   function setAutoSettings() {
-    chrome.experimental.proxy.settings.set(
+    chrome.proxy.settings.set(
         {'value': config},
         chrome.test.callbackPass());
   },
   function verifySettings() {
-    chrome.experimental.proxy.settings.get(
+    chrome.proxy.settings.get(
         {'incognito': false},
         expect({ 'value': config,
                  'levelOfControl': "ControlledByThisExtension" },

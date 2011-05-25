@@ -15,7 +15,6 @@
   },
   "background_page": "background.html",
   "permissions": [
-    "experimental",
     "proxy"
   ]
 }
