@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,14 @@ TEST_F(ChromeLoggingTest, EnvironmentLogFileName) {
 #define EXPECTED_ASSERT_CRASHES 1
 #endif
 
+// Touch build will start an extra renderer process (the extension process)
+// for the virtual keyboard.
+#if defined(TOUCH_UI)
+#define EXPECTED_ASSERT_ERRORS 2
+#else
+#define EXPECTED_ASSERT_ERRORS 1
+#endif
+
 #if !defined(NDEBUG)  // We don't have assertions in release builds.
 // Tests whether we correctly fail on browser assertions during tests.
 class AssertionTest : public UITest {
@@ -103,7 +111,7 @@ TEST_F(AssertionTest, Assertion) {
     expected_errors_ = 0;
     expected_crashes_ = 0;
   } else {
-    expected_errors_ = 1;
+    expected_errors_ = EXPECTED_ASSERT_ERRORS;
     expected_crashes_ = EXPECTED_ASSERT_CRASHES;
   }
 }
@@ -138,7 +146,7 @@ TEST_F(CheckFalseTest, CheckFails) {
     expected_errors_ = 0;
     expected_crashes_ = 0;
   } else {
-    expected_errors_ = 1;
+    expected_errors_ = EXPECTED_ASSERT_ERRORS;
     expected_crashes_ = EXPECTED_ASSERT_CRASHES;
   }
 }
