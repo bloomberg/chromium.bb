@@ -2955,6 +2955,14 @@ ts-newer-than() {
   return 1
 }
 
+
+# Don't define any functions after this or they won't show up in completions
+function-completions() {
+  if [ $# = 0 ]; then set -- ""; fi
+  compgen -A function -- $1
+  exit 0
+}
+
 ######################################################################
 ######################################################################
 #
@@ -2966,7 +2974,13 @@ ts-newer-than() {
 mkdir -p "${INSTALL_ROOT}"
 PackageCheck
 
-[ $# = 0 ] && set -- help  # Avoid reference to undefined $1.
+if [ $# = 0 ]; then set -- help; fi  # Avoid reference to undefined $1.
+
+# Accept one -- argument for some compatibility with google3
+if [ $1 = "--tab_completion_word" ]; then
+  set -- function-completions $2
+fi
+
 if [ "$(type -t $1)" != "function" ]; then
   #Usage
   echo "ERROR: unknown function '$1'." >&2
