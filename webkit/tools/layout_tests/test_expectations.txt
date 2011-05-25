@@ -33,3 +33,8 @@ BUG_ADAMK : ietestcenter/Javascript/15.5.4.20-1-2.html = PASS TEXT MISSING
 
 // Remove once we roll past r87318
 BUG_ADAMK : fast/canvas/canvas-composite.html = IMAGE
+
+// Need rebaselining after r87310. New platform/mac results are correct,
+// but are not pixel-perfect matches. Remove once all platforms are rebaselined.
+BUG_ADAMK : svg/W3C-SVG-1.1-SE/filters-felem-01-b.svg = IMAGE+TEXT
+BUG_ADAMK : svg/W3C-SVG-1.1/filters-felem-01-b.svg = IMAGE
