@@ -188,7 +188,7 @@ readonly REPO_BINUTILS="binutils.nacl-llvm-branches"
 
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
 # bug that brakes the build if we do that.
-CC=${CC:-}
+CC=${CC:-gcc}
 CXX=${CXX:-g++}
 if ${HOST_ARCH_X8632} ; then
   # These are simple compiler wrappers to force 32bit builds
@@ -793,8 +793,8 @@ llvm-configure() {
   RunWithLog "llvm.configure" \
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
-             CC=${CC} \
-             CXX=${CXX} \
+             CC="${CC}" \
+             CXX="${CXX}" \
              ${srcdir}/llvm-trunk/configure \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
@@ -847,8 +847,8 @@ llvm-make() {
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS="${MAKE_OPTS}" \
            NACL_SANDBOX=0 \
-           CC=${CC} \
-           CXX=${CXX} \
+           CC="${CC}" \
+           CXX="${CXX}" \
            make ${MAKE_OPTS} all
 
   ts-touch-commit  "${objdir}"
@@ -975,8 +975,8 @@ gcc-stage1-configure() {
   # TODO(robertm): do we really need CROSS_TARGET_*
   RunWithLog llvm-pregcc-${target}.configure \
       env -i PATH=/usr/bin/:/bin \
-             CC=${CC} \
-             CXX=${CXX} \
+             CC="${CC}" \
+             CXX="${CXX}" \
              CFLAGS="-Dinhibit_libc" \
              ${srcdir}/llvm-gcc-4.2/configure \
                --prefix=${INSTALL_DIR} \
@@ -1022,8 +1022,8 @@ gcc-stage1-make() {
   # NOTE: we add ${INSTALL_DIR}/bin to PATH
   RunWithLog llvm-pregcc-${target}.make \
        env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
-              CC=${CC} \
-              CXX=${CXX} \
+              CC="${CC}" \
+              CXX="${CXX}" \
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all-gcc
 
@@ -1039,8 +1039,8 @@ gcc-stage1-make() {
   # when we start supporting shared libraries.
   RunWithLog llvm-pregcc2-${target}.make \
        env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
-              CC=${CC} \
-              CXX=${CXX} \
+              CC="${CC}" \
+              CXX="${CXX}" \
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all
 
@@ -1156,8 +1156,8 @@ gcc-stage1-install() {
   # NOTE: we add ${INSTALL_DIR}/bin to PATH
   RunWithLog llvm-pregcc-${target}.install \
        env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
-              CC=${CC} \
-              CXX=${CXX} \
+              CC="${CC}" \
+              CXX="${CXX}" \
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} install
 
@@ -1386,8 +1386,8 @@ binutils-arm-configure() {
   RunWithLog binutils.arm.configure \
     env -i \
     PATH="/usr/bin:/bin" \
-    CC=${CC} \
-    CXX=${CXX} \
+    CC="${CC}" \
+    CXX="${CXX}" \
     CFLAGS="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5" \
     ${srcdir}/binutils-2.20/configure --prefix=${INSTALL_DIR} \
                                       --target=${BINUTILS_TARGET} \
@@ -1496,8 +1496,8 @@ binutils-liberty-configure() {
   RunWithLog binutils.liberty.configure \
       env -i \
       PATH="/usr/bin:/bin" \
-      CC=${CC} \
-      CXX=${CXX} \
+      CC="${CC}" \
+      CXX="${CXX}" \
       ${srcdir}/binutils-2.20/configure
   spopd
 }
@@ -1520,7 +1520,10 @@ binutils-liberty-make() {
   ts-touch-open "${objdir}"
 
   RunWithLog binutils.liberty.make \
-      env -i PATH="/usr/bin:/bin" \
+      env -i \
+      PATH="/usr/bin:/bin" \
+      CC="${CC}" \
+      CXX="${CXX}" \
       make ${MAKE_OPTS} all-libiberty
 
   ts-touch-commit "${objdir}"
@@ -1871,6 +1874,8 @@ binutils-sb-configure() {
       binutils.${arch}.${mode}.sandboxed.configure \
       env -i \
       PATH="/usr/bin:/bin" \
+      CC_FOR_BUILD="${CC}" \
+      CXX_FOR_BUILD="${CXX}" \
       AR="${NNACL_ROOT}/bin/${nacl}-ar" \
       AS="${NNACL_ROOT}/bin/${nacl}-as" \
       CC="${NNACL_ROOT}/bin/${nacl}-gcc" \
