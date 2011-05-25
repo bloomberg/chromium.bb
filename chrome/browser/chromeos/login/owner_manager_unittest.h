@@ -38,9 +38,7 @@ class MockKeyLoadObserver : public NotificationObserver {
         NotificationService::AllSources());
   }
 
-  virtual ~MockKeyLoadObserver() {
-    DCHECK(observed_);
-  }
+  virtual ~MockKeyLoadObserver();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

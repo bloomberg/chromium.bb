@@ -29,7 +29,7 @@ class ExampleNativeThemeButton : public views::CustomButton,
   ExampleNativeThemeButton(views::ButtonListener* listener,
                            views::Combobox* cb_part,
                            views::Combobox* cb_state);
-  ~ExampleNativeThemeButton();
+  virtual ~ExampleNativeThemeButton();
 
   std::wstring MessWithState();
 

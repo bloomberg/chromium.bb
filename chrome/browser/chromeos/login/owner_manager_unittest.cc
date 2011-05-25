@@ -31,6 +31,10 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // MockKeyLoadObserver
 
+virtual MockKeyLoadObserver::~MockKeyLoadObserver() {
+  DCHECK(observed_);
+}
+
 void MockKeyLoadObserver::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {

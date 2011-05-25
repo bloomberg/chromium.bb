@@ -60,7 +60,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
 class DesktopNotificationsTest : public testing::Test {
  public:
   DesktopNotificationsTest();
-  ~DesktopNotificationsTest();
+  virtual ~DesktopNotificationsTest();
 
   static void log(const std::string& message) {
     log_output_.append(message);
