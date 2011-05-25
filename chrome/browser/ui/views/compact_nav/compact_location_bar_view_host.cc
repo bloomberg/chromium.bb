@@ -333,10 +333,20 @@ void CompactLocationBarViewHost::TabMoved(TabContentsWrapper* contents,
 void CompactLocationBarViewHost::TabChangedAt(TabContentsWrapper* contents,
                                               int index,
                                               TabChangeType change_type) {
-  if (IsCurrentTabIndex(index) && change_type ==
-      TabStripModelObserver::LOADING_ONLY) {
-    bool was_not_visible = !IsVisible();
+  if (IsCurrentTabIndex(index) &&
+      change_type == TabStripModelObserver::LOADING_ONLY) {
     TabContents* tab_contents = contents->tab_contents();
+    bool was_not_visible = !IsVisible();
+    if (was_not_visible) {
+      // Only show the compact navigation bar when we change hosts or scheme.
+      const GURL& new_url = tab_contents->GetURL();
+      GURL old_url = GetCompactLocationBarView()->location_bar_view()->
+          location_entry()->model()->PermanentURL();
+      if (old_url.has_host() && new_url.host() == old_url.host() &&
+          new_url.scheme() == old_url.scheme()) {
+        return;
+      }
+    }
     Update(tab_contents, false);
     if (was_not_visible) {
       if (tab_contents->is_loading()) {
