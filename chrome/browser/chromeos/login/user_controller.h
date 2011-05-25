@@ -60,7 +60,7 @@ class UserController : public views::WidgetDelegate,
   // Creates a UserController for the specified user.
   UserController(Delegate* delegate, const UserManager::User& user);
 
-  ~UserController();
+  virtual ~UserController();
 
   // Initializes the UserController, creating the set of windows/controls.
   // |index| is the index of this user, and |total_user_count| the total

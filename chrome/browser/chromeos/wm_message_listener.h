@@ -49,7 +49,7 @@ class WmMessageListener : public MessageLoopForUI::Observer {
   friend struct DefaultSingletonTraits<WmMessageListener>;
 
   WmMessageListener();
-  ~WmMessageListener();
+  virtual ~WmMessageListener();
 
   // Invoked when a valid WmIpc::Message is received.
   void ProcessMessage(const WmIpc::Message& message, GdkWindow* window);

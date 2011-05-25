@@ -41,7 +41,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
                   const std::wstring& title,
                   const GURL& url,
                   Style style);
-  ~LoginHtmlDialog();
+  virtual ~LoginHtmlDialog();
 
   // Shows created dialog.
   void Show();

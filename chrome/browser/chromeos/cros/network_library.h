@@ -430,7 +430,7 @@ class VirtualNetwork : public Network {
   };
 
   explicit VirtualNetwork(const std::string& service_path);
-  ~VirtualNetwork();
+  virtual ~VirtualNetwork();
 
   const std::string& server_hostname() const { return server_hostname_; }
   ProviderType provider_type() const { return provider_type_; }

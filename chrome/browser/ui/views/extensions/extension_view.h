@@ -21,7 +21,7 @@ class RenderViewHost;
 class ExtensionView : public views::NativeViewHost {
  public:
   ExtensionView(ExtensionHost* host, Browser* browser);
-  ~ExtensionView();
+  virtual ~ExtensionView();
 
   // A class that represents the container that this view is in.
   // (bottom shelf, side bar, etc.)

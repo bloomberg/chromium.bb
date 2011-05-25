@@ -51,7 +51,7 @@ class WizardController : public chromeos::ScreenObserver,
  public:
   explicit WizardController(chromeos::LoginDisplayHost* host,
                             const gfx::Rect& screen_bounds);
-  ~WizardController();
+  virtual ~WizardController();
 
   // Returns the default wizard controller if it has been created.
   static WizardController* default_controller() {

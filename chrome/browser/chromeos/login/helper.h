@@ -156,7 +156,7 @@ class WideButton : public views::NativeButton {
     CorrectNativeButtonFontSize(this);
   }
 
-  ~WideButton() {}
+  virtual ~WideButton() {}
 
  private:
   virtual gfx::Size GetPreferredSize();

@@ -83,7 +83,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
   StartupCustomizationDocument(SystemAccess* system_access,
                                const std::string& manifest);
 
-  ~StartupCustomizationDocument();
+  virtual ~StartupCustomizationDocument();
 
   void Init(SystemAccess* system_access);
 
@@ -169,7 +169,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   ServicesCustomizationDocument(const std::string& manifest,
                                 const std::string& initial_locale);
 
-  ~ServicesCustomizationDocument();
+  virtual ~ServicesCustomizationDocument();
 
   // Save applied state in machine settings.
   static void SetApplied(bool val);

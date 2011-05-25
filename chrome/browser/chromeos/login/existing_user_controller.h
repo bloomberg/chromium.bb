@@ -48,7 +48,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
  public:
   // All UI initialization is deferred till Init() call.
   explicit ExistingUserController(LoginDisplayHost* host);
-  ~ExistingUserController();
+  virtual ~ExistingUserController();
 
   // Returns the current existing user controller if it has been created.
   static ExistingUserController* current_controller() {
