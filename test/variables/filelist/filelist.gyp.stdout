@@ -29,8 +29,8 @@ VARIABLES: Expanding 'Schmidt' to 'Schmidt'
 VARIABLES: Expanding 'Schultz' to 'Schultz'
 VARIABLES: Expanding 'Astor' to 'Astor'
 VARIABLES: Expanding '.' to '.'
-VARIABLES: Matches: {'content': 'names.txt <@(names', 'is_array': '', 'type': '<|', 'replace': '<|(names.txt <@(names)'}
-VARIABLES: Matches: {'content': 'names', 'is_array': '', 'type': '<@', 'replace': '<@(names)'}
+VARIABLES: Matches: {'content': 'names.txt <@(names', 'is_array': '', 'replace': '<|(names.txt <@(names)', 'type': '<|', 'command_string': None}
+VARIABLES: Matches: {'content': 'names', 'is_array': '', 'replace': '<@(names)', 'type': '<@', 'command_string': None}
 VARIABLES: Expanding 'names' to 'names'
 VARIABLES: Expanding 'John' to 'John'
 VARIABLES: Expanding 'Jacob' to 'Jacob'
@@ -48,18 +48,18 @@ VARIABLES: Expanding 'none' to 'none'
 VARIABLES: Expanding 'test_action' to 'test_action'
 VARIABLES: Expanding 'python' to 'python'
 VARIABLES: Expanding 'dummy.py' to 'dummy.py'
-VARIABLES: Matches: {'content': 'names_listfile', 'is_array': '', 'type': '<', 'replace': '<(names_listfile)'}
+VARIABLES: Matches: {'content': 'names_listfile', 'is_array': '', 'replace': '<(names_listfile)', 'type': '<', 'command_string': None}
 VARIABLES: Expanding 'names_listfile' to 'names_listfile'
 VARIABLES: Found output 'names.txt', recursing.
 VARIABLES: Expanding 'names.txt' to 'names.txt'
 VARIABLES: Expanding '<(names_listfile)' to 'names.txt'
-VARIABLES: Matches: {'content': 'names_listfile', 'is_array': '', 'type': '<', 'replace': '<(names_listfile)'}
+VARIABLES: Matches: {'content': 'names_listfile', 'is_array': '', 'replace': '<(names_listfile)', 'type': '<', 'command_string': None}
 VARIABLES: Expanding 'names_listfile' to 'names_listfile'
 VARIABLES: Found output 'names.txt', recursing.
 VARIABLES: Expanding 'names.txt' to 'names.txt'
 VARIABLES: Expanding '<(names_listfile)' to 'names.txt'
-VARIABLES: Matches: {'content': 'cat <(names_listfile', 'is_array': '', 'type': '<!@', 'replace': '<!@(cat <(names_listfile)'}
-VARIABLES: Matches: {'content': 'names_listfile', 'is_array': '', 'type': '<', 'replace': '<(names_listfile)'}
+VARIABLES: Matches: {'content': 'cat <(names_listfile', 'is_array': '', 'replace': '<!@(cat <(names_listfile)', 'type': '<!@', 'command_string': None}
+VARIABLES: Matches: {'content': 'names_listfile', 'is_array': '', 'replace': '<(names_listfile)', 'type': '<', 'command_string': None}
 VARIABLES: Expanding 'names_listfile' to 'names_listfile'
 VARIABLES: Found output 'cat names.txt', recursing.
 VARIABLES: Expanding 'cat names.txt' to 'cat names.txt'
@@ -72,8 +72,8 @@ VARIABLES: Expanding 'Jingleheimer' to 'Jingleheimer'
 VARIABLES: Expanding 'Schmidt' to 'Schmidt'
 VARIABLES: Expanding '<!@(cat <(names_listfile))' to ['John', 'Jacob', 'Jingleheimer', 'Schmidt']
 VARIABLES: Expanding 'dummy_foo' to 'dummy_foo'
-VARIABLES: Matches: {'content': 'sources.txt <@(_sources', 'is_array': '', 'type': '<|', 'replace': '<|(sources.txt <@(_sources)'}
-VARIABLES: Matches: {'content': '_sources', 'is_array': '', 'type': '<@', 'replace': '<@(_sources)'}
+VARIABLES: Matches: {'content': 'sources.txt <@(_sources', 'is_array': '', 'replace': '<|(sources.txt <@(_sources)', 'type': '<|', 'command_string': None}
+VARIABLES: Matches: {'content': '_sources', 'is_array': '', 'replace': '<@(_sources)', 'type': '<@', 'command_string': None}
 VARIABLES: Expanding '_sources' to '_sources'
 VARIABLES: Expanding 'John' to 'John'
 VARIABLES: Expanding 'Jacob' to 'Jacob'
@@ -98,18 +98,18 @@ VARIABLES: Expanding 'Astor' to 'Astor'
 VARIABLES: Expanding 'test_action' to 'test_action'
 VARIABLES: Expanding 'python' to 'python'
 VARIABLES: Expanding 'dummy.py' to 'dummy.py'
-VARIABLES: Matches: {'content': 'sources_listfile', 'is_array': '', 'type': '<', 'replace': '<(sources_listfile)'}
+VARIABLES: Matches: {'content': 'sources_listfile', 'is_array': '', 'replace': '<(sources_listfile)', 'type': '<', 'command_string': None}
 VARIABLES: Expanding 'sources_listfile' to 'sources_listfile'
 VARIABLES: Found output 'sources.txt', recursing.
 VARIABLES: Expanding 'sources.txt' to 'sources.txt'
 VARIABLES: Expanding '<(sources_listfile)' to 'sources.txt'
-VARIABLES: Matches: {'content': 'sources_listfile', 'is_array': '', 'type': '<', 'replace': '<(sources_listfile)'}
+VARIABLES: Matches: {'content': 'sources_listfile', 'is_array': '', 'replace': '<(sources_listfile)', 'type': '<', 'command_string': None}
 VARIABLES: Expanding 'sources_listfile' to 'sources_listfile'
 VARIABLES: Found output 'sources.txt', recursing.
 VARIABLES: Expanding 'sources.txt' to 'sources.txt'
 VARIABLES: Expanding '<(sources_listfile)' to 'sources.txt'
-VARIABLES: Matches: {'content': 'cat <(sources_listfile', 'is_array': '', 'type': '<!@', 'replace': '<!@(cat <(sources_listfile)'}
-VARIABLES: Matches: {'content': 'sources_listfile', 'is_array': '', 'type': '<', 'replace': '<(sources_listfile)'}
+VARIABLES: Matches: {'content': 'cat <(sources_listfile', 'is_array': '', 'replace': '<!@(cat <(sources_listfile)', 'type': '<!@', 'command_string': None}
+VARIABLES: Matches: {'content': 'sources_listfile', 'is_array': '', 'replace': '<(sources_listfile)', 'type': '<', 'command_string': None}
 VARIABLES: Expanding 'sources_listfile' to 'sources_listfile'
 VARIABLES: Found output 'cat sources.txt', recursing.
 VARIABLES: Expanding 'cat sources.txt' to 'cat sources.txt'
