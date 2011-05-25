@@ -5,12 +5,14 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 using ::base::SharedMemory;
 
@@ -65,6 +67,16 @@ bool GpuScheduler::InitializeCommon(
 
   if (!context->MakeCurrent(surface))
     return false;
+
+#if !defined(OS_MACOSX)
+  // Set up swap interval for onscreen contexts.
+  if (!surface->IsOffscreen()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+      context->SetSwapInterval(0);
+    else
+      context->SetSwapInterval(1);
+  }
+#endif
 
   // Do not limit to a certain number of commands before scheduling another
   // update when rendering onscreen.

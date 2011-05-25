@@ -119,12 +119,21 @@ void GLContextGLX::SetSwapInterval(int interval) {
     // manager. At the moment, compositing window managers don't
     // respect this setting anyway (tearing still occurs) and it
     // dramatically increases latency.
-    if (!IsCompositingWindowManagerActive(GLSurfaceGLX::GetDisplay())) {
-      glXSwapIntervalEXT(
-          GLSurfaceGLX::GetDisplay(),
-          glXGetCurrentDrawable(),
-          interval);
+    if (interval == 1 &&
+        IsCompositingWindowManagerActive(GLSurfaceGLX::GetDisplay())) {
+      LOG(INFO) <<
+          "Forcing vsync off because compositing window manager was detected.";
+      interval = 0;
     }
+    glXSwapIntervalEXT(
+        GLSurfaceGLX::GetDisplay(),
+        glXGetCurrentDrawable(),
+        interval);
+  } else {
+    if(interval == 0)
+      LOG(WARNING) <<
+          "Could not disable vsync: driver does not "
+          "support GLX_EXT_swap_control";
   }
 }
 
