@@ -54,8 +54,7 @@ function registerConnection() {
         var clientjid = xhr.responseText;
 
         chromoting.plugin.sendIq = sendIq;
-        // TODO:(jamiewalch): Pass in the correct nonce.
-        chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid);
+        chromoting.plugin.connect(chromoting.hostjid, clientjid);
         // TODO(ajwong): This should just be feedIq();
         window.setTimeout(feedIq, 1000);
       } else {
@@ -132,9 +131,8 @@ function init() {
     if (chromoting.connectMethod == "sandboxed") {
       registerConnection();
     } else {
-      // TODO:(jamiewalch): Pass in the correct nonce.
-      plugin.connect(chromoting.username, chromoting.hostjid,
-                     chromoting.talkToken, '');
+      plugin.connectUnsandboxed(chromoting.hostjid, chromoting.username,
+                                chromoting.talkToken);
     }
   } else {
     addToDebugLog('ERROR: chromoting plugin not loaded');

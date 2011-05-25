@@ -85,8 +85,8 @@ void ChromotingScriptableObject::Init() {
   AddAttribute(kRoundTripLatencyAttribute, Var());
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
-  AddMethod("connectSandboxed",
-            &ChromotingScriptableObject::DoConnectSandboxed);
+  AddMethod("connectUnsandboxed",
+            &ChromotingScriptableObject::DoConnectUnsandboxed);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
   AddMethod("submitLoginInfo", &ChromotingScriptableObject::DoSubmitLogin);
   AddMethod("setScaleToFit", &ChromotingScriptableObject::DoSetScaleToFit);
@@ -327,79 +327,100 @@ void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
   cb.Call(Var(), Var(message_xml), &exception);
 
   if (!exception.is_undefined())
-    LogDebugInfo("Exception when invoking loginChallenge JS callback.");
+    LogDebugInfo("Exception when invoking sendiq JS callback.");
 }
 
 Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
                                           Var* exception) {
-  if (args.size() != 4) {
-    *exception = Var("Usage: connect(username, host_jid, auth_token)");
-    return Var();
-  }
-
-  ClientConfig config;
-
-  if (!args[0].is_string()) {
-    *exception = Var("The username must be a string.");
-    return Var();
-  }
-  config.username = args[0].AsString();
-
-  if (!args[1].is_string()) {
+  // Parameter order is:
+  //   host_jid
+  //   client_jid
+  //   access_code (optional)
+  unsigned int arg = 0;
+  if (!args[arg].is_string()) {
     *exception = Var("The host_jid must be a string.");
     return Var();
   }
-  config.host_jid = args[1].AsString();
+  std::string host_jid = args[arg++].AsString();
 
-  if (!args[2].is_string()) {
-    *exception = Var("The auth_token must be a string.");
+  if (!args[arg].is_string()) {
+    *exception = Var("The client_jid must be a string.");
     return Var();
   }
-  config.auth_token = args[2].AsString();
+  std::string client_jid = args[arg++].AsString();
 
-  if (!args[3].is_string()) {
-    *exception = Var("nonce must be a string.");
+  std::string access_code;
+  if (args.size() > arg) {
+    if (!args[arg].is_string()) {
+      *exception = Var("The access code must be a string.");
+      return Var();
+    }
+    access_code = args[arg++].AsString();
+  }
+
+  if (args.size() != arg) {
+    *exception = Var("Too many agruments passed to connect().");
     return Var();
   }
-  config.nonce = args[3].AsString();
 
   LogDebugInfo("Connecting to host.");
-  instance_->Connect(config);
+  VLOG(1) << "client_jid: " << client_jid << ", host_jid: " << host_jid
+          << ", access_code: " << access_code;
+  instance_->ConnectSandboxed(client_jid, host_jid, access_code);
 
   return Var();
 }
 
-Var ChromotingScriptableObject::DoConnectSandboxed(
-    const std::vector<Var>& args, Var* exception) {
-  if (args.size() != 3) {
-    *exception = Var("Usage: connectSandboxed(your_jid, host_jid, nonce)");
+Var ChromotingScriptableObject::DoConnectUnsandboxed(
+    const std::vector<Var>& args,
+    Var* exception) {
+  // Parameter order is:
+  //   host_jid
+  //   username
+  //   xmpp_token
+  //   access_code (optional)
+  unsigned int arg = 0;
+  if (!args[arg].is_string()) {
+    *exception = Var("The host_jid must be a string.");
+    return Var();
+  }
+  std::string host_jid = args[arg++].AsString();
+
+  if (!args[arg].is_string()) {
+    *exception = Var("The username must be a string.");
+    return Var();
+  }
+  std::string username = args[arg++].AsString();
+
+  if (!args[arg].is_string()) {
+    *exception = Var("The auth_token must be a string.");
+    return Var();
+  }
+  std::string auth_token = args[arg++].AsString();
+
+  std::string access_code;
+  if (args.size() > arg) {
+    if (!args[arg].is_string()) {
+      *exception = Var("The access code must be a string.");
+      return Var();
+    }
+    access_code = args[arg++].AsString();
+  }
+
+  if (args.size() != arg) {
+    *exception = Var("Too many agruments passed to connect().");
     return Var();
   }
 
-  std::string your_jid;
-  if (!args[0].is_string()) {
-    *exception = Var("your_jid must be a string.");
-    return Var();
-  }
-  your_jid = args[0].AsString();
-
-  std::string host_jid;
-  if (!args[1].is_string()) {
-    *exception = Var("host_jid must be a string.");
-    return Var();
-  }
-  host_jid = args[1].AsString();
-
-  std::string nonce;
-  if (!args[2].is_string()) {
-    *exception = Var("nonce must be a string.");
-    return Var();
-  }
-  nonce = args[2].AsString();
-
-  VLOG(1) << "your_jid: " << your_jid << ", host_jid: " << host_jid
-          << ", nonce: " << nonce;
-  instance_->ConnectSandboxed(your_jid, host_jid, nonce);
+  LogDebugInfo("Connecting to host.");
+  ClientConfig config;
+  config.host_jid = host_jid;
+  config.username = username;
+  config.auth_token = auth_token;
+  config.nonce = access_code;
+  VLOG(1) << "host_jid: " << host_jid << ", username: " << username
+          << ", access_code: " << access_code;
+  instance_->Connect(config);
 
   return Var();
 }
