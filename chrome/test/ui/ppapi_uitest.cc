@@ -53,6 +53,11 @@ class PPAPITest : public UITest {
     // TODO(dumi): remove this switch once we have a quota management
     // system in place.
     launch_arguments_.AppendSwitch(switches::kUnlimitedQuotaForFiles);
+
+#if defined(ENABLE_P2P_APIS)
+    // Enable P2P API.
+    launch_arguments_.AppendSwitch(switches::kEnableP2PApi);
+#endif // ENABLE_P2P_APIS
   }
 
   void RunTest(const std::string& test_case) {
@@ -169,7 +174,8 @@ TEST_F(PPAPITest, DISABLED_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
 
-// http://crbug.com/83395
-TEST_F(PPAPITest, DISABLED_Transport) {
+#if defined(ENABLE_P2P_APIS)
+TEST_F(PPAPITest, Transport) {
   RunTest("Transport");
 }
+#endif // ENABLE_P2P_APIS
