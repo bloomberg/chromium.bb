@@ -155,6 +155,10 @@ class ProtocolHandlerRegistryInterceptor
     return protocol_handler_registry_->MaybeCreateJob(request);
   }
 
+  virtual bool WillHandleProtocol(const std::string& protocol) const {
+    return protocol_handler_registry_->IsHandledProtocol(protocol);
+  }
+
   virtual net::URLRequestJob* MaybeInterceptRedirect(
       const GURL& url, net::URLRequest* request) const OVERRIDE {
     return NULL;
