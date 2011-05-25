@@ -12,11 +12,13 @@ function showNotification(url) {
 }
 
 // Called by the notification when it is done with its tests.
-function onNotificationDone() {
+function onNotificationDone(notificationWindow) {
   var views = chrome.extension.getViews();
   chrome.test.assertEq(2, views.length);
+  notificationWindow.onunload = function() {
+    chrome.test.succeed();
+  }
   notification.cancel();
-  chrome.test.succeed();
 }
 
 chrome.test.runTests([

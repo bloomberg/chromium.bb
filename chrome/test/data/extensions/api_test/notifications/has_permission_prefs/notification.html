@@ -5,7 +5,7 @@
 // permissions error.
 chrome.windows.getAll(null, function() {
   chrome.test.assertNoLastError();
-  chrome.extension.getBackgroundPage().onNotificationDone();
+  chrome.extension.getBackgroundPage().onNotificationDone(window);
 });
 </script>
 Why hello there.

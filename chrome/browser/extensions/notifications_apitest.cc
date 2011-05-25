@@ -9,8 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 
-// Flaky, http://crbug.com/42314.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Notifications) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Notifications) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
