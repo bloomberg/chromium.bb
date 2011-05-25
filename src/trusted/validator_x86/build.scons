@@ -254,7 +254,6 @@ env.Requires(ncdecode_table, crt)
 NCVALIDATE_SOURCES = ['halt_trim.c',
                       'nacl_cpuid.c',
                       'ncdecode.c',
-                      'error_reporter.c',
                       'ncinstbuffer.c',
                       'nc_segment.c',
                       'nc_inst_iter.c',
@@ -335,10 +334,7 @@ if test_env.Bit('target_x86_32'):
         'ncdecode_tests',
         ['ncdecode_tests.c'],
         EXTRA_LIBS=['ncdis_util',
-                    'ncvalidate',
-                    'platform',
-                    'gio'
-                    ])
+                    'ncvalidate'])
 
     node = test_env.CommandTest(
         'ncdecode_tests.out',
@@ -354,11 +350,11 @@ ncdis = test_env.ComponentProgram(
     force_cpp_o,
   ],
   EXTRA_LIBS=[
-    'ncvalidate',
     'ncdis_util',
+    'utils',
     'ncvalidate',
     'nchelper',
-    'utils',
+    'ncdis_util',
     'platform',
     'gio'
   ])
@@ -368,15 +364,9 @@ env.Requires(ncdis, crt)
 # ======================================================================
 # Valiator unittests
 if test_env.Bit('target_x86_32'):
-  ncval_tests = test_env.ComponentProgram(
-      'ncval_tests',
-      ['ncval_tests.c'],
-      EXTRA_LIBS=['ncvalidate',
-                  'nchelper',
-                  'ncdis_util',
-                  'ncvalidate',
-                  'platform',
-                  'gio'])
+  ncval_tests = test_env.ComponentProgram('ncval_tests',
+                                          ['ncval_tests.c'],
+                                          EXTRA_LIBS=['ncvalidate', 'nchelper'])
   test_env.Requires(ncval_tests, crt)
 
   node = test_env.CommandTest(
@@ -466,9 +456,9 @@ ncval = test_env.ComponentProgram(
     force_cpp_o,
   ],
   EXTRA_LIBS=[
+    'ncdis_util',
     'ncvalidate_sfi',
     'ncvalidate',
-    'ncdis_util',
     'nchelper',
     'platform',
     'gio',
@@ -670,3 +660,4 @@ for source in gtest_sources:
       command=[test_exe])
   gtest_env.AddNodeToTestSuite(test_node, ['small_tests'],
                                'run_x86_validator_tests')
+

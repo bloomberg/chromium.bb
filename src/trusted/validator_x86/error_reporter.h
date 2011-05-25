@@ -27,30 +27,18 @@
 EXTERN_C_BEGIN
 
 struct NaClErrorReporter;
+struct NaClInstState;
 
-/* Enumeration defining type of expected error reporter, based on
- * model of instructions to be printed.
+/* Method called to start an error message. */
+typedef void (*NaClStartError)(struct NaClErrorReporter* self);
+
+/* Method called to end an error message. */
+typedef void (*NaClEndError)(struct NaClErrorReporter* self);
+
+/* Method to start the next line of a multi-line error message. Adds
+ * any useful tagging information.
  */
-typedef enum NaClErrorReporterSupported {
-  /* The following defines the null error reporter, which reports
-   * no errors, and therefore, can support any model of instructions
-   * to be printed.
-   */
-  NaClNullErrorReporter,
-
-  /* The following defines that the error reporter handles calls
-   * to NaClPrintInst using a NaClInstState* instruction argument.
-   */
-  NaClInstStateErrorReporter,
-
-  /* The following defines that the error reporter handles calls
-   * to NaClPrintInst using a NCDecoderInst* instruction argument.
-   */
-  NCDecoderInstErrorReporter
-} NaClErrorReporterSupported;
-
-/* Returns the name of the NaClErrorReporterSupported value. */
-const char* NaClErrorReporterSupportedName(NaClErrorReporterSupported kind);
+typedef void (*NaClTagNewLine)(struct NaClErrorReporter* self);
 
 /* Method to print out a formatted string. */
 typedef void (*NaClPrintfMessage)(
@@ -61,39 +49,19 @@ typedef void (*NaClPrintfVMessage)(struct NaClErrorReporter* self,
                                    const char* format,
                                    va_list ap);
 
-/* Method to print out a parsed instruction.
- * WARNING: the inst parameter is either a NaClInstState* (if the
- * iterator parser is being used), or NCDecoderInst* (if the callback
- * parser is being used). Be sure to use the correct error reporter
- * for the parser being used.
+/* Method to print out an instruction.
+ * Note: inst is either of type NaClInstState* (sfi model), or
+ * NCDecoderInst* (segment model).
  */
-typedef void (*NaClPrintInst)(struct NaClErrorReporter* self, void* inst);
+typedef void (*NaClPrintInst)(struct NaClErrorReporter* self,
+                              struct NaClInstState* inst);
 
 /* The virtual (base) class of virtual printing methods. */
 typedef struct NaClErrorReporter {
-  NaClErrorReporterSupported supported_reporter;
   NaClPrintfMessage  printf;
   NaClPrintfVMessage printf_v;
   NaClPrintInst      print_inst;
 } NaClErrorReporter;
-
-/* Default null printf function for error reporter. */
-void NaClNullErrorPrintf(NaClErrorReporter* self,
-                         const char* format, ...);
-
-/* Default null printf_v function for error reporter. */
-void NaClNullErrorPrintfV(NaClErrorReporter* self,
-                          const char* format,
-                          va_list ap);
-
-/* Default verbose printf function that reports to NaClLogGetGio(). */
-void NaClVerboseErrorPrintf(NaClErrorReporter* self,
-                            const char* format, ...);
-
-/* Default verbose printf_v function that reports to NaClLogGetGio(). */
-void NaClVerboseErrorPrintfV(NaClErrorReporter* self,
-                             const char* format,
-                             va_list ap);
 
 EXTERN_C_END
 

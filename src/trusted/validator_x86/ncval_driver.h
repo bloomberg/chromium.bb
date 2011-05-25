@@ -37,6 +37,12 @@ extern Bool NACL_FLAGS_fatal;
 /* Command line flag to turn on reporting of time used by validator. */
 extern Bool NACL_FLAGS_print_timing;
 
+/* Default verbose error reporter for the validator. Uses the log
+ * file defined by NaClLogGetGio().
+ * Warning: this global is not thread safe.
+ */
+extern NaClErrorReporter kNaClVerboseErrorReporter;
+
 /* The model of data to be passed to the load/analyze steps. */
 typedef void* NaClRunValidatorData;
 

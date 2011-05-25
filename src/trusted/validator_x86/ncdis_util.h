@@ -20,8 +20,12 @@
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 
 /*
+ * Print out the instruction stored in the given decoder state.
+ */
+extern void PrintInst(const NCDecoderInst *dinst, FILE* fp);
+
+/*
  * Run the decoder and print out the decoded instructions.
- * Note: Prints to NaClLogGetGio().
  *
  * Parameters are:
  *   mbase - The beging of the memory segment to decode.
@@ -31,10 +35,5 @@
  */
 extern void NCDecodeSegment(uint8_t* mbase, NaClPcAddress vbase,
                             NaClMemorySize sz);
-
-/* Verbose error reporter for a NCDecoderInst* that reports to
- * NaClLogGetGio().
- */
-extern NaClErrorReporter kNCVerboseErrorReporter;
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDIS_UTIL_H_ */

@@ -17,7 +17,6 @@
           'halt_trim.c',
           'nacl_cpuid.c',
           'ncdecode.c',
-          'error_reporter.c',
           'ncinstbuffer.c',
           'nc_segment.c',
           'nc_inst_iter.c',

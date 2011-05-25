@@ -25,12 +25,11 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/ncdis_util.h"
+#include "native_client/src/trusted/validator_x86/nc_jumps.h"
+#include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
-#include "native_client/src/trusted/validator_x86/nc_jumps.h"
-#include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 
 Bool NACL_FLAGS_print_timing = FALSE;
 
@@ -189,3 +188,28 @@ Bool NaClRunValidatorBytes(int argc,
                           (NaClValidateLoad) NaClValidateNoLoad,
                           (NaClValidateAnalyze) NaClValidateAnalyzeBytes);
 }
+
+static void NaClValidatorPrintf(NaClErrorReporter* self,
+                                const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  gvprintf(NaClLogGetGio(), format, ap);
+  va_end(ap);
+}
+
+static void NaClValidatorPrintfV(NaClErrorReporter* self,
+                                 const char* format,
+                                 va_list ap) {
+  gvprintf(NaClLogGetGio(), format, ap);
+}
+
+static void NaClValidatorPrintInst(NaClErrorReporter* self,
+                                   NaClInstState* inst) {
+  NaClInstStateInstPrint(NaClLogGetGio(), inst);
+}
+
+NaClErrorReporter kNaClVerboseErrorReporter = {
+  (NaClPrintfMessage) NaClValidatorPrintf,
+  (NaClPrintfVMessage) NaClValidatorPrintfV,
+  (NaClPrintInst) NaClValidatorPrintInst
+};

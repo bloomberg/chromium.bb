@@ -14,7 +14,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_x86/error_reporter.h"
 #include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
 
 EXTERN_C_BEGIN
@@ -431,9 +430,6 @@ typedef struct NCDecoderState {
   /* The index of the current instruction within inst_buffer. */
   size_t cur_inst_index;
 
-  /* Holds the error reporting object to use. */
-  NaClErrorReporter* error_reporter;
-
   /* Member function to apply actions to a decoded instruction. */
   NCDecoderStateAction action_fn;
 
@@ -468,20 +464,6 @@ extern void NCDecoderStateConstruct(NCDecoderState* tthis,
                                     NaClMemorySize sz,
                                     NCDecoderInst* inst_buffer,
                                     size_t inst_buffer_size);
-
-/* Define an error reporter to use to report error messages.
- * Note: By default, a decoder state uses the null error reporter,
- * which doesn't report error messages.
- *
- * WARNING: Be sure the error reporter is expecting a NCDecoderInst* for
- * the print_inst method.
- */
-void NCDecoderStateSetErrorReporter(NCDecoderState* tthis,
-                                    NaClErrorReporter* reporter);
-
-
-/* A default, null error reporter for a NCDecoderInst* instruction. */
-extern NaClErrorReporter kNCNullErrorReporter;
 
 /*
  * Decodes the memory segment associated with the decoder state.
