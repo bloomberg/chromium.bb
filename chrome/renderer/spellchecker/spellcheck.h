@@ -30,7 +30,7 @@ class MemoryMappedFile;
 class SpellCheck : public RenderProcessObserver {
  public:
   SpellCheck();
-  ~SpellCheck();
+  virtual ~SpellCheck();
 
   void Init(base::PlatformFile file,
             const std::vector<std::string>& custom_words,

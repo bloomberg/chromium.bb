@@ -66,7 +66,7 @@ class HTTPSProber : public URLRequest::Delegate {
   friend struct DefaultSingletonTraits<HTTPSProber>;
 
   HTTPSProber();
-  ~HTTPSProber();
+  virtual ~HTTPSProber();
 
   void Success(URLRequest* request);
   void Failure(URLRequest* request);

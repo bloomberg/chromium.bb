@@ -39,7 +39,7 @@ struct URLsModifiedDetails;
 class InMemoryHistoryBackend : public NotificationObserver {
  public:
   InMemoryHistoryBackend();
-  ~InMemoryHistoryBackend();
+  virtual ~InMemoryHistoryBackend();
 
   // Initializes the backend from the history database pointed to by the
   // full path in |history_filename|. |history_dir| is the path to the

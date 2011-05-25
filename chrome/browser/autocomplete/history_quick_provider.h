@@ -28,7 +28,7 @@ class HistoryQuickProvider : public HistoryProvider {
  public:
   HistoryQuickProvider(ACProviderListener* listener, Profile* profile);
 
-  ~HistoryQuickProvider();
+  virtual ~HistoryQuickProvider();
 
   // AutocompleteProvider. |minimal_changes| is ignored since there
   // is no asynch completion performed.

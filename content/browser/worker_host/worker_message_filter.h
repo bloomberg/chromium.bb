@@ -41,7 +41,7 @@ class WorkerMessageFilter : public BrowserMessageFilter {
   }
 
  private:
-  ~WorkerMessageFilter();
+  virtual ~WorkerMessageFilter();
 
   // Message handlers.
   void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,

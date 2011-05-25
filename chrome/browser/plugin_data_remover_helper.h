@@ -21,7 +21,7 @@ class Profile;
 class PluginDataRemoverHelper : public NotificationObserver {
  public:
   PluginDataRemoverHelper();
-  ~PluginDataRemoverHelper();
+  virtual ~PluginDataRemoverHelper();
 
   // Binds this object to the |pref_name| preference in |prefs|, notifying
   // |observer| if the value changes.

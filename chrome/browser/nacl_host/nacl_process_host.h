@@ -26,7 +26,7 @@ class ChromeRenderMessageFilter;
 class NaClProcessHost : public BrowserChildProcessHost {
  public:
   explicit NaClProcessHost(const std::wstring& url);
-  ~NaClProcessHost();
+  virtual ~NaClProcessHost();
 
   // Initialize the new NaCl process, returning true on success.
   bool Launch(ChromeRenderMessageFilter* chrome_render_message_filter,

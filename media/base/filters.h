@@ -267,7 +267,7 @@ class AudioDecoder : public Filter {
 
  protected:
   AudioDecoder();
-  ~AudioDecoder();
+  virtual ~AudioDecoder();
 
   // Executes the permanent callback to pass off decoded audio.
   void ConsumeAudioSamples(scoped_refptr<Buffer> buffer);

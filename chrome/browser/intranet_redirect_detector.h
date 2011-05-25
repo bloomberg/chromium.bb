@@ -46,7 +46,7 @@ class IntranetRedirectDetector
   // since there aren't useful public functions on this object for consumers to
   // access anyway).
   IntranetRedirectDetector();
-  ~IntranetRedirectDetector();
+  virtual ~IntranetRedirectDetector();
 
   // Returns the current redirect origin.  This will be empty if no redirection
   // is in place.

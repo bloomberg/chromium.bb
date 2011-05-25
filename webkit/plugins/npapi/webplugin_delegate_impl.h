@@ -201,7 +201,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   WebPluginDelegateImpl(gfx::PluginWindowHandle containing_view,
                         PluginInstance *instance);
-  ~WebPluginDelegateImpl();
+  virtual ~WebPluginDelegateImpl();
 
   // Called by Initialize() for platform-specific initialization.
   // If this returns false, the plugin shouldn't be started--see Initialize().

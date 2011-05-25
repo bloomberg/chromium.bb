@@ -51,64 +51,64 @@ bool GetTabById(int tab_id, Profile* profile, bool incognito_enabled,
 
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
-  ~GetWindowFunction() {}
+  virtual ~GetWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.get")
 };
 class GetCurrentWindowFunction : public SyncExtensionFunction {
-  ~GetCurrentWindowFunction() {}
+  virtual ~GetCurrentWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getCurrent")
 };
 class GetLastFocusedWindowFunction : public SyncExtensionFunction {
-  ~GetLastFocusedWindowFunction() {}
+  virtual ~GetLastFocusedWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getLastFocused")
 };
 class GetAllWindowsFunction : public SyncExtensionFunction {
-  ~GetAllWindowsFunction() {}
+  virtual ~GetAllWindowsFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getAll")
 };
 class CreateWindowFunction : public SyncExtensionFunction {
-  ~CreateWindowFunction() {}
+  virtual ~CreateWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.create")
 };
 class UpdateWindowFunction : public SyncExtensionFunction {
-  ~UpdateWindowFunction() {}
+  virtual ~UpdateWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.update")
 };
 class RemoveWindowFunction : public SyncExtensionFunction {
-  ~RemoveWindowFunction() {}
+  virtual ~RemoveWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.remove")
 };
 
 // Tabs
 class GetTabFunction : public SyncExtensionFunction {
-  ~GetTabFunction() {}
+  virtual ~GetTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.get")
 };
 class GetCurrentTabFunction : public SyncExtensionFunction {
-  ~GetCurrentTabFunction() {}
+  virtual ~GetCurrentTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getCurrent")
 };
 class GetSelectedTabFunction : public SyncExtensionFunction {
-  ~GetSelectedTabFunction() {}
+  virtual ~GetSelectedTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getSelected")
 };
 class GetAllTabsInWindowFunction : public SyncExtensionFunction {
-  ~GetAllTabsInWindowFunction() {}
+  virtual ~GetAllTabsInWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getAllInWindow")
 };
 class CreateTabFunction : public SyncExtensionFunction {
-  ~CreateTabFunction() {}
+  virtual ~CreateTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.create")
 };
@@ -117,7 +117,7 @@ class UpdateTabFunction : public AsyncExtensionFunction,
  public:
   UpdateTabFunction();
  private:
-  ~UpdateTabFunction() {}
+  virtual ~UpdateTabFunction() {}
   virtual bool RunImpl();
   virtual bool OnMessageReceived(const IPC::Message& message);
   void OnExecuteCodeFinished(int request_id, bool success,
@@ -126,19 +126,19 @@ class UpdateTabFunction : public AsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };
 class MoveTabFunction : public SyncExtensionFunction {
-  ~MoveTabFunction() {}
+  virtual ~MoveTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.move")
 };
 class RemoveTabFunction : public SyncExtensionFunction {
-  ~RemoveTabFunction() {}
+  virtual ~RemoveTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.remove")
 };
 class DetectTabLanguageFunction : public AsyncExtensionFunction,
                                   public NotificationObserver {
  private:
-  ~DetectTabLanguageFunction() {}
+  virtual ~DetectTabLanguageFunction() {}
   virtual bool RunImpl();
 
   virtual void Observe(NotificationType type,
@@ -159,7 +159,7 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   // The default quality setting used when encoding jpegs.
   static const int kDefaultQuality;
 
-  ~CaptureVisibleTabFunction() {}
+  virtual ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl();
   virtual bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
   virtual void Observe(NotificationType type,

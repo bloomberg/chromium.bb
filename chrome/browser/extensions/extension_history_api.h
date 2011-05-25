@@ -72,7 +72,7 @@ class HistoryFunction : public AsyncExtensionFunction {
 class HistoryFunctionWithCallback : public HistoryFunction {
  public:
   HistoryFunctionWithCallback();
-  ~HistoryFunctionWithCallback();
+  virtual ~HistoryFunctionWithCallback();
 
   // Return true if the async call was completed, false otherwise.
   virtual bool RunAsyncImpl() = 0;

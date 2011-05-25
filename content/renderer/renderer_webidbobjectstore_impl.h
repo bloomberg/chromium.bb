@@ -22,7 +22,7 @@ class WebString;
 class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
  public:
   explicit RendererWebIDBObjectStoreImpl(int32 idb_object_store_id);
-  ~RendererWebIDBObjectStoreImpl();
+  virtual ~RendererWebIDBObjectStoreImpl();
 
   // WebKit::WebIDBObjectStore
   virtual WebKit::WebString name() const;

@@ -18,7 +18,7 @@ class MimeRegistryMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
 
  private:
-  ~MimeRegistryMessageFilter();
+  virtual ~MimeRegistryMessageFilter();
 
   void OnGetMimeTypeFromExtension(const FilePath::StringType& ext,
                                   std::string* mime_type);

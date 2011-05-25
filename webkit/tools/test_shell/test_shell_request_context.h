@@ -43,7 +43,7 @@ class TestShellRequestContext : public net::URLRequestContext {
   }
 
  private:
-  ~TestShellRequestContext();
+  virtual ~TestShellRequestContext();
 
   void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);

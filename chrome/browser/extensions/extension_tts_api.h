@@ -205,7 +205,7 @@ class ExtensionTtsController {
 
 class ExtensionTtsSpeakFunction : public AsyncExtensionFunction {
  private:
-  ~ExtensionTtsSpeakFunction() {}
+  virtual ~ExtensionTtsSpeakFunction() {}
   virtual bool RunImpl();
   void SpeechFinished();
   Utterance* utterance_;
@@ -214,21 +214,21 @@ class ExtensionTtsSpeakFunction : public AsyncExtensionFunction {
 
 class ExtensionTtsStopSpeakingFunction : public SyncExtensionFunction {
  private:
-  ~ExtensionTtsStopSpeakingFunction() {}
+  virtual ~ExtensionTtsStopSpeakingFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.stop")
 };
 
 class ExtensionTtsIsSpeakingFunction : public SyncExtensionFunction {
  private:
-  ~ExtensionTtsIsSpeakingFunction() {}
+  virtual ~ExtensionTtsIsSpeakingFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.isSpeaking")
 };
 
 class ExtensionTtsSpeakCompletedFunction : public SyncExtensionFunction {
  private:
-  ~ExtensionTtsSpeakCompletedFunction() {}
+  virtual ~ExtensionTtsSpeakCompletedFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.speakCompleted")
 };

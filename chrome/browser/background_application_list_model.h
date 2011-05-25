@@ -45,7 +45,7 @@ class BackgroundApplicationListModel : public NotificationObserver {
   // Create a new model associated with profile.
   explicit BackgroundApplicationListModel(Profile* profile);
 
-  ~BackgroundApplicationListModel();
+  virtual ~BackgroundApplicationListModel();
 
   // Associate observer with this model.
   void AddObserver(Observer* observer);

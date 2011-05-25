@@ -44,7 +44,7 @@ class ResourceDispatcher : public IPC::Channel::Listener {
   };
 
   explicit ResourceDispatcher(IPC::Message::Sender* sender);
-  ~ResourceDispatcher();
+  virtual ~ResourceDispatcher();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);

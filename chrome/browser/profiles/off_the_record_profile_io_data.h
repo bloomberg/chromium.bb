@@ -85,7 +85,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
       HttpTransactionFactoryMap;
 
   OffTheRecordProfileIOData();
-  ~OffTheRecordProfileIOData();
+  virtual ~OffTheRecordProfileIOData();
 
   virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
   virtual scoped_refptr<RequestContext> InitializeAppRequestContext(

@@ -174,7 +174,7 @@ class SingleClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
  public:
   SingleClientLiveBookmarksSyncTest()
       : LiveBookmarksSyncTest(SINGLE_CLIENT) {}
-  ~SingleClientLiveBookmarksSyncTest() {}
+  virtual ~SingleClientLiveBookmarksSyncTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientLiveBookmarksSyncTest);
@@ -184,7 +184,7 @@ class TwoClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
  public:
   TwoClientLiveBookmarksSyncTest()
       : LiveBookmarksSyncTest(TWO_CLIENT) {}
-  ~TwoClientLiveBookmarksSyncTest() {}
+  virtual ~TwoClientLiveBookmarksSyncTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientLiveBookmarksSyncTest);
@@ -194,7 +194,7 @@ class MultipleClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
  public:
   MultipleClientLiveBookmarksSyncTest()
       : LiveBookmarksSyncTest(MULTIPLE_CLIENT) {}
-  ~MultipleClientLiveBookmarksSyncTest() {}
+  virtual ~MultipleClientLiveBookmarksSyncTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientLiveBookmarksSyncTest);
@@ -204,7 +204,7 @@ class ManyClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
  public:
   ManyClientLiveBookmarksSyncTest()
       : LiveBookmarksSyncTest(MANY_CLIENT) {}
-  ~ManyClientLiveBookmarksSyncTest() {}
+  virtual ~ManyClientLiveBookmarksSyncTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManyClientLiveBookmarksSyncTest);

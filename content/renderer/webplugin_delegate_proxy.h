@@ -123,7 +123,7 @@ class WebPluginDelegateProxy
 
  protected:
   template<class WebPluginDelegateProxy> friend class DeleteTask;
-  ~WebPluginDelegateProxy();
+  virtual ~WebPluginDelegateProxy();
 
  private:
   // Message handlers for messages that proxy WebPlugin methods, which

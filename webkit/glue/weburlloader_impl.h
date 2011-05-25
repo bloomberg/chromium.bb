@@ -13,7 +13,7 @@ namespace webkit_glue {
 class WebURLLoaderImpl : public WebKit::WebURLLoader {
  public:
   WebURLLoaderImpl();
-  ~WebURLLoaderImpl();
+  virtual ~WebURLLoaderImpl();
 
   // WebURLLoader methods:
   virtual void loadSynchronously(

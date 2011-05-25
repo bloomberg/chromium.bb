@@ -41,7 +41,7 @@ class BookmarkFaviconFetcher: public NotificationObserver {
   BookmarkFaviconFetcher(Profile* profile,
                          const FilePath& path,
                          BookmarksExportObserver* observer);
-  ~BookmarkFaviconFetcher();
+  virtual ~BookmarkFaviconFetcher();
 
   // Executes bookmark export process.
   void ExportBookmarks();

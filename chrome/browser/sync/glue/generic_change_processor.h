@@ -32,7 +32,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   GenericChangeProcessor(SyncableService* local_service,
                          UnrecoverableErrorHandler* error_handler,
                          sync_api::UserShare* user_share);
-  ~GenericChangeProcessor();
+  virtual ~GenericChangeProcessor();
 
   // ChangeProcessor interface.
   // Build and store a list of all changes into |syncer_changes_|.

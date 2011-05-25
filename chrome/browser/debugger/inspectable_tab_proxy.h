@@ -65,7 +65,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
     int32 id,
     DebuggerRemoteService* service,
     InspectableTabProxy::IdToClientHostMap* map);
-  ~DevToolsClientHostImpl();
+  virtual ~DevToolsClientHostImpl();
 
   DebuggerRemoteService* debugger_remote_service() {
     return service_;

@@ -29,7 +29,7 @@ class WebWorkerProxy : public WebKit::WebWorker, private WebWorkerBase {
                  ChildThread* child_thread,
                  int render_view_route_id,
                  int parent_appcache_host_id);
-  ~WebWorkerProxy();
+  virtual ~WebWorkerProxy();
 
   // WebWorker implementation.
   virtual void startWorkerContext(const WebKit::WebURL& script_url,

@@ -95,7 +95,7 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
                               SafeBrowsingService* safe_browsing,
                               ResourceDispatcherHost* resource_dispatcher_host);
 
-  ~SafeBrowsingResourceHandler();
+  virtual ~SafeBrowsingResourceHandler();
 
   // Cancels any in progress safe browsing actions.
   void Shutdown();

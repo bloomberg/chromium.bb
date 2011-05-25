@@ -47,7 +47,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
                                 public ui::AnimationDelegate {
  public:
   explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
-  ~RenderWidgetHostViewGtk();
+  virtual ~RenderWidgetHostViewGtk();
 
   // Initialize this object for use as a drawing area.
   void InitAsChild();

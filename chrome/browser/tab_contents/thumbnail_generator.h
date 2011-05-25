@@ -54,7 +54,7 @@ class ThumbnailGenerator : NotificationObserver {
 
   // This class will do nothing until you call StartThumbnailing.
   ThumbnailGenerator();
-  ~ThumbnailGenerator();
+  virtual ~ThumbnailGenerator();
 
   // Starts taking thumbnails of the given tab contents.
   void StartThumbnailing(TabContents* tab_contents);

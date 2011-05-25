@@ -30,7 +30,7 @@ class WebStorageQuotaCallbacks;
 class QuotaDispatcher : public IPC::Channel::Listener {
  public:
   QuotaDispatcher();
-  ~QuotaDispatcher();
+  virtual ~QuotaDispatcher();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

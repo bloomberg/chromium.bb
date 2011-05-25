@@ -23,7 +23,7 @@
 class PluginThread : public ChildThread {
  public:
   PluginThread();
-  ~PluginThread();
+  virtual ~PluginThread();
 
   // Returns the one plugin thread.
   static PluginThread* current();

@@ -103,7 +103,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   AutocompleteEditModel(OmniboxView* view,
                         AutocompleteEditController* controller,
                         Profile* profile);
-  ~AutocompleteEditModel();
+  virtual ~AutocompleteEditModel();
 
   AutocompleteController* autocomplete_controller() const {
     return autocomplete_controller_.get();

@@ -57,7 +57,7 @@ class GeolocationProvider : public base::Thread, public GeolocationObserver {
 
  private:
   friend struct DefaultSingletonTraits<GeolocationProvider>;
-  ~GeolocationProvider();
+  virtual ~GeolocationProvider();
 
   bool OnClientThread() const;
   bool OnGeolocationThread() const;

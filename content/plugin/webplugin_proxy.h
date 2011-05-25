@@ -48,7 +48,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
                  const GURL& page_url,
                  gfx::NativeViewId containing_window,
                  int host_render_view_routing_id);
-  ~WebPluginProxy();
+  virtual ~WebPluginProxy();
 
   void set_delegate(webkit::npapi::WebPluginDelegateImpl* d) { delegate_ = d; }
 

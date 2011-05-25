@@ -29,7 +29,7 @@ class FileSelectHelper
       public NotificationObserver {
  public:
   explicit FileSelectHelper(Profile* profile);
-  ~FileSelectHelper();
+  virtual ~FileSelectHelper();
 
   // Show the file chooser dialog.
   void RunFileChooser(RenderViewHost* render_view_host,
@@ -50,7 +50,7 @@ class FileSelectHelper
     DirectoryListerDispatchDelegate(FileSelectHelper* parent, int id)
         : parent_(parent),
           id_(id) {}
-    ~DirectoryListerDispatchDelegate() {}
+    virtual ~DirectoryListerDispatchDelegate() {}
     virtual void OnListFile(
         const net::DirectoryLister::DirectoryListerData& data) {
       parent_->OnListFile(id_, data);
@@ -123,7 +123,7 @@ class FileSelectHelper
 class FileSelectObserver : public TabContentsObserver {
  public:
   explicit FileSelectObserver(TabContents* tab_contents);
-  ~FileSelectObserver();
+  virtual ~FileSelectObserver();
 
  private:
   // TabContentsObserver overrides.

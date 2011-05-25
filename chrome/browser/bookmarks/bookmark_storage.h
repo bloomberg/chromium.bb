@@ -104,7 +104,7 @@ class BookmarkStorage : public NotificationObserver,
  private:
   friend class base::RefCountedThreadSafe<BookmarkStorage>;
 
-  ~BookmarkStorage();
+  virtual ~BookmarkStorage();
 
   class LoadTask;
 

@@ -20,7 +20,7 @@ class URLRequestMockLinkDoctorJob : public URLRequestMockHTTPJob {
   static void AddUrlHandler();
 
  private:
-  ~URLRequestMockLinkDoctorJob() {}
+  virtual ~URLRequestMockLinkDoctorJob() {}
 };
 
 #endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_LINK_DOCTOR_JOB_H_

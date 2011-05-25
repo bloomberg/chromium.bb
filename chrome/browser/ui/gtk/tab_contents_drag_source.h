@@ -29,7 +29,7 @@ struct WebDropData;
 class TabContentsDragSource : public MessageLoopForUI::Observer {
  public:
   explicit TabContentsDragSource(TabContentsView* tab_contents_view);
-  ~TabContentsDragSource();
+  virtual ~TabContentsDragSource();
 
   TabContents* tab_contents() const;
 

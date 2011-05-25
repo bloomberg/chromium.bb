@@ -37,6 +37,11 @@ SimpleBuffer::SimpleBuffer(int size)
   storage_ = new char[size];
 }
 
+SimpleBuffer::~SimpleBuffer() {
+  delete[] storage_;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 int SimpleBuffer::ReadableBytes() const {
@@ -201,4 +206,3 @@ inline void SimpleBuffer::AdvanceWritablePtr(int amount_to_advance) {
 }
 
 }  // namespace net
-

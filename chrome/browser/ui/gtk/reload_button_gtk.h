@@ -26,7 +26,7 @@ class ReloadButtonGtk : public NotificationObserver {
   enum Mode { MODE_RELOAD = 0, MODE_STOP };
 
   ReloadButtonGtk(LocationBarViewGtk* location_bar, Browser* browser);
-  ~ReloadButtonGtk();
+  virtual ~ReloadButtonGtk();
 
   GtkWidget* widget() const { return widget_.get(); }
 

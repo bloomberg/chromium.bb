@@ -12,7 +12,7 @@
 class SpellCheckMessageFilter : public BrowserMessageFilter {
  public:
   explicit SpellCheckMessageFilter(int render_process_id);
-  ~SpellCheckMessageFilter();
+  virtual ~SpellCheckMessageFilter();
 
   // BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(const IPC::Message& message,

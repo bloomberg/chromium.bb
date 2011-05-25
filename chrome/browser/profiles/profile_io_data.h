@@ -94,7 +94,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   class RequestContext : public ChromeURLRequestContext {
    public:
     RequestContext();
-    ~RequestContext();
+    virtual ~RequestContext();
 
     // Setter is used to transfer ownership of the ProfileIOData to the context.
     void set_profile_io_data(const ProfileIOData* profile_io_data) {

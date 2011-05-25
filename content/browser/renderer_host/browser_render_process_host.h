@@ -44,7 +44,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
                                  public ChildProcessLauncher::Client {
  public:
   explicit BrowserRenderProcessHost(Profile* profile);
-  ~BrowserRenderProcessHost();
+  virtual ~BrowserRenderProcessHost();
 
   // RenderProcessHost implementation (public portion).
   virtual bool Init(bool is_accessibility_enabled);

@@ -15,7 +15,7 @@ class ExtensionMenuItem;
 
 class ExtensionContextMenuFunction : public SyncExtensionFunction {
  public:
-  ~ExtensionContextMenuFunction() {}
+  virtual ~ExtensionContextMenuFunction() {}
 
  protected:
   // Helper function to read and parse a list of menu item contexts.
@@ -60,25 +60,25 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
 };
 
 class CreateContextMenuFunction : public ExtensionContextMenuFunction {
-  ~CreateContextMenuFunction() {}
+  virtual ~CreateContextMenuFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.create")
 };
 
 class UpdateContextMenuFunction : public ExtensionContextMenuFunction {
-  ~UpdateContextMenuFunction() {}
+  virtual ~UpdateContextMenuFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.update")
 };
 
 class RemoveContextMenuFunction : public ExtensionContextMenuFunction {
-  ~RemoveContextMenuFunction() {}
+  virtual ~RemoveContextMenuFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.remove")
 };
 
 class RemoveAllContextMenusFunction : public ExtensionContextMenuFunction {
-  ~RemoveAllContextMenusFunction() {}
+  virtual ~RemoveAllContextMenusFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.removeAll")
 };

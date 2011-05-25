@@ -71,7 +71,7 @@ class DownloadResourceHandler : public ResourceHandler {
   std::string DebugString() const;
 
  private:
-  ~DownloadResourceHandler();
+  virtual ~DownloadResourceHandler();
 
   void StartPauseTimer();
 

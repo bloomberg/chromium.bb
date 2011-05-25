@@ -167,7 +167,7 @@ class HostContentSettingsMap
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<HostContentSettingsMap>;
 
-  ~HostContentSettingsMap();
+  virtual ~HostContentSettingsMap();
 
   void UnregisterObservers();
 

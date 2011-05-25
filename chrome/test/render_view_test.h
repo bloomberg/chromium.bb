@@ -44,7 +44,7 @@ class RenderViewTest : public testing::Test {
   };
 
   RenderViewTest();
-  ~RenderViewTest();
+  virtual ~RenderViewTest();
 
  protected:
   // Spins the message loop to process all messages that are currently pending.

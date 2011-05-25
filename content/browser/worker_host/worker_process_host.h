@@ -117,7 +117,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   WorkerProcessHost(
       const content::ResourceContext* resource_context,
       ResourceDispatcherHost* resource_dispatcher_host);
-  ~WorkerProcessHost();
+  virtual ~WorkerProcessHost();
 
   // Starts the process.  Returns true iff it succeeded.
   // |render_process_id| is the renderer process responsible for starting this

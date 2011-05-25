@@ -84,7 +84,7 @@ class SpeechRecognizer
                    const std::string& grammar,
                    const std::string& hardware_info,
                    const std::string& origin_url);
-  ~SpeechRecognizer();
+  virtual ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
   // SpeechRecognizer instance can be used multiple times for speech recognition

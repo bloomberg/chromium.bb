@@ -32,7 +32,7 @@
 class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
  public:
   explicit TestShellWebKitInit(bool layout_test_mode);
-  ~TestShellWebKitInit();
+  virtual ~TestShellWebKitInit();
 
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebClipboard* clipboard();

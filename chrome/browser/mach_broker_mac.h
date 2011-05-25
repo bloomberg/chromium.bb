@@ -86,7 +86,7 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
  private:
   // Private constructor.
   MachBroker();
-  ~MachBroker();
+  virtual ~MachBroker();
 
   // True if the listener thread has been started.
   bool listener_thread_started_;
@@ -110,4 +110,3 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
 };
 
 #endif  // CHROME_BROWSER_MACH_BROKER_H_
-

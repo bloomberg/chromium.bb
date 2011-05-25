@@ -141,7 +141,7 @@ class SyncChannel : public ChannelProxy,
     bool restrict_dispatch() const { return restrict_dispatch_; }
 
    private:
-    ~SyncContext();
+    virtual ~SyncContext();
     // ChannelProxy methods that we override.
 
     // Called on the listener thread.

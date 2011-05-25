@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class GetAcceptLanguagesFunction : public SyncExtensionFunction {
-  ~GetAcceptLanguagesFunction() {}
+  virtual ~GetAcceptLanguagesFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("i18n.getAcceptLanguages")
 };

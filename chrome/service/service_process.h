@@ -32,7 +32,7 @@ class CommandLine;
 class ServiceProcess : public CloudPrintProxy::Client {
  public:
   ServiceProcess();
-  ~ServiceProcess();
+  virtual ~ServiceProcess();
 
   // Initialize the ServiceProcess with the message loop that it should run on.
   // ServiceProcess takes ownership of |state|.

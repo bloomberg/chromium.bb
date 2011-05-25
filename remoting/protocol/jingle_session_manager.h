@@ -42,7 +42,7 @@ class ContentDescription : public cricket::ContentDescription {
   explicit ContentDescription(const CandidateSessionConfig* config,
                               const std::string& auth_token,
                               scoped_refptr<net::X509Certificate> certificate);
-  ~ContentDescription();
+  virtual ~ContentDescription();
 
   const CandidateSessionConfig* config() const {
     return candidate_config_.get();

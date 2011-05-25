@@ -74,7 +74,7 @@ class XmppConnection : public sigslot::has_slots<> {
   // Invalidates any weak pointers passed to the delegate by
   // OnConnect(), but does not trigger a call to the delegate's
   // OnError() function.
-  ~XmppConnection();
+  virtual ~XmppConnection();
 
  private:
   void OnStateChange(buzz::XmppEngine::State state);

@@ -23,7 +23,7 @@ class TabContentsWrapper;
 class OmniboxSearchHint : public NotificationObserver {
  public:
   explicit OmniboxSearchHint(TabContentsWrapper* tab);
-  ~OmniboxSearchHint();
+  virtual ~OmniboxSearchHint();
 
   // NotificationObserver method:
   virtual void Observe(NotificationType type,

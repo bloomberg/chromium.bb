@@ -38,7 +38,7 @@ class DownloadShelfGtk : public DownloadShelf,
  public:
   explicit DownloadShelfGtk(Browser* browser, gfx::NativeView view);
 
-  ~DownloadShelfGtk();
+  virtual ~DownloadShelfGtk();
 
   // DownloadShelf implementation.
   virtual void AddDownload(BaseDownloadItemModel* download_model);

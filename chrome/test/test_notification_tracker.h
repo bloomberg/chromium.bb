@@ -31,7 +31,7 @@ class TestNotificationTracker : public NotificationObserver {
   // ListenFor for the notifications you are interested in.
   TestNotificationTracker();
 
-  ~TestNotificationTracker();
+  virtual ~TestNotificationTracker();
 
   // Makes this object listen for the given notification with the given source.
   void ListenFor(NotificationType type, const NotificationSource& source);

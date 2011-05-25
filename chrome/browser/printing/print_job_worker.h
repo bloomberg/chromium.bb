@@ -32,7 +32,7 @@ class PrintJobWorkerOwner;
 class PrintJobWorker : public base::Thread {
  public:
   explicit PrintJobWorker(PrintJobWorkerOwner* owner);
-  ~PrintJobWorker();
+  virtual ~PrintJobWorker();
 
   void SetNewOwner(PrintJobWorkerOwner* new_owner);
 

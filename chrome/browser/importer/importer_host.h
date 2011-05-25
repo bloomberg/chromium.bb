@@ -81,7 +81,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   virtual void Cancel();
 
  protected:
-  ~ImporterHost();
+  virtual ~ImporterHost();
 
   // Returns true if importer should import to bookmark bar.
   bool ShouldImportToBookmarkBar(bool first_run);

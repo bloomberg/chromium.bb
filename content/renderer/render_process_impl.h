@@ -20,7 +20,7 @@ class PlatformCanvas;
 class RenderProcessImpl : public RenderProcess {
  public:
   RenderProcessImpl();
-  ~RenderProcessImpl();
+  virtual ~RenderProcessImpl();
 
   // RenderProcess implementation.
   virtual skia::PlatformCanvas* GetDrawingCanvas(TransportDIB** memory,

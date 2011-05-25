@@ -577,7 +577,7 @@ class HistoryService : public CancelableRequestProvider,
   static bool CanAddURL(const GURL& url);
 
  protected:
-  ~HistoryService();
+  virtual ~HistoryService();
 
   // These are not currently used, hopefully we can do something in the future
   // to ensure that the most important things happen first.

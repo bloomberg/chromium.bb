@@ -442,7 +442,7 @@
    public:                                                                    \
     enum { ID = IPC_MESSAGE_ID() };                                           \
     msg_class(IPC_TYPE_IN_##in_cnt in_list);                                  \
-    ~msg_class();                                                             \
+    virtual ~msg_class();                                                     \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
@@ -453,7 +453,7 @@
     enum { ID = IPC_MESSAGE_ID() };                                           \
     msg_class(int32 routing_id IPC_COMMA_##in_cnt                             \
               IPC_TYPE_IN_##in_cnt in_list);                                  \
-    ~msg_class();                                                             \
+    virtual ~msg_class();                                                     \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
@@ -466,7 +466,7 @@
     msg_class(IPC_TYPE_IN_##in_cnt in_list                                    \
               IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                     \
               IPC_TYPE_OUT_##out_cnt out_list);                               \
-    ~msg_class();                                                             \
+    virtual ~msg_class();                                                     \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
@@ -481,7 +481,7 @@
               IPC_TYPE_IN_##in_cnt in_list                                    \
               IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                     \
               IPC_TYPE_OUT_##out_cnt out_list);                               \
-    ~msg_class();                                                             \
+    virtual ~msg_class();                                                     \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
@@ -777,4 +777,3 @@ LogFunctionMap g_log_function_mapping;
 // XXX_messages.h files need not do so themselves.  This makes the
 // XXX_messages.h files easier to write.
 #undef IPC_MESSAGE_START
-

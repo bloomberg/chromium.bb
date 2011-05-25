@@ -31,7 +31,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
                       public IPC::Message::Sender,
                       public NPObjectBase {
  public:
-  ~NPObjectProxy();
+  virtual ~NPObjectProxy();
 
   static NPObject* Create(PluginChannelBase* channel,
                           int route_id,

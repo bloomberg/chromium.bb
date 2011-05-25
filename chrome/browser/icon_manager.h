@@ -60,7 +60,7 @@ class IconManager : public IconLoader::Delegate,
                     public CancelableRequestProvider {
  public:
   IconManager();
-  ~IconManager();
+  virtual ~IconManager();
 
   // Synchronous call to examine the internal caches for the icon. Returns the
   // icon if we have already loaded it, NULL if we don't have it and must load

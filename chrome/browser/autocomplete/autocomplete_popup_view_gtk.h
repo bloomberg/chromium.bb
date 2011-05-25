@@ -36,7 +36,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
                            GtkWidget* location_bar);
-  ~AutocompletePopupViewGtk();
+  virtual ~AutocompletePopupViewGtk();
 
   // Overridden from AutocompletePopupView:
   virtual bool IsOpen() const;

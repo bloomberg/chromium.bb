@@ -27,7 +27,7 @@
 // instance of the bubble.
 class ThemeInstallBubbleView : public NotificationObserver {
  public:
-  ~ThemeInstallBubbleView();
+  virtual ~ThemeInstallBubbleView();
 
   // NotificationObserver
   virtual void Observe(NotificationType type,

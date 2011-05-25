@@ -59,7 +59,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int32 Add(WebKit::WebIDBTransaction* idb_transaction);
 
  private:
-  ~IndexedDBDispatcherHost();
+  virtual ~IndexedDBDispatcherHost();
 
   // Message processing. Most of the work is delegated to the dispatcher hosts
   // below.

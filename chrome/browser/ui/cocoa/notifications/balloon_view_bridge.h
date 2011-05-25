@@ -19,7 +19,7 @@ class Size;
 class BalloonViewBridge : public BalloonView {
  public:
   BalloonViewBridge();
-  ~BalloonViewBridge();
+  virtual ~BalloonViewBridge();
 
   // BalloonView interface.
   virtual void Show(Balloon* balloon);

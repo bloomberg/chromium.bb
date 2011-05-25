@@ -47,7 +47,7 @@ class ExtensionTestMessageListener : public NotificationObserver {
   // We immediately start listening for |expected_message|.
   ExtensionTestMessageListener(const std::string& expected_message,
                                bool will_reply);
-  ~ExtensionTestMessageListener();
+  virtual ~ExtensionTestMessageListener();
 
   // This returns true immediately if we've already gotten the expected
   // message, or waits until it arrives. Returns false if the wait is

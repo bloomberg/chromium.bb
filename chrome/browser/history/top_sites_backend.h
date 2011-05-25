@@ -69,7 +69,7 @@ class TopSitesBackend
  private:
   friend class base::RefCountedThreadSafe<TopSitesBackend>;
 
-  ~TopSitesBackend();
+  virtual ~TopSitesBackend();
 
   // Invokes Init on the db_.
   void InitDBOnDBThread(const FilePath& path);

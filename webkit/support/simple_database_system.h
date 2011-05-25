@@ -29,7 +29,7 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   static SimpleDatabaseSystem* GetInstance();
 
   SimpleDatabaseSystem();
-  ~SimpleDatabaseSystem();
+  virtual ~SimpleDatabaseSystem();
 
   // WebDatabaseObserver implementation, these are called on the script
   // execution context thread on which the database is opened. This may be

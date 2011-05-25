@@ -30,7 +30,7 @@ class GURL;
 class FileSystemDispatcher : public IPC::Channel::Listener {
  public:
   FileSystemDispatcher();
-  ~FileSystemDispatcher();
+  virtual ~FileSystemDispatcher();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

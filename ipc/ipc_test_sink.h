@@ -74,7 +74,7 @@ class Message;
 class TestSink : public Channel {
  public:
   TestSink();
-  ~TestSink();
+  virtual ~TestSink();
 
   // Interface in IPC::Channel. This copies the message to the sink and then
   // deletes it.

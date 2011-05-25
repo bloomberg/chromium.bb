@@ -52,7 +52,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // Mirror methods of Channel, see ipc_channel.h for description.
   ChannelImpl(const IPC::ChannelHandle& channel_handle, Mode mode,
               Listener* listener);
-  ~ChannelImpl();
+  virtual ~ChannelImpl();
   bool Connect();
   void Close();
   void set_listener(Listener* listener) { listener_ = listener; }

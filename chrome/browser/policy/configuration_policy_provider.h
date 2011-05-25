@@ -103,7 +103,7 @@ class ConfigurationPolicyObserverRegistrar
     : ConfigurationPolicyProvider::Observer {
  public:
   ConfigurationPolicyObserverRegistrar();
-  ~ConfigurationPolicyObserverRegistrar();
+  virtual ~ConfigurationPolicyObserverRegistrar();
   void Init(ConfigurationPolicyProvider* provider,
             ConfigurationPolicyProvider::Observer* observer);
 

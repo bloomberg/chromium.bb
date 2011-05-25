@@ -151,7 +151,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
-  ~SavePackage();
+  virtual ~SavePackage();
 
   // Notes from Init() above applies here as well.
   void InternalInit();

@@ -119,7 +119,7 @@ class Channel : public Message::Sender {
   Channel(const IPC::ChannelHandle &channel_handle, Mode mode,
           Listener* listener);
 
-  ~Channel();
+  virtual ~Channel();
 
   // Connect the pipe.  On the server side, this will initiate
   // waiting for connections.  On the client, it attempts to

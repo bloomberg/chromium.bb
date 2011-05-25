@@ -51,7 +51,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   ExtensionHost(const Extension* extension, SiteInstance* site_instance,
                 const GURL& url, ViewType::Type host_type);
-  ~ExtensionHost();
+  virtual ~ExtensionHost();
 
 #if defined(TOOLKIT_VIEWS)
   void set_view(ExtensionView* view) { view_.reset(view); }

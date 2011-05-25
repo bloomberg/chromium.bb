@@ -46,7 +46,7 @@ class SMAcceptorThread : public base::SimpleThread,
                          public SMConnectionPoolInterface {
  public:
   SMAcceptorThread(FlipAcceptor *acceptor, MemoryCache* memory_cache);
-  ~SMAcceptorThread();
+  virtual ~SMAcceptorThread();
 
   // EpollCallbackInteface interface
   virtual void OnRegistration(EpollServer* eps, int fd, int event_mask) {}
@@ -92,4 +92,3 @@ class SMAcceptorThread : public base::SimpleThread,
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_ACCEPTOR_THREAD_H_
-

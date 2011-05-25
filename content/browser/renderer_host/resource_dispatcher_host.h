@@ -61,7 +61,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
  public:
   explicit ResourceDispatcherHost(
       const ResourceQueue::DelegateSet& resource_queue_delegates);
-  ~ResourceDispatcherHost();
+  virtual ~ResourceDispatcherHost();
 
   void Initialize();
 

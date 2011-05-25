@@ -12,31 +12,31 @@
 template <typename T> struct DefaultSingletonTraits;
 
 class ExtensionTestPassFunction : public SyncExtensionFunction {
-  ~ExtensionTestPassFunction();
+  virtual ~ExtensionTestPassFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyPass")
 };
 
 class ExtensionTestFailFunction : public SyncExtensionFunction {
-  ~ExtensionTestFailFunction();
+  virtual ~ExtensionTestFailFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyFail")
 };
 
 class ExtensionTestLogFunction : public SyncExtensionFunction {
-  ~ExtensionTestLogFunction();
+  virtual ~ExtensionTestLogFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.log")
 };
 
 class ExtensionTestQuotaResetFunction : public SyncExtensionFunction {
-  ~ExtensionTestQuotaResetFunction();
+  virtual ~ExtensionTestQuotaResetFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.resetQuota")
 };
 
 class ExtensionTestCreateIncognitoTabFunction : public SyncExtensionFunction {
-  ~ExtensionTestCreateIncognitoTabFunction();
+  virtual ~ExtensionTestCreateIncognitoTabFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.createIncognitoTab")
 };
@@ -48,7 +48,7 @@ class ExtensionTestSendMessageFunction : public AsyncExtensionFunction {
   void Reply(const std::string& message);
 
  private:
-  ~ExtensionTestSendMessageFunction();
+  virtual ~ExtensionTestSendMessageFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.sendMessage")
 };
@@ -81,7 +81,7 @@ class ExtensionTestGetConfigFunction : public SyncExtensionFunction {
     DISALLOW_COPY_AND_ASSIGN(TestConfigState);
   };
 
-  ~ExtensionTestGetConfigFunction();
+  virtual ~ExtensionTestGetConfigFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.getConfig")
 };

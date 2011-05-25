@@ -34,7 +34,7 @@ class PepperXmppProxy : public XmppProxy {
   virtual void OnIq(const std::string& response_xml);
 
  private:
-  ~PepperXmppProxy();
+  virtual ~PepperXmppProxy();
 
   base::WeakPtr<ChromotingScriptableObject> scriptable_object_;
 

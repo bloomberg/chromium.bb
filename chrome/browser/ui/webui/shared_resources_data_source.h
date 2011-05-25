@@ -27,7 +27,7 @@ class SharedResourcesDataSource : public ChromeURLDataManager::DataSource {
   virtual std::string GetMimeType(const std::string&) const;
 
  private:
-  ~SharedResourcesDataSource();
+  virtual ~SharedResourcesDataSource();
 
   DISALLOW_COPY_AND_ASSIGN(SharedResourcesDataSource);
 };

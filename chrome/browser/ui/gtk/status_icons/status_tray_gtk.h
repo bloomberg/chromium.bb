@@ -11,7 +11,7 @@
 class StatusTrayGtk : public StatusTray {
  public:
   StatusTrayGtk();
-  ~StatusTrayGtk();
+  virtual ~StatusTrayGtk();
 
  protected:
   // Overriden from StatusTray:

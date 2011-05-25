@@ -27,7 +27,7 @@ class PrinterQuery;
 class PrintJobManager : public NotificationObserver {
  public:
   PrintJobManager();
-  ~PrintJobManager();
+  virtual ~PrintJobManager();
 
   // Registers for changes to the printing enabled preference in |prefs|.
   // This method should be called on the UI thread.

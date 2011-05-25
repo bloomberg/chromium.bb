@@ -35,7 +35,7 @@ class HistoryContentsProvider : public HistoryProvider {
   virtual void Stop() OVERRIDE;
 
  private:
-  ~HistoryContentsProvider();
+  virtual ~HistoryContentsProvider();
 
   void QueryComplete(HistoryService::Handle handle,
                      history::QueryResults* results);

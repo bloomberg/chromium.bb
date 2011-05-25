@@ -124,7 +124,7 @@ class PluginService
   // Creates the PluginService object, but doesn't actually build the plugin
   // list yet.  It's generated lazily.
   PluginService();
-  ~PluginService();
+  virtual ~PluginService();
 
   // base::WaitableEventWatcher::Delegate implementation.
   virtual void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);

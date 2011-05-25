@@ -28,7 +28,7 @@ class NetPrefObserver : public NotificationObserver {
   // outlive this.
   NetPrefObserver(PrefService* prefs,
                   prerender::PrerenderManager* prerender_manager);
-  ~NetPrefObserver();
+  virtual ~NetPrefObserver();
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
@@ -50,4 +50,3 @@ class NetPrefObserver : public NotificationObserver {
 };
 
 #endif  // CHROME_BROWSER_NET_NET_PREF_OBSERVER_H_
-

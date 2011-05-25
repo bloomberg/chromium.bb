@@ -104,7 +104,7 @@ class ChromeNetLog : public net::NetLog {
   };
 
   ChromeNetLog();
-  ~ChromeNetLog();
+  virtual ~ChromeNetLog();
 
   // NetLog implementation:
   virtual void AddEntry(EventType type,

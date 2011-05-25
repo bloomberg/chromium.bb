@@ -28,7 +28,7 @@ class ServiceGaiaAuthenticator
                            const std::string& service_id,
                            const std::string& gaia_url,
                            base::MessageLoopProxy* io_message_loop_proxy);
-  ~ServiceGaiaAuthenticator();
+  virtual ~ServiceGaiaAuthenticator();
 
   // URLFetcher::Delegate implementation.
   virtual void OnURLFetchComplete(const URLFetcher *source,

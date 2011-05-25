@@ -77,7 +77,7 @@ class HostZoomMap :
 
   typedef std::map<std::string, double> HostZoomLevels;
 
-  ~HostZoomMap();
+  virtual ~HostZoomMap();
 
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;

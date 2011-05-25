@@ -26,7 +26,7 @@ class URLRequestFailedDnsJob : public net::URLRequestJob {
   static void AddUrlHandler();
 
  private:
-  ~URLRequestFailedDnsJob();
+  virtual ~URLRequestFailedDnsJob();
 
   // Simulate a DNS failure.
   void StartAsync();

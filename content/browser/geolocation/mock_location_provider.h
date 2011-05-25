@@ -20,7 +20,7 @@ class MockLocationProvider : public LocationProviderBase {
   // Will update |*self_ref| to point to |this| on construction, and to NULL
   // on destruction.
   explicit MockLocationProvider(MockLocationProvider** self_ref);
-  ~MockLocationProvider();
+  virtual ~MockLocationProvider();
 
   // Updates listeners with the new position.
   void HandlePositionChanged(const Geoposition& position);

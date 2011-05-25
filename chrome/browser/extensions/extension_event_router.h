@@ -29,7 +29,7 @@ class ExtensionEventRouter : public NotificationObserver {
   static bool CanCrossIncognito(Profile* profile, const Extension* extension);
 
   explicit ExtensionEventRouter(Profile* profile);
-  ~ExtensionEventRouter();
+  virtual ~ExtensionEventRouter();
 
   // Add or remove the process/extension pair as a listener for |event_name|.
   // Note that multiple extensions can share a process due to process

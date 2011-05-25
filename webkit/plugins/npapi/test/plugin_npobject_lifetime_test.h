@@ -41,7 +41,7 @@ class NPObjectLifetimeTestInstance2 : public PluginTest {
  public:
   // Constructor.
   NPObjectLifetimeTestInstance2(NPP id, NPNetscapeFuncs *host_functions);
-  ~NPObjectLifetimeTestInstance2();
+  virtual ~NPObjectLifetimeTestInstance2();
 
   // NPAPI SetWindow handler.
   virtual NPError SetWindow(NPWindow* pNPWindow);
@@ -58,7 +58,7 @@ class NPObjectDeletePluginInNPN_Evaluate : public PluginTest {
  public:
   // Constructor.
   NPObjectDeletePluginInNPN_Evaluate(NPP id, NPNetscapeFuncs *host_functions);
-  ~NPObjectDeletePluginInNPN_Evaluate();
+  virtual ~NPObjectDeletePluginInNPN_Evaluate();
 
   // NPAPI SetWindow handler.
   virtual NPError SetWindow(NPWindow* pNPWindow);

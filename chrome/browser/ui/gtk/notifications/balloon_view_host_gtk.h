@@ -19,9 +19,7 @@ class BalloonViewHost : public BalloonHost {
  public:
   explicit BalloonViewHost(Balloon* balloon);
 
-  ~BalloonViewHost() {
-    Shutdown();
-  }
+  virtual ~BalloonViewHost();
 
   // Changes the size of the balloon.
   void UpdateActualSize(const gfx::Size& new_size);

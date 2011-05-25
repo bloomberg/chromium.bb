@@ -26,7 +26,7 @@ class ChromeSystemResources : public invalidation::SystemResources {
  public:
   explicit ChromeSystemResources(StateWriter* state_writer);
 
-  ~ChromeSystemResources();
+  virtual ~ChromeSystemResources();
 
   // invalidation::SystemResources implementation.
 

@@ -58,7 +58,7 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
  private:
   friend class base::RefCountedThreadSafe<PluginDataRemover>;
   friend class PluginDataRemoverTest;
-  ~PluginDataRemover();
+  virtual ~PluginDataRemover();
 
   // Signals that we are finished with removing data (successful or not). This
   // method is safe to call multiple times.

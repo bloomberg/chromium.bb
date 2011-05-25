@@ -53,7 +53,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   };
 
   explicit AudioMessageFilter(int32 route_id);
-  ~AudioMessageFilter();
+  virtual ~AudioMessageFilter();
 
   // Add a delegate to the map and return id of the entry.
   int32 AddDelegate(Delegate* delegate);

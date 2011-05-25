@@ -34,7 +34,7 @@ class ViewBlobInternalsJob : public net::URLRequestSimpleJob {
   virtual void Kill();
 
  private:
-  ~ViewBlobInternalsJob();
+  virtual ~ViewBlobInternalsJob();
 
   void DoWorkAsync();
   void GenerateHTML(std::string* out) const;

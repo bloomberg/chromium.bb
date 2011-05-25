@@ -37,28 +37,28 @@ class BrowserActionFunction : public SyncExtensionFunction {
 
 // Implement chrome.browserAction.setIcon().
 class BrowserActionSetIconFunction : public BrowserActionFunction {
-  ~BrowserActionSetIconFunction() {}
+  virtual ~BrowserActionSetIconFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };
 
 // Implement chrome.browserAction.setTitle().
 class BrowserActionSetTitleFunction : public BrowserActionFunction {
-  ~BrowserActionSetTitleFunction() {}
+  virtual ~BrowserActionSetTitleFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
 };
 
 // Implement chrome.browserActions.setPopup().
 class BrowserActionSetPopupFunction : public BrowserActionFunction {
-  ~BrowserActionSetPopupFunction() {}
+  virtual ~BrowserActionSetPopupFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setPopup")
 };
 
 // Implement chrome.browserAction.setBadgeText().
 class BrowserActionSetBadgeTextFunction : public BrowserActionFunction {
-  ~BrowserActionSetBadgeTextFunction() {}
+  virtual ~BrowserActionSetBadgeTextFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
 };
@@ -66,7 +66,7 @@ class BrowserActionSetBadgeTextFunction : public BrowserActionFunction {
 // Implement chrome.browserAction.setBadgeBackgroundColor().
 class BrowserActionSetBadgeBackgroundColorFunction
     : public BrowserActionFunction {
-  ~BrowserActionSetBadgeBackgroundColorFunction() {}
+  virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
 };

@@ -11,7 +11,7 @@
 class GpuProcess : public ChildProcess {
  public:
   GpuProcess();
-  ~GpuProcess();
+  virtual ~GpuProcess();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuProcess);

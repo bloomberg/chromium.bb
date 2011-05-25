@@ -34,7 +34,7 @@ class ViewAppCacheInternalsJob : public net::URLRequestSimpleJob {
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
 
  private:
-  ~ViewAppCacheInternalsJob();
+  virtual ~ViewAppCacheInternalsJob();
 
   void AppCacheDone(int rv);
 

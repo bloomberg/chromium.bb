@@ -40,7 +40,7 @@ class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
   // Defines a function that returns the current time.
   typedef base::Time (*GetTimeNow)();
 
-  ~GeolocationArbitrator();
+  virtual ~GeolocationArbitrator();
 
   static GeolocationArbitrator* Create(GeolocationObserver* observer);
 

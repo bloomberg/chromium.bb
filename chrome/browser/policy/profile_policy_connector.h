@@ -26,7 +26,7 @@ class UserPolicyIdentityStrategy;
 class ProfilePolicyConnector : public ProfileKeyedService {
  public:
   explicit ProfilePolicyConnector(Profile* profile);
-  ~ProfilePolicyConnector();
+  virtual ~ProfilePolicyConnector();
 
   // Schedules initialization of the policy backend service if the service is
   // already constructed.

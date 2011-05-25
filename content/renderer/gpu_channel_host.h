@@ -43,7 +43,7 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   // Called on the render thread
   GpuChannelHost();
-  ~GpuChannelHost();
+  virtual ~GpuChannelHost();
 
   // Connect to GPU process channel.
   void Connect(const IPC::ChannelHandle& channel_handle,

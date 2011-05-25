@@ -24,7 +24,7 @@ class MockResourceContext : public ResourceContext {
   friend struct base::DefaultLazyInstanceTraits<MockResourceContext>;
 
   MockResourceContext();
-  ~MockResourceContext();
+  virtual ~MockResourceContext();
   virtual void EnsureInitialized() const OVERRIDE;
 
   const scoped_refptr<net::URLRequestContext> test_request_context_;

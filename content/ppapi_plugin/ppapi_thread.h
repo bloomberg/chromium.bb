@@ -27,7 +27,7 @@ class PpapiThread : public ChildThread,
                     public pp::proxy::PluginDispatcher::PluginDelegate {
  public:
   explicit PpapiThread(bool is_broker);
-  ~PpapiThread();
+  virtual ~PpapiThread();
 
  private:
   // ChildThread overrides.

@@ -16,9 +16,7 @@ class SimpleBuffer : public BufferInterface {
  public:
   SimpleBuffer();
   explicit SimpleBuffer(int size);
-  virtual ~SimpleBuffer() {
-    delete[] storage_;
-  }
+  virtual ~SimpleBuffer();
 
   std::string str() const;
 
@@ -92,4 +90,3 @@ class SimpleBuffer : public BufferInterface {
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_SIMPLE_BUFFER_H__
-

@@ -23,7 +23,7 @@ class NetLogLogger : public ChromeNetLog::ThreadSafeObserver {
   // Otherwise, writes to |log_path|.  Uses one line per entry, for
   // easy parsing.
   explicit NetLogLogger(const FilePath &log_path);
-  ~NetLogLogger();
+  virtual ~NetLogLogger();
 
   // ThreadSafeObserver implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
@@ -39,4 +39,3 @@ class NetLogLogger : public ChromeNetLog::ThreadSafeObserver {
 };
 
 #endif  // CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
-

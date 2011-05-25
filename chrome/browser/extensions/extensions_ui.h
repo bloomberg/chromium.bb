@@ -54,7 +54,7 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
   virtual std::string GetMimeType(const std::string&) const;
 
  private:
-  ~ExtensionsUIHTMLSource() {}
+  virtual ~ExtensionsUIHTMLSource() {}
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsUIHTMLSource);
 };

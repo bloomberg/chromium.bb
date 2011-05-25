@@ -28,7 +28,7 @@ class ClientUsageTracker;
 class UsageTracker : public QuotaTaskObserver {
  public:
   UsageTracker(const QuotaClientList& clients, StorageType type);
-  ~UsageTracker();
+  virtual ~UsageTracker();
 
   StorageType type() const { return type_; }
   ClientUsageTracker* GetClientTracker(QuotaClient::ID client_id);

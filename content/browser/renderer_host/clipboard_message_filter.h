@@ -23,7 +23,7 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
  private:
-  ~ClipboardMessageFilter();
+  virtual ~ClipboardMessageFilter();
 
   void OnWriteObjectsAsync(const ui::Clipboard::ObjectMap& objects);
   void OnWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,

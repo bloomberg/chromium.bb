@@ -143,7 +143,7 @@ class CrxInstaller
   }
 
  private:
-  ~CrxInstaller();
+  virtual ~CrxInstaller();
 
   // Converts the source user script to an extension.
   void ConvertUserScriptOnFileThread();

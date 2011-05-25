@@ -57,7 +57,7 @@ class AppCacheDiskCache {
 
     disk_cache::Backend* backend_ptr_;  // Accessed directly.
    private:
-    ~CreateBackendCallback() {
+    virtual ~CreateBackendCallback() {
       delete backend_ptr_;
     }
   };

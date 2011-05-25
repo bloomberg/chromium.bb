@@ -19,7 +19,7 @@ class SearchBox : public RenderViewObserver,
                   public RenderViewObserverTracker<SearchBox> {
  public:
   explicit SearchBox(RenderView* render_view);
-  ~SearchBox();
+  virtual ~SearchBox();
 
   // Sends ViewHostMsg_SetSuggestions to the browser.
   void SetSuggestions(const std::vector<std::string>& suggestions,

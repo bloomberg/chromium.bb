@@ -18,7 +18,7 @@ class CoreLocationDataProviderMac;
 class CoreLocationProviderMac : public LocationProviderBase {
  public:
   explicit CoreLocationProviderMac();
-  ~CoreLocationProviderMac();
+  virtual ~CoreLocationProviderMac();
 
   // LocationProvider
   virtual bool StartProvider(bool high_accuracy);

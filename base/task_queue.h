@@ -17,7 +17,7 @@
 class BASE_API TaskQueue : public Task {
  public:
   TaskQueue();
-  ~TaskQueue();
+  virtual ~TaskQueue();
 
   // Push the specified task onto the queue.  When the queue is run, the tasks
   // will be run in the order they are pushed.

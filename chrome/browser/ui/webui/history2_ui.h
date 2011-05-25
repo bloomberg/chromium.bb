@@ -32,7 +32,7 @@ class HistoryUIHTMLSource2 : public ChromeURLDataManager::DataSource {
   virtual std::string GetMimeType(const std::string&) const;
 
  private:
-  ~HistoryUIHTMLSource2() {}
+  virtual ~HistoryUIHTMLSource2() {}
 
   DISALLOW_COPY_AND_ASSIGN(HistoryUIHTMLSource2);
 };

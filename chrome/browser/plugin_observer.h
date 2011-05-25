@@ -17,7 +17,7 @@ class TabContentsWrapper;
 class PluginObserver : public TabContentsObserver {
  public:
   explicit PluginObserver(TabContentsWrapper* tab_contents);
-  ~PluginObserver();
+  virtual ~PluginObserver();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);

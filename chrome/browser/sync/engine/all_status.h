@@ -30,7 +30,7 @@ class AllStatus : public SyncEngineEventListener {
  public:
 
   AllStatus();
-  ~AllStatus();
+  virtual ~AllStatus();
 
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 

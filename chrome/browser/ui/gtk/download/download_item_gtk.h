@@ -45,7 +45,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
                   BaseDownloadItemModel* download_item_model);
 
   // Destroys all widgets belonging to this DownloadItemGtk.
-  ~DownloadItemGtk();
+  virtual ~DownloadItemGtk();
 
   // DownloadItem::Observer implementation.
   virtual void OnDownloadUpdated(DownloadItem* download);

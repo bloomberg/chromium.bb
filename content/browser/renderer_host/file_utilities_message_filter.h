@@ -28,7 +28,7 @@ class FileUtilitiesMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
  private:
-  ~FileUtilitiesMessageFilter();
+  virtual ~FileUtilitiesMessageFilter();
 
   typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
                                     const base::PlatformFileInfo& file_info);

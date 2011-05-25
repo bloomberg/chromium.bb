@@ -50,7 +50,7 @@ class CertStore : public NotificationObserver {
   friend struct DefaultSingletonTraits<CertStore>;
 
   CertStore();
-  ~CertStore();
+  virtual ~CertStore();
 
   // Remove the specified cert from id_to_cert_ and cert_to_id_.
   // NOTE: the caller (RemoveCertsForRenderProcesHost) must hold cert_lock_.

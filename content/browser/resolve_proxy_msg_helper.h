@@ -33,7 +33,7 @@ class ResolveProxyMsgHelper : public BrowserMessageFilter {
 
   // Destruction cancels the current outstanding request, and clears the
   // pending queue.
-  ~ResolveProxyMsgHelper();
+  virtual ~ResolveProxyMsgHelper();
 
   // BrowserMessageFilter implementation
   virtual bool OnMessageReceived(const IPC::Message& message,

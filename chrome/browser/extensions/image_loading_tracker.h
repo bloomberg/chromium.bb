@@ -59,7 +59,7 @@ class ImageLoadingTracker : public NotificationObserver {
   };
 
   explicit ImageLoadingTracker(Observer* observer);
-  ~ImageLoadingTracker();
+  virtual ~ImageLoadingTracker();
 
   // Specify image resource to load. If the loaded image is larger than
   // |max_size| it will be resized to those dimensions. IMPORTANT NOTE: this

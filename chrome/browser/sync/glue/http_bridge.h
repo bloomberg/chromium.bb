@@ -61,7 +61,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
    private:
     // The destructor MUST be called on the IO thread.
-    ~RequestContext();
+    virtual ~RequestContext();
 
     std::string user_agent_;
     net::URLRequestContext* baseline_context_;
@@ -83,7 +83,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
    private:
-    ~RequestContextGetter() {}
+    virtual ~RequestContextGetter() {}
 
     // User agent to apply to the net::URLRequestContext.
     std::string user_agent_;

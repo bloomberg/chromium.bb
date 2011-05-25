@@ -28,7 +28,7 @@ class WebIDBTransaction;
 class IndexedDBDispatcher : public IPC::Channel::Listener {
  public:
   IndexedDBDispatcher();
-  ~IndexedDBDispatcher();
+  virtual ~IndexedDBDispatcher();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

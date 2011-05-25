@@ -87,7 +87,7 @@ AutofillProfile CreateAutofillProfile(LiveAutofillSyncTest::ProfileType type);
 class TwoClientLiveAutofillSyncTest : public LiveAutofillSyncTest {
  public:
   TwoClientLiveAutofillSyncTest() : LiveAutofillSyncTest(TWO_CLIENT) {}
-  ~TwoClientLiveAutofillSyncTest() {}
+  virtual ~TwoClientLiveAutofillSyncTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientLiveAutofillSyncTest);

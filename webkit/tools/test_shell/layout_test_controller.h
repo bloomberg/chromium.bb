@@ -27,7 +27,7 @@ class LayoutTestController : public CppBoundClass {
   // Builds the property and method lists needed to bind this class to a JS
   // object.
   LayoutTestController(TestShell* shell);
-  ~LayoutTestController();
+  virtual ~LayoutTestController();
 
   // By default, tests end when page load is complete.  These methods are used
   // to delay the completion of the test until notifyDone is called.

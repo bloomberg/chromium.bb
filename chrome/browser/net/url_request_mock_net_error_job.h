@@ -38,7 +38,7 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
   static void RemoveMockedURL(const GURL& url);
 
  private:
-  ~URLRequestMockNetErrorJob();
+  virtual ~URLRequestMockNetErrorJob();
 
   static net::URLRequest::ProtocolFactory Factory;
 

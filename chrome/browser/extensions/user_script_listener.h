@@ -49,7 +49,7 @@ class UserScriptListener
 
   typedef std::list<URLPattern> URLPatterns;
 
-  ~UserScriptListener();
+  virtual ~UserScriptListener();
 
   // Resume any requests that we delayed in order to wait for user scripts.
   void StartDelayedRequests();

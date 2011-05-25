@@ -20,7 +20,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
                            const ContextMenuParams& params,
                            uint32_t triggering_event_time);
 
-  ~RenderViewContextMenuGtk();
+  virtual ~RenderViewContextMenuGtk();
 
   // Show the menu at the given location.
   void Popup(const gfx::Point& point);

@@ -53,7 +53,7 @@ class TransportSecurityPersister
  private:
   friend class base::RefCountedThreadSafe<TransportSecurityPersister>;
 
-  ~TransportSecurityPersister();
+  virtual ~TransportSecurityPersister();
 
   void Load();
   void CompleteLoad(const std::string& state);

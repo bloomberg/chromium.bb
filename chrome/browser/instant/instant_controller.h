@@ -51,7 +51,7 @@ class InstantController : public InstantLoaderDelegate {
   static const int kAutoCommitFadeInTimeMS = 300;
 
   InstantController(Profile* profile, InstantDelegate* delegate);
-  ~InstantController();
+  virtual ~InstantController();
 
   // Registers instant related preferences.
   static void RegisterUserPrefs(PrefService* prefs);

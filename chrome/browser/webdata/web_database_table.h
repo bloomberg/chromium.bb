@@ -16,10 +16,7 @@ class WebDatabaseTable {
  protected:
   explicit WebDatabaseTable(sql::Connection* db, sql::MetaTable* meta_table)
       : db_(db), meta_table_(meta_table) {}
-  virtual ~WebDatabaseTable() {
-    db_ = NULL;
-    meta_table_ = NULL;
-  };
+  virtual ~WebDatabaseTable();
 
   // Attempts to initialize the table and returns true if successful.
   virtual bool Init() = 0;

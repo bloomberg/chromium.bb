@@ -48,7 +48,7 @@ class AppCacheHost : public AppCacheStorage::Delegate,
 
   AppCacheHost(int host_id, AppCacheFrontend* frontend,
                AppCacheService* service);
-  ~AppCacheHost();
+  virtual ~AppCacheHost();
 
   // Adds/removes an observer, the AppCacheHost does not take
   // ownership of the observer.

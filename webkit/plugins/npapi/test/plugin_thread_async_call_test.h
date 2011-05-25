@@ -18,7 +18,7 @@ namespace NPAPIClient {
 class PluginThreadAsyncCallTest : public PluginTest {
  public:
   PluginThreadAsyncCallTest(NPP id, NPNetscapeFuncs *host_functions);
-  ~PluginThreadAsyncCallTest();
+  virtual ~PluginThreadAsyncCallTest();
 
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
                       const char* argv[], NPSavedData* saved);

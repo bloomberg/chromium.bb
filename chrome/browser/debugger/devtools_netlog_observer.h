@@ -67,7 +67,7 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
   static DevToolsNetLogObserver* instance_;
 
   explicit DevToolsNetLogObserver(ChromeNetLog* chrome_net_log);
-  ~DevToolsNetLogObserver();
+  virtual ~DevToolsNetLogObserver();
 
   ResourceInfo* GetResourceInfo(uint32 id);
 

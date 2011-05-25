@@ -47,7 +47,7 @@ class SyncResourceHandler : public ResourceHandler {
  private:
   enum { kReadBufSize = 3840 };
 
-  ~SyncResourceHandler();
+  virtual ~SyncResourceHandler();
 
   scoped_refptr<net::IOBuffer> read_buffer_;
 

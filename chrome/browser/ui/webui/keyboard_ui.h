@@ -17,7 +17,7 @@ class Profile;
 class KeyboardUI : public WebUI {
  public:
   explicit KeyboardUI(TabContents* manager);
-  ~KeyboardUI();
+  virtual ~KeyboardUI();
 
   class KeyboardHTMLSource : public ChromeURLDataManager::DataSource {
    public:

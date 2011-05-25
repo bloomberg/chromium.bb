@@ -55,7 +55,7 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
                     Profile* profile,
                     const GURL& url,
                     bool newly_bookmarked);
-  ~BookmarkBubbleGtk();
+  virtual ~BookmarkBubbleGtk();
 
   // Notified when |content_| is destroyed so we can delete our instance.
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnDestroy);

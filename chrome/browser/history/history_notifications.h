@@ -87,7 +87,7 @@ struct FaviconChangeDetails : public HistoryDetails {
 // Details for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
 struct KeywordSearchTermDetails : public HistoryDetails {
   KeywordSearchTermDetails();
-  ~KeywordSearchTermDetails();
+  virtual ~KeywordSearchTermDetails();
 
   GURL url;
   TemplateURLID keyword_id;

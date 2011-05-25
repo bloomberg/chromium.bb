@@ -31,7 +31,7 @@ class PPB_AudioConfig_Impl : public Resource,
  public:
   // Note that you must call Init (on AudioConfigImpl) before using this class.
   PPB_AudioConfig_Impl(PluginInstance* instance);
-  ~PPB_AudioConfig_Impl();
+  virtual ~PPB_AudioConfig_Impl();
 
   // ResourceObjectBase overrides.
   virtual ::ppapi::thunk::PPB_AudioConfig_API* AsAudioConfig_API() OVERRIDE;

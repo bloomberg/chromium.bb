@@ -18,7 +18,7 @@ class SearchProviderInstallStateMessageFilter : public BrowserMessageFilter {
   // Unlike the other methods, the constructor is called on the UI thread.
   SearchProviderInstallStateMessageFilter(int render_process_id,
                                           Profile* profile);
-  ~SearchProviderInstallStateMessageFilter();
+  virtual ~SearchProviderInstallStateMessageFilter();
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,

@@ -53,7 +53,7 @@ class PrintDialogGtk
   friend class DeleteTask<PrintDialogGtk>;
 
   explicit PrintDialogGtk(PrintingContextCairo* context);
-  ~PrintDialogGtk();
+  virtual ~PrintDialogGtk();
 
   // Handles dialog response.
   CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, int);

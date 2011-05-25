@@ -72,7 +72,7 @@ class SSLManager : public NotificationObserver {
   // Construct an SSLManager for the specified tab.
   // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
   explicit SSLManager(NavigationController* controller);
-  ~SSLManager();
+  virtual ~SSLManager();
 
   SSLPolicy* policy() { return policy_.get(); }
   SSLPolicyBackend* backend() { return &backend_; }

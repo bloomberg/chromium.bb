@@ -33,7 +33,7 @@ class AppCacheUpdateJob : public AppCacheStorage::Delegate,
                           public AppCacheHost::Observer {
  public:
   AppCacheUpdateJob(AppCacheService* service, AppCacheGroup* group);
-  ~AppCacheUpdateJob();
+  virtual ~AppCacheUpdateJob();
 
   // Triggers the update process or adds more info if this update is already
   // in progress.
@@ -101,7 +101,7 @@ class AppCacheUpdateJob : public AppCacheStorage::Delegate,
     URLFetcher(const GURL& url,
                FetchType fetch_type,
                AppCacheUpdateJob* job);
-    ~URLFetcher();
+    virtual ~URLFetcher();
     void Start();
     FetchType fetch_type() const { return fetch_type_; }
     net::URLRequest* request() const { return request_.get(); }

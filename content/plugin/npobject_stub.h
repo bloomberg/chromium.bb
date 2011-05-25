@@ -36,7 +36,7 @@ class NPObjectStub : public IPC::Channel::Listener,
                int route_id,
                gfx::NativeViewId containing_window,
                const GURL& page_url);
-  ~NPObjectStub();
+  virtual ~NPObjectStub();
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);

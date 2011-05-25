@@ -17,7 +17,7 @@ class PrintDialogGtkInterface;
 class PrintingContextCairo : public PrintingContext {
  public:
   explicit PrintingContextCairo(const std::string& app_locale);
-  ~PrintingContextCairo();
+  virtual ~PrintingContextCairo();
 
 #if !defined(OS_CHROMEOS)
   // Sets the function that creates the print dialog.

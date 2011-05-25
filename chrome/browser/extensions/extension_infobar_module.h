@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class ShowInfoBarFunction : public SyncExtensionFunction {
-  ~ShowInfoBarFunction() {}
+  virtual ~ShowInfoBarFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.infobars.show")
 };

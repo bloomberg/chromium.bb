@@ -55,7 +55,7 @@ class TabFinder : public NotificationObserver {
   typedef std::set<TabContentsObserverImpl*> TabContentsObservers;
 
   TabFinder();
-  ~TabFinder();
+  virtual ~TabFinder();
 
   void Init();
 

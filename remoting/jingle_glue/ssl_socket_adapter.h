@@ -33,7 +33,7 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
  public:
   TransportSocket(talk_base::AsyncSocket* socket,
                   SSLSocketAdapter *ssl_adapter);
-  ~TransportSocket();
+  virtual ~TransportSocket();
 
   void set_addr(const talk_base::SocketAddress& addr) {
     addr_ = addr;
@@ -92,7 +92,7 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
 class SSLSocketAdapter : public talk_base::SSLAdapter {
  public:
   explicit SSLSocketAdapter(talk_base::AsyncSocket* socket);
-  ~SSLSocketAdapter();
+  virtual ~SSLSocketAdapter();
 
   // StartSSL returns 0 if successful, or non-zero on failure.
   // If StartSSL is called while the socket is closed or connecting, the SSL

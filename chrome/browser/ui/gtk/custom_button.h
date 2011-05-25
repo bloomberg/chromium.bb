@@ -38,7 +38,7 @@ class CustomDrawButtonBase : public NotificationObserver {
                        int hover_id,
                        int disabled_id);
 
-  ~CustomDrawButtonBase();
+  virtual ~CustomDrawButtonBase();
 
   // Flip the image horizontally. Not to be used for RTL/LTR reasons. (In RTL
   // mode, this will unflip the image.)
@@ -154,7 +154,7 @@ class CustomDrawButton : public NotificationObserver {
                    int disabled_id,
                    GtkWidget* native_widget);
 
-  ~CustomDrawButton();
+  virtual ~CustomDrawButton();
 
   void Init();
 

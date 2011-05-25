@@ -33,7 +33,7 @@ class DownloadItemMac : DownloadItem::Observer {
                   DownloadItemController* controller);
 
   // Destructor.
-  ~DownloadItemMac();
+  virtual ~DownloadItemMac();
 
   // DownloadItem::Observer implementation
   virtual void OnDownloadUpdated(DownloadItem* download);

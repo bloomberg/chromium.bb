@@ -47,7 +47,7 @@ class GpuChildThread : public ChildThread {
   // For single-process mode.
   explicit GpuChildThread(const std::string& channel_id);
 
-  ~GpuChildThread();
+  virtual ~GpuChildThread();
 
   void Init(const base::Time& process_start_time);
   void StopWatchdog();

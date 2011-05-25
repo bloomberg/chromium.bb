@@ -278,7 +278,7 @@ class DownloadManager
   friend class DeleteTask<DownloadManager>;
   friend class OtherDownloadManagerObserver;
 
-  ~DownloadManager();
+  virtual ~DownloadManager();
 
   // Called on the download thread to check whether the suggested file path
   // exists.  We don't check if the file exists on the UI thread to avoid UI

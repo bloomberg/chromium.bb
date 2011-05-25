@@ -15,7 +15,7 @@
 class NaClLauncherThread : public ChildThread {
  public:
   explicit NaClLauncherThread(bool debug);
-  ~NaClLauncherThread();
+  virtual ~NaClLauncherThread();
   // Returns the one NaCl thread.
   static NaClLauncherThread* current();
 

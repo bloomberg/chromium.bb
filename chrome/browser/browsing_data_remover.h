@@ -108,7 +108,7 @@ class BrowsingDataRemover : public NotificationObserver,
   // to be deleted by other objects so make destructor private and DeleteTask
   // a friend.
   friend class DeleteTask<BrowsingDataRemover>;
-  ~BrowsingDataRemover();
+  virtual ~BrowsingDataRemover();
 
   // NotificationObserver method. Callback when TemplateURLModel has finished
   // loading. Deletes the entries from the model, and if we're not waiting on

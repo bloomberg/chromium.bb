@@ -23,7 +23,7 @@ class BlobMessageFilter : public BrowserMessageFilter {
  public:
   BlobMessageFilter(int process_id,
                     ChromeBlobStorageContext* blob_storage_context);
-  ~BlobMessageFilter();
+  virtual ~BlobMessageFilter();
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();

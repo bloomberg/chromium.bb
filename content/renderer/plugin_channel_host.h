@@ -46,7 +46,7 @@ class PluginChannelHost : public PluginChannelBase {
  private:
   // Called on the render thread
   PluginChannelHost();
-  ~PluginChannelHost();
+  virtual ~PluginChannelHost();
 
   static PluginChannelBase* ClassFactory() { return new PluginChannelHost(); }
 

@@ -17,7 +17,7 @@ class NTPLoginHandler : public WebUIMessageHandler,
                         public NotificationObserver {
  public:
   NTPLoginHandler();
-  ~NTPLoginHandler();
+  virtual ~NTPLoginHandler();
 
   virtual WebUIMessageHandler* Attach(WebUI* web_ui);
 

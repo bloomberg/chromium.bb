@@ -21,7 +21,7 @@ class RendererHistogramSnapshots : public HistogramSender,
                                    public RenderProcessObserver {
  public:
   RendererHistogramSnapshots();
-  ~RendererHistogramSnapshots();
+  virtual ~RendererHistogramSnapshots();
 
   // Send the histogram data.
   void SendHistograms(int sequence_number);

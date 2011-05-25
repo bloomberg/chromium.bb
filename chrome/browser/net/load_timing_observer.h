@@ -60,7 +60,7 @@ class LoadTimingObserver : public ChromeNetLog::ThreadSafeObserver {
   };
 
   LoadTimingObserver();
-  ~LoadTimingObserver();
+  virtual ~LoadTimingObserver();
 
   URLRequestRecord* GetURLRequestRecord(uint32 source_id);
 

@@ -13,7 +13,7 @@
 class TranslateTabHelper : public TabContentsObserver {
  public:
   explicit TranslateTabHelper(TabContents* tab_contents);
-  ~TranslateTabHelper();
+  virtual ~TranslateTabHelper();
 
   LanguageState& language_state() { return language_state_; }
 

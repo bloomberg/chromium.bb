@@ -40,7 +40,7 @@ class Message;
 class RouteToGpuProcessHostUIShimTask : public Task {
  public:
   RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
-  ~RouteToGpuProcessHostUIShimTask();
+  virtual ~RouteToGpuProcessHostUIShimTask();
 
  private:
   virtual void Run();

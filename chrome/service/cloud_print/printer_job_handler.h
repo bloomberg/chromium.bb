@@ -113,7 +113,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                     const GURL& cloud_print_server_url,
                     cloud_print::PrintSystem* print_system,
                     Delegate* delegate);
-  ~PrinterJobHandler();
+  virtual ~PrinterJobHandler();
   bool Initialize();
   // Requests a job check. |reason| is the reason for fetching the job. Used
   // for logging and diagnostc purposes.

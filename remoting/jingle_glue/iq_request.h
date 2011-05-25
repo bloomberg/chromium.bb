@@ -232,7 +232,7 @@ class SessionStartRequest : public sigslot::has_slots<> {
  public:
   SessionStartRequest(JavascriptIqRequest* request,
                       cricket::SessionManager* session_manager);
-  ~SessionStartRequest();
+  virtual ~SessionStartRequest();
 
   void Run();
 

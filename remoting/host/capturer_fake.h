@@ -18,7 +18,7 @@ namespace remoting {
 class CapturerFake : public Capturer {
  public:
   CapturerFake();
-  ~CapturerFake();
+  virtual ~CapturerFake();
 
   // Capturer interface.
   virtual void ScreenConfigurationChanged();

@@ -23,7 +23,7 @@ class QuotaManager;
 class QuotaDispatcherHost : public BrowserMessageFilter {
  public:
   QuotaDispatcherHost(quota::QuotaManager* quota_manager);
-  ~QuotaDispatcherHost();
+  virtual ~QuotaDispatcherHost();
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 

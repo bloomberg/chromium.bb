@@ -42,7 +42,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   // Used by the worker, since it has the context handy already.
   FileSystemDispatcherHost(net::URLRequestContext* request_context,
                            fileapi::FileSystemContext* file_system_context);
-  ~FileSystemDispatcherHost();
+  virtual ~FileSystemDispatcherHost();
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid);

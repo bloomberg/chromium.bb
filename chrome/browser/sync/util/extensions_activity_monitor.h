@@ -46,7 +46,7 @@ class ExtensionsActivityMonitor : public NotificationObserver {
   // Creates an ExtensionsActivityMonitor to monitor extensions activities on
   // BrowserThread::UI.
   ExtensionsActivityMonitor();
-  ~ExtensionsActivityMonitor();
+  virtual ~ExtensionsActivityMonitor();
 
   // Fills |buffer| with snapshot of current records in constant time by
   // swapping.  This is done mutually exclusively w.r.t methods of this class.

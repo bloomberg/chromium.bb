@@ -36,7 +36,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                     public NotificationObserver {
  public:
   explicit ExtensionBrowserEventRouter(Profile* profile);
-  ~ExtensionBrowserEventRouter();
+  virtual ~ExtensionBrowserEventRouter();
 
   // Must be called once. Subsequent calls have no effect.
   void Init();

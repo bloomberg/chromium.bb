@@ -55,7 +55,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
  private:
   friend class base::RefCounted<WebPluginDelegateStub>;
 
-  ~WebPluginDelegateStub();
+  virtual ~WebPluginDelegateStub();
 
   // Message handlers for the WebPluginDelegate calls that are proxied from the
   // renderer over the IPC channel.

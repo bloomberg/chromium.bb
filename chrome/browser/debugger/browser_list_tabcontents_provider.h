@@ -11,7 +11,7 @@ class BrowserListTabContentsProvider :
     public DevToolsHttpProtocolHandler::TabContentsProvider {
  public:
   BrowserListTabContentsProvider() {}
-  ~BrowserListTabContentsProvider() {}
+  virtual ~BrowserListTabContentsProvider() {}
 
   virtual DevToolsHttpProtocolHandler::InspectableTabs GetInspectableTabs();
  private:

@@ -22,7 +22,7 @@ namespace printing {
 class PrintingContextMac : public PrintingContext {
  public:
   explicit PrintingContextMac(const std::string& app_locale);
-  ~PrintingContextMac();
+  virtual ~PrintingContextMac();
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(gfx::NativeView parent_view,

@@ -21,7 +21,7 @@ struct WorkerProcessMsg_CreateWorker_Params;
 class WorkerThread : public ChildThread {
  public:
   WorkerThread();
-  ~WorkerThread();
+  virtual ~WorkerThread();
 
   // Returns the one worker thread.
   static WorkerThread* current();

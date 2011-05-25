@@ -32,10 +32,7 @@ class DataFrame {
   bool delete_when_done;
   size_t index;
   DataFrame() : data(NULL), size(0), delete_when_done(false), index(0) {}
-  virtual ~DataFrame() {
-    if (delete_when_done)
-      delete[] data;
-  }
+  virtual ~DataFrame();
 };
 
 typedef std::list<DataFrame*> OutputList;
@@ -160,4 +157,3 @@ class SMConnection : public SMConnectionInterface,
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_SM_CONNECTION_H_
-

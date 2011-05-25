@@ -86,7 +86,7 @@ class PolicyProvider : public BaseProvider,
  public:
   explicit PolicyProvider(Profile* profile,
                           DefaultProviderInterface* default_provider);
-  ~PolicyProvider();
+  virtual ~PolicyProvider();
   static void RegisterUserPrefs(PrefService* prefs);
 
   // BaseProvider Implementation

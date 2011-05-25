@@ -83,7 +83,7 @@ class ConstrainedWindowMacDelegateCustomSheet
  public:
   ConstrainedWindowMacDelegateCustomSheet();
   ConstrainedWindowMacDelegateCustomSheet(id delegate, SEL didEndSelector);
-  ~ConstrainedWindowMacDelegateCustomSheet();
+  virtual ~ConstrainedWindowMacDelegateCustomSheet();
 
  protected:
   // For when you need to delay initalization after the constructor call.
@@ -146,4 +146,3 @@ class ConstrainedWindowMac : public ConstrainedWindow {
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_MAC_H_
-

@@ -67,7 +67,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
   explicit TabContentsWrapper(TabContents* contents);
-  ~TabContentsWrapper();
+  virtual ~TabContentsWrapper();
 
   // Used to retrieve this object from |tab_contents_|, which is placed in
   // its property bag to avoid adding additional interfaces.

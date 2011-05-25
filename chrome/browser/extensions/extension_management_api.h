@@ -19,31 +19,31 @@ class ExtensionManagementFunction : public SyncExtensionFunction {
 };
 
 class GetAllExtensionsFunction : public ExtensionManagementFunction {
-  ~GetAllExtensionsFunction() {}
+  virtual ~GetAllExtensionsFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("management.getAll");
 };
 
 class GetExtensionByIdFunction : public ExtensionManagementFunction {
-  ~GetExtensionByIdFunction() {}
+  virtual ~GetExtensionByIdFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("management.get");
 };
 
 class LaunchAppFunction : public ExtensionManagementFunction {
-  ~LaunchAppFunction() {}
+  virtual ~LaunchAppFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("management.launchApp");
 };
 
 class SetEnabledFunction : public ExtensionManagementFunction {
-  ~SetEnabledFunction() {}
+  virtual ~SetEnabledFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("management.setEnabled");
 };
 
 class UninstallFunction : public ExtensionManagementFunction {
-  ~UninstallFunction() {}
+  virtual ~UninstallFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("management.uninstall");
 };

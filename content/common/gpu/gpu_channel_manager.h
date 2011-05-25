@@ -47,7 +47,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
                     GpuWatchdog* watchdog,
                     base::MessageLoopProxy* io_message_loop,
                     base::WaitableEvent* shutdown_event);
-  ~GpuChannelManager();
+  virtual ~GpuChannelManager();
 
   // Remove the channel for a particular renderer.
   void RemoveChannel(int renderer_id);

@@ -42,7 +42,7 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
  private:
   friend class BrowserThread;
   friend class DeleteTask<DOMStorageMessageFilter>;
-  ~DOMStorageMessageFilter();
+  virtual ~DOMStorageMessageFilter();
 
   // Message Handlers.
   void OnStorageAreaId(int64 namespace_id, const string16& origin,

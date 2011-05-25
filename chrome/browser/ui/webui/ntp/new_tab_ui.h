@@ -26,7 +26,7 @@ class NewTabUI : public WebUI,
                  public NotificationObserver {
  public:
   explicit NewTabUI(TabContents* manager);
-  ~NewTabUI();
+  virtual ~NewTabUI();
 
   // Override WebUI methods so we can hook up the paint timer to the render
   // view host.

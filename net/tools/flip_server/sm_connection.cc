@@ -23,6 +23,11 @@ namespace net {
 // static
 bool SMConnection::force_spdy_ = false;
 
+DataFrame::~DataFrame() {
+  if (delete_when_done)
+    delete[] data;
+}
+
 SMConnection::SMConnection(EpollServer* epoll_server,
                            SSLState* ssl_state,
                            MemoryCache* memory_cache,
@@ -659,5 +664,3 @@ SMConnection* SMConnection::NewSMConnection(EpollServer* epoll_server,
 }
 
 }  // namespace net
-
-

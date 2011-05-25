@@ -48,7 +48,7 @@ class RtpPacket {
 class RtpReader : public SocketReaderBase {
  public:
   RtpReader();
-  ~RtpReader();
+  virtual ~RtpReader();
 
   // The OnMessageCallback is called whenever a new message is received.
   // Ownership of the message is passed the callback.

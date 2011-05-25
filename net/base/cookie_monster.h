@@ -341,7 +341,7 @@ class NET_API CookieMonster : public CookieStore {
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
 
-  ~CookieMonster();
+  virtual ~CookieMonster();
 
   bool SetCookieWithCreationTime(const GURL& url,
                                  const std::string& cookie_line,

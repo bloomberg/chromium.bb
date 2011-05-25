@@ -15,7 +15,7 @@
 class FontConfigIPC : public FontConfigInterface {
  public:
   explicit FontConfigIPC(int fd);
-  ~FontConfigIPC();
+  virtual ~FontConfigIPC();
 
   // FontConfigInterface implementation.
   virtual bool Match(std::string* result_family,

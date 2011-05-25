@@ -29,7 +29,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
  public:
   AppCacheDispatcherHost(const content::ResourceContext* resource_context,
                          int process_id);
-  ~AppCacheDispatcherHost();
+  virtual ~AppCacheDispatcherHost();
 
   // BrowserIOMessageFilter implementation
   virtual void OnChannelConnected(int32 peer_pid);

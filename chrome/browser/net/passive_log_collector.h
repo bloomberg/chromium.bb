@@ -90,7 +90,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserver {
   class GlobalSourceTracker : public SourceTrackerInterface {
    public:
     GlobalSourceTracker();
-    ~GlobalSourceTracker();
+    virtual ~GlobalSourceTracker();
 
     // SourceTrackerInterface implementation:
     virtual void OnAddEntry(const ChromeNetLog::Entry& entry);
@@ -343,7 +343,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserver {
 
 
   PassiveLogCollector();
-  ~PassiveLogCollector();
+  virtual ~PassiveLogCollector();
 
   // ThreadSafeObserver implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,

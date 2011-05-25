@@ -345,7 +345,7 @@ class URLResult : public URLRow {
   // Constructor that create a URLResult from the specified URL and title match
   // positions from title_matches.
   URLResult(const GURL& url, const Snippet::MatchPositions& title_matches);
-  ~URLResult();
+  virtual ~URLResult();
 
   base::Time visit_time() const { return visit_time_; }
   void set_visit_time(base::Time visit_time) { visit_time_ = visit_time; }

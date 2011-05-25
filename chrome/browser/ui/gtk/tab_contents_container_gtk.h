@@ -26,7 +26,7 @@ class TabContentsContainerGtk : public NotificationObserver,
                                 public ViewIDUtil::Delegate {
  public:
   explicit TabContentsContainerGtk(StatusBubbleGtk* status_bubble);
-  ~TabContentsContainerGtk();
+  virtual ~TabContentsContainerGtk();
 
   void Init();
 
