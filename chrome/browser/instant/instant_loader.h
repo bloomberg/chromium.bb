@@ -150,6 +150,15 @@ class InstantLoader : public NotificationObserver {
   // waiting on the load and |force_if_loading| is false this does nothing.
   void SendBoundsToPage(bool force_if_loading);
 
+  // Called when the TabContentsDelegate wants to swap a new TabContentsWrapper
+  // into our |preview_contents_|.
+  void ReplacePreviewContents(TabContentsWrapper* old_tc,
+                              TabContentsWrapper* new_tc);
+
+  // Called to set up the |preview_contents_| based on |tab_contents| when it is
+  // created or replaced.
+  void SetupPreviewContents(TabContentsWrapper* tab_contents);
+
   // Creates and sets the preview TabContentsWrapper.
   void CreatePreviewContents(TabContentsWrapper* tab_contents);
 

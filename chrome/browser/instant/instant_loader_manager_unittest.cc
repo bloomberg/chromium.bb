@@ -39,6 +39,9 @@ class InstantLoaderDelegateImpl : public InstantLoaderDelegate {
                               const GURL& url) OVERRIDE {
   }
 
+  virtual void SwappedTabContents(InstantLoader* loader) OVERRIDE {
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantLoaderDelegateImpl);
 };

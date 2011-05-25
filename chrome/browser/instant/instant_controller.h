@@ -184,6 +184,7 @@ class InstantController : public InstantLoaderDelegate {
       InstantLoader* loader) OVERRIDE;
   virtual void AddToBlacklist(InstantLoader* loader,
                               const GURL& url) OVERRIDE;
+  virtual void SwappedTabContents(InstantLoader* loader) OVERRIDE;
 
  private:
   friend class InstantTest;

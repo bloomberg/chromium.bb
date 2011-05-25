@@ -500,6 +500,11 @@ void InstantController::AddToBlacklist(InstantLoader* loader, const GURL& url) {
   UpdateDisplayableLoader();
 }
 
+void InstantController::SwappedTabContents(InstantLoader* loader) {
+  if (displayable_loader_ == loader)
+    delegate_->ShowInstant(displayable_loader_->preview_contents());
+}
+
 void InstantController::UpdateDisplayableLoader() {
   InstantLoader* loader = NULL;
   // As soon as the pending loader is displayable it becomes the current loader,

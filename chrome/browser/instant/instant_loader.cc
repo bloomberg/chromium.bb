@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -144,6 +145,7 @@ void InstantLoader::FrameLoadObserver::Observe(
 
 class InstantLoader::TabContentsDelegateImpl
     : public TabContentsDelegate,
+      public TabContentsWrapperDelegate,
       public NotificationObserver,
       public TabContentsObserver,
       public DownloadTabHelperDelegate {
@@ -219,6 +221,10 @@ class InstantLoader::TabContentsDelegateImpl
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type) OVERRIDE;
   virtual bool ShouldShowHungRendererDialog() OVERRIDE;
+
+  // TabContentsWrapperDelegate:
+  virtual void SwapTabContents(TabContentsWrapper* old_tc,
+                               TabContentsWrapper* new_tc) OVERRIDE;
 
   // TabContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -553,6 +559,15 @@ bool InstantLoader::TabContentsDelegateImpl::ShouldShowHungRendererDialog() {
   // false so that doesn't happen.
   return false;
 }
+
+// If this is being called, something is swapping in to our preview_contents_
+// before we've added it to the tab strip.
+void InstantLoader::TabContentsDelegateImpl::SwapTabContents(
+    TabContentsWrapper* old_tc,
+    TabContentsWrapper* new_tc) {
+  loader_->ReplacePreviewContents(old_tc, new_tc);
+}
+
 
 bool InstantLoader::TabContentsDelegateImpl::OnMessageReceived(
     const IPC::Message& message) {
@@ -995,20 +1010,54 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
   }
 }
 
-void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
-  TabContents* new_contents =
-      new TabContents(
-          tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  preview_contents_.reset(new TabContentsWrapper(new_contents));
+void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
+                                           TabContentsWrapper* new_tc) {
+  DCHECK(old_tc == preview_contents_);
+  // We release here without deleting so that the caller still has reponsibility
+  // for deleting the TabContentsWrapper.
+  ignore_result(preview_contents_.release());
+  preview_contents_.reset(new_tc);
+
+  // Make sure the new preview contents acts like the old one.
+  SetupPreviewContents(old_tc);
+
+  // Cleanup the old preview contents.
+  old_tc->download_tab_helper()->set_delegate(NULL);
+  old_tc->tab_contents()->set_delegate(NULL);
+  old_tc->set_delegate(NULL);
+
+#if defined(OS_MACOSX)
+  registrar_.Remove(this,
+                    NotificationType::RENDER_VIEW_HOST_CHANGED,
+                    Source<NavigationController>(&old_tc->controller()));
+#endif
+  registrar_.Remove(this,
+                 NotificationType::NAV_ENTRY_COMMITTED,
+                 Source<NavigationController>(&old_tc->controller()));
+
+  // We prerendered so we should be ready to show. If we're ready, swap in
+  // immediately, otherwise show the preview as normal.
+  if (ready_)
+    delegate_->SwappedTabContents(this);
+  else
+    ShowPreview();
+}
+
+void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
+  preview_contents_->set_delegate(preview_tab_contents_delegate_.get());
+  preview_contents_->tab_contents()->set_delegate(
+      preview_tab_contents_delegate_.get());
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
-  preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
-  new_contents->set_delegate(preview_tab_contents_delegate_.get());
+
+  // Propagate the max page id. That way if we end up merging the two
+  // NavigationControllers (which happens if we commit) none of the page ids
+  // will overlap.
+  int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
+  if (max_page_id != -1)
+    preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
+
   preview_contents_->download_tab_helper()->set_delegate(
       preview_tab_contents_delegate_.get());
-
-  gfx::Rect tab_bounds;
-  tab_contents->view()->GetContainerBounds(&tab_bounds);
-  preview_contents_->view()->SizeContents(tab_bounds.size());
 
 #if defined(OS_MACOSX)
   // If |preview_contents_| does not currently have a RWHV, we will call
@@ -1028,6 +1077,19 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
       this,
       NotificationType::NAV_ENTRY_COMMITTED,
       Source<NavigationController>(&preview_contents_->controller()));
+
+  gfx::Rect tab_bounds;
+  tab_contents->view()->GetContainerBounds(&tab_bounds);
+  preview_contents_->view()->SizeContents(tab_bounds.size());
+}
+
+void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
+  TabContents* new_contents =
+      new TabContents(
+          tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  preview_contents_.reset(new TabContentsWrapper(new_contents));
+  preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
+  SetupPreviewContents(tab_contents);
 
   preview_contents_->tab_contents()->ShowContents();
 }
