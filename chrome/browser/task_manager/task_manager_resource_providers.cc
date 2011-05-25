@@ -197,9 +197,11 @@ TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
 
 string16 TaskManagerTabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
-  string16 tab_title = tab_contents_->tab_contents()->GetTitle();
+  TabContents* contents = tab_contents_->tab_contents();
+  string16 tab_title = contents->GetTitle();
+  GURL url = contents->GetURL();
   if (tab_title.empty()) {
-    tab_title = UTF8ToUTF16(tab_contents_->tab_contents()->GetURL().spec());
+    tab_title = UTF8ToUTF16(url.spec());
     // Force URL to be LTR.
     tab_title = base::i18n::GetDisplayStringInLTRDirectionality(tab_title);
   } else {
@@ -215,13 +217,17 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
     base::i18n::AdjustStringForLocaleDirection(&tab_title);
   }
 
+  // Only classify as an app if the URL is an app and the tab is hosting an
+  // extension process.  (It's possible to be showing the URL from before it
+  // was installed as an app.)
   ExtensionService* extensions_service =
       tab_contents_->profile()->GetExtensionService();
+  bool is_app = extensions_service->IsInstalledApp(url) &&
+      contents->GetRenderProcessHost()->is_extension_process();
 
   int message_id = GetMessagePrefixID(
-      extensions_service->IsInstalledApp(
-          tab_contents_->tab_contents()->GetURL()),
-      tab_contents_->tab_contents()->HostsExtension(),
+      is_app,
+      contents->HostsExtension(),
       tab_contents_->profile()->IsOffTheRecord(),
       IsPrerendering());
   return l10n_util::GetStringFUTF16(message_id, tab_title);

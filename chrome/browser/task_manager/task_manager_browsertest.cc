@@ -27,6 +27,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/page_transition_types.h"
 #include "grit/generated_resources.h"
+#include "net/base/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -304,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   // a tab contents and an extension. The title should start with "App:".
   ASSERT_EQ(TaskManager::Resource::EXTENSION, model()->GetResourceType(2));
   ASSERT_TRUE(model()->GetResourceTabContents(2) != NULL);
-  ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
+  ASSERT_TRUE(model()->GetResourceExtension(2) == extension);
   string16 prefix = l10n_util::GetStringFUTF16(
       IDS_TASK_MANAGER_APP_PREFIX, string16());
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
@@ -312,6 +313,56 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   // Unload extension to avoid crash on Windows.
   UnloadExtension(last_loaded_extension_id_);
   WaitForResourceChange(2);
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  // Browser and the New Tab Page.
+  WaitForResourceChange(2);
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process/");
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  // Open a new tab to an app URL before the app is loaded.
+  GURL url(base_url.Resolve("path1/empty.html"));
+  AddTabAtIndex(0, url, PageTransition::TYPED);
+  ui_test_utils::WaitForNavigation(
+      &browser()->GetSelectedTabContents()->controller());
+
+  // Check that the third entry's title starts with "Tab:".
+  string16 tab_prefix = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_TAB_PREFIX, string16());
+  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), tab_prefix, true));
+
+  // Load the hosted app and make sure it still starts with "Tab:",
+  // since it hasn't changed to an app process yet.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("api_test").AppendASCII("app_process")));
+  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), tab_prefix, true));
+
+  // Now reload and check that the third entry's title now starts with "App:".
+  ui_test_utils::NavigateToURL(browser(), url);
+  string16 app_prefix = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_APP_PREFIX, string16());
+  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), app_prefix, true));
+
+  // Disable extension and reload page.
+  DisableExtension(last_loaded_extension_id_);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // The third entry's title should be back to a normal tab.
+  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), tab_prefix, true));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {

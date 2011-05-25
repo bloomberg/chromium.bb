@@ -105,6 +105,11 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   // Darin suggests.
   SiteInstance* GetRelatedSiteInstance(const GURL& url);
 
+  // Returns whether this SiteInstance has a process that is the wrong type for
+  // the given URL.  If so, the browser should force a process swap when
+  // navigating to the URL.
+  bool HasWrongProcessForURL(const GURL& url) const;
+
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
   // from scratch (or similar circumstances).  Callers should ensure that

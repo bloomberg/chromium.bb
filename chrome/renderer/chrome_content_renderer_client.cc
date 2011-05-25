@@ -558,6 +558,16 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(WebFrame* frame,
   if (old_url.is_empty() && frame->opener())
     old_url = frame->opener()->url();
 
+  // If this is a reload, check whether it has the wrong process type.  We
+  // should send it to the browser if it's an extension URL (e.g., hosted app)
+  // in a normal process, or if it's a process for an extension that has been
+  // uninstalled.
+  if (old_url == new_url) {
+    bool is_extension_url = !!extensions->GetByURL(new_url);
+    if (is_extension_url != extension_dispatcher_->is_extension_process())
+      return true;
+  }
+
   return !extensions->InSameExtent(old_url, new_url);
 }
 

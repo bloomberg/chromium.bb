@@ -206,7 +206,7 @@ class NavigationEntry {
   //
   // Note that the SiteInstance should usually not be changed after it is set,
   // but this may happen if the NavigationEntry was cloned and needs to use a
-  // different SiteInstance.
+  // different SiteInstance, or if a hosted app is installed or uninstalled.
   void set_site_instance(SiteInstance* site_instance);
   SiteInstance* site_instance() const {
     return site_instance_;

@@ -116,6 +116,18 @@ SiteInstance* SiteInstance::GetRelatedSiteInstance(const GURL& url) {
   return browsing_instance_->GetSiteInstanceForURL(url);
 }
 
+bool SiteInstance::HasWrongProcessForURL(const GURL& url) const {
+  // Having no process isn't a problem, since we'll assign it correctly.
+  if (!HasProcess())
+    return false;
+
+  // If the effective URL is an extension (e.g., for hosted apps) but the
+  // process is not (or vice versa), make sure we notice and fix it.
+  GURL effective_url = GetEffectiveURL(browsing_instance_->profile(), url);
+  return effective_url.SchemeIs(chrome::kExtensionScheme) !=
+      process_->is_extension_process();
+}
+
 /*static*/
 SiteInstance* SiteInstance::CreateSiteInstance(Profile* profile) {
   return new SiteInstance(new BrowsingInstance(profile));

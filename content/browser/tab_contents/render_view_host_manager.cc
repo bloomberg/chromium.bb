@@ -393,9 +393,19 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     SiteInstance* curr_instance) {
   // NOTE: This is only called when ShouldTransitionCrossSite is true.
 
-  // If the entry has an instance already, we should use it.
-  if (entry.site_instance())
-    return entry.site_instance();
+  const GURL& dest_url = entry.url();
+  NavigationController& controller = delegate_->GetControllerForRenderManager();
+  Profile* profile = controller.profile();
+
+  // If the entry has an instance already we should use it, unless the URL
+  // is part of an app that has been installed or uninstalled since the last
+  // visit.
+  if (entry.site_instance()) {
+    if (entry.site_instance()->HasWrongProcessForURL(dest_url))
+      return curr_instance->GetRelatedSiteInstance(dest_url);
+    else
+      return entry.site_instance();
+  }
 
   // (UGLY) HEURISTIC, process-per-site only:
   //
@@ -410,10 +420,6 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
       entry.transition_type() == PageTransition::GENERATED)
     return curr_instance;
-
-  const GURL& dest_url = entry.url();
-  NavigationController& controller = delegate_->GetControllerForRenderManager();
-  Profile* profile = controller.profile();
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
@@ -480,7 +486,11 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   const GURL& current_url = (curr_entry) ? curr_entry->url() :
       curr_instance->site();
 
-  if (SiteInstance::IsSameWebSite(profile, current_url, dest_url)) {
+  // Use the current SiteInstance for same site navigations, as long as the
+  // process type is correct.  (The URL may have been installed as an app since
+  // the last time we visited it.)
+  if (SiteInstance::IsSameWebSite(profile, current_url, dest_url) &&
+      !curr_instance->HasWrongProcessForURL(dest_url)) {
     return curr_instance;
   } else if (ShouldSwapProcessesForNavigation(curr_entry, &entry)) {
     // When we're swapping, we need to force the site instance AND browsing
