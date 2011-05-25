@@ -93,6 +93,7 @@
       # crbug.com/50481, crbug.com/54942
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
+      '-downloads.DownloadsTest.testDownloadsPersistence',  # crbug.com/83942
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/70694, crbug.com/73078
