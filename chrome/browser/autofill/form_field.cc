@@ -81,6 +81,26 @@ FormField* ParseFormField(AutofillScanner* scanner, bool is_ecml) {
   return NameField::Parse(scanner, is_ecml);
 }
 
+bool IsTextField(const string16& type) {
+  return type == ASCIIToUTF16("text");
+}
+
+bool IsEmailField(const string16& type) {
+  return type == ASCIIToUTF16("email");
+}
+
+bool IsMonthField(const string16& type) {
+  return type == ASCIIToUTF16("month");
+}
+
+bool IsTelephoneField(const string16& type) {
+  return type == ASCIIToUTF16("tel");
+}
+
+bool IsSelectField(const string16& type) {
+  return type == ASCIIToUTF16("select-one");
+}
+
 }  // namespace
 
 // static
@@ -109,7 +129,7 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
 bool FormField::ParseField(AutofillScanner* scanner,
                            const string16& pattern,
                            const AutofillField** match) {
-  return ParseFieldSpecifics(scanner, pattern, MATCH_ALL, match);
+  return ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT, match);
 }
 
 // static
@@ -121,12 +141,20 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
     return false;
 
   const AutofillField* field = scanner->Cursor();
-  if (Match(field, pattern, match_type)) {
-    if (match)
-      *match = field;
-    scanner->Advance();
-    return true;
+
+  if ((match_type & MATCH_TEXT) && IsTextField(field->form_control_type))
+    return MatchAndAdvance(scanner, pattern, match_type, match);
+
+  if ((match_type & MATCH_EMAIL) && IsEmailField(field->form_control_type))
+    return MatchAndAdvance(scanner, pattern, match_type, match);
+
+  if ((match_type & MATCH_TELEPHONE) &&
+      IsTelephoneField(field->form_control_type)) {
+    return MatchAndAdvance(scanner, pattern, match_type, match);
   }
+
+  if ((match_type & MATCH_SELECT) && IsSelectField(field->form_control_type))
+    return MatchAndAdvance(scanner, pattern, match_type, match);
 
   return false;
 }
@@ -134,7 +162,10 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 // static
 bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
                                 const AutofillField** match) {
-  return ParseFieldSpecifics(scanner, ASCIIToUTF16("^$"), MATCH_LABEL, match);
+  return ParseFieldSpecifics(scanner,
+                             ASCIIToUTF16("^$"),
+                             MATCH_LABEL | MATCH_ALL_INPUTS,
+                             match);
 }
 
 // static
@@ -146,6 +177,22 @@ bool FormField::AddClassification(const AutofillField* field,
     return true;
 
   return map->insert(make_pair(field->unique_name(), type)).second;
+}
+
+// static.
+bool FormField::MatchAndAdvance(AutofillScanner* scanner,
+                                const string16& pattern,
+                                int match_type,
+                                const AutofillField** match) {
+  const AutofillField* field = scanner->Cursor();
+  if (FormField::Match(field, pattern, match_type)) {
+    if (match)
+      *match = field;
+    scanner->Advance();
+    return true;
+  }
+
+  return false;
 }
 
 // static

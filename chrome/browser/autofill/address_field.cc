@@ -195,7 +195,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE);
 
     if (!ParseField(scanner, pattern, &address_field->address1_) &&
-        !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL,
+        !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
                              &address_field->address1_)) {
       return false;
     }
@@ -214,7 +214,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE);
     if (!ParseEmptyLabel(scanner, &address_field->address2_) &&
         !ParseField(scanner, pattern, &address_field->address2_)) {
-      ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL,
+      ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
                           &address_field->address2_);
     }
   }
@@ -250,7 +250,8 @@ bool AddressField::ParseCountry(AutofillScanner* scanner,
   else
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_COUNTRY_RE);
 
-  return ParseField(scanner, pattern, &address_field->country_);
+  return ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
+                             &address_field->country_);
 }
 
 // static
@@ -334,7 +335,8 @@ bool AddressField::ParseState(AutofillScanner* scanner,
   else
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_STATE_RE);
 
-  return ParseField(scanner, pattern, &address_field->state_);
+  return ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
+                             &address_field->state_);
 }
 
 AddressType AddressField::AddressTypeFromText(const string16 &text) {

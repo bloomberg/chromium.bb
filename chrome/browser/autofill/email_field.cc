@@ -20,8 +20,10 @@ EmailField* EmailField::Parse(AutofillScanner* scanner, bool is_ecml) {
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EMAIL_RE);
 
   const AutofillField* field;
-  if (ParseField(scanner, pattern, &field))
+  if (ParseFieldSpecifics(scanner, pattern,
+                          MATCH_DEFAULT | MATCH_EMAIL, &field)) {
     return new EmailField(field);
+  }
 
   return NULL;
 }

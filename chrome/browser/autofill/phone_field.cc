@@ -269,9 +269,11 @@ bool PhoneField::ParseInternal(PhoneField *phone_field,
     // Attempt to parse according to the next grammar.
     for (; i < arraysize(phone_field_grammars_) &&
          phone_field_grammars_[i].regex != REGEX_SEPARATOR; ++i) {
-      if (!ParseField(scanner,
-                      phone_field->GetRegExp(phone_field_grammars_[i].regex),
-                      &parsed_fields[phone_field_grammars_[i].phone_part]))
+      if (!ParseFieldSpecifics(
+              scanner,
+              phone_field->GetRegExp(phone_field_grammars_[i].regex),
+              MATCH_DEFAULT | MATCH_TELEPHONE,
+              &parsed_fields[phone_field_grammars_[i].phone_part]))
         break;
       if (phone_field_grammars_[i].max_size &&
           (!parsed_fields[phone_field_grammars_[i].phone_part]->max_length ||

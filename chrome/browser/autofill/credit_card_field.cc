@@ -122,14 +122,15 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
 
       if ((!credit_card_field->expiration_month_ ||
            credit_card_field->expiration_month_->IsEmpty()) &&
-          ParseField(scanner, pattern, &credit_card_field->expiration_month_)) {
+          ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
+                              &credit_card_field->expiration_month_)) {
         if (is_ecml)
           pattern = GetEcmlPattern(kEcmlCardExpireYear);
         else
           pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
 
-        if (!ParseField(scanner, pattern,
-                        &credit_card_field->expiration_year_)) {
+        if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
+                                 &credit_card_field->expiration_year_)) {
           scanner->Rewind();
           return NULL;
         }
@@ -137,8 +138,10 @@ CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
       }
     }
 
-    if (ParseField(scanner, GetEcmlPattern(kEcmlCardExpireDay), NULL))
+    if (ParseFieldSpecifics(scanner, GetEcmlPattern(kEcmlCardExpireDay),
+                            MATCH_DEFAULT | MATCH_SELECT, NULL)) {
       continue;
+    }
 
     // Some pages (e.g. ExpediaBilling.html) have a "card description"
     // field; we parse this field but ignore it.

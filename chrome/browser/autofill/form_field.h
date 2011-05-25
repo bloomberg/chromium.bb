@@ -32,9 +32,20 @@ class FormField {
  protected:
   // A bit-field used for matching specific parts of a field in question.
   enum MatchType {
-    MATCH_LABEL  = 1 << 0,
-    MATCH_NAME   = 1 << 1,
-    MATCH_ALL    = MATCH_LABEL | MATCH_NAME
+    // Attributes.
+    MATCH_LABEL      = 1 << 0,
+    MATCH_NAME       = 1 << 1,
+
+    // Input types.
+    MATCH_TEXT       = 1 << 2,
+    MATCH_EMAIL      = 1 << 3,
+    MATCH_TELEPHONE  = 1 << 4,
+    MATCH_SELECT     = 1 << 5,
+    MATCH_ALL_INPUTS =
+        MATCH_TEXT | MATCH_EMAIL | MATCH_TELEPHONE | MATCH_SELECT,
+
+    // By default match label and name for input/text types.
+    MATCH_DEFAULT    = MATCH_LABEL | MATCH_NAME | MATCH_TEXT,
   };
 
   // Only derived classes may instantiate.
@@ -74,6 +85,15 @@ class FormField {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FormFieldTest, Match);
+
+  // Matches |pattern| to the contents of the field at the head of the
+  // |scanner|.
+  // Returns |true| if a match is found according to |match_type|, and |false|
+  // otherwise.
+  static bool MatchAndAdvance(AutofillScanner* scanner,
+                              const string16& pattern,
+                              int match_type,
+                              const AutofillField** match);
 
   // Matches the regular expression |pattern| against the components of |field|
   // as specified in the |match_type| bit field (see |MatchType|).
