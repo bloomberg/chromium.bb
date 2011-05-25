@@ -101,15 +101,6 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
   return dictionary;
 }
 
-// If |profile| is not incognito, returns it. Otherwise returns the real
-// (not incognito) default profile.
-Profile* GetDefaultProfile(Profile* profile) {
-  if (!profile->IsOffTheRecord())
-    return profile;
-  else
-    return g_browser_process->profile_manager()->GetDefaultProfile();
-}
-
 }  // namespace
 
 // static
@@ -470,7 +461,7 @@ bool CompleteInstallFunction::RunImpl() {
 bool GetBrowserLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
-  result_.reset(CreateLoginResult(GetDefaultProfile(profile_)));
+  result_.reset(CreateLoginResult(profile_->GetOriginalProfile()));
   return true;
 }
 
@@ -514,7 +505,7 @@ bool PromptBrowserLoginFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &preferred_email));
   }
 
-  Profile* profile = GetDefaultProfile(profile_);
+  Profile* profile = profile_->GetOriginalProfile();
 
   // Login can currently only be invoked tab-modal.  Since this is
   // coming from the webstore, we should always have a tab, but check
@@ -566,7 +557,7 @@ void PromptBrowserLoginFunction::OnLoginSuccess() {
   // Ensure that apps are synced.
   // - If the user has already setup sync, we add Apps to the current types.
   // - If not, we create a new set which is just Apps.
-  ProfileSyncService* service = GetSyncService(GetDefaultProfile(profile_));
+  ProfileSyncService* service = GetSyncService(profile_->GetOriginalProfile());
   syncable::ModelTypeSet types;
   if (service->HasSyncSetupCompleted())
     service->GetPreferredDataTypes(&types);
@@ -608,7 +599,7 @@ void PromptBrowserLoginFunction::Observe(NotificationType type,
 
   DCHECK(waiting_for_token_);
 
-  result_.reset(CreateLoginResult(GetDefaultProfile(profile_)));
+  result_.reset(CreateLoginResult(profile_->GetOriginalProfile()));
   SendResponse(true);
 
   // Matches the AddRef in RunImpl().
