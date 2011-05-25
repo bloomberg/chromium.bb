@@ -10,12 +10,20 @@ import sys
 
 def Main():
   pwd = os.environ.get('PWD', '')
-  # TODO(ncbray): figure out why this is failing on windows and enable.
-  if sys.platform in ['win32', 'cygwin'] and 'nacl-chrome' not in pwd: return
-  # TODO(ncbray): figure out why this is failing on mac and re-enable.
-  if sys.platform == 'darwin' and 'nacl-chrome' not in pwd: return
-  # TODO(ncbray): figure out why this is failing on some linux trybots.
-  if sys.platform in ['linux', 'linux2'] and 'nacl-chrome' not in pwd: return
+  is_integration_bot = 'nacl-chrome' in pwd
+
+  if not is_integration_bot:
+    # On the main Chrome waterfall, we may need to control where the tests are
+    # run.
+
+    # TODO(ncbray): enable on all platforms.
+    if sys.platform in ['win32', 'cygwin']: return
+    if sys.platform == 'darwin': return
+    # if sys.platform in ['linux', 'linux2']: return
+
+    # Uncomment the following line if there is skew in the PPAPI interface
+    # and the tests are failing.  Comment out once the issues are resolved.
+    # return
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
   test_dir = os.path.dirname(script_dir)
