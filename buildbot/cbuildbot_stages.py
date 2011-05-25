@@ -426,7 +426,7 @@ class BuildTargetStage(BuilderStage):
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
           self._build_config['rev_overlays'], [], self._prebuilt_type,
-          False)
+          None, self._options.buildnumber)
 
     commands.BuildImage(self._build_root, extra_env=env)
 
@@ -516,7 +516,8 @@ class PushChangesStage(BuilderStage):
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
           self._build_config['rev_overlays'], [BuilderStage.new_binhost],
-          self._prebuilt_type, self._options.chrome_rev)
+          self._prebuilt_type, self._options.chrome_rev,
+          self._options.buildnumber)
 
     commands.UprevPush(self._build_root,
                        self._build_config['board'],
