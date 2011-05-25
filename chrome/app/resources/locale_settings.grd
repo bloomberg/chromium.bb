@@ -553,6 +553,15 @@
       <message name="IDS_DEFAULT_SEARCH_WIDTH_CHARS" use_name_for_id="true">
         82
       </message>
+
+      <!-- The width and height of the About Panel Information bubble in -->
+      <!-- characters and lines (See above). -->
+      <message name="IDS_ABOUTPANELBUBBLE_WIDTH_CHARS" use_name_for_id="true">
+        56
+      </message>
+      <message name="IDS_ABOUTPANELBUBBLE_HEIGHT_LINES" use_name_for_id="true">
+        8
+      </message>
     </messages>
   </release>
 </grit>

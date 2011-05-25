@@ -475,6 +475,13 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id) {
   return t;
 }
 
+std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
+  std::string prefix(kCrxAppPrefix);
+  if (app_name.substr(0, prefix.length()) != prefix)
+    return std::string();
+  return app_name.substr(prefix.length());
+}
+
 void CreateShortcut(
     const FilePath& data_dir,
     const ShellIntegration::ShortcutInfo& shortcut_info,

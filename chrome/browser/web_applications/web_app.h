@@ -30,6 +30,9 @@ std::string GenerateApplicationNameFromURL(const GURL& url);
 // Compute a deterministic name based on an extension/apps's id.
 std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 
+// Extracts the extension id from the app name.
+std::string GetExtensionIdFromApplicationName(const std::string& app_name);
+
 // Callback after user dismisses CreateShortcutView. "true" indicates
 // shortcut is created successfully. Otherwise, it is false.
 typedef Callback1<bool>::Type CreateShortcutCallback;

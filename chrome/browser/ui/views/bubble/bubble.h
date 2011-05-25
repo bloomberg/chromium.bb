@@ -130,6 +130,10 @@ class Bubble
   virtual void AnimationEnded(const ui::Animation* animation);
   virtual void AnimationProgressed(const ui::Animation* animation);
 
+#ifdef UNIT_TEST
+  views::View* contents() const { return contents_; }
+#endif
+
   static const SkColor kBackgroundColor;
 
  protected:

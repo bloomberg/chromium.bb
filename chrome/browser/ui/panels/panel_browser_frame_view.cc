@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/panels/about_panel_bubble.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -407,6 +408,16 @@ void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == close_button_)
     frame_->Close();
+  else if (sender == info_button_) {
+    gfx::Point origin(info_button_->bounds().origin());
+    views::View::ConvertPointToScreen(this, &origin);
+    AboutPanelBubble::Show(
+        GetWidget(),
+        gfx::Rect(origin, info_button_->bounds().size()),
+        BubbleBorder::BOTTOM_RIGHT,
+        GetFaviconForTabIconView(),
+        browser_view_->browser());
+  }
 }
 
 bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {

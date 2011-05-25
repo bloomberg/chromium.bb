@@ -3,17 +3,27 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/i18n/time_formatting.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/panels/about_panel_bubble.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/button/image_button.h"
+#include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
+#include "views/controls/textfield/textfield.h"
 
 class PanelBrowserViewTest : public InProcessBrowserTest {
  public:
@@ -405,5 +415,96 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
     browser_views[i]->panel()->Close();
     EXPECT_FALSE(browser_views[i]->panel());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, AboutPanelBubble) {
+  ExtensionService* extension_service =
+      browser()->GetProfile()->GetExtensionService();
+
+  // Create a testing extension.
+#if defined(OS_WIN)
+  FilePath path(FILE_PATH_LITERAL("c:\\foo"));
+#else
+  FilePath path(FILE_PATH_LITERAL("/foo"));
+#endif
+  DictionaryValue input_value;
+  input_value.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
+  input_value.SetString(extension_manifest_keys::kName, "Sample Extension");
+  input_value.SetString(extension_manifest_keys::kDescription,
+                        "Sample Description");
+  scoped_refptr<Extension> extension(Extension::Create(path, Extension::INVALID,
+      input_value, Extension::STRICT_ERROR_CHECKS, NULL));
+  ASSERT_TRUE(extension.get());
+  extension_service->AddExtension(extension.get());
+  // Make sure that async task ExtensionPrefs::OnExtensionInstalled gets a
+  // chance to be procesed.
+  MessageLoop::current()->RunAllPending();
+
+  extension_service->extension_prefs()->OnExtensionInstalled(
+      extension, Extension::ENABLED);
+
+  // Create a panel with the app name that comes from the extension ID.
+  PanelBrowserView* browser_view = CreatePanelBrowserView(
+      web_app::GenerateApplicationNameFromExtensionId(extension->id()));
+
+  AboutPanelBubble* bubble = AboutPanelBubble::Show(
+      browser_view->GetWidget(),
+      gfx::Rect(),
+      BubbleBorder::BOTTOM_RIGHT,
+      SkBitmap(),
+      browser_view->browser());
+  AboutPanelBubble::AboutPanelBubbleView* contents =
+      static_cast<AboutPanelBubble::AboutPanelBubbleView*>(bubble->contents());
+
+  // We should have the expected controls.
+  EXPECT_EQ(6, contents->child_count());
+  EXPECT_TRUE(contents->Contains(contents->icon_));
+  EXPECT_TRUE(contents->Contains(contents->title_));
+  EXPECT_TRUE(contents->Contains(contents->install_date_));
+  EXPECT_TRUE(contents->Contains(contents->description_));
+  EXPECT_TRUE(contents->Contains(contents->uninstall_link_));
+  EXPECT_TRUE(contents->Contains(contents->report_abuse_link_));
+
+  // These controls should be visible.
+  EXPECT_TRUE(contents->icon_->IsVisible());
+  EXPECT_TRUE(contents->title_->IsVisible());
+  EXPECT_TRUE(contents->install_date_->IsVisible());
+  EXPECT_TRUE(contents->description_->IsVisible());
+  EXPECT_TRUE(contents->uninstall_link_->IsVisible());
+  EXPECT_TRUE(contents->report_abuse_link_->IsVisible());
+
+  // Validate their layouts.
+  EXPECT_GT(contents->title_->x(), contents->icon_->x());
+  EXPECT_GT(contents->title_->width(), 0);
+  EXPECT_GT(contents->title_->height(), 0);
+  EXPECT_EQ(contents->install_date_->x(), contents->title_->x());
+  EXPECT_GT(contents->install_date_->y(), contents->title_->y());
+  EXPECT_GT(contents->install_date_->width(), 0);
+  EXPECT_GT(contents->install_date_->height(), 0);
+  EXPECT_EQ(contents->description_->x(), contents->install_date_->x());
+  EXPECT_GT(contents->description_->y(), contents->install_date_->y());
+  EXPECT_GT(contents->description_->width(), 0);
+  EXPECT_GT(contents->description_->height(), 0);
+  EXPECT_EQ(contents->uninstall_link_->x(), contents->description_->x());
+  EXPECT_GT(contents->uninstall_link_->y(), contents->description_->y());
+  EXPECT_GT(contents->uninstall_link_->width(), 0);
+  EXPECT_GT(contents->uninstall_link_->height(), 0);
+  EXPECT_GT(contents->report_abuse_link_->x(), contents->uninstall_link_->x());
+  EXPECT_EQ(contents->report_abuse_link_->y(), contents->uninstall_link_->y());
+  EXPECT_GT(contents->report_abuse_link_->width(), 0);
+  EXPECT_GT(contents->report_abuse_link_->height(), 0);
+
+  // Validates the texts.
+  base::Time install_time =
+      extension_service->extension_prefs()->GetInstallTime(extension->id());
+  string16 time_text = l10n_util::GetStringFUTF16(
+      IDS_ABOUT_PANEL_BUBBLE_EXTENSION_INSTALL_DATE,
+      base::TimeFormatFriendlyDate(
+          extension_service->extension_prefs()->GetInstallTime(
+              extension->id())));
+  EXPECT_STREQ(UTF16ToUTF8(time_text).c_str(),
+               WideToUTF8(contents->install_date_->GetText()).c_str());
+  EXPECT_STREQ(extension->description().c_str(),
+               UTF16ToUTF8(contents->description_->text()).c_str());
 }
 #endif

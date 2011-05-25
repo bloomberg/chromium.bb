@@ -12496,6 +12496,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       bookmarks_<ph name="DATESTAMP">$1<ex>02_11_11</ex></ph>.html
     </message>
 
+    <!-- Panels -->
+    <message name="IDS_ABOUT_PANEL_BUBBLE_EXTENSION_INSTALL_DATE" desc="Text for the label of the about panel bubble to show the extension install date.">
+      Extension installed: <ph name="DATE">$1<ex>January 1, 2011</ex></ph>
+    </message>
+    <message name="IDS_ABOUT_PANEL_BUBBLE_UNINSTALL_EXTENSION" desc="Text for the link shown on the about panel bubble to uninstall the extension.">
+      Uninstall <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
+    </message>
+    <message name="IDS_ABOUT_PANEL_BUBBLE_REPORT_ABUSE" desc="Text for the link shown on the about panel bubble to report the abuse.">
+      Report abuse
+    </message>
+
     </messages>
     <includes>
       <if expr="pp_ifdef('_google_chrome')">
