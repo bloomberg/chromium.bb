@@ -2,6 +2,11 @@
 <html id="t" i18n-values="dir:textdirection">
 <head>
 <meta charset="utf-8">
+<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
+     TODO(tsepez) rename when Content-security-policy is done.
+     TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
+-->
+<meta http-equiv="X-WebKit-CSP" content="object-src 'none'; script-src chrome://resources 'self' 'unsafe-eval'">
 <!-- Set the title to that of the default page so that the title doesn't flash
      on load (for the most common case). -->
 <title i18n-content="browserPageTabTitle"></title>

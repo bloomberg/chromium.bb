@@ -2,11 +2,15 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
+<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
+     TODO(tsepez) rename when Content-security-policy is done.
+     TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
+-->
+<meta http-equiv="X-WebKit-CSP" content="object-src 'none'; script-src chrome://resources 'self' 'unsafe-eval'">
 <title i18n-content="title"></title>
 <link rel="icon" href="../../app/theme/history_favicon.png">
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
-<script src="chrome://history/history.js"></script>
 <link rel="stylesheet" href="webui.css">
 <style>
 #results-separator {
@@ -119,16 +123,14 @@ html[dir='rtl'] .entry .title > a {
   padding-top:24px;
   -webkit-margin-start:18px;
 }
-
 </style>
 </head>
-<body onload="load();" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div class="header">
-  <a href="" onclick="setSearch(''); return false;">
+  <a id="history-section" href="">
     <img src="shared/images/history_section.png"
          width="67" height="67" class="logo" border="0"></a>
-  <form method="post" action=""
-      onsubmit="setSearch(this.term.value); return false;"
+  <form id="search-form" method="post" action=""
       class="form">
     <input type="text" name="term" id="term">
     <input type="submit" name="submit" i18n-values="value:searchbutton">
@@ -146,6 +148,7 @@ html[dir='rtl'] .entry .title > a {
 </div>
 <div class="footer">
 </div>
+<script src="chrome://history/history.js"></script>
 <script src="chrome://history/strings.js"></script>
 <script src="chrome://resources/js/i18n_template.js"></script>
 <script src="chrome://resources/js/i18n_process.js"></script>

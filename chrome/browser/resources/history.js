@@ -1037,3 +1037,14 @@ function deleteFailed() {
   setTimeout(deleteNextInQueue, 500);
 }
 
+// Add handlers to HTML elements.
+document.body.onload = load;
+$('history-section').onclick = function () {
+  setSearch('');
+  return false;
+};
+$('search-form').onsubmit = function () {
+  setSearch(this.term.value);
+  return false;
+}
+

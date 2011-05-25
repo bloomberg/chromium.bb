@@ -53,9 +53,14 @@
     throw new Error(message);
   }
 
-  function runTest(currentTest, testArguments) {
+  function runTest(testFunction, testArguments) {
     try {
-      currentTest = eval(currentTest);
+      // Avoid eval() if at all possible, since it will not work on pages
+      // that have enabled content-security-policy.
+      currentTest = this[testFunction];    // global object -- not a method.
+      if (typeof currentTest === "undefined") {
+        currentTest = eval(testFunction);
+      }
       console.log('Running test ' + currentTest.name);
       currentTest.apply(null, testArguments);
     } catch (e) {

@@ -587,3 +587,15 @@ function downloadUpdated(results) {
   }
 }
 
+// Add handlers to HTML elements.
+document.body.onload = load;
+$('clear-all').onclick = function () { clearAll(''); };
+$('search-link').onclick = function () {
+  setSearch('');
+  return false;
+};
+$('search-form').onsubmit = function () {
+  setSearch(this.term.value);
+  return false;
+};
+
