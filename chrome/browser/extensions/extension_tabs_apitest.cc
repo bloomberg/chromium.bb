@@ -97,7 +97,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabJpeg) {
+// Test is flaky. See http://crbug.com/83876
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_CaptureVisibleTabJpeg) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
