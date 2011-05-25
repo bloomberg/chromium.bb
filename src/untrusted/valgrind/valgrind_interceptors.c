@@ -404,9 +404,86 @@ int VG_NACL_ANY_FUNC(strcmp)(char* s1, char* s2) {
   return 0;
 }
 
-#ifndef __GLIBC__
+#ifdef __GLIBC__
+
+static void* tsan_start_thread(void* arg) {
+  size_t* args;
+  void* (*start_routine)(void*);
+  size_t real_arg;
+
+  start_ignore_all_accesses();
+  VG_CREQ_v_W(TSREQ_SET_MY_PTHREAD_T, pthread_self());
+
+  args = (size_t*)arg;
+  start_routine = (void* (*)(void*))args[0];
+  real_arg = args[1];
+
+  /* Let the tool guess where the stack starts. */
+  VG_CREQ_v_W(TSREQ_THR_STACK_TOP,
+      VALGRIND_SANDBOX_PTR((size_t)&args));
+
+  __sync_synchronize();
+  args[2] = 0; /* The parent may continue. */
+  stop_ignore_all_accesses();
+
+  return start_routine((void*)real_arg);
+}
+
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucreateZAZa)(size_t thread, size_t attr,
+    size_t start_routine, size_t arg) {
+  OrigFn fn;
+  int ret;
+  volatile size_t args[3];
+  VALGRIND_GET_ORIG_FN(fn);
+
+  args[0] = start_routine;
+  args[1] = arg;
+  args[2] = 1;
+
+  CALL_FN_W_WWWW(ret, fn, thread, attr, (size_t)tsan_start_thread,
+      (size_t)&args);
+
+  start_ignore_all_accesses();
+  if (!ret)
+    while (args[2])
+      sched_yield();
+
+  __sync_synchronize();
+  stop_ignore_all_accesses();
+
+  return ret;
+}
+
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZujoin)(size_t thread, size_t value_ptr) {
+  OrigFn fn;
+  int ret;
+  VALGRIND_GET_ORIG_FN(fn);
+  CALL_FN_W_WW(ret, fn, thread, value_ptr);
+
+  /* *(int*)0=0; */
+
+  if (!ret) /* success */
+    VG_CREQ_v_W(TSREQ_PTHREAD_JOIN_POST, thread);
+
+  return ret;
+}
+
+#else
+
+void VG_NACL_NONE_FUNC(ncZuthreadZustarter)(size_t func, size_t state) {
+  OrigFn fn;
+  int local_stack_var = 0;
+
+  /* Let the tool guess where the stack starts. */
+  VG_CREQ_v_W(TSREQ_THR_STACK_TOP, (size_t)&local_stack_var);
+
+  VALGRIND_GET_ORIG_FN(fn);
+  CALL_FN_v_WW(fn, func, state);
+}
+
 /* nc_allocate_memory_block_mu() - a cached malloc for thread stack & tls. */
-size_t VG_NACL_NONE_FUNC(nc_allocate_memory_block_mu)(int type, size_t size) {
+size_t VG_NACL_NONE_FUNC(ncZuallocateZumemoryZublockZumu)(int type,
+    size_t size) {
   OrigFn fn;
   size_t ret;
   VALGRIND_GET_ORIG_FN(fn);
@@ -418,21 +495,6 @@ size_t VG_NACL_NONE_FUNC(nc_allocate_memory_block_mu)(int type, size_t size) {
         size + sizeof(nc_thread_memory_block_t));
   }
   return ret;
-}
-
-/* Tell the tool that the stack has moved.
-   This is the first untrusted function of any NaCl thread and the first
-   place after the context switch that we can intercept. */
-/* TODO(eugenis): do the same for GLibC. */
-void VG_NACL_NONE_FUNC(nc_thread_starter)(size_t func, size_t state) {
-  OrigFn fn;
-  int local_stack_var = 0;
-
-  /* Let the tool guess where the stack starts. */
-  VG_CREQ_v_W(TSREQ_THR_STACK_TOP, (size_t)&local_stack_var);
-
-  VALGRIND_GET_ORIG_FN(fn);
-  CALL_FN_v_WW(fn, func, state);
 }
 #endif
 
@@ -596,18 +658,7 @@ static int handle_sem_wait(void* sem) {
   return ret;
 }
 
-/* sem_wait */
-int VG_NACL_LIBPTHREAD_FUNC(semZuwait)(void* sem) {
-  return handle_sem_wait(sem);
-}
-
-/* sem_trywait */
-int VG_NACL_LIBPTHREAD_FUNC(semZutrywait)(void* sem) {
-  return handle_sem_wait(sem);
-}
-
-/* sem_timedwait */
-int VG_NACL_LIBPTHREAD_FUNC(semZutimedwait)(void* sem, void* abs_timeout) {
+static int handle_sem_timedwait(void* sem, void* abs_timeout) {
   OrigFn fn;
   int    ret;
   VALGRIND_GET_ORIG_FN(fn);
@@ -622,8 +673,7 @@ int VG_NACL_LIBPTHREAD_FUNC(semZutimedwait)(void* sem, void* abs_timeout) {
   return ret;
 }
 
-/* sem_post */
-int VG_NACL_LIBPTHREAD_FUNC(semZupost)(void* sem) {
+static int handle_sem_post(void* sem) {
   OrigFn fn;
   int    ret;
   VALGRIND_GET_ORIG_FN(fn);
@@ -636,6 +686,51 @@ int VG_NACL_LIBPTHREAD_FUNC(semZupost)(void* sem) {
 
   return ret;
 }
+
+#ifdef __GLIBC__
+
+/* sem_wait@* */
+int VG_NACL_LIBPTHREAD_FUNC(semZuwaitZAZa)(void* sem) {
+  return handle_sem_wait(sem);
+}
+
+/* sem_trywait@* */
+int VG_NACL_LIBPTHREAD_FUNC(semZutrywaitZAZa)(void* sem) {
+  return handle_sem_wait(sem);
+}
+
+/* sem_timedwait@* */
+int VG_NACL_LIBPTHREAD_FUNC(semZutimedwaitZAZa)(void* sem, void* abs_timeout) {
+  return handle_sem_timedwait(sem, abs_timeout);
+}
+
+/* sem_post@* */
+int VG_NACL_LIBPTHREAD_FUNC(semZupostZAZa)(void* sem) {
+  return handle_sem_post(sem);
+}
+
+#else
+
+/* sem_wait */
+int VG_NACL_LIBPTHREAD_FUNC(semZuwait)(void* sem) {
+  return handle_sem_wait(sem);
+}
+
+/* sem_trywait */
+int VG_NACL_LIBPTHREAD_FUNC(semZutrywait)(void* sem) {
+  return handle_sem_wait(sem);
+}
+
+/* sem_timedwait */
+int VG_NACL_LIBPTHREAD_FUNC(semZutimedwait)(void* sem, void* abs_timeout) {
+  return handle_sem_timedwait(sem, abs_timeout);
+}
+
+/* sem_post */
+int VG_NACL_LIBPTHREAD_FUNC(semZupost)(void* sem) {
+  return handle_sem_post(sem);
+}
+#endif
 
 /* ------------------------------------------------------------------*/
 /*             Limited support for dynamic annotations.              */
