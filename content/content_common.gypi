@@ -289,6 +289,23 @@
             '../gpu/gpu.gyp:command_buffer_service',
           ],
         }],
+        ['target_arch=="arm"', {
+          'sources': [
+            'common/gpu/gles2_texture_to_egl_image_translator.cc',
+            'common/gpu/gles2_texture_to_egl_image_translator.h',
+            'common/gpu/omx_video_decode_accelerator.cc',
+            'common/gpu/omx_video_decode_accelerator.h',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/openmax/il',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lEGL',
+              '-lGLESv2',
+            ],
+          },
+        }],
       ],
     },
   ],

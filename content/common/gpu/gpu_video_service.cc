@@ -8,6 +8,10 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_video_decode_accelerator.h"
 
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/omx_video_decode_accelerator.h"
+#endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+
 GpuVideoService::GpuVideoService() {
   // TODO(jiesun): move this time consuming stuff out of here.
   IntializeGpuVideoService();
@@ -57,6 +61,10 @@ bool GpuVideoService::CreateVideoDecoder(
   // Create GpuVideoDecodeAccelerator and add to map.
   scoped_refptr<GpuVideoDecodeAccelerator> decoder =
       new GpuVideoDecodeAccelerator(channel, decoder_host_id);
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  decoder->set_video_decode_accelerator(
+      new OmxVideoDecodeAccelerator(decoder, MessageLoop::current()));
+#endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 
   bool result = decoder_map_.insert(std::make_pair(decoder_id, decoder)).second;
 

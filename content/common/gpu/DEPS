@@ -6,4 +6,5 @@ include_rules = [
   "+media/base",
   "+media/video",
   "+skia",
+  "+third_party/openmax",
 ]

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/gpu/gles2_texture_to_egl_image_translator.h"
+#include "content/common/gpu/gles2_texture_to_egl_image_translator.h"
+
+#include "base/logging.h"
 
 // Get EGL extension functions.
 static PFNEGLCREATEIMAGEKHRPROC egl_create_image_khr =
@@ -69,5 +71,3 @@ void Gles2TextureToEglImageTranslator::DestroyEglImage(EGLImageKHR egl_image) {
   }
   egl_destroy_image_khr(egl_display_, egl_image);
 }
-
-

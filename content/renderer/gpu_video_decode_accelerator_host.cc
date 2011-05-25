@@ -14,7 +14,6 @@
 #include "ipc/ipc_message_utils.h"
 
 using media::VideoDecodeAccelerator;
-using media::VideoDecodeAcceleratorCallback;
 
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     MessageRouter* router,
@@ -105,11 +104,11 @@ void GpuVideoDecodeAcceleratorHost::AssignGLESBuffers(
   std::vector<uint32> context_ids;
   std::vector<gfx::Size> sizes;
   for (uint32 i = 0; i < buffers.size(); i++) {
-    const media::BufferInfo& info = buffers[i].buffer_info();
-    texture_ids.push_back(buffers[i].texture_id());
-    context_ids.push_back(buffers[i].context_id());
-    buffer_ids.push_back(info.id());
-    sizes.push_back(info.size());
+    const media::GLESBuffer& buffer = buffers[i];
+    texture_ids.push_back(buffer.texture_id());
+    context_ids.push_back(buffer.context_id());
+    buffer_ids.push_back(buffer.id());
+    sizes.push_back(buffer.size());
   }
   if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_AssignGLESBuffers(
           decoder_id_, buffer_ids, texture_ids, context_ids, sizes))) {
