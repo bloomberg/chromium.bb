@@ -11,13 +11,10 @@
       'target_base': 'none',
     },
     'target_conditions': [
-      ['target_base=="reverse_service"', {
+      ['target_base=="weak_ref"', {
         'sources': [
-          'reverse_socket.h',
-          'reverse_service.h',
-
-          'reverse_socket.cc',
-          'reverse_service.cc',
+          'weak_ref.cc',
+          'weak_ref.h',
         ],
         'xcode_settings': {
           'WARNING_CFLAGS': [
@@ -50,10 +47,10 @@
       ],
       'targets': [
         {
-          'target_name': 'reverse_service64',
+          'target_name': 'weak_ref64',
           'type': 'static_library',
           'variables': {
-            'target_base': 'reverse_service',
+            'target_base': 'weak_ref',
           },
           'configurations': {
             'Common_Base': {
@@ -61,10 +58,7 @@
             },
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-            '<(DEPTH)/native_client/src/trusted/nacl_base/nacl_base.gyp:nacl_base64',
           ],
         },
       ],
@@ -72,16 +66,13 @@
   ],
   'targets': [
     {
-      'target_name': 'reverse_service',
+      'target_name': 'weak_ref',
       'type': 'static_library', # 'dynamic_library', ?!?
       'variables': {
-        'target_base': 'reverse_service',
+        'target_base': 'weak_ref',
       },
       'dependencies': [
-        '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '<(DEPTH)/native_client/src/trusted/nacl_base/nacl_base.gyp:nacl_base',
       ],
     },
   ],

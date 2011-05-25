@@ -16,10 +16,10 @@
 
 namespace {
 
-void Test(struct NaClSrpcRpc* rpc,
-          struct NaClSrpcArg** in_args,
-          struct NaClSrpcArg** out_args,
-          struct NaClSrpcClosure* done) {
+void Test(NaClSrpcRpc* rpc,
+          NaClSrpcArg** in_args,
+          NaClSrpcArg** out_args,
+          NaClSrpcClosure* done) {
   char *msg = in_args[0]->arrays.str;
   UNREFERENCED_PARAMETER(out_args);
   // use rpc->channel rather than rpc->channel->server_instance_data
@@ -30,10 +30,10 @@ void Test(struct NaClSrpcRpc* rpc,
   done->Run(done);
 }
 
-void AddChannel(struct NaClSrpcRpc* rpc,
-                struct NaClSrpcArg** in_args,
-                struct NaClSrpcArg** out_args,
-                struct NaClSrpcClosure* done) {
+void AddChannel(NaClSrpcRpc* rpc,
+                NaClSrpcArg** in_args,
+                NaClSrpcArg** out_args,
+                NaClSrpcClosure* done) {
   nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
       rpc->channel->server_instance_data);
   UNREFERENCED_PARAMETER(in_args);
@@ -45,6 +45,23 @@ void AddChannel(struct NaClSrpcRpc* rpc,
   done->Run(done);
 }
 
+void RevLog(NaClSrpcRpc* rpc,
+            NaClSrpcArg** in_args,
+            NaClSrpcArg** out_args,
+            NaClSrpcClosure* done) {
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      rpc->channel->server_instance_data);
+  UNREFERENCED_PARAMETER(out_args);
+  char* message = in_args[0]->arrays.str;
+
+  if (NULL == service->reverse_interface()) {
+    NaClLog(1, "Log RPC, no reverse_interface.  Message: %s\n", message);
+  } else {
+    service->reverse_interface()->Log(message);
+  }
+  done->Run(done);
+}
+
 }  // namespace
 
 namespace nacl {
@@ -53,7 +70,7 @@ namespace nacl {
 
 struct ReverseCountingThreadInterface {
   struct NaClThreadInterface  base;
-  ReverseService* rev;
+  nacl::ReverseService* rev;
 };
 
 /* fwd */ extern NaClThreadInterfaceVtbl const kReverseThreadInterfaceVtbl;
@@ -143,12 +160,15 @@ NaClThreadInterfaceVtbl const kReverseThreadInterfaceVtbl = {
 
 NaClSrpcHandlerDesc const ReverseService::handlers[] = {
   { "test:s:", Test, },
+  { "revlog:s:", RevLog, },
   { "add_channel::b", AddChannel, },
   { NULL, NULL, },
 };
 
-ReverseService::ReverseService(nacl::DescWrapper* conn_cap)
+ReverseService::ReverseService(nacl::DescWrapper* conn_cap,
+                               ReverseInterface* rif)
     : service_socket_(NULL),
+      reverse_interface_(rif),
       thread_count_(0) {
   /*
    * We wait for service threads to exit before dtor'ing, so the

@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/tests/fake_browser_ppapi/fake_core.h"
@@ -64,7 +64,7 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
               ", result=%" NACL_PRIu32 "\n",
               delay_in_milliseconds,
               result);
-  NACL_UNIMPLEMENTED();
+  // NACL_UNIMPLEMENTED();  // possibly leak some resources
 }
 
 static PP_Bool IsMainThread() {

@@ -6,11 +6,13 @@
 
 #include "native_client/src/trusted/plugin/service_runtime.h"
 
+#include <utility>
 #include <map>
 #include <vector>
 
-#include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -33,9 +35,47 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/core.h"
+#include "ppapi/cpp/completion_callback.h"
+
 using std::vector;
 
 namespace plugin {
+
+typedef std::pair<Plugin*, nacl::string> LogCallbackData;
+
+struct LogToJavaScriptConsoleResource {
+ public:
+  LogToJavaScriptConsoleResource(std::string msg, Plugin* plugin_ptr)
+      : message(msg),
+        plugin(plugin_ptr) {}
+  std::string message;
+  Plugin* plugin;
+};
+
+// Must be called on the main thread.
+void LogToJavaScriptConsole(nacl::WeakRef<LogToJavaScriptConsoleResource>* wr,
+                            int32_t err) {
+  UNREFERENCED_PARAMETER(err);
+  nacl::scoped_ptr<LogToJavaScriptConsoleResource> p;
+  wr->ReleaseAndUnref(&p);
+  if (p == NULL) {
+    NaClLog(0, "LogToJavaScriptConsole: Weak ref died\n");
+    return;
+  }
+  NaClLog(0, "LogToJavaScriptConsole: Weak ref okay: %p\n",
+          reinterpret_cast<void*>(p.get()));
+  p->plugin->browser_interface()->AddToConsole(p->plugin->instance_id(),
+                                               p->message);
+}
+
+void LogToJavaScriptConsoleInterface::Log(nacl::string message) {
+  (void) WeakRefCompletionCallback(anchor_, 0,
+                                   LogToJavaScriptConsole,
+                                   new LogToJavaScriptConsoleResource(
+                                       message, plugin_));
+}
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin)
     : default_socket_address_(NULL),
@@ -45,7 +85,9 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin)
       reverse_service_(NULL),
       subprocess_(NULL),
       async_receive_desc_(NULL),
-      async_send_desc_(NULL) {
+      async_send_desc_(NULL),
+      anchor_(new nacl::WeakRefAnchor()),
+      log_interface_(new LogToJavaScriptConsoleInterface(anchor_, plugin)) {
 }
 
 bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
@@ -114,7 +156,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
-  reverse_service_ = new nacl::ReverseService(conn_cap);
+  reverse_service_ = new nacl::ReverseService(conn_cap, log_interface_->Ref());
   if (!reverse_service_->Start()) {
     *error_string = "ServiceRuntime: starting reverse services failed";
     return false;
@@ -307,9 +349,14 @@ ServiceRuntime::~ServiceRuntime() {
     reverse_service_->Unref();
   }
 
+  log_interface_->Unref();
+
   // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
   delete async_receive_desc_;
   delete async_send_desc_;
+
+  anchor_->Abandon();
+  anchor_->Unref();
 }
 
 ScriptableHandle* ServiceRuntime::default_socket_address() const {
