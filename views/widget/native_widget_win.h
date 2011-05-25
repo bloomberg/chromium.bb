@@ -475,7 +475,7 @@ class NativeWidgetWin : public ui::WindowImpl,
   ScopedRunnableMethodFactory<NativeWidgetWin> paint_layered_window_factory_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
-  bool delete_on_destroy_;
+  Widget::InitParams::Ownership ownership_;
 
   // True if we are allowed to update the layered window from the DIB backing
   // store if necessary.

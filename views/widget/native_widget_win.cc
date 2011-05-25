@@ -139,7 +139,7 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       use_layered_buffer_(false),
       layered_alpha_(255),
       ALLOW_THIS_IN_INITIALIZER_LIST(paint_layered_window_factory_(this)),
-      delete_on_destroy_(true),
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       can_update_layered_window_(true),
       is_window_(false),
       restore_focus_when_enabled_(false),
@@ -153,7 +153,7 @@ NativeWidgetWin::~NativeWidgetWin() {
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
-  if (delete_on_destroy_)
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
 }
 
@@ -954,7 +954,7 @@ void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
 }
 
 void NativeWidgetWin::OnFinalMessage(HWND window) {
-  if (delete_on_destroy_)
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete this;
 }
 
@@ -1048,7 +1048,7 @@ void NativeWidgetWin::PostProcessActivateMessage(NativeWidgetWin* widget,
 
 void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   // Set non-style attributes.
-  delete_on_destroy_ = params.delete_on_destroy;
+  ownership_ = params.ownership;
 
   DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
   DWORD ex_style = 0;

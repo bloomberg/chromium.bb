@@ -1595,7 +1595,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   // Create a view window parented to native dialog.
   scoped_ptr<Widget> widget1(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = hwnd;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget1->Init(params);

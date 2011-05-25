@@ -75,7 +75,7 @@ void NativeTabContentsViewWin::EndDragging() {
 void NativeTabContentsViewWin::InitNativeTabContentsView() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = GetHiddenTabHostWindow();
   GetWidget()->Init(params);
 

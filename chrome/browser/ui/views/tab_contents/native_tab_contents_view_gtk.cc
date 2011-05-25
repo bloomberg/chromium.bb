@@ -105,7 +105,7 @@ void NativeTabContentsViewGtk::RemoveConstrainedWindow(
 void NativeTabContentsViewGtk::InitNativeTabContentsView() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   GetWidget()->Init(params);
 
   // We need to own the widget in order to attach/detach the native view to a

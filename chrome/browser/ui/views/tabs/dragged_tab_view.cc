@@ -43,7 +43,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.keep_on_top = true;
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(PreferredContainerSize());
   container_->Init(params);
   container_->SetContentsView(this);

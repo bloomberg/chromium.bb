@@ -326,7 +326,7 @@ class NativeWidgetGtk : public NativeWidget,
   ScopedRunnableMethodFactory<NativeWidgetGtk> close_widget_factory_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
-  bool delete_on_destroy_;
+  Widget::InitParams::Ownership ownership_;
 
   // See description above make_transparent for details.
   bool transparent_;

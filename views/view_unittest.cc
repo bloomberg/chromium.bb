@@ -295,7 +295,7 @@ TEST_F(ViewTest, MouseEvent) {
 
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   View* root = widget->GetRootView();
@@ -404,7 +404,7 @@ TEST_F(ViewTest, TouchEvent) {
 
   scoped_ptr<Widget> widget(new Widget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   View* root = widget->GetRootView();
@@ -935,7 +935,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   // Create a window and add the view as its child.
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   View* root = widget->GetRootView();
@@ -1000,7 +1000,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   View* root = widget->GetRootView();
@@ -1822,7 +1822,7 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
 
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = viewport_bounds;
   widget->Init(params);
   widget->GetRootView()->SetBoundsRect(viewport_bounds);

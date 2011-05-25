@@ -270,7 +270,7 @@ void BalloonViewImpl::ViewHierarchyChanged(
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_CONTROL);
     params.double_buffer = true;
-    params.delete_on_destroy = false;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = GetParentNativeView();
     control_view_host_->Init(params);
     NotificationControlView* control = new NotificationControlView(this);

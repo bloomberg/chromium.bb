@@ -56,14 +56,14 @@ class RootView;
 //
 //  A special note on ownership:
 //
-//    Depending on the value of "delete_on_destroy", the Widget either owns or
-//    is owned by its NativeWidget:
+//    Depending on the value of the InitParams' ownership field, the Widget
+//    either owns or is owned by its NativeWidget:
 //
-//    delete_on_destroy = true (default)
+//    ownership = NATIVE_WIDGET_OWNS_WIDGET (default)
 //      The Widget instance is owned by its NativeWidget. When the NativeWidget
 //      is destroyed (in response to a native destruction message), it deletes
 //      the Widget from its destructor.
-//    delete_on_destroy = false (non-default)
+//    ownership = WIDGET_OWNS_NATIVE_WIDGET (non-default)
 //      The Widget instance owns its NativeWidget. This state implies someone
 //      else wants to control the lifetime of this object. When they destroy
 //      the Widget it is responsible for destroying the NativeWidget (from its
@@ -80,6 +80,15 @@ class Widget : public internal::NativeWidgetDelegate,
       TYPE_MENU         // An undecorated Window, with transient properties
                         // specialized to menus.
     };
+    enum Ownership {
+      // Default. Creator is not responsible for managing the lifetime of the
+      // Widget, it is destroyed when the corresponding NativeWidget is
+      // destroyed.
+      NATIVE_WIDGET_OWNS_WIDGET,
+      // Used when the Widget is owned by someone other than the NativeWidget,
+      // e.g. a scoped_ptr in tests.
+      WIDGET_OWNS_NATIVE_WIDGET
+    };
 
     InitParams();
     explicit InitParams(Type type);
@@ -91,14 +100,18 @@ class Widget : public internal::NativeWidgetDelegate,
     bool accept_events;
     bool can_activate;
     bool keep_on_top;
-    bool delete_on_destroy;
+    Ownership ownership;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
     // Should the widget be double buffered? Default is false.
     bool double_buffer;
     gfx::NativeView parent;
     Widget* parent_widget;
+    // Specifies the initial bounds of the Widget. Default is empty, which means
+    // the NativeWidget may specify a default size.
     gfx::Rect bounds;
+    // When set, this value is used as the Widget's NativeWidget implementation.
+    // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
   };
   static InitParams WindowInitParams();
@@ -400,7 +413,7 @@ class Widget : public internal::NativeWidgetDelegate,
   scoped_refptr<ui::Compositor> compositor_;
 
   // See class documentation for Widget above for a note about ownership.
-  bool delete_on_destroy_;
+  InitParams::Ownership ownership_;
 
   // See set_is_secondary_widget().
   bool is_secondary_widget_;

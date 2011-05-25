@@ -33,7 +33,7 @@ Widget::InitParams::InitParams()
       accept_events(true),
       can_activate(true),
       keep_on_top(false),
-      delete_on_destroy(true),
+      ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
       double_buffer(false),
@@ -50,7 +50,7 @@ Widget::InitParams::InitParams(Type type)
       accept_events(true),
       can_activate(type != TYPE_POPUP && type != TYPE_MENU),
       keep_on_top(type == TYPE_MENU),
-      delete_on_destroy(true),
+      ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
       double_buffer(false),
@@ -73,14 +73,14 @@ Widget::Widget()
       native_widget_(NULL),
       widget_delegate_(NULL),
       dragged_view_(NULL),
-      delete_on_destroy_(false),
+      ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       is_secondary_widget_(true) {
 }
 
 Widget::~Widget() {
   DestroyRootView();
 
-  if (!delete_on_destroy_)
+  if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET)
     delete native_widget_;
 }
 
@@ -95,7 +95,7 @@ bool Widget::IsPureViews() {
 }
 
 void Widget::Init(const InitParams& params) {
-  delete_on_destroy_ = params.delete_on_destroy;
+  ownership_ = params.ownership;
   native_widget_ =
       params.native_widget ? params.native_widget
                            : NativeWidget::CreateNativeWidget(this);

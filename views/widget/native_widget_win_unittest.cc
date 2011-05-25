@@ -45,7 +45,7 @@ class NativeWidgetWinTest : public testing::Test {
 NativeWidgetWin* NativeWidgetWinTest::CreateNativeWidgetWin() {
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   return static_cast<NativeWidgetWin*>(widget.release()->native_widget());

@@ -289,7 +289,7 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       window_contents_(NULL),
       child_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
-      delete_on_destroy_(true),
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       transparent_(false),
       ignore_events_(false),
       ignore_drag_leave_(false),
@@ -323,8 +323,9 @@ NativeWidgetGtk::~NativeWidgetGtk() {
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
-  DCHECK(delete_on_destroy_ || widget_ == NULL);
-  if (delete_on_destroy_)
+  DCHECK(ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET ||
+         widget_ == NULL);
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
   // TODO(altimofeev): investigate why OnDestroy could not be called.
   if (!child_)
@@ -1334,7 +1335,7 @@ void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
   // NULL out pointers here since we might still be in an observer list
   // until delstion happens.
   widget_ = window_contents_ = NULL;
-  if (delete_on_destroy_) {
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
     // Delays the deletion of this NativeWidgetGtk as we want its children to
     // have access to it when destroyed.
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -1415,7 +1416,7 @@ void NativeWidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
 void NativeWidgetGtk::SetInitParams(const Widget::InitParams& params) {
   DCHECK(!GetNativeView());
 
-  delete_on_destroy_ = params.delete_on_destroy;
+  ownership_ = params.ownership;
   child_ = params.child;
 
   // TODO(beng): The secondary checks here actually obviate the need for

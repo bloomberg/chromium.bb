@@ -133,7 +133,7 @@ FullscreenExitBubble::FullscreenExitBubble(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.can_activate = false;
-  params.delete_on_destroy = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = frame->GetNativeView();
   params.bounds = GetPopupRect(false);
   popup_->Init(params);
@@ -154,14 +154,14 @@ FullscreenExitBubble::FullscreenExitBubble(
 
 FullscreenExitBubble::~FullscreenExitBubble() {
   // This is tricky.  We may be in an ATL message handler stack, in which case
-  // the popup cannot be deleted yet.  We also can't blindly use
-  // set_delete_on_destroy(true) on the popup to delete it when it closes,
-  // because if the user closed the last tab while in fullscreen mode, Windows
-  // has already destroyed the popup HWND by the time we get here, and thus
-  // either the popup will already have been deleted (if we set this in our
-  // constructor) or the popup will never get another OnFinalMessage() call (if
-  // not, as currently).  So instead, we tell the popup to synchronously hide,
-  // and then asynchronously close and delete itself.
+  // the popup cannot be deleted yet.  We also can't set the popup's ownership
+  // model to NATIVE_WIDGET_OWNS_WIDGET because if the user closed the last tab
+  // while in fullscreen mode, Windows has already destroyed the popup HWND by
+  // the time we get here, and thus either the popup will already have been
+  // deleted (if we set this in our constructor) or the popup will never get
+  // another OnFinalMessage() call (if not, as currently).  So instead, we tell
+  // the popup to synchronously hide, and then asynchronously close and delete
+  // itself.
   popup_->Close();
   MessageLoop::current()->DeleteSoon(FROM_HERE, popup_);
 }
