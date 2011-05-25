@@ -229,6 +229,10 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstance_GetInstanceObject,
                            PP_Instance /* instance */,
                            pp::proxy::SerializedVar /* result */)
 
+// PPP_Instance_Private.
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
+                           PP_Instance /* instance */,
+                           pp::proxy::SerializedVar /* result */)
 
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
@@ -565,6 +569,20 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_IsFullFrame,
                            PP_Instance /* instance */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
+                           PP_Instance /* instance */,
+                           pp::proxy::SerializedVar /* script */,
+                           pp::proxy::SerializedVar /* out_exception */,
+                           pp::proxy::SerializedVar /* result */)
+
+// PPB_Instance_Private.
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstancePrivate_GetWindowObject,
+                           PP_Instance /* instance */,
+                           pp::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(
+    PpapiHostMsg_PPBInstancePrivate_GetOwnerElementObject,
+    PP_Instance /* instance */,
+    pp::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstancePrivate_ExecuteScript,
                            PP_Instance /* instance */,
                            pp::proxy::SerializedVar /* script */,
                            pp::proxy::SerializedVar /* out_exception */,
