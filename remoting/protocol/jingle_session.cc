@@ -381,6 +381,8 @@ bool JingleSession::EstablishSSLConnection(
       new jingle_glue::PseudoTcpAdapter(channel);
   pseudotcp->Connect(&connect_callback_);
 
+  // TODO(wez): We shouldn't try to start SSL until the socket we're
+  // starting it on is connected.
   if (cricket_session_->initiator()) {
     // Create client SSL socket.
     net::SSLClientSocket* socket = CreateSSLClientSocket(

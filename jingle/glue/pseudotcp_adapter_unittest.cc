@@ -307,6 +307,35 @@ TEST_F(P2PTransportImplTest, TestLossyChannel) {
   tester->CheckResults();
 }
 
+class DeleteOnConnected {
+ public:
+  DeleteOnConnected(MessageLoop* message_loop,
+                    scoped_ptr<PseudoTcpAdapter>* adapter)
+      : message_loop_(message_loop), adapter_(adapter) {}
+  void OnConnected(int error) {
+    adapter_->reset();
+    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  }
+  MessageLoop* message_loop_;
+  scoped_ptr<PseudoTcpAdapter>* adapter_;
+};
+
+TEST_F(P2PTransportImplTest, TestDeleteOnConnected) {
+  // This test verifies that deleting the adapter mid-callback doesn't lead
+  // to deleted structures being touched as the stack unrolls, so the failure
+  // mode is a crash rather than a normal test failure.
+  TestCompletionCallback client_connect_cb;
+  DeleteOnConnected host_delete(&message_loop_, &host_pseudotcp_);
+  net::CompletionCallbackImpl<DeleteOnConnected>
+      host_connect_cb(&host_delete, &DeleteOnConnected::OnConnected);
+
+  host_pseudotcp_->Connect(&host_connect_cb);
+  client_pseudotcp_->Connect(&client_connect_cb);
+  message_loop_.Run();
+
+  ASSERT_EQ(NULL, host_pseudotcp_.get());
+}
+
 }  // namespace
 
 }  // namespace jingle_glue

@@ -17,12 +17,15 @@
 
 namespace jingle_glue {
 
-class PseudoTcpAdapter : public net::StreamSocket,
-                         public cricket::IPseudoTcpNotify,
-                         public base::NonThreadSafe {
+// PseudoTcpAdapter adapts a connectionless net::Socket to a connection-
+// oriented net::StreamSocket using PseudoTcp.  Because net::StreamSockets
+// can be deleted during callbacks, while PseudoTcp cannot, the core of the
+// PseudoTcpAdapter is reference counted, with a reference held by the
+// adapter, and an additional reference held on the stack during callbacks.
+class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
  public:
-  // Creates adapter for the specified |socket|. |socket| is assumed
-  // to be already connected. Takes ownership of |socket|.
+  // Creates an adapter for the supplied Socket.  |socket| should already
+  // be ready for use, and ownership of it will be assumed by the adapter.
   PseudoTcpAdapter(net::Socket* socket);
   virtual ~PseudoTcpAdapter();
 
@@ -47,43 +50,10 @@ class PseudoTcpAdapter : public net::StreamSocket,
   virtual bool WasEverUsed() const OVERRIDE;
   virtual bool UsingTCPFastOpen() const OVERRIDE;
 
-  // cricket::IPseudoTcpNotify implementation.
-  virtual void OnTcpOpen(cricket::PseudoTcp* tcp) OVERRIDE;
-  virtual void OnTcpReadable(cricket::PseudoTcp* tcp) OVERRIDE;
-  virtual void OnTcpWriteable(cricket::PseudoTcp* tcp) OVERRIDE;
-  virtual void OnTcpClosed(cricket::PseudoTcp* tcp, uint32 error) OVERRIDE;
-  virtual WriteResult TcpWritePacket(cricket::PseudoTcp* tcp,
-                                     const char* buffer, size_t len) OVERRIDE;
-
  private:
-  void DoReadFromSocket();
-  void HandleReadResults(int result);
+  class Core;
 
-  // Callback functions for Read() and Write() in |socket_|
-  void OnRead(int result);
-  void OnWritten(int result);
-
-  void AdjustClock();
-  void HandleTcpClock();
-
-  scoped_ptr<net::Socket> socket_;
-  cricket::PseudoTcp pseudotcp_;
-
-  net::CompletionCallback* connect_callback_;
-  scoped_refptr<net::IOBuffer> read_buffer_;
-  int read_buffer_size_;
-  net::CompletionCallback* read_callback_;
-  scoped_refptr<net::IOBuffer> write_buffer_;
-  int write_buffer_size_;
-  net::CompletionCallback* write_callback_;
-
-  bool socket_write_pending_;
-  scoped_refptr<net::IOBuffer> socket_read_buffer_;
-
-  net::CompletionCallbackImpl<PseudoTcpAdapter> socket_read_callback_;
-  net::CompletionCallbackImpl<PseudoTcpAdapter> socket_write_callback_;
-
-  base::OneShotTimer<PseudoTcpAdapter> timer_;
+  scoped_refptr<Core> core_;
 
   net::BoundNetLog net_log_;
 
