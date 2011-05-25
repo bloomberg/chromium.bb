@@ -208,9 +208,7 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     EXPECT_FALSE(file_info1.is_symbolic_link);
     EXPECT_EQ(0, file_info0.size);
     EXPECT_EQ(length, file_info1.size);
-    EXPECT_LE(file_info0.last_accessed, file_info1.last_accessed);
     EXPECT_LE(file_info0.last_modified, file_info1.last_modified);
-    EXPECT_EQ(file_info0.creation_time, file_info1.creation_time);
 
     context.reset(NewContext());
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofsfu()->Truncate(
@@ -730,7 +728,6 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestCopyOrMoveFileSuccess) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, ofsfu()->CreateDirectory(
         context.get(), dest_path.DirName(), exclusive, recursive));
 
-    base::Time last_access_time;
     bool created = false;
     context.reset(NewContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK,
