@@ -57,6 +57,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& vfs_file_name);
   virtual long long databaseGetFileSize(
       const WebKit::WebString& vfs_file_name);
+  virtual long long databaseGetSpaceAvailableForOrigin(
+      const WebKit::WebString& origin_identifier);
   virtual WebKit::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index,
       const WebKit::WebString& challenge,

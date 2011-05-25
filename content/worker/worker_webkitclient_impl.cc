@@ -178,22 +178,27 @@ WebSharedWorkerRepository* WorkerWebKitClientImpl::sharedWorkerRepository() {
 
 WebKitClient::FileHandle WorkerWebKitClientImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
-  return DatabaseUtil::databaseOpenFile(vfs_file_name, desired_flags);
+  return DatabaseUtil::DatabaseOpenFile(vfs_file_name, desired_flags);
 }
 
 int WorkerWebKitClientImpl::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
-  return DatabaseUtil::databaseDeleteFile(vfs_file_name, sync_dir);
+  return DatabaseUtil::DatabaseDeleteFile(vfs_file_name, sync_dir);
 }
 
 long WorkerWebKitClientImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::databaseGetFileAttributes(vfs_file_name);
+  return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name);
 }
 
 long long WorkerWebKitClientImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::databaseGetFileSize(vfs_file_name);
+  return DatabaseUtil::DatabaseGetFileSize(vfs_file_name);
+}
+
+long long WorkerWebKitClientImpl::databaseGetSpaceAvailableForOrigin(
+    const WebString& origin_identifier) {
+  return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier);
 }
 
 WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsMIMEType(

@@ -16,18 +16,52 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
+#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
 
+using quota::QuotaManager;
+using quota::QuotaManagerProxy;
+using quota::QuotaStatusCode;
 using WebKit::WebSecurityOrigin;
 using webkit_database::DatabaseTracker;
 using webkit_database::DatabaseUtil;
 using webkit_database::VfsBackend;
 
+namespace {
+
+class MyGetUsageAndQuotaCallback
+    : public QuotaManager::GetUsageAndQuotaCallback  {
+ public:
+  MyGetUsageAndQuotaCallback(
+      DatabaseMessageFilter* sender, IPC::Message* reply_msg)
+      : sender_(sender), reply_msg_(reply_msg) {}
+
+  virtual void RunWithParams(
+        const Tuple3<QuotaStatusCode, int64, int64>& params) {
+    Run(params.a, params.b, params.c);
+  }
+
+  void Run(QuotaStatusCode status, int64 usage, int64 quota) {
+    int64 available = 0;
+    if ((status == quota::kQuotaStatusOk) && (usage < quota))
+      available = quota - usage;
+    DatabaseHostMsg_GetSpaceAvailable::WriteReplyParams(
+        reply_msg_.get(), available);
+    sender_->Send(reply_msg_.release());
+  }
+
+ private:
+  scoped_refptr<DatabaseMessageFilter> sender_;
+  scoped_ptr<IPC::Message> reply_msg_;
+};
+
 const int kNumDeleteRetries = 2;
 const int kDelayDeleteRetryMs = 100;
+
+}  // namespace
 
 DatabaseMessageFilter::DatabaseMessageFilter(
     webkit_database::DatabaseTracker* db_tracker)
@@ -53,22 +87,23 @@ void DatabaseMessageFilter::AddObserver() {
 
 void DatabaseMessageFilter::RemoveObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  db_tracker_->RemoveObserver(this);
 
   // If the renderer process died without closing all databases,
   // then we need to manually close those connections
   db_tracker_->CloseDatabases(database_connections_);
   database_connections_.RemoveAllConnections();
-
-  db_tracker_->RemoveObserver(this);
 }
 
 void DatabaseMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
-  if (IPC_MESSAGE_CLASS(message) == DatabaseMsgStart)
+  if (message.type() == DatabaseHostMsg_GetSpaceAvailable::ID)
+    *thread = BrowserThread::IO;
+  else if (IPC_MESSAGE_CLASS(message) == DatabaseMsgStart)
     *thread = BrowserThread::FILE;
 
-  if (message.type() == DatabaseHostMsg_OpenFile::ID && !observer_added_) {
+  if (message.type() == DatabaseHostMsg_Opened::ID && !observer_added_) {
     observer_added_ = true;
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -89,6 +124,8 @@ bool DatabaseMessageFilter::OnMessageReceived(
                                     OnDatabaseGetFileAttributes)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_GetFileSize,
                                     OnDatabaseGetFileSize)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_GetSpaceAvailable,
+                                    OnDatabaseGetSpaceAvailable)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Opened, OnDatabaseOpened)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Modified, OnDatabaseModified)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Closed, OnDatabaseClosed)
@@ -220,7 +257,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
 }
 
 void DatabaseMessageFilter::OnDatabaseGetFileSize(
-  const string16& vfs_file_name, IPC::Message* reply_msg) {
+    const string16& vfs_file_name, IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 size = 0;
   FilePath db_file =
@@ -232,18 +269,40 @@ void DatabaseMessageFilter::OnDatabaseGetFileSize(
   Send(reply_msg);
 }
 
+void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
+    const string16& origin_identifier, IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(db_tracker_->quota_manager_proxy());
+
+  QuotaManager* quota_manager =
+      db_tracker_->quota_manager_proxy()->quota_manager();
+  if (!quota_manager) {
+    NOTREACHED();  // The system is shutting down, messages are unexpected.
+    DatabaseHostMsg_GetSpaceAvailable::WriteReplyParams(
+        reply_msg, static_cast<int64>(0));
+    Send(reply_msg);
+    return;
+  }
+
+  quota_manager->GetUsageAndQuota(
+      DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+      quota::kStorageTypeTemporary,
+      new MyGetUsageAndQuotaCallback(this, reply_msg));
+}
+
 void DatabaseMessageFilter::OnDatabaseOpened(const string16& origin_identifier,
                                              const string16& database_name,
                                              const string16& description,
                                              int64 estimated_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 database_size = 0;
-  int64 space_available = 0;
-  database_connections_.AddConnection(origin_identifier, database_name);
+  int64 space_available_not_used = 0;
   db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
-                              estimated_size, &database_size, &space_available);
+                              estimated_size, &database_size,
+                              &space_available_not_used);
+  database_connections_.AddConnection(origin_identifier, database_name);
   Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,
-                                  database_size, space_available));
+                                  database_size));
 }
 
 void DatabaseMessageFilter::OnDatabaseModified(
@@ -270,19 +329,19 @@ void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
     return;
   }
 
-  db_tracker_->DatabaseClosed(origin_identifier, database_name);
   database_connections_.RemoveConnection(origin_identifier, database_name);
+  db_tracker_->DatabaseClosed(origin_identifier, database_name);
 }
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(
     const string16& origin_identifier,
     const string16& database_name,
     int64 database_size,
-    int64 space_available) {
+    int64 space_available_not_used) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (database_connections_.IsOriginUsed(origin_identifier)) {
     Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,
-                                    database_size, space_available));
+                                    database_size));
   }
 }
 

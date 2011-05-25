@@ -19,8 +19,10 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   void OnDatabaseUpdateSize(const string16& origin_identifier,
                             const string16& database_name,
-                            int64 database_size,
-                            int64 space_available);
+                            int64 database_size);
+  void OnDatabaseUpdateSpaceAvailable(const string16& origin_identifier,
+                                      int64 space_available);
+  void OnDatabaseResetSpaceAvailable(const string16& origin_identifier);
   void OnDatabaseCloseImmediately(const string16& origin_identifier,
                                   const string16& database_name);
 };

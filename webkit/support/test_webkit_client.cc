@@ -195,12 +195,19 @@ int TestWebKitClient::databaseDeleteFile(const WebKit::WebString& vfs_file_name,
 
 long TestWebKitClient::databaseGetFileAttributes(
     const WebKit::WebString& vfs_file_name) {
-  return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(vfs_file_name);
+  return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(
+      vfs_file_name);
 }
 
 long long TestWebKitClient::databaseGetFileSize(
     const WebKit::WebString& vfs_file_name) {
   return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
+}
+
+long long TestWebKitClient::databaseGetSpaceAvailableForOrigin(
+    const WebKit::WebString& origin_identifier) {
+  return SimpleDatabaseSystem::GetInstance()->GetSpaceAvailable(
+      origin_identifier);
 }
 
 unsigned long long TestWebKitClient::visitedLinkHash(const char* canonicalURL,

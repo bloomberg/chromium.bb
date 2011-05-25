@@ -153,6 +153,12 @@ long long TestShellWebKitInit::databaseGetFileSize(
   return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
 }
 
+long long TestShellWebKitInit::databaseGetSpaceAvailableForOrigin(
+    const WebKit::WebString& origin_identifier) {
+  return SimpleDatabaseSystem::GetInstance()->GetSpaceAvailable(
+      origin_identifier);
+}
+
 unsigned long long TestShellWebKitInit::visitedLinkHash(
     const char* canonicalURL,
     size_t length) {

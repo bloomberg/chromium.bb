@@ -57,6 +57,8 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
       const WebKit::WebString& vfs_file_name);
   virtual long long databaseGetFileSize(
       const WebKit::WebString& vfs_file_name);
+  virtual long long databaseGetSpaceAvailableForOrigin(
+      const WebKit::WebString& origin_identifier);
 
   virtual WebKit::WebBlobRegistry* blobRegistry();
 

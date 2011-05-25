@@ -44,6 +44,7 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   int DeleteFile(const string16& vfs_file_name, bool sync_dir);
   uint32 GetFileAttributes(const string16& vfs_file_name);
   int64 GetFileSize(const string16& vfs_file_name);
+  int64 GetSpaceAvailable(const string16& origin_identifier);
 
   // For use by LayoutTestController, called on the main thread.
   void ClearAllDatabases();
@@ -77,6 +78,8 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
                             uint32* result, base::WaitableEvent* done_event);
   void VfsGetFileSize(const string16& vfs_file_name,
                       int64* result, base::WaitableEvent* done_event);
+  void VfsGetSpaceAvailable(const string16& origin_identifier,
+                            int64* result, base::WaitableEvent* done_event);
 
   FilePath GetFullFilePathForVfsFile(const string16& vfs_file_name);
 
@@ -91,6 +94,7 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   base::Thread db_thread_;
   scoped_refptr<base::MessageLoopProxy> db_thread_proxy_;
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+  int64 quota_per_origin_;
 
   // Data members to support waiting for all connections to be closed.
   scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;

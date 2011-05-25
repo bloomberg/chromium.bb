@@ -36,6 +36,8 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual long databaseGetFileAttributes(
       const WebKit::WebString& vfs_file_name);
   virtual long long databaseGetFileSize(const WebKit::WebString& vfs_file_name);
+  virtual long long databaseGetSpaceAvailableForOrigin(
+      const WebKit::WebString& origin_identifier);
   virtual WebKit::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index, const WebKit::WebString& challenge,
       const WebKit::WebURL& url);

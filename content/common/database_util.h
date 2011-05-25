@@ -12,12 +12,16 @@
 // WorkerWebKitClientImpl to handle database file accesses.
 class DatabaseUtil {
  public:
-  static WebKit::WebKitClient::FileHandle databaseOpenFile(
+  static WebKit::WebKitClient::FileHandle DatabaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
-  static int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
-                                bool sync_dir);
-  static long databaseGetFileAttributes(const WebKit::WebString& vfs_file_name);
-  static long long databaseGetFileSize(const WebKit::WebString& vfs_file_name);
+  static int DatabaseDeleteFile(
+      const WebKit::WebString& vfs_file_name, bool sync_dir);
+  static long DatabaseGetFileAttributes(
+      const WebKit::WebString& vfs_file_name);
+  static long long DatabaseGetFileSize(
+      const WebKit::WebString& vfs_file_name);
+  static long long DatabaseGetSpaceAvailable(
+      const WebKit::WebString& origin_identifier);
 };
 
 #endif  // CONTENT_COMMON_DATABASE_UTIL_H_

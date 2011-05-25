@@ -506,6 +506,11 @@ long long WebKitClientImpl::databaseGetFileSize(
   return 0;
 }
 
+long long WebKitClientImpl::databaseGetSpaceAvailableForOrigin(
+    const WebKit::WebString& origin_identifier) {
+  return 0;
+}
+
 WebKit::WebString WebKitClientImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const WebKit::WebString& challenge,

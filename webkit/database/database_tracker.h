@@ -70,9 +70,8 @@ class OriginInfo {
 // This class manages the main database, and keeps track of per origin quotas.
 //
 // The data in this class is not thread-safe, so all methods of this class
-// should be called on the same thread. The only exception is
-// database_directory() which returns a constant that is initialized when
-// the DatabaseTracker instance is created.
+// should be called on the same thread. The only exceptions are the ctor(),
+// the dtor() and the database_directory() and quota_manager_proxy() getters.
 //
 // Furthermore, some methods of this class have to read/write data from/to
 // the disk. Therefore, in a multi-threaded application, all methods of this
@@ -124,10 +123,16 @@ class DatabaseTracker
   virtual bool GetAllOriginIdentifiers(std::vector<string16>* origin_ids);
   virtual bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
 
+  // TODO(michaeln): remove quota related stuff when quota manager
+  // integration is complete
   void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
   int64 GetDefaultQuota() { return default_quota_; }
-  // Sets the default quota for all origins. Should be used in tests only.
-  void SetDefaultQuota(int64 quota);
+  void SetDefaultQuota(int64 quota);  // for testing
+
+  // Safe to call on any thread.
+  quota::QuotaManagerProxy* quota_manager_proxy() const {
+    return quota_manager_proxy_.get();
+  }
 
   bool IsDatabaseScheduledForDeletion(const string16& origin_identifier,
                                       const string16& database_name);
@@ -151,8 +156,9 @@ class DatabaseTracker
   // Delete all databases that belong to the given origin. Returns net::OK on
   // success, net::FAILED if not all databases could be deleted, and
   // net::ERR_IO_PENDING and |callback| is invoked upon completion, if non-NULL.
-  int DeleteDataForOrigin(const string16& origin_identifier,
-                          net::CompletionCallback* callback);
+  // virtual for unit testing only
+  virtual int DeleteDataForOrigin(const string16& origin_identifier,
+                                  net::CompletionCallback* callback);
 
   bool IsIncognitoProfile() const { return is_incognito_; }
 

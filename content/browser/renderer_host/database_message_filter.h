@@ -49,6 +49,10 @@ class DatabaseMessageFilter
   void OnDatabaseGetFileSize(const string16& vfs_file_name,
                              IPC::Message* reply_msg);
 
+  // Quota message handler (io thread)
+  void OnDatabaseGetSpaceAvailable(const string16& origin_identifier,
+                                   IPC::Message* reply_msg);
+
   // Database tracker message handlers (file thread)
   void OnDatabaseOpened(const string16& origin_identifier,
                         const string16& database_name,
