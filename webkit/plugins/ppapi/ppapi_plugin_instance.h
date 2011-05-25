@@ -427,8 +427,12 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
     PPP_Printing_Dev_Combined(const PPP_Printing_Dev_0_3& old_if)
         : PPP_Printing_Dev(),  // NOTE: The parens are important, to zero-
                                // initialize the struct.
+                               // Except older version of g++ doesn't!
+                               // So do it explicitly in the ctor.
           QuerySupportedFormats_0_3(old_if.QuerySupportedFormats),
           Begin_0_3(old_if.Begin) {
+      QuerySupportedFormats = NULL;
+      Begin = NULL;
       PrintPages = old_if.PrintPages;
       End = old_if.End;
     }
@@ -439,7 +443,6 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
     // The 0.3 version of 'Begin'.
     int32_t (*Begin_0_3)(PP_Instance instance,
                          const struct PP_PrintSettings_Dev_0_3* print_settings);
-
   };
   scoped_ptr<PPP_Printing_Dev_Combined> plugin_print_interface_;
 
