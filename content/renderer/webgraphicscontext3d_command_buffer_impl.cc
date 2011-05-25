@@ -47,7 +47,10 @@ WebGraphicsContext3DCommandBufferImpl::
   delete context_;
 }
 
-static const char* kWebGraphicsContext3DPerferredGLExtensions =
+// This string should only be passed for WebGL contexts. Nothing ELSE!!!
+// Compositor contexts, Canvas2D contexts, Pepper Contexts, nor any other use of
+// a context should not pass this string.
+static const char* kWebGLPreferredGLExtensions =
     "GL_OES_packed_depth_stencil "
     "GL_OES_depth24 "
     "GL_CHROMIUM_webglsl";
@@ -108,7 +111,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         host,
         renderview->compositing_surface(),
         renderview->routing_id(),
-        kWebGraphicsContext3DPerferredGLExtensions,
+        kWebGLPreferredGLExtensions,
         attribs,
         active_url);
     if (context_) {
@@ -138,7 +141,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         host,
         parent_context,
         gfx::Size(1, 1),
-        kWebGraphicsContext3DPerferredGLExtensions,
+        kWebGLPreferredGLExtensions,
         attribs,
         active_url);
     web_view_ = NULL;
