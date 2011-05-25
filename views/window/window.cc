@@ -14,6 +14,7 @@
 #include "ui/gfx/size.h"
 #include "views/widget/widget.h"
 #include "views/widget/native_widget.h"
+#include "views/window/custom_frame_view.h"
 #include "views/window/native_window.h"
 #include "views/window/window_delegate.h"
 
@@ -229,7 +230,8 @@ void Window::SetIsAlwaysOnTop(bool always_on_top) {
 }
 
 NonClientFrameView* Window::CreateFrameViewForWindow() {
-  return native_window_->CreateFrameViewForWindow();
+  NonClientFrameView* frame_view = native_window_->CreateFrameViewForWindow();
+  return frame_view ? frame_view : new CustomFrameView(this);
 }
 
 void Window::UpdateFrameAfterFrameChange() {

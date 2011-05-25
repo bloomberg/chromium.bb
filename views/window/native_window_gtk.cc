@@ -11,7 +11,6 @@
 #include "ui/gfx/rect.h"
 #include "views/events/event.h"
 #include "views/screen.h"
-#include "views/window/custom_frame_view.h"
 #include "views/window/hit_test.h"
 #include "views/window/native_window_delegate.h"
 #include "views/window/non_client_view.h"
@@ -364,7 +363,7 @@ void NativeWindowGtk::SetUseDragFrame(bool use_drag_frame) {
 }
 
 NonClientFrameView* NativeWindowGtk::CreateFrameViewForWindow() {
-  return new CustomFrameView(delegate_->AsWindow());
+  return NULL;
 }
 
 void NativeWindowGtk::SetAlwaysOnTop(bool always_on_top) {

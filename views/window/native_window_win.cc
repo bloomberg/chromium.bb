@@ -22,7 +22,6 @@
 #include "ui/gfx/path.h"
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/window/client_view.h"
-#include "views/window/custom_frame_view.h"
 #include "views/window/native_window_delegate.h"
 #include "views/window/native_frame_view.h"
 #include "views/window/non_client_view.h"
@@ -1308,9 +1307,8 @@ void NativeWindowWin::SetUseDragFrame(bool use_drag_frame) {
 }
 
 NonClientFrameView* NativeWindowWin::CreateFrameViewForWindow() {
-  if (GetWindow()->ShouldUseNativeFrame())
-    return new NativeFrameView(GetWindow());
-  return new CustomFrameView(GetWindow());
+  return GetWindow()->ShouldUseNativeFrame() ?
+      new NativeFrameView(GetWindow()) : NULL;
 }
 
 void NativeWindowWin::UpdateFrameAfterFrameChange() {

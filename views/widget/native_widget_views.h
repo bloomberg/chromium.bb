@@ -26,6 +26,7 @@ class NativeWidgetViews : public NativeWidget {
 
   // TODO(beng): remove.
   View* GetView();
+  const View* GetView() const;
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 

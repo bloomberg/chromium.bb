@@ -27,6 +27,10 @@ View* NativeWidgetViews::GetView() {
   return view_;
 }
 
+const View* NativeWidgetViews::GetView() const {
+  return view_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetViews, NativeWidget implementation:
 
