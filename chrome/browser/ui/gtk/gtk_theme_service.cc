@@ -291,8 +291,11 @@ GtkThemeService::~GtkThemeService() {
 void GtkThemeService::Init(Profile* profile) {
   registrar_.Init(profile->GetPrefs());
   registrar_.Add(prefs::kUsesSystemTheme, this);
+#if defined(OS_CHROMEOS)
+  use_gtk_ = false;
+#else
   use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-
+#endif
   ThemeService::Init(profile);
 }
 
@@ -367,7 +370,9 @@ void GtkThemeService::Observe(NotificationType type,
                               const NotificationDetails& details) {
   if ((type == NotificationType::PREF_CHANGED) &&
       (*Details<std::string>(details).ptr() == prefs::kUsesSystemTheme)) {
+#if !defined(OS_CHROMEOS)
     use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
+#endif
   } else {
     ThemeService::Observe(type, source, details);
   }
