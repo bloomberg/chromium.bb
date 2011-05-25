@@ -235,13 +235,6 @@ elf/tst-tls11
 elf/tst-tls12
 
 ############################################
-# Timeout due to join with main thread bug.
-# http://code.google.com/p/nativeclient/issues/detail?id=1831
-############################################
-nptl/tst-join1
-nptl/tst-basic3
-
-############################################
 # Objects that slow tests depend on.
 ############################################
 nptl/tst-cleanup4aux
