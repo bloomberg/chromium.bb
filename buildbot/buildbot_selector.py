@@ -152,6 +152,14 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
     'nacl-toolchain-win7-glibc':
         'buildbot\\buildbot_windows-glibc-makefile.bat',
+
+    'nacl-toolchain-linux-pnacl-x86_32':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
+    'nacl-toolchain-linux-pnacl-x86_64':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
+    'nacl-toolchain-mac-pnacl-x86_32':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
+
 }
 
 
