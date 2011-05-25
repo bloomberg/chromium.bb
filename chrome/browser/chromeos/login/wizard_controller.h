@@ -19,7 +19,6 @@
 
 class PrefService;
 class WizardContentsView;
-class WizardScreen;
 
 namespace chromeos {
 class AccountScreen;

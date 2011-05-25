@@ -37,7 +37,7 @@ namespace chromeos {
 // ViewsNetworkScreenActor, public:
 
 ViewsNetworkScreenActor::ViewsNetworkScreenActor(
-    WizardScreenDelegate* delegate,
+    ::WizardScreenDelegate* delegate,
     Delegate* screen)
     : ViewScreen<NetworkSelectionView>(
         delegate,

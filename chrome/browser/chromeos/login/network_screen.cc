@@ -36,7 +36,7 @@ namespace chromeos {
 ///////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, public:
 
-NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate)
+NetworkScreen::NetworkScreen(::WizardScreenDelegate* delegate)
     : WizardScreen(delegate),
       is_network_subscribed_(false),
       continue_pressed_(false),

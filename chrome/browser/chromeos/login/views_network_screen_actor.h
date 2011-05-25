@@ -20,10 +20,11 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "views/controls/button/button.h"
 
+class WizardScreenDelegate;
+
 namespace chromeos {
 
 class HelpAppLauncher;
-class WizardScreenDelegate;
 
 // Views-specific implementation of NetworkScreenActor. Hosts
 // NetworkSelectionView.

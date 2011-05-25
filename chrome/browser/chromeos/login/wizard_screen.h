@@ -14,8 +14,9 @@ class View;
 }  // namespace views
 
 namespace chromeos {
-
 class ScreenObserver;
+}  // namespace chromeos
+
 class WizardScreen;
 
 // Interface that login wizard exposes to its screens.
@@ -25,7 +26,7 @@ class WizardScreenDelegate {
   virtual views::View* GetWizardView() = 0;
 
   // Returns observer screen should notify.
-  virtual ScreenObserver* GetObserver(WizardScreen* screen) = 0;
+  virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen) = 0;
 
   // Forces the current screen to be shown immediately.
   virtual void ShowCurrentScreen() = 0;
@@ -54,11 +55,5 @@ class WizardScreen {
  private:
   WizardScreenDelegate* delegate_;
 };
-
-}  // namespace chromeos
-
-// TODO(avayvod): Fix all places where namespace is not used.
-using chromeos::WizardScreenDelegate;
-using chromeos::WizardScreen;
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_
