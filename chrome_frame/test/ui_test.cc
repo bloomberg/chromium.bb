@@ -565,7 +565,7 @@ TEST_F(ContextMenuTest, FLAKY_CFSavePageAs) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=83114
-TEST_F(ContextMenuTest, FLAKY_CFSaveLinkAs) {
+TEST_F(ContextMenuTest, DISABLED_CFSaveLinkAs) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
