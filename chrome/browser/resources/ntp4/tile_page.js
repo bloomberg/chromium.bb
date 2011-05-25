@@ -5,8 +5,15 @@
 cr.define('ntp4', function() {
   'use strict';
 
+  // We can't pass the currently dragging tile via dataTransfer because of
+  // http://crbug.com/31037
+  var currentlyDraggingTile = null;
+  function getCurrentlyDraggingTile() {
+    return currentlyDraggingTile;
+  }
+
   /**
-   * Creates a new Tileobject. Tiles wrap content on a TilePage, providing
+   * Creates a new Tile object. Tiles wrap content on a TilePage, providing
    * some styling and drag functionality.
    * @constructor
    * @extends {HTMLDivElement}
@@ -71,7 +78,7 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragStart_: function(e) {
-      TilePage.currentlyDraggingTile = this;
+      currentlyDraggingTile = this;
 
       e.dataTransfer.effectAllowed = 'copyMove';
       // TODO(estade): fill this in.
@@ -116,7 +123,7 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragEnd_: function(e) {
-      TilePage.currentlyDraggingTile = null;
+      currentlyDraggingTile = null;
       this.tilePage.positionTile_(this.index);
 
       this.dragClone.classList.add('placing');
@@ -271,11 +278,7 @@ cr.define('ntp4', function() {
     // Tile-related pixel values for the minimum narrow display.
     grid.wideTileValues = tileValuesForGrid(grid.minWideWidth,
                                             grid.maxColCount);
-  },
-
-  // We can't pass the currently dragging tile via dataTransfer because of
-  // http://crbug.com/31037
-  TilePage.currentlyDraggingTile = null;
+  };
 
   TilePage.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -322,21 +325,6 @@ cr.define('ntp4', function() {
      */
     tearDown: function() {
       this.eventTracker.removeAll();
-    },
-
-    /**
-     * Gets/sets the navigation dot element. This is not part of the DOM
-     * hierarchy for the page (it is a child of the NTP footer).
-     */
-    set navigationDot(dot) {
-      this.navigationDot_ = dot;
-      this.eventTracker.add(dot, 'dragenter',
-                            this.onDragEnterDot_.bind(this));
-      this.eventTracker.add(dot, 'dragleave',
-                            this.onDragLeaveDot_.bind(this));
-    },
-    get navigationDot() {
-      return this.navigationDot_;
     },
 
     /**
@@ -653,8 +641,7 @@ cr.define('ntp4', function() {
      * @private
      */
     doDragEnter_: function(e) {
-      if (!this.shouldAcceptDrag(TilePage.currentlyDraggingTile,
-                                 e.dataTransfer)) {
+      if (!this.shouldAcceptDrag(e.dataTransfer)) {
         return;
       }
 
@@ -664,9 +651,9 @@ cr.define('ntp4', function() {
       this.updateMask_();
 
       this.classList.add('animating-tile-page');
-      this.withinPageDrag_ = this.contains(TilePage.currentlyDraggingTile);
+      this.withinPageDrag_ = this.contains(currentlyDraggingTile);
       this.dragItemIndex_ = this.withinPageDrag_ ?
-          TilePage.currentlyDraggingTile.index : this.tileElements_.length;
+          currentlyDraggingTile.index : this.tileElements_.length;
       this.currentDropIndex_ = this.dragItemIndex_;
     },
 
@@ -679,7 +666,7 @@ cr.define('ntp4', function() {
     doDragOver_: function(e) {
       e.preventDefault();
 
-      if (TilePage.currentlyDraggingTile)
+      if (currentlyDraggingTile)
         e.dataTransfer.dropEffect = 'move';
       else
         e.dataTransfer.dropEffect = 'copy';
@@ -704,9 +691,9 @@ cr.define('ntp4', function() {
       if (!((index == this.dragItemIndex_) && this.withinPageDrag_)) {
         var adjustedIndex = this.currentDropIndex_ +
             (index > this.dragItemIndex_ ? 1 : 0);
-        if (TilePage.currentlyDraggingTile) {
+        if (currentlyDraggingTile) {
           this.tileGrid_.insertBefore(
-              TilePage.currentlyDraggingTile,
+              currentlyDraggingTile,
               this.tileElements_[adjustedIndex]);
         } else {
           this.addOutsideData(e.dataTransfer, adjustedIndex);
@@ -724,7 +711,7 @@ cr.define('ntp4', function() {
     cleanUpDrag_: function() {
       for (var i = 0; i < this.tileElements_.length; i++) {
         // The current drag tile will be positioned in its dragend handler.
-        if (this.tileElements_[i] == this.currentlyDraggingTile)
+        if (this.tileElements_[i] == currentlyDraggingTile)
           continue;
         this.positionTile_(i);
       }
@@ -760,64 +747,12 @@ cr.define('ntp4', function() {
     },
 
     /**
-      * These are equivalent to dragEnters_ and isCurrentDragTarget_, but for
-      * drags over the navigation dot.
-      * TODO(estade): thunkify the event handlers in the same manner as the
-      * tile grid drag handlers.
-      */
-    dotDragEnters_: 0,
-    dotIsCurrentDragTarget_: false,
-
-    /**
-     * A drag has entered the navigation dot. If the user hovers long enough,
-     * we will navigate to the relevant page.
-     * @param {Event} e The MouseOver event for the drag.
-     */
-    onDragEnterDot_: function(e) {
-      if (++this.dotDragEnters_ > 1)
-        return;
-
-      if (!this.shouldAcceptDrag(TilePage.currentlyDraggingTile,
-                                 e.dataTransfer)) {
-        return;
-      }
-
-      this.dotIsCurrentDragTarget_ = true;
-
-      var self = this;
-      function navPageClearTimeout() {
-        self.navigationDot.showPage();
-        self.dotNavTimeout = null;
-      }
-      this.dotNavTimeout = window.setTimeout(navPageClearTimeout, 500);
-    },
-
-    /**
-     * The drag has left the navigation dot.
-     * @param {Event} e The MouseOver event for the drag.
-     */
-    onDragLeaveDot_: function(e) {
-      if (--this.dotDragEnters_ > 0)
-        return;
-
-      if (!this.dotIsCurrentDragTarget_)
-        return;
-      this.dotIsCurrentDragTarget_ = false;
-
-      if (this.dotNavTimeout) {
-        window.clearTimeout(this.dotNavTimeout);
-        this.dotNavTimeout = null;
-      }
-    },
-
-    /**
      * Checks if a page can accept a drag with the given data.
-     * @param {Object} tile The drag tile, if any.
      * @param {Object} dataTransfer The dataTransfer object, if the drag object
      *     is not a tile (e.g. it is a link).
      * @return {boolean} True if this page can handle the drag.
      */
-    shouldAcceptDrag: function(tile, dataTransfer) {
+    shouldAcceptDrag: function(dataTransfer) {
       return false;
     },
 
@@ -835,6 +770,7 @@ cr.define('ntp4', function() {
   };
 
   return {
+    getCurrentlyDraggingTile: getCurrentlyDraggingTile,
     TilePage: TilePage,
   };
 });

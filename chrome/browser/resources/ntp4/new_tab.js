@@ -20,12 +20,6 @@ cr.define('ntp4', function() {
   var cardSlider;
 
   /**
-   * Template to use for creating new 'dot' elements
-   * @type {!Element|undefined}
-   */
-  var dotTemplate;
-
-  /**
    * The 'page-list' element.
    * @type {!Element|undefined}
    */
@@ -100,15 +94,7 @@ cr.define('ntp4', function() {
       e.preventDefault();
     }, true);
 
-    // Get the template elements and remove them from the DOM.  Things are
-    // simpler if we start with 0 pages and 0 apps and don't leave hidden
-    // template elements behind in the DOM.
     dots = dotList.getElementsByClassName('dot');
-    assert(dots.length == 1,
-           'Expected exactly one dot in the dots-list.');
-    dotTemplate = dots[0];
-    dotList.removeChild(dots[0]);
-
     tilePages = pageList.getElementsByClassName('tile-page');
     appsPages = pageList.getElementsByClassName('apps-page');
 
@@ -297,6 +283,10 @@ cr.define('ntp4', function() {
   function appsPrefChangeCallback(data) {
   }
 
+  function getCardSlider() {
+    return cardSlider;
+  }
+
   /**
    * Invoked whenever the pages in apps-page-list have changed so that
    * the Slider knows about the new elements.
@@ -322,31 +312,12 @@ cr.define('ntp4', function() {
     pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
-    var newDot = dotTemplate.cloneNode(true);
-    newDot.querySelector('span').textContent = page.pageName;
+    var newDot = new ntp4.NavDot(page);
     if (opt_animate)
       newDot.classList.add('new');
+
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
-
-    newDot.showPage = function() {
-      cardSlider.selectCardByValue(page, true);
-    };
-    function switchPage(e) {
-      newDot.showPage();
-      e.stopPropagation();
-    }
-    // Add click handler to the dot to change the page.
-    // TODO(rbyers): Perhaps this should be TouchHandler.START_EVENT_ (so we
-    // don't rely on synthesized click events, and the change takes effect
-    // before releasing). However, click events seems to be synthesized for a
-    // region outside the border, and a 10px box is too small to require touch
-    // events to fall inside of. We could get around this by adding a box around
-    // the dot for accepting the touch events.
-    newDot.addEventListener('click', switchPage);
-
-    // Change pages whenever an app is dragged over a dot.
-    newDot.addEventListener(Grabber.EventType.DRAG_ENTER, switchPage);
   }
   /**
    * Search an elements ancestor chain for the nearest element that is a member
@@ -442,8 +413,7 @@ cr.define('ntp4', function() {
         draggingAppContainer.appendChild(appBeingDragged);
 
       // If we care about the container's original position
-      if (draggingAppOriginalPage)
-      {
+      if (draggingAppOriginalPage) {
         // Then put the container back where it came from
         if (draggingAppOriginalPosition) {
           draggingAppOriginalPage.insertBefore(draggingAppContainer,
@@ -464,8 +434,7 @@ cr.define('ntp4', function() {
    * the rearrangement (but doesn't commit the change until the app is dropped).
    * @param {Grabber.Event} e The event from the Grabber indicating the drag.
    */
-  function appDragEnter(e)
-  {
+  function appDragEnter(e) {
     assert(draggingAppContainer, 'expected stored container');
     var sourceContainer = draggingAppContainer;
 
@@ -588,8 +557,7 @@ cr.define('ntp4', function() {
    * Invoked whenever some app is grabbed
    * @param {Grabber.Event} e The Grabber Grab event.
    */
-  function enterRearrangeMode(e)
-  {
+  function enterRearrangeMode(e) {
     // Stop the slider from sliding for this touch
     cardSlider.cancelTouch();
 
@@ -612,8 +580,7 @@ cr.define('ntp4', function() {
    * Invoked whenever some app is released
    * @param {Grabber.Event} e The Grabber RELEASE event.
    */
-  function leaveRearrangeMode(e)
-  {
+  function leaveRearrangeMode(e) {
     // Return the dot-list to normal
     getRequiredElement('footer').classList.remove('rearrange-mode');
 
@@ -700,6 +667,7 @@ cr.define('ntp4', function() {
     assert: assert,
     appsPrefChangeCallback: appsPrefChangeCallback,
     getAppsCallback: getAppsCallback,
+    getCardSlider: getCardSlider,
     initialize: initialize,
     themeChanged: themeChanged,
     setRecentlyClosedTabs: setRecentlyClosedTabs,

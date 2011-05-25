@@ -168,8 +168,9 @@ cr.define('ntp4', function() {
     },
 
     /** @inheritDoc */
-    shouldAcceptDrag: function(tile, dataTransfer) {
-      return tile || (dataTransfer && dataTransfer.types.indexOf('url') != -1);
+    shouldAcceptDrag: function(dataTransfer) {
+      return ntp4.getCurrentlyDraggingTile() ||
+          (dataTransfer && dataTransfer.types.indexOf('url') != -1);
     },
 
     /** @inheritDoc */
