@@ -44,6 +44,8 @@ elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
   readonly BUILD_PLATFORM_LINUX=false
   readonly BUILD_PLATFORM_MAC=true
   readonly SCONS_BUILD_PLATFORM=mac
+  # force 32 bit host because build is also 32 bit on mac (no 64bit nacl)
+  HOST_ARCH=${HOST_ARCH:-i386}
 else
   echo "Unknown system '${BUILD_PLATFORM}'"
   exit -1
@@ -58,10 +60,29 @@ elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
   readonly BUILD_ARCH_X8632=false
   readonly BUILD_ARCH_X8664=true
 else
-  echo "Unknown arch '${BUILD_ARCH}'"
+  echo "Unknown build arch '${BUILD_ARCH}'"
   exit -1
 fi
 
+readonly HOST_ARCH=${HOST_ARCH:-${BUILD_ARCH}}
+if [ "${HOST_ARCH}" == "i386" ] ||
+   [ "${HOST_ARCH}" == "i686" ] ; then
+  readonly HOST_ARCH_X8632=true
+  readonly HOST_ARCH_X8664=false
+elif [ "${HOST_ARCH}" == "x86_64" ] ; then
+  readonly HOST_ARCH_X8632=false
+  readonly HOST_ARCH_X8664=true
+else
+  echo "Unknown host arch '${HOST_ARCH}'"
+  exit -1
+fi
+
+if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
+  if ! { ${BUILD_ARCH_X8664} && ${HOST_ARCH_X8632}; }; then
+    echo "Cross targets other than host=i686 with build=x86_64 not supported"
+    exit -1
+  fi
+fi
 
 ######################################################################
 # Mercurial repository tools

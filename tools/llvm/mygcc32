@@ -1,2 +1,2 @@
 #!/bin/bash
-exec gcc -static -m32 $*
+exec gcc "$@" -m32

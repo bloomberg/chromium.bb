@@ -1,2 +1,2 @@
 #!/bin/bash
-exec g++ -static -m32 $*
+exec g++ "$@" -m32

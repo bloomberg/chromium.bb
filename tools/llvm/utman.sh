@@ -61,7 +61,7 @@ readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 
 readonly TC_ROOT="${NACL_ROOT}/toolchain"
-readonly INSTALL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}"
+readonly INSTALL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${HOST_ARCH}"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
@@ -186,21 +186,23 @@ readonly REPO_NEWLIB="newlib.nacl-llvm-branches"
 readonly REPO_BINUTILS="binutils.nacl-llvm-branches"
 
 
-# These are simple compiler wrappers to force 32bit builds
-# They are unused now. Instead we make sure that the toolchains that we
-# distribute are created on the oldest system we care to support. Currently
-# that is a 32 bit hardy. The advantage of this is that we can build
-# the toolchaing shared, reducing its size and allowing the use of
-# plugins. You can still use them by setting the environment variables
-# when running this script:
-# CC=$(GetAbsolutePath tools/llvm/mygcc32) \
-# CXX=$(GetAbsolutePath tools/llvm/myg++32) \
-# tools/llvm/utman.sh untrusted_sdk <file>
-# NOTE: this has not been tried in a while and may no longer work
-CC=${CC:-}
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
 # bug that brakes the build if we do that.
+CC=${CC:-}
 CXX=${CXX:-g++}
+if ${HOST_ARCH_X8632} ; then
+  # These are simple compiler wrappers to force 32bit builds
+  # For bots and releases we build the toolchains
+  # on the oldest system we care to support. Currently
+  # that is a 32 bit hardy. The advantage of this is that we can build
+  # the toolchain shared, reducing its size and allowing the use of
+  # plugins. You can test them on your system by setting the
+  # environment variable HOST_ARCH=x86_32 on a 64 bit system.
+  # Make sure you clean all your build dirs
+  # before switching arches.
+  CC="${NACL_ROOT}/tools/llvm/mygcc32"
+  CXX="${NACL_ROOT}/tools/llvm/myg++32"
+fi
 
 readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ar
 readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ranlib
