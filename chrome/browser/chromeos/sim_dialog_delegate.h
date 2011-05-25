@@ -27,7 +27,7 @@ class SimDialogDelegate : public HtmlDialogUIDelegate {
   static void ShowDialog(gfx::NativeWindow owning_window, SimDialogMode mode);
 
  private:
-  ~SimDialogDelegate();
+  virtual ~SimDialogDelegate();
 
   // Overridden from HtmlDialogUI::Delegate:
   virtual bool IsDialogModal() const;

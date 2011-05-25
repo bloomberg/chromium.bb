@@ -17,9 +17,7 @@ class BalloonViewHost : public BalloonHost {
  public:
   explicit BalloonViewHost(Balloon* balloon);
 
-  virtual ~BalloonViewHost() {
-     Shutdown();
-  }
+  virtual ~BalloonViewHost();
 
   void SetPreferredSize(const gfx::Size& size) {
     native_host_->SetPreferredSize(size);

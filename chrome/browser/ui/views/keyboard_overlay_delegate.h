@@ -23,7 +23,7 @@ class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
   }
 
  private:
-  ~KeyboardOverlayDelegate();
+  virtual ~KeyboardOverlayDelegate();
 
   // Overridden from HtmlDialogUI::Delegate:
   virtual bool IsDialogModal() const;

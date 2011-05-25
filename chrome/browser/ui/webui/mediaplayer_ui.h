@@ -28,7 +28,7 @@ class Profile;
 class MediaPlayer : public NotificationObserver,
                     public net::URLRequest::Interceptor {
  public:
-  ~MediaPlayer();
+  virtual ~MediaPlayer();
 
   // Enqueues this file into the current playlist.  If the mediaplayer is
   // not currently visible, show it, and play the given url.

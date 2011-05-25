@@ -25,7 +25,7 @@ class ClientLoginResponseHandler : public AuthResponseHandler {
  public:
   explicit ClientLoginResponseHandler(net::URLRequestContextGetter* getter)
       : getter_(getter) {}
-  ~ClientLoginResponseHandler() {}
+  virtual ~ClientLoginResponseHandler() {}
 
   // Overridden from AuthResponseHandler.
   virtual bool CanHandle(const GURL& url);

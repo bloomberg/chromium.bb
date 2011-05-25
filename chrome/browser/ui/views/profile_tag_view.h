@@ -27,7 +27,7 @@ class ProfileTagView : public views::View {
 
   ProfileTagView(BrowserFrame* frame,
                  ProfileMenuButton* profile_menu_button);
-  ~ProfileTagView();
+  virtual ~ProfileTagView();
 
   // Paint the profile tag background image on the given canvas.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -66,4 +66,3 @@ class ProfileTagView : public views::View {
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILE_TAG_VIEW_H_
-

@@ -729,7 +729,7 @@ class LoginObserver : public chromeos::LoginStatusConsumer,
                 AutomationProvider* automation,
                 IPC::Message* reply_message);
 
-  ~LoginObserver();
+  virtual ~LoginObserver();
 
   virtual void OnLoginFailure(const chromeos::LoginFailure& error);
 

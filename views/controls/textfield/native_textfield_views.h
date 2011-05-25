@@ -47,7 +47,7 @@ class NativeTextfieldViews : public View,
                              public TextfieldViewsModel::Delegate {
  public:
   explicit NativeTextfieldViews(Textfield* parent);
-  ~NativeTextfieldViews();
+  virtual ~NativeTextfieldViews();
 
   // View overrides:
   virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;

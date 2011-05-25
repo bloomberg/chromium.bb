@@ -24,7 +24,7 @@ class PanelBrowserView : public ::BrowserView,
                          public PanelController::Delegate {
  public:
   explicit PanelBrowserView(Browser* browser);
-  ~PanelBrowserView();
+  virtual ~PanelBrowserView();
 
   // BrowserView overrides.
   virtual void Show();

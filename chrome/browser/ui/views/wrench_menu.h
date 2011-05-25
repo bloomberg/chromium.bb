@@ -80,7 +80,7 @@ class WrenchMenu : public base::RefCounted<WrenchMenu>,
   typedef std::pair<ui::MenuModel*,int> Entry;
   typedef std::map<int,Entry> IDToEntry;
 
-  ~WrenchMenu();
+  virtual ~WrenchMenu();
 
   // Populates |parent| with all the child menus in |model|. Recursively invokes
   // |PopulateMenu| for any submenu. |next_id| is incremented for every menu

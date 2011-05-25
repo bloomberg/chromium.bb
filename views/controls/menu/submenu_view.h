@@ -39,7 +39,7 @@ class SubmenuView : public View {
 
   // Creates a SubmenuView for the specified menu item.
   explicit SubmenuView(MenuItemView* parent);
-  ~SubmenuView();
+  virtual ~SubmenuView();
 
   // Returns the number of child views that are MenuItemViews.
   // MenuItemViews are identified by ID.

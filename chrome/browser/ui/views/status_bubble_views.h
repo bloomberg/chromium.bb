@@ -36,7 +36,7 @@ class StatusBubbleViews : public StatusBubble {
 
   // |base_view| is the view that this bubble is positioned relative to.
   explicit StatusBubbleViews(views::View* base_view);
-  ~StatusBubbleViews();
+  virtual ~StatusBubbleViews();
 
   views::View* base_view() { return base_view_; }
 

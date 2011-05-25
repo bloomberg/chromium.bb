@@ -49,7 +49,7 @@ class BoundsAnimator : public ui::AnimationDelegate,
   };
 
   explicit BoundsAnimator(View* view);
-  ~BoundsAnimator();
+  virtual ~BoundsAnimator();
 
   // Starts animating |view| from its current bounds to |target|. If there is
   // already an animation running for the view it's stopped and a new one
