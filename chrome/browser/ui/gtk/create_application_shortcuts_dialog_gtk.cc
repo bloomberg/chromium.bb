@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/browser_thread.h"
@@ -20,6 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 
@@ -324,10 +326,9 @@ CreateChromeApplicationShortcutsDialogGtk::
 // Called by tracker_ when the app's icon is loaded.
 void CreateChromeApplicationShortcutsDialogGtk::OnImageLoaded(
     SkBitmap* image, const ExtensionResource& resource, int index) {
-  if (image->isNull()) {
-    NOTREACHED() << "Corrupt image in profile?";
-    return;
-  }
+  if (!image || image->isNull())
+    image = ExtensionIconSource::LoadImageByResourceId(IDR_APP_DEFAULT_ICON);
+
   shortcut_info_.favicon = *image;
 
   CreateIconPixBuf(*image);

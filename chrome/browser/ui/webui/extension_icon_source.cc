@@ -52,16 +52,6 @@ SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
   return decoded;
 }
 
-SkBitmap* LoadImageByResourceId(int resource_id) {
-  std::string contents = ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(resource_id).as_string();
-
-  // Convert and return it.
-  const unsigned char* data =
-      reinterpret_cast<const unsigned char*>(contents.data());
-  return ToBitmap(data, contents.length());
-}
-
 }  // namespace
 
 
@@ -98,6 +88,17 @@ GURL ExtensionIconSource::GetIconURL(const Extension* extension,
                                    grayscale ? "?grayscale=true" : ""));
   CHECK(icon_url.is_valid());
   return icon_url;
+}
+
+// static
+SkBitmap* ExtensionIconSource::LoadImageByResourceId(int resource_id) {
+  std::string contents = ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(resource_id).as_string();
+
+  // Convert and return it.
+  const unsigned char* data =
+      reinterpret_cast<const unsigned char*>(contents.data());
+  return ToBitmap(data, contents.length());
 }
 
 std::string ExtensionIconSource::GetMimeType(const std::string&) const {

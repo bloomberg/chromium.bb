@@ -63,6 +63,10 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
                          ExtensionIconSet::MatchType match,
                          bool grayscale);
 
+  // A public utility function for accessing the bitmap of the image specified
+  // by |resource_id|.
+  static SkBitmap* LoadImageByResourceId(int resource_id);
+
   // ChromeURLDataManager::DataSource
 
   virtual std::string GetMimeType(const std::string&) const;

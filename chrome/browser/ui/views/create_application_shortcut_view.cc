@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -21,6 +22,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -520,11 +522,9 @@ CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 // Called by tracker_ when the app's icon is loaded.
 void CreateChromeApplicationShortcutView::OnImageLoaded(
     SkBitmap* image, const ExtensionResource& resource, int index) {
-  if (image->isNull()) {
-    NOTREACHED() << "Corrupt image in profile?";
-    return;
-  }
+  if (!image || image->isNull())
+    image = ExtensionIconSource::LoadImageByResourceId(IDR_APP_DEFAULT_ICON);
+
   shortcut_info_.favicon = *image;
   static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
 }
-
