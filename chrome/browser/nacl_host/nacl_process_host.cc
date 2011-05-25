@@ -11,7 +11,6 @@
 #endif
 
 #include "base/command_line.h"
-#include "base/metrics/nacl_histogram.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -128,7 +127,6 @@ bool NaClProcessHost::Launch(
   if (!LaunchSelLdr()) {
     return false;
   }
-  UmaNaclHistogramEnumeration(NACL_STARTED);
   chrome_render_message_filter_ = chrome_render_message_filter;
   reply_msg_ = reply_msg;
 
