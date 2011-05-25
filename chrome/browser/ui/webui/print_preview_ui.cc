@@ -38,6 +38,8 @@ void PrintPreviewUI::OnInitiatorTabClosed(
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                               const string16& job_title,
                                               bool modifiable) {
+  VLOG(1) << "Print preview request finished with "
+          << expected_pages_count << " pages";
   FundamentalValue pages_count(expected_pages_count);
   StringValue title(job_title);
   FundamentalValue is_preview_modifiable(modifiable);

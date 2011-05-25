@@ -119,6 +119,7 @@ class PrintSystemTaskProxy
   }
 
   void EnumeratePrinters() {
+    VLOG(1) << "Enumerate printers start";
     ListValue* printers = new ListValue;
     int default_printer_index = -1;
 
@@ -131,24 +132,24 @@ class PrintSystemTaskProxy
     }
 
     int i = 0;
-    for (printing::PrinterList::iterator index = printer_list.begin();
-         index != printer_list.end(); ++index, ++i) {
+    for (printing::PrinterList::iterator iter = printer_list.begin();
+         iter != printer_list.end(); ++iter, ++i) {
       DictionaryValue* printer_info = new DictionaryValue;
       std::string printerName;
   #if defined(OS_MACOSX)
-      // On Mac, |index->printer_description| specifies the printer name and
-      // |index->printer_name| specifies the device name / printer queue name.
-      printerName = index->printer_description;
+      // On Mac, |iter->printer_description| specifies the printer name and
+      // |iter->printer_name| specifies the device name / printer queue name.
+      printerName = iter->printer_description;
   #else
-      printerName = index->printer_name;
+      printerName = iter->printer_name;
   #endif
       printer_info->SetString(printing::kSettingPrinterName, printerName);
-      printer_info->SetString(printing::kSettingDeviceName,
-                              index->printer_name);
+      printer_info->SetString(printing::kSettingDeviceName, iter->printer_name);
       printers->Append(printer_info);
-      if (index->is_default)
+      if (iter->is_default)
         default_printer_index = i;
     }
+    VLOG(1) << "Enumerate printers finished, found " << i << " printers";
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -167,6 +168,7 @@ class PrintSystemTaskProxy
   }
 
   void GetPrinterCapabilities(const std::string& printer_name) {
+    VLOG(1) << "Get printer capabilities start for " << printer_name;
     printing::PrinterCapsAndDefaults printer_info;
     bool supports_color = true;
     if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
@@ -330,6 +332,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   if (!settings.get())
     return;
 
+  VLOG(1) << "Print preview request start";
   RenderViewHost* rvh = initiator_tab->render_view_host();
   rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
 }
@@ -469,6 +472,7 @@ void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
 
 void PrintPreviewHandler::SendPrinterCapabilities(
     const DictionaryValue& settings_info) {
+  VLOG(1) << "Get printer capabilities finished";
   web_ui_->CallJavascriptFunction("updateWithPrinterCapabilities",
                                   settings_info);
 }
