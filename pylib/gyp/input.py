@@ -19,6 +19,7 @@ import os.path
 import re
 import shlex
 import subprocess
+import shlex
 import sys
 
 
@@ -471,12 +472,21 @@ def IsStrCanonicalInt(string):
   return True
 
 
-early_variable_re = re.compile('(?P<replace>(?P<type><((!?@?)|\|)?)'
-                               '\((?P<is_array>\s*\[?)'
-                               '(?P<content>.*?)(\]?)\))')
-late_variable_re = re.compile('(?P<replace>(?P<type>>((!?@?)|\|)?)'
-                              '\((?P<is_array>\s*\[?)'
-                              '(?P<content>.*?)(\]?)\))')
+# This matches things like "<(asdf)", "<!(cmd)", "<!@(cmd)", "<|(list)",
+# "<!interpreter(arguments)", "<([list])", and even "<([)" and "<(<())".
+# In the last case, the inner "<()" is captured in match['content'].
+early_variable_re = re.compile(
+    '(?P<replace>(?P<type><(?:(?:!?@?)|\|)?)'
+    '(?P<command_string>[-a-zA-Z0-9_.]+)?'
+    '\((?P<is_array>\s*\[?)'
+    '(?P<content>.*?)(\]?)\))')
+
+# This matches the same as early_variable_re, but with '>' instead of '<'.
+late_variable_re = re.compile(
+    '(?P<replace>(?P<type>>(?:(?:!?@?)|\|)?)'
+    '(?P<command_string>[-a-zA-Z0-9_.]+)?'
+    '\((?P<is_array>\s*\[?)'
+    '(?P<content>.*?)(\]?)\))')
 
 # Global cache of results from running commands so they don't have to be run
 # more then once.
@@ -525,10 +535,12 @@ def ExpandVariables(input, is_late, variables, build_file):
       # is the character code for the replacement type (< > <! >! <| >| <@
       # >@ <!@ >!@), match['is_array'] contains a '[' for command
       # arrays, and match['content'] is the name of the variable (< >)
-      # or command to run (<! >!).
+      # or command to run (<! >!). match['command_string'] is an optional
+      # command string. Currently, only 'pymod_do_main' is supported.
 
       # run_command is true if a ! variant is used.
       run_command = '!' in match['type']
+      command_string = match['command_string']
 
       # file_list is true if a | variant is used.
       file_list = '|' in match['type']
@@ -634,23 +646,44 @@ def ExpandVariables(input, is_late, variables, build_file):
                           "Executing command '%s' in directory '%s'" %
                           (contents,build_file_dir))
 
-          # Fix up command with platform specific workarounds.
-          contents = FixupPlatformCommand(contents)
-          p = subprocess.Popen(contents, shell=use_shell,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               stdin=subprocess.PIPE,
-                               cwd=build_file_dir)
+          replacement = ''
 
-          (p_stdout, p_stderr) = p.communicate('')
+          if command_string == 'pymod_do_main':
+            # <!pymod_do_main(modulename param eters) loads |modulename| as a
+            # python module and then calls that module's DoMain() function,
+            # passing ["param", "eters"] as a single list argument. For modules
+            # that don't load quickly, this can be faster than
+            # <!(python modulename param eters). Do this in |build_file_dir|.
+            oldwd = os.getcwd()  # Python doesn't like os.open('.'): no fchdir.
+            os.chdir(build_file_dir)
 
-          if p.wait() != 0 or p_stderr:
-            sys.stderr.write(p_stderr)
-            # Simulate check_call behavior, since check_call only exists
-            # in python 2.5 and later.
-            raise Exception("Call to '%s' returned exit status %d." %
-                            (contents, p.returncode))
-          replacement = p_stdout.rstrip()
+            parsed_contents = shlex.split(contents)
+            py_module = __import__(parsed_contents[0])
+            replacement = str(py_module.DoMain(parsed_contents[1:])).rstrip()
+
+            os.chdir(oldwd)
+            assert replacement != None
+          elif command_string:
+            raise Exception("Unknown command string '%s' in '%s'." %
+                            (command_string, contents))
+          else:
+            # Fix up command with platform specific workarounds.
+            contents = FixupPlatformCommand(contents)
+            p = subprocess.Popen(contents, shell=use_shell,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 stdin=subprocess.PIPE,
+                                 cwd=build_file_dir)
+
+            p_stdout, p_stderr = p.communicate('')
+
+            if p.wait() != 0 or p_stderr:
+              sys.stderr.write(p_stderr)
+              # Simulate check_call behavior, since check_call only exists
+              # in python 2.5 and later.
+              raise Exception("Call to '%s' returned exit status %d." %
+                              (contents, p.returncode))
+            replacement = p_stdout.rstrip()
 
           cached_command_results[cache_key] = replacement
         else:
