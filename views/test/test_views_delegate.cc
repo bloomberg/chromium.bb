@@ -35,6 +35,6 @@ bool TestViewsDelegate::GetSavedMaximizedState(views::Window* window,
   return false;
 }
 
-int TestViewsDelegate::GetDispositionForEvent(int event_flags) OVERRIDE {
+int TestViewsDelegate::GetDispositionForEvent(int event_flags) {
   return 0;
 }
