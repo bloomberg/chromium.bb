@@ -74,16 +74,12 @@
 //
 //   // Methods for establishing a Chromoting connection.
 //   //
-//   // When using the sandboxed versions, sendIq must be set and responses to
-//   // calls on sendIq must be piped back into onIq().
-//   void connect(string host_jid, string client_jid,
-//                optional string access_code);
-//   // Non-sandboxed version used for debugging/testing.
-//   // TODO(garykac): Remove this version once we no longer need it.
-//   void connectUnsandboxed(string host_jid, string username,
-//                           string xmpp_token, optional string access_code);
-//
-//   // Terminating a Chromoting connection.
+//   // Either use connect() or connectSandboxed(), not both. If using
+//   // connectSandboxed(), sendIq must be set, and responses to calls on
+//   // sendIq must be piped back into onIq().
+//   void connect(string username, string host_jid, string auth_token,
+//                string nonce);
+//   void connectSandboxed(string your_jid, string host_jid, string nonce);
 //   void disconnect();
 //
 //   // Method for submitting login information.
@@ -197,8 +193,8 @@ class ChromotingScriptableObject
   void SignalDesktopSizeChange();
 
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
-  pp::Var DoConnectUnsandboxed(const std::vector<pp::Var>& args,
-                               pp::Var* exception);
+  pp::Var DoConnectSandboxed(const std::vector<pp::Var>& args,
+                             pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
 
   // This method is called by JS to provide login information.
