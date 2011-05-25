@@ -118,7 +118,8 @@ function init() {
   remoting.plugin = plugin;
 
   // Only allow https connections to the httpXmppProxy.
-  if (remoting.httpXmppProxy.search(/^ *https:\/\//) == -1) {
+  var regExp = /^ *https:\/\//;
+  if (remoting.httpXmppProxy.search(regExp) == -1) {
     addToDebugLog('Aborting. httpXmppProxy does not specify https protocol: ' +
                   remoting.httpXmppProxy);
     return;
