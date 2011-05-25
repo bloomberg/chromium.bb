@@ -6,6 +6,16 @@
 // Only the most recent <n> lines are displayed.
 var MAX_DEBUG_LOG_SIZE = 1000;
 
+// Chromoting session API version (for this javascript).
+// This is compared with the plugin API version to verify that they are
+// compatible.
+chromoting.apiVersion = 1;
+
+// The oldest API version that we support.
+// This will differ from the |apiVersion| if we decide to maintain backward
+// compatibility with older API versions.
+chromoting.apiMinVersion = 1;
+
 // Message id so that we can identify (and ignore) message fade operations for
 // old messages.  This starts at 1 and is incremented for each new message.
 chromoting.messageId = 1;
@@ -93,6 +103,11 @@ function sendIq(msg) {
            "&host_jid=" + encodeURIComponent(chromoting.hostjid));
 }
 
+function checkVersion(plugin) {
+  return chromoting.apiVersion >= plugin.apiMinVersion &&
+      plugin.apiVersion >= chromoting.apiMinVersion;
+}
+
 function init() {
   // Kick off the connection.
   var plugin = document.getElementById('chromoting');
@@ -122,6 +137,12 @@ function init() {
   plugin.debugInfo = debugInfoCallback;
   plugin.desktopSizeUpdate = desktopSizeChanged;
   plugin.loginChallenge = loginChallengeCallback;
+
+  if (!checkVersion(plugin)) {
+    // TODO(garykac): We need better messaging here. Perhaps an install link.
+    setClientStateMessage("Out of date. Please re-install.");
+    return;
+  }
 
   addToDebugLog('Connect to ' + chromoting.hostname + ' as user ' +
                 chromoting.username);

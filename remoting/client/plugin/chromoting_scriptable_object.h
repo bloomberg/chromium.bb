@@ -7,6 +7,16 @@
 //
 // interface ChromotingScriptableObject {
 //
+//   // Chromoting session API version (for this plugin).
+//   // This is compared with the javascript API version to verify that they are
+//   // compatible.
+//   readonly attribute unsigned short apiVersion;
+//
+//   // The oldest API version that we support.
+//   // This will differ from |apiVersion| if we decide to maintain backward
+//   // compatibility with older API versions.
+//   readonly attribute unsigned short apiMinVersion;
+//
 //   // Dimension of the desktop area.
 //   readonly attribute int desktopWidth;
 //   readonly attribute int desktopHeight;

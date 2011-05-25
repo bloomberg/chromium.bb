@@ -5,7 +5,18 @@
 // Maximum numer of lines to record in the debug log.
 // Only the most recent <n> lines are displayed.
 var MAX_DEBUG_LOG_SIZE = 1000;
+
 var remoting = chrome.extension.getBackgroundPage().remoting;
+
+// Chromoting session API version (for this javascript).
+// This is compared with the plugin API version to verify that they are
+// compatible.
+remoting.apiVersion = 1;
+
+// The oldest API version that we support.
+// This will differ from the |apiVersion| if we maintain backward
+// compatibility with older API versions.
+remoting.apiMinVersion = 1;
 
 // Message id so that we can identify (and ignore) message fade operations for
 // old messages.  This starts at 1 and is incremented for each new message.
@@ -95,6 +106,11 @@ function sendIq(msg) {
            '&host_jid=' + encodeURIComponent(remoting.hostjid));
 }
 
+function checkVersion(plugin) {
+  return remoting.apiVersion >= plugin.apiMinVersion &&
+      plugin.apiVersion >= remoting.apiMinVersion;
+}
+
 function init() {
   // Kick off the connection.
   var plugin = document.getElementById('remoting');
@@ -115,6 +131,12 @@ function init() {
   plugin.debugInfo = debugInfoCallback;
   plugin.desktopSizeUpdate = desktopSizeChanged;
   plugin.loginChallenge = loginChallengeCallback;
+
+  if (!checkVersion(plugin)) {
+    // TODO(garykac): We need better messaging here. Perhaps an install link.
+    setClientStateMessage("Out of date. Please re-install.");
+    return;
+  }
 
   addToDebugLog('Connect as user ' + remoting.username);
 

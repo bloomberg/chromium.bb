@@ -18,6 +18,8 @@ namespace remoting {
 
 namespace {
 
+const char kApiVersionAttribute[] = "apiVersion";
+const char kApiMinVersionAttribute[] = "apiMinVersion";
 const char kConnectionInfoUpdate[] = "connectionInfoUpdate";
 const char kDebugInfo[] = "debugInfo";
 const char kDesktopHeight[] = "desktopHeight";
@@ -47,6 +49,14 @@ ChromotingScriptableObject::~ChromotingScriptableObject() {
 void ChromotingScriptableObject::Init() {
   // Property addition order should match the interface description at the
   // top of chromoting_scriptable_object.h.
+
+  // Plugin API version.
+  // This should be incremented whenever the API interface changes.
+  AddAttribute(kApiVersionAttribute, Var(1));
+
+  // This should be updated whenever we remove support for an older version
+  // of the API.
+  AddAttribute(kApiMinVersionAttribute, Var(1));
 
   // Connection status.
   AddAttribute(kStatusAttribute, Var(STATUS_UNKNOWN));
