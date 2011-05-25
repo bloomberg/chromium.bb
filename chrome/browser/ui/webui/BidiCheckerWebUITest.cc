@@ -71,10 +71,6 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestAboutPageLTR) {\
   RunBidiCheckerOnPage(chrome::kChromeUIAboutURL, false);\
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestAppLauncherPageLTR) {\
-  RunBidiCheckerOnPage(chrome::kChromeUIAppLauncherURL, false);\
-}
-
 // Times out. http://code.google.com/p/chromium/issues/detail?id=82896
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
                        DISABLED_TestBookmarksPageLTR) {\

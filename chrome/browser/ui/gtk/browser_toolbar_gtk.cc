@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -606,7 +607,8 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
   if (!url.is_valid())
     return;
 
-  bool url_is_newtab = url.spec() == chrome::kChromeUINewTabURL;
+  bool url_is_newtab =
+      web_ui_util::ChromeURLHostEquals(url, chrome::kChromeUINewTabHost);
   home_page_is_new_tab_page_.SetValue(url_is_newtab);
   if (!url_is_newtab)
     home_page_.SetValue(url.spec());

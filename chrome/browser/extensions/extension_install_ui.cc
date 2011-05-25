@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -69,9 +70,8 @@ void ShowAppInstalledAnimation(Browser* browser, const std::string& app_id) {
   // Select an already open NTP, if there is one. Existing NTPs will
   // automatically show the install animation for any new apps.
   for (int i = 0; i < browser->tab_count(); ++i) {
-    TabContents* tab_contents = browser->GetTabContentsAt(i);
-    GURL url = tab_contents->GetURL();
-    if (StartsWithASCII(url.spec(), chrome::kChromeUINewTabURL, false)) {
+    GURL url = browser->GetTabContentsAt(i)->GetURL();
+    if (web_ui_util::ChromeURLHostEquals(url, chrome::kChromeUINewTabHost)) {
       browser->ActivateTabAt(i, false);
       return;
     }
@@ -79,7 +79,7 @@ void ShowAppInstalledAnimation(Browser* browser, const std::string& app_id) {
 
   // If there isn't an NTP, open one and pass it the ID of the installed app.
   std::string url = base::StringPrintf(
-      "%s/#app-id=%s", chrome::kChromeUINewTabURL, app_id.c_str());
+      "%s#app-id=%s", chrome::kChromeUINewTabURL, app_id.c_str());
   browser->AddSelectedTabWithURL(GURL(url), PageTransition::TYPED);
 }
 

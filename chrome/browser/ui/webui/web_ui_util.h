@@ -8,6 +8,7 @@
 
 #include <string>
 
+class GURL;
 class SkBitmap;
 
 namespace web_ui_util {
@@ -23,6 +24,10 @@ std::string GetImageDataUrl(const SkBitmap& bitmap);
 // image. Returns empty string if a resource does not exist for given
 // |resource_id|.
 std::string GetImageDataUrlFromResource(int resource_id);
+
+// Returns true if |url| has a chrome: or about: scheme and matching |host|.
+// The url may contain a path under the host.
+bool ChromeURLHostEquals(const GURL& url, const char* host);
 
 }  // namespace web_ui_util
 

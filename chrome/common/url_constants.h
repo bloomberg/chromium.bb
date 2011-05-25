@@ -45,7 +45,6 @@ extern const char kAboutVersionURL[];
 extern const char kChromeUIAboutAboutURL[];
 extern const char kChromeUIAboutCreditsURL[];
 extern const char kChromeUIAboutURL[];
-extern const char kChromeUIAppLauncherURL[];
 extern const char kChromeUIBookmarksURL[];
 extern const char kChromeUIBugReportURL[];
 extern const char kChromeUIConflictsURL[];

@@ -22,6 +22,7 @@
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -1102,8 +1103,8 @@ std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
 
 bool TabStripModel::IsNewTabAtEndOfTabStrip(
     TabContentsWrapper* contents) const {
-  return LowerCaseEqualsASCII(contents->tab_contents()->GetURL().spec(),
-                              chrome::kChromeUINewTabURL) &&
+  const GURL& url = contents->tab_contents()->GetURL();
+  return web_ui_util::ChromeURLHostEquals(url, chrome::kChromeUINewTabHost) &&
       contents == GetContentsAt(count() - 1) &&
       contents->controller().entry_count() == 1;
 }

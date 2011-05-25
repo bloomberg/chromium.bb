@@ -7,6 +7,9 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/string_util.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -37,6 +40,12 @@ std::string GetImageDataUrlFromResource(int res) {
   base::Base64Encode(str_url, &str_url);
   str_url.insert(0, "data:image/png;base64,");
   return str_url;
+}
+
+bool ChromeURLHostEquals(const GURL& url, const char* host) {
+  return (url.SchemeIs(chrome::kChromeUIScheme) ||
+          url.SchemeIs(chrome::kAboutScheme)) &&
+         LowerCaseEqualsASCII(url.host(), host);
 }
 
 }  // namespace web_ui_util
