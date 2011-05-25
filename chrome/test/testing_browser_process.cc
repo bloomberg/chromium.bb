@@ -124,14 +124,6 @@ TabCloseableStateWatcher* TestingBrowserProcess::tab_closeable_state_watcher() {
   return NULL;
 }
 
-BackgroundModeManager* TestingBrowserProcess::background_mode_manager() {
-  return NULL;
-}
-
-StatusTray* TestingBrowserProcess::status_tray() {
-  return NULL;
-}
-
 safe_browsing::ClientSideDetectionService*
 TestingBrowserProcess::safe_browsing_detection_service() {
   return NULL;

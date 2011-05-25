@@ -109,6 +109,7 @@ class ProfileImpl : public Profile,
   virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force);
   virtual WebKitContext* GetWebKitContext();
+  virtual StatusTray* GetStatusTray();
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions(bool extensions_enabled);
   virtual void InitPromoResources();
@@ -240,6 +241,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<WebKitContext> webkit_context_;
+  scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_ptr<BrowserSignin> browser_signin_;

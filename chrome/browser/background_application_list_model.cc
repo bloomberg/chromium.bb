@@ -96,12 +96,11 @@ bool HasBackgroundAppPermission(
 
 void
 BackgroundApplicationListModel::Observer::OnApplicationDataChanged(
-    const Extension* extension, Profile* profile) {
+    const Extension* extension) {
 }
 
 void
-BackgroundApplicationListModel::Observer::OnApplicationListChanged(
-    Profile* profile) {
+BackgroundApplicationListModel::Observer::OnApplicationListChanged() {
 }
 
 BackgroundApplicationListModel::Observer::~Observer() {
@@ -126,7 +125,7 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
   if (!image)
     return;
   icon_.reset(new SkBitmap(*image));
-  model_->SendApplicationDataChangedNotifications(extension_);
+  model_->OnApplicationDataChanged(extension_);
 }
 
 void BackgroundApplicationListModel::Application::RequestIcon(
@@ -264,10 +263,9 @@ void BackgroundApplicationListModel::Observe(
   }
 }
 
-void BackgroundApplicationListModel::SendApplicationDataChangedNotifications(
+void BackgroundApplicationListModel::OnApplicationDataChanged(
     const Extension* extension) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnApplicationDataChanged(extension,
-                                                                   profile_));
+  FOR_EACH_OBSERVER(Observer, observers_, OnApplicationDataChanged(extension));
 }
 
 void BackgroundApplicationListModel::OnExtensionLoaded(Extension* extension) {
@@ -312,6 +310,6 @@ void BackgroundApplicationListModel::Update() {
   }
   if (old_cursor != extensions_.end() || new_cursor != extensions.end()) {
     extensions_ = extensions;
-    FOR_EACH_OBSERVER(Observer, observers_, OnApplicationListChanged(profile_));
+    FOR_EACH_OBSERVER(Observer, observers_, OnApplicationListChanged());
   }
 }

@@ -249,6 +249,7 @@ class TestingProfile : public Profile {
   virtual void InitRegisteredProtocolHandlers() {}
   virtual NTPResourceCache* GetNTPResourceCache();
 
+  virtual StatusTray* GetStatusTray();
   virtual FilePath last_selected_directory();
   virtual void set_last_selected_directory(const FilePath& path);
 #if defined(OS_CHROMEOS)

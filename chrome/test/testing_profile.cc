@@ -677,6 +677,10 @@ NTPResourceCache* TestingProfile::GetNTPResourceCache() {
   return ntp_resource_cache_.get();
 }
 
+StatusTray* TestingProfile::GetStatusTray() {
+  return NULL;
+}
+
 FilePath TestingProfile::last_selected_directory() {
   return last_selected_directory_;
 }
