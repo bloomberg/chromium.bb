@@ -177,7 +177,7 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 readonly LLVM_REV=2e67a11d533c
 readonly LLVM_GCC_REV=974739742365
 readonly NEWLIB_REV=9bef47f82918
-readonly BINUTILS_REV=b43218f5f9fc
+readonly BINUTILS_REV=c1f0b7db9e92
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
