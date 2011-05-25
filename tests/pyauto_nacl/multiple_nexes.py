@@ -10,63 +10,70 @@ import random
 
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
-  nexes = [# TODO(cstefansen): Figure out why multiple nexes in a page flakes
-           # on Linux 32 bit (issue 1851); then uncomment the following line
-           # (and similar line below)
-           # 'basic_object.html',
-           'earth_c.html',
-           'earth_cc.html',
-           'ppapi_core.html',
-           'ppapi_example_audio.html#mute',
-           'ppapi_file_system.html',
-           'ppapi_geturl.html',
-           'ppapi_progress_events.html',
+  # (test.html, number of nexes loaded concurrently on page)
+  nexes = [('basic_object.html', 2),
+           ('earth_c.html', 1),
+           ('earth_cc.html', 1),
+           ('ppapi_core.html', 1),
+           ('ppapi_example_audio.html#mute', 1),
+           ('ppapi_file_system.html', 1),
+           ('ppapi_geturl.html', 1),
+           ('ppapi_progress_events.html', 1),
            # TODO(nfullagar): graphics 2d appears to lock up while waiting
            # for the replace contents flush callback. Enable this test when
            # we've figured out why this occurs and the problem is fixed.
-           # 'ppapi_ppb_graphics2d.html',
-           'srpc_basic.html',
-           'srpc_hw.html',
+           # ('ppapi_ppb_graphics2d.html', 1),
+           ('srpc_basic.html', 1),
+           ('srpc_hw.html', 1),
            # TODO(nfullagar): enable this test when it works on trybots.
-           # 'srpc_hw_fd.html',
-           # TODO(cstefansen): Figure out why multiple nexes in a page flakes
-           # on Linux 32 bit (issue 1851); then uncomment the following line.
-           # 'srpc_nrd_xfer.html',
-           'srpc_plugin.html',
-           'srpc_shm.html',
-           'srpc_sockaddr.html',
-           'srpc_url_as_nacl_desc.html']
+           # ('srpc_hw_fd.html', 1),
+           ('srpc_nrd_xfer.html', 2),
+           ('srpc_plugin.html', 1),
+           ('srpc_shm.html', 1),
+           ('srpc_sockaddr.html', 1),
+           ('srpc_url_as_nacl_desc.html', 1)]
 
   def testLoadNexesInMultipleTabs(self):
     """Load nexes in multiple tabs and surf away from all of them."""
 
     # Prime each tab by navigating to about:version.
-    # TODO(mcgrathr): Reduced from 10 to 5 because 256MB*10 is too
+    # TODO(mcgrathr): Reduced from 10 to 6 because 256MB*10 is too
     # much /dev/shm space for the bots to handle.
     # See http://code.google.com/p/nativeclient/issues/detail?id=503
-    num_tabs = 5
+    max_nexes = 6
+    max_tabs = 6
+    max_attempts = max_nexes * 10
     num_iterations = 10
     self.NavigateToURL('about:version')
     original_title = self.GetActiveTabTitle()
-    for i in range(1, num_tabs):
+    for i in range(1, max_tabs):
       self.AppendTab(pyauto.GURL('about:version'))
 
     for j in range(0, num_iterations):
-      # Pick a nexe for each tab and navigate to it.
-      for i in range(0, num_tabs):
-        page_url = random.choice(NaClTest.nexes)
-        self.GetBrowserWindow(0).GetTab(i).NavigateToURL(pyauto.GURL(
+      # Pick a test for each tab and navigate to it.
+      # Some tests have more than one nexe on the page, limit the total to
+      # max_nexes, due to mcgrathr's /dev/shm note above.
+      num_nexes = 0
+      num_tabs = 0
+      num_attempts = 0
+      while (num_nexes < max_nexes) and (num_attempts < max_attempts):
+        page_url, page_nexes = random.choice(NaClTest.nexes)
+        if num_nexes + page_nexes <= max_nexes:
+          self.GetBrowserWindow(0).GetTab(num_tabs).NavigateToURL(pyauto.GURL(
             self.GetHttpURLForDataPath(page_url)))
+          num_nexes = num_nexes + page_nexes
+          num_tabs = num_tabs + 1
+        num_attempts = num_attempts + 1
 
-      # Wait for all the nexes to fully load.
+      # Wait for all the tabs to fully load.
       for i in range(0, num_tabs):
         nacl_utils.WaitForNexeLoad(self, tab_index=i)
 
-      # Make sure every nexe successfully passed test(s).
+      # Make sure every tab successfully passed test(s).
       for i in range(0, num_tabs):
         nacl_utils.VerifyAllTestsPassed(self, tab_index=i)
 
-      # Surf away from each nexe and verify that the tab didn't crash.
+      # Surf away from each tab and verify no crash occurred.
       for i in range(0, num_tabs):
         self.GetBrowserWindow(0).GetTab(i).GoBack()
         self.assertEqual(original_title, self.GetActiveTabTitle())
@@ -79,7 +86,8 @@ class NaClTest(pyauto.PyUITest):
     original_title = self.GetActiveTabTitle()
 
     # Navigate to a nexe and make sure it loads. Repeate for all nexes.
-    for page_url in NaClTest.nexes:
+    for page_info in NaClTest.nexes:
+      page_url, page_nexes = page_info
       self.NavigateToURL(self.GetHttpURLForDataPath(page_url))
       nacl_utils.WaitForNexeLoad(self)
       nacl_utils.VerifyAllTestsPassed(self)
