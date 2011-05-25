@@ -14,9 +14,7 @@ import unittest
 import constants
 sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot as cbuildbot
-import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_config as config
-import chromite.lib.cros_build_lib as cros_lib
 
 
 class CBuildBotTest(mox.MoxTestBase):
@@ -37,6 +35,7 @@ class CBuildBotTest(mox.MoxTestBase):
     self.options.uprev = False
     self.options.tests = False
     self.options.archive = False
+    self.options.remote_test_status = False
 
   def testNoResultCodeReturned(self):
     """Test a non-error run."""
