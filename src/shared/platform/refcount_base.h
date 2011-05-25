@@ -29,7 +29,11 @@ class RefCountBase {
   void Unref();
 
  protected:
-  ~RefCountBase();
+  virtual ~RefCountBase();
+  // dtor (or one method) must be virtual to ensure that the base
+  // class has a vtbl pointer, so that the covariant casts of Ref()
+  // using reinterpret_cast<SubClass>(RefCountBase::Ref()) in
+  // subclasses that have virtual functions
 
  private:
   NaClMutex mu_;
