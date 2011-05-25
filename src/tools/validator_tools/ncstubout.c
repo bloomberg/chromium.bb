@@ -26,6 +26,7 @@
 #if NACL_TARGET_SUBARCH == 32
 
 # include "native_client/src/trusted/validator_x86/ncdecode.h"
+# include "native_client/src/trusted/validator_x86/ncdis_util.h"
 # include "native_client/src/trusted/validator_x86/ncvalidate.h"
 
 static Bool FixUpSection(uintptr_t load_address,
@@ -65,6 +66,7 @@ static Bool FixUpSection(uintptr_t load_address,
     return FALSE;
   }
   NCValidatorStateSetCPUFeatures(vstate, &features);
+  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   NCValidateSegment(code, load_address, code_size, vstate);
   return_code = NCValidateFinish(vstate);
   NCValidateFreeState(&vstate);
@@ -99,7 +101,6 @@ static Bool FixUpSection(uintptr_t load_address,
    */
   NaClSetAllCPUFeatures(&features);
   NaClValidatorStateSetCPUFeatures(vstate, &features);
-  NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
   NaClValidateSegment(code, load_address, code_size, vstate);
   return_code = NaClValidatesOk(vstate);
   NaClValidatorStateDestroy(vstate);
@@ -115,6 +116,7 @@ static Bool FixUpSection(uintptr_t load_address,
     return FALSE;
   }
   NaClValidatorStateSetCPUFeatures(vstate, &features);
+  NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
   NaClValidateSegment(code, load_address, code_size, vstate);
   return_code = NaClValidatesOk(vstate);
   NaClValidatorStateDestroy(vstate);

@@ -153,13 +153,14 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NCValidateInit(vbase, vlimit, ncf->ncalign);
+  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   if (vstate == NULL) return 0;
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
     SegmentInfo("%s: text validate failed\n", fname);
   }
   result = NCValidateFinish(vstate);
   NCValidateResults(result, fname);
-  Stats_Print(stdout, vstate);
+  Stats_Print(vstate);
   NCValidateFreeState(&vstate);
   SegmentDebug("Validated %s\n", fname);
   return result;
@@ -709,6 +710,7 @@ int main(int argc, const char *argv[]) {
     argc = ValidateSfiHexLoad(argc, argv, &data);
     vstate = NCValidateInit(data.base, data.num_bytes,
                             (uint8_t) NACL_FLAGS_block_alignment);
+    NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
     if (NACL_FLAGS_stubout_memory) {
       NCValidateSetStubOutMode(vstate, 1);
     }

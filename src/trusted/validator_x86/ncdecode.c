@@ -121,7 +121,8 @@ static void NCDecoderStateInternalError(NCDecoderState* tthis) {
 /* Error Condition Handling */
 static void ErrorSegmentation(NCDecoderInst* dinst) {
   NCDecoderState* dstate = dinst->dstate;
-  fprintf(stdout, "ErrorSegmentation\n");
+  NaClErrorReporter* reporter = dstate->error_reporter;
+  reporter->printf(dstate->error_reporter, "ErrorSegmentation\n");
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
@@ -130,7 +131,8 @@ static void ErrorSegmentation(NCDecoderInst* dinst) {
 
 static void ErrorInternal(NCDecoderInst* dinst) {
   NCDecoderState* dstate = dinst->dstate;
-  fprintf(stdout, "ErrorInternal\n");
+  NaClErrorReporter* reporter = dstate->error_reporter;
+  reporter->printf(reporter, "ErrorInternal\n");
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
@@ -449,6 +451,7 @@ struct NCDecoderInst* PreviousInst(const NCDecoderInst* dinst,
  */
 static void NCDecoderStateInitFields(NCDecoderState* this) {
   size_t dbindex;
+  this->error_reporter = &kNCNullErrorReporter;
   NCRemainingMemoryInit(this->mbase, this->size, &this->memory);
   this->memory.error_fn = NCRemainingMemoryInternalError;
   this->memory.error_fn_state = (void*) this;
@@ -582,6 +585,34 @@ static void ConsumeNextInstruction(struct NCDecoderInst* inst) {
   MaybeConsumePredefinedNop(inst);
 }
 
+void NCDecoderStateSetErrorReporter(NCDecoderState* this,
+                                    NaClErrorReporter* reporter) {
+  switch (reporter->supported_reporter) {
+    case NaClNullErrorReporter:
+    case NCDecoderInstErrorReporter:
+      this->error_reporter = reporter;
+      return;
+    default:
+      break;
+  }
+  reporter->printf(
+      reporter,
+      "*** FATAL: using unsupported error reporter! ***\n"
+      "*** NCDecoderInstErrorReporter expected but found %s***\n",
+      NaClErrorReporterSupportedName(reporter->supported_reporter));
+  exit(1);
+}
+
+static void NCNullErrorPrintInst(NaClErrorReporter* self,
+                                 struct NCDecoderInst* inst) {}
+
+NaClErrorReporter kNCNullErrorReporter = {
+  NaClNullErrorReporter,
+  NaClNullErrorPrintf,
+  NaClNullErrorPrintfV,
+  (NaClPrintInst) NCNullErrorPrintInst,
+};
+
 Bool NCDecoderStateDecode(NCDecoderState* this) {
   NCDecoderInst* dinst = &this->inst_buffer[this->cur_inst_index];
   const NaClPcAddress vlimit = this->vbase + this->size;
@@ -594,9 +625,11 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
     ConsumeNextInstruction(dinst);
     if (this->memory.overflow_count) {
       NaClPcAddress newpc = dinst->vpc + dinst->inst.bytes.length;
-      fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress
-              " (read overflow of %d bytes)\n",
-              newpc, vlimit, this->memory.overflow_count);
+      this->error_reporter->printf(
+          this->error_reporter,
+          "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress
+          " (read overflow of %d bytes)\n",
+          newpc, vlimit, this->memory.overflow_count);
       ErrorSegmentation(dinst);
       break;
     }
@@ -669,7 +702,7 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
     ConsumeNextInstruction(new_dinst);
 
 
-    /* Verify that the instruciton lengths match. */
+    /* Verify that the instruction lengths match. */
     if (old_dinst->inst.bytes.length !=
         new_dinst->inst.bytes.length) {
       ErrorInternal(new_dinst);
@@ -683,7 +716,12 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
      * segment lengths are the same, if overflow occurs on one
      * segment, it must occur on the other.
      */
-    if (tthis->new_dstate->memory.overflow_count) {
+    if (new_dinst->vpc > new_vlimit) {
+      NaClErrorReporter* reporter = new_dinst->dstate->error_reporter;
+      reporter->printf(
+          reporter,
+          "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
+          new_dinst->vpc, new_vlimit);
       ErrorSegmentation(new_dinst);
       return FALSE;
     }

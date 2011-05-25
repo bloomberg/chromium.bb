@@ -43,9 +43,19 @@
 /* TODO(bradchen) verbosity needs to be controllable via commandline flags */
 #define VERBOSE 1
 #if VERBOSE
-#define vprint(args)        do { printf args; } while (0)
+#define vprint(vstate, args) \
+  do { \
+    NaClErrorReporter* reporter = vstate->dstate.error_reporter; \
+    reporter->printf args; \
+  } while (0)
 #else
-#define vprint(args)        do { if (0) { printf args; } } while (0)
+#define vprint(vstate, args) \
+  do { \
+    if (0) { \
+      NaClErrorReporter* reporter = vstate->dstate.error_reporter; \
+      reporter->printf args; \
+    } \
+  } while (0)
 /* allows DCE but compiler can still do format string checks */
 #endif  /* VERBOSE */
 
@@ -75,12 +85,16 @@ void NCValidatorSetMaxDiagnostics(int new_value) {
 
 static void ValidatePrintError(const NaClPcAddress addr, const char *msg,
                                struct NCValidatorState *vstate) {
-
   if (vstate->num_diagnostics != 0) {
-    printf("VALIDATOR: %"NACL_PRIxNaClPcAddress": %s\n", addr, msg);
+    NaClErrorReporter* reporter = vstate->dstate.error_reporter;
+    reporter->printf(
+        reporter,
+        "VALIDATOR: %"NACL_PRIxNaClPcAddress": %s\n", addr, msg);
     --(vstate->num_diagnostics);
     if (vstate->num_diagnostics == 0) {
-      printf("VALIDATOR: Error limit reached, turning off diagnostics!\n");
+      reporter->printf(
+          reporter,
+          "VALIDATOR: Error limit reached, turning off diagnostics!\n");
     }
   }
 }
@@ -119,23 +133,24 @@ static void InitOpcodeHisto(struct NCValidatorState *vstate) {
   for (i = 0; i < 256; i += 1) vstate->opcodehisto[i] = 0;
 }
 
-static void PrintOpcodeHisto(FILE *f, struct NCValidatorState *vstate) {
+static void PrintOpcodeHisto(struct NCValidatorState *vstate) {
   int i;
   int printed_in_this_row = 0;
+  NaClErrorReporter* reporter = vstate->dstate.error_reporter;
   if (!VERBOSE) return;
-  fprintf(f, "\nOpcode Histogram;\n");
+  reporter->printf(reporter, "\nOpcode Histogram;\n");
   for (i = 0; i < 256; ++i) {
     if (0 != vstate->opcodehisto[i]) {
-      fprintf(f, "%d\t0x%02x\t", vstate->opcodehisto[i], i);
+      reporter->printf(reporter, "%d\t0x%02x\t", vstate->opcodehisto[i], i);
       ++printed_in_this_row;
       if (printed_in_this_row > 3) {
         printed_in_this_row = 0;
-        fprintf(f, "\n");
+        reporter->printf(reporter, "\n");
       }
     }
   }
   if (0 != printed_in_this_row) {
-    fprintf(f, "\n");
+    reporter->printf(reporter, "\n");
   }
 }
 #else
@@ -179,7 +194,7 @@ static void Stats_SegFault(struct NCValidatorState *vstate) {
 static void Stats_NewSegment(struct NCValidatorState *vstate) {
   vstate->stats.segments += 1;
   if (vstate->stats.segments > 1) {
-    vprint(("error: multiple segments\n"));
+    vprint(vstate, (reporter, "error: multiple segments\n"));
     Stats_SawFailure(vstate);
   }
 }
@@ -233,35 +248,38 @@ static void Stats_Init(struct NCValidatorState *vstate) {
   InitOpcodeHisto(vstate);
 }
 
-void Stats_Print(FILE *f, struct NCValidatorState *vstate) {
-  if (!VERBOSE) return;
-  if (vstate == NULL) {
-    fprintf(f, "Analysis Summary: invalid module or internal failure\n");
-    return;
-  }
-  PrintOpcodeHisto(f, vstate);
-  fprintf(f, "Analysis Summary:\n");
-  fprintf(f, "%d Checked instructions\n", vstate->stats.instructions);
-  fprintf(f, "%d checked jump targets\n", vstate->stats.checktarget);
-  fprintf(f, "%d calls/jumps need dynamic checking (%0.2f%%)\n",
-          vstate->stats.targetindirect,
-          vstate->stats.instructions ?
-          100.0 * vstate->stats.targetindirect/vstate->stats.instructions : 0);
-  fprintf(f, "\nProblems:\n");
-  fprintf(f, "%d illegal instructions\n", vstate->stats.illegalinst);
-  fprintf(f, "%d bad jump targets\n", vstate->stats.badtarget);
-  fprintf(f, "%d illegal unprotected indirect jumps (including ret)\n",
-          vstate->stats.unsafeindirect);
-  fprintf(f, "%d instruction alignment defects\n",
-          vstate->stats.badalignment);
-  fprintf(f, "%d segmentation errors\n",
-          vstate->stats.segfaults);
-  fprintf(f, "%d bad prefix\n",
-          vstate->stats.badprefix);
-  fprintf(f, "%d bad instruction length\n",
-          vstate->stats.badinstlength);
-  fprintf(f, "%d internal errors\n",
-          vstate->stats.internalerrors);
+void Stats_Print(struct NCValidatorState *vstate) {
+  NaClErrorReporter* reporter;
+  if (!VERBOSE || (vstate == NULL)) return;
+  reporter = vstate->dstate.error_reporter;
+  PrintOpcodeHisto(vstate);
+  reporter->printf(reporter, "Analysis Summary:\n");
+  reporter->printf(reporter, "%d Checked instructions\n",
+                   vstate->stats.instructions);
+  reporter->printf(reporter, "%d checked jump targets\n",
+                   vstate->stats.checktarget);
+  reporter->printf(
+      reporter, "%d calls/jumps need dynamic checking (%0.2f%%)\n",
+      vstate->stats.targetindirect,
+      vstate->stats.instructions ?
+      100.0 * vstate->stats.targetindirect/vstate->stats.instructions : 0);
+  reporter->printf(reporter, "\nProblems:\n");
+  reporter->printf(reporter, "%d illegal instructions\n",
+                   vstate->stats.illegalinst);
+  reporter->printf(reporter, "%d bad jump targets\n", vstate->stats.badtarget);
+  reporter->printf(
+      reporter, "%d illegal unprotected indirect jumps (including ret)\n",
+      vstate->stats.unsafeindirect);
+  reporter->printf(reporter, "%d instruction alignment defects\n",
+                   vstate->stats.badalignment);
+  reporter->printf(reporter, "%d segmentation errors\n",
+                   vstate->stats.segfaults);
+  reporter->printf(reporter, "%d bad prefix\n",
+                   vstate->stats.badprefix);
+  reporter->printf(reporter, "%d bad instruction length\n",
+                   vstate->stats.badinstlength);
+  reporter->printf(reporter, "%d internal errors\n",
+                   vstate->stats.internalerrors);
 }
 
 /***********************************************************************/
@@ -308,6 +326,11 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
             ")\n", vbase, vlimit));
     vstate = (struct NCValidatorState *)calloc(1, sizeof(*vstate));
     if (vstate == NULL) break;
+    /* Record default error reporter here, since we don't construct
+     * the decoder state until the call to NCValidateSegment. This allows
+     * us to update the error reporter in the decoder state properly.
+     */
+    vstate->dstate.error_reporter = &kNCNullErrorReporter;
     vstate->num_diagnostics = kMaxDiagnostics;
     vstate->iadrbase = vbase;
     vstate->iadrlimit = vlimit;
@@ -359,6 +382,11 @@ void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
   vstate->num_diagnostics = num_diagnostics;
 }
 
+void NCValidateSetErrorReporter(struct NCValidatorState* state,
+                                NaClErrorReporter* error_reporter) {
+  NCDecoderStateSetErrorReporter(&state->dstate, error_reporter);
+}
+
 static void RememberIP(const NaClPcAddress ip,
                        struct NCValidatorState *vstate) {
   const NaClMemorySize ioffset =  ip - vstate->iadrbase;
@@ -368,8 +396,9 @@ static void RememberIP(const NaClPcAddress ip,
     return;
   }
   if (GetAdrTable(ioffset, vstate->vttable)) {
-    vprint(("RememberIP: Saw inst at %"NACL_PRIxNaClPcAddressAll
-            " twice\n", ip));
+    vprint(vstate, (reporter,
+                    "RememberIP: Saw inst at %"NACL_PRIxNaClPcAddressAll
+                    " twice\n", ip));
     Stats_InternalError(vstate);
     return;
   }
@@ -408,7 +437,9 @@ static void ForgetIP(const NaClPcAddress ip,
 int NCValidateFinish(struct NCValidatorState *vstate) {
   uint32_t offset;
   if (vstate == NULL) {
-    vprint(("validator not initialized. Did you call ncvalidate_init()?\n"));
+    vprint(vstate,
+           (reporter,
+            "validator not initialized. Did you call ncvalidate_init()?\n"));
     /* non-zero indicates failure */
     return 1;
   }
@@ -502,8 +533,8 @@ static void ValidateJmp8(const NCDecoderInst *dinst) {
     RememberTP(dinst->vpc, target, vstate);
   } else {
     /* If this ever happens, it's probably a decoder bug. */
-    vprint(("ERROR: JMP8 %"NACL_PRIxNaClPcAddress": %x\n",
-            dinst->vpc, opcode));
+    vprint(vstate, (reporter, "ERROR: JMP8 %"NACL_PRIxNaClPcAddress": %x\n",
+                    dinst->vpc, opcode));
     Stats_InternalError(vstate);
   }
 }
@@ -538,8 +569,9 @@ static void ValidateJmpz(const NCDecoderInst *dinst) {
   } else {
     /* If this ever happens, it's probably a decoder bug. */
     uint8_t opcode1 = NCInstBytesByte(&opcode, 1);
-    vprint(("ERROR: JMPZ %"NACL_PRIxNaClPcAddress": %x %x\n",
-             dinst->vpc, opcode0, opcode1));
+    vprint(vstate,
+           (reporter, "ERROR: JMPZ %"NACL_PRIxNaClPcAddress": %x %x\n",
+            dinst->vpc, opcode0, opcode1));
     Stats_InternalError(vstate);
   }
 }
@@ -867,9 +899,21 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
     Stats_SegFault(vstate);
     return;
   } else {
+    /* Note: Based on the current API, we must grab the error reporter
+     * and reinstall it, after the call to NCValidateDStateInit, so that
+     * we don't replace it with the default error reporter.
+     */
+    /* TODO(karl): Create a constructor for a decoder state so that
+     * it doesn't require the mbase, vbase, and sz values, so that
+     * the constructor can be called whe4n the validator state is
+     * created.
+     */
+    NCDecoderState* dstate = &vstate->dstate;
+    NaClErrorReporter* reporter = dstate->error_reporter;
     NCValidateDStateInit(vstate, mbase, vbase, sz);
-    NCDecoderStateDecode(&vstate->dstate);
-    NCDecoderStateDestruct(&vstate->dstate);
+    NCDecoderStateSetErrorReporter(dstate, reporter);
+    NCDecoderStateDecode(dstate);
+    NCDecoderStateDestruct(dstate);
   }
 }
 
