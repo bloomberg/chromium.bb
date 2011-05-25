@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/touch/frame/touch_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
 
 namespace browser {
 
@@ -15,7 +16,7 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
       browser_view->IsBrowserTypePanel()) {
     // TODO(anicolao): implement popups for touch
     NOTIMPLEMENTED();
-    return NULL;
+    return new PopupNonClientFrameView(frame);
   } else {
     return new TouchBrowserFrameView(frame, browser_view);
   }
