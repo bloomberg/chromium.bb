@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.preferences - Google Chrome Extensions - Google Code</title></head>
+  <title>Preferences - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,16 +251,23 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.preferences</h1>
+        <h1 class="page_title">Preferences</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
-              <a>h2Name</a>
+            <li>
+              <a href="#description">Overview</a>
               <ol>
-                <li>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#precedence">Precedence</a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
@@ -312,7 +319,96 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-name" class="pageData">Preferences</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+The <code>chrome.preferences</code> module contains a prototype for giving other
+modules access to manage preferences stored by Chrome. This prototype is used,
+for example, for <a href="proxy.html#property-settings"><code>chrome.proxy.settings</code></a>.
+</p>
+
+<h2 id="description">Overview</h2>
+
+<p>
+The preferences API provides a common set of functions
+(<code>get()</code>, <code>set()</code>, and <code>clear()</code>) as
+well as an event publisher (<code>onChange</code>) for various
+preferences in Chrome. The <a href="proxy.html#overview-examples">proxy settings
+ examples</a> demonstrate how these functions are intended to be used.
+</p>
+
+<!--
+<h2 id="lifecycle">Life cycle of preferences</h2>
+
+<p>
+The life cycle of preferences depends on whether they are set for regular or
+incognito profiles. </p>
+-->
+
+<p>
+Currently, preferences can only be set for regular profiles. Once set, they
+remain in place until they are cleared by the governing extension, or the
+governing extension is disabled or uninstalled.
+</p>
+
+<h2 id="precedence">Precedence</h2>
+
+<p>
+Chrome manages preferences on different layers. The following list describes the
+layers that may influence the effective preferences, in increasing order of
+precedence.
+</p><ol>
+  <li>System preferences provided by the operating system</li>
+  <li>Command-line parameters</li>
+  <li>Preferences set by extensions</li>
+  <li>Policies</li>
+</ol>
+<p></p>
+
+<p>
+As the list implies, policies might overrule any changes that you specify with
+your extension.
+</p>
+
+<!--
+<p>
+As discussed above, Chrome allows using different preferences for regular
+windows and incognito windows. The following example illustrates the behavior.
+Assume that no policy overrides the preferences and that an extension can set
+preferences for regular windows <b>(R)</b> and preferences for incognito windows
+<b>(I)</b>.
+</p>
+
+<p>
+<ul>
+  <li>If only <b>(R)</b> is set, these preferences are effective for both
+  regular and incognito windows.</li>
+  <li>If only <b>(I)</b> is set, these preferences are effective for only
+  incognito windows. Regular windows use the preferences determined by the lower
+  layers (command-line options and system settings).</li>
+  <li>If both <b>(R)</b> and <b>(I)</b> are set, the respective preferences are
+  used for regular and incognito windows.</li>
+</ul>
+</p>
+-->
+
+<p>
+If two or more extensions want to set the same preference to different values,
+the extension installed most recently takes precedence over the other
+extensions.
+<!-- If the
+extension installed last sets only <b>(I)</b>, the preference of regular windows
+can be defined by previously installed extensions. -->
+</p>
+
+<p>
+The <em>effective</em> preference value is the setting that results from
+considering the preference rules. It is used by Chrome.
+</p><p>
+
+<!-- END AUTHORED CONTENT -->
+</p></div>
 
         <!-- API PAGE -->
         <div class="apiPage">

@@ -3,7 +3,8 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.proxy</code> module to manage Chrome's
-proxy settings.
+proxy settings. This module relies on the <a href="preferences.html">preferences
+  API</a> for getting and setting the proxy configuration.
 </p>
 
 <h2 id="manifest">Manifest</h2>
@@ -149,61 +150,14 @@ Individual servers may be excluded from being proxied with the
 </dl>
 
 
-<h2 id="precedence">Precedence</h2>
-
-<p>
-Chrome manages settings on different layers. The following list describes the
-layers that may influence the effective proxy settings, in increasing order of
-precedence.
-<ol>
-  <li>System settings provided by the operating system</li>
-  <li>Command line parameters</li>
-  <li>Preferences set by extensions</li>
-  <li>Policies</li>
-</ol>
-</p>
-
-<p>
-As the list implies, policies might overrule any changes that you specify with
-the proxy settings API.
-</p>
-
-<!--
-<p>
-Chrome allows using different proxy settings for regular windows and incognito
-windows. The following example illustrates the behavior. Assume that no policy
-overrides the proxy settings and that an extension can set proxy settings for
-regular windows <b>(R)</b> and proxy settings for incognito windows <b>(I)</b>.
-</p>
-
-<p>
-<ul>
-  <li>If only <b>(R)</b> is set, these settings are effective for both regular
-  and incognito windows.</li>
-  <li>If only <b>(I)</b> is set, these settings are effective for only incognito
-  windows. Regular windows use the proxy settings determined by the lower layers
-  (command-line options and system settings).</li>
-  <li>If both <b>(R)</b> and <b>(I)</b> are set, the respective settings are
-  used for regular and incognito windows.</li>
-</ul>
-</p>
-
-<p>
-If two extensions want to set proxy settings, the extension installed last takes
-precedence over the other extensions. If the extension installed last sets only
-<b>(I)</b>, the settings of regular windows can be defined by more recently
-installed extensions.
-</p>
--->
-
-
-
 <h2 id="overview-examples">Examples</h2>
 
 <p>
 The following code sets a SOCKS 5 proxy for HTTP connections to all servers but
 foobar.com and uses direct connections for all other protocols. The settings
-apply to regular and incognito windows.
+apply to regular and incognito windows, as incognito windows inherit preferences
+from regular windows. Please also consult the <a
+  href="preferences.html">Preferences API</a> documentation.
 </p>
 
 <pre>
@@ -223,7 +177,7 @@ chrome.proxy.settings.set(
 </pre>
 
 <p>
-The following code sets a custom pac script.
+The following code sets a custom PAC script.
 </p>
 
 <pre>
@@ -243,7 +197,9 @@ chrome.proxy.settings.set(
 </pre>
 
 <p>
-The next snippet queries the current proxy settings.
+The next snippet queries the currently effective proxy settings. The effective
+proxy settings can be determined by another extension or by a policy. See the <a
+  href="preferences.html">Preferences API</a> documentation for details.
 </p>
 
 <pre>
