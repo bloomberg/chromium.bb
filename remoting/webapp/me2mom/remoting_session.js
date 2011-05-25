@@ -55,8 +55,8 @@ function registerConnection() {
         var clientjid = xhr.responseText;
 
         remoting.plugin.sendIq = sendIq;
-        remoting.plugin.connectSandboxed(clientjid, remoting.hostjid,
-                                         remoting.accessCode);
+        remoting.plugin.connect(remoting.hostjid, clientjid,
+                                remoting.accessCode);
         // TODO(ajwong): This should just be feedIq();
         window.setTimeout(feedIq, 1000);
       } else {
@@ -123,8 +123,8 @@ function init() {
     if (remoting.connectMethod == 'sandboxed') {
       registerConnection();
     } else {
-      plugin.connect(remoting.username, remoting.hostjid,
-                     remoting.xmppAuthToken, remoting.accessCode);
+      plugin.connectUnsandboxed(remoting.hostjid, remoting.username,
+                                remoting.xmppAuthToken, remoting.accessCode);
     }
   } else {
     addToDebugLog('ERROR: remoting plugin not loaded');
