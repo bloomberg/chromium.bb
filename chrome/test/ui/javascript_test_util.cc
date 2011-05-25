@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/common/json_value_serializer.h"
@@ -39,28 +38,17 @@ bool JsonDictionaryToMap(const std::string& json,
     if (!succeeded)
       continue;
 
-    const std::string& key(*it);
-    std::string result;
+    EXPECT_TRUE(value->IsType(Value::TYPE_STRING));
+    if (value->IsType(Value::TYPE_STRING)) {
+      const std::string& key(*it);
 
-    switch (value->GetType()) {
-      case Value::TYPE_STRING:
-        succeeded = value->GetAsString(&result);
-        break;
-      case Value::TYPE_DOUBLE: {
-        double double_result;
-        succeeded = value->GetAsDouble(&double_result);
-        if (succeeded)
-          result = base::DoubleToString(double_result);
-        break;
-      }
-      default:
-        NOTREACHED() << "Value type not supported!";
-        return false;
+      std::string result;
+      succeeded = value->GetAsString(&result);
+      EXPECT_TRUE(succeeded);
+
+      if (succeeded)
+        results->insert(std::make_pair(key, result));
     }
-
-    EXPECT_TRUE(succeeded);
-    if (succeeded)
-      results->insert(std::make_pair(key, result));
   }
 
   return true;

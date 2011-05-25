@@ -45,7 +45,7 @@ class UIPerfTest : public UITest {
                    bool important);
 
   // Like PrintResult(), but prints a (mean, standard deviation) result pair.
-  // The |<values>| should be two comma-separated numbers, the mean and
+  // The |<values>| should be two comma-seaprated numbers, the mean and
   // standard deviation (or other error metric) of the measurement.
   void PrintResultMeanAndError(const std::string& measurement,
                                const std::string& modifier,
