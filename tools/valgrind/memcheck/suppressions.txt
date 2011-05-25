@@ -4602,6 +4602,7 @@
    bug_83949
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN13P2PSocketHost6CreateEPN3IPC7Message6SenderEii13P2PSocketType
    fun:_ZN23P2PSocketDispatcherHost14OnCreateSocketERKN3IPC7MessageE13P2PSocketTypeiRKN3net10IPEndPointES8_
    fun:_ZN3IPC16MessageWithTupleI6Tuple4I13P2PSocketTypeiN3net10IPEndPointES4_EE8DispatchI23P2PSocketDispatcherHostS8_S2_iRKS4_SA_EEbPKNS_7MessageEPT_PT0_MSE_FvRSC_T1_T2_T3_T4_E
@@ -4613,6 +4614,7 @@
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
 }
+
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
