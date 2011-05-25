@@ -34,7 +34,8 @@ class DownloadHistory {
   // Retrieves DownloadCreateInfos saved in the history.
   void Load(HistoryService::DownloadQueryCallback* callback);
 
-  // Checks whether |referrer_url| has been visited before today.
+  // Checks whether |referrer_url| has been visited before today.  This takes
+  // ownership of |callback|.
   void CheckVisitedReferrerBefore(int32 download_id,
                                   const GURL& referrer_url,
                                   VisitedBeforeDoneCallback* callback);

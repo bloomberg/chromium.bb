@@ -24,6 +24,13 @@ DownloadHistory::DownloadHistory(Profile* profile)
 }
 
 DownloadHistory::~DownloadHistory() {
+  // For any outstanding requests to HistoryService::GetVisitCountToHost(),
+  // since they'll be cancelled and thus not call back to
+  // OnGotVisitCountToHost(), we need to delete the associated
+  // VisitedBeforeDoneCallbacks.
+  for (VisitedBeforeRequestsMap::iterator i(visited_before_requests_.begin());
+       i != visited_before_requests_.end(); ++i)
+    delete i->second.second;
 }
 
 void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
@@ -56,6 +63,7 @@ void DownloadHistory::CheckVisitedReferrerBefore(
     }
   }
   callback->Run(download_id, false);
+  delete callback;
 }
 
 void DownloadHistory::AddEntry(
@@ -145,4 +153,5 @@ void DownloadHistory::OnGotVisitCountToHost(HistoryService::Handle handle,
   visited_before_requests_.erase(request);
   callback->Run(download_id, found_visits && count &&
       (first_visit.LocalMidnight() < base::Time::Now().LocalMidnight()));
+  delete callback;
 }
