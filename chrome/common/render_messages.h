@@ -290,33 +290,37 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
 
 // Sent by the renderer process to check whether access to web databases is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowDatabase,
+IPC_SYNC_MESSAGE_CONTROL5_1(ViewHostMsg_AllowDatabase,
                             int /* render_view_id */,
                             GURL /* origin_url */,
+                            GURL /* top origin url */,
                             string16 /* database name */,
                             string16 /* database display name */,
                             bool /* allowed */)
 
 // Sent by the renderer process to check whether access to DOM Storage is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowDOMStorage,
+IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowDOMStorage,
                             int /* render_view_id */,
                             GURL /* origin_url */,
+                            GURL /* top origin url */,
                             DOMStorageType /* type */,
                             bool /* allowed */)
 
 // Sent by the renderer process to check whether access to FileSystem is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllowFileSystem,
+IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowFileSystem,
                             int /* render_view_id */,
                             GURL /* origin_url */,
+                            GURL /* top origin url */,
                             bool /* allowed */)
 
 // Sent by the renderer process to check whether access to Indexed DBis
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowIndexedDB,
+IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowIndexedDB,
                             int /* render_view_id */,
-                            string16 /* origin_url */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
                             string16 /* database name */,
                             bool /* allowed */)
 

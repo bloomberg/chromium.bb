@@ -144,24 +144,27 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
                                             const WebString& name,
                                             const WebString& display_name,
                                             unsigned long estimated_size) {
-  WebSecurityOrigin origin = frame->securityOrigin();
-  if (origin.isEmpty())
-    return false;  // Uninitialized document?
+  if (frame->securityOrigin().isEmpty() ||
+      frame->top()->securityOrigin().isEmpty())
+    return false; // Uninitialized document.
 
   bool result = false;
   Send(new ViewHostMsg_AllowDatabase(
-      routing_id(), GURL(origin.toString()), name, display_name, &result));
+      routing_id(), GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString()),
+      name, display_name, &result));
   return result;
 }
 
 bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
-  WebSecurityOrigin origin = frame->securityOrigin();
-  if (origin.isEmpty())
-    return false;  // Uninitialized document?
+  if (frame->securityOrigin().isEmpty() ||
+      frame->top()->securityOrigin().isEmpty())
+    return false; // Uninitialized document.
 
   bool result = false;
   Send(new ViewHostMsg_AllowFileSystem(
-      routing_id(), GURL(origin.toString()), &result));
+      routing_id(), GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString()), &result));
   return result;
 }
 
@@ -182,9 +185,15 @@ bool ContentSettingsObserver::AllowImages(WebFrame* frame,
 bool ContentSettingsObserver::AllowIndexedDB(WebFrame* frame,
                                              const WebString& name,
                                              const WebSecurityOrigin& origin) {
+  if (frame->securityOrigin().isEmpty() ||
+      frame->top()->securityOrigin().isEmpty())
+    return false; // Uninitialized document.
+
   bool result = false;
   Send(new ViewHostMsg_AllowIndexedDB(
-      routing_id(), origin.databaseIdentifier(), name, &result));
+      routing_id(), GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString()),
+      name, &result));
   return result;
 }
 
@@ -207,9 +216,14 @@ bool ContentSettingsObserver::AllowScript(WebFrame* frame,
 }
 
 bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
+  if (frame->securityOrigin().isEmpty() ||
+      frame->top()->securityOrigin().isEmpty())
+    return false; // Uninitialized document.
   bool result = false;
+
   Send(new ViewHostMsg_AllowDOMStorage(
-      routing_id(), frame->url(),
+      routing_id(), GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString()),
       local ? DOM_STORAGE_LOCAL : DOM_STORAGE_SESSION,
       &result));
   return result;

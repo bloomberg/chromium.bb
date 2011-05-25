@@ -329,6 +329,7 @@ void ChromeRenderMessageFilter::OnGetPluginPolicies(
 
 void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
                                                 const GURL& origin_url,
+                                                const GURL& top_origin_url,
                                                 const string16& name,
                                                 const string16& display_name,
                                                 bool* allowed) {
@@ -348,28 +349,29 @@ void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
 }
 
 void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
-                                                  const GURL& url,
+                                                  const GURL& origin_url,
+                                                  const GURL& top_origin_url,
                                                   DOMStorageType type,
                                                   bool* allowed) {
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   *allowed = setting != CONTENT_SETTING_BLOCK;
   // If content was blocked, tell the UI to display the blocked content icon.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
           &TabSpecificContentSettings::DOMStorageAccessed,
-          render_process_id_, render_view_id, url, type, !*allowed));
+          render_process_id_, render_view_id, origin_url, type, !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
-                                                  const GURL& url,
+                                                  const GURL& origin_url,
+                                                  const GURL& top_origin_url,
                                                   bool* allowed) {
-  
   // TODO(kinuko): Need to notify the UI thread to indicate that
   // there's a blocked content.  See the above for inspiration.
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK((setting == CONTENT_SETTING_ALLOW) ||
          (setting == CONTENT_SETTING_BLOCK) ||
          (setting == CONTENT_SETTING_SESSION_ONLY));
@@ -377,25 +379,19 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
 }
 
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
-                                                 const string16& origin_url,
+                                                 const GURL& origin_url,
+                                                 const GURL& top_origin_url,
                                                  const string16& name,
                                                  bool* allowed) {
-  // TODO(jochen): This doesn't support file:/// urls properly. We probably need
-  //               to add some toString method to WebSecurityOrigin that doesn't
-  //               return null for them.
-  WebSecurityOrigin origin(
-      WebSecurityOrigin::createFromDatabaseIdentifier(origin_url));
-  GURL url(origin.toString());
-
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   *allowed = setting != CONTENT_SETTING_BLOCK;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
           &TabSpecificContentSettings::IndexedDBAccessed,
-          render_process_id_, render_view_id, url, name, !*allowed));
+          render_process_id_, render_view_id, origin_url, name, !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnGetPluginContentSetting(
