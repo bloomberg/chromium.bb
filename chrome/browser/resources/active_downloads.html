@@ -220,6 +220,11 @@ function init() {
   localStrings = new LocalStrings();
   initTestHarness();
 
+  // Suppress browser shortcuts. 
+  window.onkeydown = function(e) {
+    e.preventDefault();
+  };
+
   $('showalldownloadstext').textContent =
       localStrings.getString('showalldownloads');
 
@@ -264,7 +269,7 @@ function initTestHarness() {
 /**
  * Create a results array with test data and call downloadsList.
  */
-var id = 1;
+var id = 0;
 var results = [];
 function sendTestResults() {
   results.push({
