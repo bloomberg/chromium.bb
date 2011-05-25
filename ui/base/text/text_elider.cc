@@ -576,7 +576,7 @@ class RectangleString {
 };
 
 void RectangleString::AddString(const string16& input) {
-  base::i18n::BreakIterator lines(&input,
+  base::i18n::BreakIterator lines(input,
                                   base::i18n::BreakIterator::BREAK_NEWLINE);
   if (lines.Init()) {
     while (lines.Advance())
@@ -598,7 +598,7 @@ void RectangleString::AddLine(const string16& line) {
   if (line.length() < max_cols_) {
     Append(line);
   } else {
-    base::i18n::BreakIterator words(&line,
+    base::i18n::BreakIterator words(line,
                                     base::i18n::BreakIterator::BREAK_SPACE);
     if (words.Init()) {
       while (words.Advance())

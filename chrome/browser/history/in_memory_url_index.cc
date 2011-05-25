@@ -487,7 +487,7 @@ InMemoryURLIndex::String16Vector InMemoryURLIndex::WordVectorFromString16(
     const string16& uni_string,
     bool break_on_space) {
   base::i18n::BreakIterator iter(
-      &uni_string,
+      uni_string,
       break_on_space ? base::i18n::BreakIterator::BREAK_SPACE
                      : base::i18n::BreakIterator::BREAK_WORD);
   String16Vector words;

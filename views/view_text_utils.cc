@@ -98,7 +98,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
   // Iterate through line breaking opportunities (which in English would be
   // spaces and such). This tells us where to wrap.
   string16 text16(WideToUTF16(text));
-  base::i18n::BreakIterator iter(&text16,
+  base::i18n::BreakIterator iter(text16,
                                  base::i18n::BreakIterator::BREAK_SPACE);
   if (!iter.Init())
     return;

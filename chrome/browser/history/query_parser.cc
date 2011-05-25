@@ -354,7 +354,7 @@ bool QueryParser::DoesQueryMatch(const string16& text,
 }
 
 bool QueryParser::ParseQueryImpl(const string16& query, QueryNodeList* root) {
-  base::i18n::BreakIterator iter(&query, base::i18n::BreakIterator::BREAK_WORD);
+  base::i18n::BreakIterator iter(query, base::i18n::BreakIterator::BREAK_WORD);
   // TODO(evanm): support a locale here
   if (!iter.Init())
     return false;
@@ -395,7 +395,7 @@ bool QueryParser::ParseQueryImpl(const string16& query, QueryNodeList* root) {
 
 void QueryParser::ExtractQueryWords(const string16& text,
                                     std::vector<QueryWord>* words) {
-  base::i18n::BreakIterator iter(&text, base::i18n::BreakIterator::BREAK_WORD);
+  base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
   // TODO(evanm): support a locale here
   if (!iter.Init())
     return;

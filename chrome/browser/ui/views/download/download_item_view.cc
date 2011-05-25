@@ -1043,7 +1043,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
   // Using BREAK_WORD can work in most cases, but it can also break
   // lines where it should not. Using BREAK_LINE is safer although
   // slower for Chinese/Japanese. This is not perf-critical at all, though.
-  base::i18n::BreakIterator iter(&text, base::i18n::BreakIterator::BREAK_LINE);
+  base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_LINE);
   bool status = iter.Init();
   DCHECK(status);
 
