@@ -17,7 +17,7 @@ vars = {
   "libvpx_revision": "81610",
   "ffmpeg_revision": "83815",
   "skia_revision": "1410",
-  "v8_revision": "8003",
+  "v8_revision": "8053",
 }
 
 deps = {
