@@ -37,10 +37,6 @@ bool ContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
   return false;
 }
 
-GURL ContentBrowserClient::GetAlternateErrorPageURL(const TabContents* tab) {
-  return GURL();
-}
-
 std::string ContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return alias_name;

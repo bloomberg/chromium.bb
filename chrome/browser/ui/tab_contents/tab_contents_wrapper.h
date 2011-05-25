@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
@@ -175,6 +176,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -214,6 +216,19 @@ class TabContentsWrapper : public TabContentsObserver,
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
 
+  // Returns the server that can provide alternate error pages.  If the returned
+  // URL is empty, the default error page built into WebKit will be used.
+  GURL GetAlternateErrorPageURL() const;
+
+  // Send the alternate error page URL to the renderer.
+  void UpdateAlternateErrorPageURL(RenderViewHost* rvh);
+
+  // Update the RenderView's WebPreferences.
+  void UpdateWebPreferences();
+
+  // Update the TabContents's RendererPreferences.
+  void UpdateRendererPreferences();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -224,6 +239,7 @@ class TabContentsWrapper : public TabContentsObserver,
   bool infobars_enabled_;
 
   NotificationRegistrar registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Data for current page -----------------------------------------------------
 

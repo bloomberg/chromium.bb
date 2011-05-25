@@ -190,7 +190,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnSetCacheMode(bool enabled);
   void OnClearCache(bool preserve_ssl_host_info, IPC::Message* reply_msg);
   void OnClearHostResolverCache(int* result);
-  void OnClearPredictorCache(int* result);
   void OnCacheableMetadataAvailable(const GURL& url,
                                     double expected_response_time,
                                     const std::vector<char>& data);

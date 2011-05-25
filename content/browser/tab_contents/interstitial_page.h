@@ -144,6 +144,9 @@ class InterstitialPage : public NotificationObserver,
   TabContents* tab() const { return tab_; }
   const GURL& url() const { return url_; }
   RenderViewHost* render_view_host() const { return render_view_host_; }
+  void set_renderer_preferences(const RendererPreferences& prefs) {
+    renderer_preferences_ = prefs;
+  }
 
   // Creates the RenderViewHost containing the interstitial content.
   // Overriden in unit tests.

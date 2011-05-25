@@ -16,7 +16,6 @@
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
@@ -383,7 +382,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClearHostResolverCache,
                         OnClearHostResolverCache)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClearPredictorCache, OnClearPredictorCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
@@ -769,14 +767,6 @@ void RenderMessageFilter::OnClearHostResolverCache(int* result) {
     cache->clear();
     *result = 0;
   }
-}
-
-void RenderMessageFilter::OnClearPredictorCache(int* result) {
-  // This function is disabled unless the user has enabled
-  // benchmarking extensions.
-  CHECK(CheckBenchmarkingEnabled());
-  chrome_browser_net::ClearPredictorCache();
-  *result = 0;
 }
 
 bool RenderMessageFilter::CheckPreparsedJsCachingEnabled() const {

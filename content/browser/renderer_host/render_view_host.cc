@@ -15,7 +15,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_message_filter.h"
@@ -171,10 +170,6 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   params.frame_name = frame_name;
   Send(new ViewMsg_New(params));
 
-  // Set the alternate error page, which is profile specific, in the renderer.
-  GURL url = delegate_->GetAlternateErrorPageURL();
-  Send(new ViewMsg_SetAltErrorPageURL(routing_id(), url));
-
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
   Send(new ViewMsg_AllowBindings(routing_id(), enabled_bindings_));
@@ -233,10 +228,9 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
     if (!params.url.SchemeIs(chrome::kJavaScriptScheme))
       delegate_->DidStartLoading();
   }
-  const GURL& url = params.url;
-  if (!delegate_->IsExternalTabContainer() &&
-      (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme)))
-    chrome_browser_net::PreconnectUrlAndSubresources(url);
+
+  FOR_EACH_OBSERVER(
+      RenderViewHostObserver, observers_, Navigate(params));
 }
 
 void RenderViewHost::NavigateToURL(const GURL& url) {

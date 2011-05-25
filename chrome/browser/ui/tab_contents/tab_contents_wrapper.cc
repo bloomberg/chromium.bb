@@ -18,6 +18,7 @@
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
@@ -43,6 +45,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -52,8 +55,22 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webpreferences.h"
 
+namespace {
+
 static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
     g_tab_contents_wrapper_property_accessor(base::LINKER_INITIALIZED);
+
+// The list of prefs we want to observe.
+const char* kPrefsToObserve[] = {
+  prefs::kAlternateErrorPagesEnabled,
+  prefs::kDefaultCharset,
+  prefs::kDefaultZoomLevel,
+  prefs::kEnableReferrers
+};
+
+const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsWrapper, public:
@@ -109,6 +126,26 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(contents->profile()))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
+
+  registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::USER_STYLE_SHEET_UPDATED,
+                 NotificationService::AllSources());
+#if defined(OS_LINUX)
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+#endif
+
+  // Register for notifications about all interested prefs change.
+  PrefService* prefs = profile()->GetPrefs();
+  pref_change_registrar_.Init(prefs);
+  if (prefs) {
+    for (int i = 0; i < kPrefsToObserveLength; ++i)
+      pref_change_registrar_.Add(kPrefsToObserve[i], this);
+  }
+
+  renderer_preferences_util::UpdateFromSystemSettings(
+      tab_contents()->GetMutableRendererPrefs(), profile());
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
@@ -290,6 +327,10 @@ TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsWrapper implementation:
 
+void TabContentsWrapper::RenderViewCreated(RenderViewHost* render_view_host) {
+  UpdateAlternateErrorPageURL(render_view_host);
+}
+
 void TabContentsWrapper::RenderViewGone() {
   // Remove all infobars.
   while (!infobar_delegates_.empty())
@@ -330,6 +371,36 @@ void TabContentsWrapper::Observe(NotificationType type,
           RemoveInfoBar(delegate);
       }
 
+      break;
+    }
+    case NotificationType::GOOGLE_URL_UPDATED:
+      UpdateAlternateErrorPageURL(render_view_host());
+      break;
+    case NotificationType::USER_STYLE_SHEET_UPDATED:
+      UpdateWebPreferences();
+      break;
+#if defined(OS_LINUX)
+    case NotificationType::BROWSER_THEME_CHANGED: {
+      UpdateRendererPreferences();
+      break;
+    }
+#endif
+    case NotificationType::PREF_CHANGED: {
+      std::string* pref_name_in = Details<std::string>(details).ptr();
+      DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());
+      if (*pref_name_in == prefs::kAlternateErrorPagesEnabled) {
+        UpdateAlternateErrorPageURL(render_view_host());
+      } else if ((*pref_name_in == prefs::kDefaultCharset) ||
+                 StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
+        UpdateWebPreferences();
+      } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
+        Send(new ViewMsg_SetZoomLevel(
+            routing_id(), tab_contents()->GetZoomLevel()));
+      } else if (*pref_name_in == prefs::kEnableReferrers) {
+        UpdateRendererPreferences();
+      } else {
+        NOTREACHED() << "unexpected pref change notification" << *pref_name_in;
+      }
       break;
     }
     default:
@@ -459,4 +530,35 @@ void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
 
 void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
   PDFHasUnsupportedFeature(this);
+}
+
+GURL TabContentsWrapper::GetAlternateErrorPageURL() const {
+  GURL url;
+  // Disable alternate error pages when in Incognito mode.
+  if (profile()->IsOffTheRecord())
+    return url;
+
+  PrefService* prefs = profile()->GetPrefs();
+  if (prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
+    url = google_util::AppendGoogleLocaleParam(
+        GURL(google_util::kLinkDoctorBaseURL));
+    url = google_util::AppendGoogleTLDParam(url);
+  }
+  return url;
+}
+
+void TabContentsWrapper::UpdateAlternateErrorPageURL(RenderViewHost* rvh) {
+  rvh->Send(new ViewMsg_SetAltErrorPageURL(
+      rvh->routing_id(), GetAlternateErrorPageURL()));
+}
+
+void TabContentsWrapper::UpdateWebPreferences() {
+  RenderViewHostDelegate* rvhd = tab_contents();
+  Send(new ViewMsg_UpdateWebPreferences(routing_id(), rvhd->GetWebkitPrefs()));
+}
+
+void TabContentsWrapper::UpdateRendererPreferences() {
+  renderer_preferences_util::UpdateFromSystemSettings(
+      tab_contents()->GetMutableRendererPrefs(), profile());
+  render_view_host()->SyncRendererPrefs();
 }

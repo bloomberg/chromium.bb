@@ -19,7 +19,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual content::WebUIFactory* GetWebUIFactory();
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url);
-  virtual GURL GetAlternateErrorPageURL(const TabContents* tab);
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name);
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,

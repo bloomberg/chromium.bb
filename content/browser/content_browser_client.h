@@ -61,9 +61,6 @@ class ContentBrowserClient {
   // SiteInstance.
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url);
 
-  // See RenderViewHostDelegate's comment.
-  virtual GURL GetAlternateErrorPageURL(const TabContents* tab);
-
   // See CharacterEncoding's comment.
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name);

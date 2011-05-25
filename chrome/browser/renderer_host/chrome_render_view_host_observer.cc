@@ -5,8 +5,12 @@
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/net/predictor_api.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_service.h"
+#include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
@@ -15,6 +19,14 @@ ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
 }
 
 ChromeRenderViewHostObserver::~ChromeRenderViewHostObserver() {
+}
+
+void ChromeRenderViewHostObserver::Navigate(
+    const ViewMsg_Navigate_Params& params) {
+  const GURL& url = params.url;
+  if (!render_view_host()->delegate()->IsExternalTabContainer() &&
+      (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme)))
+    chrome_browser_net::PreconnectUrlAndSubresources(url);
 }
 
 bool ChromeRenderViewHostObserver::OnMessageReceived(

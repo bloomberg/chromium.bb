@@ -177,23 +177,6 @@ bool ChromeContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
          url.spec() == chrome::kAboutShorthangURL;
 }
 
-GURL ChromeContentBrowserClient::GetAlternateErrorPageURL(
-    const TabContents* tab) {
-  GURL url;
-  // Disable alternate error pages when in OffTheRecord/Incognito mode.
-  if (tab->profile()->IsOffTheRecord())
-    return url;
-
-  PrefService* prefs = tab->profile()->GetPrefs();
-  DCHECK(prefs);
-  if (prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
-    url = google_util::AppendGoogleLocaleParam(
-        GURL(google_util::kLinkDoctorBaseURL));
-    url = google_util::AppendGoogleTLDParam(url);
-  }
-  return url;
-}
-
 std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);

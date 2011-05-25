@@ -41,10 +41,6 @@ BackgroundContents* RenderViewHostDelegate::GetAsBackgroundContents() {
   return NULL;
 }
 
-GURL RenderViewHostDelegate::GetAlternateErrorPageURL() const {
-  return GURL();
-}
-
 WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
   return WebPreferences();
 }

@@ -16,7 +16,8 @@ class ChromeRenderViewHostObserver : public RenderViewHostObserver {
   virtual ~ChromeRenderViewHostObserver();
 
   // RenderViewHostObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void Navigate(const ViewMsg_Navigate_Params& params) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   void OnDomOperationResponse(const std::string& json_string,

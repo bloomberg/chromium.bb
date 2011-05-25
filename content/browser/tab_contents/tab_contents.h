@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/constrained_window.h"
@@ -601,16 +600,6 @@ class TabContents : public PageNavigator,
   // Closes all constrained windows.
   void CloseConstrainedWindows();
 
-  // Send the alternate error page URL to the renderer. This method is virtual
-  // so special html pages can override this (e.g., the new tab page).
-  virtual void UpdateAlternateErrorPageURL();
-
-  // Send webkit specific settings to the renderer.
-  void UpdateWebPreferences();
-
-  // Instruct the renderer to update the zoom level.
-  void UpdateZoomLevel();
-
   // If our controller was restored and the page id is > than the site
   // instance's page id, the site instances page id is updated as well as the
   // renderers max page id.
@@ -690,7 +679,6 @@ class TabContents : public PageNavigator,
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
                                       const std::wstring& message,
                                       IPC::Message* reply_msg);
-  virtual GURL GetAlternateErrorPageURL() const;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
   virtual WebPreferences GetWebkitPrefs();
   virtual void OnUserGesture();
@@ -770,9 +758,6 @@ class TabContents : public PageNavigator,
 
   // Registers and unregisters us for notifications.
   NotificationRegistrar registrar_;
-
-  // Registers and unregisters for pref notifications.
-  PrefChangeRegistrar pref_change_registrar_;
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;

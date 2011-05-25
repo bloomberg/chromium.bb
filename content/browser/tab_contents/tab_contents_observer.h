@@ -40,10 +40,10 @@ class TabContentsObserver : public IPC::Channel::Listener,
     DISALLOW_COPY_AND_ASSIGN(Registrar);
   };
 
+  virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void NavigateToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type);
-
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);

@@ -22,7 +22,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
@@ -117,32 +116,6 @@ const int kQueryStateDelay = 5000;
 
 const int kSyncWaitDelay = 40;
 
-// The list of prefs we want to observe.
-const char* kPrefsToObserve[] = {
-  prefs::kAlternateErrorPagesEnabled,
-  prefs::kDefaultZoomLevel,
-  prefs::kWebKitJavaEnabled,
-  prefs::kWebKitJavascriptEnabled,
-  prefs::kWebKitLoadsImagesAutomatically,
-  prefs::kWebKitPluginsEnabled,
-  prefs::kWebKitUsesUniversalDetector,
-  prefs::kWebKitStandardFontFamily,
-  prefs::kWebKitSerifFontFamily,
-  prefs::kWebKitSansSerifFontFamily,
-  prefs::kWebKitFixedFontFamily,
-  prefs::kWebKitDefaultFontSize,
-  prefs::kWebKitDefaultFixedFontSize,
-  prefs::kWebKitMinimumFontSize,
-  prefs::kWebKitMinimumLogicalFontSize,
-  prefs::kWebkitTabsToLinks,
-  prefs::kWebKitAllowRunningInsecureContent,
-  prefs::kWebKitAllowDisplayingInsecureContent,
-  prefs::kDefaultCharset,
-  prefs::kEnableReferrers
-};
-
-const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
-
 #if defined(OS_WIN)
 
 BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
@@ -231,8 +204,6 @@ TabContents::TabContents(Profile* profile,
           static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
       temporary_zoom_settings_(false),
       content_restrictions_(0) {
-  renderer_preferences_util::UpdateFromSystemSettings(
-      &renderer_preferences_, profile);
 
   render_manager_.Init(profile, site_instance, routing_id);
 
@@ -241,26 +212,7 @@ TabContents::TabContents(Profile* profile,
   view_->CreateView(base_tab_contents ?
       base_tab_contents->view()->GetContainerSize() : gfx::Size());
 
-  // Register for notifications about all interested prefs change.
-  PrefService* prefs = profile->GetPrefs();
-  pref_change_registrar_.Init(prefs);
-  if (prefs) {
-    for (int i = 0; i < kPrefsToObserveLength; ++i)
-      pref_change_registrar_.Add(kPrefsToObserve[i], this);
-  }
-
   registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
-                 NotificationService::AllSources());
-#if defined(OS_LINUX)
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
-#endif
-
-  registrar_.Add(this, NotificationType::USER_STYLE_SHEET_UPDATED,
-                 NotificationService::AllSources());
-
-  // Listen for Google URL changes.
-  registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
                  NotificationService::AllSources());
 
   // Can only add observers after render_manager_.Init() is called, since that's
@@ -274,7 +226,6 @@ TabContents::~TabContents() {
 
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
-  pref_change_registrar_.RemoveAll();
 
   NotifyDisconnected();
   browser::HideHungRendererDialog(this);
@@ -1195,22 +1146,6 @@ void TabContents::CloseConstrainedWindows() {
   }
 }
 
-void TabContents::UpdateAlternateErrorPageURL() {
-  GURL url = GetAlternateErrorPageURL();
-  render_view_host()->Send(new ViewMsg_SetAltErrorPageURL(
-      render_view_host()->routing_id(), url));
-}
-
-void TabContents::UpdateWebPreferences() {
-  render_view_host()->Send(new ViewMsg_UpdateWebPreferences(
-      render_view_host()->routing_id(), GetWebkitPrefs()));
-}
-
-void TabContents::UpdateZoomLevel() {
-  render_view_host()->Send(new ViewMsg_SetZoomLevel(
-      render_view_host()->routing_id(), GetZoomLevel()));
-}
-
 void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
                                              RenderViewHost* rvh) {
   // If we are creating a RVH for a restored controller, then we might
@@ -1355,6 +1290,9 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   }
 
   view()->RenderViewCreated(render_view_host);
+
+  FOR_EACH_OBSERVER(
+      TabContentsObserver, observers_, RenderViewCreated(render_view_host));
 }
 
 void TabContents::RenderViewReady(RenderViewHost* rvh) {
@@ -1705,10 +1643,6 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
   RunBeforeUnloadDialog(this, message, reply_msg);
 }
 
-GURL TabContents::GetAlternateErrorPageURL() const {
-  return content::GetContentClient()->browser()->GetAlternateErrorPageURL(this);
-}
-
 WebPreferences TabContents::GetWebkitPrefs() {
   Profile* profile = render_view_host()->process()->profile();
   bool is_web_ui = false;
@@ -1887,46 +1821,9 @@ void TabContents::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::PREF_CHANGED: {
-      std::string* pref_name_in = Details<std::string>(details).ptr();
-      DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());
-      if (*pref_name_in == prefs::kAlternateErrorPagesEnabled) {
-        UpdateAlternateErrorPageURL();
-      } else if ((*pref_name_in == prefs::kDefaultCharset) ||
-                 StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
-        UpdateWebPreferences();
-      } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
-        UpdateZoomLevel();
-      } else if (*pref_name_in == prefs::kEnableReferrers) {
-        renderer_preferences_util::UpdateFromSystemSettings(
-            &renderer_preferences_, profile());
-        render_view_host()->SyncRendererPrefs();
-      } else {
-        NOTREACHED() << "unexpected pref change notification" << *pref_name_in;
-      }
-      break;
-    }
     case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
       view_->RenderWidgetHostDestroyed(Source<RenderWidgetHost>(source).ptr());
       break;
-
-#if defined(OS_LINUX)
-    case NotificationType::BROWSER_THEME_CHANGED: {
-      renderer_preferences_util::UpdateFromSystemSettings(
-          &renderer_preferences_, profile());
-      render_view_host()->SyncRendererPrefs();
-      break;
-    }
-#endif
-
-    case NotificationType::USER_STYLE_SHEET_UPDATED:
-      UpdateWebPreferences();
-      break;
-
-    case NotificationType::GOOGLE_URL_UPDATED:
-      UpdateAlternateErrorPageURL();
-      break;
-
     default:
       NOTREACHED();
   }

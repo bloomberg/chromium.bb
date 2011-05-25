@@ -374,11 +374,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
                                       const std::wstring& message,
                                       IPC::Message* reply_msg) {}
 
-  // |url| is assigned to a server that can provide alternate error pages.  If
-  // the returned URL is empty, the default error page built into WebKit will
-  // be used.
-  virtual GURL GetAlternateErrorPageURL() const;
-
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const = 0;

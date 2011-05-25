@@ -41,7 +41,6 @@ include_rules = [
   "+chrome/browser/mach_broker_mac.h",
 
   "+chrome/browser/net/load_timing_observer.h",
-  "+chrome/browser/net/predictor_api.h",
 
   "+chrome/browser/notifications/desktop_notification_service.h",
   "+chrome/browser/notifications/desktop_notification_service_factory.h",
@@ -49,7 +48,6 @@ include_rules = [
 
   "+chrome/browser/platform_util.h",
 
-  "+chrome/browser/prefs/pref_change_registrar.h",
   "+chrome/browser/prefs/pref_service.h",
   "+chrome/common/pref_names.h",
 
@@ -61,8 +59,6 @@ include_rules = [
   "+chrome/browser/renderer_host/offline_resource_handler.h",
 
   "+chrome/browser/renderer_host/web_cache_manager.h",
-
-  "+chrome/browser/renderer_preferences_util.h",
 
   # http://crbug.com/77089
   "+chrome/browser/safe_browsing/safe_browsing_service.h",

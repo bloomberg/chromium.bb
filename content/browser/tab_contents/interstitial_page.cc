@@ -12,8 +12,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -158,9 +156,6 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       resource_dispatcher_host_notified_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(rvh_view_delegate_(
           new InterstitialPageRVHViewDelegate(this))) {
-  renderer_preferences_util::UpdateFromSystemSettings(
-      &renderer_preferences_, tab_->profile());
-
   InitInterstitialPageMap();
   // It would be inconsistent to create an interstitial with no new navigation
   // (which is the case when the interstitial was triggered by a sub-resource on

@@ -24,6 +24,9 @@ void RenderViewHostObserver::RenderViewHostDestroyed() {
   delete this;
 }
 
+void RenderViewHostObserver::Navigate(const ViewMsg_Navigate_Params& params) {
+}
+
 bool RenderViewHostObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

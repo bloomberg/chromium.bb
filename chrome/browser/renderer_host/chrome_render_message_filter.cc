@@ -90,6 +90,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardWrite,
                         OnCanTriggerClipboardWrite)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClearPredictorCache, OnClearPredictorCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -419,6 +420,13 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
   *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
       context->extension_info_map()->CheckURLAccessToExtensionPermission(
           url, Extension::kClipboardWritePermission);
+}
+
+void ChromeRenderMessageFilter::OnClearPredictorCache(int* result) {
+  // This function is disabled unless the user has enabled
+  // benchmarking extensions.
+  chrome_browser_net::ClearPredictorCache();
+  *result = 0;
 }
 
 void ChromeRenderMessageFilter::OnGetCookies(

@@ -8,6 +8,7 @@
 #include "ipc/ipc_channel.h"
 
 class RenderViewHost;
+struct ViewMsg_Navigate_Params;
 
 // An observer API implemented by classes which want to filter IPC messages from
 // RenderViewHost.
@@ -27,6 +28,9 @@ class RenderViewHostObserver : public IPC::Channel::Listener,
   // Invoked when the RenderViewHost is being destroyed. Gives subclasses a
   // chance to cleanup.  The base implementation will delete the object.
   virtual void RenderViewHostDestroyed();
+
+  // Notifies that a navigation is starting.
+  virtual void Navigate(const ViewMsg_Navigate_Params& params);
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
