@@ -10,7 +10,10 @@ import random
 
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
-  nexes = ['basic_object.html',
+  nexes = [# TODO(cstefansen): Figure out why multiple nexes in a page flakes
+           # on Linux 32 bit (issue 1851); then uncomment the following line
+           # (and similar line below)
+           # 'basic_object.html',
            'earth_c.html',
            'earth_cc.html',
            'ppapi_core.html',
@@ -26,7 +29,9 @@ class NaClTest(pyauto.PyUITest):
            'srpc_hw.html',
            # TODO(nfullagar): enable this test when it works on trybots.
            # 'srpc_hw_fd.html',
-           'srpc_nrd_xfer.html',
+           # TODO(cstefansen): Figure out why multiple nexes in a page flakes
+           # on Linux 32 bit (issue 1851); then uncomment the following line.
+           # 'srpc_nrd_xfer.html',
            'srpc_plugin.html',
            'srpc_shm.html',
            'srpc_sockaddr.html',
