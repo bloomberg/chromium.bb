@@ -4149,6 +4149,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION" desc="Description of the 'Ignore GPU blacklist' lab.">
         Overrides the built-in software rendering list and enables GPU-acceleration on unsupported system configurations.
       </message>
+      <message name="IDS_FLAGS_DISABLE_GPU_VSYNC_NAME" desc="Name of the 'Disable GPU VSync' lab.">
+        Disable GPU VSync
+      </message>
+      <message name="IDS_FLAGS_DISABLE_GPU_VSYNC_DESCRIPTION" desc="Description of the 'Disable GPU VSync' lab.">
+        Disables synchronization with the display's vertical refresh rate when GPU rendering. This allows frame rates to exceed
+        60 hertz. While useful for benchmarking purposes, this also results in visual tearing during rapid screen updates.
+      </message>
       <message name="IDS_FLAGS_WEBAUDIO_NAME" desc="Name of the 'Web Audio' lab.">
         Web Audio
       </message>

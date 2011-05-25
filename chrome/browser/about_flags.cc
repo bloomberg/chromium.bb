@@ -23,6 +23,7 @@
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 namespace about_flags {
 
@@ -159,6 +160,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_SHOW_FPS_COUNTER_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kShowFPSCounter)
+  },
+  {
+    "disable-gpu-vsync",
+    IDS_FLAGS_DISABLE_GPU_VSYNC_NAME,
+    IDS_FLAGS_DISABLE_GPU_VSYNC_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
   },
 #if !defined(GOOGLE_CHROME_BUILD)
   // Only expose this for Chromium builds where users may not have the PDF
