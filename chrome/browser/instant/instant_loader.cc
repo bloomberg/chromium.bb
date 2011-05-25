@@ -1001,13 +1001,6 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
           tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   preview_contents_.reset(new TabContentsWrapper(new_contents));
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
-  // Propagate the max page id. That way if we end up merging the two
-  // NavigationControllers (which happens if we commit) none of the page ids
-  // will overlap.
-  int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
-  if (max_page_id != -1)
-    preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
-
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->set_delegate(preview_tab_contents_delegate_.get());
   preview_contents_->download_tab_helper()->set_delegate(
