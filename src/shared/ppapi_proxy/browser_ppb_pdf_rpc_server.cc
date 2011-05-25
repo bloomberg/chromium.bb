@@ -4,6 +4,9 @@
 //
 // SRPC-abstraction wrappers around PPB_PDF functions.
 
+#include <string.h>
+#include <algorithm>
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
@@ -18,9 +21,13 @@
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
+using ppapi_proxy::PPBCoreInterface;
 using ppapi_proxy::PPBPDFInterface;
 using ppapi_proxy::SerializeTo;
 using ppapi_proxy::DeserializeTo;
+
+const nacl_abi_size_t kPpbPrivateFindResultBytes =
+    static_cast<nacl_abi_size_t>(sizeof(PP_PrivateFindResult));
 
 void PpbPdfRpcServer::PPB_PDF_GetLocalizedString(
     NaClSrpcRpc* rpc,
@@ -116,18 +123,24 @@ void PpbPdfRpcServer::PPB_PDF_SearchString(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  UNREFERENCED_PARAMETER(instance);
   UNREFERENCED_PARAMETER(string_size);
-  UNREFERENCED_PARAMETER(string);
   UNREFERENCED_PARAMETER(term_size);
-  UNREFERENCED_PARAMETER(term);
-  UNREFERENCED_PARAMETER(case_sensitive);
-  UNREFERENCED_PARAMETER(results);
+  struct PP_PrivateFindResult* pp_results = NULL;
+  int pp_result_count = 0;
+  PPBPDFInterface()->SearchString(
+      instance,
+      reinterpret_cast<unsigned short*>(string),
+      reinterpret_cast<unsigned short*>(term),
+      case_sensitive ? PP_TRUE : PP_FALSE,
+      &pp_results,
+      &pp_result_count);
+  *results_size = std::min(*results_size,
+                           pp_result_count * kPpbPrivateFindResultBytes);
+  memcpy(results, pp_results, *results_size);
+  free(pp_results);
+  *count = static_cast<int32_t>(pp_result_count);
 
-  *results_size = 0;
-  *count = 0;
-
-  DebugPrintf("PPB_PDF::SearchString: Not Implemented\n");
+  DebugPrintf("PPB_PDF::SearchString: count=%"NACL_PRId32"\n", *count);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

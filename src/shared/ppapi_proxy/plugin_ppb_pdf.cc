@@ -23,6 +23,9 @@ namespace ppapi_proxy {
 
 namespace {
 
+const nacl_abi_size_t kPpbPrivateFindResultBytes =
+    static_cast<nacl_abi_size_t>(sizeof(PP_PrivateFindResult));
+
 PP_Var GetLocalizedString(
     PP_Instance instance,
     PP_ResourceString string_id) {
@@ -92,15 +95,48 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
   return false;
 }
 
+nacl_abi_size_t utf16_length(const unsigned short* str) {
+  const unsigned short* s = str;
+  while (*s)
+    ++s;
+  return (s - str);
+}
+
 void SearchString(PP_Instance instance,
                   const unsigned short* string,
                   const unsigned short* term,
                   bool case_sensitive,
                   struct PP_PrivateFindResult** results,
                   int* count) {
-  *count = 0;
-  *results = NULL;
-  DebugPrintf("PPB_PDF::SearchString: Not Implemented\n");
+  DebugPrintf("PPB_PDF::SearchString: instance=%"NACL_PRIu32"\n", instance);
+
+  if (string == NULL ||
+      term == NULL ||
+      results == NULL ||
+      count == NULL)
+    return;
+  nacl_abi_size_t string_size = utf16_length(string);
+  nacl_abi_size_t term_size = utf16_length(term);
+  const int MAX_FIND_RESULTS = 8192;
+  nacl_abi_size_t find_results_size =
+      MAX_FIND_RESULTS * kPpbPrivateFindResultBytes;
+  *results = reinterpret_cast<PP_PrivateFindResult*>(malloc(find_results_size));
+  NaClSrpcError srpc_result =
+      PpbPdfRpcClient::PPB_PDF_SearchString(
+          GetMainSrpcChannel(),
+          instance,
+          string_size * sizeof(unsigned short),
+          reinterpret_cast<char*>(const_cast<unsigned short*>(string)),
+          term_size * sizeof(unsigned short),
+          reinterpret_cast<char*>(const_cast<unsigned short*>(term)),
+          static_cast<int32_t>(case_sensitive),
+          &find_results_size,
+          reinterpret_cast<char*>(*results),
+          reinterpret_cast<int32_t*>(count));
+
+  DebugPrintf("PPB_PDF::SearchString: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    *count = 0;
 }
 
 void DidStartLoading(PP_Instance instance) {
