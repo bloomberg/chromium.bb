@@ -89,8 +89,8 @@ class CanvasPaintT : public T {
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    T::translate(-SkIntToScalar(rectangle_.origin.x),
-                 -SkIntToScalar(rectangle_.origin.y));
+    T::translate(-SkDoubleToScalar(rectangle_.origin.x),
+                 -SkDoubleToScalar(rectangle_.origin.y));
 
     context_ = T::getTopPlatformDevice().GetBitmapContext();
   }
