@@ -732,6 +732,39 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.devtools.resources.getHAR",
+        "chrome.experimental.devtools.resources.onFinished",
+        "chrome.extension.onRequest",
+        "chrome.extension.sendRequest",
+        "chrome.tabs.executeScript"
+      ],
+      "description": "Extends the Developer Tools, adding support for parsing FirePHP messages from server",
+      "features": [
+        "background_page",
+        "devtools_page",
+        "experimental",
+        "tabs"
+      ],
+      "icon": null,
+      "id": "81c9aeb77827013f15a8fdff0cf6e07332816614",
+      "name": "FirePHP for Chrome",
+      "path": "examples\/api\/devtools\/resources\/chrome-firephp\/",
+      "protocols": [
+        "http:\/\/",
+        "https:\/\/"
+      ],
+      "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.RESOURCES.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.RESOURCES.ONFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
+      "source_files": [
+        "background.html",
+        "devtools.html",
+        "devtools.js",
+        "manifest.json"
+      ],
+      "source_hash": "46b426df9ae054648e56756d19e15094f63a0776",
+      "zip_path": "examples\/api\/devtools\/resources\/chrome-firephp.zip"
+    },
+    {
+      "api_calls": [
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setBadgeBackgroundColor",
         "chrome.browserAction.setBadgeText",
