@@ -245,7 +245,7 @@ void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
          server = server->NextNamed(buzz::QN_JINGLE_INFO_SERVER)) {
       std::string host = server->Attr(buzz::QN_JINGLE_INFO_HOST);
       std::string port_str = server->Attr(buzz::QN_JINGLE_INFO_UDP);
-      if (host != buzz::STR_EMPTY && host != buzz::STR_EMPTY) {
+      if (host != buzz::STR_EMPTY && port_str != buzz::STR_EMPTY) {
         int port;
         if (!base::StringToInt(port_str, &port)) {
           LOG(WARNING) << "Unable to parse port in stanza" << stanza->Str();
