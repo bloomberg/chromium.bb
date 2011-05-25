@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -1737,7 +1736,6 @@ WebPreferences TabContents::GetWebkitPrefs() {
 void TabContents::OnUserGesture() {
   // Notify observers.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidGetUserGesture());
-  ExternalProtocolHandler::PermitLaunchUrl();
 }
 
 void TabContents::OnIgnoredUIEvent() {

@@ -15,6 +15,7 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
+#include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -91,6 +92,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   print_view_manager_.reset(new printing::PrintViewManager(contents));
 
   // Create the per-tab observers.
+  external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   file_select_observer_.reset(new FileSelectObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));

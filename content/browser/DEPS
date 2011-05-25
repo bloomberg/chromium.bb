@@ -34,7 +34,7 @@ include_rules = [
   "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/user_script.h",
 
-  "+chrome/browser/external_protocol_handler.h",
+  "+chrome/browser/external_protocol/external_protocol_handler.h",
 
   "+chrome/browser/load_from_memory_cache_details.h",
 

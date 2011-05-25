@@ -34,6 +34,7 @@ class DownloadTabHelper;
 class Extension;
 class ExtensionTabHelper;
 class ExtensionWebNavigationTabObserver;
+class ExternalProtocolObserver;
 class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
@@ -270,6 +271,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
+  scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<FileSelectObserver> file_select_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
