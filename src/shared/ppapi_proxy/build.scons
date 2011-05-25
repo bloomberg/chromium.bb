@@ -148,7 +148,7 @@ env.DualLibrary('ppapi_browser',
 # TODO(polina): this is only needed because fake_browser_ppapi
 # borrows code from the plugin side proxy. Don't do that.
 env.DualLibrary('ppapi_plugin',
-                ['plugin_ppb_var.cc',
+                ['plugin_ppb_var_deprecated.cc',
                  common_obj])
 
 

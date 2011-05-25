@@ -13,7 +13,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 #include "native_client/tests/fake_browser_ppapi/fake_core.h"
 #include "native_client/tests/fake_browser_ppapi/fake_file_io.h"
 #include "native_client/tests/fake_browser_ppapi/fake_file_io_trusted.h"
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
   host = new fake_browser_ppapi::Host(plugin_name);
   // TODO(polina): Change FakeWindow functions to not rely on host for
   // the var interface.
-  host->set_var_interface(ppapi_proxy::PluginVar::GetInterface());
+  host->set_var_interface(ppapi_proxy::PluginVarDeprecated::GetInterface());
 
   // Test startup.
   CHECK(host->InitializeModule(PluginModuleId(), FakeGetBrowserInterface) ==

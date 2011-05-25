@@ -27,7 +27,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_loader.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_widget.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_surface_3d.h"
@@ -70,7 +70,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_URLREQUESTINFO_INTERFACE, PluginURLRequestInfo::GetInterface(), true },
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),
     true },
-  { PPB_VAR_DEPRECATED_INTERFACE, PluginVar::GetInterface(), true },
+  { PPB_VAR_DEPRECATED_INTERFACE, PluginVarDeprecated::GetInterface(), true },
   { PPB_WIDGET_DEV_INTERFACE, PluginWidget::GetInterface(), true },
   { PPB_ZOOM_DEV_INTERFACE, PluginZoom::GetInterface(), true },
 };

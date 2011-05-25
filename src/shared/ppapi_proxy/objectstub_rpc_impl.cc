@@ -26,7 +26,7 @@ using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::ObjectCapability;
 using ppapi_proxy::DeserializeTo;
 using ppapi_proxy::SerializeTo;
-using ppapi_proxy::PPBVarInterface;
+using ppapi_proxy::PPBVarDeprecatedInterface;
 
 namespace {
 
@@ -82,7 +82,9 @@ void ObjectStubRpcServer::HasProperty(NaClSrpcRpc* rpc,
     }
   }
   // Invoke the method.
-  *success = PPBVarInterface()->HasProperty(var, name, exception.get());
+  *success = PPBVarDeprecatedInterface()->HasProperty(var,
+                                                      name,
+                                                      exception.get());
   // Return the final value of the exception PP_Var.
   if (exception.get() != NULL) {
     if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
@@ -136,7 +138,7 @@ void ObjectStubRpcServer::HasMethod(NaClSrpcRpc* rpc,
     }
   }
   // Invoke the method.
-  *success = PPBVarInterface()->HasMethod(var, name, exception.get());
+  *success = PPBVarDeprecatedInterface()->HasMethod(var, name, exception.get());
   // Return the final value of the exception PP_Var.
   if (exception.get() != NULL) {
     if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
@@ -191,7 +193,9 @@ void ObjectStubRpcServer::GetProperty(NaClSrpcRpc* rpc,
     }
   }
   // Invoke the method.
-  PP_Var value = PPBVarInterface()->GetProperty(var, name, exception.get());
+  PP_Var value = PPBVarDeprecatedInterface()->GetProperty(var,
+                                                          name,
+                                                          exception.get());
   // Return the value PP_Var.
   if (!SerializeTo(&value, value_bytes, value_length)) {
     // Serialization of value failed.
@@ -308,7 +312,7 @@ void ObjectStubRpcServer::SetProperty(NaClSrpcRpc* rpc,
       return;
     }
   }  // Invoke the method.
-  PPBVarInterface()->SetProperty(var, name, value, exception.get());
+  PPBVarDeprecatedInterface()->SetProperty(var, name, value, exception.get());
   // Return the final value of the exception PP_Var.
   if (exception.get() != NULL) {
     if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
@@ -360,7 +364,7 @@ void ObjectStubRpcServer::RemoveProperty(NaClSrpcRpc* rpc,
       return;
     }
   }  // Invoke the method.
-  PPBVarInterface()->RemoveProperty(var, name, exception.get());
+  PPBVarDeprecatedInterface()->RemoveProperty(var, name, exception.get());
   // Return the final value of the exception PP_Var.
   if (exception.get() != NULL) {
     if (!SerializeTo(exception.get(), exception_bytes, exception_length)) {
@@ -427,11 +431,11 @@ void ObjectStubRpcServer::Call(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  PP_Var ret = PPBVarInterface()->Call(var,
-                                       name,
-                                       static_cast<uint32_t>(argc),
-                                       argv.get(),
-                                       exception.get());
+  PP_Var ret = PPBVarDeprecatedInterface()->Call(var,
+                                                 name,
+                                                 static_cast<uint32_t>(argc),
+                                                 argv.get(),
+                                                 exception.get());
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.
@@ -494,10 +498,8 @@ void ObjectStubRpcServer::Construct(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  PP_Var ret = PPBVarInterface()->Construct(var,
-                                            static_cast<uint32_t>(argc),
-                                            argv.get(),
-                                            exception.get());
+  PP_Var ret = PPBVarDeprecatedInterface()->Construct(
+      var, static_cast<uint32_t>(argc), argv.get(), exception.get());
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.

@@ -14,14 +14,14 @@
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 #include "native_client/tests/fake_browser_ppapi/fake_object.h"
 #include "native_client/tests/fake_browser_ppapi/utility.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_var.h"
 
 using fake_browser_ppapi::Object;
-using ppapi_proxy::PluginVar;
+using ppapi_proxy::PluginVarDeprecated;
 
 namespace {
 
@@ -32,7 +32,7 @@ PP_Var* NewStringVar(PP_Module browser_module, const char* str) {
   static const PPB_Var_Deprecated* ppb_var = NULL;
   if (ppb_var == NULL) {
     ppb_var = reinterpret_cast<const PPB_Var_Deprecated*>(
-        PluginVar::GetInterface());
+        PluginVarDeprecated::GetInterface());
     if (ppb_var == NULL) {
       return NULL;
     }
@@ -75,7 +75,7 @@ PP_Var ConsoleLog(Object* object,
   for (uint32_t i = 0; i < argc; ++i) {
     // NB: currently we are not doing the printf-style formatting.
     // TODO(sehr): implement the formatting.
-    printf("'%s'", PluginVar::DebugString(argv[i]).c_str());
+    printf("'%s'", PluginVarDeprecated::DebugString(argv[i]).c_str());
     if (i < argc - 1) {
       printf(", ");
     }
@@ -107,7 +107,7 @@ PP_Var Alert(Object* object,
   UNREFERENCED_PARAMETER(exception);
   printf("window.alert(");
   if (argc == 1) {
-    printf("'%s'", PluginVar::DebugString(argv[0]).c_str());
+    printf("'%s'", PluginVarDeprecated::DebugString(argv[0]).c_str());
   } else {
     printf("<BAD PARAMETER COUNT: %d>", argc);
   }
@@ -158,7 +158,7 @@ PP_Var Parse(Object* object,
   UNREFERENCED_PARAMETER(exception);
   printf("window.JSON.parse(");
   if (argc == 1) {
-    printf("'%s')\n", PluginVar::DebugString(argv[0]).c_str());
+    printf("'%s')\n", PluginVarDeprecated::DebugString(argv[0]).c_str());
   } else {
     printf("<BAD PARAMETER COUNT: %d>)\n", argc);
     return PP_MakeUndefined();
@@ -166,9 +166,10 @@ PP_Var Parse(Object* object,
   // Build the nexes object from the json string.
   // Populate the properties map.
   Object::PropertyMap properties;
-  properties["nexes"] = NexesObject(g_browser_module,
-                                    g_browser_instance,
-                                    PluginVar::DebugString(argv[0]).c_str());
+  properties["nexes"] =
+      NexesObject(g_browser_module,
+                  g_browser_instance,
+                  PluginVarDeprecated::DebugString(argv[0]).c_str());
 
   // Populate the methods map.
   Object::MethodMap methods;

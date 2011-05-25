@@ -43,7 +43,7 @@ bool NameMatches(PP_Var name, const char* name_to_match) {
   }
   uint32_t string_length;
   const char* name_string =
-      PPBVarInterface()->VarToUtf8(name, &string_length);
+      PPBVarDeprecatedInterface()->VarToUtf8(name, &string_length);
   return (strncmp(name_string, name_to_match, string_length) == 0);
 }
 
@@ -229,11 +229,11 @@ void ObjectProxy::SetProperty(PP_Var name,
       if (exception != NULL) {
         uint32_t string_length;
         const char* name_string =
-            PPBVarInterface()->VarToUtf8(name, &string_length);
+            PPBVarDeprecatedInterface()->VarToUtf8(name, &string_length);
         nacl::string error_string =
             nacl::string("cannot set the ") + name_string + " property.";
         *exception =
-            PPBVarInterface()->VarFromUtf8(
+            PPBVarDeprecatedInterface()->VarFromUtf8(
                 LookupModuleIdForSrpcChannel(channel_),
                 error_string.c_str(),
                 sizeof(error_string.size()));
@@ -476,7 +476,7 @@ PP_Var ObjectProxy::New(const ObjectCapability& capability,
                                            channel,
                                            is_instance_object));
   PP_Var* var = new PP_Var;
-  *var = PPBVarInterface()->CreateObjectWithModuleDeprecated(
+  *var = PPBVarDeprecatedInterface()->CreateObjectWithModuleDeprecated(
       LookupModuleIdForSrpcChannel(channel),
       &Object::object_class,
       proxy);

@@ -8,14 +8,14 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 #include "native_client/tests/fake_browser_ppapi/fake_url_loader.h"
 #include "native_client/tests/fake_browser_ppapi/utility.h"
 
 #include "ppapi/c/pp_errors.h"
 
 using fake_browser_ppapi::DebugPrintf;
-using ppapi_proxy::PluginVar;
+using ppapi_proxy::PluginVarDeprecated;
 
 namespace fake_browser_ppapi {
 
@@ -45,16 +45,17 @@ struct PP_Var Canonicalize(struct PP_Var url,
   }
   // TODO(sehr,polina) This could easily be 'return url;' but refcounting
   // in fake_browser_ppapi is broken.
-  std::string url_str = PluginVar::PPVarToString(url);
-  return PluginVar::StringToPPVar(0, url_str);
+  std::string url_str = PluginVarDeprecated::PPVarToString(url);
+  return PluginVarDeprecated::StringToPPVar(0, url_str);
 }
 
 
 struct PP_Var ResolveRelativeToURL(struct PP_Var base_url,
                                    struct PP_Var relative_string,
                                    struct PP_URLComponents_Dev* components) {
-  std::string base_url_str = PluginVar::PPVarToString(base_url);
-  std::string relative_string_str = PluginVar::PPVarToString(relative_string);
+  std::string base_url_str = PluginVarDeprecated::PPVarToString(base_url);
+  std::string relative_string_str =
+      PluginVarDeprecated::PPVarToString(relative_string);
   std::string resolved_str;
   UNREFERENCED_PARAMETER(components);
   // This is a very limited version of canonical URL matching.  It's just
@@ -76,7 +77,7 @@ struct PP_Var ResolveRelativeToURL(struct PP_Var base_url,
     // Otherwise, the last slash precedes a file name, which we strip off.
     resolved_str = base_url_str.substr(0, last_slash + 1) + relative_string_str;
   }
-  return PluginVar::StringToPPVar(0, resolved_str);
+  return PluginVarDeprecated::StringToPPVar(0, resolved_str);
 }
 
 struct PP_Var ResolveRelativeToDocument(
@@ -114,16 +115,16 @@ PP_Bool DocumentCanAccessDocument(PP_Instance active, PP_Instance target) {
 struct PP_Var GetDocumentURL(PP_Instance instance,
                              struct PP_URLComponents_Dev* components) {
   UNREFERENCED_PARAMETER(components);
-  return PluginVar::StringToPPVar(instance,
-                                  fake_browser_ppapi::g_nacl_ppapi_url_path);
+  return PluginVarDeprecated::StringToPPVar(
+      instance, fake_browser_ppapi::g_nacl_ppapi_url_path);
 }
 
 struct PP_Var GetPluginInstanceURL(PP_Instance instance,
                                    struct PP_URLComponents_Dev* components) {
   UNREFERENCED_PARAMETER(instance);
   UNREFERENCED_PARAMETER(components);
-  return PluginVar::StringToPPVar(instance,
-                                  fake_browser_ppapi::g_nacl_ppapi_url_path);
+  return PluginVarDeprecated::StringToPPVar(
+      instance, fake_browser_ppapi::g_nacl_ppapi_url_path);
 }
 
 }  // namespace

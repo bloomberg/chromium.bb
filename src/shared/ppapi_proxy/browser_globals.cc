@@ -189,7 +189,7 @@ const PPB_URLResponseInfo* PPBURLResponseInfoInterface() {
   return ppb;
 }
 
-const PPB_Var_Deprecated* PPBVarInterface() {
+const PPB_Var_Deprecated* PPBVarDeprecatedInterface() {
   static const PPB_Var_Deprecated* ppb =
       reinterpret_cast<const PPB_Var_Deprecated*>(
           GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));

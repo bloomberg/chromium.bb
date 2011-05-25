@@ -126,7 +126,7 @@ uint32_t PpVarSize(const PP_Var& var) {
       return sizeof(SerializedDouble);
     case PP_VARTYPE_STRING: {
       uint32_t string_length;
-      (void) PPBVarInterface()->VarToUtf8(var, &string_length);
+      (void) PPBVarDeprecatedInterface()->VarToUtf8(var, &string_length);
       string_length = RoundedStringBytes(string_length);
       if (std::numeric_limits<uint32_t>::max() == string_length ||
           AddWouldOverflow(string_length,
@@ -210,7 +210,8 @@ bool SerializePpVar(const PP_Var* vars,
       }
       case PP_VARTYPE_STRING: {
         uint32_t string_length;
-        const char* str = PPBVarInterface()->VarToUtf8(vars[i], &string_length);
+        const char* str =
+            PPBVarDeprecatedInterface()->VarToUtf8(vars[i], &string_length);
         SerializedString* ss = reinterpret_cast<SerializedString*>(p);
         ss->fixed.u.string_length = string_length;
         memcpy(reinterpret_cast<void*>(ss->string_bytes),
@@ -356,9 +357,10 @@ bool DeserializeString(char* p,
   // memory allocation function, and copies string_length bytes from
   // ss->string_bytes in to that buffer.  The ref count of the returned var is
   // 1.
-  *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
-                                        ss->string_bytes,
-                                        string_length);
+  *var = PPBVarDeprecatedInterface()->VarFromUtf8(
+      LookupModuleIdForSrpcChannel(channel),
+      ss->string_bytes,
+      string_length);
   return true;
 }
 

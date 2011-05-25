@@ -33,7 +33,7 @@ struct MessageInfo {
 };
 
 /* TODO(dspringer): Replace PPB_Var_Deprecated with PPB_Var when PPB_Var
- * becomes available.
+ * becomes available on the NaCl proxy.
  */
 static struct PPB_Var_Deprecated* GetPPB_Var() {
   return (struct PPB_Var_Deprecated*)(*get_browser_interface_func)(

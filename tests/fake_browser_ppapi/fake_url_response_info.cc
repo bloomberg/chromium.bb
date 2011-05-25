@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/tests/fake_browser_ppapi/fake_url_response_info.h"
 
@@ -10,7 +8,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 
 #include "native_client/tests/fake_browser_ppapi/fake_file_ref.h"
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
@@ -20,7 +18,7 @@
 #include "ppapi/c/pp_resource.h"
 
 using fake_browser_ppapi::DebugPrintf;
-using ppapi_proxy::PluginVar;
+using ppapi_proxy::PluginVarDeprecated;
 
 namespace fake_browser_ppapi {
 
@@ -43,7 +41,8 @@ PP_Var GetProperty(PP_Resource response_id,
 
   switch (property) {
     case PP_URLRESPONSEPROPERTY_URL:
-      return PluginVar::StringToPPVar(response->module_id(), response->url());
+      return PluginVarDeprecated::StringToPPVar(response->module_id(),
+                                                response->url());
     case PP_URLRESPONSEPROPERTY_STATUSCODE:
       return PP_MakeInt32(response->status_code());
     case PP_URLRESPONSEPROPERTY_HEADERS:

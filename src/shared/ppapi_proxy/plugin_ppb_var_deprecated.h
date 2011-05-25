@@ -1,9 +1,9 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_VAR_H_
-#define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_VAR_H_
+#ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_VAR_DEPRECATED_H_
+#define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_VAR_DEPRECATED_H_
 
 #include <string>
 
@@ -17,7 +17,7 @@ namespace ppapi_proxy {
 // Implements the plugin side of the PPB_Var_Deprecated interface.
 // This implementation also determines how PP_Vars are represented internally
 // in the proxied implementation.
-class PluginVar {
+class PluginVarDeprecated {
  public:
   // Returns an interface pointer suitable to the PPAPI client.
   static const PPB_Var_Deprecated* GetInterface();
@@ -31,9 +31,10 @@ class PluginVar {
   static std::string DebugString(PP_Var var);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PluginVar);
+  NACL_DISALLOW_COPY_AND_ASSIGN(PluginVarDeprecated);
 };
 
 }  // namespace ppapi_proxy
 
-#endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_VAR_H_
+#endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_VAR_DEPRECATED_H_
+

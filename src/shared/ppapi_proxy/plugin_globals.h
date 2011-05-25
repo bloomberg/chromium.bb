@@ -40,7 +40,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // plugin side of the proxy, so they can be used by the shared proxy code
 // under both trusted and untrusted compilation.
 const PPB_Core* PPBCoreInterface();  // shared
-const PPB_Var_Deprecated* PPBVarInterface();  // shared
+const PPB_Var_Deprecated* PPBVarDeprecatedInterface();  // shared
 const PPP_Messaging* PPPMessagingInterface();
 
 // Get thread creation/join functions.
