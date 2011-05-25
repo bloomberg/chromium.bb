@@ -2880,50 +2880,6 @@
       ],
     },
     {
-      'target_name': 'performance_ui_tests',
-      'type': 'executable',
-      'msvs_guid': 'C3539D2F-B87A-4F9B-8220-1BB5F7119720',
-      'dependencies': [
-        'chrome',
-        'chrome_resources',
-        'chrome_strings',
-        'debugger',
-        'test_support_common',
-        'test_support_ui',
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'sources': [
-        # TODO(darin): Move other UIPerfTests here.
-        'test/perf/frame_rate/frame_rate_tests.cc',
-      ],
-      'conditions': [
-        ['OS=="win" and buildtype=="Official"', {
-          'configurations': {
-            'Release': {
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  'WholeProgramOptimization': 'false',
-                },
-              },
-            },
-          },
-        },],
-        ['OS=="linux"', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../views/views.gyp:views',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'tab_switching_test',
       'type': 'executable',
       'msvs_guid': 'A34770EA-A574-43E8-9327-F79C04770E98',
