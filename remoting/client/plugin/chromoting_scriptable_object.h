@@ -17,12 +17,54 @@
 //   // compatibility with older API versions.
 //   readonly attribute unsigned short apiMinVersion;
 //
+//   // Connection status.
+//   readonly attribute unsigned short status;
+//
+//   // Constants for connection status.
+//   const unsigned short STATUS_UNKNOWN = 0;
+//   const unsigned short STATUS_CONNECTING = 1;
+//   const unsigned short STATUS_INITIALIZING = 2;
+//   const unsigned short STATUS_CONNECTED = 3;
+//   const unsigned short STATUS_CLOSED = 4;
+//   const unsigned short STATUS_FAILED = 5;
+//
+//   // Connection quality.
+//   readonly attribute unsigned short quality;
+//
+//   // Constants for connection quality
+//   const unsigned short QUALITY_UNKNOWN = 0;
+//   const unsigned short QUALITY_GOOD = 1;
+//   const unsigned short QUALITY_BAD = 2;
+//
+//   // JS callback function so we can signal the JS UI when the connection
+//   // status has been updated.
+//   attribute Function connectionInfoUpdate;
+//
+//   // JS callback function to call when there is new debug info to display
+//   // in the client UI.
+//   attribute Function debugInfo;
+//
+//   attribute Function desktopSizeUpdate;
+//
+//   // This function is called when login information for the host machine is
+//   // needed.
+//   //
+//   // User of this object should respond with calling submitLoginInfo() when
+//   // username and password is available.
+//   //
+//   // This function will be called multiple times until login was successful
+//   // or the maximum number of login attempts has been reached. In the
+//   // later case |connection_status| is changed to STATUS_FAILED.
+//   attribute Function loginChallenge;
+//
+//   // JS callback function to send an XMPP IQ stanza for performing the
+//   // signaling in a jingle connection.  The callback function should be
+//   // of type void(string request_xml).
+//   attribute Function sendIq;
+//
 //   // Dimension of the desktop area.
 //   readonly attribute int desktopWidth;
 //   readonly attribute int desktopHeight;
-//
-//   // Connection status.
-//   readonly attribute unsigned short status;
 //
 //   // Statistics.
 //   // Video Bandwidth in bytes per second.
@@ -38,49 +80,6 @@
 //   // Latency between an event is sent and a corresponding video packet is
 //   // received.
 //   readonly attribute int roundTripLatency;
-//
-//   // Constants for connection status.
-//   const unsigned short STATUS_UNKNOWN = 0;
-//   const unsigned short STATUS_CONNECTING = 1;
-//   const unsigned short STATUS_INITIALIZING = 2;
-//   const unsigned short STATUS_CONNECTED = 3;
-//   const unsigned short STATUS_CLOSED = 4;
-//   const unsigned short STATUS_FAILED = 5;
-//
-//   // Connection quality.
-//   readonly attribute unsigned short quality;
-//   // Constants for connection quality
-//   const unsigned short QUALITY_UNKNOWN = 0;
-//   const unsigned short QUALITY_GOOD = 1;
-//   const unsigned short QUALITY_BAD = 2;
-//
-//   // JS callback function so we can signal the JS UI when the connection
-//   // status has been updated.
-//   attribute Function connectionInfoUpdate;
-//
-//   // JS callback function to call when there is new debug info to display
-//   // in the client UI.
-//   attribute Function debugInfo;
-//
-//   // JS callback function to send an XMPP IQ stanza for performing the
-//   // signaling in a jingle connection.  The callback function should be
-//   // of type void(string request_xml).
-//   attribute Function sendIq;
-//
-//   // Method for receiving an XMPP IQ stanza in response to a previous
-//   // sendIq() invocation. Other packets will be silently dropped.
-//   void onIq(string response_xml);
-//
-//   // This function is called when login information for the host machine is
-//   // needed.
-//   //
-//   // User of this object should respond with calling submitLoginInfo() when
-//   // username and password is available.
-//   //
-//   // This function will be called multiple times until login was successful
-//   // or the maximum number of login attempts has been reached. In the
-//   // later case |connection_status| is changed to STATUS_FAILED.
-//   attribute Function loginChallenge;
 //
 //   // Methods for establishing a Chromoting connection.
 //   //
@@ -101,6 +100,10 @@
 //
 //   // Method for setting scale-to-fit.
 //   void setScaleToFit(bool scale_to_fit);
+//
+//   // Method for receiving an XMPP IQ stanza in response to a previous
+//   // sendIq() invocation. Other packets will be silently dropped.
+//   void onIq(string response_xml);
 // }
 
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_SCRIPTABLE_OBJECT_H_
@@ -165,7 +168,7 @@ class ChromotingScriptableObject
   void SignalLoginChallenge();
 
   // Attaches the XmppProxy used for issuing and receivng IQ stanzas for
-  // initiaing a jingle connection from within the sandbox.
+  // initializing a jingle connection from within the sandbox.
   void AttachXmppProxy(PepperXmppProxy* xmpp_proxy);
 
   // Sends an IQ stanza, serialized as an xml string, into Javascript for
