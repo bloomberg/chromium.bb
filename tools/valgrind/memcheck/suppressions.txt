@@ -2013,14 +2013,6 @@
    fun:_ZN53ActiveNotificationTrackerTest_TestLookupAndClear_Test8TestBodyEv
 }
 {
-   bug_41186
-   Memcheck:Addr1
-   fun:_ZNK16GtkThemeProvider11UsingNativeThemeEv
-   fun:_ZN12browser_sync*14UseSystemThemeEP7Profile
-   fun:_ZN12browser_sync33GetThemeSpecificsFromCurrentThemeEP7ProfilePN7sync_pb14ThemeSpecificsE
-   fun:_ZN12browser_sync44SetCurrentThemeFromThemeSpecificsIfNecessaryERKN7sync_pb14ThemeSpecificsEP7Profile
-}
-{
    bug_42389
    Memcheck:Leak
    ...
@@ -3223,15 +3215,6 @@
    fun:_ZN9file_util9WriteFileERK8FilePathPKci
    fun:_Z24ConvertWebAppToExtensionRK18WebApplicationInfoRKN4base4TimeE
    fun:_ZN30ExtensionFromWebApp_Basic_Test8TestBodyEv
-}
-{
-   bug_63672
-   Memcheck:Addr1
-   fun:_ZNK16GtkThemeProvider11UsingNativeThemeEv
-   fun:_ZN12browser_sync67_GLOBAL__N_chrome_browser_sync_glue_theme_util.cc_00000000_1C67A97A14UseSystemThemeEP7Profile
-   fun:_ZN12browser_sync33GetThemeSpecificsFromCurrentThemeEP7ProfilePN7sync_pb14ThemeSpecificsE
-   fun:_ZN12browser_sync44SetCurrentThemeFromThemeSpecificsIfNecessaryERKN7sync_pb14ThemeSpecificsEP7Profile
-   fun:_ZN12browser_sync76_GLOBAL__N_chrome_browser_sync_glue_theme_util_unittest.cc_00000000_6D6EFF0A69ThemeUtilTest_SetCurrentThemeIfNecessaryDefaultThemeNotNecessary_Test8TestBodyEv
 }
 {
    bug_64804

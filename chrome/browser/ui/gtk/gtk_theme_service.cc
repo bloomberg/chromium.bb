@@ -256,6 +256,7 @@ GtkThemeService* GtkThemeService::GetFrom(Profile* profile) {
 
 GtkThemeService::GtkThemeService()
     : ThemeService(),
+      use_gtk_(false),
       fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
       fake_frame_(chrome_gtk_frame_new()),
       signals_(new ui::GtkSignalRegistrar),
