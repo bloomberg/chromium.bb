@@ -2314,7 +2314,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)bookmarkDragDidEnd:(BookmarkButton*)button
                  operation:(NSDragOperation)operation {
-  [self closeFolderAndStopTrackingMenus];
   [button setHidden:NO];
   [self resetAllButtonPositionsWithAnimation:YES];
 }
