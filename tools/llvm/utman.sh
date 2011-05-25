@@ -689,7 +689,10 @@ untrusted_sdk() {
 #+ prune                 - Prune toolchain
 prune() {
   StepBanner "PRUNE" "Pruning toolchain"
-  local ACCEPTABLE_SIZE=250
+  # ACCEPTABLE_SIZE should be much lower for real release,
+  # but we are currently doing a debug build and not pruning
+  # as aggressively as we could.
+  local ACCEPTABLE_SIZE=300
   local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
 
   SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
