@@ -1610,3 +1610,16 @@
    fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
 }
+{
+   bug_83836
+   Heapcheck:Leak
+   fun:Callback2::Type* NewCallback
+   fun:DownloadManager::CheckDownloadUrlDone
+   fun:void DispatchToMethod
+   fun:CallbackImpl::RunWithParams
+   fun:CallbackRunner::Run
+   fun:DownloadSBClient::SafeBrowsingCheckUrlDone
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:::TaskClosureAdapter::Run
+}

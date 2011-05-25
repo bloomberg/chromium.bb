@@ -4615,6 +4615,20 @@
    fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvRKN4base9TimeTicksEjE6Tuple2IS4_jEED0Ev
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
 }
+{
+   bug_83836
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackI15DownloadManageribEPN9Callback2IT0_T1_E4TypeEPT_MS7_FvS2_S3_E
+   fun:_ZN15DownloadManager20CheckDownloadUrlDoneEib
+   fun:_Z16DispatchToMethodI15DownloadManagerMS0_FvibEibEvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN12CallbackImplI15DownloadManagerMS0_FvibE6Tuple2IibEE13RunWithParamsERKS4_
+   fun:_ZN14CallbackRunnerI6Tuple2IibEE3RunIibEEvRKT_RKT0_
+   fun:_ZN16DownloadSBClient24SafeBrowsingCheckUrlDoneEN19SafeBrowsingService14UrlCheckResultE
+   fun:_Z16DispatchToMethodI16DownloadSBClientMS0_FvN19SafeBrowsingService14UrlCheckResultEES2_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodI16DownloadSBClientMS0_FvN19SafeBrowsingService14UrlCheckResultEE6Tuple1IS2_EE3RunEv
+   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
