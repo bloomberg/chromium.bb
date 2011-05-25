@@ -1271,6 +1271,15 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
   } else if (notify) {
     // The spellchecker has been disabled.
     SpellCheckHostInitialized();
+    for (RenderProcessHost::iterator
+         i(RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance()) {
+      RenderProcessHost* process = i.GetCurrentValue();
+      process->Send(new SpellCheckMsg_Init(IPC::InvalidPlatformFileForTransit(),
+                                           std::vector<std::string>(),
+                                           std::string(),
+                                           false));
+    }
   }
 }
 
@@ -1278,7 +1287,7 @@ void ProfileImpl::SpellCheckHostInitialized() {
   spellcheck_host_ready_ = spellcheck_host_ &&
       (spellcheck_host_->GetDictionaryFile() !=
        base::kInvalidPlatformFileValue ||
-       spellcheck_host_->IsUsingPlatformChecker());;
+       spellcheck_host_->IsUsingPlatformChecker());
 }
 
 ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
