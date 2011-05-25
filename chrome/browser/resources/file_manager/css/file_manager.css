@@ -345,7 +345,7 @@ button.thumbnail-view > img {
   white-space: nowrap;
 }
 
-.filename-label {
+.dialog-footer .filename-label {
   -webkit-box-orient: horizontal;
   color: #666;
   display: -webkit-box;
