@@ -24,6 +24,7 @@ include_rules = [
   "+webkit/blob",
   "+webkit/database",
   "+webkit/fileapi",
+  "+webkit/quota",
 
   # Allow inclusion of third-party code:
   "+third_party/mozilla",   # Mozilla interface headers.

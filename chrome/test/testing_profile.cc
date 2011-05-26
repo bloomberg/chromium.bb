@@ -59,6 +59,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/quota/quota_manager.h"
 
 using base::Time;
 using testing::NiceMock;
@@ -514,7 +516,19 @@ PersonalDataManager* TestingProfile::GetPersonalDataManager() {
 }
 
 fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
-  return NULL;
+  if (!file_system_context_) {
+    file_system_context_ = new fileapi::FileSystemContext(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      GetExtensionSpecialStoragePolicy(),
+      NULL,
+      GetPath(),
+      IsOffTheRecord(),
+      true,  // Allow file access from files.
+      true,  // Unlimited quota.
+      NULL);
+  }
+  return file_system_context_.get();
 }
 
 quota::QuotaManager* TestingProfile::GetQuotaManager() {

@@ -382,6 +382,9 @@ class TestingProfile : public Profile {
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
 
+  // FileSystemContext.  Created lazily by GetFileSystemContext().
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+
   // The proxy prefs tracker.
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
