@@ -259,9 +259,8 @@ int OpaqueBrowserFrameView::NonClientTopBorderHeight(
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
-  if (!tabstrip) {
+  if (!tabstrip)
     return gfx::Rect();
-  }
 
   if (browser_view_->UseVerticalTabs()) {
     gfx::Size ps = tabstrip->GetPreferredSize();
@@ -282,11 +281,8 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->IsMaximized() ?
           maximized_spacing : kNewTabCaptionRestoredSpacing);
-  int tabstrip_height = 0;
-  if (tabstrip)
-    tabstrip_height = tabstrip->GetPreferredSize().height();
   return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
-                   std::max(0, tabstrip_width), tabstrip_height);
+      std::max(0, tabstrip_width), tabstrip->GetPreferredSize().height());
 }
 
 int OpaqueBrowserFrameView::GetHorizontalTabStripVerticalOffset(
@@ -453,31 +449,23 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
     return in_nonclient;
 
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
-  bool vertical_tabs = browser_view_->UseVerticalTabs();
-  gfx::Rect tabstrip_bounds = GetBoundsForTabStrip(browser_view_->tabstrip());
+  if (!browser_view_->tabstrip())
+    return false;
+  gfx::Rect tabstrip_bounds(browser_view_->tabstrip()->bounds());
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
   View::ConvertPointToView(frame_->client_view(), this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
-  if ((!vertical_tabs && l.y() > tabstrip_bounds.bottom()) ||
-      (vertical_tabs && l.x() > tabstrip_bounds.right())) {
+  if (browser_view_->UseVerticalTabs() ?
+      (l.x() > tabstrip_bounds.right()) : (l.y() > tabstrip_bounds.bottom()))
     return false;
-  }
 
   // Claim it only if we're also not in the compact navigation buttons.
-  if (browser_view_->UseCompactNavigationBar()) {
-    if (ConvertedContainsCheck(browser_view_->GetCompactNavigationBarBounds(),
-                               frame_->client_view(),
-                               static_cast<const View*>(this),
-                               l)) {
-      return false;
-    }
-    if (ConvertedContainsCheck(browser_view_->GetCompactOptionsBarBounds(),
-                               frame_->client_view(),
-                               static_cast<const View*>(this),
-                               l)) {
-      return false;
-    }
-  }
+  if (browser_view_->UseCompactNavigationBar() &&
+      (ConvertedContainsCheck(browser_view_->GetCompactNavigationBarBounds(),
+                              frame_->client_view(), this, l) ||
+       ConvertedContainsCheck(browser_view_->GetCompactOptionsBarBounds(),
+                              frame_->client_view(), this, l)))
+    return false;
 
   // We convert from our parent's coordinates since we assume we fill its bounds
   // completely. We need to do this since we're not a parent of the tabstrip,

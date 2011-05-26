@@ -247,13 +247,10 @@ void GlassBrowserFrameView::Layout() {
 bool GlassBrowserFrameView::HitTest(const gfx::Point& l) const {
   // The ProfileMenuButton intrudes into the client area when the window is
   // maximized.
-  if (frame_->IsMaximized() && show_profile_button() &&
-       profile_button_->IsVisible() &&
-       profile_button_->GetMirroredBounds().Contains(l)) {
-    return true;
-  } else {
-    return !frame_->client_view()->bounds().Contains(l);
-  }
+  return (frame_->IsMaximized() && show_profile_button() &&
+          profile_button_->IsVisible() &&
+          profile_button_->GetMirroredBounds().Contains(l)) ||
+      !frame_->client_view()->bounds().Contains(l);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
