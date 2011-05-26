@@ -696,8 +696,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Prerenders a page that contains an automatic download triggered through an
 // iframe. This should not prerender successfully.
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderDownloadIframe) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIframe) {
   PrerenderTestURL("files/prerender/prerender_download_iframe.html",
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -706,9 +705,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderDownloadIframe) {
 // Prerenders a page that contains an automatic download triggered through
 // Javascript changing the window.location. This should not prerender
 // successfully
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FLAKY_PrerenderDownloadLocation) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
   PrerenderTestURL(CreateClientRedirect("files/download-test1.lib"),
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -716,9 +713,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Prerenders a page that contains an automatic download triggered through a
 // client-issued redirect. This should not prerender successfully.
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FLAKY_PrerenderDownloadClientRedirect) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadClientRedirect) {
   PrerenderTestURL("files/prerender/prerender_download_refresh.html",
                    FINAL_STATUS_DOWNLOAD,
                    1);
@@ -994,8 +989,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
 
 // Checks that a prerender of a CRX will result in a cancellation due to
 // download.
-// Flaky: http://crbug.com/81985
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderCrx) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCrx) {
   PrerenderTestURL("files/prerender/extension.crx", FINAL_STATUS_DOWNLOAD, 1);
 }
 
