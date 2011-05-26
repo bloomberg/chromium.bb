@@ -676,6 +676,7 @@ class WifiNetwork : public WirelessNetwork {
   void SetEAPPhase2Auth(EAPPhase2Auth auth);
   void SetEAPServerCaCertNssNickname(const std::string& nss_nickname);
   void SetEAPClientCertPkcs11Id(const std::string& pkcs11_id);
+  void SetEAPPin(const std::string& tpm_pin);
   void SetEAPUseSystemCAs(bool use_system_cas);
   void SetEAPIdentity(const std::string& identity);
   void SetEAPAnonymousIdentity(const std::string& identity);

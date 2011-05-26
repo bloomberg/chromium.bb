@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/browser_thread.h"
+#include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -2141,6 +2142,10 @@ void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
                            &eap_client_cert_pkcs11_id_);
 }
 
+void WifiNetwork::SetEAPPin(const std::string& tpm_pin) {
+  SetOrClearStringProperty(kEapPinProperty, tpm_pin, NULL);
+}
+
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
   SetBooleanProperty(kEapUseSystemCAsProperty, use_system_cas,
                      &eap_use_system_cas_);
@@ -2816,6 +2821,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (wifi->user_passphrase_ != wifi->passphrase_ ||
         wifi->passphrase_required())
       wifi->SetPassphrase(wifi->user_passphrase_);
+    // For enterprise 802.1X networks, always provide TPM PIN when available.
+    // flimflam uses the PIN if it needs to access certificates in the TPM and
+    // ignores it otherwise.
+    if (wifi->encryption() == SECURITY_8021X) {
+      if (crypto::IsTPMTokenReady()) {
+        std::string token_name;
+        std::string user_pin;
+        crypto::GetTPMTokenInfo(&token_name, &user_pin);
+        wifi->SetEAPPin(user_pin);
+      } else {
+        LOG(WARNING) << "TPM token not ready";
+      }
+    }
     CallConnectToNetwork(wifi);
   }
 

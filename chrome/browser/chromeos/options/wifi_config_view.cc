@@ -4,13 +4,11 @@
 
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 
-#include "base/command_line.h"  // TODO(jamescook): Remove.
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/wifi_config_model.h"
-#include "chrome/common/chrome_switches.h"  // TODO(jamescook): Remove.
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -556,11 +554,7 @@ bool WifiConfigView::GetEapUseSystemCas() const {
 }
 
 std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
-  // TODO(jamescook): When the flag for "experimental EAP methods" is
-  // permanently on, client_cert_combobox_ will always exist and this can
-  // become a DCHECK().
-  if (!client_cert_combobox_)
-    return std::string();
+  DCHECK(client_cert_combobox_);
   int selected = client_cert_combobox_->selected_item();
   if (selected == 0) {
     // First item is "None".
