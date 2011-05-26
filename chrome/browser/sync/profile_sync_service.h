@@ -113,6 +113,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     START_FROM_OPTIONS = 3,  // Sync was started from Wrench->Options.
     START_FROM_BOOKMARK_MANAGER = 4,  // Sync was started from Bookmark manager.
     START_FROM_PROFILE_MENU = 5,  // Sync was started from multiprofile menu.
+    START_FROM_URL = 6,  // Sync was started from a typed URL.
 
     // Events regarding cancellation of the signon process of sync.
     CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,   // Cancelled before submitting

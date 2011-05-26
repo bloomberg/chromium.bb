@@ -399,10 +399,29 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
 
   ProfileSyncService* sync_service =
       web_ui_->GetProfile()->GetProfileSyncService();
-  if (!sync_service)
+  if (!sync_service) {
+    // If there's no sync service, the user tried to manually invoke a syncSetup
+    // URL, but sync features are disabled.  We need to close the overlay for
+    // this (rare) case.
+    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
     return;
+  }
 
-  if (!flow_)
-    flow_ = sync_service->get_wizard().AttachSyncSetupHandler(this);
+  if (sync_service->get_wizard().IsVisible()) {
+    // The wizard and setup flow have been configured, all we need to do is
+    // attach the handler if we haven't already done so.
+    if (!flow_)
+      flow_ = sync_service->get_wizard().AttachSyncSetupHandler(this);
+    return;
+  }
+
+  // The user is trying to manually load a syncSetup URL.  We should bring up
+  // either a login or a configure flow based on the state of sync.
+  if (sync_service->HasSyncSetupCompleted()) {
+    sync_service->ShowConfigure(web_ui_, false);
+  } else {
+    sync_service->ShowLoginDialog(web_ui_);
+    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_URL);
+  }
 }
 
