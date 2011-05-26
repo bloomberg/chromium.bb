@@ -13,6 +13,8 @@
 #endif
 
 #include <stdio.h>
+#include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 
@@ -334,7 +336,15 @@ void ncdecode_unittests() {
 }
 
 int main() {
+  struct GioFile gio_out_stream;
+  struct Gio *gout = (struct Gio*) &gio_out_stream;
+  if (!GioFileRefCtor(&gio_out_stream, stdout)) {
+    fprintf(stderr, "Unable to create gio file for stdout!\n");
+    return 1;
+  }
+  NaClLogModuleInitExtended(LOG_INFO, gout);
   ncdecode_unittests();
   printf("PASSED\n");
+  GioFileDtor(gout);
   return 0;
 }

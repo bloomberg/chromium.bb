@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -12,13 +12,16 @@
 #error("This file is not meant for use in the TCB")
 #endif
 
-#include "native_client/src/include/portability.h"
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "native_client/src/include/portability.h"
+#include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 
 #if !defined(ARRAYSIZE)
@@ -1130,6 +1133,7 @@ static void TestValidator(struct NCValTestCase *vtest) {
 
   vstate = NCValidateInit(vtest->vaddr, vtest->vaddr + data_size, 16);
   assert (vstate != NULL);
+  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   NCValidateSegment(byte0, (uint32_t)vtest->vaddr, data_size - 1, vstate);
   free(byte0);
   rc = NCValidateFinish(vstate);
@@ -1141,7 +1145,7 @@ static void TestValidator(struct NCValTestCase *vtest) {
     NCValidateFreeState(&vstate);
     return;
   } while (0);
-  Stats_Print(stderr, vstate);
+  Stats_Print(vstate);
   NCValidateFreeState(&vstate);
   Info("*** %s failed (%s)\n", vtest->name, vtest->description);
   exit(-1);
@@ -1177,6 +1181,14 @@ void ncvalidate_unittests() {
 
 
 int main() {
+  struct GioFile gio_out_stream;
+  struct Gio *gout = (struct Gio*) &gio_out_stream;
+  if (!GioFileRefCtor(&gio_out_stream, stdout)) {
+    fprintf(stderr, "Unable to create gio file for stdout!\n");
+    return 1;
+  }
+  NaClLogModuleInitExtended(LOG_INFO, gout);
   ncvalidate_unittests();
+  GioFileDtor(gout);
   return 0;
 }

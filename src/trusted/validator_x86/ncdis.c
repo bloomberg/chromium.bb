@@ -33,7 +33,7 @@
 /* The name of the executable that is being run. */
 static const char* exec_name = "???";
 
-void Fatal(const char *fmt, ...) {
+static void Fatal(const char *fmt, ...) {
   FILE* fp = stdout;
   va_list ap;
   fprintf(fp, "Fatal: ");

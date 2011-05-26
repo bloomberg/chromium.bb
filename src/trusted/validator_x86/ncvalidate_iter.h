@@ -132,6 +132,14 @@ void NaClValidatorStateSetCPUFeatures(NaClValidatorState* state,
 void NaClValidatorStateSetErrorReporter(NaClValidatorState* state,
                                         NaClErrorReporter* reporter);
 
+/* A default, null error reporter for a NCInstState* */
+extern NaClErrorReporter kNaClNullErrorReporter;
+
+/* Verbose error reporter for a NaClInstState* that reports to
+ * NaClLogGetGio().
+ */
+extern NaClErrorReporter kNaClVerboseErrorReporter;
+
 /* Returns true if an opcode histogram should be printed by the validator.
  * Note: Defaults to NACL_FLAGS_opcode_histogram.
  */

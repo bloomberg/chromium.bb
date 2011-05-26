@@ -31,6 +31,8 @@
  * structure of the validator.
  */
 struct NCValidatorState;
+struct Gio;
+struct NaClErrorReporter;
 
 /* NCValidateSetCPUFeatures: Define the set of CPU features to use.
  * Parameters:
@@ -88,6 +90,12 @@ void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
 void NCValidatorStateSetCPUFeatures(struct NCValidatorState* vstate,
                                     const CPUFeatures* features);
 
+/* Changes the error reporter to the given error reporter
+ * for the given validator state.
+ */
+void NCValidateSetErrorReporter(struct NCValidatorState* vstate,
+                                struct NaClErrorReporter* error_reporter);
+
 /* Validate a segment */
 /* This routine will raise an segmentation exception if you ask
  * it to check memory that can't be accessed. This should of be
@@ -115,8 +123,15 @@ int NCValidateFinish(struct NCValidatorState *vstate);
 /* BEWARE: this call deallocates vstate.                      */
 void NCValidateFreeState(struct NCValidatorState **vstate);
 
-/* Print some interesting statistics... */
-void Stats_Print(FILE *f, struct NCValidatorState *vstate);
+/* Print some interesting statistics...
+ *
+ * Note: Uses error reporter of validator to print messages.
+ * The default error reporter of the validator will not
+ * print any messages. To actually get the messages, you
+ * must associate an error reporter with the validator using
+ * NCValidateSetErrorReporter.
+ */
+void Stats_Print(struct NCValidatorState *vstate);
 
 /* Returns the default value used for controlling printing
  * of validator messages.

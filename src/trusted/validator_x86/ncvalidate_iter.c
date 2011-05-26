@@ -74,7 +74,20 @@ void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState *state,
 
 void NaClValidatorStateSetErrorReporter(NaClValidatorState *state,
                                         NaClErrorReporter *reporter) {
-  state->error_reporter = reporter;
+  switch (reporter->supported_reporter) {
+    case NaClNullErrorReporter:
+    case NaClInstStateErrorReporter:
+      state->error_reporter = reporter;
+      return;
+    default:
+      break;
+  }
+  reporter->printf(
+      reporter,
+      "*** FATAL: using unsupported error reporter! ***\n",
+      "*** NaClInstStateErrorReporter expected but found %s ***\n",
+      NaClErrorReporterSupportedName(reporter->supported_reporter));
+  exit(1);
 }
 
 Bool NaClValidatorStateGetPrintOpcodeHistogram(NaClValidatorState *state) {
@@ -345,20 +358,27 @@ void NaClRegisterValidator(
   defn->destroy_memory = destroy_memory;
 }
 
-static void NaClNullErrorPrintf(NaClErrorReporter* self,
-                                const char* format, ...) {}
-static void NaClNullErrorPrintfV(NaClErrorReporter* self,
-                                 const char* format,
-                                 va_list ap) {}
 static void NaClNullErrorPrintInst(NaClErrorReporter* self,
                                    struct NaClInstState* inst) {}
 
-static NaClErrorReporter nacl_null_reporter = {
+NaClErrorReporter kNaClNullErrorReporter = {
+  NaClNullErrorReporter,
   NaClNullErrorPrintf,
   NaClNullErrorPrintfV,
-  NaClNullErrorPrintInst
+  (NaClPrintInst) NaClNullErrorPrintInst
 };
 
+static void NaClVerboseErrorPrintInst(NaClErrorReporter* self,
+                                      struct NaClInstState* inst) {
+  NaClInstStateInstPrint(NaClLogGetGio(), inst);
+}
+
+NaClErrorReporter kNaClVerboseErrorReporter = {
+  NaClInstStateErrorReporter,
+  NaClVerboseErrorPrintf,
+  NaClVerboseErrorPrintfV,
+  (NaClPrintInst) NaClVerboseErrorPrintInst
+};
 
 NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize sz,
@@ -392,7 +412,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     state->validates_ok = TRUE;
     state->number_validators = 0;
     state->quit_after_error_count = NACL_FLAGS_max_reported_errors;
-    state->error_reporter = &nacl_null_reporter;
+    state->error_reporter = &kNaClNullErrorReporter;
     state->print_opcode_histogram = NACL_FLAGS_opcode_histogram;
     state->trace_instructions = NACL_FLAGS_validator_trace_instructions;
     state->trace_inst_internals = NACL_FLAGS_validator_trace_inst_internals;
