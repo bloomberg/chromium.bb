@@ -767,7 +767,6 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     self.failException = Exception("FailStage needs to fail.")
 
-
   def _runStages(self):
     """Run a couple of stages so we can capture the results"""
 
@@ -778,6 +777,10 @@ class BuildStagesResultsTest(unittest.TestCase):
       """PassStage always works"""
       pass
 
+    class Pass2Stage(stages.BuilderStage):
+      """Pass2Stage always works"""
+      pass
+
     class FailStage(stages.BuilderStage):
       """FailStage always throws an exception"""
 
@@ -785,12 +788,28 @@ class BuildStagesResultsTest(unittest.TestCase):
         """Throw the exception to make us fail."""
         raise outer_self.failException
 
-    # Run two stages
+    # Run two pass stages, and one fail stage.
     PassStage(self.bot_id, self.options, self.build_config).Run()
+    Pass2Stage(self.bot_id, self.options, self.build_config).Run()
 
     self.assertRaises(
-        Exception,
-        FailStage(self.bot_id, self.options, self.build_config).Run)
+      stages.BuildException,
+      FailStage(self.bot_id, self.options, self.build_config).Run)
+
+  def _verifyRunResults(self, expectedResults):
+
+    actualResults = stages.BuilderStage.Results.Get()
+
+    # Break out the asserts to be per item to make debugging easier
+    self.assertEqual(len(expectedResults), len(actualResults))
+    for i in xrange(len(expectedResults)):
+      expectedName, expectedResult, expectedDescription = actualResults[i]
+
+      if expectedResult not in (stages.BuilderStage.Results.SUCCESS,
+                                stages.BuilderStage.Results.SKIPPED):
+        self.assertTrue(isinstance(expectedDescription, str))
+
+      self.assertEqual(expectedResults[i], (expectedName, expectedResult))
 
   def testRunStages(self):
     """Run some stages and verify the captured results"""
@@ -803,14 +822,28 @@ class BuildStagesResultsTest(unittest.TestCase):
     # Verify that the results are what we expect.
     expectedResults = [
         ('Pass', stages.BuilderStage.Results.SUCCESS),
+        ('Pass2', stages.BuilderStage.Results.SUCCESS),
         ('Fail', self.failException)]
 
-    actualResults = stages.BuilderStage.Results.Get()
+    self._verifyRunResults(expectedResults)
 
-    # Break out the asserts to be per item to make debugging easier
-    self.assertEqual(len(expectedResults), len(actualResults))
-    for i in xrange(len(expectedResults)):
-      self.assertEqual(expectedResults[i], actualResults[i])
+  def testSuccessTest(self):
+    """Run some stages and verify the captured results"""
+
+    stages.BuilderStage.Results.Clear()
+    stages.BuilderStage.Results.Record('Pass',
+                                       stages.BuilderStage.Results.SKIPPED)
+
+    self.assertTrue(stages.BuilderStage.Results.Success())
+
+    stages.BuilderStage.Results.Record('Fail', self.failException)
+
+    self.assertFalse(stages.BuilderStage.Results.Success())
+
+    stages.BuilderStage.Results.Record('Pass2',
+                                       stages.BuilderStage.Results.SUCCESS)
+
+    self.assertFalse(stages.BuilderStage.Results.Success())
 
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
@@ -873,21 +906,25 @@ class BuildStagesResultsTest(unittest.TestCase):
                                        stages.BuilderStage.Results.SKIPPED)
     stages.BuilderStage.Results.Record('Pass2',
                                        stages.BuilderStage.Results.SUCCESS)
-    stages.BuilderStage.Results.Record('Fail', self.failException)
+    stages.BuilderStage.Results.Record('Fail',
+                                       self.failException,
+                                       'failException Msg\nLine 2')
     stages.BuilderStage.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
-            ['/bin/false', '/nosuchdir']))
+            ['/bin/false', '/nosuchdir']),
+        'FailRunCommand msg')
     stages.BuilderStage.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
-            ['/bin/false', '/nosuchdir']))
+            ['/bin/false', '/nosuchdir']),
+        'FailOldRunCommand msg')
 
     results = StringIO.StringIO()
 
-    stages.BuilderStage.Results.Report(results, 'Exception:\nMessage\n')
+    stages.BuilderStage.Results.Report(results)
 
     expectedResults = (
         "************************************************************\n"
@@ -906,8 +943,8 @@ class BuildStagesResultsTest(unittest.TestCase):
         "\n"
         "Build failed with:\n"
         "\n"
-        "Exception:\n"
-        "Message\n")
+        "failException Msg\n"
+        "Line 2")
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
@@ -990,14 +1027,10 @@ class BuildStagesResultsTest(unittest.TestCase):
     # Verify that the results are what we expect.
     expectedResults = [
         ('Pass', stages.BuilderStage.Results.SKIPPED),
+        ('Pass2', stages.BuilderStage.Results.SUCCESS),
         ('Fail', self.failException)]
 
-    actualResults = stages.BuilderStage.Results.Get()
-
-    # Break out the asserts to be per item to make debugging easier
-    self.assertEqual(len(expectedResults), len(actualResults))
-    for i in xrange(len(expectedResults)):
-      self.assertEqual(expectedResults[i], actualResults[i])
+    self._verifyRunResults(expectedResults)
 
 
 if __name__ == '__main__':

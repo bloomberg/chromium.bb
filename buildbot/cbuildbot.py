@@ -14,7 +14,6 @@ import optparse
 import os
 import pprint
 import sys
-import traceback
 
 if __name__ == '__main__':
   import constants
@@ -50,14 +49,23 @@ def _GetConfig(config_name, options):
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
 
+  completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
+
+  if options.resume and os.path.exists(completed_stages_file):
+    with open(completed_stages_file, 'r') as load_file:
+      stages.BuilderStage.Results.RestoreCompletedStages(load_file)
+
   # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
   if build_config['chromeos_official']:
     os.environ['CHROMEOS_OFFICIAL'] = '1'
 
-  try:
-    tracking_branch = commands.GetChromiteTrackingBranch()
-    stages.BuilderStage.SetTrackingBranch(tracking_branch)
+  tracking_branch = commands.GetChromiteTrackingBranch()
+  stages.BuilderStage.SetTrackingBranch(tracking_branch)
 
+  build_success = False
+  build_and_test_success = False
+
+  try:
     if options.sync:
       if build_config['manifest_version']:
         stages.ManifestVersionedSyncStage(bot_id, options, build_config).Run()
@@ -84,81 +92,61 @@ def RunBuildStages(bot_id, options, build_config):
     if options.build:
       stages.BuildTargetStage(bot_id, options, build_config).Run()
 
-    # TODO(sosa): We only want to archive artifacts if we have artifacts to
-    # archive.  Today this means we have at least built an image.  We should
-    # make this more general and have dependencies within stages themselves ...
-    # i.e. archive -> build_target ... however someday it might be
-    # archive->sync.
-    try:
-      if options.tests:
-        stages.TestStage(bot_id, options, build_config).Run()
+    build_success = True
 
-      if options.remote_test_status:
-          stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
+    if options.tests:
+      stages.TestStage(bot_id, options, build_config).Run()
 
-      # Control master / slave logic here.
-      if build_config['master']:
-        if cbuildbot_comm.HaveSlavesCompleted(cbuildbot_config.config):
-          stages.PushChangesStage(bot_id, options, build_config).Run()
-        else:
-          cros_lib.Die('One of the other slaves failed.')
+    if options.remote_test_status:
+      stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
 
-      elif build_config['important']:
-        cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
+    build_and_test_success = True
 
-      # If the ManifestVersionedSync created a manifest, we need to
-      # store off final results for the manifest.
-      if stages.ManifestVersionedSyncStage.manifest_manager:
-        stages.ManifestVersionedSyncCompletionStage(bot_id,
-                                                    options,
-                                                    build_config,
-                                                    success=True).Run()
+  except stages.BuildException:
+    # We skipped out of this build block early, all we need to do.
+    pass
 
-    finally:
-      if options.archive:
-        stages.ArchiveStage(bot_id, options, build_config).Run()
-        cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
-        cros_lib.Info(stages.BuilderStage.archive_url)
+  # Control master / slave logic here.
+  if build_and_test_success and build_config['master']:
+    if cbuildbot_comm.HaveSlavesCompleted(cbuildbot_config.config):
+      stages.PushChangesStage(bot_id, options, build_config).Run()
+    else:
+      cros_lib.Die('One of the other slaves failed.')
 
-  except:
-    # Send failure to master.
-    if not build_config['master'] and build_config['important']:
+  if build_config['important']:
+    if build_and_test_success:
+      cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
+    else:
       cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_FAILED)
 
-    if options.sync and build_config['manifest_version']:
-      stages.ManifestVersionedSyncCompletionStage(bot_id,
-                                    options,
-                                    build_config,
-                                    success=False).Run()
-    raise
+  # If the ManifestVersionedSync created a manifest, we need to
+  # store off final results for the manifest.
+  if stages.ManifestVersionedSyncStage.manifest_manager:
+    try:
+      stages.ManifestVersionedSyncCompletionStage(
+         bot_id,
+         options,
+         build_config,
+         success=build_and_test_success).Run()
+    except stages.BuildException:
+      pass
 
+  if build_success and options.archive:
+    try:
+      stages.ArchiveStage(bot_id, options, build_config).Run()
+    except stages.BuildException:
+      pass
 
-def RunEverything(bot_id, options, build_config):
-  """Pull out the meat of main() in a unittest friendly manner"""
+    cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
+    cros_lib.Info(stages.BuilderStage.archive_url)
 
-  completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
+  if os.path.exists(options.buildroot):
+    with open(completed_stages_file, 'w+') as save_file:
+      stages.BuilderStage.Results.SaveCompletedStages(save_file)
 
-  if options.resume and os.path.exists(completed_stages_file):
-    with open(completed_stages_file, 'r') as load_file:
-      stages.BuilderStage.Results.RestoreCompletedStages(load_file)
+  stages.BuilderStage.Results.Report(sys.stdout)
 
-  try:
-    RunBuildStages(bot_id, options, build_config)
-    stages.BuilderStage.Results.Report(sys.stdout)
-  except Exception:
-    stages.BuilderStage.Results.Report(
-       sys.stdout,
-       exception_description=traceback.format_exc())
-
-    # Made sure cbuildbot returns an error exit code if we are failing.
-    sys.exit(1)
-  finally:
-    # An error here can override sys.exit, but we'll get a stacktrace
-    # and error out anyway
-    if os.path.exists(options.buildroot):
-      with open(completed_stages_file, 'w+') as save_file:
-        stages.BuilderStage.Results.SaveCompletedStages(save_file)
-
+  return stages.BuilderStage.Results.Success()
 
 def main():
   # Parse options
@@ -227,9 +215,10 @@ def main():
     print 'Configuration %s:' % bot_id
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(build_config)
-    exit(0)
+    sys.exit(0)
 
-  RunEverything(bot_id, options, build_config)
+  if not RunBuildStages(bot_id, options, build_config):
+    sys.exit(1)
 
 
 if __name__ == '__main__':

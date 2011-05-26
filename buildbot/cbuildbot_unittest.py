@@ -37,56 +37,6 @@ class CBuildBotTest(mox.MoxTestBase):
     self.options.archive = False
     self.options.remote_test_status = False
 
-  def testNoResultCodeReturned(self):
-    """Test a non-error run."""
-
-    self.options.resume = True
-
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cbuildbot, 'RunBuildStages')
-
-    os.path.exists(mox.IsA(str)).AndReturn(False)
-
-    cbuildbot.RunBuildStages(self.bot_id,
-                             self.options,
-                             self.build_config)
-
-    os.path.exists(mox.IsA(str)).AndReturn(False)
-
-    self.mox.ReplayAll()
-
-    cbuildbot.RunEverything(self.bot_id,
-                            self.options,
-                            self.build_config)
-
-    self.mox.VerifyAll()
-
-  # Verify bug 13035 is fixed.
-  def testResultCodeReturned(self):
-    """Verify that we return failure exit code on error."""
-
-    self.options.resume = False
-
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cbuildbot, 'RunBuildStages')
-
-    os.path.exists(mox.IsA(str)).AndReturn(False)
-
-    cbuildbot.RunBuildStages(self.bot_id,
-                             self.options,
-                             self.build_config).AndRaise(
-                                 Exception('Test Error'))
-
-    self.mox.ReplayAll()
-
-    self.assertRaises(
-        SystemExit,
-        lambda : cbuildbot.RunEverything(self.bot_id,
-                                         self.options,
-                                         self.build_config))
-
-    self.mox.VerifyAll()
-
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
 
@@ -136,10 +86,6 @@ class CBuildBotTest(mox.MoxTestBase):
     # Clean up after the test
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
-
-
-
-
 
 if __name__ == '__main__':
   unittest.main()

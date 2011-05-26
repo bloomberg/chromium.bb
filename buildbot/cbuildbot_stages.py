@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import tempfile
+import traceback
 
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.manifest_version as manifest_version
@@ -20,6 +21,9 @@ _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
 VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                             'chromeos/config/chromeos_version.sh')
+
+class BuildException(Exception):
+  pass
 
 class BuilderStage():
   """Parent class for stages to be performed by a builder."""
@@ -45,8 +49,11 @@ class BuilderStage():
     """Static class that collects the results of our BuildStages as they run."""
 
     # List of results for all stages that's built up as we run. Members are of
-    #  the form ('name', None or e)
+    #  the form ('name', SUCCESS | SKIPPED | Exception, None | description)
     _results_log = []
+
+    # Stages run in a previous run and restored. Stored as a list of
+    # stage names.
     _previous = []
 
     # Stored in the results log for a stage skipped because it was previously
@@ -67,21 +74,41 @@ class BuilderStage():
          Returns:
            A boolean showing the stage was successful in the previous run.
       """
-
       return name in cls._previous
 
     @classmethod
-    def Record(cls, name, exception):
-      """Store off an additional stage result."""
-      cls._results_log.append((name, exception))
+    def Success(cls):
+      """Return true if all stages so far have passed."""
+      for entry in cls._results_log:
+        _, result, _ = entry
+
+        if not result in (cls.SUCCESS, cls.SKIPPED):
+          return False
+
+      return True
+
+    @classmethod
+    def Record(cls, name, result, description=None):
+      """Store off an additional stage result.
+
+         Args:
+           name: The name of the stage
+           result:
+             Result should be one of:
+               Results.SUCCESS if the stage was successful.
+               Results.SKIPPED if the stage was completed in a previous run.
+               The exception the stage errored with.
+           description:
+             The textual backtrace of the exception, or None
+      """
+      cls._results_log.append((name, result, description))
 
     @classmethod
     def Get(cls):
       """Fetch stage results.
 
          Returns:
-           A list with one entry per stage run with members of the form
-          ('name', None or Exception)
+           A list with one entry per stage run with a result.
       """
       return cls._results_log
 
@@ -90,15 +117,25 @@ class BuilderStage():
       """Fetch stage results.
 
          Returns:
-           A list with one entry per stage run with members of the form
-          ('name', None or Exception)
+           A list of stages names that were completed in a previous run.
       """
       return cls._previous
 
     @classmethod
+    def Error(cls):
+      """If if there has been an error in any stage"""
+      for stage in cls._results_log:
+        _, result, _ = stage
+
+        if result not in (cls.SUCCESS, cls.SKIPPED):
+          return True
+
+      return False
+
+    @classmethod
     def SaveCompletedStages(cls, file):
       """Save out the successfully completed stages to the provided file."""
-      for name, result in cls._results_log:
+      for name, result, _ in cls._results_log:
         if result != cls.SUCCESS and result != cls.SKIPPED: break
         file.write(name)
         file.write('\n')
@@ -110,7 +147,7 @@ class BuilderStage():
       cls._previous = [line.strip() for line in file.readlines()]
 
     @classmethod
-    def Report(cls, file, exception_description=None):
+    def Report(cls, file):
       """Generate a user friendly text display of the results data."""
       results = cls._results_log
 
@@ -127,7 +164,9 @@ class BuilderStage():
       file.write(line)
       file.write(edge + ' Stage Results\n')
 
-      for name, result in results:
+      first_exception = None
+
+      for name, result, description in results:
         file.write(line)
 
         if result == cls.SUCCESS:
@@ -138,24 +177,28 @@ class BuilderStage():
           # The stage was executed previously, and skipped this time
           file.write('%s %s previously completed\n' %
                      (edge, name))
-
-        elif type(result) in (cros_lib.RunCommandException,
-                              cros_lib.RunCommandError):
-          # If there was a RunCommand error, give just the command that failed,
-          # not it's full argument list, since those are usually too long.
-          file.write('%s %s failed in %s\n' %
-                     (edge, name, result.cmd[0]))
         else:
-          # There was a normal error, give the type of exception
-          file.write('%s %s failed with %s\n' %
-                     (edge, name, type(result).__name__))
+          if type(result) in (cros_lib.RunCommandException,
+                              cros_lib.RunCommandError):
+            # If there was a RunCommand error, give just the command that
+            # failed, not it's full argument list, since those are usually
+            # too long.
+            file.write('%s %s failed in %s\n' %
+                       (edge, name, result.cmd[0]))
+          else:
+            # There was a normal error, give the type of exception
+            file.write('%s %s failed with %s\n' %
+                       (edge, name, type(result).__name__))
+
+          if not first_exception:
+            first_exception = description
 
       file.write(line)
-      if exception_description:
+      if first_exception:
         file.write('\n')
         file.write('Build failed with:\n')
         file.write('\n')
-        file.write(exception_description)
+        file.write(first_exception)
 
   def __init__(self, bot_id, options, build_config):
     self._bot_id = bot_id
@@ -280,8 +323,12 @@ class BuilderStage():
     try:
       self._PerformStage()
     except Exception as e:
-      self.Results.Record(self._name, e)
-      raise
+      # Tell the user about the exception, and record it
+      description = traceback.format_exc()
+      print >> sys.stderr, description
+      self.Results.Record(self._name, e, description)
+
+      raise BuildException()
     else:
       self.Results.Record(self._name, self.Results.SUCCESS)
     finally:
