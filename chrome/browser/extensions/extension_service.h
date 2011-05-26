@@ -593,6 +593,10 @@ class ExtensionService
   void RegisterNaClModule(const GURL& url, const std::string& mime_type);
   void UnregisterNaClModule(const GURL& url);
 
+  // Call UpdatePluginListWithNaClModules() after registering or unregistering
+  // a NaCl module to see those changes reflected in the PluginList.
+  void UpdatePluginListWithNaClModules();
+
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
   base::WeakPtrFactory<ExtensionService> weak_ptr_factory_;
@@ -716,9 +720,6 @@ class ExtensionService
   bool external_extension_url_added_;
 
   NaClModuleInfoList nacl_module_list_;
-
-  // The back end needs to reference nacl_module_list_.
-  friend class ExtensionServiceBackend;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

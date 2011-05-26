@@ -179,11 +179,6 @@ class ExtensionServiceBackend
   // (presumably into memory) without installing it.
   void LoadSingleExtension(const FilePath &path);
 
-  // Update the PluginList after NaCl modules are loaded or unloaded. Since
-  // this could cause file IO, make this a back end task.
-  void UpdatePluginListWithNaClModules(
-    const ExtensionService::NaClModuleInfoList& nacl_module_list);
-
  private:
   friend class base::RefCountedThreadSafe<ExtensionServiceBackend>;
 
@@ -254,34 +249,6 @@ void ExtensionServiceBackend::LoadSingleExtension(const FilePath& path_in) {
               &ExtensionServiceBackend::OnExtensionInstalled,
               extension)))
     NOTREACHED();
-}
-
-void ExtensionServiceBackend::UpdatePluginListWithNaClModules(
-    const ExtensionService::NaClModuleInfoList& nacl_module_list) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  FilePath path;
-  PathService::Get(chrome::FILE_NACL_PLUGIN, &path);
-
-  webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(path);
-
-  const PepperPluginInfo* pepper_info =
-      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(path);
-  webkit::npapi::WebPluginInfo info = pepper_info->ToWebPluginInfo();
-
-  DCHECK(nacl_module_list.size() <= 1);
-  for (ExtensionService::NaClModuleInfoList::const_iterator iter =
-      nacl_module_list.begin(); iter != nacl_module_list.end(); ++iter) {
-    webkit::npapi::WebPluginMimeType mime_type_info;
-    mime_type_info.mime_type = iter->mime_type;
-    mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
-    mime_type_info.additional_param_values.push_back(
-        UTF8ToUTF16(iter->url.spec()));
-    info.mime_types.push_back(mime_type_info);
-  }
-
-  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
 }
 
 void ExtensionServiceBackend::ReportExtensionLoadError(
@@ -1232,15 +1199,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     nacl_modules_changed = true;
   }
 
-  if (nacl_modules_changed) {
-    if (!BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
-            NewRunnableMethod(
-                backend_.get(),
-                &ExtensionServiceBackend::UpdatePluginListWithNaClModules,
-                nacl_module_list_)))
-      NOTREACHED();
-  }
+  if (nacl_modules_changed)
+    UpdatePluginListWithNaClModules();
 
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(false);
@@ -1304,15 +1264,8 @@ void ExtensionService::NotifyExtensionUnloaded(
     nacl_modules_changed = true;
   }
 
-  if (nacl_modules_changed) {
-    if (!BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
-            NewRunnableMethod(
-                backend_.get(),
-                &ExtensionServiceBackend::UpdatePluginListWithNaClModules,
-                nacl_module_list_)))
-      NOTREACHED();
-  }
+  if (nacl_modules_changed)
+    UpdatePluginListWithNaClModules();
 
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(false);
@@ -2264,6 +2217,41 @@ void ExtensionService::UnregisterNaClModule(const GURL& url) {
   NaClModuleInfoList::iterator iter = FindNaClModule(url);
   DCHECK(iter != nacl_module_list_.end());
   nacl_module_list_.erase(iter);
+}
+
+void ExtensionService::UpdatePluginListWithNaClModules() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  FilePath path;
+  PathService::Get(chrome::FILE_NACL_PLUGIN, &path);
+
+  webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(path);
+
+  const PepperPluginInfo* pepper_info = NULL;
+  std::vector<PepperPluginInfo> plugins;
+  PepperPluginRegistry::ComputeList(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (path == plugins[i].path) {
+      pepper_info = &plugins[i];
+      break;
+    }
+  }
+  CHECK(pepper_info);
+  webkit::npapi::WebPluginInfo info = pepper_info->ToWebPluginInfo();
+
+  DCHECK(nacl_module_list_.size() <= 1);
+  for (ExtensionService::NaClModuleInfoList::const_iterator iter =
+      nacl_module_list_.begin(); iter != nacl_module_list_.end(); ++iter) {
+    webkit::npapi::WebPluginMimeType mime_type_info;
+    mime_type_info.mime_type = iter->mime_type;
+    mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
+    mime_type_info.additional_param_values.push_back(
+        UTF8ToUTF16(iter->url.spec()));
+    info.mime_types.push_back(mime_type_info);
+  }
+
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
 }
 
 ExtensionService::NaClModuleInfoList::iterator
