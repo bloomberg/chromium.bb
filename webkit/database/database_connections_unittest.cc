@@ -81,11 +81,18 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
   EXPECT_FALSE(connections.IsDatabaseOpened(kOriginId, kName2));
   EXPECT_TRUE(connections.IsDatabaseOpened(kOriginId, kName));
   EXPECT_EQ(kSize, connections.GetOpenDatabaseSize(kOriginId, kName));
-
+  another.RemoveAllConnections();
   connections.RemoveAllConnections();
   EXPECT_TRUE(connections.IsEmpty());
 
-  another.RemoveAllConnections();
+  // Ensure the return value properly indicates the initial
+  // addition and final removal.
+  EXPECT_TRUE(connections.AddConnection(kOriginId, kName));
+  EXPECT_FALSE(connections.AddConnection(kOriginId, kName));
+  EXPECT_FALSE(connections.AddConnection(kOriginId, kName));
+  EXPECT_FALSE(connections.RemoveConnection(kOriginId, kName));
+  EXPECT_FALSE(connections.RemoveConnection(kOriginId, kName));
+  EXPECT_TRUE(connections.RemoveConnection(kOriginId, kName));
 }
 
 TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {

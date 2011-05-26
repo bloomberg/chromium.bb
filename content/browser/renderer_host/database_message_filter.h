@@ -66,8 +66,7 @@ class DatabaseMessageFilter
   // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
                                      const string16& database_name,
-                                     int64 database_size,
-                                     int64 space_available);
+                                     int64 database_size);
   virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
                                               const string16& database_name);
 

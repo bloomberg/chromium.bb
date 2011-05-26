@@ -21,7 +21,6 @@
 #include "webkit/database/database_quota_client.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/databases_table.h"
-#include "webkit/database/quota_table.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -51,13 +50,11 @@ static const int kCompatibleVersion = 1;
 static const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
 OriginInfo::OriginInfo()
-    : total_size_(0),
-      quota_(0) {}
+    : total_size_(0) {}
 
 OriginInfo::OriginInfo(const OriginInfo& origin_info)
     : origin_(origin_info.origin_),
       total_size_(origin_info.total_size_),
-      quota_(origin_info.quota_),
       database_info_(origin_info.database_info_) {}
 
 OriginInfo::~OriginInfo() {}
@@ -84,8 +81,8 @@ string16 OriginInfo::GetDatabaseDescription(
   return string16();
 }
 
-OriginInfo::OriginInfo(const string16& origin, int64 total_size, int64 quota)
-    : origin_(origin), total_size_(total_size), quota_(quota) {}
+OriginInfo::OriginInfo(const string16& origin, int64 total_size)
+    : origin_(origin), total_size_(total_size) {}
 
 DatabaseTracker::DatabaseTracker(
     const FilePath& profile_path,
@@ -103,7 +100,6 @@ DatabaseTracker::DatabaseTracker(
       db_(new sql::Connection()),
       databases_table_(NULL),
       meta_table_(NULL),
-      default_quota_(5 * 1024 * 1024),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
       incognito_origin_directories_generator_(0) {
@@ -118,66 +114,37 @@ DatabaseTracker::~DatabaseTracker() {
   DCHECK(deletion_callbacks_.empty());
 }
 
-void DatabaseTracker::SetDefaultQuota(int64 quota) {
-  default_quota_ = quota;
-  ClearAllCachedOriginInfo();
-}
-
 void DatabaseTracker::DatabaseOpened(const string16& origin_identifier,
                                      const string16& database_name,
                                      const string16& database_description,
                                      int64 estimated_size,
-                                     int64* database_size,
-                                     int64* space_available) {
+                                     int64* database_size) {
   if (!LazyInit()) {
     *database_size = 0;
-    *space_available = 0;
     return;
   }
 
-  InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
-                                database_description, estimated_size);
-  database_connections_.AddConnection(origin_identifier, database_name);
-
-  CachedOriginInfo* info = GetCachedOriginInfo(origin_identifier);
-  *database_size = (info ? info->GetDatabaseSize(database_name) : 0);
-  *space_available = GetOriginSpaceAvailable(origin_identifier);
-
-  if (quota_manager_proxy_) {
-    // So we can compute deltas as modifications are made.
-    database_connections_.SetOpenDatabaseSize(
-        origin_identifier, database_name, *database_size);
+  if (quota_manager_proxy_)
     quota_manager_proxy_->NotifyStorageAccessed(
         quota::QuotaClient::kDatabase,
         DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
         quota::kStorageTypeTemporary);
+
+  InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
+                                database_description, estimated_size);
+  if (database_connections_.AddConnection(origin_identifier, database_name)) {
+    *database_size = SeedOpenDatabaseSize(origin_identifier, database_name);
+    return;
   }
+  *database_size  = UpdateOpenDatabaseSizeAndNotify(origin_identifier,
+                                                    database_name);
 }
 
 void DatabaseTracker::DatabaseModified(const string16& origin_identifier,
                                        const string16& database_name) {
   if (!LazyInit())
     return;
-
-  int64 new_size =
-      UpdateCachedDatabaseFileSize(origin_identifier, database_name);
-  int64 space_available = GetOriginSpaceAvailable(origin_identifier);
-  FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseSizeChanged(
-      origin_identifier, database_name, new_size, space_available));
-
-  if (quota_manager_proxy_) {
-    int64 old_size = database_connections_.GetOpenDatabaseSize(
-        origin_identifier, database_name);
-    if (old_size != new_size) {
-      database_connections_.SetOpenDatabaseSize(
-          origin_identifier, database_name, new_size);
-      quota_manager_proxy_->NotifyStorageModified(
-          quota::QuotaClient::kDatabase,
-          DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
-          quota::kStorageTypeTemporary,
-          new_size - old_size);
-    }
-  }
+  UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
 }
 
 void DatabaseTracker::DatabaseClosed(const string16& origin_identifier,
@@ -186,8 +153,17 @@ void DatabaseTracker::DatabaseClosed(const string16& origin_identifier,
     DCHECK(!is_initialized_);
     return;
   }
-  database_connections_.RemoveConnection(origin_identifier, database_name);
-  if (!database_connections_.IsDatabaseOpened(origin_identifier, database_name))
+
+  // We call NotifiyStorageAccessed when a db is opened and also when
+  // closed because we don't call it for read while open.
+  if (quota_manager_proxy_)
+    quota_manager_proxy_->NotifyStorageAccessed(
+        quota::QuotaClient::kDatabase,
+        DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+        quota::kStorageTypeTemporary);
+
+  UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
+  if (database_connections_.RemoveConnection(origin_identifier, database_name))
     DeleteDatabaseIfNeeded(origin_identifier, database_name);
 }
 
@@ -197,31 +173,17 @@ void DatabaseTracker::CloseDatabases(const DatabaseConnections& connections) {
     return;
   }
 
-  if (quota_manager_proxy_) {
-    // When being closed by this route, there's a chance that
-    // the tracker missed some DatabseModified calls. This method is used
-    // when a renderer crashes to cleanup it's open resources.
-    // We need to examine what we have in connections for the
-    // size of each open databases and notify any differences between the
-    // actual file sizes now.
-    std::vector<std::pair<string16, string16> > open_dbs;
-    connections.ListConnections(&open_dbs);
-    for (std::vector<std::pair<string16, string16> >::iterator it =
-             open_dbs.begin(); it != open_dbs.end(); ++it) {
-      int64 old_size = database_connections_.GetOpenDatabaseSize(
-          it->first, it->second);
-      int64 new_size = GetDBFileSize(it->first, it->second);
-      if (new_size != old_size) {
-        database_connections_.SetOpenDatabaseSize(
-            it->first, it->second, new_size);
-        quota_manager_proxy_->NotifyStorageModified(
-            quota::QuotaClient::kDatabase,
-            DatabaseUtil::GetOriginFromIdentifier(it->first),
-            quota::kStorageTypeTemporary,
-            new_size - old_size);
-      }
-    }
-  }
+  // When being closed by this route, there's a chance that
+  // the tracker missed some DatabseModified calls. This method is used
+  // when a renderer crashes to cleanup it's open resources.
+  // We need to examine what we have in connections for the
+  // size of each open databases and notify any differences between the
+  // actual file sizes now.
+  std::vector<std::pair<string16, string16> > open_dbs;
+  connections.ListConnections(&open_dbs);
+  for (std::vector<std::pair<string16, string16> >::iterator it =
+           open_dbs.begin(); it != open_dbs.end(); ++it)
+    UpdateOpenDatabaseSizeAndNotify(it->first, it->second);
 
   std::vector<std::pair<string16, string16> > closed_dbs;
   database_connections_.RemoveConnections(connections, &closed_dbs);
@@ -283,7 +245,6 @@ void DatabaseTracker::CloseTrackerDatabaseAndClearCaches() {
   if (!is_incognito_) {
     meta_table_.reset(NULL);
     databases_table_.reset(NULL);
-    quota_table_.reset(NULL);
     db_->Close();
     is_initialized_ = false;
   }
@@ -364,18 +325,6 @@ bool DatabaseTracker::GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) {
 
   return true;
 }
-
-void DatabaseTracker::SetOriginQuota(const string16& origin_identifier,
-                                     int64 new_quota) {
-  if (!LazyInit())
-    return;
-
-  if (quota_table_->SetOriginQuota(origin_identifier, new_quota) &&
-      (origins_info_map_.find(origin_identifier) != origins_info_map_.end())) {
-    origins_info_map_[origin_identifier].SetQuota(new_quota);
-  }
-}
-
 
 bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
                                            const string16& database_name) {
@@ -471,7 +420,6 @@ bool DatabaseTracker::LazyInit() {
   if (!is_initialized_ && !shutting_down_) {
     DCHECK(!db_->is_open());
     DCHECK(!databases_table_.get());
-    DCHECK(!quota_table_.get());
     DCHECK(!meta_table_.get());
 
     // If the tracker database exists, but it's corrupt or doesn't
@@ -490,7 +438,6 @@ bool DatabaseTracker::LazyInit() {
     db_->set_error_delegate(GetErrorHandlerForTrackerDb());
 
     databases_table_.reset(new DatabasesTable(db_.get()));
-    quota_table_.reset(new QuotaTable(db_.get()));
     meta_table_.reset(new sql::MetaTable());
 
     is_initialized_ =
@@ -501,7 +448,6 @@ bool DatabaseTracker::LazyInit() {
         UpgradeToCurrentVersion();
     if (!is_initialized_) {
       databases_table_.reset(NULL);
-      quota_table_.reset(NULL);
       meta_table_.reset(NULL);
       db_->Close();
     }
@@ -514,8 +460,7 @@ bool DatabaseTracker::UpgradeToCurrentVersion() {
   if (!transaction.Begin() ||
       !meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion) ||
       (meta_table_->GetCompatibleVersionNumber() > kCurrentVersion) ||
-      !databases_table_->Init() ||
-      !quota_table_->Init())
+      !databases_table_->Init())
     return false;
 
   if (meta_table_->GetVersionNumber() < kCurrentVersion)
@@ -566,24 +511,16 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::GetCachedOriginInfo(
     origin_info.SetOrigin(origin_identifier);
     for (std::vector<DatabaseDetails>::const_iterator it = details.begin();
          it != details.end(); it++) {
-      int64 db_file_size =
-          GetDBFileSize(origin_identifier, it->database_name);
+      int64 db_file_size;
+      if (database_connections_.IsDatabaseOpened(
+              origin_identifier, it->database_name)) {
+        db_file_size = database_connections_.GetOpenDatabaseSize(
+            origin_identifier, it->database_name);
+      } else {
+        db_file_size = GetDBFileSize(origin_identifier, it->database_name);
+      }
       origin_info.SetDatabaseSize(it->database_name, db_file_size);
       origin_info.SetDatabaseDescription(it->database_name, it->description);
-    }
-
-    if (special_storage_policy_.get() &&
-        special_storage_policy_->IsStorageUnlimited(
-            DatabaseUtil::GetOriginFromIdentifier(origin_identifier))) {
-      // TODO(michaeln): handle the case where it changes status sometime after
-      // the cached origin_info has been established
-      origin_info.SetQuota(kint64max);
-    } else {
-      int64 origin_quota = quota_table_->GetOriginQuota(origin_identifier);
-      if (origin_quota > 0)
-        origin_info.SetQuota(origin_quota);
-      else
-        origin_info.SetQuota(default_quota_);
     }
   }
 
@@ -599,23 +536,34 @@ int64 DatabaseTracker::GetDBFileSize(const string16& origin_identifier,
   return db_file_size;
 }
 
-int64 DatabaseTracker::GetOriginSpaceAvailable(
-    const string16& origin_identifier) {
-  // TODO(michaeln): Come up with a value according to the the QuotaMgr.
-  CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
-  if (!origin_info)
-    return 0;
-  int64 space_available = origin_info->Quota() - origin_info->TotalSize();
-  return (space_available < 0 ? 0 : space_available);
+int64 DatabaseTracker::SeedOpenDatabaseSize(
+    const string16& origin_id, const string16& name) {
+  DCHECK(database_connections_.IsDatabaseOpened(origin_id, name));
+  int64 size = GetDBFileSize(origin_id, name);
+  database_connections_.SetOpenDatabaseSize(origin_id, name,  size);
+  if (origins_info_map_.find(origin_id) != origins_info_map_.end())
+    origins_info_map_[origin_id].SetDatabaseSize(name, size);
+  return size;
 }
 
-int64 DatabaseTracker::UpdateCachedDatabaseFileSize(
-    const string16& origin_identifier,
-    const string16& database_name) {
-  int64 new_size = GetDBFileSize(origin_identifier, database_name);
-  CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
-  if (origin_info)
-    origin_info->SetDatabaseSize(database_name, new_size);
+int64 DatabaseTracker::UpdateOpenDatabaseSizeAndNotify(
+    const string16& origin_id, const string16& name) {
+  DCHECK(database_connections_.IsDatabaseOpened(origin_id, name));
+  int64 new_size = GetDBFileSize(origin_id, name);
+  int64 old_size = database_connections_.GetOpenDatabaseSize(origin_id, name);
+  if (old_size != new_size) {
+    database_connections_.SetOpenDatabaseSize(origin_id, name, new_size);
+    if (origins_info_map_.find(origin_id) != origins_info_map_.end())
+      origins_info_map_[origin_id].SetDatabaseSize(name, new_size);
+    if (quota_manager_proxy_)
+      quota_manager_proxy_->NotifyStorageModified(
+          quota::QuotaClient::kDatabase,
+          DatabaseUtil::GetOriginFromIdentifier(origin_id),
+          quota::kStorageTypeTemporary,
+          new_size - old_size);
+    FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseSizeChanged(
+        origin_id, name, new_size));
+  }
   return new_size;
 }
 

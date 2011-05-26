@@ -72,6 +72,11 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
 
  private:
   void DidGetUsage(int64 usage) {
+    // Defend against confusing inputs from QuotaClients.
+    DCHECK_GE(usage, 0);
+    if (usage < 0)
+      usage = 0;
+
     // This code assumes DidGetUsage callbacks are called in the same
     // order as we dispatched GetOriginUsage calls.
     DCHECK(original_message_loop()->BelongsToCurrentThread());
@@ -339,6 +344,8 @@ void ClientUsageTracker::UpdateUsageCache(
   if (cached_origins_.find(origin) != cached_origins_.end()) {
     host_usage_map_[host] += delta;
     global_usage_ += delta;
+    DCHECK_GE(host_usage_map_[host], 0);
+    DCHECK_GE(global_usage_, 0);
     return;
   }
   if (global_usage_retrieved_ ||
@@ -347,6 +354,8 @@ void ClientUsageTracker::UpdateUsageCache(
     cached_origins_.insert(origin);
     host_usage_map_[host] = delta;
     global_usage_ += delta;
+    DCHECK_GE(host_usage_map_[host], 0);
+    DCHECK_GE(global_usage_, 0);
     return;
   }
   // See if the origin has been processed in outstanding gather tasks
@@ -354,11 +363,14 @@ void ClientUsageTracker::UpdateUsageCache(
   if (global_usage_task_ && global_usage_task_->IsOriginDone(origin)) {
     host_usage_map_[host] += delta;
     global_usage_ += delta;
+    DCHECK_GE(host_usage_map_[host], 0);
+    DCHECK_GE(global_usage_, 0);
     return;
   }
   if (host_usage_tasks_.find(host) != host_usage_tasks_.end() &&
       host_usage_tasks_[host]->IsOriginDone(origin)) {
     host_usage_map_[host] += delta;
+    DCHECK_GE(host_usage_map_[host], 0);
   }
   // Otherwise we have not cached usage info for the origin yet.
   // Succeeding GetUsage tasks would eventually catch the change.
@@ -377,6 +389,8 @@ void ClientUsageTracker::DidGetGlobalUsage(
       global_usage_ += iter->second;
       std::string host = net::GetHostOrSpecFromURL(iter->first);
       host_usage_map_[host] += iter->second;
+      DCHECK_GE(host_usage_map_[host], 0);
+      DCHECK_GE(global_usage_, 0);
     }
   }
 
@@ -409,6 +423,8 @@ void ClientUsageTracker::DidGetHostUsage(
     if (cached_origins_.insert(iter->first).second) {
       global_usage_ += iter->second;
       host_usage_map_[host] += iter->second;
+      DCHECK_GE(host_usage_map_[host], 0);
+      DCHECK_GE(global_usage_, 0);
     }
   }
 

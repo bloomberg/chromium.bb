@@ -38,14 +38,15 @@ bool DatabaseConnections::IsOriginUsed(
   return (connections_.find(origin_identifier) != connections_.end());
 }
 
-void DatabaseConnections::AddConnection(const string16& origin_identifier,
+bool DatabaseConnections::AddConnection(const string16& origin_identifier,
                                         const string16& database_name) {
-  connections_[origin_identifier][database_name].first++;
+  int& count = connections_[origin_identifier][database_name].first;
+  return ++count == 1;
 }
 
-void DatabaseConnections::RemoveConnection(const string16& origin_identifier,
+bool DatabaseConnections::RemoveConnection(const string16& origin_identifier,
                                            const string16& database_name) {
-  RemoveConnectionsHelper(origin_identifier, database_name, 1);
+  return RemoveConnectionsHelper(origin_identifier, database_name, 1);
 }
 
 void DatabaseConnections::RemoveAllConnections() {
@@ -62,9 +63,8 @@ void DatabaseConnections::RemoveConnections(
     const DBConnections& db_connections = origin_it->second;
     for (DBConnections::const_iterator db_it = db_connections.begin();
          db_it != db_connections.end(); db_it++) {
-      RemoveConnectionsHelper(origin_it->first, db_it->first,
-                              db_it->second.first);
-      if (!IsDatabaseOpened(origin_it->first, db_it->first))
+      if (RemoveConnectionsHelper(origin_it->first, db_it->first,
+                                  db_it->second.first))
         closed_dbs->push_back(std::make_pair(origin_it->first, db_it->first));
     }
   }
@@ -99,7 +99,7 @@ void DatabaseConnections::ListConnections(
   }
 }
 
-void DatabaseConnections::RemoveConnectionsHelper(
+bool DatabaseConnections::RemoveConnectionsHelper(
     const string16& origin_identifier,
     const string16& database_name,
     int num_connections) {
@@ -110,11 +110,12 @@ void DatabaseConnections::RemoveConnectionsHelper(
   int& count = db_connections[database_name].first;
   DCHECK(count >= num_connections);
   count -= num_connections;
-  if (!count) {
-    db_connections.erase(database_name);
-    if (db_connections.empty())
-      connections_.erase(origin_iterator);
-  }
+  if (count)
+    return false;
+  db_connections.erase(database_name);
+  if (db_connections.empty())
+    connections_.erase(origin_iterator);
+  return true;
 }
 
 DatabaseConnectionsWrapper::DatabaseConnectionsWrapper()

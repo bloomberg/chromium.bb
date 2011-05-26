@@ -2698,9 +2698,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   string16 db_name = UTF8ToUTF16("db");
   string16 description = UTF8ToUTF16("db_description");
   int64 size;
-  int64 available;
-  db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size,
-                             &available);
+  db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
   db_tracker->DatabaseClosed(origin_id, db_name);
   std::vector<webkit_database::OriginInfo> origins;
   db_tracker->GetAllOriginsInfo(&origins);
@@ -3351,38 +3349,12 @@ TEST_F(ExtensionServiceTest, StorageQuota) {
   ASSERT_EQ(3u, loaded_.size());
   EXPECT_TRUE(profile_.get());
   EXPECT_FALSE(profile_->IsOffTheRecord());
-
-  // Open the database from each origin to make the tracker aware
-  // of the existence of these origins and to get their quotas.
-  int64 limited_quota = -1;
-  int64 unlimited_quota = -1;
-  string16 limited_quota_identifier =
-      webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[0]->url());
-  string16 unlimited_quota_identifier =
-      webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[1]->url());
-  string16 unlimited_quota_identifier2 =
-      webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[2]->url());
-  string16 db_name = UTF8ToUTF16("db");
-  string16 description = UTF8ToUTF16("db_description");
-  int64 database_size;
-  webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
-
-  // First check the normal limited quota extension.
-  db_tracker->DatabaseOpened(limited_quota_identifier, db_name, description,
-                             1, &database_size, &limited_quota);
-  db_tracker->DatabaseClosed(limited_quota_identifier, db_name);
-  EXPECT_EQ(profile_->GetDatabaseTracker()->GetDefaultQuota(), limited_quota);
-
-  // Now check the two unlimited quota ones.
-  db_tracker->DatabaseOpened(unlimited_quota_identifier, db_name, description,
-                             1, &database_size, &unlimited_quota);
-  db_tracker->DatabaseClosed(unlimited_quota_identifier, db_name);
-  EXPECT_EQ(kint64max, unlimited_quota);
-  db_tracker->DatabaseOpened(unlimited_quota_identifier2, db_name, description,
-                             1, &database_size, &unlimited_quota);
-  db_tracker->DatabaseClosed(unlimited_quota_identifier2, db_name);
-
-  EXPECT_EQ(kint64max, unlimited_quota);
+  EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
+      loaded_[0]->url()));
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
+      loaded_[1]->url()));
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
+      loaded_[2]->url()));
 }
 
 // Tests ExtensionService::register_component_extension().

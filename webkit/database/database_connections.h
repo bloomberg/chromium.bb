@@ -27,10 +27,15 @@ class DatabaseConnections {
   bool IsDatabaseOpened(const string16& origin_identifier,
                         const string16& database_name) const;
   bool IsOriginUsed(const string16& origin_identifier) const;
-  void AddConnection(const string16& origin_identifier,
+
+  // Returns true if this is the first connection.
+  bool AddConnection(const string16& origin_identifier,
                      const string16& database_name);
-  void RemoveConnection(const string16& origin_identifier,
+
+  // Returns true if the last connection was removed.
+  bool RemoveConnection(const string16& origin_identifier,
                         const string16& database_name);
+
   void RemoveAllConnections();
   void RemoveConnections(
       const DatabaseConnections& connections,
@@ -53,7 +58,8 @@ class DatabaseConnections {
   typedef std::map<string16, DBConnections> OriginConnections;
   mutable OriginConnections connections_;  // mutable for GetOpenDatabaseSize
 
-  void RemoveConnectionsHelper(const string16& origin_identifier,
+  // Returns true if the last connection was removed.
+  bool RemoveConnectionsHelper(const string16& origin_identifier,
                                const string16& database_name,
                                int num_connections);
 };

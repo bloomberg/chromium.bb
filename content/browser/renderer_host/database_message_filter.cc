@@ -296,10 +296,8 @@ void DatabaseMessageFilter::OnDatabaseOpened(const string16& origin_identifier,
                                              int64 estimated_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 database_size = 0;
-  int64 space_available_not_used = 0;
   db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
-                              estimated_size, &database_size,
-                              &space_available_not_used);
+                              estimated_size, &database_size);
   database_connections_.AddConnection(origin_identifier, database_name);
   Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,
                                   database_size));
@@ -336,8 +334,7 @@ void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
 void DatabaseMessageFilter::OnDatabaseSizeChanged(
     const string16& origin_identifier,
     const string16& database_name,
-    int64 database_size,
-    int64 space_available_not_used) {
+    int64 database_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (database_connections_.IsOriginUsed(origin_identifier)) {
     Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,
