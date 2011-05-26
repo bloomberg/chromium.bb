@@ -37,6 +37,18 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   return base::SysUTF16ToNSString(title);
 }
 
++ (NSString*)tooltipForNode:(const BookmarkNode*)node {
+  NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+  std::string url_string = node->GetURL().possibly_invalid_spec();
+  NSString* url = [NSString stringWithUTF8String:url_string.c_str()];
+  if ([title length] == 0)
+    return url;
+  else if ([url length] == 0 || [url isEqualToString:title])
+    return title;
+  else
+    return [NSString stringWithFormat:@"%@\n%@", title, url];
+}
+
 - (id)initWithBridge:(BookmarkMenuBridge *)bridge {
   if ((self = [super init])) {
     bridge_ = bridge;

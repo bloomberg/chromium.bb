@@ -226,8 +226,8 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToMenu) {
   // Confirm tooltips and confirm they are not trimmed (like the item
   // name might be).  Add tolerance for URL fixer-upping;
   // e.g. http://foo becomes http://foo/)
-  EXPECT_GE([[short_item toolTip] length], (2*strlen(short_url) - 5));
-  EXPECT_GE([[long_item toolTip] length], (2*strlen(long_url) - 5));
+  EXPECT_GE([[short_item toolTip] length], strlen(short_url) - 3);
+  EXPECT_GE([[long_item toolTip] length], strlen(long_url) - 3);
 
   // Make sure the favicon is non-nil (should be either the default site
   // icon or a favicon, if present).

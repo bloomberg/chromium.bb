@@ -1148,7 +1148,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [item setAction:@selector(openBookmarkMenuItem:)];
     [item setTag:[self menuTagFromNodeId:child->id()]];
     if (child->is_url())
-      [item setToolTip:[self tooltipForNode:child]];
+      [item setToolTip:[BookmarkMenuCocoaController tooltipForNode:child]];
   }
 }
 
@@ -1228,17 +1228,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   }
 }
 
-- (NSString*)tooltipForNode:(const BookmarkNode*)node {
-  NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-  std::string url_string = node->GetURL().possibly_invalid_spec();
-  NSString* url = [NSString stringWithUTF8String:url_string.c_str()];
-  if ([title length] == 0)
-    return url;
-  else if ([url length] == 0 || [url isEqualToString:title])
-    return title;
-  else
-    return [NSString stringWithFormat:@"%@\n%@", title, url];
-}
 
 - (BookmarkButton*)buttonForNode:(const BookmarkNode*)node
                          xOffset:(int*)xOffset {
@@ -1280,7 +1269,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [button setTarget:self];
     [button setAction:@selector(openBookmark:)];
     if (node->is_url())
-      [button setToolTip:[self tooltipForNode:node]];
+      [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
   }
   return [[button.get() retain] autorelease];
 }

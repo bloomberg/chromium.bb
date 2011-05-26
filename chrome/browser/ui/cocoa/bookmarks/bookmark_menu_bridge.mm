@@ -272,21 +272,13 @@ void BookmarkMenuBridge::AddItemToMenu(int command_id,
 void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
                                            NSMenuItem* item,
                                            bool set_title) {
-  if (set_title) {
-    NSString* title = [BookmarkMenuCocoaController menuTitleForNode:node];
-    [item setTitle:title];
-  }
+  if (set_title)
+    [item setTitle:[BookmarkMenuCocoaController menuTitleForNode:node]];
   [item setTarget:controller_];
   [item setAction:@selector(openBookmarkMenuItem:)];
   [item setTag:node->id()];
-  if (node->is_url()) {
-    // Add a tooltip
-    std::string url_string = node->GetURL().possibly_invalid_spec();
-    NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                         base::SysUTF16ToNSString(node->GetTitle()),
-                         url_string.c_str()];
-    [item setToolTip:tooltip];
-  }
+  if (node->is_url())
+    [item setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
   // Check to see if we have a favicon.
   NSImage* favicon = nil;
   BookmarkModel* model = GetBookmarkModel();

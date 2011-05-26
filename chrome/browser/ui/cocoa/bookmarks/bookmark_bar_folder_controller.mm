@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #include "ui/base/theme_provider.h"
@@ -389,7 +390,7 @@ struct LayoutMetrics {
       [button setTarget:self];
       [button setAction:@selector(openBookmark:)];
       // Add a tooltip.
-      [button setToolTip:[barController_ tooltipForNode:node]];
+      [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
       [button setAcceptsTrackIn:YES];
     }
   } else {

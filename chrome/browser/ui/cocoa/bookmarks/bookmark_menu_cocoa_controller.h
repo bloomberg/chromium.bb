@@ -30,6 +30,9 @@ class BookmarkMenuBridge;
 // given bookmark node.
 + (NSString*)menuTitleForNode:(const BookmarkNode*)node;
 
+// Make a relevant tooltip string for node.
++ (NSString*)tooltipForNode:(const BookmarkNode*)node;
+
 - (id)initWithBridge:(BookmarkMenuBridge *)bridge;
 
 // Called by any Bookmark menu item.
