@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
-#define CONTENT_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef CONTENT_COMMON_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
+#define CONTENT_COMMON_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <dlfcn.h>
 #include <map>
@@ -30,19 +30,24 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   virtual ~OmxVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
-  const std::vector<uint32>& GetConfig(
-      const std::vector<uint32>& prototype_config);
-  bool Initialize(const std::vector<uint32>& config);
-  bool Decode(const media::BitstreamBuffer& bitstream_buffer,
-              const media::VideoDecodeAcceleratorCallback& callback);
-  void AssignPictureBuffer(std::vector<PictureBuffer*> picture_buffers);
-  void ReusePictureBuffer(int32 picture_buffer_id);
-  bool Flush(const media::VideoDecodeAcceleratorCallback& callback);
-  bool Abort(const media::VideoDecodeAcceleratorCallback& callback);
+  void GetConfigs(const std::vector<uint32>& requested_configs,
+                  std::vector<uint32>* matched_configs) OVERRIDE;
+  bool Initialize(const std::vector<uint32>& config) OVERRIDE;
+  bool Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
+  virtual void AssignGLESBuffers(
+      const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
+  virtual void AssignSysmemBuffers(
+      const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
+  void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
+  bool Flush() OVERRIDE;
+  bool Abort() OVERRIDE;
 
  private:
   MessageLoop* message_loop_;
   OMX_HANDLETYPE component_handle_;
+
+  // Common initialization code for Assign{GLES,Sysmem}Buffers.
+  void AssignBuffersHelper(const std::vector<media::BaseBuffer*>& buffers);
 
   // Create the Component for OMX. Handles all OMX initialization.
   bool CreateComponent();
@@ -102,17 +107,12 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::queue<OMX_BUFFERHEADERTYPE*> free_input_buffers_;
 
   // For output buffer recycling cases.
-  std::vector<media::VideoDecodeAccelerator::PictureBuffer*>
-      assigned_picture_buffers_;
-  typedef std::pair<PictureBuffer*,
-                    OMX_BUFFERHEADERTYPE*> OutputPicture;
+  std::vector<media::BaseBuffer*> assigned_picture_buffers_;
+  typedef std::pair<int32, OMX_BUFFERHEADERTYPE*> OutputPicture;
   std::vector<OutputPicture> output_pictures_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
   Client* client_;
-
-  media::VideoDecodeAcceleratorCallback flush_done_callback_;
-  media::VideoDecodeAcceleratorCallback abort_done_callback_;
 
   std::vector<uint32> texture_ids_;
   std::vector<uint32> context_ids_;
@@ -127,14 +127,10 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // Method to receive buffers from component's output port
   void FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer);
   typedef std::pair<OMX_BUFFERHEADERTYPE*, uint32> OMXbufferTexture;
-  // void pointer to hold EGLImage handle.
-  void* egl_image_;
 
-  typedef std::map<
-    OMX_BUFFERHEADERTYPE*,
-    std::pair<base::SharedMemory*,
-              media::VideoDecodeAcceleratorCallback> > OMXBufferCallbackMap;
-  OMXBufferCallbackMap omx_buff_cb_;
+  typedef std::map<OMX_BUFFERHEADERTYPE*,
+                   std::pair<base::SharedMemory*, int32> > OMXBufferIdMap;
+  OMXBufferIdMap omx_buff_ids_;
 
   // Method used the change the state of the port.
   void ChangePort(OMX_COMMANDTYPE cmd, int port_index);
@@ -162,4 +158,4 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
                                           OMX_BUFFERHEADERTYPE* buffer);
 };
 
-#endif  // CONTENT_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // CONTENT_COMMON_GPU_OMX_VIDEO_DECODE_ACCELERATOR_H_

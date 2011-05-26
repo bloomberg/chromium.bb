@@ -108,7 +108,7 @@ void GpuVideoDecodeAccelerator::OnGetConfigs(
 
 void GpuVideoDecodeAccelerator::OnInitialize(
     const std::vector<uint32>& configs) {
-  if (!video_decode_accelerator_)
+  if (!video_decode_accelerator_.get())
     return;
 
   video_decode_accelerator_->Initialize(configs);
@@ -117,7 +117,7 @@ void GpuVideoDecodeAccelerator::OnInitialize(
 void GpuVideoDecodeAccelerator::OnDecode(int32 id,
                                          base::SharedMemoryHandle handle,
                                          int32 size) {
-  if (!video_decode_accelerator_)
+  if (!video_decode_accelerator_.get())
     return;
   video_decode_accelerator_->Decode(media::BitstreamBuffer(id, handle, size));
 }
@@ -140,14 +140,14 @@ void GpuVideoDecodeAccelerator::OnAssignSysmemBuffers(
 }
 
 void GpuVideoDecodeAccelerator::OnReusePictureBuffer(int32 picture_buffer_id) {
-  if (!video_decode_accelerator_)
+  if (!video_decode_accelerator_.get())
     return;
 
   video_decode_accelerator_->ReusePictureBuffer(picture_buffer_id);
 }
 
 void GpuVideoDecodeAccelerator::OnFlush() {
-  if (!video_decode_accelerator_)
+  if (!video_decode_accelerator_.get())
     return;
 
   if (!video_decode_accelerator_->Flush()) {
@@ -157,7 +157,7 @@ void GpuVideoDecodeAccelerator::OnFlush() {
 }
 
 void GpuVideoDecodeAccelerator::OnAbort() {
-  if (!video_decode_accelerator_)
+  if (!video_decode_accelerator_.get())
     return;
 
   video_decode_accelerator_->Abort();

@@ -46,7 +46,8 @@ class GpuVideoDecodeAccelerator
 
   void set_video_decode_accelerator(
       media::VideoDecodeAccelerator* accelerator) {
-    video_decode_accelerator_ = accelerator;
+    DCHECK(!video_decode_accelerator_.get());
+    video_decode_accelerator_.reset(accelerator);
   }
 
  private:
@@ -73,7 +74,7 @@ class GpuVideoDecodeAccelerator
   int32 route_id_;
 
   // Pointer to the underlying VideoDecodeAccelerator.
-  media::VideoDecodeAccelerator* video_decode_accelerator_;
+  scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };

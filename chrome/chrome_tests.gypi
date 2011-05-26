@@ -3470,22 +3470,6 @@
         # '<(DEPTH)/ui/gfx/size.cc',
         # '<(DEPTH)/ui/gfx/size.h',
       # ],
-      # 'conditions': [
-        # ['target_arch=="arm"', {
-          # 'sources': [
-            # '<(DEPTH)/content/gpu/gles2_texture_to_egl_image_translator.cc',
-            # '<(DEPTH)/content/gpu/gles2_texture_to_egl_image_translator.h',
-            # '<(DEPTH)/content/gpu/omx_video_decode_accelerator.cc',
-            # '<(DEPTH)/content/gpu/omx_video_decode_accelerator.h',
-          # ],
-          # 'link_settings': {
-            # 'libraries': [
-              # '-lEGL',
-              # '-lGLESv2',
-            # ],
-          # },
-        # }],
-      # ],
     # },
     {
       'target_name': 'plugin_tests',

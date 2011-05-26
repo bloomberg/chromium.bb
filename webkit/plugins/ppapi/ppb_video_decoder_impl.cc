@@ -413,7 +413,7 @@ void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
 // These functions are declared in picture.h but are defined here because of
 // dependencies (we can't depend on ppapi types from media).
 namespace media {
-BufferInfo::BufferInfo(const PP_BufferInfo_Dev& info)
+BaseBuffer::BaseBuffer(const PP_BufferInfo_Dev& info)
     : id_(info.id),
       size_(info.size.width, info.size.height) {
 }
@@ -421,13 +421,13 @@ BufferInfo::BufferInfo(const PP_BufferInfo_Dev& info)
 // TODO(vrk): This assigns the PP_Resource context to be
 // the context_id. Not sure what it's actually supposed to be.
 GLESBuffer::GLESBuffer(const PP_GLESBuffer_Dev& buffer)
-    : texture_id_(buffer.texture_id),
-      context_id_(buffer.context),
-      info_(buffer.info) {
+    : BaseBuffer(buffer.info),
+      texture_id_(buffer.texture_id),
+      context_id_(buffer.context) {
 }
 
 SysmemBuffer::SysmemBuffer(const PP_SysmemBuffer_Dev& buffer)
-    : info_(buffer.info) {
+    : BaseBuffer(buffer.info) {
   scoped_refptr<webkit::ppapi::PPB_Buffer_Impl> pepper_buffer =
       webkit::ppapi::Resource::GetAs<webkit::ppapi::PPB_Buffer_Impl>(
           buffer.data);
