@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_url_handler.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/test/test_notification_tracker.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"

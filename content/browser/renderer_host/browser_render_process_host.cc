@@ -28,11 +28,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/child_process_security_policy.h"
@@ -95,8 +93,6 @@
 #include <objbase.h>
 #include "content/common/section_util_win.h"
 #endif
-
-using WebKit::WebCache;
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -193,7 +189,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       is_initialized_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
-  WebCacheManager::GetInstance()->Add(id());
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
 
   // Grant most file permissions to this renderer.
@@ -224,7 +219,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 BrowserRenderProcessHost::~BrowserRenderProcessHost() {
   VLOG_IF(1, g_log_bug53991) << "~BrowserRenderProcessHost: " << this;
 
-  WebCacheManager::GetInstance()->Remove(id());
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
 
   // We may have some unsent messages at this point, but that's OK.
@@ -785,8 +779,6 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP_EX(BrowserRenderProcessHost, msg, msg_is_ok)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_UpdatedCacheStats,
-                          OnUpdatedCacheStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SuddenTerminationChanged,
                           SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
@@ -864,7 +856,6 @@ void BrowserRenderProcessHost::OnChannelError() {
       Source<RenderProcessHost>(this),
       Details<RendererClosedDetails>(&details));
 
-  WebCacheManager::GetInstance()->Remove(id());
   child_process_launcher_.reset();
   channel_.reset();
 
@@ -895,11 +886,6 @@ void BrowserRenderProcessHost::OnShutdownRequest() {
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
   Send(new ChildProcessMsg_Shutdown());
-}
-
-void BrowserRenderProcessHost::OnUpdatedCacheStats(
-    const WebCache::UsageStats& stats) {
-  WebCacheManager::GetInstance()->ObserveStats(id(), stats);
 }
 
 void BrowserRenderProcessHost::SuddenTerminationChanged(bool enabled) {
@@ -938,8 +924,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
   if (child_process_launcher_.get())
     child_process_launcher_->SetProcessBackgrounded(backgrounded_);
-
-  Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));

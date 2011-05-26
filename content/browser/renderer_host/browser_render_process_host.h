@@ -15,7 +15,6 @@
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 class CommandLine;
@@ -82,7 +81,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
 
   // Control message handlers.
   void OnShutdownRequest();
-  void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
 

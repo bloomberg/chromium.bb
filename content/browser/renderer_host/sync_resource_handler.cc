@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
 #include "chrome/browser/net/load_timing_observer.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"

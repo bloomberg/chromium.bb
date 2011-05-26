@@ -7,7 +7,6 @@
 #include "base/shared_memory.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/backing_store.h"

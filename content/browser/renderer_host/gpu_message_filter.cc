@@ -9,7 +9,6 @@
 #include "content/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/callback.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu/gpu_messages.h"
 

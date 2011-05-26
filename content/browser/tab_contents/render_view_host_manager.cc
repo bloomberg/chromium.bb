@@ -6,9 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -21,6 +18,7 @@
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/content_client.h"
+#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "content/common/url_constants.h"

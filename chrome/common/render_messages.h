@@ -178,9 +178,6 @@ IPC_MESSAGE_CONTROL2(ViewMsg_SetContentSettingsForCurrentURL,
 // Tells the render view to load all blocked plugins.
 IPC_MESSAGE_ROUTED0(ViewMsg_LoadBlockedPlugins)
 
-// Used to instruct the RenderView to go into "view source" mode.
-IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
-
 // Get all savable resource links from current webpage, include main
 // frame and sub-frame.
 IPC_MESSAGE_ROUTED1(ViewMsg_GetAllSavableResourceLinksForCurrentPage,

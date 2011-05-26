@@ -29,6 +29,7 @@
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -336,6 +337,11 @@ void TabContentsWrapper::RenderViewGone() {
   // Remove all infobars.
   while (!infobar_delegates_.empty())
     RemoveInfoBar(GetInfoBarDelegateAt(infobar_count() - 1));
+}
+
+void TabContentsWrapper::DidBecomeSelected() {
+  WebCacheManager::GetInstance()->ObserveActivity(
+      tab_contents()->GetRenderProcessHost()->id());
 }
 
 bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {

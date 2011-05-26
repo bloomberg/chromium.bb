@@ -9,7 +9,6 @@
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/pepper_plugin_registry.h"

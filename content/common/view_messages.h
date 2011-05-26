@@ -1186,6 +1186,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 // Asks the renderer to send back FPS.
 IPC_MESSAGE_ROUTED0(ViewMsg_GetFPS)
 
+// Used to instruct the RenderView to go into "view source" mode.
+IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
+
 
 // Messages sent from the renderer to the browser.
 

@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/common/render_messages.h"
 #include "content/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"

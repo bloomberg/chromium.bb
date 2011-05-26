@@ -66,6 +66,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms, OnRendererHistograms)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdatedCacheStats, OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FPS, OnFPS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
@@ -128,6 +129,8 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_CloseChannel::ID:
       *thread = BrowserThread::UI;
       break;
+    case ViewHostMsg_UpdatedCacheStats::ID:
+      *thread = BrowserThread::UI;
     default:
       break;
   }
@@ -166,6 +169,11 @@ void ChromeRenderMessageFilter::OnResourceTypeStats(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TaskManager::GetInstance()->model()->NotifyResourceTypeStats(
       base::GetProcId(peer_handle()), stats);
+}
+
+void ChromeRenderMessageFilter::OnUpdatedCacheStats(
+    const WebCache::UsageStats& stats) {
+  WebCacheManager::GetInstance()->ObserveStats(render_process_id_, stats);
 }
 
 void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {

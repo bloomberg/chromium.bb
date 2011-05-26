@@ -5,7 +5,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"

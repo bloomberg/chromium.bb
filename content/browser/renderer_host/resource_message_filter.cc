@@ -4,8 +4,6 @@
 
 #include "content/browser/renderer_host/resource_message_filter.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

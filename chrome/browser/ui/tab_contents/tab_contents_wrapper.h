@@ -178,6 +178,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // TabContentsObserver overrides:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone() OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // NotificationObserver overrides:

@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/common/notification_service.h"
 
 using base::Time;
@@ -62,6 +62,10 @@ WebCacheManager* WebCacheManager::GetInstance() {
 WebCacheManager::WebCacheManager()
     : global_size_limit_(GetDefaultGlobalSizeLimit()),
       ALLOW_THIS_IN_INITIALIZER_LIST(revise_allocation_factory_(this)) {
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllSources());
 }
 
 WebCacheManager::~WebCacheManager() {
@@ -151,6 +155,26 @@ void WebCacheManager::ClearCache() {
   // Tell each renderer process to clear the cache.
   ClearRendederCache(active_renderers_);
   ClearRendederCache(inactive_renderers_);
+}
+
+void WebCacheManager::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::RENDERER_PROCESS_CREATED: {
+      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      Add(process->id());
+      break;
+    }
+    case NotificationType::RENDERER_PROCESS_TERMINATED: {
+      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      Remove(process->id());
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 // static

@@ -16,7 +16,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"

@@ -72,6 +72,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
   virtual void DocumentLoadedInFrame(int64 frame_id);
   virtual void DidFinishLoad(int64 frame_id);
   virtual void DidGetUserGesture();
+  virtual void DidBecomeSelected();
 
   virtual void DidStartLoading();
   virtual void DidStopLoading();

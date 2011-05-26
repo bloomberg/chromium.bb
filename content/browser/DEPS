@@ -14,6 +14,7 @@ include_rules = [
 
   "+chrome/browser/browser_url_handler.h",
 
+  # http://crbug.com/84078
   "+chrome/browser/debugger/devtools_manager.h",
   "+chrome/browser/debugger/devtools_netlog_observer.h",
 
@@ -53,8 +54,6 @@ include_rules = [
 
   "+chrome/browser/renderer_host/offline_resource_handler.h",
 
-  "+chrome/browser/renderer_host/web_cache_manager.h",
-
   # http://crbug.com/77089
   "+chrome/browser/safe_browsing/safe_browsing_service.h",
   "+chrome/browser/renderer_host/safe_browsing_resource_handler.h",
@@ -80,7 +79,6 @@ include_rules = [
   "+chrome/common/chrome_switches.h",
   "+chrome/common/chrome_paths.h",
   "+chrome/common/logging_chrome.h",
-  "+chrome/common/render_messages.h",
 
   "+chrome/common/net/url_fetcher.h",
 

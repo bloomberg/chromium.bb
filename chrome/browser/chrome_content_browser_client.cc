@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
@@ -135,6 +136,8 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
 #if defined(OS_MACOSX)
   host->channel()->AddFilter(new TextInputClientMessageFilter(host->id()));
 #endif
+
+  host->Send(new ViewMsg_SetIsIncognitoProcess(profile->IsOffTheRecord()));
 }
 
 void ChromeContentBrowserClient::PluginProcessHostCreated(

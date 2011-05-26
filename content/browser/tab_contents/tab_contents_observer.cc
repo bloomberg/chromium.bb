@@ -78,6 +78,9 @@ void TabContentsObserver::DidFinishLoad(int64 frame_id) {
 void TabContentsObserver::DidGetUserGesture() {
 }
 
+void TabContentsObserver::DidBecomeSelected() {
+}
+
 void TabContentsObserver::DidStartLoading() {
 }
 
