@@ -21,6 +21,11 @@
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
   OleInitialize(NULL);
+#elif defined(OS_LINUX)
+  // Initializes gtk stuff.
+  g_thread_init(NULL);
+  g_type_init();
+  gtk_init(&argc, &argv);
 #endif
 
   CommandLine::Init(argc, argv);

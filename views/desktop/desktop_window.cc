@@ -42,8 +42,8 @@ class TestWindowContentView : public View,
     return this;
   }
 
-  SkColor color_;
   std::wstring title_;
+  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowContentView);
 };
