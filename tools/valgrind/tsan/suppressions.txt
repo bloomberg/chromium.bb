@@ -254,6 +254,26 @@
   obj:*nvidia*/libGL.so.*
 }
 
+{
+  bug_84094_a  (Could be benign. See bug for details)
+  ThreadSanitizer:Race
+  ...
+  fun:pcache1AllocPage
+  fun:pcache1Fetch
+  fun:sqlite3PcacheFetch
+  ...
+  fun::history::*
+}
+
+{
+  bug_84094_b (Could be benign. See bug for details)
+  ThreadSanitizer:Race
+  fun:sqlite3StatusSet
+  fun:pcache1Alloc
+  ...
+  fun:history::*
+}
+
 ############################
 # Data races in tests
 
@@ -378,6 +398,7 @@
 
 ############################
 # Benign race in SQLLite
+# TODO(timurrr|oshima): following three suppression could be obsolete.
 {
   Two writes, same value (SQLLite pthreadMutexAlloc)
   ThreadSanitizer:Race
