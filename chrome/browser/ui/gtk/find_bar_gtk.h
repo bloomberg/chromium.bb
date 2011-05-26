@@ -65,6 +65,7 @@ class FindBarGtk : public FindBar,
   virtual string16 GetFindText();
   virtual string16 GetFindSelectedText();
   virtual string16 GetMatchCountText();
+  virtual int GetWidth();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

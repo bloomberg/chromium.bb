@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,7 @@ class FindBarBridge : public FindBar,
   virtual string16 GetFindText();
   virtual string16 GetFindSelectedText();
   virtual string16 GetMatchCountText();
+  virtual int GetWidth();
 
   // Used to disable find bar animations when testing.
   static bool disable_animations_during_testing_;

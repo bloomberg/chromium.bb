@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -96,6 +96,9 @@ class FindBarTesting {
 
   // Gets the match count text (ie. 1 of 3) visible in the Find box.
   virtual string16 GetMatchCountText() = 0;
+
+  // Gets the pixel width of the FindBar.
+  virtual int GetWidth() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_

@@ -573,6 +573,10 @@ string16 FindBarGtk::GetMatchCountText() {
   return UTF8ToUTF16(contents);
 }
 
+int FindBarGtk::GetWidth() {
+  return container_->allocation.width;
+}
+
 void FindBarGtk::FindEntryTextInContents(bool forward_search) {
   TabContentsWrapper* tab_contents = find_bar_controller_->tab_contents();
   if (!tab_contents)

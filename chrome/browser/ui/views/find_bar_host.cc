@@ -229,6 +229,11 @@ string16 FindBarHost::GetMatchCountText() {
   return find_bar_view()->GetMatchCountText();
 }
 
+int FindBarHost::GetWidth() {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from DropdownBarHost:
 

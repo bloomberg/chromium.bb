@@ -73,6 +73,7 @@ class FindBarHost : public DropdownBarHost,
   virtual string16 GetFindText();
   virtual string16 GetFindSelectedText();
   virtual string16 GetMatchCountText();
+  virtual int GetWidth();
 
   // Overridden from DropdownBarHost:
   // Returns the rectangle representing where to position the find bar. It uses

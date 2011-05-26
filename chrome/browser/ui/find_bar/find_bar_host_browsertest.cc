@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -94,12 +95,18 @@ class FindInPageControllerTest : public InProcessBrowserTest {
 
   string16 GetFindBarMatchCountTextForBrowser(Browser* browser) {
     FindBarTesting* find_bar =
-      browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+        browser->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetMatchCountText();
   }
 
   string16 GetMatchCountText() {
     return GetFindBarMatchCountTextForBrowser(browser());
+  }
+
+  int GetFindBarWidthForBrowser(Browser* browser) {
+    FindBarTesting* find_bar =
+        browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+    return find_bar->GetWidth();
   }
 
   void EnsureFindBoxOpenForBrowser(Browser* browser) {
@@ -1079,4 +1086,29 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   // End the find session, click on the link.
   tab->find_tab_helper()->StopFinding(FindBarController::kActivateSelection);
   EXPECT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+}
+
+// Tests that FindBar fits within a narrow browser window.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
+  Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile());
+  params.initial_bounds = gfx::Rect(0, 0, 250, 500);
+  Browser* popup = Browser::CreateWithParams(params);
+  popup->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
+                               PageTransition::LINK);
+
+  // Wait for the page to finish loading.
+  ui_test_utils::WaitForNavigation(
+      &popup->GetSelectedTabContents()->controller());
+  popup->window()->Show();
+
+  // On GTK, bounds change is asynchronous.
+  MessageLoop::current()->RunAllPending();
+
+  EnsureFindBoxOpenForBrowser(popup);
+
+  // GTK adjusts FindBar size asynchronously.
+  MessageLoop::current()->RunAllPending();
+
+  ASSERT_LE(GetFindBarWidthForBrowser(popup),
+            popup->window()->GetBounds().width());
 }
