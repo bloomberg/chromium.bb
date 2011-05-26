@@ -275,6 +275,29 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
 }
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
+// from a normal Browser results in a new Browser with is_app() true.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup_ExtensionId) {
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = NEW_POPUP;
+  p.extension_app_id = "extensionappid";
+  p.window_bounds = gfx::Rect(0, 0, 200, 200);
+  browser::Navigate(&p);
+  // Wait for new popup to to load and gain focus.
+  ui_test_utils::WaitForNavigationInCurrentTab(p.browser);
+
+  // Navigate() should have opened a new, focused popup window.
+  EXPECT_NE(browser(), p.browser);
+  EXPECT_TRUE(p.browser->is_type_popup());
+  EXPECT_TRUE(p.browser->is_app());
+
+  // We should have two windows, the browser() provided by the framework and the
+  // new popup window.
+  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, p.browser->tab_count());
+}
+
+// This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
 // from a normal popup results in a new Browser with TYPE_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
   // Open a popup.

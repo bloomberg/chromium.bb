@@ -49,6 +49,23 @@ void WaitForTabsAndPopups(Browser* browser, int num_tabs, int num_popups) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserIsApp) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("window_open").AppendASCII("browser_is_app")));
+
+  WaitForTabsAndPopups(browser(), 0, 2);
+
+  for (BrowserList::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end(); ++iter) {
+    if (*iter == browser())
+      ASSERT_FALSE((*iter)->is_app());
+    else
+      ASSERT_TRUE((*iter)->is_app());
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingExtension) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());

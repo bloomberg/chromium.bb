@@ -586,6 +586,10 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
     browser::NavigateParams params(browser, wrapper);
     if (!browser)
       params.profile = contents->profile();
+    // The extension_app_id parameter ends up as app_name in the Browser
+    // which causes the Browser to return true for is_app().  This affects
+    // among other things, whether the location bar gets displayed.
+    params.extension_app_id = extension_id_;
     params.disposition = NEW_POPUP;
     params.window_bounds = initial_pos;
     params.window_action = browser::NavigateParams::SHOW_WINDOW;

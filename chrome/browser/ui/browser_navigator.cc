@@ -186,7 +186,9 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
       if (profile) {
         // Coerce app-style if |params->browser| or |source| represents an app.
         std::string app_name;
-        if (params->browser && !params->browser->app_name().empty()) {
+        if (!params->extension_app_id.empty()) {
+          app_name = params->extension_app_id;
+        } else if (params->browser && !params->browser->app_name().empty()) {
           app_name = params->browser->app_name();
         } else if (params->source_contents &&
                    params->source_contents->extension_tab_helper()->is_app()) {
