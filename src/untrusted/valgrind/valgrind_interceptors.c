@@ -468,6 +468,18 @@ int VG_NACL_LIBPTHREAD_FUNC(pthreadZujoin)(size_t thread, size_t value_ptr) {
   return ret;
 }
 
+void VG_NACL_LIBPTHREAD_FUNC(ZuZupthreadZuinitializeZuminimal)(void) {
+  OrigFn fn;
+  int local_var;
+  VALGRIND_GET_ORIG_FN(fn);
+  CALL_FN_v_v(fn);
+
+  VG_CREQ_v_W(TSREQ_SET_MY_PTHREAD_T, pthread_self());
+  /* Let the tool guess where the stack starts. */
+  VG_CREQ_v_W(TSREQ_THR_STACK_TOP,
+      VALGRIND_SANDBOX_PTR((size_t)&local_var));
+}
+
 #else
 
 void VG_NACL_NONE_FUNC(ncZuthreadZustarter)(size_t func, size_t state) {
@@ -607,8 +619,7 @@ int VG_NACL_LIBPTHREAD_FUNC(pthreadZumutexZuunlock)(pthread_mutex_t *mutex) {
 /* ------------------------------------------------------------------*/
 /*                     Conditional variables.                        */
 
-/* pthread_cond_wait */
-int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
+static int handle_cond_wait(size_t cond, size_t mutex) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -625,8 +636,7 @@ int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
   return ret;
 }
 
-/* pthread_cond_signal */
-int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZusignal)(size_t cond) {
+static int handle_cond_signal(size_t cond) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -639,6 +649,33 @@ int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZusignal)(size_t cond) {
 
   return ret;
 }
+
+#ifdef __GLIBC__
+
+/* pthread_cond_wait@* */
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZuwaitZAZa)(size_t cond,
+    size_t mutex) {
+  return handle_cond_wait(cond, mutex);
+}
+
+/* pthread_cond_signal@* */
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZusignalZAZa)(size_t cond) {
+  return handle_cond_signal(cond);
+}
+
+#else
+
+/* pthread_cond_wait */
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
+  return handle_cond_wait(cond, mutex);
+}
+
+/* pthread_cond_signal */
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZusignal)(size_t cond) {
+  return handle_cond_signal(cond);
+}
+
+#endif
 
 /* ------------------------------------------------------------------*/
 /*                       POSIX semaphores.                           */

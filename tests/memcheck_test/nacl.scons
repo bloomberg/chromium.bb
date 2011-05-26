@@ -35,7 +35,7 @@ node = env.CommandSelLdrTestNacl(
       "(strcmp: .*)'"),
     exit_status='1',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_memcheck_test')
+env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_memcheck_test')
 
 
 # Leak checker sanity test.
@@ -51,4 +51,4 @@ if env.Bit('with_leakcheck'):
           "'(7,931,147 bytes in 1 blocks are definitely lost).*'"),
       exit_status='1',
       )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_leak_test')
+  env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_leak_test')

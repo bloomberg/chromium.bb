@@ -318,7 +318,8 @@ def ExpandArguments():
     print 'buildbot=tsan expands to the following arguments:'
     SetArgument('run_under',
                 'src/third_party/valgrind/tsan.sh,' +
-                '--nacl-untrusted,--error-exitcode=1')
+                '--nacl-untrusted,--error-exitcode=1,' +
+                '--suppressions=src/third_party/valgrind/tests.supp')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
   elif ARGUMENTS.get('buildbot') == 'tsan-trusted':
@@ -508,6 +509,8 @@ MAJOR_TEST_SUITES = set([
   # can be merged.
   'dynamic_library_browser_tests',
   'huge_tests',
+  'memcheck_bot_tests',
+  'tsan_bot_tests'
 ])
 
 # These are the test suites we know exist, but aren't run on a regular basis.
@@ -519,7 +522,6 @@ ACCEPTABLE_TEST_SUITES = set([
   'sel_ldr_tests',
   'sel_ldr_sled_tests',
   'barebones_tests',
-  'tsan_bot_tests',
   'toolchain_tests',
   'pnacl_abi_tests',
   'performance_tests',
@@ -649,10 +651,11 @@ Alias('smoke_tests', ['small_tests', 'medium_tests'])
 
 if pre_base_env.Bit('nacl_glibc'):
   Alias('memcheck_bot_tests', ['small_tests'])
+  Alias('tsan_bot_tests', ['small_tests'])
 else:
   Alias('memcheck_bot_tests', ['small_tests', 'medium_tests', 'large_tests'])
+  Alias('tsan_bot_tests', [])
 
-Alias('tsan_bot_tests', [])
 
 # ----------------------------------------------------------
 def Banner(text):

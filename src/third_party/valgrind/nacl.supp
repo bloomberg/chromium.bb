@@ -71,3 +71,18 @@
    Memcheck:Cond
    obj:/lib*/ld-2.*.so*
 }
+
+# Glibc's start_thread() does stack accesses before we can report the location of
+# the thread's stack to ThreadSanitizer. Normally this is not a problem because
+# we are ignoring all memory accesses in libpthread, but in NaCl one of these
+# accesses is in the trampoline.
+# This suppression should not match any user code because there is always a
+# frame with ThreadSanitizer wrapper (tsan_start_thread in
+# valgrind_interceptors.c) between start_thread and the user-provided thread
+# function.
+{
+   glibc start_thread
+   ThreadSanitizer:Race
+   fun:*
+   fun:start_thread
+}
