@@ -394,6 +394,7 @@ class DownloadsTest(pyauto.PyUITest):
                                   'a_zip_file.zip')
     self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
+    self.WaitForDownloadToComplete(downloaded_pkg)
     downloads = self.GetDownloadsInfo().Downloads()
     self.assertEqual(1, len(downloads))
     self.assertEqual('a_zip_file.zip', downloads[0]['file_name'])

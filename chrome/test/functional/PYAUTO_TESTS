@@ -50,7 +50,7 @@
       'crash_reporter',
       'databases',
       'downloads',
-      'find_in_page',      
+      'find_in_page',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       'execute_javascript',
@@ -94,7 +94,6 @@
       # crbug.com/50481, crbug.com/54942
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
-      '-downloads.DownloadsTest.testDownloadsPersistence',  # crbug.com/83942
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/70694, crbug.com/73078
