@@ -53,12 +53,13 @@ std::string CreateServerRedirect(const std::string& dest_url) {
   return kServerRedirectBase + dest_url;
 }
 
-// Returns true iff the final status is one in which the prerendered
+// Returns true if and only if the final status is one in which the prerendered
 // page should prerender correctly. The page still may not be used.
 bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
   switch (status) {
     case FINAL_STATUS_USED:
     case FINAL_STATUS_WINDOW_OPENER:
+    case FINAL_STATUS_FRAGMENT_MISMATCH:
       return true;
     default:
       return false;
@@ -927,18 +928,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRendererCrash) {
 // fragment.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNavigateFragment) {
   PrerenderTestURL("files/prerender/prerender_fragment.html",
-                   FINAL_STATUS_USED,
+                   FINAL_STATUS_FRAGMENT_MISMATCH,
                    1);
   NavigateToURL("files/prerender/prerender_fragment.html#fragment");
 }
 
 // Checks that we correctly use a prerendered page when we prerender a fragment
 // but navigate to the main page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFragmentNavigatePage) {
-  PrerenderTestURL("files/prerender/prerender_page.html#fragment",
-                   FINAL_STATUS_USED,
+// http://crbug.com/83901
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderFragmentNavigatePage) {
+  PrerenderTestURL("files/prerender/prerender_fragment.html#fragment",
+                   FINAL_STATUS_FRAGMENT_MISMATCH,
                    1);
-  NavigateToURL("files/prerender/prerender_page.html");
+  NavigateToURL("files/prerender/prerender_fragment.html");
 }
 
 // Checks that we correctly use a prerendered page when we prerender a fragment
@@ -946,21 +949,32 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFragmentNavigatePage) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderFragmentNavigateFragment) {
   PrerenderTestURL("files/prerender/prerender_fragment.html#other_fragment",
-                   FINAL_STATUS_USED,
+                   FINAL_STATUS_FRAGMENT_MISMATCH,
                    1);
   NavigateToURL("files/prerender/prerender_fragment.html#fragment");
 }
 
-// Checks that we correctly use a prerendered page when the page uses meta
-// http-equiv to refresh to a fragment on the same page.
+// Checks that we correctly use a prerendered page when the page uses a client
+// redirect to refresh from a fragment on the same page.
+// http://crbug.com/83901
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderClientRedirectFromFragment) {
+  PrerenderTestURL(
+      CreateClientRedirect("files/prerender/prerender_fragment.html#fragment"),
+      FINAL_STATUS_FRAGMENT_MISMATCH,
+      2);
+  NavigateToURL("files/prerender/prerender_fragment.html");
+}
+
+// Checks that we correctly use a prerendered page when the page uses a crient
+// redirect to refresh to a fragment on the same page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderClientRedirectToFragment) {
   PrerenderTestURL(
-      CreateClientRedirect("files/prerender/prerender_fragment.html#fragment"),
-      FINAL_STATUS_USED,
+      CreateClientRedirect("files/prerender/prerender_fragment.html"),
+      FINAL_STATUS_FRAGMENT_MISMATCH,
       2);
-  NavigateToURL(
-      CreateClientRedirect("files/prerender/prerender_fragment.html"));
+  NavigateToURL("files/prerender/prerender_fragment.html#fragment");
 }
 
 // Checks that we correctly use a prerendered page when the page uses JS to set

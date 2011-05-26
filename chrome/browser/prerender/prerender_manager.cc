@@ -410,7 +410,7 @@ PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedTC(
        it != prerender_list_.end();
        ++it) {
     PrerenderContents* prerender_contents = it->contents_;
-    if (prerender_contents->MatchesURL(url)) {
+    if (prerender_contents->MatchesURL(url, NULL)) {
       if (!prerender_contents->prerender_contents() ||
           !tc ||
           prerender_contents->prerender_contents()->tab_contents() != tc) {
@@ -545,6 +545,16 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   // supposed to be set.
   if (has_opener_set) {
     prerender_contents.release()->Destroy(FINAL_STATUS_WINDOW_OPENER);
+    return false;
+  }
+
+  // Even if we match, the location.hash might be different. Record this as a
+  // separate final status.
+  GURL matching_url;
+  bool url_matches = prerender_contents->MatchesURL(url, &matching_url);
+  DCHECK(url_matches);
+  if (url_matches && url.ref() != matching_url.ref()) {
+    prerender_contents.release()->Destroy(FINAL_STATUS_FRAGMENT_MISMATCH);
     return false;
   }
 
@@ -795,7 +805,7 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
-    if (it->contents_->MatchesURL(url))
+    if (it->contents_->MatchesURL(url, NULL))
       return it->contents_;
   }
   // Entry not found.

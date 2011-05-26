@@ -128,8 +128,9 @@ class PrerenderContents : public RenderViewHostDelegate,
   base::TimeTicks load_start_time() const { return load_start_time_; }
 
   // Indicates whether this prerendered page can be used for the provided
-  // URL, i.e. whether there is a match.
-  bool MatchesURL(const GURL& url) const;
+  // URL, i.e. whether there is a match. |matching_url| is optional and will be
+  // set to the URL that is found as a match if it is provided.
+  bool MatchesURL(const GURL& url, GURL* matching_url) const;
 
   void OnJSOutOfMemory();
   void OnRunJavaScriptMessage(const std::wstring& message,

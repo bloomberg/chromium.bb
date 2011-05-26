@@ -10,10 +10,9 @@ function DidPrerenderPass() {
   return true;
 }
 
-// Make sure DidPrerenderPass() was called first.  Otherwise, the page was
-// most likely reloaded instead of using the prerendered page.
+// Make sure DidPrerenderPass() was not called first.
 function DidDisplayPass() {
-  return pageWasPrerendered;
+  return !pageWasPrerendered;
 }
 </script>
 

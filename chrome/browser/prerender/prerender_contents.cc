@@ -50,8 +50,8 @@ namespace {
 
 // Compares URLs ignoring any ref for the purposes of matching URLs when
 // prerendering.
-struct PrerenderUrlPredicate {
-  explicit PrerenderUrlPredicate(const GURL& url)
+struct PrerenderURLPredicate {
+  explicit PrerenderURLPredicate(const GURL& url)
       : url_(url) {
   }
 
@@ -689,10 +689,17 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
   return true;
 }
 
-bool PrerenderContents::MatchesURL(const GURL& url) const {
-  return std::find_if(alias_urls_.begin(),
-                      alias_urls_.end(),
-                      PrerenderUrlPredicate(url)) != alias_urls_.end();
+bool PrerenderContents::MatchesURL(const GURL& url, GURL* matching_url) const {
+  std::vector<GURL>::const_iterator matching_url_iterator =
+      std::find_if(alias_urls_.begin(),
+                   alias_urls_.end(),
+                   PrerenderURLPredicate(url));
+  if (matching_url_iterator != alias_urls_.end()) {
+    if (matching_url)
+      *matching_url = *matching_url_iterator;
+    return true;
+  }
+  return false;
 }
 
 void PrerenderContents::OnJSOutOfMemory() {
