@@ -1391,7 +1391,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_BrowserCloseAfterDownload) {
 }
 
 // Test to make sure auto-open works.
-IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
+#if defined(OS_CHROMEOS)
+// Always fails on Chrome OS: crbug.com/84058
+#define MAYBE_AutoOpen FAILS_AutoOpen
+#else
+#define MAYBE_AutoOpen AutoOpen
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_AutoOpen) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
