@@ -53,7 +53,7 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
     if (origin_order_.empty())
       callback->Run(GURL());
     else
-      callback->Run(origin_order_.front());
+      callback->Run(GURL(origin_order_.front()));
     delete callback;
   }
 
