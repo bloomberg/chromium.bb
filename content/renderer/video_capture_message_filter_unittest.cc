@@ -13,6 +13,8 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
  public:
   MockVideoCaptureDelegate() {
     Reset();
+    device_id_received_ = false;
+    device_id_ = 0;
   }
 
   virtual void OnBufferReceived(TransportDIB::Handle handle,
@@ -32,6 +34,11 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
     params_.width = params.width;
     params_.height = params.height;
     params_.frame_per_second = params.frame_per_second;
+  }
+
+  virtual void OnDelegateAdded(int32 device_id) {
+    device_id_received_ = true;
+    device_id_ = device_id;
   }
 
   void Reset() {
@@ -58,6 +65,9 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   bool device_info_receive() { return device_info_received_; }
   const media::VideoCaptureParams& received_device_info() { return params_; }
 
+  bool device_id_received() { return device_id_received_; }
+  int32 device_id() { return device_id_; }
+
  private:
   bool buffer_received_;
   TransportDIB::Handle handle_;
@@ -68,6 +78,9 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
 
   bool device_info_received_;
   media::VideoCaptureParams params_;
+
+  bool device_id_received_;
+  int32 device_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureDelegate);
 };
@@ -80,14 +93,15 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   const int kRouteId = 0;
   scoped_refptr<VideoCaptureMessageFilter> filter(
       new VideoCaptureMessageFilter(kRouteId));
+  filter->channel_ = reinterpret_cast<IPC::Channel*>(1);
 
   MockVideoCaptureDelegate delegate;
-  int device_id = filter->AddDelegate(&delegate);
+  filter->AddDelegate(&delegate);
 
   // VideoCaptureMsg_StateChanged
   EXPECT_FALSE(delegate.state_changed_received());
   filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(kRouteId, device_id,
+      VideoCaptureMsg_StateChanged(kRouteId, delegate.device_id(),
                                    media::VideoCapture::kStarted));
   EXPECT_TRUE(delegate.state_changed_received());
   EXPECT_TRUE(media::VideoCapture::kStarted == delegate.state());
@@ -99,7 +113,7 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
 
   EXPECT_FALSE(delegate.buffer_received());
   filter->OnMessageReceived(VideoCaptureMsg_BufferReady(
-      kRouteId, device_id, handle, timestamp));
+      kRouteId, delegate.device_id(), handle, timestamp));
   EXPECT_TRUE(delegate.buffer_received());
 #if defined(OS_MACOSX)
   EXPECT_EQ(handle.fd, delegate.received_buffer_handle().fd);
@@ -117,7 +131,7 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
 
   EXPECT_FALSE(delegate.device_info_receive());
   filter->OnMessageReceived(VideoCaptureMsg_DeviceInfo(
-      kRouteId, device_id, params));
+      kRouteId, delegate.device_id(), params));
   EXPECT_TRUE(delegate.device_info_receive());
   EXPECT_EQ(params.width, delegate.received_device_info().width);
   EXPECT_EQ(params.height, delegate.received_device_info().height);
@@ -134,18 +148,19 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
   const int kRouteId = 0;
   scoped_refptr<VideoCaptureMessageFilter> filter(
       new VideoCaptureMessageFilter(kRouteId));
+  filter->channel_ = reinterpret_cast<IPC::Channel*>(1);
 
   MockVideoCaptureDelegate delegate1;
   MockVideoCaptureDelegate delegate2;
 
-  int device_id1 = filter->AddDelegate(&delegate1);
-  int device_id2 = filter->AddDelegate(&delegate2);
+  filter->AddDelegate(&delegate1);
+  filter->AddDelegate(&delegate2);
 
   // Send an IPC message. Make sure the correct delegate gets called.
   EXPECT_FALSE(delegate1.state_changed_received());
   EXPECT_FALSE(delegate2.state_changed_received());
   filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(kRouteId, device_id1,
+      VideoCaptureMsg_StateChanged(kRouteId, delegate1.device_id(),
                                    media::VideoCapture::kStarted));
   EXPECT_TRUE(delegate1.state_changed_received());
   EXPECT_FALSE(delegate2.state_changed_received());
@@ -154,7 +169,7 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
   EXPECT_FALSE(delegate1.state_changed_received());
   EXPECT_FALSE(delegate2.state_changed_received());
   filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(kRouteId, device_id2,
+      VideoCaptureMsg_StateChanged(kRouteId, delegate2.device_id(),
                                    media::VideoCapture::kStarted));
   EXPECT_FALSE(delegate1.state_changed_received());
   EXPECT_TRUE(delegate2.state_changed_received());
@@ -163,7 +178,7 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
   // Send a message of a different route id, a message is not received.
   EXPECT_FALSE(delegate1.state_changed_received());
   filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(kRouteId+1, device_id1,
+      VideoCaptureMsg_StateChanged(kRouteId+1, delegate1.device_id(),
                                    media::VideoCapture::kStarted));
   EXPECT_FALSE(delegate1.state_changed_received());
 
@@ -171,14 +186,14 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
   filter->RemoveDelegate(&delegate1);
   EXPECT_FALSE(delegate1.state_changed_received());
   filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(kRouteId, device_id1,
+      VideoCaptureMsg_StateChanged(kRouteId, delegate1.device_id(),
                                    media::VideoCapture::kStarted));
   EXPECT_FALSE(delegate1.state_changed_received());
 
   filter->RemoveDelegate(&delegate2);
   EXPECT_FALSE(delegate2.state_changed_received());
   filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(kRouteId, device_id2,
+      VideoCaptureMsg_StateChanged(kRouteId, delegate2.device_id(),
                                    media::VideoCapture::kStarted));
   EXPECT_FALSE(delegate2.state_changed_received());
 
