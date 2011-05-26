@@ -266,7 +266,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         view->set_delegate(this);
         views::Window* window = browser::CreateViewsWindow(
             GetNativeWindow(), gfx::Rect(), view);
-        window->SetIsAlwaysOnTop(true);
+        window->SetAlwaysOnTop(true);
         window->Show();
       } else {
         LOG(WARNING) << "No captcha image url was found?";
@@ -410,7 +410,7 @@ void ExistingUserController::OnPasswordChangeDetected(
   views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
                                                      gfx::Rect(),
                                                      view);
-  window->SetIsAlwaysOnTop(true);
+  window->SetAlwaysOnTop(true);
   window->Show();
 
   if (login_status_consumer_)

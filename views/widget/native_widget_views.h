@@ -66,10 +66,17 @@ class NativeWidgetViews : public NativeWidget {
   virtual void CloseNow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void SetOpacity(unsigned char opacity) OVERRIDE;
-  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual void SetOpacity(unsigned char opacity) OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void RunShellDrag(View* view,

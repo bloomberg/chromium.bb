@@ -799,7 +799,7 @@ void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
   views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
                                                      gfx::Rect(),
                                                      view);
-  window->SetIsAlwaysOnTop(true);
+  window->SetAlwaysOnTop(true);
   window->Show();
 }
 

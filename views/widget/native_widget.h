@@ -142,10 +142,17 @@ class NativeWidget {
   virtual void CloseNow() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
-  virtual void SetOpacity(unsigned char opacity) = 0;
-  virtual void SetAlwaysOnTop(bool on_top) = 0;
   virtual bool IsVisible() const = 0;
+  virtual void Activate() = 0;
+  virtual void Deactivate() = 0;
   virtual bool IsActive() const = 0;
+  virtual void SetAlwaysOnTop(bool always_on_top) = 0;
+  virtual void Maximize() = 0;
+  virtual void Minimize() = 0;
+  virtual bool IsMaximized() const = 0;
+  virtual bool IsMinimized() const = 0;
+  virtual void Restore() = 0;
+  virtual void SetOpacity(unsigned char opacity) = 0;
   virtual bool IsAccessibleWidget() const = 0;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const = 0;
   virtual void RunShellDrag(View* view,

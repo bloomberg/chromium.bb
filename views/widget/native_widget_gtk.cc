@@ -284,6 +284,7 @@ bool NativeWidgetGtk::debug_paint_enabled_ = false;
 
 NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
     : is_window_(false),
+      window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       delegate_(delegate),
       widget_(NULL),
       window_contents_(NULL),
@@ -716,6 +717,8 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
                    G_CALLBACK(&OnDragEndThunk), this);
   g_signal_connect(window_contents_, "drag_failed",
                    G_CALLBACK(&OnDragFailedThunk), this);
+  g_signal_connect(G_OBJECT(GetNativeWindow()), "window-state-event",
+                   G_CALLBACK(&OnWindowStateEventThunk), this);
 
   tooltip_manager_.reset(new TooltipManagerGtk(this));
 
@@ -957,13 +960,21 @@ void NativeWidgetGtk::Hide() {
   }
 }
 
-void NativeWidgetGtk::SetOpacity(unsigned char opacity) {
-  opacity_ = opacity;
-  if (widget_) {
-    // We can only set the opacity when the widget has been realized.
-    gdk_window_set_opacity(widget_->window, static_cast<gdouble>(opacity) /
-      static_cast<gdouble>(255));
-  }
+bool NativeWidgetGtk::IsVisible() const {
+  return GTK_WIDGET_VISIBLE(GetNativeView());
+}
+
+void NativeWidgetGtk::Activate() {
+  gtk_window_present(GetNativeWindow());
+}
+
+void NativeWidgetGtk::Deactivate() {
+  gdk_window_lower(GTK_WIDGET(GetNativeView())->window);
+}
+
+bool NativeWidgetGtk::IsActive() const {
+  DCHECK(!child_);
+  return is_active_;
 }
 
 void NativeWidgetGtk::SetAlwaysOnTop(bool on_top) {
@@ -973,13 +984,36 @@ void NativeWidgetGtk::SetAlwaysOnTop(bool on_top) {
     gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
 }
 
-bool NativeWidgetGtk::IsVisible() const {
-  return GTK_WIDGET_VISIBLE(widget_);
+void NativeWidgetGtk::Maximize() {
+  gtk_window_maximize(GetNativeWindow());
 }
 
-bool NativeWidgetGtk::IsActive() const {
-  DCHECK(!child_);
-  return is_active_;
+void NativeWidgetGtk::Minimize() {
+  gtk_window_iconify(GetNativeWindow());
+}
+
+bool NativeWidgetGtk::IsMaximized() const {
+  return window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
+}
+
+bool NativeWidgetGtk::IsMinimized() const {
+  return window_state_ & GDK_WINDOW_STATE_ICONIFIED;
+}
+
+void NativeWidgetGtk::Restore() {
+  if (IsMaximized())
+    gtk_window_unmaximize(GetNativeWindow());
+  else if (IsMinimized())
+    gtk_window_deiconify(GetNativeWindow());
+}
+
+void NativeWidgetGtk::SetOpacity(unsigned char opacity) {
+  opacity_ = opacity;
+  if (widget_) {
+    // We can only set the opacity when the widget has been realized.
+    gdk_window_set_opacity(widget_->window, static_cast<gdouble>(opacity) /
+        static_cast<gdouble>(255));
+  }
 }
 
 bool NativeWidgetGtk::IsAccessibleWidget() const {
@@ -1359,6 +1393,12 @@ void NativeWidgetGtk::OnMap(GtkWidget* widget) {
 }
 
 void NativeWidgetGtk::OnHide(GtkWidget* widget) {
+}
+
+gboolean NativeWidgetGtk::OnWindowStateEvent(GtkWidget* widget,
+                                             GdkEventWindowState* event) {
+  window_state_ = event->new_window_state;
+  return FALSE;
 }
 
 void NativeWidgetGtk::HandleXGrabBroke() {

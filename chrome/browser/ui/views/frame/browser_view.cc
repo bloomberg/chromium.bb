@@ -1688,7 +1688,7 @@ bool BrowserView::CanClose() {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.
-    frame_->HideWindow();
+    frame_->Hide();
     browser_->OnWindowClosing();
     return false;
   }
