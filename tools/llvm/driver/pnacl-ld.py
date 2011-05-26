@@ -30,6 +30,8 @@ EXTRA_ENV = {
   'SHARED'   : '0',
   'STATIC'   : '0',
 
+  'LINK_IN_BITCODE_INTRINSICS' : '1',
+
   'STRIP_MODE' : 'none',
 
   'STRIP_FLAGS'      : '${STRIP_FLAGS_%STRIP_MODE%}',
@@ -81,7 +83,8 @@ EXTRA_ENV = {
 
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}"',
 
-  'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} ${BASE}/llvm-intrinsics.bc '
+  'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} '
+               '${LINK_IN_BITCODE_INTRINSICS ? ${BASE}/llvm-intrinsics.bc} '
                '-o "${output}"'),
 }
 env.update(EXTRA_ENV)
@@ -93,6 +96,8 @@ LDPatterns = [
   ( ('-o', '(.+)'),    "env.set('OUTPUT', $0)"),
 
   ( '-nostdlib',       ""),
+
+  ( '-nobitcode-intrinsics', "env.set('LINK_IN_BITCODE_INTRINSICS', '0')"),
 
   ( '-shared',         "env.set('SHARED', '1')"),
 
