@@ -92,7 +92,7 @@ class CanvasPaintT : public T {
     // surface.
     T::translate(-SkIntToScalar(bounds.x), -SkIntToScalar(bounds.y));
 
-    context_ = T::getTopPlatformDevice().BeginPlatformPaint();
+    context_ = BeginPlatformPaint(GetTopDevice(*this));
   }
 
   cairo_t* context_;

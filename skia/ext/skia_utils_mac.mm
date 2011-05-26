@@ -193,10 +193,10 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
   int width = CGImageGetWidth(image);
   int height = CGImageGetHeight(image);
 
-  scoped_ptr<skia::BitmapPlatformDevice> device(
+  scoped_ptr<SkDevice> device(
       skia::BitmapPlatformDevice::Create(NULL, width, height, false));
 
-  CGContextRef context = device->GetBitmapContext();
+  CGContextRef context = skia::GetBitmapContext(device.get());
 
   // We need to invert the y-axis of the canvas so that Core Graphics drawing
   // happens right-side up. Skia has an upper-left origin and CG has a lower-

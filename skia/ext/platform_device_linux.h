@@ -6,9 +6,8 @@
 #define SKIA_EXT_PLATFORM_DEVICE_LINUX_H_
 #pragma once
 
+#include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkDevice.h"
-
-typedef struct _cairo cairo_t;
 
 namespace skia {
 
@@ -25,6 +24,12 @@ class PlatformDevice : public SkDevice {
 
   virtual PlatformSurface BeginPlatformPaint() = 0;
   virtual void EndPlatformPaint();
+
+  virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
+                                   const PlatformRect* src_rect );
+                                   
+  // Sets the opacity of each pixel in the specified region to be opaque.
+  virtual void MakeOpaque(int x, int y, int width, int height) { }
 
  protected:
   // Forwards |bitmap| to SkDevice's constructor.

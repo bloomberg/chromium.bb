@@ -158,10 +158,10 @@ bool BackingStoreWin::CopyFromBackingStore(const gfx::Rect& rect,
   if (!output->initialize(rect.width(), rect.height(), true))
     return false;
 
-  HDC temp_dc = output->beginPlatformPaint();
+  skia::ScopedPlatformPaint scoped_platform_paint(output);
+  HDC temp_dc = scoped_platform_paint.GetPlatformSurface();
   BitBlt(temp_dc, 0, 0, rect.width(), rect.height(),
          hdc(), rect.x(), rect.y(), SRCCOPY);
-  output->endPlatformPaint();
   return true;
 }
 

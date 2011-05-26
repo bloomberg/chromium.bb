@@ -8,9 +8,9 @@
 
 #include "skia/ext/platform_canvas.h"
 
-namespace skia {
+class SkDevice;
 
-class PlatformDevice;
+namespace skia {
 
 // This class is a specialization of the regular PlatformCanvas. It is designed
 // to work with a VectorDevice to manage platform-specific drawing. It allows
@@ -19,7 +19,7 @@ class PlatformDevice;
 class SK_API VectorCanvas : public PlatformCanvas {
  public:
   // Ownership of |device| is transfered to VectorCanvas.
-  explicit VectorCanvas(PlatformDevice* device);
+  explicit VectorCanvas(SkDevice* device);
   virtual ~VectorCanvas();
 
   virtual SkBounder* setBounder(SkBounder* bounder);

@@ -38,9 +38,10 @@ void PaintSadPlugin(WebKit::WebCanvas* webcanvas,
   // then copy that to the screen than to use the native APIs. The small speed
   // penalty is not important when drawing crashed plugins.
 #if WEBKIT_USING_SKIA
-  gfx::NativeDrawingContext context = skia::BeginPlatformPaint(webcanvas);
+  skia::ScopedPlatformPaint scoped_platform_paint(webcanvas);
+  gfx::NativeDrawingContext context =
+      scoped_platform_paint.GetPlatformSurface();
   BlitCanvasToContext(context, plugin_rect, &canvas, gfx::Point(0, 0));
-  skia::EndPlatformPaint(webcanvas);
 #elif WEBKIT_USING_CG
   BlitCanvasToContext(webcanvas, plugin_rect, &canvas, gfx::Point(0, 0));
 #endif

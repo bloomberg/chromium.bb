@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/platform_device_win.h"
+#include "skia/ext/platform_device.h"
 
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -12,17 +12,7 @@
 
 namespace skia {
 
-PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
-    : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
-}
-
-void PlatformDevice::EndPlatformPaint() {
-  // We don't clear the DC here since it will be likely to be used again.
-  // Flushing will be done in onAccessBitmap.
-}
-
-// static
-void PlatformDevice::InitializeDC(HDC context) {
+void InitializeDC(HDC context) {
   // Enables world transformation.
   // If the GM_ADVANCED graphics mode is set, GDI always draws arcs in the
   // counterclockwise direction in logical space. This is equivalent to the
@@ -59,6 +49,16 @@ void PlatformDevice::InitializeDC(HDC context) {
   SkASSERT(res != 0);
   res = SetROP2(context, R2_COPYPEN);
   SkASSERT(res != 0);
+}
+
+PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
+    : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
+  SetPlatformDevice(this, this);
+}
+
+void PlatformDevice::EndPlatformPaint() {
+  // We don't clear the DC here since it will be likely to be used again.
+  // Flushing will be done in onAccessBitmap.
 }
 
 // static

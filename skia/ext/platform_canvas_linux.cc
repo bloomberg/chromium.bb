@@ -6,8 +6,8 @@
 
 #include <cairo/cairo.h>
 
-#include "skia/ext/platform_device_linux.h"
-#include "skia/ext/bitmap_platform_device_linux.h"
+#include "skia/ext/bitmap_platform_device.h"
+#include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 namespace skia {
@@ -31,14 +31,6 @@ bool PlatformCanvas::initialize(int width, int height, bool is_opaque,
                                 uint8_t* data) {
   return initializeWithDevice(BitmapPlatformDevice::Create(
       width, height, is_opaque, data));
-}
-
-cairo_t* PlatformCanvas::beginPlatformPaint() const {
-  return getTopPlatformDevice().BeginPlatformPaint();
-}
-
-void PlatformCanvas::endPlatformPaint() const {
-  getTopPlatformDevice().EndPlatformPaint();
 }
 
 }  // namespace skia

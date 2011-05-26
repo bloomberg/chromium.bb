@@ -111,9 +111,9 @@ void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
                                   const gfx::Rect& rect) {
   if (!windowless_)
     return;
-  cairo_t* context = skia::BeginPlatformPaint(canvas);
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
+  cairo_t* context = scoped_platform_paint.GetPlatformSurface();
   WindowlessPaint(context, rect);
-  skia::EndPlatformPaint(canvas);
 }
 
 void WebPluginDelegateImpl::InstallMissingPlugin() {

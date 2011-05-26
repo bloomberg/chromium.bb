@@ -96,10 +96,11 @@ class Image {
   }
 
   // Loads the image from a canvas.
-  Image(const skia::PlatformCanvas& canvas) : ignore_alpha_(true) {
+  Image(skia::PlatformCanvas& canvas) : ignore_alpha_(true) {
     // Use a different way to access the bitmap. The normal way would be to
     // query the SkBitmap.
-    HDC context = canvas.beginPlatformPaint();
+    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    HDC context = scoped_platform_paint.GetPlatformSurface();
     HGDIOBJ bitmap = GetCurrentObject(context, OBJ_BITMAP);
     EXPECT_TRUE(bitmap != NULL);
     // Initialize the clip region to the entire bitmap.
@@ -111,7 +112,6 @@ class Image {
     size_t size = row_length_ * height_;
     data_.resize(size);
     memcpy(&*data_.begin(), bitmap_data.bmBits, size);
-    canvas.endPlatformPaint();
   }
 
   // Loads the image from a canvas.
@@ -267,7 +267,7 @@ class ImageTest : public testing::Test {
   // kGenerating value. Returns 0 on success or any positive value between ]0,
   // 100] on failure. The return value is the percentage of difference between
   // the image in the file and the image in the canvas.
-  double ProcessCanvas(const skia::PlatformCanvas& canvas,
+  double ProcessCanvas(skia::PlatformCanvas& canvas,
                        FilePath::StringType filename) const {
     filename = filename + FILE_PATH_LITERAL(".png");
     switch (action_) {
@@ -286,7 +286,7 @@ class ImageTest : public testing::Test {
 
   // Compares the bitmap currently loaded in the context with the file. Returns
   // the percentage of pixel difference between both images, between 0 and 100.
-  double CompareImage(const skia::PlatformCanvas& canvas,
+  double CompareImage(skia::PlatformCanvas& canvas,
                       const FilePath::StringType& filename) const {
     Image image1(canvas);
     Image image2(test_file(filename));
@@ -295,7 +295,7 @@ class ImageTest : public testing::Test {
   }
 
   // Saves the bitmap currently loaded in the context into the file.
-  void SaveImage(const skia::PlatformCanvas& canvas,
+  void SaveImage(skia::PlatformCanvas& canvas,
                  const FilePath::StringType& filename) const {
     Image(canvas).SaveToFile(test_file(filename));
   }

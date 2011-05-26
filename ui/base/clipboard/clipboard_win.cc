@@ -456,9 +456,9 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 
   gfx::CanvasSkia canvas(width, height, false);
 
-  HDC destination_dc = canvas.beginPlatformPaint();
+  skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+  HDC destination_dc = scoped_platform_paint.GetPlatformSurface();
   ::BitBlt(destination_dc, 0, 0, width, height, source_dc, 0, 0, SRCCOPY);
-  canvas.endPlatformPaint();
   return canvas.ExtractBitmap();
 }
 

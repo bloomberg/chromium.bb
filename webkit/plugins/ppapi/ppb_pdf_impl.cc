@@ -153,7 +153,7 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
 
   skia::PlatformCanvas* canvas = image_data->mapped_canvas();
   SkBitmap& ret_bitmap =
-      const_cast<SkBitmap&>(canvas->getTopPlatformDevice().accessBitmap(true));
+      const_cast<SkBitmap&>(skia::GetTopDevice(*canvas)->accessBitmap(true));
   if (!res_bitmap->copyTo(&ret_bitmap, SkBitmap::kARGB_8888_Config, NULL)) {
     return 0;
   }

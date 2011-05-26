@@ -35,7 +35,7 @@ bool HasClipOrTransform(const skia::PlatformCanvas& canvas) {
 
   // Now we know the clip is a regular rectangle, make sure it covers the
   // entire canvas.
-  const SkBitmap& bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
+  const SkBitmap& bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
   const SkIRect& clip_bounds = clip_region.getBounds();
   if (clip_bounds.fLeft != 0 || clip_bounds.fTop != 0 ||
       clip_bounds.fRight != bitmap.width() ||
@@ -95,9 +95,9 @@ void BlitContextToCanvas(skia::PlatformCanvas *dst_canvas,
                          const Rect& dst_rect,
                          NativeDrawingContext src_context,
                          const Point& src_origin) {
-  BlitContextToContext(dst_canvas->beginPlatformPaint(), dst_rect,
+  BlitContextToContext(skia::BeginPlatformPaint(dst_canvas), dst_rect,
                        src_context, src_origin);
-  dst_canvas->endPlatformPaint();
+  skia::EndPlatformPaint(dst_canvas);
 }
 
 void BlitCanvasToContext(NativeDrawingContext dst_context,
@@ -105,18 +105,18 @@ void BlitCanvasToContext(NativeDrawingContext dst_context,
                          skia::PlatformCanvas *src_canvas,
                          const Point& src_origin) {
   BlitContextToContext(dst_context, dst_rect,
-                       src_canvas->beginPlatformPaint(), src_origin);
-  src_canvas->endPlatformPaint();
+                       skia::BeginPlatformPaint(src_canvas), src_origin);
+  skia::EndPlatformPaint(src_canvas);
 }
 
 void BlitCanvasToCanvas(skia::PlatformCanvas *dst_canvas,
                         const Rect& dst_rect,
                         skia::PlatformCanvas *src_canvas,
                         const Point& src_origin) {
-  BlitContextToContext(dst_canvas->beginPlatformPaint(), dst_rect,
-                       src_canvas->beginPlatformPaint(), src_origin);
-  src_canvas->endPlatformPaint();
-  dst_canvas->endPlatformPaint();
+  BlitContextToContext(skia::BeginPlatformPaint(dst_canvas), dst_rect,
+                       skia::BeginPlatformPaint(src_canvas), src_origin);
+  skia::EndPlatformPaint(src_canvas);
+  skia::EndPlatformPaint(dst_canvas);
 }
 
 #if defined(OS_WIN)
@@ -125,13 +125,12 @@ void ScrollCanvas(skia::PlatformCanvas* canvas,
                   const gfx::Rect& clip,
                   const gfx::Point& amount) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
-  HDC hdc = canvas->beginPlatformPaint();
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
+  HDC hdc = scoped_platform_paint.GetPlatformSurface();
 
   RECT damaged_rect;
   RECT r = clip.ToRECT();
   ScrollDC(hdc, amount.x(), amount.y(), NULL, &r, NULL, &damaged_rect);
-
-  canvas->endPlatformPaint();
 }
 
 #elif defined(OS_POSIX)
@@ -144,7 +143,7 @@ void ScrollCanvas(skia::PlatformCanvas* canvas,
                   const gfx::Point& amount) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
   SkBitmap& bitmap = const_cast<SkBitmap&>(
-      canvas->getTopPlatformDevice().accessBitmap(true));
+      skia::GetTopDevice(*canvas)->accessBitmap(true));
   SkAutoLockPixels lock(bitmap);
 
   // We expect all coords to be inside the canvas, so clip here.

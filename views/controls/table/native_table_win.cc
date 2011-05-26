@@ -548,10 +548,9 @@ LRESULT NativeTableWin::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
                               (intersection.right - intersection.left);
               to_draw.bottom = to_draw.top +
                               (intersection.bottom - intersection.top);
-              canvas.getTopPlatformDevice().drawToHDC(draw_info->nmcd.hdc,
-                                                      intersection.left,
-                                                      intersection.top,
-                                                      &to_draw);
+              skia::DrawToNativeContext(&canvas, draw_info->nmcd.hdc,
+                                       intersection.left, intersection.top,
+                                       &to_draw);
               r = CDRF_SKIPDEFAULT;
             }
           }

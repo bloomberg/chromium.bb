@@ -220,8 +220,8 @@ void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
   data_->SetMatrixClip(transform, region);
 }
 
-void BitmapPlatformDevice::drawToHDC(HDC dc, int x, int y,
-                                     const RECT* src_rect) {
+void BitmapPlatformDevice::DrawToNativeContext(HDC dc, int x, int y,
+                                               const RECT* src_rect) {
   bool created_dc = !data_->IsBitmapDCCreated();
   HDC source_dc = BeginPlatformPaint();
 
@@ -273,14 +273,6 @@ void BitmapPlatformDevice::drawToHDC(HDC dc, int x, int y,
   EndPlatformPaint();
   if (created_dc)
     data_->ReleaseBitmapDC();
-}
-
-// Returns the color value at the specified location.
-SkColor BitmapPlatformDevice::getColorAt(int x, int y) {
-  const SkBitmap& bitmap = accessBitmap(false);
-  SkAutoLockPixels lock(bitmap);
-  uint32_t* data = bitmap.getAddr32(0, 0);
-  return static_cast<SkColor>(data[x + y * width()]);
 }
 
 void BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {

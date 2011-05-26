@@ -549,7 +549,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
 
     // Flush to underlying bitmap.  TODO(darin): is this needed?
-    canvas->getTopPlatformDevice().accessBitmap(false);
+    skia::GetTopDevice(*canvas)->accessBitmap(false);
   }
 
   PaintDebugBorder(rect, canvas);

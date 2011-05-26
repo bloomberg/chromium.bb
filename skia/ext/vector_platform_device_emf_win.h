@@ -73,7 +73,7 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
 
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&);
-  virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect);
+  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
   virtual bool IsVectorial() { return true; }
 
   void LoadClipRegion();

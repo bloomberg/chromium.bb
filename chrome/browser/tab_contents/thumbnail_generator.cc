@@ -21,7 +21,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
-#include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -80,7 +79,7 @@ SkBitmap GetBitmapForBackingStore(
   if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store->size()),
                                            &temp_canvas))
     return result;
-  const SkBitmap& bmp = temp_canvas.getTopPlatformDevice().accessBitmap(false);
+  const SkBitmap& bmp = skia::GetTopDevice(temp_canvas)->accessBitmap(false);
 
   // Check if a clipped thumbnail is requested.
   if (options & ThumbnailGenerator::kClippedThumbnail) {

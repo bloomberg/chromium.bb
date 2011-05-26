@@ -81,7 +81,7 @@ void PrintWebViewHelper::PrintPageInternal(
   scoped_ptr<Metafile> metafile(new printing::NativeMetafile);
   metafile->Init();
   DCHECK(metafile->context());
-  skia::PlatformDevice::InitializeDC(metafile->context());
+  skia::InitializeDC(metafile->context());
 
   int page_number = params.page_number;
 
@@ -228,7 +228,7 @@ void PrintWebViewHelper::RenderPage(
                          static_cast<int>(margin_top_in_points),
                          static_cast<int>(content_width_in_points),
                          static_cast<int>(content_height_in_points));
-  skia::PlatformDevice* device = (*metafile)->StartPageForVectorCanvas(
+  SkDevice* device = (*metafile)->StartPageForVectorCanvas(
       page_size, content_area, frame->getPrintPageShrink(page_number));
   DCHECK(device);
   // The printPage method may take a reference to the canvas we pass down, so it
@@ -290,7 +290,7 @@ void PrintWebViewHelper::RenderPage(
       metafile2->Init();
       HDC hdc = metafile2->context();
       DCHECK(hdc);
-      skia::PlatformDevice::InitializeDC(hdc);
+      skia::InitializeDC(hdc);
 
       RECT metafile_bounds = (*metafile)->GetPageBounds(1).ToRECT();
       // Process the old metafile, placing all non-AlphaBlend calls into the

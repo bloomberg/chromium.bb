@@ -169,20 +169,22 @@ void DrawDeemphasized(const SkColor& color,
                       HDC backing_store_dc,
                       HDC paint_dc) {
   gfx::CanvasSkia canvas(paint_rect.width(), paint_rect.height(), true);
-  HDC dc = canvas.beginPlatformPaint();
-  BitBlt(dc,
-         0,
-         0,
-         paint_rect.width(),
-         paint_rect.height(),
-         backing_store_dc,
-         paint_rect.x(),
-         paint_rect.y(),
-         SRCCOPY);
-  canvas.endPlatformPaint();
+  {
+    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    HDC dc = scoped_platform_paint.GetPlatformSurface();
+    BitBlt(dc,
+           0,
+           0,
+           paint_rect.width(),
+           paint_rect.height(),
+           backing_store_dc,
+           paint_rect.x(),
+           paint_rect.y(),
+           SRCCOPY);
+  }
   canvas.FillRectInt(color, 0, 0, paint_rect.width(), paint_rect.height());
-  canvas.getTopPlatformDevice().drawToHDC(paint_dc, paint_rect.x(),
-                                          paint_rect.y(), NULL);
+  skia::DrawToNativeContext(&canvas, paint_dc, paint_rect.x(),
+                            paint_rect.y(), NULL);
 }
 
 // The plugin wrapper window which lives in the browser process has this proc
@@ -961,8 +963,8 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
                         dc_rect.right - dc_rect.left,
                         dc_rect.bottom - dc_rect.top);
 
-    canvas.getTopPlatformDevice().drawToHDC(*dc, dirty_rect.left,
-                                            dirty_rect.top, NULL);
+    skia::DrawToNativeContext(&canvas, *dc, dirty_rect.left, dirty_rect.top,
+                              NULL);
   } else {
     HBRUSH white_brush = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
     dc->FillRect(&dirty_rect, white_brush);
