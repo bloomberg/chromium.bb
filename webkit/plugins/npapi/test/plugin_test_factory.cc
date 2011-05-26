@@ -11,6 +11,7 @@
 #include "webkit/plugins/npapi/test/plugin_geturl_test.h"
 #include "webkit/plugins/npapi/test/plugin_javascript_open_popup.h"
 #include "webkit/plugins/npapi/test/plugin_new_fails_test.h"
+#include "webkit/plugins/npapi/test/plugin_npobject_identity_test.h"
 #include "webkit/plugins/npapi/test/plugin_npobject_lifetime_test.h"
 #include "webkit/plugins/npapi/test/plugin_npobject_proxy_test.h"
 #include "webkit/plugins/npapi/test/plugin_private_test.h"
@@ -37,6 +38,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
              test_name == "plugin_referrer_test" ||
              test_name == "geturlredirectnotify") {
     new_test = new PluginGetURLTest(instance, host_functions);
+  } else if (test_name == "npobject_identity") {
+    new_test = new NPObjectIdentityTest(instance, host_functions);
   } else if (test_name == "npobject_proxy") {
     new_test = new NPObjectProxyTest(instance, host_functions);
 #if defined(OS_WIN) || defined(OS_MACOSX)

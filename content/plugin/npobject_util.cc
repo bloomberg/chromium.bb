@@ -192,11 +192,17 @@ void CreateNPVariantParam(const NPVariant& variant,
           // we were supposed to release the corresponding variant
           // (release==true), we should still do that.
           param->type = NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID;
-          int route_id = channel->GenerateRouteID();
-          new NPObjectStub(
-              variant.value.objectValue, channel, route_id, containing_window,
-              page_url);
-          param->npobject_routing_id = route_id;
+          int route_id = channel->GetExistingRouteForNPObjectStub(
+              variant.value.objectValue);
+          if (route_id != MSG_ROUTING_NONE) {
+            param->npobject_routing_id = route_id;
+          } else {
+            route_id = channel->GenerateRouteID();
+            new NPObjectStub(
+                variant.value.objectValue, channel, route_id,
+                containing_window, page_url);
+            param->npobject_routing_id = route_id;
+          }
         } else {
           param->type = NPVARIANT_PARAM_VOID;
         }
@@ -216,6 +222,7 @@ bool CreateNPVariant(const NPVariant_Param& param,
                      NPVariant* result,
                      gfx::NativeViewId containing_window,
                      const GURL& page_url) {
+  NPObject* object = NULL;
   switch (param.type) {
     case NPVARIANT_PARAM_VOID:
       result->type = NPVariantType_Void;
@@ -244,11 +251,18 @@ bool CreateNPVariant(const NPVariant_Param& param,
       break;
     case NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID:
       result->type = NPVariantType_Object;
-      result->value.objectValue =
-          NPObjectProxy::Create(channel,
-                                param.npobject_routing_id,
-                                containing_window,
-                                page_url);
+      object = channel->GetExistingNPObjectProxy(param.npobject_routing_id);
+      if (object) {
+        WebBindings::retainObject(object);
+        result->value.objectValue = object;
+      } else {
+        result->value.objectValue =
+            object = NPObjectProxy::Create(channel,
+                                           param.npobject_routing_id,
+                                           containing_window,
+                                           page_url);
+        result->value.objectValue = object;
+      }
       break;
     case NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID: {
       NPObjectBase* npobject_base =

@@ -117,6 +117,16 @@ TEST_F(NPAPITesterBase, MAYBE_GetURLRedirectNotification) {
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
+// Tests that identity is preserved for NPObjects passed from a plugin
+// into JavaScript.
+TEST_F(NPAPITesterBase, NPObjectIdentity) {
+  const FilePath test_case(FILE_PATH_LITERAL("npobject_identity.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+  WaitForFinish("npobject_identity", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
+}
+
 // Tests that if an NPObject is proxies back to its original process, the
 // original pointer is returned and not a proxy.  If this fails the plugin
 // will crash.

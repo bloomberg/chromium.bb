@@ -69,8 +69,10 @@ NPObjectProxy::NPObjectProxy(
 NPObjectProxy::~NPObjectProxy() {
   if (channel_.get()) {
     Send(new NPObjectMsg_Release(route_id_));
-    if (channel_.get())
+    if (channel_.get()) {
       channel_->RemoveRoute(route_id_);
+      channel_->RemoveMappingForNPObjectProxy(route_id_);
+    }
   }
 }
 
@@ -82,7 +84,7 @@ NPObject* NPObjectProxy::Create(PluginChannelBase* channel,
       WebBindings::createObject(0, &npclass_proxy_));
   obj->proxy = new NPObjectProxy(
       channel, route_id, containing_window, page_url);
-
+  channel->AddMappingForNPObjectProxy(route_id, &obj->object);
   return reinterpret_cast<NPObject*>(obj);
 }
 

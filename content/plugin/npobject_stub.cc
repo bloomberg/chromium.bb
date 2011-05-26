@@ -27,6 +27,7 @@ NPObjectStub::NPObjectStub(
       route_id_(route_id),
       containing_window_(containing_window),
       page_url_(page_url) {
+  channel_->AddMappingForNPObjectStub(route_id, npobject);
   channel_->AddRoute(route_id, this, this);
 
   // We retain the object just as PluginHost does if everything was in-process.
@@ -35,8 +36,10 @@ NPObjectStub::NPObjectStub(
 
 NPObjectStub::~NPObjectStub() {
   channel_->RemoveRoute(route_id_);
-  if (npobject_)
+  if (npobject_) {
+    channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
     WebBindings::releaseObject(npobject_);
+  }
 }
 
 bool NPObjectStub::Send(IPC::Message* msg) {
@@ -44,6 +47,7 @@ bool NPObjectStub::Send(IPC::Message* msg) {
 }
 
 void NPObjectStub::OnPluginDestroyed() {
+  channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
   // We null out the underlying NPObject pointer since it's not valid anymore (
   // ScriptController manually deleted the object).  As a result,
   // OnMessageReceived won't dispatch any more messages.  Since this includes

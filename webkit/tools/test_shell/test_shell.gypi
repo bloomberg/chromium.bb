@@ -580,6 +580,8 @@
             '../../plugins/npapi/test/plugin_javascript_open_popup.h',
             '../../plugins/npapi/test/plugin_new_fails_test.cc',
             '../../plugins/npapi/test/plugin_new_fails_test.h',
+            '../../plugins/npapi/test/plugin_npobject_identity_test.cc',
+            '../../plugins/npapi/test/plugin_npobject_identity_test.h',
             '../../plugins/npapi/test/plugin_npobject_lifetime_test.cc',
             '../../plugins/npapi/test/plugin_npobject_lifetime_test.h',
             '../../plugins/npapi/test/plugin_npobject_proxy_test.cc',

@@ -239,3 +239,34 @@ bool PluginChannelBase::OnControlMessageReceived(const IPC::Message& msg) {
 void PluginChannelBase::OnChannelError() {
   channel_valid_ = false;
 }
+
+NPObject* PluginChannelBase::GetExistingNPObjectProxy(int route_id) {
+  ProxyMap::iterator iter = proxy_map_.find(route_id);
+  return iter != proxy_map_.end() ? iter->second : NULL;
+}
+
+int PluginChannelBase::GetExistingRouteForNPObjectStub(NPObject* npobject) {
+  StubMap::iterator iter = stub_map_.find(npobject);
+  return iter != stub_map_.end() ? iter->second : MSG_ROUTING_NONE;
+}
+
+void PluginChannelBase::AddMappingForNPObjectProxy(int route_id,
+                                                   NPObject* object) {
+  proxy_map_[route_id] = object;
+}
+
+void PluginChannelBase::AddMappingForNPObjectStub(int route_id,
+                                                  NPObject* object) {
+  DCHECK(object != NULL);
+  stub_map_[object] = route_id;
+}
+
+void PluginChannelBase::RemoveMappingForNPObjectStub(int route_id,
+                                                     NPObject* object) {
+  DCHECK(object != NULL);
+  stub_map_.erase(object);
+}
+
+void PluginChannelBase::RemoveMappingForNPObjectProxy(int route_id) {
+  proxy_map_.erase(route_id);
+}

@@ -22,6 +22,28 @@ namespace base {
 class MessageLoopProxy;
 }
 
+#if defined(COMPILER_GCC)
+namespace __gnu_cxx {
+
+template<>
+struct hash<NPObject*> {
+  std::size_t operator()(NPObject* const& ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+
+}  // namespace __gnu_cxx
+#elif defined(COMPILER_MSVC)
+namespace stdext {
+
+template<>
+inline size_t hash_value(NPObject* const& ptr) {
+  return hash_value(reinterpret_cast<size_t>(ptr));
+}
+
+}  // namespace stdext
+#endif // COMPILER
+
 // Encapsulates an IPC channel between a renderer and a plugin process.
 class PluginChannelBase : public IPC::Channel::Listener,
                           public IPC::Message::Sender,
@@ -37,6 +59,17 @@ class PluginChannelBase : public IPC::Channel::Listener,
   void AddRoute(int route_id, IPC::Channel::Listener* listener,
                 NPObjectBase* npobject);
   void RemoveRoute(int route_id);
+
+
+  void AddMappingForNPObjectProxy(int route_id, NPObject* object);
+  void RemoveMappingForNPObjectProxy(int route_id);
+
+  void AddMappingForNPObjectStub(int route_id, NPObject* object);
+  void RemoveMappingForNPObjectStub(int route_id, NPObject* object);
+
+  NPObject* GetExistingNPObjectProxy(int route_id);
+  int GetExistingRouteForNPObjectStub(NPObject* npobject);
+
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
@@ -121,6 +154,12 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // channel is closed we can inform them.
   typedef base::hash_map<int, NPObjectBase*> ListenerMap;
   ListenerMap npobject_listeners_;
+
+  typedef base::hash_map<int, NPObject*> ProxyMap;
+  ProxyMap proxy_map_;
+
+  typedef base::hash_map<NPObject*, int> StubMap;
+  StubMap stub_map_;
 
   // Used to implement message routing functionality to WebPlugin[Delegate]
   // objects
