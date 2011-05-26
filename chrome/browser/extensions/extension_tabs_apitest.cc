@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabJpeg) {
 }
 
 // Test is timing out on cros and flaky on others. See http://crbug.com/83876
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_CaptureVisibleTabPng DISABLED_CaptureVisibleTabPng
 #else
 #define MAYBE_CaptureVisibleTabPng FLAKY_CaptureVisibleTabPng
