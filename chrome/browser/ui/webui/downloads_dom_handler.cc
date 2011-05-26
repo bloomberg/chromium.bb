@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
+#include "chrome/browser/ui/webui/fileicon_source_cros.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -53,7 +54,11 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Create our fileicon data source.
   dlm->profile()->GetChromeURLDataManager()->AddDataSource(
+#if defined(OS_CHROMEOS)
+      new FileIconSourceCros());
+#else
       new FileIconSource());
+#endif  // OS_CHROMEOS
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {
