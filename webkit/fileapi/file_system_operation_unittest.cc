@@ -88,10 +88,29 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
  public:
   explicit MockQuotaManagerProxy(QuotaManager* quota_manager)
       : QuotaManagerProxy(quota_manager,
-                          base::MessageLoopProxy::CreateForCurrentThread()) {}
+                          base::MessageLoopProxy::CreateForCurrentThread()),
+        registered_client_(NULL) {
+  }
+
+  virtual ~MockQuotaManagerProxy() {
+    EXPECT_FALSE(registered_client_);
+  }
+
+  virtual void RegisterClient(QuotaClient* client) {
+    EXPECT_FALSE(registered_client_);
+    registered_client_ = client;
+  }
+
+  void SimulateQuotaManagerDestroyed() {
+    if (registered_client_) {
+      // We cannot call this in the destructor as the client (indirectly)
+      // holds a refptr of the proxy.
+      registered_client_->OnQuotaManagerDestroyed();
+      registered_client_ = NULL;
+    }
+  }
 
   // We don't mock them.
-  virtual void RegisterClient(QuotaClient* client) OVERRIDE {}
   virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
   virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
 
@@ -120,6 +139,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   MockQuotaManager* mock_manager() const {
     return static_cast<MockQuotaManager*>(quota_manager());
   }
+  QuotaClient* registered_client_;
 };
 
 FilePath ASCIIToFilePath(const std::string& str) {
@@ -287,6 +307,8 @@ void FileSystemOperationTest::SetUp() {
 }
 
 void FileSystemOperationTest::TearDown() {
+  // Let the client go away before dropping a ref of the quota manager proxy.
+  quota_manager_proxy()->SimulateQuotaManagerDestroyed();
   quota_manager_ = NULL;
   quota_manager_proxy_ = NULL;
   test_helper_.TearDown();

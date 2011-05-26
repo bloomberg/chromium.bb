@@ -4651,12 +4651,6 @@
    fun:_ZN3net17UDPSocketLibevent11ReadWatcher28OnFileCanReadWithoutBlockingEi
 }
 {
-   bug_83944_a
-   Memcheck:Leak
-   ...
-   fun:_ZN7fileapi23FileSystemOperationTest5SetUpEv
-}
-{
    bug_83944_b
    Memcheck:Addr1
    fun:bcmp

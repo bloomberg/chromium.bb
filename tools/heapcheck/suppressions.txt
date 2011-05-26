@@ -1610,9 +1610,3 @@
    fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
 }
-{
-   bug_83944
-   Heapcheck:Leak
-   ...
-   fun:fileapi::FileSystemOperationTest::SetUp
-}
