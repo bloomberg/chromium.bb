@@ -261,8 +261,26 @@ HRESULT NativeThemeWin::PaintScrollbarArrow(
     return draw_theme_(handle, hdc, SBP_ARROWBTN, state_id, &rect_win, NULL);
   }
 
-  // TODO: Draw it manually.
-  DrawFrameControl(hdc, &rect_win, DFC_SCROLL, 0);
+  int classic_state = DFCS_SCROLLDOWN;
+  switch(part) {
+    case kScrollbarDownArrow:
+      classic_state = DFCS_SCROLLDOWN;
+      break;
+    case kScrollbarLeftArrow:
+      classic_state = DFCS_SCROLLLEFT;
+      break;
+    case kScrollbarRightArrow:
+      classic_state = DFCS_SCROLLRIGHT;
+      break;
+    case kScrollbarUpArrow:
+      classic_state = DFCS_SCROLLUP;
+      break;
+    default:
+      NOTREACHED() << "Invalid part: " << part;
+      break;
+  }
+
+  DrawFrameControl(hdc, &rect_win, DFC_SCROLL, classic_state);
   return S_OK;
 }
 
