@@ -132,6 +132,13 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra) const {
+  if (!skia::SupportsPlatformPaint(canvas)) {
+    // TODO(alokp): Implement this path.
+    // This block will only get hit with --enable-accelerated-drawing flag.
+    DLOG(INFO) << "Could not paint native UI control";
+    return;
+  }
+
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);
   HDC hdc = scoped_platform_paint.GetPlatformSurface();
 
