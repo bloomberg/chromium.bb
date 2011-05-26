@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,12 +97,8 @@ sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
     return sql::INIT_FAILURE;
 
 #if defined(OS_MACOSX)
-  // Exclude the history file and its journal from backups.
-  base::mac::SetFileBackupExclusion(history_name, true);
-  FilePath::StringType history_name_string(history_name.value());
-  history_name_string += "-journal";
-  FilePath history_journal_name(history_name_string);
-  base::mac::SetFileBackupExclusion(history_journal_name, true);
+  // Exclude the history file from backups.
+  base::mac::SetFileBackupExclusion(history_name);
 #endif
 
   // Prime the cache.

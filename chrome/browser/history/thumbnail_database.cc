@@ -66,12 +66,8 @@ sql::InitStatus ThumbnailDatabase::Init(
   transaction.Begin();
 
 #if defined(OS_MACOSX)
-  // Exclude the thumbnails file and its journal from backups.
-  base::mac::SetFileBackupExclusion(db_name, true);
-  FilePath::StringType db_name_string(db_name.value());
-  db_name_string += "-journal";
-  FilePath db_journal_name(db_name_string);
-  base::mac::SetFileBackupExclusion(db_journal_name, true);
+  // Exclude the thumbnails file from backups.
+  base::mac::SetFileBackupExclusion(db_name);
 #endif
 
   // Create the tables.
