@@ -548,14 +548,14 @@ class ArchiveStage(BuilderStage):
         self._options.buildnumber, BuilderStage.test_tarball,
         self._options.debug)
 
-    if self._build_config['upload_symbols']:
+    if not self._options.debug and self._build_config['upload_symbols']:
       commands.UploadSymbols(self._build_root,
                              board=self._build_config['board'],
                              official=self._build_config['chromeos_official'])
 
     # TODO: When we support branches fully, the friendly name of the branch
     # needs to be used with PushImages
-    if self._build_config['push_image']:
+    if not self._options.debug and  self._build_config['push_image']:
       commands.PushImages(self._build_root,
                           board=self._build_config['board'],
                           branch_name='master',
