@@ -79,10 +79,6 @@ ExtensionDialog* ExtensionDialog::Show(
   return popup;
 }
 
-void ExtensionDialog::ObserverDestroyed() {
-  observer_ = NULL;
-}
-
 void ExtensionDialog::Close() {
   if (closing_)
     return;

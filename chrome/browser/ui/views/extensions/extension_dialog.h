@@ -51,10 +51,6 @@ class ExtensionDialog : public BrowserBubble,
                                int height,
                                Observer* observer);
 
-  // Notifies the dialog that the observer has been destroyed and should not
-  // be sent notifications.
-  void ObserverDestroyed();
-
   // Closes the ExtensionDialog.
   void Close();
 
