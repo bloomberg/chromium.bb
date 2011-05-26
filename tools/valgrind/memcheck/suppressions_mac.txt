@@ -1690,3 +1690,13 @@
    fun:_ZN7WebCore21DedicatedWorkerThread12runEventLoopEv
    fun:_ZN7WebCore12WorkerThread12workerThreadEv
 }
+{
+   bug_83979
+   Memcheck:Leak
+   fun:*alloc*
+   ...
+   fun:_ZN12_GLOBAL__N_125BookmarkBarFolderViewTest22GetFakeDragInfoForTypeEP8NSString
+   fun:_ZN12_GLOBAL__N_*BookmarkBarFolderViewTest_*_Test8TestBodyEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+}
