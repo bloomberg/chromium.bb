@@ -1,15 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SECURITY_STYLE_H_
-#define CHROME_COMMON_SECURITY_STYLE_H_
+#ifndef CONTENT_COMMON_SECURITY_STYLE_H_
+#define CONTENT_COMMON_SECURITY_STYLE_H_
 #pragma once
 
 // Various aspects of the UI change their appearance according to the security
 // context in which they are displayed.  For example, the location bar displays
 // a lock icon when it is displayed during a valid SSL connection.
-// SecuirtySyle enumerates these styles, but it is up to the UI elements to
+// SecuritySyle enumerates these styles, but it is up to the UI elements to
 // adjust their display appropriately.
 enum SecurityStyle {
   // SECURITY_STYLE_UNKNOWN indicates that we do not know the proper security
@@ -32,4 +32,4 @@ enum SecurityStyle {
   SECURITY_STYLE_AUTHENTICATED,
 };
 
-#endif  // CHROME_COMMON_SECURITY_STYLE_H_
+#endif  // CONTENT_COMMON_SECURITY_STYLE_H_

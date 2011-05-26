@@ -205,6 +205,7 @@
         'common/sandbox_methods_linux.h',
         'common/section_util_win.cc',
         'common/section_util_win.h',
+        'common/security_style.h',
         'common/serialized_script_value.cc',
         'common/serialized_script_value.h',
         'common/set_process_title.cc',

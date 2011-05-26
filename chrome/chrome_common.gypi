@@ -221,7 +221,6 @@
         '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.cc',
         '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.h',
         'common/search_provider.h',
-        'common/security_style.h',
         'common/service_messages.h',
         'common/service_process_util.cc',
         'common/service_process_util.h',

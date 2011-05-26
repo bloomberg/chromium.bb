@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/security_style.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_type.h"
+#include "content/common/security_style.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

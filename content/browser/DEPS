@@ -84,8 +84,6 @@ include_rules = [
 
   "+chrome/common/sandbox_policy.h",
 
-  "+chrome/common/security_style.h",
-
   # ONLY USED BY TESTS
   "+chrome/browser/net/url_request_failed_dns_job.h",
   "+chrome/browser/net/url_request_mock_http_job.h",

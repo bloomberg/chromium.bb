@@ -20,11 +20,11 @@
 #include "base/observer_list.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/security_style.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "content/common/page_type.h"
+#include "content/common/security_style.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BrowserProxy;
