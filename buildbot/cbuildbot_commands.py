@@ -456,7 +456,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
     # designated the x86-generic bot as the bot that does that.  Note: this only
     # works with public-only prebuilts.
     if board == 'x86-generic':
-      cmd.extend('--sync-host')
+      cmd.append('--sync-host')
   else:
     assert overlay_config in ('private', 'both')
     upload_bucket = 'chromeos-%s' % board
