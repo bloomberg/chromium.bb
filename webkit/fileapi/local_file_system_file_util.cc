@@ -121,6 +121,21 @@ PlatformFileError LocalFileSystemFileUtil::CopyOrMoveFile(
       context, local_src_path, local_dest_path, copy);
 }
 
+PlatformFileError LocalFileSystemFileUtil::CopyInForeignFile(
+    FileSystemOperationContext* context,
+    const FilePath& src_file_path,
+    const FilePath& dest_file_path) {
+  if (src_file_path.empty())
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  FilePath local_dest_path =
+      GetLocalPath(context, context->dest_origin_url(), context->dest_type(),
+          dest_file_path);
+  if (local_dest_path.empty())
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  return QuotaFileUtil::GetInstance()->CopyOrMoveFile(
+      context, src_file_path, local_dest_path, true);
+}
+
 PlatformFileError LocalFileSystemFileUtil::DeleteFile(
     FileSystemOperationContext* context,
     const FilePath& file_path) {

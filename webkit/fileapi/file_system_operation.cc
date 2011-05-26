@@ -148,19 +148,6 @@ void FileSystemOperation::Copy(const GURL& src_path,
     delete this;
     return;
   }
-  if (src_origin_url.GetOrigin() != dest_origin_url.GetOrigin()) {
-    // TODO(ericu): We don't yet support copying across filesystem types, from
-    // extension to sandbox, etc.  From temporary to persistent works, though.
-    // Since the sandbox code isn't in yet, I'm not sure exactly what check
-    // belongs here, but there's also no danger yet.
-    delete this;
-    return;
-  }
-  if (src_file_system_file_util != dest_file_system_file_util) {
-    // TODO(ericu): implement this.
-    delete this;
-    return;
-  }
   file_system_operation_context_.set_src_origin_url(src_origin_url);
   file_system_operation_context_.set_dest_origin_url(dest_origin_url);
   file_system_operation_context_.set_src_type(src_type);
@@ -217,17 +204,6 @@ void FileSystemOperation::Move(const GURL& src_path,
       !VerifyFileSystemPathForWrite(dest_path, true /* create */,
           &dest_origin_url, &dest_type, &virtual_path_1,
           &dest_file_system_file_util)) {
-    delete this;
-    return;
-  }
-  if (src_origin_url.GetOrigin() != dest_origin_url.GetOrigin()) {
-    // TODO(ericu): We don't yet support moving across filesystem types, from
-    // extension to sandbox, etc.  From temporary to persistent works, though.
-    delete this;
-    return;
-  }
-  if (src_file_system_file_util != dest_file_system_file_util) {
-    // TODO(ericu): implement this.
     delete this;
     return;
   }

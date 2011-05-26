@@ -32,24 +32,22 @@ class QuotaFileUtilTest : public testing::Test {
     FilePath base_dir = data_dir_.path().AppendASCII("filesystem");
 
     // For path translation we rely on LocalFileSystemFileUtil::GetLocalPath().
-    test_helper_.SetUp(base_dir, LocalFileSystemFileUtil::GetInstance());
+    local_test_helper_.SetUp(base_dir, LocalFileSystemFileUtil::GetInstance());
+    quota_test_helper_.SetUp(base_dir, QuotaFileUtil::GetInstance());
   }
 
   void TearDown() {
-    test_helper_.TearDown();
+    local_test_helper_.TearDown();
+    quota_test_helper_.TearDown();
   }
 
  protected:
   FileSystemOperationContext* NewContext() {
-    return test_helper_.NewOperationContext();
-  }
-
-  QuotaFileUtil* FileUtil() {
-    return QuotaFileUtil::GetInstance();
+    return quota_test_helper_.NewOperationContext();
   }
 
   FilePath Path(const std::string& file_name) {
-    return test_helper_.GetLocalPathFromASCII(file_name);
+    return local_test_helper_.GetLocalPathFromASCII(file_name);
   }
 
   base::PlatformFileError CreateFile(const char* file_name,
@@ -58,28 +56,26 @@ class QuotaFileUtilTest : public testing::Test {
         base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC;
 
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return FileUtil()->CreateOrOpen(context.get(), Path(file_name),
-        file_flags, file_handle, created);
+    return QuotaFileUtil::GetInstance()->CreateOrOpen(
+        context.get(), Path(file_name), file_flags, file_handle, created);
   }
 
   base::PlatformFileError EnsureFileExists(const char* file_name,
       bool* created) {
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return FileUtil()->EnsureFileExists(context.get(),
-                                        Path(file_name), created);
+    return QuotaFileUtil::GetInstance()->EnsureFileExists(
+        context.get(), Path(file_name), created);
   }
 
   int64 GetCachedUsage() {
-    return FileSystemUsageCache::GetUsage(test_helper_.GetUsageCachePath());
-  }
-
-  FileSystemContext* file_system_context() const {
-    return test_helper_.file_system_context();
+    return FileSystemUsageCache::GetUsage(
+        quota_test_helper_.GetUsageCachePath());
   }
 
  private:
   ScopedTempDir data_dir_;
-  FileSystemTestOriginHelper test_helper_;
+  FileSystemTestOriginHelper local_test_helper_;
+  FileSystemTestOriginHelper quota_test_helper_;
   base::ScopedCallbackFactory<QuotaFileUtilTest> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtilTest);
@@ -95,7 +91,7 @@ TEST_F(QuotaFileUtilTest, CreateAndClose) {
 
   scoped_ptr<FileSystemOperationContext> context(NewContext());
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            FileUtil()->Close(context.get(), file_handle));
+            QuotaFileUtil::GetInstance()->Close(context.get(), file_handle));
 }
 
 TEST_F(QuotaFileUtilTest, EnsureFileExists) {

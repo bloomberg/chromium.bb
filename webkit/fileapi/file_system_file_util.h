@@ -116,6 +116,14 @@ class FileSystemFileUtil {
       const FilePath& dest_file_path,
       bool copy);
 
+  // Copies in a single file from a different filesystem.  The src_file_path is
+  // a true local platform path, regardless of which subclass of
+  // FileSystemFileUtil is being invoked.
+  virtual PlatformFileError CopyInForeignFile(
+        FileSystemOperationContext* context,
+        const FilePath& src_file_path,
+        const FilePath& dest_file_path);
+
   // Copies a file or a directory from |src_file_path| to |dest_file_path|.
   //
   // Error cases:
@@ -249,6 +257,16 @@ class FileSystemFileUtil {
   // It assumes src_file_path and dest_file_path have passed
   // PerformCommonCheckAndPreparationForMoveAndCopy().
   PlatformFileError CopyOrMoveDirectory(
+      FileSystemOperationContext* context,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path,
+      bool copy);
+
+  // Determines whether a simple same-filesystem move or copy can be done.  If
+  // so, it delegates to CopyOrMoveFile.  Otherwise it looks up the true
+  // platform path of the source file, delegates to CopyInForeignFile, and [for
+  // move] calls DeleteFile on the source file.
+  PlatformFileError CopyOrMoveFileHelper(
       FileSystemOperationContext* context,
       const FilePath& src_file_path,
       const FilePath& dest_file_path,

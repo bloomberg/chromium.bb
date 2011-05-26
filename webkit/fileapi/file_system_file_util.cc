@@ -13,6 +13,21 @@
 
 namespace fileapi {
 
+namespace {
+
+// This assumes that the root exists.
+bool ParentExists(FileSystemOperationContext* context,
+    FileSystemFileUtil* file_util, const FilePath& file_path) {
+  // If file_path is in the root, file_path.DirName() will be ".",
+  // since we use paths with no leading '/'.
+  FilePath parent = file_path.DirName();
+  if (parent == FilePath(FILE_PATH_LITERAL(".")))
+    return true;
+  return file_util->DirectoryExists(context, parent);
+}
+
+}
+
 // static
 FileSystemFileUtil* FileSystemFileUtil::GetInstance() {
   return Singleton<FileSystemFileUtil>::get();
@@ -148,9 +163,8 @@ PlatformFileError FileSystemFileUtil::Copy(
   if (DirectoryExists(context, src_file_path))
     return CopyOrMoveDirectory(context, src_file_path, dest_file_path,
                                true /* copy */);
-  else
-    return CopyOrMoveFile(context, src_file_path, dest_file_path,
-                          true /* copy */);
+  return CopyOrMoveFileHelper(context, src_file_path, dest_file_path,
+                              true /* copy */);
 }
 
 PlatformFileError FileSystemFileUtil::Move(
@@ -168,9 +182,8 @@ PlatformFileError FileSystemFileUtil::Move(
   if (DirectoryExists(context, src_file_path))
     return CopyOrMoveDirectory(context, src_file_path, dest_file_path,
                                false /* copy */);
-  else
-    return CopyOrMoveFile(context, src_file_path, dest_file_path,
-                          false /* copy */);
+  return CopyOrMoveFileHelper(context, src_file_path, dest_file_path,
+                              false /* copy */);
 }
 
 PlatformFileError FileSystemFileUtil::Delete(
@@ -222,26 +235,50 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
     FileSystemOperationContext* context,
     const FilePath& src_file_path,
     const FilePath& dest_file_path) {
+  bool same_file_system =
+     (context->src_origin_url() == context->dest_origin_url()) &&
+     (context->src_type() == context->dest_type());
+  FileSystemFileUtil* dest_util = context->dest_file_system_file_util();
+  DCHECK(dest_util);
+  FileSystemOperationContext local_dest_context(
+      context->file_system_context(), dest_util);
+  FileSystemOperationContext* dest_context;
+  if (same_file_system) {
+    dest_context = context;
+    DCHECK(context->src_file_system_file_util() ==
+         context->dest_file_system_file_util());
+  } else {
+    // All the single-path virtual FSFU methods expect the context information
+    // to be in the src_* variables, not the dest_* variables, so we have to
+    // make a new context if we want to call them on the dest_file_path.
+    dest_context = &local_dest_context;
+    dest_context->set_src_type(context->dest_type());
+    dest_context->set_src_origin_url(context->dest_origin_url());
+    dest_context->set_src_virtual_path(context->dest_virtual_path());
+    dest_context->set_allowed_bytes_growth(context->allowed_bytes_growth());
+  }
+
   // Exits earlier if the source path does not exist.
   if (!PathExists(context, src_file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // The parent of the |dest_file_path| does not exist.
-  if (!DirectoryExists(context, dest_file_path.DirName()))
+  if (!ParentExists(dest_context, dest_util, dest_file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // It is an error to try to copy/move an entry into its child.
-  if (src_file_path.IsParent(dest_file_path))
+  if (same_file_system && src_file_path.IsParent(dest_file_path))
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // Now it is ok to return if the |dest_file_path| does not exist.
-  if (!PathExists(context, dest_file_path))
+  if (!dest_util->PathExists(dest_context, dest_file_path))
     return base::PLATFORM_FILE_OK;
 
   // |src_file_path| exists and is a directory.
   // |dest_file_path| exists and is a file.
   bool src_is_directory = DirectoryExists(context, src_file_path);
-  bool dest_is_directory = DirectoryExists(context, dest_file_path);
+  bool dest_is_directory =
+      dest_util->DirectoryExists(dest_context, dest_file_path);
   if (src_is_directory && !dest_is_directory)
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
@@ -251,7 +288,7 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // It is an error to copy/move an entry into the same path.
-  if (src_file_path.value() == dest_file_path.value())
+  if (same_file_system && (src_file_path.value() == dest_file_path.value()))
     return base::PLATFORM_FILE_ERROR_EXISTS;
 
   if (dest_is_directory) {
@@ -261,8 +298,9 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
     // on all platforms, so we delete the destination directory here.
     // TODO(kinuko): may be better to change the file_util::{Copy,Move}.
     if (base::PLATFORM_FILE_OK !=
-        Delete(context, dest_file_path, false /* recursive */)) {
-      if (!IsDirectoryEmpty(context, dest_file_path))
+        dest_util->Delete(dest_context, dest_file_path,
+                          false /* recursive */)) {
+      if (!dest_util->IsDirectoryEmpty(dest_context, dest_file_path))
         return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
@@ -286,19 +324,39 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveFile(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
+PlatformFileError FileSystemFileUtil::CopyInForeignFile(
+      FileSystemOperationContext* context,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path) {
+  return CopyOrMoveFile(context, src_file_path, dest_file_path, true);
+}
+
 PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
       FileSystemOperationContext* context,
       const FilePath& src_file_path,
       const FilePath& dest_file_path,
       bool copy) {
+  FileSystemFileUtil* dest_util = context->dest_file_system_file_util();
+  FileSystemOperationContext dest_context(
+      context->file_system_context(), dest_util);
+  // All the single-path virtual FSFU methods expect the context information to
+  // be in the src_* variables, not the dest_* variables, so we have to make a
+  // new context if we want to call them on the dest_file_path.
+  dest_context.set_src_type(context->dest_type());
+  dest_context.set_src_origin_url(context->dest_origin_url());
+  dest_context.set_src_virtual_path(context->dest_virtual_path());
+  dest_context.set_allowed_bytes_growth(context->allowed_bytes_growth());
+
   // Re-check PerformCommonCheckAndPreparationForMoveAndCopy() by DCHECK.
   DCHECK(DirectoryExists(context, src_file_path));
-  DCHECK(DirectoryExists(context, dest_file_path.DirName()));
-  DCHECK(!src_file_path.IsParent(dest_file_path));
-  DCHECK(!PathExists(context, dest_file_path));
+  DCHECK(ParentExists(&dest_context, dest_util, dest_file_path));
+  DCHECK(!dest_util->PathExists(&dest_context, dest_file_path));
+  if ((context->src_origin_url() == context->dest_origin_url()) &&
+      (context->src_type() == context->dest_type()))
+    DCHECK(!src_file_path.IsParent(dest_file_path));
 
-  if (!DirectoryExists(context, dest_file_path)) {
-    PlatformFileError error = CreateDirectory(context,
+  if (!dest_util->DirectoryExists(&dest_context, dest_file_path)) {
+    PlatformFileError error = dest_util->CreateDirectory(&dest_context,
         dest_file_path, false, false);
     if (error != base::PLATFORM_FILE_OK)
       return error;
@@ -312,13 +370,12 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
     src_file_path.AppendRelativePath(src_file_path_each, &dest_file_path_each);
 
     if (file_enum->IsDirectory()) {
-      PlatformFileError error = CreateDirectory(context,
+      PlatformFileError error = dest_util->CreateDirectory(&dest_context,
           dest_file_path_each, false, false);
       if (error != base::PLATFORM_FILE_OK)
         return error;
     } else {
-      // CopyOrMoveFile here is the virtual overridden member function.
-      PlatformFileError error = CopyOrMoveFile(
+      PlatformFileError error = CopyOrMoveFileHelper(
           context, src_file_path_each, dest_file_path_each, copy);
       if (error != base::PLATFORM_FILE_OK)
         return error;
@@ -332,6 +389,35 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
   }
   return base::PLATFORM_FILE_OK;
 }
+
+PlatformFileError FileSystemFileUtil::CopyOrMoveFileHelper(
+    FileSystemOperationContext* context,
+    const FilePath& src_file_path,
+    const FilePath& dest_file_path,
+    bool copy) {
+  // CopyOrMoveFile here is the virtual overridden member function.
+  if ((context->src_origin_url() == context->dest_origin_url()) &&
+      (context->src_type() == context->dest_type())) {
+    DCHECK(context->src_file_system_file_util() ==
+           context->dest_file_system_file_util());
+    return CopyOrMoveFile(context, src_file_path, dest_file_path, copy);
+  }
+  base::PlatformFileInfo file_info;
+  FilePath platform_file_path;
+  PlatformFileError error_code;
+  error_code =
+      GetFileInfo(context, src_file_path, &file_info, &platform_file_path);
+  if (error_code != base::PLATFORM_FILE_OK)
+    return error_code;
+
+  DCHECK(context->dest_file_system_file_util());
+  error_code = context->dest_file_system_file_util()->CopyInForeignFile(
+      context, platform_file_path, dest_file_path);
+  if (copy || error_code != base::PLATFORM_FILE_OK)
+    return error_code;
+  return DeleteFile(context, src_file_path);
+}
+
 
 PlatformFileError FileSystemFileUtil::DeleteFile(
     FileSystemOperationContext* unused,

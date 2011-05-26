@@ -36,6 +36,12 @@ bool FileExists(const FilePath& path) {
   return file_util::PathExists(path) && !file_util::DirectoryExists(path);
 }
 
+int64 GetSize(const FilePath& path) {
+  int64 size;
+  EXPECT_TRUE(file_util::GetFileSize(path, &size));
+  return size;
+}
+
 // After a move, the dest exists and the source doesn't.
 // After a copy, both source and dest exist.
 struct CopyMoveTestCaseRecord {
@@ -157,12 +163,6 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     return type_;
   }
 
-  int64 GetSize(const FilePath& path) {
-    int64 size;
-    EXPECT_TRUE(file_util::GetFileSize(path, &size));
-    return size;
-  }
-
   void CheckFileAndCloseHandle(
       const FilePath& virtual_path, PlatformFile file_handle) {
     scoped_ptr<FileSystemOperationContext> context(NewContext());
@@ -189,6 +189,7 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
           base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
           &created,
           &error);
+      ASSERT_NE(base::kInvalidPlatformFileValue, file_handle);
       ASSERT_EQ(base::PLATFORM_FILE_OK, error);
       EXPECT_FALSE(created);
     }
@@ -336,6 +337,55 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofsfu()->GetFileInfo(
         context.get(), path, &file_info, &local_path));
     EXPECT_EQ(file_info.last_modified.ToTimeT(), last_modified_time.ToTimeT());
+  }
+
+  void TestCopyInForeignFileHelper(bool overwrite) {
+    ScopedTempDir source_dir;
+    ASSERT_TRUE(source_dir.CreateUniqueTempDir());
+    FilePath root_path = source_dir.path();
+    FilePath src_path = root_path.AppendASCII("file_name");
+    FilePath dest_path(FILE_PATH_LITERAL("new file"));
+    int64 src_file_length = 87;
+
+    base::PlatformFileError error_code;
+    bool created = false;
+    int file_flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
+    base::PlatformFile file_handle =
+        base::CreatePlatformFile(
+            src_path, file_flags, &created, &error_code);
+    EXPECT_TRUE(created);
+    ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
+    ASSERT_NE(base::kInvalidPlatformFileValue, file_handle);
+    ASSERT_TRUE(base::TruncatePlatformFile(file_handle, src_file_length));
+    EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+
+    scoped_ptr<FileSystemOperationContext> context;
+
+    if (overwrite) {
+      context.reset(NewContext());
+      EXPECT_EQ(base::PLATFORM_FILE_OK,
+          ofsfu()->EnsureFileExists(context.get(), dest_path, &created));
+      EXPECT_TRUE(created);
+    }
+
+    context.reset(NewContext());
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+        ofsfu()->CopyInForeignFile(context.get(), src_path, dest_path));
+    context.reset(NewContext());
+    EXPECT_TRUE(ofsfu()->PathExists(context.get(), dest_path));
+    context.reset(NewContext());
+    EXPECT_FALSE(ofsfu()->DirectoryExists(context.get(), dest_path));
+    context.reset(NewContext());
+    base::PlatformFileInfo file_info;
+    FilePath data_path;
+    EXPECT_EQ(base::PLATFORM_FILE_OK, ofsfu()->GetFileInfo(
+        context.get(), dest_path, &file_info, &data_path));
+    EXPECT_NE(data_path, src_path);
+    EXPECT_TRUE(FileExists(data_path));
+    EXPECT_EQ(src_file_length, GetSize(data_path));
+
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+        ofsfu()->DeleteFile(context.get(), dest_path));
   }
 
  private:
@@ -778,6 +828,11 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestCopyOrMoveFileSuccess) {
   }
 }
 
+TEST_F(ObfuscatedFileSystemFileUtilTest, TestCopyInForeignFile) {
+  TestCopyInForeignFileHelper(false /* overwrite */);
+  TestCopyInForeignFileHelper(true /* overwrite */);
+}
+
 TEST_F(ObfuscatedFileSystemFileUtilTest, TestEnumerator) {
   scoped_ptr<FileSystemOperationContext> context(NewContext());
   FilePath src_path = UTF8ToFilePath("source dir");
@@ -832,6 +887,7 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestMigration) {
           base::CreatePlatformFile(
               local_src_path, file_flags, &created, &error_code);
       EXPECT_TRUE(created);
+      ASSERT_NE(base::kInvalidPlatformFileValue, file_handle);
       ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
       ASSERT_TRUE(
           base::TruncatePlatformFile(file_handle, test_case.data_file_size));

@@ -284,10 +284,6 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
     bool copy) {
-  // TODO(ericu): Handle multi-db move+copy, where src and dest aren't in the
-  // same database.  Currently we'll just fail badly.  This may get handled from
-  // higher-level code, though, and as we don't have cross-filesystem
-  // transactions that's not any less efficient than doing it here.
   FileSystemDirectoryDatabase* db =
       GetDirectoryDatabase(context->src_origin_url(), context->src_type());
   if (!db)
@@ -369,6 +365,41 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
     }
   }
   NOTREACHED();
+  return base::PLATFORM_FILE_ERROR_FAILED;
+}
+
+PlatformFileError ObfuscatedFileSystemFileUtil::CopyInForeignFile(
+    FileSystemOperationContext* context,
+    const FilePath& src_file_path,
+    const FilePath& dest_file_path) {
+  FileSystemDirectoryDatabase* db =
+      GetDirectoryDatabase(context->dest_origin_url(), context->dest_type());
+  if (!db)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  FileId dest_file_id;
+  bool overwrite = db->GetFileWithPath(dest_file_path, &dest_file_id);
+  FileInfo dest_file_info;
+  if (overwrite) {
+    if (!db->GetFileInfo(dest_file_id, &dest_file_info) ||
+        dest_file_info.is_directory()) {
+      NOTREACHED();
+      return base::PLATFORM_FILE_ERROR_FAILED;
+    }
+    FilePath dest_data_path = DataPathToLocalPath(context->dest_origin_url(),
+      context->dest_type(), dest_file_info.data_path);
+    return QuotaFileUtil::GetInstance()->CopyOrMoveFile(context,
+        src_file_path, dest_data_path, true /* copy */);
+  } else {
+    FileId dest_parent_id;
+    if (!db->GetFileWithPath(dest_file_path.DirName(), &dest_parent_id)) {
+      NOTREACHED();  // We shouldn't be called in this case.
+      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    }
+    InitFileInfo(&dest_file_info, dest_parent_id,
+        dest_file_path.BaseName().value());
+    return CreateFile(context, context->dest_origin_url(),
+        context->dest_type(), src_file_path, &dest_file_info, 0, NULL);
+  }
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 

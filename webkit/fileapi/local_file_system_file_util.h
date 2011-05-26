@@ -77,6 +77,11 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       const FilePath& dest_file_path,
       bool copy);
 
+  virtual PlatformFileError CopyInForeignFile(
+        FileSystemOperationContext* context,
+        const FilePath& src_file_path,
+        const FilePath& dest_file_path);
+
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
       const FilePath& file_path);
