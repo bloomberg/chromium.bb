@@ -465,6 +465,7 @@
       'export_dependent_settings': [
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
+      'hard_dependency': 1,
     },
   ],
   'conditions': [
