@@ -17,11 +17,12 @@ class TitleUpdatedDetails {
         explicit_set_(explicit_set) {}
   ~TitleUpdatedDetails() {}
 
+  // |entry()| may return null.
   const NavigationEntry* entry() const { return entry_; }
   bool explicit_set() const { return explicit_set_; }
 
  private:
-  const NavigationEntry* entry_;
+  const NavigationEntry* entry_;  // |entry_| may be null.
   bool explicit_set_;  // If a synthesized title.
 
   TitleUpdatedDetails() {}

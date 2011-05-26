@@ -113,9 +113,11 @@ void HistoryTabHelper::Observe(NotificationType type,
   if (received_page_title_)
     return;
 
-  UpdateHistoryPageTitle(*title->entry());
-
-  received_page_title_ = title->explicit_set();
+  // |title->entry()| may be null.
+  if (title->entry()) {
+    UpdateHistoryPageTitle(*title->entry());
+    received_page_title_ = title->explicit_set();
+  }
 }
 
 void HistoryTabHelper::OnPageContents(const GURL& url,

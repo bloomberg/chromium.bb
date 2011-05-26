@@ -792,6 +792,9 @@ class TabContents : public PageNavigator,
 
   // Data for current page -----------------------------------------------------
 
+  // When a title cannot be taken from any entry, this title will be used.
+  string16 page_title_when_no_navigation_entry_;
+
   // When a navigation occurs, we record its contents MIME type. It can be
   // used to check whether we can do something for some special contents.
   std::string contents_mime_type_;

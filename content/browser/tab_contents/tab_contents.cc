@@ -354,7 +354,10 @@ const string16& TabContents::GetTitle() const {
   if (entry) {
     return entry->GetTitleForDisplay(accept_languages);
   }
-  return EmptyString16();
+
+  // |page_title_when_no_navigation_entry_| is finally used
+  // if no title cannot be retrieved.
+  return page_title_when_no_navigation_entry_;
 }
 
 int32 TabContents::GetMaxPageID() {
@@ -1169,7 +1172,7 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   // per page of the title to history."
   string16 final_title;
   bool explicit_set;
-  if (entry->url().SchemeIsFile() && title.empty()) {
+  if (entry && entry->url().SchemeIsFile() && title.empty()) {
     final_title = UTF8ToUTF16(entry->url().ExtractFileName());
     explicit_set = false;  // Don't count synthetic titles toward the set limit.
   } else {
@@ -1177,10 +1180,20 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
     explicit_set = true;
   }
 
-  if (final_title == entry->title())
-    return false;  // Nothing changed, don't bother.
+  // If a page is created via window.open and never navigated,
+  // there will be no navigation entry. In this situation,
+  // |page_title_when_no_navigaiton_entry_| will be used for page title.
+  if (entry) {
+    if (final_title == entry->title())
+      return false;  // Nothing changed, don't bother.
 
-  entry->set_title(final_title);
+    entry->set_title(final_title);
+  } else {
+    if (page_title_when_no_navigation_entry_ == final_title)
+      return false;  // Nothing changed, don't bother.
+
+    page_title_when_no_navigation_entry_ = final_title;
+  }
 
   // Lastly, set the title for the view.
   view_->SetPageTitle(UTF16ToWideHack(final_title));
@@ -1438,7 +1451,8 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
   DCHECK(rvh == render_view_host());
   NavigationEntry* entry = controller_.GetEntryWithPageID(rvh->site_instance(),
                                                           page_id);
-  if (!entry || !UpdateTitleForEntry(entry, title))
+
+  if (!UpdateTitleForEntry(entry, title))
     return;
 
   // Broadcast notifications when the UI should be updated.
