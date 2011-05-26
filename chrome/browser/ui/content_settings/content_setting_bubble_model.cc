@@ -28,6 +28,25 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+struct ContentSettingsTypeIdEntry {
+  ContentSettingsType type;
+  int id;
+};
+
+int GetIdForContentType(const ContentSettingsTypeIdEntry* entries,
+                        size_t num_entries,
+                        ContentSettingsType type) {
+  for (size_t i = 0; i < num_entries; ++i) {
+    if (entries[i].type == type)
+      return entries[i].id;
+  }
+  return 0;
+}
+
+}
+
 class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  public:
   ContentSettingTitleAndLinkModel(Browser* browser,
@@ -58,70 +77,49 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   }
 
   void SetTitle() {
-    static const int kBlockedTitleIDs[] = {
-      IDS_BLOCKED_COOKIES_TITLE,
-      IDS_BLOCKED_IMAGES_TITLE,
-      IDS_BLOCKED_JAVASCRIPT_TITLE,
-      IDS_BLOCKED_PLUGINS_MESSAGE,
-      IDS_BLOCKED_POPUPS_TITLE,
-      0,  // Geolocation does not have an overall title.
-      0,  // Notifications do not have a bubble.
-      0,  // Prerender does not have a bubble.
+    static const ContentSettingsTypeIdEntry kBlockedTitleIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
+      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
+      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TITLE},
     };
     // Fields as for kBlockedTitleIDs, above.
-    static const int kResourceSpecificBlockedTitleIDs[] = {
-      0,
-      0,
-      0,
-      IDS_BLOCKED_PLUGINS_TITLE,
-      0,
-      0,
-      0,
-      0,
+    static const ContentSettingsTypeIdEntry
+        kResourceSpecificBlockedTitleIDs[] = {
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
     };
-    static const int kAccessedTitleIDs[] = {
-      IDS_ACCESSED_COOKIES_TITLE,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+    static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
     };
-    COMPILE_ASSERT(arraysize(kAccessedTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
-                   Need_a_setting_for_every_content_settings_type);
-    COMPILE_ASSERT(arraysize(kBlockedTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
-                   Need_a_setting_for_every_content_settings_type);
-    COMPILE_ASSERT(arraysize(kResourceSpecificBlockedTitleIDs) ==
-        CONTENT_SETTINGS_NUM_TYPES,
-        Need_a_setting_for_every_content_settings_type);
-    const int *title_ids = kBlockedTitleIDs;
+    const ContentSettingsTypeIdEntry *title_ids = kBlockedTitleIDs;
+    size_t num_title_ids = arraysize(kBlockedTitleIDs);
     if (tab_contents() && tab_contents()->content_settings()->
             IsContentAccessed(content_type()) &&
         !tab_contents()->content_settings()->IsContentBlocked(content_type())) {
       title_ids = kAccessedTitleIDs;
+      num_title_ids = arraysize(kAccessedTitleIDs);
     } else if (!bubble_content().resource_identifiers.empty()) {
       title_ids = kResourceSpecificBlockedTitleIDs;
+      num_title_ids = arraysize(kResourceSpecificBlockedTitleIDs);
     }
-    if (title_ids[content_type()])
-      set_title(l10n_util::GetStringUTF8(title_ids[content_type()]));
+    int title_id =
+        GetIdForContentType(title_ids, num_title_ids, content_type());
+    if (title_id)
+      set_title(l10n_util::GetStringUTF8(title_id));
   }
 
   void SetManageLink() {
-    static const int kLinkIDs[] = {
-      IDS_BLOCKED_COOKIES_LINK,
-      IDS_BLOCKED_IMAGES_LINK,
-      IDS_BLOCKED_JAVASCRIPT_LINK,
-      IDS_BLOCKED_PLUGINS_LINK,
-      IDS_BLOCKED_POPUPS_LINK,
-      IDS_GEOLOCATION_BUBBLE_MANAGE_LINK,
-      0,  // Notifications do not have a bubble.
-      0,  // Prerender does not have a bubble.
+    static const ContentSettingsTypeIdEntry kLinkIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_LINK},
+      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_LINK},
+      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_LINK},
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_LINK},
+      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_LINK},
+      {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_GEOLOCATION_BUBBLE_MANAGE_LINK},
     };
-    COMPILE_ASSERT(arraysize(kLinkIDs) == CONTENT_SETTINGS_NUM_TYPES,
-                   Need_a_setting_for_every_content_settings_type);
-    set_manage_link(l10n_util::GetStringUTF8(kLinkIDs[content_type()]));
+    set_manage_link(l10n_util::GetStringUTF8(
+        GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
   }
 
   virtual void OnManageLinkClicked() {
@@ -148,20 +146,14 @@ class ContentSettingTitleLinkAndCustomModel
 
  private:
   void SetCustomLink() {
-    static const int kCustomIDs[] = {
-      IDS_BLOCKED_COOKIES_INFO,
-      0,  // Images do not have a custom link.
-      0,  // Javascript doesn't have a custom link.
-      IDS_BLOCKED_PLUGINS_LOAD_ALL,
-      0,  // Popups do not have a custom link.
-      0,  // Geolocation custom links are set within that class.
-      0,  // Notifications do not have a bubble.
-      0,  // Prerender does not have a bubble.
+    static const ContentSettingsTypeIdEntry kCustomIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_INFO},
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_LOAD_ALL},
     };
-    COMPILE_ASSERT(arraysize(kCustomIDs) == CONTENT_SETTINGS_NUM_TYPES,
-                   Need_a_setting_for_every_content_settings_type);
-    if (kCustomIDs[content_type()])
-      set_custom_link(l10n_util::GetStringUTF8(kCustomIDs[content_type()]));
+    int custom_link_id =
+        GetIdForContentType(kCustomIDs, arraysize(kCustomIDs), content_type());
+    if (custom_link_id)
+      set_custom_link(l10n_util::GetStringUTF8(custom_link_id));
   }
 
   virtual void OnCustomLinkClicked() {}
@@ -227,52 +219,36 @@ class ContentSettingSingleRadioGroup
     RadioGroup radio_group;
     radio_group.url = url;
 
-    static const int kAllowIDs[] = {
-      IDS_BLOCKED_COOKIES_UNBLOCK,
-      IDS_BLOCKED_IMAGES_UNBLOCK,
-      IDS_BLOCKED_JAVASCRIPT_UNBLOCK,
-      IDS_BLOCKED_PLUGINS_UNBLOCK_ALL,
-      IDS_BLOCKED_POPUPS_UNBLOCK,
-      0,  // We don't manage geolocation here.
-      0,  // Notifications do not have a bubble.
-      0,  // Prerender does not have a bubble.
+    static const ContentSettingsTypeIdEntry kAllowIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_UNBLOCK},
+      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_UNBLOCK},
+      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_UNBLOCK},
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_UNBLOCK_ALL},
+      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_UNBLOCK},
     };
-    COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
-                   Need_a_setting_for_every_content_settings_type);
      // Fields as for kAllowIDs, above.
-    static const int kResourceSpecificAllowIDs[] = {
-      0,
-      0,
-      0,
-      IDS_BLOCKED_PLUGINS_UNBLOCK,
-      0,
-      0,
-      0,
-      0,  // Prerender does not have a bubble.
+    static const ContentSettingsTypeIdEntry kResourceSpecificAllowIDs[] = {
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_UNBLOCK},
     };
-    COMPILE_ASSERT(
-        arraysize(kResourceSpecificAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
-        Need_a_setting_for_every_content_settings_type);
     std::string radio_allow_label;
-    const int* allowIDs = resources.empty() ?
+    const ContentSettingsTypeIdEntry* allow_ids = resources.empty() ?
         kAllowIDs : kResourceSpecificAllowIDs;
+    size_t num_allow_ids = resources.empty() ?
+        arraysize(kAllowIDs) : arraysize(kResourceSpecificAllowIDs);
     radio_allow_label = l10n_util::GetStringFUTF8(
-        allowIDs[content_type()], UTF8ToUTF16(display_host));
+        GetIdForContentType(allow_ids, num_allow_ids, content_type()),
+        UTF8ToUTF16(display_host));
 
-    static const int kBlockIDs[] = {
-      IDS_BLOCKED_COOKIES_NO_ACTION,
-      IDS_BLOCKED_IMAGES_NO_ACTION,
-      IDS_BLOCKED_JAVASCRIPT_NO_ACTION,
-      IDS_BLOCKED_PLUGINS_NO_ACTION,
-      IDS_BLOCKED_POPUPS_NO_ACTION,
-      0,  // We don't manage geolocation here.
-      0,  // Notifications do not have a bubble.
-      0,  // Prerender does not have a bubble.
+    static const ContentSettingsTypeIdEntry kBlockIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_NO_ACTION},
+      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_NO_ACTION},
+      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_NO_ACTION},
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_NO_ACTION},
+      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_NO_ACTION},
     };
-    COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
-                   Need_a_setting_for_every_content_settings_type);
     std::string radio_block_label;
-    radio_block_label = l10n_util::GetStringUTF8(kBlockIDs[content_type()]);
+    radio_block_label = l10n_util::GetStringUTF8(
+        GetIdForContentType(kBlockIDs, arraysize(kBlockIDs), content_type()));
 
     radio_group.radio_items.push_back(radio_allow_label);
     radio_group.radio_items.push_back(radio_block_label);

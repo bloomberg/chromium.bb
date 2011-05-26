@@ -33,33 +33,30 @@
 
 namespace {
 
+struct ContentSettingsTypeNameEntry {
+  ContentSettingsType type;
+  const char* name;
+};
+
 const char* kDisplayPattern = "displayPattern";
 const char* kSetting = "setting";
 const char* kOrigin = "origin";
 const char* kEmbeddingOrigin = "embeddingOrigin";
 
-const char* const kContentSettingsTypeGroupNames[] = {
-  "cookies",
-  "images",
-  "javascript",
-  "plugins",
-  "popups",
-  "location",
-  "notifications",
-  "prerender",
+const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
+  {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
+  {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
+  {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
+  {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
+  {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
+  {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
+  {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
 };
-COMPILE_ASSERT(arraysize(kContentSettingsTypeGroupNames) ==
-               CONTENT_SETTINGS_NUM_TYPES,
-               invalid_content_settings_type_group_names_size);
-
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
-
-  for (int content_settings_type = CONTENT_SETTINGS_TYPE_COOKIES;
-       content_settings_type < CONTENT_SETTINGS_NUM_TYPES;
-       ++content_settings_type) {
-    if (name == kContentSettingsTypeGroupNames[content_settings_type])
-      return static_cast<ContentSettingsType>(content_settings_type);
+  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+    if (name == kContentSettingsTypeGroupNames[i].name)
+      return kContentSettingsTypeGroupNames[i].type;
   }
 
   NOTREACHED() << name << " is not a recognized content settings type.";
@@ -734,12 +731,13 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
 // static
 std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
     ContentSettingsType type) {
-  if (type < CONTENT_SETTINGS_TYPE_COOKIES ||
-      type >= CONTENT_SETTINGS_NUM_TYPES) {
-    NOTREACHED();
-    return "";
+  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+    if (type == kContentSettingsTypeGroupNames[i].type)
+      return kContentSettingsTypeGroupNames[i].name;
   }
-  return kContentSettingsTypeGroupNames[type];
+
+  NOTREACHED();
+  return std::string();
 }
 
 HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {

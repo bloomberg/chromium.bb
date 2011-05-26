@@ -119,23 +119,25 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   scoped_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
   DCHECK(model.get());
 
-  NSString* const nibPaths[] = {
-    @"ContentBlockedCookies",
-    @"ContentBlockedImages",
-    @"ContentBlockedJavaScript",
-    @"ContentBlockedPlugins",
-    @"ContentBlockedPopups",
-    @"ContentBubbleGeolocation",
-    @"",  // Notifications do not have a bubble.
-    @"",  // Prerender does not have a bubble.
-  };
-  COMPILE_ASSERT(arraysize(nibPaths) == CONTENT_SETTINGS_NUM_TYPES,
-                 nibPaths_requires_an_entry_for_every_setting_type);
   const int settingsType = model->content_type();
-  // Nofifications do not have a bubble.
-  CHECK_NE(settingsType, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  DCHECK_LT(settingsType, CONTENT_SETTINGS_NUM_TYPES);
-  if ((self = [super initWithWindowNibPath:nibPaths[settingsType]
+  NSString* nibPath = @"";
+  switch (settingsType) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      nibPath = @"ContentBlockedCookies"; break;
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+      nibPath = @"ContentBlockedImages"; break;
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+      nibPath = @"ContentBlockedJavaScript"; break;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      nibPath = @"ContentBlockedPlugins"; break;
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      nibPath = @"ContentBlockedPopups"; break;
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      nibPath = @"ContentBlockedGeolocation"; break;
+    default:
+      NOTREACHED();
+  }
+  if ((self = [super initWithWindowNibPath:nibPath
                               parentWindow:parentWindow
                                 anchoredAt:anchoredAt])) {
     contentSettingBubbleModel_.reset(model.release());

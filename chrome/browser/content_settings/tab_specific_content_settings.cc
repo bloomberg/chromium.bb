@@ -71,7 +71,7 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
   for (TabSpecificList::iterator i = g_tab_specific.Get().begin();
        i != g_tab_specific.Get().end(); ++i) {
     if (view->delegate() == (*i)->tab_contents())
-      return (*i);    
+      return (*i);
   }
 
   return NULL;
@@ -138,6 +138,9 @@ bool TabSpecificContentSettings::IsContentBlocked(
   DCHECK(content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
       << "Notifications settings handled by "
       << "ContentSettingsNotificationsImageModel";
+  DCHECK(content_type != CONTENT_SETTINGS_TYPE_PRERENDER)
+      << "Prerendering settings handled by "
+      << "ContentSettingPrerenderImageModel";
 
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
       content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
@@ -146,7 +149,6 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_POPUPS)
     return content_blocked_[content_type];
 
-  NOTREACHED();
   return false;
 }
 
