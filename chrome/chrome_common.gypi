@@ -519,7 +519,6 @@
             '../content/common/socket_stream_dispatcher_dummy.cc',
           ],
           'export_dependent_settings': [
-            '../app/app.gyp:app_base_nacl_win64',
             'app/policy/cloud_policy_codegen.gyp:policy_win64',
           ],
           # TODO(gregoryd): This could be shared with the 32-bit target, but
