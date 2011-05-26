@@ -5,9 +5,6 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// Failing after WebKit roll to r85369, possibly r85319?
-BUGKBR RELEASE WIN : inspector/debugger/live-edit.html = TEXT PASS
-
 // The need for rebaselines is conflicting with the TIMEOUT expectation upstream
 BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-color-attr.html = IMAGE TIMEOUT
 BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-attr.html = IMAGE TIMEOUT
@@ -15,12 +12,5 @@ BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-
 BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html = IMAGE TIMEOUT
 BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/filters/feDropShadow.svg = IMAGE TIMEOUT
 
-// The following tests only fail in Windows.
-BUG_HCLAM WIN : svg/text/text-fonts-01-t.svg = IMAGE
-BUG_HCLAM WIN : svg/text/text-intro-05-t.svg = IMAGE
-
 // Failure introduced by Chromium r83848.
 BUG_HCLAM : fast/url/ipv6.html = TEXT
-
-// Temporary until expectations are updated after execScript removal.
-BUGAGER : fast/dom/prototype-inheritance.html = PASS TEXT
