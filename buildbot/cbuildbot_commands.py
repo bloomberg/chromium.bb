@@ -426,7 +426,7 @@ def UprevPush(buildroot, board, overlays, dryrun):
 
 
 def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
-                    chrome_rev):
+                    chrome_rev, buildnumber):
   """Upload prebuilts.
 
   Args:
@@ -440,6 +440,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
               present will not be uploaded twice. Empty URLs will be ignored.
     category: Build type. Can be [binary|full|chrome].
     chrome_rev: Chrome_rev of type [tot|latest_release|sticky_release].
+    buildnumber:  self explanatory.
   """
   cwd = os.path.dirname(__file__)
   cmd = ['./prebuilt.py',
@@ -451,10 +452,18 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
       cmd.extend(['--previous-binhost-url', binhost])
   if overlay_config == 'public':
     cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
+    # Only one bot should upload host prebuilts. We've arbitrarily
+    # designated the x86-generic bot as the bot that does that.  Note: this only
+    # works with public-only prebuilts.
+    if board == 'x86-generic':
+      cmd.extend('--sync-host')
   else:
     assert overlay_config in ('private', 'both')
-    cmd.extend(['--upload', 'chromeos-images:/var/www/prebuilt/',
-                '--binhost-base-url', 'http://chromeos-prebuilt'])
+    upload_bucket = 'chromeos-%s' % board
+    cmd.extend(['--upload', 'gs://%s/%s/%d/prebuilts/' %
+                    (upload_bucket, category, buildnumber),
+                '--private',
+               ])
 
   if category == 'chrome':
     assert chrome_rev
@@ -463,18 +472,12 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
                  '--key', key.upper()])
   elif category == 'binary':
     cmd.extend(['--sync-binhost-conf',
-                '--sync-host',
                 '--key', _PREFLIGHT_BINHOST])
   else:
     assert category == 'full'
     # Commit new binhost directly to board overlay.
     cmd.extend(['--git-sync',
                 '--key', _FULL_BINHOST])
-    # Only one bot should upload full host prebuilts. We've arbitrarily
-    # designated the x86-generic bot as the bot that does that.
-    if board == 'x86-generic':
-      cmd.append('--sync-host')
-
 
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
@@ -494,7 +497,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./archive_build.sh',
          '--build_number', str(buildnumber),
-         '--to',  '/var/www/archive/' + bot_id,
+         '--to', '/var/www/archive/' + bot_id,
          '--keep_max', str(keep_max),
          '--board', buildconfig['board'],
          ]
