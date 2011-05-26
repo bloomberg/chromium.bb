@@ -59,6 +59,8 @@ class NotificationCounter : public NotificationObserver {
   }
 
   int events() { return events_; }
+  bool notified() { return events_ > 0; }
+  void Clear() { events_ = 0; }
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
@@ -127,6 +129,20 @@ TEST_F(ProtocolHandlerRegistryTest, AcceptProtocolHandlerHandlesProtocol) {
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
 }
 
+TEST_F(ProtocolHandlerRegistryTest, DeniedProtocolIsntHandledUntilSetDefault) {
+  registry()->OnDenyRegisterProtocolHandler(test_protocol_handler());
+  ASSERT_FALSE(registry()->IsHandledProtocol("test"));
+  registry()->SetDefault(test_protocol_handler());
+  ASSERT_TRUE(registry()->IsHandledProtocol("test"));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, ClearDefaultMakesProtocolNotHandled) {
+  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
+  registry()->ClearDefault("test");
+  ASSERT_FALSE(registry()->IsHandledProtocol("test"));
+  ASSERT_TRUE(registry()->GetHandlerFor("test").IsEmpty());
+}
+
 TEST_F(ProtocolHandlerRegistryTest, DisableDeregistersProtocolHandlers) {
   ASSERT_FALSE(delegate()->IsExternalHandlerRegistered("test"));
   registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
@@ -184,13 +200,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestStartsAsDefault) {
   ASSERT_TRUE(registry()->IsDefault(test_protocol_handler()));
 }
 
-TEST_F(ProtocolHandlerRegistryTest,
-    TestClearDefaultDoesntClearImplicitDefault) {
-  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
-  registry()->ClearDefault("test");
-  ASSERT_TRUE(registry()->IsDefault(test_protocol_handler()));
-}
-
 TEST_F(ProtocolHandlerRegistryTest, TestClearDefault) {
   ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
   ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
@@ -200,7 +209,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestClearDefault) {
   registry()->SetDefault(ph1);
   registry()->ClearDefault("test");
   ASSERT_FALSE(registry()->IsDefault(ph1));
-  ASSERT_TRUE(registry()->IsDefault(ph2));
+  ASSERT_FALSE(registry()->IsDefault(ph2));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestGetHandlerFor) {
@@ -211,7 +220,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestGetHandlerFor) {
 
   registry()->SetDefault(ph2);
   ASSERT_EQ(ph2, registry()->GetHandlerFor("test"));
-  ASSERT_TRUE(registry()->HasDefault("test"));
+  ASSERT_TRUE(registry()->IsHandledProtocol("test"));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestMostRecentHandlerIsDefault) {
@@ -323,14 +332,18 @@ TEST_F(ProtocolHandlerRegistryTest, TestNotifications) {
   NotificationCounter counter;
 
   registry()->OnAcceptRegisterProtocolHandler(ph1);
-  ASSERT_EQ(1, counter.events());
+  ASSERT_TRUE(counter.notified());
+  counter.Clear();
 
   registry()->Disable();
-  ASSERT_EQ(2, counter.events());
+  ASSERT_TRUE(counter.notified());
+  counter.Clear();
 
   registry()->Enable();
-  ASSERT_EQ(3, counter.events());
+  ASSERT_TRUE(counter.notified());
+  counter.Clear();
 
   registry()->RemoveHandler(ph1);
-  ASSERT_EQ(4, counter.events());
+  ASSERT_TRUE(counter.notified());
+  counter.Clear();
 }

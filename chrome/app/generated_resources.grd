@@ -5345,6 +5345,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_HANDLERS_REMOVE_HANDLER_LINK" desc="Text on the link that removes a registered protocol handler from a user's settings.">
         remove this site
     </message>
+    <message name="IDS_HANDLERS_NONE_HANDLER" desc="Text in the dropdown for handlers for a given protocol that indicates that the protocol shouldn't be handled.">
+        (none)
+    </message>
 
     <message name="IDS_HANDLER_OPTIONS_WINDOW_TITLE" desc="The title of the window that lets a user change what handlers they have registered for various protocols / mimetypes.">
       Protocol and Mimetype Handlers
@@ -12480,7 +12483,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </message>
 
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_DENY" desc="Text to show for the deny button for the register protocol handler request infobar.">
-        Do nothing
+        No
     </message>
 
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED" desc="Text to show when the user tries to register a protocol handler that they have already registered.">

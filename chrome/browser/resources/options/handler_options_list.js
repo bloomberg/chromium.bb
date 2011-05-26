@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,26 +46,36 @@ cr.define('options', function() {
 
       // Handler selection.
       var handlerElement = document.createElement('div');
-      var selectElement;
-      if (data.handlers.length > 1) {
-        selectElement = document.createElement('select');
-        for (var i = 0; i < data.handlers.length; ++i) {
-          var optionElement = document.createElement('option');
-          optionElement.selected = i == data.default_handler;
-          optionElement.innerText = data.handlers[i][1];
-          optionElement.value = i;
-          selectElement.appendChild(optionElement);
-        }
+      var selectElement = document.createElement('select');
+      var defaultOptionElement = document.createElement('option');
+      defaultOptionElement.selected = data.default_handler == -1;
+      defaultOptionElement.innerText =
+          localStrings.getString('handlers_none_handler');
+      defaultOptionElement.value = -1;
+      selectElement.appendChild(defaultOptionElement);
 
-        selectElement.addEventListener('change', function (e) {
-          var index = e.target.value;
-          delegate.setDefault([data.protocol].concat(data.handlers[index]));
-        });
-        handlerElement.appendChild(selectElement);
-      } else {
-        handlerElement.innerText = data.handlers[0][1];
+      for (var i = 0; i < data.handlers.length; ++i) {
+        var optionElement = document.createElement('option');
+        optionElement.selected = i == data.default_handler;
+        optionElement.innerText = data.handlers[i][1];
+        optionElement.value = i;
+        selectElement.appendChild(optionElement);
       }
+
+      selectElement.addEventListener('change', function (e) {
+        var index = e.target.value;
+        if (index == -1) {
+          this.classList.add('none');
+          delegate.clearDefault(data.protocol);
+        } else {
+          handlerElement.classList.remove('none');
+          delegate.setDefault([data.protocol].concat(data.handlers[index]));
+        }
+      });
+      handlerElement.appendChild(selectElement);
       handlerElement.className = 'handlers-site-column';
+      if (data.default_handler == -1)
+        this.classList.add('none');
       this.appendChild(handlerElement);
 
       // Remove link.
@@ -92,6 +102,9 @@ cr.define('options', function() {
         },
         setDefault: function(handler) {
           chrome.send('setDefault', [handler]);
+        },
+        clearDefault: function(protocol) {
+          chrome.send('clearDefault', [protocol]);
         },
       };
 

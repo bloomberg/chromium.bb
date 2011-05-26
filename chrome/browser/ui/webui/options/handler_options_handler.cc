@@ -31,6 +31,7 @@ void HandlerOptionsHandler::GetLocalizedValues(
       { "handlers_type_column_header", IDS_HANDLERS_TYPE_COLUMN_HEADER },
       { "handlers_site_column_header", IDS_HANDLERS_SITE_COLUMN_HEADER },
       { "handlers_remove_link", IDS_HANDLERS_REMOVE_HANDLER_LINK },
+      { "handlers_none_handler", IDS_HANDLERS_NONE_HANDLER },
   };
   RegisterTitle(localized_strings, "handlersPage",
                 IDS_HANDLER_OPTIONS_WINDOW_TITLE);
@@ -46,6 +47,8 @@ void HandlerOptionsHandler::Initialize() {
 
 void HandlerOptionsHandler::RegisterMessages() {
   DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("clearDefault",
+      NewCallback(this, &HandlerOptionsHandler::ClearDefault));
   web_ui_->RegisterMessageCallback("removeHandler",
       NewCallback(this, &HandlerOptionsHandler::RemoveHandler));
   web_ui_->RegisterMessageCallback("setHandlersEnabled",
@@ -119,6 +122,14 @@ void HandlerOptionsHandler::SetHandlersEnabled(const ListValue* args) {
     GetProtocolHandlerRegistry()->Enable();
   else
     GetProtocolHandlerRegistry()->Disable();
+}
+
+void HandlerOptionsHandler::ClearDefault(const ListValue* args) {
+  Value* value;
+  CHECK(args->Get(0, &value));
+  std::string protocol_to_clear;
+  CHECK(value->GetAsString(&protocol_to_clear));
+  GetProtocolHandlerRegistry()->ClearDefault(protocol_to_clear);
 }
 
 void HandlerOptionsHandler::SetDefault(const ListValue* args) {

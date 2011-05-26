@@ -36,6 +36,10 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
   // Called when the user sets a new default handler for a protocol.
   void SetDefault(const ListValue* args);
 
+  // Called when the user clears the default handler for a protocol.
+  // |args| is the string name of the protocol to clear.
+  void ClearDefault(const ListValue* args);
+
   // Parses a ProtocolHandler out of the arguments passed back from the view.
   // |args| is a list of [protocol, url, title].
   ProtocolHandler ParseHandlerFromArgs(const ListValue* args) const;

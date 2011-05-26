@@ -57,7 +57,7 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
   ProtocolHandlerMultiMap::iterator p =
-    protocol_handlers_.find(handler.protocol());
+      protocol_handlers_.find(handler.protocol());
 
   if (p != protocol_handlers_.end()) {
     p->second.push_back(handler);
@@ -126,10 +126,10 @@ void ProtocolHandlerRegistry::Load() {
     enabled_ = prefs->GetBoolean(prefs::kCustomHandlersEnabled);
   }
   std::vector<const DictionaryValue*> registered_handlers =
-    GetHandlersFromPref(prefs::kRegisteredProtocolHandlers);
+      GetHandlersFromPref(prefs::kRegisteredProtocolHandlers);
   for (std::vector<const DictionaryValue*>::const_iterator p =
-      registered_handlers.begin();
-      p != registered_handlers.end(); ++p) {
+       registered_handlers.begin();
+       p != registered_handlers.end(); ++p) {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(*p);
     RegisterProtocolHandler(handler);
     bool is_default = false;
@@ -145,14 +145,6 @@ void ProtocolHandlerRegistry::Load() {
     IgnoreProtocolHandler(ProtocolHandler::CreateProtocolHandler(*p));
   }
   is_loading_ = false;
-}
-
-void ProtocolHandlerRegistry::RegisterHandlerFromValue(
-    const DictionaryValue* value) {
-  ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(value);
-  if (!handler.IsEmpty()) {
-    RegisterProtocolHandler(handler);
-  }
 }
 
 void ProtocolHandlerRegistry::Save() {
@@ -172,8 +164,12 @@ void ProtocolHandlerRegistry::Save() {
 
 bool ProtocolHandlerRegistry::CanSchemeBeOverridden(
     const std::string& scheme) const {
-  return IsHandledProtocol(scheme) ||
-    !delegate_->IsExternalHandlerRegistered(scheme);
+  const ProtocolHandlerList* handlers = GetHandlersFor(scheme);
+  // If we already have a handler for this scheme, we can add more.
+  if (handlers != NULL && !handlers->empty())
+    return true;
+  // Don't override a scheme if it already has an external handler.
+  return !delegate_->IsExternalHandlerRegistered(scheme);
 }
 
 void ProtocolHandlerRegistry::GetHandledProtocols(
@@ -188,9 +184,9 @@ void ProtocolHandlerRegistry::GetHandledProtocols(
 
 void ProtocolHandlerRegistry::RemoveIgnoredHandler(
     const ProtocolHandler& handler) {
-  ProtocolHandlerList::iterator p =
-      std::find(ignored_protocol_handlers_.begin(),
-      ignored_protocol_handlers_.end(), handler);
+  ProtocolHandlerList::iterator p = std::find(
+      ignored_protocol_handlers_.begin(), ignored_protocol_handlers_.end(),
+      handler);
   if (p != ignored_protocol_handlers_.end()) {
     ignored_protocol_handlers_.erase(p);
     Save();
@@ -211,7 +207,7 @@ bool ProtocolHandlerRegistry::IsRegistered(
 bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
   ProtocolHandlerList::const_iterator i;
   for (i = ignored_protocol_handlers_.begin();
-      i != ignored_protocol_handlers_.end(); ++i) {
+       i != ignored_protocol_handlers_.end(); ++i) {
     if (*i == handler) {
       return true;
     }
@@ -227,7 +223,7 @@ bool ProtocolHandlerRegistry::IsHandledProtocol(
 void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
   ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
   ProtocolHandlerList::iterator p =
-    std::find(handlers.begin(), handlers.end(), handler);
+      std::find(handlers.begin(), handlers.end(), handler);
   if (p != handlers.end()) {
     handlers.erase(p);
   }
@@ -247,17 +243,13 @@ void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
 net::URLRequestJob* ProtocolHandlerRegistry::MaybeCreateJob(
     net::URLRequest* request) const {
   ProtocolHandler handler = GetHandlerFor(request->url().scheme());
-
   if (handler.IsEmpty()) {
     return NULL;
   }
-
   GURL translated_url(handler.TranslateUrl(request->url()));
-
   if (!translated_url.is_valid()) {
     return NULL;
   }
-
   return new net::URLRequestRedirectJob(request, translated_url);
 }
 
@@ -291,11 +283,14 @@ Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
 void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(
     const ProtocolHandler& handler) {
   RegisterProtocolHandler(handler);
+  SetDefault(handler);
   Save();
 }
 
 void ProtocolHandlerRegistry::OnDenyRegisterProtocolHandler(
     const ProtocolHandler& handler) {
+  RegisterProtocolHandler(handler);
+  Save();
 }
 
 void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
@@ -336,33 +331,24 @@ const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerFor(
   if (p != default_handlers_.end()) {
     return p->second;
   }
-  ProtocolHandlerMultiMap::const_iterator q = protocol_handlers_.find(scheme);
-  if (q == protocol_handlers_.end() || q->second.empty()) {
-    return ProtocolHandler::EmptyProtocolHandler();
-  }
-  return q->second.back();
+  return ProtocolHandler::EmptyProtocolHandler();
 }
 
 int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
   const ProtocolHandler& handler = GetHandlerFor(scheme);
-  const ProtocolHandlerList* handlers = GetHandlersFor(scheme);
-  if (!handlers) {
+  if (handler.IsEmpty())
     return -1;
-  }
+  const ProtocolHandlerList* handlers = GetHandlersFor(scheme);
+  if (!handlers)
+    return -1;
 
   ProtocolHandlerList::const_iterator p;
   int i;
   for (i = 0, p = handlers->begin(); p != handlers->end(); ++p, ++i) {
-    if (*p == handler) {
+    if (*p == handler)
       return i;
-    }
   }
   return -1;
-}
-
-bool ProtocolHandlerRegistry::HasDefault(
-    const std::string& scheme) const {
-  return !GetHandlerFor(scheme).IsEmpty();
 }
 
 void ProtocolHandlerRegistry::NotifyChanged() {

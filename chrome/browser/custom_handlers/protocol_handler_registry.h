@@ -65,10 +65,6 @@ class ProtocolHandlerRegistry
   // Returns true if this handler is the default handler for its protocol.
   bool IsDefault(const ProtocolHandler& handler) const;
 
-  // Returns true if the given protocol has a default handler associated with
-  // it.
-  bool HasDefault(const std::string& scheme) const;
-
   // Loads a user's registered protocol handlers.
   void Load();
 
@@ -152,9 +148,6 @@ class ProtocolHandlerRegistry
 
   // Ignores future requests to register the given protocol handler.
   void IgnoreProtocolHandler(const ProtocolHandler& handler);
-
-  // Registers a new protocol handler from a JSON dictionary.
-  void RegisterHandlerFromValue(const DictionaryValue* value);
 
   // Register
   void IgnoreHandlerFromValue(const DictionaryValue* value);
