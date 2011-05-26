@@ -288,7 +288,7 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
   // Verify that the matches' ACMatchClassifications offsets are in range.
   ACMatchClassifications content(ac_matches_[0].contents_class);
   // The max offset accounts for 6 occurrences of '%20' plus the 'http://'.
-  const size_t max_offset = url.size() - ((6 * 2) + 7);
+  const size_t max_offset = url.length() - ((6 * 2) + 7);
   for (ACMatchClassifications::const_iterator citer = content.begin();
        citer != content.end(); ++citer)
     EXPECT_LT(citer->offset, max_offset);
@@ -296,7 +296,7 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
   std::string page_title("Dogs & Cats & Mice");
   for (ACMatchClassifications::const_iterator diter = description.begin();
        diter != description.end(); ++diter)
-    EXPECT_LT(diter->offset, page_title.size());
+    EXPECT_LT(diter->offset, page_title.length());
 }
 
 TEST_F(HistoryQuickProviderTest, Spans) {

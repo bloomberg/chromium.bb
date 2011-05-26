@@ -164,7 +164,7 @@ void AutocompleteMatch::ValidateClassifications(
     const string16& text,
     const ACMatchClassifications& classifications) const {
   if (text.empty()) {
-    DCHECK(classifications.size() == 0);
+    DCHECK(classifications.empty());
     return;
   }
 

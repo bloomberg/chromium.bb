@@ -110,8 +110,7 @@ class OmniboxView {
   // It is not guaranteed that |*start < *end|, as the selection can be
   // directed.  If there is no selection, |start| and |end| will both be equal
   // to the current cursor position.
-  virtual void GetSelectionBounds(string16::size_type* start,
-                                  string16::size_type* end) = 0;
+  virtual void GetSelectionBounds(size_t* start, size_t* end) = 0;
 
   // Selects all the text in the edit.  Use this in place of SetSelAll() to
   // avoid selecting the "phantom newline" at the end of the edit.

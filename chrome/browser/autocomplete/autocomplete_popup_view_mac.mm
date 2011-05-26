@@ -124,7 +124,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
   for (ACMatchClassifications::const_iterator i = classifications.begin();
        i != classifications.end(); ++i) {
     const BOOL isLast = (i+1) == classifications.end();
-    const size_t nextOffset = (isLast ? matchString.length() : (i+1)->offset);
+    const size_t nextOffset = (isLast ? matchString.length() : (i + 1)->offset);
     const NSInteger location = static_cast<NSInteger>(i->offset);
     const NSInteger length = static_cast<NSInteger>(nextOffset - i->offset);
     const NSRange range = NSMakeRange(location, length);
@@ -177,7 +177,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
 
   // The ellipses should be the last character, and everything before
   // that should match the original string.
-  const size_t i(elided.size() - 1);
+  const size_t i(elided.length() - 1);
   DCHECK_NE(0, elided.compare(0, i, originalString));
 
   // Replace the end of |aString| with the ellipses from |elided|.

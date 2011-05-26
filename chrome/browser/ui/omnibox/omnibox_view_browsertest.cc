@@ -655,7 +655,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), old_text);
     EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-    string16::size_type start, end;
+    size_t start, end;
     omnibox_view->GetSelectionBounds(&start, &end);
     EXPECT_EQ(0U, start);
     EXPECT_EQ(old_text.size(), end);
@@ -820,7 +820,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_EQ(text, omnibox_view->model()->keyword());
     ASSERT_EQ(text + ASCIIToUTF16("  "), omnibox_view->GetText());
 
-    string16::size_type start, end;
+    size_t start, end;
     omnibox_view->GetSelectionBounds(&start, &end);
     ASSERT_NE(start, end);
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
@@ -1023,7 +1023,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, 0));
 #endif
 
-    string16::size_type start, end;
+    size_t start, end;
     omnibox_view->GetSelectionBounds(&start, &end);
     EXPECT_EQ(0U, start);
     EXPECT_EQ(0U, end);
@@ -1223,7 +1223,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedoLinux) {
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
   // The cursor should be at the end.
-  string16::size_type start, end;
+  size_t start, end;
   omnibox_view->GetSelectionBounds(&start, &end);
   EXPECT_EQ(old_text.size(), start);
   EXPECT_EQ(old_text.size(), end);

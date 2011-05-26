@@ -151,5 +151,5 @@ bool HistoryProvider::PreventInlineAutocomplete(
     const AutocompleteInput& input) {
   return input.prevent_inline_autocomplete() ||
         (!input.text().empty() &&
-         IsWhitespace(input.text()[input.text().size() - 1]));
+         IsWhitespace(input.text()[input.text().length() - 1]));
 }

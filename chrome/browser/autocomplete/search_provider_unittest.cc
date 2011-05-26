@@ -221,7 +221,7 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
 // Make sure we query history for the default provider and a URLFetcher is
 // created for the default provider suggest results.
 TEST_F(SearchProviderTest, QueryDefaultProvider) {
-  string16 term = term1_.substr(0, term1_.size() - 1);
+  string16 term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, false, false);
 
   // Make sure the default providers suggest service was queried.
@@ -262,7 +262,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
 }
 
 TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
-  string16 term = term1_.substr(0, term1_.size() - 1);
+  string16 term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, true, false);
 
   ASSERT_FALSE(provider_->matches().empty());
@@ -273,7 +273,7 @@ TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
 // Issues a query that matches the registered keyword and makes sure history
 // is queried as well as URLFetchers getting created.
 TEST_F(SearchProviderTest, QueryKeywordProvider) {
-  string16 term = keyword_term_.substr(0, keyword_term_.size() - 1);
+  string16 term = keyword_term_.substr(0, keyword_term_.length() - 1);
   QueryForInput(keyword_t_url_->keyword() + UTF8ToUTF16(" ") + term, false,
                 false);
 

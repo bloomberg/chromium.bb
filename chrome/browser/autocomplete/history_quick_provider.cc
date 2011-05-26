@@ -77,10 +77,10 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   if (GetIndex()) {
     base::TimeTicks start_time = base::TimeTicks::Now();
     DoAutocomplete();
-    if (input.text().size() < 6) {
+    if (input.text().length() < 6) {
       base::TimeTicks end_time = base::TimeTicks::Now();
       std::string name = "HistoryQuickProvider.QueryIndexTime." +
-          base::IntToString(input.text().size());
+          base::IntToString(input.text().length());
       base::Histogram* counter = base::Histogram::FactoryGet(
           name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
       counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
@@ -147,7 +147,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       InMemoryURLIndex::ReplaceOffsetsInTermMatches(history_match.url_matches,
                                                     offsets);
   match.contents_class =
-      SpansFromTermMatch(new_matches, match.contents.size(), true);
+      SpansFromTermMatch(new_matches, match.contents.length(), true);
   match.fill_into_edit = match.contents;
 
   if (prevent_inline_autocomplete || !history_match.can_inline) {
@@ -160,8 +160,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
 
   // Format the description autocomplete presentation.
   match.description = info.title();
-  match.description_class = SpansFromTermMatch(history_match.title_matches,
-                                               match.description.size(), false);
+  match.description_class = SpansFromTermMatch(
+      history_match.title_matches, match.description.length(), false);
 
   return match;
 }

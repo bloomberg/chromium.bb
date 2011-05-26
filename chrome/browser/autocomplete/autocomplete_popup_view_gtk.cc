@@ -112,7 +112,7 @@ void DrawFullPixbuf(GdkDrawable* drawable, GdkGC* gc, GdkPixbuf* pixbuf,
 
 // TODO(deanm): Find some better home for this, and make it more efficient.
 size_t GetUTF8Offset(const string16& text, size_t text_offset) {
-  return UTF16ToUTF8(text.substr(0, text_offset)).size();
+  return UTF16ToUTF8(text.substr(0, text_offset)).length();
 }
 
 // Generates the normal URL color, a green color used in unhighlighted URL
@@ -193,7 +193,7 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
   // spiral that can corrupt the screen. Assume that we'll never have more than
   // 2000 characters, which should be a safe assumption until we all get robot
   // eyes. http://crbug.com/66576
-  if (localized_text.size() > 2000)
+  if (localized_text.length() > 2000)
     localized_text = localized_text.substr(0, 2000);
   bool is_rtl = base::i18n::IsRTL();
   if (is_rtl && !base::i18n::StringContainsStrongRTLChars(localized_text)) {
@@ -204,7 +204,7 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
   // We can have a prefix, or insert additional characters while processing the
   // classifications.  We need to take this in to account when we translate the
   // UTF-16 offsets in the classification into text_utf8 byte offsets.
-  size_t additional_offset = prefix_text.size();  // Length in utf-8 bytes.
+  size_t additional_offset = prefix_text.length();  // Length in utf-8 bytes.
   std::string text_utf8 = prefix_text + UTF16ToUTF8(localized_text);
 
   PangoAttrList* attrs = pango_attr_list_new();
@@ -241,7 +241,7 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
       if (is_rtl && !marked_with_lre) {
         std::string lre(kLRE);
         text_utf8.insert(offset, lre);
-        additional_offset += lre.size();
+        additional_offset += lre.length();
       }
     }
 
@@ -261,7 +261,7 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
     pango_attr_list_insert(attrs, weight_attr);  // Ownership taken.
   }
 
-  pango_layout_set_text(layout, text_utf8.data(), text_utf8.size());
+  pango_layout_set_text(layout, text_utf8.data(), text_utf8.length());
   pango_layout_set_attributes(layout, attrs);  // Ref taken.
   pango_attr_list_unref(attrs);
 }

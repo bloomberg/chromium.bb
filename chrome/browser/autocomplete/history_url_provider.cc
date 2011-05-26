@@ -541,12 +541,11 @@ void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
 }
 
 // static
-void HistoryURLProvider::EnsureMatchPresent(
-    const history::URLRow& info,
-    string16::size_type input_location,
-    bool match_in_scheme,
-    HistoryMatches* matches,
-    bool promote) {
+void HistoryURLProvider::EnsureMatchPresent(const history::URLRow& info,
+                                            size_t input_location,
+                                            bool match_in_scheme,
+                                            HistoryMatches* matches,
+                                            bool promote) {
   // |matches| may already have an entry for this.
   for (HistoryMatches::iterator i(matches->begin()); i != matches->end();
        ++i) {

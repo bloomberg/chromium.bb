@@ -247,7 +247,7 @@ void HistoryContentsProvider::ClassifyDescription(
       offset = i->second;
     }
   }
-  if (offset != result.title().size()) {
+  if (offset != result.title().length()) {
     match->description_class.push_back(
         ACMatchClassification(offset, ACMatchClassification::NONE));
   }

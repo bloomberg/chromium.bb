@@ -200,25 +200,18 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringNoMatch) {
                       &kURLTextColor,
                       std::string());
 
-  EXPECT_EQ(kContents.size(),
-            RunLengthForAttrType(0U,
-                                 kContents.size(),
-                                 PANGO_ATTR_FOREGROUND));
+  EXPECT_EQ(kContents.length(), RunLengthForAttrType(0U, kContents.length(),
+                                                     PANGO_ATTR_FOREGROUND));
 
-  EXPECT_TRUE(RunHasColor(0U,
-                          kContents.size(),
-                          kContentTextColor));
+  EXPECT_TRUE(RunHasColor(0U, kContents.length(), kContentTextColor));
 
   // This part's a little wacky - either we don't have a weight, or
   // the weight run is the entire string and is NORMAL
-  guint weightLength = RunLengthForAttrType(0U,
-                                           kContents.size(),
+  guint weightLength = RunLengthForAttrType(0U, kContents.length(),
                                            PANGO_ATTR_WEIGHT);
   if (weightLength) {
-    EXPECT_EQ(kContents.size(), weightLength);
-    EXPECT_TRUE(RunHasWeight(0U,
-                             kContents.size(),
-                             PANGO_WEIGHT_NORMAL));
+    EXPECT_EQ(kContents.length(), weightLength);
+    EXPECT_TRUE(RunHasWeight(0U, kContents.length(), PANGO_WEIGHT_NORMAL));
   }
 }
 
@@ -238,24 +231,17 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
                       &kURLTextColor,
                       std::string());
 
-  EXPECT_EQ(kContents.size(),
-            RunLengthForAttrType(0U,
-                                 kContents.size(),
-                                 PANGO_ATTR_FOREGROUND));
-  EXPECT_TRUE(RunHasColor(0U,
-                          kContents.size(),
-                          kURLTextColor));
+  EXPECT_EQ(kContents.length(), RunLengthForAttrType(0U, kContents.length(),
+                                                     PANGO_ATTR_FOREGROUND));
+  EXPECT_TRUE(RunHasColor(0U, kContents.length(), kURLTextColor));
 
   // This part's a little wacky - either we don't have a weight, or
   // the weight run is the entire string and is NORMAL
-  guint weightLength = RunLengthForAttrType(0U,
-                                           kContents.size(),
+  guint weightLength = RunLengthForAttrType(0U, kContents.length(),
                                            PANGO_ATTR_WEIGHT);
   if (weightLength) {
-    EXPECT_EQ(kContents.size(), weightLength);
-    EXPECT_TRUE(RunHasWeight(0U,
-                             kContents.size(),
-                             PANGO_WEIGHT_NORMAL));
+    EXPECT_EQ(kContents.length(), weightLength);
+    EXPECT_TRUE(RunHasWeight(0U, kContents.length(), PANGO_WEIGHT_NORMAL));
   }
 }
 
@@ -263,18 +249,18 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
   const string16 kContents = ASCIIToUTF16("This is a test");
   // Dim "is".
-  const guint runLength1 = 5, runLength2 = 2, runLength3 = 7;
+  const guint kRunLength1 = 5, kRunLength2 = 2, kRunLength3 = 7;
   // Make sure nobody messed up the inputs.
-  EXPECT_EQ(runLength1 + runLength2 + runLength3, kContents.size());
+  EXPECT_EQ(kRunLength1 + kRunLength2 + kRunLength3, kContents.length());
 
   // Push each run onto classifications.
   AutocompleteMatch::ACMatchClassifications classifications;
   classifications.push_back(
       ACMatchClassification(0U, ACMatchClassification::NONE));
   classifications.push_back(
-      ACMatchClassification(runLength1, ACMatchClassification::DIM));
+      ACMatchClassification(kRunLength1, ACMatchClassification::DIM));
   classifications.push_back(
-      ACMatchClassification(runLength1 + runLength2,
+      ACMatchClassification(kRunLength1 + kRunLength2,
                             ACMatchClassification::NONE));
 
   SetupLayoutForMatch(kContents,
@@ -285,38 +271,26 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
                       std::string());
 
   // Check the runs have expected color and length.
-  EXPECT_EQ(runLength1,
-            RunLengthForAttrType(0U,
-                                 kContents.size(),
-                                 PANGO_ATTR_FOREGROUND));
-  EXPECT_TRUE(RunHasColor(0U,
-                          kContents.size(),
-                          kContentTextColor));
-  EXPECT_EQ(runLength2,
-            RunLengthForAttrType(runLength1,
-                                 kContents.size(),
-                                 PANGO_ATTR_FOREGROUND));
-  EXPECT_TRUE(RunHasColor(runLength1,
-                          kContents.size(),
+  EXPECT_EQ(kRunLength1, RunLengthForAttrType(0U, kContents.length(),
+                                              PANGO_ATTR_FOREGROUND));
+  EXPECT_TRUE(RunHasColor(0U, kContents.length(), kContentTextColor));
+  EXPECT_EQ(kRunLength2, RunLengthForAttrType(kRunLength1, kContents.length(),
+                                              PANGO_ATTR_FOREGROUND));
+  EXPECT_TRUE(RunHasColor(kRunLength1, kContents.length(),
                           kDimContentTextColor));
-  EXPECT_EQ(runLength3,
-            RunLengthForAttrType(runLength1 + runLength2,
-                                 kContents.size(),
-                                 PANGO_ATTR_FOREGROUND));
-  EXPECT_TRUE(RunHasColor(runLength1 + runLength2,
-                          kContents.size(),
+  EXPECT_EQ(kRunLength3, RunLengthForAttrType(kRunLength1 + kRunLength2,
+                                              kContents.length(),
+                                              PANGO_ATTR_FOREGROUND));
+  EXPECT_TRUE(RunHasColor(kRunLength1 + kRunLength2, kContents.length(),
                           kContentTextColor));
 
   // This part's a little wacky - either we don't have a weight, or
   // the weight run is the entire string and is NORMAL
-  guint weightLength = RunLengthForAttrType(0U,
-                                           kContents.size(),
-                                           PANGO_ATTR_WEIGHT);
+  guint weightLength = RunLengthForAttrType(0U, kContents.length(),
+                                            PANGO_ATTR_WEIGHT);
   if (weightLength) {
-    EXPECT_EQ(kContents.size(), weightLength);
-    EXPECT_TRUE(RunHasWeight(0U,
-                             kContents.size(),
-                             PANGO_WEIGHT_NORMAL));
+    EXPECT_EQ(kContents.length(), weightLength);
+    EXPECT_TRUE(RunHasWeight(0U, kContents.length(), PANGO_WEIGHT_NORMAL));
   }
 }
 
@@ -325,18 +299,18 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringMatch) {
   const string16 kContents = ASCIIToUTF16("This is a test");
   // Match "is".
-  const guint runLength1 = 5, runLength2 = 2, runLength3 = 7;
+  const guint kRunLength1 = 5, kRunLength2 = 2, kRunLength3 = 7;
   // Make sure nobody messed up the inputs.
-  EXPECT_EQ(runLength1 + runLength2 + runLength3, kContents.size());
+  EXPECT_EQ(kRunLength1 + kRunLength2 + kRunLength3, kContents.length());
 
   // Push each run onto classifications.
   AutocompleteMatch::ACMatchClassifications classifications;
   classifications.push_back(
       ACMatchClassification(0U, ACMatchClassification::NONE));
   classifications.push_back(
-      ACMatchClassification(runLength1, ACMatchClassification::MATCH));
+      ACMatchClassification(kRunLength1, ACMatchClassification::MATCH));
   classifications.push_back(
-      ACMatchClassification(runLength1 + runLength2,
+      ACMatchClassification(kRunLength1 + kRunLength2,
                             ACMatchClassification::NONE));
 
   SetupLayoutForMatch(kContents,
@@ -347,45 +321,31 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringMatch) {
                       std::string());
 
   // Check the runs have expected weight and length.
-  EXPECT_EQ(runLength1,
-            RunLengthForAttrType(0U,
-                                 kContents.size(),
-                                 PANGO_ATTR_WEIGHT));
-  EXPECT_TRUE(RunHasWeight(0U,
-                          kContents.size(),
-                          PANGO_WEIGHT_NORMAL));
-  EXPECT_EQ(runLength2,
-            RunLengthForAttrType(runLength1,
-                                 kContents.size(),
-                                 PANGO_ATTR_WEIGHT));
-  EXPECT_TRUE(RunHasWeight(runLength1,
-                          kContents.size(),
-                          PANGO_WEIGHT_BOLD));
-  EXPECT_EQ(runLength3,
-            RunLengthForAttrType(runLength1 + runLength2,
-                                 kContents.size(),
-                                 PANGO_ATTR_WEIGHT));
-  EXPECT_TRUE(RunHasWeight(runLength1 + runLength2,
-                          kContents.size(),
-                          PANGO_WEIGHT_NORMAL));
+  EXPECT_EQ(kRunLength1, RunLengthForAttrType(0U, kContents.length(),
+                                              PANGO_ATTR_WEIGHT));
+  EXPECT_TRUE(RunHasWeight(0U, kContents.length(), PANGO_WEIGHT_NORMAL));
+  EXPECT_EQ(kRunLength2, RunLengthForAttrType(kRunLength1, kContents.length(),
+                                              PANGO_ATTR_WEIGHT));
+  EXPECT_TRUE(RunHasWeight(kRunLength1, kContents.length(), PANGO_WEIGHT_BOLD));
+  EXPECT_EQ(kRunLength3, RunLengthForAttrType(kRunLength1 + kRunLength2,
+                                              kContents.length(),
+                                              PANGO_ATTR_WEIGHT));
+  EXPECT_TRUE(RunHasWeight(kRunLength1 + kRunLength2, kContents.length(),
+                           PANGO_WEIGHT_NORMAL));
 
   // The entire string should be the same, normal color.
-  EXPECT_EQ(kContents.size(),
-            RunLengthForAttrType(0U,
-                                 kContents.size(),
-                                 PANGO_ATTR_FOREGROUND));
-  EXPECT_TRUE(RunHasColor(0U,
-                          kContents.size(),
-                          kContentTextColor));
+  EXPECT_EQ(kContents.length(), RunLengthForAttrType(0U, kContents.length(),
+                                                     PANGO_ATTR_FOREGROUND));
+  EXPECT_TRUE(RunHasColor(0U, kContents.length(), kContentTextColor));
 }
 
 // Just like DecorateMatchedStringURLMatch, this time with URL style.
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLMatch) {
   const string16 kContents = ASCIIToUTF16("http://hello.world/");
   // Match "hello".
-  const guint runLength1 = 7, runLength2 = 5, runLength3 = 7;
+  const guint kRunLength1 = 7, kRunLength2 = 5, kRunLength3 = 7;
   // Make sure nobody messed up the inputs.
-  EXPECT_EQ(runLength1 + runLength2 + runLength3, kContents.size());
+  EXPECT_EQ(kRunLength1 + kRunLength2 + kRunLength3, kContents.length());
 
   // Push each run onto classifications.
   AutocompleteMatch::ACMatchClassifications classifications;
@@ -394,10 +354,9 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLMatch) {
   const int kURLMatch =
       ACMatchClassification::URL | ACMatchClassification::MATCH;
   classifications.push_back(
-      ACMatchClassification(runLength1,
-                            kURLMatch));
+      ACMatchClassification(kRunLength1, kURLMatch));
   classifications.push_back(
-      ACMatchClassification(runLength1 + runLength2,
+      ACMatchClassification(kRunLength1 + kRunLength2,
                             ACMatchClassification::URL));
 
   SetupLayoutForMatch(kContents,
@@ -409,11 +368,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLMatch) {
 
   // One color for the entire string, and it's not the one we passed
   // in.
-  EXPECT_EQ(kContents.size(),
-            RunLengthForAttrType(0U,
-                                 kContents.size(),
-                                 PANGO_ATTR_FOREGROUND));
-  EXPECT_TRUE(RunHasColor(0U,
-                          kContents.size(),
-                          kURLTextColor));
+  EXPECT_EQ(kContents.length(), RunLengthForAttrType(0U, kContents.length(),
+                                                     PANGO_ATTR_FOREGROUND));
+  EXPECT_TRUE(RunHasColor(0U, kContents.length(), kURLTextColor));
 }

@@ -276,9 +276,9 @@ bool AutocompleteEditModel::UseVerbatimInstant() {
       just_deleted_text_)
     return true;
 
-  string16::size_type start, end;
+  size_t start, end;
   view_->GetSelectionBounds(&start, &end);
-  return (start != end) || (start != view_->GetText().size());
+  return (start != end) || (start != view_->GetText().length());
 }
 
 string16 AutocompleteEditModel::GetDesiredTLD() const {
@@ -513,7 +513,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
               current_match : result().match_at(index);
 
       // Strip the keyword + leading space off the input.
-      size_t prefix_length = match.template_url->keyword().size() + 1;
+      size_t prefix_length = match.template_url->keyword().length() + 1;
       ExtensionOmniboxEventRouter::OnInputEntered(
           profile_, match.template_url->GetExtensionId(),
           UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));

@@ -224,7 +224,7 @@ class HistoryURLProvider : public HistoryProvider {
   // |promote| is false, existing matches are left in place, and newly added
   // matches are placed at the back.
   static void EnsureMatchPresent(const history::URLRow& info,
-                                 string16::size_type input_location,
+                                 size_t input_location,
                                  bool match_in_scheme,
                                  history::HistoryMatches* matches,
                                  bool promote);
