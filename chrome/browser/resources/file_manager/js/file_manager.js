@@ -1486,7 +1486,13 @@ FileManager.prototype = {
       if (this.selection.leadEntry && this.selection.leadEntry.isFile)
         this.filenameInput_.value = this.selection.leadEntry.name;
 
-      selectable = !!this.filenameInput_.value;
+      if (this.currentDirEntry_.fullPath == '/' ||
+          this.currentDirEntry_.fullPath == MEDIA_DIRECTORY) {
+        // Nothing can be saved in to the root or media/ directories.
+        selectable = false;
+      } else {
+        selectable = !!this.filenameInput_.value;
+      }
     } else if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       // No "select" buttons on the full page UI.
       selectable = true;
@@ -1532,8 +1538,10 @@ FileManager.prototype = {
                         location.href);
     }
 
-    // New folder should never be enabled in the root directory.
-    this.newFolderButton_.disabled = this.currentDirEntry_.fullPath == '/';
+    // New folder should never be enabled in the root or media/ directories.
+    this.newFolderButton_.disabled =
+        (this.currentDirEntry_.fullPath == '/' ||
+         this.currentDirEntry_.fullPath == MEDIA_DIRECTORY);
 
     this.document_.title = this.currentDirEntry_.fullPath;
     this.rescanDirectory_();
