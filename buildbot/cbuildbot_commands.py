@@ -491,15 +491,10 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   else:
     gsutil_archive = buildconfig['gs_path']
 
-  # Create the output directory, and set the right permissions
-  to_dir = '/var/www/archive/' + bot_id
-  if not os.path.exists(to_dir):
-    os.makedirs(to_dir, mode=755)
-
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./archive_build.sh',
          '--build_number', str(buildnumber),
-         '--to', to_dir,
+         '--to',  '/var/www/archive/' + bot_id,
          '--keep_max', str(keep_max),
          '--board', buildconfig['board'],
          ]
@@ -528,14 +523,18 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
 
   result = None
   try:
+    # Files created in our archive dir should be publically accessable.
+    old_umask = os.umask(022)
     result = cros_lib.RunCommand(cmd, cwd=cwd, redirect_stdout=True,
                                  redirect_stderr=True,
                                  combine_stdout_stderr=True)
-  except:
+  except cros_lib.RunCommandError:
     if result and result.output:
       Warning(result.output)
 
     raise
+  finally:
+    os.umask(old_umask)
 
   archive_url = None
   archive_dir = None
