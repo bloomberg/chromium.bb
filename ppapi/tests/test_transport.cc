@@ -30,16 +30,18 @@ REGISTER_TEST_CASE(Transport);
 namespace {
 
 const char kTestChannelName[] = "test";
-const int kNumPackets = 100;
-const int kSendBufferSize = 1200;
 const int kReadBufferSize = 65536;
 
 class StreamReader {
  public:
-  explicit StreamReader(pp::Transport_Dev* transport)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+  explicit StreamReader(pp::Transport_Dev* transport,
+                        int expected_size,
+                        pp::CompletionCallback done_callback)
+      : expected_size_(expected_size),
+        done_callback_(done_callback),
+        ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
         transport_(transport),
-        errors_(0) {
+        received_size_(0) {
     Read();
   }
 
@@ -75,13 +77,19 @@ class StreamReader {
       }
       buffer_.resize(result);
       received_.push_back(buffer_);
+      received_size_ += buffer_.size();
+      if (received_size_ >= expected_size_)
+        done_callback_.Run(0);
     }
   }
 
+  int expected_size_;
+  pp::CompletionCallback done_callback_;
   pp::CompletionCallbackFactory<StreamReader> callback_factory_;
   pp::Transport_Dev* transport_;
   std::vector<char> buffer_;
   std::list<std::vector<char> > received_;
+  int received_size_;
   std::list<std::string> errors_;
 };
 
@@ -167,11 +175,19 @@ std::string TestTransport::TestConnect() {
   PASS();
 }
 
+// Creating datagram connection and try sending data over it. Verify
+// that at least some packets are received (some packets may be lost).
 std::string TestTransport::TestSendDataUdp() {
   RUN_SUBTEST(InitTargets("udp"));
   RUN_SUBTEST(Connect());
 
-  StreamReader reader(transport1_.get());
+  const int kNumPackets = 100;
+  const int kSendBufferSize = 1200;
+  const int kUdpWaitTimeMs = 1000;  // 1 second.
+
+  TestCompletionCallback done_cb(instance_->pp_instance());
+  StreamReader reader(transport1_.get(), kSendBufferSize * kNumPackets,
+                      done_cb);
 
   std::map<int, std::vector<char> > sent_packets;
   for (int i = 0; i < kNumPackets; ++i) {
@@ -189,10 +205,9 @@ std::string TestTransport::TestSendDataUdp() {
     sent_packets[i] = send_buffer;
   }
 
-  // Wait for 1 second.
-  TestCompletionCallback wait_cb(instance_->pp_instance());
-  pp::Module::Get()->core()->CallOnMainThread(1000, wait_cb);
-  ASSERT_EQ(wait_cb.WaitForResult(), PP_OK);
+  // Limit waiting time.
+  pp::Module::Get()->core()->CallOnMainThread(kUdpWaitTimeMs, done_cb);
+  ASSERT_EQ(done_cb.WaitForResult(), PP_OK);
 
   ASSERT_TRUE(reader.errors().size() == 0);
   ASSERT_TRUE(reader.received().size() > 0);
@@ -208,33 +223,38 @@ std::string TestTransport::TestSendDataUdp() {
   PASS();
 }
 
+// Creating reliable (TCP-like) connection and try sending data over
+// it. Verify that all data is received correctly.
 std::string TestTransport::TestSendDataTcp() {
   RUN_SUBTEST(InitTargets("tcp"));
   RUN_SUBTEST(Connect());
 
-  StreamReader reader(transport1_.get());
+  const int kTcpSendSize = 100000;
+  const int kTimeoutMs = 20000;  // 20 seconds.
 
-  std::vector<char> sent_data;
-  for (int i = 0; i < kNumPackets; ++i) {
-    std::vector<char> send_buffer(kSendBufferSize);
-    for (size_t j = 0; j < send_buffer.size(); ++j) {
-      send_buffer[j] = rand() % 256;
-    }
+  TestCompletionCallback done_cb(instance_->pp_instance());
+  StreamReader reader(transport1_.get(), kTcpSendSize,
+                      done_cb);
 
+  std::vector<char> send_buffer(kTcpSendSize);
+  for (size_t j = 0; j < send_buffer.size(); ++j) {
+    send_buffer[j] = rand() % 256;
+  }
+
+  int pos = 0;
+  while (pos < static_cast<int>(send_buffer.size())) {
     TestCompletionCallback send_cb(instance_->pp_instance());
-    int result = transport2_->Send(&send_buffer[0], send_buffer.size(),
-                                   send_cb);
+    int result = transport2_->Send(
+        &send_buffer[0] + pos, send_buffer.size() - pos, send_cb);
     if (result == PP_OK_COMPLETIONPENDING)
       result = send_cb.WaitForResult();
     ASSERT_TRUE(result > 0);
-    sent_data.insert(sent_data.end(), send_buffer.begin(),
-                     send_buffer.begin() + result);
+    pos += result;
   }
 
-  // Wait for 1 second.
-  TestCompletionCallback wait_cb(instance_->pp_instance());
-  pp::Module::Get()->core()->CallOnMainThread(1000, wait_cb);
-  ASSERT_EQ(wait_cb.WaitForResult(), PP_OK);
+  // Limit waiting time.
+  pp::Module::Get()->core()->CallOnMainThread(kTimeoutMs, done_cb);
+  ASSERT_EQ(done_cb.WaitForResult(), PP_OK);
 
   ASSERT_TRUE(reader.errors().size() == 0);
 
@@ -243,7 +263,7 @@ std::string TestTransport::TestSendDataTcp() {
            reader.received().begin(); it != reader.received().end(); ++it) {
     received_data.insert(received_data.end(), it->begin(), it->end());
   }
-  ASSERT_EQ(sent_data, received_data);
+  ASSERT_EQ(send_buffer, received_data);
 
   Clean();
 

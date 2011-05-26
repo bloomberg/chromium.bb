@@ -175,7 +175,7 @@ TEST_F(PPAPITest, DISABLED_DirectoryReader) {
 }
 
 #if defined(ENABLE_P2P_APIS)
-TEST_F(PPAPITest, FLAKY_Transport) {
+TEST_F(PPAPITest, Transport) {
   RunTest("Transport");
 }
 #endif // ENABLE_P2P_APIS
