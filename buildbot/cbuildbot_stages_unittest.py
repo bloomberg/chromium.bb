@@ -164,7 +164,6 @@ class SyncStageTest(AbstractStageTest):
     commands.PreFlightRinse(self.build_root, board,
                             [self.overlay])
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    stages.BuilderStage._GetPortageEnvVar(stages._FULL_BINHOST, board)
     commands.IncrementalCheckout(self.build_root)
     os.path.isdir(self.overlay).AndReturn(True)
 
@@ -531,8 +530,8 @@ class BuildTargetStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     return stages.BuildTargetStage(self.bot_id,
-                                    self.options,
-                                    self.build_config)
+                                   self.options,
+                                   self.build_config)
 
   def testAllConditionalPaths(self):
     """Enable all paths to get line coverage."""
@@ -546,14 +545,8 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
-    board = self.build_config['board']
-    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST',
-        board).AndReturn('new.com')
-    stages.BuilderStage.old_binhost = 'old.com'
-
     commands.Build(self.build_root,
                    build_autotest=True,
-                   emptytree=True,
                    usepkg=True,
                    fast=True,
                    extra_env=proper_env)
@@ -570,43 +563,16 @@ class BuildTargetStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
-  def testFalseBuildArgs1(self):
+  def testFalseBuildArgs(self):
     """Make sure our logic for Build arguments can toggle to false."""
-    board = self.build_config['board']
-    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST',
-        board).AndReturn('new.com')
-    stages.BuilderStage.old_binhost = 'new.com'
     self.build_config['useflags'] = None
 
     commands.Build(self.build_root,
                    build_autotest=mox.IgnoreArg(),
-                   emptytree=mox.IgnoreArg(),
                    fast=mox.IgnoreArg(),
                    usepkg=mox.IgnoreArg(),
                    extra_env={})
     commands.BuildImage(self.build_root, extra_env={})
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testFalseBuildArgs2(self):
-    """Verify emptytree flag is false when there is no old binhost."""
-    board = self.build_config['board']
-    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST',
-        board).AndReturn('new.com')
-    stages.BuilderStage.old_binhost = False
-    self.build_config['useflags'] = ['BAKER']
-    proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
-
-    commands.Build(self.build_root,
-                   build_autotest=mox.IgnoreArg(),
-                   emptytree=False,
-                   fast=mox.IgnoreArg(),
-                   usepkg=mox.IgnoreArg(),
-                   extra_env=proper_env)
-
-    commands.BuildImage(self.build_root, extra_env=proper_env)
 
     self.mox.ReplayAll()
     self.RunStage()

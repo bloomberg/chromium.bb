@@ -190,7 +190,6 @@ class CBuildBotTest(mox.MoxTestBase):
                         extra_env={})
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
-                   emptytree=False,
                    build_autotest=False,
                    fast=True,
                    usepkg=False)
@@ -202,10 +201,9 @@ class CBuildBotTest(mox.MoxTestBase):
     cros_lib.RunCommand(['./build_packages', '--fast'],
                         cwd=mox.StrContains(buildroot),
                         enter_chroot=True,
-                        extra_env={'EXTRA_BOARD_FLAGS': '--emptytree'})
+                        extra_env={'EXTRA_BOARD_FLAGS': '--rebuilt-binaries'})
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
-                   emptytree=True,
                    fast=True,
                    build_autotest=True,
                    usepkg=True)
@@ -223,7 +221,6 @@ class CBuildBotTest(mox.MoxTestBase):
         mox.ContainsKeyValue('A', 'Av'), mox.ContainsKeyValue('B', 'Bv')))
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
-                   emptytree=True,
                    build_autotest=False,
                    fast=False,
                    usepkg=False,

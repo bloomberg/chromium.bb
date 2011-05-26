@@ -182,7 +182,7 @@ def SetupBoard(buildroot, board, fast, usepkg):
   # TODO(sosa): Add prebuilt call for boards in build_type == chroot.
 
 
-def Build(buildroot, emptytree, build_autotest, fast, usepkg, extra_env=None):
+def Build(buildroot, build_autotest, fast, usepkg, extra_env=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages']
@@ -197,11 +197,13 @@ def Build(buildroot, emptytree, build_autotest, fast, usepkg, extra_env=None):
     cmd.append('--nofast')
 
   if not build_autotest: cmd.append('--nowithautotest')
-  if not usepkg: cmd.append('--nousepkg')
-  if emptytree:
+
+  if usepkg:
     key = 'EXTRA_BOARD_FLAGS'
     prev = env.get(key)
-    env[key] = (prev and prev + ' ' or '') + '--emptytree'
+    env[key] = (prev and prev + ' ' or '') + '--rebuilt-binaries'
+  else:
+    cmd.append('--nousepkg')
 
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env)
 

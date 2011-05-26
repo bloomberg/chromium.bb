@@ -186,8 +186,6 @@ class BuilderStage():
 
   # TODO(sosa): Remove these once we have a SEND/RECIEVE IPC mechanism
   # implemented.
-  new_binhost = None
-  old_binhost = None
   test_tarball = None
   rev_overlays = None
   push_overlays = None
@@ -365,7 +363,6 @@ class SyncStage(BuilderStage):
       board = self._build_config['board']
       commands.PreFlightRinse(self._build_root, board,
                               BuilderStage.rev_overlays)
-      BuilderStage.old_binhost = self._GetPortageEnvVar(_FULL_BINHOST, board)
       commands.IncrementalCheckout(self._build_root)
 
     # Check that all overlays can be found.
@@ -498,9 +495,6 @@ class BuildTargetStage(BuilderStage):
   the images we want per the build spec."""
   def _PerformStage(self):
     board = self._build_config['board']
-    BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST, board)
-    emptytree = (BuilderStage.old_binhost and
-                 BuilderStage.old_binhost != BuilderStage.new_binhost)
     build_autotest = (self._build_config['build_tests'] and
                       self._options.tests)
     env = {}
@@ -508,7 +502,6 @@ class BuildTargetStage(BuilderStage):
       env['USE'] = ' '.join(self._build_config['useflags'])
 
     commands.Build(self._build_root,
-                   emptytree=emptytree,
                    build_autotest=build_autotest,
                    fast=self._build_config['fast'],
                    usepkg=self._build_config['usepkg_build_packages'],
