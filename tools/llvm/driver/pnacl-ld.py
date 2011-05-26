@@ -53,7 +53,7 @@ EXTRA_ENV = {
 
   'LD_BFD_FLAGS': '-m ${LD_EMUL} -T ${LD_SCRIPT}',
 
-  'LD_GOLD_FLAGS': '--native-client ' +
+  'LD_GOLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} '
                    '${GOLD_FIX ? -T ${LD_SCRIPT} : -Ttext=0x20000}',
 
    # Symbols to wrap
@@ -65,6 +65,11 @@ EXTRA_ENV = {
 
   'LD_SEARCH_DIRS' : '',
   'SEARCH_DIRS'    : '',
+
+  'LD_GOLD_OFORMAT'        : '${LD_GOLD_OFORMAT_%ARCH%}',
+  'LD_GOLD_OFORMAT_ARM'    : 'elf32-littlearm',
+  'LD_GOLD_OFORMAT_X8632'  : 'elf32-nacl',
+  'LD_GOLD_OFORMAT_X8664'  : 'elf64-nacl',
 
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
