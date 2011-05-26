@@ -4625,13 +4625,13 @@
    fun:_ZNSt8_Rb_treeIN3net10IPEndPointES1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE16_M_insert_uniqueERKS1_
    fun:_ZNSt3setIN3net10IPEndPointESt4lessIS1_ESaIS1_EE6insertERKS1_
    fun:_ZN16P2PSocketHostUdp15DidCompleteReadEi
+   ...
    fun:_ZN16P2PSocketHostUdp6OnRecvEi
    fun:_Z16DispatchToMethodI16P2PSocketHostUdpMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN12CallbackImplI16P2PSocketHostUdpMS0_FviE6Tuple1IiEE13RunWithParamsERKS4_
    fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
    fun:_ZN3net17UDPSocketLibevent14DoReadCallbackEi
    fun:_ZN3net17UDPSocketLibevent15DidCompleteReadEv
-   fun:_ZN3net17UDPSocketLibevent11ReadWatcher28OnFileCanReadWithoutBlockingEi
 }
 {
    bug_83944_a
