@@ -123,6 +123,10 @@ HDC VectorPlatformDeviceEmf::BeginPlatformPaint() {
   return hdc_;
 }
 
+uint32_t VectorPlatformDeviceEmf::getDeviceCapabilities() {
+  return SkDevice::getDeviceCapabilities() | kVector_Capability;
+}
+
 void VectorPlatformDeviceEmf::drawPaint(const SkDraw& draw,
                                         const SkPaint& paint) {
   // TODO(maruel):  Bypass the current transformation matrix.

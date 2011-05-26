@@ -39,15 +39,16 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
   SkPDFDevice* PdfDevice() { return pdf_device_.get(); }
 
   // PlatformDevice methods.
-  virtual bool IsVectorial();
   virtual bool IsNativeFontRenderingAllowed();
 
   virtual PlatformSurface BeginPlatformPaint();
   virtual void EndPlatformPaint();
+#if defined(OS_WIN)
+  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
+#endif
 
   // SkDevice methods.
   virtual uint32_t getDeviceCapabilities();
-
   virtual int width() const;
   virtual int height() const;
   virtual void setMatrixClip(const SkMatrix& matrix, const SkRegion& region,
@@ -82,10 +83,6 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
                             int indexCount, const SkPaint& paint);
   virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
                           const SkPaint&);
-
-#if defined(OS_WIN)
-  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
-#endif
 
  protected:
   // Override from SkDevice (through PlatformDevice).

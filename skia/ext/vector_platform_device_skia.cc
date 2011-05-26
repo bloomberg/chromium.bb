@@ -40,10 +40,6 @@ VectorPlatformDeviceSkia::VectorPlatformDeviceSkia(SkPDFDevice* pdf_device)
 VectorPlatformDeviceSkia::~VectorPlatformDeviceSkia() {
 }
 
-bool VectorPlatformDeviceSkia::IsVectorial() {
-  return true;
-}
-
 bool VectorPlatformDeviceSkia::IsNativeFontRenderingAllowed() {
   return false;
 }
@@ -87,7 +83,7 @@ void VectorPlatformDeviceSkia::EndPlatformPaint() {
 }
 
 uint32_t VectorPlatformDeviceSkia::getDeviceCapabilities() {
-  return kVector_Capability;
+  return SkDevice::getDeviceCapabilities() | kVector_Capability;
 }
 
 int VectorPlatformDeviceSkia::width() const {

@@ -66,7 +66,6 @@ class BitmapPlatformDevice : public PlatformDevice {
   virtual void DrawToNativeContext(CGContextRef context, int x, int y,
                                    const CGRect* src_rect);
   virtual void MakeOpaque(int x, int y, int width, int height);
-  virtual bool IsVectorial();
 
   // SkDevice overrides
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,

@@ -95,7 +95,6 @@ class BitmapPlatformDevice : public PlatformDevice {
                              const SkClipStack&);
 
   // Overridden from PlatformDevice:
-  virtual bool IsVectorial();
   virtual cairo_t* BeginPlatformPaint();
 
  protected:

@@ -35,8 +35,12 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
   VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap);
   virtual ~VectorPlatformDeviceEmf();
 
+  // PlatformDevice methods
   virtual PlatformSurface BeginPlatformPaint();
+  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
 
+  // SkDevice methods.
+  virtual uint32_t getDeviceCapabilities();
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
                           size_t count, const SkPoint[],
@@ -70,11 +74,8 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
   virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
                           const SkPaint&) OVERRIDE;
 
-
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&);
-  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
-  virtual bool IsVectorial() { return true; }
 
   void LoadClipRegion();
   bool alpha_blend_used() const { return alpha_blend_used_; }

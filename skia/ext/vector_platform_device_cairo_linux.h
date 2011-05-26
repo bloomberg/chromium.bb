@@ -43,7 +43,8 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
   // this class.
   static void ClearFontCache();
 
-  // Overridden from PlatformDevice:
+  // Overridden from SkDevice
+  virtual uint32_t getDeviceCapabilities();
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
                           size_t count, const SkPoint[],
@@ -79,8 +80,9 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
 
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&);
+
+  // Overridden from PlatformDevice
   virtual PlatformSurface BeginPlatformPaint();
-  virtual bool IsVectorial();
 
  protected:
   explicit VectorPlatformDeviceCairo(PlatformSurface context,

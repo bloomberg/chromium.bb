@@ -41,14 +41,6 @@ void EndPlatformPaint(SkDevice* device) {
     return platform_device->EndPlatformPaint();
 }
 
-bool IsVectorial(SkDevice* device) {
-  PlatformDevice* platform_device = GetPlatformDevice(device);
-  if (platform_device)
-    return platform_device->IsVectorial();
-
-  return device->getDeviceCapabilities() & SkDevice::kVector_Capability;
-}
-
 bool IsNativeFontRenderingAllowed(SkDevice* device) {
   PlatformDevice* platform_device = GetPlatformDevice(device);
   if (platform_device)

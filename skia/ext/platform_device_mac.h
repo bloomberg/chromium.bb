@@ -47,9 +47,6 @@ class PlatformDevice : public SkDevice {
   // Sets the opacity of each pixel in the specified region to be opaque.
   virtual void MakeOpaque(int x, int y, int width, int height) { }
 
-  // Returns if the preferred rendering engine is vectorial or bitmap based.
-  virtual bool IsVectorial() = 0;
-
   // Returns if native platform APIs are allowed to render text to this device.
   virtual bool IsNativeFontRenderingAllowed();
 

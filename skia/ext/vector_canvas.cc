@@ -31,7 +31,8 @@ SkDrawFilter* VectorCanvas::setDrawFilter(SkDrawFilter* filter) {
 }
 
 bool VectorCanvas::IsTopDeviceVectorial() const {
-  return IsVectorial(GetTopDevice(*this));
+  SkDevice* device = GetTopDevice(*this);
+  return device->getDeviceCapabilities() & SkDevice::kVector_Capability;
 }
 
 }  // namespace skia

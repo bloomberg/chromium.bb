@@ -77,7 +77,6 @@ class SK_API BitmapPlatformDevice : public PlatformDevice {
 
   virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
   virtual void MakeOpaque(int x, int y, int width, int height);
-  virtual bool IsVectorial() { return false; }
 
   // Loads the given transform and clipping region into the HDC. This is
   // overridden from SkDevice.

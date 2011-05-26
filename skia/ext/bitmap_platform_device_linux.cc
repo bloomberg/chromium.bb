@@ -143,10 +143,6 @@ BitmapPlatformDevice::BitmapPlatformDevice(
 BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
-bool BitmapPlatformDevice::IsVectorial() {
-  return false;
-}
-
 SkDeviceFactory* BitmapPlatformDevice::onNewDeviceFactory() {
   return SkNEW(BitmapPlatformDeviceFactory);
 }

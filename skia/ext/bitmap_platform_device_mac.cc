@@ -257,10 +257,6 @@ void BitmapPlatformDevice::DrawToNativeContext(CGContextRef context, int x,
     data_->ReleaseBitmapContext();
 }
 
-bool BitmapPlatformDevice::IsVectorial() {
-  return false;
-}
-
 void BitmapPlatformDevice::onAccessBitmap(SkBitmap*) {
   // Not needed in CoreGraphics
 }

@@ -59,11 +59,6 @@ SK_API void SetPlatformDevice(SkDevice* device,
                               PlatformDevice* platform_device);
 SK_API PlatformDevice* GetPlatformDevice(SkDevice* device);
 
-// Returns if the preferred rendering engine is vectorial or bitmap based.
-// Forwards to PlatformDevice::IsVectorial, if a PlatformDevice is bound,
-// otherwise falls-back to the SkDevice::getDeviceCapabilities routine.
-SK_API bool IsVectorial(SkDevice* device);
-
 // Returns if the native font rendering engine is allowed to render text to
 // this device.
 SK_API bool IsNativeFontRenderingAllowed(SkDevice* device);
