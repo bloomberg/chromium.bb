@@ -174,6 +174,9 @@ cr.define('options.autofillOptions', function() {
 
       if (this.input.value &&
           this.list.dataModel.indexOf(this.input.value) == -1) {
+        // It is important that updateIndex is done before validateAndSave.
+        // Otherwise we can not be sure about AddRow index.
+        this.list.dataModel.updateIndex(i);
         this.list.validateAndSave(i, 0, this.input.value);
       } else {
         this.input.value = '';

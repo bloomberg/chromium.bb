@@ -7,7 +7,7 @@
  */
 
 cr.define('cr.ui', function() {
-  const TableSelectionModel = cr.ui.table.TableSelectionModel;
+  const ListSelectionModel = cr.ui.ListSelectionModel;
   const ListSelectionController = cr.ui.ListSelectionController;
   const ArrayDataModel = cr.ui.ArrayDataModel;
   const TableColumnModel = cr.ui.table.TableColumnModel;
@@ -30,25 +30,19 @@ cr.define('cr.ui', function() {
     /**
      * The table data model.
      *
-     * @type {cr.ui.table.TableDataModel}
+     * @type {cr.ui.ArrayDataModel}
      */
     get dataModel() {
       return this.list_.dataModel;
     },
     set dataModel(dataModel) {
       if (this.list_.dataModel != dataModel) {
-        this.list_.dataModel = dataModel;
         if (this.list_.dataModel) {
-          this.list_.dataModel.removeEventListener('splice', this.boundRedraw_);
           this.list_.dataModel.removeEventListener('sorted',
                                                    this.boundHandleSorted_);
         }
         this.list_.dataModel = dataModel;
-        this.list_.dataModel.table = this;
-
-
         if (this.list_.dataModel) {
-          this.list_.dataModel.addEventListener('splice', this.boundRedraw_);
           this.list_.dataModel.addEventListener('sorted',
                                                 this.boundHandleSorted_);
         }
@@ -66,16 +60,13 @@ cr.define('cr.ui', function() {
     },
     set columnModel(columnModel) {
       if (this.columnModel_ != columnModel) {
-        if (this.columnModel_) {
-          this.columnModel_.removeEventListener('change', this.boundRedraw_);
+        if (this.columnModel_)
           this.columnModel_.removeEventListener('resize', this.boundResize_);
-        }
         this.columnModel_ = columnModel;
 
-        if (this.columnModel_) {
-          this.columnModel_.addEventListener('change', this.boundRedraw_);
+        if (this.columnModel_)
           this.columnModel_.addEventListener('resize', this.boundResize_);
-        }
+        this.list_.invalidate();
         this.redraw();
       }
     },
@@ -84,7 +75,7 @@ cr.define('cr.ui', function() {
      * The table selection model.
      *
      * @type
-     * {cr.ui.table.TableSelectionModel|cr.ui.table.TableSingleSelectionModel}
+     * {cr.ui.ListSelectionModel|cr.ui.table.ListSingleSelectionModel}
      */
     get selectionModel() {
       return this.list_.selectionModel;
@@ -92,9 +83,8 @@ cr.define('cr.ui', function() {
     set selectionModel(selectionModel) {
       if (this.list_.selectionModel != selectionModel) {
         if (this.dataModel)
-          selectionModel.adjust(0, 0, this.dataModel.length);
+          selectionModel.adjustLength(this.dataModel.length);
         this.list_.selectionModel = selectionModel;
-        this.redraw();
       }
     },
 
@@ -114,7 +104,7 @@ cr.define('cr.ui', function() {
     decorate: function() {
       this.list_ = this.ownerDocument.createElement('list');
       TableList.decorate(this.list_);
-      this.list_.selectionModel = new TableSelectionModel(this);
+      this.list_.selectionModel = new ListSelectionModel(this);
       this.list_.table = this;
 
       this.header_ = this.ownerDocument.createElement('div');
@@ -127,7 +117,6 @@ cr.define('cr.ui', function() {
       this.ownerDocument.defaultView.addEventListener(
           'resize', this.header_.updateWidth.bind(this.header_));
 
-      this.boundRedraw_ = this.redraw.bind(this);
       this.boundResize_ = this.resize.bind(this);
       this.boundHandleSorted_ = this.handleSorted_.bind(this);
 
@@ -136,6 +125,14 @@ cr.define('cr.ui', function() {
         this.tabIndex = 0;
       this.addEventListener('focus', this.handleElementFocus_, true);
       this.addEventListener('blur', this.handleElementBlur_, true);
+    },
+
+    /**
+     * Redraws the table.
+     */
+    redraw: function(index) {
+      this.list_.redraw();
+      this.header_.redraw();
     },
 
     /**
@@ -166,36 +163,12 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Redraws the table.
-     * This forces the list to remove all cached items.
-     */
-    redraw: function() {
-      this.list_.startBatchUpdates();
-      if (this.list_.dataModel) {
-        for (var i = 0; i < this.list_.dataModel.length; i++) {
-          this.list_.redrawItem(i);
-        }
-      }
-      this.list_.endBatchUpdates();
-      this.list_.redraw();
-      this.header_.redraw();
-    },
-
-    /**
      * This handles data model 'sorted' event.
-     * After sorting we need to
-     *  - adjust selection
-     *  - redraw all the items
-     *  - scroll the list to show selection.
+     * After sorting we need to redraw header
      * @param {Event} e The 'sorted' event.
      */
     handleSorted_: function(e) {
-      var sm = this.list_.selectionModel;
-      sm.adjustToReordering(e.sortPermutation);
-
-      this.redraw();
-      if (sm.leadIndex != -1)
-        this.list_.scrollIndexIntoView(sm.leadIndex)
+      this.header_.redraw();
     },
 
     /**
