@@ -5,6 +5,9 @@
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_tracker.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
@@ -175,6 +178,16 @@ void SafeBrowsingResourceHandler::OnBrowseUrlCheckResult(
   } else {
     const net::URLRequest* request = rdh_->GetURLRequest(
         GlobalRequestID(render_process_host_id_, deferred_request_id_));
+    if (request->load_flags() & net::LOAD_PRERENDERING) {
+      prerender::PrerenderTracker* prerender_tracker = g_browser_process->
+          prerender_tracker();
+      if (prerender_tracker->TryCancelOnIOThread(render_process_host_id_,
+                    render_view_id_,
+                    prerender::FINAL_STATUS_SAFE_BROWSING)) {
+        rdh_->CancelRequest(render_process_host_id_, deferred_request_id_,
+                            false);
+      }
+    }
     if (request->load_flags() & net::LOAD_PREFETCH) {
       // Don't prefetch resources that fail safe browsing, disallow
       // them.
