@@ -57,6 +57,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -3622,6 +3623,7 @@ void TestingAutomationProvider::AddSavedPassword(
   // This observer will delete itself.
   PasswordStoreLoginsChangedObserver *observer =
       new PasswordStoreLoginsChangedObserver(this, reply_message,
+                                             PasswordStoreChange::ADD,
                                              "password_added");
   observer->Init();
   password_store->AddLogin(new_password);
@@ -3634,18 +3636,19 @@ void TestingAutomationProvider::RemoveSavedPassword(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
   DictionaryValue* password_dict = NULL;
 
   if (!args->GetDictionary("password", &password_dict)) {
-    reply.SendError("Password must be a dictionary.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Must specify a password dictionary.");
     return;
   }
 
-  // The signon realm is effectively the primary key and must be included.
+  // The "signon realm" is effectively the primary key and must be included.
   // Check here before calling GetPasswordFormFromDict.
   if (!password_dict->HasKey("signon_realm")) {
-    reply.SendError("Password must include signon_realm.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Password must include a value for 'signon_realm.'");
     return;
   }
   webkit_glue::PasswordForm to_remove =
@@ -3654,14 +3657,19 @@ void TestingAutomationProvider::RemoveSavedPassword(
   // Use EXPLICIT_ACCESS since passwords can be removed in incognito mode.
   PasswordStore* password_store =
       browser->profile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
-
   if (password_store == NULL) {
-    reply.SendError("Unable to get password store.");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to get password store.");
     return;
   }
 
+  // This observer will delete itself.
+  PasswordStoreLoginsChangedObserver* observer =
+      new PasswordStoreLoginsChangedObserver(
+          this, reply_message, PasswordStoreChange::REMOVE, "");
+  observer->Init();
+
   password_store->RemoveLogin(to_remove);
-  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetSavedPasswords" }

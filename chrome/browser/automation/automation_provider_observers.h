@@ -30,6 +30,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
+#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -1037,8 +1038,8 @@ class AutomationProviderGetPasswordsObserver : public PasswordStoreConsumer {
 };
 
 // Observes when login entries stored in the password store are changed.  The
-// notifications are sent on BrowserThread::DB, the thread that interacts with
-// the web database.
+// notifications are sent on the DB thread, the thread that interacts with the
+// web database.
 class PasswordStoreLoginsChangedObserver
     : public base::RefCountedThreadSafe<
           PasswordStoreLoginsChangedObserver,
@@ -1047,11 +1048,11 @@ class PasswordStoreLoginsChangedObserver
  public:
   PasswordStoreLoginsChangedObserver(AutomationProvider* automation,
                                      IPC::Message* reply_message,
+                                     PasswordStoreChange::Type expected_type,
                                      const std::string& result_key);
   virtual ~PasswordStoreLoginsChangedObserver();
 
-  // Schedules a task on the BrowserThread::DB thread to register the
-  // appropriate observers.
+  // Schedules a task on the DB thread to register the appropriate observers.
   virtual void Init();
 
   // NotificationObserver interface.
@@ -1063,20 +1064,24 @@ class PasswordStoreLoginsChangedObserver
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<PasswordStoreLoginsChangedObserver>;
 
-  // Registers the appropriate observers.  Called on thread BrowserThread::DB.
+  // Registers the appropriate observers.  Called on the DB thread.
   void RegisterObserversTask();
 
   // Sends the |reply_message_| to |automation_| indicating we're done.  Called
-  // on thread BrowserThread::UI (the main browser UI thread).
+  // on the UI thread.
   void IndicateDone();
+
+  // Sends an error reply to |automation_|.  Called on the UI thread.
+  void IndicateError(const std::string& error);
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   NotificationRegistrar registrar_;
+  PasswordStoreChange::Type expected_type_;
   std::string result_key_;
 
-  // Used to ensure that thread BrowserThread::UI waits for thread
-  // BrowserThread::DB to finish registering observers before proceeding.
+  // Used to ensure that the UI thread waits for the DB thread to finish
+  // registering observers before proceeding.
   base::WaitableEvent done_event_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreLoginsChangedObserver);
@@ -1279,8 +1284,8 @@ class AutofillDisplayedObserver : public NotificationObserver {
 };
 
 // Observes when a specified number of autofill profiles and credit cards have
-// been changed in the WebDataService.  The notifications are sent on
-// BrowserThread::DB, the thread that interacts with the database.
+// been changed in the WebDataService.  The notifications are sent on the DB
+// thread, the thread that interacts with the database.
 class AutofillChangedObserver
     : public base::RefCountedThreadSafe<
           AutofillChangedObserver,
@@ -1293,8 +1298,7 @@ class AutofillChangedObserver
                           int num_credit_cards);
   virtual ~AutofillChangedObserver();
 
-  // Schedules a task on the BrowserThread::DB thread to register the
-  // appropriate observers.
+  // Schedules a task on the DB thread to register the appropriate observers.
   virtual void Init();
 
   // NotificationObserver interface.
@@ -1306,11 +1310,11 @@ class AutofillChangedObserver
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<AutofillChangedObserver>;
 
-  // Registers the appropriate observers.  Called on thread BrowserThread::DB.
+  // Registers the appropriate observers.  Called on the DB thread.
   void RegisterObserversTask();
 
   // Sends the |reply_message_| to |automation_| indicating we're done.  Called
-  // on thread BrowserThread::UI (the main browser UI thread).
+  // on the UI thread.
   void IndicateDone();
 
   base::WeakPtr<AutomationProvider> automation_;
@@ -1319,8 +1323,8 @@ class AutofillChangedObserver
   int num_profiles_;
   int num_credit_cards_;
 
-  // Used to ensure that thread BrowserThread::UI waits for thread
-  // BrowserThread::DB to finish registering observers before proceeding.
+  // Used to ensure that the UI thread waits for the DB thread to finish
+  // registering observers before proceeding.
   base::WaitableEvent done_event_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillChangedObserver);

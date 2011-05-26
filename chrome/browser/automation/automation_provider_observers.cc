@@ -38,6 +38,7 @@
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -1688,9 +1689,11 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
 PasswordStoreLoginsChangedObserver::PasswordStoreLoginsChangedObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message,
+    PasswordStoreChange::Type expected_type,
     const std::string& result_key)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
+      expected_type_(expected_type),
       result_key_(result_key),
       done_event_(false, false) {
   AddRef();
@@ -1723,10 +1726,23 @@ void PasswordStoreLoginsChangedObserver::Observe(
     const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(type.value == NotificationType::LOGINS_CHANGED);
+  PasswordStoreChangeList* change_details =
+      Details<PasswordStoreChangeList>(details).ptr();
+  if (change_details->size() != 1 ||
+      change_details->front().type() != expected_type_) {
+    // Notify the UI thread that there's an error.
+    std::string error = "Unexpected password store login change details.";
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(
+            this, &PasswordStoreLoginsChangedObserver::IndicateError, error));
+    return;
+  }
 
-  registrar_.RemoveAll();  // Must be done from thread BrowserThread::DB.
+  registrar_.RemoveAll();  // Must be done from the DB thread.
 
-  // Notify thread BrowserThread::UI that we're done listening.
+  // Notify the UI thread that we're done listening.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -1737,11 +1753,24 @@ void PasswordStoreLoginsChangedObserver::Observe(
 void PasswordStoreLoginsChangedObserver::IndicateDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (automation_) {
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->SetBoolean(result_key_, true);
-    AutomationJSONReply(
-        automation_, reply_message_.release()).SendSuccess(return_value.get());
+    if (result_key_.empty()) {
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(NULL);
+    } else {
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+      return_value->SetBoolean(result_key_, true);
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(return_value.get());
+    }
   }
+  Release();
+}
+
+void PasswordStoreLoginsChangedObserver::IndicateError(
+    const std::string& error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (automation_)
+    AutomationJSONReply(automation_, reply_message_.release()).SendError(error);
   Release();
 }
 
@@ -2227,10 +2256,10 @@ void AutofillChangedObserver::Observe(
   }
 
   if (num_profiles_ == 0 && num_credit_cards_ == 0) {
-    registrar_.RemoveAll();  // Must be done from thread BrowserThread::DB.
+    registrar_.RemoveAll();  // Must be done from the DB thread.
 
-    // Notify thread BrowserThread::UI that we're done listening for all
-    // relevant autofill notifications.
+    // Notify the UI thread that we're done listening for all relevant
+    // autofill notifications.
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,

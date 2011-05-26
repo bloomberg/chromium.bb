@@ -113,8 +113,7 @@ class PasswordTest(pyauto.PyUITest):
     test_utils.ClearPasswords(self)
 
   def testNeverSavePasswords(self):
-    """Verify that we don't save passwords and delete saved passwords
-    for a domain when 'never for this site' is chosen."""
+    """Verify passwords not saved/deleted when 'never for this site' chosen."""
     creds1 = self.GetPrivateInfo()['test_google_account']
     test_utils.GoogleAccountsLogin(
         self, creds1['username'], creds1['password'])
@@ -135,8 +134,7 @@ class PasswordTest(pyauto.PyUITest):
     # TODO: Check the exceptions list
 
   def testSavedPasswordInTabsAndWindows(self):
-    """Verify saved username/password displays in Regular/Incognito Window
-       and NTP"""
+    """Verify saved username/password shows in regular/incognito Window, NTP"""
     username = 'test'
     password = 'test12345'
     password_dict = {
@@ -165,8 +163,7 @@ class PasswordTest(pyauto.PyUITest):
     test_utils.ClearPasswords(self)
 
   def testInfoBarDisappearByNavigatingPage(self):
-    """Test that Password infobar is dismissed by navigating to
-       different page."""
+    """Test password infobar is dismissed when navigating to different page."""
     creds = self.GetPrivateInfo()['test_google_account']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
