@@ -17,15 +17,20 @@
 #include "content/common/notification_type.h"
 #include "content/common/result_codes.h"
 
-ExtensionFunction::RenderViewHostTracker::RenderViewHostTracker(
-    ExtensionFunction* function)
+// static
+void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
+  x->Destruct();
+}
+
+UIThreadExtensionFunction::RenderViewHostTracker::RenderViewHostTracker(
+    UIThreadExtensionFunction* function)
     : function_(function) {
   registrar_.Add(this,
                  NotificationType::RENDER_VIEW_HOST_DELETED,
                  Source<RenderViewHost>(function->render_view_host()));
 }
 
-void ExtensionFunction::RenderViewHostTracker::Observe(
+void UIThreadExtensionFunction::RenderViewHostTracker::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
@@ -37,43 +42,23 @@ void ExtensionFunction::RenderViewHostTracker::Observe(
 
 ExtensionFunction::ExtensionFunction()
     : request_id_(-1),
-      profile_(NULL),
+      profile_id_(0),
       has_callback_(false),
       include_incognito_(false),
-      user_gesture_(false) {
+      user_gesture_(false),
+      args_(NULL),
+      bad_message_(false) {
 }
 
 ExtensionFunction::~ExtensionFunction() {
 }
 
-void ExtensionFunction::SetRenderViewHost(RenderViewHost* render_view_host) {
-  render_view_host_ = render_view_host;
-  tracker_.reset(render_view_host ? new RenderViewHostTracker(this) : NULL);
-}
-
-const Extension* ExtensionFunction::GetExtension() {
-  ExtensionService* service = profile_->GetExtensionService();
-  DCHECK(service);
-  return service->GetExtensionById(extension_id_, false);
-}
-
-Browser* ExtensionFunction::GetCurrentBrowser() {
-  return dispatcher()->GetCurrentBrowser(render_view_host_, include_incognito_);
-}
-
-AsyncExtensionFunction::AsyncExtensionFunction()
-    : args_(NULL), bad_message_(false) {
-}
-
-AsyncExtensionFunction::~AsyncExtensionFunction() {
-}
-
-void AsyncExtensionFunction::SetArgs(const ListValue* args) {
+void ExtensionFunction::SetArgs(const ListValue* args) {
   DCHECK(!args_.get());  // Should only be called once.
   args_.reset(args->DeepCopy());
 }
 
-const std::string AsyncExtensionFunction::GetResult() {
+const std::string ExtensionFunction::GetResult() {
   std::string json;
   // Some functions might not need to return any results.
   if (result_.get())
@@ -81,16 +66,42 @@ const std::string AsyncExtensionFunction::GetResult() {
   return json;
 }
 
-const std::string AsyncExtensionFunction::GetError() {
+const std::string ExtensionFunction::GetError() {
   return error_;
 }
 
-void AsyncExtensionFunction::Run() {
+void ExtensionFunction::Run() {
   if (!RunImpl())
     SendResponse(false);
 }
 
-void AsyncExtensionFunction::SendResponse(bool success) {
+bool ExtensionFunction::HasOptionalArgument(size_t index) {
+  Value* value;
+  return args_->Get(index, &value) && !value->IsType(Value::TYPE_NULL);
+}
+
+UIThreadExtensionFunction::UIThreadExtensionFunction()
+    : profile_(NULL) {
+}
+
+UIThreadExtensionFunction::~UIThreadExtensionFunction() {
+}
+
+void UIThreadExtensionFunction::Destruct() const {
+  BrowserThread::DeleteOnUIThread::Destruct(this);
+}
+
+void UIThreadExtensionFunction::SetRenderViewHost(
+    RenderViewHost* render_view_host) {
+  render_view_host_ = render_view_host;
+  tracker_.reset(render_view_host ? new RenderViewHostTracker(this) : NULL);
+}
+
+Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
+  return dispatcher()->GetCurrentBrowser(render_view_host_, include_incognito_);
+}
+
+void UIThreadExtensionFunction::SendResponse(bool success) {
   if (!render_view_host_ || !dispatcher())
     return;
   if (bad_message_) {
@@ -103,7 +114,7 @@ void AsyncExtensionFunction::SendResponse(bool success) {
       GetResult(), GetError()));
 }
 
-void AsyncExtensionFunction::HandleBadMessage() {
+void UIThreadExtensionFunction::HandleBadMessage() {
   LOG(ERROR) << "bad extension message " << name_ << " : terminating renderer.";
   if (RenderProcessHost::run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just crash.
@@ -111,14 +122,17 @@ void AsyncExtensionFunction::HandleBadMessage() {
   } else {
     NOTREACHED();
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_EFD"));
-    base::KillProcess(render_view_host_->process()->GetHandle(),
-                      ResultCodes::KILLED_BAD_MESSAGE, false);
+    if (render_view_host_) {
+      base::KillProcess(render_view_host_->process()->GetHandle(),
+          ResultCodes::KILLED_BAD_MESSAGE, false);
+    }
   }
 }
 
-bool AsyncExtensionFunction::HasOptionalArgument(size_t index) {
-  Value* value;
-  return args_->Get(index, &value) && !value->IsType(Value::TYPE_NULL);
+AsyncExtensionFunction::AsyncExtensionFunction() {
+}
+
+AsyncExtensionFunction::~AsyncExtensionFunction() {
 }
 
 SyncExtensionFunction::SyncExtensionFunction() {

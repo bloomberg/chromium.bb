@@ -479,10 +479,18 @@ void ExtensionFunctionDispatcher::Dispatch(
 
   scoped_refptr<ExtensionFunction> function(
       FactoryRegistry::GetInstance()->NewFunction(params.name));
-  function->SetRenderViewHost(render_view_host);
-  function->set_dispatcher(AsWeakPtr());
-  function->set_profile(profile_);
-  function->set_extension_id(extension->id());
+  UIThreadExtensionFunction* function_ui =
+      function->AsUIThreadExtensionFunction();
+  if (!function_ui) {
+    NOTREACHED();
+    return;
+  }
+  function_ui->SetRenderViewHost(render_view_host);
+  function_ui->set_dispatcher(AsWeakPtr());
+  function_ui->set_profile(profile_);
+
+  function->set_profile_id(profile_->GetRuntimeId());
+  function->set_extension(extension);
   function->SetArgs(&params.arguments);
   function->set_source_url(params.source_url);
   function->set_request_id(params.request_id);

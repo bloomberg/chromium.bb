@@ -12,6 +12,7 @@
 #include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
+struct ExtensionHostMsg_Request_Params;
 class FilePath;
 class GURL;
 class HostContentSettingsMap;

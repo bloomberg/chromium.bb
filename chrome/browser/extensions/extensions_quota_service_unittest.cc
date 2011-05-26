@@ -56,6 +56,10 @@ class MockFunction : public ExtensionFunction {
   virtual const std::string GetError() { return std::string(); }
   virtual const std::string GetResult() { return std::string(); }
   virtual void Run() {}
+  virtual void Destruct() const { delete this; }
+  virtual bool RunImpl() { return true; }
+  virtual void SendResponse(bool) { }
+  virtual void HandleBadMessage() { }
 };
 
 class TimedLimitMockFunction : public MockFunction {

@@ -11,15 +11,19 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class Browser;
+class ExtensionFunction;
 class ExtensionFunctionDispatcher;
+class UIThreadExtensionFunction;
 class ListValue;
-class Profile;
 class QuotaLimitHeuristic;
+class RenderViewHost;
 class Value;
 
 #define EXTENSION_FUNCTION_VALIDATE(test) do { \
@@ -38,56 +42,59 @@ class Value;
 #define DECLARE_EXTENSION_FUNCTION_NAME(name) \
   public: static const char* function_name() { return name; }
 
+// Traits that describe how ExtensionFunction should be deleted. This just calls
+// the virtual "Destruct" method on ExtensionFunction, allowing derived classes
+// to override the behavior.
+struct ExtensionFunctionDeleteTraits {
+ public:
+  static void Destruct(const ExtensionFunction* x);
+};
+
 // Abstract base class for extension functions the ExtensionFunctionDispatcher
 // knows how to dispatch to.
 class ExtensionFunction
     : public base::RefCountedThreadSafe<ExtensionFunction,
-                                        BrowserThread::DeleteOnUIThread> {
+                                        ExtensionFunctionDeleteTraits> {
  public:
   ExtensionFunction();
 
-  virtual ~ExtensionFunction();
-
-  // Specifies the name of the function.
-  void set_name(const std::string& name) { name_ = name; }
-  const std::string name() const { return name_; }
-
-  // Set the profile which contains the extension that has originated this
-  // function call.
-  void set_profile(Profile* profile) { profile_ = profile; }
-  Profile* profile() const { return profile_; }
-
-  // Set the id of this function call's extension.
-  void set_extension_id(std::string extension_id) {
-    extension_id_ = extension_id;
+  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() {
+    return NULL;
   }
-  std::string extension_id() const { return extension_id_; }
 
-  void SetRenderViewHost(RenderViewHost* render_view_host);
-  RenderViewHost* render_view_host() const { return render_view_host_; }
-
-  // Specifies the raw arguments to the function, as a JSON value.
-  virtual void SetArgs(const ListValue* args) = 0;
-
-  // Retrieves the results of the function as a JSON-encoded string (may
-  // be empty).
-  virtual const std::string GetResult() = 0;
-
-  // Retrieves any error string from the function.
-  virtual const std::string GetError() = 0;
+  // Execute the API. Clients should initialize the ExtensionFunction using
+  // SetArgs(), set_request_id(), and the other setters before calling this
+  // method. Derived classes should be ready to return GetResult() and
+  // GetError() before returning from this function.
+  // Note that once Run() returns, dispatcher() can be NULL, so be sure to
+  // NULL-check.
+  virtual void Run();
 
   // Returns a quota limit heuristic suitable for this function.
   // No quota limiting by default.
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const {}
 
-  void set_dispatcher(
-      const base::WeakPtr<ExtensionFunctionDispatcher>& dispatcher) {
-    dispatcher_ = dispatcher;
-  }
-  ExtensionFunctionDispatcher* dispatcher() const {
-    return dispatcher_.get();
-  }
+  // Specifies the raw arguments to the function, as a JSON value.
+  virtual void SetArgs(const ListValue* args);
+
+  // Retrieves the results of the function as a JSON-encoded string (may
+  // be empty).
+  virtual const std::string GetResult();
+
+  // Retrieves any error string from the function.
+  virtual const std::string GetError();
+
+  // Specifies the name of the function.
+  void set_name(const std::string& name) { name_ = name; }
+  const std::string& name() const { return name_; }
+
+  void set_profile_id(ProfileId profile_id) { profile_id_ = profile_id; }
+  ProfileId profile_id() const { return profile_id_; }
+
+  void set_extension(const Extension* extension) { extension_ = extension; }
+  const Extension* GetExtension() const { return extension_.get(); }
+  const std::string& extension_id() const { return extension_->id(); }
 
   void set_request_id(int request_id) { request_id_ = request_id; }
   int request_id() { return request_id_; }
@@ -104,19 +111,110 @@ class ExtensionFunction
   void set_user_gesture(bool user_gesture) { user_gesture_ = user_gesture; }
   bool user_gesture() const { return user_gesture_; }
 
-  // Execute the API. Clients should call set_raw_args() and
-  // set_request_id() before calling this method. Derived classes should be
-  // ready to return raw_result() and error() before returning from this
-  // function.
-  virtual void Run() = 0;
+ protected:
+  friend struct ExtensionFunctionDeleteTraits;
+
+  virtual ~ExtensionFunction();
+
+  // Helper method for ExtensionFunctionDeleteTraits. Deletes this object.
+  virtual void Destruct() const = 0;
+
+  // Derived classes should implement this method to do their work and return
+  // success/failure.
+  virtual bool RunImpl() = 0;
+
+  // Sends the result back to the extension.
+  virtual void SendResponse(bool success) = 0;
+
+  // Called when we receive an extension api request that is invalid in a way
+  // that JSON validation in the renderer should have caught. This should never
+  // happen and could be an attacker trying to exploit the browser, so we crash
+  // the renderer instead.
+  virtual void HandleBadMessage() = 0;
+
+  // Return true if the argument to this function at |index| was provided and
+  // is non-null.
+  bool HasOptionalArgument(size_t index);
+
+  // Id of this request, used to map the response back to the caller.
+  int request_id_;
+
+  // The ID of the Profile of this function's extension.
+  ProfileId profile_id_;
+
+  // The extension that called this function.
+  scoped_refptr<const Extension> extension_;
+
+  // The name of this function.
+  std::string name_;
+
+  // The URL of the frame which is making this request
+  GURL source_url_;
+
+  // True if the js caller provides a callback function to receive the response
+  // of this call.
+  bool has_callback_;
+
+  // True if this callback should include information from incognito contexts
+  // even if our profile_ is non-incognito. Note that in the case of a "split"
+  // mode extension, this will always be false, and we will limit access to
+  // data from within the same profile_ (either incognito or not).
+  bool include_incognito_;
+
+  // True if the call was made in response of user gesture.
+  bool user_gesture_;
+
+  // The arguments to the API. Only non-null if argument were specified.
+  scoped_ptr<ListValue> args_;
+
+  // The result of the API. This should be populated by the derived class before
+  // SendResponse() is called.
+  scoped_ptr<Value> result_;
+
+  // Any detailed error from the API. This should be populated by the derived
+  // class before Run() returns.
+  std::string error_;
+
+  // Any class that gets a malformed message should set this to true before
+  // returning.  The calling renderer process will be killed.
+  bool bad_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
+};
+
+// Extension functions that run on the UI thread. Most functions fall into
+// this category.
+class UIThreadExtensionFunction : public ExtensionFunction {
+ public:
+  UIThreadExtensionFunction();
+
+  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() OVERRIDE {
+    return this;
+  }
+
+  // Set the profile which contains the extension that has originated this
+  // function call.
+  void set_profile(Profile* profile) { profile_ = profile; }
+  Profile* profile() const { return profile_; }
+
+  void SetRenderViewHost(RenderViewHost* render_view_host);
+  RenderViewHost* render_view_host() const { return render_view_host_; }
+
+  void set_dispatcher(
+      const base::WeakPtr<ExtensionFunctionDispatcher>& dispatcher) {
+    dispatcher_ = dispatcher;
+  }
+  ExtensionFunctionDispatcher* dispatcher() const {
+    return dispatcher_.get();
+  }
 
  protected:
-  friend class base::RefCountedThreadSafe<ExtensionFunction>;
+  template<BrowserThread::ID id> friend struct BrowserThread::DeleteOnThread;
+  friend class DeleteTask<UIThreadExtensionFunction>;
 
-  // Gets the extension that called this function. This can return NULL for
-  // async functions, for example if the extension is unloaded while the
-  // function is running.
-  const Extension* GetExtension();
+  virtual ~UIThreadExtensionFunction();
+
+  virtual void SendResponse(bool success);
 
   // Gets the "current" browser, if any.
   //
@@ -142,33 +240,8 @@ class ExtensionFunction
   // The RenderViewHost we will send responses too.
   RenderViewHost* render_view_host_;
 
-  // Id of this request, used to map the response back to the caller.
-  int request_id_;
-
   // The Profile of this function's extension.
   Profile* profile_;
-
-  // The id of this function's extension.
-  std::string extension_id_;
-
-  // The name of this function.
-  std::string name_;
-
-  // The URL of the frame which is making this request
-  GURL source_url_;
-
-  // True if the js caller provides a callback function to receive the response
-  // of this call.
-  bool has_callback_;
-
-  // True if this callback should include information from incognito contexts
-  // even if our profile_ is non-incognito. Note that in the case of a "split"
-  // mode extension, this will always be false, and we will limit access to
-  // data from within the same profile_ (either incognito or not).
-  bool include_incognito_;
-
-  // True if the call was made in response of user gesture.
-  bool user_gesture_;
 
  private:
   // Helper class to track the lifetime of ExtensionFunction's RenderViewHost
@@ -179,71 +252,31 @@ class ExtensionFunction
   // method.
   class RenderViewHostTracker : public NotificationObserver {
    public:
-    explicit RenderViewHostTracker(ExtensionFunction* extension_function);
+    explicit RenderViewHostTracker(UIThreadExtensionFunction* function);
    private:
     virtual void Observe(NotificationType type,
                          const NotificationSource& source,
                          const NotificationDetails& details);
-    ExtensionFunction* function_;
+    UIThreadExtensionFunction* function_;
     NotificationRegistrar registrar_;
   };
 
+  virtual void HandleBadMessage();
+
+  virtual void Destruct() const;
+
   scoped_ptr<RenderViewHostTracker> tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
 
 // Base class for an extension function that runs asynchronously *relative to
 // the browser's UI thread*.
-// Note that once Run() returns, dispatcher() can be NULL, so be sure to
-// NULL-check.
-// TODO(aa) Remove this extra level of inheritance once the browser stops
-// parsing JSON (and instead uses custom serialization of Value objects).
-class AsyncExtensionFunction : public ExtensionFunction {
+class AsyncExtensionFunction : public UIThreadExtensionFunction {
  public:
   AsyncExtensionFunction();
 
-  virtual void SetArgs(const ListValue* args);
-  virtual const std::string GetResult();
-  virtual const std::string GetError();
-  virtual void Run();
-
-  // Derived classes should implement this method to do their work and return
-  // success/failure.
-  virtual bool RunImpl() = 0;
-
  protected:
   virtual ~AsyncExtensionFunction();
-
-  void SendResponse(bool success);
-
-  // Return true if the argument to this function at |index| was provided and
-  // is non-null.
-  bool HasOptionalArgument(size_t index);
-
-  // The arguments to the API. Only non-null if argument were specified.
-  scoped_ptr<ListValue> args_;
-
-  // The result of the API. This should be populated by the derived class before
-  // SendResponse() is called.
-  scoped_ptr<Value> result_;
-
-  // Any detailed error from the API. This should be populated by the derived
-  // class before Run() returns.
-  std::string error_;
-
-  // Any class that gets a malformed message should set this to true before
-  // returning.  The calling renderer process will be killed.
-  bool bad_message_;
-
- private:
-  // Called when we receive an extension api request that is invalid in a way
-  // that JSON validation in the renderer should have caught. This should never
-  // happen and could be an attacker trying to exploit the browser, so we crash
-  // the renderer instead.
-  void HandleBadMessage();
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncExtensionFunction);
 };
 
 // A SyncExtensionFunction is an ExtensionFunction that runs synchronously
@@ -253,15 +286,11 @@ class AsyncExtensionFunction : public ExtensionFunction {
 //
 // This kind of function is convenient for implementing simple APIs that just
 // need to interact with things on the browser UI thread.
-class SyncExtensionFunction : public AsyncExtensionFunction {
+class SyncExtensionFunction : public UIThreadExtensionFunction {
  public:
   SyncExtensionFunction();
 
-  // Derived classes should implement this method to do their work and return
-  // success/failure.
-  virtual bool RunImpl() = 0;
-
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
  protected:
   virtual ~SyncExtensionFunction();

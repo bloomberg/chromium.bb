@@ -17,6 +17,7 @@
 
 class DictionaryValue;
 class ExtensionDevToolsClientHost;
+class TabContents;
 
 class DebuggerFunction : public AsyncExtensionFunction {
  protected:
