@@ -672,6 +672,8 @@ void BrowserProcessImpl::Observe(NotificationType type,
         ShellIntegration::SetAsDefaultBrowser();
     } else if (*pref == prefs::kDisabledSchemes) {
       ApplyDisabledSchemesPolicy();
+    } else if (*pref == prefs::kAllowCrossOriginAuthPrompt) {
+      ApplyAllowCrossOriginAuthPromptPolicy();
     }
   } else {
     NOTREACHED();
@@ -744,6 +746,9 @@ void BrowserProcessImpl::CreateResourceDispatcherHost() {
       new ChromeResourceDispatcherHostObserver(prerender_tracker()));
   resource_dispatcher_host_->set_observer(
       resource_dispatcher_host_observer_.get());
+
+  pref_change_registrar_.Add(prefs::kAllowCrossOriginAuthPrompt, this);
+  ApplyAllowCrossOriginAuthPromptPolicy();
 }
 
 void BrowserProcessImpl::CreateMetricsService() {
@@ -1049,6 +1054,11 @@ void BrowserProcessImpl::ApplyDisabledSchemesPolicy() {
       schemes.insert(scheme);
   }
   ChildProcessSecurityPolicy::GetInstance()->RegisterDisabledSchemes(schemes);
+}
+
+void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
+  bool value = local_state()->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
+  resource_dispatcher_host()->set_allow_cross_origin_auth_prompt(value);
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

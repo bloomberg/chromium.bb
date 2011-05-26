@@ -575,6 +575,7 @@ void IOThread::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(prefs::kAuthServerWhitelist, "");
   local_state->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
   local_state->RegisterStringPref(prefs::kGSSAPILibraryName, "");
+  local_state->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
   local_state->RegisterBooleanPref(prefs::kEnableReferrers, true);
 }
 

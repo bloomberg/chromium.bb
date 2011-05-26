@@ -262,6 +262,11 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   static bool is_prefetch_enabled();
   static void set_is_prefetch_enabled(bool value);
 
+  // Controls whether third-party sub-content can pop-up HTTP basic auth
+  // dialog boxes.
+  bool allow_cross_origin_auth_prompt();
+  void set_allow_cross_origin_auth_prompt(bool value);
+
   // This does not take ownership of the observer. It is expected that the
   // observer have a longer lifetime than the ResourceDispatcherHost.
   void set_observer(Observer* observer) { observer_ = observer; }
@@ -428,6 +433,17 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                          int render_view_id,
                          T* detail);
 
+  // Relationship of resource being authenticated with the top level page.
+  enum HttpAuthResourceType {
+    HTTP_AUTH_RESOURCE_TOP,            // Top-level page itself
+    HTTP_AUTH_RESOURCE_SAME_DOMAIN,    // Sub-content from same domain
+    HTTP_AUTH_RESOURCE_BLOCKED_CROSS,  // Blocked Sub-content from cross domain
+    HTTP_AUTH_RESOURCE_ALLOWED_CROSS,  // Allowed Sub-content per command line
+    HTTP_AUTH_RESOURCE_LAST
+  };
+
+  HttpAuthResourceType HttpAuthResourceTypeOf(net::URLRequest* request);
+
   PendingRequestList pending_requests_;
 
   // Collection of temp files downloaded for child processes via
@@ -501,6 +517,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   Observer* observer_;
 
   static bool is_prefetch_enabled_;
+  bool allow_cross_origin_auth_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
 };

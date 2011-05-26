@@ -233,7 +233,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyEditBookmarksEnabled,
                     prefs::kEditBookmarksEnabled),
         TypeAndName(kPolicyAllowFileSelectionDialogs,
-                    prefs::kAllowFileSelectionDialogs)));
+                    prefs::kAllowFileSelectionDialogs),
+        TypeAndName(kPolicyAllowCrossOriginAuthPrompt,
+                    prefs::kAllowCrossOriginAuthPrompt)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

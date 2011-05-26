@@ -1261,6 +1261,10 @@ const char kAuthNegotiateDelegateWhitelist[] =
 // String that specifies the name of a custom GSSAPI library to load.
 const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
 
+// Boolean that specifies whether to allow basic auth prompting on cross-
+// domain sub-content requests.
+const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
+
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into signed
 // settings storage before owner has been assigned.

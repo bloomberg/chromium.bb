@@ -233,32 +233,6 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
 #pragma warning(default: 4748)
 #endif
 
-// Relationship of resource being authenticated with the top level page.
-enum HttpAuthResourceType {
-  HTTP_AUTH_RESOURCE_TOP,              // Top-level page itself
-  HTTP_AUTH_RESOURCE_SAME_DOMAIN,      // Sub-content from same domain
-  HTTP_AUTH_RESOURCE_BLOCKED_CROSS,    // Blocked Sub-content from cross domain
-  HTTP_AUTH_RESOURCE_ALLOWED_CROSS,    // Allowed Sub-content per command line
-  HTTP_AUTH_RESOURCE_LAST
-};
-
-HttpAuthResourceType HttpAuthResourceTypeOf(net::URLRequest* request) {
-  // Use the same critera as for cookies to determine the sub-resource type
-  // that is requesting to be authenticated.
-  if (!request->first_party_for_cookies().is_valid())
-    return HTTP_AUTH_RESOURCE_TOP;
-
-  if (net::RegistryControlledDomainService::SameDomainOrHost(
-          request->first_party_for_cookies(), request->url()))
-    return HTTP_AUTH_RESOURCE_SAME_DOMAIN;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowCrossOriginAuthPrompt))
-    return HTTP_AUTH_RESOURCE_ALLOWED_CROSS;
-
-  return HTTP_AUTH_RESOURCE_BLOCKED_CROSS;
-}
-
 }  // namespace
 
 ResourceDispatcherHost::ResourceDispatcherHost(
@@ -276,7 +250,8 @@ ResourceDispatcherHost::ResourceDispatcherHost(
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
       filter_(NULL),
-      observer_(NULL) {
+      observer_(NULL),
+      allow_cross_origin_auth_prompt_(false) {
   resource_queue_.Initialize(resource_queue_delegates);
 }
 
@@ -2024,3 +1999,30 @@ void ResourceDispatcherHost::set_is_prefetch_enabled(bool value) {
 
 // static
 bool ResourceDispatcherHost::is_prefetch_enabled_ = false;
+
+ResourceDispatcherHost::HttpAuthResourceType
+ResourceDispatcherHost::HttpAuthResourceTypeOf(net::URLRequest* request) {
+  // Use the same critera as for cookies to determine the sub-resource type
+  // that is requesting to be authenticated.
+  if (!request->first_party_for_cookies().is_valid())
+    return HTTP_AUTH_RESOURCE_TOP;
+
+  if (net::RegistryControlledDomainService::SameDomainOrHost(
+          request->first_party_for_cookies(), request->url()))
+    return HTTP_AUTH_RESOURCE_SAME_DOMAIN;
+
+  if (allow_cross_origin_auth_prompt())
+    return HTTP_AUTH_RESOURCE_ALLOWED_CROSS;
+
+  return HTTP_AUTH_RESOURCE_BLOCKED_CROSS;
+}
+
+bool ResourceDispatcherHost::allow_cross_origin_auth_prompt() {
+  return allow_cross_origin_auth_prompt_;
+}
+
+void ResourceDispatcherHost::set_allow_cross_origin_auth_prompt(bool value) {
+  allow_cross_origin_auth_prompt_ = value;
+}
+
+
