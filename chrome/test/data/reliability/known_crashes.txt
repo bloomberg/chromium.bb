@@ -180,3 +180,6 @@ PREFIX: webcore::cssstyleselector::loadpendingimages___webcore::cssstyleselector
 
 # 83676
 PREFIX: webcore::renderstyle::haspseudostyle___webcore::cssstyleselector::styleforelement___webcore::node::styleforrenderer
+
+# 84048
+PREFIX: webcore::element::getattribute___webcore::floatwidthofsubstringusingsvgfont___webcore::svgtextrunrenderingcontext::floatwidthusingsvgfont___webcore::font::width___webcore::renderblock::linebreaker::nextlinebreak___webcore::renderblock::layoutrunsandfloats___webcore::renderblock::layoutinlinechildren___webcore::renderblock::layoutblock
