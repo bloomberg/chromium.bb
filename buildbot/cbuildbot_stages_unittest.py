@@ -108,16 +108,13 @@ class BuilderStageTest(AbstractStageTest):
     for _ in range(3):
       output_obj = cros_lib.CommandResult()
       output_obj.output = 'public1 public2\n'
-      cros_lib.RunCommand(
-          mox.And(mox.IsA(list), mox.In('--noprivate')),
-          print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+      cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In('--noprivate')),
+                          redirect_stdout=True).AndReturn(output_obj)
       output_obj = cros_lib.CommandResult()
       output_obj.output = 'private1 private2\n'
-      cros_lib.RunCommand(
-          mox.And(mox.IsA(list), mox.In('--nopublic')),
-          print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+      cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In('--nopublic')), \
+                          redirect_stdout=True).AndReturn(output_obj)
     self.mox.ReplayAll()
-    stages.OVERLAY_LIST_CMD = '/bin/true'
     stage = self.ConstructStage()
     public_overlays = ['public1', 'public2', self.overlay]
     private_overlays = ['private1', 'private2']
@@ -196,7 +193,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
       self.build_name, self.incr_type, dry_run=True)
 
   def tearDown(self):
-    if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
+    shutil.rmtree(self.tmpdir)
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
@@ -212,12 +209,10 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     commands.ManifestCheckout(self.build_root,
                               self.TRACKING_BRANCH,
                               self.next_version,
-                              url=self.url)
+                              url=self.manifest_version_url)
 
-    os.path.isdir('/fake_root/.repo').AndReturn(True)
-    os.path.isdir('/fake_root/src/third_party/'
-                  'chromiumos-overlay').AndReturn(True)
-
+    os.path.isdir('/fake_root/src/'
+                  'third_party/chromiumos-overlay').AndReturn(True)
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncStage(self.bot_id,
@@ -557,7 +552,7 @@ class BuildTargetStageTest(AbstractStageTest):
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
         self.build_config['rev_overlays'], [],
-        self.build_config['build_type'], None, self.options.buildnumber)
+        self.build_config['build_type'], False)
 
     commands.BuildImage(self.build_root, extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, extra_env=proper_env)
@@ -674,8 +669,7 @@ class PushChangesStageTest(AbstractStageTest):
         self.build_root, self.build_config['board'],
         self.build_config['rev_overlays'], mox.IsA(list),
         self.build_config['build_type'],
-        self.options.chrome_rev,
-        self.options.buildnumber)
+        self.options.chrome_rev)
 
     commands.UprevPush(
         self.build_root,
@@ -695,8 +689,7 @@ class PushChangesStageTest(AbstractStageTest):
         self.build_root, self.build_config['board'],
         self.build_config['rev_overlays'], mox.IsA(list),
         self.build_config['build_type'],
-        self.options.chrome_rev,
-        self.options.buildnumber)
+        self.options.chrome_rev)
 
     commands.UprevPush(
         self.build_root,

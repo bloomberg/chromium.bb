@@ -192,41 +192,25 @@ class CBuildBotTest(mox.MoxTestBase):
     """Test _UploadPrebuilts with a public location."""
     binhost = 'http://www.example.com'
     binhosts = [binhost, None]
-    buildnumber = 4
     check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
                     mox.In('gs://chromeos-prebuilt'), mox.In('binary'))
     cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                             binhosts, 'binary', None, buildnumber)
+                              binhosts, 'binary', None)
     self.mox.VerifyAll()
 
   def testUploadPrivatePrebuilts(self):
     """Test _UploadPrebuilts with a private location."""
     binhost = 'http://www.example.com'
     binhosts = [binhost, None]
-    buildnumber = 4
     check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
-                    mox.In('gs://chromeos-%s/%s/%d/prebuilts/' %
-                           (self._test_board, 'full', buildnumber)),
-                    mox.In('full'))
+                    mox.In('chromeos-images:/var/www/prebuilt/'),
+                    mox.In('chrome'))
     cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'private',
-                             binhosts, 'full', None, buildnumber)
-    self.mox.VerifyAll()
-
-  def testChromePrebuilts(self):
-    """Test _UploadPrebuilts for Chrome prebuilts."""
-    binhost = 'http://www.example.com'
-    binhosts = [binhost, None]
-    buildnumber = 4
-    check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
-                    mox.In('gs://chromeos-prebuilt'), mox.In('chrome'))
-    cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
-    self.mox.ReplayAll()
-    commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                             binhosts, 'chrome', 'tot', buildnumber)
+                             binhosts, 'chrome', 'tot')
     self.mox.VerifyAll()
 
   def testRepoSyncRetriesFail(self):
