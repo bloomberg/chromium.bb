@@ -13,15 +13,16 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/common/notification_registrar.h"
 
+class Profile;
+
 // Observes the Task Manager and routes the notifications as events to the
 // extension system.
 class ExtensionProcessesEventRouter : public TaskManagerModelObserver {
  public:
-  // Single instance of the event router.
-  static ExtensionProcessesEventRouter* GetInstance();
+  explicit ExtensionProcessesEventRouter(Profile* profile);
+  virtual ~ExtensionProcessesEventRouter();
 
-  // Safe to call multiple times.
-  void ObserveProfile(Profile* profile);
+  void Init();
 
   // Called when an extension process wants to listen to process events.
   void ListenerAdded();
@@ -30,10 +31,6 @@ class ExtensionProcessesEventRouter : public TaskManagerModelObserver {
   void ListenerRemoved();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionProcessesEventRouter>;
-
-  ExtensionProcessesEventRouter();
-  virtual ~ExtensionProcessesEventRouter();
 
   // TaskManagerModelObserver methods.
   virtual void OnModelChanged() {}
@@ -48,9 +45,8 @@ class ExtensionProcessesEventRouter : public TaskManagerModelObserver {
   // Used for tracking registrations to process related notifications.
   NotificationRegistrar registrar_;
 
-  // Registered profiles.
-  typedef std::set<Profile*> ProfileSet;
-  ProfileSet profiles_;
+  // The associated Profile owns us transitively via ExtensionService.
+  Profile* profile_;
 
   // TaskManager to observe for updates.
   TaskManagerModel* model_;

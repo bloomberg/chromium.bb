@@ -17,6 +17,8 @@ class ExtensionPreferenceEventRouter : public NotificationObserver {
   explicit ExtensionPreferenceEventRouter(Profile* profile);
   virtual ~ExtensionPreferenceEventRouter();
 
+  void Init();
+
  private:
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

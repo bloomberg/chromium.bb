@@ -73,6 +73,8 @@ class AccessibilityEventRouterViews {
   FRIEND_TEST_ALL_PREFIXES(AccessibilityEventRouterViewsTest,
                            TestFocusNotification);
 
+  bool IsAccessibilityEnabled(Profile* profile);
+
   // Checks the type of the view and calls one of the more specific
   // Send*Notification methods, below.
   void DispatchAccessibilityNotification(
@@ -111,6 +113,11 @@ class AccessibilityEventRouterViews {
   void RecursiveGetMenuItemIndexAndCount(
       views::View* menu, views::View* item, int* index, int* count);
 
+  // Used for testing only. Overrides the accessibility enabled setting
+  // so the test doesn't depend directly on the ExtensionService and
+  // ExtensionAccessibilityEventRouter.
+  void SetAccessibilityEnabledForTesting(bool enabled);
+
   // The profile associated with the most recent window event  - used to
   // figure out where to route a few events that can't be directly traced
   // to a window with a profile (like menu events).
@@ -119,6 +126,10 @@ class AccessibilityEventRouterViews {
   // Used to defer handling of some events until the next time
   // through the event loop.
   ScopedRunnableMethodFactory<AccessibilityEventRouterViews> method_factory_;
+
+  // Used for testing only, with SetAccessibilityEnabledForTesting.
+  bool accessibility_enabled_overridden_for_testing_;
+  bool accessibility_enabled_override_value_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_EVENT_ROUTER_VIEWS_H_

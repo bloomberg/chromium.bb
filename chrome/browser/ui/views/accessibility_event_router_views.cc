@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -34,7 +35,9 @@ using views::FocusManager;
 
 AccessibilityEventRouterViews::AccessibilityEventRouterViews()
     : most_recent_profile_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      accessibility_enabled_overridden_for_testing_(false),
+      accessibility_enabled_override_value_(false) {
 }
 
 AccessibilityEventRouterViews::~AccessibilityEventRouterViews() {
@@ -47,11 +50,6 @@ AccessibilityEventRouterViews* AccessibilityEventRouterViews::GetInstance() {
 
 void AccessibilityEventRouterViews::HandleAccessibilityEvent(
     views::View* view, ui::AccessibilityTypes::Event event_type) {
-  if (!ExtensionAccessibilityEventRouter::GetInstance()->
-      IsAccessibilityEnabled()) {
-    return;
-  }
-
   switch (event_type) {
     case ui::AccessibilityTypes::EVENT_FOCUS:
       DispatchAccessibilityNotification(
@@ -92,13 +90,12 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
     int item_index,
     int item_count,
     bool has_submenu) {
-  if (!ExtensionAccessibilityEventRouter::GetInstance()->
-      IsAccessibilityEnabled()) {
-    return;
-  }
-
   if (!most_recent_profile_)
     return;
+
+  if (!IsAccessibilityEnabled(most_recent_profile_)) {
+    return;
+  }
 
   AccessibilityMenuItemInfo info(
       most_recent_profile_,
@@ -113,6 +110,15 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
 //
 // Private methods
 //
+
+bool AccessibilityEventRouterViews::IsAccessibilityEnabled(Profile* profile) {
+  if (accessibility_enabled_overridden_for_testing_) {
+    return accessibility_enabled_override_value_;
+  }
+  DCHECK(profile);
+  return profile->GetExtensionService()->accessibility_event_router()->
+      IsAccessibilityEnabled();
+}
 
 std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
   ui::AccessibleViewState state;
@@ -138,6 +144,10 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
     profile = g_browser_process->profile_manager()->GetDefaultProfile();
   if (!profile) {
     NOTREACHED();
+    return;
+  }
+
+  if (!IsAccessibilityEnabled(profile)) {
     return;
   }
 
@@ -295,3 +305,8 @@ void AccessibilityEventRouterViews::SendCheckboxNotification(
   SendAccessibilityNotification(type, &info);
 }
 
+void AccessibilityEventRouterViews::SetAccessibilityEnabledForTesting(
+    bool enabled) {
+  accessibility_enabled_overridden_for_testing_ = true;
+  accessibility_enabled_override_value_ = enabled;
+}

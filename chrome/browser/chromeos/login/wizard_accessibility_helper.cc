@@ -8,6 +8,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -114,7 +115,7 @@ void WizardAccessibilityHelper::SetAccessibilityEnabled(bool enabled) {
     prefService->SetBoolean(prefs::kAccessibilityEnabled, enabled);
     prefService->ScheduleSavePersistentPrefs();
   }
-  ExtensionAccessibilityEventRouter::GetInstance()->
+  profile_->GetExtensionService()->accessibility_event_router()->
       SetAccessibilityEnabled(enabled);
   if (doSpeak) {
     accessibility_handler_->Speak(enabled ?

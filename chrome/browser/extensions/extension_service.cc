@@ -569,34 +569,35 @@ ExtensionService::~ExtensionService() {
     ExternalExtensionProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
-
-#if defined(OS_CHROMEOS)
-  if (event_routers_initialized_) {
-    ExtensionFileBrowserEventRouter::GetInstance()->
-        StopObservingFileSystemEvents();
-  }
-#endif
 }
 
 void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
 
-  ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
-  ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
+  history_event_router_.reset(new ExtensionHistoryEventRouter(profile_));
+  history_event_router_->Init();
+  accessibility_event_router_.reset(new ExtensionAccessibilityEventRouter());
+  accessibility_event_router_->Init();
   browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
   browser_event_router_->Init();
   preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
-  ExtensionBookmarkEventRouter::GetInstance()->Observe(
-      profile_->GetBookmarkModel());
-  ExtensionCookiesEventRouter::GetInstance()->Init();
-  ExtensionManagementEventRouter::GetInstance()->Init();
-  ExtensionProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
-  ExtensionWebNavigationEventRouter::GetInstance()->Init();
+  preference_event_router_->Init();
+  bookmark_event_router_.reset(new ExtensionBookmarkEventRouter());
+  bookmark_event_router_->Observe(profile_->GetBookmarkModel());
+  cookies_event_router_.reset(new ExtensionCookiesEventRouter());
+  cookies_event_router_->Init();
+  management_event_router_.reset(new ExtensionManagementEventRouter());
+  management_event_router_->Init();
+  processes_event_router_.reset(new ExtensionProcessesEventRouter(profile_));
+  processes_event_router_->Init();
+  web_navigation_event_router_.reset(new ExtensionWebNavigationEventRouter());
+  web_navigation_event_router_->Init();
 
 #if defined(OS_CHROMEOS)
-  ExtensionFileBrowserEventRouter::GetInstance()->ObserveFileSystemEvents(
-      profile_);
+  file_browser_event_router_.reset(
+      new ExtensionFileBrowserEventRouter(profile_));
+  file_browser_event_router_->ObserveFileSystemEvents();
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)

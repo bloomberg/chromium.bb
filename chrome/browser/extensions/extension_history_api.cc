@@ -64,49 +64,39 @@ void AddVisitNode(const history::VisitRow& row, ListValue* list) {
 
 }  // namespace
 
-ExtensionHistoryEventRouter* ExtensionHistoryEventRouter::GetInstance() {
-  return Singleton<ExtensionHistoryEventRouter>::get();
-}
+ExtensionHistoryEventRouter::ExtensionHistoryEventRouter(Profile* profile)
+    : profile_(profile) {}
 
-void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
-  NotificationSource source = Source<Profile>(profile);
-  if (profiles_.find(source.map_key()) == profiles_.end())
-    profiles_[source.map_key()] = profile;
+ExtensionHistoryEventRouter::~ExtensionHistoryEventRouter() {}
 
+void ExtensionHistoryEventRouter::Init() {
+  NotificationSource source = Source<Profile>(profile_);
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
                    NotificationType::HISTORY_URL_VISITED,
-                   NotificationService::AllSources());
+                   source);
     registrar_.Add(this,
                    NotificationType::HISTORY_URLS_DELETED,
-                   NotificationService::AllSources());
+                   source);
   }
 }
-
-ExtensionHistoryEventRouter::ExtensionHistoryEventRouter() {}
-
-ExtensionHistoryEventRouter::~ExtensionHistoryEventRouter() {}
 
 void ExtensionHistoryEventRouter::Observe(NotificationType type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
-  ProfileMap::iterator it = profiles_.find(source.map_key());
-  if (it != profiles_.end()) {
-    Profile* profile = it->second;
-    switch (type.value) {
-      case NotificationType::HISTORY_URL_VISITED:
-        HistoryUrlVisited(
-            profile,
-            Details<const history::URLVisitedDetails>(details).ptr());
-        break;
-      case NotificationType::HISTORY_URLS_DELETED:
-        HistoryUrlsRemoved(
-            profile,
-            Details<const history::URLsDeletedDetails>(details).ptr());
-        break;
-      default:
-        NOTREACHED();
-    }
+  switch (type.value) {
+    case NotificationType::HISTORY_URL_VISITED:
+      HistoryUrlVisited(
+          profile_,
+          Details<const history::URLVisitedDetails>(details).ptr());
+      break;
+    case NotificationType::HISTORY_URLS_DELETED:
+      HistoryUrlsRemoved(
+          profile_,
+          Details<const history::URLsDeletedDetails>(details).ptr());
+      break;
+    default:
+      NOTREACHED();
   }
 }
 

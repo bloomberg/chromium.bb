@@ -9,28 +9,23 @@
 #include <map>
 #include <string>
 
-#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "content/common/notification_registrar.h"
 
+class Profile;
+
 // Observes History service and routes the notifications as events to the
 // extension system.
 class ExtensionHistoryEventRouter : public NotificationObserver {
  public:
-  // Single instance of the event router.
-  static ExtensionHistoryEventRouter* GetInstance();
-
-  // Safe to call multiple times.
-  void ObserveProfile(Profile* profile);
-
- private:
-  friend struct DefaultSingletonTraits<ExtensionHistoryEventRouter>;
-
-  ExtensionHistoryEventRouter();
+  explicit ExtensionHistoryEventRouter(Profile* profile);
   virtual ~ExtensionHistoryEventRouter();
 
+  void Init();
+
+ private:
   // NotificationObserver::Observe.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -49,9 +44,8 @@ class ExtensionHistoryEventRouter : public NotificationObserver {
   // Used for tracking registrations to history service notifications.
   NotificationRegistrar registrar_;
 
-  // Registered profiles.
-  typedef std::map<uintptr_t, Profile*> ProfileMap;
-  ProfileMap profiles_;
+  // The associated Profile owns us transitively via ExtensionService.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHistoryEventRouter);
 };

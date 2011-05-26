@@ -34,20 +34,16 @@ std::string ControlInfoToJsonString(const AccessibilityControlInfo* info) {
   return json_args;
 }
 
-ExtensionAccessibilityEventRouter*
-    ExtensionAccessibilityEventRouter::GetInstance() {
-  return Singleton<ExtensionAccessibilityEventRouter>::get();
-}
-
 ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
-    : enabled_(false) {}
+    : enabled_(false) {
+}
 
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
   STLDeleteElements(&on_enabled_listeners_);
   STLDeleteElements(&on_disabled_listeners_);
 }
 
-void ExtensionAccessibilityEventRouter::ObserveProfile(Profile* profile) {
+void ExtensionAccessibilityEventRouter::Init() {
   last_focused_control_dict_.Clear();
 
   if (registrar_.IsEmpty()) {
@@ -192,8 +188,9 @@ void ExtensionAccessibilityEventRouter::DispatchEvent(
 bool SetAccessibilityEnabledFunction::RunImpl() {
   bool enabled;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
-  ExtensionAccessibilityEventRouter::GetInstance()
-      ->SetAccessibilityEnabled(enabled);
+  ExtensionAccessibilityEventRouter* accessibility_event_router =
+      profile()->GetExtensionService()->accessibility_event_router();
+  accessibility_event_router->SetAccessibilityEnabled(enabled);
   return true;
 }
 
@@ -201,8 +198,8 @@ bool GetFocusedControlFunction::RunImpl() {
   // Get the serialized dict from the last focused control and return it.
   // However, if the dict is empty, that means we haven't seen any focus
   // events yet, so return null instead.
-  ExtensionAccessibilityEventRouter *accessibility_event_router =
-      ExtensionAccessibilityEventRouter::GetInstance();
+  ExtensionAccessibilityEventRouter* accessibility_event_router =
+      profile()->GetExtensionService()->accessibility_event_router();
   DictionaryValue *last_focused_control_dict =
       accessibility_event_router->last_focused_control_dict();
   if (last_focused_control_dict->size()) {

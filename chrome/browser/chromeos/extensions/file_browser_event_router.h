@@ -24,12 +24,12 @@ class SystemNotification;
 class ExtensionFileBrowserEventRouter
     : public chromeos::MountLibrary::Observer {
  public:
-  static ExtensionFileBrowserEventRouter* GetInstance();
+  explicit ExtensionFileBrowserEventRouter(Profile* profile);
+  virtual ~ExtensionFileBrowserEventRouter();
 
-  // Starts/stops observing file system change events. Currently only
+  // Starts observing file system change events. Currently only
   // MountLibrary events are being observed.
-  void ObserveFileSystemEvents(Profile* profile);
-  void StopObservingFileSystemEvents();
+  void ObserveFileSystemEvents();
 
   // MountLibrary::Observer overrides.
   virtual void DiskChanged(chromeos::MountLibraryEventType event,
@@ -38,13 +38,9 @@ class ExtensionFileBrowserEventRouter
                              const std::string& device_path);
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionFileBrowserEventRouter>;
   typedef std::map<std::string, linked_ptr<chromeos::SystemNotification> >
       NotificationMap;
   typedef std::map<std::string, std::string> MountPointMap;
-
-  ExtensionFileBrowserEventRouter();
-  virtual ~ExtensionFileBrowserEventRouter();
 
   // USB mount event handlers.
   void OnDiskAdded(const chromeos::MountLibrary::Disk* disk);

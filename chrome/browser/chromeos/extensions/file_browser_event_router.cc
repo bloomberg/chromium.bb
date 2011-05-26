@@ -47,30 +47,13 @@ DictionaryValue* DiskToDictionaryValue(
   return result;
 }
 
-ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter()
-    : profile_(NULL) {
+ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter(
+    Profile* profile)
+    : profile_(profile) {
+  DCHECK(profile);
 }
 
 ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
-}
-
-void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents(
-    Profile* profile) {
-  if (!profile)
-    return;
-  profile_ = profile;
-  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
-    return;
-  if (chromeos::UserManager::Get()->user_is_logged_in()) {
-    chromeos::MountLibrary* lib =
-        chromeos::CrosLibrary::Get()->GetMountLibrary();
-    lib->RemoveObserver(this);
-    lib->AddObserver(this);
-    lib->RequestMountInfoRefresh();
-  }
-}
-
-void ExtensionFileBrowserEventRouter::StopObservingFileSystemEvents() {
   if (!profile_)
     return;
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
@@ -81,10 +64,16 @@ void ExtensionFileBrowserEventRouter::StopObservingFileSystemEvents() {
   profile_ = NULL;
 }
 
-// static
-ExtensionFileBrowserEventRouter*
-    ExtensionFileBrowserEventRouter::GetInstance() {
-  return Singleton<ExtensionFileBrowserEventRouter>::get();
+void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents() {
+  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
+    return;
+  if (chromeos::UserManager::Get()->user_is_logged_in()) {
+    chromeos::MountLibrary* lib =
+        chromeos::CrosLibrary::Get()->GetMountLibrary();
+    lib->RemoveObserver(this);
+    lib->AddObserver(this);
+    lib->RequestMountInfoRefresh();
+  }
 }
 
 void ExtensionFileBrowserEventRouter::DiskChanged(

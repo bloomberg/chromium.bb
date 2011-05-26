@@ -248,11 +248,6 @@ bool UninstallFunction::RunImpl() {
   return true;
 }
 
-// static
-ExtensionManagementEventRouter* ExtensionManagementEventRouter::GetInstance() {
-  return Singleton<ExtensionManagementEventRouter>::get();
-}
-
 ExtensionManagementEventRouter::ExtensionManagementEventRouter() {}
 
 ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
