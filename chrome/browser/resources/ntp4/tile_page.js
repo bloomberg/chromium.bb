@@ -78,6 +78,11 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragStart_: function(e) {
+      // The user may start dragging again during a previous drag's finishing
+      // animation.
+      if (this.classList.contains('dragging'))
+        this.finalizeDrag_();
+
       currentlyDraggingTile = this;
 
       e.dataTransfer.effectAllowed = 'copyMove';
@@ -123,10 +128,13 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragEnd_: function(e) {
+      // The drag clone can still be hidden from the last drag move event.
+      this.dragClone.classList.remove('hidden');
+      this.dragClone.classList.add('placing');
+
       currentlyDraggingTile = null;
       this.tilePage.positionTile_(this.index);
 
-      this.dragClone.classList.add('placing');
       // The tile's contents may have moved following the respositioning; adjust
       // for that.
       var contentDiffX = this.dragClone.firstChild.offsetLeft -
@@ -184,20 +192,33 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Cleans up after the drag is over. This is either called when the
+     * drag representation finishes animating to the final position, or when
+     * the next drag starts (if the user starts a 2nd drag very quickly).
+     * @private
+     */
+    finalizeDrag_: function() {
+      assert(this.classList.contains('dragging'));
+
+      var clone = this.dragClone;
+      this.dragClone = null;
+
+      clone.parentNode.removeChild(clone);
+      this.eventTracker.remove(clone, 'webkitTransitionEnd');
+      this.classList.remove('dragging');
+    },
+
+    /**
      * Called when the drag representation node is done migrating to its final
      * resting spot.
      * @param {Event} e The transition end event.
      */
     onDragCloneTransitionEnd_: function(e) {
-      if (e.propertyName == 'left') {
-        var clone = this.dragClone;
-        this.dragClone = null;
-
-        clone.parentNode.removeChild(clone);
-        this.eventTracker.remove(clone, 'webkitTransitionEnd');
-        this.classList.remove('dragging');
+      if (this.classList.contains('dragging') &&
+          (e.propertyName == 'left' || e.propertyName == 'top')) {
+        this.finalizeDrag_();
       }
-    }
+    },
   };
 
   /**
