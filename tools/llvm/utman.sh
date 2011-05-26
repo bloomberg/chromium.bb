@@ -263,7 +263,6 @@ STD_ENV_FOR_NEWLIB=(
 # * --with-binutils-include when building binutils
 # * linking the plugin in bfd-plugins
 
-
 ######################################################################
 ######################################################################
 #
