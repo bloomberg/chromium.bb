@@ -73,6 +73,10 @@ class ContentBrowserClient {
   // Returns the locale used by the application.
   virtual std::string GetApplicationLocale();
 
+  // Returns the languages used in the Accept-Languages HTTP header.
+  // (Not called GetAcceptLanguages so it doesn't clash with win32).
+  virtual std::string GetAcceptLangs(const TabContents* tab);
+
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.
   virtual bool AllowAppCache(const GURL& manifest_url,

@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -318,8 +319,11 @@ NewTabUI::NewTabUI(TabContents* contents)
   // Override some options on the Web UI.
   hide_favicon_ = true;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) &&
+      GetProfile()->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar) &&
+      browser_defaults::bookmarks_enabled) {
     force_bookmark_bar_visible_ = true;
+  }
 
   focus_location_bar_by_default_ = true;
   should_hide_url_ = true;

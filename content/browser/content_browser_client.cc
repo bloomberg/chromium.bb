@@ -50,6 +50,10 @@ std::string ContentBrowserClient::GetApplicationLocale() {
   return std::string();
 }
 
+std::string ContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
+  return std::string();
+}
+
 bool ContentBrowserClient::AllowAppCache(
     const GURL& manifest_url, const content::ResourceContext& context) {
   return true;

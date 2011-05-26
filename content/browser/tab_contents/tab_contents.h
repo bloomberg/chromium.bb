@@ -492,7 +492,6 @@ class TabContents : public PageNavigator,
   // the pending WebUI, the committed WebUI, or NULL.
   WebUI* GetWebUIForCurrentState();
 
-
  protected:
   friend class TabContentsObserver;
   friend class TabContentsObserver::Registrar;

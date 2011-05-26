@@ -17,8 +17,6 @@ include_rules = [
   "+chrome/browser/debugger/devtools_manager.h",
   "+chrome/browser/debugger/devtools_netlog_observer.h",
 
-  "+chrome/browser/defaults.h",
-
   # http://crbug.com/82782
   "+chrome/browser/download/download_file_manager.h",
   "+chrome/browser/download/download_manager.h",
@@ -47,9 +45,6 @@ include_rules = [
   "+chrome/browser/notifications/notifications_prefs_cache.h",
 
   "+chrome/browser/platform_util.h",
-
-  "+chrome/browser/prefs/pref_service.h",
-  "+chrome/common/pref_names.h",
 
   # http://crbug.com/76788
   "+chrome/browser/profiles/profile.h",

@@ -15,17 +15,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/debugger/devtools_manager.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -331,9 +328,10 @@ const string16& TabContents::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.
   NavigationEntry* entry = controller_.GetTransientEntry();
+  std::string accept_languages =
+      content::GetContentClient()->browser()->GetAcceptLangs(this);
   if (entry) {
-    return entry->GetTitleForDisplay(profile()->GetPrefs()->
-        GetString(prefs::kAcceptLanguages));
+    return entry->GetTitleForDisplay(accept_languages);
   }
   WebUI* our_web_ui = render_manager_.pending_web_ui() ?
       render_manager_.pending_web_ui() : render_manager_.web_ui();
@@ -354,8 +352,7 @@ const string16& TabContents::GetTitle() const {
   // title.
   entry = controller_.GetLastCommittedEntry();
   if (entry) {
-    return entry->GetTitleForDisplay(profile()->GetPrefs()->
-        GetString(prefs::kAcceptLanguages));
+    return entry->GetTitleForDisplay(accept_languages);
   }
   return EmptyString16();
 }
@@ -668,13 +665,6 @@ void TabContents::SetFocusToLocationBar(bool select_all) {
 
 bool TabContents::ShouldShowBookmarkBar() {
   if (showing_interstitial_page())
-    return false;
-
-  // Do not show bookmarks bar if bookmarks aren't enabled.
-  if (!browser_defaults::bookmarks_enabled)
-    return false;
-
-  if (!profile()->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar))
     return false;
 
   // See GetWebUIForCurrentState() comment for more info. This case is very
@@ -1728,7 +1718,7 @@ void TabContents::LoadStateChanged(const GURL& url,
   upload_position_ = upload_position;
   upload_size_ = upload_size;
   load_state_host_ = net::IDNToUnicode(url.host(),
-      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+      content::GetContentClient()->browser()->GetAcceptLangs(this));
   if (load_state_ == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (is_loading())

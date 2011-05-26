@@ -24,6 +24,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
                                               int child_process_id);
   virtual std::string GetApplicationLocale();
+  virtual std::string GetAcceptLangs(const TabContents* tab);
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const content::ResourceContext& context);
   virtual bool AllowGetCookie(const GURL& url,

@@ -233,6 +233,10 @@ std::string ChromeContentBrowserClient::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
 }
 
+std::string ChromeContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
+  return tab->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+}
+
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url, const content::ResourceContext& context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
