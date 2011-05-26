@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
+#include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/textfields_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -217,6 +218,20 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   return NULL;
 }
 
+// When the test-type switch is set, return a TestType object, which should be a
+// subclass of Type. The logic is provided here in the traits class, rather than
+// in GetInstance() so that the choice is made only once, when the Singleton is
+// first instantiated, rather than every time GetInstance() is called.
+template<typename Type, typename TestType>
+struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
+  static Type* New() {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+      return DefaultSingletonTraits<TestType>::New();
+    else
+      return DefaultSingletonTraits<Type>::New();
+  }
+};
+
 }  // namespace
 
 WebUI::TypeID ChromeWebUIFactory::GetWebUIType(Profile* profile,
@@ -286,7 +301,8 @@ void ChromeWebUIFactory::GetFaviconForURL(
 
 // static
 ChromeWebUIFactory* ChromeWebUIFactory::GetInstance() {
-  return Singleton<ChromeWebUIFactory>::get();
+  return Singleton<ChromeWebUIFactory, PossibleTestSingletonTraits<
+      ChromeWebUIFactory, TestChromeWebUIFactory> >::get();
 }
 
 ChromeWebUIFactory::ChromeWebUIFactory() {

@@ -35,8 +35,11 @@ class ChromeWebUIFactory : public content::WebUIFactory {
 
   static ChromeWebUIFactory* GetInstance();
 
- private:
+ protected:
+  ChromeWebUIFactory();
   virtual ~ChromeWebUIFactory();
+
+ private:
 
   friend struct DefaultSingletonTraits<ChromeWebUIFactory>;
 
@@ -44,7 +47,7 @@ class ChromeWebUIFactory : public content::WebUIFactory {
   // does not have a favicon.
   RefCountedMemory* GetFaviconResourceBytes(const GURL& page_url) const;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeWebUIFactory);
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebUIFactory);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_FACTORY_H_

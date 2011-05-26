@@ -3459,6 +3459,8 @@
         'browser/ui/webui/sync_internals_html_source.h',
         'browser/ui/webui/sync_internals_ui.cc',
         'browser/ui/webui/sync_internals_ui.h',
+        'browser/ui/webui/test_chrome_web_ui_factory.cc',
+        'browser/ui/webui/test_chrome_web_ui_factory.h',
         'browser/ui/webui/textfields_ui.cc',
         'browser/ui/webui/textfields_ui.h',
         'browser/ui/webui/theme_source.cc',

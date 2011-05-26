@@ -2431,6 +2431,7 @@
         'browser/ui/webui/mediaplayer_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
         'browser/ui/webui/settings_browsertest.cc',
+        'browser/ui/webui/test_chrome_web_ui_factory_browsertest.cc',
         'browser/ui/webui/BidiCheckerWebUITest.cc',
         'browser/ui/webui/BidiCheckerWebUITest.h',
         'browser/ui/webui/web_ui_browsertest.cc',
