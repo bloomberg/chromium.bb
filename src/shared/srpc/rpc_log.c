@@ -26,31 +26,27 @@
 
 static struct NaClMutex log_mu;
 
-#define VERBOSITY_NOT_SET ((int) (((unsigned) -1) >> 1))
+static int verbosity;
 
-static int verbosity = VERBOSITY_NOT_SET;
+static void setVerbosityFromEnv() {
+  const char* env_verbosity = getenv("NACL_SRPC_DEBUG");
+  verbosity = 0;
+  if (NULL != env_verbosity) {
+    int v = strtol(env_verbosity, (char**) 0, 0);
+    if (v >= 0) {
+      verbosity = v;
+    }
+  }
+}
 
 int NaClSrpcLogInit() {
   NaClXMutexCtor(&log_mu);
+  setVerbosityFromEnv();
   return 1;
 }
 
 void NaClSrpcLogFini() {
   NaClMutexDtor(&log_mu);
-}
-
-static int getVerbosity() {
-  if (VERBOSITY_NOT_SET == verbosity) {
-    const char* env_verbosity = getenv("NACL_SRPC_DEBUG");
-    verbosity = 0;
-    if (NULL != env_verbosity) {
-      int v = strtol(env_verbosity, (char**) 0, 0);
-      if (v >= 0) {
-        verbosity = v;
-      }
-    }
-  }
-  return verbosity;
 }
 
 void NaClSrpcLog(int detail_level, const char* fmt, ...) {
@@ -60,7 +56,7 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
    * http://code.google.com/p/nativeclient/issues/detail?id=1802
    * TODO(bsy,sehr): convert this when NaClLog is ready for SRPC levels, etc.
    */
-  if (detail_level <= getVerbosity()) {
+  if (detail_level <= verbosity) {
     char timestamp[128];
     int pid = GETPID();
     va_list ap;
@@ -192,7 +188,7 @@ void NaClSrpcFormatArg(int detail_level,
                        size_t buffer_size) {
   uint32_t i;
 
-  if (detail_level > getVerbosity()) {
+  if (detail_level > verbosity) {
     return;
   }
   /* Reserve space for trailing zero. */
