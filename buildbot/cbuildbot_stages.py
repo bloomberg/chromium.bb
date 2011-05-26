@@ -233,7 +233,7 @@ class BuilderStage():
 
     cros_lib.Info('%s\n' % msg)
 
-  def _GetPortageEnvVar(self, envvar):
+  def _GetPortageEnvVar(self, envvar, board):
     """Get a portage environment variable for the configuration's board.
 
     envvar: The environment variable to get. E.g. 'PORTAGE_BINHOST'.
@@ -243,7 +243,10 @@ class BuilderStage():
       can be found, return the empty string.
     """
     cwd = os.path.join(self._build_root, 'src', 'scripts')
-    portageq = 'portageq-%s' % self._build_config['board']
+    if board:
+      portageq = 'portageq-%s' % board
+    else:
+      portageq = 'portageq'
     binhost = cros_lib.OldRunCommand(
         [portageq, 'envvar', envvar], cwd=cwd, redirect_stdout=True,
         enter_chroot=True, error_ok=True)
@@ -294,9 +297,10 @@ class SyncStage(BuilderStage):
                             self._tracking_branch,
                             url=self._build_config['git_url'])
     else:
-      commands.PreFlightRinse(self._build_root, self._build_config['board'],
+      board = self._build_config['board']
+      commands.PreFlightRinse(self._build_root, board,
                               BuilderStage.rev_overlays)
-      BuilderStage.old_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
+      BuilderStage.old_binhost = self._GetPortageEnvVar(_FULL_BINHOST, board)
       commands.IncrementalCheckout(self._build_root)
 
     # Check that all overlays can be found.
@@ -406,7 +410,8 @@ class BuildTargetStage(BuilderStage):
   Specifically, we build Chromium OS packages and perform imaging to get
   the images we want per the build spec."""
   def _PerformStage(self):
-    BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
+    board = self._build_config['board']
+    BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST, board)
     emptytree = (BuilderStage.old_binhost and
                  BuilderStage.old_binhost != BuilderStage.new_binhost)
     build_autotest = (self._build_config['build_tests'] and
@@ -513,10 +518,14 @@ class PushChangesStage(BuilderStage):
   """Pushes pfq and prebuilt url changes to git."""
   def _PerformStage(self):
     if self._prebuilt_type in ('binary', 'chrome'):
+      board = self._build_config['board']
+      binhosts = [
+          self._GetPortageEnvVar(_FULL_BINHOST, board),
+          self._GetPortageEnvVar(_FULL_BINHOST, None)
+      ]
       commands.UploadPrebuilts(
-          self._build_root, self._build_config['board'],
-          self._build_config['rev_overlays'], [BuilderStage.new_binhost],
-          self._prebuilt_type, self._options.chrome_rev,
+          self._build_root, board, self._build_config['rev_overlays'],
+          binhosts, self._prebuilt_type, self._options.chrome_rev,
           self._options.buildnumber)
 
     commands.UprevPush(self._build_root,

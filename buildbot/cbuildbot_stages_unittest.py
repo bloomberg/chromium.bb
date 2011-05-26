@@ -98,7 +98,8 @@ class BuilderStageTest(AbstractStageTest):
                            error_ok=True).AndReturn('RESULT\n')
     self.mox.ReplayAll()
     stage = self.ConstructStage()
-    result = stage._GetPortageEnvVar(envvar)
+    board = self.build_config['board']
+    result = stage._GetPortageEnvVar(envvar, board)
     self.mox.VerifyAll()
     self.assertEqual(result, 'RESULT')
 
@@ -159,10 +160,11 @@ class SyncStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.BuilderStage, '_GetPortageEnvVar')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    commands.PreFlightRinse(self.build_root, self.build_config['board'],
+    board = self.build_config['board']
+    commands.PreFlightRinse(self.build_root, board,
                             [self.overlay])
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    stages.BuilderStage._GetPortageEnvVar(stages._FULL_BINHOST)
+    stages.BuilderStage._GetPortageEnvVar(stages._FULL_BINHOST, board)
     commands.IncrementalCheckout(self.build_root)
     os.path.isdir(self.overlay).AndReturn(True)
 
@@ -544,7 +546,9 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
-    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
+    board = self.build_config['board']
+    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST',
+        board).AndReturn('new.com')
     stages.BuilderStage.old_binhost = 'old.com'
 
     commands.Build(self.build_root,
@@ -568,7 +572,9 @@ class BuildTargetStageTest(AbstractStageTest):
 
   def testFalseBuildArgs1(self):
     """Make sure our logic for Build arguments can toggle to false."""
-    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
+    board = self.build_config['board']
+    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST',
+        board).AndReturn('new.com')
     stages.BuilderStage.old_binhost = 'new.com'
     self.build_config['useflags'] = None
 
@@ -586,7 +592,9 @@ class BuildTargetStageTest(AbstractStageTest):
 
   def testFalseBuildArgs2(self):
     """Verify emptytree flag is false when there is no old binhost."""
-    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
+    board = self.build_config['board']
+    stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST',
+        board).AndReturn('new.com')
     stages.BuilderStage.old_binhost = False
     self.build_config['useflags'] = ['BAKER']
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
@@ -658,6 +666,7 @@ class PushChangesStageTest(AbstractStageTest):
     self.build_config['build_type'] = 'full'
     self.options.chrome_rev = 'tot'
     self.options.prebuilts = True
+    self.mox.StubOutWithMock(stages.PushChangesStage, '_GetPortageEnvVar')
     self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
     self.mox.StubOutWithMock(commands, 'UprevPush')
 
@@ -666,13 +675,23 @@ class PushChangesStageTest(AbstractStageTest):
                                    self.options,
                                    self.build_config)
 
+  def ConstructBinhosts(self):
+    binhosts = []
+    for board in (self.build_config['board'], None):
+      binhost = 'http://binhost/?board=' + str(board)
+      stages.PushChangesStage._GetPortageEnvVar(stages._FULL_BINHOST,
+          board).AndReturn(binhost)
+      binhosts.append(binhost)
+    return binhosts
+
   def testChromePush(self):
     """Test uploading of prebuilts for chrome build."""
     self.build_config['build_type'] = 'chrome'
 
+    binhosts = self.ConstructBinhosts()
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
-        self.build_config['rev_overlays'], mox.IsA(list),
+        self.build_config['rev_overlays'], binhosts,
         self.build_config['build_type'],
         self.options.chrome_rev,
         self.options.buildnumber)
@@ -691,9 +710,10 @@ class PushChangesStageTest(AbstractStageTest):
     """Test uploading of prebuilts for preflight build."""
     self.build_config['build_type'] = 'binary'
 
+    binhosts = self.ConstructBinhosts()
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
-        self.build_config['rev_overlays'], mox.IsA(list),
+        self.build_config['rev_overlays'], binhosts,
         self.build_config['build_type'],
         self.options.chrome_rev,
         self.options.buildnumber)
