@@ -1004,7 +1004,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   const UserScriptList& scripts = extension->content_scripts();
   ASSERT_EQ(2u, scripts.size());
   EXPECT_EQ(3u, scripts[0].url_patterns().size());
-  EXPECT_EQ("file://*",
+  EXPECT_EQ("file:///*",
             scripts[0].url_patterns()[0].GetAsString());
   EXPECT_EQ("http://*.google.com/*",
             scripts[0].url_patterns()[1].GetAsString());

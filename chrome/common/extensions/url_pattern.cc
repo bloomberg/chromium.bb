@@ -144,9 +144,20 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
   size_t host_start_pos = scheme_end_pos;
   size_t path_start_pos = 0;
 
-  // File URLs are special because they have no host.
-  if (scheme_ == chrome::kFileScheme || !standard_scheme) {
+  if (!standard_scheme) {
     path_start_pos = host_start_pos;
+  } else if (scheme_ == chrome::kFileScheme) {
+    size_t host_end_pos = pattern.find(kPathSeparator, host_start_pos);
+    if (host_end_pos == std::string::npos) {
+      // Allow hostname omission.
+      // e.g. file://* is interpreted as file:///*,
+      // file://foo* is interpreted as file:///foo*.
+      path_start_pos = host_start_pos - 1;
+    } else {
+      // Ignore hostname if scheme is file://.
+      // e.g. file://localhost/foo is equal to file:///foo.
+      path_start_pos = host_end_pos;
+    }
   } else {
     size_t host_end_pos = pattern.find(kPathSeparator, host_start_pos);
 
@@ -222,7 +233,8 @@ bool URLPattern::MatchesURL(const GURL &test) const {
   if (match_all_urls_)
     return true;
 
-  if (!MatchesHost(test))
+  // Ignore hostname if scheme is file://.
+  if (scheme_ != chrome::kFileScheme && !MatchesHost(test))
     return false;
 
   if (!MatchesPath(test.PathForRequest()))

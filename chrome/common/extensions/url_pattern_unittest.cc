@@ -224,6 +224,7 @@ TEST(ExtensionURLPatternTest, Match10) {
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("chrome://favicon/http://google.com")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("file:///foo/bar")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file://localhost/foo/bar")));
 };
 
 // <all_urls>
@@ -241,6 +242,7 @@ TEST(ExtensionURLPatternTest, Match11) {
   EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://favicon/http://google.com")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo/bar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file://localhost/foo/bar")));
 };
 
 // SCHEME_ALL matches all schemes.
@@ -262,6 +264,7 @@ TEST(ExtensionURLPatternTest, Match12) {
   EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://favicon/http://google.com")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo/bar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file://localhost/foo/bar")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("chrome://newtab")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("about:blank")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("about:version")));
@@ -300,6 +303,58 @@ TEST(ExtensionURLPatternTest, Match13) {
             pattern.Parse("data:*", URLPattern::PARSE_STRICT));
   EXPECT_FALSE(pattern.MatchesURL(GURL("about:blank")));
 };
+
+// file scheme with empty hostname
+TEST(ExtensionURLPatternTest, Match14) {
+  URLPattern pattern(kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("file:///foo*", URLPattern::PARSE_STRICT));
+  EXPECT_EQ("file", pattern.scheme());
+  EXPECT_EQ("", pattern.host());
+  EXPECT_FALSE(pattern.match_subdomains());
+  EXPECT_FALSE(pattern.match_all_urls());
+  EXPECT_EQ("/foo*", pattern.path());
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file://foo")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file://foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file://localhost/foo")));
+}
+
+// file scheme without hostname part
+TEST(ExtensionURLPatternTest, Match15) {
+  URLPattern pattern(kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("file://foo*", URLPattern::PARSE_STRICT));
+  EXPECT_EQ("file", pattern.scheme());
+  EXPECT_EQ("", pattern.host());
+  EXPECT_FALSE(pattern.match_subdomains());
+  EXPECT_FALSE(pattern.match_all_urls());
+  EXPECT_EQ("/foo*", pattern.path());
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file://foo")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file://foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file://localhost/foo")));
+}
+
+// file scheme with hostname
+TEST(ExtensionURLPatternTest, Match16) {
+  URLPattern pattern(kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("file://localhost/foo*", URLPattern::PARSE_STRICT));
+  EXPECT_EQ("file", pattern.scheme());
+  // Since hostname is ignored for file://.
+  EXPECT_EQ("", pattern.host());
+  EXPECT_FALSE(pattern.match_subdomains());
+  EXPECT_FALSE(pattern.match_all_urls());
+  EXPECT_EQ("/foo*", pattern.path());
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file://foo")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("file://foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("file://localhost/foo")));
+}
 
 static const struct GetAsStringPatterns {
   const char* pattern;

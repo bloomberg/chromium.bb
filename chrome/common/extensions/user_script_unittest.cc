@@ -59,6 +59,7 @@ TEST(ExtensionUserScriptTest, Match4) {
   EXPECT_TRUE(script.MatchesURL(GURL("http://hot.com/dog")));
   EXPECT_TRUE(script.MatchesURL(GURL("https://hot.com/dog")));
   EXPECT_TRUE(script.MatchesURL(GURL("file:///foo/bar")));
+  EXPECT_TRUE(script.MatchesURL(GURL("file://localhost/foo/bar")));
 }
 
 TEST(ExtensionUserScriptTest, Match5) {
