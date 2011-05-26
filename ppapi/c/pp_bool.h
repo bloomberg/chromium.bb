@@ -33,5 +33,21 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Bool, 4);
  * @}
  */
 
+#ifdef __cplusplus
+/**
+ * Converts a C++ "bool" type to a PP_Bool.
+ */
+inline PP_Bool PP_FromBool(bool b) {
+  return b ? PP_TRUE : PP_FALSE;
+}
+
+/**
+ * Converts a PP_Bool to a C++ "bool" type.
+ */
+inline bool PP_ToBool(PP_Bool b) {
+  return (b != PP_FALSE);
+}
+#endif  // __cplusplus
+
 #endif  /* PPAPI_C_PP_BOOL_H_ */
 
