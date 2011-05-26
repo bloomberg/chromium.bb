@@ -76,7 +76,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
                                                      int length,
                                                      base::Time timestamp) {
   TransportDIB::Handle handle;
-  TransportDIB* dib;
+  TransportDIB* dib = NULL;
   // Check if there is a TransportDIB to fill.
   bool buffer_exist = false;
   {
