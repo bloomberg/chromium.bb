@@ -309,8 +309,9 @@ TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
   if (ProxyLauncher::in_process_renderer())
     return;
 
-  const FilePath test_case(FILE_PATH_LITERAL("private.html?private"));
-  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("private.html"));
+  GURL url = ui_test_utils::GetFileUrlWithQuery(
+      ui_test_utils::GetTestFilePath(FilePath(kTestDir), test_case), "private");
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("private", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());

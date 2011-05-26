@@ -537,6 +537,17 @@ GURL GetTestUrl(const FilePath& dir, const FilePath& file) {
   return net::FilePathToFileURL(GetTestFilePath(dir, file));
 }
 
+GURL GetFileUrlWithQuery(const FilePath& path,
+                         const std::string& query_string) {
+  GURL url = net::FilePathToFileURL(path);
+  if (!query_string.empty()) {
+    GURL::Replacements replacements;
+    replacements.SetQueryStr(query_string);
+    return url.ReplaceComponents(replacements);
+  }
+  return url;
+}
+
 AppModalDialog* WaitForAppModalDialog() {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, NotificationType::APP_MODAL_DIALOG_SHOWN,

@@ -191,6 +191,9 @@ FilePath GetTestFilePath(const FilePath& dir, const FilePath& file);
 // The returned path is GURL format.
 GURL GetTestUrl(const FilePath& dir, const FilePath& file);
 
+// Generate a URL for a file path including a query string.
+GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
+
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();
 

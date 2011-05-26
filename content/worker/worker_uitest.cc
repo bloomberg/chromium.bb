@@ -40,11 +40,13 @@ class WorkerTest : public UILayoutTest {
  protected:
   virtual ~WorkerTest() { }
 
-  void RunTest(const FilePath& test_case) {
+  void RunTest(const FilePath& test_case, const std::string& query) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
 
-    GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
+    FilePath test_file_path = ui_test_utils::GetTestFilePath(
+        FilePath(kTestDir), test_case);
+    GURL url = ui_test_utils::GetFileUrlWithQuery(test_file_path, query);
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
@@ -167,19 +169,19 @@ class WorkerTest : public UILayoutTest {
 
 
 TEST_F(WorkerTest, SingleWorker) {
-  RunTest(FilePath(FILE_PATH_LITERAL("single_worker.html")));
+  RunTest(FilePath(FILE_PATH_LITERAL("single_worker.html")), "");
 }
 
 TEST_F(WorkerTest, MultipleWorkers) {
-  RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html")));
+  RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html")), "");
 }
 
 TEST_F(WorkerTest, SingleSharedWorker) {
-  RunTest(FilePath(FILE_PATH_LITERAL("single_worker.html?shared=true")));
+  RunTest(FilePath(FILE_PATH_LITERAL("single_worker.html")), "shared=true");
 }
 
 TEST_F(WorkerTest, MultipleSharedWorkers) {
-  RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html?shared=true")));
+  RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html")), "shared=true");
 }
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -189,7 +191,7 @@ TEST_F(WorkerTest, MultipleSharedWorkers) {
 
 TEST_F(WorkerTest, TerminateQueuedWorkers) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
-  RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")));
+  RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")), "");
   // Make sure all workers exit.
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
@@ -202,7 +204,7 @@ TEST_F(WorkerTest, TerminateQueuedWorkers) {
 // Incognito windows should not share workers with non-incognito windows
 TEST_F(WorkerTest, IncognitoSharedWorkers) {
   // Load a non-incognito tab and have it create a shared worker
-  RunTest(FilePath(FILE_PATH_LITERAL("incognito_worker.html")));
+  RunTest(FilePath(FILE_PATH_LITERAL("incognito_worker.html")), "");
   // Incognito worker should not share with non-incognito
   RunIncognitoTest(FilePath(FILE_PATH_LITERAL("incognito_worker.html")));
 }

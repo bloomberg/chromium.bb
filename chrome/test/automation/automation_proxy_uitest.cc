@@ -1613,10 +1613,15 @@ class AutomationProxySnapshotTest : public UITest {
 
   // Returns the file path for the directory for these tests appended with
   // the given relative path.
-  FilePath GetTestFilePath(const char* relative_path) {
+  FilePath GetTestFilePath(const std::string& relative_path) {
     FilePath filename(test_data_directory_);
     return filename.AppendASCII("automation_proxy_snapshot")
         .AppendASCII(relative_path);
+  }
+
+  GURL GetTestUrl(const std::string& relative_path, const std::string& query) {
+    FilePath file_path = GetTestFilePath(relative_path);
+    return ui_test_utils::GetFileUrlWithQuery(file_path, query);
   }
 
   FilePath snapshot_path_;
@@ -1643,9 +1648,8 @@ TEST_F(AutomationProxySnapshotTest, MAYBE_ContentLargerThanView) {
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
   ASSERT_TRUE(tab.get());
 
-  FilePath set_size_page = GetTestFilePath("set_size.html?600,800");
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(net::FilePathToFileURL(set_size_page)));
+            tab->NavigateToURL(GetTestUrl("set_size.html", "600,800")));
 
   ASSERT_TRUE(tab->CaptureEntirePageAsPNG(snapshot_path_));
 
@@ -1666,9 +1670,8 @@ TEST_F(AutomationProxySnapshotTest, LargeSnapshot) {
   // 2000x2000 creates an approximately 15 MB bitmap.
   // Don't increase this too much. At least my linux box has SHMMAX set at
   // 32 MB.
-  FilePath set_size_page = GetTestFilePath("set_size.html?2000,2000");
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(net::FilePathToFileURL(set_size_page)));
+            tab->NavigateToURL(GetTestUrl("set_size.html", "2000,2000")));
 
   ASSERT_TRUE(tab->CaptureEntirePageAsPNG(snapshot_path_));
 
@@ -1701,9 +1704,8 @@ TEST_F(AutomationProxySnapshotTest, MAYBE_ContentsCorrect) {
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
   ASSERT_TRUE(tab.get());
 
-  FilePath set_size_page = GetTestFilePath("just_image.html");
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(net::FilePathToFileURL(set_size_page)));
+            tab->NavigateToURL(GetTestUrl("just_image.html", "")));
 
   ASSERT_TRUE(tab->CaptureEntirePageAsPNG(snapshot_path_));
 
