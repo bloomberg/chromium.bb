@@ -61,86 +61,131 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ShellIntegration::DefaultBrowserWorker
+// ShellIntegration::DefaultWebClientWorker
 //
 
-ShellIntegration::DefaultBrowserWorker::DefaultBrowserWorker(
-    DefaultBrowserObserver* observer)
+ShellIntegration::DefaultWebClientWorker::DefaultWebClientWorker(
+    DefaultWebClientObserver* observer)
     : observer_(observer) {
 }
 
-void ShellIntegration::DefaultBrowserWorker::StartCheckDefaultBrowser() {
-  observer_->SetDefaultBrowserUIState(STATE_PROCESSING);
+void ShellIntegration::DefaultWebClientWorker::StartCheckIsDefault() {
+  if (observer_) {
+    observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            this, &DefaultWebClientWorker::ExecuteCheckIsDefault));
+  }
+}
+
+void ShellIntegration::DefaultWebClientWorker::StartSetAsDefault() {
+  if (observer_) {
+    observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
+  }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          this, &DefaultBrowserWorker::ExecuteCheckDefaultBrowser));
+          this, &DefaultWebClientWorker::ExecuteSetAsDefault));
 }
 
-void ShellIntegration::DefaultBrowserWorker::StartSetAsDefaultBrowser() {
-  observer_->SetDefaultBrowserUIState(STATE_PROCESSING);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &DefaultBrowserWorker::ExecuteSetAsDefaultBrowser));
-}
-
-void ShellIntegration::DefaultBrowserWorker::ObserverDestroyed() {
+void ShellIntegration::DefaultWebClientWorker::ObserverDestroyed() {
   // Our associated view has gone away, so we shouldn't call back to it if
   // our worker thread returns after the view is dead.
   observer_ = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DefaultBrowserWorker, private:
+// DefaultWebClientWorker, private:
 
-void ShellIntegration::DefaultBrowserWorker::ExecuteCheckDefaultBrowser() {
+void ShellIntegration::DefaultWebClientWorker::ExecuteCheckIsDefault() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DefaultBrowserState state = ShellIntegration::IsDefaultBrowser();
+  DefaultWebClientState state = CheckIsDefault();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &DefaultBrowserWorker::CompleteCheckDefaultBrowser, state));
+          this, &DefaultWebClientWorker::CompleteCheckIsDefault, state));
 }
 
-void ShellIntegration::DefaultBrowserWorker::CompleteCheckDefaultBrowser(
-    DefaultBrowserState state) {
+void ShellIntegration::DefaultWebClientWorker::CompleteCheckIsDefault(
+    DefaultWebClientState state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UpdateUI(state);
 }
 
-void ShellIntegration::DefaultBrowserWorker::ExecuteSetAsDefaultBrowser() {
+void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  ShellIntegration::SetAsDefaultBrowser();
+  SetAsDefault();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &DefaultBrowserWorker::CompleteSetAsDefaultBrowser));
+          this, &DefaultWebClientWorker::CompleteSetAsDefault));
 }
 
-void ShellIntegration::DefaultBrowserWorker::CompleteSetAsDefaultBrowser() {
+void ShellIntegration::DefaultWebClientWorker::CompleteSetAsDefault() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (observer_) {
-    // Set as default completed, check again to make sure it stuck...
-    StartCheckDefaultBrowser();
-  }
+  // Set as default completed, check again to make sure it stuck...
+  StartCheckIsDefault();
 }
 
-void ShellIntegration::DefaultBrowserWorker::UpdateUI(
-    DefaultBrowserState state) {
+void ShellIntegration::DefaultWebClientWorker::UpdateUI(
+    DefaultWebClientState state) {
   if (observer_) {
     switch (state) {
-      case NOT_DEFAULT_BROWSER:
-        observer_->SetDefaultBrowserUIState(STATE_NOT_DEFAULT);
+      case NOT_DEFAULT_WEB_CLIENT:
+        observer_->SetDefaultWebClientUIState(STATE_NOT_DEFAULT);
         break;
-      case IS_DEFAULT_BROWSER:
-        observer_->SetDefaultBrowserUIState(STATE_IS_DEFAULT);
+      case IS_DEFAULT_WEB_CLIENT:
+        observer_->SetDefaultWebClientUIState(STATE_IS_DEFAULT);
         break;
-      case UNKNOWN_DEFAULT_BROWSER:
-        observer_->SetDefaultBrowserUIState(STATE_UNKNOWN);
+      case UNKNOWN_DEFAULT_WEB_CLIENT:
+        observer_->SetDefaultWebClientUIState(STATE_UNKNOWN);
         break;
       default:
         break;
     }
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ShellIntegration::DefaultBrowserWorker
+//
+
+ShellIntegration::DefaultBrowserWorker::DefaultBrowserWorker(
+    DefaultWebClientObserver* observer)
+    : DefaultWebClientWorker(observer) {
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DefaultBrowserWorker, private:
+
+ShellIntegration::DefaultWebClientState
+ShellIntegration::DefaultBrowserWorker::CheckIsDefault() {
+  return ShellIntegration::IsDefaultBrowser();
+}
+
+void ShellIntegration::DefaultBrowserWorker::SetAsDefault() {
+  ShellIntegration::SetAsDefaultBrowser();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ShellIntegration::DefaultProtocolClientWorker
+//
+
+ShellIntegration::DefaultProtocolClientWorker::DefaultProtocolClientWorker(
+    DefaultWebClientObserver* observer, const std::string& protocol)
+    : DefaultWebClientWorker(observer),
+      protocol_(protocol) {
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DefaultProtocolClientWorker, private:
+
+ShellIntegration::DefaultWebClientState
+ShellIntegration::DefaultProtocolClientWorker::CheckIsDefault() {
+  return ShellIntegration::IsDefaultProtocolClient(protocol_);
+}
+
+void ShellIntegration::DefaultProtocolClientWorker::SetAsDefault() {
+  ShellIntegration::SetAsDefaultProtocolClient(protocol_);
 }

@@ -21,7 +21,7 @@ class TemplateURLModel;
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler : public OptionsPageUIHandler,
                               public AutocompleteControllerDelegate,
-                              public ShellIntegration::DefaultBrowserObserver,
+                              public ShellIntegration::DefaultWebClientObserver,
                               public TemplateURLModelObserver,
                               public ui::TableModelObserver {
  public:
@@ -37,9 +37,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // AutocompleteControllerDelegate implementation.
   virtual void OnResultChanged(bool default_match_changed);
 
-  // ShellIntegration::DefaultBrowserObserver implementation.
-  virtual void SetDefaultBrowserUIState(
-      ShellIntegration::DefaultBrowserUIState state);
+  // ShellIntegration::DefaultWebClientObserver implementation.
+  virtual void SetDefaultWebClientUIState(
+      ShellIntegration::DefaultWebClientUIState state);
 
   // TemplateURLModelObserver implementation.
   virtual void OnTemplateURLModelChanged();
@@ -88,7 +88,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   void ToggleShowBookmarksBar(const ListValue* args);
 
   // Returns the string ID for the given default browser state.
-  int StatusStringIdForState(ShellIntegration::DefaultBrowserState state);
+  int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
 
   // Gets the current default browser state, and asynchronously reports it to
   // the WebUI page.
@@ -106,7 +106,8 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Writes the current set of startup pages to prefs.
   void SaveStartupPagesPref();
 
-  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
+  scoped_refptr<ShellIntegration::DefaultBrowserWorker>
+      default_browser_worker_;
 
   StringPrefMember homepage_;
   BooleanPrefMember default_browser_policy_;

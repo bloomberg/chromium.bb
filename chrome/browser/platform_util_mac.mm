@@ -230,4 +230,8 @@ bool CanSetAsDefaultBrowser() {
   return GetChannel() != CHANNEL_CANARY;
 }
 
+bool CanSetAsDefaultProtocolClient(const std::string& protocol) {
+  return CanSetAsDefaultBrowser();
+}
+
 }  // namespace platform_util

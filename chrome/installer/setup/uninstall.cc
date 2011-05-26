@@ -559,8 +559,10 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   std::wstring parent_key(ShellUtil::kRegClasses);
   const std::wstring::size_type base_length = parent_key.size();
   std::wstring child_key;
-  for (const wchar_t* const* proto = &ShellUtil::kProtocolAssociations[0];
-       *proto != NULL; ++proto) {
+  for (const wchar_t* const* proto =
+           &ShellUtil::kPotentialProtocolAssociations[0];
+       *proto != NULL;
+       ++proto) {
     parent_key.resize(base_length);
     file_util::AppendToPath(&parent_key, *proto);
     child_key.assign(parent_key).append(ShellUtil::kRegShellOpen);

@@ -832,14 +832,25 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       GoogleUpdateSettings::SetEULAConsent(*installer_state, true);
   } else if (cmd_line.HasSwitch(
       installer::switches::kRegisterChromeBrowser)) {
+    installer::InstallStatus status = installer::UNKNOWN_STATUS;
     const Product* chrome_install =
         installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
     if (chrome_install) {
       // If --register-chrome-browser option is specified, register all
-      // Chrome protocol/file associations as well as register it as a valid
-      // browser for Start Menu->Internet shortcut. This option should only
-      // be used when setup.exe is launched with admin rights. We do not
-      // make any user specific changes in this option.
+      // Chrome protocol/file associations, as well as register it as a valid
+      // browser for Start Menu->Internet shortcut. This switch will also
+      // register Chrome as a valid handler for a set of URL protocols that
+      // Chrome may become the default handler for, either by the user marking
+      // Chrome as the default browser, through the Windows Default Programs
+      // control panel settings, or through website use of
+      // registerProtocolHandler. These protocols are found in
+      // ShellUtil::kPotentialProtocolAssociations.
+      // The --register-url-protocol will additionally register Chrome as a
+      // potential handler for the supplied protocol, and is used if a website
+      // registers a handler for a protocol not found in
+      // ShellUtil::kPotentialProtocolAssociations.
+      // These options should only be used when setup.exe is launched with admin
+      // rights. We do not make any user specific changes with this option.
       std::wstring chrome_exe(cmd_line.GetSwitchValueNative(
           installer::switches::kRegisterChromeBrowser));
       std::wstring suffix;
@@ -848,12 +859,25 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         suffix = cmd_line.GetSwitchValueNative(
             installer::switches::kRegisterChromeBrowserSuffix);
       }
-      *exit_code = ShellUtil::RegisterChromeBrowser(
-          chrome_install->distribution(), chrome_exe, suffix, false);
+      if (cmd_line.HasSwitch(
+          installer::switches::kRegisterURLProtocol)) {
+        std::wstring protocol = cmd_line.GetSwitchValueNative(
+            installer::switches::kRegisterURLProtocol);
+        // ShellUtil::RegisterChromeForProtocol performs all registration
+        // done by ShellUtil::RegisterChromeBrowser, as well as registering
+        // with Winows as capable of handling the supplied protocol.
+        if (ShellUtil::RegisterChromeForProtocol(chrome_install->distribution(),
+            chrome_exe, suffix, protocol, false))
+          status = installer::IN_USE_UPDATED;
+      } else {
+        if (ShellUtil::RegisterChromeBrowser(chrome_install->distribution(),
+            chrome_exe, suffix, false))
+          status = installer::IN_USE_UPDATED;
+      }
     } else {
       LOG(DFATAL) << "Can't register browser - Chrome distribution not found";
-      *exit_code = installer::UNKNOWN_STATUS;
     }
+    *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRenameChromeExe)) {
     // If --rename-chrome-exe is specified, we want to rename the executables
     // and exit.

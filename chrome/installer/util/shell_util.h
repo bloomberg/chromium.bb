@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -29,6 +29,9 @@ class ShellUtil {
     CURRENT_USER = 0x1,  // Make any shell changes only at the user level
     SYSTEM_LEVEL = 0x2   // Make any shell changes only at the system level
   };
+
+  // Relative path of the URL Protocol registry entry (prefixed with '\').
+  static const wchar_t* kRegURLProtocol;
 
   // Relative path of DefaultIcon registry entry (prefixed with '\').
   static const wchar_t* kRegDefaultIcon;
@@ -69,8 +72,12 @@ class ShellUtil {
   // File extensions that Chrome registers itself for.
   static const wchar_t* kFileAssociations[];
 
-  // Protocols that Chrome registers itself for.
-  static const wchar_t* kProtocolAssociations[];
+  // Protocols that Chrome registers itself as the default handler for
+  // when the user makes Chrome the default browser.
+  static const wchar_t* kBrowserProtocolAssociations[];
+
+  // Protocols that Chrome registers itself as being capable of handling.
+  static const wchar_t* kPotentialProtocolAssociations[];
 
   // Registry value name that is needed for ChromeHTML ProgId
   static const wchar_t* kRegUrlProtocol;
@@ -156,7 +163,18 @@ class ShellUtil {
   static bool GetUserSpecificDefaultBrowserSuffix(BrowserDistribution* dist,
                                                   std::wstring* entry);
 
-  // Make Chrome default browser.
+  // Make Chrome the default browser. This function works by going through
+  // the url protocols and file associations that are related to general
+  // browsing, e.g. http, https, .html etc., and requesting to become the
+  // default handler for each. If any of these fails the operation will return
+  // false to indicate failure, which is consistent with the return value of
+  // ShellIntegration::IsDefaultBrowser.
+  //
+  // In the case of failure any successful changes will be left, however no
+  // more changes will be attempted.
+  // TODO(benwells): Attempt to undo any changes that were successfully made.
+  // http://crbug.com/83970
+  //
   // shell_change: Defined whether to register as default browser at system
   //               level or user level. If value has ShellChange::SYSTEM_LEVEL
   //               we should be running as admin user.
@@ -167,6 +185,13 @@ class ShellUtil {
                                 int shell_change,
                                 const std::wstring& chrome_exe,
                                 bool elevate_if_not_admin);
+
+  // Make Chrome the default application for a protocol.
+  // chrome_exe: The chrome.exe path to register as default browser.
+  // protocol: The protocol to register as the default handler for.
+  static bool MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
+                                              const std::wstring& chrome_exe,
+                                              const std::wstring& protocol);
 
   // This method adds Chrome to the list that shows up in Add/Remove Programs->
   // Set Program Access and Defaults and also creates Chrome ProgIds under
@@ -193,6 +218,29 @@ class ShellUtil {
                                     const std::wstring& chrome_exe,
                                     const std::wstring& unique_suffix,
                                     bool elevate_if_not_admin);
+
+  // This method declares to Windows that Chrome is capable of handling the
+  // given protocol. This function will call the RegisterChromeBrowser function
+  // to register with Windows as capable of handling the protocol, if it isn't
+  // currently registered as capable.
+  // Declaring the capability of handling a protocol is necessary to register
+  // as the default handler for the protocol in Vista and later versions of
+  // Windows.
+  //
+  // If called by the browser and elevation is required, it will elevate by
+  // calling setup.exe which will again call this function with elevate false.
+  //
+  // |chrome_exe| full path to chrome.exe.
+  // |unique_suffix| Optional input. If given, this function appends the value
+  // to default browser entries names that it creates in the registry.
+  // |protocol| The protocol to register as being capable of handling.s
+  // |elevate_if_not_admin| if true will make this method try alternate methods
+  // as described above.
+  static bool RegisterChromeForProtocol(BrowserDistribution* dist,
+                                        const std::wstring& chrome_exe,
+                                        const std::wstring& unique_suffix,
+                                        const std::wstring& protocol,
+                                        bool elevate_if_not_admin);
 
   // Remove Chrome shortcut from Desktop.
   // If shell_change is CURRENT_USER, the shortcut is removed from the

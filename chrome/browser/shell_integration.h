@@ -26,29 +26,38 @@ class Environment;
 
 class ShellIntegration {
  public:
-  // Sets Chrome as default browser (only for current user). Returns false if
-  // this operation fails.
+  // Sets Chrome as the default browser (only for the current user). Returns
+  // false if this operation fails.
   static bool SetAsDefaultBrowser();
+
+  // Sets Chrome as the default client application for the given protocol
+  // (only for the current user). Returns false if this operation fails.
+  static bool SetAsDefaultProtocolClient(const std::string& protocol);
 
   // On Linux, it may not be possible to determine or set the default browser
   // on some desktop environments or configurations. So, we use this enum and
   // not a plain bool. (Note however that if used like a bool, this enum will
   // have reasonable behavior.)
-  enum DefaultBrowserState {
-    NOT_DEFAULT_BROWSER = 0,
-    IS_DEFAULT_BROWSER,
-    UNKNOWN_DEFAULT_BROWSER
+  enum DefaultWebClientState {
+    NOT_DEFAULT_WEB_CLIENT = 0,
+    IS_DEFAULT_WEB_CLIENT,
+    UNKNOWN_DEFAULT_WEB_CLIENT = -1
   };
 
   // Attempt to determine if this instance of Chrome is the default browser and
   // return the appropriate state. (Defined as being the handler for HTTP/HTTPS
   // protocols; we don't want to report "no" here if the user has simply chosen
   // to open HTML files in a text editor and FTP links with an FTP client.)
-  static DefaultBrowserState IsDefaultBrowser();
+  static DefaultWebClientState IsDefaultBrowser();
 
   // Returns true if Firefox is likely to be the default browser for the current
   // user. This method is very fast so it can be invoked in the UI thread.
   static bool IsFirefoxDefaultBrowser();
+
+  // Attempt to determine if this instance of Chrome is the default client
+  // application for the given protocol and return the appropriate state.
+  static DefaultWebClientState
+      IsDefaultProtocolClient(const std::string& protocol);
 
   struct ShortcutInfo {
     ShortcutInfo();
@@ -123,65 +132,132 @@ class ShellIntegration {
   static void MigrateChromiumShortcuts();
 #endif  // defined(OS_WIN)
 
-  // The current default browser UI state
-  enum DefaultBrowserUIState {
+  // The current default web client application UI state. This is used when
+  // querying if Chrome is the default browser or the default handler
+  // application for a url protocol, and communicates the state and result of
+  // a request.
+  enum DefaultWebClientUIState {
     STATE_PROCESSING,
     STATE_NOT_DEFAULT,
     STATE_IS_DEFAULT,
     STATE_UNKNOWN
   };
 
-  class DefaultBrowserObserver {
+  class DefaultWebClientObserver {
    public:
+    virtual ~DefaultWebClientObserver() {}
     // Updates the UI state to reflect the current default browser state.
-    virtual void SetDefaultBrowserUIState(DefaultBrowserUIState state) = 0;
-    virtual ~DefaultBrowserObserver() {}
+    virtual void SetDefaultWebClientUIState(DefaultWebClientUIState state) = 0;
   };
-  //  A helper object that handles checking if Chrome is the default browser on
-  //  Windows and also setting it as the default browser. These operations are
-  //  performed asynchronously on the file thread since registry access is
-  //  involved and this can be slow.
-  //
-  class DefaultBrowserWorker
-      : public base::RefCountedThreadSafe<DefaultBrowserWorker> {
+
+  //  Helper objects that handle checking if Chrome is the default browser
+  //  or application for a url protocol on Windows and Linux, and also setting
+  //  it as the default. These operations are performed asynchronously on the
+  //  file thread since registry access (on Windows) or the preference database
+  //  (on Linux) are involved and this can be slow.
+  class DefaultWebClientWorker
+      : public base::RefCountedThreadSafe<DefaultWebClientWorker> {
    public:
-    explicit DefaultBrowserWorker(DefaultBrowserObserver* observer);
+    explicit DefaultWebClientWorker(DefaultWebClientObserver* observer);
 
-    // Checks if Chrome is the default browser.
-    void StartCheckDefaultBrowser();
+    // Checks to see if Chrome is the default web client application. The result
+    // will be passed back to the observer via the SetDefaultWebClientUIState
+    // function. If there is no observer, this function does not do anything.
+    void StartCheckIsDefault();
 
-    // Sets Chrome as the default browser.
-    void StartSetAsDefaultBrowser();
+    // Sets Chrome as the default web client application. If there is an
+    // observer, once the operation has completed the new default will be
+    // queried and the current status reported via SetDefaultWebClientUIState.
+    void StartSetAsDefault();
 
     // Called to notify the worker that the view is gone.
     void ObserverDestroyed();
 
-   private:
-    friend class base::RefCountedThreadSafe<DefaultBrowserWorker>;
+   protected:
+    friend class base::RefCountedThreadSafe<DefaultWebClientWorker>;
 
+    virtual ~DefaultWebClientWorker() {}
+
+   private:
+    // Function that performs the check.
+    virtual DefaultWebClientState CheckIsDefault() = 0;
+
+    // Function that sets Chrome as the default web client.
+    virtual void SetAsDefault() = 0;
+
+    // Function that handles performing the check on the file thread. This
+    // function is posted as a task onto the file thread, where it performs
+    // the check. When the check has finished the CompleteCheckIsDefault
+    // function is posted to the UI thread, where the result is sent back to
+    // the observer.
+    void ExecuteCheckIsDefault();
+
+    // Function that handles setting Chrome as the default web client on the
+    // file thread. This function is posted as a task onto the file thread.
+    // Once it is finished the CompleteSetAsDefault function is posted to the
+    // UI thread which will check the status of Chrome as the default, and
+    // send this to the observer.
+    void ExecuteSetAsDefault();
+
+    // Communicate results to the observer. This function is posted as a task
+    // onto the UI thread by the ExecuteCheckIsDefault function running in the
+    // file thread.
+    void CompleteCheckIsDefault(DefaultWebClientState state);
+
+    // When the action to set Chrome as the default has completed this function
+    // is run. It is posted as a task back onto the UI thread by the
+    // ExecuteSetAsDefault function running in the file thread. This function
+    // will the start the check process, which, if an observer is present,
+    // reports to it the new status.
+    void CompleteSetAsDefault();
+
+    // Updates the UI in our associated view with the current default web
+    // client state.
+    void UpdateUI(DefaultWebClientState state);
+
+    DefaultWebClientObserver* observer_;
+
+    DISALLOW_COPY_AND_ASSIGN(DefaultWebClientWorker);
+  };
+
+  // Worker for checking and setting the default browser.
+  class DefaultBrowserWorker : public DefaultWebClientWorker {
+   public:
+    explicit DefaultBrowserWorker(DefaultWebClientObserver* observer);
+
+   private:
     virtual ~DefaultBrowserWorker() {}
 
-    // Functions that track the process of checking if Chrome is the default
-    // browser.  |ExecuteCheckDefaultBrowser| checks the registry on the file
-    // thread.  |CompleteCheckDefaultBrowser| notifies the view to update on the
-    // UI thread.
-    void ExecuteCheckDefaultBrowser();
-    void CompleteCheckDefaultBrowser(DefaultBrowserState state);
+    // Check if Chrome is the default browser.
+    virtual DefaultWebClientState CheckIsDefault();
 
-    // Functions that track the process of setting Chrome as the default
-    // browser.  |ExecuteSetAsDefaultBrowser| updates the registry on the file
-    // thread.  |CompleteSetAsDefaultBrowser| notifies the view to update on the
-    // UI thread.
-    void ExecuteSetAsDefaultBrowser();
-    void CompleteSetAsDefaultBrowser();
-
-    // Updates the UI in our associated view with the current default browser
-    // state.
-    void UpdateUI(DefaultBrowserState state);
-
-    DefaultBrowserObserver* observer_;
+    // Set Chrome as the default browser.
+    virtual void SetAsDefault();
 
     DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
+  };
+
+  // Worker for checking and setting the default client application
+  // for a given protocol. A different worker instance is needed for each
+  // protocol you are interested in, so to check or set the default for
+  // multiple protocols you should use multiple worker objects.
+  class DefaultProtocolClientWorker : public DefaultWebClientWorker {
+   public:
+    DefaultProtocolClientWorker(DefaultWebClientObserver* observer,
+                                const std::string& protocol);
+
+   private:
+    virtual ~DefaultProtocolClientWorker() {}
+
+    // Check is Chrome is the default handler for this protocol.
+    virtual DefaultWebClientState CheckIsDefault();
+
+    // Set Chrome as the default handler for this protocol.
+    virtual void SetAsDefault();
+
+    std::string protocol_;
+
+    DISALLOW_COPY_AND_ASSIGN(DefaultProtocolClientWorker);
   };
 };
 

@@ -156,4 +156,8 @@ bool CanSetAsDefaultBrowser() {
   return true;
 }
 
+bool CanSetAsDefaultProtocolClient(const std::string& protocol) {
+  return CanSetAsDefaultBrowser();
+}
+
 }  // namespace platform_util

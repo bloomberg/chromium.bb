@@ -167,19 +167,19 @@ void BrowserOptionsHandler::UpdateDefaultBrowserState() {
   }
 
 #if defined(OS_MACOSX)
-  ShellIntegration::DefaultBrowserState state =
+  ShellIntegration::DefaultWebClientState state =
       ShellIntegration::IsDefaultBrowser();
   int status_string_id;
-  if (state == ShellIntegration::IS_DEFAULT_BROWSER)
+  if (state == ShellIntegration::IS_DEFAULT_WEB_CLIENT)
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  else if (state == ShellIntegration::NOT_DEFAULT_BROWSER)
+  else if (state == ShellIntegration::NOT_DEFAULT_WEB_CLIENT)
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
   else
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
 
   SetDefaultBrowserUIString(status_string_id);
 #else
-  default_browser_worker_->StartCheckDefaultBrowser();
+  default_browser_worker_->StartCheckIsDefault();
 #endif
 }
 
@@ -194,7 +194,7 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
   if (ShellIntegration::SetAsDefaultBrowser())
     UpdateDefaultBrowserState();
 #else
-  default_browser_worker_->StartSetAsDefaultBrowser();
+  default_browser_worker_->StartSetAsDefault();
   // Callback takes care of updating UI.
 #endif
 
@@ -205,16 +205,16 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
 }
 
 int BrowserOptionsHandler::StatusStringIdForState(
-    ShellIntegration::DefaultBrowserState state) {
-  if (state == ShellIntegration::IS_DEFAULT_BROWSER)
+    ShellIntegration::DefaultWebClientState state) {
+  if (state == ShellIntegration::IS_DEFAULT_WEB_CLIENT)
     return IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  if (state == ShellIntegration::NOT_DEFAULT_BROWSER)
+  if (state == ShellIntegration::NOT_DEFAULT_WEB_CLIENT)
     return IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
   return IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
 }
 
-void BrowserOptionsHandler::SetDefaultBrowserUIState(
-    ShellIntegration::DefaultBrowserUIState state) {
+void BrowserOptionsHandler::SetDefaultWebClientUIState(
+    ShellIntegration::DefaultWebClientUIState state) {
   int status_string_id;
   if (state == ShellIntegration::STATE_IS_DEFAULT)
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;

@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
@@ -287,13 +288,36 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   return true;
 }
 
-ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
+bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
+  if (protocol.empty())
+    return false;
+
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    LOG(ERROR) << "Error getting app exe path";
+    return false;
+  }
+
+  std::wstring wprotocol = UTF8ToWide(protocol);
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe.value(),
+        wprotocol)) {
+    LOG(ERROR) << "Chrome could not be set as default handler for "
+               << protocol << ".";
+    return false;
+  }
+
+  VLOG(1) << "Chrome registered as default handler for " << protocol << ".";
+  return true;
+}
+
+ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
   // First determine the app path. If we can't determine what that is, we have
   // bigger fish to fry...
   FilePath app_path;
   if (!PathService::Get(base::FILE_EXE, &app_path)) {
     LOG(ERROR) << "Error getting app exe path";
-    return UNKNOWN_DEFAULT_BROWSER;
+    return UNKNOWN_DEFAULT_WEB_CLIENT;
   }
   // When we check for default browser we don't necessarily want to count file
   // type handlers and icons as having changed the default browser status,
@@ -307,12 +331,11 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
   const std::wstring kChromeProtocols[] = {L"http", L"https"};
 
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    IApplicationAssociationRegistration* pAAR;
-    HRESULT hr = CoCreateInstance(CLSID_ApplicationAssociationRegistration,
-        NULL, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistration),
-        (void**)&pAAR);
+    base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
+    HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
+        NULL, CLSCTX_INPROC);
     if (!SUCCEEDED(hr))
-      return NOT_DEFAULT_BROWSER;
+      return NOT_DEFAULT_WEB_CLIENT;
 
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     std::wstring app_name = dist->GetApplicationName();
@@ -328,16 +351,17 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       hr = pAAR->QueryAppIsDefault(kChromeProtocols[i].c_str(), AT_URLPROTOCOL,
           AL_EFFECTIVE, app_name.c_str(), &result);
       if (!SUCCEEDED(hr) || result == FALSE) {
-        pAAR->Release();
-        return NOT_DEFAULT_BROWSER;
+        return NOT_DEFAULT_WEB_CLIENT;
       }
     }
-    pAAR->Release();
   } else {
     std::wstring short_app_path;
-    GetShortPathName(app_path.value().c_str(),
-                     WriteInto(&short_app_path, MAX_PATH),
-                     MAX_PATH);
+    DWORD get_path_result = GetShortPathName(app_path.value().c_str(),
+        WriteInto(&short_app_path, MAX_PATH), MAX_PATH);
+    if (!get_path_result || get_path_result > MAX_PATH) {
+      LOG(ERROR) << "GetShortPathName error in IsDefaultBrowser.";
+      return UNKNOWN_DEFAULT_WEB_CLIENT;
+    }
 
     // open command for protocol associations
     for (int i = 0; i < _countof(kChromeProtocols); i++) {
@@ -349,17 +373,94 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
       std::wstring value;
       if (!key.Valid() || (key.ReadValue(L"", &value) != ERROR_SUCCESS))
-        return NOT_DEFAULT_BROWSER;
+        return NOT_DEFAULT_WEB_CLIENT;
       // Need to normalize path in case it's been munged.
       CommandLine command_line = CommandLine::FromString(value);
       std::wstring short_path;
-      GetShortPathName(command_line.GetProgram().value().c_str(),
-                       WriteInto(&short_path, MAX_PATH), MAX_PATH);
+      get_path_result = GetShortPathName(
+          command_line.GetProgram().value().c_str(),
+          WriteInto(&short_path, MAX_PATH), MAX_PATH);
+      if (!get_path_result || get_path_result > MAX_PATH) {
+        LOG(ERROR) << "GetShortPathName error in IsDefaultBrowser.";
+        return UNKNOWN_DEFAULT_WEB_CLIENT;
+      }
       if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
-        return NOT_DEFAULT_BROWSER;
+        return NOT_DEFAULT_WEB_CLIENT;
     }
   }
-  return IS_DEFAULT_BROWSER;
+  return IS_DEFAULT_WEB_CLIENT;
+}
+
+ShellIntegration::DefaultWebClientState
+    ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+  if (protocol.empty())
+    return UNKNOWN_DEFAULT_WEB_CLIENT;
+
+  // Determine the app path. If we can't determine what that is, we have
+  // bigger fish to fry...
+  FilePath app_path;
+  if (!PathService::Get(base::FILE_EXE, &app_path)) {
+    LOG(ERROR) << "Error getting app exe path";
+    return UNKNOWN_DEFAULT_WEB_CLIENT;
+  }
+
+  std::wstring wprotocol = UTF8ToWide(protocol);
+
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
+    HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
+        NULL, CLSCTX_INPROC);
+    if (!SUCCEEDED(hr))
+      return NOT_DEFAULT_WEB_CLIENT;
+
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    std::wstring app_name = dist->GetApplicationName();
+    // If a user specific default browser entry exists, we check for that
+    // app name being default. If not, then default browser is just called
+    // Google Chrome or Chromium so we do not append suffix to app name.
+    std::wstring suffix;
+    if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
+      app_name += suffix;
+
+    BOOL result = TRUE;
+    hr = pAAR->QueryAppIsDefault(wprotocol.c_str(), AT_URLPROTOCOL,
+        AL_EFFECTIVE, app_name.c_str(), &result);
+    if (!SUCCEEDED(hr) || result == FALSE) {
+      return NOT_DEFAULT_WEB_CLIENT;
+    }
+  } else {
+    std::wstring short_app_path;
+    DWORD get_path_result = GetShortPathName(app_path.value().c_str(),
+        WriteInto(&short_app_path, MAX_PATH), MAX_PATH);
+    if (!get_path_result || get_path_result > MAX_PATH) {
+      LOG(ERROR) << "GetShortPathName error in IsDefaultProtocolClient.";
+      return UNKNOWN_DEFAULT_WEB_CLIENT;
+    }
+
+    // open command for protocol associations
+    // Check in HKEY_CLASSES_ROOT that is the result of merge between
+    // HKLM and HKCU
+    HKEY root_key = HKEY_CLASSES_ROOT;
+    // Check <protocol>\shell\open\command
+    std::wstring key_path(wprotocol + ShellUtil::kRegShellOpen);
+    base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
+    std::wstring value;
+    if (!key.Valid() || (key.ReadValue(L"", &value) != ERROR_SUCCESS))
+      return NOT_DEFAULT_WEB_CLIENT;
+    // Need to normalize path in case it's been munged.
+    CommandLine command_line = CommandLine::FromString(value);
+    std::wstring short_path;
+    get_path_result = GetShortPathName(
+        command_line.GetProgram().value().c_str(),
+        WriteInto(&short_path, MAX_PATH), MAX_PATH);
+    if (!get_path_result || get_path_result > MAX_PATH) {
+      LOG(ERROR) << "GetShortPathName error in IsDefaultProtocolClient.";
+      return UNKNOWN_DEFAULT_WEB_CLIENT;
+    }
+    if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
+      return NOT_DEFAULT_WEB_CLIENT;
+  }
+  return IS_DEFAULT_WEB_CLIENT;
 }
 
 // There is no reliable way to say which browser is default on a machine (each

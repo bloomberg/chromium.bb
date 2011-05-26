@@ -254,7 +254,13 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 }
 
 // static
-ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
+bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
+  // TODO(benwells): Implement this for Linux - crbug.com/83557
+  return false;
+}
+
+// static
+ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -268,11 +274,19 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
   std::string reply;
   if (!base::GetAppOutput(CommandLine(argv), &reply)) {
     // xdg-settings failed: we can't determine or set the default browser.
-    return UNKNOWN_DEFAULT_BROWSER;
+    return UNKNOWN_DEFAULT_WEB_CLIENT;
   }
 
   // Allow any reply that starts with "yes".
-  return (reply.find("yes") == 0) ? IS_DEFAULT_BROWSER : NOT_DEFAULT_BROWSER;
+  return (reply.find("yes") == 0) ?
+      IS_DEFAULT_WEB_CLIENT : NOT_DEFAULT_WEB_CLIENT;
+}
+
+// static
+ShellIntegration::DefaultWebClientState
+ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
+  // TODO(benwells): Implement this for Linux - crbug.com/83557
+  return UNKNOWN_DEFAULT_WEB_CLIENT;
 }
 
 // static

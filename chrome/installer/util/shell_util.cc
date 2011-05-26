@@ -24,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -69,6 +70,27 @@ class RegistryEntry {
 
     return true;
   }
+
+  // This method returns a list of the system level registry entries
+  // needed to declare a capability of handling a protocol.
+  static bool GetProtocolCapabilityEntries(BrowserDistribution* dist,
+                                           const std::wstring& chrome_exe,
+                                           const std::wstring& suffix,
+                                           const std::wstring& protocol,
+                                           std::list<RegistryEntry*>* entries) {
+    std::wstring app_name = dist->GetApplicationName() + suffix;
+    std::wstring start_menu_entry(ShellUtil::kRegStartMenuInternet);
+    start_menu_entry.append(L"\\" + app_name);
+
+    std::wstring capabilities(start_menu_entry + L"\\Capabilities");
+
+    std::wstring html_prog_id(ShellUtil::kChromeHTMLProgId);
+    html_prog_id.append(suffix);
+    entries->push_front(new RegistryEntry(capabilities + L"\\URLAssociations",
+        protocol, html_prog_id));
+    return true;
+}
+
 
   // This method returns a list of all the system level registry entries that
   // are needed to register Chromium on the machine.
@@ -119,10 +141,11 @@ class RegistryEntry {
           capabilities + L"\\FileAssociations",
           ShellUtil::kFileAssociations[i], html_prog_id));
     }
-    for (int i = 0; ShellUtil::kProtocolAssociations[i] != NULL; i++) {
+    for (int i = 0; ShellUtil::kPotentialProtocolAssociations[i] != NULL;
+        i++) {
       entries->push_front(new RegistryEntry(
           capabilities + L"\\URLAssociations",
-          ShellUtil::kProtocolAssociations[i], html_prog_id));
+          ShellUtil::kPotentialProtocolAssociations[i], html_prog_id));
     }
 
     FilePath chrome_path(chrome_exe);
@@ -133,6 +156,44 @@ class RegistryEntry {
         ShellUtil::kAppPathsRegistryPathName, chrome_path.DirName().value()));
 
     // TODO: add chrome to open with list (Bug 16726).
+    return true;
+  }
+
+  // This method returns a list of all the user level registry entries that
+  // are needed to make Chromium the default handler for a protocol.
+  static bool GetUserProtocolEntries(BrowserDistribution* dist,
+                                     const std::wstring& chrome_exe,
+                                     const std::wstring& suffix,
+                                     const std::wstring& protocol,
+                                     const std::wstring& chrome_icon,
+                                     const std::wstring& chrome_open,
+                                     std::list<RegistryEntry*>* entries) {
+    // Protocols associations.
+    std::wstring url_key(ShellUtil::kRegClasses);
+    file_util::AppendToPath(&url_key, protocol);
+
+    // This registry value tells Windows that this 'class' is a URL scheme
+    // so IE, explorer and other apps will route it to our handler.
+    // <root hkey>\Software\Classes\<protocol>\URL Protocol
+    entries->push_front(new RegistryEntry(url_key,
+        ShellUtil::kRegUrlProtocol, L""));
+
+    // <root hkey>\Software\Classes\<protocol>\DefaultIcon
+    std::wstring icon_key = url_key + ShellUtil::kRegDefaultIcon;
+    entries->push_front(new RegistryEntry(icon_key, chrome_icon));
+
+    // <root hkey>\Software\Classes\<protocol>\shell\open\command
+    std::wstring shell_key = url_key + ShellUtil::kRegShellOpen;
+    entries->push_front(new RegistryEntry(shell_key, chrome_open));
+
+    // <root hkey>\Software\Classes\<protocol>\shell\open\ddeexec
+    std::wstring dde_key = url_key + L"\\shell\\open\\ddeexec";
+    entries->push_front(new RegistryEntry(dde_key, L""));
+
+    // <root hkey>\Software\Classes\<protocol>\shell\@
+    std::wstring protocol_shell_key = url_key + ShellUtil::kRegShellPath;
+    entries->push_front(new RegistryEntry(protocol_shell_key, L"open"));
+
     return true;
   }
 
@@ -154,25 +215,10 @@ class RegistryEntry {
     // Protocols associations.
     std::wstring chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
     std::wstring chrome_icon = ShellUtil::GetChromeIcon(dist, chrome_exe);
-    for (int i = 0; ShellUtil::kProtocolAssociations[i] != NULL; i++) {
-      std::wstring url_key(ShellUtil::kRegClasses);
-      file_util::AppendToPath(&url_key, ShellUtil::kProtocolAssociations[i]);
-
-      // <root hkey>\Software\Classes\<protocol>\DefaultIcon
-      std::wstring icon_key = url_key + ShellUtil::kRegDefaultIcon;
-      entries->push_front(new RegistryEntry(icon_key, chrome_icon));
-
-      // <root hkey>\Software\Classes\<protocol>\shell\open\command
-      std::wstring shell_key = url_key + ShellUtil::kRegShellOpen;
-      entries->push_front(new RegistryEntry(shell_key, chrome_open));
-
-      // <root hkey>\Software\Classes\<protocol>\shell\open\ddeexec
-      std::wstring dde_key = url_key + L"\\shell\\open\\ddeexec";
-      entries->push_front(new RegistryEntry(dde_key, L""));
-
-      // <root hkey>\Software\Classes\<protocol>\shell\@
-      std::wstring protocol_shell_key = url_key + ShellUtil::kRegShellPath;
-      entries->push_front(new RegistryEntry(protocol_shell_key, L"open"));
+    for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
+      GetUserProtocolEntries(dist, chrome_exe, suffix,
+                             ShellUtil::kBrowserProtocolAssociations[i],
+                             chrome_icon, chrome_open, entries);
     }
 
     // start->Internet shortcut.
@@ -297,13 +343,36 @@ bool IsChromeRegistered(BrowserDistribution* dist,
   return registered;
 }
 
+// This method checks if Chrome is already registered on the local machine
+// for the requested protocol. It just checks the one value required for this.
+bool IsChromeRegisteredForProtocol(BrowserDistribution* dist,
+                                   const std::wstring& chrome_exe,
+                                   const std::wstring& suffix,
+                                   const std::wstring& protocol) {
+  bool registered = true;
+  std::list<RegistryEntry*> entries;
+  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  RegistryEntry::GetProtocolCapabilityEntries(dist, chrome_exe, suffix,
+      protocol, &entries);
+  for (std::list<RegistryEntry*>::const_iterator itr = entries.begin();
+       itr != entries.end() && registered; ++itr) {
+    // We do not need registered = registered && ... since the loop condition
+    // is set to exit early.
+    registered = (*itr)->ExistsInHKLM();
+  }
+  return registered;
+}
+
 // This method registers Chrome on Vista by launching an elevated setup.exe.
 // That will show the user the standard Vista elevation prompt. If the user
 // accepts it the new process will make the necessary changes and return SUCCESS
 // that we capture and return.
+// If protocol is non-empty we will also register Chrome as being capable of
+// handling the protocol.
 bool ElevateAndRegisterChrome(BrowserDistribution* dist,
                               const std::wstring& chrome_exe,
-                              const std::wstring& suffix) {
+                              const std::wstring& suffix,
+                              const std::wstring& protocol) {
   FilePath exe_path =
       FilePath::FromWStringHack(chrome_exe).DirName()
           .Append(installer::kSetupExe);
@@ -329,6 +398,11 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
     CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
     if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
       cmd.AppendSwitch(installer::switches::kChromeFrame);
+    }
+
+    if (!protocol.empty()) {
+      cmd.AppendSwitchNative(
+        installer::switches::kRegisterURLProtocol, protocol);
     }
 
     DWORD ret_val = 0;
@@ -396,7 +470,6 @@ bool AnotherUserHasDefaultBrowser(BrowserDistribution* dist,
 
 }  // namespace
 
-
 const wchar_t* ShellUtil::kRegDefaultIcon = L"\\DefaultIcon";
 const wchar_t* ShellUtil::kRegShellPath = L"\\shell";
 const wchar_t* ShellUtil::kRegShellOpen = L"\\shell\\open\\command";
@@ -422,8 +495,10 @@ const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chromium HTML Document";
 
 const wchar_t* ShellUtil::kFileAssociations[] = {L".htm", L".html", L".shtml",
     L".xht", L".xhtml", NULL};
-const wchar_t* ShellUtil::kProtocolAssociations[] = {L"ftp", L"http", L"https",
-    NULL};
+const wchar_t* ShellUtil::kBrowserProtocolAssociations[] = {L"ftp", L"http",
+    L"https", NULL};
+const wchar_t* ShellUtil::kPotentialProtocolAssociations[] = {L"ftp", L"http",
+    L"https", L"mailto", L"webcal", NULL};
 const wchar_t* ShellUtil::kRegUrlProtocol = L"URL Protocol";
 
 bool ShellUtil::AdminNeededForRegistryCleanup(BrowserDistribution* dist,
@@ -636,22 +711,32 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   // browser.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     VLOG(1) << "Registering Chrome as default browser on Vista.";
-    IApplicationAssociationRegistration* pAAR;
-    HRESULT hr = CoCreateInstance(CLSID_ApplicationAssociationRegistration,
-        NULL, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistration),
-        (void**)&pAAR);
+    base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
+    HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
+        NULL, CLSCTX_INPROC);
     if (SUCCEEDED(hr)) {
       std::wstring app_name = dist->GetApplicationName();
       std::wstring suffix;
       if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
         app_name += suffix;
 
-      hr = pAAR->SetAppAsDefaultAll(app_name.c_str());
-      pAAR->Release();
+      for (int i = 0;
+           SUCCEEDED(hr) && ShellUtil::kBrowserProtocolAssociations[i] != NULL;
+           i++) {
+        hr = pAAR->SetAppAsDefault(app_name.c_str(),
+            ShellUtil::kBrowserProtocolAssociations[i], AT_URLPROTOCOL);
+      }
+
+      for (int i = 0;
+           SUCCEEDED(hr) && ShellUtil::kFileAssociations[i] != NULL; i++) {
+        hr = pAAR->SetAppAsDefault(app_name.c_str(),
+            ShellUtil::kFileAssociations[i], AT_FILEEXTENSION);
+      }
     }
     if (!SUCCEEDED(hr)) {
       ret = false;
-      LOG(ERROR) << "Could not make Chrome default browser.";
+      LOG(ERROR) << "Could not make Chrome default browser (Vista): HRESULT="
+                 << hr << ".";
     }
   }
 
@@ -668,17 +753,76 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   RegistryEntry::GetUserEntries(dist, chrome_exe, suffix, &entries);
   // Change the default browser for current user.
   if ((shell_change & ShellUtil::CURRENT_USER) &&
-      !AddRegistryEntries(HKEY_CURRENT_USER, entries))
-      ret = false;
+      !AddRegistryEntries(HKEY_CURRENT_USER, entries)) {
+    ret = false;
+    LOG(ERROR) << "Could not make Chrome default browser (XP/current user).";
+  }
 
   // Chrome as default browser at system level.
   if ((shell_change & ShellUtil::SYSTEM_LEVEL) &&
-      !AddRegistryEntries(HKEY_LOCAL_MACHINE, entries))
+      !AddRegistryEntries(HKEY_LOCAL_MACHINE, entries)) {
     ret = false;
+    LOG(ERROR) << "Could not make Chrome default browser (XP/system level).";
+  }
 
   // Send Windows notification event so that it can update icons for
   // file associations.
   SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+  return ret;
+}
+
+bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
+                                                const std::wstring& chrome_exe,
+                                                const std::wstring& protocol) {
+  if (!dist->CanSetAsDefault())
+    return false;
+
+  ShellUtil::RegisterChromeForProtocol(dist, chrome_exe, L"", protocol, true);
+
+  bool ret = true;
+  // First use the new "recommended" way on Vista to make Chrome default
+  // protocol handler.
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    VLOG(1) << "Registering Chrome as default handler for " << protocol
+            << " on Vista.";
+    base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
+    HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
+      NULL, CLSCTX_INPROC);
+    if (SUCCEEDED(hr)) {
+      std::wstring app_name = dist->GetApplicationName();
+      std::wstring suffix;
+      if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
+        app_name += suffix;
+
+      hr = pAAR->SetAppAsDefault(app_name.c_str(), protocol.c_str(),
+                                 AT_URLPROTOCOL);
+    }
+    if (!SUCCEEDED(hr)) {
+      ret = false;
+      LOG(ERROR) << "Could not make Chrome default protocol client (Vista):"
+                 << " HRESULT=" << hr << ".";
+    }
+  }
+
+  // Now use the old way to associate Chrome with the desired protocol. This
+  // should not be required on Vista but since some applications still read
+  // Software\Classes\http key directly, we have to do this on Vista also.
+
+  std::list<RegistryEntry*> entries;
+  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  std::wstring suffix;
+  if (!GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
+    suffix = L"";
+  std::wstring chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
+  std::wstring chrome_icon = ShellUtil::GetChromeIcon(dist, chrome_exe);
+  RegistryEntry::GetUserProtocolEntries(dist, chrome_exe, suffix, protocol,
+                                        chrome_icon, chrome_open, &entries);
+  // Change the default protocol handler for current user.
+  if (!AddRegistryEntries(HKEY_CURRENT_USER, entries)) {
+      ret = false;
+      LOG(ERROR) << "Could not make Chrome default protocol client (XP).";
+  }
+
   return ret;
 }
 
@@ -716,7 +860,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   // If user is not an admin and OS is Vista, try to elevate and register.
   if (elevate_if_not_admin &&
       base::win::GetVersion() >= base::win::VERSION_VISTA &&
-      ElevateAndRegisterChrome(dist, chrome_exe, suffix))
+      ElevateAndRegisterChrome(dist, chrome_exe, suffix, L""))
     return true;
 
   // If we got to this point then all we can do is create ProgIds under HKCU
@@ -725,6 +869,55 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
   RegistryEntry::GetProgIdEntries(dist, chrome_exe, L"", &entries);
   return AddRegistryEntries(HKEY_CURRENT_USER, entries);
+}
+
+bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
+                                          const std::wstring& chrome_exe,
+                                          const std::wstring& unique_suffix,
+                                          const std::wstring& protocol,
+                                          bool elevate_if_not_admin) {
+  if (!dist->CanSetAsDefault())
+    return false;
+
+  // Figure out we need to append a suffix to the registry entries to
+  // make them unique.
+  std::wstring suffix;
+  if (!unique_suffix.empty()) {
+    suffix = unique_suffix;
+  } else if (InstallUtil::IsPerUserInstall(chrome_exe.c_str()) &&
+             !GetUserSpecificDefaultBrowserSuffix(dist, &suffix) &&
+             !AnotherUserHasDefaultBrowser(dist, chrome_exe)) {
+    suffix = L"";
+  }
+
+  // Check if Chromium is already registered with this suffix.
+  if (IsChromeRegisteredForProtocol(dist, chrome_exe, suffix, protocol))
+    return true;
+
+  if (IsUserAnAdmin()) {
+    // We can do this operation directly.
+    // If we're not registered at all, try to register. If that fails
+    // we should give up.
+    if (!IsChromeRegistered(dist, chrome_exe, suffix) &&
+        !RegisterChromeBrowser(dist, chrome_exe, suffix, false)) {
+      return false;
+    }
+
+    // Write in the capabillity for the protocol.
+    std::list<RegistryEntry*> entries;
+    STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+    RegistryEntry::GetProtocolCapabilityEntries(dist, chrome_exe, suffix,
+        protocol, &entries);
+    return AddRegistryEntries(HKEY_LOCAL_MACHINE, entries);
+  } else if (elevate_if_not_admin &&
+             base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    // Elevate to do the whole job
+    return ElevateAndRegisterChrome(dist, chrome_exe, suffix, protocol);
+  } else {
+    // we need admin rights to register our capability. If we don't
+    // have them and can't elevate, give up.
+    return false;
+  }
 }
 
 bool ShellUtil::RemoveChromeDesktopShortcut(BrowserDistribution* dist,

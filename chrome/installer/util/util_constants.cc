@@ -106,6 +106,11 @@ const char kRegisterChromeBrowser[] = "register-chrome-browser";
 const char kRegisterChromeBrowserSuffix[] =
     "register-chrome-browser-suffix";
 
+// Switch to allow an extra URL protocol to be registered. This option is used
+// in conjunction with kRegisterChromeBrowser to specify an extra protocol
+// in addition to the standard set of protocols.
+const char kRegisterURLProtocol[] = "register-url-protocol";
+
 // Renames chrome.exe to old_chrome.exe and renames new_chrome.exe to chrome.exe
 // to support in-use updates. Also deletes opv key.
 const char kRenameChromeExe[] = "rename-chrome-exe";
