@@ -1959,6 +1959,7 @@
         '../content/renderer/active_notification_tracker_unittest.cc',
         '../content/renderer/audio_message_filter_unittest.cc',
         '../content/renderer/media/audio_renderer_impl_unittest.cc',
+        '../content/renderer/media/video_capture_impl_unittest.cc',
         '../content/renderer/paint_aggregator_unittest.cc',
         '../content/renderer/video_capture_message_filter_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
