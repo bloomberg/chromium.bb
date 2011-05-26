@@ -65,6 +65,16 @@ class HostContentSettingsMap
       ContentSettingsType content_type,
       const std::string& resource_identifier) const;
 
+  // Gets the content setting for cookies. This takes the third party cookie
+  // flag into account, and therefore needs to know whether we read or write a
+  // cookie.
+  //
+  // This may be called on any thread.
+  ContentSetting GetCookieContentSetting(
+      const GURL& url,
+      const GURL& first_party_url,
+      bool setting_cookie) const;
+
   // Returns a single ContentSetting which applies to a given URL or
   // CONTENT_SETTING_DEFAULT, if no exception applies. Note that certain
   // internal schemes are whitelisted. For ContentSettingsTypes that require an
@@ -168,6 +178,11 @@ class HostContentSettingsMap
   friend class DeleteTask<HostContentSettingsMap>;
 
   virtual ~HostContentSettingsMap();
+
+  ContentSetting GetContentSettingInternal(
+      const GURL& url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier) const;
 
   void UnregisterObservers();
 

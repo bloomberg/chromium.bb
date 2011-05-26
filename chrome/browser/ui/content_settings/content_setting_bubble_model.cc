@@ -280,7 +280,9 @@ class ContentSettingSingleRadioGroup
     ContentSetting mostRestrictiveSetting;
     if (resources.empty()) {
       mostRestrictiveSetting =
-          map->GetContentSetting(url, content_type(), std::string());
+          content_type() == CONTENT_SETTINGS_TYPE_COOKIES ?
+              map->GetCookieContentSetting(url, url, true) :
+              map->GetContentSetting(url, content_type(), std::string());
     } else {
       mostRestrictiveSetting = CONTENT_SETTING_ALLOW;
       for (std::set<std::string>::const_iterator it = resources.begin();

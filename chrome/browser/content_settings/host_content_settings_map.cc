@@ -24,6 +24,7 @@
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/static_cookie_policy.h"
 
@@ -161,11 +162,46 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& url,
     ContentSettingsType content_type,
     const std::string& resource_identifier) const {
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
+  return GetContentSettingInternal(url, content_type, resource_identifier);
+}
+
+ContentSetting HostContentSettingsMap::GetContentSettingInternal(
+    const GURL& url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) const {
   ContentSetting setting = GetNonDefaultContentSetting(url,
                                                        content_type,
                                                        resource_identifier);
   if (setting == CONTENT_SETTING_DEFAULT)
     return GetDefaultContentSetting(content_type);
+  return setting;
+}
+
+ContentSetting HostContentSettingsMap::GetCookieContentSetting(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool setting_cookie) const {
+  ContentSetting setting = CONTENT_SETTING_ALLOW;
+  if (BlockThirdPartyCookies()) {
+    bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kBlockReadingThirdPartyCookies);
+    net::StaticCookiePolicy policy(strict ?
+        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
+        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
+    int rv;
+    if (setting_cookie)
+     rv = policy.CanSetCookie(url, first_party_url);
+    else
+     rv = policy.CanGetCookies(url, first_party_url);
+    DCHECK_NE(net::ERR_IO_PENDING, rv);
+    if (rv != net::OK)
+      setting = CONTENT_SETTING_BLOCK;
+  }
+
+  if (setting == CONTENT_SETTING_ALLOW)
+    setting = GetContentSettingInternal(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+
   return setting;
 }
 

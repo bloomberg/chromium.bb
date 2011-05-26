@@ -43,8 +43,7 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
                                                 unsigned long estimated_size,
                                                 bool* result) {
   ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+      host_content_settings_map_->GetCookieContentSetting(url, url, true);
 
   *result = content_setting != CONTENT_SETTING_BLOCK;
 
@@ -75,7 +74,6 @@ void ChromeWorkerMessageFilter::OnAllowFileSystem(int worker_route_id,
   // TODO(kinuko): Need to notify the UI thread to indicate that
   // there's a blocked content.  See the above for inspiration.
   ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+      host_content_settings_map_->GetCookieContentSetting(url, url, true);
   *result = content_setting != CONTENT_SETTING_BLOCK;
 }

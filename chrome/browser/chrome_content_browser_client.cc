@@ -44,7 +44,6 @@
 #include "content/common/bindings_policy.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
-#include "net/base/static_cookie_policy.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -238,12 +237,14 @@ std::string ChromeContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(
-    const GURL& manifest_url, const content::ResourceContext& context) {
+    const GURL& manifest_url,
+    const content::ResourceContext& context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  // FIXME(jochen): get the correct top-level origin.
   ContentSetting setting = io_data->GetHostContentSettingsMap()->
-      GetContentSetting(manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+      GetCookieContentSetting(manifest_url, manifest_url, true);
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   return setting != CONTENT_SETTING_BLOCK;
 }
@@ -256,27 +257,12 @@ bool ChromeContentBrowserClient::AllowGetCookie(
     int render_process_id,
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  bool allow = true;
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  if (io_data->GetHostContentSettingsMap()->BlockThirdPartyCookies()) {
-    bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kBlockReadingThirdPartyCookies);
-    net::StaticCookiePolicy policy(strict ?
-        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
-        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
-    int rv = policy.CanGetCookies(url, first_party);
-    DCHECK_NE(net::ERR_IO_PENDING, rv);
-    if (rv != net::OK)
-      allow = false;
-  }
-
-  if (allow) {
-    ContentSetting setting = io_data->GetHostContentSettingsMap()->
-        GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-    allow = setting == CONTENT_SETTING_ALLOW ||
-        setting == CONTENT_SETTING_SESSION_ONLY;
-  }
+  ContentSetting setting = io_data->GetHostContentSettingsMap()->
+      GetCookieContentSetting(url, first_party, false);
+  bool allow = setting == CONTENT_SETTING_ALLOW ||
+      setting == CONTENT_SETTING_SESSION_ONLY;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -295,30 +281,16 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     int render_view_id,
     net::CookieOptions* options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  bool allow = true;
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  if (io_data->GetHostContentSettingsMap()->BlockThirdPartyCookies()) {
-    bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kBlockReadingThirdPartyCookies);
-    net::StaticCookiePolicy policy(strict ?
-        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
-        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
-    int rv = policy.CanSetCookie(url, first_party, cookie_line);
-    if (rv != net::OK)
-      allow = false;
-  }
+  ContentSetting setting = io_data->GetHostContentSettingsMap()->
+      GetCookieContentSetting(url, first_party, true);
 
-  if (allow) {
-    ContentSetting setting = io_data->GetHostContentSettingsMap()->
-        GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  if (setting == CONTENT_SETTING_SESSION_ONLY)
+    options->set_force_session();
 
-    if (setting == CONTENT_SETTING_SESSION_ONLY)
-      options->set_force_session();
-
-    allow = setting == CONTENT_SETTING_ALLOW ||
-        setting == CONTENT_SETTING_SESSION_ONLY;
-  }
+  bool allow = setting == CONTENT_SETTING_ALLOW ||
+      setting == CONTENT_SETTING_SESSION_ONLY;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

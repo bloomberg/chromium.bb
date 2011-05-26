@@ -256,8 +256,8 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host, host, true));
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<Value> new_value(prefs->FindPreference(
@@ -266,14 +266,14 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
   // Clearing the backing pref should also clear the internal cache.
   prefs->Set(prefs::kDefaultContentSettings, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host, host, true));
 
   // Reseting the pref to its previous value should update the cache.
   prefs->Set(prefs::kDefaultContentSettings, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host, host, true));
 }
 
 TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
@@ -294,8 +294,8 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
   host_content_settings_map->SetContentSetting(pattern,
       CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host, host, true));
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<Value> new_value(prefs->FindPreference(
@@ -304,14 +304,14 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
   // Clearing the backing pref should also clear the internal cache.
   prefs->Set(prefs::kContentSettingsPatterns, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host, host, true));
 
   // Reseting the pref to its previous value should update the cache.
   prefs->Set(prefs::kContentSettingsPatterns, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host, host, true));
 }
 
 TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
@@ -338,18 +338,18 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
                 host_ending_with_dot, CONTENT_SETTINGS_TYPE_IMAGES, ""));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host_ending_with_dot, host_ending_with_dot, true));
   host_content_settings_map->SetContentSetting(pattern,
       CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_DEFAULT);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host_ending_with_dot, host_ending_with_dot, true));
   host_content_settings_map->SetContentSetting(pattern,
       CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+            host_content_settings_map->GetCookieContentSetting(
+                host_ending_with_dot, host_ending_with_dot, true));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -899,6 +899,172 @@ TEST_F(HostContentSettingsMapTest, ResetToDefaultsWhenManaged) {
   prefs->RemoveManagedPref(prefs::kBlockThirdPartyCookies);
   EXPECT_FALSE(host_content_settings_map->IsBlockThirdPartyCookiesManaged());
   EXPECT_FALSE(host_content_settings_map->BlockThirdPartyCookies());
+}
+
+// Tests for cookie content settings.
+const GURL kBlockedSite = GURL("http://ads.thirdparty.com");
+const GURL kAllowedSite = GURL("http://good.allays.com");
+const GURL kFirstPartySite = GURL("http://cool.things.com");
+
+TEST_F(HostContentSettingsMapTest, CookiesBlockSingle) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  host_content_settings_map->AddExceptionForURL(
+      kBlockedSite, CONTENT_SETTINGS_TYPE_COOKIES, "",
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kBlockedSite, false));
+}
+
+TEST_F(HostContentSettingsMapTest, CookiesBlockThirdParty) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  host_content_settings_map->SetBlockThirdPartyCookies(true);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, true));
+
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kBlockReadingThirdPartyCookies);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, true));
+}
+
+TEST_F(HostContentSettingsMapTest, CookiesAllowThirdParty) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, true));
+}
+
+TEST_F(HostContentSettingsMapTest, CookiesExplicitBlockSingleThirdParty) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  host_content_settings_map->AddExceptionForURL(
+      kBlockedSite, CONTENT_SETTINGS_TYPE_COOKIES, "",
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, true));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kFirstPartySite, true));
+}
+
+TEST_F(HostContentSettingsMapTest, CookiesExplicitSessionOnly) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  host_content_settings_map->AddExceptionForURL(
+      kBlockedSite, CONTENT_SETTINGS_TYPE_COOKIES, "",
+      CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, true));
+
+  host_content_settings_map->SetBlockThirdPartyCookies(true);
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kBlockedSite, kFirstPartySite, true));
+}
+
+TEST_F(HostContentSettingsMapTest, CookiesThirdPartyAlwaysBlocked) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  host_content_settings_map->AddExceptionForURL(
+      kAllowedSite, CONTENT_SETTINGS_TYPE_COOKIES, "",
+      CONTENT_SETTING_ALLOW);
+  host_content_settings_map->SetBlockThirdPartyCookies(true);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kFirstPartySite, true));
+
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kBlockReadingThirdPartyCookies);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kFirstPartySite, false));
+}
+
+TEST_F(HostContentSettingsMapTest, CookiesBlockEverything) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kFirstPartySite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kFirstPartySite, kFirstPartySite, true));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kFirstPartySite, true));
+}
+
+TEST_F(HostContentSettingsMapTest, CookiesBlockEverythingExceptAllowed) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  host_content_settings_map->AddExceptionForURL(
+      kAllowedSite, CONTENT_SETTINGS_TYPE_COOKIES, "",
+      CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kFirstPartySite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetCookieContentSetting(
+                kFirstPartySite, kFirstPartySite, true));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kFirstPartySite, false));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kFirstPartySite, true));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kAllowedSite, false));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                kAllowedSite, kAllowedSite, true));
 }
 
 }  // namespace

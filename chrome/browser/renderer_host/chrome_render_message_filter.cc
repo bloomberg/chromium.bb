@@ -334,8 +334,8 @@ void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
                                                 const string16& name,
                                                 const string16& display_name,
                                                 bool* allowed) {
-  ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
+      origin_url, top_origin_url, true);
   DCHECK((setting == CONTENT_SETTING_ALLOW) ||
          (setting == CONTENT_SETTING_BLOCK) ||
          (setting == CONTENT_SETTING_SESSION_ONLY));
@@ -354,8 +354,8 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
                                                   const GURL& top_origin_url,
                                                   DOMStorageType type,
                                                   bool* allowed) {
-  ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
+      origin_url, top_origin_url, true);
   *allowed = setting != CONTENT_SETTING_BLOCK;
   // If content was blocked, tell the UI to display the blocked content icon.
   BrowserThread::PostTask(
@@ -371,8 +371,8 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
                                                   bool* allowed) {
   // TODO(kinuko): Need to notify the UI thread to indicate that
   // there's a blocked content.  See the above for inspiration.
-  ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
+      origin_url, top_origin_url, true);
   DCHECK((setting == CONTENT_SETTING_ALLOW) ||
          (setting == CONTENT_SETTING_BLOCK) ||
          (setting == CONTENT_SETTING_SESSION_ONLY));
@@ -384,8 +384,8 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
                                                  const GURL& top_origin_url,
                                                  const string16& name,
                                                  bool* allowed) {
-  ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
+      origin_url, top_origin_url, true);
   *allowed = setting != CONTENT_SETTING_BLOCK;
 
   BrowserThread::PostTask(

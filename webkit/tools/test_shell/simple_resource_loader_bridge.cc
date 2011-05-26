@@ -461,7 +461,7 @@ class RequestProxy : public net::URLRequest::Delegate,
 
     StaticCookiePolicy policy(policy_type);
     int rv = policy.CanSetCookie(
-        request->url(), request->first_party_for_cookies(), cookie_line);
+        request->url(), request->first_party_for_cookies());
     return rv == net::OK;
   }
 
