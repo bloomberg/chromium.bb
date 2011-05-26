@@ -161,6 +161,7 @@
       'chromeos_security',
       'chromeos_update',
       'chromeos_wifi',
+      'chromeos_firmware_version_checker',
 
       # you cannot resize browser window on chromeos
       '-browser.BrowserTest.testWindowResize',
