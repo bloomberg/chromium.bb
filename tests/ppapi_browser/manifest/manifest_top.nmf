@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "subdir/manifest_good_x86-32.nexe",
+    "x86-64": "subdir/manifest_good_x86-64.nexe",
+    "arm": "subdir/manifest_good_arm.nexe"
+  }
+}

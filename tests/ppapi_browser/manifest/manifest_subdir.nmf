@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "manifest_good_x86-32.nexe",
+    "x86-64": "manifest_good_x86-64.nexe",
+    "arm": "manifest_good_arm.nexe"
+  }
+}
