@@ -942,18 +942,6 @@ class View : public AcceleratorTarget {
   // Whether this view is enabled.
   bool enabled_;
 
-  // Attributes ----------------------------------------------------------------
-
-  // TODO(beng): Eliminate in protected
-  // The id of this View. Used to find this View.
-  int id_;
-
-  // TODO(beng): Eliminate in protected
-  // The group of this view. Some view subclasses use this id to find other
-  // views of the same group. For example radio button uses this information
-  // to find other radio buttons.
-  int group_;
-
   // Tree operations -----------------------------------------------------------
 
   // This method is invoked when the tree changes.
@@ -1312,6 +1300,16 @@ class View : public AcceleratorTarget {
   // True if the hierarchy (i.e. the parent View) is responsible for deleting
   // this View. Default is true.
   bool parent_owned_;
+
+  // Attributes ----------------------------------------------------------------
+
+  // The id of this View. Used to find this View.
+  int id_;
+
+  // The group of this view. Some view subclasses use this id to find other
+  // views of the same group. For example radio button uses this information
+  // to find other radio buttons.
+  int group_;
 
   // Tree operations -----------------------------------------------------------
 

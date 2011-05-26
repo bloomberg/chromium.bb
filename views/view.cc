@@ -96,11 +96,11 @@ Widget* View::GetChildWidget() {
 
 View::View()
     : enabled_(true),
-      id_(0),
-      group_(-1),
       focusable_(false),
       accessibility_focusable_(false),
       parent_owned_(true),
+      id_(0),
+      group_(-1),
       parent_(NULL),
       is_visible_(true),
       registered_for_visible_bounds_notification_(false),
