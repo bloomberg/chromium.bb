@@ -131,6 +131,8 @@ bool ShaderTranslator::Translate(const char* shader) {
   if (info_log_len > 1) {
     info_log_.reset(new char[info_log_len]);
     ShGetInfoLog(compiler_, info_log_.get());
+  } else {
+    info_log_.reset();
   }
 
   return success;

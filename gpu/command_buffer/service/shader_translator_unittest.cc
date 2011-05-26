@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,10 +62,14 @@ TEST_F(ShaderTranslatorTest, ValidVertexShader) {
 }
 
 TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
-  const char* shader = "foo-bar";
+  const char* bad_shader = "foo-bar";
+  const char* good_shader =
+      "void main() {\n"
+      "  gl_Position = vec4(1.0);\n"
+      "}";
 
   // An invalid shader should fail.
-  EXPECT_FALSE(vertex_translator_.Translate(shader));
+  EXPECT_FALSE(vertex_translator_.Translate(bad_shader));
   // Info log must be valid and non-empty.
   EXPECT_TRUE(vertex_translator_.info_log() != NULL);
   EXPECT_GT(strlen(vertex_translator_.info_log()), 0u);
@@ -74,6 +78,12 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
   // There should be no attributes or uniforms.
   EXPECT_TRUE(vertex_translator_.attrib_map().empty());
   EXPECT_TRUE(vertex_translator_.uniform_map().empty());
+
+  // Try a good shader after bad.
+  EXPECT_TRUE(vertex_translator_.Translate(good_shader));
+  EXPECT_TRUE(vertex_translator_.info_log() == NULL);
+  EXPECT_TRUE(vertex_translator_.translated_shader() != NULL);
+  EXPECT_GT(strlen(vertex_translator_.translated_shader()), 0u);
 }
 
 TEST_F(ShaderTranslatorTest, ValidFragmentShader) {
