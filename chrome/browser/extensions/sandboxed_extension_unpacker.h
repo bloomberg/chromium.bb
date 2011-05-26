@@ -25,10 +25,14 @@ class SandboxedExtensionUnpackerClient
   //
   // extension_root - The path to the extension root inside of temp_dir.
   //
+  // original_manifest - The parsed but unmodified version of the manifest,
+  // with no modifications such as localization, etc.
+  //
   // extension - The extension that was unpacked. The client is responsible
   // for deleting this memory.
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_root,
+                               const DictionaryValue* original_manifest,
                                const Extension* extension) = 0;
   virtual void OnUnpackFailure(const std::string& error) = 0;
 
@@ -189,7 +193,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   virtual void OnProcessCrashed(int exit_code);
 
   void ReportFailure(FailureReason reason, const std::string& message);
-  void ReportSuccess();
+  void ReportSuccess(const DictionaryValue& original_manifest);
 
   // Overwrites original manifest with safe result from utility process.
   // Returns NULL on error. Caller owns the returned object.

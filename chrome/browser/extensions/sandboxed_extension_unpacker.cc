@@ -284,7 +284,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   if (!RewriteCatalogFiles())
     return;
 
-  ReportSuccess();
+  ReportSuccess(manifest);
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionFailed(
@@ -480,14 +480,18 @@ void SandboxedExtensionUnpacker::ReportFailure(FailureReason reason,
   client_->OnUnpackFailure(error);
 }
 
-void SandboxedExtensionUnpacker::ReportSuccess() {
+void SandboxedExtensionUnpacker::ReportSuccess(
+    const DictionaryValue& original_manifest) {
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
 
   RecordSuccessfulUnpackTimeHistograms(
       crx_path_, base::TimeTicks::Now() - unpack_start_time_);
 
   // Client takes ownership of temporary directory and extension.
-  client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_, extension_);
+  client_->OnUnpackSuccess(temp_dir_.Take(),
+                           extension_root_,
+                           &original_manifest,
+                           extension_);
   extension_ = NULL;
 }
 

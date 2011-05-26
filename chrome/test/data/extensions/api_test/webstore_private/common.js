@@ -49,13 +49,15 @@ function getIconData(callback) {
 var cachedManifest = null;
 
 // This returns the string contents of the extension's manifest file.
-function getManifest() {
+function getManifest(alternativePath) {
   if (cachedManifest)
     return cachedManifest;
 
   // Do a synchronous XHR to get the manifest.
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "extension/manifest.json", false);
+  xhr.open("GET",
+           alternativePath ? alternativePath : "extension/manifest.json",
+           false);
   xhr.send(null);
   return xhr.responseText;
 }

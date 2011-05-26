@@ -5150,26 +5150,40 @@
         ]
       },
       {
-        "name": "beginInstallWithManifest",
+        "name": "beginInstallWithManifest2",
         "description": "Initiates the install process for the given extension. This must be called during a user gesture.",
         "parameters": [
           {
-            "name": "id",
-            "type": "string",
-            "description": "The id of the extension to be installled.",
-            "minLength": 32,
-            "maxLength": 32
-          },
-          {
-            "name": "icon_data",
-            "type": "string",
-            "description": "An icon as a base64-encoded image, displayed in a confirmation dialog."
-          },
-          {
-            "name": "manifest_json",
-            "type": "string",
-            "description": "A string with the contents of the extension's manifest.json file. During the install process, the browser will check that the downloaded extension's manifest matches what was passed in here.",
-            "minLength": 1
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The id of the extension to be installled.",
+                "minLength": 32,
+                "maxLength": 32
+              },
+              "manifest": {
+                "type": "string",
+                "description": "A string with the contents of the extension's manifest.json file. During the install process, the browser will check that the downloaded extension's manifest matches what was passed in here.",
+                "minLength": 1
+              },
+              "iconData": {
+                "type": "string",
+                "optional": true,
+                "description": "An icon as a base64-encoded image, displayed in a confirmation dialog."
+              },
+              "localizedName": {
+                "type": "string",
+                "optional": true,
+                "description": "A string to use instead of the raw value of the 'name' key from manifest.json."
+              },
+              "locale": {
+                "type": "string",
+                "optional": true,
+                "description": "The name of the locale used for generating localizedName. This should be the name of one of the directories in the _locales folder of the extension, or the default_locale setting from the manifest."
+              }
+            }
           },
           {
             "name": "callback",

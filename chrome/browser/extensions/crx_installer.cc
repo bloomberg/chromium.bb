@@ -41,63 +41,65 @@
 
 namespace {
 
-struct WhitelistedInstallData {
-  WhitelistedInstallData() {}
+struct Whitelist {
+  Whitelist() {}
   std::set<std::string> ids;
-  std::map<std::string, linked_ptr<DictionaryValue> > manifests;
+  std::map<std::string, linked_ptr<CrxInstaller::WhitelistEntry> > entries;
 };
 
-static base::LazyInstance<WhitelistedInstallData>
+static base::LazyInstance<Whitelist>
     g_whitelisted_install_data(base::LINKER_INITIALIZED);
 
 }  // namespace
 
 // static
 void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   g_whitelisted_install_data.Get().ids.insert(id);
 }
 
 // static
-void CrxInstaller::SetWhitelistedManifest(const std::string& id,
-                                          DictionaryValue* parsed_manifest) {
+void CrxInstaller::SetWhitelistEntry(const std::string& id,
+                                     CrxInstaller::WhitelistEntry* entry) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WhitelistedInstallData& data = g_whitelisted_install_data.Get();
-  data.manifests[id] = linked_ptr<DictionaryValue>(parsed_manifest);
+  Whitelist& data = g_whitelisted_install_data.Get();
+  data.entries[id] = linked_ptr<CrxInstaller::WhitelistEntry>(entry);
 }
 
 // static
-const DictionaryValue* CrxInstaller::GetWhitelistedManifest(
+const CrxInstaller::WhitelistEntry* CrxInstaller::GetWhitelistEntry(
     const std::string& id) {
-  WhitelistedInstallData& data = g_whitelisted_install_data.Get();
-  if (ContainsKey(data.manifests, id))
-    return data.manifests[id].get();
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Whitelist& data = g_whitelisted_install_data.Get();
+  if (ContainsKey(data.entries, id))
+    return data.entries[id].get();
   else
     return NULL;
 }
 
 // static
-DictionaryValue* CrxInstaller::RemoveWhitelistedManifest(
+CrxInstaller::WhitelistEntry* CrxInstaller::RemoveWhitelistEntry(
     const std::string& id) {
-  WhitelistedInstallData& data = g_whitelisted_install_data.Get();
-  if (ContainsKey(data.manifests, id)) {
-    DictionaryValue* manifest = data.manifests[id].release();
-    data.manifests.erase(id);
-    return manifest;
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Whitelist& data = g_whitelisted_install_data.Get();
+  if (ContainsKey(data.entries, id)) {
+    CrxInstaller::WhitelistEntry* entry = data.entries[id].release();
+    data.entries.erase(id);
+    return entry;
   }
   return NULL;
 }
 
 // static
 bool CrxInstaller::IsIdWhitelisted(const std::string& id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::set<std::string>& ids = g_whitelisted_install_data.Get().ids;
   return ContainsKey(ids, id);
 }
 
 // static
 bool CrxInstaller::ClearWhitelistedInstallId(const std::string& id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::set<std::string>& ids = g_whitelisted_install_data.Get().ids;
   if (ContainsKey(ids, id)) {
     ids.erase(id);
@@ -185,7 +187,7 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
     return;
   }
 
-  OnUnpackSuccess(extension->path(), extension->path(), extension);
+  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension);
 }
 
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
@@ -209,7 +211,7 @@ void CrxInstaller::ConvertWebAppOnFileThread(
 
   // TODO(aa): conversion data gets lost here :(
 
-  OnUnpackSuccess(extension->path(), extension->path(), extension);
+  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension);
 }
 
 bool CrxInstaller::AllowInstall(const Extension* extension,
@@ -311,6 +313,7 @@ void CrxInstaller::OnUnpackFailure(const std::string& error_message) {
 
 void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
                                    const FilePath& extension_dir,
+                                   const DictionaryValue* original_manifest,
                                    const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -325,6 +328,9 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // Note: We take ownership of |extension| and |temp_dir|.
   extension_ = extension;
   temp_dir_ = temp_dir;
+
+  if (original_manifest)
+    original_manifest_.reset(original_manifest->DeepCopy());
 
   // We don't have to delete the unpack dir explicity since it is a child of
   // the temp dir.
@@ -345,17 +351,6 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &CrxInstaller::ConfirmInstall)))
     NOTREACHED();
-}
-
-// Helper method to let us compare a whitelisted manifest with the actual
-// downloaded extension's manifest, but ignoring the kPublicKey since the
-// whitelisted manifest doesn't have that value.
-static bool EqualsIgnoringPublicKey(
-    const DictionaryValue& extension_manifest,
-    const DictionaryValue& whitelisted_manifest) {
-  scoped_ptr<DictionaryValue> manifest_copy(extension_manifest.DeepCopy());
-  manifest_copy->Remove(extension_manifest_keys::kPublicKey, NULL);
-  return manifest_copy->Equals(&whitelisted_manifest);
 }
 
 void CrxInstaller::ConfirmInstall() {
@@ -398,12 +393,11 @@ void CrxInstaller::ConfirmInstall() {
   bool whitelisted = ClearWhitelistedInstallId(extension_->id()) &&
       extension_->plugins().empty() && is_gallery_install_;
 
-  // Now check if it's whitelisted by manifest.
-  scoped_ptr<DictionaryValue> whitelisted_manifest(
-      RemoveWhitelistedManifest(extension_->id()));
-  if (is_gallery_install_ && whitelisted_manifest.get()) {
-    if (!EqualsIgnoringPublicKey(*extension_->manifest_value(),
-                                 *whitelisted_manifest)) {
+  // Now check if there's a WhitelistEntry.
+  scoped_ptr<CrxInstaller::WhitelistEntry> entry(
+      RemoveWhitelistEntry(extension_->id()));
+  if (is_gallery_install_ && entry.get() && original_manifest_.get()) {
+    if (!(original_manifest_->Equals(entry->parsed_manifest.get()))) {
       ReportFailureFromUIThread(
           l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID));
       return;

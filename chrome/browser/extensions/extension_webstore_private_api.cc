@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -33,8 +34,13 @@
 
 namespace {
 
+const char kIconDataKey[] = "iconData";
+const char kIdKey[] = "id";
+const char kLocalizedNameKey[] = "localizedName";
 const char kLoginKey[] = "login";
+const char kManifestKey[] = "manifest";
 const char kTokenKey[] = "token";
+
 const char kImageDecodeError[] = "Image decode failed";
 const char kInvalidIdError[] = "Invalid id";
 const char kInvalidManifestError[] = "Invalid manifest";
@@ -283,15 +289,25 @@ bool BeginInstallWithManifestFunction::RunImpl() {
     return false;
   }
 
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id_));
+  DictionaryValue* details = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  CHECK(details);
+
+  EXTENSION_FUNCTION_VALIDATE(details->GetString(kIdKey, &id_));
   if (!Extension::IdIsValid(id_)) {
     SetResult(INVALID_ID);
     error_ = kInvalidIdError;
     return false;
   }
 
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &icon_data_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &manifest_));
+  EXTENSION_FUNCTION_VALIDATE(details->GetString(kManifestKey, &manifest_));
+
+  if (details->HasKey(kIconDataKey))
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(kIconDataKey, &icon_data_));
+
+  if (details->HasKey(kLocalizedNameKey))
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(kLocalizedNameKey,
+                                                   &localized_name_));
 
   scoped_refptr<SafeBeginInstallHelper> helper =
       new SafeBeginInstallHelper(this, icon_data_, manifest_);
@@ -354,19 +370,29 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
   icon_ = icon;
   parsed_manifest_.reset(parsed_manifest);
 
+  // If we were passed a localized name to use in the dialog, create a copy
+  // of the original manifest and replace the name in it.
+  scoped_ptr<DictionaryValue> localized_manifest;
+  if (!localized_name_.empty()) {
+    localized_manifest.reset(parsed_manifest->DeepCopy());
+    localized_manifest->SetString(extension_manifest_keys::kName,
+                                  localized_name_);
+  }
+
   // Create a dummy extension and show the extension install confirmation
   // dialog.
   std::string init_errors;
   dummy_extension_ = Extension::Create(
       FilePath(),
       Extension::INTERNAL,
-      *static_cast<DictionaryValue*>(parsed_manifest_.get()),
+      localized_manifest.get() ? *localized_manifest.get() : *parsed_manifest,
       Extension::NO_FLAGS,
       &init_errors);
   if (!dummy_extension_.get()) {
     OnParseFailure(MANIFEST_ERROR, std::string(kInvalidManifestError));
     return;
   }
+
   if (icon_.empty())
     icon_ = Extension::GetDefaultIcon(dummy_extension_->is_app());
 
@@ -401,7 +427,10 @@ void BeginInstallWithManifestFunction::OnParseFailure(
 }
 
 void BeginInstallWithManifestFunction::InstallUIProceed() {
-  CrxInstaller::SetWhitelistedManifest(id_, parsed_manifest_.release());
+  CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
+  entry->parsed_manifest.reset(parsed_manifest_.release());
+  entry->localized_name = localized_name_;
+  CrxInstaller::SetWhitelistEntry(id_, entry);
   SetResult(ERROR_NONE);
   SendResponse(true);
 
@@ -430,7 +459,7 @@ bool CompleteInstallFunction::RunImpl() {
   }
 
   if (!CrxInstaller::IsIdWhitelisted(id) &&
-      !CrxInstaller::GetWhitelistedManifest(id)) {
+      !CrxInstaller::GetWhitelistEntry(id)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         kNoPreviousBeginInstallError, id);
     return false;

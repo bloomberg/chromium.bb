@@ -51,9 +51,10 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     return url.ReplaceComponents(replace_host);
   }
 
-  // Navigates to |page| and runs the Extension API test there.
-  bool RunInstallTest(const std::string& page) {
-    GURL crx_url = GetTestServerURL("extension.crx");
+  // Navigates to |page| and runs the Extension API test there. Any downloads
+  // of extensions will return the contents of |crx_file|.
+  bool RunInstallTest(const std::string& page, const std::string& crx_file) {
+    GURL crx_url = GetTestServerURL(crx_file);
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAppsGalleryUpdateURL, crx_url.spec());
 
@@ -69,18 +70,23 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
 // TODO(asargent) - flaky; see crbug.com/80606.
 // Test cases where the user accepts the install confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FLAKY_InstallAccepted) {
-  ASSERT_TRUE(RunInstallTest("accepted.html"));
+  ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
+}
+
+// Tests passing a localized name.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
+  ASSERT_TRUE(RunInstallTest("localized.html", "localized_extension.crx"));
 }
 
 // Now test the case where the user cancels the confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
   BeginInstallWithManifestFunction::SetAutoConfirmForTests(false);
-  ASSERT_TRUE(RunInstallTest("cancelled.html"));
+  ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallNoGesture) {
   BeginInstallFunction::SetIgnoreUserGestureForTests(false);
-  ASSERT_TRUE(RunInstallTest("no_user_gesture.html"));
+  ASSERT_TRUE(RunInstallTest("no_user_gesture.html", "extension.crx"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
@@ -88,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ui_test_utils::WindowedNotificationObserver observer(
       NotificationType::EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
-  ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html"));
+  ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html", "extension.crx"));
   observer.Wait();
 }
 
@@ -97,6 +103,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ui_test_utils::WindowedNotificationObserver observer(
       NotificationType::EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
-  ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html"));
+  ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
   observer.Wait();
 }

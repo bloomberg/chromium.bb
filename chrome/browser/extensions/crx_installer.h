@@ -55,21 +55,25 @@ class CrxInstaller
   // crbug.com/54916
   static void SetWhitelistedInstallId(const std::string& id);
 
+  struct WhitelistEntry {
+    scoped_ptr<DictionaryValue> parsed_manifest;
+    std::string localized_name;
+  };
+
   // Exempt the next extension install with |id| from displaying a confirmation
   // prompt, since the user already agreed to the install via
   // beginInstallWithManifest. We require that the extension manifest matches
-  // |parsed_manifest| which is what was used to prompt with. Ownership of
-  // |parsed_manifest| is transferred here.
-  static void SetWhitelistedManifest(const std::string& id,
-                                     DictionaryValue* parsed_manifest);
+  // the manifest in |entry|, which is what was used to prompt with. Ownership
+  // of |entry| is transferred here.
+  static void SetWhitelistEntry(const std::string& id, WhitelistEntry* entry);
 
-  // Returns the previously stored manifest from a call to
-  // SetWhitelistedManifest.
-  static const DictionaryValue* GetWhitelistedManifest(const std::string& id);
+  // Returns the previously stored manifest from a call to SetWhitelistEntry.
+  static const CrxInstaller::WhitelistEntry* GetWhitelistEntry(
+      const std::string& id);
 
-  // Removes any whitelisted manifest for |id| and returns it. The caller owns
+  // Removes any whitelist data for |id| and returns it. The caller owns
   // the return value and is responsible for deleting it.
-  static DictionaryValue* RemoveWhitelistedManifest(const std::string& id);
+  static WhitelistEntry* RemoveWhitelistEntry(const std::string& id);
 
   // Returns whether |id| is whitelisted - only call this on the UI thread.
   static bool IsIdWhitelisted(const std::string& id);
@@ -159,6 +163,7 @@ class CrxInstaller
   virtual void OnUnpackFailure(const std::string& error_message);
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
+                               const DictionaryValue* original_manifest,
                                const Extension* extension);
 
   // Returns true if we can skip confirmation because the install was
@@ -224,6 +229,10 @@ class CrxInstaller
   // The extension we're installing. We own this and either pass it off to
   // ExtensionService on success, or delete it on failure.
   scoped_refptr<const Extension> extension_;
+
+  // A parsed copy of the unmodified original manifest, before any
+  // transformations like localization have taken place.
+  scoped_ptr<DictionaryValue> original_manifest_;
 
   // If non-empty, contains the current version of the extension we're
   // installing (for upgrades).

@@ -11,10 +11,8 @@ var manifest = alterManifest(manifestObj);
 // that we get an install error after unpacking the crx file because the crx
 // file's manifest won't match what we provided for the confirmation dialog
 // here.
-chrome.webstorePrivate.beginInstallWithManifest(
-    extensionId,
-    "",
-    manifest,
+chrome.webstorePrivate.beginInstallWithManifest2(
+    { 'id': extensionId, 'manifest': manifest },
     function(result) {
   assertNoLastError();
   assertEq("", result);

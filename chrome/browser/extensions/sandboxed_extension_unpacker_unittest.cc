@@ -27,6 +27,7 @@ namespace {
 
 void OnUnpackSuccess(const FilePath& temp_dir,
                      const FilePath& extension_root,
+                     const DictionaryValue* original_manifest,
                      const Extension* extension) {
   // Don't delete temp_dir here, we need to do some post op checking.
 }
@@ -38,16 +39,17 @@ class MockSandboxedExtensionUnpackerClient
  public:
   virtual ~MockSandboxedExtensionUnpackerClient() {}
 
-  MOCK_METHOD3(OnUnpackSuccess,
+  MOCK_METHOD4(OnUnpackSuccess,
                void(const FilePath& temp_dir,
                     const FilePath& extension_root,
+                    const DictionaryValue* original_manifest,
                     const Extension* extension));
 
   MOCK_METHOD1(OnUnpackFailure,
                void(const std::string& error));
 
   void DelegateToFake() {
-    ON_CALL(*this, OnUnpackSuccess(_, _, _))
+    ON_CALL(*this, OnUnpackSuccess(_, _, _, _))
         .WillByDefault(Invoke(::OnUnpackSuccess));
   }
 };
@@ -157,7 +159,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
 };
 
 TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
-  EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
+  EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _, _));
   EXPECT_CALL(*client_, OnUnpackFailure(_)).Times(0);
 
   SetupUnpacker("no_l10n.crx");
@@ -179,7 +181,7 @@ TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
 }
 
 TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
-  EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
+  EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _, _));
   EXPECT_CALL(*client_, OnUnpackFailure(_)).Times(0);
 
   SetupUnpacker("good_l10n.crx");

@@ -106,6 +106,7 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
   std::string id_;
   std::string manifest_;
   std::string icon_data_;
+  std::string localized_name_;
 
   // The results of parsing manifest_ and icon_data_ go into these two.
   scoped_ptr<DictionaryValue> parsed_manifest_;
@@ -114,7 +115,7 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
   // A dummy Extension object we create for the purposes of using
   // ExtensionInstallUI to prompt for confirmation of the install.
   scoped_refptr<Extension> dummy_extension_;
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstallWithManifest");
+  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstallWithManifest2");
 };
 
 class CompleteInstallFunction : public SyncExtensionFunction {
