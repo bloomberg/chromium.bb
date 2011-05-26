@@ -148,7 +148,7 @@
    Intentional leak of stats histogram to avoid shutdown races
    Heapcheck:Leak
    ...
-   fun:disk_cache::StatsHistogram::FactoryGet
+   fun:disk_cache::StatsHistogram::StatsHistogramFactoryGet
 }
 {
    String name pushed into deliberately leaked histograms
