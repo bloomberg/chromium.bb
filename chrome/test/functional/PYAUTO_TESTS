@@ -50,8 +50,7 @@
       'crash_reporter',
       'databases',
       'downloads',
-      'find_in_page',
-      '-find_in_page.FindMatchTests.testSearchInPDF',  # crbug.com/83763
+      'find_in_page',      
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       'execute_javascript',
@@ -68,7 +67,7 @@
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
       'passwords',
-      '-pdf',  # crbug.com/83763
+      'pdf',
       'plugins',
       'plugins_check',
       'popups',
