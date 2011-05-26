@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,7 +8,6 @@ A library to generate and store the manifests for cros builders to use.
 
 import fnmatch
 import logging
-import logging.handlers
 import os
 import re
 import shutil
@@ -20,7 +18,7 @@ from chromite.lib import cros_build_lib as cros_lib
 
 logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
 date_format = '%Y/%m/%d %H:%M:%S'
-logging.basicConfig(level=logging.INFO, format=logging_format,
+logging.basicConfig(level=logging.DEBUG, format=logging_format,
                     datefmt=date_format)
 
 # Pattern for matching build name format. E.g, 12.3.4.5,1.0.25.3
@@ -485,7 +483,7 @@ class BuildSpecsManager(object):
 
     return None
 
-  def GetNextBuildSpec(self, version_file, latest=False, retries=0):
+  def GetNextBuildSpec(self, version_file, latest=False, retries=2):
     """Gets the version number of the next build spec to build.
       Args:
         version_file: File to use in cros when checking for cros version.
@@ -496,29 +494,33 @@ class BuildSpecsManager(object):
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
-    try:
-      version_info = self._GetCurrentVersionInfo(version_file)
-      self._LoadSpecs(version_info)
+    last_error = None
+    for index in range(0, retries + 1):
+      try:
+        version_info = self._GetCurrentVersionInfo(version_file)
+        self._LoadSpecs(version_info)
 
-      if not self.unprocessed:
-        self.current_version = self._CreateNewBuildSpec(version_info)
-      elif latest:
-        self.current_version = self.latest_unprocessed
-      else:
-        self.current_version = self.unprocessed[0]
+        if not self.unprocessed:
+          self.current_version = self._CreateNewBuildSpec(version_info)
+        elif latest:
+          self.current_version = self.latest_unprocessed
+        else:
+          self.current_version = self.unprocessed[0]
 
-      if self.current_version:
-        logging.debug('Using build spec: %s', self.current_version)
-        commit_message = 'Automatic: Start %s %s' % (self.build_name,
-                                                     self.current_version)
-        self._SetInFlight(commit_message)
+        if self.current_version:
+          logging.debug('Using build spec: %s', self.current_version)
+          commit_message = 'Automatic: Start %s %s' % (self.build_name,
+                                                       self.current_version)
+          self._SetInFlight(commit_message)
+          return self.GetLocalManifest(self.current_version)
 
-      return self.GetLocalManifest(self.current_version)
-
-    except (cros_lib.RunCommandError, GitCommandException) as e:
-      err_msg = 'Failed to generate buildspec. error: %s' % e
-      logging.error(err_msg)
-      raise GenerateBuildSpecException(err_msg)
+      except (GitCommandException, cros_lib.RunCommandError) as e:
+        last_error = 'Failed to generate buildspec. error: %s' % e
+        logging.error(last_error)
+        logging.error('Retrying to generate buildspec:  Retry %d/%d' %
+                      (index + 1, retries))
+    else:
+      raise GenerateBuildSpecException(last_error)
 
   def _SetInFlight(self, message):
     """Marks the current buildspec as inflight by creating a symlink.
@@ -566,29 +568,37 @@ class BuildSpecsManager(object):
   def _PushSpecChanges(self, commit_message):
     _PushGitChanges(self.manifests_dir, commit_message, dry_run=self.dry_run)
 
-  def UpdateStatus(self, success, retries=0):
+  def UpdateStatus(self, success, retries=3):
     """Updates the status of the build for the current build spec.
     Args:
       success: True for success, False for failure
       retries: Number of retries for updating the status
     """
-    try:
-      status = 'fail'
-      if success: status = 'pass'
-      logging.debug('Updating the status info for %s to %s', self.build_name,
-                    status)
-      commit_message = (
-          'Automatic checkin: status = %s build_version %s for %s' % (
-              status, self.current_version, self.build_name))
-      if status == 'pass':
-        self._SetPassed(commit_message)
-      if status == 'fail':
-        self._SetFailed(commit_message)
-    except (GitCommandException, cros_lib.RunCommandError) as e:
-      err_msg = ('Failed to update the status for %s to %s with the following '
-                 'error %s' % (self.build_name, status, e.message))
-      logging.error(err_msg)
-      raise StatusUpdateException(err_msg)
+    last_error = None
+    for index in range(0, retries + 1):
+      try:
+        status = 'fail'
+        if success: status = 'pass'
+        logging.debug('Updating the status info for %s to %s', self.build_name,
+                      status)
+        commit_message = (
+            'Automatic checkin: status = %s build_version %s for %s' % (
+                status, self.current_version, self.build_name))
+        if status == 'pass':
+          self._SetPassed(commit_message)
+        if status == 'fail':
+          self._SetFailed(commit_message)
+      except (GitCommandException, cros_lib.RunCommandError) as e:
+        last_error = ('Failed to update the status for %s to %s with the '
+                      'following error %s' % (self.build_name, status,
+                                              e.message))
+        logging.error(last_error)
+        logging.error('Retrying to generate buildspec:  Retry %d/%d' %
+                      (index + 1, retries))
+      else:
+        return
+    else:
+      raise StatusUpdateException(last_error)
 
 
 def SetLogFileHandler(logfile):

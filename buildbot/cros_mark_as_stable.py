@@ -262,6 +262,7 @@ def Clean(tracking_branch):
     pass
 
   _SimpleRunCommand('git reset HEAD --hard')
+  _SimpleRunCommand('git checkout ' + tracking_branch)
   branch = GitBranch(STABLE_BRANCH_NAME, tracking_branch)
   if branch.Exists():
     GitBranch.Checkout(branch)
