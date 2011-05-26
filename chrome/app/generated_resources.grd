@@ -5734,9 +5734,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_COPIES_INSTRUCTION" desc="Instruction shown when the user enters an invalid number of copies.">
         Use a number to indicate how many copies to print (1 or more).
       </message>
-      <message name="IDS_PRINT_PREVIEW_DID_YOU_MEAN" desc="Question shown next to the computer prediction for the selected page ranges.">
-        Did you mean? "<ph name="PREDICTED_PAGE_RANGE">$1<ex>1-5, 8, 11-13</ex></ph>"
-      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_CACHE">

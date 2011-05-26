@@ -104,8 +104,6 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_COPIES_INSTRUCTION));
   localized_strings->SetString(std::string("managePrinters"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_MANAGE_PRINTERS));
-  localized_strings->SetString(std::string("didYouMean"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_DID_YOU_MEAN));
 }
 
 }  // namespace

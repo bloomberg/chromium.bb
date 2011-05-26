@@ -234,28 +234,6 @@ function isInteger(toTest) {
 }
 
 /**
- * Parses the page ranges textfield and returns a suggestion.
- * For example: '1-3,2,4,8,9-10,4,4' becomes '1-4, 8-10'. If it can't parse the
- * whole string it will suggest only the part that was parsed.
- * For example: '1-3,2,4,8,abcdef,9-10,4,4' becomes '1-4, 8-10'.
- */
-function getPageRangesSuggestion() {
-  var pageRanges = getSelectedPageRanges();
-  var parsedPageRanges = '';
-  var individualPagesField = $('individual-pages');
-
-  for (var i = 0; i < pageRanges.length; ++i) {
-    if (pageRanges[i].from == pageRanges[i].to)
-      parsedPageRanges += pageRanges[i].from;
-    else
-      parsedPageRanges += pageRanges[i].from + '-' + pageRanges[i].to;
-    if (i < pageRanges.length - 1)
-      parsedPageRanges += ', ';
-  }
-  return parsedPageRanges;
-}
-
-/**
  * Checks whether the preview layout setting is set to 'landscape' or not.
  *
  * @return {boolean} true if layout is 'landscape'.
@@ -616,31 +594,17 @@ function pageRangesFieldChanged() {
   var individualPagesHint = $('individual-pages-hint');
   var validityLevel = getSelectedPagesValidityLevel();
 
-  if (validityLevel == 1)
+  if (validityLevel == 1) {
     individualPagesField.classList.remove('invalid');
-  else
-    individualPagesField.classList.add('invalid');
-
-  if (individualPagesField.value.length == 0) {
     hideInvalidHint(individualPagesHint);
-  } else if (currentlySelectedPages.length == 0) {
+  } else {
+    individualPagesField.classList.add('invalid');
     individualPagesHint.classList.remove('suggestion');
-    individualPagesHint.classList.add('invalid');
     individualPagesHint.innerHTML =
         localStrings.getStringF('pageRangeInstruction',
                                 localStrings.getString(
                                     'examplePageRangeText'));
     showInvalidHint(individualPagesHint);
-  } else if (individualPagesField.value.replace(/\s*/g,'') !=
-      getPageRangesSuggestion().replace(/\s*/g,'')) {
-    individualPagesHint.innerHTML =
-        localStrings.getStringF('didYouMean', getPageRangesSuggestion());
-    individualPagesHint.classList.remove('invalid');
-    individualPagesHint.classList.add('suggestion');
-    showInvalidHint(individualPagesHint);
-  } else if (individualPagesField.value.replace(/\s*/g,'') ==
-      getPageRangesSuggestion().replace(/\s*/g,'')) {
-    hideInvalidHint(individualPagesHint);
   }
 
   resetPageRangeFieldTimer();

@@ -455,18 +455,11 @@ span.hint {
   overflow: hidden;
 }
 
-span.hint.invalid {
-  color: #8c1414;
-}
-
-span.hint.suggestion {
-  color: #7c7c7c;
-}
-
 span.hint.visible {
   -webkit-animation-duration: 200ms;
   -webkit-animation-fill-mode: forwards;
   -webkit-user-select: text;
+  color: #8c1414;
   height: auto;
   margin-bottom: -10px;
   margin-top: 5px;
