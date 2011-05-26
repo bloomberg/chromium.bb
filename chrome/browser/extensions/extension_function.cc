@@ -53,6 +53,10 @@ ExtensionFunction::ExtensionFunction()
 ExtensionFunction::~ExtensionFunction() {
 }
 
+UIThreadExtensionFunction* ExtensionFunction::AsUIThreadExtensionFunction() {
+  return NULL;
+}
+
 void ExtensionFunction::SetArgs(const ListValue* args) {
   DCHECK(!args_.get());  // Should only be called once.
   args_.reset(args->DeepCopy());
@@ -85,6 +89,11 @@ UIThreadExtensionFunction::UIThreadExtensionFunction()
 }
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
+}
+
+UIThreadExtensionFunction*
+UIThreadExtensionFunction::AsUIThreadExtensionFunction() {
+  return this;
 }
 
 void UIThreadExtensionFunction::Destruct() const {

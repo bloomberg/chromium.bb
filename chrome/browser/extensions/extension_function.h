@@ -58,9 +58,7 @@ class ExtensionFunction
  public:
   ExtensionFunction();
 
-  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() {
-    return NULL;
-  }
+  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction();
 
   // Execute the API. Clients should initialize the ExtensionFunction using
   // SetArgs(), set_request_id(), and the other setters before calling this
@@ -188,9 +186,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
  public:
   UIThreadExtensionFunction();
 
-  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() OVERRIDE {
-    return this;
-  }
+  virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() OVERRIDE;
 
   // Set the profile which contains the extension that has originated this
   // function call.
