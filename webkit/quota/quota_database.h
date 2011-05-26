@@ -121,6 +121,7 @@ class QuotaDatabase {
   base::OneShotTimer<QuotaDatabase> timer_;
 
   friend class QuotaDatabaseTest;
+  friend class QuotaManager;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaDatabase);
 };

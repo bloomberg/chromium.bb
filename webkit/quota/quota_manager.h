@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -18,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
@@ -159,6 +161,17 @@ class QuotaManager : public QuotaTaskObserver,
   class UsageAndQuotaDispatcherTaskForPersistent;
 
   class AvailableSpaceQueryTask;
+  class DumpQuotaTableTask;
+  class DumpLastAccessTimeTableTask;
+
+  typedef QuotaDatabase::QuotaTableEntry QuotaTableEntry;
+  typedef QuotaDatabase::LastAccessTimeTableEntry LastAccessTimeTableEntry;
+  typedef std::vector<QuotaTableEntry> QuotaTableEntries;
+  typedef std::vector<LastAccessTimeTableEntry> LastAccessTimeTableEntries;
+
+  typedef Callback1<const QuotaTableEntries&>::Type DumpQuotaTableCallback;
+  typedef Callback1<const LastAccessTimeTableEntries&>::Type
+      DumpLastAccessTimeTableCallback;
 
   struct EvictionContext {
     EvictionContext()
@@ -204,6 +217,9 @@ class QuotaManager : public QuotaTaskObserver,
   // Extract cached origins list from the usage tracker.
   // (Might return empty list if no origin is tracked by the tracker.)
   void GetCachedOrigins(StorageType type, std::set<GURL>* origins);
+
+  void DumpQuotaTable(DumpQuotaTableCallback* callback);
+  void DumpLastAccessTimeTable(DumpLastAccessTimeTableCallback* callback);
 
   // Methods for eviction logic.
   void StartEviction();

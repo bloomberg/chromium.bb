@@ -8,6 +8,7 @@
 #include <deque>
 #include <set>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -637,6 +638,94 @@ class QuotaManager::OriginAccessRecordDatabaseTask
   StorageType type_;
 };
 
+class QuotaManager::DumpQuotaTableTask
+    : public QuotaManager::DatabaseTaskBase {
+ private:
+  typedef QuotaManager::DumpQuotaTableTask self_type;
+  typedef QuotaManager::DumpQuotaTableCallback Callback;
+  typedef QuotaManager::QuotaTableEntry TableEntry;
+  typedef QuotaManager::QuotaTableEntries TableEntries;
+  typedef QuotaDatabase::QuotaTableCallback TableCallback;
+
+ public:
+  DumpQuotaTableTask(
+      QuotaManager* manager,
+      QuotaDatabase* database,
+      scoped_refptr<base::MessageLoopProxy> db_message_loop,
+      Callback* callback)
+      : DatabaseTaskBase(manager, database, db_message_loop),
+        callback_(callback) {
+  }
+ protected:
+  virtual void RunOnTargetThread() OVERRIDE {
+    if (!database()->DumpQuotaTable(
+            new TableCallback(
+                base::Bind(&self_type::AppendEntry, this))))
+      set_db_disabled(true);
+  }
+
+  virtual void Aborted() OVERRIDE {
+    callback_->Run(entries_);
+  }
+
+  virtual void DatabaseTaskCompleted() OVERRIDE {
+    callback_->Run(entries_);
+  }
+
+ private:
+  bool AppendEntry(const TableEntry& entry) {
+    entries_.push_back(entry);
+    return true;
+  }
+
+  scoped_ptr<Callback> callback_;
+  TableEntries entries_;
+};
+
+class QuotaManager::DumpLastAccessTimeTableTask
+    : public QuotaManager::DatabaseTaskBase {
+ private:
+  typedef QuotaManager::DumpLastAccessTimeTableTask self_type;
+  typedef QuotaManager::DumpLastAccessTimeTableCallback Callback;
+  typedef QuotaManager::LastAccessTimeTableEntry TableEntry;
+  typedef QuotaManager::LastAccessTimeTableEntries TableEntries;
+  typedef QuotaDatabase::LastAccessTimeTableCallback TableCallback;
+
+ public:
+  DumpLastAccessTimeTableTask(
+      QuotaManager* manager,
+      QuotaDatabase* database,
+      scoped_refptr<base::MessageLoopProxy> db_message_loop,
+      Callback* callback)
+      : DatabaseTaskBase(manager, database, db_message_loop),
+        callback_(callback) {
+  }
+ protected:
+  virtual void RunOnTargetThread() OVERRIDE {
+    if (!database()->DumpLastAccessTimeTable(
+            new TableCallback(
+                base::Bind(&self_type::AppendEntry, this))))
+      set_db_disabled(true);
+  }
+
+  virtual void Aborted() OVERRIDE {
+    callback_->Run(entries_);
+  }
+
+  virtual void DatabaseTaskCompleted() OVERRIDE {
+    callback_->Run(entries_);
+  }
+
+ private:
+  bool AppendEntry(const TableEntry& entry) {
+    entries_.push_back(entry);
+    return true;
+  }
+
+  scoped_ptr<Callback> callback_;
+  TableEntries entries_;
+};
+
 // QuotaManager ---------------------------------------------------------------
 
 QuotaManager::QuotaManager(bool is_incognito,
@@ -881,6 +970,18 @@ void QuotaManager::GetCachedOrigins(
       NOTREACHED();
   }
 }
+
+void QuotaManager::DumpQuotaTable(DumpQuotaTableCallback* callback) {
+  make_scoped_refptr(new DumpQuotaTableTask(
+      this, database_.get(), db_thread_.get(), callback))->Start();
+}
+
+void QuotaManager::DumpLastAccessTimeTable(
+    DumpLastAccessTimeTableCallback* callback) {
+  make_scoped_refptr(new DumpLastAccessTimeTableTask(
+      this, database_.get(), db_thread_.get(), callback))->Start();
+}
+
 
 void QuotaManager::DeleteOriginFromDatabase(
     const GURL& origin, StorageType type) {

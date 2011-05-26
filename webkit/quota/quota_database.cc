@@ -180,7 +180,7 @@ bool QuotaDatabase::SetOriginLastAccessTime(
 
   sql::Statement statement;
 
-  int used_count = 0;
+  int used_count = 1;
   if (FindOriginUsedCount(origin, type, &used_count)) {
     ++used_count;
     const char* kSql =

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <sstream>
 #include <vector>
 
 #include "base/file_util.h"
@@ -35,6 +36,12 @@ struct MockOriginData {
 }  // anonymous namespace
 
 class QuotaManagerTest : public testing::Test {
+ protected:
+  typedef QuotaManager::QuotaTableEntry QuotaTableEntry;
+  typedef QuotaManager::QuotaTableEntries QuotaTableEntries;
+  typedef QuotaManager::LastAccessTimeTableEntry LastAccessTimeTableEntry;
+  typedef QuotaManager::LastAccessTimeTableEntries LastAccessTimeTableEntries;
+
  public:
   QuotaManagerTest()
       : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -207,6 +214,20 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->NotifyOriginNoLongerInUse(origin);
   }
 
+  void DumpQuotaTable() {
+    quota_table_.clear();
+    quota_manager_->DumpQuotaTable(
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::DidDumpQuotaTable));
+  }
+
+  void DumpLastAccessTimeTable() {
+    last_access_time_table_.clear();
+    quota_manager_->DumpLastAccessTimeTable(
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::DidDumpLastAccessTimeTable));
+  }
+
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
     quota_status_ = status;
     usage_ = usage;
@@ -269,6 +290,14 @@ class QuotaManagerTest : public testing::Test {
     lru_origin_ = origin;
   }
 
+  void DidDumpQuotaTable(const QuotaTableEntries& entries) {
+    quota_table_ = entries;
+  }
+
+  void DidDumpLastAccessTimeTable(const LastAccessTimeTableEntries& entries) {
+    last_access_time_table_ = entries;
+  }
+
   void set_additional_callback_count(int c) { additional_callback_count_ = c; }
   int additional_callback_count() const { return additional_callback_count_; }
   void DidGetUsageAndQuotaAdditional(
@@ -288,6 +317,10 @@ class QuotaManagerTest : public testing::Test {
   int64 quota() const { return quota_; }
   int64 available_space() const { return available_space_; }
   const GURL& lru_origin() const { return lru_origin_; }
+  const QuotaTableEntries& quota_table() const { return quota_table_; }
+  const LastAccessTimeTableEntries& last_access_time_table() const {
+    return last_access_time_table_;
+  }
   FilePath profile_path() const { return data_dir_.path(); }
 
  private:
@@ -303,6 +336,8 @@ class QuotaManagerTest : public testing::Test {
   int64 quota_;
   int64 available_space_;
   GURL lru_origin_;
+  QuotaTableEntries quota_table_;
+  LastAccessTimeTableEntries last_access_time_table_;
 
   int additional_callback_count_;
 
@@ -1052,4 +1087,77 @@ TEST_F(QuotaManagerTest, MAYBE_GetLRUOriginWithOriginInUse) {
   EXPECT_EQ("http://a.com/", lru_origin().spec());
 }
 
+TEST_F(QuotaManagerTest, DumpQuotaTable) {
+  SetPersistentHostQuota("example1.com", 1);
+  SetPersistentHostQuota("example2.com", 20);
+  SetPersistentHostQuota("example3.com", 300);
+  MessageLoop::current()->RunAllPending();
+
+  DumpQuotaTable();
+  MessageLoop::current()->RunAllPending();
+
+  const QuotaTableEntry kEntries[] = {
+    {"example1.com", kStorageTypePersistent, 1},
+    {"example2.com", kStorageTypePersistent, 20},
+    {"example3.com", kStorageTypePersistent, 300},
+  };
+  std::set<QuotaTableEntry> entries
+      (kEntries, kEntries + ARRAYSIZE_UNSAFE(kEntries));
+
+  typedef QuotaTableEntries::const_iterator iterator;
+  for (iterator itr(quota_table().begin()), end(quota_table().end());
+       itr != end; ++itr) {
+    SCOPED_TRACE(testing::Message()
+                 << "host = " << itr->host << ", "
+                 << "quota = " << itr->quota);
+    EXPECT_EQ(1u, entries.erase(*itr));
+  }
+  EXPECT_TRUE(entries.empty());
+}
+
+TEST_F(QuotaManagerTest, DumpLastAccessTimeTable) {
+  using std::make_pair;
+
+  quota_manager()->NotifyStorageAccessed(
+      QuotaClient::kMockStart,
+      GURL("http://example.com/"),
+      kStorageTypeTemporary);
+  quota_manager()->NotifyStorageAccessed(
+      QuotaClient::kMockStart,
+      GURL("http://example.com/"),
+      kStorageTypePersistent);
+  quota_manager()->NotifyStorageAccessed(
+      QuotaClient::kMockStart,
+      GURL("http://example.com/"),
+      kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+
+  DumpLastAccessTimeTable();
+  MessageLoop::current()->RunAllPending();
+
+  typedef std::pair<GURL, StorageType> TypedOrigin;
+  typedef std::pair<TypedOrigin, int> Entry;
+  const Entry kEntries[] = {
+    make_pair(make_pair(GURL("http://example.com/"),
+                        kStorageTypeTemporary), 1),
+    make_pair(make_pair(GURL("http://example.com/"),
+                        kStorageTypePersistent), 2),
+  };
+  std::set<Entry> entries
+      (kEntries, kEntries + ARRAYSIZE_UNSAFE(kEntries));
+
+  typedef LastAccessTimeTableEntries::const_iterator iterator;
+  for (iterator itr(last_access_time_table().begin()),
+                end(last_access_time_table().end());
+       itr != end; ++itr) {
+    SCOPED_TRACE(testing::Message()
+                 << "host = " << itr->origin << ", "
+                 << "type = " << itr->type << ", "
+                 << "used_count = " << itr->used_count);
+    EXPECT_EQ(1u, entries.erase(
+        make_pair(make_pair(itr->origin, itr->type),
+                  itr->used_count)));
+  }
+  EXPECT_TRUE(entries.empty());
+}
 }  // namespace quota
