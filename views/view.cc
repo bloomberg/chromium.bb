@@ -126,7 +126,7 @@ View::~View() {
 
   int c = static_cast<int>(children_.size());
   while (--c >= 0) {
-    children_[c]->SetParent(NULL);
+    children_[c]->parent_ = NULL;
     if (children_[c]->IsParentOwned())
       delete children_[c];
   }
@@ -164,7 +164,7 @@ void View::AddChildViewAt(View* view, int index) {
 
   // Let's insert the view.
   children_.insert(children_.begin() + index, view);
-  view->SetParent(this);
+  view->parent_ = this;
 
   for (View* p = this; p; p = p->parent())
     p->ViewHierarchyChangedImpl(false, true, this, view);
@@ -1343,7 +1343,7 @@ void View::DoRemoveChildView(View* view,
       UnregisterChildrenForVisibleBoundsNotification(view);
     view->ResetTexture();
     view->PropagateRemoveNotifications(this);
-    view->SetParent(NULL);
+    view->parent_ = NULL;
 
     if (delete_removed_view && view->IsParentOwned())
       view_to_be_deleted.reset(view);
@@ -1356,11 +1356,6 @@ void View::DoRemoveChildView(View* view,
 
   if (layout_manager_.get())
     layout_manager_->ViewRemoved(this, view);
-}
-
-void View::SetParent(View* parent) {
-  if (parent != parent_)
-    parent_ = parent;
 }
 
 void View::PropagateRemoveNotifications(View* parent) {

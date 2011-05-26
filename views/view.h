@@ -1163,10 +1163,6 @@ class View : public AcceleratorTarget {
                          bool update_tool_tip,
                          bool delete_removed_view);
 
-  // Sets the parent View. This is called automatically by AddChild and is
-  // thus private.
-  void SetParent(View* parent);
-
   // Call ViewHierarchyChanged for all child views on all parents
   void PropagateRemoveNotifications(View* parent);
 
