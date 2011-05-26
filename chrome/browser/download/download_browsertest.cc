@@ -425,6 +425,10 @@ class DownloadTest : public InProcessBrowserTest {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                  prompt_for_download);
 
+    DownloadManager* manager = browser()->profile()->GetDownloadManager();
+    manager->download_prefs()->ResetAutoOpen();
+    manager->RemoveAllDownloads();
+
     return true;
   }
 
@@ -461,6 +465,10 @@ class DownloadTest : public InProcessBrowserTest {
         downloads_directory_.path());
 
     return true;
+  }
+
+  DownloadPrefs* GetDownloadPrefs(Browser* browser) {
+    return browser->profile()->GetDownloadManager()->download_prefs();
   }
 
   FilePath GetDownloadDirectory(Browser* browser) {
@@ -724,6 +732,38 @@ class DownloadsHistoryDataCollector {
   CancelableRequestConsumer callback_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
+};
+
+}  // namespace
+
+// While an object of this class exists, it will mock out download
+// opening for all downloads created on the specified download manager.
+class MockDownloadOpeningObserver : public DownloadManager::Observer {
+ public:
+  explicit MockDownloadOpeningObserver(DownloadManager* manager)
+      : download_manager_(manager) {
+    download_manager_->AddObserver(this);
+  }
+
+  ~MockDownloadOpeningObserver() {
+    download_manager_->RemoveObserver(this);
+  }
+
+  // DownloadManager::Observer
+  virtual void ModelChanged() {
+    std::vector<DownloadItem*> downloads;
+    download_manager_->SearchDownloads(string16(), &downloads);
+
+    for (std::vector<DownloadItem*>::iterator it = downloads.begin();
+         it != downloads.end(); ++it) {
+      (*it)->TestMockDownloadOpen();
+    }
+  }
+
+ private:
+  DownloadManager* download_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDownloadOpeningObserver);
 };
 
 // NOTES:
@@ -1350,4 +1390,31 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_BrowserCloseAfterDownload) {
   signal.Wait();
 }
 
-}  // namespace
+// Test to make sure auto-open works.
+IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  ASSERT_TRUE(
+      GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
+
+  // Mokc out external opening on all downloads until end of test.
+  MockDownloadOpeningObserver observer(
+      browser()->profile()->GetDownloadManager());
+
+  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+
+  // Find the download and confirm it was opened.
+  std::vector<DownloadItem*> downloads;
+  browser()->profile()->GetDownloadManager()->SearchDownloads(
+      string16(), &downloads);
+  ASSERT_EQ(1u, downloads.size());
+  EXPECT_EQ(DownloadItem::COMPLETE, downloads[0]->state());
+  EXPECT_TRUE(downloads[0]->opened());
+
+  // As long as we're here, confirmed everything else is good.
+  EXPECT_EQ(1, browser()->tab_count());
+  CheckDownload(browser(), file, file);
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));  // Auto-opened.
+}

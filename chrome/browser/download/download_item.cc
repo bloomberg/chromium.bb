@@ -135,7 +135,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_otr_(false),
       is_temporary_(false),
       all_data_saved_(false),
-      opened_(false) {
+      opened_(false),
+      open_enabled_(true) {
   if (IsInProgress())
     state_ = CANCELLED;
   if (IsComplete())
@@ -175,7 +176,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_otr_(is_otr),
       is_temporary_(!info.save_info.file_path.empty()),
       all_data_saved_(false),
-      opened_(false) {
+      opened_(false),
+      open_enabled_(true) {
   Init(true /* start progress timer */);
 }
 
@@ -203,7 +205,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_otr_(is_otr),
       is_temporary_(false),
       all_data_saved_(false),
-      opened_(false) {
+      opened_(false),
+      open_enabled_(true) {
   Init(true /* start progress timer */);
 }
 
@@ -247,6 +250,12 @@ void DownloadItem::OpenDownload() {
   } else if (IsComplete()) {
     opened_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
+
+    // For testing: If download opening is disabled on this item,
+    // make the rest of the routine a no-op.
+    if (!open_enabled_)
+      return;
+
     if (is_extension_install()) {
       download_util::OpenChromeExtension(download_manager_->profile(),
                                          download_manager_,
@@ -347,6 +356,10 @@ void DownloadItem::OnAllDataSaved(int64 size) {
 void DownloadItem::Completed() {
   VLOG(20) << __FUNCTION__ << "() " << DebugString(false);
 
+  DCHECK(all_data_saved_);
+  state_ = COMPLETE;
+  UpdateObservers();
+  download_manager_->DownloadCompleted(id());
   download_util::RecordDownloadCount(download_util::COMPLETED_COUNT);
 
   // Handle chrome extensions explicitly and skip the shell execute.
@@ -364,13 +377,10 @@ void DownloadItem::Completed() {
     // download shelf.
     if (!is_temporary())
       OpenDownload();
-    auto_opened_ = true;
-  }
 
-  DCHECK(all_data_saved_);
-  state_ = COMPLETE;
-  UpdateObservers();
-  download_manager_->DownloadCompleted(id());
+    auto_opened_ = true;
+    UpdateObservers();
+  }
 }
 
 void DownloadItem::Interrupted(int64 size, int os_error) {

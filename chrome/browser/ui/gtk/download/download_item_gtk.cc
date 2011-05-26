@@ -320,15 +320,18 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       complete_animation_.Show();
       break;
     case DownloadItem::COMPLETE:
-      if (download_complete_)
-        // We've already handled the completion specific actions; skip
-        // doing them again.
-        break;
-
+      // auto_opened() may change after the download's initial transition to
+      // COMPLETE, so we check it before the idemopotency shield below.
       if (download->auto_opened()) {
         parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
         return;
       }
+
+      // We've already handled the completion specific actions; skip
+      // doing the non-idempotent ones again.
+      if (download_complete_)
+        break;
+
       StopDownloadProgress();
 
       // Set up the widget as a drag source.

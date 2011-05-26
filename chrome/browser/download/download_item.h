@@ -317,6 +317,11 @@ class DownloadItem {
 
   std::string DebugString(bool verbose) const;
 
+#ifdef UNIT_TEST
+  // Mock opening downloads (for testing only).
+  void TestMockDownloadOpen() { open_enabled_ = false; }
+#endif
+
  private:
   void Init(bool start_timer);
 
@@ -429,6 +434,10 @@ class DownloadItem {
   // when the user closes the shelf before the item has been opened but should
   // be treated as though the user opened it.
   bool opened_;
+
+  // Do we actual open downloads when requested?  For testing purposes
+  // only.
+  bool open_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };
