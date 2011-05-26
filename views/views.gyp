@@ -632,6 +632,61 @@
         }],
       ],
     },
+    {
+      'target_name': 'views_desktop',
+      'type': 'executable',
+      'dependencies': [
+        '../app/app.gyp:app_resources',
+        '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        'views',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'desktop/desktop_main.cc',
+        'desktop/desktop_views_delegate.cc',
+        'desktop/desktop_views_delegate.h',
+        'desktop/desktop_window.cc',
+        'desktop/desktop_window.h',
+        'desktop/desktop_background.cc',
+        'desktop/desktop_background.h',
+        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+      ],
+      'conditions': [
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../chrome/chrome.gyp:packed_resources',
+          ],
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+               'dependencies': [
+                 '../base/allocator/allocator.gyp:allocator',
+               ],
+            }],
+          ],
+        },
+        ],
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ]
+          },
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+      ],
+    },
+
+
   ],
 }
 
