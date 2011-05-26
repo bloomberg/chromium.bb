@@ -98,9 +98,10 @@ if not (env.Bit('nacl_glibc') and env.Bit('nacl_static_link')):
   env.AddNodeToTestSuite(node, ['small_tests'],
                          'run_main_thread_pthread_exit_test',
                          is_broken=is_broken)
+# This test additionally doesn't work with newlib.
   env.AddNodeToTestSuite(node2, ['small_tests'],
                          'run_main_thread_pthread_exit_test2',
-                         is_broken=is_broken)
+                         is_broken=is_broken or not env.Bit('nacl_glibc'))
 
 env.ComponentProgram('cond_wait_test.nexe',
                      'cond_wait_test.cc',
