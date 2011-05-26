@@ -45,6 +45,14 @@ cr.define('options', function() {
         };
       }
 
+      var manageHandlersButton =
+          this.pageDiv.querySelector('#manage-handlers-button');
+      if (manageHandlersButton) {
+        manageHandlersButton.onclick = function(event) {
+          OptionsPage.navigateToPage('handlers');
+        };
+      }
+
       // Cookies filter page ---------------------------------------------------
       $('block-third-party-cookies').onclick = function(event) {
         chrome.send('setAllowThirdPartyCookies',
@@ -59,6 +67,12 @@ cr.define('options', function() {
       if (!templateData.enable_click_to_play)
         $('click_to_play').style.display = 'none';
     },
+  };
+
+  ContentSettings.updateHandlersEnabledRadios = function(enabled) {
+    var selector = '#handlers-section input[type=radio][value=' +
+        (enabled ? 'allow' : 'block') + ']';
+    document.querySelector(selector).checked = true;
   };
 
   /**
@@ -90,8 +104,11 @@ cr.define('options', function() {
     var exceptionsList =
         document.querySelector('div[contentType=' + type + ']' +
                                ' list[mode=normal]');
-
     exceptionsList.setExceptions(list);
+  };
+
+  ContentSettings.setHandlers = function(list) {
+    $('handlers-list').setHandlers(list);
   };
 
   ContentSettings.setOTRExceptions = function(type, list) {

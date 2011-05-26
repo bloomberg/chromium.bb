@@ -3433,6 +3433,8 @@
         'browser/ui/webui/options/options_ui.h',
         'browser/ui/webui/options/password_manager_handler.cc',
         'browser/ui/webui/options/password_manager_handler.h',
+        'browser/ui/webui/options/handler_options_handler.cc',
+        'browser/ui/webui/options/handler_options_handler.h',
         'browser/ui/webui/options/personal_options_handler.cc',
         'browser/ui/webui/options/personal_options_handler.h',
         'browser/ui/webui/options/search_engine_manager_handler.cc',

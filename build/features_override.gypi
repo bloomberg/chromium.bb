@@ -119,6 +119,11 @@
           'WTF_USE_WEBAUDIO_FFMPEG=1',
         ],
       }],
+      ['enable_register_protocol_handler==1', {
+        'feature_defines': [
+          'ENABLE_REGISTER_PROTOCOL_HANDLER=1',
+        ],
+      }],
     ],
     # TODO: If the need arises, create a mechanism that will intelligently
     # merge the lists rather than replace one with the other. This may

@@ -5321,6 +5321,34 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_JS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing JavaScript use on any site.">
         Do not allow any site to run JavaScript
       </message>
+      <message name="IDS_HANDLERS_TAB_LABEL" desc="Label for Handlers tab on Content Settings dialog">
+        Handlers
+      </message>
+      <message name="IDS_HANDLERS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing sites to register themselves as handlers for protocols.">
+        Allow sites to ask to become default handlers for protocols
+      </message>
+      <message name="IDS_HANDLERS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing sites from registering themselves as handlers for protocols.">
+        Do not allow any site to handle protocols
+      </message>
+      <message name="IDS_BLOCKED_HANDLERS_TITLE" desc="Bubble info header text when a page is not allowed register handlers.">
+        This site was prevented from registering a custom URL handler.
+      </message>
+    <message name="IDS_HANDLERS_BUBBLE_MANAGE_LINK" desc="Link on the register protocol handler bubble that opens up the Content Settings management dialog.">
+      Manage handler settings...
+    </message>
+    <message name="IDS_HANDLERS_TYPE_COLUMN_HEADER" desc="Header on the settings page for the column showing handler protocols.">
+        Type
+    </message>
+    <message name="IDS_HANDLERS_SITE_COLUMN_HEADER" desc="Header on the settings page for the column showing handler sites.">
+        Site
+    </message>
+    <message name="IDS_HANDLERS_REMOVE_HANDLER_LINK" desc="Text on the link that removes a registered protocol handler from a user's settings.">
+        remove this site
+    </message>
+
+    <message name="IDS_HANDLER_OPTIONS_WINDOW_TITLE" desc="The title of the window that lets a user change what handlers they have registered for various protocols / mimetypes.">
+      Protocol and Mimetype Handlers
+    </message>
       <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog">
         Location
       </message>
@@ -5416,6 +5444,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
           All Cookies and Site Data...
         </message>
+        <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
+          Manage Handlers...
+        </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
@@ -5423,6 +5454,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
           All cookies and site data...
+        </message>
+        <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
+          Manage handlers...
         </message>
       </if>
 
@@ -12434,11 +12468,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Register Protocol Handler Strings -->
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-      Would you like to use <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> (<ph name="HANDLER_HOSTNAME">$2<ex>google.com</ex></ph>) to handle <ph name="PROTOCOL">$3<ex>search</ex></ph>:// links from now on?
+      Would you like to use <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> (<ph name="HANDLER_HOSTNAME">$2<ex>google.com</ex></ph>) to handle <ph name="PROTOCOL">$3<ex>search</ex></ph>: links from now on?
     </message>
 
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-      Would you like to use <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> (<ph name="HANDLER_HOSTNAME">$2<ex>google.com</ex></ph>) to handle <ph name="PROTOCOL">$3<ex>search</ex></ph>:// links instead of <ph name="REPLACED_HANDLER_TITLE">$4<ex>Elgoog Search</ex></ph> from now on?
+      Would you like to use <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> (<ph name="HANDLER_HOSTNAME">$2<ex>google.com</ex></ph>) to handle <ph name="PROTOCOL">$3<ex>search</ex></ph>: links instead of <ph name="REPLACED_HANDLER_TITLE">$4<ex>Elgoog Search</ex></ph> from now on?
     </message>
 
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT" desc="Text to show for the accept button for the register protocol handler request infobar.">
@@ -12450,7 +12484,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </message>
 
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED" desc="Text to show when the user tries to register a protocol handler that they have already registered.">
-      <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> is already being used to handle <ph name="PROTOCOL">$2<ex>search</ex></ph>:// links.
+      <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> is already being used to handle <ph name="PROTOCOL">$2<ex>search</ex></ph>: links.
     </message>
 
     <!-- PDF with unsupported feature Info Bar -->

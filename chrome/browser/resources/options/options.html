@@ -27,6 +27,9 @@
 <link rel="stylesheet" href="content_settings.css">
 <link rel="stylesheet" href="cookies_view.css">
 <link rel="stylesheet" href="font_settings.css">
+<if expr="pp_ifdef('enable_register_protocol_handler')">
+  <link rel="stylesheet" href="handler_options.css">
+</if>
 <link rel="stylesheet" href="import_data_overlay.css">
 <link rel="stylesheet" href="language_options.css">
 <link rel="stylesheet" href="password_manager.css">
@@ -152,6 +155,9 @@
                <include src="chromeos/language_pinyin_options.html">
              </if>
              <include src="cookies_view.html">
+             <if expr="pp_ifdef('enable_register_protocol_handler')">
+               <include src="handler_options.html">
+             </if>
              <include src="content_settings_exceptions_area.html">
            </div>
          </div>

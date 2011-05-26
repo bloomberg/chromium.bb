@@ -14,6 +14,7 @@
 #include "content/common/notification_registrar.h"
 
 class HostContentSettingsMap;
+class ProtocolHandlerRegistry;
 
 class ContentSettingsHandler : public OptionsPageUIHandler {
  public:
@@ -61,6 +62,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // As above, but acts on the OTR table for the content setting type.
   void UpdateExceptionsViewFromOTRHostContentSettingsMap(
       ContentSettingsType type);
+  // Updates the radio buttons for enabling / disabling handlers.
+  void UpdateHandlersEnabledRadios();
 
   // Callbacks used by the page ------------------------------------------------
 
@@ -100,6 +103,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // Returns true if the default setting for the given content settings type
   // |type| is managed.
   bool GetDefaultSettingManagedFromModel(ContentSettingsType type);
+
+  // Gets the ProtocolHandlerRegistry for the normal profile.
+  ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
   // Member variables ---------------------------------------------------------
 

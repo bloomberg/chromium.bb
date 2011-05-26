@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/options/browser_options_handler.h"
 #include "chrome/browser/ui/webui/options/clear_browser_data_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
+#include "chrome/browser/ui/webui/options/handler_options_handler.h"
 #include "chrome/browser/ui/webui/options/cookies_view_handler.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/options/font_settings_handler.h"
@@ -260,6 +261,7 @@ OptionsUI::OptionsUI(TabContents* contents)
 #if defined(USE_NSS)
   AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());
 #endif
+  AddOptionsPageUIHandler(localized_strings, new HandlerOptionsHandler());
 
   // |localized_strings| ownership is taken over by this constructor.
   OptionsUIHTMLSource* html_source =

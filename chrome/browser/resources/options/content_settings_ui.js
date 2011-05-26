@@ -27,9 +27,33 @@ cr.define('options', function() {
     },
   };
 
+  //////////////////////////////////////////////////////////////////////////////
+  // HandlersEnabledRadio class:
+
+  // Define a constructor that uses an input element as its underlying element.
+  var HandlersEnabledRadio = cr.ui.define('input');
+
+  HandlersEnabledRadio.prototype = {
+    __proto__: HTMLInputElement.prototype,
+
+    /**
+     * Initialization function for the cr.ui framework.
+     */
+    decorate: function() {
+      this.type = 'radio';
+      var self = this;
+
+      this.addEventListener('change',
+          function(e) {
+            chrome.send('setHandlersEnabled', [this.value == 'allow']);
+          });
+    },
+  };
+
   // Export
   return {
-    ContentSettingsRadio: ContentSettingsRadio
+    ContentSettingsRadio: ContentSettingsRadio,
+    HandlersEnabledRadio: HandlersEnabledRadio
   };
 
 });

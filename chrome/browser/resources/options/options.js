@@ -15,6 +15,7 @@ var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
 var FontSettings = options.FontSettings;
+var HandlerOptions = options.HandlerOptions;
 var ImportDataOverlay = options.ImportDataOverlay;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
@@ -39,8 +40,10 @@ function load() {
   cr.ui.decorate('select[pref]', options.PrefSelect);
   cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
-  cr.ui.decorate('#content-settings-page input[type=radio]',
+  cr.ui.decorate('#content-settings-page input[type=radio] [name]',
       options.ContentSettingsRadio);
+  cr.ui.decorate('#handlers-section input[type=radio]',
+      options.HandlersEnabledRadio);
 
   var menuOffPattern = /(^\?|&)menu=off($|&)/;
   var menuDisabled = menuOffPattern.test(window.location.search);
@@ -104,6 +107,12 @@ function load() {
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
+  // If HandlerOptions is null it means it got compiled out.
+  if (HandlerOptions) {
+    OptionsPage.registerSubPage(HandlerOptions.getInstance(),
+                                ContentSettings.getInstance(),
+                                [$('manage-handlers-button')]);
+  }
   OptionsPage.registerSubPage(FontSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);

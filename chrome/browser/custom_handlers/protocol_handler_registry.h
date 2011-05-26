@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
@@ -37,6 +38,10 @@ class ProtocolHandlerRegistry
     virtual void DeregisterExternalHandler(const std::string& protocol);
     virtual bool IsExternalHandlerRegistered(const std::string& protocol);
   };
+
+  typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
+  typedef std::vector<ProtocolHandler> ProtocolHandlerList;
+  typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
 
   ProtocolHandlerRegistry(Profile* profile, Delegate* delegate);
   ~ProtocolHandlerRegistry();
@@ -64,9 +69,6 @@ class ProtocolHandlerRegistry
   // it.
   bool HasDefault(const std::string& scheme) const;
 
-  // Returns true if there is a handler registered for the given protocol.
-  bool HasHandler(const std::string& scheme);
-
   // Loads a user's registered protocol handlers.
   void Load();
 
@@ -77,6 +79,13 @@ class ProtocolHandlerRegistry
   // exists.
   const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
 
+  // Returns the offset in the list of handlers for a protocol of the default
+  // handler for that protocol.
+  int GetHandlerIndex(const std::string& scheme) const;
+
+  // Get the list of protocol handlers for the given scheme.
+  const ProtocolHandlerList* GetHandlersFor(const std::string& scheme) const;
+
   // Yields a list of the protocols handled by this registry.
   void GetHandledProtocols(std::vector<std::string>* output) const;
 
@@ -85,7 +94,7 @@ class ProtocolHandlerRegistry
   bool CanSchemeBeOverridden(const std::string& scheme) const;
 
   // Returns true if an identical protocol handler has already been registered.
-  bool IsRegistered(const ProtocolHandler& handler);
+  bool IsRegistered(const ProtocolHandler& handler) const;
 
   // Returns true if the protocol handler is being ignored.
   bool IsIgnored(const ProtocolHandler& handler) const;
@@ -119,9 +128,8 @@ class ProtocolHandlerRegistry
  private:
   friend class base::RefCountedThreadSafe<ProtocolHandlerRegistry>;
 
-  typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
-  typedef std::vector<ProtocolHandler> ProtocolHandlerList;
-  typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
+  // Insert the given ProtocolHandler into the registry.
+  void InsertHandler(const ProtocolHandler& handler);
 
   // Returns a JSON list of protocol handlers. The caller is responsible for
   // deleting this Value.
@@ -130,6 +138,9 @@ class ProtocolHandlerRegistry
   // Returns a JSON list of ignored protocol handlers. The caller is
   // responsible for deleting this Value.
   Value* EncodeIgnoredHandlers();
+
+  // Sends a notification of the given type to the NotificationService.
+  void NotifyChanged();
 
   // Registers a new protocol handler.
   void RegisterProtocolHandler(const ProtocolHandler& handler);
@@ -147,8 +158,6 @@ class ProtocolHandlerRegistry
 
   // Register
   void IgnoreHandlerFromValue(const DictionaryValue* value);
-
-  ProtocolHandlerList& GetHandlerListFor(const std::string& scheme);
 
   // Map from protocols (strings) to protocol handlers.
   ProtocolHandlerMultiMap protocol_handlers_;

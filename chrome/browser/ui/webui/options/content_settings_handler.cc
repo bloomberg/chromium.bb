@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -202,6 +203,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "examplePattern", IDS_EXCEPTIONS_PATTERN_EXAMPLE },
     { "addNewExceptionInstructions", IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS },
     { "manage_exceptions", IDS_EXCEPTIONS_MANAGE },
+    { "manage_handlers", IDS_HANDLERS_MANAGE },
     { "exceptionPatternHeader", IDS_EXCEPTIONS_PATTERN_HEADER },
     { "exceptionBehaviorHeader", IDS_EXCEPTIONS_ACTION_HEADER },
     // Cookies filter.
@@ -274,6 +276,7 @@ void ContentSettingsHandler::Initialize() {
       this, NotificationType::PROFILE_DESTROYED,
       NotificationService::AllSources());
 
+  UpdateHandlersEnabledRadios();
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
@@ -283,6 +286,9 @@ void ContentSettingsHandler::Initialize() {
       NotificationService::AllSources());
   notification_registrar_.Add(
       this, NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(
+      this, NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
       NotificationService::AllSources());
 
   PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
@@ -340,6 +346,11 @@ void ContentSettingsHandler::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED: {
+      UpdateHandlersEnabledRadios();
+      break;
+    }
+
     default:
       OptionsPageUIHandler::Observe(type, source, details);
   }
@@ -384,6 +395,16 @@ bool ContentSettingsHandler::GetDefaultSettingManagedFromModel(
   } else {
     return GetContentSettingsMap()->IsDefaultContentSettingManaged(type);
   }
+}
+
+void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
+#if defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
+  DCHECK(web_ui_);
+  FundamentalValue handlers_enabled(GetProtocolHandlerRegistry()->enabled());
+
+  web_ui_->CallJavascriptFunction("ContentSettings.updateHandlersEnabledRadios",
+      handlers_enabled);
+#endif // defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
 }
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
@@ -723,6 +744,10 @@ std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
 
 HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
   return web_ui_->GetProfile()->GetHostContentSettingsMap();
+}
+
+ProtocolHandlerRegistry* ContentSettingsHandler::GetProtocolHandlerRegistry() {
+  return web_ui_->GetProfile()->GetProtocolHandlerRegistry();
 }
 
 HostContentSettingsMap*

@@ -59,6 +59,10 @@
 <include src="cookies_list.js"></include>
 <include src="cookies_view.js"></include>
 <include src="font_settings.js"></include>
+<if expr="pp_ifdef('enable_register_protocol_handler')">
+  <include src="handler_options.js"></script>
+  <include src="handler_options_list.js"></script>
+</if>
 <include src="import_data_overlay.js"></include>
 <include src="instant_confirm_overlay.js"></include>
 <include src="language_add_language_overlay.js"></include>

@@ -12,6 +12,8 @@
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -40,11 +42,39 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
   std::set<std::string> registered_protocols_;
 };
 
+class NotificationCounter : public NotificationObserver {
+ public:
+  NotificationCounter()
+      : events_(0),
+        notification_registrar_() {
+    notification_registrar_.Add(this,
+        NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+        NotificationService::AllSources());
+  }
 
-class ProtocolHandlerRegistryTest : public testing::Test {
+  ~NotificationCounter() {
+    notification_registrar_.Remove(this,
+        NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+        NotificationService::AllSources());
+  }
+
+  int events() { return events_; }
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    ++events_;
+  }
+
+  int events_;
+  NotificationRegistrar notification_registrar_;
+};
+
+
+class ProtocolHandlerRegistryTest : public RenderViewHostTestHarness {
  protected:
   ProtocolHandlerRegistryTest()
-      : test_protocol_handler_(CreateProtocolHandler("test", "test")) {}
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        test_protocol_handler_(CreateProtocolHandler("test", "test")) {}
 
   FakeDelegate* delegate() const { return delegate_; }
   TestingProfile* profile() const { return profile_.get(); }
@@ -84,6 +114,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     ProtocolHandlerRegistry::RegisterPrefs(pref_service());
   }
 
+  BrowserThread ui_thread_;
   FakeDelegate* delegate_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ProtocolHandlerRegistry> registry_;
@@ -141,6 +172,13 @@ TEST_F(ProtocolHandlerRegistryTest,
   ASSERT_FALSE(registry()->CanSchemeBeOverridden("test"));
 }
 
+TEST_F(ProtocolHandlerRegistryTest, RemovingHandlerMeansItCanBeAddedAgain) {
+  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
+  ASSERT_TRUE(registry()->CanSchemeBeOverridden("test"));
+  registry()->RemoveHandler(test_protocol_handler());
+  ASSERT_TRUE(registry()->CanSchemeBeOverridden("test"));
+}
+
 TEST_F(ProtocolHandlerRegistryTest, TestStartsAsDefault) {
   registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
   ASSERT_TRUE(registry()->IsDefault(test_protocol_handler()));
@@ -159,9 +197,10 @@ TEST_F(ProtocolHandlerRegistryTest, TestClearDefault) {
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->OnAcceptRegisterProtocolHandler(ph2);
 
-  registry()->SetDefault(ph2);
+  registry()->SetDefault(ph1);
   registry()->ClearDefault("test");
-  ASSERT_FALSE(registry()->IsDefault(ph2));
+  ASSERT_FALSE(registry()->IsDefault(ph1));
+  ASSERT_TRUE(registry()->IsDefault(ph2));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestGetHandlerFor) {
@@ -175,13 +214,13 @@ TEST_F(ProtocolHandlerRegistryTest, TestGetHandlerFor) {
   ASSERT_TRUE(registry()->HasDefault("test"));
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestMultipleHandlersClearsDefault) {
+TEST_F(ProtocolHandlerRegistryTest, TestMostRecentHandlerIsDefault) {
   ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
   ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->OnAcceptRegisterProtocolHandler(ph2);
   ASSERT_FALSE(registry()->IsDefault(ph1));
-  ASSERT_FALSE(registry()->IsDefault(ph2));
+  ASSERT_TRUE(registry()->IsDefault(ph2));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestSetDefault) {
@@ -220,7 +259,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandler) {
 
   registry()->RemoveHandler(ph1);
   ASSERT_FALSE(registry()->IsRegistered(ph1));
-  ASSERT_FALSE(registry()->HasHandler("test"));
+  ASSERT_FALSE(registry()->IsHandledProtocol("test"));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestIsRegistered) {
@@ -236,6 +275,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandlerRemovesDefault) {
   ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
   ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
   ProtocolHandler ph3 = CreateProtocolHandler("test", "test3");
+
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->OnAcceptRegisterProtocolHandler(ph2);
   registry()->OnAcceptRegisterProtocolHandler(ph3);
@@ -243,4 +283,54 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandlerRemovesDefault) {
   registry()->SetDefault(ph1);
   registry()->RemoveHandler(ph1);
   ASSERT_FALSE(registry()->IsDefault(ph1));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestGetHandlersFor) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  ProtocolHandler ph3 = CreateProtocolHandler("test", "test3");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+  registry()->OnAcceptRegisterProtocolHandler(ph3);
+
+  const ProtocolHandlerRegistry::ProtocolHandlerList* handlers =
+    registry()->GetHandlersFor("test");
+  ASSERT_TRUE(handlers != NULL);
+  ASSERT_EQ(ph1, (*handlers)[0]);
+  ASSERT_EQ(ph2, (*handlers)[1]);
+  ASSERT_EQ(ph3, (*handlers)[2]);
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestGetHandledProtocols) {
+  std::vector<std::string> protocols;
+  registry()->GetHandledProtocols(&protocols);
+  ASSERT_EQ((size_t) 0, protocols.size());
+
+  registry()->GetHandlersFor("test");
+
+  protocols.clear();
+  registry()->GetHandledProtocols(&protocols);
+  ASSERT_EQ((size_t) 0, protocols.size());
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestIsHandledProtocol) {
+  registry()->GetHandlersFor("test");
+  ASSERT_FALSE(registry()->IsHandledProtocol("test"));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestNotifications) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  NotificationCounter counter;
+
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  ASSERT_EQ(1, counter.events());
+
+  registry()->Disable();
+  ASSERT_EQ(2, counter.events());
+
+  registry()->Enable();
+  ASSERT_EQ(3, counter.events());
+
+  registry()->RemoveHandler(ph1);
+  ASSERT_EQ(4, counter.events());
 }
