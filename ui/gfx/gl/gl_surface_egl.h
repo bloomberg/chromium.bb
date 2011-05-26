@@ -6,6 +6,10 @@
 #define UI_GFX_GL_GL_SURFACE_EGL_H_
 #pragma once
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -13,6 +17,12 @@
 typedef void* EGLConfig;
 typedef void* EGLDisplay;
 typedef void* EGLSurface;
+
+#if defined(OS_WIN)
+typedef HDC EGLNativeDisplayType;
+#else
+typedef struct _XDisplay* EGLNativeDisplayType;
+#endif
 
 namespace gfx {
 
@@ -25,6 +35,7 @@ class GLSurfaceEGL : public GLSurface {
   static bool InitializeOneOff();
   static EGLDisplay GetDisplay();
   static EGLConfig GetConfig();
+  static EGLNativeDisplayType GetNativeDisplay();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);

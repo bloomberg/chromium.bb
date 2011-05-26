@@ -25,6 +25,7 @@ namespace gfx {
 namespace {
 EGLConfig g_config;
 EGLDisplay g_display;
+EGLNativeDisplayType g_native_display;
 }
 
 GLSurfaceEGL::GLSurfaceEGL() {
@@ -39,11 +40,11 @@ bool GLSurfaceEGL::InitializeOneOff() {
     return true;
 
 #if defined(USE_X11)
-  EGLNativeDisplayType native_display = XOpenDisplay(NULL);
+  g_native_display = XOpenDisplay(NULL);
 #else
-  EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;
+  g_native_display = EGL_DEFAULT_DISPLAY;
 #endif
-  g_display = eglGetDisplay(native_display);
+  g_display = eglGetDisplay(g_native_display);
   if (!g_display) {
     LOG(ERROR) << "eglGetDisplay failed with error " << GetLastEGLErrorString();
     return false;
@@ -107,6 +108,10 @@ EGLDisplay GLSurfaceEGL::GetDisplay() {
 
 EGLConfig GLSurfaceEGL::GetConfig() {
   return g_config;
+}
+
+EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
+  return g_native_display;
 }
 
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(gfx::PluginWindowHandle window)
