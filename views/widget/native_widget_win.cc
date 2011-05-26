@@ -1147,9 +1147,9 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
 
 gfx::AcceleratedWidget NativeWidgetWin::GetAcceleratedWidget() {
 #if defined(VIEWS_COMPOSITOR)
-  return gfx::kNullAcceleratedWidget;
-#else
   return hwnd();
+#else
+  return gfx::kNullAcceleratedWidget;
 #endif
 }
 
