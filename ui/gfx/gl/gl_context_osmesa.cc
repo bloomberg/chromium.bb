@@ -102,7 +102,7 @@ void* GLContextOSMesa::GetHandle() {
 
 void GLContextOSMesa::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
-  NOTREACHED() << "Attempt to call SetSwapInterval on an GLContextOSMesa.";
+  LOG(WARNING) << "GLContextOSMesa::SetSwapInterval is ignored.";
 }
 
 }  // namespace gfx

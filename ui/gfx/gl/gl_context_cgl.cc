@@ -102,7 +102,7 @@ void* GLContextCGL::GetHandle() {
 
 void GLContextCGL::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
-  NOTREACHED() << "Attempt to call SetSwapInterval on a GLContextCGL.";
+  LOG(WARNING) << "GLContex: GLContextCGL::SetSwapInterval is ignored.";
 }
 
 }  // namespace gfx

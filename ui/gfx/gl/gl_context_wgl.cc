@@ -111,6 +111,10 @@ void GLContextWGL::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
   if (HasExtension("WGL_EXT_swap_control") && wglSwapIntervalEXT) {
     wglSwapIntervalEXT(interval);
+  } else {
+      LOG(WARNING) <<
+          "Could not disable vsync: driver does not "
+          "support WGL_EXT_swap_control";
   }
 }
 
