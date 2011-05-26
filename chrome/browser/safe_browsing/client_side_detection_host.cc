@@ -373,9 +373,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
                             redirect_urls,
                             // We only classify the main frame URL.
                             ResourceType::MAIN_FRAME,
-                            // TODO(noelutz): create a separate threat type
-                            // for client-side phishing detection.
-                            SafeBrowsingService::URL_PHISHING,
+                            SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
                             new CsdClient() /* will delete itself */,
                             tab_contents()->GetRenderProcessHost()->id(),
                             tab_contents()->render_view_host()->routing_id()));

@@ -48,7 +48,7 @@ static const char* const kSbDiagnosticUrl =
     "http://safebrowsing.clients.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
 #endif
 
-static const char* const kSbReportPhishingUrl =
+static const char* const kSbReportPhishingErrorUrl =
     "http://www.google.com/safebrowsing/report_error/";
 
 // URL for the "Learn more" link on the multi threat malware blocking page.
@@ -175,15 +175,20 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
     PopulateMultipleThreatStringDictionary(&strings);
     html = rb.GetRawDataResource(
         IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK).as_string();
-  } else if (unsafe_resources_[0].threat_type ==
-             SafeBrowsingService::URL_MALWARE) {
-    PopulateMalwareStringDictionary(&strings);
-    html = rb.GetRawDataResource(IDR_SAFE_BROWSING_MALWARE_BLOCK).as_string();
-  } else {  // Phishing.
-    DCHECK(unsafe_resources_[0].threat_type ==
-           SafeBrowsingService::URL_PHISHING);
-    PopulatePhishingStringDictionary(&strings);
-    html = rb.GetRawDataResource(IDR_SAFE_BROWSING_PHISHING_BLOCK).as_string();
+  } else {
+    SafeBrowsingService::UrlCheckResult threat_type =
+        unsafe_resources_[0].threat_type;
+    if (threat_type == SafeBrowsingService::URL_MALWARE) {
+      PopulateMalwareStringDictionary(&strings);
+      html = rb.GetRawDataResource(
+          IDR_SAFE_BROWSING_MALWARE_BLOCK).as_string();
+    } else {  // Phishing.
+      DCHECK(threat_type == SafeBrowsingService::URL_PHISHING ||
+             threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
+      PopulatePhishingStringDictionary(&strings);
+      html = rb.GetRawDataResource(
+          IDR_SAFE_BROWSING_PHISHING_BLOCK).as_string();
+    }
   }
 
   return jstemplate_builder::GetTemplatesHtml(html, &strings, "template_root");
@@ -221,14 +226,16 @@ void SafeBrowsingBlockingPage::PopulateMultipleThreatStringDictionary(
   for (UnsafeResourceList::const_iterator iter = unsafe_resources_.begin();
        iter != unsafe_resources_.end(); ++iter) {
     const SafeBrowsingService::UnsafeResource& resource = *iter;
+    SafeBrowsingService::UrlCheckResult threat_type = resource.threat_type;
     DictionaryValue* current_error_strings = new DictionaryValue;
-    if (resource.threat_type == SafeBrowsingService::URL_MALWARE) {
+    if (threat_type == SafeBrowsingService::URL_MALWARE) {
       malware = true;
       current_error_strings->SetString("type", "malware");
       current_error_strings->SetString("typeLabel", malware_label);
       current_error_strings->SetString("errorLink", malware_link);
     } else {
-      DCHECK(resource.threat_type == SafeBrowsingService::URL_PHISHING);
+      DCHECK(threat_type == SafeBrowsingService::URL_PHISHING ||
+             threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
       phishing = true;
       current_error_strings->SetString("type", "phishing");
       current_error_strings->SetString("typeLabel", phishing_label);
@@ -408,10 +415,12 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   if (command == kLearnMoreCommand) {
     // User pressed "Learn more".
     GURL url;
-    if (unsafe_resources_[0].threat_type == SafeBrowsingService::URL_MALWARE) {
+    SafeBrowsingService::UrlCheckResult threat_type =
+        unsafe_resources_[0].threat_type;
+    if (threat_type == SafeBrowsingService::URL_MALWARE) {
       url = google_util::AppendGoogleLocaleParam(GURL(kLearnMoreMalwareUrl));
-    } else if (unsafe_resources_[0].threat_type ==
-               SafeBrowsingService::URL_PHISHING) {
+    } else if (threat_type == SafeBrowsingService::URL_PHISHING ||
+               threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL) {
       url = google_util::AppendGoogleLocaleParam(GURL(kLearnMorePhishingUrl));
     } else {
       NOTREACHED();
@@ -462,11 +471,15 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // User pressed "Report error" for a phishing site.
     // Note that we cannot just put a link in the interstitial at this point.
     // It is not OK to navigate in the context of an interstitial page.
-    DCHECK(unsafe_resources_[element_index].threat_type ==
-           SafeBrowsingService::URL_PHISHING);
+    SafeBrowsingService::UrlCheckResult threat_type =
+        unsafe_resources_[element_index].threat_type;
+    DCHECK(threat_type == SafeBrowsingService::URL_PHISHING ||
+           threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
     GURL report_url =
-        safe_browsing_util::GeneratePhishingReportUrl(kSbReportPhishingUrl,
-                                                      bad_url_spec);
+        safe_browsing_util::GeneratePhishingReportUrl(
+            kSbReportPhishingErrorUrl,
+            bad_url_spec,
+            threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
     tab()->OpenURL(report_url, GURL(), CURRENT_TAB, PageTransition::LINK);
     return;
   }

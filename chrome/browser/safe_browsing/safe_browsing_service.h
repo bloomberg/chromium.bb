@@ -51,6 +51,10 @@ class SafeBrowsingService
     URL_MALWARE,
     BINARY_MALWARE_URL,  // Binary url leads to a malware.
     BINARY_MALWARE_HASH,  // Binary hash indicates this is a malware.
+
+    // Url detected by the client-side phishing model.  Note that unlike the
+    // above values, this does not correspond to a downloaded list.
+    CLIENT_SIDE_PHISHING_URL,
   };
 
   // Structure used to pass parameters between the IO and UI thread when

@@ -499,7 +499,8 @@ bool VerifyMAC(const std::string& key, const std::string& mac,
 }
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,
-                               const std::string& url_to_report) {
+                               const std::string& url_to_report,
+                               bool is_client_side_detection) {
   icu::Locale locale = icu::Locale::getDefault();
   const char* lang = locale.getLanguage();
   if (!lang)
@@ -514,6 +515,8 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
 #else
   std::string client_name("googlechrome");
 #endif
+  if (is_client_side_detection)
+    client_name.append("_csd");
 
   GURL report_url(report_page + base::StringPrintf(kReportParams,
                                                    client_name.c_str(),

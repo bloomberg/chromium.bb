@@ -769,7 +769,8 @@ GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
   DCHECK(threat_type == SafeBrowsingService::URL_MALWARE ||
          threat_type == SafeBrowsingService::URL_PHISHING ||
          threat_type == SafeBrowsingService::BINARY_MALWARE_URL ||
-         threat_type == SafeBrowsingService::BINARY_MALWARE_HASH);
+         threat_type == SafeBrowsingService::BINARY_MALWARE_HASH ||
+         threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
   // The malware and phishing hits go over HTTP.
   std::string url = ComposeUrl(http_url_prefix_, "report", client_name_,
                                version_, additional_query_);
@@ -786,6 +787,9 @@ GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
       break;
     case SafeBrowsingService::BINARY_MALWARE_HASH:
       threat_list = "binhashhit";
+      break;
+    case SafeBrowsingService::CLIENT_SIDE_PHISHING_URL:
+      threat_list = "phishcsdhit";
       break;
     default:
       NOTREACHED();

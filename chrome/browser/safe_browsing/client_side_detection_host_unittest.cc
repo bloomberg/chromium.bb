@@ -310,7 +310,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
                   phishing_url,
                   _,
                   ResourceType::MAIN_FRAME,
-                  SafeBrowsingService::URL_PHISHING,
+                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
                   _ /* a CsdClient object */,
                   contents()->GetRenderProcessHost()->id(),
                   contents()->render_view_host()->routing_id()))
@@ -388,7 +388,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
                   other_phishing_url,
                   _,
                   ResourceType::MAIN_FRAME,
-                  SafeBrowsingService::URL_PHISHING,
+                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
                   _ /* a CsdClient object */,
                   contents()->GetRenderProcessHost()->id(),
                   contents()->render_view_host()->routing_id()))

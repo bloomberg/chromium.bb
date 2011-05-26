@@ -236,6 +236,15 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
             pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
                 false, SafeBrowsingService::BINARY_MALWARE_HASH).spec());
+
+  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+            "pver=2.2&additional_query&evts=phishcsdhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=0",
+            pm.SafeBrowsingHitUrl(
+                malicious_url, page_url, referrer_url,
+                false, SafeBrowsingService::CLIENT_SIDE_PHISHING_URL).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {

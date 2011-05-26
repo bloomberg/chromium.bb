@@ -317,7 +317,8 @@ bool VerifyMAC(const std::string& key,
                int data_length);
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,
-                               const std::string& url_to_report);
+                               const std::string& url_to_report,
+                               bool is_client_side_detection);
 
 void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out);
 std::string SBFullHashToString(const SBFullHash& hash_out);
