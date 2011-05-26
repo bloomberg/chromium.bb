@@ -279,8 +279,7 @@ function isColor() {
  * @return {boolean} true if collate setting is enabled and checked.
  */
 function isCollated() {
-  return !$('collate-option').classList.contains('hidden') &&
-      $('collate').checked;
+  return !$('collate-option').hidden && $('collate').checked;
 }
 
 /**
@@ -602,15 +601,7 @@ window.addEventListener('DOMContentLoaded', onLoad);
  */
 function copiesFieldChanged() {
   updateCopiesButtonsState();
-  // TODO: change the following if else to
-  // $('collate-option').hidden = getCopies() <= 1;
-  // once the span[hidden] {display: none;} rule is applied correctly and also
-  // update isCollated() function. Currently it is not reducing the size of the
-  // span to 0x0.
-  if (getCopies() <= 1)
-    $('collate-option').classList.add('hidden');
-  else
-    $('collate-option').classList.remove('hidden');
+  $('collate-option').hidden = getCopies() <= 1;
 }
 
 /**

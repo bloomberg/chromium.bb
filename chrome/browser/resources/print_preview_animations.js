@@ -21,6 +21,7 @@ function addAnimation(code) {
 function showInvalidHint(el) {
   if (el.classList.contains('visible'))
     return;
+  el.classList.remove('closing');
   el.style.height = 'auto';
   var height = el.offsetHeight;
   el.style.height = height + 'px';
@@ -36,6 +37,6 @@ function hideInvalidHint(el) {
   if (!el.classList.contains('visible'))
     return;
   el.style.webkitAnimationName = '';
+  el.classList.add('closing');
   el.classList.remove('visible');
-  el.style.height = '';
 }
