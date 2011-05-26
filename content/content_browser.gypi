@@ -258,6 +258,8 @@
         'browser/renderer_host/render_widget_helper.h',
         'browser/renderer_host/render_widget_host.cc',
         'browser/renderer_host/render_widget_host.h',
+        'browser/renderer_host/render_widget_host_gtk.cc',
+        'browser/renderer_host/render_widget_host_mac.cc',
         'browser/renderer_host/render_widget_host_view.cc',
         'browser/renderer_host/render_widget_host_view.h',
         'browser/renderer_host/resource_dispatcher_host.cc',

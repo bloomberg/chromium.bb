@@ -32,11 +32,6 @@
 #include "views/view.h"
 #endif
 
-#if defined (OS_MACOSX)
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebScreenInfoFactory.h"
-#endif
-
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -46,11 +41,6 @@ using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebTextDirection;
-
-#if defined (OS_MACOSX)
-using WebKit::WebScreenInfo;
-using WebKit::WebScreenInfoFactory;
-#endif
 
 // How long to (synchronously) wait for the renderer to respond with a
 // PaintRect message, when our backing-store is invalid, before giving up and
@@ -198,7 +188,7 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnAcceleratedSurfaceSetTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
-#elif defined(OS_POSIX)
+#elif defined(TOOLKIT_USES_GTK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
                         OnMsgCreatePluginContainer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
@@ -1044,120 +1034,6 @@ void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
     view_->AcceleratedCompositingActivated(activated);
 #endif
 }
-
-#if defined(OS_MACOSX)
-
-void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId view,
-                                          WebScreenInfo* results) {
-  gfx::NativeView native_view = view_ ? view_->GetNativeView() : NULL;
-  *results = WebScreenInfoFactory::screenInfo(native_view);
-}
-
-void RenderWidgetHost::OnMsgGetWindowRect(gfx::NativeViewId window_id,
-                                          gfx::Rect* results) {
-  if (view_) {
-    *results = view_->GetViewBounds();
-  }
-}
-
-void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
-                                              gfx::Rect* results) {
-  if (view_) {
-    *results = view_->GetRootWindowRect();
-  }
-}
-
-void RenderWidgetHost::OnMsgPluginFocusChanged(bool focused, int plugin_id) {
-  if (view_)
-    view_->PluginFocusChanged(focused, plugin_id);
-}
-
-void RenderWidgetHost::OnMsgStartPluginIme() {
-  if (view_)
-    view_->StartPluginIme();
-}
-
-void RenderWidgetHost::OnAllocateFakePluginWindowHandle(
-    bool opaque,
-    bool root,
-    gfx::PluginWindowHandle* id) {
-  // TODO(kbr): similar potential issue here as in OnMsgCreatePluginContainer.
-  // Possibly less of an issue because this is only used for the GPU plugin.
-  if (view_) {
-    *id = view_->AllocateFakePluginWindowHandle(opaque, root);
-  } else {
-    NOTIMPLEMENTED();
-  }
-}
-
-void RenderWidgetHost::OnDestroyFakePluginWindowHandle(
-    gfx::PluginWindowHandle id) {
-  if (view_) {
-    view_->DestroyFakePluginWindowHandle(id);
-  } else {
-    NOTIMPLEMENTED();
-  }
-}
-
-void RenderWidgetHost::OnAcceleratedSurfaceSetIOSurface(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    uint64 mach_port) {
-  if (view_) {
-    view_->AcceleratedSurfaceSetIOSurface(window, width, height, mach_port);
-  }
-}
-
-void RenderWidgetHost::OnAcceleratedSurfaceSetTransportDIB(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    TransportDIB::Handle transport_dib) {
-  if (view_) {
-    view_->AcceleratedSurfaceSetTransportDIB(window, width, height,
-                                             transport_dib);
-  }
-}
-
-void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_id) {
-  if (view_) {
-    // This code path could be updated to implement flow control for
-    // updating of accelerated plugins as well. However, if we add support
-    // for composited plugins then this is not necessary.
-    view_->AcceleratedSurfaceBuffersSwapped(window, surface_id,
-                                            0, 0, 0, 0);
-  }
-}
-#elif defined(OS_POSIX)
-
-void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
-  // TODO(piman): view_ can only be NULL with delayed view creation in
-  // extensions (see ExtensionHost::CreateRenderViewSoon). Figure out how to
-  // support plugins in that case.
-  if (view_) {
-    view_->CreatePluginContainer(id);
-  } else {
-    deferred_plugin_handles_.push_back(id);
-  }
-}
-
-void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
-  if (view_) {
-    view_->DestroyPluginContainer(id);
-  } else {
-    for (int i = 0;
-         i < static_cast<int>(deferred_plugin_handles_.size());
-         i++) {
-      if (deferred_plugin_handles_[i] == id) {
-        deferred_plugin_handles_.erase(deferred_plugin_handles_.begin() + i);
-        i--;
-      }
-    }
-  }
-}
-#endif
 
 void RenderWidgetHost::PaintBackingStoreRect(
     TransportDIB::Id bitmap,
