@@ -6,6 +6,10 @@
 
 #include "base/compiler_specific.h"
 
+namespace ppapi {
+struct Preferences;
+}
+
 namespace webkit {
 namespace ppapi {
 
@@ -17,6 +21,7 @@ class WebKitForwardingImpl : public ::ppapi::WebKitForwarding {
   virtual void CreateFontForwarding(base::WaitableEvent* event,
                                     const PP_FontDescription_Dev& desc,
                                     const std::string& desc_face,
+                                    const ::ppapi::Preferences& prefs,
                                     Font** result) OVERRIDE;
 };
 

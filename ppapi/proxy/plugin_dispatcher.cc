@@ -40,7 +40,8 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
                                    GetInterfaceFunc get_interface)
     : Dispatcher(remote_process_handle, get_interface),
-      plugin_delegate_(NULL) {
+      plugin_delegate_(NULL),
+      received_preferences_(false) {
   SetSerializationRules(new PluginVarSerializationRules);
 
   // As a plugin, we always support the PPP_Class interface. There's no
@@ -122,6 +123,7 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PluginDispatcher, msg)
       IPC_MESSAGE_HANDLER(PpapiMsg_SupportsInterface, OnMsgSupportsInterface)
+      IPC_MESSAGE_HANDLER(PpapiMsg_SetPreferences, OnMsgSetPreferences)
     IPC_END_MESSAGE_MAP()
     return handled;
   }
@@ -272,6 +274,20 @@ void PluginDispatcher::OnMsgSupportsInterface(
   target_proxies_[info->id].reset(
       info->create_proxy(this, interface_functions));
   *result = true;
+}
+
+void PluginDispatcher::OnMsgSetPreferences(const ::ppapi::Preferences& prefs) {
+  // The renderer may send us preferences more than once (currently this
+  // happens every time a new plugin instance is created). Since we don't have
+  // a way to signal to the plugin that the preferences have changed, changing
+  // the default fonts and such in the middle of a running plugin could be
+  // confusing to it. As a result, we never allow the preferences to be changed
+  // once they're set. The user will have to restart to get new font prefs
+  // propogated to plugins.
+  if (!received_preferences_) {
+    received_preferences_ = true;
+    preferences_ = prefs;
+  }
 }
 
 }  // namespace proxy

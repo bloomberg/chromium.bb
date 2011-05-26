@@ -105,6 +105,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual double GetLocalTimeZoneOffset(base::Time t);
   virtual std::string GetFlashCommandLineArgs();
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
+  virtual ::ppapi::Preferences GetPreferences();
 };
 
 }  // namespace ppapi

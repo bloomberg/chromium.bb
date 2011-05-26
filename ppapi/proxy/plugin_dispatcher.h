@@ -15,11 +15,16 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
 
 class MessageLoop;
 
 namespace base {
 class WaitableEvent;
+}
+
+namespace ppapi {
+struct Preferences;
 }
 
 namespace pp {
@@ -108,6 +113,9 @@ class PluginDispatcher : public Dispatcher {
   // Returns the WebKitForwarding object used to forward events to WebKit.
   ppapi::WebKitForwarding* GetWebKitForwarding();
 
+  // Returns the Preferences.
+  const ppapi::Preferences& preferences() const { return preferences_; }
+
   // Returns the "new-style" function API for the given interface ID, creating
   // it if necessary.
   // TODO(brettw) this is in progress. It should be merged with the target
@@ -124,6 +132,7 @@ class PluginDispatcher : public Dispatcher {
 
   // IPC message handlers.
   void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
+  void OnMsgSetPreferences(const ::ppapi::Preferences& prefs);
 
   PluginDelegate* plugin_delegate_;
 
@@ -139,6 +148,11 @@ class PluginDispatcher : public Dispatcher {
 
   typedef base::hash_map<PP_Instance, InstanceData> InstanceDataMap;
   InstanceDataMap instance_map_;
+
+  // The preferences sent from the host. We only want to set this once, which
+  // is what the received_preferences_ indicates. See OnMsgSetPreferences.
+  bool received_preferences_;
+  ppapi::Preferences preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginDispatcher);
 };

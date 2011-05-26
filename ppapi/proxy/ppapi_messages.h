@@ -29,6 +29,7 @@
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
 
 #define IPC_MESSAGE_START PpapiMsgStart
 
@@ -45,6 +46,15 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PP_Rect)
   IPC_STRUCT_TRAITS_MEMBER(point)
   IPC_STRUCT_TRAITS_MEMBER(size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(::ppapi::Preferences)
+  IPC_STRUCT_TRAITS_MEMBER(standard_font_family)
+  IPC_STRUCT_TRAITS_MEMBER(fixed_font_family)
+  IPC_STRUCT_TRAITS_MEMBER(serif_font_family)
+  IPC_STRUCT_TRAITS_MEMBER(sans_serif_font_family)
+  IPC_STRUCT_TRAITS_MEMBER(default_font_size)
+  IPC_STRUCT_TRAITS_MEMBER(default_fixed_font_size)
 IPC_STRUCT_TRAITS_END()
 
 // These are from the browser to the plugin.
@@ -74,6 +84,10 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
 IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_ReserveInstanceId,
                             PP_Instance /* instance */,
                             bool /* usable */)
+
+// Passes the WebKit preferences to the plugin.
+IPC_MESSAGE_CONTROL1(PpapiMsg_SetPreferences,
+                     ::ppapi::Preferences)
 
 // Sent in both directions to see if the other side supports the given
 // interface.

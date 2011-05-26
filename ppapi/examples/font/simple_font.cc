@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdio.h>
+
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/font_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
@@ -31,22 +33,71 @@ class MyInstance : public pp::Instance {
 
     pp::FontDescription_Dev desc;
     desc.set_family(PP_FONTFAMILY_SANSSERIF);
-    desc.set_size(30);
+    desc.set_size(100);
     pp::Font_Dev font(this, desc);
 
+    // Draw some large, alpha blended text, including Arabic shaping.
     pp::Rect text_clip(position.size());  // Use entire bounds for clip.
     font.DrawTextAt(&image,
         pp::TextRun_Dev("\xD9\x85\xD8\xB1\xD8\xAD\xD8\xA8\xD8\xA7\xE2\x80\x8E",
                          true, true),
-        pp::Point(10, 40), 0xFF008000, clip, false);
-    font.DrawTextAt(&image, pp::TextRun_Dev("Hello"),
-        pp::Point(10, 80), 0xFF000080, text_clip, false);
+        pp::Point(20, 100), 0x80008000, clip, false);
+
+    // Draw the default font names and sizes.
+    int y = 160;
+    {
+      pp::FontDescription_Dev desc;
+      pp::Font_Dev default_font(this, desc);
+      default_font.DrawSimpleText(
+          &image, DescribeFont(default_font, "Default font"),
+          pp::Point(10, y), 0xFF000000);
+      y += 20;
+    }
+    {
+      pp::FontDescription_Dev desc;
+      desc.set_family(PP_FONTFAMILY_SERIF);
+      pp::Font_Dev serif_font(this, desc);
+      serif_font.DrawSimpleText(
+          &image, DescribeFont(serif_font, "Serif font"),
+          pp::Point(10, y), 0xFF000000);
+      y += 20;
+    }
+    {
+      pp::FontDescription_Dev desc;
+      desc.set_family(PP_FONTFAMILY_SANSSERIF);
+      pp::Font_Dev sans_serif_font(this, desc);
+      sans_serif_font.DrawSimpleText(
+          &image, DescribeFont(sans_serif_font, "Sans serif font"),
+          pp::Point(10, y), 0xFF000000);
+      y += 20;
+    }
+    {
+      pp::FontDescription_Dev desc;
+      desc.set_family(PP_FONTFAMILY_MONOSPACE);
+      pp::Font_Dev monospace_font(this, desc);
+      monospace_font.DrawSimpleText(
+          &image, DescribeFont(monospace_font, "Monospace font"),
+          pp::Point(10, y), 0xFF000000);
+      y += 20;
+    }
 
     device.PaintImageData(image, pp::Point(0, 0));
     device.Flush(pp::CompletionCallback(&DummyCompletionCallback, NULL));
   }
 
  private:
+  // Returns a string describing the given font, using the given title.
+  std::string DescribeFont(const pp::Font_Dev& font, const char* title) {
+    pp::FontDescription_Dev desc;
+    PP_FontMetrics_Dev metrics;
+    font.Describe(&desc, &metrics);
+
+    char buf[256];
+    sprintf(buf, "%s = %s %dpt",
+            title, desc.face().AsString().c_str(), desc.size());
+    return std::string(buf);
+  }
+
   pp::Size last_size_;
 };
 

@@ -35,6 +35,8 @@
         'shared_impl/font_impl.h',
         'shared_impl/image_data_impl.cc',
         'shared_impl/image_data_impl.h',
+        'shared_impl/ppapi_preferences.cc',
+        'shared_impl/ppapi_preferences.h',
         'shared_impl/tracker_base.cc',
         'shared_impl/tracker_base.h',
         'shared_impl/url_util_impl.cc',

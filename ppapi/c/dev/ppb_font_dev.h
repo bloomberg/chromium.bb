@@ -56,18 +56,31 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FontWeight_Dev, 4);
 struct PP_FontDescription_Dev {
   /**
    * Font face name as a string. This can also be an undefined var, in which
-   * case the generic family will be obeyed.
+   * case the generic family will be obeyed. If the face is not available on
+   * the system, the browser will attempt to do font fallback or pick a default
+   * font.
    */
   struct PP_Var face;
 
   /**
-   * When face is an undefined var, this specifies the generic font family type
-   * to use. If the face is specified, this will be ignored.
+   * When Create()ing a font and the face is an undefined var, the family
+   * specifies the generic font family type to use. If the face is specified,
+   * this will be ignored.
+   *
+   * When Describe()ing a font, the family will be the value you passed in when
+   * the font was created. In other words, if you specify a face name, the
+   * family will not be updated to reflect whether the font name you requested
+   * is serif or sans serif.
    */
   PP_FontFamily_Dev family;
 
   /**
    * Size in pixels.
+   *
+   * You can specify 0 to get the default font size. The default font size
+   * may vary depending on the requested font. The typical example is that
+   * the user may have a different font size for the default monospace font to
+   * give it a similar optical size to the proportionally spaced fonts.
    */
   uint32_t size;
 

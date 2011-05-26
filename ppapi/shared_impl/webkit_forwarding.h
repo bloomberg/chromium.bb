@@ -25,6 +25,8 @@ class PlatformCanvas;
 
 namespace ppapi {
 
+struct Preferences;
+
 class WebKitForwarding {
  public:
   class Font {
@@ -93,8 +95,8 @@ class WebKitForwarding {
   virtual void CreateFontForwarding(base::WaitableEvent* event,
                                     const PP_FontDescription_Dev& desc,
                                     const std::string& desc_face,
+                                    const Preferences& prefs,
                                     Font** result) = 0;
-
 };
 
 }  // namespace ppapi

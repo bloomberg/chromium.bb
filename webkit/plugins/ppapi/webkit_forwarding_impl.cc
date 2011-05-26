@@ -5,11 +5,13 @@
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFont.h"
@@ -43,7 +45,8 @@ namespace {
 
 // Assumes the given PP_FontDescription has been validated.
 WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription_Dev& font,
-                                           const std::string& face) {
+                                           const std::string& face,
+                                           const ::ppapi::Preferences& prefs) {
   // Verify that the enums match so we can just static cast.
   COMPILE_ASSERT(static_cast<int>(WebFontDescription::Weight100) ==
                  static_cast<int>(PP_FONTWEIGHT_100),
@@ -65,9 +68,47 @@ WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription_Dev& font,
                  MonospaceFamily);
 
   WebFontDescription result;
-  result.family = UTF8ToUTF16(face);
+  string16 resolved_family;
+  if (face.empty()) {
+    // Resolve the generic family.
+    switch (font.family) {
+      case PP_FONTFAMILY_SERIF:
+        resolved_family = prefs.serif_font_family;
+        break;
+      case PP_FONTFAMILY_SANSSERIF:
+        resolved_family = prefs.sans_serif_font_family;
+        break;
+      case PP_FONTFAMILY_MONOSPACE:
+        resolved_family = prefs.fixed_font_family;
+        break;
+      case PP_FONTFAMILY_DEFAULT:
+      default:
+        resolved_family = prefs.standard_font_family;
+        break;
+    }
+  } else {
+    // Use the exact font.
+    resolved_family = UTF8ToUTF16(face);
+  }
+  result.family = resolved_family;
+
   result.genericFamily = PP_FONTFAMILY_TO_WEB_FONTFAMILY(font.family);
-  result.size = static_cast<float>(font.size);
+
+  if (font.size == 0) {
+    // Resolve the default font size, using the resolved family to see if
+    // we should use the fixed or regular font size. It's difficult at this
+    // level to detect if the requested font is fixed width, so we only apply
+    // the alternate font size to the default fixed font family.
+    if (StringToLowerASCII(resolved_family) ==
+        StringToLowerASCII(prefs.fixed_font_family))
+      result.size = static_cast<float>(prefs.default_fixed_font_size);
+    else
+      result.size = static_cast<float>(prefs.default_font_size);
+  } else {
+    // Use the exact size.
+    result.size = static_cast<float>(font.size);
+  }
+
   result.italic = font.italic != PP_FALSE;
   result.smallCaps = font.small_caps != PP_FALSE;
   result.weight = static_cast<WebFontDescription::Weight>(font.weight);
@@ -87,7 +128,8 @@ WebTextRun TextRunToWebTextRun(const WebKitForwarding::Font::TextRun& run) {
 class FontImpl : public WebKitForwarding::Font {
  public:
   FontImpl(const PP_FontDescription_Dev& desc,
-           const std::string& desc_face);
+           const std::string& desc_face,
+           const ::ppapi::Preferences& prefs);
   virtual ~FontImpl();
 
   virtual void Describe(base::WaitableEvent* event,
@@ -116,8 +158,10 @@ class FontImpl : public WebKitForwarding::Font {
 };
 
 FontImpl::FontImpl(const PP_FontDescription_Dev& desc,
-                   const std::string& desc_face) {
-  WebFontDescription web_font_desc = PPFontDescToWebFontDesc(desc, desc_face);
+                   const std::string& desc_face,
+                   const ::ppapi::Preferences& prefs) {
+  WebFontDescription web_font_desc = PPFontDescToWebFontDesc(desc, desc_face,
+                                                             prefs);
   font_.reset(WebFont::create(web_font_desc));
 }
 
@@ -232,8 +276,9 @@ void WebKitForwardingImpl::CreateFontForwarding(
     base::WaitableEvent* event,
     const PP_FontDescription_Dev& desc,
     const std::string& desc_face,
+    const ::ppapi::Preferences& prefs,
     Font** result) {
-  *result = new FontImpl(desc, desc_face);
+  *result = new FontImpl(desc, desc_face, prefs);
   if (event)
     event->Signal();
 }

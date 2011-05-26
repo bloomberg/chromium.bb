@@ -6,6 +6,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
 
 namespace webkit {
 namespace ppapi {
@@ -246,6 +247,10 @@ std::string MockPluginDelegate::GetFlashCommandLineArgs() {
 base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
     uint32_t size) {
   return NULL;
+}
+
+::ppapi::Preferences MockPluginDelegate::GetPreferences() {
+  return ::ppapi::Preferences();
 }
 
 }  // namespace ppapi

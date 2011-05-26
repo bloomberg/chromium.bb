@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/scoped_native_library.h"
@@ -31,16 +32,16 @@ class PpapiThread : public ChildThread,
 
  private:
   // ChildThread overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Dispatcher::Delegate implementation.
-  virtual base::MessageLoopProxy* GetIPCMessageLoop();
-  virtual base::WaitableEvent* GetShutdownEvent();
-  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
-  virtual ppapi::WebKitForwarding* GetWebKitForwarding();
+  virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
+  virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
+  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() OVERRIDE;
+  virtual ppapi::WebKitForwarding* GetWebKitForwarding() OVERRIDE;
   virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
-                                  const base::Closure& task);
-  virtual bool SendToBrowser(IPC::Message* msg);
+                                  const base::Closure& task) OVERRIDE;
+  virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
 
   // Message handlers.
   void OnMsgLoadPlugin(const FilePath& path);

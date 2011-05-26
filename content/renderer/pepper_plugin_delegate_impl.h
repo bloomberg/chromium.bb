@@ -273,6 +273,7 @@ class PepperPluginDelegateImpl
   virtual double GetLocalTimeZoneOffset(base::Time t);
   virtual std::string GetFlashCommandLineArgs();
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
+  virtual ::ppapi::Preferences GetPreferences();
 
  private:
   // Asynchronously attempts to create a PPAPI broker for the given plugin.

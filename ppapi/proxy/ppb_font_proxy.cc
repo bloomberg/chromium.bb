@@ -10,6 +10,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/resource_object_base.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
@@ -104,7 +105,9 @@ Font::Font(const HostResource& resource,
   RunOnWebKitThread(base::Bind(&WebKitForwarding::CreateFontForwarding,
                                base::Unretained(forwarding),
                                &webkit_event_, desc,
-                               face ? *face : std::string(), &result));
+                               face ? *face : std::string(),
+                               GetDispatcher()->preferences(),
+                               &result));
   font_forwarding_.reset(result);
 }
 

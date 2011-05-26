@@ -92,9 +92,11 @@ HostDispatcher::~HostDispatcher() {
 bool HostDispatcher::InitHostWithChannel(
     Delegate* delegate,
     const IPC::ChannelHandle& channel_handle,
-    bool is_client) {
+    bool is_client,
+    const ppapi::Preferences& preferences) {
   if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
     return false;
+  Send(new PpapiMsg_SetPreferences(preferences));
   return true;
 }
 

@@ -27,6 +27,10 @@ namespace IPC {
 class SyncChannel;
 }
 
+namespace ppapi {
+struct Preferences;
+}
+
 namespace pp {
 namespace proxy {
 
@@ -48,7 +52,8 @@ class HostDispatcher : public Dispatcher {
   // transferred.
   virtual bool InitHostWithChannel(Delegate* delegate,
                                    const IPC::ChannelHandle& channel_handle,
-                                   bool is_client);
+                                   bool is_client,
+                                   const ppapi::Preferences& preferences);
 
   // The host side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel.

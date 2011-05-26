@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -43,7 +44,8 @@ PPB_Font_Impl::PPB_Font_Impl(PluginInstance* instance,
 
   WebKitForwarding::Font* result = NULL;
   instance->module()->GetWebKitForwarding()->CreateFontForwarding(
-      NULL, desc, face_name ? face_name->value() : std::string(), &result);
+      NULL, desc, face_name ? face_name->value() : std::string(),
+      instance->delegate()->GetPreferences(), &result);
   font_forwarding_.reset(result);
 }
 

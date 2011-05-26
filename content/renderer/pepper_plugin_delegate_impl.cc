@@ -45,6 +45,7 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
@@ -328,7 +329,8 @@ class DispatcherWrapper
   DispatcherWrapper() {}
   virtual ~DispatcherWrapper() {}
 
-  bool Init(base::ProcessHandle plugin_process_handle,
+  bool Init(RenderView* render_view,
+            base::ProcessHandle plugin_process_handle,
             const IPC::ChannelHandle& channel_handle,
             PP_Module pp_module,
             pp::proxy::Dispatcher::GetInterfaceFunc local_get_interface);
@@ -351,6 +353,7 @@ class DispatcherWrapper
 }  // namespace
 
 bool DispatcherWrapper::Init(
+    RenderView* render_view,
     base::ProcessHandle plugin_process_handle,
     const IPC::ChannelHandle& channel_handle,
     PP_Module pp_module,
@@ -358,8 +361,10 @@ bool DispatcherWrapper::Init(
   dispatcher_.reset(new pp::proxy::HostDispatcher(
       plugin_process_handle, pp_module, local_get_interface));
 
-  if (!dispatcher_->InitHostWithChannel(PepperPluginRegistry::GetInstance(),
-                                        channel_handle, true)) {
+  if (!dispatcher_->InitHostWithChannel(
+          PepperPluginRegistry::GetInstance(),
+          channel_handle, true,
+          ppapi::Preferences(render_view->webkit_preferences()))) {
     dispatcher_.reset();
     return false;
   }
@@ -608,6 +613,7 @@ PepperPluginDelegateImpl::CreatePepperPlugin(
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
   if (!dispatcher->Init(
+          render_view_,
           plugin_process_handle, channel_handle,
           module->pp_module(),
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc()))
@@ -1312,4 +1318,8 @@ base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
     return NULL;
   }
   return new base::SharedMemory(handle, false);
+}
+
+ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {
+  return ppapi::Preferences(render_view_->webkit_preferences());
 }
