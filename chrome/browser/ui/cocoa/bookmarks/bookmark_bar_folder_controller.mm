@@ -389,11 +389,7 @@ struct LayoutMetrics {
       [button setTarget:self];
       [button setAction:@selector(openBookmark:)];
       // Add a tooltip.
-      NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-      std::string urlString = node->GetURL().possibly_invalid_spec();
-      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
-                                    urlString.c_str()];
-      [button setToolTip:tooltip];
+      [button setToolTip:[barController_ tooltipForNode:node]];
       [button setAcceptsTrackIn:YES];
     }
   } else {

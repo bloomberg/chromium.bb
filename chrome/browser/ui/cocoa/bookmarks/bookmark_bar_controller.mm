@@ -1145,14 +1145,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [item setTarget:self];
     [item setAction:@selector(openBookmarkMenuItem:)];
     [item setTag:[self menuTagFromNodeId:child->id()]];
-    if (child->is_url()) {
-      // Add a tooltip
-      std::string url_string = child->GetURL().possibly_invalid_spec();
-      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                           base::SysUTF16ToNSString(child->GetTitle()),
-                           url_string.c_str()];
-      [item setToolTip:tooltip];
-    }
+    if (child->is_url())
+      [item setToolTip:[self tooltipForNode:child]];
   }
 }
 
@@ -1232,6 +1226,18 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   }
 }
 
+- (NSString*)tooltipForNode:(const BookmarkNode*)node {
+  NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+  std::string url_string = node->GetURL().possibly_invalid_spec();
+  NSString* url = [NSString stringWithUTF8String:url_string.c_str()];
+  if ([title length] == 0)
+    return url;
+  else if ([url length] == 0 || [url isEqualToString:title])
+    return title;
+  else
+    return [NSString stringWithFormat:@"%@\n%@", title, url];
+}
+
 - (BookmarkButton*)buttonForNode:(const BookmarkNode*)node
                          xOffset:(int*)xOffset {
   BookmarkButtonCell* cell = [self cellForBookmarkNode:node];
@@ -1271,14 +1277,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // Make the button do something
     [button setTarget:self];
     [button setAction:@selector(openBookmark:)];
-    if (node->is_url()) {
-      // Add a tooltip.
-      NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-      std::string url_string = node->GetURL().possibly_invalid_spec();
-      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
-                           url_string.c_str()];
-      [button setToolTip:tooltip];
-    }
+    if (node->is_url())
+      [button setToolTip:[self tooltipForNode:node]];
   }
   return [[button.get() retain] autorelease];
 }
