@@ -121,6 +121,14 @@ const int kMaxPendingDataMessages = 20;
 // This bound is 25MB, which allows for around 6000 outstanding requests.
 const int kMaxOutstandingRequestsCostPerProcess = 26214400;
 
+// All possible error codes from the network module. Note that the error codes
+// are all positive (since histograms expect positive sample values).
+const int kAllNetErrorCodes[] = {
+#define NET_ERROR(label, value) -(value),
+#include "net/base/net_error_list.h"
+#undef NET_ERROR
+};
+
 // Aborts a request before an URLRequest has actually been created.
 void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
                                 IPC::Message* sync_result,
@@ -207,17 +215,6 @@ void PopulateResourceResponse(net::URLRequest* request,
       request,
       &response->response_head.appcache_id,
       &response->response_head.appcache_manifest_url);
-}
-
-// Returns a list of all the possible error codes from the network module.
-// Note that the error codes are all positive (since histograms expect positive
-// sample values).
-std::vector<int> GetAllNetErrorCodes() {
-  std::vector<int> all_error_codes;
-#define NET_ERROR(label, value) all_error_codes.push_back(-(value));
-#include "net/base/net_error_list.h"
-#undef NET_ERROR
-  return all_error_codes;
 }
 
 void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
@@ -1582,9 +1579,14 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
   if (!request->status().is_success() &&
       info->resource_type() == ResourceType::MAIN_FRAME &&
       request->status().os_error() != net::ERR_ABORTED) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.ErrorCodesForMainFrame",
-                                     -request->status().os_error(),
-                                     GetAllNetErrorCodes());
+    // This enumeration has "2" appended to its name to distinguish it from
+    // its original version. We changed the buckets at one point (added
+    // guard buckets by using CustomHistogram::ArrayToCustomRanges).
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+        "Net.ErrorCodesForMainFrame2",
+        -request->status().os_error(),
+        base::CustomHistogram::ArrayToCustomRanges(
+            kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
   }
 
   std::string security_info;
