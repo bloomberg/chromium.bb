@@ -261,9 +261,8 @@ class TabContents : public PageNavigator,
 
   // Called by the NavigationController to cause the TabContents to navigate to
   // the current pending entry. The NavigationController should be called back
-  // with CommitPendingEntry/RendererDidNavigate on success or
-  // DiscardPendingEntry. The callbacks can be inside of this function, or at
-  // some future time.
+  // with RendererDidNavigate on success or DiscardPendingEntry on failure.
+  // The callbacks can be inside of this function, or at some future time.
   //
   // The entry has a PageID of -1 if newly created (corresponding to navigation
   // to a new URL).

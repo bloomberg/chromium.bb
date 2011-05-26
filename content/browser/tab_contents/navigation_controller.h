@@ -217,16 +217,6 @@ class NavigationController {
 
   // Pending entry -------------------------------------------------------------
 
-  // Commits the current pending entry and issues the NOTIFY_NAV_ENTRY_COMMIT
-  // notification. No changes are made to the entry during this process, it is
-  // just moved from pending to committed. This is an alternative to
-  // RendererDidNavigate for simple TabContents types.
-  //
-  // When the pending entry is a new navigation, it will have a page ID of -1.
-  // The caller should leave this as-is. CommitPendingEntry will generate a
-  // new page ID for you and update the TabContents with that ID.
-  void CommitPendingEntry();
-
   // Discards the pending and transient entries if any.
   void DiscardNonCommittedEntries();
 
@@ -313,8 +303,7 @@ class NavigationController {
   // For use by TabContents ----------------------------------------------------
 
   // Handles updating the navigation state after the renderer has navigated.
-  // This is used by the TabContents. Simpler tab contents types can use
-  // CommitPendingEntry below.
+  // This is used by the TabContents.
   //
   // If a new entry is created, it will return true and will have filled the
   // given details structure and broadcast the NOTIFY_NAV_ENTRY_COMMITTED
