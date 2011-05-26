@@ -4,12 +4,145 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/timer.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/adaptive_demuxer.h"
 
 namespace media {
+
+static const int64 kSwitchTimerPeriod = 5000;  // In milliseconds.
+
+// Object that decides when to switch streams.
+class StreamSwitchManager
+    : public base::RefCountedThreadSafe<StreamSwitchManager> {
+ public:
+  typedef std::vector<int> StreamIdVector;
+
+  StreamSwitchManager(AdaptiveDemuxer* demuxer,
+                      const StreamIdVector& video_ids);
+  virtual ~StreamSwitchManager();
+
+  // Playback events. These methods are called when playback starts, pauses, or
+  // stops.
+  void Play();
+  void Pause();
+  void Stop();
+
+ private:
+  // Method called periodically to determine if we should switch
+  // streams.
+  void OnSwitchTimer();
+
+  // Called when the demuxer completes a stream switch.
+  void OnSwitchDone(PipelineStatus status);
+
+  // The demuxer that owns this object.
+  AdaptiveDemuxer* demuxer_;
+
+  // Message loop this object runs on.
+  MessageLoop* message_loop_;
+
+  // Is clip playing or not?
+  bool playing_;
+
+  // Is a stream switch in progress?
+  bool switch_pending_;
+
+  // Periodic timer that calls OnSwitchTimer().
+  base::RepeatingTimer<StreamSwitchManager> timer_;
+
+  // The stream IDs for the video streams.
+  StreamIdVector video_ids_;
+
+  // An index into |video_ids_| for the current video stream.
+  int current_id_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(StreamSwitchManager);
+};
+
+StreamSwitchManager::StreamSwitchManager(
+    AdaptiveDemuxer* demuxer,
+    const StreamIdVector& video_ids)
+    : demuxer_(demuxer),
+      playing_(false),
+      switch_pending_(false),
+      video_ids_(video_ids),
+      current_id_index_(-1) {
+  DCHECK(demuxer);
+  message_loop_ = MessageLoop::current();
+  demuxer_ = demuxer;
+  current_id_index_ = -1;
+
+  if (video_ids_.size() > 0) {
+    // Find the index in video_ids_ for the current video ID.
+    int current_id = demuxer->GetCurrentVideoId();
+    current_id_index_ = 0;
+    for (size_t i = 0; i < video_ids_.size(); i++) {
+      if (current_id == video_ids_[i]) {
+        current_id_index_ = i;
+        break;
+      }
+    }
+  }
+}
+
+StreamSwitchManager::~StreamSwitchManager() {}
+
+void StreamSwitchManager::Play() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(!playing_);
+  playing_ = true;
+
+  if (video_ids_.size() > 1) {
+    timer_.Start(base::TimeDelta::FromMilliseconds(kSwitchTimerPeriod),
+                 this, &StreamSwitchManager::OnSwitchTimer);
+  }
+}
+
+void StreamSwitchManager::Pause() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(playing_);
+  playing_ = false;
+  timer_.Stop();
+}
+
+void StreamSwitchManager::Stop() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(!playing_);
+  demuxer_ = NULL;
+}
+
+void StreamSwitchManager::OnSwitchTimer() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
+  if (!playing_ || !demuxer_ || (video_ids_.size() < 2) || switch_pending_)
+    return;
+
+  // Select the stream to switch to. For now we are just rotating
+  // through the available streams.
+  int new_id_index = (current_id_index_ + 1) % video_ids_.size();
+
+  current_id_index_ = new_id_index;
+  switch_pending_ = true;
+  demuxer_->ChangeVideoStream(video_ids_[new_id_index],
+                              base::Bind(&StreamSwitchManager::OnSwitchDone,
+                                         this));
+}
+
+void StreamSwitchManager::OnSwitchDone(PipelineStatus status) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &StreamSwitchManager::OnSwitchDone, status));
+    return;
+  }
+
+  switch_pending_ = false;
+}
 
 //
 // AdaptiveDemuxerStream
@@ -17,7 +150,10 @@ namespace media {
 AdaptiveDemuxerStream::AdaptiveDemuxerStream(
     StreamVector const& streams, int initial_stream)
     : streams_(streams), current_stream_index_(initial_stream),
-      bitstream_converter_enabled_(false) {
+      bitstream_converter_enabled_(false),
+      pending_reads_(0),
+      switch_index_(-1),
+      last_buffer_timestamp_(kNoTimestamp) {
   DCheckSanity();
 }
 
@@ -57,7 +193,26 @@ DemuxerStream* AdaptiveDemuxerStream::current_stream() {
 }
 
 void AdaptiveDemuxerStream::Read(const ReadCallback& read_callback) {
-  current_stream()->Read(read_callback);
+  DemuxerStream* stream = NULL;
+
+  {
+    base::AutoLock auto_lock(lock_);
+
+    read_cb_queue_.push_back(read_callback);
+
+    // Check to make sure we aren't doing a stream switch. We only want to
+    // make calls on |streams_[current_stream_index_]| when we aren't
+    // in the middle of a stream switch. Since the callback is stored in
+    // |read_cb_queue_| we will issue the Read() on the new stream once
+    // the switch has completed.
+    if (!IsSwitchPending_Locked()) {
+      stream = streams_[current_stream_index_];
+      pending_reads_++;
+    }
+  }
+
+  if (stream)
+    stream->Read(base::Bind(&AdaptiveDemuxerStream::OnReadDone, this));
 }
 
 AVStream* AdaptiveDemuxerStream::GetAVStream() {
@@ -80,16 +235,215 @@ void AdaptiveDemuxerStream::EnableBitstreamConverter() {
   current_stream()->EnableBitstreamConverter();
 }
 
-void AdaptiveDemuxerStream::ChangeCurrentStream(int index) {
-  bool needs_bitstream_converter_enabled;
+void AdaptiveDemuxerStream::OnAdaptiveDemuxerSeek(base::TimeDelta seek_time) {
+  base::AutoLock auto_lock(lock_);
+
+  last_buffer_timestamp_ = seek_time;
+
+  // TODO(acolwell): Figure out what to do if this happens during a stream
+  // switch.
+}
+
+// This method initiates a stream switch. The diagram below shows the steps
+// involved.
+//
+//                           +-----------------------+
+// ChangeCurrentStream() ->  | Store stream switch   |
+//                           | index, seek_function, |
+//                           |    and switch_cb.     |
+//                           +-----------------------+
+//                                   |
+//                                   V
+//                          +-------------------+ Yes
+//                          | Are there pending | -----> (Wait for OnReadDone())
+//                          | Read()s on the    |                |
+//                          | current stream?   | <-----+        V
+//                          +-------------------+       +--- OnReadDone()
+//                                   | No
+//                                   V
+//                              StartSwitch()
+//                                   |
+//                                   V
+//                        +------------------------+ No
+//                        | Have buffer timestamp? |-----+
+//                        +------------------------+     |
+//                                   | Yes               |
+//                                   V                   |
+//                     +-----------------------------+   |
+//                     | Seek stream to timestamp    |   |
+//                     | using switch_seek_function_ |   |
+//                     +-----------------------------+   |
+//                                   |                   |
+//                                   V                   |
+//                              OnSwitchSeekDone() <-----+
+//                                   |
+//                                   V
+//                         +------------------+ No
+//                         | Seek successful? |----------+
+//                         +------------------+          |
+//                                   | Yes               |
+//                                   V                   |
+//                     +------------------------------+  |
+//                     | Update current_stream_index_ |  |
+//                     +------------------------------+  |
+//                                   |                   |
+//                                   V                   |
+//                      +---------------------------+    |
+//                      | Call Read() on new stream |<---+
+//                      |    for deferred reads.    |
+//                      +---------------------------+
+//                                   |
+//                                   V
+//                            switch_cb(OK | ERROR)
+//
+// NOTE: Any AdaptiveDemuxerStream::Read() calls that occur during the stream
+//       switch will be deferred until the switch has completed. The callbacks
+//       will be queued on |read_cb_queue_|, but no Read() will be issued on the
+//       current stream.
+void AdaptiveDemuxerStream::ChangeCurrentStream(
+    int index,
+    const SeekFunction& seek_function,
+    const PipelineStatusCB& switch_cb) {
+  DCHECK_GE(index, 0);
+
+  bool start_switch = false;
+
   {
     base::AutoLock auto_lock(lock_);
-    current_stream_index_ = index;
-    DCHECK(streams_[current_stream_index_]);
-    needs_bitstream_converter_enabled = bitstream_converter_enabled_;
+
+    DCHECK_LE(index, (int)streams_.size());
+    DCHECK(streams_[index].get());
+    DCHECK_NE(index, current_stream_index_);
+    DCHECK(!IsSwitchPending_Locked());
+
+    // TODO(acolwell): Still need to handle the case where the stream has ended.
+
+    switch_cb_ = switch_cb;
+    switch_index_ = index;
+    switch_seek_function_ = seek_function;
+
+    start_switch = CanStartSwitch_Locked();
   }
+
+  if (start_switch)
+    StartSwitch();
+}
+
+void AdaptiveDemuxerStream::OnReadDone(Buffer* buffer) {
+  ReadCallback read_cb;
+  bool start_switch = false;
+
+  {
+    base::AutoLock auto_lock(lock_);
+
+    pending_reads_--;
+
+    DCHECK_GE(pending_reads_, 0);
+    DCHECK_GE(read_cb_queue_.size(), 0u);
+
+    read_cb = read_cb_queue_.front();
+    read_cb_queue_.pop_front();
+
+    if (buffer && !buffer->IsEndOfStream())
+      last_buffer_timestamp_ = buffer->GetTimestamp();
+
+    start_switch = IsSwitchPending_Locked() && CanStartSwitch_Locked();
+  }
+
+  if (!read_cb.is_null())
+    read_cb.Run(buffer);
+
+  if (start_switch)
+    StartSwitch();
+}
+
+bool AdaptiveDemuxerStream::IsSwitchPending_Locked() const {
+  lock_.AssertAcquired();
+  return !switch_cb_.is_null();
+}
+
+bool AdaptiveDemuxerStream::CanStartSwitch_Locked() const {
+  lock_.AssertAcquired();
+
+  if (pending_reads_ == 0) {
+    DCHECK(IsSwitchPending_Locked());
+    return true;
+  }
+  return false;
+}
+
+void AdaptiveDemuxerStream::StartSwitch() {
+  SeekFunction seek_function;
+  base::TimeDelta seek_point;
+
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(IsSwitchPending_Locked());
+    DCHECK_EQ(pending_reads_, 0);
+    DCHECK_GE(switch_index_, 0);
+
+    seek_point = last_buffer_timestamp_;
+    seek_function = switch_seek_function_;
+
+    // TODO(acolwell): add code to call switch_cb_ if we are at the end of the
+    // stream now.
+  }
+
+  if (seek_point == kNoTimestamp) {
+    // We haven't seen a buffer so there is no need to seek. Just move on to
+    // the next stage in the switch process.
+    OnSwitchSeekDone(kNoTimestamp, PIPELINE_OK);
+    return;
+  }
+
+  DCHECK(!seek_function.is_null());
+  seek_function.Run(seek_point,
+                    base::Bind(&AdaptiveDemuxerStream::OnSwitchSeekDone, this));
+}
+
+void AdaptiveDemuxerStream::OnSwitchSeekDone(base::TimeDelta seek_time,
+                                             PipelineStatus status) {
+  DemuxerStream* stream = NULL;
+  PipelineStatusCB switch_cb;
+  int reads_to_request = 0;
+  bool needs_bitstream_converter_enabled = false;
+
+  {
+    base::AutoLock auto_lock(lock_);
+
+    if (status == PIPELINE_OK) {
+      DCHECK(streams_[switch_index_]);
+
+      current_stream_index_ = switch_index_;
+      needs_bitstream_converter_enabled = bitstream_converter_enabled_;
+    }
+
+    // Clear stream switch state.
+    std::swap(switch_cb, switch_cb_);
+    switch_index_ = -1;
+    switch_seek_function_.Reset();
+
+    // Get the number of outstanding Read()s on this object.
+    reads_to_request = read_cb_queue_.size();
+
+    DCHECK_EQ(pending_reads_, 0);
+    pending_reads_ = reads_to_request;
+
+    stream = streams_[current_stream_index_];
+  }
+
   if (needs_bitstream_converter_enabled)
     EnableBitstreamConverter();
+
+  DCHECK(stream);
+  DCHECK(!switch_cb.is_null());
+
+  // Make the Read() calls that were deferred during the stream switch.
+  for (;reads_to_request > 0; --reads_to_request)
+    stream->Read(base::Bind(&AdaptiveDemuxerStream::OnReadDone, this));
+
+  // Signal that the stream switch has completed.
+  switch_cb.Run(status);
 }
 
 //
@@ -101,7 +455,9 @@ AdaptiveDemuxer::AdaptiveDemuxer(DemuxerVector const& demuxers,
                                  int initial_video_demuxer_index)
     : demuxers_(demuxers),
       current_audio_demuxer_index_(initial_audio_demuxer_index),
-      current_video_demuxer_index_(initial_video_demuxer_index) {
+      current_video_demuxer_index_(initial_video_demuxer_index),
+      playback_rate_(0),
+      switch_pending_(false) {
   DCHECK(!demuxers_.empty());
   DCHECK_GE(current_audio_demuxer_index_, -1);
   DCHECK_GE(current_video_demuxer_index_, -1);
@@ -110,9 +466,13 @@ AdaptiveDemuxer::AdaptiveDemuxer(DemuxerVector const& demuxers,
   DCHECK(current_audio_demuxer_index_ != -1 ||
          current_video_demuxer_index_ != -1);
   AdaptiveDemuxerStream::StreamVector audio_streams, video_streams;
+  StreamSwitchManager::StreamIdVector video_ids;
   for (size_t i = 0; i < demuxers_.size(); ++i) {
+    DemuxerStream* video = demuxers_[i]->GetStream(DemuxerStream::VIDEO);
     audio_streams.push_back(demuxers_[i]->GetStream(DemuxerStream::AUDIO));
-    video_streams.push_back(demuxers_[i]->GetStream(DemuxerStream::VIDEO));
+    video_streams.push_back(video);
+    if (video)
+      video_ids.push_back(i);
   }
   if (current_audio_demuxer_index_ >= 0) {
     audio_stream_ = new AdaptiveDemuxerStream(
@@ -123,6 +483,7 @@ AdaptiveDemuxer::AdaptiveDemuxer(DemuxerVector const& demuxers,
         video_streams, current_video_demuxer_index_);
   }
 
+  stream_switch_manager_ = new StreamSwitchManager(this, video_ids);
   // TODO(fischman): any streams in the underlying demuxers that aren't being
   // consumed currently need to be sent to /dev/null or else FFmpegDemuxer will
   // hold data for them in memory, waiting for them to get drained by a
@@ -131,17 +492,91 @@ AdaptiveDemuxer::AdaptiveDemuxer(DemuxerVector const& demuxers,
 
 AdaptiveDemuxer::~AdaptiveDemuxer() {}
 
-void AdaptiveDemuxer::ChangeCurrentDemuxer(int audio_index, int video_index) {
+// Switches the current video stream. The diagram below describes the switch
+// process.
+//                          +-------------------------------+
+// ChangeVideoStream() ---> |          video_index          |
+//                          |              ==               | Yes.
+//                          | current_video_demuxer_index_? |--> done_cb(OK)
+//                          +-------------------------------+
+//                                          | No.
+//                                          V
+//                         Call video_stream_->ChangeCurrentStream()
+//                                          |
+//                                          V
+//                          (Wait for ChangeVideoStreamDone())
+//                                          |
+//                                          V
+//                                ChangeVideoStreamDone()
+//                                          |
+//                                          V
+//                             +------------------------+ No
+//                             | Was switch successful? |---> done_cb(ERROR)
+//                             +------------------------+
+//                                          |
+//                                          V
+//                            Update current_video_demuxer_index_
+//                            & SetPlaybackRate() on new stream.
+//                                          |
+//                                          V
+//                                      done_cb(OK).
+//
+void AdaptiveDemuxer::ChangeVideoStream(int video_index,
+                                        const PipelineStatusCB& done_cb) {
   // TODO(fischman): this is currently broken because when a new Demuxer is to
   // be used we need to set_host(host()) it, and we need to set_host(NULL) the
   // current Demuxer if it's no longer being used.
+  bool switching_to_current_stream = false;
+  AdaptiveDemuxerStream::SeekFunction seek_function;
+
+  {
+    base::AutoLock auto_lock(lock_);
+
+    DCHECK(video_stream_);
+    DCHECK(!switch_pending_);
+    if (current_video_demuxer_index_ == video_index) {
+      switching_to_current_stream = true;
+    } else {
+      switch_pending_ = true;
+      seek_function = base::Bind(&AdaptiveDemuxer::StartStreamSwitchSeek,
+                                 this,
+                                 DemuxerStream::VIDEO,
+                                 video_index);
+    }
+  }
+
+  if (switching_to_current_stream) {
+    done_cb.Run(PIPELINE_OK);
+    return;
+  }
+
+  video_stream_->ChangeCurrentStream(
+      video_index, seek_function,
+      base::Bind(&AdaptiveDemuxer::ChangeVideoStreamDone, this, video_index,
+                 done_cb));
+}
+
+int AdaptiveDemuxer::GetCurrentVideoId() const {
   base::AutoLock auto_lock(lock_);
-  current_audio_demuxer_index_ = audio_index;
-  current_video_demuxer_index_ = video_index;
-  if (audio_stream_)
-    audio_stream_->ChangeCurrentStream(audio_index);
-  if (video_stream_)
-    video_stream_->ChangeCurrentStream(video_index);
+  return current_video_demuxer_index_;
+}
+
+void AdaptiveDemuxer::ChangeVideoStreamDone(int new_stream_index,
+                                            const PipelineStatusCB& done_cb,
+                                            PipelineStatus status) {
+  {
+    base::AutoLock auto_lock(lock_);
+
+    switch_pending_ = false;
+
+    if (status == PIPELINE_OK) {
+      demuxers_[current_video_demuxer_index_]->SetPlaybackRate(0);
+      current_video_demuxer_index_ = new_stream_index;
+      demuxers_[current_video_demuxer_index_]->SetPlaybackRate(playback_rate_);
+    }
+  }
+
+  done_cb.Run(status);
 }
 
 Demuxer* AdaptiveDemuxer::current_demuxer(DemuxerStream::Type type) {
@@ -162,7 +597,7 @@ Demuxer* AdaptiveDemuxer::current_demuxer(DemuxerStream::Type type) {
 // Helper class that wraps a FilterCallback and expects to get called a set
 // number of times, after which the wrapped callback is fired (and deleted).
 //
-// TODO: Remove this class once Stop() is converted to FilterStatusCB.
+// TODO(acolwell): Remove this class once Stop() is converted to FilterStatusCB.
 class CountingCallback {
  public:
   CountingCallback(int count, FilterCallback* orig_cb)
@@ -241,18 +676,27 @@ class CountingStatusCB : public base::RefCountedThreadSafe<CountingStatusCB> {
 };
 
 void AdaptiveDemuxer::Stop(FilterCallback* callback) {
+  stream_switch_manager_->Stop();
+
   // Stop() must be called on all of the demuxers even though only one demuxer
   // is  actively delivering audio and another one is delivering video. This
   // just satisfies the contract that all demuxers must have Stop() called on
   // them before they are destroyed.
   //
-  // TODO: Remove CountingCallback once Stop() is converted to FilterStatusCB.
+  // TODO(acolwell): Remove CountingCallback once Stop() is converted to
+  // FilterStatusCB.
   CountingCallback* wrapper = new CountingCallback(demuxers_.size(), callback);
   for (size_t i = 0; i < demuxers_.size(); ++i)
     demuxers_[i]->Stop(wrapper->GetACallback());
 }
 
 void AdaptiveDemuxer::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
+  if (audio_stream_)
+    audio_stream_->OnAdaptiveDemuxerSeek(time);
+
+  if (video_stream_)
+    video_stream_->OnAdaptiveDemuxerSeek(time);
+
   Demuxer* audio = current_demuxer(DemuxerStream::AUDIO);
   Demuxer* video = current_demuxer(DemuxerStream::VIDEO);
   int count = (audio ? 1 : 0) + (video && audio != video ? 1 : 0);
@@ -276,6 +720,17 @@ void AdaptiveDemuxer::set_host(FilterHost* filter_host) {
 }
 
 void AdaptiveDemuxer::SetPlaybackRate(float playback_rate) {
+  {
+    base::AutoLock auto_lock(lock_);
+    if (playback_rate_ == 0 && playback_rate > 0) {
+      stream_switch_manager_->Play();
+    } else if (playback_rate_ > 0 && playback_rate == 0) {
+      stream_switch_manager_->Pause();
+    }
+
+    playback_rate_ = playback_rate;
+  }
+
   Demuxer* audio = current_demuxer(DemuxerStream::AUDIO);
   Demuxer* video = current_demuxer(DemuxerStream::VIDEO);
   if (audio) audio->SetPlaybackRate(playback_rate);
@@ -298,6 +753,91 @@ scoped_refptr<DemuxerStream> AdaptiveDemuxer::GetStream(
       LOG(DFATAL) << "Unexpected type " << type;
       return NULL;
   }
+}
+
+void AdaptiveDemuxer::StartStreamSwitchSeek(
+    DemuxerStream::Type type,
+    int stream_index,
+    base::TimeDelta seek_time,
+    const AdaptiveDemuxerStream::SeekFunctionCB& seek_cb) {
+  DCHECK_GE(stream_index, 0);
+  DCHECK(!seek_cb.is_null());
+
+  Demuxer* demuxer = NULL;
+  base::TimeDelta seek_point;
+  FilterStatusCB filter_cb;
+
+  {
+    base::AutoLock auto_lock(lock_);
+
+    demuxer = demuxers_[stream_index];
+
+    if (GetSeekTimeAfter(demuxer->GetStream(type)->GetAVStream(), seek_time,
+                         &seek_point)) {
+      // We found a seek point.
+      filter_cb = base::Bind(&AdaptiveDemuxer::OnStreamSeekDone,
+                             seek_cb, seek_point);
+    } else {
+      // We didn't find a seek point. Assume we don't have index data for it
+      // yet. Seek to the specified time to force index data to be loaded.
+      seek_point = seek_time;
+      filter_cb = base::Bind(&AdaptiveDemuxer::OnIndexSeekDone, this,
+                             type, stream_index, seek_time, seek_cb);
+    }
+  }
+
+  DCHECK(demuxer);
+  demuxer->Seek(seek_point, filter_cb);
+}
+
+void AdaptiveDemuxer::OnIndexSeekDone(
+    DemuxerStream::Type type,
+    int stream_index,
+    base::TimeDelta seek_time,
+    const AdaptiveDemuxerStream::SeekFunctionCB& seek_cb,
+    PipelineStatus status) {
+  base::TimeDelta seek_point;
+  FilterStatusCB filter_cb;
+
+  Demuxer* demuxer = NULL;
+
+  if (status != PIPELINE_OK) {
+    seek_cb.Run(base::TimeDelta(), status);
+    return;
+  }
+
+  {
+    base::AutoLock auto_lock(lock_);
+
+    demuxer = demuxers_[stream_index];
+    DCHECK(demuxer);
+
+    // Look for a seek point now that we have index data.
+    if (GetSeekTimeAfter(demuxer->GetStream(type)->GetAVStream(), seek_time,
+                         &seek_point)) {
+      filter_cb = base::Bind(&AdaptiveDemuxer::OnStreamSeekDone,
+                             seek_cb, seek_point);
+    } else {
+      // Failed again to find a seek point. Clear the demuxer so that
+      // a seek error will be reported.
+      demuxer = NULL;
+    }
+  }
+
+  if (!demuxer) {
+    seek_cb.Run(base::TimeDelta(), PIPELINE_ERROR_INITIALIZATION_FAILED);
+    return;
+  }
+
+  demuxer->Seek(seek_point, filter_cb);
+}
+
+// static
+void AdaptiveDemuxer::OnStreamSeekDone(
+    const AdaptiveDemuxerStream::SeekFunctionCB& seek_cb,
+    base::TimeDelta seek_point,
+    PipelineStatus status) {
+  seek_cb.Run(seek_point, status);
 }
 
 //
