@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,16 @@ TEST_F(PolicyPathParserTests, AllPlatformVariables) {
   FilePath::StringType unknown_vars_result =
       path_parser::ExpandPathVariables(unknown_vars);
   ASSERT_EQ(unknown_vars_result, unknown_vars);
+
+  // Trim quotes around, but not inside paths. Test against bug 80211.
+  FilePath::StringType no_quotes(FILE_PATH_LITERAL("//$C/\"a\"/$path"));
+  FilePath::StringType single_quotes(FILE_PATH_LITERAL("'//$C/\"a\"/$path'"));
+  FilePath::StringType double_quotes(FILE_PATH_LITERAL("\"//$C/\"a\"/$path\""));
+  FilePath::StringType quotes_result =
+      path_parser::ExpandPathVariables(single_quotes);
+  ASSERT_EQ(quotes_result, no_quotes);
+  quotes_result = path_parser::ExpandPathVariables(double_quotes);
+  ASSERT_EQ(quotes_result, no_quotes);
 
   // Both should have been substituted.
   FilePath::StringType vars(FILE_PATH_LITERAL("${user_name}${machine_name}"));
