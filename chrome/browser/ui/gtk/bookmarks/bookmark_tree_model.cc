@@ -104,8 +104,10 @@ void AddToTreeStore(BookmarkModel* model, int64 selected_id,
                     GtkTreeStore* store, GtkTreeIter* selected_iter) {
   const BookmarkNode* root_node = model->root_node();
   for (int i = 0; i < root_node->child_count(); ++i) {
-    AddToTreeStoreAt(root_node->GetChild(i), selected_id, store, selected_iter,
-                     NULL);
+    const BookmarkNode* child = root_node->GetChild(i);
+    if (child->IsVisible()) {
+      AddToTreeStoreAt(child, selected_id, store, selected_iter, NULL);
+    }
   }
 }
 

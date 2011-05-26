@@ -71,6 +71,8 @@ class BookmarkEditorGtkTest : public testing::Test {
   //   oa
   //   OF1
   //     of1a
+  // synced node
+  //   sa
   void AddTestData() {
     std::string test_base = base_path();
 
@@ -89,6 +91,10 @@ class BookmarkEditorGtkTest : public testing::Test {
     const BookmarkNode* of1 =
         model_->AddFolder(model_->other_node(), 1, ASCIIToUTF16("OF1"));
     model_->AddURL(of1, 0, ASCIIToUTF16("of1a"), GURL(test_base + "of1a"));
+
+    // Children of the synced node.
+    model_->AddURL(model_->synced_node(), 0, ASCIIToUTF16("sa"),
+                   GURL(test_base + "sa"));
   }
 };
 
@@ -98,15 +104,22 @@ TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
                            BookmarkEditor::EditDetails(),
                            BookmarkEditor::SHOW_TREE);
 
-  // The root should have two children, one for the bookmark bar node,
-  // the other for the 'other bookmarks' folder.
+  // The root should have two or three children, one for the bookmark bar node,
+  // another for the 'other bookmarks' folder, and depending on the visib
   GtkTreeModel* store = GTK_TREE_MODEL(editor.tree_store_);
   GtkTreeIter toplevel;
   ASSERT_TRUE(gtk_tree_model_get_iter_first(store, &toplevel));
   GtkTreeIter bookmark_bar_node = toplevel;
   ASSERT_TRUE(gtk_tree_model_iter_next(store, &toplevel));
   GtkTreeIter other_node = toplevel;
-  ASSERT_FALSE(gtk_tree_model_iter_next(store, &toplevel));
+  if (model_->synced_node()->IsVisible()) {
+    // If we have a synced node, then the iterator should find one element after
+    // "other bookmarks"
+    ASSERT_TRUE(gtk_tree_model_iter_next(store, &toplevel));
+    ASSERT_FALSE(gtk_tree_model_iter_next(store, &toplevel));
+  } else {
+    ASSERT_FALSE(gtk_tree_model_iter_next(store, &toplevel));
+  }
 
   // The bookmark bar should have 2 nodes: folder F1 and F2.
   GtkTreeIter f1_iter;

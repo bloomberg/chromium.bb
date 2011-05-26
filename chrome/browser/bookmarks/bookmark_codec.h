@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,8 @@ class BookmarkCodec {
   // This method is public for use by StarredURLDatabase in migrating the
   // bookmarks out of the database.
   Value* Encode(const BookmarkNode* bookmark_bar_node,
-                const BookmarkNode* other_folder_node);
+                const BookmarkNode* other_folder_node,
+                const BookmarkNode* synced_folder_node);
 
   // Decodes the previously encoded value to the specified nodes as well as
   // setting |max_node_id| to the greatest node id. Returns true on success,
@@ -55,6 +56,7 @@ class BookmarkCodec {
   // |max_node_id| is set to the max id of the nodes.
   bool Decode(BookmarkNode* bb_node,
               BookmarkNode* other_folder_node,
+              BookmarkNode* synced_folder_node,
               int64* max_node_id,
               const Value& value);
 
@@ -76,6 +78,7 @@ class BookmarkCodec {
   static const char* kRootsKey;
   static const char* kRootFolderNameKey;
   static const char* kOtherBookmarkFolderNameKey;
+  static const char* kSyncedBookmarkFolderNameKey;
   static const char* kVersionKey;
   static const char* kChecksumKey;
   static const char* kIdKey;
@@ -98,6 +101,7 @@ class BookmarkCodec {
   // Helper to perform decoding.
   bool DecodeHelper(BookmarkNode* bb_node,
                     BookmarkNode* other_folder_node,
+                    BookmarkNode* synced_folder_node,
                     const Value& value);
 
   // Decodes the children of the specified node. Returns true on success.
@@ -105,7 +109,9 @@ class BookmarkCodec {
                       BookmarkNode* parent);
 
   // Reassigns bookmark IDs for all nodes.
-  void ReassignIDs(BookmarkNode* bb_node, BookmarkNode* other_node);
+  void ReassignIDs(BookmarkNode* bb_node,
+                   BookmarkNode* other_node,
+                   BookmarkNode* synced_node);
 
   // Helper to recursively reassign IDs.
   void ReassignIDsHelper(BookmarkNode* node);

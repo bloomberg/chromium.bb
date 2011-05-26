@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -10,6 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_test_utils.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/common/chrome_paths.h"
+#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -111,6 +116,7 @@ class BookmarkCodecTest : public testing::Test {
     int64 max_id;
     bool result = codec->Decode(AsMutable(model->GetBookmarkBarNode()),
                                 AsMutable(model->other_node()),
+                                AsMutable(model->synced_node()),
                                 &max_id, value);
     model->set_next_node_id(max_id);
     return result;
@@ -161,6 +167,7 @@ class BookmarkCodecTest : public testing::Test {
     std::set<int64> assigned_ids;
     CheckIDs(model->GetBookmarkBarNode(), &assigned_ids);
     CheckIDs(model->other_node(), &assigned_ids);
+    CheckIDs(model->synced_node(), &assigned_ids);
   }
 };
 
@@ -286,4 +293,46 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   BookmarkModelTestUtils::AssertModelsEqual(&decoded_model,
                                             &decoded_model2,
                                             true);
+}
+
+TEST_F(BookmarkCodecTest, CanDecodeModelWithoutSyncedBookmarks) {
+  FilePath test_data_directory;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
+  FilePath test_file = test_data_directory.AppendASCII(
+      "bookmarks/model_without_sync.json");
+  ASSERT_TRUE(file_util::PathExists(test_file));
+
+  JSONFileValueSerializer serializer(test_file);
+  scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
+
+  BookmarkModel decoded_model(NULL);
+  BookmarkCodec decoder;
+  ASSERT_TRUE(Decode(&decoder, &decoded_model, *root.get()));
+  ExpectIDsUnique(&decoded_model);
+
+  const BookmarkNode* bbn = decoded_model.GetBookmarkBarNode();
+  ASSERT_EQ(1, bbn->child_count());
+
+  const BookmarkNode* child = bbn->GetChild(0);
+  EXPECT_EQ(BookmarkNode::FOLDER, child->type());
+  EXPECT_EQ(ASCIIToUTF16("Folder A"), child->GetTitle());
+  ASSERT_EQ(1, child->child_count());
+
+  child = child->GetChild(0);
+  EXPECT_EQ(BookmarkNode::URL, child->type());
+  EXPECT_EQ(ASCIIToUTF16("Bookmark Manager"), child->GetTitle());
+
+  const BookmarkNode* other = decoded_model.other_node();
+  ASSERT_EQ(1, other->child_count());
+
+  child = other->GetChild(0);
+  EXPECT_EQ(BookmarkNode::FOLDER, child->type());
+  EXPECT_EQ(ASCIIToUTF16("Folder B"), child->GetTitle());
+  ASSERT_EQ(1, child->child_count());
+
+  child = child->GetChild(0);
+  EXPECT_EQ(BookmarkNode::URL, child->type());
+  EXPECT_EQ(ASCIIToUTF16("Get started with Google Chrome"), child->GetTitle());
+
+  ASSERT_TRUE(decoded_model.synced_node() != NULL);
 }

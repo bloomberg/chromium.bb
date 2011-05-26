@@ -39,5 +39,7 @@ void BookmarkModelTestUtils::AssertModelsEqual(BookmarkModel* expected,
   AssertNodesEqual(expected->other_node(),
                    actual->other_node(),
                    check_ids);
+  AssertNodesEqual(expected->synced_node(),
+                   actual->synced_node(),
+                   check_ids);
 }
-

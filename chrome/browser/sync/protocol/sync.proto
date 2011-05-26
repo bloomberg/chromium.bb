@@ -387,6 +387,9 @@ message GetUpdatesMessage {
   // containing GetUpdatesStreamingResponse.  These ClientToServerResponses are
   // delimited by a length prefix, which is encoded as a varint.
   optional bool streaming = 7 [default = false];
+
+  // Whether to request the syncable_bookmarks permanent item.
+  optional bool include_syncable_bookmarks = 1000 [default = false];
 };
 
 message AuthenticateMessage {

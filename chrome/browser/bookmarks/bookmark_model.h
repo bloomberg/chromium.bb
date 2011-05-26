@@ -50,7 +50,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     URL,
     FOLDER,
     BOOKMARK_BAR,
-    OTHER_NODE
+    OTHER_NODE,
+    SYNCED
   };
   // Creates a new node with the specified url and id of 0
   explicit BookmarkNode(const GURL& url);
@@ -108,6 +109,15 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
   bool is_favicon_loaded() const { return loaded_favicon_; }
   void set_favicon_loaded(bool value) { loaded_favicon_ = value; }
+
+  // Accessor method for controlling the visibility of a bookmark node/sub-tree.
+  // Note that visibility is not propagated down the tree hierarchy so if a
+  // parent node is marked as invisible, a child node may return "Visible". This
+  // function is primarily useful when traversing the model to generate a UI
+  // representation but we may want to suppress some nodes.
+  // TODO(yfriedman): Remove this when enable-synced-bookmarks-folder is
+  // no longer a command line flag.
+  bool IsVisible() const;
 
   HistoryService::Handle favicon_load_handle() const {
     return favicon_load_handle_;
@@ -192,6 +202,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Returns the 'other' node. This is NULL until loaded.
   const BookmarkNode* other_node() { return other_node_; }
+
+  // Returns the 'synced' node. This is NULL until loaded.
+  const BookmarkNode* synced_node() { return synced_node_; }
 
   // Returns the parent the last node was added to. This never returns NULL
   // (as long as the model is loaded).
@@ -311,6 +324,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   bool is_bookmark_bar_node(const BookmarkNode* node) const {
     return node == bookmark_bar_node_;
   }
+  bool is_synced_bookmarks_node(const BookmarkNode* node) const {
+    return node == synced_node_;
+  }
   bool is_other_bookmarks_node(const BookmarkNode* node) const {
     return node == other_node_;
   }
@@ -319,7 +335,8 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   bool is_permanent_node(const BookmarkNode* node) const {
     return is_root(node) ||
            is_bookmark_bar_node(node) ||
-           is_other_bookmarks_node(node);
+           is_other_bookmarks_node(node) ||
+           is_synced_bookmarks_node(node);
   }
 
   // Sets the store to NULL, making it so the BookmarkModel does not persist
@@ -380,10 +397,11 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
 
-  // Creates the bookmark bar/other nodes. These call into
+  // Creates the bookmark bar/synced/other nodes. These call into
   // CreateRootNodeFromStarredEntry.
   BookmarkNode* CreateBookmarkNode();
   BookmarkNode* CreateOtherBookmarksNode();
+  BookmarkNode* CreateSyncedBookmarksNode();
 
   // Creates a root node (either the bookmark bar node or other node) from the
   // specified starred entry.
@@ -439,6 +457,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   BookmarkNode* bookmark_bar_node_;
   BookmarkNode* other_node_;
+  BookmarkNode* synced_node_;
 
   // The maximum ID assigned to the bookmark nodes in the model.
   int64 next_node_id_;

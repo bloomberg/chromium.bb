@@ -512,9 +512,7 @@ bool MoveBookmarkFunction::RunImpl() {
     error_ = keys::kNoNodeError;
     return false;
   }
-  if (node == model->root_node() ||
-      node == model->other_node() ||
-      node == model->GetBookmarkBarNode()) {
+  if (model->is_permanent_node(node)) {
     error_ = keys::kModifySpecialError;
     return false;
   }
@@ -606,9 +604,7 @@ bool UpdateBookmarkFunction::RunImpl() {
     error_ = keys::kNoNodeError;
     return false;
   }
-  if (node == model->root_node() ||
-      node == model->other_node() ||
-      node == model->GetBookmarkBarNode()) {
+  if (model->is_permanent_node(node)) {
     error_ = keys::kModifySpecialError;
     return false;
   }

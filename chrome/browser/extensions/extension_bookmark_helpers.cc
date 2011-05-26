@@ -50,7 +50,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
     ListValue* children = new ListValue();
     for (int i = 0; i < childCount; ++i) {
       const BookmarkNode* child = node->GetChild(i);
-      if (!only_folders || child->is_folder()) {
+      if (child->IsVisible() && (!only_folders || child->is_folder())) {
         DictionaryValue* dict = GetNodeDictionary(child, true, only_folders);
         children->Append(dict);
       }
@@ -64,8 +64,10 @@ void AddNode(const BookmarkNode* node,
              ListValue* list,
              bool recurse,
              bool only_folders) {
-  DictionaryValue* dict = GetNodeDictionary(node, recurse, only_folders);
-  list->Append(dict);
+  if (node->IsVisible()) {
+    DictionaryValue* dict = GetNodeDictionary(node, recurse, only_folders);
+    list->Append(dict);
+  }
 }
 
 // Add a JSON representation of |node| to the JSON |list|.
@@ -76,8 +78,8 @@ void AddNode(const BookmarkNode* node,
 }
 
 void AddNodeFoldersOnly(const BookmarkNode* node,
-             ListValue* list,
-             bool recurse) {
+                        ListValue* list,
+                        bool recurse) {
   return AddNode(node, list, recurse, true);
 }
 
@@ -92,6 +94,7 @@ bool RemoveNode(BookmarkModel* model,
   }
   if (node == model->root_node() ||
       node == model->other_node() ||
+      node == model->synced_node() ||
       node == model->GetBookmarkBarNode()) {
     *error = keys::kModifySpecialError;
     return false;

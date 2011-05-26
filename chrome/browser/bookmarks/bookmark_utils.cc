@@ -479,6 +479,12 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
         find(nodes.begin(), nodes.end(), model->other_node()) == nodes.end()) {
       nodes.push_back(model->other_node());
     }
+
+    if (nodes.size() < max_count && model->synced_node()->IsVisible() &&
+        find(nodes.begin(), nodes.end(),
+             model->synced_node()) == nodes.end()) {
+      nodes.push_back(model->synced_node());
+    }
   }
   return nodes;
 }

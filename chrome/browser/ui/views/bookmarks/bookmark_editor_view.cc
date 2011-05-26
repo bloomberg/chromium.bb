@@ -485,9 +485,12 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
   EditorNode* root_node = new EditorNode(std::wstring(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node);
-  DCHECK(root_node->child_count() == 2);
+  DCHECK(root_node->child_count() >= 2 && root_node->child_count() <= 3);
   DCHECK(bb_root_node->GetChild(0)->type() == BookmarkNode::BOOKMARK_BAR);
   DCHECK(bb_root_node->GetChild(1)->type() == BookmarkNode::OTHER_NODE);
+  if (root_node->child_count() == 3) {
+    DCHECK(bb_root_node->GetChild(2)->type() == BookmarkNode::SYNCED);
+  }
   return root_node;
 }
 
@@ -495,7 +498,7 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
                                      BookmarkEditorView::EditorNode* b_node) {
   for (int i = 0; i < bb_node->child_count(); ++i) {
     const BookmarkNode* child_bb_node = bb_node->GetChild(i);
-    if (child_bb_node->is_folder()) {
+    if (child_bb_node->IsVisible() && child_bb_node->is_folder()) {
       EditorNode* new_b_node =
           new EditorNode(WideToUTF16(child_bb_node->GetTitle()),
                                      child_bb_node->id());

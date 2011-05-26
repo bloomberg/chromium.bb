@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/path_service.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/model_test_utils.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
@@ -83,11 +85,16 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
     int index2;
   };
 
-  BookmarkModelTest() : model(NULL) {
-    model.AddObserver(this);
-    ClearCounts();
+  BookmarkModelTest() :
+    model_(NULL),
+    original_command_line_(*CommandLine::ForCurrentProcess()) {
+      model_.AddObserver(this);
+      ClearCounts();
   }
 
+  virtual void TearDown() {
+    *CommandLine::ForCurrentProcess() = original_command_line_;
+  }
 
   void Loaded(BookmarkModel* model) OVERRIDE {
     // We never load from the db, so that this should never get invoked.
@@ -153,7 +160,9 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
     ASSERT_EQ(reordered_count, reordered_count_);
   }
 
-  BookmarkModel model;
+  BookmarkModel model_;
+
+  CommandLine original_command_line_;
 
   int moved_count;
 
@@ -169,25 +178,32 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
 };
 
 TEST_F(BookmarkModelTest, InitialState) {
-  const BookmarkNode* bb_node = model.GetBookmarkBarNode();
+  const BookmarkNode* bb_node = model_.GetBookmarkBarNode();
   ASSERT_TRUE(bb_node != NULL);
   EXPECT_EQ(0, bb_node->child_count());
   EXPECT_EQ(BookmarkNode::BOOKMARK_BAR, bb_node->type());
 
-  const BookmarkNode* other_node = model.other_node();
+  const BookmarkNode* other_node = model_.other_node();
   ASSERT_TRUE(other_node != NULL);
   EXPECT_EQ(0, other_node->child_count());
   EXPECT_EQ(BookmarkNode::OTHER_NODE, other_node->type());
 
+  const BookmarkNode* synced_node = model_.synced_node();
+  ASSERT_TRUE(synced_node != NULL);
+  EXPECT_EQ(0, synced_node->child_count());
+  EXPECT_EQ(BookmarkNode::SYNCED, synced_node->type());
+
   EXPECT_TRUE(bb_node->id() != other_node->id());
+  EXPECT_TRUE(bb_node->id() != synced_node->id());
+  EXPECT_TRUE(other_node->id() != synced_node->id());
 }
 
 TEST_F(BookmarkModelTest, AddURL) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
-  const BookmarkNode* new_node = model.AddURL(root, 0, title, url);
+  const BookmarkNode* new_node = model_.AddURL(root, 0, title, url);
   AssertObserverCount(1, 0, 0, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 
@@ -195,17 +211,38 @@ TEST_F(BookmarkModelTest, AddURL) {
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->GetURL());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
-  ASSERT_TRUE(new_node == model.GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_TRUE(new_node == model_.GetMostRecentlyAddedNodeForURL(url));
 
   EXPECT_TRUE(new_node->id() != root->id() &&
-              new_node->id() != model.other_node()->id());
+              new_node->id() != model_.other_node()->id() &&
+              new_node->id() != model_.synced_node()->id());
+}
+
+TEST_F(BookmarkModelTest, AddURLToSyncedBookmarks) {
+  const BookmarkNode* root = model_.synced_node();
+  const string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+
+  const BookmarkNode* new_node = model_.AddURL(root, 0, title, url);
+  AssertObserverCount(1, 0, 0, 0, 0);
+  observer_details.AssertEquals(root, NULL, 0, -1);
+
+  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(title, new_node->GetTitle());
+  ASSERT_TRUE(url == new_node->GetURL());
+  ASSERT_EQ(BookmarkNode::URL, new_node->type());
+  ASSERT_TRUE(new_node == model_.GetMostRecentlyAddedNodeForURL(url));
+
+  EXPECT_TRUE(new_node->id() != root->id() &&
+              new_node->id() != model_.other_node()->id() &&
+              new_node->id() != model_.synced_node()->id());
 }
 
 TEST_F(BookmarkModelTest, AddFolder) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
   const string16 title(ASCIIToUTF16("foo"));
 
-  const BookmarkNode* new_node = model.AddFolder(root, 0, title);
+  const BookmarkNode* new_node = model_.AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 
@@ -214,93 +251,94 @@ TEST_F(BookmarkModelTest, AddFolder) {
   ASSERT_EQ(BookmarkNode::FOLDER, new_node->type());
 
   EXPECT_TRUE(new_node->id() != root->id() &&
-              new_node->id() != model.other_node()->id());
+              new_node->id() != model_.other_node()->id() &&
+              new_node->id() != model_.synced_node()->id());
 
   // Add another folder, just to make sure folder_ids are incremented correctly.
   ClearCounts();
-  model.AddFolder(root, 0, title);
+  model_.AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 }
 
 TEST_F(BookmarkModelTest, RemoveURL) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
-  model.AddURL(root, 0, title, url);
+  model_.AddURL(root, 0, title, url);
   ClearCounts();
 
-  model.Remove(root, 0);
+  model_.Remove(root, 0);
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
-  ASSERT_TRUE(model.GetMostRecentlyAddedNodeForURL(url) == NULL);
+  ASSERT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == NULL);
 }
 
 TEST_F(BookmarkModelTest, RemoveFolder) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
-  const BookmarkNode* folder = model.AddFolder(root, 0, ASCIIToUTF16("foo"));
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
+  const BookmarkNode* folder = model_.AddFolder(root, 0, ASCIIToUTF16("foo"));
 
   ClearCounts();
 
   // Add a URL as a child.
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
-  model.AddURL(folder, 0, title, url);
+  model_.AddURL(folder, 0, title, url);
 
   ClearCounts();
 
   // Now remove the folder.
-  model.Remove(root, 0);
+  model_.Remove(root, 0);
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
-  ASSERT_TRUE(model.GetMostRecentlyAddedNodeForURL(url) == NULL);
+  ASSERT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == NULL);
 }
 
 TEST_F(BookmarkModelTest, SetTitle) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
   string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
-  const BookmarkNode* node = model.AddURL(root, 0, title, url);
+  const BookmarkNode* node = model_.AddURL(root, 0, title, url);
 
   ClearCounts();
 
   title = ASCIIToUTF16("foo2");
-  model.SetTitle(node, title);
+  model_.SetTitle(node, title);
   AssertObserverCount(0, 0, 0, 1, 0);
   observer_details.AssertEquals(node, NULL, -1, -1);
   EXPECT_EQ(title, node->GetTitle());
 }
 
 TEST_F(BookmarkModelTest, SetURL) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
   const string16 title(ASCIIToUTF16("foo"));
   GURL url("http://foo.com");
-  const BookmarkNode* node = model.AddURL(root, 0, title, url);
+  const BookmarkNode* node = model_.AddURL(root, 0, title, url);
 
   ClearCounts();
 
   url = GURL("http://foo2.com");
-  model.SetURL(node, url);
+  model_.SetURL(node, url);
   AssertObserverCount(0, 0, 0, 1, 0);
   observer_details.AssertEquals(node, NULL, -1, -1);
   EXPECT_EQ(url, node->GetURL());
 }
 
 TEST_F(BookmarkModelTest, Move) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
-  const BookmarkNode* node = model.AddURL(root, 0, title, url);
-  const BookmarkNode* folder1 = model.AddFolder(root, 0, ASCIIToUTF16("foo"));
+  const BookmarkNode* node = model_.AddURL(root, 0, title, url);
+  const BookmarkNode* folder1 = model_.AddFolder(root, 0, ASCIIToUTF16("foo"));
   ClearCounts();
 
-  model.Move(node, folder1, 0);
+  model_.Move(node, folder1, 0);
 
   AssertObserverCount(0, 1, 0, 0, 0);
   observer_details.AssertEquals(root, folder1, 1, 0);
@@ -312,17 +350,17 @@ TEST_F(BookmarkModelTest, Move) {
 
   // And remove the folder.
   ClearCounts();
-  model.Remove(root, 0);
+  model_.Remove(root, 0);
   AssertObserverCount(0, 0, 1, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
-  EXPECT_TRUE(model.GetMostRecentlyAddedNodeForURL(url) == NULL);
+  EXPECT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == NULL);
   EXPECT_EQ(0, root->child_count());
 }
 
 TEST_F(BookmarkModelTest, Copy) {
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model_.GetBookmarkBarNode();
   static const std::string model_string("a 1:[ b c ] d 2:[ e f g ] h ");
-  model_test_utils::AddNodesFromModelString(model, root, model_string);
+  model_test_utils::AddNodesFromModelString(model_, root, model_string);
 
   // Validate initial model.
   std::string actualModelString = model_test_utils::ModelStringFromNode(root);
@@ -331,42 +369,42 @@ TEST_F(BookmarkModelTest, Copy) {
   // Copy 'd' to be after '1:b': URL item from bar to folder.
   const BookmarkNode* nodeToCopy = root->GetChild(2);
   const BookmarkNode* destination = root->GetChild(1);
-  model.Copy(nodeToCopy, destination, 1);
+  model_.Copy(nodeToCopy, destination, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
 
   // Copy '1:d' to be after 'a': URL item from folder to bar.
   const BookmarkNode* folder = root->GetChild(1);
   nodeToCopy = folder->GetChild(1);
-  model.Copy(nodeToCopy, root, 1);
+  model_.Copy(nodeToCopy, root, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
 
   // Copy '1' to be after '2:e': Folder from bar to folder.
   nodeToCopy = root->GetChild(2);
   destination = root->GetChild(4);
-  model.Copy(nodeToCopy, destination, 1);
+  model_.Copy(nodeToCopy, destination, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ", actualModelString);
 
   // Copy '2:1' to be after '2:f': Folder within same folder.
   folder = root->GetChild(4);
   nodeToCopy = folder->GetChild(1);
-  model.Copy(nodeToCopy, folder, 3);
+  model_.Copy(nodeToCopy, folder, 3);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h ",
             actualModelString);
 
   // Copy first 'd' to be after 'h': URL item within the bar.
   nodeToCopy = root->GetChild(1);
-  model.Copy(nodeToCopy, root, 6);
+  model_.Copy(nodeToCopy, root, 6);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
             actualModelString);
 
   // Copy '2' to be after 'a': Folder within the bar.
   nodeToCopy = root->GetChild(4);
-  model.Copy(nodeToCopy, root, 1);
+  model_.Copy(nodeToCopy, root, 1);
   actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ("a 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] d 1:[ b d c ] "
             "d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
@@ -375,34 +413,45 @@ TEST_F(BookmarkModelTest, Copy) {
 
 // Tests that adding a URL to a folder updates the last modified time.
 TEST_F(BookmarkModelTest, ParentForNewNodes) {
-  ASSERT_EQ(model.GetBookmarkBarNode(), model.GetParentForNewNodes());
+  ASSERT_EQ(model_.GetBookmarkBarNode(), model_.GetParentForNewNodes());
 
   const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
-  model.AddURL(model.other_node(), 0, title, url);
-  ASSERT_EQ(model.other_node(), model.GetParentForNewNodes());
+  model_.AddURL(model_.other_node(), 0, title, url);
+  ASSERT_EQ(model_.other_node(), model_.GetParentForNewNodes());
+}
+
+// Tests that adding a URL to a folder updates the last modified time.
+TEST_F(BookmarkModelTest, ParentForNewSyncedNodes) {
+  ASSERT_EQ(model_.GetBookmarkBarNode(), model_.GetParentForNewNodes());
+
+  const string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+
+  model_.AddURL(model_.synced_node(), 0, title, url);
+  ASSERT_EQ(model_.synced_node(), model_.GetParentForNewNodes());
 }
 
 // Make sure recently modified stays in sync when adding a URL.
 TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
   // Add a folder.
-  const BookmarkNode* folder = model.AddFolder(model.other_node(), 0,
-                                               ASCIIToUTF16("foo"));
+  const BookmarkNode* folder = model_.AddFolder(model_.other_node(), 0,
+                                                 ASCIIToUTF16("foo"));
   // Add a URL to it.
-  model.AddURL(folder, 0, ASCIIToUTF16("blah"), GURL("http://foo.com"));
+  model_.AddURL(folder, 0, ASCIIToUTF16("blah"), GURL("http://foo.com"));
 
   // Make sure folder is in the most recently modified.
   std::vector<const BookmarkNode*> most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedFolders(&model, 1);
+      bookmark_utils::GetMostRecentlyModifiedFolders(&model_, 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_EQ(folder, most_recent_folders[0]);
 
   // Nuke the folder and do another fetch, making sure folder isn't in the
   // returned list.
-  model.Remove(folder->parent(), 0);
+  model_.Remove(folder->parent(), 0);
   most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedFolders(&model, 1);
+      bookmark_utils::GetMostRecentlyModifiedFolders(&model_, 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_TRUE(most_recent_folders[0] != folder);
 }
@@ -412,19 +461,19 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
   // Add a couple of nodes such that the following holds for the time of the
   // nodes: n1 > n2 > n3 > n4.
   Time base_time = Time::Now();
-  BookmarkNode* n1 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
+  BookmarkNode* n1 = AsMutable(model_.AddURL(model_.GetBookmarkBarNode(),
                                   0,
                                   ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/0")));
-  BookmarkNode* n2 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
+  BookmarkNode* n2 = AsMutable(model_.AddURL(model_.GetBookmarkBarNode(),
                                   1,
                                   ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/1")));
-  BookmarkNode* n3 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
+  BookmarkNode* n3 = AsMutable(model_.AddURL(model_.GetBookmarkBarNode(),
                                   2,
                                   ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/2")));
-  BookmarkNode* n4 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
+  BookmarkNode* n4 = AsMutable(model_.AddURL(model_.GetBookmarkBarNode(),
                                   3,
                                   ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/3")));
@@ -435,7 +484,7 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
 
   // Make sure order is honored.
   std::vector<const BookmarkNode*> recently_added;
-  bookmark_utils::GetMostRecentlyAddedEntries(&model, 2, &recently_added);
+  bookmark_utils::GetMostRecentlyAddedEntries(&model_, 2, &recently_added);
   ASSERT_EQ(2U, recently_added.size());
   ASSERT_TRUE(n1 == recently_added[0]);
   ASSERT_TRUE(n2 == recently_added[1]);
@@ -443,7 +492,7 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
   // swap 1 and 2, then check again.
   recently_added.clear();
   SwapDateAdded(n1, n2);
-  bookmark_utils::GetMostRecentlyAddedEntries(&model, 4, &recently_added);
+  bookmark_utils::GetMostRecentlyAddedEntries(&model_, 4, &recently_added);
   ASSERT_EQ(4U, recently_added.size());
   ASSERT_TRUE(n2 == recently_added[0]);
   ASSERT_TRUE(n1 == recently_added[1]);
@@ -457,38 +506,38 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedNodeForURL) {
   // nodes: n1 > n2
   Time base_time = Time::Now();
   const GURL url("http://foo.com/0");
-  BookmarkNode* n1 = AsMutable(model.AddURL(
-      model.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url));
-  BookmarkNode* n2 = AsMutable(model.AddURL(
-      model.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url));
+  BookmarkNode* n1 = AsMutable(model_.AddURL(
+      model_.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url));
+  BookmarkNode* n2 = AsMutable(model_.AddURL(
+      model_.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url));
   n1->set_date_added(base_time + TimeDelta::FromDays(4));
   n2->set_date_added(base_time + TimeDelta::FromDays(3));
 
   // Make sure order is honored.
-  ASSERT_EQ(n1, model.GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_EQ(n1, model_.GetMostRecentlyAddedNodeForURL(url));
 
   // swap 1 and 2, then check again.
   SwapDateAdded(n1, n2);
-  ASSERT_EQ(n2, model.GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_EQ(n2, model_.GetMostRecentlyAddedNodeForURL(url));
 }
 
 // Makes sure GetBookmarks removes duplicates.
 TEST_F(BookmarkModelTest, GetBookmarksWithDups) {
   const GURL url("http://foo.com/0");
-  model.AddURL(model.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url);
-  model.AddURL(model.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url);
+  model_.AddURL(model_.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url);
+  model_.AddURL(model_.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url);
 
   std::vector<GURL> urls;
-  model.GetBookmarks(&urls);
+  model_.GetBookmarks(&urls);
   EXPECT_EQ(1U, urls.size());
   ASSERT_TRUE(urls[0] == url);
 }
 
 TEST_F(BookmarkModelTest, HasBookmarks) {
   const GURL url("http://foo.com/");
-  model.AddURL(model.GetBookmarkBarNode(), 0, ASCIIToUTF16("bar"), url);
+  model_.AddURL(model_.GetBookmarkBarNode(), 0, ASCIIToUTF16("bar"), url);
 
-  EXPECT_TRUE(model.HasBookmarks());
+  EXPECT_TRUE(model_.HasBookmarks());
 }
 
 namespace {
@@ -528,8 +577,8 @@ class StarredListener : public NotificationObserver {
 TEST_F(BookmarkModelTest, NotifyURLsStarred) {
   StarredListener listener;
   const GURL url("http://foo.com/0");
-  const BookmarkNode* n1 = model.AddURL(
-      model.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url);
+  const BookmarkNode* n1 = model_.AddURL(
+      model_.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url);
 
   // Starred notification should be sent.
   EXPECT_EQ(1, listener.notification_count_);
@@ -541,23 +590,23 @@ TEST_F(BookmarkModelTest, NotifyURLsStarred) {
 
   // Add another bookmark for the same URL. This should not send any
   // notification.
-  const BookmarkNode* n2 = model.AddURL(
-      model.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url);
+  const BookmarkNode* n2 = model_.AddURL(
+      model_.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url);
 
   EXPECT_EQ(0, listener.notification_count_);
 
   // Remove n2.
-  model.Remove(n2->parent(), 1);
+  model_.Remove(n2->parent(), 1);
   n2 = NULL;
 
   // Shouldn't have received any notification as n1 still exists with the same
   // URL.
   EXPECT_EQ(0, listener.notification_count_);
 
-  EXPECT_TRUE(model.GetMostRecentlyAddedNodeForURL(url) == n1);
+  EXPECT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == n1);
 
   // Remove n1.
-  model.Remove(n1->parent(), 0);
+  model_.Remove(n1->parent(), 0);
 
   // Now we should get the notification.
   EXPECT_EQ(1, listener.notification_count_);
@@ -762,6 +811,8 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     const std::string bbn_contents;
     // Structure of the children of the other node.
     const std::string other_contents;
+    // Structure of the children of the synced node.
+    const std::string synced_contents;
   } data[] = {
     // See PopulateNodeFromString for a description of these strings.
     { "", "" },
@@ -789,11 +840,16 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     PopulateNodeFromString(data[i].other_contents, &other);
     PopulateBookmarkNode(&other, bb_model_, bb_model_->other_node());
 
+    TestNode synced;
+    PopulateNodeFromString(data[i].synced_contents, &synced);
+    PopulateBookmarkNode(&synced, bb_model_, bb_model_->synced_node());
+
     profile_->CreateBookmarkModel(false);
     BlockTillBookmarkModelLoaded();
 
     VerifyModelMatchesNode(&bbn, bb_model_->GetBookmarkBarNode());
     VerifyModelMatchesNode(&other, bb_model_->other_node());
+    VerifyModelMatchesNode(&synced, bb_model_->synced_node());
     VerifyNoDuplicateIDs(bb_model_);
   }
 }
@@ -862,6 +918,9 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     ASSERT_EQ(ASCIIToUTF16("About Google"), child->GetTitle());
     ASSERT_TRUE(child->GetURL() ==
                 GURL("http://www.google.com/intl/en/about.html"));
+
+    parent = bb_model_->synced_node();
+    ASSERT_EQ(0, parent->child_count());
 
     ASSERT_TRUE(bb_model_->IsBookmarked(GURL("http://www.google.com")));
   }
@@ -972,8 +1031,8 @@ TEST_F(BookmarkModelTest, Sort) {
   // 'C' and 'a' are folders.
   TestNode bbn;
   PopulateNodeFromString("B [ a ] d [ a ]", &bbn);
-  const BookmarkNode* parent = model.GetBookmarkBarNode();
-  PopulateBookmarkNode(&bbn, &model, parent);
+  const BookmarkNode* parent = model_.GetBookmarkBarNode();
+  PopulateBookmarkNode(&bbn, &model_, parent);
 
   BookmarkNode* child1 = AsMutable(parent->GetChild(1));
   child1->set_title(ASCIIToUTF16("a"));
@@ -985,7 +1044,7 @@ TEST_F(BookmarkModelTest, Sort) {
   ClearCounts();
 
   // Sort the children of the bookmark bar node.
-  model.SortChildren(parent);
+  model_.SortChildren(parent);
 
   // Make sure we were notified.
   AssertObserverCount(0, 0, 0, 0, 1);
@@ -996,4 +1055,33 @@ TEST_F(BookmarkModelTest, Sort) {
   EXPECT_EQ(parent->GetChild(1)->GetTitle(), ASCIIToUTF16("C"));
   EXPECT_EQ(parent->GetChild(2)->GetTitle(), ASCIIToUTF16("B"));
   EXPECT_EQ(parent->GetChild(3)->GetTitle(), ASCIIToUTF16("d"));
+}
+
+TEST_F(BookmarkModelTest, NodeVisibility) {
+  EXPECT_TRUE(model_.GetBookmarkBarNode()->IsVisible());
+  EXPECT_TRUE(model_.other_node()->IsVisible());
+  // Sync node invisible by default
+  EXPECT_FALSE(model_.synced_node()->IsVisible());
+
+  // Arbitrary node should be visible
+  TestNode bbn;
+  PopulateNodeFromString("B", &bbn);
+  const BookmarkNode* parent = model_.GetBookmarkBarNode();
+  PopulateBookmarkNode(&bbn, &model_, parent);
+  EXPECT_TRUE(parent->GetChild(0)->IsVisible());
+}
+
+TEST_F(BookmarkModelTest, SyncNodeVisibileIfFlagSet) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableSyncedBookmarksFolder);
+  EXPECT_TRUE(model_.synced_node()->IsVisible());
+}
+
+TEST_F(BookmarkModelTest, SyncNodeVisibileWithChildren) {
+  const BookmarkNode* root = model_.synced_node();
+  const string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+
+  model_.AddURL(root, 0, title, url);
+  EXPECT_TRUE(model_.synced_node()->IsVisible());
 }

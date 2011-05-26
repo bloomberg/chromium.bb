@@ -24,7 +24,9 @@
 //   id                 Unique identifier (primary key) for the entry.
 //   type               Type of entry, if 0 this corresponds to a URL, 1 for
 //                      a system folder, 2 for a user created folder, 3 for
-//                      other.
+//                      other. Note that 4 (synced) will never appear in the
+//                      database because it was added after this storage was
+//                      deprecated.
 //   url_id             ID of the url, only valid if type == 0
 //   group_id           ID of the folder, only valid if type != 0. This id comes
 //                      from the UI and is NOT the same as id.
@@ -545,6 +547,12 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   entry.type = history::StarredEntry::OTHER;
   BookmarkNode other_node(0, GURL());
   other_node.Reset(entry);
+  // NOTE(yfriedman): We don't do anything with the synced star node because it
+  // won't ever exist in the starred node DB. We only need to create it to pass
+  // to "encode".
+  entry.type = history::StarredEntry::SYNCED;
+  BookmarkNode synced_node(0, GURL());
+  synced_node.Reset(entry);
 
   std::map<history::UIStarID, history::StarID> folder_id_to_id_map;
   typedef std::map<history::StarID, BookmarkNode*> IDToNodeMap;
@@ -579,6 +587,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
        i != entries.end(); ++i) {
     if (!i->parent_folder_id) {
       DCHECK(i->type == history::StarredEntry::BOOKMARK_BAR ||
+             i->type == history::StarredEntry::SYNCED ||
              i->type == history::StarredEntry::OTHER);
       // Only entries with no parent should be the bookmark bar and other
       // bookmarks folders.
@@ -616,7 +625,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   // Save to file.
   BookmarkCodec encoder;
   scoped_ptr<Value> encoded_bookmarks(
-      encoder.Encode(&bookmark_bar_node, &other_node));
+      encoder.Encode(&bookmark_bar_node, &other_node, &synced_node));
   std::string content;
   base::JSONWriter::Write(encoded_bookmarks.get(), true, &content);
 
