@@ -34,6 +34,25 @@ void ConvertRGB32ToYUV_C(const uint8* rgbframe,
                          int ystride,
                          int uvstride);
 
+// C version of converting RGB24 to YV12.
+void ConvertRGB24ToYUV_C(const uint8* rgbframe,
+                         uint8* yplane,
+                         uint8* uplane,
+                         uint8* vplane,
+                         int width,
+                         int height,
+                         int rgbstride,
+                         int ystride,
+                         int uvstride);
+
+// C version of converting YUY2 to YV12.
+void ConvertYUY2ToYUV_C(const uint8* src,
+                        uint8* yplane,
+                        uint8* uplane,
+                        uint8* vplane,
+                        int width,
+                        int height);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_YUV_CONVERT_INTERNAL_H_

@@ -1930,6 +1930,7 @@
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_unittest.cc',
         '../content/browser/renderer_host/resource_queue_unittest.cc',
+        '../content/browser/renderer_host/video_capture_host_unittest.cc',
         '../content/browser/resolve_proxy_msg_helper_unittest.cc',
         '../content/browser/site_instance_unittest.cc',
         '../content/browser/speech/endpointer/endpointer_unittest.cc',
