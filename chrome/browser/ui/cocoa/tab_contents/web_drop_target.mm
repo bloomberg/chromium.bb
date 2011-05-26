@@ -7,14 +7,10 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#include "chrome/browser/ui/cocoa/drag_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/url_constants.h"
-#include "net/base/mime_util.h"
-#include "net/base/net_util.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
-#include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -70,38 +66,6 @@ using WebKit::WebDragOperationsMask;
   return tabContents_->showing_interstitial_page();
 }
 
-// Determines whether the given drag and drop operation can be performed
-// on the web view.
-- (BOOL)shouldDisallowDrop:(id<NSDraggingInfo>)info {
-  if ([[info draggingPasteboard] containsURLData]) {
-    GURL url;
-    [self populateURL:&url
-        andTitle:NULL
-        fromPasteboard:[info draggingPasteboard]
-        convertingFilenames:YES];
-
-    // If dragging a file, only allow dropping supported file types (that the
-    // web view can display).
-    if (url.SchemeIs(chrome::kFileScheme)) {
-      FilePath full_path;
-      net::FileURLToFilePath(url, &full_path);
-
-      std::string mime_type;
-      net::GetMimeTypeFromFile(full_path, &mime_type);
-
-      if (!net::IsSupportedMimeType(mime_type))
-        return YES;
-    }
-  }
-
-  return NO;
-}
-
-- (void)setNoDropCursor {
-  WebKit::WebCursorInfo cursorInfo(WebKit::WebCursorInfo::TypeNoDrop);
-  [WebCursor(cursorInfo).GetCursor() set];
-}
-
 // Messages to send during the tracking of a drag, usually upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
 
@@ -110,11 +74,6 @@ using WebKit::WebDragOperationsMask;
   // Save off the RVH so we can tell if it changes during a drag. If it does,
   // we need to send a new enter message in draggingUpdated:.
   currentRVH_ = tabContents_->render_view_host();
-
-  if ([self shouldDisallowDrop:info]) {
-    [self setNoDropCursor];
-    return NSDragOperationNone;
-  }
 
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
@@ -155,9 +114,6 @@ using WebKit::WebDragOperationsMask;
   if (currentRVH_ != tabContents_->render_view_host())
     return;
 
-  if ([self shouldDisallowDrop:info])
-    return;
-
   // Nothing to do in the interstitial case.
 
   tabContents_->render_view_host()->DragTargetDragLeave();
@@ -168,11 +124,6 @@ using WebKit::WebDragOperationsMask;
   DCHECK(currentRVH_);
   if (currentRVH_ != tabContents_->render_view_host())
     [self draggingEntered:info view:view];
-
-  if ([self shouldDisallowDrop:info]) {
-    [self setNoDropCursor];
-    return NSDragOperationNone;
-  }
 
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
@@ -210,10 +161,7 @@ using WebKit::WebDragOperationsMask;
     NSPasteboard* pboard = [info draggingPasteboard];
     if ([pboard containsURLData]) {
       GURL url;
-      [self populateURL:&url
-          andTitle:NULL
-          fromPasteboard:pboard
-          convertingFilenames:YES];
+      drag_util::PopulateURLAndTitleFromPasteBoard(&url, NULL, pboard, YES);
       tabContents_->OpenURL(url, GURL(), CURRENT_TAB,
                             PageTransition::AUTO_BOOKMARK);
       return YES;
@@ -242,45 +190,6 @@ using WebKit::WebDragOperationsMask;
   return YES;
 }
 
-// Populate the |url| and |title| with URL data in |pboard|. There may be more
-// than one, but we only handle dropping the first. |url| must not be |NULL|;
-// |title| is an optional parameter. Returns |YES| if URL data was obtained from
-// the pasteboard, |NO| otherwise. If |convertFilenames| is |YES|, the function
-// will also attempt to convert filenames in |pboard| to file URLs.
-- (BOOL)populateURL:(GURL*)url
-    andTitle:(string16*)title
-    fromPasteboard:(NSPasteboard*)pboard
-    convertingFilenames:(BOOL)convertFilenames {
-  DCHECK(url);
-
-  // Bail out early if there's no URL data.
-  if (![pboard containsURLData])
-    return NO;
-
-  // |-getURLs:andTitles:convertingFilenames:| will already validate URIs so we
-  // don't need to again. The arrays returned are both of NSString's.
-  NSArray* urls = nil;
-  NSArray* titles = nil;
-  [pboard getURLs:&urls andTitles:&titles convertingFilenames:convertFilenames];
-  DCHECK_EQ([urls count], [titles count]);
-  // It's possible that no URLs were actually provided!
-  if (![urls count])
-    return NO;
-  NSString* urlString = [urls objectAtIndex:0];
-  if ([urlString length]) {
-    // Check again just to make sure to not assign NULL into a std::string,
-    // which throws an exception.
-    const char* utf8Url = [urlString UTF8String];
-    if (utf8Url) {
-      *url = GURL(utf8Url);
-      // Extra paranoia check.
-      if (title && [titles count])
-        *title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
-    }
-  }
-  return YES;
-}
-
 // Given |data|, which should not be nil, fill it in using the contents of the
 // given pasteboard.
 - (void)populateWebDropData:(WebDropData*)data
@@ -291,10 +200,10 @@ using WebKit::WebDragOperationsMask;
 
   // Get URL if possible. To avoid exposing file system paths to web content,
   // filenames in the drag are not converted to file URLs.
-  [self populateURL:&data->url
-      andTitle:&data->url_title
-      fromPasteboard:pboard
-      convertingFilenames:NO];
+  drag_util::PopulateURLAndTitleFromPasteBoard(&data->url,
+                                               &data->url_title,
+                                               pboard,
+                                               NO);
 
   // Get plain text.
   if ([types containsObject:NSStringPboardType]) {

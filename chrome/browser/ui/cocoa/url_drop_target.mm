@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/cocoa/drag_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
 @interface URLDropTargetHandler(Private)
@@ -40,10 +41,20 @@
 // (us).
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+  if (drag_util::IsUnsupportedDropData(sender)) {
+    drag_util::SetNoDropCursor();
+    return NSDragOperationNone;
+  }
+
   return [self getDragOperation:sender];
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
+  if (drag_util::IsUnsupportedDropData(sender)) {
+    drag_util::SetNoDropCursor();
+    return NSDragOperationNone;
+  }
+
   NSDragOperation dragOp = [self getDragOperation:sender];
   if (dragOp == NSDragOperationCopy) {
     // Just tell the window controller to update the indicator.
@@ -55,6 +66,9 @@
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
+  if (drag_util::IsUnsupportedDropData(sender))
+    return;
+
   [self hideIndicator];
 }
 

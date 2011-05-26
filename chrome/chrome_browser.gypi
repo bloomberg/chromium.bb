@@ -2312,6 +2312,8 @@
         'browser/ui/cocoa/download/download_util_mac.mm',
         'browser/ui/cocoa/draggable_button.h',
         'browser/ui/cocoa/draggable_button.mm',
+        'browser/ui/cocoa/drag_util.h',
+        'browser/ui/cocoa/drag_util.mm',
         'browser/ui/cocoa/encoding_menu_controller_delegate_mac.h',
         'browser/ui/cocoa/encoding_menu_controller_delegate_mac.mm',
         'browser/ui/cocoa/event_utils.h',

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -80,10 +81,8 @@ TEST_F(WebDropTargetTest, URL) {
   pboard = [NSPasteboard pasteboardWithUniqueName];
   url = @"http://www.google.com/";
   PutURLOnPasteboard(url, pboard);
-  EXPECT_TRUE([drop_target_ populateURL:&result_url
-                               andTitle:&result_title
-                         fromPasteboard:pboard
-                    convertingFilenames:NO]);
+  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+      &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   [pboard releaseGlobally];
 
@@ -92,10 +91,8 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"http://www.google.com/";
   title = @"Title of Awesomeness!",
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE([drop_target_ populateURL:&result_url
-                               andTitle:&result_title
-                         fromPasteboard:pboard
-                    convertingFilenames:NO]);
+  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+      &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
   [pboard releaseGlobally];
@@ -105,10 +102,8 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"file:///tmp/dont_delete_me.txt";
   title = @"very important";
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE([drop_target_ populateURL:&result_url
-                               andTitle:&result_title
-                         fromPasteboard:pboard
-                    convertingFilenames:NO]);
+  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+      &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
   [pboard releaseGlobally];
@@ -118,10 +113,8 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"javascript:open('http://www.youtube.com/')";
   title = @"kill some time";
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE([drop_target_ populateURL:&result_url
-                               andTitle:&result_title
-                         fromPasteboard:pboard
-                    convertingFilenames:NO]);
+  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+      &result_url, &result_title, pboard, NO));
   EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
   [pboard releaseGlobally];
@@ -132,14 +125,10 @@ TEST_F(WebDropTargetTest, URL) {
                  owner:nil];
   [pboard setPropertyList:[NSArray arrayWithObject:url]
                   forType:NSFilenamesPboardType];
-  EXPECT_FALSE([drop_target_ populateURL:&result_url
-                                andTitle:&result_title
-                          fromPasteboard:pboard
-                    convertingFilenames:NO]);
-  EXPECT_TRUE([drop_target_ populateURL:&result_url
-                               andTitle:&result_title
-                         fromPasteboard:pboard
-                    convertingFilenames:YES]);
+  EXPECT_FALSE(drag_util::PopulateURLAndTitleFromPasteBoard(
+      &result_url, &result_title, pboard, NO));
+  EXPECT_TRUE(drag_util::PopulateURLAndTitleFromPasteBoard(
+      &result_url, &result_title, pboard, YES));
   EXPECT_EQ("file://localhost/bin/sh", result_url.spec());
   EXPECT_EQ("sh", UTF16ToUTF8(result_title));
   [pboard releaseGlobally];
