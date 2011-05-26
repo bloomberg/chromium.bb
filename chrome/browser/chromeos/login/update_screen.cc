@@ -71,7 +71,7 @@ UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
       reboot_check_delay_(0),
       is_checking_for_update_(true),
       is_downloading_update_(false),
-      is_ignore_update_deadlines_(true),  // See http://crosbug.com/10068
+      is_ignore_update_deadlines_(false),
       is_shown_(false),
       actor_(new ViewsUpdateScreenActor(delegate,
                                         kUpdateScreenWidth,
