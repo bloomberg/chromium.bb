@@ -40,10 +40,6 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/images/icon_media.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_ICON_PHOTO"
                file="shared/images/icon_photo.png" type="BINDATA" />
-      <include name="IDR_SHARED_IMAGES_MEDIAPLAYER_PREV"
-               file="shared/images/mediaplayer_prev.png" type="BINDATA" />
-      <include name="IDR_SHARED_IMAGES_MEDIAPLAYER_NEXT"
-               file="shared/images/mediaplayer_next.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_THROBBER"
                file="shared/images/throbber.svg" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
