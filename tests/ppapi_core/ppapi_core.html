@@ -39,6 +39,13 @@ function setupTests(tester, plugin) {
       tester.waitForCallback('CallOnMainThreadCallback_FromMainThread', 1);
     });
 
+    tester.addTest(
+        'PPB_Core::CallOnMainThread_FromMainThreadDelayed', function() {
+      assert(plugin.testCallOnMainThread_FromMainThreadDelayed());
+      tester.waitForCallback(
+        'CallOnMainThreadCallback_FromMainThreadDelayed', 1);
+    });
+
     tester.addTest('PPB_Core::CallOnMainThread_FromNonMainThread', function() {
       assert(plugin.testCallOnMainThread_FromNonMainThread());
       tester.waitForCallback('CallOnMainThreadCallback_FromNonMainThread', 1);

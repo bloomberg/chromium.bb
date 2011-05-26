@@ -60,10 +60,16 @@ BrowserPpp* LookupBrowserPppForInstance(PP_Instance instance);
 // To keep track of memory allocated by a particular module, we need to remember
 // the PP_Module corresponding to a particular NaClSrpcChannel*.
 void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id);
+// To call remote callbacks only when the proxy is up and running, we need to
+// remember the PP_Instance corresponding to a particular NaClSrpcChannel*.
+void SetInstanceIdForSrpcChannel(NaClSrpcChannel* channel,
+                                 PP_Instance instance_id);
 // Removes the association with a given channel.
 void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel);
+void UnsetInstanceIdForSrpcChannel(NaClSrpcChannel* channel);
 // Looks up the association with a given channel.
 PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel);
+PP_Instance LookupInstanceIdForSrpcChannel(NaClSrpcChannel* channel);
 
 // Helpers for getting a pointer to the "main channel" for a specific nexe.
 NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc);

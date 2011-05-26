@@ -127,6 +127,19 @@ PP_Var TestCallOnMainThreadFromMainThread() {
   return TEST_PASSED;
 }
 
+// Tests PPB_Core::CallOnMainThread() from the main thread after a long delay.
+// This is useful for surf-away/reload tests where the nexe is aborted
+// after the callback was scheduled, but before it was fired.
+PP_Var TestCallOnMainThreadFromMainThreadDelayed() {
+  PP_CompletionCallback callback = MakeTestableCompletionCallback(
+      "CallOnMainThreadCallback_FromMainThreadDelayed",
+      EmptyCompletionCallback,
+      NULL /*user_data*/);
+  PPBCore()->CallOnMainThread(1000 /*delay in ms*/, callback, kNotPPError);
+
+  return TEST_PASSED;
+}
+
 // Tests PPB_Core::CallOnMainThread from non-main thread.
 PP_Var TestCallOnMainThreadFromNonMainThread() {
   pthread_t tid;
@@ -221,6 +234,8 @@ void SetupScriptableTests() {
                          TestAddRefAndReleaseInvalidResource);
   RegisterScriptableTest("testCallOnMainThread_FromMainThread",
                          TestCallOnMainThreadFromMainThread);
+  RegisterScriptableTest("testCallOnMainThread_FromMainThreadDelayed",
+                         TestCallOnMainThreadFromMainThreadDelayed);
   RegisterScriptableTest("testCallOnMainThread_FromNonMainThread",
                          TestCallOnMainThreadFromNonMainThread);
   RegisterScriptableTest("testCallOnMainThread_FromNonMainThreadStress",

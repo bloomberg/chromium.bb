@@ -23,7 +23,14 @@ const PP_Resource kInvalidResourceId = 0;
 namespace {
 
 std::map<PP_Instance, BrowserPpp*>* instance_to_ppp_map = NULL;
+
+// In the future, we might have one sel_ldr with one channel per module, shared
+// by multiple instances, where each instance consists of a trusted plugin with
+// a proxy to a nexe. When this happens, we will need to provide the instance id
+// with each SRPC message. But in the meantime it is enough to map channels
+// to instances since each proxy has its own SRPC channel.
 std::map<NaClSrpcChannel*, PP_Module>* channel_to_module_id_map = NULL;
+std::map<NaClSrpcChannel*, PP_Instance>* channel_to_instance_id_map = NULL;
 
 // The function pointer from the browser
 // Set by SetPPBGetInterface().
@@ -72,6 +79,14 @@ void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id) {
   (*channel_to_module_id_map)[channel] = module_id;
 }
 
+void SetInstanceIdForSrpcChannel(NaClSrpcChannel* channel,
+                                 PP_Instance instance_id) {
+  if (channel_to_instance_id_map == NULL) {
+    channel_to_instance_id_map = new std::map<NaClSrpcChannel*, PP_Instance>;
+  }
+  (*channel_to_instance_id_map)[channel] = instance_id;
+}
+
 void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   if (channel_to_module_id_map == NULL) {
     // Something major is wrong here.  We are deleting a map entry
@@ -88,11 +103,30 @@ void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   }
 }
 
+void UnsetInstanceIdForSrpcChannel(NaClSrpcChannel* channel) {
+  if (channel_to_instance_id_map == NULL) {
+    NACL_NOTREACHED();
+    return;
+  }
+  channel_to_instance_id_map->erase(channel);
+  if (channel_to_instance_id_map->size() == 0) {
+    delete channel_to_module_id_map;
+    channel_to_module_id_map = NULL;
+  }
+}
+
 PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   if (channel_to_module_id_map == NULL) {
     return 0;
   }
   return (*channel_to_module_id_map)[channel];
+}
+
+PP_Module LookupInstanceIdForSrpcChannel(NaClSrpcChannel* channel) {
+  if (channel_to_instance_id_map == NULL) {
+    return 0;
+  }
+  return (*channel_to_instance_id_map)[channel];
 }
 
 NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc) {

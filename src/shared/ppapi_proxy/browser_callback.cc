@@ -45,11 +45,19 @@ struct RemoteCallbackInfo {
 // It is passed as-is to the plugin side callback.
 void RunRemoteCallback(void* user_data, int32_t result) {
   CHECK(PPBCoreInterface()->IsMainThread());
-  DebugPrintf("RunRemotecallback: result=%"NACL_PRId32"\n", result);
+  DebugPrintf("RunRemoteCallback: result=%"NACL_PRId32"\n", result);
   nacl::scoped_ptr<RemoteCallbackInfo> remote_callback(
       reinterpret_cast<RemoteCallbackInfo*>(user_data));
-
   nacl::scoped_array<char> read_buffer(remote_callback->read_buffer);
+
+  // If the proxy is down, the channel is no longer usable for remote calls.
+  PP_Instance instance =
+      LookupInstanceIdForSrpcChannel(remote_callback->srpc_channel);
+  if (LookupBrowserPppForInstance(instance) == NULL) {
+    DebugPrintf("RunRemoteCallback: proxy=NULL\n", result);
+    return;
+  }
+
   nacl_abi_size_t read_buffer_size = 0;
   if (result > 0 && remote_callback->read_buffer != NULL)
     read_buffer_size = static_cast<nacl_abi_size_t>(result);

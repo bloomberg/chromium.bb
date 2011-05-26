@@ -68,6 +68,7 @@ int32_t BrowserPpp::InitializeModule(
   main_channel_->server = service;
   char* service_string = const_cast<char*>(service->service_string);
   SetModuleIdForSrpcChannel(main_channel_, module_id);
+  SetInstanceIdForSrpcChannel(main_channel_, plugin_->pp_instance());
   // Do the RPC.
   int32_t browser_pid = static_cast<int32_t>(GETPID());
   int32_t pp_error;
@@ -106,6 +107,7 @@ void BrowserPpp::ShutdownModule() {
   DebugPrintf("PPP_ShutdownModule: %s\n", NaClSrpcErrorString(srpc_result));
   NaClThreadJoin(&upcall_thread_);
   UnsetModuleIdForSrpcChannel(main_channel_);
+  UnsetInstanceIdForSrpcChannel(main_channel_);
 }
 
 const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
