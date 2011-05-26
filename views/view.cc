@@ -35,6 +35,7 @@
 #endif
 
 namespace {
+
 // Whether to use accelerated compositing when necessary (e.g. when a view has a
 // transformation).
 bool use_acceleration_when_possible = true;
@@ -63,7 +64,7 @@ class ScopedCanvas {
   DISALLOW_COPY_AND_ASSIGN(ScopedCanvas);
 };
 
-}
+}  // namespace
 
 namespace views {
 
@@ -99,7 +100,7 @@ View::View()
       group_(-1),
       focusable_(false),
       accessibility_focusable_(false),
-      is_parent_owned_(true),
+      parent_owned_(true),
       parent_(NULL),
       is_visible_(true),
       registered_for_visible_bounds_notification_(false),
@@ -127,7 +128,7 @@ View::~View() {
   int c = static_cast<int>(children_.size());
   while (--c >= 0) {
     children_[c]->parent_ = NULL;
-    if (children_[c]->IsParentOwned())
+    if (children_[c]->parent_owned())
       delete children_[c];
   }
 
@@ -1345,7 +1346,7 @@ void View::DoRemoveChildView(View* view,
     view->PropagateRemoveNotifications(this);
     view->parent_ = NULL;
 
-    if (delete_removed_view && view->IsParentOwned())
+    if (delete_removed_view && view->parent_owned())
       view_to_be_deleted.reset(view);
 
     children_.erase(i);

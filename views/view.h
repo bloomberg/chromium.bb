@@ -182,16 +182,9 @@ class View : public AcceleratorTarget {
   View();
   virtual ~View();
 
-  // Set whether this view is owned by its parent. A view that is owned by its
-  // parent is automatically deleted when the parent is deleted. The default is
-  // true. Set to false if the view is owned by another object and should not
-  // be deleted by its parent.
-  void set_parent_owned(bool is_parent_owned) {
-    is_parent_owned_ = is_parent_owned;
-  }
-
-  // Return whether a view is owned by its parent.
-  bool IsParentOwned() const { return is_parent_owned_; }
+  // By default a View is owned by its parent unless specified otherwise here.
+  bool parent_owned() const { return parent_owned_; }
+  void set_parent_owned(bool parent_owned) { parent_owned_ = parent_owned; }
 
   // Tree operations -----------------------------------------------------------
 
@@ -1316,12 +1309,13 @@ class View : public AcceleratorTarget {
 
   // Creation and lifetime -----------------------------------------------------
 
-  // Whether this view is owned by its parent.
-  bool is_parent_owned_;
+  // True if the hierarchy (i.e. the parent View) is responsible for deleting
+  // this View. Default is true.
+  bool parent_owned_;
 
   // Tree operations -----------------------------------------------------------
 
-  // This view's parent
+  // This view's parent.
   View* parent_;
 
   // This view's children.
