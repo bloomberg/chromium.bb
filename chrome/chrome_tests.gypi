@@ -613,9 +613,9 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
-        'chrome_mesa',
         'default_plugin/default_plugin.gyp:default_plugin',
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
+        '../third_party/mesa/mesa.gyp:osmesa',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
@@ -2225,7 +2225,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../v8/tools/gyp/v8.gyp:v8',
         # Runtime dependencies
-        'chrome_mesa',
+        '../third_party/mesa/mesa.gyp:osmesa',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
@@ -3359,7 +3359,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         # Runtime dependencies
-        'chrome_mesa',
+        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       'include_dirs': [
         '..',

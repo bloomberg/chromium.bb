@@ -5,6 +5,7 @@
 #include "base/base_paths.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -25,17 +26,21 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
-      FilePath module_path;
-      if (!PathService::Get(base::DIR_MODULE, &module_path)) {
+      // osmesa.so is located in the build directory. This code path is only
+      // valid in a developer build environment.
+      FilePath exe_path;
+      if (!PathService::Get(base::FILE_EXE, &exe_path)) {
         LOG(ERROR) << "PathService::Get failed.";
         return false;
       }
+      FilePath bundle_path = base::mac::GetAppBundlePath(exe_path);
+      FilePath build_dir_path = bundle_path.DirName();
+      FilePath osmesa_path = build_dir_path.Append("osmesa.so");
 
       // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
-      base::NativeLibrary library = base::LoadNativeLibrary(
-          module_path.Append("osmesa.so"), NULL);
+      base::NativeLibrary library = base::LoadNativeLibrary(osmesa_path, NULL);
       if (!library) {
-        VLOG(1) << "osmesa.so not found";
+        LOG(ERROR) << "osmesa.so not found at " << osmesa_path.value();
         return false;
       }
 

@@ -474,22 +474,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'chrome_mesa',
-      'type': 'none',
-      'dependencies': [
-        'chrome',
-        '../third_party/mesa/mesa.gyp:osmesa',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'copies': [{
-            'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)/<(mac_product_name) Helper.app/Contents/MacOS/',
-            'files': ['<(PRODUCT_DIR)/osmesa.so'],
-          }],
-        }],
-      ],
-    },
   ],
   'conditions': [
     ['OS=="win"', {
