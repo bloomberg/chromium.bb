@@ -25,8 +25,12 @@ namespace internal {
 //
 class NativeWidgetView : public View {
  public:
+  static const char kViewClassName[];
+
   explicit NativeWidgetView(NativeWidgetViews* native_widget);
   virtual ~NativeWidgetView();
+
+  Widget* GetAssociatedWidget();
 
  private:
   // Overridden from View:
@@ -50,6 +54,7 @@ class NativeWidgetView : public View {
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   internal::NativeWidgetDelegate* delegate() {
     return native_widget_->delegate();

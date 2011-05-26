@@ -9,6 +9,8 @@
 #include "views/window/window_delegate.h"
 
 namespace views {
+class NativeWidgetViews;
+
 namespace desktop {
 
 class DesktopWindow : public View,
@@ -18,6 +20,10 @@ class DesktopWindow : public View,
    virtual ~DesktopWindow();
 
    static void CreateDesktopWindow();
+
+   // Changes activation to the specified Widget. The currently active Widget
+   // is de-activated.
+   void ActivateWidget(Widget* widget);
 
  private:
   // Overridden from View:
@@ -37,6 +43,8 @@ class DesktopWindow : public View,
                         SkColor color,
                         gfx::Rect initial_bounds,
                         bool rotate);
+
+  NativeWidgetViews* active_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindow);
 };

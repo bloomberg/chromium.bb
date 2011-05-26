@@ -17,6 +17,7 @@ NativeWidgetViews::NativeWidgetViews(View* host,
     : delegate_(delegate),
       view_(NULL),
       host_view_(host),
+      active_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
 }
 
@@ -29,6 +30,11 @@ View* NativeWidgetViews::GetView() {
 
 const View* NativeWidgetViews::GetView() const {
   return view_;
+}
+
+void NativeWidgetViews::OnActivate(bool active) {
+  active_ = active;
+  view_->SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +190,7 @@ bool NativeWidgetViews::IsVisible() const {
 }
 
 bool NativeWidgetViews::IsActive() const {
-  return view_->HasFocus();
+  return active_;
 }
 
 bool NativeWidgetViews::IsAccessibleWidget() const {

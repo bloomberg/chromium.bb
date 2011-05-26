@@ -28,9 +28,11 @@ class NativeWidgetViews : public NativeWidget {
   View* GetView();
   const View* GetView() const;
 
+  void OnActivate(bool active);
+
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
- private:
+ protected:
   // Overridden from NativeWidget:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
@@ -76,6 +78,7 @@ class NativeWidgetViews : public NativeWidget {
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
 
+ private:
   NativeWidget* GetParentNativeWidget();
   const NativeWidget* GetParentNativeWidget() const;
 
@@ -84,6 +87,8 @@ class NativeWidgetViews : public NativeWidget {
   internal::NativeWidgetView* view_;
 
   View* host_view_;
+
+  bool active_;
 
   // The following factory is used for calls to close the NativeWidgetViews
   // instance.

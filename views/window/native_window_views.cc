@@ -117,8 +117,7 @@ void NativeWindowViews::Restore() {
 }
 
 bool NativeWindowViews::IsActive() const {
-  NOTIMPLEMENTED();
-  return false;
+  return NativeWidgetViews::IsActive();
 }
 
 bool NativeWindowViews::IsVisible() const {

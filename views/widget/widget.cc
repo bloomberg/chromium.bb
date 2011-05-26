@@ -213,6 +213,10 @@ void Widget::Hide() {
   native_widget_->Hide();
 }
 
+bool Widget::IsActive() const {
+  return native_widget_->IsActive();
+}
+
 void Widget::SetOpacity(unsigned char opacity) {
   native_widget_->SetOpacity(opacity);
 }
@@ -231,10 +235,6 @@ View* Widget::GetRootView() {
 
 bool Widget::IsVisible() const {
   return native_widget_->IsVisible();
-}
-
-bool Widget::IsActive() const {
-  return native_widget_->IsActive();
 }
 
 bool Widget::IsAccessibleWidget() const {

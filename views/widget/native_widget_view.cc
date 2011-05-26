@@ -12,11 +12,18 @@ namespace internal {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetView, public:
 
+// static
+const char NativeWidgetView::kViewClassName[] = "views/NativeWidgetView";
+
 NativeWidgetView::NativeWidgetView(NativeWidgetViews* native_widget)
     : native_widget_(native_widget) {
 }
 
 NativeWidgetView::~NativeWidgetView() {
+}
+
+Widget* NativeWidgetView::GetAssociatedWidget() {
+  return native_widget_->delegate()->AsWidget();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,6 +109,11 @@ void NativeWidgetView::OnBlur() {
   // TODO(beng): check if we have to do this.
   //delegate()->OnNativeBlur(NULL);
 }
+
+std::string NativeWidgetView::GetClassName() const {
+  return kViewClassName;
+}
+
 
 }  // namespace internal
 }  // namespace views
