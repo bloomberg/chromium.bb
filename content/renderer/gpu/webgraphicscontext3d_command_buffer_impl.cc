@@ -87,6 +87,9 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     RendererGLContext::NONE,
   };
 
+  const char* preferred_extensions = attributes.noExtensions ?
+      kWebGLPreferredGLExtensions : "*";
+
   const GPUInfo& gpu_info = host->gpu_info();
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.WebGraphicsContext3D_Init_CanLoseContext",
@@ -111,7 +114,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         host,
         renderview->compositing_surface(),
         renderview->routing_id(),
-        kWebGLPreferredGLExtensions,
+        preferred_extensions,
         attribs,
         active_url);
     if (context_) {
@@ -141,7 +144,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         host,
         parent_context,
         gfx::Size(1, 1),
-        kWebGLPreferredGLExtensions,
+        preferred_extensions,
         attribs,
         active_url);
     web_view_ = NULL;
