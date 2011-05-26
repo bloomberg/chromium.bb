@@ -59,6 +59,9 @@
       <include name="IDR_PDF_BUTTON_FTW" file="resources\pdf_button_ftw.png" type="BINDATA" />
       <include name="IDR_PDF_BUTTON_FTW_HOVER" file="resources\pdf_button_ftw_hover.png" type="BINDATA" />
       <include name="IDR_PDF_BUTTON_FTW_PRESSED" file="resources\pdf_button_ftw_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_END" file="resources\pdf_button_zoomin_end.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_END_HOVER" file="resources\pdf_button_zoomin_end_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_END_PRESSED" file="resources\pdf_button_zoomin_end_pressed.png" type="BINDATA" />
       <include name="IDR_PDF_BUTTON_ZOOMIN" file="resources\pdf_button_zoomin.png" type="BINDATA" />
       <include name="IDR_PDF_BUTTON_ZOOMIN_HOVER" file="resources\pdf_button_zoomin_hover.png" type="BINDATA" />
       <include name="IDR_PDF_BUTTON_ZOOMIN_PRESSED" file="resources\pdf_button_zoomin_pressed.png" type="BINDATA" />
