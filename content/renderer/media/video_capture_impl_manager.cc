@@ -113,3 +113,6 @@ VideoCaptureImplManager::Device::Device(
     : vc(device) {
   clients.push_front(handler);
 }
+
+VideoCaptureImplManager::Device::~Device() {}
+

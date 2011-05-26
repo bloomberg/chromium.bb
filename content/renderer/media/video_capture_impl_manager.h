@@ -46,6 +46,7 @@ class VideoCaptureImplManager {
     Device();
     Device(VideoCaptureImpl* device,
            media::VideoCapture::EventHandler* handler);
+    ~Device();
 
     VideoCaptureImpl* vc;
     std::list<media::VideoCapture::EventHandler*> clients;
