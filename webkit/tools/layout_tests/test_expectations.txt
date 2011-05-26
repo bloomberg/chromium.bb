@@ -24,17 +24,3 @@ BUG_HCLAM : fast/url/ipv6.html = TEXT
 
 // Temporary until expectations are updated after execScript removal.
 BUGAGER : fast/dom/prototype-inheritance.html = PASS TEXT
-
-// Almost fixed upstream by WebKit r87291, but expectations were accidentally
-// emptied instead of removed.  Get rid of these lines in the next roll that
-// includes the properly deleted expectations.
-BUG_ADAMK : ietestcenter/Javascript/15.5.4.20-1-1.html = PASS TEXT MISSING
-BUG_ADAMK : ietestcenter/Javascript/15.5.4.20-1-2.html = PASS TEXT MISSING
-
-// Remove once we roll past r87318
-BUG_ADAMK : fast/canvas/canvas-composite.html = IMAGE
-
-// Need rebaselining after r87310. New platform/mac results are correct,
-// but are not pixel-perfect matches. Remove once all platforms are rebaselined.
-BUG_ADAMK : svg/W3C-SVG-1.1-SE/filters-felem-01-b.svg = IMAGE+TEXT
-BUG_ADAMK : svg/W3C-SVG-1.1/filters-felem-01-b.svg = IMAGE
