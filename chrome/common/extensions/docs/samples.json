@@ -617,7 +617,7 @@
         "contentscript.js",
         "manifest.json"
       ],
-      "source_hash": "0fe56cea50dc18b7e5e31d47c383356a85d8b896",
+      "source_hash": "d77b68c4839500a5974d4775033f2ee94bb611f7",
       "zip_path": "examples\/howto\/contentscript_xhr.zip"
     },
     {

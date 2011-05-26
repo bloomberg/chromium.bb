@@ -29,7 +29,7 @@
         }
         // Note that any URL fetched here must be matched by a permission in
         // the manifest.json file!
-        var url = 'http://search.twitter.com/trends/current.json?exclude=hashtags';
+        var url = 'http://api.twitter.com/1/trends/current.json?exclude=hashtags';
         xhr.open('GET', url, true);
         xhr.send();
       };
