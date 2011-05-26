@@ -14,6 +14,7 @@ import chromite.buildbot.manifest_version as manifest_version
 import chromite.lib.cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
+_PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
@@ -519,10 +520,9 @@ class PushChangesStage(BuilderStage):
   def _PerformStage(self):
     if self._prebuilt_type in ('binary', 'chrome'):
       board = self._build_config['board']
-      binhosts = [
-          self._GetPortageEnvVar(_FULL_BINHOST, board),
-          self._GetPortageEnvVar(_FULL_BINHOST, None)
-      ]
+      binhosts = []
+      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
+      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
       commands.UploadPrebuilts(
           self._build_root, board, self._build_config['rev_overlays'],
           binhosts, self._prebuilt_type, self._options.chrome_rev,

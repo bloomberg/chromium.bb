@@ -12,6 +12,8 @@ import tempfile
 import time
 import urllib2
 
+TWO_WEEKS = 60 * 60 * 24 * 7 * 2
+
 class PackageIndex(object):
   """A parser for the Portage Packages index file.
 
@@ -41,17 +43,18 @@ class PackageIndex(object):
     # was written.
     self.modified = False
 
-  def _PopulateDuplicateDB(self, db):
+  def _PopulateDuplicateDB(self, db, expires):
     """Populate db with SHA1 -> URL mapping for packages.
 
     Args:
       db: Dictionary to populate with SHA1 -> URL mapping for packages.
+      expires: The time at which prebuilts expire from the binhost.
     """
 
     uri = self.header['URI']
     for pkg in self.packages:
-      cpv, sha1 = pkg['CPV'], pkg.get('SHA1')
-      if sha1:
+      cpv, sha1, mtime = pkg['CPV'], pkg.get('SHA1'), pkg.get('MTIME')
+      if sha1 and mtime and int(mtime) > expires:
         path = pkg.get('PATH', cpv + '.tbz2')
         db[sha1] = '%s/%s' % (uri.rstrip('/'), path)
 
@@ -163,8 +166,9 @@ class PackageIndex(object):
     """Point packages at files that have already been uploaded.
 
     For each package in our index, check if there is an existing package that
-    has already been uploaded to the same base URI. If so, point that package
-    at the existing file, so that we don't have to upload the file.
+    has already been uploaded to the same base URI, and that is no older than
+    two weeks. If so, point that package at the existing file, so that we don't
+    have to upload the file.
 
     Args:
       pkgindexes: A list of PackageIndex objects containing info about packages
@@ -174,8 +178,10 @@ class PackageIndex(object):
       A list of the packages that still need to be uploaded.
     """
     db = {}
+    now = int(time.time())
+    expires = now - TWO_WEEKS
     for pkgindex in pkgindexes:
-      pkgindex._PopulateDuplicateDB(db)
+      pkgindex._PopulateDuplicateDB(db, expires)
 
     uploads = []
     base_uri = self.header['URI']
@@ -185,6 +191,7 @@ class PackageIndex(object):
       if sha1 and uri and uri.startswith(base_uri):
         pkg['PATH'] = uri[len(base_uri):].lstrip('/')
       else:
+        pkg['MTIME'] = str(now)
         uploads.append(pkg)
     return uploads
 

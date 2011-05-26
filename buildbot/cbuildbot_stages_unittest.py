@@ -679,7 +679,7 @@ class PushChangesStageTest(AbstractStageTest):
     binhosts = []
     for board in (self.build_config['board'], None):
       binhost = 'http://binhost/?board=' + str(board)
-      stages.PushChangesStage._GetPortageEnvVar(stages._FULL_BINHOST,
+      stages.PushChangesStage._GetPortageEnvVar(stages._PORTAGE_BINHOST,
           board).AndReturn(binhost)
       binhosts.append(binhost)
     return binhosts
