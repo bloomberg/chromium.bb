@@ -84,41 +84,6 @@ body {
   margin: 0 9px;
 }
 
-/* TODO(estade): handle overflow better? I tried overflow-x: hidden and
-   overflow-y: visible (for the new dot animation), but this makes a scroll
-   bar appear */
-#dot-list {
-  display: -webkit-box;
-  height: 100%;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  /* Expand to take up all available horizontal space.  */
-  -webkit-box-flex: 1;
-  /* Center child dots. */
-  -webkit-box-pack: center;
-}
-
-/* TODO(estade): improve focus indicator. */
-.dot {
-  border-top: 5px solid;
-  cursor: pointer;
-  font-size: 9pt;
-  height: 100%;
-  margin: 0 10px;
-  padding-top: 5px;
-  text-align: left;
-  width: 60px;
-  -webkit-box-sizing: border-box;
-  -webkit-padding-start: 5px;
-  -webkit-transition: -webkit-transform 500ms,
-                      background-color 250ms;
-}
-
-.dot.new {
-  -webkit-transform: translate(0, 40px);
-}
-
 #trash {
   position: absolute;
   width: 110px;
