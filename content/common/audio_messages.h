@@ -16,6 +16,7 @@
 
 IPC_ENUM_TRAITS(AudioStreamState)
 IPC_ENUM_TRAITS(AudioParameters::Format)
+IPC_ENUM_TRAITS(ChannelLayout)
 
 IPC_STRUCT_TRAITS_BEGIN(AudioBuffersState)
   IPC_STRUCT_TRAITS_MEMBER(pending_bytes)
@@ -25,10 +26,11 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(AudioParameters)
   IPC_STRUCT_TRAITS_MEMBER(format)
-  IPC_STRUCT_TRAITS_MEMBER(channels)
+  IPC_STRUCT_TRAITS_MEMBER(channel_layout)
   IPC_STRUCT_TRAITS_MEMBER(sample_rate)
   IPC_STRUCT_TRAITS_MEMBER(bits_per_sample)
   IPC_STRUCT_TRAITS_MEMBER(samples_per_packet)
+  IPC_STRUCT_TRAITS_MEMBER(channels)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
