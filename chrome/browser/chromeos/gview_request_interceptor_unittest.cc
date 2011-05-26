@@ -11,15 +11,12 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
 namespace chromeos {
-
-namespace {
 
 class GViewURLRequestTestJob : public net::URLRequestTestJob {
  public:
@@ -50,25 +47,23 @@ class GViewURLRequestTestJob : public net::URLRequestTestJob {
   ~GViewURLRequestTestJob() {}
 };
 
-class GViewRequestProtocolFactory
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  GViewRequestProtocolFactory() {}
-  virtual ~GViewRequestProtocolFactory() {}
-
-  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
-    return new GViewURLRequestTestJob(request);
-  }
-};
-
 class GViewRequestInterceptorTest : public testing::Test {
  public:
   virtual void SetUp() {
-    job_factory_.SetProtocolHandler("http", new GViewRequestProtocolFactory);
-    job_factory_.AddInterceptor(new GViewRequestInterceptor);
-    request_context_ = new TestURLRequestContext;
-    request_context_->set_job_factory(&job_factory_);
+    net::URLRequest::RegisterProtocolFactory("http",
+                                        &GViewRequestInterceptorTest::Factory);
+    interceptor_ = GViewRequestInterceptor::GetInstance();
     ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path_));
+  }
+
+  virtual void TearDown() {
+    net::URLRequest::RegisterProtocolFactory("http", NULL);
+    message_loop_.RunAllPending();
+  }
+
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme) {
+    return new GViewURLRequestTestJob(request);
   }
 
   void RegisterPDFPlugin() {
@@ -107,15 +102,13 @@ class GViewRequestInterceptorTest : public testing::Test {
 
  protected:
   MessageLoopForIO message_loop_;
-  net::URLRequestJobFactory job_factory_;
-  scoped_refptr<TestURLRequestContext> request_context_;
   TestDelegate test_delegate_;
+  net::URLRequest::Interceptor* interceptor_;
   FilePath pdf_path_;
 };
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
   net::URLRequest request(GURL("http://foo.com/index.html"), &test_delegate_);
-  request.set_context(request_context_);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(0, test_delegate_.received_redirect_count());
@@ -124,7 +117,6 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
   request.set_load_flags(net::LOAD_IS_DOWNLOAD);
   request.Start();
   MessageLoop::current()->Run();
@@ -143,7 +135,6 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
   }
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(0, test_delegate_.received_redirect_count());
@@ -161,7 +152,6 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   }
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
@@ -175,7 +165,6 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
   SetPDFPluginLoadedState(false, &enabled);
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
@@ -185,14 +174,11 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
 
 TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
   net::URLRequest request(GURL("http://foo.com/file.ppt"), &test_delegate_);
-  request.set_context(request_context_);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
   EXPECT_EQ(GURL("http://docs.google.com/gview?url=http%3A//foo.com/file.ppt"),
                  request.url());
 }
-
-}  // namespace
 
 }  // namespace chromeos

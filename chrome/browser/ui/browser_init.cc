@@ -555,6 +555,12 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // of what window has focus.
   chromeos::WmMessageListener::GetInstance();
 
+  // Install the GView request interceptor that will redirect requests
+  // of compatible documents (PDF, etc) to the GView document viewer.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(switches::kEnableGView)) {
+    chromeos::GViewRequestInterceptor::GetInstance();
+  }
   if (process_startup) {
     // This observer is a singleton. It is never deleted but the pointer is kept
     // in a static so that it isn't reported as a leak.

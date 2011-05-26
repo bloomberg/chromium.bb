@@ -5,12 +5,14 @@
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 
 #include "base/file_path.h"
+#include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
@@ -19,41 +21,37 @@ namespace chromeos {
 // The PDF mime type is treated special if the browser has a built-in
 // PDF viewer plug-in installed - we want to intercept only if we're
 // told to.
-static const char kPdfMimeType[] = "application/pdf";
+static const char* const kPdfMimeType = "application/pdf";
 
 // This is the list of mime types currently supported by the Google
 // Document Viewer.
-static const char* const kSupportedMimeTypeList[] = {
+static const char* const supported_mime_type_list[] = {
   kPdfMimeType,
   "application/vnd.ms-powerpoint"
 };
 
-static const char kGViewUrlPrefix[] = "http://docs.google.com/gview?url=";
+static const char* const kGViewUrlPrefix = "http://docs.google.com/gview?url=";
 
 GViewRequestInterceptor::GViewRequestInterceptor() {
-  for (size_t i = 0; i < arraysize(kSupportedMimeTypeList); ++i) {
-    supported_mime_types_.insert(kSupportedMimeTypeList[i]);
+  net::URLRequest::RegisterRequestInterceptor(this);
+  for (size_t i = 0; i < arraysize(supported_mime_type_list); ++i) {
+    supported_mime_types_.insert(supported_mime_type_list[i]);
   }
 }
 
 GViewRequestInterceptor::~GViewRequestInterceptor() {
+  net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
 net::URLRequestJob* GViewRequestInterceptor::MaybeIntercept(
-    net::URLRequest* request) const {
+    net::URLRequest* request) {
   // Don't attempt to intercept here as we want to wait until the mime
   // type is fully determined.
   return NULL;
 }
 
-net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptRedirect(
-    const GURL& location,
-    net::URLRequest* request) const {
-  return NULL;
-}
-
 net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request) const {
+    net::URLRequest* request) {
   // Do not intercept this request if it is a download.
   if (request->load_flags() & net::LOAD_IS_DOWNLOAD) {
     return NULL;
@@ -81,6 +79,10 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
     return new net::URLRequestRedirectJob(request, GURL(url));
   }
   return NULL;
+}
+
+GViewRequestInterceptor* GViewRequestInterceptor::GetInstance() {
+  return Singleton<GViewRequestInterceptor>::get();
 }
 
 }  // namespace chromeos
