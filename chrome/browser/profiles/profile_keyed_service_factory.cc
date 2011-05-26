@@ -25,10 +25,18 @@ ProfileKeyedServiceFactory::~ProfileKeyedServiceFactory() {
 ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
     Profile* profile,
     bool create) {
+#ifndef NDEBUG
+  dependency_manager_->AssertProfileWasntDestroyed(profile);
+#endif
+
   // Possibly handle Incognito mode.
   if (profile->IsOffTheRecord()) {
     if (ServiceRedirectedInIncognito()) {
       profile = profile->GetOriginalProfile();
+
+#ifndef NDEBUG
+      dependency_manager_->AssertProfileWasntDestroyed(profile);
+#endif
     } else if (ServiceHasOwnInstanceInIncognito()) {
       // No-op; the pointers are already set correctly.
     } else {

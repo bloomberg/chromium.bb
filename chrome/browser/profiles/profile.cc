@@ -200,6 +200,10 @@ class OffTheRecordProfileImpl : public Profile,
         prefs_(real_profile->GetOffTheRecordPrefs()),
         ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
         start_time_(Time::Now()) {
+#ifndef NDEBUG
+    ProfileDependencyManager::GetInstance()->ProfileNowExists(this);
+#endif
+
     extension_process_manager_.reset(ExtensionProcessManager::Create(this));
 
     BrowserList::AddObserver(this);

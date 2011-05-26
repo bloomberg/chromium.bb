@@ -294,6 +294,11 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       delegate_(delegate) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
+
+#ifndef NDEBUG
+    ProfileDependencyManager::GetInstance()->ProfileNowExists(this);
+#endif
+
   create_session_service_timer_.Start(
       TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
       &ProfileImpl::EnsureSessionServiceCreated);

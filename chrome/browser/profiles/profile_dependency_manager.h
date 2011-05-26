@@ -10,6 +10,10 @@
 
 #include "base/memory/singleton.h"
 
+#ifndef NDEBUG
+#include <set>
+#endif
+
 class Profile;
 class ProfileKeyedServiceFactory;
 
@@ -39,6 +43,18 @@ class ProfileDependencyManager {
   //   replaced in many tests.
   void DestroyProfileServices(Profile* profile);
 
+#ifndef NDEBUG
+  // Unmark |profile| as dead. This exists because of unit tests, which will
+  // often have similar stack structures. 0xWhatever might be created, go out
+  // of scope, and then a new Profile object might be created at 0xWhatever.
+  void ProfileNowExists(Profile* profile);
+
+  // Debugging assertion called as part of GetServiceForProfile in debug
+  // mode. This will NOTREACHED() whenever the user is trying to access a stale
+  // Profile*.
+  void AssertProfileWasntDestroyed(Profile* profile);
+#endif
+
   static ProfileDependencyManager* GetInstance();
 
  private:
@@ -60,6 +76,14 @@ class ProfileDependencyManager {
   EdgeMap edges_;
 
   std::vector<ProfileKeyedServiceFactory*> destruction_order_;
+
+#ifndef NDEBUG
+  // A list of profile objects that have gone through the Shutdown()
+  // phase. These pointers are most likely invalid, but we keep track of their
+  // locations in memory so we can nicely assert if we're asked to do anything
+  // with them.
+  std::set<Profile*> dead_profile_pointers_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_DEPENDENCY_MANAGER_H_

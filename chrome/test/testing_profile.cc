@@ -128,6 +128,10 @@ TestingProfile::TestingProfile()
       incognito_(false),
       last_session_exited_cleanly_(true),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()) {
+#ifndef NDEBUG
+    profile_dependency_manager_->ProfileNowExists(this);
+#endif
+
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique temporary directory.";
 

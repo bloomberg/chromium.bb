@@ -55,11 +55,31 @@ void ProfileDependencyManager::DestroyProfileServices(Profile* profile) {
     (*it)->ProfileShutdown(profile);
   }
 
+#ifndef NDEBUG
+  // The profile is now dead to the rest of the program.
+  dead_profile_pointers_.insert(profile);
+#endif
+
   for (std::vector<ProfileKeyedServiceFactory*>::const_iterator it =
            destruction_order_.begin(); it != destruction_order_.end(); ++it) {
     (*it)->ProfileDestroyed(profile);
   }
 }
+
+#ifndef NDEBUG
+void ProfileDependencyManager::ProfileNowExists(Profile* profile) {
+  dead_profile_pointers_.erase(profile);
+}
+
+void ProfileDependencyManager::AssertProfileWasntDestroyed(Profile* profile) {
+  if (dead_profile_pointers_.find(profile) != dead_profile_pointers_.end()) {
+    NOTREACHED() << "Attempted to access a Profile that was ShutDown(). This "
+                 << "is most likely a heap smasher in progress. After "
+                 << "ProfileKeyedService::Shutdown() completes, your service "
+                 << "MUST NOT refer to depended Profile services again.";
+  }
+}
+#endif
 
 // static
 ProfileDependencyManager* ProfileDependencyManager::GetInstance() {
