@@ -49,6 +49,10 @@
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gview_request_interceptor.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // ----------------------------------------------------------------------------
@@ -457,6 +461,13 @@ void ProfileIOData::LazyInitialize() const {
           profile_params_->file_system_context,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
+#if defined(OS_CHROMEOS)
+  // Install the GView request interceptor that will redirect requests
+  // of compatible documents (PDF, etc) to the GView document viewer.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(switches::kEnableGView))
+    job_factory_->AddInterceptor(new chromeos::GViewRequestInterceptor);
+#endif  // defined(OS_CHROMEOS)
 
   // Take ownership over these parameters.
   database_tracker_ = profile_params_->database_tracker;
