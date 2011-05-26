@@ -39,6 +39,14 @@ def GetPreferredTrySlaves():
   return %s
 """
 
+  presubmit_tryslave_project = """
+def GetPreferredTrySlaves(project):
+  if project == %s:
+    return %s
+  else:
+    return %s
+"""
+
   presubmit_diffs = """
 --- file1       2011-02-09 10:38:16.517224845 -0800
 +++ file2       2011-02-09 10:38:53.177226516 -0800
@@ -661,9 +669,9 @@ def CheckChangeOnCommit(input_api, output_api):
     self.mox.ReplayAll()
 
     executer = presubmit.GetTrySlavesExecuter()
-    self.assertEqual([], executer.ExecPresubmitScript('', ''))
+    self.assertEqual([], executer.ExecPresubmitScript('', '', ''))
     self.assertEqual(
-        [], executer.ExecPresubmitScript('def foo():\n  return\n', ''))
+        [], executer.ExecPresubmitScript('def foo():\n  return\n', '', ''))
 
     # bad results
     starts_with_space_result = ['  starts_with_space']
@@ -672,7 +680,7 @@ def CheckChangeOnCommit(input_api, output_api):
     for result in starts_with_space_result, not_list_result1, not_list_result2:
       self.assertRaises(presubmit.PresubmitFailure,
                         executer.ExecPresubmitScript,
-                        self.presubmit_tryslave % result, '')
+                        self.presubmit_tryslave % result, '', '')
 
     # good results
     expected_result = ['1', '2', '3']
@@ -681,7 +689,21 @@ def CheckChangeOnCommit(input_api, output_api):
     for result in expected_result, empty_result, space_in_name_result:
       self.assertEqual(
           result,
-          executer.ExecPresubmitScript(self.presubmit_tryslave % result, ''))
+          executer.ExecPresubmitScript(
+              self.presubmit_tryslave % result, '', ''))
+
+  def testGetTrySlavesExecuterWithProject(self):
+    self.mox.ReplayAll()
+
+    executer = presubmit.GetTrySlavesExecuter()
+    expected_result1 = ['1', '2']
+    expected_result2 = ['a', 'b', 'c']
+    script = self.presubmit_tryslave_project % (
+        repr('foo'), repr(expected_result1), repr(expected_result2)) 
+    self.assertEqual(
+        expected_result1, executer.ExecPresubmitScript(script, '', 'foo'))
+    self.assertEqual(
+        expected_result2, executer.ExecPresubmitScript(script, '', 'bar'))
 
   def testDoGetTrySlaves(self):
     join = presubmit.os.path.join
@@ -709,12 +731,12 @@ def CheckChangeOnCommit(input_api, output_api):
     output = StringIO.StringIO()
     self.assertEqual(['win'],
                      presubmit.DoGetTrySlaves([filename], self.fake_root_dir,
-                                              None, False, output))
+                                              None, None, False, output))
     output = StringIO.StringIO()
     self.assertEqual(['win', 'linux'],
                      presubmit.DoGetTrySlaves([filename, filename_linux],
-                                              self.fake_root_dir, None, False,
-                                              output))
+                                              self.fake_root_dir, None, None,
+                                              False, output))
 
   def testMainUnversioned(self):
     # OptParser calls presubmit.os.path.exists and is a pain when mocked.
