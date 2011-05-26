@@ -593,7 +593,6 @@ void AutofillManager::OnDidFillAutofillFormData() {
 }
 
 void AutofillManager::OnDidShowAutofillSuggestions() {
-  LOG(WARNING) << "Notifying listeners that Autofill suggestions were shown.";
   NotificationService::current()->Notify(
       NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(tab_contents()->render_view_host()),

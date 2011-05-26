@@ -214,7 +214,6 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
                                           const std::vector<string16>& labels,
                                           const std::vector<string16>& icons,
                                           const std::vector<int>& unique_ids) {
-  LOG(WARNING) << "Received Autofill suggestions.";
   WebKit::WebView* web_view = render_view()->webview();
   if (!web_view || query_id != autofill_query_id_)
     return;
@@ -284,7 +283,6 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
         autofill_query_node_, v, l, i, ids, separator_index);
   }
 
-  LOG(WARNING) << "Showed Autofill suggestions popup.";
   Send(new AutofillHostMsg_DidShowAutofillSuggestions(routing_id()));
 }
 
@@ -311,7 +309,6 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
                                     bool autofill_on_empty_values,
                                     bool requires_caret_at_end,
                                     bool display_warning_if_disabled) {
-  LOG(WARNING) << "Got a request to show Autofill suggestions.";
   if (!element.isEnabled() || element.isReadOnly() || !element.autoComplete() ||
       !element.isTextField() || element.isPasswordField() ||
       !element.suggestedValue().isEmpty())
@@ -339,7 +336,6 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
 
 void AutofillAgent::QueryAutofillSuggestions(const WebNode& node,
                                              bool display_warning_if_disabled) {
-  LOG(WARNING) << "Querying the browser-side Autofill host for suggestions.";
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
