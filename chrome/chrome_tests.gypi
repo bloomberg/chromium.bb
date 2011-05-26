@@ -3702,7 +3702,7 @@
         {
           # Documentation: http://dev.chromium.org/developers/testing/pyauto
           'target_name': 'pyautolib',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'product_prefix': '_',
           'dependencies': [
             'chrome',
@@ -3738,11 +3738,6 @@
             '<@(pyautolib_sources)',
           ],
           'xcode_settings': {
-            # Need a shared object named _pyautolib.so (not libpyautolib.dylib
-            # that xcode would generate)
-            # Change when gyp can support a platform-neutral way for this
-            # (http://code.google.com/p/gyp/issues/detail?id=135)
-            'EXECUTABLE_EXTENSION': 'so',
             # When generated, pyautolib_wrap.cc includes some swig support
             # files which, as of swig 1.3.31 that comes with 10.5 and 10.6,
             # may not compile cleanly at -Wall.
@@ -3762,24 +3757,6 @@
                   '-lpython<(python_ver)',
                 ],
               },
-              'actions': [
-              {
-                # _pyautolib.so gets created in lib.target dir.
-                # Create a symlink from the product dir.
-                'action_name': 'create_symlink',
-                'inputs': [
-                ],
-                'outputs': [
-                  '<(PRODUCT_DIR)/_pyautolib.so',
-                ],
-                'action': [ 'ln',
-                            '-sf',
-                            '<(PRODUCT_DIR)/lib.target/_pyautolib.so',
-                            '<@(_outputs)',
-                ],
-                'message': 'Creating symlink: '
-                           '<(PRODUCT_DIR)/lib.target/_pyautolib.so',
-              }],  # actions
             }],
             ['OS=="mac"', {
               # See the comment in this section of the unit_tests target for an
