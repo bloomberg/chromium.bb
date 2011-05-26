@@ -108,6 +108,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_throttler_manager.h"
+#include "net/websockets/websocket_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -725,6 +726,11 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
       true);
 
   SetDnsCertProvenanceCheckerFactory(CreateChromeDnsCertProvenanceChecker);
+
+  if (parsed_command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
+    // Enable WebSocket over SPDY.
+    net::WebSocketJob::set_websocket_over_spdy_enabled(true);
+  }
 }
 
 // Creates key child threads. We need to do this explicitly since
