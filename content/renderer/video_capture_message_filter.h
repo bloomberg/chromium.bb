@@ -34,10 +34,6 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
     virtual void OnDeviceInfoReceived(
         const media::VideoCaptureParams& device_info) = 0;
 
-    // Called when the delegate has been added to filter's delegate list.
-    // |device_id| is the device id for the delegate.
-    virtual void OnDelegateAdded(int32 device_id) = 0;
-
    protected:
     virtual ~Delegate() {}
   };
@@ -45,14 +41,14 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
   explicit VideoCaptureMessageFilter(int32 route_id);
   virtual ~VideoCaptureMessageFilter();
 
-  // Add a delegate to the map.
-  void AddDelegate(Delegate* delegate);
+  // Add a delegate to the map and return id of the entry.
+  int32 AddDelegate(Delegate* delegate);
 
   // Remove a delegate from the map.
   void RemoveDelegate(Delegate* delegate);
 
   // Send a message asynchronously.
-  virtual bool Send(IPC::Message* message);
+  bool Send(IPC::Message* message);
 
   void AddFilter();
 
@@ -83,7 +79,6 @@ class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // A map of device ids to delegates.
   Delegates delegates_;
-  Delegates pending_delegates_;
   int32 last_device_id_;
 
   int32 route_id_;

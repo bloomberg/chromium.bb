@@ -54,13 +54,6 @@ void VideoCaptureMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   // Captures the message loop proxy for IPC.
   message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
   channel_ = channel;
-
-  for (Delegates::iterator it = pending_delegates_.begin();
-       it != pending_delegates_.end(); it++) {
-    it->second->OnDelegateAdded(it->first);
-    delegates_[it->first] = it->second;
-  }
-  pending_delegates_.clear();
 }
 
 void VideoCaptureMessageFilter::OnFilterRemoved() {
@@ -121,18 +114,14 @@ void VideoCaptureMessageFilter::OnDeviceInfoReceived(
   delegate->OnDeviceInfoReceived(params);
 }
 
-void VideoCaptureMessageFilter::AddDelegate(Delegate* delegate) {
+int32 VideoCaptureMessageFilter::AddDelegate(Delegate* delegate) {
   if (++last_device_id_ <= 0)
     last_device_id_ = 1;
   while (delegates_.find(last_device_id_) != delegates_.end())
     last_device_id_++;
 
-  if (channel_) {
-    delegates_[last_device_id_] = delegate;
-    delegate->OnDelegateAdded(last_device_id_);
-  } else {
-    pending_delegates_[last_device_id_] = delegate;
-  }
+  delegates_[last_device_id_] = delegate;
+  return last_device_id_;
 }
 
 void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
@@ -140,13 +129,6 @@ void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
        it != delegates_.end(); it++) {
     if (it->second == delegate) {
       delegates_.erase(it);
-      break;
-    }
-  }
-  for (Delegates::iterator it = pending_delegates_.begin();
-       it != pending_delegates_.end(); it++) {
-    if (it->second == delegate) {
-      pending_delegates_.erase(it);
       break;
     }
   }
