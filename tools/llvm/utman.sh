@@ -63,6 +63,7 @@ readonly REAL_CROSS_TARGET=pnacl
 readonly TC_ROOT="${NACL_ROOT}/toolchain"
 readonly INSTALL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${HOST_ARCH}"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
+readonly DRIVER_DIR="${NACL_ROOT}/tools/llvm/driver"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
 readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
@@ -73,6 +74,7 @@ readonly GCC_VER="4.2.1"
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 
 readonly NNACL_ROOT="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86_newlib"
+readonly NNACL_GLIBC_ROOT="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 
 readonly BFD_PLUGIN_DIR="${INSTALL_DIR}/lib/bfd-plugins"
 
@@ -126,10 +128,15 @@ readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain locations (absolute!)
 readonly PNACL_TOOLCHAIN_ROOT="${INSTALL_ROOT}"
-readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm"
-readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632"
-readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664"
 readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
+
+readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm-newlib"
+readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632-newlib"
+readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664-newlib"
+
+readonly PNACL_ARM_GLIBC_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm-glibc"
+readonly PNACL_X8632_GLIBC_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632-glibc"
+readonly PNACL_X8664_GLIBC_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664-glibc"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly PNACL_SB_ROOT="${INSTALL_ROOT}/tools-sb"
@@ -546,6 +553,48 @@ everything() {
   verify
 }
 
+steal-glibc() {
+  StepBanner "GLIBC" "Copying glibc from NNaCl toolchain"
+
+  mkdir -p "${PNACL_X8632_GLIBC_ROOT}"
+  mkdir -p "${PNACL_X8664_GLIBC_ROOT}"
+
+  # Files in: lib/gcc/nacl64/4.4.3/[32]/
+  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o \
+               libgcc.a libgcc_eh.a"
+
+  # Files in: nacl64/lib[32]/
+  local LIBS2="crt1.o crti.o crtn.o \
+               libc.a libc_nonshared.a \
+               libgcc_s.so.1 libgcc_s.so \
+               libc-2.9.so libc.so libc.so.6 \
+               runnable-ld.so libcrt_platform.a \
+               libnacl.a libnacl.so \
+               libstdc++.so libstdc++.so.6 libstdc++.a libstdc++.so.6.0.13 \
+               libm-2.9.so libm.a libm.so libm.so.6 \
+               ldscripts/elf_nacl.x ldscripts/elf64_nacl.x \
+               ldscripts/elf_nacl.xs ldscripts/elf64_nacl.xs \
+               ldscripts/elf_nacl.x.static ldscripts/elf64_nacl.x.static"
+
+  for lib in ${LIBS1} ; do
+    cp "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/32/${lib}" \
+       "${PNACL_X8632_GLIBC_ROOT}"
+    cp "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/${lib}" \
+       "${PNACL_X8664_GLIBC_ROOT}"
+  done
+
+  for lib in ${LIBS2} ; do
+    cp "${NNACL_GLIBC_ROOT}/nacl64/lib32/${lib}" "${PNACL_X8632_GLIBC_ROOT}"
+    cp "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_GLIBC_ROOT}"
+  done
+
+  # ld-linux has different naming across 32/64
+  cp "${NNACL_GLIBC_ROOT}"/nacl64/lib32/ld-linux.so.2 \
+     "${PNACL_X8632_GLIBC_ROOT}"
+  cp "${NNACL_GLIBC_ROOT}"/nacl64/lib/ld-linux-x86-64.so.2 \
+     "${PNACL_X8664_GLIBC_ROOT}"
+}
+
 #@ all                   - Alias for 'everything'
 all() {
   everything
@@ -714,6 +763,9 @@ prune() {
 
   echo "removing llvm headers"
   rm -rf "${INSTALL_DIR}"/include/llvm*
+
+  echo "removing .pyc files"
+  rm -f "${INSTALL_BIN}"/*.pyc
 
   local dir_size_after=$(get_dir_size_in_mb ${INSTALL_ROOT})
   SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
@@ -1100,6 +1152,7 @@ XGCC_NAME=\$(basename \$0)
 XGCC_REAL=\${XGCC_ABSPATH}/\${XGCC_NAME}-real
 ${PNACL_GCC} \\
 --driver="\${XGCC_REAL}" \\
+--pnacl-allow-translate \\
 --pnacl-bias=${arch} -arch ${arch} "\$@"
 EOF
 
@@ -2401,6 +2454,10 @@ driver() {
   linker-install
   driver-install
   driver-intrinsics
+
+  # Steal glibc and runtime from the nnacl toolchain.
+  # TODO(pdox): Build glibc ourselves.
+  steal-glibc
 }
 
 driver-intrinsics() {
@@ -2431,13 +2488,11 @@ driver-install() {
   # TODO(robertm): move the driver to their own dir
   # rm -rf  ${INSTALL_DIR}
   mkdir -p "${INSTALL_BIN}"
-  rm -f "${INSTALL_BIN}/pnacl-*"
-  cp tools/llvm/driver.py "${INSTALL_BIN}"
-  for s in gcc g++ as arm-as i686-as x86_64-as \
-           bclink opt dis ld strip translate illegal nop \
-           ar nm ranlib pexecheck ; do
-    local t="pnacl-$s"
-    ln -fs driver.py "${INSTALL_BIN}/$t"
+  rm -f "${INSTALL_BIN}"/pnacl-*
+  cp "${DRIVER_DIR}"/driver_tools.py "${INSTALL_BIN}"
+  for t in "${DRIVER_DIR}"/pnacl-*; do
+    local name=$(basename "$t")
+    cp "${t}" "${INSTALL_BIN}/${name/.py}"
   done
 }
 

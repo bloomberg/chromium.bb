@@ -26,13 +26,18 @@ def GetAssemblerFile(env):
     raise Exception('unknown architecture')
 
 asm_env = env.Clone()
+use_obj_env = env.Clone()
+
 if asm_env.Bit('bitcode'):
   asm_env.Replace(OBJSUFFIX='.o')
   asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
+  # Allow use of native object file
+  use_obj_env.Append(LINKFLAGS=['--pnacl-allow-native'])
+
 asm_obj = asm_env.ComponentObject(GetAssemblerFile(env))
 
-env.ComponentProgram('syscall_return_sandboxing.nexe',
-                     ['syscall_return_sandboxing.c', asm_obj])
+use_obj_env.ComponentProgram('syscall_return_sandboxing.nexe',
+                             ['syscall_return_sandboxing.c', asm_obj])
 node = env.CommandSelLdrTestNacl(
     'syscall_return_sandboxing.out',
     command=[env.File('syscall_return_sandboxing.nexe')])

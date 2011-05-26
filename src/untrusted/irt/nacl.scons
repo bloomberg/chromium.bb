@@ -30,6 +30,8 @@ blob_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_BLOB_DATA_START}')
 # not affect the executable's base address.
 if blob_env.Bit('bitcode'):
   blob_env.Append(LINKFLAGS='-Wl,-Ttext=${IRT_BLOB_CODE_START}')
+  # To allow elf_restart_*.o in the link line
+  blob_env.Append(LINKFLAGS='--pnacl-allow-native')
   # Without this llc asserts
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1225
   blob_env.Append(LINKFLAGS=['--pnacl-skip-lto'])

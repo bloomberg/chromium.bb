@@ -26,7 +26,8 @@ if env.Bit('bitcode'):
   #       normally compiled into a bitcode file.
   env.Replace(OBJSUFFIX='.o')
   env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
-  env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}'])
+  env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
+                      '--pnacl-allow-translate'])
 
 
 # the nacl-gcc toolchain does not want to switch to using

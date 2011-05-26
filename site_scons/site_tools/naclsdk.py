@@ -257,7 +257,7 @@ def _SetEnvForPnacl(env, root):
               CC=pnacl_sdk_cc + pnacl_sdk_cc_flags,
               CXX=pnacl_sdk_cxx + pnacl_sdk_cxx_flags,
               OBJSUFFIX=".bc",
-              LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
+              LINK=pnacl_sdk_cxx + pnacl_sdk_ld_flags,
               LD=pnacl_sdk_ld,
               AR=pnacl_sdk_ar,
               RANLIB=pnacl_sdk_ranlib,

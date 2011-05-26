@@ -39,6 +39,7 @@ prog_env = env.Clone()
 
 if env.Bit('bitcode'):
   prog_env.AddBiasForPNaCl()
+  prog_env.Append(LINKFLAGS=['--pnacl-allow-native'])
 
 dynamic_load_test_nexe_name = ('dynamic_load_test_%s.nexe' %
                                env.get('TARGET_FULLARCH'))

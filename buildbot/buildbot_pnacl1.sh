@@ -108,6 +108,10 @@ gyp-arm-build() {
 
 
 ad-hoc-shared-lib-tests() {
+  # Disable this until the tests can be fixed to work with
+  # runnable-ld.so instead of native code.
+  return 0
+
   # TODO(robertm): make this accessible by the utman script so that this get
   # http://code.google.com/p/nativeclient/issues/detail?id=1647
   echo "@@@BUILD_STEP fake_shared_libs@@@"
