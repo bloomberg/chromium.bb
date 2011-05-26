@@ -311,12 +311,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Used to throttle WM_USER+1 messages in Flash.
   uint32 last_message_;
   bool is_calling_wndproc;
-
-  // The current keyboard layout of this process and the main thread ID of the
-  // browser process. These variables are used for synchronizing the keyboard
-  // layout of this process with the one of the browser process.
-  HKL keyboard_layout_;
-  int parent_thread_id_;
 #endif  // defined(OS_WIN)
 
 #if defined(USE_X11)
