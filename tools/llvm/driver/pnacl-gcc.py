@@ -37,6 +37,7 @@ EXTRA_ENV = {
   'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
   'STATIC'      : '${USE_GLIBC ? 0 : 1}', # -static (on by default for newlib)
+  'PIC'         : '0',   # Generate PIC
 
   'INPUTS'      : '',    # Input files
   'OUTPUT'      : '',    # Output file
@@ -82,7 +83,7 @@ EXTRA_ENV = {
 
   # ${LIBS} must come before ${LIBS_BC} so that the native glibc/libnacl
   # takes precedence over bitcode libc.
-  'LD_FLAGS' : '${STATIC ? -static} ${SHARED ? -shared} ' +
+  'LD_FLAGS' : '${STATIC ? -static} ${SHARED ? -shared} ${PIC ? -fPIC} ' +
                '-L${LIBS} -L${LIBS_BC}',
 
   # Library Strings
@@ -186,8 +187,8 @@ GCCPatterns = [
   ( '-nostdinc',       "env.set('STDINC', '0')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
 
-  # Ignore -fPIC. We automatically use PIC when translating shared objects.
-  ( '-fPIC',           ''),
+  # We don't care about -fPIC, but pnacl-ld and pnacl-translate do.
+  ( '-fPIC',           "env.set('PIC', '1')"),
 
   # We must include -l, -Xlinker, and -Wl options into the INPUTS
   # in the order they appeared. This is the exactly behavior of gcc.
@@ -440,7 +441,10 @@ def RunTranslate(input, output, mode):
     Log.Fatal('%s: Trying to convert bitcode to an object file before '
               'bitcode linking. This is supposed to wait until '
               'translation. Use --pnacl-allow-translate to override.', input)
-  RunDriver('pnacl-translate', [mode, input, '-o', output])
+  args = [mode, input, '-o', output]
+  if env.getbool('PIC'):
+    args += ['-fPIC']
+  RunDriver('pnacl-translate', args)
 
 def SetupChain(chain, input_type, output_type):
   assert(output_type in ('pp','ll','bc','s','o'))

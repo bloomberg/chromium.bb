@@ -409,6 +409,8 @@ def DoTranslate(infile, outfile, mode = ''):
   args = [infile, '-o', outfile]
   if mode:
     args += [mode]
+  if env.getbool('PIC'):
+    args += ['-fPIC']
   RunDriver('pnacl-translate', args)
 
 def DoNativeLink(infile, outfile, native_left, native_right):

@@ -67,6 +67,8 @@ TranslatorPatterns = [
   ( '-S',              "env.set('OUTPUT_TYPE', 's')"), # Stop at .s
   ( '-c',              "env.set('OUTPUT_TYPE', 'o')"), # Stop at .o
 
+  ( '-fPIC',           "env.set('PIC', '1')"),
+
   ( '(-*)',            UnrecognizedOption),
 
   ( '(.*)',            "env.append('INPUTS', $0)"),
