@@ -49,6 +49,11 @@
       'cookies',
       'crash_reporter',
       'databases',
+      # crbug.com/84060
+      '-databases.DatabasesTest.testIncognitoCannotReadRegularDatabase',
+      '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
+      '-databases.DatabasesTest.testIncognitoDatabaseNotPersistent',
+      '-databases.DatabasesTest.testRegularCannotReadIncognitoDatabase',
       'downloads',
       'find_in_page',
       # Turkish I problem. crbug.com/60638
