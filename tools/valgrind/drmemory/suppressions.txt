@@ -20,11 +20,10 @@ LEAK
 ...
 sophos*.dll!*
 
-# Leaks inside GoogleDesktop
-# TODO(timurrrr): How/why does it inject itself into the binaries? WTF?
+# Leaks inside GoogleDesktop - it injects into our processes for some reason
 LEAK
 ...
-GoogleDesktop*.DLL!*
+GoogleDesktopNetwork3.DLL!DllUnregisterServer
 
 ############################
 # Suppress some false reports due to bugs in Dr.Memory like wrong analysis
@@ -345,8 +344,7 @@ ntdll.dll!LdrShutdownThread
 
 # http://code.google.com/p/drmemory/issues/detail?id=412
 UNINITIALIZED READ
-...
-ADVAPI32.dll!Reg*Value*
+ADVAPI32.dll!RegDeleteValue*
 
 UNINITIALIZED READ
 ...

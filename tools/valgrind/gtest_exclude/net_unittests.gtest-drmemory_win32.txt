@@ -5,6 +5,9 @@ HttpNetworkLayerTest.GET
 # See http://crbug.com/82391
 URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
 
+# Times out, see http://crbug.com/84033
+AddressListTest.IPLiteralConstructor
+
 # TODO(timurrrr): investigate these
 ClientSocketPoolBaseTest.*
 CookieMonsterTest.GarbageCollectionTriggers
