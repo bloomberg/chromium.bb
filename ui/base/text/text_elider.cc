@@ -24,6 +24,7 @@ namespace ui {
 
 // U+2026 in utf8
 const char kEllipsis[] = "\xE2\x80\xA6";
+const char16 kForwardSlash = '/';
 
 namespace {
 
@@ -46,6 +47,55 @@ string16 CutString(const string16& text,
   const size_t half_length = length / 2;
   return text.substr(0, length - half_length) + kInsert +
       text.substr(text.length() - half_length, half_length);
+}
+
+// Build a path from the first |num_components| elements in |path_elements|.
+// Prepends |path_prefix|, appends |filename|, inserts ellipsis if appropriate.
+string16 BuildPathFromComponents(const string16& path_prefix,
+                                 const std::vector<string16>& path_elements,
+                                 const string16& filename,
+                                 size_t num_components) {
+  static const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) +
+                                            kForwardSlash;
+
+  // Add the initial elements of the path.
+  string16 path = path_prefix;
+
+  // Build path from first |num_components| elements.
+  for (size_t j = 0; j < num_components; ++j)
+    path += path_elements[j] + kForwardSlash;
+
+  // Add |filename|, ellipsis if necessary.
+  if (num_components != (path_elements.size() - 1))
+    path += kEllipsisAndSlash;
+  path += filename;
+
+  return path;
+}
+
+// Takes a prefix (Domain, or Domain+subdomain) and a collection of path
+// components and elides if possible. Returns a string containing the longest
+// possible elided path, or an empty string if elision is not possible.
+string16 ElideComponentizedPath(const string16& url_path_prefix,
+                                const std::vector<string16>& url_path_elements,
+                                const string16& url_filename,
+                                const string16& url_query,
+                                const gfx::Font& font,
+                                int available_pixel_width) {
+  size_t url_path_number_of_elements = url_path_elements.size();
+
+  static const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) +
+                                            kForwardSlash;
+
+  for (size_t i = url_path_number_of_elements - 1; i > 0; --i) {
+    string16 elided_path = BuildPathFromComponents(url_path_prefix,
+        url_path_elements, url_filename, i);
+    if (available_pixel_width >= font.GetStringWidth(elided_path))
+      return ElideText(elided_path + url_query,
+          font, available_pixel_width, false);
+  }
+
+  return string16();
 }
 
 }  // namespace
@@ -166,9 +216,8 @@ string16 ElideUrl(const GURL& url,
   }
 
   // Parse url_path using '/'.
-  static const string16 kForwardSlash = UTF8ToUTF16("/");
   std::vector<string16> url_path_elements;
-  base::SplitString(url_path, kForwardSlash[0], &url_path_elements);
+  base::SplitString(url_path, kForwardSlash, &url_path_elements);
 
   // Get filename - note that for a path ending with /
   // such as www.google.com/intl/ads/, the file name is ads/.
@@ -193,47 +242,15 @@ string16 ElideUrl(const GURL& url,
                      available_pixel_width, false);
   }
 
-  // Start eliding the path and replacing elements by "../".
+  // Start eliding the path and replacing elements by ".../".
   const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) + kForwardSlash;
-  int pixel_width_url_filename = font.GetStringWidth(url_filename);
-  int pixel_width_dot_dot_slash = font.GetStringWidth(kEllipsisAndSlash);
-  int pixel_width_slash = font.GetStringWidth(ASCIIToUTF16("/"));
-  int pixel_width_url_path_elements[kMaxNumberOfUrlPathElementsAllowed];
-  for (size_t i = 0; i < url_path_number_of_elements; ++i) {
-    pixel_width_url_path_elements[i] =
-       font.GetStringWidth(url_path_elements.at(i));
-  }
+  int pixel_width_ellipsis_slash = font.GetStringWidth(kEllipsisAndSlash);
 
   // Check with both subdomain and domain.
-  string16 elided_path;
-  int pixel_width_elided_path;
-  for (size_t i = url_path_number_of_elements - 1; i >= 1; --i) {
-    // Add the initial elements of the path.
-    elided_path.clear();
-    pixel_width_elided_path = 0;
-    for (size_t j = 0; j < i; ++j) {
-      elided_path += url_path_elements.at(j) + kForwardSlash;
-      pixel_width_elided_path += pixel_width_url_path_elements[j] +
-          pixel_width_slash;
-    }
-
-    // Add url_file_name.
-    if (i == (url_path_number_of_elements - 1)) {
-      elided_path += url_filename;
-      pixel_width_elided_path += pixel_width_url_filename;
-    } else {
-      elided_path += kEllipsisAndSlash + url_filename;
-      pixel_width_elided_path += pixel_width_dot_dot_slash +
-          pixel_width_url_filename;
-    }
-
-    if (available_pixel_width >=
-        pixel_width_url_subdomain + pixel_width_url_domain +
-        pixel_width_elided_path) {
-      return ElideText(url_subdomain + url_domain + elided_path + url_query,
-                       font, available_pixel_width, false);
-    }
-  }
+  string16 elided_path = ElideComponentizedPath(url_subdomain + url_domain,
+      url_path_elements, url_filename, url_query, font, available_pixel_width);
+  if (!elided_path.empty())
+    return elided_path;
 
   // Check with only domain.
   // If a subdomain is present, add an ellipsis before domain.
@@ -250,43 +267,23 @@ string16 ElideUrl(const GURL& url,
       url_elided_domain = url_domain;
     }
 
-    for (size_t i = url_path_number_of_elements - 1; i >= 1; --i) {
-      // Add the initial elements of the path.
-      elided_path.clear();
-      pixel_width_elided_path = 0;
-      for (size_t j = 0; j < i; ++j) {
-        elided_path += url_path_elements.at(j) + kForwardSlash;
-        pixel_width_elided_path += pixel_width_url_path_elements[j] +
-            pixel_width_slash;
-      }
+    elided_path = ElideComponentizedPath(url_elided_domain, url_path_elements,
+        url_filename, url_query, font, available_pixel_width);
 
-      // Add url_file_name.
-      if (i == (url_path_number_of_elements - 1)) {
-        elided_path += url_filename;
-        pixel_width_elided_path += pixel_width_url_filename;
-      } else {
-        elided_path += kEllipsisAndSlash + url_filename;
-        pixel_width_elided_path += pixel_width_dot_dot_slash +
-            pixel_width_url_filename;
-      }
-
-      if (available_pixel_width >=
-          pixel_width_url_elided_domain + pixel_width_elided_path) {
-        return ElideText(url_elided_domain + elided_path + url_query, font,
-                         available_pixel_width, false);
-      }
-    }
+    if (!elided_path.empty())
+      return elided_path;
   }
 
-  // Return elided domain/../filename anyway.
+  // Return elided domain/.../filename anyway.
   string16 final_elided_url_string(url_elided_domain);
   int url_elided_domain_width = font.GetStringWidth(url_elided_domain);
 
-  // A hack to prevent trailing "../...".
+  // A hack to prevent trailing ".../...".
   if ((available_pixel_width - url_elided_domain_width) >
-      pixel_width_dot_dot_slash + kPixelWidthDotsTrailer +
+      pixel_width_ellipsis_slash + kPixelWidthDotsTrailer +
       font.GetStringWidth(ASCIIToUTF16("UV"))) {
-    final_elided_url_string += elided_path;
+    final_elided_url_string += BuildPathFromComponents(string16(),
+        url_path_elements, url_filename, 1);
   } else {
     final_elided_url_string += url_path;
   }

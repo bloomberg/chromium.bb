@@ -59,11 +59,8 @@ TEST(TextEliderTest, TestGeneralEliding) {
     {"http://www.google.com/intl/en/ads/",
      "www.google.com/intl/en/ads/"},
     {"http://www.google.com/intl/en/ads/", "www.google.com/intl/en/ads/"},
-// TODO(port): make this test case work on mac.
-#if !defined(OS_MACOSX)
     {"http://www.google.com/intl/en/ads/",
      "google.com/intl/" + kEllipsisStr + "/ads/"},
-#endif
     {"http://www.google.com/intl/en/ads/",
      "google.com/" + kEllipsisStr + "/ads/"},
     {"http://www.google.com/intl/en/ads/", "google.com/" + kEllipsisStr},
@@ -78,6 +75,30 @@ TEST(TextEliderTest, TestGeneralEliding) {
      "www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
   };
 
+  RunTest(testcases, arraysize(testcases));
+}
+
+// When there is very little space available, the elision code will shorten
+// both path AND file name to an ellipsis - ".../...". To avoid this result,
+// there is a hack in place that simply treats them as one string in this
+// case.
+TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack)
+{
+  const std::string kEllipsisStr(kEllipsis);
+
+  // Very little space, would cause double ellipsis.
+  gfx::Font font;
+  GURL url("http://battersbox.com/directory/foo/peter_paul_and_mary.html");
+  int available_width = font.GetStringWidth(
+      UTF8ToUTF16("battersbox.com/" + kEllipsisStr + "/" + kEllipsisStr));
+  EXPECT_EQ(UTF8ToUTF16("battersbox.com/dir" + kEllipsisStr),
+             ElideUrl(url, font, available_width, std::string()));
+
+  // More space available - elide directories, partially elide filename.
+  Testcase testcases[] = {
+    {"http://battersbox.com/directory/foo/peter_paul_and_mary.html",
+     "battersbox.com/" + kEllipsisStr + "/peter" + kEllipsisStr},
+  };
   RunTest(testcases, arraysize(testcases));
 }
 
