@@ -52,6 +52,9 @@ static base::LazyInstance<Whitelist>
 
 }  // namespace
 
+CrxInstaller::WhitelistEntry::WhitelistEntry() {}
+CrxInstaller::WhitelistEntry::~WhitelistEntry() {}
+
 // static
 void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -56,6 +56,9 @@ class CrxInstaller
   static void SetWhitelistedInstallId(const std::string& id);
 
   struct WhitelistEntry {
+    WhitelistEntry();
+    ~WhitelistEntry();
+
     scoped_ptr<DictionaryValue> parsed_manifest;
     std::string localized_name;
   };
