@@ -68,6 +68,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       host_window_(0),
       current_paint_buf_(NULL),
       next_paint_flags_(0),
+      filtered_time_per_frame_(1.0f/60.0f),
       update_reply_pending_(false),
       using_asynchronous_swapbuffers_(false),
       num_swapbuffers_complete_pending_(0),
@@ -201,6 +202,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetFPS, OnGetFPS)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -686,7 +688,7 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
-  if(!last_do_deferred_update_time_.is_null()) {
+  if (!last_do_deferred_update_time_.is_null()) {
     base::TimeDelta delay = frame_begin_ticks - last_do_deferred_update_time_;
     if(is_accelerated_compositing_active_)
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.AccelDoDeferredUpdateDelay",
@@ -700,6 +702,11 @@ void RenderWidget::DoDeferredUpdate() {
                                  base::TimeDelta::FromMilliseconds(1),
                                  base::TimeDelta::FromMilliseconds(60),
                                  30);
+
+    // Calculate filtered time per frame:
+    float frame_time_elapsed = static_cast<float>(delay.InSecondsF());
+    filtered_time_per_frame_ =
+        0.9f * filtered_time_per_frame_ + 0.1f * frame_time_elapsed;
   }
   last_do_deferred_update_time_ = frame_begin_ticks;
 
@@ -1180,6 +1187,12 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (!webwidget_)
     return;
   webwidget_->setTextDirection(direction);
+}
+
+void RenderWidget::OnGetFPS() {
+  float fps = (filtered_time_per_frame_ > 0.0f)?
+      1.0f / filtered_time_per_frame_ : 0.0f;
+  Send(new ViewHostMsg_FPS(routing_id_, fps));
 }
 
 webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(

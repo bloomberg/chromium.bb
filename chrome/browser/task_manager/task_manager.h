@@ -63,11 +63,15 @@ class TaskManager {
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
     virtual Type GetType() const = 0;
+    virtual int GetRoutingId() const { return 0; }
 
     virtual bool ReportsCacheStats() const { return false; }
     virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const {
       return WebKit::WebCache::ResourceTypeStats();
     }
+
+    virtual bool ReportsFPS() const { return false; }
+    virtual float GetFPS() const { return 0.0f; }
 
     virtual bool ReportsSqliteMemoryUsed() const { return false; }
     virtual size_t SqliteMemoryUsedBytes() const { return 0; }
@@ -101,6 +105,7 @@ class TaskManager {
 
     virtual void NotifyResourceTypeStats(
         const WebKit::WebCache::ResourceTypeStats& stats) {}
+    virtual void NotifyFPS(float fps) {}
     virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                    size_t v8_memory_used) {}
 
@@ -242,6 +247,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   string16 GetResourceWebCoreImageCacheSize(int index) const;
   string16 GetResourceWebCoreScriptsCacheSize(int index) const;
   string16 GetResourceWebCoreCSSCacheSize(int index) const;
+  string16 GetResourceFPS(int index) const;
   string16 GetResourceSqliteMemoryUsed(int index) const;
   string16 GetResourceGoatsTeleported(int index) const;
   string16 GetResourceV8MemoryAllocatedSize(int index) const;
@@ -313,6 +319,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   void NotifyResourceTypeStats(
         base::ProcessId renderer_id,
         const WebKit::WebCache::ResourceTypeStats& stats);
+
+  void NotifyFPS(base::ProcessId renderer_id,
+                 int routing_id,
+                 float fps);
 
   void NotifyV8HeapStats(base::ProcessId renderer_id,
                          size_t v8_memory_allocated,

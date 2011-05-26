@@ -213,6 +213,15 @@ string16 TaskManagerModel::GetResourceWebCoreCSSCacheSize(
   return FormatStatsSize(stats.cssStyleSheets);
 }
 
+string16 TaskManagerModel::GetResourceFPS(
+    int index) const {
+  CHECK_LT(index, ResourceCount());
+  if (!resources_[index]->ReportsFPS())
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
+  double fps = resources_[index]->GetFPS();
+  return UTF8ToUTF16(base::StringPrintf("%.0f", fps));
+}
+
 string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
   CHECK_LT(index, ResourceCount());
   if (!resources_[index]->ReportsSqliteMemoryUsed())
@@ -348,6 +357,9 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
     DCHECK_EQ(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN, col_id);
     return ValueCompare<size_t>(stats1.cssStyleSheets.size,
                                 stats2.cssStyleSheets.size);
+  } else if (col_id == IDS_TASK_MANAGER_FPS_COLUMN) {
+    return ValueCompare<float>(resources_[row1]->GetFPS(),
+                               resources_[row2]->GetFPS());
   } else if (col_id == IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN) {
     return ValueCompare<int>(GetGoatsTeleported(row1),
                              GetGoatsTeleported(row2));
@@ -674,6 +686,18 @@ void TaskManagerModel::NotifyResourceTypeStats(
        it != resources_.end(); ++it) {
     if (base::GetProcId((*it)->GetProcess()) == renderer_id) {
       (*it)->NotifyResourceTypeStats(stats);
+    }
+  }
+}
+
+void TaskManagerModel::NotifyFPS(base::ProcessId renderer_id,
+                                 int routing_id,
+                                 float fps) {
+  for (ResourceList::iterator it = resources_.begin();
+       it != resources_.end(); ++it) {
+    if (base::GetProcId((*it)->GetProcess()) == renderer_id &&
+        (*it)->GetRoutingId() == routing_id) {
+      (*it)->NotifyFPS(fps);
     }
   }
 }

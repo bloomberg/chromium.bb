@@ -448,7 +448,7 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     int32 /* complete status */)
 
 // Provide the browser process with information about the WebCore resource
-// cache.
+// cache and current renderer framerate.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_ResourceTypeStats,
                      WebKit::WebCache::ResourceTypeStats)
 

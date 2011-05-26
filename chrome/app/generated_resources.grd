@@ -3502,6 +3502,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
         CSS cache
       </message>
+      <message name="IDS_TASK_MANAGER_FPS_COLUMN" desc="The text of the FPS column">
+        FPS
+      </message>
       <message name="IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN" desc="Amount of memory used by SQLite.">
         SQLite memory
       </message>

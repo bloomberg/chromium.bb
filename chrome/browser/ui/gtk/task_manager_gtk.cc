@@ -67,6 +67,7 @@ enum TaskManagerColumn {
   kTaskManagerWebCoreImageCache,
   kTaskManagerWebCoreScriptsCache,
   kTaskManagerWebCoreCssCache,
+  kTaskManagerFPS,
   kTaskManagerSqliteMemoryUsed,
   kTaskManagerGoatsTeleported,
   // Columns below this point are not visible in the task manager.
@@ -101,6 +102,8 @@ TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
       return kTaskManagerWebCoreScriptsCache;
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
       return kTaskManagerWebCoreCssCache;
+    case IDS_TASK_MANAGER_FPS_COLUMN:
+      return kTaskManagerFPS;
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
       return kTaskManagerSqliteMemoryUsed;
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
@@ -133,6 +136,8 @@ int TaskManagerColumnIDToResourceID(int id) {
       return IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN;
     case kTaskManagerWebCoreCssCache:
       return IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN;
+    case kTaskManagerFPS:
+      return IDS_TASK_MANAGER_FPS_COLUMN;
     case kTaskManagerSqliteMemoryUsed:
       return IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN;
     case kTaskManagerGoatsTeleported:
@@ -583,7 +588,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, GDK_TYPE_COLOR);
+      G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_COLOR);
 
   // Support sorting on all columns.
   process_list_sort_ = gtk_tree_model_sort_new_with_model(
@@ -619,6 +624,9 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
                                   kTaskManagerWebCoreCssCache,
                                   CompareWebCoreCssCache, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerFPS,
+                                  CompareFPS, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
                                   kTaskManagerSqliteMemoryUsed,
                                   CompareSqliteMemoryUsed, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
@@ -639,6 +647,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_,
                        IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_FPS_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
 
@@ -707,6 +716,9 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
       return UTF16ToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
 
+    case IDS_TASK_MANAGER_FPS_COLUMN:
+      return UTF16ToUTF8(model_->GetResourceFPS(row));
+
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
       return UTF16ToUTF8(model_->GetResourceSqliteMemoryUsed(row));
 
@@ -759,6 +771,10 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   if (TreeViewColumnIsVisible(treeview_, kTaskManagerWebCoreCssCache))
     wk_css_cache = GetModelText(
         row, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
+  std::string fps;
+  if (TreeViewColumnIsVisible(treeview_, kTaskManagerFPS))
+    fps = GetModelText(
+        row, IDS_TASK_MANAGER_FPS_COLUMN);
   std::string sqlite_memory;
   if (TreeViewColumnIsVisible(treeview_, kTaskManagerSqliteMemoryUsed))
     sqlite_memory = GetModelText(
@@ -781,6 +797,7 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      kTaskManagerWebCoreImageCache, wk_img_cache.c_str(),
                      kTaskManagerWebCoreScriptsCache, wk_scripts_cache.c_str(),
                      kTaskManagerWebCoreCssCache, wk_css_cache.c_str(),
+                     kTaskManagerFPS, fps.c_str(),
                      kTaskManagerSqliteMemoryUsed, sqlite_memory.c_str(),
                      kTaskManagerGoatsTeleported, goats.c_str(),
                      kTaskManagerBackgroundColor,

@@ -140,6 +140,9 @@ string16 TaskManagerTableModel::GetText(int row, int col_id) {
         return string16();
       return model_->GetResourceWebCoreCSSCacheSize(row);
 
+    case IDS_TASK_MANAGER_FPS_COLUMN:
+      return model_->GetResourceFPS(row);
+
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
         return string16();
@@ -406,6 +409,9 @@ void TaskManagerView::Init() {
       ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
   columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
+  columns_.back().sortable = true;
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_FPS_COLUMN,
                                      ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
   columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,

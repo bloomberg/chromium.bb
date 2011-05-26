@@ -49,6 +49,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   void OnRendererHistograms(int sequence_number,
                             const std::vector<std::string>& histogram_info);
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
+  void OnFPS(int routing_id, float fps);
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
   void OnOpenChannelToExtension(int routing_id,
                                 const std::string& source_extension_id,

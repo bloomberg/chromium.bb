@@ -1183,6 +1183,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_InstallMissingPlugin)
 // into a full window).
 IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 
+// Asks the renderer to send back FPS.
+IPC_MESSAGE_ROUTED0(ViewMsg_GetFPS)
+
 
 // Messages sent from the renderer to the browser.
 
@@ -1945,3 +1948,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
                      std::string /* action */)
+
+// Provide the browser process with current renderer framerate.
+IPC_MESSAGE_CONTROL2(ViewHostMsg_FPS,
+                     int /* routing id */,
+                     float /* frames per second */)
+

@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -88,6 +89,8 @@ TaskManagerRendererResource::TaskManagerRendererResource(
     : process_(process),
       render_view_host_(render_view_host),
       pending_stats_update_(false),
+      fps_(0.0f),
+      pending_fps_update_(false),
       v8_memory_allocated_(0),
       v8_memory_used_(0),
       pending_v8_memory_allocated_update_(false) {
@@ -109,6 +112,11 @@ void TaskManagerRendererResource::Refresh() {
     render_view_host_->Send(new ViewMsg_GetCacheResourceStats);
     pending_stats_update_ = true;
   }
+  if (!pending_fps_update_) {
+    render_view_host_->Send(
+        new ViewMsg_GetFPS(render_view_host_->routing_id()));
+    pending_fps_update_ = true;
+  }
   if (!pending_v8_memory_allocated_update_) {
     render_view_host_->Send(new ViewMsg_GetV8HeapStats);
     pending_v8_memory_allocated_update_ = true;
@@ -118,6 +126,10 @@ void TaskManagerRendererResource::Refresh() {
 WebKit::WebCache::ResourceTypeStats
 TaskManagerRendererResource::GetWebCoreCacheStats() const {
   return stats_;
+}
+
+float TaskManagerRendererResource::GetFPS() const {
+  return fps_;
 }
 
 size_t TaskManagerRendererResource::GetV8MemoryAllocated() const {
@@ -132,6 +144,11 @@ void TaskManagerRendererResource::NotifyResourceTypeStats(
     const WebKit::WebCache::ResourceTypeStats& stats) {
   stats_ = stats;
   pending_stats_update_ = false;
+}
+
+void TaskManagerRendererResource::NotifyFPS(float fps) {
+  fps_ = fps;
+  pending_fps_update_ = false;
 }
 
 void TaskManagerRendererResource::NotifyV8HeapStats(
@@ -149,7 +166,15 @@ TaskManager::Resource::Type TaskManagerRendererResource::GetType() const {
   return RENDERER;
 }
 
+int TaskManagerRendererResource::GetRoutingId() const {
+  return render_view_host_->routing_id();
+}
+
 bool TaskManagerRendererResource::ReportsCacheStats() const {
+  return true;
+}
+
+bool TaskManagerRendererResource::ReportsFPS() const {
   return true;
 }
 

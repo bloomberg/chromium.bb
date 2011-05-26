@@ -38,9 +38,13 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   // TaskManager::Resource methods:
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual int GetRoutingId() const OVERRIDE;
+
   virtual bool ReportsCacheStats() const OVERRIDE;
   virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const
       OVERRIDE;
+  virtual bool ReportsFPS() const OVERRIDE;
+  virtual float GetFPS() const OVERRIDE;
   virtual bool ReportsV8MemoryStats() const OVERRIDE;
   virtual size_t GetV8MemoryAllocated() const OVERRIDE;
   virtual size_t GetV8MemoryUsed() const OVERRIDE;
@@ -53,6 +57,8 @@ class TaskManagerRendererResource : public TaskManager::Resource {
 
   virtual void NotifyResourceTypeStats(
       const WebKit::WebCache::ResourceTypeStats& stats);
+
+  virtual void NotifyFPS(float fps);
 
   virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                  size_t v8_memory_used);
@@ -68,6 +74,11 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   WebKit::WebCache::ResourceTypeStats stats_;
   // This flag is true if we are waiting for the renderer to report its stats.
   bool pending_stats_update_;
+
+  // The fps_ field holds the renderer frames per second.
+  float fps_;
+  // This flag is true if we are waiting for the renderer to report its FPS.
+  bool pending_fps_update_;
 
   // We do a similar dance to gather the V8 memory usage in a process.
   size_t v8_memory_allocated_;

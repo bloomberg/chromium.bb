@@ -211,6 +211,7 @@ class RenderWidget : public IPC::Channel::Listener,
                         const gfx::Size& desired_size);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
+  void OnGetFPS();
 
   // Override point to notify derived classes that a paint has happened.
   // DidInitiatePaint happens when we've generated a new bitmap and sent it to
@@ -334,6 +335,9 @@ class RenderWidget : public IPC::Channel::Listener,
 
   // Flags for the next ViewHostMsg_UpdateRect message.
   int next_paint_flags_;
+
+  // Filtered time per frame based on UpdateRect messages.
+  float filtered_time_per_frame_;
 
   // True if we are expecting an UpdateRect_ACK message (i.e., that a
   // UpdateRect message has been sent).

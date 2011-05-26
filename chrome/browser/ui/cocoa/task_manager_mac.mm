@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,8 @@ const struct ColumnWidth {
       arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
       arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_FPS_COLUMN,
+      arraysize("100") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
       arraysize("800 kB") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN,
@@ -295,6 +297,7 @@ class SortHelper {
   [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN
                 visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN visible:NO];
+  [self addColumnWithId:IDS_TASK_MANAGER_FPS_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN
                 visible:NO];
@@ -471,6 +474,9 @@ class SortHelper {
         return @"";
       return base::SysUTF16ToNSString(
           model_->GetResourceWebCoreCSSCacheSize(row));
+
+    case IDS_TASK_MANAGER_FPS_COLUMN:
+      return base::SysUTF16ToNSString(model_->GetResourceFPS(row));
 
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
