@@ -649,6 +649,8 @@ def ParseOptions():
     usage(parser, 'Error: you need provide a chroot path')
   if not options.upload:
     usage(parser, 'Error: you need to provide an upload location using -u')
+  if args:
+    usage(parser, 'Error: invalid arguments passed to prebuilt.py: %r' % args)
 
 
   if options.upload_board_tarball and not options.upload.startswith('gs://'):
