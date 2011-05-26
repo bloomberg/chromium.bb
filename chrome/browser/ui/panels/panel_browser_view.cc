@@ -10,8 +10,14 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/window/window.h"
+
+namespace {
+// This value is experimental and subjective.
+const int kSetBoundsAnimationMs = 200;
+}
 
 BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
   PanelBrowserView* view = new PanelBrowserView(browser, panel);
@@ -47,8 +53,32 @@ void PanelBrowserView::Close() {
   DCHECK(panel_->closing());
 #endif
 
+  // Cancel any currently running animation since we're closing down.
+  if (bounds_animator_.get())
+    bounds_animator_.reset();
+
   ::BrowserView::Close();
   panel_ = NULL;
+}
+
+void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
+  // No animation if the panel is empty or being dragged.
+  if (GetBounds().IsEmpty() || mouse_dragging_) {
+    ::BrowserView::SetBounds(bounds);
+    return;
+  }
+
+  animation_start_bounds_ = GetBounds();
+  animation_target_bounds_ = bounds;
+
+  if (!bounds_animator_.get()) {
+    bounds_animator_.reset(new ui::SlideAnimation(this));
+    bounds_animator_->SetSlideDuration(kSetBoundsAnimationMs);
+  }
+
+  if (bounds_animator_->IsShowing())
+    bounds_animator_->Reset();
+  bounds_animator_->Show();
 }
 
 void PanelBrowserView::UpdateTitleBar() {
@@ -73,6 +103,12 @@ bool PanelBrowserView::AcceleratorPressed(
     return true;
   }
   return BrowserView::AcceleratorPressed(accelerator);
+}
+
+void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {
+  gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
+      animation_start_bounds_, animation_target_bounds_);
+  ::BrowserView::SetBounds(new_bounds);
 }
 
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
@@ -116,7 +152,9 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
     return false;
   mouse_pressed_ = false;
 
-  panel_->manager()->EndDragging(cancelled || !mouse_dragging_);
+  if (!mouse_dragging_)
+    cancelled = true;
   mouse_dragging_ = false;
+  panel_->manager()->EndDragging(cancelled);
   return true;
 }

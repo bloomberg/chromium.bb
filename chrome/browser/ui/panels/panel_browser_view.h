@@ -8,13 +8,18 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/animation/animation_delegate.h"
 
 class Browser;
 class Panel;
 class PanelBrowserFrameView;
+namespace ui {
+class SlideAnimation;
+}
 
 // A browser view that implements Panel specific behavior.
-class PanelBrowserView : public ::BrowserView {
+class PanelBrowserView : public ::BrowserView,
+                         public ui::AnimationDelegate {
  public:
   PanelBrowserView(Browser* browser, Panel* panel);
   virtual ~PanelBrowserView();
@@ -32,15 +37,20 @@ class PanelBrowserView : public ::BrowserView {
   friend class PanelBrowserViewTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideInfoButton);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, SetBoundsAnimation);
 
   // Overridden from BrowserView:
   virtual void Init() OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
   virtual void OnWindowActivationChanged(bool active) OVERRIDE;
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
       OVERRIDE;
+
+  // Overridden from AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   PanelBrowserFrameView* GetFrameView() const;
   bool EndDragging(bool cancelled);
@@ -56,6 +66,11 @@ class PanelBrowserView : public ::BrowserView {
   // Is the titlebar currently being dragged?  That is, has the cursor
   // moved more than kDragThreshold away from its starting position?
   bool mouse_dragging_;
+
+  // Used to animate the bounds change.
+  scoped_ptr<ui::SlideAnimation> bounds_animator_;
+  gfx::Rect animation_start_bounds_;
+  gfx::Rect animation_target_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserView);
 };

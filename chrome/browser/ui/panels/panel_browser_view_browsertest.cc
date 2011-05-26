@@ -19,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -107,6 +108,7 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
                               ui::EF_LEFT_BUTTON_DOWN);
     if (delta_x || delta_y) {
       browser_views[index_to_drag]->OnTitleBarMouseDragged(dragged);
+
       for (size_t i = 0; i < num_browser_views; ++i) {
         gfx::Rect expected_bounds = initial_bounds[i];
         expected_bounds.Offset(expected_delta_x_after_drag[i], 0);
@@ -164,8 +166,12 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
 // Panel is not supported for Linux view yet.
 #if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
-  PanelBrowserFrameView* frame_view =
-      CreatePanelBrowserView("PanelTest")->GetFrameView();
+  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
+  PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
+
+  // The bounds animation should not be triggered when the panel is up for the
+  // first time.
+  EXPECT_FALSE(browser_view->bounds_animator_.get());
 
   // We should have icon, text, options button and close button.
   EXPECT_EQ(4, frame_view->child_count());
@@ -506,5 +512,42 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, AboutPanelBubble) {
                WideToUTF8(contents->install_date_->GetText()).c_str());
   EXPECT_STREQ(extension->description().c_str(),
                UTF16ToUTF8(contents->description_->text()).c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
+  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
+
+  // Validate that animation should be triggered when SetBounds is called.
+  gfx::Rect target_bounds(browser_view->GetBounds());
+  target_bounds.Offset(20, -30);
+  target_bounds.set_width(target_bounds.width() + 100);
+  target_bounds.set_height(target_bounds.height() + 50);
+  browser_view->SetBounds(target_bounds);
+  ASSERT_TRUE(browser_view->bounds_animator_.get());
+  EXPECT_TRUE(browser_view->bounds_animator_->is_animating());
+  EXPECT_NE(browser_view->GetBounds(), target_bounds);
+  // The timer for the animation will only kick in as async task.
+  while (browser_view->bounds_animator_->is_animating()) {
+    MessageLoop::current()->RunAllPending();
+  }
+  EXPECT_EQ(browser_view->GetBounds(), target_bounds);
+
+  // Validates that no animation should be triggered for the panel currently
+  // being dragged.
+  views::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
+                            target_bounds.x(),
+                            target_bounds.y(),
+                            ui::EF_LEFT_BUTTON_DOWN);
+  browser_view->OnTitleBarMousePressed(pressed);
+
+  views::MouseEvent dragged(ui::ET_MOUSE_DRAGGED,
+                            target_bounds.x() + 5,
+                            target_bounds.y() + 5,
+                            ui::EF_LEFT_BUTTON_DOWN);
+  browser_view->OnTitleBarMouseDragged(dragged);
+  EXPECT_FALSE(browser_view->bounds_animator_->is_animating());
+  browser_view->OnTitleBarMouseCaptureLost();
+
+  browser_view->panel()->Close();
 }
 #endif
