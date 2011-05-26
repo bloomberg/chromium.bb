@@ -119,6 +119,14 @@ echo @@@BUILD_STEP chrome_browser_tests@@@
     chrome_browser_tests ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
+echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
+./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
+    ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
+    force_ppapi_plugin=../xcodebuild/${GYPMODE}/libppGoogleNaClPlugin.dylib \
+    force_sel_ldr=../xcodebuild/${GYPMODE}/sel_ldr \
+    chrome_browser_tests ||
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+
 # TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1691
 echo @@@BUILD_STEP chrome_browser_tests without IRT@@@
