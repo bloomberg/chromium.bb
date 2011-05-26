@@ -15,7 +15,6 @@
       ['target_base=="ncvalidate"', {
         'sources': [
           'halt_trim.c',
-          'nacl_cpuid.c',
           'ncdecode.c',
           'error_reporter.c',
           'ncinstbuffer.c',
@@ -133,6 +132,7 @@
       },
       'dependencies': [
         'ncopcode_utils',
+        'nacl_cpuid_lib',
       ],
       'hard_dependency': 1,
     },
@@ -212,6 +212,7 @@
           },
           'dependencies': [
             'ncopcode_utils64',
+            'nacl_cpuid_lib64',
           ],
           'hard_dependency': 1,
         },
