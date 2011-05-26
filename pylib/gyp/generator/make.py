@@ -207,15 +207,29 @@ cmd_copy = ln -f $< $@ 2>/dev/null || cp -af $< $@
 quiet_cmd_link = LINK($(TOOLSET)) $@
 cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 
-# Shared-object link (for generating .so).
+# We support two kinds of shared objects (.so):
+# 1) shared_library, which is just bundling together many dependent libraries
+# into a link line.
+# 2) loadable_module, which is generating a module intended for dlopen().
+#
+# They differ only slightly:
+# In the former case, we want to package all dependent code into the .so.
+# In the latter case, we want to package just the API exposed by the
+# outermost module.
+# This means shared_library uses --whole-archive, while loadable_module doesn't.
+# (Note that --whole-archive is incompatible with the --start-group used in
+# normal linking.)
+
+# Other shared-object link notes:
 # - Set SONAME to the library filename so our binaries don't reference
 # the local, absolute paths used on the link command-line.
-# - Use --whole-archive so that the .a files we combine end up in the public
-# API of the shared object.  (Note that --whole-archive is incompatible with
-# the --start-group used in normal linking.)
 quiet_cmd_solink = SOLINK($(TOOLSET)) $@
 cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(filter-out FORCE_DO_CMD, $^) -Wl,--no-whole-archive $(LIBS)
+
+quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
+cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 """
+
 r"""
 # Define an escape_quotes function to escape single quotes.
 # This allows us to handle quotes properly as long as we always use
@@ -1014,8 +1028,10 @@ class MakefileWriter:
       self.WriteDoCmd([self.output], link_deps, 'link', part_of_all)
     elif self.type == 'static_library':
       self.WriteDoCmd([self.output], link_deps, 'alink', part_of_all)
-    elif self.type in ('loadable_module', 'shared_library'):
+    elif self.type == 'shared_library':
       self.WriteDoCmd([self.output], link_deps, 'solink', part_of_all)
+    elif self.type == 'loadable_module':
+      self.WriteDoCmd([self.output], link_deps, 'solink_module', part_of_all)
     elif self.type == 'none':
       # Write a stamp line.
       self.WriteDoCmd([self.output], deps, 'touch', part_of_all)
