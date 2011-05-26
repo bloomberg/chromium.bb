@@ -29,6 +29,7 @@ EXTRA_ENV = {
 
   'SHARED'   : '0',
   'STATIC'   : '0',
+  'PIC'      : '0',
 
   'LINK_IN_BITCODE_INTRINSICS' : '1',
 
