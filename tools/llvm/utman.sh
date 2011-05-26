@@ -771,8 +771,9 @@ prune() {
   SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
 
   if [[ ${dir_size_after} -gt ${ACCEPTABLE_SIZE} ]] ; then
-    echo "ERROR: size of toolchain exceeds ${ACCEPTABLE_SIZE}MB"
-    exit -1
+    # TODO(pdox): Move this to the buildbot script so that
+    # it can make the bot red without ruining the toolchain archive.
+    echo "WARNING: size of toolchain exceeds ${ACCEPTABLE_SIZE}MB"
   fi
 
 }
