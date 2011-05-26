@@ -45,6 +45,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -503,10 +504,15 @@ void TabContentsWrapper::OnJSOutOfMemory() {
 void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
                                                    const GURL& url,
                                                    const string16& title) {
-  ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
-  if (!registry->enabled()) {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
     return;
-  }
+
+  ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
+  if (!registry->enabled())
+    return;
+
   ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
   if (!handler.IsEmpty() &&
