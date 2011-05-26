@@ -265,6 +265,13 @@
                 </li>
               </ol>
             </li><li>
+              <a href="#lifecycle">Scope and life cycle of preferences</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
               <a href="#precedence">Precedence</a>
               <ol>
                 <li style="display: none; ">
@@ -338,19 +345,34 @@ preferences in Chrome. The <a href="proxy.html#overview-examples">proxy settings
  examples</a> demonstrate how these functions are intended to be used.
 </p>
 
-<!--
-<h2 id="lifecycle">Life cycle of preferences</h2>
+<h2 id="lifecycle">Scope and life cycle of preferences</h2>
 
 <p>
-The life cycle of preferences depends on whether they are set for regular or
-incognito profiles. </p>
--->
+Chrome distinguishes between three different scopes of preferences:
+</p><dl>
+  <dt><code>regular</code></dt>
+  <dd>Preferences set in the <code>regular</code> scope apply to regular
+  browser windows and are inherited by the incognito windows if they are not
+  overwritten. These preferences are stored to disk and remain in place until
+  they are cleared by the governing extension, or the governing extension is
+  disabled or uninstalled.</dd>
 
-<p>
-Currently, preferences can only be set for regular profiles. Once set, they
-remain in place until they are cleared by the governing extension, or the
-governing extension is disabled or uninstalled.
-</p>
+  <dt><code>incognito_persistent</code></dt>
+  <dd>Preferences set in the <code>incognito_persistent</code> scope apply only
+  to incognito windows. For these, they override <code>regular</code>
+  preferences. These preferences are stored to disk and remain in place until
+  they are cleared by the governing extension, or the governing extension is
+  disabled or uninstalled.</dd>
+
+  <dt><code>incognito_session_only</code></dt>
+  <dd>Preferences set in the <code>incognito_session_only</code> scope apply only
+  to incognito windows. For these, they override <code>regular</code> and
+  <code>incognito_session_only</code> preferences. These preferences are not
+  stored to disk and are cleared when the last incognito window is closed. They
+  can only be set when at least one incognito window is open.</dd>
+
+</dl>
+<p></p>
 
 <h2 id="precedence">Precedence</h2>
 
@@ -368,10 +390,11 @@ precedence.
 
 <p>
 As the list implies, policies might overrule any changes that you specify with
-your extension.
+your extension. You can use the <code>get()</code> function to determine whether
+your extension is capable of setting a preference or whether this setting would
+be overridden.
 </p>
 
-<!--
 <p>
 As discussed above, Chrome allows using different preferences for regular
 windows and incognito windows. The following example illustrates the behavior.
@@ -381,7 +404,7 @@ preferences for regular windows <b>(R)</b> and preferences for incognito windows
 </p>
 
 <p>
-<ul>
+</p><ul>
   <li>If only <b>(R)</b> is set, these preferences are effective for both
   regular and incognito windows.</li>
   <li>If only <b>(I)</b> is set, these preferences are effective for only
@@ -390,16 +413,13 @@ preferences for regular windows <b>(R)</b> and preferences for incognito windows
   <li>If both <b>(R)</b> and <b>(I)</b> are set, the respective preferences are
   used for regular and incognito windows.</li>
 </ul>
-</p>
--->
+<p></p>
 
 <p>
 If two or more extensions want to set the same preference to different values,
 the extension installed most recently takes precedence over the other
-extensions.
-<!-- If the
-extension installed last sets only <b>(I)</b>, the preference of regular windows
-can be defined by previously installed extensions. -->
+extensions.  If the most recently installed extension sets only <b>(I)</b>, the
+preference of regular windows can be defined by previously installed extensions.
 </p>
 
 <p>
