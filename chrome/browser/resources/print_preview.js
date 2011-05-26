@@ -776,11 +776,11 @@ function getSelectedPages() {
 
   for (var i = 0; i < parts.length; ++i) {
     var part = parts[i];
-    var match = part.match(/^\s*([0-9]+)\s*-\s*([0-9]+)\s*$/);
+    var match = part.match(/^\s*([0-9]+)\s*-\s*([0-9]*)\s*$/);
 
-    if (match && match[1] && match[2]) {
+    if (match && match[1]) {
       var from = parseInt(match[1], 10);
-      var to = parseInt(match[2], 10);
+      var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
 
       if (from && to) {
         for (var j = from; j <= to; ++j)
@@ -820,13 +820,12 @@ function getSelectedPagesValidityLevel() {
     if (part.length == 0)
       continue;
 
-    var match = part.match(/^([0-9]+)-([0-9]+)$/);
-
-    if (match && match[1] && match[2]) {
+    var match = part.match(/^([0-9]+)-([0-9]*)$/);
+    if (match && match[1]) {
       var from = parseInt(match[1], 10);
-      var to = parseInt(match[2], 10);
+      var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
 
-      if (from && to && from < to && to <= totalPageCount)
+      if (from && to && from <= to)
         successfullyParsed += 1;
       else
         failedToParse += 1;
