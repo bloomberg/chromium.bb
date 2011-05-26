@@ -714,6 +714,10 @@ WebKit::WebMediaPlayer::MovieLoadType
   return WebKit::WebMediaPlayer::Unknown;
 }
 
+float WebMediaPlayerImpl::mediaTimeForTimeValue(float timeValue) const {
+  return ConvertSecondsToTimestamp(timeValue).InSecondsF();
+}
+
 unsigned WebMediaPlayerImpl::decodedFrameCount() const {
   DCHECK(MessageLoop::current() == main_loop_);
 

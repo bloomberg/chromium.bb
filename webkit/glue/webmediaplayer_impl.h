@@ -246,6 +246,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   virtual bool hasSingleSecurityOrigin() const;
   virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
+  virtual float mediaTimeForTimeValue(float timeValue) const;
+
   virtual unsigned decodedFrameCount() const;
   virtual unsigned droppedFrameCount() const;
   virtual unsigned audioDecodedByteCount() const;
