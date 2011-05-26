@@ -4634,6 +4634,23 @@
    fun:_ZN3net17UDPSocketLibevent15DidCompleteReadEv
 }
 {
+   bug_83949_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
+   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN3net17UDPSocketLibevent8RecvFromEPNS_8IOBufferEiPNS_10IPEndPointEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net15UDPServerSocket8RecvFromEPNS_8IOBufferEiPNS_10IPEndPointEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN16P2PSocketHostUdp6DoReadEv
+   fun:_ZN16P2PSocketHostUdp6OnRecvEi
+   fun:_Z16DispatchToMethodI16P2PSocketHostUdpMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplI16P2PSocketHostUdpMS0_FviE6Tuple1IiEE13RunWithParamsERKS4_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net17UDPSocketLibevent14DoReadCallbackEi
+   fun:_ZN3net17UDPSocketLibevent15DidCompleteReadEv
+   fun:_ZN3net17UDPSocketLibevent11ReadWatcher28OnFileCanReadWithoutBlockingEi
+}
+{
    bug_83944_a
    Memcheck:Leak
    ...
