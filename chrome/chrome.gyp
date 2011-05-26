@@ -1269,7 +1269,7 @@
                   'inputs': [
                     '<(PRODUCT_DIR)/automated_ui_tests',
                     '<(PRODUCT_DIR)/reliability_tests',
-                    '<(PRODUCT_DIR)/lib.target/_pyautolib.so',
+                    '<(PRODUCT_DIR)/_pyautolib.so',
                   ],
                   'outputs': [
                     '<(PRODUCT_DIR)/strip_reliability_tests.stamp',

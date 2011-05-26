@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,8 +64,8 @@ class FetchPrebuilt(object):
     chrome_test_url = '%s/%s.test' % (self._url, self._chrome_zip_name)
     self._pyautolib_py_url = '%s/pyautolib.py' % chrome_test_url
     self._pyautolib_so_url = '%s/%s' % (chrome_test_url,
-                                        { 'linux64': 'lib.target/_pyautolib.so',
-                                          'linux32': 'lib.target/_pyautolib.so',
+                                        { 'linux64': '_pyautolib.so',
+                                          'linux32': '_pyautolib.so',
                                           'mac': '_pyautolib.so',
                                           'win': '_pyautolib.pyd',
                                          }[self._options.platform])
