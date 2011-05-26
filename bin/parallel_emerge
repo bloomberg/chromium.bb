@@ -316,7 +316,7 @@ class DepGraphGenerator(object):
     os.environ["UNMERGE_DELAY"] = "0"
 
     # Parse the emerge options.
-    action, opts, cmdline_packages = parse_opts(emerge_args, silent=True)
+    action, opts, cmdline_packages = parse_opts(emerge_args)
 
     # If we're installing to the board, we want the --root-deps option so that
     # portage will install the build dependencies to that location as well.
@@ -371,13 +371,6 @@ class DepGraphGenerator(object):
     # Now that we've setup the necessary environment variables, we can load the
     # emerge config from disk.
     settings, trees, mtimedb = load_emerge_config()
-
-    # Add in EMERGE_DEFAULT_OPTS, if specified.
-    tmpcmdline = []
-    if "--ignore-default-opts" not in opts:
-      tmpcmdline.extend(settings["EMERGE_DEFAULT_OPTS"].split())
-    tmpcmdline.extend(emerge_args)
-    action, opts, cmdline_packages = parse_opts(tmpcmdline)
 
     # Check whether our portage tree is out of date. Typically, this happens
     # when you're setting up a new portage tree, such as in setup_board and
