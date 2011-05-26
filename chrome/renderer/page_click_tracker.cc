@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,26 @@ using WebKit::WebNode;
 using WebKit::WebString;
 using WebKit::WebView;
 
+namespace {
+
+// Casts |node| to a WebInputElement.
+// Returns an empty (isNull()) WebInputElement if |node| is not a text
+// WebInputElement.
+const WebInputElement GetTextWebInputElement(const WebNode& node) {
+  if (!node.isElementNode())
+    return WebInputElement();
+  const WebElement element = node.toConst<WebElement>();
+  if (!element.isFormControlElement())
+    return WebInputElement();
+  const WebFormControlElement control =
+      element.toConst<WebFormControlElement>();
+  if (control.formControlType() != WebString::fromUTF8("text"))
+    return WebInputElement();
+  return element.toConst<WebInputElement>();
+}
+
+}  // namespace
+
 PageClickTracker::PageClickTracker(RenderView* render_view)
     : RenderViewObserver(render_view),
       was_focused_(false) {
@@ -48,17 +68,10 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
   }
 
   // We are only interested in text field clicks.
-  if (!last_node_clicked_.isElementNode())
+  const WebInputElement input_element =
+      GetTextWebInputElement(last_node_clicked_);
+  if (input_element.isNull())
     return;
-  const WebElement& element = last_node_clicked_.toConst<WebElement>();
-  if (!element.isFormControlElement())
-    return;
-  const WebFormControlElement& control =
-      element.toConst<WebFormControlElement>();
-  if (control.formControlType() != WebString::fromUTF8("text"))
-    return;
-
-  const WebInputElement& input_element = element.toConst<WebInputElement>();
 
   bool is_focused = (last_node_clicked_ == GetFocusedNode());
   ObserverListBase<PageClickListener>::Iterator it(listeners_);
@@ -125,7 +138,12 @@ void PageClickTracker::handleEvent(const WebDOMEvent& event) {
   // Remember which node has focus before the click is processed.
   // We'll get a notification once the mouse event has been processed
   // (DidHandleMouseEvent), we'll notify the listener at that point.
-  last_node_clicked_ = mouse_event.target();
+  WebNode node = mouse_event.target();
+  // We are only interested in text field clicks.
+  if (GetTextWebInputElement(node).isNull())
+    return;
+
+  last_node_clicked_ = node;
   was_focused_ = (GetFocusedNode() == last_node_clicked_);
 }
 
