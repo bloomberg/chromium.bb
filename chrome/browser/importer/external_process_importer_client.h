@@ -34,8 +34,7 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
   ExternalProcessImporterClient(ExternalProcessImporterHost* importer_host,
                                 const importer::SourceProfile& source_profile,
                                 uint16 items,
-                                InProcessImporterBridge* bridge,
-                                bool import_to_bookmark_bar);
+                                InProcessImporterBridge* bridge);
   virtual ~ExternalProcessImporterClient();
 
   // Cancel import process on IO thread.
@@ -78,10 +77,8 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
 
   // First message received when importing bookmarks.
   // |first_folder_name| can be NULL.
-  // |options| is described in ProfileWriter::BookmarkOptions.
   // |total_bookmarks_count| is the total number of bookmarks to be imported.
   virtual void OnBookmarksImportStart(const string16& first_folder_name,
-                                      int options,
                                       size_t total_bookmarks_count) OVERRIDE;
 
   // Called when a group of bookmarks has been received.
@@ -121,9 +118,6 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
   // under which imported bookmarks will be placed.
   string16 bookmarks_first_folder_name_;
 
-  // Determines how bookmarks should be added (ProfileWriter::BookmarkOptions).
-  int bookmarks_options_;
-
   // Total number of bookmarks to import.
   size_t total_bookmarks_count_;
 
@@ -146,7 +140,6 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
   // Data to be passed from the importer host to the external importer.
   const importer::SourceProfile& source_profile_;
   uint16 items_;
-  bool import_to_bookmark_bar_;
 
   // Takes import data coming over IPC and delivers it to be written by the
   // ProfileWriter.  Released by ExternalProcessImporterClient in its

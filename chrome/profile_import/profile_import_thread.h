@@ -56,8 +56,7 @@ class ProfileImportThread : public ChildThread {
   void NotifyHomePageImportReady(const GURL& home_page);
   void NotifyBookmarksImportReady(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-      const string16& first_folder_name,
-      int options);
+      const string16& first_folder_name);
   void NotifyFaviconsImportReady(
       const std::vector<history::ImportedFaviconUsage>& favicons);
   void NotifyPasswordFormReady(const webkit_glue::PasswordForm& form);
@@ -76,8 +75,7 @@ class ProfileImportThread : public ChildThread {
   void OnImportStart(
       const importer::SourceProfile& source_profile,
       uint16 items,
-      const DictionaryValue& localized_strings,
-      bool import_to_bookmark_bar);
+      const DictionaryValue& localized_strings);
 
   // Calls cleanup to stop the import operation.
   void OnImportCancel();

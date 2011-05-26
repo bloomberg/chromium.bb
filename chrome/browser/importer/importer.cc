@@ -16,10 +16,7 @@ void Importer::Cancel() {
   cancelled_ = true;
 }
 
-Importer::Importer()
-    : import_to_bookmark_bar_(false),
-      bookmark_bar_disabled_(false),
-      cancelled_(false) {
+Importer::Importer() : cancelled_(false) {
 }
 
 Importer::~Importer() {

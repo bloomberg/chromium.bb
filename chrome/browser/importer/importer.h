@@ -31,15 +31,6 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
   // Cancels the import process.
   virtual void Cancel();
 
-  void set_import_to_bookmark_bar(bool import_to_bookmark_bar) {
-    import_to_bookmark_bar_ = import_to_bookmark_bar;
-  }
-
-  void set_bookmark_bar_disabled(bool bookmark_bar_disabled) {
-    bookmark_bar_disabled_ = bookmark_bar_disabled;
-  }
-
-  bool bookmark_bar_disabled() { return bookmark_bar_disabled_; }
   bool cancelled() const { return cancelled_; }
 
  protected:
@@ -55,19 +46,9 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
                               size_t src_len,
                               std::vector<unsigned char>* png_data);
 
-  bool import_to_bookmark_bar() const { return import_to_bookmark_bar_; }
-
   scoped_refptr<ImporterBridge> bridge_;
 
  private:
-  // True if the importer is created in the first run UI.
-  bool import_to_bookmark_bar_;
-
-  // Whether bookmark bar is disabled (not shown) for importer. This is set
-  // true during first run to prevent out of process bookmark importer from
-  // updating bookmark bar settings.
-  bool bookmark_bar_disabled_;
-
   // True if the caller cancels the import process.
   bool cancelled_;
 

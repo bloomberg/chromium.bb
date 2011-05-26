@@ -29,8 +29,7 @@ ProfileImportProcessHost::~ProfileImportProcessHost() {
 
 bool ProfileImportProcessHost::StartProfileImportProcess(
     const importer::SourceProfile& source_profile,
-    uint16 items,
-    bool import_to_bookmark_bar) {
+    uint16 items) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!StartProcess())
     return false;
@@ -53,9 +52,12 @@ bool ProfileImportProcessHost::StartProfileImportProcess(
   localized_strings.SetString(
       base::IntToString(IDS_IMPORT_FROM_SAFARI),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
+  localized_strings.SetString(
+      base::IntToString(IDS_BOOMARK_BAR_FOLDER_NAME),
+      l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_FOLDER_NAME));
 
-  Send(new ProfileImportProcessMsg_StartImport(
-      source_profile, items, localized_strings, import_to_bookmark_bar));
+  Send(new ProfileImportProcessMsg_StartImport(source_profile, items,
+                                               localized_strings));
   return true;
 }
 

@@ -38,11 +38,9 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
                            BrowserThread::ID thread_id);
   virtual ~ProfileImportProcessHost();
 
-  // |source_profile|, |items|, and |import_to_bookmark_bar| are all needed by
-  // the external importer process.
+  // |source_profile| and |items| are needed by the external importer process.
   bool StartProfileImportProcess(const importer::SourceProfile& source_profile,
-                                 uint16 items,
-                                 bool import_to_bookmark_bar);
+                                 uint16 items);
 
   // Cancel the external import process.
   bool CancelProfileImportProcess();

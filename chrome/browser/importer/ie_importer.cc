@@ -137,10 +137,7 @@ void IEImporter::ImportFavorites() {
   if (!bookmarks.empty() && !cancelled()) {
     const string16& first_folder_name =
         l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE);
-    int options = 0;
-    if (import_to_bookmark_bar())
-      options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
-    bridge_->AddBookmarks(bookmarks, first_folder_name, options);
+    bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
 }
 
@@ -529,8 +526,6 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
 
 void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
                                       BookmarkVector* bookmarks) {
-  std::wstring ie_folder =
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE));
   BookmarkVector toolbar_bookmarks;
   FilePath file;
   std::vector<FilePath::StringType> file_list;
@@ -575,18 +570,12 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
     if (!relative_path.empty())
       relative_path.GetComponents(&entry.path);
 
-    // Flatten the bookmarks in Link folder onto bookmark toolbar. Otherwise,
-    // put it into "Other bookmarks".
-    if (import_to_bookmark_bar() &&
-        (!entry.path.empty() && entry.path[0] == info.links_folder)) {
+    // Add the bookmark.
+    if (!entry.path.empty() && entry.path[0] == info.links_folder) {
+      // Bookmarks in the Link folder should be imported to the toolbar.
       entry.in_toolbar = true;
-      entry.path.erase(entry.path.begin());
       toolbar_bookmarks.push_back(entry);
     } else {
-      // We put the bookmarks in a "Imported From IE"
-      // folder, so that we don't mess up the "Other bookmarks".
-      if (!import_to_bookmark_bar())
-        entry.path.insert(entry.path.begin(), ie_folder);
       bookmarks->push_back(entry);
     }
   }

@@ -556,8 +556,6 @@ void  Toolbar5Importer::AddBookmarksToChrome(
   if (!bookmarks.empty() && !cancelled()) {
     const string16& first_folder_name =
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR);
-    int options = ProfileWriter::ADD_IF_UNIQUE |
-        (import_to_bookmark_bar() ? ProfileWriter::IMPORT_TO_BOOKMARK_BAR : 0);
-    bridge_->AddBookmarks(bookmarks, first_folder_name, options);
+    bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
 }

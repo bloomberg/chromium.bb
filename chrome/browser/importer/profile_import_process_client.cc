@@ -50,7 +50,6 @@ void ProfileImportProcessClient::OnHomePageImportReady(const GURL& home_page) {
 
 void ProfileImportProcessClient::OnBookmarksImportStart(
     const string16& first_folder_name,
-    int options,
     size_t total_bookmarks_count) {
 }
 

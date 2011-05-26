@@ -18,17 +18,14 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
     ExternalProcessImporterHost* importer_host,
     const importer::SourceProfile& source_profile,
     uint16 items,
-    InProcessImporterBridge* bridge,
-    bool import_to_bookmark_bar)
-    : bookmarks_options_(0),
-      total_bookmarks_count_(0),
+    InProcessImporterBridge* bridge)
+    : total_bookmarks_count_(0),
       total_history_rows_count_(0),
       total_favicons_count_(0),
       process_importer_host_(importer_host),
       profile_import_process_host_(NULL),
       source_profile_(source_profile),
       items_(items),
-      import_to_bookmark_bar_(import_to_bookmark_bar),
       bridge_(bridge),
       cancelled_(false) {
   bridge_->AddRef();
@@ -73,8 +70,8 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
     BrowserThread::ID thread_id) {
   profile_import_process_host_ =
       new ProfileImportProcessHost(this, thread_id);
-  profile_import_process_host_->StartProfileImportProcess(
-      source_profile_, items_, import_to_bookmark_bar_);
+  profile_import_process_host_->StartProfileImportProcess(source_profile_,
+                                                          items_);
 }
 
 void ExternalProcessImporterClient::Cancel() {
@@ -168,13 +165,11 @@ void ExternalProcessImporterClient::OnHomePageImportReady(
 
 void ExternalProcessImporterClient::OnBookmarksImportStart(
     const string16& first_folder_name,
-    int options,
     size_t total_bookmarks_count) {
   if (cancelled_)
     return;
 
   bookmarks_first_folder_name_ = first_folder_name;
-  bookmarks_options_ = options;
   total_bookmarks_count_ = total_bookmarks_count;
   bookmarks_.reserve(total_bookmarks_count);
 }
@@ -188,10 +183,8 @@ void ExternalProcessImporterClient::OnBookmarksImportGroup(
   // total_bookmarks_count_:
   bookmarks_.insert(bookmarks_.end(), bookmarks_group.begin(),
                     bookmarks_group.end());
-  if (bookmarks_.size() == total_bookmarks_count_) {
-    bridge_->AddBookmarks(bookmarks_, bookmarks_first_folder_name_,
-                          bookmarks_options_);
-  }
+  if (bookmarks_.size() == total_bookmarks_count_)
+    bridge_->AddBookmarks(bookmarks_, bookmarks_first_folder_name_);
 }
 
 void ExternalProcessImporterClient::OnFaviconsImportStart(

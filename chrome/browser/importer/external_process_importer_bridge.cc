@@ -27,11 +27,9 @@ ExternalProcessImporterBridge::ExternalProcessImporterBridge(
 
 void ExternalProcessImporterBridge::AddBookmarks(
     const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-    const string16& first_folder_name,
-    int options) {
+    const string16& first_folder_name) {
   profile_import_thread_->NotifyBookmarksImportReady(bookmarks,
-                                                     first_folder_name,
-                                                     options);
+                                                     first_folder_name);
 }
 
 void ExternalProcessImporterBridge::AddHomePage(const GURL& home_page) {

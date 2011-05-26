@@ -373,11 +373,10 @@ struct ParamTraits<TemplateURL> {
 //-----------------------------------------------------------------------------
 // ProfileImportProcess messages
 // These are messages sent from the browser to the profile import process.
-IPC_MESSAGE_CONTROL4(ProfileImportProcessMsg_StartImport,
+IPC_MESSAGE_CONTROL3(ProfileImportProcessMsg_StartImport,
                      importer::SourceProfile,
                      int                     /* Bitmask of items to import. */,
-                     DictionaryValue         /* Localized strings. */,
-                     bool                    /* Import to bookmark bar. */)
+                     DictionaryValue         /* Localized strings. */)
 
 IPC_MESSAGE_CONTROL0(ProfileImportProcessMsg_CancelImport)
 
@@ -414,9 +413,8 @@ IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyHistoryImportGroup,
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyHomePageImportReady,
                      GURL  /* GURL of home page */)
 
-IPC_MESSAGE_CONTROL3(ProfileImportProcessHostMsg_NotifyBookmarksImportStart,
+IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyBookmarksImportStart,
                      string16  /* first folder name */,
-                     int       /* options */,
                      int       /* total number of bookmarks */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyBookmarksImportGroup,

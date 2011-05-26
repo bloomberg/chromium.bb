@@ -22,12 +22,11 @@ InProcessImporterBridge::InProcessImporterBridge(ProfileWriter* writer,
 
 void InProcessImporterBridge::AddBookmarks(
     const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-    const string16& first_folder_name,
-    int options) {
+    const string16& first_folder_name) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(writer_, &ProfileWriter::AddBookmarks, bookmarks,
-                        first_folder_name, options));
+                        first_folder_name));
 }
 
 void InProcessImporterBridge::AddHomePage(const GURL &home_page) {

@@ -50,14 +50,13 @@ class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
   }
 
   // Converts a BookmarkEntry to a string suitable for assertion testing.
-  string16 BookmarkEntryToString(
-      const ProfileWriter::BookmarkEntry& entry) {
+  string16 BookmarkEntryToString(const ProfileWriter::BookmarkEntry& entry) {
     string16 result;
     result.append(ASCIIToUTF16("on_toolbar="));
     if (entry.in_toolbar)
-      result.append(ASCIIToUTF16("false"));
-    else
       result.append(ASCIIToUTF16("true"));
+    else
+      result.append(ASCIIToUTF16("false"));
 
     result.append(ASCIIToUTF16(" url=") + UTF8ToUTF16(entry.url.spec()));
 
@@ -87,9 +86,6 @@ class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
     ProfileWriter::BookmarkEntry entry;
     entry.in_toolbar = on_toolbar;
     entry.url = url;
-    // The first path element should always be 'x', as that is what we passed
-    // to the importer.
-    entry.path.push_back(ASCIIToUTF16("x"));
     if (!f1.empty()) {
       entry.path.push_back(f1);
       if (!f2.empty()) {
@@ -225,8 +221,6 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   std::vector<history::ImportedFaviconUsage> favicons;
   Firefox2Importer::ImportBookmarksFile(path_,
                                         std::set<GURL>(),
-                                        false,
-                                        ASCIIToUTF16("x"),
                                         NULL,
                                         &parsed_bookmarks,
                                         NULL,
@@ -249,13 +243,13 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Windows and ChromeOS builds use Sentence case.
   string16 bookmark_folder_name =
       l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME);
-  AssertBookmarkEntryEquals(parsed_bookmarks[0], false, url1, url1_title, t1,
+  AssertBookmarkEntryEquals(parsed_bookmarks[0], true, url1, url1_title, t1,
                             bookmark_folder_name, f1_title, string16());
-  AssertBookmarkEntryEquals(parsed_bookmarks[1], false, url2, url2_title, t2,
+  AssertBookmarkEntryEquals(parsed_bookmarks[1], true, url2, url2_title, t2,
                             bookmark_folder_name, f1_title, f2_title);
-  AssertBookmarkEntryEquals(parsed_bookmarks[2], false, url3, url3_title, t3,
+  AssertBookmarkEntryEquals(parsed_bookmarks[2], true, url3, url3_title, t3,
                             bookmark_folder_name, string16(), string16());
-  AssertBookmarkEntryEquals(parsed_bookmarks[3], false, url4, url4_title, t4,
+  AssertBookmarkEntryEquals(parsed_bookmarks[3], true, url4, url4_title, t4,
                             bookmark_folder_name, string16(), string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[4], false, url1, url1_title, t1,
                             string16(), string16(), string16());

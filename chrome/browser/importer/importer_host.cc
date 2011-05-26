@@ -117,8 +117,6 @@ void ImporterHost::StartImportSettings(
   }
 
   importer_->AddRef();
-  importer_->set_import_to_bookmark_bar(ShouldImportToBookmarkBar(first_run));
-  importer_->set_bookmark_bar_disabled(first_run);
 
   scoped_refptr<InProcessImporterBridge> bridge(
       new InProcessImporterBridge(writer_.get(), this));
@@ -170,14 +168,6 @@ ImporterHost::~ImporterHost() {
                        // is if we have a profile.
     profile_->GetBookmarkModel()->RemoveObserver(this);
   }
-}
-
-bool ImporterHost::ShouldImportToBookmarkBar(bool first_run) {
-  bool import_to_bookmark_bar = first_run;
-  if (profile_ && profile_->GetBookmarkModel()->IsLoaded()) {
-    import_to_bookmark_bar = (!profile_->GetBookmarkModel()->HasBookmarks());
-  }
-  return import_to_bookmark_bar;
 }
 
 void ImporterHost::CheckForFirefoxLock(
@@ -232,7 +222,6 @@ void ImporterHost::Loaded(BookmarkModel* model) {
   waiting_for_bookmarkbar_model_ = false;
   installed_bookmark_observer_ = false;
 
-  importer_->set_import_to_bookmark_bar(!model->HasBookmarks());
   InvokeTaskIfDone();
 }
 

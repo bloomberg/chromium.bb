@@ -47,9 +47,6 @@ class ExternalProcessImporterHost : public ImporterHost {
   // Bitmask of items to be imported (see importer::ImportItem enum).
   uint16 items_;
 
-  // Whether to import bookmarks to the bookmark bar.
-  bool import_to_bookmark_bar_;
-
   // True if the import process has been cancelled.
   bool cancelled_;
 

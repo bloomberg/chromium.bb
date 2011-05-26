@@ -57,7 +57,6 @@ class ProfileImportProcessClient
   virtual void OnHomePageImportReady(const GURL& home_page);
 
   virtual void OnBookmarksImportStart(const string16& first_folder_name,
-                                      int options,
                                       size_t total_bookmarks_count);
   virtual void OnBookmarksImportGroup(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks);

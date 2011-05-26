@@ -97,17 +97,16 @@ void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
 }
 
 void SafariImporter::ImportBookmarks() {
+  string16 toolbar_name =
+      bridge_->GetLocalizedString(IDS_BOOMARK_BAR_FOLDER_NAME);
   std::vector<ProfileWriter::BookmarkEntry> bookmarks;
-  ParseBookmarks(&bookmarks);
+  ParseBookmarks(toolbar_name, &bookmarks);
 
   // Write bookmarks into profile.
   if (!bookmarks.empty() && !cancelled()) {
     const string16& first_folder_name =
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_SAFARI);
-    int options = 0;
-    if (import_to_bookmark_bar())
-      options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
-    bridge_->AddBookmarks(bookmarks, first_folder_name, options);
+    bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
 
   // Import favicons.
@@ -193,6 +192,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     NSDictionary* bookmark_folder,
     const std::vector<string16>& parent_path_elements,
     bool is_in_toolbar,
+    const string16& toolbar_name,
     std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks) {
   DCHECK(bookmark_folder);
 
@@ -208,32 +208,43 @@ void SafariImporter::RecursiveReadBookmarksFolder(
   if (!is_top_level_bookmarks_container) {
     // Top level containers sometimes don't have title attributes.
     if (![type isEqualToString:@"WebBookmarkTypeList"] || !title) {
-      DCHECK(false) << "Type =("
-      << (type ? base::SysNSStringToUTF8(type) : "Null Type")
-      << ") Title=(" << (title ? base::SysNSStringToUTF8(title) : "Null title")
-      << ")";
+      NOTREACHED() << "Type=("
+                   << (type ? base::SysNSStringToUTF8(type) : "Null type")
+                   << ") Title=("
+                   << (title ? base::SysNSStringToUTF8(title) : "Null title")
+                   << ")";
       return;
     }
   }
 
+  NSArray* elements = [bookmark_folder objectForKey:@"Children"];
+  if (!elements && (!parent_path_elements.empty() || !is_in_toolbar)) {
+    // This is an empty folder, so add it explicitly; but don't add the toolbar
+    // folder if it is empty.  Note that all non-empty folders are added
+    // implicitly when their children are added.
+    ProfileWriter::BookmarkEntry entry;
+    // Safari doesn't specify a creation time for the folder.
+    entry.creation_time = base::Time::Now();
+    entry.title = base::SysNSStringToUTF16(title);
+    entry.path = parent_path_elements;
+    entry.in_toolbar = is_in_toolbar;
+    entry.is_folder = true;
+
+    out_bookmarks->push_back(entry);
+    return;
+  }
+
   std::vector<string16> path_elements(parent_path_elements);
-  // Is this the toolbar folder?
-  if ([title isEqualToString:@"BookmarksBar"]) {
-    // Be defensive, the toolbar items shouldn't have a prepended path.
-    path_elements.clear();
+  // Create a folder for the toolbar, but not for the bookmarks menu.
+  if (path_elements.empty() && [title isEqualToString:@"BookmarksBar"]) {
     is_in_toolbar = true;
-  } else if ([title isEqualToString:@"BookmarksMenu"]) {
-    // top level container for normal bookmarks.
-    path_elements.clear();
-  } else if (!is_top_level_bookmarks_container) {
+    path_elements.push_back(toolbar_name);
+  } else if (!is_top_level_bookmarks_container &&
+             !(path_elements.empty() &&
+               [title isEqualToString:@"BookmarksMenu"])) {
     if (title)
       path_elements.push_back(base::SysNSStringToUTF16(title));
   }
-
-  NSArray* elements = [bookmark_folder objectForKey:@"Children"];
-  // TODO(jeremy) Does Chrome support importing empty folders?
-  if (!elements)
-    return;
 
   // Iterate over individual bookmarks.
   for (NSDictionary* bookmark in elements) {
@@ -246,11 +257,12 @@ void SafariImporter::RecursiveReadBookmarksFolder(
       RecursiveReadBookmarksFolder(bookmark,
                                    path_elements,
                                    is_in_toolbar,
+                                   toolbar_name,
                                    out_bookmarks);
     }
 
     // If we didn't see a bookmark folder, then we're expecting a bookmark
-    // item, if that's not what we got then ignore it.
+    // item.  If that's not what we got then ignore it.
     if (![type isEqualToString:@"WebBookmarkTypeLeaf"])
       continue;
 
@@ -275,6 +287,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
 }
 
 void SafariImporter::ParseBookmarks(
+    const string16& toolbar_name,
     std::vector<ProfileWriter::BookmarkEntry>* bookmarks) {
   DCHECK(bookmarks);
 
@@ -295,7 +308,7 @@ void SafariImporter::ParseBookmarks(
   // Recursively read in bookmarks.
   std::vector<string16> parent_path_elements;
   RecursiveReadBookmarksFolder(bookmarks_dict, parent_path_elements, false,
-                               bookmarks);
+                               toolbar_name, bookmarks);
 }
 
 void SafariImporter::ImportPasswords() {

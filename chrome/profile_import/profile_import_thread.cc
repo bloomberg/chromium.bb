@@ -54,8 +54,7 @@ bool ProfileImportThread::OnControlMessageReceived(const IPC::Message& msg) {
 void ProfileImportThread::OnImportStart(
     const importer::SourceProfile& source_profile,
     uint16 items,
-    const DictionaryValue& localized_strings,
-    bool import_to_bookmark_bar) {
+    const DictionaryValue& localized_strings) {
   bridge_ = new ExternalProcessImporterBridge(this, localized_strings);
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
   if (!importer_) {
@@ -64,7 +63,6 @@ void ProfileImportThread::OnImportStart(
     return;
   }
 
-  importer_->set_import_to_bookmark_bar(import_to_bookmark_bar);
   items_to_import_ = items;
 
   // Create worker thread in which importer runs.
@@ -137,10 +135,9 @@ void ProfileImportThread::NotifyHomePageImportReady(
 
 void ProfileImportThread::NotifyBookmarksImportReady(
     const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
-    const string16& first_folder_name,
-    int options) {
+    const string16& first_folder_name) {
   Send(new ProfileImportProcessHostMsg_NotifyBookmarksImportStart(
-      first_folder_name, options, bookmarks.size()));
+      first_folder_name, bookmarks.size()));
 
   std::vector<ProfileWriter::BookmarkEntry>::const_iterator it;
   for (it = bookmarks.begin(); it < bookmarks.end();

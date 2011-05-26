@@ -208,8 +208,8 @@ void Firefox3Importer::ImportBookmarks() {
     BookmarkItem* item = list[i];
 
     if (item->type == TYPE_FOLDER) {
-      // Folders are added implicitly on adding children,
-      // so now we pass only empty folders to add them explicitly.
+      // Folders are added implicitly on adding children, so we only explicitly
+      // add empty folders.
       if (!item->empty_folder)
         continue;
     } else if (item->type == TYPE_BOOKMARK) {
@@ -232,31 +232,28 @@ void Firefox3Importer::ImportBookmarks() {
     bool is_in_toolbar = false;
     while (child->parent >= 0) {
       BookmarkItem* parent = list[child->parent];
-      if (parent->id == toolbar_folder_id) {
-        // This bookmark entry should be put in the bookmark bar.
-        // But we put it in the Firefox group after first run, so
-        // that do not mess up the bookmark bar.
-        if (import_to_bookmark_bar()) {
-          is_in_toolbar = true;
-        } else {
-          path.insert(path.begin(), parent->title);
-          path.insert(path.begin(), firefox_folder);
-        }
-        found_path = true;
-        break;
-      } else if (parent->id == menu_folder_id ||
-                 parent->id == unsorted_folder_id) {
-        // After the first run, the item will be placed in a folder in
-        // the "Other bookmarks".
-        if (!import_to_bookmark_bar())
-          path.insert(path.begin(), firefox_folder);
-        found_path = true;
-        break;
-      } else if (livemark_id.find(parent->id) != livemark_id.end()) {
-        // If the entry is under a livemark folder, we don't import it.
+      if (livemark_id.find(parent->id) != livemark_id.end()) {
+        // Don't import live bookmarks.
         break;
       }
-      path.insert(path.begin(), parent->title);
+
+      if (parent->id != menu_folder_id) {
+        // To avoid excessive nesting, omit the name for the bookmarks menu
+        // folder.
+        path.insert(path.begin(), parent->title);
+      }
+
+      if (parent->id == toolbar_folder_id)
+        is_in_toolbar = true;
+
+      if (parent->id == toolbar_folder_id ||
+          parent->id == menu_folder_id ||
+          parent->id == unsorted_folder_id) {
+        // We've reached a root node, hooray!
+        found_path = true;
+        break;
+      }
+
       child = parent;
     }
 
@@ -291,10 +288,7 @@ void Firefox3Importer::ImportBookmarks() {
   if (!bookmarks.empty() && !cancelled()) {
     const string16& first_folder_name =
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
-    int options = 0;
-    if (import_to_bookmark_bar())
-      options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
-    bridge_->AddBookmarks(bookmarks, first_folder_name, options);
+    bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
   if (!template_urls.empty() && !cancelled()) {
     bridge_->SetKeywords(template_urls, -1, false);

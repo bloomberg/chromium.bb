@@ -4,6 +4,9 @@
 
 #include "chrome/browser/importer/profile_writer.h"
 
+#include <string>
+
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -15,6 +18,54 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
+
+namespace {
+
+// Generates a unique folder name. If |folder_name| is not unique, then this
+// repeatedly tests for '|folder_name| + (i)' until a unique name is found.
+string16 GenerateUniqueFolderName(BookmarkModel* model,
+                                  const string16& folder_name) {
+  // Build a set containing the bookmark bar folder names.
+  std::set<string16> existing_folder_names;
+  const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
+  for (int i = 0; i < bookmark_bar->child_count(); ++i) {
+    const BookmarkNode* node = bookmark_bar->GetChild(i);
+    if (node->is_folder())
+      existing_folder_names.insert(node->GetTitle());
+  }
+
+  // If the given name is unique, use it.
+  if (existing_folder_names.find(folder_name) == existing_folder_names.end())
+    return folder_name;
+
+  // Otherwise iterate until we find a unique name.
+  for (size_t i = 1; i <= existing_folder_names.size(); ++i) {
+    string16 name = folder_name + ASCIIToUTF16(" (") + base::IntToString16(i) +
+        ASCIIToUTF16(")");
+    if (existing_folder_names.find(name) == existing_folder_names.end())
+      return name;
+  }
+
+  NOTREACHED();
+  return folder_name;
+}
+
+// Shows the bookmarks toolbar.
+void ShowBookmarkBar(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  // Check whether the bookmark bar is shown in current pref.
+  if (!prefs->GetBoolean(prefs::kShowBookmarkBar)) {
+    // Set the pref and notify the notification service.
+    prefs->SetBoolean(prefs::kShowBookmarkBar, true);
+    prefs->ScheduleSavePersistentPrefs();
+    Source<Profile> source(profile);
+    NotificationService::current()->Notify(
+        NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED, source,
+        NotificationService::NoDetails());
+  }
+}
+
+}  // namespace
 
 ProfileWriter::BookmarkEntry::BookmarkEntry()
     : in_toolbar(false),
@@ -61,72 +112,89 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
 }
 
 void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
-                                 const string16& first_folder_name,
-                                 int options) {
+                                 const string16& top_level_folder_name) {
   if (bookmarks.empty())
     return;
 
   BookmarkModel* model = profile_->GetBookmarkModel();
   DCHECK(model->IsLoaded());
 
-  bool import_to_bookmark_bar = ((options & IMPORT_TO_BOOKMARK_BAR) != 0);
-  string16 real_first_folder = import_to_bookmark_bar ? first_folder_name :
-      GenerateUniqueFolderName(model, first_folder_name);
+  // If the bookmark bar is currently empty, we should import directly to it.
+  // Otherwise, we should import everything to a subfolder.
+  const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
+  bool import_to_top_level = bookmark_bar->child_count() == 0;
 
-  bool show_bookmark_toolbar = false;
-  std::set<const BookmarkNode*> folders_added_to;
+  // If the user currently has no bookmarks in the bookmark bar, make sure that
+  // at least some of the imported bookmarks end up there.  Otherwise, we'll end
+  // up with just a single folder containing the imported bookmarks, which makes
+  // for unnecessary nesting.
+  bool add_all_to_top_level = import_to_top_level;
+  for (std::vector<BookmarkEntry>::const_iterator it = bookmarks.begin();
+       it != bookmarks.end() && add_all_to_top_level; ++it) {
+    if (it->in_toolbar)
+      add_all_to_top_level = false;
+  }
 
   model->BeginImportMode();
 
-  for (std::vector<BookmarkEntry>::const_iterator it = bookmarks.begin();
-       it != bookmarks.end(); ++it) {
-    // Don't insert this url if it isn't valid.
-    if (!it->is_folder && !it->url.is_valid())
+  std::set<const BookmarkNode*> folders_added_to;
+  const BookmarkNode* top_level_folder = NULL;
+  for (std::vector<BookmarkEntry>::const_iterator bookmark = bookmarks.begin();
+       bookmark != bookmarks.end(); ++bookmark) {
+    // Disregard any bookmarks with invalid urls.
+    if (!bookmark->is_folder && !bookmark->url.is_valid())
       continue;
 
-    // We suppose that bookmarks are unique by Title, URL, and Folder.  Since
-    // checking for uniqueness may not be always the user's intention we have
-    // this as an option.
-    if (options & ADD_IF_UNIQUE && DoesBookmarkExist(model, *it,
-        real_first_folder, import_to_bookmark_bar))
-      continue;
+    const BookmarkNode* parent = NULL;
+    if (import_to_top_level && (add_all_to_top_level || bookmark->in_toolbar)) {
+      // Add directly to the bookmarks bar.
+      parent = bookmark_bar;
+    } else {
+      // Add to a folder that will contain all the imported bookmarks not added
+      // to the bar.  The first time we do so, create the folder.
+      if (!top_level_folder) {
+        string16 name = GenerateUniqueFolderName(model, top_level_folder_name);
+        top_level_folder = model->AddFolder(bookmark_bar,
+                                            bookmark_bar->child_count(),
+                                            name);
+      }
+      parent = top_level_folder;
+    }
 
-    // Set up folders in BookmarkModel in such a way that path[i] is
-    // the subfolder of path[i-1]. Finally they construct a path in the
-    // model:
-    //   path[0] \ path[1] \ ... \ path[size() - 1]
-    const BookmarkNode* parent =
-        (it->in_toolbar ? model->GetBookmarkBarNode() : model->other_node());
-    for (std::vector<string16>::const_iterator i = it->path.begin();
-         i != it->path.end(); ++i) {
+    // Ensure any enclosing folders are present in the model.  The bookmark's
+    // enclosing folder structure should be
+    //   path[0] > path[1] > ... > path[size() - 1]
+    for (std::vector<string16>::const_iterator folder_name =
+             bookmark->path.begin();
+         folder_name != bookmark->path.end(); ++folder_name) {
+      if (bookmark->in_toolbar && parent == bookmark_bar &&
+          folder_name == bookmark->path.begin()) {
+        // If we're importing directly to the bookmarks bar, skip over the
+        // folder named "Bookmarks Toolbar" (or any non-Firefox equivalent).
+        continue;
+      }
+
       const BookmarkNode* child = NULL;
-      const string16& folder_name = (!import_to_bookmark_bar &&
-          !it->in_toolbar && (i == it->path.begin())) ? real_first_folder : *i;
-
       for (int index = 0; index < parent->child_count(); ++index) {
         const BookmarkNode* node = parent->GetChild(index);
-        if (node->is_folder() && node->GetTitle() == folder_name) {
+        if (node->is_folder() && node->GetTitle() == *folder_name) {
           child = node;
           break;
         }
       }
       if (!child)
-        child = model->AddFolder(parent, parent->child_count(), folder_name);
+        child = model->AddFolder(parent, parent->child_count(), *folder_name);
       parent = child;
     }
 
     folders_added_to.insert(parent);
-    if (it->is_folder) {
-      model->AddFolder(parent, parent->child_count(), it->title);
+    if (bookmark->is_folder) {
+      model->AddFolder(parent, parent->child_count(), bookmark->title);
     } else {
       model->AddURLWithCreationTime(parent, parent->child_count(),
-          it->title, it->url, it->creation_time);
+                                    bookmark->title, bookmark->url,
+                                    bookmark->creation_time);
     }
-
-    // If some items are put into toolbar, it looks like the user was using
-    // it in their last browser. We turn on the bookmarks toolbar.
-    if (it->in_toolbar)
-      show_bookmark_toolbar = true;
   }
 
   // In order to keep the imported-to folders from appearing in the 'recently
@@ -139,8 +207,9 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
 
   model->EndImportMode();
 
-  if (show_bookmark_toolbar && !(options & BOOKMARK_BAR_DISABLED))
-    ShowBookmarkBar();
+  // If the user was previously using a toolbar, we should show the bar.
+  if (import_to_top_level && !add_all_to_top_level)
+    ShowBookmarkBar(profile_);
 }
 
 void ProfileWriter::AddFavicons(
@@ -265,94 +334,4 @@ void ProfileWriter::AddKeywords(const std::vector<TemplateURL*>& template_urls,
   }
 }
 
-void ProfileWriter::ShowBookmarkBar() {
-  DCHECK(profile_);
-
-  PrefService* prefs = profile_->GetPrefs();
-  // Check whether the bookmark bar is shown in current pref.
-  if (!prefs->GetBoolean(prefs::kShowBookmarkBar)) {
-    // Set the pref and notify the notification service.
-    prefs->SetBoolean(prefs::kShowBookmarkBar, true);
-    prefs->ScheduleSavePersistentPrefs();
-    Source<Profile> source(profile_);
-    NotificationService::current()->Notify(
-        NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED, source,
-        NotificationService::NoDetails());
-  }
-}
-
 ProfileWriter::~ProfileWriter() {}
-
-string16 ProfileWriter::GenerateUniqueFolderName(
-    BookmarkModel* model,
-    const string16& folder_name) {
-  // Build a set containing the folder names of the other folder.
-  std::set<string16> other_folder_names;
-  const BookmarkNode* other = model->other_node();
-
-  for (int i = 0, child_count = other->child_count(); i < child_count; ++i) {
-    const BookmarkNode* node = other->GetChild(i);
-    if (node->is_folder())
-      other_folder_names.insert(node->GetTitle());
-  }
-
-  if (other_folder_names.find(folder_name) == other_folder_names.end())
-    return folder_name;  // Name is unique, use it.
-
-  // Otherwise iterate until we find a unique name.
-  for (int i = 1; i < 100; ++i) {
-    string16 name = folder_name + UTF8ToUTF16(base::StringPrintf(" (%d)", i));
-    if (other_folder_names.find(name) == other_folder_names.end())
-      return name;
-  }
-
-  return folder_name;
-}
-
-bool ProfileWriter::DoesBookmarkExist(
-    BookmarkModel* model,
-    const BookmarkEntry& entry,
-    const string16& first_folder_name,
-    bool import_to_bookmark_bar) {
-  std::vector<const BookmarkNode*> nodes_with_same_url;
-  model->GetNodesByURL(entry.url, &nodes_with_same_url);
-  if (nodes_with_same_url.empty())
-    return false;
-
-  for (size_t i = 0; i < nodes_with_same_url.size(); ++i) {
-    const BookmarkNode* node = nodes_with_same_url[i];
-    if (entry.title != node->GetTitle())
-      continue;
-
-    // Does the path match?
-    bool found_match = true;
-    const BookmarkNode* parent = node->parent();
-    for (std::vector<string16>::const_reverse_iterator path_it =
-             entry.path.rbegin();
-         (path_it != entry.path.rend()) && found_match; ++path_it) {
-      const string16& folder_name =
-          (!import_to_bookmark_bar && path_it + 1 == entry.path.rend()) ?
-           first_folder_name : *path_it;
-      if (NULL == parent || *path_it != folder_name)
-        found_match = false;
-      else
-        parent = parent->parent();
-    }
-
-    // We need a post test to differentiate checks such as
-    // /home/hello and /hello. The parent should either by the other folder
-    // node, or the bookmarks bar, depending upon import_to_bookmark_bar and
-    // entry.in_toolbar.
-    if (found_match &&
-        ((import_to_bookmark_bar && entry.in_toolbar && parent !=
-          model->GetBookmarkBarNode()) ||
-         ((!import_to_bookmark_bar || !entry.in_toolbar) &&
-           parent != model->other_node()))) {
-      found_match = false;
-    }
-
-    if (found_match)
-      return true;  // Found a match with the same url path and title.
-  }
-  return false;
-}

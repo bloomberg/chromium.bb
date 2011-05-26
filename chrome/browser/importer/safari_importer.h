@@ -72,7 +72,8 @@ class SafariImporter : public Importer {
   void ImportHistory();
 
   // Parse Safari's stored bookmarks.
-  void ParseBookmarks(std::vector<ProfileWriter::BookmarkEntry>* bookmarks);
+  void ParseBookmarks(const string16& toolbar_name,
+                      std::vector<ProfileWriter::BookmarkEntry>* bookmarks);
 
   // Function to recursively read Bookmarks out of Safari plist.
   // |bookmark_folder| The dictionary containing a folder to parse.
@@ -83,6 +84,7 @@ class SafariImporter : public Importer {
       NSDictionary* bookmark_folder,
       const std::vector<string16>& parent_path_elements,
       bool is_in_toolbar,
+      const string16& toolbar_name,
       std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks);
 
   // Converts history time stored by Safari as a double serialized as a string,

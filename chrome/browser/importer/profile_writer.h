@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_types.h"
@@ -31,21 +32,6 @@ struct IE7PasswordInfo;
 // This object must be invoked on UI thread.
 class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
  public:
-  // Used to identify how the bookmarks are added.
-  enum BookmarkOptions {
-    // Indicates the bookmark should only be added if unique. Uniqueness is done
-    // by title, url and path. That is, if this is passed to AddBookmarks, the
-    // bookmark is added only if there is no other URL with the same url, path
-    // and title.
-    ADD_IF_UNIQUE = 1 << 0,
-
-    // Indicates the bookmarks should be added to the bookmark bar.
-    IMPORT_TO_BOOKMARK_BAR = 1 << 1,
-
-    // Indicates the bookmark bar is not shown.
-    BOOKMARK_BAR_DISABLED = 1 << 2
-  };
-
   struct BookmarkEntry {
     BookmarkEntry();
     ~BookmarkEntry();
@@ -78,21 +64,26 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
 
   virtual void AddHomepage(const GURL& homepage);
 
-  // Adds the bookmarks to the BookmarkModel.
-  // |options| is a bitmask of BookmarkOptions and dictates how and
-  // which bookmarks are added. If the bitmask contains IMPORT_TO_BOOKMARK_BAR,
-  // then any entries with a value of true for in_toolbar are added to
-  // the bookmark bar. If the bitmask does not contain IMPORT_TO_BOOKMARK_BAR
-  // then the folder name the bookmarks are added to is uniqued based on
-  // |first_folder_name|. For example, if |first_folder_name| is 'foo'
-  // and a folder with the name 'foo' already exists in the other
-  // bookmarks folder, then the folder name 'foo 2' is used.
-  // If |options| contains ADD_IF_UNIQUE, then the bookmark is added only
-  // if another bookmarks does not exist with the same title, path and
-  // url.
-  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmark,
-                            const string16& first_folder_name,
-                            int options);
+  // Adds the |bookmarks| to the bookmark model.
+  //
+  // (a) If the bookmarks bar is empty:
+  //     (i) If |bookmarks| includes at least one bookmark that was originally
+  //         located in a toolbar, all such bookmarks are imported directly to
+  //         the toolbar; any other bookmarks are imported to a subfolder in
+  //         the toolbar.
+  //     (i) If |bookmarks| includes no bookmarks that were originally located
+  //         in a toolbar, all bookmarks are imported directly to the toolbar.
+  // (b) If the bookmarks bar is not empty, all bookmarks are imported to a
+  //     subfolder in the toolbar.
+  //
+  // In either case, if a subfolder is created, the name will be the value of
+  // |top_level_folder_name|, unless a folder with this name already exists.
+  // If a folder with this name already exists, then the name is uniquified.
+  // For example, if |first_folder_name| is 'Imported from IE' and a folder with
+  // the name 'Imported from IE' already exists in the bookmarks toolbar, then
+  // we will instead create a subfolder named 'Imported from IE (1)'.
+  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+                            const string16& top_level_folder_name);
 
   virtual void AddFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicons);
@@ -107,13 +98,9 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   // If unique_on_host_and_path a TemplateURL is only added if there is not an
   // existing TemplateURL that has a replaceable search url with the same
   // host+path combination.
-
   virtual void AddKeywords(const std::vector<TemplateURL*>& template_urls,
                            int default_keyword_index,
                            bool unique_on_host_and_path);
-
-  // Shows the bookmarks toolbar.
-  void ShowBookmarkBar();
 
  protected:
   friend class base::RefCountedThreadSafe<ProfileWriter>;
@@ -121,19 +108,6 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   virtual ~ProfileWriter();
 
  private:
-  // Generates a unique folder name. If folder_name is not unique, then this
-  // repeatedly tests for '|folder_name| + (i)' until a unique name is found.
-  string16 GenerateUniqueFolderName(BookmarkModel* model,
-                                    const string16& folder_name);
-
-  // Returns true if a bookmark exists with the same url, title and path
-  // as |entry|. |first_folder_name| is the name to use for the first
-  // path entry if |import_to_bookmark_bar| is true.
-  bool DoesBookmarkExist(BookmarkModel* model,
-                         const BookmarkEntry& entry,
-                         const string16& first_folder_name,
-                         bool import_to_bookmark_bar);
-
   Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileWriter);
