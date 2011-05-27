@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/devtools_messages.h"
+#include "content/common/devtools_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"

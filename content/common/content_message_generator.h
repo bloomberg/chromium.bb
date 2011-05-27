@@ -15,6 +15,7 @@
 #include "content/common/database_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/device_orientation_messages.h"
+#include "content/common/devtools_messages.h"
 #include "content/common/dom_storage_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/file_system_messages.h"

@@ -6,13 +6,16 @@
 #define CONTENT_RENDERER_WEBWORKER_BASE_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
 
 class ChildThread;
 class GURL;
+class WorkerDevToolsAgentProxy;
 
 // WebWorkerBase is the common base class used by both WebWorkerProxy and
 // WebSharedWorker. It contains logic to support starting up both dedicated
@@ -63,7 +66,8 @@ class WebWorkerBase : public IPC::Channel::Listener {
                 unsigned long long document_id,
                 int route_id,
                 int render_view_route_id,
-                int parent_appcache_host_id);
+                int parent_appcache_host_id,
+                WorkerDevToolsAgentProxy*);
 
   // Routing id associated with this worker - used to receive messages from the
   // worker, and also to route messages to the worker (WorkerService contains
@@ -75,6 +79,8 @@ class WebWorkerBase : public IPC::Channel::Listener {
   int render_view_route_id_;
 
   ChildThread* child_thread_;
+
+  scoped_ptr<WorkerDevToolsAgentProxy> devtools_proxy_;
 
  private:
   void CreateWorkerContext(const GURL& script_url,

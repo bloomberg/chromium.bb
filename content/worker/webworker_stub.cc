@@ -6,9 +6,11 @@
 
 #include "base/command_line.h"
 #include "content/common/child_thread.h"
+#include "content/common/content_client.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/worker/worker_devtools_agent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorker.h"
@@ -19,7 +21,10 @@ WebWorkerStub::WebWorkerStub(const GURL& url, int route_id,
                              const WorkerAppCacheInitInfo& appcache_init_info)
     : WebWorkerStubBase(route_id, appcache_init_info),
       ALLOW_THIS_IN_INITIALIZER_LIST(impl_(WebWorker::create(client()))),
-      url_(url) {
+      url_(url),
+      ALLOW_THIS_IN_INITIALIZER_LIST(worker_devtools_agent_(
+          new WorkerDevToolsAgent(route_id, impl_))) {
+  client()->set_devtools_agent(worker_devtools_agent_.get());
 }
 
 WebWorkerStub::~WebWorkerStub() {
@@ -37,6 +42,9 @@ const GURL& WebWorkerStub::url() const {
 bool WebWorkerStub::OnMessageReceived(const IPC::Message& message) {
   if (!impl_)
     return false;
+
+  if (worker_devtools_agent_->OnMessageReceived(message))
+    return true;
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebWorkerStub, message)

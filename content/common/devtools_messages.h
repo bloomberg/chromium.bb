@@ -45,12 +45,12 @@
 #include "ipc/ipc_message_macros.h"
 
 // Singly-included section.
-#ifndef CHROME_COMMON_DEVTOOLS_MESSAGES_H_
-#define CHROME_COMMON_DEVTOOLS_MESSAGES_H_
+#ifndef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
+#define CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
 
 typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
-#endif  // CHROME_COMMON_DEVTOOLS_MESSAGES_H_
+#endif  // CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
 
 #define IPC_MESSAGE_START DevToolsMsgStart
 
@@ -81,6 +81,11 @@ IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_FrontendLoaded)
 // WebKit-level transport.
 IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DispatchOnInspectorBackend,
                      std::string /* message */)
+
+// WebKit-level transport for messages from WorkerInspectorController to
+// InspectorController.
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchMessageFromWorker,
+                    std::string /* message */)
 
 // Send debugger command to the debugger agent. Debugger commands should
 // be handled on IO thread(while all other devtools messages are handled in
@@ -140,3 +145,13 @@ IPC_MESSAGE_ROUTED2(DevToolsHostMsg_SaveAs,
 IPC_MESSAGE_ROUTED2(DevToolsHostMsg_RuntimePropertyChanged,
                     std::string /* name */,
                     std::string /* value */)
+
+
+//-----------------------------------------------------------------------------
+// These are messages sent from the inspected page renderer to the worker
+// renderer.
+
+IPC_MESSAGE_ROUTED0(WorkerDevToolsAgentMsg_Attach)
+IPC_MESSAGE_ROUTED0(WorkerDevToolsAgentMsg_Detach)
+IPC_MESSAGE_ROUTED1(WorkerDevToolsAgentMsg_DispatchOnInspectorBackend,
+                    std::string /* message */)

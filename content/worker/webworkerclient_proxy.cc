@@ -16,6 +16,7 @@
 // don't support nested workers anyways.
 //#include "content/renderer/webworker_proxy.h"
 #include "content/worker/webworker_stub_base.h"
+#include "content/worker/worker_devtools_agent.h"
 #include "content/worker/worker_thread.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_logging.h"
@@ -43,7 +44,8 @@ WebWorkerClientProxy::WebWorkerClientProxy(int route_id,
     : route_id_(route_id),
       appcache_host_id_(0),
       stub_(stub),
-      ALLOW_THIS_IN_INITIALIZER_LIST(kill_process_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(kill_process_factory_(this)),
+      devtools_agent_(NULL) {
 }
 
 WebWorkerClientProxy::~WebWorkerClientProxy() {
@@ -171,6 +173,11 @@ void WebWorkerClientProxy::openFileSystem(
   ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
       stub_->url().GetOrigin(), static_cast<fileapi::FileSystemType>(type),
       size, create, new WebFileSystemCallbackDispatcher(callbacks));
+}
+
+void WebWorkerClientProxy::dispatchDevToolsMessage(const WebString& message) {
+  if (devtools_agent_)
+    devtools_agent_->SendDevToolsMessage(message);
 }
 
 bool WebWorkerClientProxy::Send(IPC::Message* message) {

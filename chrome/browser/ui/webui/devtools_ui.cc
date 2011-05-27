@@ -8,11 +8,11 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/devtools_messages.h"
 #include "grit/devtools_resources_map.h"
 #include "ui/base/resource/resource_bundle.h"
 

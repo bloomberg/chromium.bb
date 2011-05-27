@@ -16,8 +16,8 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/devtools_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/devtools_messages.h"
 
 ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
                                                  Profile* profile)

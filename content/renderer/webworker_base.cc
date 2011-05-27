@@ -8,6 +8,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/renderer/worker_devtools_agent_proxy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
 
@@ -22,10 +23,12 @@ WebWorkerBase::WebWorkerBase(
     unsigned long long document_id,
     int route_id,
     int render_view_route_id,
-    int parent_appcache_host_id)
+    int parent_appcache_host_id,
+    WorkerDevToolsAgentProxy* devtools_proxy)
     : route_id_(route_id),
       render_view_route_id_(render_view_route_id),
       child_thread_(child_thread),
+      devtools_proxy_(devtools_proxy),
       document_id_(document_id),
       parent_appcache_host_id_(parent_appcache_host_id) {
   if (route_id_ != MSG_ROUTING_NONE)
@@ -50,6 +53,9 @@ void WebWorkerBase::Disconnect() {
   child_thread_->RemoveRoute(route_id_);
 
   route_id_ = MSG_ROUTING_NONE;
+
+  if (devtools_proxy_.get())
+    devtools_proxy_->SetRouteId(MSG_ROUTING_NONE);
 }
 
 void WebWorkerBase::CreateWorkerContext(const GURL& script_url,
@@ -76,6 +82,9 @@ void WebWorkerBase::CreateWorkerContext(const GURL& script_url,
     return;
 
   child_thread_->AddRoute(route_id_, this);
+
+  if (devtools_proxy_.get())
+    devtools_proxy_->SetRouteId(route_id_);
 
   // We make sure that the start message is the first, since postMessage or
   // connect might have already been called.

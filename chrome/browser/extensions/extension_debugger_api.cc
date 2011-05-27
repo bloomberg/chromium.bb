@@ -21,10 +21,10 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
 
 namespace keys = extension_debugger_api_constants;

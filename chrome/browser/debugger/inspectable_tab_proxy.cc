@@ -12,8 +12,8 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/devtools_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/devtools_messages.h"
 
 DevToolsClientHostImpl::DevToolsClientHostImpl(
     int32 id,

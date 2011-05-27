@@ -20,9 +20,9 @@
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/devtools_messages.h"
 
 namespace {
 

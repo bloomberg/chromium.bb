@@ -16,12 +16,12 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/devtools_messages.h"
 #include "net/base/net_util.h"
 
 // Looks for an ExtensionHost whose URL has the given path component (including

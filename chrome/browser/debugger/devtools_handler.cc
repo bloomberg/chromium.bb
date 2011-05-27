@@ -6,9 +6,9 @@
 
 #include "chrome/browser/debugger/devtools_file_util.h"
 #include "chrome/browser/debugger/devtools_manager.h"
-#include "chrome/common/devtools_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/devtools_messages.h"
 
 DevToolsHandler::DevToolsHandler(RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host) {

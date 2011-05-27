@@ -18,7 +18,8 @@ WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
                     document_id,
                     exists ? route_id : MSG_ROUTING_NONE,
                     render_view_route_id,
-                    0),
+                    0,
+                    NULL),
       pending_route_id_(route_id),
       connect_listener_(NULL) {
 }
