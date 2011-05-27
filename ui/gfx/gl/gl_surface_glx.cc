@@ -14,6 +14,7 @@ extern "C" {
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process_util.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -25,6 +26,7 @@ static Display* g_display;
 typedef std::map<gfx::PluginWindowHandle, XID> XIDMapping;
 static XIDMapping glx_windows_destroyed_;
 static const char kGLX_WINDOWPropertyName[] = "GLX_WINDOW";
+static const char kGLX_GPU_PIDPropertyName[] = "GPU_PID";
 
 }  // namespace
 
@@ -44,13 +46,24 @@ class ScopedPtrXFree {
 };
 
 XID GetGLX_WINDOWProperty(XID window) {
-  Atom a = XInternAtom(g_display, kGLX_WINDOWPropertyName, False);
+  Atom a;
   Atom actual_type;
   int actual_format;
   unsigned long nitems;
   unsigned long bytes_after;
   unsigned char* prop;
 
+  a = XInternAtom(g_display, kGLX_GPU_PIDPropertyName, False);
+  if (XGetWindowProperty(g_display, window, a, 0, 1, False, XA_INTEGER,
+                         &actual_type, &actual_format, &nitems,
+                         &bytes_after, &prop) == Success && actual_type) {
+    scoped_ptr_malloc<unsigned char, ScopedPtrXFree> prop_scoped(prop);
+    if (*reinterpret_cast<int*>(prop) != base::GetCurrentProcId())
+      return 0;
+  }
+
+
+  a = XInternAtom(g_display, kGLX_WINDOWPropertyName, False);
   if (XGetWindowProperty(g_display, window, a, 0, 1, False, XA_WINDOW,
                          &actual_type, &actual_format, &nitems,
                          &bytes_after, &prop) == Success && actual_type) {
@@ -65,6 +78,10 @@ void SetGLX_WINDOWProperty(XID window, XID glx_window) {
   Atom a = XInternAtom(g_display, kGLX_WINDOWPropertyName, False);
   XChangeProperty(g_display, window, a, XA_WINDOW, 32, PropModeReplace,
                   reinterpret_cast<unsigned char*>(&glx_window), 1);
+  a = XInternAtom(g_display, kGLX_GPU_PIDPropertyName, False);
+  base::ProcessId pid = base::GetCurrentProcId();
+  XChangeProperty(g_display, window, a, XA_INTEGER, 32, PropModeReplace,
+                  reinterpret_cast<unsigned char*>(&pid), 1);
 }
 
 void CollectGarbage() {
