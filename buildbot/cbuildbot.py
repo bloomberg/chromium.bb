@@ -53,7 +53,7 @@ def RunBuildStages(bot_id, options, build_config):
 
   if options.resume and os.path.exists(completed_stages_file):
     with open(completed_stages_file, 'r') as load_file:
-      stages.BuilderStage.Results.RestoreCompletedStages(load_file)
+      stages.Results.RestoreCompletedStages(load_file)
 
   # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
   if build_config['chromeos_official']:
@@ -142,11 +142,11 @@ def RunBuildStages(bot_id, options, build_config):
 
   if os.path.exists(options.buildroot):
     with open(completed_stages_file, 'w+') as save_file:
-      stages.BuilderStage.Results.SaveCompletedStages(save_file)
+      stages.Results.SaveCompletedStages(save_file)
 
-  stages.BuilderStage.Results.Report(sys.stdout)
+  stages.Results.Report(sys.stdout)
 
-  return stages.BuilderStage.Results.Success()
+  return stages.Results.Success()
 
 def main():
   # Parse options

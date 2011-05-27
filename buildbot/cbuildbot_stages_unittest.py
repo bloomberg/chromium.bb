@@ -798,15 +798,15 @@ class BuildStagesResultsTest(unittest.TestCase):
 
   def _verifyRunResults(self, expectedResults):
 
-    actualResults = stages.BuilderStage.Results.Get()
+    actualResults = stages.Results.Get()
 
     # Break out the asserts to be per item to make debugging easier
     self.assertEqual(len(expectedResults), len(actualResults))
     for i in xrange(len(expectedResults)):
       expectedName, expectedResult, expectedDescription = actualResults[i]
 
-      if expectedResult not in (stages.BuilderStage.Results.SUCCESS,
-                                stages.BuilderStage.Results.SKIPPED):
+      if expectedResult not in (stages.Results.SUCCESS,
+                                stages.Results.SKIPPED):
         self.assertTrue(isinstance(expectedDescription, str))
 
       self.assertEqual(expectedResults[i], (expectedName, expectedResult))
@@ -814,15 +814,15 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testRunStages(self):
     """Run some stages and verify the captured results"""
 
-    stages.BuilderStage.Results.Clear()
-    self.assertEqual(stages.BuilderStage.Results.Get(), [])
+    stages.Results.Clear()
+    self.assertEqual(stages.Results.Get(), [])
 
     self._runStages()
 
     # Verify that the results are what we expect.
     expectedResults = [
-        ('Pass', stages.BuilderStage.Results.SUCCESS),
-        ('Pass2', stages.BuilderStage.Results.SUCCESS),
+        ('Pass', stages.Results.SUCCESS),
+        ('Pass2', stages.Results.SUCCESS),
         ('Fail', self.failException)]
 
     self._verifyRunResults(expectedResults)
@@ -830,20 +830,18 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testSuccessTest(self):
     """Run some stages and verify the captured results"""
 
-    stages.BuilderStage.Results.Clear()
-    stages.BuilderStage.Results.Record('Pass',
-                                       stages.BuilderStage.Results.SKIPPED)
+    stages.Results.Clear()
+    stages.Results.Record('Pass', stages.Results.SKIPPED)
 
-    self.assertTrue(stages.BuilderStage.Results.Success())
+    self.assertTrue(stages.Results.Success())
 
-    stages.BuilderStage.Results.Record('Fail', self.failException)
+    stages.Results.Record('Fail', self.failException)
 
-    self.assertFalse(stages.BuilderStage.Results.Success())
+    self.assertFalse(stages.Results.Success())
 
-    stages.BuilderStage.Results.Record('Pass2',
-                                       stages.BuilderStage.Results.SUCCESS)
+    stages.Results.Record('Pass2', stages.Results.SUCCESS)
 
-    self.assertFalse(stages.BuilderStage.Results.Success())
+    self.assertFalse(stages.Results.Success())
 
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
@@ -851,18 +849,16 @@ class BuildStagesResultsTest(unittest.TestCase):
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
-    stages.BuilderStage.Results.Clear()
-    stages.BuilderStage.Results.Record('Pass',
-                                       stages.BuilderStage.Results.SKIPPED)
-    stages.BuilderStage.Results.Record('Pass2',
-                                       stages.BuilderStage.Results.SUCCESS)
-    stages.BuilderStage.Results.Record('Fail', self.failException)
-    stages.BuilderStage.Results.Record(
+    stages.Results.Clear()
+    stages.Results.Record('Pass', stages.Results.SKIPPED)
+    stages.Results.Record('Pass2', stages.Results.SUCCESS)
+    stages.Results.Record('Fail', self.failException)
+    stages.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             ['/bin/false', '/nosuchdir']))
-    stages.BuilderStage.Results.Record(
+    stages.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
@@ -870,7 +866,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     results = StringIO.StringIO()
 
-    stages.BuilderStage.Results.Report(results)
+    stages.Results.Report(results)
 
     expectedResults = (
         "************************************************************\n"
@@ -901,21 +897,18 @@ class BuildStagesResultsTest(unittest.TestCase):
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
-    stages.BuilderStage.Results.Clear()
-    stages.BuilderStage.Results.Record('Pass',
-                                       stages.BuilderStage.Results.SKIPPED)
-    stages.BuilderStage.Results.Record('Pass2',
-                                       stages.BuilderStage.Results.SUCCESS)
-    stages.BuilderStage.Results.Record('Fail',
-                                       self.failException,
+    stages.Results.Clear()
+    stages.Results.Record('Pass', stages.Results.SKIPPED)
+    stages.Results.Record('Pass2', stages.Results.SUCCESS)
+    stages.Results.Record('Fail', self.failException,
                                        'failException Msg\nLine 2')
-    stages.BuilderStage.Results.Record(
+    stages.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             ['/bin/false', '/nosuchdir']),
         'FailRunCommand msg')
-    stages.BuilderStage.Results.Record(
+    stages.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
@@ -924,7 +917,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     results = StringIO.StringIO()
 
-    stages.BuilderStage.Results.Report(results)
+    stages.Results.Report(results)
 
     expectedResults = (
         "************************************************************\n"
@@ -962,13 +955,12 @@ class BuildStagesResultsTest(unittest.TestCase):
     stages.ManifestVersionedSyncStage.manifest_manager = manifest_manager
 
     # Store off a known set of results and generate a report
-    stages.BuilderStage.Results.Clear()
-    stages.BuilderStage.Results.Record('Pass',
-                                       stages.BuilderStage.Results.SUCCESS)
+    stages.Results.Clear()
+    stages.Results.Record('Pass', stages.Results.SUCCESS)
 
     results = StringIO.StringIO()
 
-    stages.BuilderStage.Results.Report(results)
+    stages.Results.Report(results)
 
     expectedResults = (
         "************************************************************\n"
@@ -991,43 +983,38 @@ class BuildStagesResultsTest(unittest.TestCase):
     """Tests that we can save out completed stages."""
 
     # Run this again to make sure we have the expected results stored
-    stages.BuilderStage.Results.Clear()
-    stages.BuilderStage.Results.Record('Pass',
-                                       stages.BuilderStage.Results.SUCCESS)
-
-    stages.BuilderStage.Results.Record('Fail',
-                                       self.failException)
-
-    stages.BuilderStage.Results.Record('Pass2',
-                                       stages.BuilderStage.Results.SUCCESS)
+    stages.Results.Clear()
+    stages.Results.Record('Pass', stages.Results.SUCCESS)
+    stages.Results.Record('Fail', self.failException)
+    stages.Results.Record('Pass2', stages.Results.SUCCESS)
 
     saveFile = StringIO.StringIO()
-    stages.BuilderStage.Results.SaveCompletedStages(saveFile)
+    stages.Results.SaveCompletedStages(saveFile)
     self.assertEqual(saveFile.getvalue(), 'Pass\n')
 
   def testRestoreCompletedStages(self):
     """Tests that we can read in completed stages."""
 
-    stages.BuilderStage.Results.Clear()
-    stages.BuilderStage.Results.RestoreCompletedStages(
+    stages.Results.Clear()
+    stages.Results.RestoreCompletedStages(
         StringIO.StringIO('Pass\n'))
 
-    self.assertEqual(stages.BuilderStage.Results.GetPrevious(), ['Pass'])
+    self.assertEqual(stages.Results.GetPrevious(), ['Pass'])
 
   def testRunAfterRestore(self):
     """Tests that we skip previously completed stages."""
 
-    # Fake stages.BuilderStage.Results.RestoreCompletedStages
-    stages.BuilderStage.Results.Clear()
-    stages.BuilderStage.Results.RestoreCompletedStages(
+    # Fake stages.Results.RestoreCompletedStages
+    stages.Results.Clear()
+    stages.Results.RestoreCompletedStages(
         StringIO.StringIO('Pass\n'))
 
     self._runStages()
 
     # Verify that the results are what we expect.
     expectedResults = [
-        ('Pass', stages.BuilderStage.Results.SKIPPED),
-        ('Pass2', stages.BuilderStage.Results.SUCCESS),
+        ('Pass', stages.Results.SKIPPED),
+        ('Pass2', stages.Results.SUCCESS),
         ('Fail', self.failException)]
 
     self._verifyRunResults(expectedResults)
