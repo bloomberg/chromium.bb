@@ -755,7 +755,7 @@ double TabContents::GetZoomLevel() const {
     zoom_level = zoom_map->GetTemporaryZoomLevel(
         GetRenderProcessHost()->id(), render_view_host()->routing_id());
   } else {
-    zoom_level = zoom_map->GetZoomLevel(GetURL());
+    zoom_level = zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(GetURL()));
   }
   return zoom_level;
 }

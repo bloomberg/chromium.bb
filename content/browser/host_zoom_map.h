@@ -31,21 +31,22 @@ class HostZoomMap :
  public:
   HostZoomMap();
 
-  // Returns the zoom level for a given url. The zoom level is determined by
-  // the host portion of the URL, or (in the absence of a host) the complete
-  // spec of the URL. In most cases, there is no custom zoom level, and this
-  // returns the user's default zoom level.  Otherwise, returns the saved zoom
-  // level, which may be positive (to zoom in) or negative (to zoom out).
+  // Returns the zoom level for the host or spec for a given url. The zoom
+  // level is determined by the host portion of the URL, or (in the absence of
+  // a host) the complete spec of the URL. In most cases, there is no custom
+  // zoom level, and this returns the user's default zoom level.  Otherwise,
+  // returns the saved zoom level, which may be positive (to zoom in) or
+  // negative (to zoom out).
   //
   // This may be called on any thread.
-  double GetZoomLevel(const GURL& url) const;
+  double GetZoomLevel(std::string host) const;
 
-  // Sets the zoom level for a given url to |level|.  If the level matches the
-  // current default zoom level, the host is erased from the saved preferences;
-  // otherwise the new value is written out.
+  // Sets the zoom level for the host or spec for a given url to |level|.  If
+  // the level matches the current default zoom level, the host is erased
+  // from the saved preferences; otherwise the new value is written out.
   //
   // This should only be called on the UI thread.
-  void SetZoomLevel(const GURL& url, double level);
+  void SetZoomLevel(std::string host, double level);
 
   // Returns the temporary zoom level that's only valid for the lifetime of
   // the given tab (i.e. isn't saved and doesn't affect other tabs) if it

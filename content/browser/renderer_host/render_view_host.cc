@@ -1255,7 +1255,7 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   HostZoomMap* host_zoom_map = process()->profile()->GetHostZoomMap();
   if (remember) {
-    host_zoom_map->SetZoomLevel(url, zoom_level);
+    host_zoom_map->SetZoomLevel(net::GetHostOrSpecFromURL(url), zoom_level);
     // Notify renderers from this profile.
     for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {

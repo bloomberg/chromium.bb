@@ -976,7 +976,7 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
         bool success = host_zoom_dictionary->GetDoubleWithoutPathExpansion(
             host, &zoom_level);
         DCHECK(success);
-        host_zoom_map_->SetZoomLevel(GURL(host), zoom_level);
+        host_zoom_map_->SetZoomLevel(host, zoom_level);
       }
     }
 
@@ -1418,7 +1418,7 @@ void ProfileImpl::Observe(NotificationType type,
     case NotificationType::ZOOM_LEVEL_CHANGED: {
       const std::string& host = *(Details<const std::string>(details).ptr());
       if (!host.empty()) {
-        double level = host_zoom_map_->GetZoomLevel(GURL(host));
+        double level = host_zoom_map_->GetZoomLevel(host);
         DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
         DictionaryValue* host_zoom_dictionary = update.Get();
         if (level == host_zoom_map_->default_zoom_level()) {

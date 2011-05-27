@@ -129,7 +129,8 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
     GURL request_url(request->url());
     filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->route_id(),
-        request_url, host_zoom_map_->GetZoomLevel(request_url)));
+        request_url, host_zoom_map_->GetZoomLevel(net::GetHostOrSpecFromURL(
+            request_url))));
   }
 
   filter_->Send(new ResourceMsg_ReceivedResponse(

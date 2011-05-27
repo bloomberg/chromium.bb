@@ -24,17 +24,14 @@ HostZoomMap::HostZoomMap() : default_zoom_level_(0.0) {
       NotificationService::AllSources());
 }
 
-double HostZoomMap::GetZoomLevel(const GURL& url) const {
-  std::string host(net::GetHostOrSpecFromURL(url));
+double HostZoomMap::GetZoomLevel(std::string host) const {
   base::AutoLock auto_lock(lock_);
   HostZoomLevels::const_iterator i(host_zoom_levels_.find(host));
   return (i == host_zoom_levels_.end()) ? default_zoom_level_ : i->second;
 }
 
-void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
+void HostZoomMap::SetZoomLevel(std::string host, double level) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  std::string host(net::GetHostOrSpecFromURL(url));
 
   {
     base::AutoLock auto_lock(lock_);
