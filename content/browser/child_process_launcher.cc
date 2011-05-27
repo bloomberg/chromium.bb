@@ -236,6 +236,13 @@ class ChildProcessLauncher::Context
     process_.SetProcessBackgrounded(background);
   }
 
+// TODO(apatrick): Remove this ASAP. http://crbog.com/81449 shows that this is
+// called before later calling null. Disable optimization to try and get more
+// information about what happened here.
+#if defined(OS_WIN)
+#pragma optimize("", off)
+#endif
+
   static void TerminateInternal(
 #if defined(OS_LINUX)
       bool zygote,
@@ -260,6 +267,10 @@ class ChildProcessLauncher::Context
 #endif  // OS_POSIX
     process.Close();
   }
+
+#if defined(OS_WIN)
+#pragma optimize("", on)
+#endif
 
   Client* client_;
   BrowserThread::ID client_thread_id_;
