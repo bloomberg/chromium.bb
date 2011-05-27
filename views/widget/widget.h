@@ -150,6 +150,9 @@ class Widget : public internal::NativeWidgetDelegate,
   static void SetPureViews(bool pure);
   static bool IsPureViews();
 
+  // Passes through to NativeWidget::GetWidgetForNativeView().
+  static Widget* GetWidgetForNativeView(gfx::NativeView native_view);
+
   void Init(const InitParams& params);
 
   // Unconverted methods -------------------------------------------------------
@@ -212,6 +215,13 @@ class Widget : public internal::NativeWidgetDelegate,
   // Sizes and/or places the widget to the specified bounds, size or position.
   void SetBounds(const gfx::Rect& bounds);
   void SetSize(const gfx::Size& size);
+
+  // Like SetBounds(), but ensures the Widget is fully visible within the bounds
+  // of its parent. If the Widget has no parent, it is centered within the
+  // bounds of its screen if it is visible, or |other_widget|'s screen if it is
+  // not.
+  void SetBoundsConstrained(const gfx::Rect& bounds,
+                            Widget* other_widget);
 
   // Places the widget in front of the specified widget in z-order.
   void MoveAboveWidget(Widget* widget);

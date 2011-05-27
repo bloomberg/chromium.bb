@@ -85,13 +85,6 @@ void NativeWindowViews::SetAccessibleState(
     ui::AccessibilityTypes::State state) {
 }
 
-void NativeWindowViews::SetWindowBounds(const gfx::Rect& bounds,
-                                        gfx::NativeWindow other_window) {
-  if (other_window)
-    NOTIMPLEMENTED();
-  GetView()->SetBoundsRect(bounds);
-}
-
 void NativeWindowViews::SetFullscreen(bool fullscreen) {
 }
 

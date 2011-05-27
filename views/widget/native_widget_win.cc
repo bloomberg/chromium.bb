@@ -28,6 +28,7 @@
 #include "views/focus/focus_util_win.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method_win.h"
+#include "views/screen.h"
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/child_window_message_processor.h"
@@ -117,12 +118,65 @@ bool DidClientAreaSizeChange(const WINDOWPOS* window_pos) {
          window_pos->flags & SWP_FRAMECHANGED;
 }
 
+// Ensures that the child window stays within the boundaries of the parent
+// before setting its bounds. If |parent_window| is NULL, the bounds of the
+// parent are assumed to be the bounds of the monitor that |child_window| is
+// nearest to. If |child_window| isn't visible yet and |insert_after_window|
+// is non-NULL and visible, the monitor |insert_after_window| is on is used
+// as the parent bounds instead.
+// TODO(beng): This function could easily not be so windowsy, deal with Widgets
+//             instead of HWNDs, and move to Widget instead of NativeWidget and
+//             then miraculously also work on Linux.
+void SetChildBounds(HWND child_window,
+                    HWND parent_window,
+                    HWND insert_after_window,
+                    const gfx::Rect& bounds,
+                    int padding,
+                    unsigned long flags) {
+  DCHECK(IsWindow(child_window));
+
+  // First figure out the bounds of the parent.
+  RECT parent_rect = {0};
+  if (parent_window) {
+    GetClientRect(parent_window, &parent_rect);
+  } else {
+    // If there is no parent, we consider the bounds of the monitor the window
+    // is on to be the parent bounds.
+
+    // If the child_window isn't visible yet and we've been given a valid,
+    // visible insert after window, use that window to locate the correct
+    // monitor instead.
+    HWND window = child_window;
+    if (!IsWindowVisible(window) && IsWindow(insert_after_window) &&
+        IsWindowVisible(insert_after_window))
+      window = insert_after_window;
+
+    gfx::Rect work_area =
+        views::Screen::GetMonitorWorkAreaNearestPoint(bounds.origin());
+    if (!work_area.IsEmpty())
+      parent_rect = work_area.ToRECT();
+  }
+
+  gfx::Rect actual_bounds = bounds;
+  internal::EnsureRectIsVisibleInRect(gfx::Rect(parent_rect), &actual_bounds,
+                                      padding);
+
+  SetWindowPos(child_window, insert_after_window, actual_bounds.x(),
+               actual_bounds.y(), actual_bounds.width(),
+               actual_bounds.height(), flags);
+}
+
 // Links the HWND to its NativeWidget.
 const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
 const int kCustomObjectID = 1;
+
+// If the hung renderer warning doesn't fit on screen, the amount of padding to
+// be left between the edge of the window and the edge of the nearest monitor,
+// after the window is nudged back on screen. Pixels.
+const int kMonitorEdgePadding = 10;
 
 }  // namespace
 
@@ -331,6 +385,13 @@ void NativeWidgetWin::SetBounds(const gfx::Rect& bounds) {
 void NativeWidgetWin::SetSize(const gfx::Size& size) {
   SetWindowPos(NULL, 0, 0, size.width(), size.height(),
                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+}
+
+void NativeWidgetWin::SetBoundsConstrained(const gfx::Rect& bounds,
+                                           Widget* other_widget) {
+  SetChildBounds(GetNativeView(), GetParent(),
+                 other_widget ? other_widget->GetNativeView() : NULL,
+                 bounds, kMonitorEdgePadding, 0);
 }
 
 void NativeWidgetWin::MoveAbove(gfx::NativeView native_view) {

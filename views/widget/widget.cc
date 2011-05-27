@@ -93,6 +93,13 @@ bool Widget::IsPureViews() {
   return use_pure_views;
 }
 
+// static
+Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(native_view);
+  return native_widget ? native_widget->GetWidget() : NULL;
+}
+
 void Widget::Init(const InitParams& params) {
   ownership_ = params.ownership;
   native_widget_ =
@@ -183,6 +190,11 @@ void Widget::SetBounds(const gfx::Rect& bounds) {
 
 void Widget::SetSize(const gfx::Size& size) {
   native_widget_->SetSize(size);
+}
+
+void Widget::SetBoundsConstrained(const gfx::Rect& bounds,
+                                  Widget* other_widget) {
+  native_widget_->SetBoundsConstrained(bounds, other_widget);
 }
 
 void Widget::MoveAboveWidget(Widget* widget) {

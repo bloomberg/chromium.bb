@@ -136,6 +136,8 @@ class NativeWidget {
   virtual gfx::Rect GetClientAreaScreenBounds() const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual void SetSize(const gfx::Size& size) = 0;
+  virtual void SetBoundsConstrained(const gfx::Rect& bounds,
+                                    Widget* other_widget) = 0;
   virtual void MoveAbove(gfx::NativeView native_view) = 0;
   virtual void SetShape(gfx::NativeRegion shape) = 0;
   virtual void Close() = 0;

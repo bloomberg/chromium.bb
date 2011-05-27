@@ -42,8 +42,6 @@ class NativeWindowViews : public NativeWidgetViews,
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
-  virtual void SetWindowBounds(const gfx::Rect& bounds,
-                               gfx::NativeWindow other_window) OVERRIDE;
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;

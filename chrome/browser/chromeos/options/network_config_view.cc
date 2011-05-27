@@ -141,7 +141,7 @@ void NetworkConfigView::ShowAdvancedView() {
   int vert_padding = bounds.height() - size.height();
   bounds.Inset(horiz_padding / 2, vert_padding / 2,
                horiz_padding / 2, vert_padding / 2);
-  window()->SetWindowBounds(bounds, GetNativeWindow());
+  window()->SetBoundsConstrained(bounds, NULL);
   Layout();
   child_config_view_->InitFocus();
 }

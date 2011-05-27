@@ -107,11 +107,6 @@ gfx::Rect Window::GetNormalBounds() const {
   return native_window_->GetRestoredBounds();
 }
 
-void Window::SetWindowBounds(const gfx::Rect& bounds,
-                             gfx::NativeWindow other_window) {
-  native_window_->SetWindowBounds(bounds, other_window);
-}
-
 void Window::ShowInactive() {
   native_window_->ShowNativeWindow(NativeWindow::SHOW_INACTIVE);
 }
@@ -352,7 +347,7 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
       native_window_->CenterWindow(non_client_view_->GetPreferredSize());
     } else {
       // Use the supplied initial bounds.
-      SetWindowBounds(bounds, NULL);
+      SetBoundsConstrained(bounds, NULL);
     }
   }
 }

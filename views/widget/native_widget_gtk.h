@@ -172,6 +172,8 @@ class NativeWidgetGtk : public NativeWidget,
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetBoundsConstrained(const gfx::Rect& bounds,
+                                    Widget* other_widget) OVERRIDE;
   virtual void MoveAbove(gfx::NativeView native_view) OVERRIDE;
   virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
   virtual void Close() OVERRIDE;

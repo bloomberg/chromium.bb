@@ -53,55 +53,6 @@ bool GetMonitorAndRects(const RECT& rect,
   return true;
 }
 
-// Ensures that the child window stays within the boundaries of the parent
-// before setting its bounds. If |parent_window| is NULL, the bounds of the
-// parent are assumed to be the bounds of the monitor that |child_window| is
-// nearest to. If |child_window| isn't visible yet and |insert_after_window|
-// is non-NULL and visible, the monitor |insert_after_window| is on is used
-// as the parent bounds instead.
-void SetChildBounds(HWND child_window, HWND parent_window,
-                    HWND insert_after_window, const gfx::Rect& bounds,
-                    int padding, unsigned long flags) {
-  DCHECK(IsWindow(child_window));
-
-  // First figure out the bounds of the parent.
-  RECT parent_rect = {0};
-  if (parent_window) {
-    GetClientRect(parent_window, &parent_rect);
-  } else {
-    // If there is no parent, we consider the bounds of the monitor the window
-    // is on to be the parent bounds.
-
-    // If the child_window isn't visible yet and we've been given a valid,
-    // visible insert after window, use that window to locate the correct
-    // monitor instead.
-    HWND window = child_window;
-    if (!IsWindowVisible(window) && IsWindow(insert_after_window) &&
-        IsWindowVisible(insert_after_window))
-      window = insert_after_window;
-
-    POINT window_point = { bounds.x(), bounds.y() };
-    HMONITOR monitor = MonitorFromPoint(window_point,
-                                        MONITOR_DEFAULTTONEAREST);
-    if (monitor) {
-      MONITORINFO mi = {0};
-      mi.cbSize = sizeof(mi);
-      GetMonitorInfo(monitor, &mi);
-      parent_rect = mi.rcWork;
-    } else {
-      NOTREACHED() << "Unable to get default monitor";
-    }
-  }
-
-  gfx::Rect actual_bounds = bounds;
-  internal::EnsureRectIsVisibleInRect(gfx::Rect(parent_rect), &actual_bounds,
-                                      padding);
-
-  SetWindowPos(child_window, insert_after_window, actual_bounds.x(),
-               actual_bounds.y(), actual_bounds.width(),
-               actual_bounds.height(), flags);
-}
-
 // Returns true if edge |edge| (one of ABE_LEFT, TOP, RIGHT, or BOTTOM) of
 // monitor |monitor| has an auto-hiding taskbar that's always-on-top.
 bool EdgeHasTopmostAutoHideTaskbar(UINT edge, HMONITOR monitor) {
@@ -139,11 +90,6 @@ void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
   UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
   EnableMenuItem(menu, command, flags);
 }
-
-// If the hung renderer warning doesn't fit on screen, the amount of padding to
-// be left between the edge of the window and the edge of the nearest monitor,
-// after the window is nudged back on screen. Pixels.
-const int kMonitorEdgePadding = 10;
 
 }  // namespace
 
@@ -1167,12 +1113,6 @@ void NativeWindowWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
                                          CHILDID_SELF, PROPID_ACC_STATE, var);
     }
   }
-}
-
-void NativeWindowWin::SetWindowBounds(const gfx::Rect& bounds,
-                                      gfx::NativeWindow other_window) {
-  SetChildBounds(GetNativeView(), GetParent(), other_window, bounds,
-                 kMonitorEdgePadding, 0);
 }
 
 void NativeWindowWin::SetFullscreen(bool fullscreen) {

@@ -89,8 +89,6 @@ class NativeWindow {
   // Window pass-thrus ---------------------------------------------------------
   // See documentation in window.h
 
-  virtual void SetWindowBounds(const gfx::Rect& bounds,
-                               gfx::NativeWindow other_window) = 0;
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;
   virtual void SetUseDragFrame(bool use_drag_frame) = 0;

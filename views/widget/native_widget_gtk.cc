@@ -912,6 +912,12 @@ void NativeWidgetGtk::SetSize(const gfx::Size& size) {
   }
 }
 
+void NativeWidgetGtk::SetBoundsConstrained(const gfx::Rect& bounds,
+                                           Widget* other_widget) {
+  // We apparently don't care about |other_widget|.
+  SetBounds(bounds);
+}
+
 void NativeWidgetGtk::MoveAbove(gfx::NativeView native_view) {
   ui::StackPopupWindow(GetNativeView(), native_view);
 }

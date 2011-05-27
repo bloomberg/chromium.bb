@@ -79,12 +79,6 @@ class Window : public Widget,
   // Retrieves the restored bounds for the window.
   gfx::Rect GetNormalBounds() const;
 
-  // Sets the Window's bounds. The window is inserted after |other_window| in
-  // the window Z-order. If this window is not yet visible, other_window's
-  // monitor is used as the constraining rectangle, rather than this window's
-  // monitor.
-  void SetWindowBounds(const gfx::Rect& bounds, gfx::NativeWindow other_window);
-
   // Like Show(), but does not activate the window.
   void ShowInactive();
 

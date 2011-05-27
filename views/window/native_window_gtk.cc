@@ -247,7 +247,7 @@ void NativeWindowGtk::CenterWindow(const gfx::Size& size) {
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
                    center_rect.y() + (center_rect.height() - size.height()) / 2,
                    size.width(), size.height());
-  SetWindowBounds(bounds, NULL);
+  SetBoundsConstrained(bounds, NULL);
 }
 
 void NativeWindowGtk::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
@@ -283,12 +283,6 @@ Window* NativeWindowGtk::GetWindow() {
 
 const Window* NativeWindowGtk::GetWindow() const {
   return delegate_->AsWindow();
-}
-
-void NativeWindowGtk::SetWindowBounds(const gfx::Rect& bounds,
-                                gfx::NativeWindow other_window) {
-  // TODO: need to deal with other_window.
-  NativeWidgetGtk::SetBounds(bounds);
 }
 
 void NativeWindowGtk::SetFullscreen(bool fullscreen) {
