@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,17 @@ void RendererWebIDBFactoryImpl::deleteDatabase(
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
     const WebString& data_dir) {
+  deleteDatabase(name, callbacks, origin, web_frame, data_dir,
+                 WebKit::WebIDBFactory::DefaultBackingStore);
+}
+
+void RendererWebIDBFactoryImpl::deleteDatabase(
+    const WebString& name,
+    WebIDBCallbacks* callbacks,
+    const WebSecurityOrigin& origin,
+    WebFrame* web_frame,
+    const WebString& data_dir,
+    WebKit::WebIDBFactory::BackingStoreType) {
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =

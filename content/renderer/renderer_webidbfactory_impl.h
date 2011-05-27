@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,20 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       const WebKit::WebString& data_dir,
       unsigned long long maximum_size,
       WebKit::WebIDBFactory::BackingStoreType);
+  // FIXME(jochen): remove after webkit roll.
   virtual void deleteDatabase(
       const WebKit::WebString& name,
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
       const WebKit::WebString& data_dir);
+  virtual void deleteDatabase(
+      const WebKit::WebString& name,
+      WebKit::WebIDBCallbacks* callbacks,
+      const WebKit::WebSecurityOrigin& origin,
+      WebKit::WebFrame* web_frame,
+      const WebKit::WebString& data_dir,
+      WebKit::WebIDBFactory::BackingStoreType);
 };
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_
