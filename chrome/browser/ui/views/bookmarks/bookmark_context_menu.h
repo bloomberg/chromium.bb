@@ -31,7 +31,8 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
       Profile* profile,
       PageNavigator* page_navigator,
       const BookmarkNode* parent,
-      const std::vector<const BookmarkNode*>& selection);
+      const std::vector<const BookmarkNode*>& selection,
+      bool close_on_remove);
   virtual ~BookmarkContextMenu();
 
   // Shows the context menu at the specified point.
@@ -71,6 +72,9 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   const BookmarkNode* parent_node_;
 
   BookmarkContextMenuObserver* observer_;
+
+  // Should the menu close when a node is removed.
+  bool close_on_remove_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenu);
 };

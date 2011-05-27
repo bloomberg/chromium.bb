@@ -1147,8 +1147,11 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
   // Browser may be null during testing.
   PageNavigator* navigator =
       browser() ? browser()->GetSelectedTabContents() : NULL;
+  bool close_on_remove =
+      (parent == profile_->GetBookmarkModel()->other_node() &&
+       parent->child_count() == 1);
   BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), GetProfile(),
-                                 navigator, parent, nodes);
+                                 navigator, parent, nodes, close_on_remove);
   controller.RunMenuAt(p);
 }
 

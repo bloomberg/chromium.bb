@@ -1325,8 +1325,14 @@ void MenuController::OpenMenu(MenuItemView* item) {
 }
 
 void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
-  if (show)
+  if (show) {
+    int old_count = item->GetSubmenu()->child_count();
     item->GetDelegate()->WillShowMenu(item);
+    if (old_count != item->GetSubmenu()->child_count()) {
+      // If the number of children changed then we may need to add empty items.
+      item->AddEmptyMenus();
+    }
+  }
   bool prefer_leading =
       state_.open_leading.empty() ? true : state_.open_leading.back();
   bool resulting_direction;

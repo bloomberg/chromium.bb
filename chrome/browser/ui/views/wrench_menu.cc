@@ -693,7 +693,7 @@ int WrenchMenu::GetMaxWidthForMenu(MenuItemView* menu) {
 }
 
 bool WrenchMenu::IsItemChecked(int id) const {
-  if (!is_bookmark_command(id))
+  if (is_bookmark_command(id))
     return false;
 
   const Entry& entry = id_to_entry_.find(id)->second;
@@ -762,7 +762,9 @@ void WrenchMenu::WillShowMenu(MenuItemView* menu) {
 }
 
 void WrenchMenu::BookmarkModelChanged() {
-  root_->Cancel();
+  DCHECK(bookmark_menu_delegate_.get());
+  if (!bookmark_menu_delegate_->is_mutating_model())
+    root_->Cancel();
 }
 
 WrenchMenu::~WrenchMenu() {

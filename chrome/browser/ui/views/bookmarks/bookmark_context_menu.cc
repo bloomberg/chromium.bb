@@ -22,14 +22,16 @@ BookmarkContextMenu::BookmarkContextMenu(
     Profile* profile,
     PageNavigator* page_navigator,
     const BookmarkNode* parent,
-    const std::vector<const BookmarkNode*>& selection)
+    const std::vector<const BookmarkNode*>& selection,
+    bool close_on_remove)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           controller_(new BookmarkContextMenuControllerViews(parent_window,
               this, profile, page_navigator, parent, selection))),
       parent_window_(parent_window),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
       parent_node_(parent),
-      observer_(NULL) {
+      observer_(NULL),
+      close_on_remove_(close_on_remove) {
   controller_->BuildMenu();
 }
 
@@ -64,10 +66,7 @@ bool BookmarkContextMenu::IsCommandEnabled(int command_id) const {
 }
 
 bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
-  return id != IDC_BOOKMARK_BAR_REMOVE ||
-      (parent_node_ ==
-       controller_->profile()->GetBookmarkModel()->other_node() &&
-       parent_node_->child_count() == 1);
+  return (id != IDC_BOOKMARK_BAR_REMOVE) || close_on_remove_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

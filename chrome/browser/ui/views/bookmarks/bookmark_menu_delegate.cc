@@ -226,13 +226,17 @@ bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(menu_id_to_node_map_[id]);
+  bool close_on_delete = !parent_menu_item_ &&
+      (nodes[0]->parent() == profile()->GetBookmarkModel()->other_node() &&
+       nodes[0]->parent()->child_count() == 1);
   context_menu_.reset(
       new BookmarkContextMenu(
           parent_,
           profile_,
           page_navigator_,
           nodes[0]->parent(),
-          nodes));
+          nodes,
+          close_on_delete));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(p);
   context_menu_.reset(NULL);
