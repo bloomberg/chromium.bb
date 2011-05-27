@@ -53,6 +53,9 @@ class FileSystemTestOriginHelper {
   GURL GetURLForPath(const FilePath& path) const;
   FilePath GetUsageCachePath() const;
 
+  int64 GetCachedOriginUsage() const;
+  int64 ComputeCurrentOriginUsage() const;
+
   FileSystemOperation* NewOperation(
       FileSystemCallbackDispatcher* callback_dispatcher);
   FileSystemOperationContext* NewOperationContext();
@@ -75,6 +78,7 @@ class FileSystemTestOriginHelper {
   const GURL origin_;
   const FileSystemType type_;
   FileSystemFileUtil* file_util_;
+  int64 initial_usage_size_;
 };
 
 }  // namespace fileapi
