@@ -103,7 +103,7 @@ class WebCacheManager : public NotificationObserver {
   WebCacheManager();
   friend struct DefaultSingletonTraits<WebCacheManager>;
 
-  ~WebCacheManager();
+  virtual ~WebCacheManager();
 
   // Recomputes the allocation of cache resources among the renderers.  Also
   // informs the renderers of their new allocation.
