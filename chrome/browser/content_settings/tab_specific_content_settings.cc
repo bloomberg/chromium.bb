@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
@@ -24,6 +25,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "net/base/cookie_monster.h"
+#include "webkit/fileapi/file_system_types.h"
 
 namespace {
 typedef std::list<TabSpecificContentSettings*> TabSpecificList;
@@ -35,6 +37,7 @@ bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
   return cookies_->GetAllCookies().empty() &&
       appcaches_->empty() &&
       databases_->empty() &&
+      file_systems_->empty() &&
       indexed_dbs_->empty() &&
       local_storages_->empty() &&
       session_storages_->empty();
@@ -129,6 +132,15 @@ void TabSpecificContentSettings::IndexedDBAccessed(int render_process_id,
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings)
     settings->OnIndexedDBAccessed(url, description, blocked_by_policy);
+}
+
+void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
+                                                    int render_view_id,
+                                                    const GURL& url,
+                                                    bool blocked_by_policy) {
+  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  if (settings)
+    settings->OnFileSystemAccessed(url, blocked_by_policy);
 }
 
 bool TabSpecificContentSettings::IsContentBlocked(
@@ -270,7 +282,7 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(
     blocked_local_shared_objects_.indexed_dbs()->AddIndexedDB(
         url, description);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  }else {
+  } else {
     allowed_local_shared_objects_.indexed_dbs()->AddIndexedDB(
         url, description);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
@@ -321,6 +333,19 @@ void TabSpecificContentSettings::OnAppCacheAccessed(
   }
 }
 
+void TabSpecificContentSettings::OnFileSystemAccessed(
+    const GURL& url,
+    bool blocked_by_policy) {
+  if (blocked_by_policy) {
+    blocked_local_shared_objects_.file_systems()->AddFileSystem(url,
+        fileapi::kFileSystemTypeTemporary, 0);
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  } else {
+    allowed_local_shared_objects_.file_systems()->AddFileSystem(url,
+        fileapi::kFileSystemTypeTemporary, 0);
+    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+  }
+}
 void TabSpecificContentSettings::OnGeolocationPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {
@@ -454,6 +479,7 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
     : cookies_(new net::CookieMonster(NULL, NULL)),
       appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
+      file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(profile)),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
@@ -475,6 +501,7 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
   cookies_->SetKeepExpiredCookies();
   appcaches_->Reset();
   databases_->Reset();
+  file_systems_->Reset();
   indexed_dbs_->Reset();
   local_storages_->Reset();
   session_storages_->Reset();
@@ -488,5 +515,6 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
                               session_storages_->Clone(),
                               appcaches_->Clone(),
                               indexed_dbs_->Clone(),
+                              file_systems_->Clone(),
                               true);
 }

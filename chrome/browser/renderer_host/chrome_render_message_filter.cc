@@ -379,7 +379,7 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
   ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
       origin_url, top_origin_url, true);
   *allowed = setting != CONTENT_SETTING_BLOCK;
-  // If content was blocked, tell the UI to display the blocked content icon.
+  // Record access to DOM storage for potential display in UI.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
@@ -391,14 +391,18 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
                                                   const GURL& origin_url,
                                                   const GURL& top_origin_url,
                                                   bool* allowed) {
-  // TODO(kinuko): Need to notify the UI thread to indicate that
-  // there's a blocked content.  See the above for inspiration.
   ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
       origin_url, top_origin_url, true);
   DCHECK((setting == CONTENT_SETTING_ALLOW) ||
          (setting == CONTENT_SETTING_BLOCK) ||
          (setting == CONTENT_SETTING_SESSION_ONLY));
   *allowed = setting != CONTENT_SETTING_BLOCK;
+  // Record access to file system for potential display in UI.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &TabSpecificContentSettings::FileSystemAccessed,
+          render_process_id_, render_view_id, origin_url, !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,

@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -142,6 +143,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         NULL,
         new BrowsingDataAppCacheHelper(profile),
         BrowsingDataIndexedDBHelper::Create(profile),
+        BrowsingDataFileSystemHelper::Create(profile),
         false));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
@@ -149,7 +151,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
 
 void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
   std::string query;
-  if (!args->GetString(0, &query)){
+  if (!args->GetString(0, &query)) {
     return;
   }
 
@@ -165,7 +167,7 @@ void CookiesViewHandler::RemoveAll(const ListValue* args) {
 
 void CookiesViewHandler::Remove(const ListValue* args) {
   std::string node_path;
-  if (!args->GetString(0, &node_path)){
+  if (!args->GetString(0, &node_path)) {
     return;
   }
 
@@ -179,7 +181,7 @@ void CookiesViewHandler::Remove(const ListValue* args) {
 
 void CookiesViewHandler::LoadChildren(const ListValue* args) {
   std::string node_path;
-  if (!args->GetString(0, &node_path)){
+  if (!args->GetString(0, &node_path)) {
     return;
   }
 

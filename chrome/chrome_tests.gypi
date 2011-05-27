@@ -75,6 +75,8 @@
         'browser/mock_browsing_data_appcache_helper.h',
         'browser/mock_browsing_data_database_helper.cc',
         'browser/mock_browsing_data_database_helper.h',
+        'browser/mock_browsing_data_file_system_helper.cc',
+        'browser/mock_browsing_data_file_system_helper.h',
         'browser/mock_browsing_data_indexed_db_helper.cc',
         'browser/mock_browsing_data_indexed_db_helper.h',
         'browser/mock_browsing_data_local_storage_helper.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataDatabaseHelper;
+class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
 class CookiesTreeModel;
@@ -34,7 +35,7 @@ class CookieOptions;
 class TabSpecificContentSettings : public TabContentsObserver,
                                    public NotificationObserver {
  public:
-  TabSpecificContentSettings(TabContents* tab);
+  explicit TabSpecificContentSettings(TabContents* tab);
 
   virtual ~TabSpecificContentSettings();
 
@@ -94,6 +95,15 @@ class TabSpecificContentSettings : public TabContentsObserver,
                                 const GURL& url,
                                 const string16& description,
                                 bool blocked_by_policy);
+
+  // Called when a specific file system in the current page was accessed.
+  // If access was blocked due to the user's content settings,
+  // |blocked_by_policy| should be true, and this function should invoke
+  // OnContentBlocked.
+  static void FileSystemAccessed(int render_process_id,
+                                 int render_view_id,
+                                 const GURL& url,
+                                 bool blocked_by_policy);
 
   // Resets the |content_blocked_| and |content_accessed_| arrays, except for
   // CONTENT_SETTINGS_TYPE_COOKIES related information.
@@ -171,6 +181,8 @@ class TabSpecificContentSettings : public TabContentsObserver,
                        const std::string& cookie_line,
                        const net::CookieOptions& options,
                        bool blocked_by_policy);
+  void OnFileSystemAccessed(const GURL& url,
+                            bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url,
                            const string16& description,
                            bool blocked_by_policy);
@@ -200,6 +212,9 @@ class TabSpecificContentSettings : public TabContentsObserver,
     CannedBrowsingDataDatabaseHelper* databases() const {
       return databases_;
     }
+    CannedBrowsingDataFileSystemHelper* file_systems() const {
+      return file_systems_;
+    }
     CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
       return indexed_dbs_;
     }
@@ -220,6 +235,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
     scoped_refptr<net::CookieMonster> cookies_;
     scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
     scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
+    scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
     scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;

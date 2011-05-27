@@ -47,7 +47,8 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
 
   *result = content_setting != CONTENT_SETTING_BLOCK;
 
-  // Find the worker instance and forward the message to all attached documents.
+  // Record access to database for potential display in UI: Find the worker
+  // instance and forward the message to all attached documents.
   WorkerProcessHost::Instances::const_iterator i;
   for (i = process_->instances().begin(); i != process_->instances().end();
        ++i) {
@@ -71,9 +72,28 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
 void ChromeWorkerMessageFilter::OnAllowFileSystem(int worker_route_id,
                                                   const GURL& url,
                                                   bool* result) {
-  // TODO(kinuko): Need to notify the UI thread to indicate that
-  // there's a blocked content.  See the above for inspiration.
   ContentSetting content_setting =
       host_content_settings_map_->GetCookieContentSetting(url, url, true);
+
   *result = content_setting != CONTENT_SETTING_BLOCK;
+
+  // Record access to file system for potential display in UI: Find the worker
+  // instance and forward the message to all attached documents.
+  WorkerProcessHost::Instances::const_iterator i;
+  for (i = process_->instances().begin(); i != process_->instances().end();
+       ++i) {
+    if (i->worker_route_id() != worker_route_id)
+      continue;
+    const WorkerDocumentSet::DocumentInfoSet& documents =
+        i->worker_document_set()->documents();
+    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
+         documents.begin(); doc != documents.end(); ++doc) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableFunction(
+              &TabSpecificContentSettings::FileSystemAccessed,
+              doc->render_process_id(), doc->render_view_id(), url, !*result));
+    }
+    break;
+  }
 }

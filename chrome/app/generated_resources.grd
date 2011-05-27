@@ -7853,6 +7853,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_INDEXED_DBS" desc="Label for Indexed Databases (name of an HTML standard)">
         Indexed Databases
       </message>
+      <message name="IDS_COOKIES_FILE_SYSTEMS" desc="Label for the folder under which a list of file systems (name of an HTML standard) are displayed">
+        File Systems
+      </message>
       <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
         Last accessed:
       </message>

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,20 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_FALSE(
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
+TEST_F(TabSpecificContentSettingsTest, BlockedFileSystems) {
+  TabSpecificContentSettings content_settings(contents());
+
+  // Access a file system.
+  content_settings.OnFileSystemAccessed(GURL("http://google.com"), false);
+  EXPECT_FALSE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+
+  // Block access to a file system.
+  content_settings.OnFileSystemAccessed(GURL("http://google.com"), true);
+  EXPECT_TRUE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
