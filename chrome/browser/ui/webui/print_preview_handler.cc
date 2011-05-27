@@ -63,11 +63,22 @@ enum UserActionBuckets {
   USERACTION_BUCKET_BOUNDARY
 };
 
+enum PrintSettingsBuckets {
+  LANDSCAPE,
+  PORTRAIT,
+  COLOR,
+  BLACK_AND_WHITE,
+  COLLATE,
+  SIMPLEX,
+  DUPLEX,
+  PRINT_SETTINGS_BUCKET_BOUNDARY
+};
 
 // Print preview user action histogram names.
 const char kUserAction[] = "PrintPreview.UserAction";
 const char kManagePrinters[] = "PrintPreview.ManagePrinters";
 const char kNumberOfPrinters[] = "PrintPreview.NumberOfPrinters";
+const char kPrintSettings[] = "PrintPreview.PrintSettings";
 const char kPreviewFailedInitiatorTabDoesNotExist[] =
     "PrintPreview.Failed.InitiatorTabDoesNotExist";
 
@@ -102,6 +113,39 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
   }
 
   return settings.release();
+}
+
+// Track the popularity of print settings and report the stats.
+void ReportPrintSettingsStats(const DictionaryValue& settings) {
+  bool landscape;
+  if (settings.GetBoolean(printing::kSettingLandscape, &landscape)) {
+    UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
+                              landscape ? LANDSCAPE : PORTRAIT,
+                              PRINT_SETTINGS_BUCKET_BOUNDARY);
+  }
+
+  bool collate;
+  if (settings.GetBoolean(printing::kSettingCollate, &collate)) {
+    if (collate) {
+      UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
+                                COLLATE,
+                                PRINT_SETTINGS_BUCKET_BOUNDARY);
+    }
+  }
+
+  int duplex_mode;
+  if (settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode)) {
+    UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
+                              duplex_mode ? DUPLEX : SIMPLEX,
+                              PRINT_SETTINGS_BUCKET_BOUNDARY);
+  }
+
+  bool is_color;
+  if (settings.GetBoolean(printing::kSettingColor, &is_color)) {
+    UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
+                              is_color ? COLOR : BLACK_AND_WHITE,
+                              PRINT_SETTINGS_BUCKET_BOUNDARY);
+  }
 }
 
 }  // namespace
@@ -383,6 +427,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     SelectFile(default_filename);
   } else {
+    ReportPrintSettingsStats(*settings);
     UMA_HISTOGRAM_ENUMERATION(kUserAction,
                               PRINT_TO_PRINTER,
                               USERACTION_BUCKET_BOUNDARY);
