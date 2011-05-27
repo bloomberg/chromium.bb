@@ -147,7 +147,7 @@ static void formatString(const char* str,
                          char** buf,
                          size_t* bytes_remaining) {
   while (*str != 0) {
-    formatChar(*str, buf, bytes_remaining);
+    formatChar((unsigned char) *str, buf, bytes_remaining);
     ++str;
   }
 }
