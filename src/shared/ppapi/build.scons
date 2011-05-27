@@ -10,6 +10,9 @@ Import('env')
 # Underlay $SOURCE_ROOT/ppapi in this directory.
 Dir('.').addRepository(Dir('#/../ppapi'))
 
+if env.Bit('linux'):
+  env.Append(CCFLAGS=['-fPIC'])
+
 # Don't treat warnings as errors on Windows
 if env.Bit('windows'):
   env.FilterOut(CCFLAGS=['/WX'])

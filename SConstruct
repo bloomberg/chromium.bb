@@ -1288,13 +1288,13 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
     pyauto_python = 'python2.5'
 
   # Pass on the chrome flags to pyauto as one string.
-  chrome_flags = ''
+  chrome_flags = ' --enable-pepper-testing'
   if not env.Bit('disable_dynamic_plugin_loading'):
-    chrome_flags += ('--register-pepper-plugins=%s;application/x-nacl' %
+    chrome_flags += (' --register-pepper-plugins=%s;application/x-nacl' %
                      GetPPAPIPluginPath(env['TRUSTED_ENV']))
     chrome_flags += ' --no-sandbox'
   else:
-    chrome_flags += '--enable-nacl'
+    chrome_flags += ' --enable-nacl'
 
   osenv = []
   if not env.Bit('disable_dynamic_plugin_loading'):
@@ -1940,6 +1940,7 @@ base_env.Append(
     'tests/ppapi_file_system/build.scons',
     'tests/ppapi_geturl/build.scons',
     'tests/ppapi_messaging/build.scons',
+    'tests/ppapi_tests/build.scons',  # Run PPAPI tests as a .so
     'tests/python_version/build.scons',
     'tests/tools/build.scons',
     'tests/unittests/shared/srpc/build.scons',
@@ -2511,9 +2512,7 @@ nacl_env.Append(
     'tests/ppapi_simple_tests/nacl.scons',
     'tests/ppapi_test_example/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
-    # uncomment this test once issue
-    # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
-    # 'tests/ppapi_tests/nacl.scons',
+    'tests/ppapi_tests/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
     'tests/redir/nacl.scons',

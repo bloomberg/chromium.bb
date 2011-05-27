@@ -106,5 +106,29 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncPPBFileSystem(self):
     self.surfAwayAsync('ppapi_file_system.html', 'PPAPI')
 
+  def testSurfAwayAsyncPPAPITestsGraphics2D(self):
+    self.surfAwayAsync('test_case.html?mode=nacl&testcase=Graphics2D',
+                  'Test Graphics2D')
+
+  def testSurfAwayAsyncPPAPITestsImageData(self):
+    self.surfAwayAsync('test_case.html?mode=nacl&testcase=ImageData',
+                  'Test ImageData')
+
+  def testSurfAwayAsyncPPAPITestsInstance(self):
+    self.surfAwayAsync('test_case.html?mode=nacl&testcase=Instance',
+                  'Test Instance')
+
+  def testSurfAwayAsyncPPAPITestsPaintAggregator(self):
+    self.surfAwayAsync('test_case.html?mode=nacl&testcase=PaintAggregator',
+                  'Test PaintAggregator')
+
+  def testSurfAwayAsyncPPAPITestsPostMessage(self):
+    self.surfAwayAsync('test_case.html?mode=nacl&testcase=PostMessage',
+                  'Test PostMessage')
+
+  def testSurfAwayAsyncPPAPITestsScrollbar(self):
+    self.surfAwayAsync('test_case.html?mode=nacl&testcase=Scrollbar',
+                  'Test Scrollbar')
+
 if __name__ == '__main__':
   pyauto_nacl.Main()
