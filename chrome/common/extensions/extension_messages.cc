@@ -38,7 +38,8 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     extension_manifest_keys::kPageAction,
     extension_manifest_keys::kPageActions,
     extension_manifest_keys::kPermissions,
-    extension_manifest_keys::kApp
+    extension_manifest_keys::kApp,
+    extension_manifest_keys::kContentScripts
   };
 
   // Copy only the data we need.

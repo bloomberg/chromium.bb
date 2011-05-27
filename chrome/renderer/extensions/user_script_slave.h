@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SLAVE_H_
 #pragma once
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,6 +18,7 @@
 #include "chrome/common/extensions/user_script.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 
+class Extension;
 class ExtensionSet;
 
 namespace WebKit {
@@ -28,7 +30,7 @@ using WebKit::WebScriptSource;
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
  public:
-  UserScriptSlave(const ExtensionSet* extensions);
+  explicit UserScriptSlave(const ExtensionSet* extensions);
   ~UserScriptSlave();
 
   // Returns the unique set of extension IDs this UserScriptSlave knows about.
@@ -42,11 +44,20 @@ class UserScriptSlave {
   // testability.
   void InjectScripts(WebKit::WebFrame* frame, UserScript::RunLocation location);
 
-  static int GetIsolatedWorldId(const std::string& extension_id);
+  // Gets the isolated world ID to use for the given |extension| in the given
+  // |frame|. If no isolated world has been created for that extension,
+  // one will be created and initialized.
+  static int GetIsolatedWorldId(const Extension* extension,
+                                WebKit::WebFrame* frame);
+
+  static void RemoveIsolatedWorld(const std::string& extension_id);
 
   static void InsertInitExtensionCode(std::vector<WebScriptSource>* sources,
                                       const std::string& extension_id);
  private:
+  static void InitializeIsolatedWorld(int isolated_world_id,
+                                      const Extension* extension);
+
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;
 
@@ -59,6 +70,9 @@ class UserScriptSlave {
 
   // Extension metadata.
   const ExtensionSet* extensions_;
+
+  typedef std::map<std::string, int> IsolatedWorldMap;
+  static IsolatedWorldMap isolated_world_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptSlave);
 };

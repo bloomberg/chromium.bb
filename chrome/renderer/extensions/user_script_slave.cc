@@ -17,15 +17,20 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebFrame;
+using WebKit::WebSecurityOrigin;
+using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
@@ -40,24 +45,66 @@ static const char kUserScriptTail[] = "\n})(window);";
 static const char kInitExtension[] =
   "if (chrome.initExtension) chrome.initExtension('%s', true, %s);";
 
+// static
+UserScriptSlave::IsolatedWorldMap UserScriptSlave::isolated_world_ids_;
 
-int UserScriptSlave::GetIsolatedWorldId(const std::string& extension_id) {
-  typedef std::map<std::string, int> IsolatedWorldMap;
-
-  static IsolatedWorldMap g_isolated_world_ids;
+// static
+int UserScriptSlave::GetIsolatedWorldId(
+    const Extension* extension, WebFrame* frame) {
   static int g_next_isolated_world_id = 1;
 
-  IsolatedWorldMap::iterator iter = g_isolated_world_ids.find(extension_id);
-  if (iter != g_isolated_world_ids.end())
+  IsolatedWorldMap::iterator iter = isolated_world_ids_.find(extension->id());
+  if (iter != isolated_world_ids_.end()) {
+    // We need to set the isolated world origin even if it's not a new world
+    // since that is stored per frame, and we might not have used this isolated
+    // world in this frame before.
+    frame->setIsolatedWorldSecurityOrigin(
+        iter->second,
+        WebSecurityOrigin::create(extension->url()));
     return iter->second;
+  }
 
   int new_id = g_next_isolated_world_id;
   ++g_next_isolated_world_id;
 
   // This map will tend to pile up over time, but realistically, you're never
   // going to have enough extensions for it to matter.
-  g_isolated_world_ids[extension_id] = new_id;
+  isolated_world_ids_[extension->id()] = new_id;
+  InitializeIsolatedWorld(new_id, extension);
+  frame->setIsolatedWorldSecurityOrigin(
+      new_id,
+      WebSecurityOrigin::create(extension->url()));
   return new_id;
+}
+
+// static
+void UserScriptSlave::InitializeIsolatedWorld(
+    int isolated_world_id,
+    const Extension* extension) {
+  const URLPatternList& permissions =
+      extension->GetEffectiveHostPermissions().patterns();
+  for (size_t i = 0; i < permissions.size(); ++i) {
+    const char* schemes[] = {
+      chrome::kHttpScheme,
+      chrome::kHttpsScheme,
+      chrome::kFileScheme,
+      chrome::kChromeUIScheme,
+    };
+    for (size_t j = 0; j < arraysize(schemes); ++j) {
+      if (permissions[i].MatchesScheme(schemes[j])) {
+        WebSecurityPolicy::addOriginAccessWhitelistEntry(
+            extension->url(),
+            WebString::fromUTF8(schemes[j]),
+            WebString::fromUTF8(permissions[i].host()),
+            permissions[i].match_subdomains());
+      }
+    }
+  }
+}
+
+// static
+void UserScriptSlave::RemoveIsolatedWorld(const std::string& extension_id) {
+  isolated_world_ids_.erase(extension_id);
 }
 
 UserScriptSlave::UserScriptSlave(const ExtensionSet* extensions)
@@ -248,7 +295,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
       // ID.
       if (!script->extension_id().empty()) {
         InsertInitExtensionCode(&sources, script->extension_id());
-        isolated_world_id = GetIsolatedWorldId(script->extension_id());
+        isolated_world_id = GetIsolatedWorldId(extension, frame);
       }
 
       PerfTimer exec_timer;

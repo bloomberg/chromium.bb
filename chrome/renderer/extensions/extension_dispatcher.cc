@@ -153,6 +153,7 @@ void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
 
 void ExtensionDispatcher::OnUnloaded(const std::string& id) {
   extensions_.Remove(id);
+  UserScriptSlave::RemoveIsolatedWorld(id);
 }
 
 void ExtensionDispatcher::OnSetScriptingWhitelist(

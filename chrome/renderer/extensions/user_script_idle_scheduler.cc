@@ -145,7 +145,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
         sources.push_back(source);
         UserScriptSlave::InsertInitExtensionCode(&sources, params.extension_id);
         frame->executeScriptInIsolatedWorld(
-            UserScriptSlave::GetIsolatedWorldId(params.extension_id),
+            UserScriptSlave::GetIsolatedWorldId(extension, frame),
             &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
       }
     } else {
