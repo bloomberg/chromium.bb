@@ -215,3 +215,6 @@ OptionsUITest.NavBarCheck
 
 # Timing out, see http://crbug.com/83565
 NPAPIAutomationEnabledTest.LoadAllBlockedPlugins
+
+# Fails constantly. See http://crbug.com/84230.
+NPAPITesterBase.NPObjectIdentity
