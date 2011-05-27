@@ -88,8 +88,6 @@
             'installer/util/delete_reg_value_work_item_unittest.cc',
             'installer/util/delete_tree_work_item_unittest.cc',
             'installer/util/duplicate_tree_detector_unittest.cc',
-            'installer/util/fake_installation_state.h',
-            'installer/util/fake_product_state.h',
             'installer/util/google_chrome_distribution_unittest.cc',
             'installer/util/google_update_settings_unittest.cc',
             'installer/util/install_util_unittest.cc',

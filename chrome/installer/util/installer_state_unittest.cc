@@ -17,9 +17,6 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/installer/util/fake_installation_state.h"
-#include "chrome/installer/util/fake_product_state.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/installation_state.h"
@@ -433,27 +430,4 @@ TEST_F(InstallerStateTest, InstallerResult) {
     key.Close();
   }
   TempRegKeyOverride::DeleteAllTempKeys();
-}
-
-// Test GetCurrentVersion when migrating single Chrome to multi
-TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
-  using installer::FakeInstallationState;
-
-  const bool system_install = false;
-  FakeInstallationState machine_state;
-
-  // Pretend that this version of single-install Chrome is already installed.
-  machine_state.AddChrome(system_install, false,
-      Version::GetVersionFromString(chrome::kChromeVersion));
-
-  // Now we're invoked to install multi Chrome.
-  CommandLine cmd_line(
-      CommandLine::FromString(L"setup.exe --multi-install --chrome"));
-  MasterPreferences prefs(cmd_line);
-  InstallerState installer_state;
-  installer_state.Initialize(cmd_line, prefs, machine_state);
-
-  // Is the Chrome version picked up?
-  scoped_ptr<Version> version(installer_state.GetCurrentVersion(machine_state));
-  EXPECT_TRUE(version.get() != NULL);
 }
