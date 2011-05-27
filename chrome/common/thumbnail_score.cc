@@ -12,8 +12,6 @@ using base::TimeDelta;
 
 const TimeDelta ThumbnailScore::kUpdateThumbnailTime = TimeDelta::FromDays(1);
 const double ThumbnailScore::kThumbnailMaximumBoringness = 0.94;
-// Per crbug.com/65936#c4, 91.83% of thumbnail scores are less than 0.70.
-const double ThumbnailScore::kThumbnailInterestingEnoughBoringness = 0.70;
 const double ThumbnailScore::kThumbnailDegradePerHour = 0.01;
 
 // Calculates a numeric score from traits about where a snapshot was
@@ -132,13 +130,11 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
 
 bool ThumbnailScore::ShouldConsiderUpdating() {
   const TimeDelta time_elapsed = Time::Now() - time_at_snapshot;
-  // Consider the current thumbnail to be new and interesting enough if
-  // the following critera are met.
-  const bool new_and_interesting_enough =
-      (time_elapsed < kUpdateThumbnailTime &&
-       good_clipping && at_top &&
-       boring_score < kThumbnailInterestingEnoughBoringness);
-  // We want to generate a new thumbnail when the current thumbnail is
-  // sufficiently old or uninteresting.
-  return !new_and_interesting_enough;
+  if (time_elapsed < kUpdateThumbnailTime &&
+      good_clipping && at_top) {
+    // The current thumbnail is new and has good properties.
+    return false;
+  }
+  // The current thumbnail should be updated.
+  return true;
 }

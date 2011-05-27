@@ -35,6 +35,13 @@ struct ThumbnailScore {
   // percentage of pixels that are the most common luma. Higher boring
   // scores indicate that a higher percentage of a bitmap are all the
   // same brightness (most likely the same color).
+  //
+  // The score should only be used for comparing two thumbnails taken from
+  // the same page to see which one is more boring/interesting. The
+  // absolute score is not suitable for judging whether the thumbnail is
+  // actually boring or not. For instance, www.google.com is very
+  // succinct, so the boring score can be as high as 0.9, depending on the
+  // browser window size.
   double boring_score;
 
   // Whether the thumbnail was taken with height greater then

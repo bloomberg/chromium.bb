@@ -55,9 +55,7 @@ TEST(ThumbnailScoreTest, RedirectCount) {
 
 TEST(ThumbnailScoreTest, ShouldConsiderUpdating) {
   ThumbnailScore score;
-  // By default, the score is 1.0, meaning very boring, thus we should
-  // generate a new thumbnail.
-  EXPECT_DOUBLE_EQ(1.0, score.boring_score);
+  // By default, the score is low, thus we should generate a new thumbnail.
   EXPECT_TRUE(score.ShouldConsiderUpdating());
 
   // Make it very interesting, but this is not enough.
@@ -70,6 +68,12 @@ TEST(ThumbnailScoreTest, ShouldConsiderUpdating) {
 
   // at_top is important. Finally, the thumbnail is new and interesting enough.
   score.at_top = true;
+  EXPECT_FALSE(score.ShouldConsiderUpdating());
+
+  // Make it very boring, but it won't change the result. The boring score
+  // isn't used for judging whether we should update or not. See comments
+  // at boring_score in thumbnail_score.h for why.
+  score.boring_score = 1.0;
   EXPECT_FALSE(score.ShouldConsiderUpdating());
 
   // Make it old. Then, it's no longer new enough.
