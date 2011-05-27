@@ -129,15 +129,15 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
       wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
   plugin->set_nacl_ready_state(Plugin::LOADING);
   // Generate the event stream for loading a module.
-  plugin->DispatchProgressEvent("loadstart",
-                                false,  // length_computable
-                                Plugin::kUnknownBytes,
-                                Plugin::kUnknownBytes);
+  plugin->EnqueueProgressEvent("loadstart",
+                               Plugin::LENGTH_IS_NOT_COMPUTABLE,
+                               Plugin::kUnknownBytes,
+                               Plugin::kUnknownBytes);
   nacl::string error_string;
   bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_string);
   // Set the readyState attribute to indicate ready to start.
   if (was_successful) {
-    plugin->ReportLoadSuccess(false,  // length_computable
+    plugin->ReportLoadSuccess(Plugin::LENGTH_IS_NOT_COMPUTABLE,
                               Plugin::kUnknownBytes,
                               Plugin::kUnknownBytes);
   } else {

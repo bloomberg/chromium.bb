@@ -46,8 +46,12 @@ class Plugin : public PortableHandle {
   // The callee retains ownership of the result.
   char* LookupArgument(const char* key);
 
+  enum LengthComputable {
+    LENGTH_IS_NOT_COMPUTABLE = 0,
+    LENGTH_IS_COMPUTABLE = 1
+  };
   // Report successful loading of a module.
-  virtual void ReportLoadSuccess(bool length_computable,
+  virtual void ReportLoadSuccess(LengthComputable length_computable,
                                  uint64_t loaded_bytes,
                                  uint64_t total_bytes) = 0;
   // Report an error that was encountered while loading a module.
@@ -58,10 +62,10 @@ class Plugin : public PortableHandle {
   // Dispatch a JavaScript event to indicate a key step in loading.
   // |event_type| is a character string indicating which type of progress
   // event (loadstart, progress, error, abort, load, loadend).
-  virtual void DispatchProgressEvent(const char* event_type,
-                                     bool length_computable,
-                                     uint64_t loaded_bytes,
-                                     uint64_t total_bytes) = 0;
+  virtual void EnqueueProgressEvent(const char* event_type,
+                                    LengthComputable length_computable,
+                                    uint64_t loaded_bytes,
+                                    uint64_t total_bytes) = 0;
 
   // overriding virtual methods
   virtual bool InvokeEx(uintptr_t method_id,

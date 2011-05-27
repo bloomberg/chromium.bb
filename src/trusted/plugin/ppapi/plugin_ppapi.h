@@ -11,6 +11,7 @@
 
 #include <map>
 #include <set>
+#include <queue>
 #include <string>
 
 #include "native_client/src/include/nacl_string.h"
@@ -42,6 +43,7 @@ class Zoom_Dev;
 namespace plugin {
 
 class Manifest;
+class ProgressEvent;
 
 // Encapsulates a PPAPI NaCl plugin.
 class PluginPpapi : public pp::Instance, public Plugin {
@@ -88,7 +90,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
 
   // Report successful loading of a module.
-  virtual void ReportLoadSuccess(bool length_computable,
+  virtual void ReportLoadSuccess(LengthComputable length_computable,
                                  uint64_t loaded_bytes,
                                  uint64_t total_bytes);
   // Report an error encountered while loading a module.
@@ -97,11 +99,16 @@ class PluginPpapi : public pp::Instance, public Plugin {
   virtual void ReportLoadAbort();
   // Dispatch a JavaScript event to indicate a key step in loading.
   // |event_type| is a character string indicating which type of progress
-  // event (loadstart, progress, error, abort, load, loadend).
-  virtual void DispatchProgressEvent(const char* event_type,
-                                     bool length_computable,
-                                     uint64_t loaded_bytes,
-                                     uint64_t total_bytes);
+  // event (loadstart, progress, error, abort, load, loadend).  Events are
+  // enqueued on the JavaScript event loop, which then calls back through
+  // DispatchProgressEvent.
+  virtual void EnqueueProgressEvent(const char* event_type,
+                                    LengthComputable length_computable,
+                                    uint64_t loaded_bytes,
+                                    uint64_t total_bytes);
+  // Called back by CallOnMainThread.  Dispatches the first enqueued progress
+  // event.
+  void DispatchProgressEvent(int32_t result);
 
   // ----- Methods unique to PluginPpapi:
 
@@ -241,6 +248,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Keep track of file descriptors opened by StreamAsFile().
   // These are owned by the browser.
   std::map<nacl::string, int32_t> url_fd_map_;
+
+  // Pending progress events.
+  std::queue<ProgressEvent*> progress_events_;
 
   // Adapter class constructors require a reference to 'this', so we can't
   // contain them directly.

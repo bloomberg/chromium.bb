@@ -383,6 +383,33 @@ class ZoomAdapter : public pp::Zoom_Dev {
 
 }  // namespace
 
+class ProgressEvent {
+ public:
+  ProgressEvent(const char* event_type,
+                Plugin::LengthComputable length_computable,
+                uint64_t loaded_bytes,
+                uint64_t total_bytes) :
+    event_type_(event_type),
+    length_computable_(length_computable),
+    loaded_bytes_(loaded_bytes),
+    total_bytes_(total_bytes) { }
+  const char* event_type() const { return event_type_; }
+  Plugin::LengthComputable length_computable() const {
+    return length_computable_;
+  }
+  uint64_t loaded_bytes() const { return loaded_bytes_; }
+  uint64_t total_bytes() const { return total_bytes_; }
+
+ private:
+  // event_type_ is always passed from a string literal, so ownership is
+  // not taken.  Hence it does not need to be deleted when ProgressEvent is
+  // destroyed.
+  const char* event_type_;
+  Plugin::LengthComputable length_computable_;
+  uint64_t loaded_bytes_;
+  uint64_t total_bytes_;
+};
+
 const char* const PluginPpapi::kNaClMIMEType = "application/x-nacl";
 
 bool PluginPpapi::IsForeignMIMEType() const {
@@ -680,15 +707,15 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
                      nexe_downloader_.TimeSinceOpenMilliseconds());
 
   // Inform JavaScript that we successfully loaded the manifest file.
-  DispatchProgressEvent("progress",
-                        true,  // length_computable
-                        nexe_bytes_read,
-                        nexe_bytes_read);
+  EnqueueProgressEvent("progress",
+                       LENGTH_IS_COMPUTABLE,
+                       nexe_bytes_read,
+                       nexe_bytes_read);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
   bool was_successful = LoadNaClModule(wrapper.get(), &error_string);
   if (was_successful) {
-    ReportLoadSuccess(true, nexe_bytes_read, nexe_bytes_read);
+    ReportLoadSuccess(LENGTH_IS_COMPUTABLE, nexe_bytes_read, nexe_bytes_read);
   } else {
     ReportLoadError(error_string);
   }
@@ -841,10 +868,10 @@ void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
   }
   set_nacl_ready_state(LOADING);
   // Inform JavaScript that we found a nexe URL to load.
-  DispatchProgressEvent("progress",
-                        false,  // length_computable
-                        kUnknownBytes,
-                        kUnknownBytes);
+  EnqueueProgressEvent("progress",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
   // Will always call the callback on success or failure.
@@ -939,10 +966,10 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   }
   set_nacl_ready_state(LOADING);
   // Inform JavaScript that we found a nexe URL to load.
-  DispatchProgressEvent("progress",
-                        false,  // length_computable
-                        kUnknownBytes,
-                        kUnknownBytes);
+  EnqueueProgressEvent("progress",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
   // Will always call the callback on success or failure.
@@ -967,10 +994,10 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   set_manifest_url(url);
   // Inform JavaScript that a load is starting.
   set_nacl_ready_state(OPENED);
-  DispatchProgressEvent("loadstart",
-                        false,  // length_computable
-                        kUnknownBytes,
-                        kUnknownBytes);
+  EnqueueProgressEvent("loadstart",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
   if (GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA) {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&PluginPpapi::NaClManifestBufferReady);
@@ -1139,7 +1166,7 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
 }
 
 
-void PluginPpapi::ReportLoadSuccess(bool length_computable,
+void PluginPpapi::ReportLoadSuccess(LengthComputable length_computable,
                                     uint64_t loaded_bytes,
                                     uint64_t total_bytes) {
   // Set the readyState attribute to indicate loaded.
@@ -1148,11 +1175,8 @@ void PluginPpapi::ReportLoadSuccess(bool length_computable,
   // Note that these events will be dispatched, as will failure events, when
   // this code is reached from __launchExecutableFromFd also.
   // TODO(sehr,polina): Remove comment when experimental APIs are removed.
-  DispatchProgressEvent("load", length_computable, loaded_bytes, total_bytes);
-  DispatchProgressEvent("loadend",
-                        length_computable,
-                        loaded_bytes,
-                        total_bytes);
+  EnqueueProgressEvent("load", length_computable, loaded_bytes, total_bytes);
+  EnqueueProgressEvent("loadend", length_computable, loaded_bytes, total_bytes);
 }
 
 
@@ -1167,14 +1191,14 @@ void PluginPpapi::ReportLoadError(const nacl::string& error) {
   browser_interface()->AddToConsole(instance_id(), prefix + error);
   ShutdownProxy();
   // Inform JavaScript that loading encountered an error and is complete.
-  DispatchProgressEvent("error",
-                        false,  // length_computable
-                        kUnknownBytes,
-                        kUnknownBytes);
-  DispatchProgressEvent("loadend",
-                        false,  // length_computable
-                        kUnknownBytes,
-                        kUnknownBytes);
+  EnqueueProgressEvent("error",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
+  EnqueueProgressEvent("loadend",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
 }
 
 
@@ -1188,25 +1212,61 @@ void PluginPpapi::ReportLoadAbort() {
   browser_interface()->AddToConsole(instance_id(), error_string);
   ShutdownProxy();
   // Inform JavaScript that loading was aborted and is complete.
-  DispatchProgressEvent("abort",
-                        false,  // length_computable
-                        kUnknownBytes,
-                        kUnknownBytes);
-  DispatchProgressEvent("loadend",
-                        false,  // length_computable
-                        kUnknownBytes,
-                        kUnknownBytes);
+  EnqueueProgressEvent("abort",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
+  EnqueueProgressEvent("loadend",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
 }
 
 
-void PluginPpapi::DispatchProgressEvent(const char* event_type,
-                                        bool length_computable,
-                                        uint64_t loaded_bytes,
-                                        uint64_t total_bytes) {
-  PLUGIN_PRINTF(("PluginPpapi::DispatchEvent ("
+void PluginPpapi::EnqueueProgressEvent(const char* event_type,
+                                       LengthComputable length_computable,
+                                       uint64_t loaded_bytes,
+                                       uint64_t total_bytes) {
+  PLUGIN_PRINTF(("PluginPpapi::EnqueueProgressEvent ("
                  "event_type='%s', length_computable=%d, "
                  "loaded=%"NACL_PRIu64", total=%"NACL_PRIu64")\n",
-                 event_type, length_computable, loaded_bytes, total_bytes));
+                 event_type,
+                 static_cast<int>(length_computable),
+                 loaded_bytes,
+                 total_bytes));
+
+  progress_events_.push(new ProgressEvent(event_type,
+                                          length_computable,
+                                          loaded_bytes,
+                                          total_bytes));
+  // Note that using callback_factory_ in this way is not thread safe.
+  // If/when EnqueueProgressEvent is callable from another thread, this
+  // will need to change.
+  pp::CompletionCallback callback =
+      callback_factory_.NewCallback(&PluginPpapi::DispatchProgressEvent);
+  pp::Core* core = pp::Module::Get()->core();
+  core->CallOnMainThread(0, callback, 0);
+}
+
+void PluginPpapi::DispatchProgressEvent(int32_t result) {
+  PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent (result=%"
+                 NACL_PRId32")\n", result));
+  if (result < 0) {
+    return;
+  }
+  if (progress_events_.empty()) {
+    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent: no pending events\n"));
+    return;
+  }
+  nacl::scoped_ptr<ProgressEvent> event(progress_events_.front());
+  progress_events_.pop();
+  PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent ("
+                 "event_type='%s', length_computable=%d, "
+                 "loaded=%"NACL_PRIu64", total=%"NACL_PRIu64")\n",
+                 event->event_type(),
+                 static_cast<int>(event->length_computable()),
+                 event->loaded_bytes(),
+                 event->total_bytes()));
 
   static const char* kEventClosureJS =
       "(function(target, type, lengthComputable, loadedBytes, totalBytes) {"
@@ -1221,23 +1281,18 @@ void PluginPpapi::DispatchProgressEvent(const char* event_type,
   // Create a function object by evaluating the JavaScript text.
   // TODO(sehr, polina): We should probably cache the created function object to
   // avoid JavaScript reparsing.
-  pp::Var window_object = GetWindowObject();
-  if (!window_object.is_object()) {
-    PLUGIN_PRINTF(("Couldn't get window object."));
-    return;
-  }
   pp::Var exception;
-  pp::Var function_object = window_object.Call("eval",
-                                               kEventClosureJS,
-                                               &exception);
+  pp::Var function_object = ExecuteScript(kEventClosureJS, &exception);
   if (!exception.is_undefined() || !function_object.is_object()) {
-    PLUGIN_PRINTF(("Function object creation failed.\n"));
+    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent:"
+                   " Function object creation failed.\n"));
     return;
   }
   // Get the target of the event to be dispatched.
   pp::Var owner_element_object = GetOwnerElementObject();
   if (!owner_element_object.is_object()) {
-    PLUGIN_PRINTF(("Couldn't get owner element object.\n"));
+    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent:"
+                   " Couldn't get owner element object.\n"));
     NACL_NOTREACHED();
     return;
   }
@@ -1245,16 +1300,17 @@ void PluginPpapi::DispatchProgressEvent(const char* event_type,
   pp::Var argv[5];
   static const uint32_t argc = NACL_ARRAY_SIZE(argv);
   argv[0] = owner_element_object;
-  argv[1] = pp::Var(event_type);
-  argv[2] = pp::Var(length_computable);
-  argv[3] = pp::Var(static_cast<double>(loaded_bytes));
-  argv[4] = pp::Var(static_cast<double>(total_bytes));
+  argv[1] = pp::Var(event->event_type());
+  argv[2] = pp::Var(event->length_computable() == LENGTH_IS_COMPUTABLE);
+  argv[3] = pp::Var(static_cast<double>(event->loaded_bytes()));
+  argv[4] = pp::Var(static_cast<double>(event->total_bytes()));
 
   // Dispatch the event.
   const pp::Var default_method;
   function_object.Call(default_method, argc, argv, &exception);
   if (!exception.is_undefined()) {
-    PLUGIN_PRINTF(("Event dispatch failed.\n"));
+    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent:"
+                   " event dispatch failed.\n"));
   }
 }
 
