@@ -1306,7 +1306,6 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
   if (quota_manager_.get()) {
     DCHECK(file_system_context_.get());
     DCHECK(db_tracker_.get());
-    DCHECK(webkit_context_.get());
     return;
   }
 
@@ -1330,10 +1329,6 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
       GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy(),
       quota_manager_->proxy(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  webkit_context_ = new WebKitContext(
-        IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
-        clear_local_state_on_exit_, quota_manager_->proxy(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT));
   appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -1348,7 +1343,11 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {
-  CreateQuotaManagerAndClients();
+  if (!webkit_context_.get()) {
+    webkit_context_ = new WebKitContext(
+        IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
+        clear_local_state_on_exit_);
+  }
   return webkit_context_.get();
 }
 
