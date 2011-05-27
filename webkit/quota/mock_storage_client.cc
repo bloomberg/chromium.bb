@@ -67,10 +67,10 @@ void MockStorageClient::ModifyMockOriginDataSize(
   if (find == origin_data_.end()) {
     DCHECK_GE(delta, 0);
     AddMockOriginData(origin_url, type, delta);
-    return;
+  } else {
+    find->second += delta;
+    DCHECK_GE(find->second, 0);
   }
-  find->second += delta;
-  DCHECK_GE(find->second, 0);
 
   // TODO(tzik): Check quota to prevent usage exceed
   quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, delta);

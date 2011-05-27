@@ -298,6 +298,8 @@ class QuotaManagerTest : public testing::Test {
     last_access_time_table_ = entries;
   }
 
+  void GetUsage_WithModifyTestBody(const StorageType type);
+
   void set_additional_callback_count(int c) { additional_callback_count_ = c; }
   int additional_callback_count() const { return additional_callback_count_; }
   void DidGetUsageAndQuotaAdditional(
@@ -496,35 +498,45 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   EXPECT_EQ(40 + 50, usage());
 }
 
-TEST_F(QuotaManagerTest, GetTemporaryUsage_WithModify) {
-  static const MockOriginData kData[] = {
-    { "http://foo.com/",     kStorageTypeTemporary,  10 },
-    { "http://foo.com:1/",   kStorageTypeTemporary,  20 },
+void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
+  const MockOriginData data[] = {
+    { "http://foo.com/",   type,  10 },
+    { "http://foo.com:1/", type,  20 },
   };
-  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  MockStorageClient* client = CreateClient(data, ARRAYSIZE_UNSAFE(data));
   RegisterClient(client);
 
-  GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
+  GetUsageAndQuota(GURL("http://foo.com/"), type);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
 
-  client->ModifyMockOriginDataSize(
-      GURL("http://foo.com/"), kStorageTypeTemporary, 20);
-  client->ModifyMockOriginDataSize(
-      GURL("http://foo.com:1/"), kStorageTypeTemporary, -5);
-  client->ModifyMockOriginDataSize(
-      GURL("http://bar.com/"), kStorageTypeTemporary, 33);
+  client->ModifyMockOriginDataSize(GURL("http://foo.com/"), type, 30);
+  client->ModifyMockOriginDataSize(GURL("http://foo.com:1/"), type, -5);
 
-  GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
+  // Modifying (adding) a new origin for an existing host.
+  client->ModifyMockOriginDataSize(GURL("https://foo.com/"), type, 1);
+
+  GetUsageAndQuota(GURL("http://foo.com/"), type);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(10 + 20 + 20 - 5, usage());
+  EXPECT_EQ(10 + 20 + 30 - 5 + 1, usage());
+  int foo_usage = usage();
 
-  GetUsageAndQuota(GURL("http://bar.com/"), kStorageTypeTemporary);
+  // Modifying (adding) a new origin.
+  client->ModifyMockOriginDataSize(GURL("http://bar.com/"), type, 40);
+  GetUsageAndQuota(GURL("http://bar.com/"), type);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(33, usage());
+  EXPECT_EQ(40, usage());
+
+  GetGlobalUsage(type);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(foo_usage + 40, usage());
+}
+
+TEST_F(QuotaManagerTest, GetTemporaryUsage_WithModify) {
+  GetUsage_WithModifyTestBody(kStorageTypeTemporary);
 }
 
 TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
@@ -666,34 +678,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_MultiOrigins) {
 }
 
 TEST_F(QuotaManagerTest, GetPersistentUsage_WithModify) {
-  static const MockOriginData kData[] = {
-    { "http://foo.com/",     kStorageTypePersistent,  10 },
-    { "http://foo.com:1/",   kStorageTypePersistent,  20 },
-  };
-  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
-  RegisterClient(client);
-
-  GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypePersistent);
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(10 + 20, usage());
-
-  client->ModifyMockOriginDataSize(
-      GURL("http://foo.com/"), kStorageTypePersistent, 20);
-  client->ModifyMockOriginDataSize(
-      GURL("http://foo.com:1/"), kStorageTypePersistent, -5);
-  client->ModifyMockOriginDataSize(
-      GURL("http://bar.com/"), kStorageTypePersistent, 33);
-
-  GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypePersistent);
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(10 + 20 + 20 - 5, usage());
-
-  GetUsageAndQuota(GURL("http://bar.com/"), kStorageTypePersistent);
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(33, usage());
+  GetUsage_WithModifyTestBody(kStorageTypePersistent);
 }
 
 TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_WithAdditionalTasks) {

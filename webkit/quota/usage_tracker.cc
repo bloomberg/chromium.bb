@@ -352,7 +352,7 @@ void ClientUsageTracker::UpdateUsageCache(
       host_usage_map_.find(host) != host_usage_map_.end()) {
     // This might be for a new origin.
     cached_origins_.insert(origin);
-    host_usage_map_[host] = delta;
+    host_usage_map_[host] += delta;
     global_usage_ += delta;
     DCHECK_GE(host_usage_map_[host], 0);
     DCHECK_GE(global_usage_, 0);
