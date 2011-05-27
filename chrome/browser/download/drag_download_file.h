@@ -78,6 +78,8 @@ class DragDownloadFile : public ui::DownloadFileProvider,
   void AssertCurrentlyOnDragThread();
   void AssertCurrentlyOnUIThread();
 
+  void RemoveObservers();
+
   // Initialized on drag-and-drop thread. Accessed on either thread after that
   // (Windows).
   // Accessed on UI thread (MacOSX).
@@ -104,7 +106,8 @@ class DragDownloadFile : public ui::DownloadFileProvider,
 
   // Access on UI thread.
   DownloadManager* download_manager_;
-  bool download_item_observer_added_;
+  bool download_manager_observer_added_;
+  DownloadItem* download_item_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFile);
 };

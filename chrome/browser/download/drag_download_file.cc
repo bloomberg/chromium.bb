@@ -30,7 +30,8 @@ DragDownloadFile::DragDownloadFile(
       is_started_(false),
       is_successful_(false),
       download_manager_(NULL),
-      download_item_observer_added_(false) {
+      download_manager_observer_added_(false),
+      download_item_(NULL) {
 #if defined(OS_WIN)
   DCHECK(!file_name_or_path.empty() && !file_stream.get());
   file_name_ = file_name_or_path;
@@ -54,8 +55,19 @@ DragDownloadFile::~DragDownloadFile() {
   }
 #endif
 
-  if (download_manager_)
+  RemoveObservers();
+}
+
+void DragDownloadFile::RemoveObservers() {
+  if (download_item_) {
+    download_item_->RemoveObserver(this);
+    download_item_ = NULL;
+  }
+
+  if (download_manager_observer_added_) {
+    download_manager_observer_added_ = false;
     download_manager_->RemoveObserver(this);
+  }
 }
 
 bool DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
@@ -106,6 +118,7 @@ void DragDownloadFile::InitiateDownload() {
 #endif
 
   download_manager_ = tab_contents_->profile()->GetDownloadManager();
+  download_manager_observer_added_ = true;
   download_manager_->AddObserver(this);
 
   DownloadSaveInfo save_info;
@@ -154,27 +167,28 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
 void DragDownloadFile::ModelChanged() {
   AssertCurrentlyOnUIThread();
 
+  if (download_item_)
+    return;
+
   std::vector<DownloadItem*> downloads;
   download_manager_->GetTemporaryDownloads(file_path_.DirName(), &downloads);
   for (std::vector<DownloadItem*>::const_iterator i = downloads.begin();
        i != downloads.end(); ++i) {
-    if (!download_item_observer_added_ && (*i)->original_url() == url_) {
-      download_item_observer_added_ = true;
-      (*i)->AddObserver(this);
+    if ((*i)->original_url() == url_) {
+      download_item_ = *i;
+      download_item_->AddObserver(this);
+      break;
     }
   }
 }
 
 void DragDownloadFile::OnDownloadUpdated(DownloadItem* download) {
   AssertCurrentlyOnUIThread();
-  if (download->IsCancelled()) {
-    download->RemoveObserver(this);
-    download_manager_->RemoveObserver(this);
-
+  if (download->IsCancelled() || download->state() == DownloadItem::REMOVING) {
+    RemoveObservers();
     DownloadCompleted(false);
   } else if (download->IsComplete()) {
-    download->RemoveObserver(this);
-    download_manager_->RemoveObserver(this);
+    RemoveObservers();
     DownloadCompleted(true);
   }
   // Ignore other states.
