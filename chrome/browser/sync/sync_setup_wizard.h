@@ -80,8 +80,6 @@ class SyncSetupWizard {
 
   SyncSetupFlowContainer* flow_container_;
 
-  SyncSetupFlowHandler* flow_handler_;
-
   DISALLOW_COPY_AND_ASSIGN(SyncSetupWizard);
 };
 
