@@ -191,7 +191,9 @@ class BrowserThread : public base::Thread {
 #if defined(UNIT_TEST)
           // Only logged under unit testing because leaks at shutdown
           // are acceptable under normal circumstances.
-          LOG(ERROR) << "DeleteSoon failed on thread " << thread;
+          LOG(ERROR) << "DeleteSoon failed on thread " << thread
+                     << "; deleting locally.";
+          delete x;
 #endif  // UNIT_TEST
         }
       }
