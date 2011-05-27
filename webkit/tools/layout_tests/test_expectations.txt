@@ -18,3 +18,6 @@ BUG_HCLAM : fast/url/ipv6.html = TEXT
 // Probably just need rebaselining, but putting here to get the @DEPS builders green.
 BUGCR84161 : fast/dom/navigator-detached-no-crash.html = TEXT
 BUGCR84161 : fast/dom/register-protocol-handler.html = TEXT
+
+// Just needs rebasing, suppressing until all baselines are available.
+BUGADAMK WIN : svg/zoom/page/zoom-foreignObject.svg = IMAGE TEXT IMAGE+TEXT
