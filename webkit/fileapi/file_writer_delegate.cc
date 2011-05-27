@@ -277,7 +277,8 @@ void FileWriterDelegate::OnError(base::PlatformFileError error) {
 
 void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
   DCHECK(bytes_written + bytes_written_backlog_ >= bytes_written_backlog_);
-  if (bytes_written > 0 &&
+  if (quota_util() &&
+      bytes_written > 0 &&
       total_bytes_written_ + bytes_written + offset_ > size_) {
     int overlapped = 0;
     if (total_bytes_written_ + offset_ < size_)
