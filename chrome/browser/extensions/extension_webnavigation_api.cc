@@ -251,6 +251,12 @@ ExtensionWebNavigationEventRouter::ExtensionWebNavigationEventRouter() {}
 
 ExtensionWebNavigationEventRouter::~ExtensionWebNavigationEventRouter() {}
 
+// static
+ExtensionWebNavigationEventRouter*
+ExtensionWebNavigationEventRouter::GetInstance() {
+  return Singleton<ExtensionWebNavigationEventRouter>::get();
+}
+
 void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,

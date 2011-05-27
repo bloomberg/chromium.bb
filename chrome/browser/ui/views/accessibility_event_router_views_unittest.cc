@@ -8,8 +8,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
 #include "chrome/test/testing_profile.h"
 #include "content/common/notification_registrar.h"
@@ -149,15 +147,6 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   // Put the view in a window.
   views::Window* window = CreateWindowWithContents(contents);
 
-  // Create a profile and associate it with this window.
-  TestingProfile profile;
-  window->AsWidget()->native_widget()->SetNativeWindowProperty(
-      Profile::kProfileKey, &profile);
-
-  // To begin with, accessibility event notifications are off.
-  AccessibilityEventRouterViews::GetInstance()->
-      SetAccessibilityEnabledForTesting(false);
-
   // Set focus to the first button initially.
   button1->RequestFocus();
 
@@ -168,8 +157,14 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
                 NotificationService::AllSources());
 
   // Switch on accessibility event notifications.
-  AccessibilityEventRouterViews::GetInstance()->
-      SetAccessibilityEnabledForTesting(true);
+  ExtensionAccessibilityEventRouter* accessibility_event_router =
+      ExtensionAccessibilityEventRouter::GetInstance();
+  accessibility_event_router->SetAccessibilityEnabled(true);
+
+  // Create a profile and associate it with this window.
+  TestingProfile profile;
+  window->AsWidget()->native_widget()->SetNativeWindowProperty(
+      Profile::kProfileKey, &profile);
 
   // Change the accessible name of button3.
   button3->SetAccessibleName(ASCIIToUTF16(kButton3NewASCII));

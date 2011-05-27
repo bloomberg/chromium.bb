@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -24,10 +25,11 @@ class FilePath;
 // the extension system.
 class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
  public:
-  explicit ExtensionBookmarkEventRouter();
+  static ExtensionBookmarkEventRouter* GetInstance();
   virtual ~ExtensionBookmarkEventRouter();
 
-  // Initialize to observe this bookmark model.
+  // Call this for each model to observe.  Safe to call multiple times per
+  // model.
   void Observe(BookmarkModel* model);
 
   // BookmarkModelObserver:
@@ -55,13 +57,18 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
   virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE;
 
  private:
+  ExtensionBookmarkEventRouter();
+  friend struct DefaultSingletonTraits<ExtensionBookmarkEventRouter>;
+
   // Helper to actually dispatch an event to extension listeners.
   void DispatchEvent(Profile* profile,
                      const char* event_name,
                      const std::string& json_args);
 
-  // The model being observed.
-  BookmarkModel* model_;
+  // These are stored so that Observe can be called multiple times safely.
+  // This way the caller doesn't have to know whether it's already observing
+  // a particular model or not.  The pointers are not owned by this object.
+  std::set<BookmarkModel*> models_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBookmarkEventRouter);
 };

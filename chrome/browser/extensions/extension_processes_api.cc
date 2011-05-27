@@ -42,17 +42,21 @@ DictionaryValue* CreateProcessValue(int process_id,
   return result;
 }
 
-ExtensionProcessesEventRouter::ExtensionProcessesEventRouter(Profile* profile)
-    : profile_(profile) {
+ExtensionProcessesEventRouter* ExtensionProcessesEventRouter::GetInstance() {
+  return Singleton<ExtensionProcessesEventRouter>::get();
+}
+
+ExtensionProcessesEventRouter::ExtensionProcessesEventRouter() {
+  model_ = TaskManager::GetInstance()->model();
+  model_->AddObserver(this);
 }
 
 ExtensionProcessesEventRouter::~ExtensionProcessesEventRouter() {
   model_->RemoveObserver(this);
 }
 
-void ExtensionProcessesEventRouter::Init() {
-  model_ = TaskManager::GetInstance()->model();
-  model_->AddObserver(this);
+void ExtensionProcessesEventRouter::ObserveProfile(Profile* profile) {
+  profiles_.insert(profile);
 }
 
 void ExtensionProcessesEventRouter::ListenerAdded() {
@@ -134,8 +138,12 @@ void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
     std::string json_args;
     base::JSONWriter::Write(&args, false, &json_args);
 
-    // Notify the profile.
-    DispatchEvent(profile_, keys::kOnUpdated, json_args);
+    // Notify each profile that is interested.
+    for (ProfileSet::iterator it = profiles_.begin();
+         it != profiles_.end(); it++) {
+      Profile* profile = *it;
+      DispatchEvent(profile, keys::kOnUpdated, json_args);
+    }
   }
 }
 

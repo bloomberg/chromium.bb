@@ -222,11 +222,6 @@ class PrefMapping {
 
 ExtensionPreferenceEventRouter::ExtensionPreferenceEventRouter(
     Profile* profile) : profile_(profile) {
-}
-
-ExtensionPreferenceEventRouter::~ExtensionPreferenceEventRouter() {}
-
-void ExtensionPreferenceEventRouter::Init() {
   registrar_.Init(profile_->GetPrefs());
   incognito_registrar_.Init(profile_->GetOffTheRecordPrefs());
   for (size_t i = 0; i < arraysize(kPrefMapping); ++i) {
@@ -234,6 +229,8 @@ void ExtensionPreferenceEventRouter::Init() {
     incognito_registrar_.Add(kPrefMapping[i].browser_pref, this);
   }
 }
+
+ExtensionPreferenceEventRouter::~ExtensionPreferenceEventRouter() { }
 
 void ExtensionPreferenceEventRouter::Observe(
     NotificationType type,

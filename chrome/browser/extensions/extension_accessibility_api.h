@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_old.h"
+#include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -20,10 +21,11 @@
 // to the extension system.
 class ExtensionAccessibilityEventRouter : public NotificationObserver {
  public:
-  explicit ExtensionAccessibilityEventRouter();
-  virtual ~ExtensionAccessibilityEventRouter();
+  // Single instance of the event router.
+  static ExtensionAccessibilityEventRouter* GetInstance();
 
-  void Init();
+  // Safe to call multiple times.
+  void ObserveProfile(Profile* profile);
 
   // Get the dict representing the last control that received an
   // OnControlFocus event.
@@ -43,6 +45,11 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
   void AddOnDisabledListener(Callback* callback);
 
  private:
+  friend struct DefaultSingletonTraits<ExtensionAccessibilityEventRouter>;
+
+  ExtensionAccessibilityEventRouter();
+  virtual ~ExtensionAccessibilityEventRouter();
+
   // NotificationObserver::Observe.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

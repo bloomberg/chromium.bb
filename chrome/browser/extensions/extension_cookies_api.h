@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
@@ -30,12 +31,17 @@ class URLRequestContextGetter;
 // extension system.
 class ExtensionCookiesEventRouter : public NotificationObserver {
  public:
-  explicit ExtensionCookiesEventRouter();
-  virtual ~ExtensionCookiesEventRouter();
+  // Single instance of the event router.
+  static ExtensionCookiesEventRouter* GetInstance();
 
   void Init();
 
  private:
+  friend struct DefaultSingletonTraits<ExtensionCookiesEventRouter>;
+
+  ExtensionCookiesEventRouter() {}
+  virtual ~ExtensionCookiesEventRouter() {}
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

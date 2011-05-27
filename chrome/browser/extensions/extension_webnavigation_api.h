@@ -12,6 +12,7 @@
 
 #include <map>
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"
@@ -131,12 +132,19 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
 // system.
 class ExtensionWebNavigationEventRouter : public NotificationObserver {
  public:
-  explicit ExtensionWebNavigationEventRouter();
-  virtual ~ExtensionWebNavigationEventRouter();
+  // Returns the singleton instance of the event router.
+  static ExtensionWebNavigationEventRouter* GetInstance();
 
+  // Invoked by the extensions service once the extension system is fully set
+  // up and can start dispatching events to extensions.
   void Init();
 
  private:
+  friend struct DefaultSingletonTraits<ExtensionWebNavigationEventRouter>;
+
+  ExtensionWebNavigationEventRouter();
+  virtual ~ExtensionWebNavigationEventRouter();
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

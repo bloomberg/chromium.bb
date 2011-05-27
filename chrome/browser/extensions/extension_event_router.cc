@@ -106,7 +106,7 @@ void ExtensionEventRouter::AddEventListener(
   // We lazily tell the TaskManager to start updating when listeners to the
   // processes.onUpdated event arrive.
   if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0)
-    profile_->GetExtensionService()->processes_event_router()->ListenerAdded();
+    ExtensionProcessesEventRouter::GetInstance()->ListenerAdded();
 }
 
 void ExtensionEventRouter::RemoveEventListener(
@@ -127,8 +127,7 @@ void ExtensionEventRouter::RemoveEventListener(
   // If a processes.onUpdated event listener is removed (or a process with one
   // exits), then we let the TaskManager know that it has one fewer listener.
   if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0)
-    profile_->GetExtensionService()->processes_event_router()->
-        ListenerRemoved();
+    ExtensionProcessesEventRouter::GetInstance()->ListenerRemoved();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

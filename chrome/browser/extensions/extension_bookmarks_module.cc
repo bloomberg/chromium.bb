@@ -118,13 +118,22 @@ void BookmarksFunction::Observe(NotificationType type,
   Release();  // Balanced in Run().
 }
 
-ExtensionBookmarkEventRouter::ExtensionBookmarkEventRouter() {}
+// static
+ExtensionBookmarkEventRouter* ExtensionBookmarkEventRouter::GetInstance() {
+  return Singleton<ExtensionBookmarkEventRouter>::get();
+}
 
-ExtensionBookmarkEventRouter::~ExtensionBookmarkEventRouter() {}
+ExtensionBookmarkEventRouter::ExtensionBookmarkEventRouter() {
+}
+
+ExtensionBookmarkEventRouter::~ExtensionBookmarkEventRouter() {
+}
 
 void ExtensionBookmarkEventRouter::Observe(BookmarkModel* model) {
-  model->AddObserver(this);
-  model_ = model;
+  if (models_.find(model) == models_.end()) {
+    model->AddObserver(this);
+    models_.insert(model);
+  }
 }
 
 void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,

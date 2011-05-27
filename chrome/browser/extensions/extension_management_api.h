@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
 #pragma once
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -49,12 +50,18 @@ class UninstallFunction : public ExtensionManagementFunction {
 
 class ExtensionManagementEventRouter : public NotificationObserver {
  public:
-  explicit ExtensionManagementEventRouter();
-  virtual ~ExtensionManagementEventRouter();
+  // Get the singleton instance of the event router.
+  static ExtensionManagementEventRouter* GetInstance();
 
+  // Performs one-time initialization of our singleton.
   void Init();
 
  private:
+  friend struct DefaultSingletonTraits<ExtensionManagementEventRouter>;
+
+  ExtensionManagementEventRouter();
+  virtual ~ExtensionManagementEventRouter();
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

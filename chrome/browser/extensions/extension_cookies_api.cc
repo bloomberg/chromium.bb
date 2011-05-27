@@ -25,9 +25,10 @@
 
 namespace keys = extension_cookies_api_constants;
 
-ExtensionCookiesEventRouter::ExtensionCookiesEventRouter() {}
-
-ExtensionCookiesEventRouter::~ExtensionCookiesEventRouter() {}
+// static
+ExtensionCookiesEventRouter* ExtensionCookiesEventRouter::GetInstance() {
+  return Singleton<ExtensionCookiesEventRouter>::get();
+}
 
 void ExtensionCookiesEventRouter::Init() {
   if (registrar_.IsEmpty()) {
