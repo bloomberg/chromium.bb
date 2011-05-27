@@ -640,7 +640,7 @@ bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
   info.lStructSize = sizeof(info);
   info.hwndOwner = m_mainWnd;
   info.hInstance = instance_handle_;
-  info.lpstrFilter = L"*.txt";
+  info.lpstrFilter = L"*.txt\0";
   info.lpstrFile = path_buf;
   info.nMaxFile = arraysize(path_buf);
   info.lpstrTitle = prompt_title;
