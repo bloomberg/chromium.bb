@@ -48,7 +48,7 @@ class Rietveld(object):
       self.rpc_server = upload.HttpRpcServer(
             self.url,
             get_creds,
-            extra_headers=extra_headers)
+            extra_headers=extra_headers or {})
     else:
       self.rpc_server = upload.GetRpcServer(url, email)
     self._xsrf_token = None
