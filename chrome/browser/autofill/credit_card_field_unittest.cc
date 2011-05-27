@@ -17,10 +17,15 @@ class CreditCardFieldTest : public testing::Test {
   CreditCardFieldTest() {}
 
  protected:
-  ScopedVector<AutofillField> list_;
+  ScopedVector<const AutofillField> list_;
   scoped_ptr<CreditCardField> field_;
   FieldTypeMap field_type_map_;
-  std::vector<AutofillField*>::const_iterator iter_;
+
+  // Downcast for tests.
+  static CreditCardField* Parse(AutofillScanner* scanner, bool is_ecml) {
+    return static_cast<CreditCardField*>(
+        CreditCardField::Parse(scanner, is_ecml));
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CreditCardFieldTest);
@@ -28,14 +33,14 @@ class CreditCardFieldTest : public testing::Test {
 
 TEST_F(CreditCardFieldTest, Empty) {
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_EQ(static_cast<CreditCardField*>(NULL), field_.get());
 }
 
 TEST_F(CreditCardFieldTest, NonParse) {
   list_.push_back(new AutofillField);
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_EQ(static_cast<CreditCardField*>(NULL), field_.get());
 }
 
@@ -57,7 +62,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNoNumber) {
                                                false),
                         ASCIIToUTF16("year1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_EQ(static_cast<CreditCardField*>(NULL), field_.get());
 }
 
@@ -71,7 +76,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNoDate) {
                                                false),
                         ASCIIToUTF16("number1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_EQ(static_cast<CreditCardField*>(NULL), field_.get());
 }
 
@@ -101,7 +106,7 @@ TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
                                                false),
                         ASCIIToUTF16("year1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -144,7 +149,7 @@ TEST_F(CreditCardFieldTest, ParseMiniumCreditCardEcml) {
                                  false),
           ASCIIToUTF16("year1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -201,7 +206,7 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
                                                false),
                         ASCIIToUTF16("cvc1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -267,7 +272,7 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCardEcml) {
                                  false),
           ASCIIToUTF16("cvc1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -324,7 +329,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
                                  false),
           ASCIIToUTF16("year")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -378,7 +383,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
                                  false),
           ASCIIToUTF16("year")));
   AutofillScanner scanner(list_.get());
-  field_.reset(CreditCardField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(

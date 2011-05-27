@@ -21,7 +21,7 @@
 using autofill::GetEcmlPattern;
 
 // static
-CreditCardField* CreditCardField::Parse(AutofillScanner* scanner,
+FormField* CreditCardField::Parse(AutofillScanner* scanner,
                                         bool is_ecml) {
   if (scanner->IsEnd())
     return NULL;

@@ -12,7 +12,7 @@
 
 class EmailField : public FormField {
  public:
-  static EmailField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FormField* Parse(AutofillScanner* scanner, bool is_ecml);
 
  protected:
   // FormField:

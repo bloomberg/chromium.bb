@@ -54,43 +54,12 @@ bool MatchLabel(const AutofillField* field, const string16& pattern) {
   return match;
 }
 
-// Parses a field using the different field views we know about.  |is_ecml|
-// should be true when the field conforms to the ECML specification.
-FormField* ParseFormField(AutofillScanner* scanner, bool is_ecml) {
-  FormField* field;
-
-  field = EmailField::Parse(scanner, is_ecml);
-  if (field)
-    return field;
-
-  // Parses both phone and fax.
-  field = PhoneField::Parse(scanner, is_ecml);
-  if (field)
-    return field;
-
-  field = AddressField::Parse(scanner, is_ecml);
-  if (field)
-    return field;
-
-  field = CreditCardField::Parse(scanner, is_ecml);
-  if (field)
-    return field;
-
-  // We search for a |NameField| last since it matches the word "name", which is
-  // relatively general.
-  return NameField::Parse(scanner, is_ecml);
-}
-
 bool IsTextField(const string16& type) {
   return type == ASCIIToUTF16("text");
 }
 
 bool IsEmailField(const string16& type) {
   return type == ASCIIToUTF16("email");
-}
-
-bool IsMonthField(const string16& type) {
-  return type == ASCIIToUTF16("month");
 }
 
 bool IsTelephoneField(const string16& type) {
@@ -110,19 +79,24 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
   // If there is, then we will match an element only if it is in the standard.
   bool is_ecml = HasECMLField(fields);
 
-  // Parse fields.
-  AutofillScanner scanner(fields);
-  while (!scanner.IsEnd()) {
-    scoped_ptr<FormField> form_field(ParseFormField(&scanner, is_ecml));
-    if (!form_field.get()) {
-      scanner.Advance();
-      continue;
-    }
+  // Set up a working copy of the fields to be processed.
+  std::vector<const AutofillField*> remaining_fields(fields.size());
+  std::copy(fields.begin(), fields.end(), remaining_fields.begin());
 
-    // Add entries into the map for each field type found in |form_field|.
-    bool ok = form_field->ClassifyField(map);
-    DCHECK(ok);
-  }
+  // Email pass.
+  ParseFormFieldsPass(EmailField::Parse, is_ecml, &remaining_fields, map);
+
+  // Phone/fax pass.
+  ParseFormFieldsPass(PhoneField::Parse, is_ecml, &remaining_fields, map);
+
+  // Address pass.
+  ParseFormFieldsPass(AddressField::Parse, is_ecml, &remaining_fields, map);
+
+  // Credit card pass.
+  ParseFormFieldsPass(CreditCardField::Parse, is_ecml, &remaining_fields, map);
+
+  // Name pass.
+  ParseFormFieldsPass(NameField::Parse, is_ecml, &remaining_fields, map);
 }
 
 // static
@@ -206,4 +180,29 @@ bool FormField::Match(const AutofillField* field,
       return true;
 
   return false;
+}
+
+// static
+void FormField::ParseFormFieldsPass(ParseFunction parse,
+                                    bool is_ecml,
+                                    std::vector<const AutofillField*>* fields,
+                                    FieldTypeMap* map) {
+  // Store unmatched fields for further processing by the caller.
+  std::vector<const AutofillField*> remaining_fields;
+
+  AutofillScanner scanner(*fields);
+  while (!scanner.IsEnd()) {
+    scoped_ptr<FormField> form_field(parse(&scanner, is_ecml));
+    if (!form_field.get()) {
+      remaining_fields.push_back(scanner.Cursor());
+      scanner.Advance();
+      continue;
+    }
+
+    // Add entries into the map for each field type found in |form_field|.
+    bool ok = form_field->ClassifyField(map);
+    DCHECK(ok);
+  }
+
+  std::swap(*fields, remaining_fields);
 }

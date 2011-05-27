@@ -16,10 +16,14 @@ class NameFieldTest : public testing::Test {
   NameFieldTest() {}
 
  protected:
-  ScopedVector<AutofillField> list_;
+  ScopedVector<const AutofillField> list_;
   scoped_ptr<NameField> field_;
   FieldTypeMap field_type_map_;
-  std::vector<AutofillField*>::const_iterator iter_;
+
+  // Downcast for tests.
+  static NameField* Parse(AutofillScanner* scanner, bool is_ecml) {
+    return static_cast<NameField*>(NameField::Parse(scanner, is_ecml));
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NameFieldTest);
@@ -51,7 +55,7 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
                                                false),
                         ASCIIToUTF16("name3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -91,7 +95,7 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
                                                false),
                         ASCIIToUTF16("name3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -123,7 +127,7 @@ TEST_F(NameFieldTest, FirstLast) {
                                                false),
                         ASCIIToUTF16("name2")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -152,7 +156,7 @@ TEST_F(NameFieldTest, FirstLast2) {
                                                false),
                         ASCIIToUTF16("name2")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -189,7 +193,7 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
                                                false),
                         ASCIIToUTF16("name3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -221,7 +225,7 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
                                                false),
                         ASCIIToUTF16("name2")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -258,7 +262,7 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
                                                false),
                         ASCIIToUTF16("name3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -298,7 +302,7 @@ TEST_F(NameFieldTest, MiddleInitial) {
                                                false),
                         ASCIIToUTF16("name3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -330,7 +334,7 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
                                                false),
                         ASCIIToUTF16("name2")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_EQ(static_cast<NameField*>(NULL), field_.get());
 }
 
@@ -362,7 +366,7 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
                                                false),
                         ASCIIToUTF16("name3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, false));
+  field_.reset(Parse(&scanner, false));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
@@ -386,7 +390,7 @@ TEST_F(NameFieldTest, ECMLNoName) {
                              false),
       ASCIIToUTF16("field1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, true));
+  field_.reset(Parse(&scanner, true));
   ASSERT_EQ(static_cast<NameField*>(NULL), field_.get());
 }
 
@@ -408,7 +412,7 @@ TEST_F(NameFieldTest, ECMLMiddleInitialNoLastName) {
                              false),
       ASCIIToUTF16("name2")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, true));
+  field_.reset(Parse(&scanner, true));
   ASSERT_EQ(static_cast<NameField*>(NULL), field_.get());
 }
 
@@ -438,7 +442,7 @@ TEST_F(NameFieldTest, ECMLFirstMiddleLast) {
                              false),
       ASCIIToUTF16("name3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(NameField::Parse(&scanner, true));
+  field_.reset(Parse(&scanner, true));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(

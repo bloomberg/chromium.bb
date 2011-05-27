@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "chrome/browser/autofill/autofill_field.h"
 
-AutofillScanner::AutofillScanner(const std::vector<AutofillField*>& fields)
+AutofillScanner::AutofillScanner(
+    const std::vector<const AutofillField*>& fields)
     : cursor_(fields.begin()),
       end_(fields.end()) {
 }

@@ -21,6 +21,8 @@ class AutofillScanner;
 // name, phone number, or address field.
 class FormField {
  public:
+  typedef FormField* ParseFunction(AutofillScanner* scanner, bool is_ecml);
+
   virtual ~FormField() {}
 
   // Classifies each field in |fields| with its heuristically detected type.
@@ -100,6 +102,17 @@ class FormField {
   static bool Match(const AutofillField* field,
                     const string16& pattern,
                     int match_type);
+
+  // Perform a "pass" over the |fields| where each pass uses the supplied
+  // |parse| method to match content to a given field type.
+  // |is_ecml| designates whether to match only ECML fields.
+  // |fields| is both an input and an output parameter.  Upon exit |fields|
+  // holds any remaining unclassified fields for further processing.
+  // Classification results of the proceessed fields are stored in |map|.
+  static void ParseFormFieldsPass(ParseFunction parse,
+                                  bool is_ecml,
+                                  std::vector<const AutofillField*>* fields,
+                                  FieldTypeMap* map);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };

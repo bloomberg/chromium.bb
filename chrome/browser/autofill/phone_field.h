@@ -25,8 +25,8 @@ class PhoneField : public FormField {
  public:
   virtual ~PhoneField();
 
-  static PhoneField* Parse(AutofillScanner* scanner, bool is_ecml);
-  static PhoneField* ParseECML(AutofillScanner* scanner);
+  static FormField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FormField* ParseECML(AutofillScanner* scanner);
 
  protected:
   // FormField:

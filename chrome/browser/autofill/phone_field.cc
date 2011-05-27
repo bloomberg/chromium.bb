@@ -101,7 +101,7 @@ PhoneField::Parser PhoneField::phone_field_grammars_[] = {
 PhoneField::~PhoneField() {}
 
 // static
-PhoneField* PhoneField::Parse(AutofillScanner* scanner, bool is_ecml) {
+FormField* PhoneField::Parse(AutofillScanner* scanner, bool is_ecml) {
   if (scanner->IsEnd())
     return NULL;
 
@@ -123,7 +123,7 @@ PhoneField* PhoneField::Parse(AutofillScanner* scanner, bool is_ecml) {
 }
 
 // static
-PhoneField* PhoneField::ParseECML(AutofillScanner* scanner) {
+FormField* PhoneField::ParseECML(AutofillScanner* scanner) {
   string16 pattern(GetEcmlPattern(kEcmlShipToPhone, kEcmlBillToPhone, '|'));
 
   const AutofillField* field;

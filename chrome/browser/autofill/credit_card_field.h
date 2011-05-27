@@ -19,7 +19,7 @@ class AutofillScanner;
 
 class CreditCardField : public FormField {
  public:
-  static CreditCardField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FormField* Parse(AutofillScanner* scanner, bool is_ecml);
 
  protected:
   // FormField:

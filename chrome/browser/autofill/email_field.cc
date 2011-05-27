@@ -12,7 +12,7 @@
 using autofill::GetEcmlPattern;
 
 // static
-EmailField* EmailField::Parse(AutofillScanner* scanner, bool is_ecml) {
+FormField* EmailField::Parse(AutofillScanner* scanner, bool is_ecml) {
   string16 pattern;
   if (is_ecml)
     pattern = GetEcmlPattern(kEcmlShipToEmail, kEcmlBillToEmail, '|');

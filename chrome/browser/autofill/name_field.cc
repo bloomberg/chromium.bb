@@ -60,7 +60,7 @@ class FirstLastNameField : public NameField {
 
 }  // namespace
 
-NameField* NameField::Parse(AutofillScanner* scanner, bool is_ecml) {
+FormField* NameField::Parse(AutofillScanner* scanner, bool is_ecml) {
   if (scanner->IsEnd())
     return NULL;
 

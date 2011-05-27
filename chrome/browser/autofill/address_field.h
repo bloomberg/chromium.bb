@@ -21,7 +21,7 @@ class AutofillScanner;
 
 class AddressField : public FormField {
  public:
-  static AddressField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FormField* Parse(AutofillScanner* scanner, bool is_ecml);
 
   // Tries to determine the billing/shipping type of this address.
   AddressType FindType() const;

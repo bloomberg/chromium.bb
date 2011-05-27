@@ -19,7 +19,7 @@
 
 using autofill::GetEcmlPattern;
 
-AddressField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
+FormField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
   if (scanner->IsEnd())
     return NULL;
 
@@ -319,7 +319,9 @@ bool AddressField::ParseCity(AutofillScanner* scanner,
   else
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CITY_RE);
 
-  return ParseField(scanner, pattern, &address_field->city_);
+  // Select fields are allowed here.  This occurs on top-100 site rediff.com.
+  return ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
+                             &address_field->city_);
 }
 
 // static
