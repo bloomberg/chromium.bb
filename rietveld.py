@@ -40,14 +40,15 @@ upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 class Rietveld(object):
   """Accesses rietveld."""
-  def __init__(self, url, email, password):
+  def __init__(self, url, email, password, extra_headers=None):
     self.issue = None
     self.url = url
     if email and password:
       get_creds = lambda: (email, password)
       self.rpc_server = upload.HttpRpcServer(
             self.url,
-            get_creds)
+            get_creds,
+            extra_headers=extra_headers)
     else:
       self.rpc_server = upload.GetRpcServer(url, email)
     self._xsrf_token = None
