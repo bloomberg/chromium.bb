@@ -452,10 +452,11 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
       cmd.extend(['--previous-binhost-url', binhost])
   if overlay_config == 'public':
     cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
-    # Only one bot should upload host prebuilts. We've arbitrarily
-    # designated the x86-generic bot as the bot that does that.  Note: this only
+    # Only one bot should upload full host prebuilts, and one bot should upload
+    # preflight host prebuilts. We've arbitrarily designated the x86-generic
+    # preflight and full bots as the bots that do that.  Note: This only
     # works with public-only prebuilts.
-    if board == 'x86-generic':
+    if board == 'x86-generic' and category in ('binary', 'full'):
       cmd.append('--sync-host')
   else:
     assert overlay_config in ('private', 'both')
