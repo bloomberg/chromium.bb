@@ -20,67 +20,17 @@ if env.IsRunningUnderValgrind():
 if env.Bit('nacl_glibc'):
   Return()
 
-# The PNaCl translators are not supposed to handle incoming native code
+# The PNaCl translators are not supposed to handle the special linkage
 if env.Bit('use_sandboxed_translator'):
+  Return()
+
+# pic might introduce extra sections that we do not want
+if env.Bit('nacl_pic'):
   Return()
 
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
-
-if env.Bit('target_x86_32'):
-  nacl_text_pad_asm = 'arch/x86_32/nacl_text_pad_test.S'
-elif env.Bit('target_x86_64'):
-  nacl_text_pad_asm = 'arch/x86_64/nacl_text_pad_test.S'
-elif env.Bit('target_arm'):
-  nacl_text_pad_asm = 'arch/arm/nacl_text_pad_test.S'
-else:
-  raise Exception('unknown architecture')
-
-def NewAsmEnv(env, defines, rodata_address, rwdata_address):
-
-  asm_env = env.Clone()
-  # NOTE(robertm): convert this to pure C code so that most of this
-  # special handling can be eliminated
-  if asm_env.Bit('bitcode'):
-    asm_env.Replace(OBJSUFFIX='.o')
-    asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
-    # NOTE: MC_ASM has issues with skip directive
-    asm_env.Append(ASFLAGS='--pnacl-driver-set-USE_MC_ASM=0')
-  link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
-                ' -o ${TARGET} ${SOURCES}')
-
-  if env.Bit('target_x86_32'):
-    link_cmd += ' -melf_nacl'
-  elif env.Bit('target_x86_64'):
-    link_cmd += ' -melf64_nacl'
-  elif env.Bit('target_arm'):
-    link_cmd += ' -marmelf_nacl'
-  else:
-    raise Exception('unknown architecture')
-
-  asm_env['LINKCOM'] = link_cmd
-
-  asm_env.Append(CPPDEFINES = [
-                     ['NACL_BLOCK_SHIFT', 5],
-                     ['NACL_BLOCK_SIZE', 32],
-                     ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
-                     ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
-                     ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
-                     ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
-                 ])
-
-  asm_env.Append(CPPDEFINES=defines)
-
-  asm_env['TEXT_START'] = '--section-start .text=0x%x' % 0x20000
-  if rodata_address:
-    asm_env['RO_START'] = '--section-start .rodata=0x%x' % rodata_address
-  if rwdata_address:
-    asm_env['RW_START'] = '--section-start .data=0x%x' % rwdata_address
-
-  return asm_env
-
-
 ALLOCATION_SIZE   = 0x10000
 START_OF_TEXT     = 0x20000
 TEXT_SIZE_BOUND   = 0x10000  # estimate of test code size
@@ -121,20 +71,59 @@ def ExpectedBreak(text_end, rodata_addr, rwdata_addr, rwdata_size):
     break_addr = rwdata_addr + rwdata_size
   return break_addr
 
+
+def MakeSectionStartFlags(env, sec_name, sec_start):
+    return ['-Wl,--section-start', '-Wl,%s=0x%x' % (sec_name, sec_start)]
+
+
+def MakeEnv(env, code_pos, code_size, ro_pos, ro_size, rw_pos, rw_size):
+  barebones_env = env.Clone()
+
+  # NOTE: we are really trying to align segments but in this case
+  #       sections and segments coincidence
+  linker_flags = ['-nostdlib']
+  if env.Bit('bitcode'):
+    linker_flags += ['-Wl,-nobitcode-intrinsics']
+  linker_flags += MakeSectionStartFlags(env, ".text", code_pos)
+  if ro_pos:
+    linker_flags += MakeSectionStartFlags(env, ".rodata", ro_pos)
+  barebones_env.Replace(LIBS=[],
+                        EXTRA_LIBS=[],
+                        LINKFLAGS=linker_flags)
+
+  # make gcc tolerate some gnu'ism such as array initialization tricks
+  barebones_env.FilterOut(CFLAGS=['-pedantic'])
+  barebones_env.FilterOut(CCFLAGS=['-pedantic'])
+
+  if env.Bit('target_arm'):
+    nop_word = 0xe1a00000
+  else:
+    nop_word =  0x90909090
+
+  defines = [
+      ('NOP_WORD', "0x%x" % nop_word),
+      ('TEXT_SEGMENT_SIZE', "0x%x" % code_size),
+      ('RODATA_SEGMENT_SIZE', "0x%x" % ro_size),
+      ('RWDATA_SEGMENT_SIZE', "0x%x" % rw_size),
+      ('EXPECTED_BREAK',
+       "0x%x" % ExpectedBreak(code_pos + code_size, ro_pos, rw_pos, rw_size)),
+      ]
+  barebones_env.Append(CPPDEFINES=defines)
+  return barebones_env
+
+
 test_specs = [ (0x10000,       'no'),
                (0x10000 - 32, 'small'),
                ( 0x8000,      'large'),
                (0x10000 - 28, 'too_small') ]
 
-rwdata_addr = None  # none for now
-
-
 def CreateSegmentPosAndSizeCheckingCommands(out,
-                                            code_pos=None,
-                                            code_size=None,
-                                            ro_pos=None,
-                                            ro_size=None,
-                                            rw_pos=None):
+                                            code_pos,
+                                            code_size,
+                                            ro_pos,
+                                            ro_size,
+                                            rw_pos,
+                                            rw_size):
   '''
   The string magic below crafts command lines using tools/elf_checker.py
   for checking various program header properties of nexes
@@ -149,7 +138,6 @@ def CreateSegmentPosAndSizeCheckingCommands(out,
   large_num = 0x70000000
   cmd_prefix = ('${PYTHON} ${SCONSTRUCT_DIR}/tools/elf_checker.py '
                 '-s load -d 0x%x ' % large_num)
-
   cmd_suffix = ' ${SOURCES} >> %s' % out
 
   command_templates = [
@@ -158,6 +146,7 @@ def CreateSegmentPosAndSizeCheckingCommands(out,
       (cmd_prefix + '-a vaddr -f 4 -r 0x%x' + cmd_suffix, ro_pos),
       (cmd_prefix + '-a memsz -f 4 -r 0x%x' + cmd_suffix, ro_size),
       (cmd_prefix + '-a vaddr -f 6 -r 0x%x' + cmd_suffix, rw_pos),
+      (cmd_prefix + '-a memsz -f 6 -r 0x%x' + cmd_suffix, rw_size),
       ]
 
   commands = []
@@ -166,8 +155,6 @@ def CreateSegmentPosAndSizeCheckingCommands(out,
     if val is not None:
       commands.append(template % val)
   return commands
-
-
 
 for text_end, variant in test_specs:
   for rodata_addr, rodata_size, name_modifier in [(None, 0, ''),
@@ -182,27 +169,30 @@ for text_end, variant in test_specs:
       rodata_addr = NaturalRodataStart(text_end)
     # rodata_address is None or a non-zero integer
 
-    break_addr = ExpectedBreak(text_end,
-                               rodata_addr,
-                               rwdata_addr,
-                               RWDATA_SIZE)
-
-    defines=[]
-    for (symbol, value) in [('TEXT_EXTEND', text_end),
-                            ('EXPECTED_BREAK', break_addr),
-                            ('EXPECTED_RODATA', rodata_addr),
-                            ('EXPECTED_RWDATA', rwdata_addr)]:
-      if value is not None:
-        defines += [[symbol, str(value)]]
-
-    asm_env = NewAsmEnv(env, defines, rodata_addr, rwdata_addr)
+    barebones_env = MakeEnv(env,
+                            START_OF_TEXT, text_end,
+                            rodata_addr, rodata_size,
+                            None, 0);
 
     base_name = 'nacl_text_' + variant + '_pad' + name_modifier + '_test'
-    obj = asm_env.ComponentObject(base_name + '.o', nacl_text_pad_asm)
+    main = barebones_env.ComponentObject(base_name + '_main.o',
+                                         'segment_test_main.c')
+    # NOTE: this hack strips out the .eh_section which for some reason is
+    #       always generated by nacl-gcc64
+    # http://code.google.com/p/nativeclient/issues/detail?id=1844
+    if not barebones_env.Bit('bitcode'):
+      rm_eh_sec = "${OBJCOPY} -R .eh_frame ${SOURCES} ${TARGET}"
+      main = barebones_env.Command(base_name + '_main_hack.o',
+                                   main,
+                                   rm_eh_sec)
 
-    nexe = asm_env.ComponentProgram(base_name + '.nexe', [obj])
+    rest = barebones_env.ComponentObject(base_name + '_rest.o',
+                                         'segment_test_rest.c')
+    nexe = barebones_env.ComponentProgram(base_name + '.nexe', [main, rest])
+
     node = env.CommandSelLdrTestNacl(base_name + '.out',
-                                     command=[nexe])
+                                     command=[env.File(base_name + '.nexe')],
+                                     exit_status='55')
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_sled_tests'],
                            'run_' + base_name)
@@ -217,16 +207,17 @@ for text_end, variant in test_specs:
     #       than they used to be when we could test that the sel_ldr
     #       actually rejects images with a too_small gap.
     #   http://code.google.com/p/nativeclient/issues/detail?id=1839
+
+    # Work around some automatic alignment in the nacl-gcc TC
     if text_end == 0x10000 - 28:
-      if env.Bit('target_arm'):
-        text_end = 0xfff0
-      else:
+      if not env.Bit('bitcode'):
         text_end = 0x10000
     commands = CreateSegmentPosAndSizeCheckingCommands(base_name,
                                                        START_OF_TEXT,
                                                        text_end,
                                                        rodata_addr,
                                                        rodata_size,
+                                                       None,
                                                        None)
 
     # Run the checks as part of the tes suite sel_ldr_sled_tests

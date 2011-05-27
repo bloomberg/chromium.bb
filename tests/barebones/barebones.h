@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -25,6 +25,7 @@
 typedef int (*TYPE_nacl_write) (int desc, void const *buf, int count);
 typedef void (*TYPE_nacl_null) (void);
 typedef void (*TYPE_nacl_exit) (int status);
+typedef void* (*TYPE_nacl_sysbrk) (int inc);
 
 #include <bits/nacl_syscalls.h>
 
