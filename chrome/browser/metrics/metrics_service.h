@@ -195,10 +195,10 @@ class MetricsService : public NotificationObserver,
   // Constructs a new, empty current_log_.
   void StartRecording();
 
-  // Called to stop recording user experience metrics.  The caller takes
-  // ownership of the resulting MetricsLog object via the log parameter,
-  // or passes in NULL to indicate that the log should simply be deleted.
-  void StopRecording(MetricsLogBase** log);
+  // Called to stop recording user experience metrics.
+  // Adds any last information to current_log_ and then moves it to pending_log_
+  // for upload.
+  void StopRecording();
 
   // Deletes pending_log_ and current_log_, and pushes their text into the
   // appropriate unsent_log vectors.  Called when Chrome shuts down.
