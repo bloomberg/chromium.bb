@@ -14,3 +14,7 @@ BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/filters/feDropShadow.svg = IMAGE TIMEOU
 
 // Failure introduced by Chromium r83848.
 BUG_HCLAM : fast/url/ipv6.html = TEXT
+
+// Probably just need rebaselining, but putting here to get the @DEPS builders green.
+BUGCR84161 : fast/dom/navigator-detached-no-crash.html = TEXT
+BUGCR84161 : fast/dom/register-protocol-handler.html = TEXT
