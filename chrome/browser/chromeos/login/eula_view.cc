@@ -519,7 +519,7 @@ void EulaView::LinkClicked(views::Link* source, int event_flags) {
     views::Window* window = browser::CreateViewsWindow(parent_window,
                                                        gfx::Rect(),
                                                        view);
-    window->SetAlwaysOnTop(true);
+    window->SetIsAlwaysOnTop(true);
     window->Show();
   }
 }

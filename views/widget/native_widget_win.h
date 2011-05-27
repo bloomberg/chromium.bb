@@ -197,17 +197,10 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void CloseNow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
-  virtual void Activate() OVERRIDE;
-  virtual void Deactivate() OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
-  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
-  virtual void Maximize() OVERRIDE;
-  virtual void Minimize() OVERRIDE;
-  virtual bool IsMaximized() const OVERRIDE;
-  virtual bool IsMinimized() const OVERRIDE;
-  virtual void Restore() OVERRIDE;
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
+  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void RunShellDrag(View* view,
@@ -393,9 +386,6 @@ class NativeWidgetWin : public ui::WindowImpl,
   // window is shown the first time.  If NULL is returned, the focus goes to the
   // button if there is one, otherwise the to the Cancel button.
   virtual void SetInitialFocus();
-
-  // Executes the specified SC_command.
-  void ExecuteSystemMenuCommand(int command);
 
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this

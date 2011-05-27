@@ -112,13 +112,78 @@ void Window::SetWindowBounds(const gfx::Rect& bounds,
   native_window_->SetWindowBounds(bounds, other_window);
 }
 
+void Window::Show() {
+  native_window_->ShowNativeWindow(
+      saved_maximized_state_ ? NativeWindow::SHOW_MAXIMIZED
+                             : NativeWindow::SHOW_RESTORED);
+  // |saved_maximized_state_| only applies the first time the window is shown.
+  // If we don't reset the value the window will be shown maximized every time
+  // it is subsequently shown after being hidden.
+  saved_maximized_state_ = false;
+}
+
 void Window::ShowInactive() {
   native_window_->ShowNativeWindow(NativeWindow::SHOW_INACTIVE);
+}
+
+void Window::HideWindow() {
+  native_window_->HideWindow();
 }
 
 void Window::DisableInactiveRendering() {
   disable_inactive_rendering_ = true;
   non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
+}
+
+void Window::Activate() {
+  native_window_->Activate();
+}
+
+void Window::Deactivate() {
+  native_window_->Deactivate();
+}
+
+void Window::Close() {
+  if (window_closed_) {
+    // It appears we can hit this code path if you close a modal dialog then
+    // close the last browser before the destructor is hit, which triggers
+    // invoking Close again.
+    return;
+  }
+
+  if (non_client_view_->CanClose()) {
+    SaveWindowPosition();
+    Widget::Close();
+    window_closed_ = true;
+  }
+}
+
+void Window::Maximize() {
+  native_window_->Maximize();
+}
+
+void Window::Minimize() {
+  native_window_->Minimize();
+}
+
+void Window::Restore() {
+  native_window_->Restore();
+}
+
+bool Window::IsActive() const {
+  return native_window_->IsActive();
+}
+
+bool Window::IsVisible() const {
+  return native_window_->IsVisible();
+}
+
+bool Window::IsMaximized() const {
+  return native_window_->IsMaximized();
+}
+
+bool Window::IsMinimized() const {
+  return native_window_->IsMinimized();
 }
 
 void Window::SetFullscreen(bool fullscreen) {
@@ -160,6 +225,10 @@ void Window::UpdateWindowIcon() {
                                  window_delegate_->GetWindowAppIcon());
 }
 
+void Window::SetIsAlwaysOnTop(bool always_on_top) {
+  native_window_->SetAlwaysOnTop(always_on_top);
+}
+
 NonClientFrameView* Window::CreateFrameViewForWindow() {
   NonClientFrameView* frame_view = native_window_->CreateFrameViewForWindow();
   return frame_view ? frame_view : new CustomFrameView(this);
@@ -167,6 +236,10 @@ NonClientFrameView* Window::CreateFrameViewForWindow() {
 
 void Window::UpdateFrameAfterFrameChange() {
   native_window_->UpdateFrameAfterFrameChange();
+}
+
+gfx::NativeWindow Window::GetNativeWindow() const {
+  return native_window_->GetNativeWindow();
 }
 
 bool Window::ShouldUseNativeFrame() const {
@@ -188,34 +261,6 @@ void Window::DebugToggleFrameType() {
 
 void Window::FrameTypeChanged() {
   native_window_->FrameTypeChanged();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Window, Widget overrides:
-
-void Window::Show() {
-  native_window_->ShowNativeWindow(
-      saved_maximized_state_ ? NativeWindow::SHOW_MAXIMIZED
-          : NativeWindow::SHOW_RESTORED);
-  // |saved_maximized_state_| only applies the first time the window is shown.
-  // If we don't reset the value the window will be shown maximized every time
-  // it is subsequently shown after being hidden.
-  saved_maximized_state_ = false;
-}
-
-void Window::Close() {
-  if (window_closed_) {
-    // It appears we can hit this code path if you close a modal dialog then
-    // close the last browser before the destructor is hit, which triggers
-    // invoking Close again.
-    return;
-  }
-
-  if (non_client_view_->CanClose()) {
-    SaveWindowPosition();
-    Widget::Close();
-    window_closed_ = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

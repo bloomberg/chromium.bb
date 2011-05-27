@@ -178,17 +178,10 @@ class NativeWidgetGtk : public NativeWidget,
   virtual void CloseNow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
-  virtual void Activate() OVERRIDE;
-  virtual void Deactivate() OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
-  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
-  virtual void Maximize() OVERRIDE;
-  virtual void Minimize() OVERRIDE;
-  virtual bool IsMaximized() const OVERRIDE;
-  virtual bool IsMinimized() const OVERRIDE;
-  virtual void Restore() OVERRIDE;
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
+  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void RunShellDrag(View* view,
@@ -252,8 +245,6 @@ class NativeWidgetGtk : public NativeWidget,
   CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnShow);
   CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnMap);
   CHROMEGTK_CALLBACK_0(NativeWidgetGtk, void, OnHide);
-  CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnWindowStateEvent,
-                       GdkEventWindowState*);
 
   // Invoked when gtk grab is stolen by other GtkWidget in the same
   // application.
@@ -265,10 +256,6 @@ class NativeWidgetGtk : public NativeWidget,
 
   // Are we a subclass of NativeWindowGtk?
   bool is_window_;
-
-  // State of the window, such as fullscreen, hidden...
-  // TODO(beng): move to private once NativeWindowGtk no longer refers to it.
-  GdkWindowState window_state_;
 
  private:
   class DropObserver;

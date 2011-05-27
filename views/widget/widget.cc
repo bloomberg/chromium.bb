@@ -213,44 +213,16 @@ void Widget::Hide() {
   native_widget_->Hide();
 }
 
-void Widget::Activate() {
-  native_widget_->Activate();
-}
-
-void Widget::Deactivate() {
-  native_widget_->Deactivate();
-}
-
 bool Widget::IsActive() const {
   return native_widget_->IsActive();
 }
 
-void Widget::SetAlwaysOnTop(bool on_top) {
-  native_widget_->SetAlwaysOnTop(on_top);
-}
-
-void Widget::Maximize() {
-  native_widget_->Maximize();
-}
-
-void Widget::Minimize() {
-  native_widget_->Minimize();
-}
-
-void Widget::Restore() {
-  native_widget_->Restore();
-}
-
-bool Widget::IsMaximized() const {
-  return native_widget_->IsMaximized();
-}
-
-bool Widget::IsMinimized() const {
-  return native_widget_->IsMinimized();
-}
-
 void Widget::SetOpacity(unsigned char opacity) {
   native_widget_->SetOpacity(opacity);
+}
+
+void Widget::SetAlwaysOnTop(bool on_top) {
+  native_widget_->SetAlwaysOnTop(on_top);
 }
 
 View* Widget::GetRootView() {

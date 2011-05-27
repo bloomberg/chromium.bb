@@ -30,6 +30,15 @@ class WindowDelegate;
 //
 // Encapsulates window-like behavior. See WindowDelegate.
 //
+//  TODO(beng): Subclass Widget as part of V2.
+//
+//  TODO(beng): Note that this class being non-abstract means that we have a
+//              violation of Google style in that we are using multiple
+//              inheritance. The intention is to split this into a separate
+//              object associated with but not equal to a NativeWidget
+//              implementation. Multiple inheritance is required for this
+//              transitional step.
+//
 class Window : public Widget,
                public internal::NativeWindowDelegate {
  public:
@@ -85,14 +94,49 @@ class Window : public Widget,
   // monitor.
   void SetWindowBounds(const gfx::Rect& bounds, gfx::NativeWindow other_window);
 
+  // Makes the window visible.
+  void Show();
+
   // Like Show(), but does not activate the window.
   void ShowInactive();
+
+  // Hides the window. This does not delete the window, it just hides it. This
+  // always hides the window, it is separate from the stack maintained by
+  // Push/PopForceHidden.
+  virtual void HideWindow();
 
   // Prevents the window from being rendered as deactivated the next time it is.
   // This state is reset automatically as soon as the window becomes activated
   // again. There is no ability to control the state through this API as this
   // leads to sync problems.
   void DisableInactiveRendering();
+
+  // Activates the window, assuming it already exists and is visible.
+  void Activate();
+
+  // Deactivates the window, making the next window in the Z order the active
+  // window.
+  void Deactivate();
+
+  // Closes the window, ultimately destroying it. The window hides immediately,
+  // and is destroyed after a return to the message loop. Close() can be called
+  // multiple times.
+  virtual void Close() OVERRIDE;
+
+  // Maximizes/minimizes/restores the window.
+  void Maximize();
+  void Minimize();
+  void Restore();
+
+  // Whether or not the window is currently active.
+  bool IsActive() const;
+
+  // Whether or not the window is currently visible.
+  bool IsVisible() const;
+
+  // Whether or not the window is maximized or minimized.
+  virtual bool IsMaximized() const;
+  bool IsMinimized() const;
 
   // Accessors for fullscreen state.
   void SetFullscreen(bool fullscreen);
@@ -112,11 +156,17 @@ class Window : public Widget,
   // Tell the window to update its icon from the delegate.
   void UpdateWindowIcon();
 
+  // Sets whether or not the window is always-on-top.
+  void SetIsAlwaysOnTop(bool always_on_top);
+
   // Creates an appropriate NonClientFrameView for this window.
   virtual NonClientFrameView* CreateFrameViewForWindow();
 
   // Updates the frame after an event caused it to be changed.
   virtual void UpdateFrameAfterFrameChange();
+
+  // Retrieves the Window's native window handle.
+  gfx::NativeWindow GetNativeWindow() const;
 
   void set_frame_type(FrameType frame_type) { frame_type_ = frame_type; }
   FrameType frame_type() const { return frame_type_; }
@@ -130,10 +180,6 @@ class Window : public Widget,
 
   // Tell the window that something caused the frame type to change.
   void FrameTypeChanged();
-
-  // Overridden from Widget:
-  virtual void Show() OVERRIDE;
-  virtual void Close() OVERRIDE;
 
   WindowDelegate* window_delegate() {
     return const_cast<WindowDelegate*>(

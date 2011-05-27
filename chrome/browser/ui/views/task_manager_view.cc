@@ -626,7 +626,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
     r = SetMenuItemInfo(system_menu, IDC_ALWAYS_ON_TOP, FALSE, &menu_info);
 
     // Now change the actual window's behavior.
-    window()->SetAlwaysOnTop(is_always_on_top_);
+    window()->SetIsAlwaysOnTop(is_always_on_top_);
 
     // Save the state.
     if (g_browser_process->local_state()) {
@@ -718,7 +718,7 @@ void TaskManagerView::ExecuteCommand(int id) {
 void TaskManagerView::InitAlwaysOnTopState() {
   is_always_on_top_ = false;
   if (GetSavedAlwaysOnTopState(&is_always_on_top_))
-    window()->SetAlwaysOnTop(is_always_on_top_);
+    window()->SetIsAlwaysOnTop(is_always_on_top_);
   AddAlwaysOnTopSystemMenuItem();
 }
 

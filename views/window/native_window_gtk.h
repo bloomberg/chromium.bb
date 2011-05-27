@@ -39,6 +39,8 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
                                     GdkEventConfigure* event);
   virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event);
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
+  virtual gboolean OnWindowStateEvent(GtkWidget* widget,
+                                      GdkEventWindowState* event);
   virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
   virtual void IsActiveChanged();
 
@@ -63,18 +65,25 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
+  virtual void HideWindow() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
-
-  // Overridden from NativeWidgetGtk:
-  virtual void Restore() OVERRIDE;
-  virtual gboolean OnWindowStateEvent(GtkWidget* widget,
-                                      GdkEventWindowState* event) OVERRIDE;
 
   // For  the constructor.
   friend class Window;
@@ -85,6 +94,9 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
   static gboolean CallConfigureEvent(GtkWidget* widget,
                                      GdkEventConfigure* event,
                                      NativeWindowGtk* window_gtk);
+  static gboolean CallWindowStateEvent(GtkWidget* widget,
+                                       GdkEventWindowState* event,
+                                       NativeWindowGtk* window_gtk);
 
   // Asks the delegate if any to save the window's location and size.
   void SaveWindowPosition();
@@ -100,6 +112,9 @@ class NativeWindowGtk : public NativeWidgetGtk, public NativeWindow {
   // the default, this class must be subclassed and this value set to the
   // desired implementation before calling |Init|.
   NonClientView* non_client_view_;
+
+  // State of the window, such as fullscreen, hidden...
+  GdkWindowState window_state_;
 
   // Set to true if the window is in the process of closing.
   bool window_closed_;

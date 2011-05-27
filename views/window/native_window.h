@@ -91,11 +91,23 @@ class NativeWindow {
 
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) = 0;
+  virtual void HideWindow() = 0;
+  virtual void Activate() = 0;
+  virtual void Deactivate() = 0;
+  virtual void Maximize() = 0;
+  virtual void Minimize() = 0;
+  virtual void Restore() = 0;
+  virtual bool IsActive() const = 0;
+  virtual bool IsVisible() const = 0;
+  virtual bool IsMaximized() const = 0;
+  virtual bool IsMinimized() const = 0;
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;
+  virtual void SetAlwaysOnTop(bool always_on_top) = 0;
   virtual void SetUseDragFrame(bool use_drag_frame) = 0;
   virtual NonClientFrameView* CreateFrameViewForWindow() = 0;
   virtual void UpdateFrameAfterFrameChange() = 0;
+  virtual gfx::NativeWindow GetNativeWindow() const = 0;
   virtual bool ShouldUseNativeFrame() const = 0;
   virtual void FrameTypeChanged() = 0;
 };

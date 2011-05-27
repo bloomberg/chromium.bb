@@ -34,7 +34,7 @@ void NetworkLoginObserver::CreateModalPopup(views::WindowDelegate* view) {
   if (browser) {
     views::Window* window = browser::CreateViewsWindow(
         browser->window()->GetNativeHandle(), gfx::Rect(), view);
-    window->SetAlwaysOnTop(true);
+    window->SetIsAlwaysOnTop(true);
     window->Show();
   } else {
     // Browser not found, so we should be in login/oobe screen.

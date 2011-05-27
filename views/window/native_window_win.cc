@@ -1175,6 +1175,53 @@ void NativeWindowWin::SetWindowBounds(const gfx::Rect& bounds,
                  kMonitorEdgePadding, 0);
 }
 
+void NativeWindowWin::HideWindow() {
+  // We can just call the function implemented by the widget.
+  Hide();
+}
+
+void NativeWindowWin::Activate() {
+  if (IsMinimized())
+    ::ShowWindow(GetNativeView(), SW_RESTORE);
+  ::SetWindowPos(GetNativeView(), HWND_TOP, 0, 0, 0, 0,
+                 SWP_NOSIZE | SWP_NOMOVE);
+  SetForegroundWindow(GetNativeView());
+}
+
+void NativeWindowWin::Deactivate() {
+  HWND hwnd = ::GetNextWindow(GetNativeView(), GW_HWNDNEXT);
+  if (hwnd)
+    ::SetForegroundWindow(hwnd);
+}
+
+void NativeWindowWin::Maximize() {
+  ExecuteSystemMenuCommand(SC_MAXIMIZE);
+}
+
+void NativeWindowWin::Minimize() {
+  ExecuteSystemMenuCommand(SC_MINIMIZE);
+}
+
+void NativeWindowWin::Restore() {
+  ExecuteSystemMenuCommand(SC_RESTORE);
+}
+
+bool NativeWindowWin::IsActive() const {
+  return is_active_;
+}
+
+bool NativeWindowWin::IsVisible() const {
+  return !!::IsWindowVisible(GetNativeView());
+}
+
+bool NativeWindowWin::IsMaximized() const {
+  return !!::IsZoomed(GetNativeView());
+}
+
+bool NativeWindowWin::IsMinimized() const {
+  return !!::IsIconic(GetNativeView());
+}
+
 void NativeWindowWin::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)
     return;  // Nothing to do.
@@ -1236,6 +1283,11 @@ bool NativeWindowWin::IsFullscreen() const {
   return fullscreen_;
 }
 
+void NativeWindowWin::SetAlwaysOnTop(bool always_on_top) {
+  ::SetWindowPos(GetNativeView(), always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
+                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+}
+
 void NativeWindowWin::SetUseDragFrame(bool use_drag_frame) {
   if (use_drag_frame) {
     // Make the frame slightly transparent during the drag operation.
@@ -1262,6 +1314,10 @@ NonClientFrameView* NativeWindowWin::CreateFrameViewForWindow() {
 void NativeWindowWin::UpdateFrameAfterFrameChange() {
   // We've either gained or lost a custom window region, so reset it now.
   ResetWindowRegion(true);
+}
+
+gfx::NativeWindow NativeWindowWin::GetNativeWindow() const {
+  return GetNativeView();
 }
 
 bool NativeWindowWin::ShouldUseNativeFrame() const {
@@ -1295,15 +1351,6 @@ void NativeWindowWin::FrameTypeChanged() {
   // to notify our children too, since we can have MDI child windows who need to
   // update their appearance.
   EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWindowWin, NativeWidgetWin overrides:
-
-bool NativeWindowWin::IsActive() const {
-  // TODO(beng): evaluate whether or not this is needed. NativeWidgetWin checks
-  //             active-state with the OS using GetWindowInfo().
-  return is_active_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1407,6 +1454,11 @@ LRESULT NativeWindowWin::CallDefaultNCActivateHandler(BOOL active) {
   // it from doing so.
   ScopedRedrawLock lock(this);
   return DefWindowProc(GetNativeView(), WM_NCACTIVATE, active, 0);
+}
+
+void NativeWindowWin::ExecuteSystemMenuCommand(int command) {
+  if (command)
+    SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
