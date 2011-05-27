@@ -384,6 +384,11 @@ class ManifestVersionedSyncStage(BuilderStage):
       print 'AUTOREV: Nothing to build!'
       sys.exit(0);
 
+    # Log this early on for the release team to grep out before we finish.
+    print
+    print "RELEASETAG: %s" % manifest_manager.current_version
+    print
+
     # Store off this value where the Completion stage can find it...
     ManifestVersionedSyncStage.manifest_manager = manifest_manager
 
