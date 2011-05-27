@@ -582,7 +582,7 @@ def UploadSymbols(buildroot, board, official):
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
 
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=True)
 
 
 def PushImages(buildroot, board, branch_name, archive_dir):

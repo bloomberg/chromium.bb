@@ -440,6 +440,7 @@ class CBuildBotTest(mox.MoxTestBase):
                          '--verbose',
                          '--official_build'],
                         cwd='/bob/src/scripts',
+                        error_ok=True,
                         enter_chroot=True)
 
     cros_lib.RunCommand(['./upload_symbols',
@@ -447,6 +448,7 @@ class CBuildBotTest(mox.MoxTestBase):
                          '--yes',
                          '--verbose'],
                         cwd='/bob/src/scripts',
+                        error_ok=True,
                         enter_chroot=True)
 
     self.mox.ReplayAll()
