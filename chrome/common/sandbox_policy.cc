@@ -14,12 +14,10 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/browser/content_browser_client.h"
+#include "content/common/content_switches.h"
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
 #include "sandbox/src/sandbox.h"
@@ -87,36 +85,6 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"wbhelp.dll",                  // Stardock Object desktop.
   L"winstylerthemehelper.dll"     // Tuneup utilities 2006.
 };
-
-enum PluginPolicyCategory {
-  PLUGIN_GROUP_TRUSTED,
-  PLUGIN_GROUP_UNTRUSTED,
-};
-
-// Returns the policy category for the plugin dll.
-PluginPolicyCategory GetPolicyCategoryForPlugin(
-    const std::wstring& dll,
-    const std::wstring& list) {
-  std::wstring filename = FilePath(dll).BaseName().value();
-  std::wstring plugin_dll = StringToLowerASCII(filename);
-  std::wstring trusted_plugins = StringToLowerASCII(list);
-
-  size_t pos = 0;
-  size_t end_item = 0;
-  while (end_item != std::wstring::npos) {
-    end_item = list.find(L",", pos);
-
-    size_t size_item = (end_item == std::wstring::npos) ? end_item :
-                                                          end_item - pos;
-    std::wstring item = list.substr(pos, size_item);
-    if (!item.empty() && item == plugin_dll)
-      return PLUGIN_GROUP_TRUSTED;
-
-    pos = end_item + 1;
-  }
-
-  return PLUGIN_GROUP_UNTRUSTED;
-}
 
 // Adds the policy rules for the path and path\ with the semantic |access|.
 // If |children| is set to true, we need to add the wildcard rules to also
@@ -246,7 +214,7 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   // Add the policy for debug message only in debug
 #ifndef NDEBUG
   FilePath app_dir;
-  if (!PathService::Get(chrome::DIR_APP, &app_dir))
+  if (!PathService::Get(base::DIR_MODULE, &app_dir))
     return false;
 
   wchar_t long_path_buf[MAX_PATH];
@@ -266,247 +234,6 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 #endif  // NDEBUG
 
   return true;
-}
-
-// Creates a sandbox without any restriction.
-bool ApplyPolicyForTrustedPlugin(sandbox::TargetPolicy* policy) {
-  policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
-  policy->SetTokenLevel(sandbox::USER_UNPROTECTED, sandbox::USER_UNPROTECTED);
-  return true;
-}
-
-// Creates a sandbox with the plugin running in a restricted environment.
-// Only the "Users" and "Everyone" groups are enabled in the token. The User SID
-// is disabled.
-bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
-  policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
-
-  sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
-  if (base::win::GetVersion() > base::win::VERSION_XP) {
-    // On 2003/Vista the initial token has to be restricted if the main token
-    // is restricted.
-    initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
-  }
-  policy->SetTokenLevel(initial_token, sandbox::USER_LIMITED);
-  policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-
-  if (!AddDirectory(base::DIR_TEMP, NULL, true,
-                    sandbox::TargetPolicy::FILES_ALLOW_ANY, policy))
-    return false;
-
-  if (!AddDirectory(base::DIR_IE_INTERNET_CACHE, NULL, true,
-                    sandbox::TargetPolicy::FILES_ALLOW_ANY, policy))
-    return false;
-
-  if (!AddDirectory(base::DIR_APP_DATA, NULL, true,
-                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                    policy))
-    return false;
-
-  if (!AddDirectory(base::DIR_PROFILE, NULL, false,  /*not recursive*/
-                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                    policy))
-    return false;
-
-  if (!AddDirectory(base::DIR_APP_DATA, L"Adobe", true,
-                    sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                    policy))
-    return false;
-
-  if (!AddDirectory(base::DIR_APP_DATA, L"Macromedia", true,
-                    sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                    policy))
-    return false;
-
-  if (!AddDirectory(base::DIR_LOCAL_APP_DATA, NULL, true,
-                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                    policy))
-    return false;
-
-  if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\ADOBE",
-                        sandbox::TargetPolicy::REG_ALLOW_ANY,
-                        policy))
-    return false;
-
-  if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\MACROMEDIA",
-                        sandbox::TargetPolicy::REG_ALLOW_ANY,
-                        policy))
-    return false;
-
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\AppDataLow",
-                          sandbox::TargetPolicy::REG_ALLOW_ANY,
-                          policy))
-      return false;
-
-    if (!AddDirectory(base::DIR_LOCAL_APP_DATA_LOW, NULL, true,
-                      sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                      policy))
-      return false;
-
-    // DIR_APP_DATA is AppData\Roaming, but Adobe needs to do a directory
-    // listing in AppData directly, so we add a non-recursive policy for
-    // AppData itself.
-    if (!AddDirectory(base::DIR_APP_DATA, L"..", false,
-                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                      policy))
-      return false;
-  }
-
-  return true;
-}
-
-// Launches the privileged flash broker, used when flash is sandboxed.
-// The broker is the same flash dll, except that it uses a different
-// entrypoint (BrokerMain) and it is hosted in windows' generic surrogate
-// process rundll32. After launching the broker we need to pass to
-// the flash plugin the process id of the broker via the command line
-// using --flash-broker=pid.
-// More info about rundll32 at http://support.microsoft.com/kb/164787.
-bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
-  FilePath rundll;
-  if (!PathService::Get(base::DIR_SYSTEM, &rundll))
-    return false;
-  rundll = rundll.AppendASCII("rundll32.exe");
-  // Rundll32 cannot handle paths with spaces, so we use the short path.
-  wchar_t short_path[MAX_PATH];
-  if (0 == ::GetShortPathNameW(plugin_path.value().c_str(),
-                               short_path, arraysize(short_path)))
-    return false;
-  // Here is the kicker, if the user has disabled 8.3 (short path) support
-  // on the volume GetShortPathNameW does not fail but simply returns the
-  // input path. In this case if the path had any spaces then rundll32 will
-  // incorrectly interpret its parameters. So we quote the path, even though
-  // the kb/164787 says you should not.
-  std::wstring cmd_final =
-      base::StringPrintf(L"%ls \"%ls\",BrokerMain browser=chrome",
-                         rundll.value().c_str(),
-                         short_path);
-  base::ProcessHandle process;
-  if (!base::LaunchApp(cmd_final, false, true, &process))
-    return false;
-
-  cmd_line->AppendSwitchASCII("flash-broker",
-                              base::Int64ToString(::GetProcessId(process)));
-
-  // The flash broker, unders some circumstances can linger beyond the lifetime
-  // of the flash player, so we put it in a job object, when the browser
-  // terminates the job object is destroyed (by the OS) and the flash broker
-  // is terminated.
-  HANDLE job = ::CreateJobObjectW(NULL, NULL);
-  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_limits = {0};
-  job_limits.BasicLimitInformation.LimitFlags =
-      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-  if (::SetInformationJobObject(job, JobObjectExtendedLimitInformation,
-                                &job_limits, sizeof(job_limits))) {
-    ::AssignProcessToJobObject(job, process);
-    // Yes, we are leaking the object here. Read comment above.
-  } else {
-    ::CloseHandle(job);
-    return false;
-  }
-
-  ::CloseHandle(process);
-  return true;
-}
-
-// Creates a sandbox for the built-in flash plugin running in a restricted
-// environment. This policy is in continual flux as flash changes
-// capabilities. For more information see bug 50796.
-bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
-  policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
-  // Vista and Win7 get a weaker token but have low integrity.
-  if (base::win::GetVersion() > base::win::VERSION_XP) {
-    policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                          sandbox::USER_INTERACTIVE);
-    policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-  } else {
-    policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
-                          sandbox::USER_LIMITED);
-
-    if (!AddKeyAndSubkeys(L"HKEY_LOCAL_MACHINE\\SOFTWARE",
-                          sandbox::TargetPolicy::REG_ALLOW_READONLY,
-                          policy))
-      return false;
-    if (!AddKeyAndSubkeys(L"HKEY_LOCAL_MACHINE\\SYSTEM",
-                          sandbox::TargetPolicy::REG_ALLOW_READONLY,
-                          policy))
-      return false;
-
-    if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE",
-                          sandbox::TargetPolicy::REG_ALLOW_READONLY,
-                          policy))
-      return false;
-  }
-
-  AddDllEvictionPolicy(policy);
-  return true;
-}
-
-// Returns true of the plugin specified in |cmd_line| is the built-in
-// flash plugin and optionally returns its full path in |flash_path|
-bool IsBuiltInFlash(const CommandLine* cmd_line, FilePath* flash_path) {
-  std::wstring plugin_dll = cmd_line->
-      GetSwitchValueNative(switches::kPluginPath);
-
-  FilePath builtin_flash;
-  if (!PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_flash))
-    return false;
-
-  FilePath plugin_path(plugin_dll);
-  if (plugin_path != builtin_flash)
-    return false;
-
-  if (flash_path)
-    *flash_path = plugin_path;
-  return true;
-}
-
-
-// Adds the custom policy rules for a given plugin. |trusted_plugins| contains
-// the comma separate list of plugin dll names that should not be sandboxed.
-bool AddPolicyForPlugin(CommandLine* cmd_line,
-                        sandbox::TargetPolicy* policy) {
-  std::wstring plugin_dll = cmd_line->
-      GetSwitchValueNative(switches::kPluginPath);
-  std::wstring trusted_plugins = CommandLine::ForCurrentProcess()->
-      GetSwitchValueNative(switches::kTrustedPlugins);
-  // Add the policy for the pipes.
-  sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                           L"\\\\.\\pipe\\chrome.*");
-  if (result != sandbox::SBOX_ALL_OK) {
-    NOTREACHED();
-    return false;
-  }
-
-  // The built-in flash gets a custom, more restricted sandbox.
-  FilePath flash_path;
-  if (IsBuiltInFlash(cmd_line, &flash_path)) {
-    // Spawn the flash broker and apply sandbox policy.
-    if (!LoadFlashBroker(flash_path, cmd_line)) {
-      // Could not start the broker, use a very weak policy instead.
-      DLOG(WARNING) << "Failed to start flash broker";
-      return ApplyPolicyForTrustedPlugin(policy);
-    }
-    return ApplyPolicyForBuiltInFlashPlugin(policy);
-  }
-
-  PluginPolicyCategory policy_category =
-      GetPolicyCategoryForPlugin(plugin_dll, trusted_plugins);
-
-  switch (policy_category) {
-    case PLUGIN_GROUP_TRUSTED:
-      return ApplyPolicyForTrustedPlugin(policy);
-    case PLUGIN_GROUP_UNTRUSTED:
-      return ApplyPolicyForUntrustedPlugin(policy);
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  return false;
 }
 
 // For the GPU process we gotten as far as USER_LIMITED. The next level
@@ -621,18 +348,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
       (type != ChildProcessInfo::PLUGIN_PROCESS);
 
-  // Second case: If it is the plugin process then it depends on it being
-  // the built-in flash, the user forcing plugins into sandbox or the
-  // the user explicitly excluding flash from the sandbox.
-  if (!in_sandbox && (type == ChildProcessInfo::PLUGIN_PROCESS)) {
-      in_sandbox = browser_command_line.HasSwitch(switches::kSafePlugins) ||
-          (IsBuiltInFlash(cmd_line, NULL) &&
-           (base::win::GetVersion() > base::win::VERSION_XP) &&
-           !browser_command_line.HasSwitch(switches::kDisableFlashSandbox));
-  }
-
-  // Third case: If it is the GPU process then it can be disabled by a
-  // command line flag.
+  // If it is the GPU process then it can be disabled by a command line flag.
   if ((type == ChildProcessInfo::GPU_PROCESS) &&
       (browser_command_line.HasSwitch(switches::kDisableGpuSandbox))) {
     in_sandbox = false;
@@ -672,19 +388,24 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // to create separate pretetch settings for browser, renderer etc.
   cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", type));
 
-  if (!in_sandbox) {
-    base::LaunchApp(*cmd_line, false, false, &process);
-    return process;
-  }
-
   sandbox::ResultCode result;
   PROCESS_INFORMATION target = {0};
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
-  if (type == ChildProcessInfo::PLUGIN_PROCESS) {
-    if (!AddPolicyForPlugin(cmd_line, policy))
-      return 0;
-  } else if (type == ChildProcessInfo::GPU_PROCESS) {
+  if (type == ChildProcessInfo::PLUGIN_PROCESS &&
+      !browser_command_line.HasSwitch(switches::kNoSandbox) &&
+      content::GetContentClient()->browser()->SandboxPlugin(cmd_line, policy)) {
+    in_sandbox = true;
+    AddDllEvictionPolicy(policy);
+  }
+
+  if (!in_sandbox) {
+    policy->Release();
+    base::LaunchApp(*cmd_line, false, false, &process);
+    return process;
+  }
+
+  if (type == ChildProcessInfo::GPU_PROCESS) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
   } else if (type == ChildProcessInfo::PPAPI_PLUGIN_PROCESS) {

@@ -20,6 +20,10 @@ const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
+// Run Chrome in Chrome Frame mode. This means that Chrome expects to be run
+// as a dependent process of the Chrome Frame plugin.
+const char kChromeFrame[]                   = "chrome-frame";
+
 // Disables client-visible 3D APIs, in particular WebGL and Pepper 3D.
 // This is controlled by policy and is kept separate from the other
 // enable/disable switches to avoid accidentally regressing the policy
@@ -28,6 +32,9 @@ const char kDisable3DAPIs[]                 = "disable-3d-apis";
 
 // Disables accelerated compositing.
 const char kDisableAcceleratedCompositing[] = "disable-accelerated-compositing";
+
+// Disables the alternate window station for the renderer.
+const char kDisableAltWinstation[]          = "disable-winsta";
 
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
@@ -228,6 +235,10 @@ const char kLoggingLevel[]                  = "log-level";
 // Make plugin processes log their sent and received messages to VLOG(1).
 const char kLogPluginMessages[]             = "log-plugin-messages";
 
+// Causes the process to run as a NativeClient broker
+// (used for launching NaCl loader processes on 64-bit Windows).
+const char kNaClBrokerProcess[]             = "nacl-broker";
+
 // Causes the process to run as a NativeClient loader.
 const char kNaClLoaderProcess[]             = "nacl-loader";
 
@@ -335,9 +346,6 @@ const char kRendererProcess[]               = "renderer";
 
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
-
-// Runs the plugin processes inside the sandbox.
-const char kSafePlugins[]                   = "safe-plugins";
 
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";

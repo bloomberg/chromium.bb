@@ -37,8 +37,6 @@ void UITestSuite::Initialize() {
       parsed_command_line.HasSwitch(switches::kNoSandbox));
   ProxyLauncher::set_full_memory_dump(
       parsed_command_line.HasSwitch(switches::kFullMemoryCrashReport));
-  ProxyLauncher::set_safe_plugins(
-      parsed_command_line.HasSwitch(switches::kSafePlugins));
   ProxyLauncher::set_dump_histograms_on_exit(
       parsed_command_line.HasSwitch(switches::kDumpHistogramsOnExit));
   ProxyLauncher::set_enable_dcheck(

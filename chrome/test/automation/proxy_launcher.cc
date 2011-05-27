@@ -102,7 +102,6 @@ const char ProxyLauncher::kDefaultInterfacePath[] =
 bool ProxyLauncher::in_process_renderer_ = false;
 bool ProxyLauncher::no_sandbox_ = false;
 bool ProxyLauncher::full_memory_dump_ = false;
-bool ProxyLauncher::safe_plugins_ = false;
 bool ProxyLauncher::show_error_dialogs_ = true;
 bool ProxyLauncher::dump_histograms_on_exit_ = false;
 bool ProxyLauncher::enable_dcheck_ = false;
@@ -426,8 +425,6 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
     command_line->AppendSwitch(switches::kNoSandbox);
   if (full_memory_dump_)
     command_line->AppendSwitch(switches::kFullMemoryCrashReport);
-  if (safe_plugins_)
-    command_line->AppendSwitch(switches::kSafePlugins);
   if (enable_dcheck_)
     command_line->AppendSwitch(switches::kEnableDCHECK);
   if (silent_dump_on_dcheck_)

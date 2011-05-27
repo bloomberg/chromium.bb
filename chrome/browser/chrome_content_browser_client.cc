@@ -5,6 +5,9 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 
 #include "base/command_line.h"
+#include "base/path_service.h"
+#include "base/string_number_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
@@ -28,6 +31,7 @@
 #include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
@@ -50,6 +54,11 @@
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif  // OS_LINUX
+
+#if defined(OS_WIN)
+#include "chrome/common/sandbox_policy.h"
+#include "sandbox/src/sandbox.h"
+#endif
 
 namespace {
 
@@ -108,6 +117,62 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
     render_view_host->AllowBindings(BindingsPolicy::EXTENSION);
   }
 }
+
+#if defined(OS_WIN)
+// Launches the privileged flash broker, used when flash is sandboxed.
+// The broker is the same flash dll, except that it uses a different
+// entrypoint (BrokerMain) and it is hosted in windows' generic surrogate
+// process rundll32. After launching the broker we need to pass to
+// the flash plugin the process id of the broker via the command line
+// using --flash-broker=pid.
+// More info about rundll32 at http://support.microsoft.com/kb/164787.
+bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
+  FilePath rundll;
+  if (!PathService::Get(base::DIR_SYSTEM, &rundll))
+    return false;
+  rundll = rundll.AppendASCII("rundll32.exe");
+  // Rundll32 cannot handle paths with spaces, so we use the short path.
+  wchar_t short_path[MAX_PATH];
+  if (0 == ::GetShortPathNameW(plugin_path.value().c_str(),
+                               short_path, arraysize(short_path)))
+    return false;
+  // Here is the kicker, if the user has disabled 8.3 (short path) support
+  // on the volume GetShortPathNameW does not fail but simply returns the
+  // input path. In this case if the path had any spaces then rundll32 will
+  // incorrectly interpret its parameters. So we quote the path, even though
+  // the kb/164787 says you should not.
+  std::wstring cmd_final =
+      base::StringPrintf(L"%ls \"%ls\",BrokerMain browser=chrome",
+                         rundll.value().c_str(),
+                         short_path);
+  base::ProcessHandle process;
+  if (!base::LaunchApp(cmd_final, false, true, &process))
+    return false;
+
+  cmd_line->AppendSwitchASCII("flash-broker",
+                              base::Int64ToString(::GetProcessId(process)));
+
+  // The flash broker, unders some circumstances can linger beyond the lifetime
+  // of the flash player, so we put it in a job object, when the browser
+  // terminates the job object is destroyed (by the OS) and the flash broker
+  // is terminated.
+  HANDLE job = ::CreateJobObjectW(NULL, NULL);
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_limits = {0};
+  job_limits.BasicLimitInformation.LimitFlags =
+      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+  if (::SetInformationJobObject(job, JobObjectExtendedLimitInformation,
+                                &job_limits, sizeof(job_limits))) {
+    ::AssignProcessToJobObject(job, process);
+    // Yes, we are leaking the object here. Read comment above.
+  } else {
+    ::CloseHandle(job);
+    return false;
+  }
+
+  ::CloseHandle(process);
+  return true;
+}
+#endif  // OS_WIN
 
 }
 
@@ -320,6 +385,54 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
     return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
 
   return -1;
+}
+#endif
+
+#if defined(OS_WIN)
+bool ChromeContentBrowserClient::SandboxPlugin(CommandLine* command_line,
+                                               sandbox::TargetPolicy* policy) {
+  std::wstring plugin_dll = command_line->
+      GetSwitchValueNative(switches::kPluginPath);
+
+  FilePath builtin_flash;
+  if (!PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_flash))
+    return false;
+
+  FilePath plugin_path(plugin_dll);
+  if (plugin_path != builtin_flash)
+    return false;
+
+  if (base::win::GetVersion() <= base::win::VERSION_XP ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableFlashSandbox)) {
+    return false;
+  }
+
+  // Add the policy for the pipes.
+  sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+                           L"\\\\.\\pipe\\chrome.*");
+  if (result != sandbox::SBOX_ALL_OK) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Spawn the flash broker and apply sandbox policy.
+  if (LoadFlashBroker(plugin_path, command_line)) {
+    policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
+    policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                          sandbox::USER_INTERACTIVE);
+    policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+  } else {
+    // Could not start the broker, use a very weak policy instead.
+    DLOG(WARNING) << "Failed to start flash broker";
+    policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
+    policy->SetTokenLevel(
+        sandbox::USER_UNPROTECTED, sandbox::USER_UNPROTECTED);
+  }
+
+  return true;
 }
 #endif
 

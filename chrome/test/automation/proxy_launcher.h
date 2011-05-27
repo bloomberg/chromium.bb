@@ -176,13 +176,6 @@ class ProxyLauncher {
     disable_breakpad_ = value;
   }
 
-  // Get/Set a flag to run the plugin processes inside the sandbox when running
-  // the tests
-  static bool safe_plugins() { return safe_plugins_; }
-  static void set_safe_plugins(bool value) {
-    safe_plugins_ = value;
-  }
-
   static bool show_error_dialogs() { return show_error_dialogs_; }
   static void set_show_error_dialogs(bool value) {
     show_error_dialogs_ = value;
@@ -262,9 +255,6 @@ class ProxyLauncher {
 
   // If true, runs the renderer outside the sandbox.
   static bool no_sandbox_;
-
-  // If true, runs plugin processes inside the sandbox.
-  static bool safe_plugins_;
 
   // If true, write full memory dump during crash.
   static bool full_memory_dump_;

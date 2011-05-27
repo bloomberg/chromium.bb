@@ -31,7 +31,6 @@ struct PolicyGlobal;
 class PolicyBase : public Dispatcher, public TargetPolicy {
  public:
   PolicyBase();
-  ~PolicyBase();
 
   virtual void AddRef() {
     ::InterlockedIncrement(&ref_count);
@@ -124,6 +123,8 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual EvalResult EvalPolicy(int service, CountedParameterSetBase* params);
 
  private:
+  ~PolicyBase();
+
   // Test IPC providers.
   bool Ping(IPCInfo* ipc, void* cookie);
 

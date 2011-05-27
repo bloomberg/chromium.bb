@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/common/chrome_descriptors.h"
+#include "content/common/content_switches.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
 

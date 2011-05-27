@@ -108,10 +108,6 @@ const char kBrowserCrashTest[]              = "crash-test";
 // testing purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 
-// Run Chrome in Chrome Frame mode. This means that Chrome expects to be run
-// as a dependent process of the Chrome Frame plugin.
-const char kChromeFrame[]                   = "chrome-frame";
-
 // Tells chrome to load the specified version of chrome.dll on Windows. If
 // this version cannot be loaded, Chrome will exit.
 const char kChromeVersion[]                 = "chrome-version";
@@ -177,9 +173,6 @@ const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
 
 // Disables GPU accelerated video display.
 const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
-
-// Disables the alternate window station for the renderer.
-const char kDisableAltWinstation[]          = "disable-winsta";
 
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
@@ -714,10 +707,6 @@ const char kNaClDebugIP[]                   = "nacl-debug-ip";
 // Sets the default port range for debugging.
 const char kNaClDebugPorts[]                = "nacl-debug-ports";
 
-// Causes the process to run as a NativeClient broker
-// (used for launching NaCl loader processes on 64-bit Windows).
-const char kNaClBrokerProcess[]             = "nacl-broker";
-
 // On POSIX only: the contents of this flag are prepended to the nacl-loader
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kNaClLoaderCmdPrefix[]           = "nacl-loader-cmd-prefix";
@@ -973,10 +962,6 @@ const char kTestType[]                      = "test-type";
 // The value of this switch tells the app to listen for and broadcast
 // testing-related messages on IPC channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
-
-// Excludes these plugins from the plugin sandbox.
-// This is a comma-separated list of plugin library names.
-const char kTrustedPlugins[]                = "trusted-plugins";
 
 // Experimental. Shows a dialog asking the user to try chrome. This flag
 // is to be used only by the upgrade process.

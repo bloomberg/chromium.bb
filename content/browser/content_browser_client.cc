@@ -86,4 +86,11 @@ int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
 }
 #endif
 
+#if defined(OS_WIN)
+bool ContentBrowserClient::SandboxPlugin(CommandLine* command_line,
+                                         sandbox::TargetPolicy* policy) {
+  return false;
+}
+#endif
+
 }  // namespace content

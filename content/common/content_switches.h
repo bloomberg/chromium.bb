@@ -14,8 +14,11 @@ extern const char kAllowFileAccessFromFiles[];
 extern const char kAllowRunningInsecureContent[];
 extern const char kAllowSandboxDebugging[];
 extern const char kBrowserSubprocessPath[];
+// TODO(jam): this doesn't belong in content.
+extern const char kChromeFrame[];
 extern const char kDisable3DAPIs[];
 extern const char kDisableAcceleratedCompositing[];
+extern const char kDisableAltWinstation[];
 extern const char kDisableApplicationCache[];
 extern const char kDisableAudio[];
 extern const char kDisableBackingStoreLimit[];
@@ -75,6 +78,7 @@ extern const char kLoadPlugin[];
 extern const char kLoggingLevel[];
 extern const char kLogPluginMessages[];
 // TODO(jam): this doesn't belong in content.
+extern const char kNaClBrokerProcess[];
 extern const char kNaClLoaderProcess[];
 extern const char kNoDisplayingInsecureContent[];
 extern const char kNoJsRandomness[];
@@ -105,7 +109,6 @@ extern const char kRendererCmdPrefix[];
 extern const char kRendererCrashTest[];
 extern const char kRendererProcess[];
 extern const char kRendererStartupDialog[];
-extern const char kSafePlugins[];
 // TODO(jam): this doesn't belong in content.
 extern const char kServiceProcess[];
 extern const char kShowPaintRects[];

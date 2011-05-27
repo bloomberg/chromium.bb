@@ -24,6 +24,10 @@ class CookieList;
 class CookieOptions;
 }
 
+namespace sandbox {
+class TargetPolicy;
+}
+
 namespace content {
 
 class ResourceContext;
@@ -104,6 +108,12 @@ class ContentBrowserClient {
 #if defined(OS_LINUX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type);
+#endif
+
+#if defined(OS_WIN)
+  // Allows the embedder to sandbox a plugin, and apply a custom policy.
+  virtual bool SandboxPlugin(CommandLine* command_line,
+                             sandbox::TargetPolicy* policy);
 #endif
 };
 
