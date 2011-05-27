@@ -926,7 +926,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRendererCrash) {
 
 // Checks that we correctly use a prerendered page when navigating to a
 // fragment.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNavigateFragment) {
+// DISABLED: http://crbug.com/84154
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderPageNavigateFragment) {
   PrerenderTestURL("files/prerender/prerender_fragment.html",
                    FINAL_STATUS_FRAGMENT_MISMATCH,
                    1);
@@ -946,8 +948,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that we correctly use a prerendered page when we prerender a fragment
 // but navigate to a different fragment on the same page.
+// DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderFragmentNavigateFragment) {
+                       DISABLED_PrerenderFragmentNavigateFragment) {
   PrerenderTestURL("files/prerender/prerender_fragment.html#other_fragment",
                    FINAL_STATUS_FRAGMENT_MISMATCH,
                    1);
@@ -968,8 +971,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that we correctly use a prerendered page when the page uses a crient
 // redirect to refresh to a fragment on the same page.
+// DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClientRedirectToFragment) {
+                       DISABLED_PrerenderClientRedirectToFragment) {
   PrerenderTestURL(
       CreateClientRedirect("files/prerender/prerender_fragment.html"),
       FINAL_STATUS_FRAGMENT_MISMATCH,
