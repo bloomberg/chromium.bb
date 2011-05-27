@@ -251,11 +251,6 @@ nptl/tst-tls4modb
 nptl/tst-mutex6
 nptl/tst-mutexpi6
 rt/tst-clock
-rt/tst-timer
-rt/tst-timer2
-rt/tst-timer3
-rt/tst-timer4
-rt/tst-timer5
 nptl/tst-spin3
 nptl/tst-exit2
 nptl/tst-exit3

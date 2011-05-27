@@ -61,7 +61,7 @@ readonly collect2out="/tmp/$(basename "$0").$$.tmp"
 # Detect if there was an unsupported symbol in the collect2 output.
 unsup_msg=none
 readonly unsup_msg_file="/tmp/$(basename "$0")unsup.$$.tmp"
-readonly unsup_regex="\\(sigaction\\|pthread_cancel\\)"
+readonly unsup_regex="\\(sigaction\\|pthread_cancel\\|accept\\|bind\\|connect\\|ftruncate\\|getcontext\\|gethostname\\|getrlimit\\|getsockname\\|getsockopt\\|listen\\|makecontext\\|pread\\|pwrite\\|recv\\|recvfrom\\|recvmsg\\|send\\|sendmsg\\|sendto\\|setcontext\\|setrlimit\\|setsockopt\\|socketpair\\|swapcontext\\|truncate\\|wait\\|waitpid\\)"
 readonly w0="warning: warning: "
 readonly w1=" is not implemented and will always fail"
 if sed 's/.*'"$w0$unsup_regex$w1/__\1__/" "$collect2out" | \
