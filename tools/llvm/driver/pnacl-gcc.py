@@ -120,8 +120,8 @@ EXTRA_ENV = {
 
   'LD_ARGS_newlib_static':
     '-static ${LIBS}/crt1.o ${LIBS_BC}/nacl_startup.bc ${ld_inputs} ' +
-    '--start-group -lc -lnacl ${LIBSTDCPP} ${LIBS}/libcrt_platform.a ' +
-    '--end-group -lgcc_eh -lgcc',
+    '--start-group -lgcc_eh -lgcc -lc -lnacl ' +
+    '${LIBSTDCPP} ${LIBS}/libcrt_platform.a --end-group',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
