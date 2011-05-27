@@ -155,7 +155,8 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
 
   if (is_preview_) {
     script_initiated_preview_frame_ = frame;
-    Send(new PrintHostMsg_ScriptInitiatedPrintPreview(routing_id()));
+    context_menu_preview_node_.reset();
+    Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
   } else {
     Print(frame, NULL);
   }
@@ -164,13 +165,15 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview,
-                        OnPrintForPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview,
+                        OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview,
+                        OnPrintForPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(PrintMsg_ResetScriptedPrintCount,
                         ResetScriptedPrintCount)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -238,18 +241,15 @@ void PrintWebViewHelper::OnPrintPages() {
 
 void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   DCHECK(is_preview_);
+  DCHECK(!context_menu_preview_node_.get() || !script_initiated_preview_frame_);
 
   if (script_initiated_preview_frame_) {
     // Script initiated print preview.
-    DCHECK(!context_menu_preview_node_.get());
     PrintPreview(script_initiated_preview_frame_, NULL, settings);
-    script_initiated_preview_frame_ = NULL;
   } else if (context_menu_preview_node_.get()) {
     // User initiated - print node under context menu.
-    DCHECK(!script_initiated_preview_frame_);
     PrintPreview(context_menu_preview_node_->document().frame(),
                  context_menu_preview_node_.get(), settings);
-    context_menu_preview_node_.reset();
   } else {
     // User initiated - normal print preview.
     WebFrame* frame;
@@ -274,11 +274,19 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   // its |context_menu_node_|.
   if (is_preview_) {
     context_menu_preview_node_.reset(new WebNode(context_menu_node));
-    Send(new PrintHostMsg_PrintPreviewNodeUnderContextMenu(routing_id()));
+    script_initiated_preview_frame_ = NULL;
+    Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
   } else {
     WebNode duplicate_node(context_menu_node);
     Print(duplicate_node.document().frame(), &duplicate_node);
   }
+}
+
+void PrintWebViewHelper::OnInitiatePrintPreview() {
+  DCHECK(is_preview_);
+  script_initiated_preview_frame_ = NULL;
+  context_menu_preview_node_.reset();
+  Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {

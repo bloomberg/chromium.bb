@@ -31,7 +31,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -1368,17 +1367,15 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_PRINT:
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {
-        if (switches::IsPrintPreviewEnabled()) {
-          printing::PrintPreviewTabController::PrintPreview(
-              source_tab_contents_);
-        } else {
-          TabContentsWrapper* tab_contents_wrapper =
-              TabContentsWrapper::GetCurrentWrapperForContents(
-                  source_tab_contents_);
-          if (!tab_contents_wrapper)
-            break;
+        TabContentsWrapper* tab_contents_wrapper =
+            TabContentsWrapper::GetCurrentWrapperForContents(
+                source_tab_contents_);
+        if (!tab_contents_wrapper)
+          break;
+        if (switches::IsPrintPreviewEnabled())
+          tab_contents_wrapper->print_view_manager()->PrintPreviewNow();
+        else
           tab_contents_wrapper->print_view_manager()->PrintNow();
-        }
       } else {
         rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->routing_id()));
       }

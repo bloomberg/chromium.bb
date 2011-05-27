@@ -60,7 +60,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -1714,12 +1713,10 @@ void Browser::EmailPageLocation() {
 }
 
 void Browser::Print() {
-  if (switches::IsPrintPreviewEnabled()) {
-    printing::PrintPreviewTabController::PrintPreview(
-        GetSelectedTabContents());
-  } else {
+  if (switches::IsPrintPreviewEnabled())
+    GetSelectedTabContentsWrapper()->print_view_manager()->PrintPreviewNow();
+  else
     GetSelectedTabContentsWrapper()->print_view_manager()->PrintNow();
-  }
 }
 
 void Browser::ToggleEncodingAutoDetect() {

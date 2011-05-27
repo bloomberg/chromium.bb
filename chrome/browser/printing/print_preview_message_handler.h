@@ -29,10 +29,9 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   TabContents* GetPrintPreviewTab();
 
   // Message handlers.
+  void OnRequestPrintPreview();
   void OnPagesReadyForPreview(
       const PrintHostMsg_DidPreviewDocument_Params& params);
-  void OnPrintPreviewNodeUnderContextMenu();
-  void OnScriptInitiatedPrintPreview();
   void OnPrintPreviewFailed(int document_cookie);
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);

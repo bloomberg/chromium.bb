@@ -103,6 +103,9 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // Print the document.
   void OnPrintPages();
 
+  // Initiate print preview.
+  void OnInitiatePrintPreview();
+
   // Generate a print preview using |settings|.
   void OnPrintPreview(const DictionaryValue& settings);
 

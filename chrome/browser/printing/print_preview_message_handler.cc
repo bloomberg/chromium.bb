@@ -56,6 +56,10 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
   return tab_controller->GetPrintPreviewForTab(tab_contents());
 }
 
+void PrintPreviewMessageHandler::OnRequestPrintPreview() {
+  PrintPreviewTabController::PrintPreview(tab_contents());
+}
+
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     const PrintHostMsg_DidPreviewDocument_Params& params) {
   // Always need to stop the worker and send PrintMsg_PrintingDone.
@@ -93,14 +97,6 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
       params.modifiable);
 }
 
-void PrintPreviewMessageHandler::OnPrintPreviewNodeUnderContextMenu() {
-  PrintPreviewTabController::PrintPreview(tab_contents());
-}
-
-void PrintPreviewMessageHandler::OnScriptInitiatedPrintPreview() {
-  PrintPreviewTabController::PrintPreview(tab_contents());
-}
-
 void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
   // Always need to stop the worker.
   StopWorker(document_cookie);
@@ -117,12 +113,10 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
+                        OnRequestPrintPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PagesReadyForPreview,
                         OnPagesReadyForPreview)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewNodeUnderContextMenu,
-                        OnPrintPreviewNodeUnderContextMenu)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptInitiatedPrintPreview,
-                        OnScriptInitiatedPrintPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)

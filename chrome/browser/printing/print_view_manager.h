@@ -41,6 +41,12 @@ class PrintViewManager : public NotificationObserver,
   // this function. Returns false if printing is impossible at the moment.
   bool PrintNow();
 
+  // Initiate print preview of the current document by first notifying the
+  // renderer. Since this happens asynchronous, the print preview tab creation
+  // will not be completed on the return of this function. Returns false if
+  // print preview is impossible at the moment.
+  bool PrintPreviewNow();
+
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName();
   virtual GURL RenderSourceUrl();

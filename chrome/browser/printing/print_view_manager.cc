@@ -63,6 +63,14 @@ bool PrintViewManager::PrintNow() {
   return Send(new PrintMsg_PrintPages(routing_id()));
 }
 
+bool PrintViewManager::PrintPreviewNow() {
+  // Don't print preview interstitials.
+  if (tab_contents()->showing_interstitial_page())
+    return false;
+
+  return Send(new PrintMsg_InitiatePrintPreview(routing_id()));
+}
+
 void PrintViewManager::StopNavigation() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);
