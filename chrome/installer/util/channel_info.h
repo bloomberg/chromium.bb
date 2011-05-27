@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,10 +43,6 @@ class ChannelInfo {
   // false (without modifying |channel_name|) if the channel could not be
   // determined.
   bool GetChannelName(std::wstring* channel_name) const;
-
-  // Returns true if this object and |other| have a common base (that which
-  // remains when all modifiers and suffixes are omitted).
-  bool EqualsBaseOf(const ChannelInfo& other) const;
 
   // Returns true if the -CEEE modifier is present in the value.
   bool IsCeee() const;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,18 +179,6 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
   }
 
   return false;
-}
-
-bool ChannelInfo::EqualsBaseOf(const ChannelInfo& other) const {
-  std::wstring::size_type this_base_end;
-  std::wstring::size_type other_base_end;
-
-  if (!FindModifier(MOD_STAGE, value_, &this_base_end, NULL))
-    this_base_end = FindInsertionPoint(MOD_STAGE, value_);
-  if (!FindModifier(MOD_STAGE, other.value_, &other_base_end, NULL))
-    other_base_end = FindInsertionPoint(MOD_STAGE, other.value_);
-  return value_.compare(0, this_base_end,
-                        other.value_, 0, other_base_end) == 0;
 }
 
 bool ChannelInfo::IsCeee() const {

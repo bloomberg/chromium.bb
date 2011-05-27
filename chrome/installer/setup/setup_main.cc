@@ -261,7 +261,6 @@ installer::InstallStatus RenameChromeExecutables(
 //     preserved (i.e., the --ready-mode command-line option is ignored).
 // --multi-install --chrome-frame
 //   - If a non-multi Chrome Frame installation is present, fail.
-//   - If a Chrome installation on a different channel is present, fail.
 //   - If --ready-mode and no Chrome installation is present, fail.
 //   - If a Chrome installation is present, add it to the set of products to
 //     install.
@@ -311,29 +310,8 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
           original_state.GetProductState(system_level,
                                          BrowserDistribution::CHROME_BROWSER);
       if (chrome_state != NULL) {
-        // Chrome Frame may not yet be installed if this is a first install, so
-        // use InstallationState's GetNonVersionedProductState() which lets us
-        // access the ap value from the partially constructed product state.
-        // There will be no value if we're not being managed by Google Update.
-        const ProductState* cf_non_versioned_state =
-            original_state.GetNonVersionedProductState(
-                system_level, BrowserDistribution::CHROME_FRAME);
-        DCHECK(cf_non_versioned_state);
-        const installer::ChannelInfo& cf_channel(
-            cf_non_versioned_state->channel());
-
-        // Fail if Chrome is already installed but is on a different update
-        // channel.
-        if (!cf_channel.EqualsBaseOf(chrome_state->channel())) {
-          LOG(ERROR) << "Cannot install Chrome Frame because existing Chrome "
-                        "install is on a different update channel.";
-          *status = installer::CONFLICTING_CHANNEL_EXISTS;
-          installer_state->WriteInstallerResult(*status,
-              IDS_INSTALL_CONFLICTING_CHANNEL_EXISTS_BASE, NULL);
-          return false;
-        }
-        // Otherwise, add Chrome to the set of products (making it multi-install
-        // in the process) so that it is updated, too.
+        // Add Chrome to the set of products (making it multi-install in the
+        // process) so that it is updated, too.
         scoped_ptr<Product> multi_chrome(new Product(
             BrowserDistribution::GetSpecificDistribution(
                 BrowserDistribution::CHROME_BROWSER)));
