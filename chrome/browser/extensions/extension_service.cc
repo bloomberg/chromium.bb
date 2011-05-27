@@ -2222,8 +2222,6 @@ void ExtensionService::UnregisterNaClModule(const GURL& url) {
 }
 
 void ExtensionService::UpdatePluginListWithNaClModules() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   FilePath path;
   PathService::Get(chrome::FILE_NACL_PLUGIN, &path);
 
