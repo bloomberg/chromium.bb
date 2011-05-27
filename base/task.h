@@ -546,4 +546,24 @@ inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
       function, MakeTuple(a, b, c, d, e, f, g, h));
 }
 
+namespace base {
+
+// ScopedTaskRunner is akin to scoped_ptr for Tasks.  It ensures that the Task
+// is executed and deleted no matter how the current scope exits.
+class BASE_API ScopedTaskRunner {
+ public:
+  // Takes ownership of the task.
+  explicit ScopedTaskRunner(Task* task);
+  ~ScopedTaskRunner();
+
+  Task* Release();
+
+ private:
+  Task* task_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedTaskRunner);
+};
+
+}  // namespace base
+
 #endif  // BASE_TASK_H_

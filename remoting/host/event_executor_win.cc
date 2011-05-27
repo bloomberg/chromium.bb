@@ -46,13 +46,13 @@ EventExecutorWin::EventExecutorWin(MessageLoop* message_loop,
 }
 
 void EventExecutorWin::InjectKeyEvent(const KeyEvent* event, Task* done) {
-  media::AutoTaskRunner done_runner(done);
+  base::ScopedTaskRunner done_runner(done);
 
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorWin::InjectKeyEvent,
-                          event, done_runner.release()));
+                          event, done_runner.Release()));
     return;
   }
 
@@ -60,13 +60,13 @@ void EventExecutorWin::InjectKeyEvent(const KeyEvent* event, Task* done) {
 }
 
 void EventExecutorWin::InjectMouseEvent(const MouseEvent* event, Task* done) {
-  media::AutoTaskRunner done_runner(done);
+  base::ScopedTaskRunner done_runner(done);
 
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorWin::InjectMouseEvent,
-                          event, done_runner.release()));
+                          event, done_runner.Release()));
     return;
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "media/base/callback.h"
 #include "remoting/base/decoder.h"
 #include "remoting/base/decoder_row_based.h"
 #include "remoting/base/decoder_vp8.h"
@@ -15,7 +14,6 @@
 #include "remoting/client/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
 
-using media::AutoTaskRunner;
 using remoting::protocol::ChannelConfig;
 using remoting::protocol::SessionConfig;
 
@@ -84,11 +82,11 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
                         done));
     return;
   }
-  AutoTaskRunner done_runner(done);
+  base::ScopedTaskRunner done_runner(done);
 
   TraceContext::tracer()->PrintString("Decode Packet called.");
 
-  AllocateFrame(packet, done_runner.release());
+  AllocateFrame(packet, done_runner.Release());
 }
 
 void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
@@ -100,7 +98,7 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
                         &RectangleUpdateDecoder::AllocateFrame, packet, done));
     return;
   }
-  AutoTaskRunner done_runner(done);
+  base::ScopedTaskRunner done_runner(done);
 
   TraceContext::tracer()->PrintString("AllocateFrame called.");
 
@@ -133,11 +131,11 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
                              &frame_,
                              NewRunnableMethod(this,
                                  &RectangleUpdateDecoder::ProcessPacketData,
-                                 packet, done_runner.release()));
+                                 packet, done_runner.Release()));
     frame_is_new_ = true;
     return;
   }
-  ProcessPacketData(packet, done_runner.release());
+  ProcessPacketData(packet, done_runner.Release());
 }
 
 void RectangleUpdateDecoder::ProcessPacketData(
@@ -150,7 +148,7 @@ void RectangleUpdateDecoder::ProcessPacketData(
                         done));
     return;
   }
-  AutoTaskRunner done_runner(done);
+  base::ScopedTaskRunner done_runner(done);
 
   if (frame_is_new_) {
     decoder_->Reset();
