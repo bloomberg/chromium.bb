@@ -60,6 +60,12 @@ void CookiesViewHandler::GetLocalizedValues(
     { "search_cookies", IDS_COOKIES_SEARCH_COOKIES },
     { "remove_cookie", IDS_COOKIES_REMOVE_LABEL },
     { "remove_all_cookie", IDS_COOKIES_REMOVE_ALL_LABEL },
+    { "cookie_file_system", IDS_COOKIES_FILE_SYSTEM },
+    { "label_file_system_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL },
+    { "label_file_system_temporary_usage",
+      IDS_COOKIES_FILE_SYSTEM_TEMPORARY_USAGE_LABEL },
+    { "label_file_system_persistent_usage",
+      IDS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

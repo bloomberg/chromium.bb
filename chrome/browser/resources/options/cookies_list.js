@@ -34,6 +34,9 @@ cr.define('options', function() {
     'indexed_db': [ ['origin', 'label_indexed_db_origin'],
                     ['size', 'label_indexed_db_size'],
                     ['modified', 'label_indexed_db_last_modified'] ],
+    'file_system': [ ['origin', 'label_file_system_origin'],
+                     ['persistent', 'label_file_system_persistent_usage' ],
+                     ['temporary', 'label_file_system_temporary_usage' ] ],
   };
 
   const localStrings = new LocalStrings();
@@ -204,7 +207,8 @@ cr.define('options', function() {
         database: false,
         localStorage: false,
         appCache: false,
-        indexedDb: false
+        indexedDb: false,
+        fileSystem: false,
       };
       if (this.origin)
         this.origin.collectSummaryInfo(info);
@@ -219,6 +223,8 @@ cr.define('options', function() {
         list.push(localStrings.getString('cookie_local_storage'));
       if (info.appCache)
         list.push(localStrings.getString('cookie_app_cache'));
+      if (info.fileSystem)
+        list.push(localStrings.getString('cookie_file_system'));
       var text = '';
       for (var i = 0; i < list.length; ++i)
         if (text.length > 0)
@@ -416,6 +422,8 @@ cr.define('options', function() {
           info.appCache = true;
         else if (this.data.type == 'indexed_db')
           info.indexedDb = true;
+        else if (this.data.type == 'file_system')
+          info.fileSystem = true;
       }
     },
 
@@ -443,6 +451,9 @@ cr.define('options', function() {
             break;
           case 'indexed_db':
             text = localStrings.getString('cookie_indexed_db');
+            break;
+          case 'file_system':
+            text = localStrings.getString('cookie_file_system');
             break;
         }
         var div = item.ownerDocument.createElement('div');

@@ -37,6 +37,9 @@ static const char kKeyCreated[] = "created";
 static const char kKeyExpires[] = "expires";
 static const char kKeyModified[] = "modified";
 
+static const char kKeyPersistent[] = "persistent";
+static const char kKeyTemporary[] = "temporary";
+
 // Encodes a pointer value into a hex string.
 std::string PointerToHexString(const void* pointer) {
   return base::HexEncode(&pointer, sizeof(pointer));
@@ -174,6 +177,34 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       dict->SetString(kKeyModified, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified)));
 
+      break;
+    }
+    case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM: {
+      dict->SetString(kKeyType, "file_system");
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
+
+      const BrowsingDataFileSystemHelper::FileSystemInfo& file_system_info =
+          *node.GetDetailedInfo().file_system_info;
+
+      dict->SetString(kKeyOrigin, file_system_info.origin.spec());
+      dict->SetString(kKeyPersistent,
+                      file_system_info.has_persistent ?
+                          UTF16ToUTF8(FormatBytes(
+                              file_system_info.usage_persistent,
+                              GetByteDisplayUnits(
+                                  file_system_info.usage_persistent),
+                              true)) :
+                          l10n_util::GetStringUTF8(
+                              IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
+      dict->SetString(kKeyTemporary,
+                      file_system_info.has_temporary ?
+                          UTF16ToUTF8(FormatBytes(
+                              file_system_info.usage_temporary,
+                              GetByteDisplayUnits(
+                                  file_system_info.usage_temporary),
+                              true)) :
+                          l10n_util::GetStringUTF8(
+                              IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       break;
     }
     default:
