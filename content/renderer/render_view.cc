@@ -2713,30 +2713,26 @@ void RenderView::logCrossFramePropertyAccess(WebFrame* frame,
           frame, target, cross_origin, property_name, event_id));
 }
 
-void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
-  CheckPreferredSize();
-}
-
-void RenderView::mayHaveChangedRenderedSize(WebFrame* frame) {
-  if (!send_preferred_size_changes_ || !webview())
-    return;
-  // If we hit this code path, then stop the deprecated timer.
-  check_preferred_size_timer_.Stop();
-  preferred_size_change_timer_.Stop();
-  preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
-                                     &RenderView::CheckPreferredSize);
-}
-
-void RenderView::CheckPreferredSize() {
-  // We don't always want to send the change messages over IPC, only if we've
-  // be put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
+void RenderView::didUpdateLayout(WebFrame* frame) {
+  // We don't always want to set up a timer, only if we've been put in that
+  // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
   if (!send_preferred_size_changes_ || !webview())
     return;
 
-  // WebCore likes to tell us things have changed even when they haven't, so
-  // cache the width and height and only send the IPC message when we're sure
-  // they're different.
+  if (check_preferred_size_timer_.IsRunning())
+    return;
+  check_preferred_size_timer_.Start(TimeDelta::FromMilliseconds(0), this,
+                                    &RenderView::CheckPreferredSize);
+}
+
+void RenderView::CheckPreferredSize() {
+  // We don't always want to send the change messages over IPC, only if we've
+  // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
+  // message.
+  if (!send_preferred_size_changes_ || !webview())
+    return;
+
   gfx::Size size(webview()->mainFrame()->contentsPreferredWidth(),
                  webview()->mainFrame()->documentElementScrollHeight());
 
@@ -3447,15 +3443,10 @@ void RenderView::OnEnablePreferredSizeChangedMode(int flags) {
     return;
   send_preferred_size_changes_ = true;
 
-  // WebKit doesn't send a notification of the effective height of the page
-  // changes, so poll for it.
-  // TODO: Add a notification for this to WebKit, remove polling. After that's
-  // done, rename kPreferredSizeHeightThisIsSlow to kPreferredSizeHeight.
-  // http://crbug.com/44850
-  if (flags & kPreferredSizeHeightThisIsSlow) {
-    preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
-                                       &RenderView::CheckPreferredSize);
-  }
+  // Start off with an initial preferred size notification (in case
+  // |didUpdateLayout| was already called).
+  if (webview())
+    didUpdateLayout(webview()->mainFrame());
 }
 
 void RenderView::OnDisableScrollbarsForSmallWindows(
@@ -3737,7 +3728,7 @@ webkit::ppapi::PluginInstance* RenderView::GetBitmapForOptimizedPluginPaint(
 }
 
 gfx::Point RenderView::GetScrollOffset() {
-  WebKit::WebSize scroll_offset = webview()->mainFrame()->scrollOffset();
+  WebSize scroll_offset = webview()->mainFrame()->scrollOffset();
   return gfx::Point(scroll_offset.width, scroll_offset.height);
 }
 

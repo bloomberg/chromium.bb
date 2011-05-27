@@ -544,9 +544,7 @@ class RenderView : public RenderWidget,
       bool cross_origin,
       const WebKit::WebString& property_name,
       unsigned long long event_id);
-  virtual void didChangeContentsSize(WebKit::WebFrame* frame,
-                                     const WebKit::WebSize& size);
-  virtual void mayHaveChangedRenderedSize(WebKit::WebFrame* frame);
+  virtual void didUpdateLayout(WebKit::WebFrame* frame);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void reportFindInPageMatchCount(int request_id,
                                           int count,
@@ -828,8 +826,7 @@ class RenderView : public RenderWidget,
                             const WebKit::WebURLError& original_error,
                             const std::string& html);
 
-  // Check whether the preferred size has changed. This is called periodically
-  // by preferred_size_change_timer_.
+  // Check whether the preferred size has changed.
   void CheckPreferredSize();
 
   // This callback is triggered when DownloadFavicon completes, either
@@ -1027,11 +1024,6 @@ class RenderView : public RenderWidget,
   // Cache the preferred size of the page in order to prevent sending the IPC
   // when layout() recomputes but doesn't actually change sizes.
   gfx::Size preferred_size_;
-
-  // Nasty hack. WebKit does not send us events when the preferred size changes,
-  // so we must poll it. See also:
-  // https://bugs.webkit.org/show_bug.cgi?id=32807.
-  base::RepeatingTimer<RenderView> preferred_size_change_timer_;
 
   // Used to delay determining the preferred size (to avoid intermediate
   // states for the sizes).
