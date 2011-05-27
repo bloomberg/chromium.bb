@@ -183,3 +183,6 @@ PREFIX: webcore::renderstyle::haspseudostyle___webcore::cssstyleselector::stylef
 
 # 84048
 PREFIX: webcore::element::getattribute___webcore::floatwidthofsubstringusingsvgfont___webcore::svgtextrunrenderingcontext::floatwidthusingsvgfont___webcore::font::width___webcore::renderblock::linebreaker::nextlinebreak___webcore::renderblock::layoutrunsandfloats___webcore::renderblock::layoutinlinechildren___webcore::renderblock::layoutblock
+
+# 84178
+PREFIX: `anonymous namespace'::establishchannelcallback::send___`anonymous namespace'::establishchannelcallback::runwithparams___gpuprocesshost::sendoutstandingreplies
