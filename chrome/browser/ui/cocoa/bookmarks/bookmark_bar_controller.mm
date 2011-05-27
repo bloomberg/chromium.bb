@@ -1847,6 +1847,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point
                                     fromArray:(NSArray*)array {
   for (BookmarkButton* button in array) {
+    // Hidden buttons can overlap valid visible buttons, just ignore.
+    if ([button isHidden])
+      continue;
     // Break early if we've gone too far.
     if ((NSMinX([button frame]) > point.x) || (![button superview]))
       return nil;
