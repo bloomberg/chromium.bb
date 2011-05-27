@@ -330,8 +330,12 @@ def ReinterpretPathForChroot(path):
   return new_path
 
 
-def GetTrackingBranch(branch, cwd):
-  """Gets the tracking branch for the specified branch / directory.
+def GetPushBranch(branch, cwd):
+  """Gets the appropriate push branch for the specified branch / directory.
+
+  If branch has a valid tracking branch, we should push to that branch. If
+  the tracking branch is a revision, we can't push to that, so we should look
+  at the default branch from the manifest.
 
   Args:
     branch: Branch to examine for tracking branch.
@@ -341,8 +345,14 @@ def GetTrackingBranch(branch, cwd):
   for key in ('remote', 'merge'):
     cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
     info[key] = RunCommand(cmd, redirect_stdout=True, cwd=cwd).output.strip()
+  if not info['merge'].startswith('refs/heads/'):
+    manifest = RunCommand(['repo', 'manifest', '-o', '-'], redirect_stdout=True,
+                          cwd=cwd).output
+    m = re.search(r'<default[^>]*revision="(refs/heads/[^"]*)"', manifest)
+    assert m, "Can't find default revision in manifest"
+    info['merge'] = m.group(1)
   assert info['merge'].startswith('refs/heads/')
-  return info['merge'].replace('refs/heads', info['remote'])
+  return info['remote'], info['merge'].replace('refs/heads/', '')
 
 
 def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
@@ -359,12 +369,12 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
     Raises:
       GitPushFailed if push was unsuccessful after retries
   """
-  tracking_branch = GetTrackingBranch(branch, cwd)
+  remote, push_branch = GetPushBranch(branch, cwd)
   for retry in range(1, retries + 1):
     try:
       RunCommand(['git', 'remote', 'update'], cwd=cwd)
-      RunCommand(['git', 'rebase', tracking_branch], cwd=cwd)
-      push_command = ['git', 'push']
+      RunCommand(['git', 'rebase', '%s/%s' % (remote, push_branch)], cwd=cwd)
+      push_command = ['git', 'push', remote, '%s:%s' % (branch, push_branch)]
       if dryrun:
         push_command.append('--dry-run')
 
