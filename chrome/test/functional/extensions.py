@@ -94,7 +94,7 @@ class ExtensionsTest(pyauto.PyUITest):
     # None of the extensions crashed.
     return None
 
-  def testExtensionCrashes(self):
+  def ExtensionCrashes(self):
     """Add top extensions; confirm browser stays up when visiting top urls"""
     # TODO: provide a way in pyauto to pass args to a test - take these as args
     extensions_dir = os.path.join(self.DataDir(), 'extensions-tool')
@@ -146,21 +146,6 @@ class ExtensionsTest(pyauto.PyUITest):
                     'experimental' in permissions_api and
                     'tabs' in permissions_api,
                     msg='Unexpected host permissions information.')
-
-  def testUpdateExtensionsNow(self):
-    """Ensures that the "Update Extensions Now" functionality works properly."""
-    # To verify that the "Update Extensions Now" functionality works, we first
-    # ensure that the only app present in the NTP is the "Web Store" app.  Then,
-    # we update the extensions, and verify that afterward, the two promo apps
-    # are installed in addition to the "Web Store" app.
-    app_info = self.GetNTPApps()
-    self.assertTrue(len(app_info) == 1 and 'name' in app_info[0] and
-                    app_info[0]['name'] == 'Chrome Web Store',
-                    msg='Web Store not present in NTP in fresh profile.')
-    self.UpdateExtensionsNow()
-    app_info = self.GetNTPApps()
-    self.assertEqual(len(app_info), 3,
-                     msg='Error verifying promo apps after extension update.')
 
 
 if __name__ == '__main__':

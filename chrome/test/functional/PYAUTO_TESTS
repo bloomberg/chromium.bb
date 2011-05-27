@@ -55,10 +55,11 @@
       '-databases.DatabasesTest.testIncognitoDatabaseNotPersistent',
       '-databases.DatabasesTest.testRegularCannotReadIncognitoDatabase',
       'downloads',
+      'execute_javascript',
+      'extensions',
       'find_in_page',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
-      'execute_javascript',
       'history',
       'https',
       'imports',
