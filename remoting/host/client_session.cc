@@ -5,6 +5,7 @@
 #include "remoting/host/client_session.h"
 
 #include "base/task.h"
+#include "media/base/callback.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/proto/auth.pb.h"
 
@@ -27,7 +28,7 @@ ClientSession::~ClientSession() {
 
 void ClientSession::SuggestResolution(
     const protocol::SuggestResolutionRequest* msg, Task* done) {
-  base::ScopedTaskRunner done_runner(done);
+  media::AutoTaskRunner done_runner(done);
 
   if (!authenticated_) {
     LOG(WARNING) << "Invalid control message received "
@@ -40,7 +41,7 @@ void ClientSession::BeginSessionRequest(
     const protocol::LocalLoginCredentials* credentials, Task* done) {
   DCHECK(event_handler_);
 
-  base::ScopedTaskRunner done_runner(done);
+  media::AutoTaskRunner done_runner(done);
 
   bool success = false;
   switch (credentials->type()) {
@@ -69,17 +70,19 @@ void ClientSession::OnAuthorizationComplete(bool success) {
 
 void ClientSession::InjectKeyEvent(const protocol::KeyEvent* event,
                                    Task* done) {
-  base::ScopedTaskRunner done_runner(done);
+  media::AutoTaskRunner done_runner(done);
   if (authenticated_) {
-    input_stub_->InjectKeyEvent(event, done_runner.Release());
+    done_runner.release();
+    input_stub_->InjectKeyEvent(event, done);
   }
 }
 
 void ClientSession::InjectMouseEvent(const protocol::MouseEvent* event,
                                      Task* done) {
-  base::ScopedTaskRunner done_runner(done);
+  media::AutoTaskRunner done_runner(done);
   if (authenticated_) {
-    input_stub_->InjectMouseEvent(event, done_runner.Release());
+    done_runner.release();
+    input_stub_->InjectMouseEvent(event, done);
   }
 }
 

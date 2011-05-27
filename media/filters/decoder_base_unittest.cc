@@ -53,7 +53,7 @@ class MockDecoderImpl : public DecoderBase<MockAudioDecoder, Buffer> {
 };
 
 ACTION(Initialize) {
-  base::ScopedTaskRunner done_runner(arg2);
+  AutoTaskRunner done_runner(arg2);
   *arg1 = true;
 }
 

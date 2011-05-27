@@ -381,6 +381,6 @@ void VideoCaptureImpl::AddDelegateOnIOThread() {
 }
 
 void VideoCaptureImpl::RemoveDelegateOnIOThread(Task* task) {
-  base::ScopedTaskRunner task_runner(task);
   message_filter_->RemoveDelegate(this);
+  media::AutoTaskRunner auto_runner(task);
 }

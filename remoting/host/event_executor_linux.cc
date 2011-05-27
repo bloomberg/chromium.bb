@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "media/base/callback.h"
 #include "remoting/proto/internal.pb.h"
 
 namespace remoting {
@@ -277,13 +278,13 @@ bool EventExecutorLinux::Init() {
 }
 
 void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
-  base::ScopedTaskRunner done_runner(done);
+  media::AutoTaskRunner done_runner(done);
 
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorLinux::InjectKeyEvent,
-                          event, done_runner.Release()));
+                          event, done_runner.release()));
     return;
   }
 
@@ -312,13 +313,13 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
 
 void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
                                           Task* done) {
-  base::ScopedTaskRunner done_runner(done);
+  media::AutoTaskRunner done_runner(done);
 
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorLinux::InjectMouseEvent,
-                          event, done_runner.Release()));
+                          event, done_runner.release()));
     return;
   }
 
