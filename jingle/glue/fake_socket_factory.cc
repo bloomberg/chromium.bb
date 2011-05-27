@@ -13,7 +13,7 @@ namespace jingle_glue {
 FakeUDPPacketSocket::FakeUDPPacketSocket(FakeSocketManager* fake_socket_manager,
                                          const net::IPEndPoint& address)
     : fake_socket_manager_(fake_socket_manager),
-      endpoint_(address), state_(STATE_OPEN), error_(0) {
+      endpoint_(address), state_(IS_OPEN), error_(0) {
   CHECK(IPEndPointToSocketAddress(endpoint_, &local_address_));
   fake_socket_manager_->AddSocket(this);
 }
@@ -22,11 +22,9 @@ FakeUDPPacketSocket::~FakeUDPPacketSocket() {
   fake_socket_manager_->RemoveSocket(this);
 }
 
-bool FakeUDPPacketSocket::GetLocalAddress(
-    talk_base::SocketAddress* address) const {
+talk_base::SocketAddress FakeUDPPacketSocket::GetLocalAddress() const {
   DCHECK(CalledOnValidThread());
-  *address = local_address_;
-  return true;
+  return local_address_;
 }
 
 talk_base::SocketAddress FakeUDPPacketSocket::GetRemoteAddress() const {
@@ -43,7 +41,7 @@ int FakeUDPPacketSocket::SendTo(const void *data, size_t data_size,
                                 const talk_base::SocketAddress& address) {
   DCHECK(CalledOnValidThread());
 
-  if (state_ == STATE_CLOSED) {
+  if (state_ == IS_CLOSED) {
     return ENOTCONN;
   }
 
@@ -62,22 +60,22 @@ int FakeUDPPacketSocket::SendTo(const void *data, size_t data_size,
 
 int FakeUDPPacketSocket::Close() {
   DCHECK(CalledOnValidThread());
-  state_ = STATE_CLOSED;
+  state_ = IS_CLOSED;
   return 0;
 }
 
-talk_base::Socket::ConnState FakeUDPPacketSocket::GetState() const {
+talk_base::AsyncPacketSocket::State FakeUDPPacketSocket::GetState() const {
   DCHECK(CalledOnValidThread());
 
   switch (state_) {
-    case STATE_OPEN:
-      return talk_base::Socket::CS_CONNECTED;
-    case STATE_CLOSED:
-      return talk_base::Socket::CS_CLOSED;
+    case IS_OPEN:
+      return STATE_BOUND;
+    case IS_CLOSED:
+      return STATE_CLOSED;
   }
 
   NOTREACHED();
-  return talk_base::Socket::CS_CLOSED;
+  return STATE_CLOSED;
 }
 
 int FakeUDPPacketSocket::GetOption(talk_base::Socket::Option opt, int* value) {

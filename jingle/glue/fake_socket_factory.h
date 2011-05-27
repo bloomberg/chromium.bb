@@ -34,30 +34,29 @@ class FakeUDPPacketSocket : public talk_base::AsyncPacketSocket,
                      const std::vector<char>& data);
 
   // talk_base::AsyncPacketSocket implementation.
-  virtual bool GetLocalAddress(
-      talk_base::SocketAddress* address) const OVERRIDE;
+  virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
   virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
   virtual int Send(const void *pv, size_t cb) OVERRIDE;
   virtual int SendTo(const void *pv, size_t cb,
                      const talk_base::SocketAddress& addr) OVERRIDE;
   virtual int Close() OVERRIDE;
-  virtual talk_base::Socket::ConnState GetState() const OVERRIDE;
+  virtual State GetState() const OVERRIDE;
   virtual int GetOption(talk_base::Socket::Option opt, int* value) OVERRIDE;
   virtual int SetOption(talk_base::Socket::Option opt, int value) OVERRIDE;
   virtual int GetError() const OVERRIDE;
   virtual void SetError(int error) OVERRIDE;
 
  private:
-  enum State {
-    STATE_OPEN,
-    STATE_CLOSED,
+  enum InternalState {
+    IS_OPEN,
+    IS_CLOSED,
   };
 
   scoped_refptr<FakeSocketManager> fake_socket_manager_;
   net::IPEndPoint endpoint_;
   talk_base::SocketAddress local_address_;
   talk_base::SocketAddress remote_address_;
-  State state_;
+  InternalState state_;
   int error_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUDPPacketSocket);

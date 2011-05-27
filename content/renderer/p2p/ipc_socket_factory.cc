@@ -29,13 +29,13 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
             const talk_base::SocketAddress& remote_address);
 
   // talk_base::AsyncPacketSocket interface.
-  virtual bool GetLocalAddress(talk_base::SocketAddress* address) const;
+  virtual talk_base::SocketAddress GetLocalAddress() const;
   virtual talk_base::SocketAddress GetRemoteAddress() const;
   virtual int Send(const void *pv, size_t cb);
   virtual int SendTo(const void *pv, size_t cb,
                      const talk_base::SocketAddress& addr);
   virtual int Close();
-  virtual talk_base::Socket::ConnState GetState() const;
+  virtual State GetState() const;
   virtual int GetOption(talk_base::Socket::Option opt, int* value);
   virtual int SetOption(talk_base::Socket::Option opt, int value);
   virtual int GetError() const;
@@ -50,17 +50,19 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
                               const std::vector<char>& data) OVERRIDE;
 
  private:
-  enum State {
-    STATE_UNINITIALIZED,
-    STATE_OPENING,
-    STATE_OPEN,
-    STATE_CLOSED,
-    STATE_ERROR,
+  enum InternalState {
+    IS_UNINITIALIZED,
+    IS_OPENING,
+    IS_OPEN,
+    IS_CLOSED,
+    IS_ERROR,
   };
 
   void InitAcceptedTcp(P2PSocketClient* client,
                        const talk_base::SocketAddress& local_address,
                        const talk_base::SocketAddress& remote_address);
+
+  P2PSocketType type_;
 
   // Message loop on which this socket was created and being used.
   MessageLoop* message_loop_;
@@ -72,15 +74,14 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   // renderer side doesn't know the address until it receives OnOpen()
   // event from the browser.
   talk_base::SocketAddress local_address_;
-  bool address_initialized_;
 
   // Remote address for client TCP connections.
   talk_base::SocketAddress remote_address_;
 
   // Current state of the object.
-  State state_;
+  InternalState state_;
 
-  // Current error code. Valid when state_ == STATE_ERROR.
+  // Current error code. Valid when state_ == IS_ERROR.
   int error_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcPacketSocket);
@@ -88,13 +89,12 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
 
 IpcPacketSocket::IpcPacketSocket()
     : message_loop_(MessageLoop::current()),
-      address_initialized_(false),
-      state_(STATE_UNINITIALIZED), error_(0) {
+      state_(IS_UNINITIALIZED), error_(0) {
 }
 
 IpcPacketSocket::~IpcPacketSocket() {
-  if (state_ == STATE_OPENING || state_ == STATE_OPEN ||
-      state_ == STATE_ERROR) {
+  if (state_ == IS_OPENING || state_ == IS_OPEN ||
+      state_ == IS_ERROR) {
     Close();
   }
 }
@@ -103,12 +103,13 @@ bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
                            const talk_base::SocketAddress& local_address,
                            const talk_base::SocketAddress& remote_address) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK_EQ(state_, IS_UNINITIALIZED);
 
+  type_ = type;
   client_ = client;
   local_address_ = local_address;
   remote_address_ = remote_address;
-  state_ = STATE_OPENING;
+  state_ = IS_OPENING;
 
   net::IPEndPoint local_endpoint;
   if (!jingle_glue::SocketAddressToIPEndPoint(local_address, &local_endpoint)) {
@@ -132,29 +133,23 @@ void IpcPacketSocket::InitAcceptedTcp(
     const talk_base::SocketAddress& local_address,
     const talk_base::SocketAddress& remote_address) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK_EQ(state_, IS_UNINITIALIZED);
 
   client_ = client;
   local_address_ = local_address;
   remote_address_ = remote_address;
-  state_ = STATE_OPEN;
+  state_ = IS_OPEN;
   client_->set_delegate(this);
 }
 
 // talk_base::AsyncPacketSocket interface.
-bool IpcPacketSocket::GetLocalAddress(talk_base::SocketAddress* address) const {
+talk_base::SocketAddress IpcPacketSocket::GetLocalAddress() const {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-
-  if (!address_initialized_)
-    return false;
-
-  *address = local_address_;
-  return true;
+  return local_address_;
 }
 
 talk_base::SocketAddress IpcPacketSocket::GetRemoteAddress() const {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-
   return remote_address_;
 }
 
@@ -168,16 +163,16 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   switch (state_) {
-    case STATE_UNINITIALIZED:
+    case IS_UNINITIALIZED:
       NOTREACHED();
       return EWOULDBLOCK;
-    case STATE_OPENING:
+    case IS_OPENING:
       return EWOULDBLOCK;
-    case STATE_CLOSED:
+    case IS_CLOSED:
       return ENOTCONN;
-    case STATE_ERROR:
+    case IS_ERROR:
       return error_;
-    case STATE_OPEN:
+    case IS_OPEN:
       // Continue sending the packet.
       break;
   }
@@ -201,32 +196,36 @@ int IpcPacketSocket::Close() {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   client_->Close();
-  state_ = STATE_CLOSED;
+  state_ = IS_CLOSED;
 
   return 0;
 }
 
-talk_base::Socket::ConnState IpcPacketSocket::GetState() const {
+talk_base::AsyncPacketSocket::State IpcPacketSocket::GetState() const {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   switch (state_) {
-    case STATE_UNINITIALIZED:
+    case IS_UNINITIALIZED:
       NOTREACHED();
-      return talk_base::Socket::CS_CONNECTING;
+      return STATE_CLOSED;
 
-    case STATE_OPENING:
-      return talk_base::Socket::CS_CONNECTING;
+    case IS_OPENING:
+      return STATE_BINDING;
 
-    case STATE_OPEN:
-      return talk_base::Socket::CS_CONNECTED;
+    case IS_OPEN:
+      if (type_ == P2P_SOCKET_TCP_CLIENT) {
+        return STATE_CONNECTED;
+      } else {
+        return STATE_BOUND;
+      }
 
-    case STATE_CLOSED:
-    case STATE_ERROR:
-      return talk_base::Socket::CS_CLOSED;
+    case IS_CLOSED:
+    case IS_ERROR:
+      return STATE_CLOSED;
   }
 
   NOTREACHED();
-  return talk_base::Socket::CS_CLOSED;
+  return STATE_CLOSED;
 }
 
 int IpcPacketSocket::GetOption(talk_base::Socket::Option opt, int* value) {
@@ -262,8 +261,9 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
     return;
   }
   SignalAddressReady(this, local_address_);
-  address_initialized_ = true;
-  state_ = STATE_OPEN;
+  if (type_ == P2P_SOCKET_TCP_CLIENT)
+    SignalConnect(this);
+  state_ = IS_OPEN;
 }
 
 void IpcPacketSocket::OnIncomingTcpConnection(
@@ -284,7 +284,7 @@ void IpcPacketSocket::OnIncomingTcpConnection(
 
 void IpcPacketSocket::OnError() {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  state_ = STATE_ERROR;
+  state_ = IS_ERROR;
   error_ = ECONNABORTED;
 }
 

@@ -13,7 +13,7 @@ vars = {
   "nacl_irt_hash_x86_64": "423ce0d282f7e57b856be8e1ae46a60a05dc6f85",
   "nacl_revision": "5445",
   "nacl_tools_revision": "5308",
-  "libjingle_revision": "59",
+  "libjingle_revision": "63",
   "libvpx_revision": "81610",
   "ffmpeg_revision": "83815",
   "skia_revision": "1437",
@@ -204,7 +204,7 @@ deps = {
     Var("ffmpeg_revision"),
 
   "src/third_party/libjingle/source":
-    (Var("googlecode_url") % "libjingle") + "/branches/chrome-sandbox@" +
+    (Var("googlecode_url") % "libjingle") + "/trunk@" +
     Var("libjingle_revision"),
 
   "src/third_party/speex":
