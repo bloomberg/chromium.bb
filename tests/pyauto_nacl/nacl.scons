@@ -36,18 +36,13 @@ ppapi_core_files = CreateDefaultDeps('ppapi_core')
 ppapi_file_system_files = CreateDefaultDeps('ppapi_file_system')
 ppapi_geturl_files = CreateDefaultDeps('ppapi_geturl') + [
     env.File('${STAGING_DIR}/ppapi_geturl_success.html')]
+ppapi_event_example_files = CreateDefaultDeps('ppapi_event_example')
 ppapi_example_2d_files = CreateDefaultDeps('ppapi_example_2d')
 ppapi_example_audio_files = CreateDefaultDeps('ppapi_example_audio')
 ppapi_ppb_graphics2d_files = CreateDefaultDeps('ppapi_ppb_graphics2d')
 ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [
     env.File('${STAGING_DIR}/ppapi_progress_events.js')]
 ppapi_test_example_files = CreateDefaultDeps('ppapi_test_example')
-ppapi_tests_files = [
-    env.File('${STAGING_DIR}/ppapi_tests_%s.nexe' % platform),
-    env.Dir('${STAGING_DIR}/test_url_loader_data/'),
-    env.File('${STAGING_DIR}/test_case.html'),
-    env.File('${STAGING_DIR}/test_case.nmf'),
-    env.File('${STAGING_DIR}/test_page.css')]
 srpc_basic_files = [
     env.File('${STAGING_DIR}/' + srpc_test_nexe_name),
     env.File('${STAGING_DIR}/srpc_basic.html'),
@@ -96,8 +91,6 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_geturl_files +
                    ppapi_ppb_graphics2d_files +
                    ppapi_progress_events_files +
-                   ppapi_test_example_files +
-                   ppapi_tests_files +
                    srpc_basic_files +
                    srpc_hw_files +
                    srpc_hw_fd_files +
@@ -122,7 +115,8 @@ env.AddNodeToTestSuite(node,
 node = env.PyAutoTester(
     'pyauto_surfaway_async.out',
     env.File('surfaway_async.py'),
-    files=core_test_files
+    files=core_test_files +
+          ppapi_event_example_files
 )
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
