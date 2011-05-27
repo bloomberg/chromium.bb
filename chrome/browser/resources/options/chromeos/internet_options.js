@@ -132,7 +132,11 @@ cr.define('options', function() {
       $('wired-section').hidden = accesslocked;
       $('wireless-section').hidden = accesslocked;
       $('remembered-section').hidden = accesslocked;
-      $('detailsInternetPage').hidden = accesslocked;
+
+      // Don't change hidden attribute on OptionsPage divs directly beucase it
+      // is used in supporting infrasture now.
+      if (accesslocked && DetailsInternetPage.getInstance().visible)
+        this.closeOverlay();
     }
   };
 

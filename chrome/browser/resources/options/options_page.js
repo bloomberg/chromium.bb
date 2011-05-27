@@ -834,9 +834,7 @@ cr.define('options', function() {
      * Gets page visibility state.
      */
     get visible() {
-      var page = $(this.pageDivName);
-      return page && page.ownerDocument.defaultView.getComputedStyle(
-          page).display == 'block';
+      return !this.pageDiv.hidden;
     },
 
     /**
