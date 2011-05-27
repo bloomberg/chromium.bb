@@ -59,8 +59,10 @@ class GPUCrashTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, Kill) {
   ui_test_utils::DOMMessageQueue message_queue;
 
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(
-      gpu_test_dir_.AppendASCII("webgl.html?query=kill")));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetFileUrlWithQuery(
+          gpu_test_dir_.AppendASCII("webgl.html"), "query=kill"));
   SimulateGPUCrash(browser());
 
   std::string m;
@@ -72,8 +74,11 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, Kill) {
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, WebkitLoseContext) {
   ui_test_utils::DOMMessageQueue message_queue;
 
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(
-      gpu_test_dir_.AppendASCII("webgl.html?query=WEBKIT_lose_context")));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetFileUrlWithQuery(
+          gpu_test_dir_.AppendASCII("webgl.html"),
+          "query=WEBKIT_lose_context"));
 
   std::string m;
   ASSERT_TRUE(message_queue.WaitForMessage(&m));

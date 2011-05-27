@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/ui_test_utils.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "content/common/json_value_serializer.h"
@@ -31,13 +32,11 @@ class DromaeoTest : public UIPerfTest {
     show_window_ = true;
   }
 
-  void RunTest(const FilePath::CharType* suite) {
+  void RunTest(const std::string& suite) {
     FilePath test_path = GetDromaeoDir();
-    test_path = test_path.Append(
-        FilePath::StringType(FILE_PATH_LITERAL("index.html?")) +
-        FilePath::StringType(suite) +
-        FilePath::StringType(FILE_PATH_LITERAL("&automated")));
-    GURL test_url(net::FilePathToFileURL(test_path));
+    std::string query_string = suite + "&automated";
+    test_path = test_path.Append(FILE_PATH_LITERAL("index.html"));
+    GURL test_url(ui_test_utils::GetFileUrlWithQuery(test_path, query_string));
 
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));
@@ -149,28 +148,28 @@ TEST_F(DromaeoTest, DOMCorePerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
-  RunTest(FILE_PATH_LITERAL("dom"));
+  RunTest("dom");
 }
 
 TEST_F(DromaeoTest, JSLibPerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
-  RunTest(FILE_PATH_LITERAL("jslib"));
+  RunTest("jslib");
 }
 
 TEST_F(DromaeoReferenceTest, DOMCorePerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
-  RunTest(FILE_PATH_LITERAL("dom"));
+  RunTest("dom");
 }
 
 TEST_F(DromaeoReferenceTest, JSLibPerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
-  RunTest(FILE_PATH_LITERAL("jslib"));
+  RunTest("jslib");
 }
 
 
