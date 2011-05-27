@@ -8730,7 +8730,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_BOOKMARKS_MENU" desc="The title of the bookmarks menu in the wrench menu and in the mac menu bar">
-        Bookmarks
+        &amp;Bookmarks
       </message>
 
       <message name="IDS_DEFAULT_DOWNLOAD_FILENAME" desc="Default name for downloaded files when we have no idea what they could be.">
