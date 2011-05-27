@@ -519,6 +519,14 @@
   fun:PR_EnterMonitor
 }
 
+{
+  bug_84244 (Looks same as one above)
+  ThreadSanitizer:Race
+  fun:PR_ExitMonitor
+  ...
+  fun:nss*
+}
+
 ############################
 # TSan false positives
 {
