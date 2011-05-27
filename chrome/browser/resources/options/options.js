@@ -166,6 +166,10 @@ function load() {
         'languageCustomizeModifierKeysOverlay',
         localStrings.getString('languageCustomizeModifierKeysOverlay'),
         'languageCustomizeModifierKeysOverlay')
+    $('languageCustomizeModifierKeysOverleyDismissButton').onclick =
+        function() {
+      OptionsPage.closeOverlay();
+    };
     OptionsPage.registerOverlay(languageModifierKeysOverlay,
                                 SystemOptions.getInstance(),
                                 [$('modifier-keys-button')]);
