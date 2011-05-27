@@ -83,7 +83,7 @@ class BaseTab : public ui::AnimationDelegate,
   virtual bool IsSelected() const;
 
   // Overridden from views::View:
-  virtual ThemeProvider* GetThemeProvider() const OVERRIDE;
+  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;

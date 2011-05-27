@@ -97,7 +97,6 @@ Widget* View::GetChildWidget() {
 View::View()
     : enabled_(true),
       focusable_(false),
-      accessibility_focusable_(false),
       parent_owned_(true),
       id_(0),
       group_(-1),
@@ -117,6 +116,7 @@ View::View()
       registered_accelerator_count_(0),
       next_focusable_view_(NULL),
       previous_focusable_view_(NULL),
+      accessibility_focusable_(false),
       context_menu_controller_(NULL),
       drag_controller_(NULL) {
 }
@@ -943,10 +943,6 @@ bool View::IsFocusableInRootView() const {
 bool View::IsAccessibilityFocusableInRootView() const {
   return (focusable_ || accessibility_focusable_) && IsEnabled() &&
     IsVisibleInRootView();
-}
-
-void View::set_accessibility_focusable(bool accessibility_focusable) {
-  accessibility_focusable_ = accessibility_focusable;
 }
 
 FocusManager* View::GetFocusManager() {

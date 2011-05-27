@@ -6,8 +6,6 @@
 #define VIEWS_VIEW_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <algorithm>
 #include <map>
 #include <set>
@@ -16,6 +14,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -40,7 +39,6 @@ class Transform;
 
 typedef unsigned int TextureID;
 }
-using ui::ThemeProvider;
 
 #if defined(OS_WIN)
 class NativeViewAccessibilityWin;
@@ -515,7 +513,7 @@ class View : public AcceleratorTarget {
   const Border* border() const { return border_.get(); }
 
   // Get the theme provider from the parent widget.
-  virtual ThemeProvider* GetThemeProvider() const;
+  virtual ui::ThemeProvider* GetThemeProvider() const;
 
   // RTL painting --------------------------------------------------------------
 
@@ -727,7 +725,9 @@ class View : public AcceleratorTarget {
   // Set whether this view can be made focusable if the user requires
   // full keyboard access, even though it's not normally focusable.
   // Note that this is false by default.
-  virtual void set_accessibility_focusable(bool accessibility_focusable);
+  void set_accessibility_focusable(bool accessibility_focusable) {
+    accessibility_focusable_ = accessibility_focusable;
+  }
 
   // Convenience method to retrieve the FocusManager associated with the
   // Widget that contains this view.  This can return NULL if this view is not
@@ -1057,21 +1057,17 @@ class View : public AcceleratorTarget {
   // Whether the view can be focused.
   bool focusable_;
 
-  // Whether this view is focusable if the user requires full keyboard access,
-  // even though it may not be normally focusable.
-  bool accessibility_focusable_;
-
   // System events -------------------------------------------------------------
 
   // Called when the UI theme has changed, overriding allows individual Views to
   // do special cleanup and processing (such as dropping resource caches).
   // To dispatch a theme changed notification, call Widget::ThemeChanged().
-  virtual void OnThemeChanged() { }
+  virtual void OnThemeChanged() {}
 
   // Called when the locale has changed, overriding allows individual Views to
   // update locale-dependent strings.
   // To dispatch a locale changed notification, call Widget::LocaleChanged().
-  virtual void OnLocaleChanged() { }
+  virtual void OnLocaleChanged() {}
 
   // Tooltips ------------------------------------------------------------------
 
@@ -1413,6 +1409,10 @@ class View : public AcceleratorTarget {
 
   // Next view to be focused when the Shift-Tab key combination is pressed.
   View* previous_focusable_view_;
+
+  // Whether this view is focusable if the user requires full keyboard access,
+  // even though it may not be normally focusable.
+  bool accessibility_focusable_;
 
   // Context menus -------------------------------------------------------------
 
