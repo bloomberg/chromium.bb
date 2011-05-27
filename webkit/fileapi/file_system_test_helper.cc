@@ -23,7 +23,7 @@ namespace {
 
 class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
-  explicit TestSpecialStoragePolicy(bool unlimited_quota)
+  TestSpecialStoragePolicy(bool unlimited_quota)
       : unlimited_quota_(unlimited_quota) {}
 
   virtual bool IsStorageProtected(const GURL& origin) {
@@ -92,15 +92,7 @@ void FileSystemTestOriginHelper::SetUp(
   // Initialize the usage cache file.
   FilePath usage_cache_path = file_system_context_->path_manager()
       ->sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
-  FileSystemUsageCache::UpdateUsage(
-      usage_cache_path, FileSystemUsageCache::kUsageFileSize);
-
-  // We expect the origin directory to be always empty, except for possibly
-  // the usage cache file.  We record the initial usage file size here
-  // (it will be either 0 or kUsageFileSize) so that later we can compute
-  // how much the size of the origin directory has grown.
-  initial_usage_size_ = file_util::ComputeDirectorySize(
-      GetOriginRootPath());
+  FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
 }
 
 void FileSystemTestOriginHelper::TearDown() {
@@ -135,19 +127,6 @@ GURL FileSystemTestOriginHelper::GetURLForPath(const FilePath& path) const {
 FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
   return file_system_context_->path_manager()
       ->sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
-}
-
-int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {
-  return FileSystemUsageCache::GetUsage(GetUsageCachePath()) -
-      FileSystemUsageCache::kUsageFileSize;
-}
-
-int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
-  // Depending on the file_util GetOriginRootPath() may include usage
-  // cache file size or may not.  Here we subtract the initial size to
-  // make it work for multiple file_utils.
-  return file_util::ComputeDirectorySize(GetOriginRootPath()) -
-      initial_usage_size_;
 }
 
 FileSystemOperation* FileSystemTestOriginHelper::NewOperation(

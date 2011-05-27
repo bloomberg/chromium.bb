@@ -35,7 +35,7 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
             base::MessageLoopProxy::CreateForCurrentThread()),
         error_code_(base::PLATFORM_FILE_OK),
         file_(file),
-        context_(*context),
+        context_(context),
         callback_(callback) {
     DCHECK(callback);
   }
@@ -55,13 +55,13 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   }
 
   void ProcessOnTargetThread() {
-    DCHECK(context_.file_system_context());
-    FileSystemQuotaUtil* quota_util = context_.file_system_context()->
-        GetQuotaUtil(context_.src_type());
+    DCHECK(context_->file_system_context());
+    FileSystemQuotaUtil* quota_util = context_->file_system_context()->
+        GetQuotaUtil(context_->src_type());
     if (quota_util) {
       DCHECK(quota_util->proxy());
       quota_util->proxy()->StartUpdateOrigin(
-          context_.src_origin_url(), context_.src_type());
+          context_->src_origin_url(), context_->src_type());
     }
     if (!base::GetPlatformFileInfo(file_, &file_info_))
       error_code_ = base::PLATFORM_FILE_ERROR_FAILED;
@@ -73,7 +73,7 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   base::PlatformFileError error_code_;
 
   base::PlatformFile file_;
-  FileSystemOperationContext context_;
+  FileSystemOperationContext* context_;
   InitializeTaskCallback* callback_;
 
   base::PlatformFileInfo file_info_;
@@ -88,7 +88,7 @@ FileWriterDelegate::FileWriterDelegate(
       file_(base::kInvalidPlatformFileValue),
       offset_(offset),
       proxy_(proxy),
-      bytes_written_backlog_(0),
+      bytes_read_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
       total_bytes_written_(0),
@@ -110,22 +110,10 @@ void FileWriterDelegate::OnGetFileInfoAndCallStartUpdate(
     OnError(error);
     return;
   }
-  int64 allowed_bytes_growth =
-      file_system_operation_context()->allowed_bytes_growth();
-  if (allowed_bytes_growth == QuotaFileUtil::kNoLimit ||
-      file_system_operation_->file_system_context()->IsStorageUnlimited(
-          file_system_operation_context()->src_origin_url())) {
-    // TODO(kinuko): kNoLimit is kint64max therefore all the calculation/
-    // comparison with the value should just work, but we should drop
-    // such implicit assumption and should use an explicit boolean flag
-    // or something.
+  if (allowed_bytes_growth_ != QuotaFileUtil::kNoLimit)
+    allowed_bytes_to_write_ = file_info.size - offset_ + allowed_bytes_growth_;
+  else
     allowed_bytes_to_write_ = QuotaFileUtil::kNoLimit;
-  } else {
-    if (allowed_bytes_growth < 0)
-      allowed_bytes_growth = 0;
-    allowed_bytes_to_write_ = file_info.size - offset_ + allowed_bytes_growth;
-  }
-  size_ = file_info.size;
   file_stream_.reset(new net::FileStream(file_,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_ASYNC));
@@ -136,6 +124,8 @@ void FileWriterDelegate::Start(base::PlatformFile file,
                                net::URLRequest* request) {
   file_ = file;
   request_ = request;
+  allowed_bytes_growth_ =
+      file_system_operation_context()->allowed_bytes_growth();
 
   scoped_refptr<InitializeTask> relay = new InitializeTask(
       file_, file_system_operation_context(),
@@ -221,12 +211,7 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
 }
 
 void FileWriterDelegate::Write() {
-  // allowed_bytes_to_write could be negative if the file size is
-  // greater than the current (possibly new) quota.
-  // (The UI should clear the entire origin data if the smaller quota size
-  // is set in general, though the UI/deletion code is not there yet.)
-  DCHECK(total_bytes_written_ <= allowed_bytes_to_write_ ||
-         allowed_bytes_to_write_ < 0);
+  DCHECK(total_bytes_written_ <= allowed_bytes_to_write_);
   if (total_bytes_written_ >= allowed_bytes_to_write_) {
     OnError(base::PLATFORM_FILE_ERROR_NO_SPACE);
     return;
@@ -275,27 +260,23 @@ void FileWriterDelegate::OnError(base::PlatformFileError error) {
   file_system_operation_->DidWrite(error, 0, true);
 }
 
-void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
-  DCHECK(bytes_written + bytes_written_backlog_ >= bytes_written_backlog_);
-  if (bytes_written > 0 &&
-      total_bytes_written_ + bytes_written + offset_ > size_) {
-    int overlapped = 0;
-    if (total_bytes_written_ + offset_ < size_)
-      overlapped = size_ - total_bytes_written_ - offset_;
+void FileWriterDelegate::OnProgress(int bytes_read, bool done) {
+  DCHECK(bytes_read + bytes_read_backlog_ >= bytes_read_backlog_);
+  if (bytes_read > 0 && quota_util()) {
     quota_util()->proxy()->UpdateOriginUsage(
         file_system_operation_->file_system_context()->quota_manager_proxy(),
         file_system_operation_context()->src_origin_url(),
         file_system_operation_context()->src_type(),
-        bytes_written - overlapped);
+        bytes_read);
   }
   static const int kMinProgressDelayMS = 200;
   base::Time currentTime = base::Time::Now();
   if (done || last_progress_event_time_.is_null() ||
       (currentTime - last_progress_event_time_).InMilliseconds() >
           kMinProgressDelayMS) {
-    bytes_written += bytes_written_backlog_;
+    bytes_read += bytes_read_backlog_;
     last_progress_event_time_ = currentTime;
-    bytes_written_backlog_ = 0;
+    bytes_read_backlog_ = 0;
     if (done && quota_util()) {
       if (quota_util()) {
         quota_util()->proxy()->EndUpdateOrigin(
@@ -303,11 +284,10 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
             file_system_operation_context()->src_type());
       }
     }
-    file_system_operation_->DidWrite(
-        base::PLATFORM_FILE_OK, bytes_written, done);
+    file_system_operation_->DidWrite(base::PLATFORM_FILE_OK, bytes_read, done);
     return;
   }
-  bytes_written_backlog_ += bytes_written;
+  bytes_read_backlog_ += bytes_read;
 }
 
 FileSystemOperationContext*

@@ -65,14 +65,15 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
 
   FileSystemOperation* file_system_operation_;
   base::PlatformFile file_;
-  int64 size_;
+  base::PlatformFileInfo file_info_;
   int64 offset_;
   scoped_refptr<base::MessageLoopProxy> proxy_;
   base::Time last_progress_event_time_;
-  int bytes_written_backlog_;
+  int bytes_read_backlog_;
   int bytes_written_;
   int bytes_read_;
   int64 total_bytes_written_;
+  int64 allowed_bytes_growth_;
   int64 allowed_bytes_to_write_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_ptr<net::FileStream> file_stream_;
