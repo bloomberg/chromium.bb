@@ -120,9 +120,6 @@ class CrashesDOMHandler : public WebUIMessageHandler,
   // Sends the recent crashes list JS.
   void UpdateUI();
 
-  // Returns whether or not crash reporting is enabled.
-  bool CrashReportingEnabled() const;
-
   scoped_refptr<CrashUploadList> upload_list_;
   bool list_available_;
   bool js_request_pending_;
@@ -150,7 +147,7 @@ void CrashesDOMHandler::RegisterMessages() {
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const ListValue* args) {
-  if (!CrashReportingEnabled() || list_available_)
+  if (!CrashesUI::CrashReportingEnabled() || list_available_)
     UpdateUI();
   else
     js_request_pending_ = true;
@@ -163,7 +160,7 @@ void CrashesDOMHandler::OnCrashListAvailable() {
 }
 
 void CrashesDOMHandler::UpdateUI() {
-  bool crash_reporting_enabled = CrashReportingEnabled();
+  bool crash_reporting_enabled = CrashesUI::CrashReportingEnabled();
   ListValue crash_list;
 
   if (crash_reporting_enabled) {
@@ -189,17 +186,6 @@ void CrashesDOMHandler::UpdateUI() {
                                   version);
 }
 
-bool CrashesDOMHandler::CrashReportingEnabled() const {
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
-#elif defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
-  return chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,4 +207,16 @@ CrashesUI::CrashesUI(TabContents* contents) : WebUI(contents) {
 RefCountedMemory* CrashesUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_SAD_FAVICON);
+}
+
+// static
+bool CrashesUI::CrashReportingEnabled() {
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
+#elif defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
+  return chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
+#else
+  return false;
+#endif
 }

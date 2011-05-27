@@ -16,6 +16,9 @@ class CrashesUI : public WebUI {
 
   static RefCountedMemory* GetFaviconResourceBytes();
 
+  // Whether crash reporting has been enabled.
+  static bool CrashReportingEnabled();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CrashesUI);
 };

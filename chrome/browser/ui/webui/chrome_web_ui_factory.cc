@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
+#include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
 #include "chrome/browser/ui/webui/history2_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
@@ -155,6 +156,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<HistoryUI2>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
+  if (url.host() == chrome::kChromeUIFlashHost)
+    return &NewWebUI<FlashUI>;
 #if defined(TOUCH_UI)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewWebUI<KeyboardUI>;
@@ -298,7 +301,7 @@ void ChromeWebUIFactory::GetFaviconForURL(
 
 // static
 ChromeWebUIFactory* ChromeWebUIFactory::GetInstance() {
-  return Singleton<ChromeWebUIFactory, PossibleTestSingletonTraits<
+  return Singleton< ChromeWebUIFactory, PossibleTestSingletonTraits<
       ChromeWebUIFactory, TestChromeWebUIFactory> >::get();
 }
 
@@ -346,6 +349,9 @@ RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
 
   if (page_url.host() == chrome::kChromeUIFlagsHost)
     return FlagsUI::GetFaviconResourceBytes();
+
+  if (page_url.host() == chrome::kChromeUIFlashHost)
+    return FlashUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUISettingsHost)
     return OptionsUI::GetFaviconResourceBytes();

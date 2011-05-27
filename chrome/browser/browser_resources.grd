@@ -12,6 +12,7 @@
       <if expr="os.find('win') != -1">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\about_conflicts.html" flattenhtml="true" type="BINDATA" />
       </if>
+      <include name="IDR_ABOUT_FLASH_HTML" file="resources\about_flash.html" flattenhtml="true" type="BINDATA" />
       <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="BINDATA" />
       </if>

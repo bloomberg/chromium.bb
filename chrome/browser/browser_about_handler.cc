@@ -114,6 +114,7 @@ const char kConflictsPath[] = "conflicts";
 #endif
 const char kDnsPath[] = "dns";
 const char kFlagsPath[] = "flags";
+const char kFlashPath[] = "flash";
 const char kGpuPath[] = "gpu-internals";
 const char kHistogramsPath[] = "histograms";
 const char kMemoryRedirectPath[] = "memory-redirect";
@@ -152,6 +153,7 @@ const char *kAllAboutPaths[] = {
 #endif
   kDnsPath,
   kFlagsPath,
+  kFlashPath,
   kGpuPath,
   kHistogramsPath,
   kMemoryPath,
@@ -351,6 +353,7 @@ std::string AboutAbout() {
         (*i != kConflictsPath) &&
   #endif
         (*i != kFlagsPath) &&
+        (*i != kFlashPath) &&
         (*i != kGpuPath) &&
         (*i != kNetInternalsPath) &&
         (*i != kPluginsPath)) {
@@ -1320,6 +1323,12 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   // Rewrite about:flags to chrome://flags/.
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL)) {
     *url = GURL(chrome::kChromeUIFlagsURL);
+    return true;
+  }
+
+  // Rewrite about:flash to chrome://flash/.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlashURL)) {
+    *url = GURL(chrome::kChromeUIFlashURL);
     return true;
   }
 

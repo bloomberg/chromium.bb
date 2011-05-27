@@ -3338,6 +3338,8 @@
         'browser/ui/webui/fileicon_source_cros.cc',
         'browser/ui/webui/flags_ui.cc',
         'browser/ui/webui/flags_ui.h',
+        'browser/ui/webui/flash_ui.cc',
+        'browser/ui/webui/flash_ui.h',
         'browser/ui/webui/gpu_internals_ui.cc',
         'browser/ui/webui/gpu_internals_ui.h',
         'browser/ui/webui/history2_ui.cc',

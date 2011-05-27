@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<style>
+.key {
+  font-weight: bold;
+}
+
+.value {
+  margin-left: 15px;
+}
+</style>
+<script>
+  /**
+  * Takes the |moduleListData| input argument which represents data about
+  * the currently available modules and populates the html jstemplate
+  * with that data. It expects an object structure like the above.
+  * @param {Object} moduleListData Information about available modules
+  */
+  function renderTemplate(moduleListData) {
+    // This is the javascript code that processes the template:
+    var input = new JsEvalContext(moduleListData);
+    var output = document.getElementById('flashInfoTemplate');
+    jstProcess(input, output);
+  }
+
+  /**
+  * Asks the C++ FlashUIDOMHandler to get details about the Flash and return
+  * the data in returnFlashInfo() (below).
+  */
+  function requestFlashInfo() {
+    chrome.send('requestFlashInfo', []);
+  }
+
+  /**
+  * Called by the WebUI to re-populate the page with data representing the
+  * current state of Flash.
+  */
+  function returnFlashInfo(moduleListData) {
+    document.getElementById('loading-message').style.visibility = 'hidden';
+    document.getElementById('body-container').style.visibility = 'visible';
+    renderTemplate(moduleListData);
+  }
+
+  // Get data and have it displayed upon loading.
+  document.addEventListener('DOMContentLoaded', requestFlashInfo);
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div id="loading-message" i18n-content="loadingMessage">LOADING_MESSAGE</div>
+<div id="body-container" style="visibility:hidden">
+  <div id="header"><h1 i18n-content="flashLongTitle">ABOUT_FLASH</h1></div>
+
+  <div id="flashInfoTemplate">
+    <table cellpadding="2" cellspacing="0" border="0">
+      <tr jsselect="flashInfo">
+        <td><span dir="ltr" jscontent="key" class="key">KEY</span></td>
+        <td><span dir="ltr" jscontent="value" class="value">VALUE</span></td>
+      </tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>
