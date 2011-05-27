@@ -30,8 +30,7 @@ class Message;
 
 class BalloonHost : public RenderViewHostDelegate,
                     public RenderViewHostDelegate::View,
-                    public ExtensionFunctionDispatcher::Delegate,
-                    public NotificationObserver {
+                    public ExtensionFunctionDispatcher::Delegate {
  public:
   explicit BalloonHost(Balloon* balloon);
 
@@ -66,12 +65,6 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual int GetBrowserWindowID() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual RenderViewHostDelegate::View* GetViewDelegate();
-
-  // NotificationObserver override.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.
@@ -166,8 +159,6 @@ class BalloonHost : public RenderViewHostDelegate,
 
   // A flag to enable Web UI.
   bool enable_web_ui_;
-
-  NotificationRegistrar registrar_;
 
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 };

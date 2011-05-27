@@ -92,13 +92,9 @@ void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->Send(new ViewMsg_DisableScrollbarsForSmallWindows(
       render_view_host->routing_id(), balloon_->min_scrollbar_size()));
   render_view_host->WasResized();
-#if !defined(OS_MACOSX)
-  // TODO(levin): Make all of the code that went in originally with this change
-  // to be cross-platform. See http://crbug.com/64720
   render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
       render_view_host->routing_id(),
       kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
-#endif
 }
 
 void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
@@ -206,10 +202,6 @@ void BalloonHost::Init() {
 
   rvh->set_view(render_widget_host_view());
   rvh->CreateRenderView(string16());
-#if defined(OS_MACOSX)
-  registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
-      Source<RenderWidgetHost>(render_view_host_));
-#endif
   rvh->NavigateToURL(balloon_->notification().content_url());
 
   initialized_ = true;
@@ -229,17 +221,6 @@ void BalloonHost::UpdateInspectorSetting(const std::string& key,
 
 void BalloonHost::ClearInspectorSettings() {
   RenderViewHostDelegateHelper::ClearInspectorSettings(GetProfile());
-}
-
-void BalloonHost::Observe(NotificationType type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  if (type == NotificationType::RENDER_WIDGET_HOST_DID_PAINT) {
-    registrar_.RemoveAll();
-    render_view_host_->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-        render_view_host_->routing_id(),
-        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
-  }
 }
 
 BalloonHost::~BalloonHost() {
