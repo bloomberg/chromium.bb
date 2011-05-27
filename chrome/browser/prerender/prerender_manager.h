@@ -47,8 +47,7 @@ void HandleTag(
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const GURL& referrer,
-    bool make_pending);
+    const GURL& referrer);
 
 void DestroyPreloadForRenderView(
     const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
@@ -81,14 +80,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // RenderViewHost that the prerender request came from and is used to
   // set the initial window size of the RenderViewHost used for prerendering.
   // Returns true if the URL was added, false if it was not.
+  // If |child_route_id_pair| itself is prerendering, adds the preloads as
+  // a pending preload.
   bool AddPreload(
       const std::pair<int, int>& child_route_id_pair,
       const GURL& url,
       const GURL& referrer);
-
-  void AddPendingPreload(const std::pair<int, int>& child_route_id_pair,
-                         const GURL& url,
-                         const GURL& referrer);
 
   // Destroy all preloads for the given child route id pair and assign a final
   // status to them.
@@ -210,6 +207,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   struct PrerenderContentsData;
   struct NavigationRecord;
+
+  // Adds a pending preload issued by the prerendering RenderView identified by
+  // |child_route_id_pair|.  If and when that prerendering RenderView is used,
+  // the specified prerender will start.
+  void AddPendingPreload(const std::pair<int, int>& child_route_id_pair,
+                         const GURL& url,
+                         const GURL& referrer);
 
   // Starts scheduling periodic cleanups.
   void StartSchedulingPeriodicCleanups();

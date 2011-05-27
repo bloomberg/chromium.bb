@@ -26,8 +26,6 @@ bool ChromeResourceDispatcherHostObserver::ShouldBeginRequest(
     const content::ResourceContext& resource_context,
     const GURL& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  bool is_prerendering = prerender_tracker_->IsPrerenderingOnIOThread(
-      child_id, route_id);
 
   // Handle a PREFETCH resource type. If prefetch is disabled, squelch the
   // request.  Otherwise, do a normal request to warm the cache.
@@ -51,15 +49,14 @@ bool ChromeResourceDispatcherHostObserver::ShouldBeginRequest(
                               child_id,
                               route_id,
                               request_data.url,
-                              referrer,
-                              is_prerendering));
+                              referrer));
     }
     // Prerendering or not, this request should be aborted.
     return false;
   }
 
   // Abort any prerenders that spawn requests that use invalid HTTP methods.
-  if (is_prerendering &&
+  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id) &&
       !prerender::PrerenderManager::IsValidHttpMethod(request_data.method)) {
     prerender_tracker_->TryCancelOnIOThread(
         child_id, route_id,

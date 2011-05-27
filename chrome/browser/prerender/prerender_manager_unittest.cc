@@ -421,39 +421,14 @@ TEST_F(PrerenderManagerTest, PendingPreloadTest) {
 
   GURL pending_url("http://news.google.com/");
 
-  prerender_manager()->AddPendingPreload(std::make_pair(child_id, route_id),
-                                        pending_url,
-                                        url);
+  EXPECT_TRUE(
+      prerender_manager()->AddPreload(std::make_pair(child_id, route_id),
+                                      pending_url,
+                                      url));
 
   EXPECT_TRUE(prerender_manager()->IsPendingEntry(pending_url));
   EXPECT_TRUE(prerender_contents->has_started());
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
-}
-
-TEST_F(PrerenderManagerTest, PendingPreloadSkippedTest) {
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url,
-          FINAL_STATUS_TIMED_OUT);
-
-  int child_id;
-  int route_id;
-  ASSERT_TRUE(prerender_contents->GetChildId(&child_id));
-  ASSERT_TRUE(prerender_contents->GetRouteId(&route_id));
-
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
-  prerender_manager()->AdvanceTime(prerender_manager()->max_prerender_age()
-                                  + base::TimeDelta::FromSeconds(1));
-  // GetEntry will cull old entries which should now include prerender_contents.
-  ASSERT_EQ(NULL, prerender_manager()->GetEntry(url));
-
-  GURL pending_url("http://news.google.com/");
-
-  prerender_manager()->AddPendingPreload(std::make_pair(child_id, route_id),
-                                        pending_url,
-                                        url);
-  EXPECT_FALSE(prerender_manager()->IsPendingEntry(pending_url));
 }
 
 // Ensure that extracting a urlencoded URL in the url= query string component

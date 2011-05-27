@@ -173,8 +173,7 @@ void HandleTag(
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const GURL& referrer,
-    bool make_pending) {
+    const GURL& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrerenderManager* prerender_manager = prerender_manager_weak_ptr.get();
   if (!prerender_manager || !prerender_manager->is_enabled())
@@ -183,13 +182,8 @@ void HandleTag(
 
   std::pair<int, int> child_route_id_pair = std::make_pair(render_process_id,
                                                            render_view_id);
-  // TODO(cbentzel): Should the decision to make pending be done on the
-  //                 UI thread rather than the IO thread? The page may have
-  //                 become activated at this point.
-  if (make_pending)
-    prerender_manager->AddPendingPreload(child_route_id_pair, url, referrer);
-  else
-    prerender_manager->AddPreload(child_route_id_pair, url, referrer);
+
+  prerender_manager->AddPreload(child_route_id_pair, url, referrer);
 }
 
 void DestroyPreloadForRenderView(
@@ -248,6 +242,14 @@ bool PrerenderManager::AddPreload(
     const GURL& url_arg,
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
+
+  // If the referring page is prerendering, defer the prerender.
+  if (FindPrerenderContentsForChildRouteIdPair(child_route_id_pair) !=
+          prerender_list_.end()) {
+    AddPendingPreload(child_route_id_pair, url_arg, referrer);
+    return true;
+  }
+
   DeleteOldEntries();
   DeletePendingDeleteEntries();
 
@@ -327,23 +329,8 @@ void PrerenderManager::AddPendingPreload(
     const std::pair<int, int>& child_route_id_pair,
     const GURL& url,
     const GURL& referrer) {
-  DCHECK(CalledOnValidThread());
-  // Check if this is coming from a valid prerender RenderViewHost.
-  bool is_valid_prerender =
-      (FindPrerenderContentsForChildRouteIdPair(child_route_id_pair) !=
-       prerender_list_.end());
-
-  // If not, we could check to see if the RenderViewHost specified by the
-  // child_route_id_pair exists and if so just start prerendering, as this
-  // suggests that the link was clicked, though this might prerender something
-  // that the user has already navigated away from. For now, we'll be
-  // conservative and skip the prerender which will mean some prerender requests
-  // from prerendered pages will be missed if the user navigates quickly.
-  if (!is_valid_prerender) {
-    RecordFinalStatus(FINAL_STATUS_PENDING_SKIPPED);
-    return;
-  }
-
+  DCHECK(FindPrerenderContentsForChildRouteIdPair(child_route_id_pair) !=
+             prerender_list_.end());
   PendingPrerenderList::iterator it =
       pending_prerender_list_.find(child_route_id_pair);
   if (it == pending_prerender_list_.end()) {
