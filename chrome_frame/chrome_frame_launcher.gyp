@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -102,6 +102,7 @@
         '../chrome/chrome.gyp:chrome_version_header',
         'chrome_frame.gyp:chrome_frame_utils',
         'chrome_frame_helper_dll',
+        'chrome_frame_helper_lib',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -131,6 +132,7 @@
       'msvs_guid': '5E80032F-7033-4661-9016-D98268244783',
       'dependencies': [
         '../chrome/chrome.gyp:chrome_version_header',
+        'chrome_frame_helper_lib',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -146,8 +148,6 @@
         'bho_loader.h',
         'chrome_frame_helper_dll.cc',
         'chrome_frame_helper_dll.def',
-        'chrome_frame_helper_util.cc',
-        'chrome_frame_helper_util.h',
         'chrome_frame_helper_version.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
         'chrome_tab.idl',
@@ -161,6 +161,36 @@
           'ProgramDatabaseFile': '$(OutDir)\\chrome_frame_helper_dll.pdb',
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
+        },
+      },
+    },
+    {
+      'target_name': 'chrome_frame_helper_lib',
+      'type': 'static_library',
+      'msvs_guid': '9984D820-1D28-48A7-957C-2AFA41B416C9',
+      'dependencies': [
+        '../chrome/chrome.gyp:chrome_version_header',
+      ],
+      'resource_include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'include_dirs': [
+        # To allow including "chrome_tab.h"
+        '<(INTERMEDIATE_DIR)',
+        '<(INTERMEDIATE_DIR)/../chrome_frame',
+      ],
+      'sources': [
+        'chrome_frame_helper_util.cc',
+        'chrome_frame_helper_util.h',
+        'registry_watcher.cc',
+        'registry_watcher.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
+        'chrome_tab.idl',
+        'iids.cc',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
           'AdditionalDependencies': [
             'shlwapi.lib',
           ],

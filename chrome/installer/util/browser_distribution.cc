@@ -43,14 +43,6 @@ bool IsChromeFrameModule() {
                                           installer::kChromeFrameDll);
 }
 
-// Returns true if currently running in ceee_broker.exe
-bool IsCeeeBrokerProcess() {
-  FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
-  return FilePath::CompareEqualIgnoreCase(exe_path.BaseName().value(),
-                                          installer::kCeeeBrokerExe);
-}
-
 BrowserDistribution::Type GetCurrentDistributionType() {
   static BrowserDistribution::Type type =
       (MasterPreferences::ForCurrentProcess().install_chrome_frame() ||

@@ -1619,7 +1619,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Note this check should only happen here, after all the checks above
   // (uninstall, resource bundle initialization, other chrome browser
   // processes etc).
-  if (CheckMachineLevelInstall())
+  // Do not allow this to occur for Chrome Frame user-to-system handoffs.
+  if (!parsed_command_line.HasSwitch(switches::kChromeFrame) &&
+      CheckMachineLevelInstall())
     return ResultCodes::MACHINE_LEVEL_INSTALL_EXISTS;
 
   // Create the TranslateManager singleton.

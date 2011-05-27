@@ -1,12 +1,26 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/chrome_frame_helper_util.h"
+#include "chrome_tab.h"  // NOLINT
 
 #include <shlwapi.h>
+#include <stdio.h>
+
+namespace {
 
 const wchar_t kGetBrowserMessage[] = L"GetAutomationObject";
+
+const wchar_t kBHORegistrationPathFmt[] =
+    L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer"
+    L"\\Browser Helper Objects\\%s";
+const wchar_t kChromeFrameClientKey[] =
+    L"Software\\Google\\Update\\Clients\\"
+    L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
+const wchar_t kGoogleUpdateVersionValue[] = L"pv";
+
+}  // namespace
 
 bool UtilIsWebBrowserWindow(HWND window_to_check) {
   bool is_browser_window = false;
@@ -185,3 +199,83 @@ HWND RecurseFindWindow(HWND parent,
   EnumChildWindows(parent, WndEnumProc, reinterpret_cast<LPARAM>(&params));
   return params.window_found_;
 }
+
+// TODO(robertshield): This is stolen shamelessly from mini_installer.cc.
+// Refactor this before (more) bad things happen.
+LONG ReadValue(HKEY key,
+               const wchar_t* value_name,
+               size_t value_size,
+               wchar_t* value) {
+  DWORD type;
+  DWORD byte_length = static_cast<DWORD>(value_size * sizeof(wchar_t));
+  LONG result = ::RegQueryValueEx(key, value_name, NULL, &type,
+                                  reinterpret_cast<BYTE*>(value),
+                                  &byte_length);
+  if (result == ERROR_SUCCESS) {
+    if (type != REG_SZ) {
+      result = ERROR_NOT_SUPPORTED;
+    } else if (byte_length == 0) {
+      *value = L'\0';
+    } else if (value[byte_length/sizeof(wchar_t) - 1] != L'\0') {
+      if ((byte_length / sizeof(wchar_t)) < value_size)
+        value[byte_length / sizeof(wchar_t)] = L'\0';
+      else
+        result = ERROR_MORE_DATA;
+    }
+  }
+  return result;
+}
+
+bool IsBHOLoadingPolicyRegistered() {
+  wchar_t bho_clsid_as_string[MAX_PATH] = {0};
+  int count = StringFromGUID2(CLSID_ChromeFrameBHO, bho_clsid_as_string,
+                              ARRAYSIZE(bho_clsid_as_string));
+
+  bool bho_registered = false;
+  if (count > 0) {
+    wchar_t reg_path_buffer[MAX_PATH] = {0};
+    int path_count = _snwprintf(reg_path_buffer,
+                                MAX_PATH - 1,
+                                kBHORegistrationPathFmt,
+                                bho_clsid_as_string);
+
+    if (path_count > 0) {
+      HKEY reg_handle = NULL;
+      LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                                 reg_path_buffer,
+                                 0,
+                                 KEY_QUERY_VALUE,
+                                 &reg_handle);
+      if (result == ERROR_SUCCESS) {
+        RegCloseKey(reg_handle);
+        bho_registered = true;
+      }
+    }
+  }
+
+  return bho_registered;
+}
+
+bool IsSystemLevelChromeFrameInstalled() {
+  bool system_level_installed = false;
+  HKEY reg_handle = NULL;
+  LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                             kChromeFrameClientKey,
+                             0,
+                             KEY_QUERY_VALUE,
+                             &reg_handle);
+  if (result == ERROR_SUCCESS) {
+    wchar_t version_buffer[MAX_PATH] = {0};
+    result = ReadValue(reg_handle,
+                       kGoogleUpdateVersionValue,
+                       MAX_PATH,
+                       version_buffer);
+    if (result == ERROR_SUCCESS && version_buffer[0] != L'\0') {
+      system_level_installed = true;
+    }
+    RegCloseKey(reg_handle);
+  }
+
+  return system_level_installed;
+}
+

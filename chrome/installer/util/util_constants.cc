@@ -157,9 +157,6 @@ const char kToastResultsKey[] = "toast-results-key";
 
 }  // namespace switches
 
-const wchar_t kCeeeBrokerExe[] = L"ceee_broker.exe";
-const wchar_t kCeeeIeDll[] = L"ceee_ie.dll";
-const wchar_t kCeeeInstallHelperDll[] = L"ceee_installer_helper.dll";
 const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";

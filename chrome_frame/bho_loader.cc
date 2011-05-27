@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,12 @@ void BHOLoader::OnHookEvent(DWORD event, HWND window) {
       UtilGetWebBrowserObjectFromWindow(browser_hwnd, __uuidof(browser),
                                         reinterpret_cast<void**>(&browser));
       if (browser) {
+        if (IsSystemLevelChromeFrameInstalled()) {
+          // We're in the right place, but a system-level installation has
+          // appeared. We should leave now.
+          return;
+        }
+
         // Figure out if we're already in the property map.
         wchar_t bho_clsid_as_string[MAX_PATH] = {0};
         StringFromGUID2(CLSID_ChromeFrameBHO, bho_clsid_as_string,

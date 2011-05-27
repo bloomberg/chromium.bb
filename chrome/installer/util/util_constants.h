@@ -152,9 +152,6 @@ extern const char kExperimentGroup[];
 extern const char kToastResultsKey[];
 }  // namespace switches
 
-extern const wchar_t kCeeeBrokerExe[];
-extern const wchar_t kCeeeIeDll[];
-extern const wchar_t kCeeeInstallHelperDll[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeFrameDll[];

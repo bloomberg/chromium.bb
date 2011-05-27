@@ -70,6 +70,7 @@ const wchar_t kRunOnce[] =
 const wchar_t kRunKeyName[] = L"ChromeFrameHelper";
 
 const wchar_t kChromeFrameHelperExe[] = L"chrome_frame_helper.exe";
+const wchar_t kChromeFrameHelperStartupArg[] = L"--startup";
 
 // Window class and window names.
 // TODO(robertshield): These and other constants need to be refactored into
@@ -314,7 +315,6 @@ HRESULT SetupRunOnce() {
     // Use this only for the dev channel and CEEE channels.
     if (channel_name.find(L"dev") != std::wstring::npos ||
         channel_name.find(L"ceee") != std::wstring::npos) {
-
       HKEY hive = HKEY_CURRENT_USER;
       if (IsSystemProcess()) {
         // For system installs, our updates will be running as SYSTEM which
@@ -375,9 +375,14 @@ void SetupUserLevelHelper() {
                                kChromeFrameHelperWindowName);
 
   if (file_util::PathExists(helper_path)) {
+    std::wstring helper_path_cmd(L"\"");
+    helper_path_cmd += helper_path.value();
+    helper_path_cmd += L"\" ";
+    helper_path_cmd += kChromeFrameHelperStartupArg;
+
     // Add new run-at-startup entry.
     base::win::AddCommandToAutoRun(HKEY_CURRENT_USER, kRunKeyName,
-                                  helper_path.value());
+                                   helper_path_cmd);
 
     // Start new instance.
     bool launched = base::LaunchApp(helper_path.value(), false, true, NULL);
