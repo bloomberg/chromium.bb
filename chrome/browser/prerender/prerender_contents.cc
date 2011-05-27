@@ -10,30 +10,19 @@
 #include "base/process_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/background_contents_service.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/history/history_tab_helper.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_render_widget_host_view.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
-#include "content/browser/resource_context.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_service.h"
@@ -133,7 +122,6 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      const GURL& referrer)
     : prerender_manager_(prerender_manager),
       prerender_tracker_(prerender_tracker),
-      render_view_host_(NULL),
       prerender_url_(url),
       referrer_(referrer),
       profile_(profile),
@@ -150,9 +138,7 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
 }
 
 bool PrerenderContents::Init() {
-  if (!AddAliasURL(prerender_url_))
-    return false;
-  return true;
+  return AddAliasURL(prerender_url_);
 }
 
 // static
@@ -160,98 +146,8 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
   return new PrerenderContentsFactoryImpl();
 }
 
-void PrerenderContents::StartPrerenderingOld(
-    const RenderViewHost* source_render_view_host) {
-  DCHECK(profile_ != NULL);
-  DCHECK(!prerendering_has_started_);
-  DCHECK(source_render_view_host != NULL);
-  DCHECK(source_render_view_host->view() != NULL);
-  prerendering_has_started_ = true;
-  SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
-  render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
-                                         NULL);
-
-  // Register as an observer of the RenderViewHost so we get messages.
-  render_view_host_observer_.reset(
-      new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
-
-  // Create the RenderView, so it can receive messages.
-  render_view_host_->CreateRenderView(string16());
-
-  OnRenderViewHostCreated(render_view_host_);
-
-  // Give the RVH a PrerenderRenderWidgetHostView, both so its size can be set
-  // and so that the prerender can be cancelled under certain circumstances.
-  PrerenderRenderWidgetHostView* view =
-      new PrerenderRenderWidgetHostView(render_view_host_, this);
-  view->Init(source_render_view_host->view());
-
-  child_id_ = render_view_host_->process()->id();
-  route_id_ = render_view_host_->routing_id();
-
-  // Register this with the PrerenderTracker as a prerendering RenderViewHost.
-  // This must be done before the Navigate message to catch all resource
-  // requests.
-  prerender_tracker_->OnPrerenderingStarted(
-      child_id_,
-      route_id_,
-      prerender_manager_);
-
-  // Close ourselves when the application is shutting down.
-  notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
-                              NotificationService::AllSources());
-
-  // Register for our parent profile to shutdown, so we can shut ourselves down
-  // as well (should only be called for OTR profiles, as we should receive
-  // APP_TERMINATING before non-OTR profiles are destroyed).
-  // TODO(tburkard): figure out if this is needed.
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
-
-  // Register to cancel if Authentication is required.
-  notification_registrar_.Add(this, NotificationType::AUTH_NEEDED,
-                              NotificationService::AllSources());
-
-  notification_registrar_.Add(this, NotificationType::AUTH_CANCELLED,
-                 NotificationService::AllSources());
-
-  // Register all responses to see if we should cancel.
-  notification_registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
-                              NotificationService::AllSources());
-
-  // Register for redirect notifications sourced from |this|.
-  notification_registrar_.Add(
-      this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
-      Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
-
-  DCHECK(load_start_time_.is_null());
-  load_start_time_ = base::TimeTicks::Now();
-
-  render_view_host_->Send(
-      new ViewMsg_SetIsPrerendering(render_view_host_->routing_id(), true));
-
-  ViewMsg_Navigate_Params params;
-  params.page_id = -1;
-  params.pending_history_list_offset = -1;
-  params.current_history_list_offset = -1;
-  params.current_history_list_length = 0;
-  params.url = prerender_url_;
-  params.transition = PageTransition::LINK;
-  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  params.referrer = referrer_;
-  params.request_time = base::Time::Now();
-
-  render_view_host_->Navigate(params);
-}
-
 void PrerenderContents::StartPrerendering(
     const RenderViewHost* source_render_view_host) {
-  if (!UseTabContents()) {
-    VLOG(1) << "Starting prerendering with LEGACY code";
-    StartPrerenderingOld(source_render_view_host);
-    return;
-  }
-  VLOG(1) << "Starting prerendering with NEW code";
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
@@ -385,10 +281,6 @@ PrerenderContents::~PrerenderContents() {
   if (prerendering_has_started())
     RecordFinalStatus(final_status_);
 
-  // Only delete the RenderViewHost if we own it.
-  if (render_view_host_)
-    render_view_host_->Shutdown();
-
   if (child_id_ != -1 && route_id_ != -1)
     prerender_tracker_->OnPrerenderingFinished(child_id_, route_id_);
 
@@ -396,58 +288,6 @@ PrerenderContents::~PrerenderContents() {
   // destroy it.
   if (prerender_contents_.get())
     delete ReleasePrerenderContents();
-}
-
-RenderViewHostDelegate::View* PrerenderContents::GetViewDelegate() {
-  return this;
-}
-
-const GURL& PrerenderContents::GetURL() const {
-  return url_;
-}
-
-ViewType::Type PrerenderContents::GetRenderViewType() const {
-  return ViewType::BACKGROUND_CONTENTS;
-}
-
-int PrerenderContents::GetBrowserWindowID() const {
-  return extension_misc::kUnknownWindowId;
-}
-
-void PrerenderContents::DidNavigate(
-    RenderViewHost* render_view_host,
-    const ViewHostMsg_FrameNavigate_Params& params) {
-  DCHECK_EQ(render_view_host_, render_view_host);
-
-  // We only care when the outer frame changes.
-  if (!PageTransition::IsMainFrame(params.transition))
-    return;
-
-  // Store the navigation params.
-  navigate_params_.reset(new ViewHostMsg_FrameNavigate_Params());
-  *navigate_params_ = params;
-
-  if (!AddAliasURL(params.url))
-    return;
-
-  url_ = params.url;
-}
-
-void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
-                                    int32 page_id,
-                                    const std::wstring& title) {
-  DCHECK_EQ(render_view_host_, render_view_host);
-  if (title.empty())
-    return;
-
-  title_ = WideToUTF16Hack(title);
-  page_id_ = page_id;
-}
-
-bool PrerenderContents::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return false;
 }
 
 void PrerenderContents::Observe(NotificationType type,
@@ -473,23 +313,6 @@ void PrerenderContents::Observe(NotificationType type,
       RenderViewHostDelegate* delegate = handler->GetRenderViewHostDelegate();
       if (delegate == GetRenderViewHostDelegate()) {
         Destroy(FINAL_STATUS_AUTH_NEEDED);
-        return;
-      }
-      break;
-    }
-
-    // TODO(mmenke):  Once we get rid of the old RenderViewHost code, remove
-    //                this.
-    case NotificationType::DOWNLOAD_INITIATED: {
-      // If the download is started from a RenderViewHost that we are
-      // delegating, kill the prerender. This cancels any pending requests
-      // though the download never actually started thanks to the
-      // DownloadRequestLimiter.
-      DCHECK(NotificationService::NoDetails() == details);
-      RenderViewHost* render_view_host = Source<RenderViewHost>(source).ptr();
-      CHECK(render_view_host != NULL);
-      if (render_view_host->delegate() == GetRenderViewHostDelegate()) {
-        Destroy(FINAL_STATUS_DOWNLOAD);
         return;
       }
       break;
@@ -557,85 +380,6 @@ void PrerenderContents::Observe(NotificationType type,
       NOTREACHED() << "Unexpected notification sent.";
       break;
   }
-}
-
-void PrerenderContents::OnMessageBoxClosed(IPC::Message* reply_msg,
-                                           bool success,
-                                           const std::wstring& prompt) {
-  render_view_host_->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
-}
-
-gfx::NativeWindow PrerenderContents::GetMessageBoxRootWindow() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-TabContents* PrerenderContents::AsTabContents() {
-  return NULL;
-}
-
-ExtensionHost* PrerenderContents::AsExtensionHost() {
-  return NULL;
-}
-
-void PrerenderContents::UpdateInspectorSetting(const std::string& key,
-                                               const std::string& value) {
-  RenderViewHostDelegateHelper::UpdateInspectorSetting(profile_, key, value);
-}
-
-void PrerenderContents::ClearInspectorSettings() {
-  RenderViewHostDelegateHelper::ClearInspectorSettings(profile_);
-}
-
-void PrerenderContents::Close(RenderViewHost* render_view_host) {
-  Destroy(FINAL_STATUS_CLOSED);
-}
-
-RendererPreferences PrerenderContents::GetRendererPrefs(
-    Profile* profile) const {
-  RendererPreferences preferences;
-  renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
-  return preferences;
-}
-
-WebPreferences PrerenderContents::GetWebkitPrefs() {
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(profile_,
-                                                      false);  // is_web_ui
-}
-
-void PrerenderContents::CreateNewWindow(
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  // TODO(dominich): Remove when we switch to TabContents.
-  // Since we don't want to permit child windows that would have a
-  // window.opener property, terminate prerendering.
-  Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
-}
-
-void PrerenderContents::CreateNewWidget(int route_id,
-                                        WebKit::WebPopupType popup_type) {
-  NOTREACHED();
-}
-
-void PrerenderContents::CreateNewFullscreenWidget(int route_id) {
-  NOTREACHED();
-}
-
-void PrerenderContents::ShowCreatedWindow(int route_id,
-                                          WindowOpenDisposition disposition,
-                                          const gfx::Rect& initial_pos,
-                                          bool user_gesture) {
-  // TODO(tburkard): need to figure out what the correct behavior here is
-  NOTIMPLEMENTED();
-}
-
-void PrerenderContents::ShowCreatedWidget(int route_id,
-                                          const gfx::Rect& initial_pos) {
-  NOTIMPLEMENTED();
-}
-
-void PrerenderContents::ShowCreatedFullscreenWidget(int route_id) {
-  NOTIMPLEMENTED();
 }
 
 void PrerenderContents::OnRenderViewHostCreated(
@@ -761,12 +505,6 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
     render_view_host_observer_->set_prerender_contents(NULL);
 }
 
-void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
-                                             bool is_during_unload) {
-  DCHECK_EQ(render_view_host_, render_view_host);
-  Destroy(FINAL_STATUS_RENDERER_UNRESPONSIVE);
-}
-
 bool PrerenderContents::CanDownload(int request_id) {
   Destroy(FINAL_STATUS_DOWNLOAD);
   // Cancel the download.
@@ -821,13 +559,9 @@ TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
 }
 
 RenderViewHostDelegate* PrerenderContents::GetRenderViewHostDelegate() {
-  if (UseTabContents()) {
-    if (!prerender_contents_.get())
-      return NULL;
-    return prerender_contents_->tab_contents();
-  } else {
-    return this;
-  }
+  if (!prerender_contents_.get())
+    return NULL;
+  return prerender_contents_->tab_contents();
 }
 
 RenderViewHost* PrerenderContents::render_view_host_mutable() {
@@ -835,14 +569,9 @@ RenderViewHost* PrerenderContents::render_view_host_mutable() {
 }
 
 const RenderViewHost* PrerenderContents::render_view_host() const {
-  // TODO(mmenke): Replace with simple accessor once TabContents is always
-  //               used.
-  if (UseTabContents()) {
-    if (!prerender_contents_.get())
-      return NULL;
-    return prerender_contents_->render_view_host();
-  }
-  return render_view_host_;
+  if (!prerender_contents_.get())
+    return NULL;
+  return prerender_contents_->render_view_host();
 }
 
 void PrerenderContents::CommitHistory(TabContentsWrapper* tab) {

@@ -14,9 +14,7 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/window_container_type.h"
@@ -47,13 +45,8 @@ class PrerenderTracker;
 // NavigationController because is has no facility for navigating (other than
 // programatically view window.location.href) or RenderViewHostManager because
 // it is never allowed to navigate across a SiteInstance boundary.
-// TODO(dominich): Remove RenderViewHostDelegate inheritance when UseTabContents
-// returns true by default.
-class PrerenderContents : public RenderViewHostDelegate,
-                          public RenderViewHostDelegate::View,
-                          public NotificationObserver,
+class PrerenderContents : public NotificationObserver,
                           public TabContentsObserver,
-                          public JavaScriptAppModalDialogDelegate,
                           public DownloadTabHelperDelegate {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
@@ -86,8 +79,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   // prerendering.  It must be non-NULL and have its own view.  It is used
   // solely to determine the window bounds while prerendering.
   virtual void StartPrerendering(const RenderViewHost* source_render_view_host);
-  virtual void StartPrerenderingOld(
-      const RenderViewHost* source_render_view_host);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.
@@ -96,12 +87,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   RenderViewHost* render_view_host_mutable();
   const RenderViewHost* render_view_host() const;
 
-  // Allows replacing of the RenderViewHost owned by this class, including
-  // replacing with a NULL value.  When a caller uses this, the caller will
-  // own (and is responsible for freeing) the old RVH.
-  void set_render_view_host(RenderViewHost* render_view_host) {
-    render_view_host_ = render_view_host;
-  }
   ViewHostMsg_FrameNavigate_Params* navigate_params() {
     return navigate_params_.get();
   }
@@ -141,89 +126,13 @@ class PrerenderContents : public RenderViewHostDelegate,
                               std::wstring* prompt_field);
   virtual void OnRenderViewGone(int status, int exit_code);
 
-  // RenderViewHostDelegate implementation.
-  // TODO(dominich): Remove when RenderViewHostDelegate is removed as a base
-  // class.
-  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
-  virtual const GURL& GetURL() const OVERRIDE;
-  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
-  virtual int GetBrowserWindowID() const OVERRIDE;
-  virtual void DidNavigate(
-      RenderViewHost* render_view_host,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
-                           int32 page_id,
-                           const std::wstring& title);
-  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
-  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
-
   // TabContentsObserver implementation.
   virtual void DidStopLoading() OVERRIDE;
-
-  // RenderViewHostDelegate::View
-  // TODO(dominich): Remove when no longer a delegate for the view.
-  virtual void CreateNewWindow(
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
-  virtual void CreateNewWidget(int route_id,
-                               WebKit::WebPopupType popup_type) OVERRIDE;
-  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) OVERRIDE;
-  virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) OVERRIDE;
-  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE {}
-  virtual void ShowPopupMenu(const gfx::Rect& bounds,
-                             int item_height,
-                             double item_font_size,
-                             int selected_item,
-                             const std::vector<WebMenuItem>& items,
-                             bool right_aligned) OVERRIDE {}
-  virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_operations,
-                             const SkBitmap& image,
-                             const gfx::Point& image_offset) OVERRIDE {}
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE {}
-  virtual void GotFocus() OVERRIDE {}
-  virtual void TakeFocus(bool reverse) OVERRIDE {}
-  virtual void LostCapture() OVERRIDE {}
-  virtual void Activate() OVERRIDE {}
-  virtual void Deactivate() OVERRIDE {}
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE {}
-  virtual void HandleMouseMove() OVERRIDE {}
-  virtual void HandleMouseDown() OVERRIDE {}
-  virtual void HandleMouseLeave() OVERRIDE {}
-  virtual void HandleMouseUp() OVERRIDE {}
-  virtual void HandleMouseActivate() OVERRIDE {}
-  virtual void UpdatePreferredSize(const gfx::Size& new_size) OVERRIDE {}
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
-
-  // Overridden from JavaScriptAppModalDialogDelegate:
-  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
-                                  bool success,
-                                  const std::wstring& prompt) OVERRIDE;
-  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) OVERRIDE {}
-  virtual gfx::NativeWindow GetMessageBoxRootWindow() OVERRIDE;
-  virtual TabContents* AsTabContents() OVERRIDE;
-  virtual ExtensionHost* AsExtensionHost() OVERRIDE;
-
-  virtual void UpdateInspectorSetting(const std::string& key,
-                                      const std::string& value) OVERRIDE;
-  virtual void ClearInspectorSettings() OVERRIDE;
-
-  virtual void RendererUnresponsive(RenderViewHost* render_view_host,
-                                    bool is_during_unload) OVERRIDE;
 
   // DownloadTabHelperDelegate implementation.
   virtual bool CanDownload(int request_id) OVERRIDE;
@@ -246,14 +155,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   // Sets the final status, calls OnDestroy and adds |this| to the
   // PrerenderManager's pending deletes list.
   void Destroy(FinalStatus reason);
-
-  // Indicates whether to use the legacy code doing prerendering via
-  // a RenderViewHost (false), or whether the new TabContents based prerendering
-  // is to be used (true).
-  // TODO(cbentzel): Remove once new approach looks stable.
-  static bool UseTabContents() {
-    return true;
-  }
 
   // Applies all the URL history encountered during prerendering to the
   // new tab.
@@ -304,9 +205,6 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   // The prerender tracker tracking prerenders.
   PrerenderTracker* prerender_tracker_;
-
-  // The host for our HTML content.
-  RenderViewHost* render_view_host_;
 
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;

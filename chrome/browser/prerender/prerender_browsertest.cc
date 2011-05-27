@@ -820,12 +820,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
-  // Early out if we're not using TabContents for Prerendering.
-  if (!prerender::PrerenderContents::UseTabContents()) {
-    SUCCEED();
-    return;
-  }
-
   // Show the task manager. This populates the model.
   browser()->window()->ShowTaskManager();
 

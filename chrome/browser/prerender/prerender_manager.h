@@ -100,9 +100,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool MaybeUsePreloadedPage(TabContents* tab_contents,
                              const GURL& url,
                              bool has_opener_set);
-  bool MaybeUsePreloadedPageOld(TabContents* tab_contents,
-                                const GURL& url,
-                                bool has_opener_set);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.
