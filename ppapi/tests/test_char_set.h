@@ -24,6 +24,7 @@ class TestCharSet : public TestCase {
  private:
   std::string TestUTF16ToCharSet();
   std::string TestCharSetToUTF16();
+  std::string TestGetDefaultCharSet();
 
   // Converts the given UTF-8 string to a NON-NULL TERMINATED UTF-16 string
   // stored in the given vector.

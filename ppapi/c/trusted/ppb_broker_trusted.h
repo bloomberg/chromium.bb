@@ -63,10 +63,12 @@ struct PPB_BrokerTrusted {
                      struct PP_CompletionCallback connect_callback);
 
   /**
-   * Returns the handle to the pipe. Use once Connect has completed.
-   * Returns PP_OK on success.
-   * Each instance of this interface has its own pipe.
-   * handle is only set when returning PP_OK.
+   * Gets the handle to the pipe. Use once Connect has completed. Each instance
+   * of this interface has its own pipe.
+   *
+   * Returns PP_OK on success, and places the result into the given output
+   * parameter. The handle is only set when returning PP_OK. Calling this
+   * before connect has completed will return PP_ERROR_FAILED.
    */
   int32_t (*GetHandle)(PP_Resource broker, int32_t* handle);
 };

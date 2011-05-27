@@ -8,6 +8,8 @@
 #include "ppapi/shared_impl/font_impl.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
+#include "webkit/plugins/ppapi/ppb_broker_impl.h"
+#include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -15,7 +17,8 @@
 namespace webkit {
 namespace ppapi {
 
-ResourceCreationImpl::ResourceCreationImpl() {
+ResourceCreationImpl::ResourceCreationImpl(PluginInstance* instance)
+    : instance_(instance) {
 }
 
 ResourceCreationImpl::~ResourceCreationImpl() {
@@ -61,6 +64,15 @@ PP_Resource ResourceCreationImpl::CreateAudioTrusted(
     return 0;
   scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
   return audio->GetReference();
+}
+
+PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
+  return PPB_Broker_Impl::Create(instance);
+}
+
+PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
+                                               uint32_t size) {
+  return PPB_Buffer_Impl::Create(instance, size);
 }
 
 PP_Resource ResourceCreationImpl::CreateFontObject(

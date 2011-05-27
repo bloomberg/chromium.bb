@@ -16,7 +16,7 @@ TestCharSet::TestCharSet(TestingInstance* instance)
 }
 
 bool TestCharSet::Init() {
-  char_set_interface_ = reinterpret_cast<struct PPB_CharSet_Dev const*>(
+  char_set_interface_ = static_cast<PPB_CharSet_Dev const*>(
       pp::Module::Get()->GetBrowserInterface(PPB_CHAR_SET_DEV_INTERFACE));
   return !!char_set_interface_;
 }
@@ -24,6 +24,7 @@ bool TestCharSet::Init() {
 void TestCharSet::RunTest() {
   RUN_TEST(UTF16ToCharSet);
   RUN_TEST(CharSetToUTF16);
+  RUN_TEST(GetDefaultCharSet);
 }
 
 std::string TestCharSet::TestUTF16ToCharSet() {
@@ -151,6 +152,20 @@ std::string TestCharSet::TestCharSetToUTF16() {
       PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf16result_len);
   ASSERT_TRUE(!utf16result);
   ASSERT_TRUE(utf16result_len == 0);
+
+  PASS();
+}
+
+std::string TestCharSet::TestGetDefaultCharSet() {
+  // Test invalid instance.
+  pp::Var result(pp::Var::PassRef(), char_set_interface_->GetDefaultCharSet(0));
+  ASSERT_TRUE(result.is_undefined());
+
+  // Just make sure the default char set is a nonempty string.
+  result = pp::Var(pp::Var::PassRef(),
+      char_set_interface_->GetDefaultCharSet(instance_->pp_instance()));
+  ASSERT_TRUE(result.is_string());
+  ASSERT_FALSE(result.AsString().empty());
 
   PASS();
 }

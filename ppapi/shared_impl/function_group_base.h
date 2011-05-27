@@ -8,6 +8,8 @@
 namespace ppapi {
 
 namespace thunk {
+class PPB_CharSet_FunctionAPI;
+class PPB_CursorControl_FunctionAPI;
 class PPB_Font_FunctionAPI;
 class ResourceCreationAPI;
 }
@@ -16,12 +18,30 @@ class FunctionGroupBase {
  public:
   // Dynamic casting for this object. Returns the pointer to the given type if
   // it's supported.
-  virtual thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI() { return NULL; }
-  virtual thunk::ResourceCreationAPI* AsResourceCreation() { return NULL; }
+  virtual thunk::PPB_CharSet_FunctionAPI* AsCharSet_FunctionAPI() {
+    return NULL;
+  }
+  virtual thunk::PPB_CursorControl_FunctionAPI* AsCursorControl_FunctionAPI() {
+    return NULL;
+  }
+  virtual thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI() {
+    return NULL;
+  }
+  virtual thunk::ResourceCreationAPI* AsResourceCreation() {
+    return NULL;
+  }
 
   template <typename T> T* GetAs() { return NULL; }
 };
 
+template<>
+inline thunk::PPB_CharSet_FunctionAPI* FunctionGroupBase::GetAs() {
+  return AsCharSet_FunctionAPI();
+}
+template<>
+inline thunk::PPB_CursorControl_FunctionAPI* FunctionGroupBase::GetAs() {
+  return AsCursorControl_FunctionAPI();
+}
 template<>
 inline thunk::PPB_Font_FunctionAPI* FunctionGroupBase::GetAs() {
   return AsFont_FunctionAPI();

@@ -14,11 +14,23 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/thunk/ppb_buffer_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace pp {
 namespace proxy {
 
-class Buffer : public PluginResource {
+namespace {
+
+InterfaceProxy* CreateBufferProxy(Dispatcher* dispatcher,
+                                  const void* target_interface) {
+  return new PPB_Buffer_Proxy(dispatcher, target_interface);
+}
+
+}  // namespace
+
+class Buffer : public ppapi::thunk::PPB_Buffer_API,
+               public PluginResource {
  public:
   Buffer(const HostResource& resource,
          int memory_handle,
@@ -26,12 +38,16 @@ class Buffer : public PluginResource {
   virtual ~Buffer();
 
   // Resource overrides.
-  virtual Buffer* AsBuffer() { return this; }
+  virtual Buffer* AsBuffer() OVERRIDE;
 
-  uint32_t size() const { return size_; }
+  // ResourceObjectBase overries.
+  virtual ppapi::thunk::PPB_Buffer_API* AsBuffer_API() OVERRIDE;
 
-  void* Map();
-  void Unmap();
+  // PPB_Buffer_API implementation.
+  virtual PP_Bool Describe(uint32_t* size_in_bytes) OVERRIDE;
+  virtual PP_Bool IsMapped() OVERRIDE;
+  virtual void* Map() OVERRIDE;
+  virtual void Unmap() OVERRIDE;
 
  private:
   int memory_handle_;
@@ -55,6 +71,23 @@ Buffer::~Buffer() {
   Unmap();
 }
 
+Buffer* Buffer::AsBuffer() {
+  return this;
+}
+
+ppapi::thunk::PPB_Buffer_API* Buffer::AsBuffer_API() {
+  return this;
+}
+
+PP_Bool Buffer::Describe(uint32_t* size_in_bytes) {
+  *size_in_bytes = size_;
+  return PP_TRUE;
+}
+
+PP_Bool Buffer::IsMapped() {
+  return PP_FromBool(!!mapped_data_);
+}
+
 void* Buffer::Map() {
   // TODO(brettw) implement this.
   return mapped_data_;
@@ -63,66 +96,6 @@ void* Buffer::Map() {
 void Buffer::Unmap() {
   // TODO(brettw) implement this.
 }
-
-namespace {
-
-PP_Resource Create(PP_Instance instance, uint32_t size) {
-  HostResource result;
-  int32_t shm_handle = -1;
-  PluginDispatcher::GetForInstance(instance)->Send(
-      new PpapiHostMsg_PPBBuffer_Create(
-          INTERFACE_ID_PPB_BUFFER, instance, size,
-          &result, &shm_handle));
-  if (result.is_null())
-    return 0;
-
-  linked_ptr<Buffer> object(new Buffer(result,
-                                       static_cast<int>(shm_handle), size));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
-}
-
-PP_Bool IsBuffer(PP_Resource resource) {
-  Buffer* object = PluginResource::GetAs<Buffer>(resource);
-  return BoolToPPBool(!!object);
-}
-
-PP_Bool Describe(PP_Resource resource, uint32_t* size_in_bytes) {
-  Buffer* object = PluginResource::GetAs<Buffer>(resource);
-  if (!object) {
-    *size_in_bytes = 0;
-    return PP_FALSE;
-  }
-  *size_in_bytes = object->size();
-  return PP_TRUE;
-}
-
-void* Map(PP_Resource resource) {
-  Buffer* object = PluginResource::GetAs<Buffer>(resource);
-  if (!object)
-    return NULL;
-  return object->Map();
-}
-
-void Unmap(PP_Resource resource) {
-  Buffer* object = PluginResource::GetAs<Buffer>(resource);
-  if (object)
-    object->Unmap();
-}
-
-const PPB_Buffer_Dev buffer_interface = {
-  &Create,
-  &IsBuffer,
-  &Describe,
-  &Map,
-  &Unmap,
-};
-
-InterfaceProxy* CreateBufferProxy(Dispatcher* dispatcher,
-                                  const void* target_interface) {
-  return new PPB_Buffer_Proxy(dispatcher, target_interface);
-}
-
-}  // namespace
 
 PPB_Buffer_Proxy::PPB_Buffer_Proxy(Dispatcher* dispatcher,
                                    const void* target_interface)
@@ -135,13 +108,33 @@ PPB_Buffer_Proxy::~PPB_Buffer_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Buffer_Proxy::GetInfo() {
   static const Info info = {
-    &buffer_interface,
+    ppapi::thunk::GetPPB_Buffer_Thunk(),
     PPB_BUFFER_DEV_INTERFACE,
     INTERFACE_ID_PPB_BUFFER,
     false,
     &CreateBufferProxy,
   };
   return &info;
+}
+
+// static
+PP_Resource PPB_Buffer_Proxy::CreateProxyResource(PP_Instance instance,
+                                                  uint32_t size) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+
+  HostResource result;
+  int32_t shm_handle = -1;
+  dispatcher->Send(new PpapiHostMsg_PPBBuffer_Create(
+      INTERFACE_ID_PPB_BUFFER, instance, size,
+      &result, &shm_handle));
+  if (result.is_null())
+    return 0;
+
+  linked_ptr<Buffer> object(new Buffer(result,
+                                       static_cast<int>(shm_handle), size));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 bool PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {

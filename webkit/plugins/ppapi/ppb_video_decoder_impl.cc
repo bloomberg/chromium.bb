@@ -13,6 +13,7 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -239,10 +240,15 @@ bool PPB_VideoDecoder_Impl::Decode(
   if (!platform_video_decoder_.get())
     return false;
 
-  media::BitstreamBuffer decode_buffer(
-      bitstream_buffer->id,
-      Resource::GetAs<PPB_Buffer_Impl>(bitstream_buffer->data)->handle(),
-      bitstream_buffer->size);
+  ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_Buffer_API>
+      enter(bitstream_buffer->data, true);
+  if (enter.failed())
+    return false;
+
+  PPB_Buffer_Impl* buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
+  media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
+                                       buffer->shared_memory()->handle(),
+                                       static_cast<size_t>(buffer->size()));
 
   // Store the callback to inform when bitstream buffer has been processed.
   // TODO(vmr): handle simultaneous decodes + callbacks.
@@ -423,8 +429,8 @@ SysmemBuffer::SysmemBuffer(const PP_SysmemBuffer_Dev& buffer)
   scoped_refptr<webkit::ppapi::PPB_Buffer_Impl> pepper_buffer =
       webkit::ppapi::Resource::GetAs<webkit::ppapi::PPB_Buffer_Impl>(
           buffer.data);
-  assert(pepper_buffer->is_mapped());
-  data_ = pepper_buffer->mapped_buffer();
+  CHECK(pepper_buffer->IsMapped());
+  data_ = pepper_buffer->Map();
 }
 
 Picture::Picture(const PP_Picture_Dev& picture)

@@ -73,12 +73,8 @@
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_broker_impl.h"
-#include "webkit/plugins/ppapi/ppb_buffer_impl.h"
-#include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 #include "webkit/plugins/ppapi/ppb_console_impl.h"
 #include "webkit/plugins/ppapi/ppb_crypto_impl.h"
-#include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_chooser_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
@@ -252,11 +248,11 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_AudioTrusted_Thunk();
   if (strcmp(name, PPB_BROKER_TRUSTED_INTERFACE) == 0)
-    return PPB_Broker_Impl::GetTrustedInterface();
+    return ::ppapi::thunk::GetPPB_Broker_Thunk();
   if (strcmp(name, PPB_BUFFER_DEV_INTERFACE) == 0)
-    return PPB_Buffer_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Buffer_Thunk();
   if (strcmp(name, PPB_CHAR_SET_DEV_INTERFACE) == 0)
-    return PPB_CharSet_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_CharSet_Thunk();
   if (strcmp(name, PPB_CONSOLE_DEV_INTERFACE) == 0)
     return PPB_Console_Impl::GetInterface();
   if (strcmp(name, PPB_CORE_INTERFACE) == 0)
@@ -264,7 +260,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_CRYPTO_DEV_INTERFACE) == 0)
     return PPB_Crypto_Impl::GetInterface();
   if (strcmp(name, PPB_CURSOR_CONTROL_DEV_INTERFACE) == 0)
-    return GetCursorControlInterface();
+    return ::ppapi::thunk::GetPPB_CursorControl_Thunk();
   if (strcmp(name, PPB_DIRECTORYREADER_DEV_INTERFACE) == 0)
     return PPB_DirectoryReader_Impl::GetInterface();
   if (strcmp(name, PPB_FILECHOOSER_DEV_INTERFACE) == 0)

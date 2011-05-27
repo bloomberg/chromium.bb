@@ -14,6 +14,8 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_config_proxy.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
+#include "ppapi/proxy/ppb_buffer_proxy.h"
+#include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
@@ -59,6 +61,15 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
 PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
   // Proxied plugins can't created trusted audio devices.
   return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateBroker(PP_Instance instance) {
+  return PPB_Broker_Proxy::CreateProxyResource(instance);
+}
+
+PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
+                                                uint32_t size) {
+  return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
 }
 
 PP_Resource ResourceCreationProxy::CreateFontObject(

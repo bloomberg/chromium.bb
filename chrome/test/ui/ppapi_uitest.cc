@@ -116,6 +116,14 @@ class PPAPITest : public UITest {
   }
 };
 
+TEST_F(PPAPITest, Broker) {
+  RunTest("Broker");
+}
+
+TEST_F(PPAPITest, CursorControl) {
+  RunTest("CursorControl");
+}
+
 TEST_F(PPAPITest, FAILS_Instance) {
   RunTest("Instance");
 }

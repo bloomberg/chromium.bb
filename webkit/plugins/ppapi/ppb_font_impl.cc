@@ -127,7 +127,8 @@ int32_t PPB_Font_Impl::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
   return result;
 }
 
-PPB_Font_FunctionImpl::PPB_Font_FunctionImpl() {
+PPB_Font_FunctionImpl::PPB_Font_FunctionImpl(PluginInstance* instance)
+    : instance_(instance) {
 }
 
 PPB_Font_FunctionImpl::~PPB_Font_FunctionImpl() {

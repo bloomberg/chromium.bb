@@ -35,7 +35,7 @@ uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
 
 PP_Bool IsAudioConfig(PP_Resource resource) {
   EnterResource<PPB_AudioConfig_API> enter(resource, false);
-  return enter.succeeded() ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(enter.succeeded());
 }
 
 PP_AudioSampleRate GetSampleRate(PP_Resource config_id) {

@@ -13,10 +13,12 @@
 namespace webkit {
 namespace ppapi {
 
+class PluginInstance;
+
 class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                              public ::ppapi::thunk::ResourceCreationAPI {
  public:
-  ResourceCreationImpl();
+  ResourceCreationImpl(PluginInstance* instance);
   virtual ~ResourceCreationImpl();
 
   // FunctionGroupBase implementation.
@@ -31,6 +33,9 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) OVERRIDE;
+  virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateBuffer(PP_Instance instance,
+                                   uint32_t size) OVERRIDE;
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,
       const PP_FontDescription_Dev* description) OVERRIDE;
@@ -43,6 +48,8 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                                       PP_Bool init_to_zero) OVERRIDE;
 
  private:
+  PluginInstance* instance_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationImpl);
 };
 

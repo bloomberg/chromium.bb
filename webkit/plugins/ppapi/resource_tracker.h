@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
@@ -60,7 +61,7 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   virtual ::ppapi::ResourceObjectBase* GetResourceAPI(
       PP_Resource res);
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
-      PP_Instance inst,
+      PP_Instance pp_instance,
       pp::proxy::InterfaceID id);
 
   // PP_Vars -------------------------------------------------------------------
@@ -180,16 +181,13 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   VarMap live_vars_;
 
   // Tracks all live instances and their associated data.
-  typedef std::map<PP_Instance, InstanceData> InstanceMap;
+  typedef std::map<PP_Instance, linked_ptr<InstanceData> > InstanceMap;
   InstanceMap instance_map_;
 
   // Tracks all live modules. The pointers are non-owning, the PluginModule
   // destructor will notify us when the module is deleted.
   typedef std::map<PP_Module, PluginModule*> ModuleMap;
   ModuleMap module_map_;
-
-  scoped_ptr< ::ppapi::FunctionGroupBase >
-      function_proxies_[::pp::proxy::INTERFACE_ID_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
 };

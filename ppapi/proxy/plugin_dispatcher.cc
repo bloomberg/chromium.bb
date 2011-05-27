@@ -17,6 +17,8 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_serialization_rules.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_char_set_proxy.h"
+#include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
@@ -222,15 +224,21 @@ ppapi::WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
 
 ::ppapi::FunctionGroupBase* PluginDispatcher::GetFunctionAPI(
     pp::proxy::InterfaceID id) {
-  if (function_proxies_[id].get())
-    return function_proxies_[id].get();
+  scoped_ptr< ::ppapi::FunctionGroupBase >& proxy = function_proxies_[id];
 
-  if (id == INTERFACE_ID_RESOURCE_CREATION)
-    function_proxies_[id].reset(new ResourceCreationProxy(this));
-  if (id == INTERFACE_ID_PPB_FONT)
-    function_proxies_[id].reset(new PPB_Font_Proxy(this, NULL));
+  if (proxy.get())
+    return proxy.get();
 
-  return function_proxies_[id].get();
+  if (id == INTERFACE_ID_PPB_CHAR_SET)
+    proxy.reset(new PPB_CharSet_Proxy(this, NULL));
+  else if(id == INTERFACE_ID_PPB_CURSORCONTROL)
+    proxy.reset(new PPB_CursorControl_Proxy(this, NULL));
+  else if (id == INTERFACE_ID_PPB_FONT)
+    proxy.reset(new PPB_Font_Proxy(this, NULL));
+  else if (id == INTERFACE_ID_RESOURCE_CREATION)
+    proxy.reset(new ResourceCreationProxy(this));
+
+  return proxy.get();
 }
 
 void PluginDispatcher::ForceFreeAllInstances() {

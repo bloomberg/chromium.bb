@@ -12,25 +12,40 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/thunk/ppb_cursor_control_api.h"
 
 struct PPB_CursorControl_Dev;
 
 namespace pp {
 namespace proxy {
 
-class PPB_CursorControl_Proxy : public InterfaceProxy {
+class PPB_CursorControl_Proxy
+    : public ppapi::FunctionGroupBase,
+      public ppapi::thunk::PPB_CursorControl_FunctionAPI,
+      public InterfaceProxy {
  public:
   PPB_CursorControl_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_CursorControl_Proxy();
 
   static const Info* GetInfo();
 
-  const PPB_CursorControl_Dev* ppb_cursor_control_target() const {
-    return reinterpret_cast<const PPB_CursorControl_Dev*>(target_interface());
-  }
+  // FunctionGroupBase overrides.
+  ppapi::thunk::PPB_CursorControl_FunctionAPI* AsCursorControl_FunctionAPI()
+      OVERRIDE;
+
+  // PPB_CursorControl_FunctionAPI implementation.
+  virtual PP_Bool SetCursor(PP_Instance instance,
+                            PP_CursorType_Dev type,
+                            PP_Resource custom_image_id,
+                            const PP_Point* hot_spot) OVERRIDE;
+  virtual PP_Bool LockCursor(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool UnlockCursor(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool HasCursorLock(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool CanLockCursor(PP_Instance instance) OVERRIDE;
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   // Message handlers.

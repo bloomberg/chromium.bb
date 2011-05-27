@@ -9,50 +9,12 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/thunk/ppb_broker_api.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace pp {
 namespace proxy {
-
-class Broker : public PluginResource {
- public:
-  explicit Broker(const HostResource& resource);
-  virtual ~Broker();
-
-  // Resource overrides.
-  virtual Broker* AsBroker() { return this; }
-
-  bool called_connect_;
-  PP_CompletionCallback current_connect_callback_;
-
-  // The plugin module owns the handle.
-  // The host side transfers ownership of the handle to the plugin side when it
-  // sends the IPC. This member holds the handle value for the plugin module
-  // to read, but the plugin side of the proxy never takes ownership.
-  base::SyncSocket::Handle socket_handle_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Broker);
-};
-
-Broker::Broker(const HostResource& resource)
-    : PluginResource(resource),
-      called_connect_(false),
-      current_connect_callback_(PP_MakeCompletionCallback(NULL, NULL)),
-      socket_handle_(base::kInvalidPlatformFileValue) {
-}
-
-Broker::~Broker() {
-  // Ensure the callback is always fired.
-  if (current_connect_callback_.func) {
-    // TODO(brettw) the callbacks at this level should be refactored with a
-    // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
-        current_connect_callback_.func, current_connect_callback_.user_data,
-        static_cast<int32_t>(PP_ERROR_ABORTED)));
-  }
-
-  socket_handle_ = base::kInvalidPlatformFileValue;
-}
 
 namespace {
 
@@ -76,76 +38,113 @@ int32_t PlatformFileToInt(base::PlatformFile handle) {
 #endif
 }
 
-PP_Resource CreateTrusted(PP_Instance instance) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return 0;
-
-  HostResource result;
-  dispatcher->Send(new PpapiHostMsg_PPBBroker_Create(
-      INTERFACE_ID_PPB_BROKER, instance, &result));
-  if (result.is_null())
-    return 0;
-
-  linked_ptr<Broker> object(new Broker(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
-}
-
-PP_Bool IsBrokerTrusted(PP_Resource resource) {
-  Broker* object = PluginResource::GetAs<Broker>(resource);
-  return BoolToPPBool(!!object);
-}
-
-int32_t Connect(PP_Resource resource,
-                PP_CompletionCallback connect_callback) {
-  Broker* object = PluginResource::GetAs<Broker>(resource);
-  if (!object)
-    return PP_ERROR_BADRESOURCE;
-
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
-  if (!dispatcher)
-    return PP_ERROR_BADRESOURCE;
-
-  if (!connect_callback.func) {
-    // Synchronous calls are not supported.
-    return PP_ERROR_BADARGUMENT;
-  }
-
-  if (object->current_connect_callback_.func)
-    return PP_ERROR_INPROGRESS;
-  else if (object->called_connect_)
-    return PP_ERROR_FAILED;
-
-  object->current_connect_callback_ = connect_callback;
-  object->called_connect_ = true;
-
-  bool success = dispatcher->Send(new PpapiHostMsg_PPBBroker_Connect(
-      INTERFACE_ID_PPB_BROKER,
-      object->host_resource()));
-  return success ?  PP_OK_COMPLETIONPENDING : PP_ERROR_FAILED;
-}
-
-int32_t GetHandle(PP_Resource resource, int32_t* handle) {
-  Broker* object = PluginResource::GetAs<Broker>(resource);
-  if (!object)
-    return PP_ERROR_BADRESOURCE;
-  *handle = PlatformFileToInt(object->socket_handle_);
-  return PP_OK;
-}
-
-const PPB_BrokerTrusted broker_interface = {
-  &CreateTrusted,
-  &IsBrokerTrusted,
-  &Connect,
-  &GetHandle,
-};
-
 InterfaceProxy* CreateBrokerProxy(Dispatcher* dispatcher,
                                   const void* target_interface) {
   return new PPB_Broker_Proxy(dispatcher, target_interface);
 }
 
 }  // namespace
+
+class Broker : public ppapi::thunk::PPB_Broker_API,
+               public PluginResource {
+ public:
+  explicit Broker(const HostResource& resource);
+  virtual ~Broker();
+
+  // ResourceObjectBase overries.
+  virtual ppapi::thunk::PPB_Broker_API* AsBroker_API() OVERRIDE;
+
+  // PPB_Broker_API implementation.
+  virtual int32_t Connect(PP_CompletionCallback connect_callback) OVERRIDE;
+  virtual int32_t GetHandle(int32_t* handle) OVERRIDE;
+
+  // Called by the proxy when the host side has completed the request.
+  void ConnectComplete(IPC::PlatformFileForTransit socket_handle,
+                       int32_t result);
+
+ private:
+  bool called_connect_;
+  PP_CompletionCallback current_connect_callback_;
+
+  // The plugin module owns the handle.
+  // The host side transfers ownership of the handle to the plugin side when it
+  // sends the IPC. This member holds the handle value for the plugin module
+  // to read, but the plugin side of the proxy never takes ownership.
+  base::SyncSocket::Handle socket_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(Broker);
+};
+
+Broker::Broker(const HostResource& resource)
+    : PluginResource(resource),
+      called_connect_(false),
+      current_connect_callback_(PP_MakeCompletionCallback(NULL, NULL)),
+      socket_handle_(base::kInvalidPlatformFileValue) {
+}
+
+Broker::~Broker() {
+  // Ensure the callback is always fired.
+  if (current_connect_callback_.func) {
+    // TODO(brettw) the callbacks at this level should be refactored with a
+    // more automatic tracking system like we have in the renderer.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+        current_connect_callback_.func, current_connect_callback_.user_data,
+        static_cast<int32_t>(PP_ERROR_ABORTED)));
+  }
+
+  socket_handle_ = base::kInvalidPlatformFileValue;
+}
+
+ppapi::thunk::PPB_Broker_API* Broker::AsBroker_API() {
+  return this;
+}
+
+int32_t Broker::Connect(PP_CompletionCallback connect_callback) {
+  if (!connect_callback.func) {
+    // Synchronous calls are not supported.
+    return PP_ERROR_BADARGUMENT;
+  }
+
+  if (current_connect_callback_.func)
+    return PP_ERROR_INPROGRESS;
+  else if (called_connect_)
+    return PP_ERROR_FAILED;
+
+  current_connect_callback_ = connect_callback;
+  called_connect_ = true;
+
+  bool success = GetDispatcher()->Send(new PpapiHostMsg_PPBBroker_Connect(
+      INTERFACE_ID_PPB_BROKER, host_resource()));
+  return success ?  PP_OK_COMPLETIONPENDING : PP_ERROR_FAILED;
+}
+
+int32_t Broker::GetHandle(int32_t* handle) {
+  if (socket_handle_ == base::kInvalidPlatformFileValue)
+    return PP_ERROR_FAILED;
+  *handle = PlatformFileToInt(socket_handle_);
+  return PP_OK;
+}
+
+void Broker::ConnectComplete(IPC::PlatformFileForTransit socket_handle,
+                             int32_t result) {
+  if (result == PP_OK) {
+    DCHECK(socket_handle_ == base::kInvalidPlatformFileValue);
+    socket_handle_ = IPC::PlatformFileForTransitToPlatformFile(socket_handle);
+  } else {
+    // The caller may still have given us a handle in the failure case.
+    // The easiest way to clean it up is to just put it in an object
+    // and then close them. This failure case is not performance critical.
+    base::SyncSocket temp_socket(
+        IPC::PlatformFileForTransitToPlatformFile(socket_handle));
+  }
+
+  if (!current_connect_callback_.func) {
+    // The handle might leak if the plugin never calls GetHandle().
+    return;
+  }
+
+  PP_RunAndClearCompletionCallback(&current_connect_callback_, result);
+}
 
 PPB_Broker_Proxy::PPB_Broker_Proxy(Dispatcher* dispatcher,
                                    const void* target_interface)
@@ -159,13 +158,29 @@ PPB_Broker_Proxy::~PPB_Broker_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Broker_Proxy::GetInfo() {
   static const Info info = {
-    &broker_interface,
+    ppapi::thunk::GetPPB_Broker_Thunk(),
     PPB_BROKER_TRUSTED_INTERFACE,
     INTERFACE_ID_PPB_BROKER,
     true,
     &CreateBrokerProxy,
   };
   return &info;
+}
+
+// static
+PP_Resource PPB_Broker_Proxy::CreateProxyResource(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+
+  HostResource result;
+  dispatcher->Send(new PpapiHostMsg_PPBBroker_Create(
+      INTERFACE_ID_PPB_BROKER, instance, &result));
+  if (result.is_null())
+    return 0;
+
+  linked_ptr<Broker> object(new Broker(result));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 bool PPB_Broker_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -203,38 +218,22 @@ void PPB_Broker_Proxy::OnMsgConnect(const HostResource& broker) {
 // the plugin owns the handle and is responsible for closing it.
 // The caller guarantees that socket_handle is not valid if result is not PP_OK.
 void PPB_Broker_Proxy::OnMsgConnectComplete(
-    const HostResource& broker,
+    const HostResource& resource,
     IPC::PlatformFileForTransit socket_handle,
     int32_t result) {
   DCHECK(result == PP_OK ||
          socket_handle == IPC::InvalidPlatformFileForTransit());
 
-  Broker* object = NULL;
-  if (result == PP_OK) {
-    object = PluginResource::GetAs<Broker>(
-        PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
-            broker));
-    if (!object)
-      result =  PP_ERROR_BADRESOURCE;
-  }
-
-  if (result == PP_OK) {
-    object->socket_handle_ =
-        IPC::PlatformFileForTransitToPlatformFile(socket_handle);
-  } else {
-    // The caller may still have given us a handle in the failure case.
-    // The easiest way to clean it up is to just put it in an object
-    // and then close them. This failure case is not performance critical.
+  ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_Broker_API> enter(
+      resource.host_resource(), true);
+  if (enter.failed()) {
+    // As in Broker::ConnectComplete, we need to close the resource on error.
     base::SyncSocket temp_socket(
         IPC::PlatformFileForTransitToPlatformFile(socket_handle));
+  } else {
+    static_cast<Broker*>(enter.object())->ConnectComplete(socket_handle,
+                                                          result);
   }
-
-  if (!object->current_connect_callback_.func) {
-    // The handle might leak if the plugin never calls GetHandle().
-    return;
-  }
-
-  PP_RunAndClearCompletionCallback(&object->current_connect_callback_, result);
 }
 
 // Callback on the host side.

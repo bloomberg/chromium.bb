@@ -27,6 +27,8 @@ class PPB_Broker_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
+  static PP_Resource CreateProxyResource(PP_Instance instance);
+
   const PPB_BrokerTrusted* ppb_broker_target() const {
     return static_cast<const PPB_BrokerTrusted*>(target_interface());
   }

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
+#include "ppapi/thunk/ppb_broker_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/callbacks.h"
@@ -20,24 +21,28 @@ namespace ppapi {
 class PluginInstance;
 
 class PPB_Broker_Impl : public Resource,
+                        public ::ppapi::thunk::PPB_Broker_API,
                         public base::SupportsWeakPtr<PPB_Broker_Impl> {
  public:
-  explicit PPB_Broker_Impl(PluginInstance* instance);
   virtual ~PPB_Broker_Impl();
 
-  static const PPB_BrokerTrusted* GetTrustedInterface();
-
-  // PPB_BrokerTrusted implementation.
-  int32_t Connect(PluginDelegate* plugin_delegate,
-                  PP_CompletionCallback connect_callback);
-  int32_t GetHandle(int32_t* handle);
+  static PP_Resource Create(PP_Instance instance_id);
 
   // Resource override.
-  virtual PPB_Broker_Impl* AsPPB_Broker_Impl();
+  virtual PPB_Broker_Impl* AsPPB_Broker_Impl() OVERRIDE;
+
+  // ResourceObjectBase override.
+  virtual ::ppapi::thunk::PPB_Broker_API* AsBroker_API() OVERRIDE;
+
+  // PPB_BrokerTrusted implementation.
+  virtual int32_t Connect(PP_CompletionCallback connect_callback) OVERRIDE;
+  virtual int32_t GetHandle(int32_t* handle) OVERRIDE;
 
   void BrokerConnected(int32_t handle, int32_t result);
 
  private:
+  explicit PPB_Broker_Impl(PluginInstance* instance);
+
   // PluginDelegate ppapi broker object.
   // We don't own this pointer but are responsible for calling Disconnect on it.
   PluginDelegate::PpapiBroker* broker_;

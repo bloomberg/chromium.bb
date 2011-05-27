@@ -8,6 +8,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/thunk/ppb_char_set_api.h"
 
 struct PPB_CharSet_Dev;
 struct PPB_Core;
@@ -17,19 +19,34 @@ namespace proxy {
 
 class SerializedVarReturnValue;
 
-class PPB_CharSet_Proxy : public InterfaceProxy {
+class PPB_CharSet_Proxy : public ppapi::FunctionGroupBase,
+                          public ppapi::thunk::PPB_CharSet_FunctionAPI,
+                          public InterfaceProxy {
  public:
   PPB_CharSet_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_CharSet_Proxy();
 
   static const Info* GetInfo();
 
-  const PPB_CharSet_Dev* ppb_char_set_target() const {
-    return static_cast<const PPB_CharSet_Dev*>(target_interface());
-  }
+  // FunctionGroupBase overrides.
+  virtual ppapi::thunk::PPB_CharSet_FunctionAPI* AsCharSet_FunctionAPI()
+      OVERRIDE;
+
+  // PPB_CharSet_FunctionAPI implementation.
+  virtual char* UTF16ToCharSet(PP_Instance instance,
+                               const uint16_t* utf16, uint32_t utf16_len,
+                               const char* output_char_set,
+                               PP_CharSet_ConversionError on_error,
+                               uint32_t* output_length) OVERRIDE;
+  virtual uint16_t* CharSetToUTF16(PP_Instance instance,
+                                   const char* input, uint32_t input_len,
+                                   const char* input_char_set,
+                                   PP_CharSet_ConversionError on_error,
+                                   uint32_t* output_length) OVERRIDE;
+  virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   void OnMsgGetDefaultCharSet(PP_Instance instance,

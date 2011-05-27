@@ -11,9 +11,12 @@
 #include "base/rand_util.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/tracker_base.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_char_set_impl.h"
+#include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
@@ -64,6 +67,10 @@ struct ResourceTracker::InstanceData {
   // Resources and object vars associated with the instance.
   ResourceSet resources;
   VarSet object_vars;
+
+  // Lazily allocated function proxies for the different interfaces.
+  scoped_ptr< ::ppapi::FunctionGroupBase >
+      function_proxies[::pp::proxy::INTERFACE_ID_COUNT];
 };
 
 scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
@@ -112,7 +119,7 @@ PP_Resource ResourceTracker::AddResource(Resource* resource) {
   // Track associated with the instance.
   PP_Instance pp_instance = resource->instance()->pp_instance();
   DCHECK(instance_map_.find(pp_instance) != instance_map_.end());
-  instance_map_[pp_instance].resources.insert(new_id);
+  instance_map_[pp_instance]->resources.insert(new_id);
   return new_id;
 }
 
@@ -130,7 +137,7 @@ int32 ResourceTracker::AddVar(Var* var) {
   if (object_var) {
     PP_Instance instance = object_var->instance()->pp_instance();
     DCHECK(instance_map_.find(instance) != instance_map_.end());
-    instance_map_[instance].object_vars.insert(new_id);
+    instance_map_[instance]->object_vars.insert(new_id);
   }
 
   return new_id;
@@ -163,7 +170,7 @@ bool ResourceTracker::UnrefResource(PP_Resource res) {
       PP_Instance instance = to_release->instance()->pp_instance();
       to_release->LastPluginRefWasDeleted(false);
 
-      instance_map_[instance].resources.erase(res);
+      instance_map_[instance]->resources.erase(res);
       live_resources_.erase(i);
     }
     return true;
@@ -181,7 +188,7 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
     NOTREACHED();
     return;
   }
-  InstanceData& data = found->second;
+  InstanceData& data = *found->second;
 
   // Force release all plugin references to resources associated with the
   // deleted instance.
@@ -235,8 +242,8 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return 0;
-  return static_cast<uint32>(found->second.resources.size() +
-                             found->second.object_vars.size());
+  return static_cast<uint32>(found->second->resources.size() +
+                             found->second->object_vars.size());
 }
 
 ::ppapi::ResourceObjectBase* ResourceTracker::GetResourceAPI(
@@ -250,18 +257,37 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
 }
 
 ::ppapi::FunctionGroupBase* ResourceTracker::GetFunctionAPI(
-    PP_Instance inst,
+    PP_Instance pp_instance,
     pp::proxy::InterfaceID id) {
-  if (function_proxies_[id].get())
-    return function_proxies_[id].get();
+  // Get the instance object. This also ensures that the instance data is in
+  // the map, since we need it below.
+  PluginInstance* instance = GetInstance(pp_instance);
+  if (!instance)
+    return NULL;
 
-  // TODO(brettw) we need a better system for doing this.
-  if (id == ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION)
-    function_proxies_[id].reset(new ResourceCreationImpl());
-  else if (id == ::pp::proxy::INTERFACE_ID_PPB_FONT)
-    function_proxies_[id].reset(new PPB_Font_FunctionImpl);
+  scoped_ptr< ::ppapi::FunctionGroupBase >& proxy =
+      instance_map_[pp_instance]->function_proxies[id];
+  if (proxy.get())
+    return proxy.get();
 
-  return function_proxies_[id].get();
+  switch (id) {
+    case pp::proxy::INTERFACE_ID_PPB_CHAR_SET:
+      proxy.reset(new PPB_CharSet_Impl(instance));
+      break;
+    case pp::proxy::INTERFACE_ID_PPB_CURSORCONTROL:
+      proxy.reset(new PPB_CursorControl_Impl(instance));
+      break;
+    case pp::proxy::INTERFACE_ID_PPB_FONT:
+      proxy.reset(new PPB_Font_FunctionImpl(instance));
+      break;
+    case pp::proxy::INTERFACE_ID_RESOURCE_CREATION:
+      proxy.reset(new ResourceCreationImpl(instance));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return proxy.get();
 }
 
 scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {
@@ -295,7 +321,7 @@ bool ResourceTracker::UnrefVar(int32 var_id) {
     if (!--i->second.second) {
       ObjectVar* object_var = i->second.first->AsObjectVar();
       if (object_var) {
-        instance_map_[object_var->instance()->pp_instance()].object_vars.erase(
+        instance_map_[object_var->instance()->pp_instance()]->object_vars.erase(
             var_id);
       }
       live_vars_.erase(i);
@@ -320,7 +346,8 @@ PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {
            instance_map_.find(new_instance) != instance_map_.end() ||
            !instance->module()->ReserveInstanceID(new_instance));
 
-  instance_map_[new_instance].instance = instance;
+  instance_map_[new_instance] = linked_ptr<InstanceData>(new InstanceData);
+  instance_map_[new_instance]->instance = instance;
   return new_instance;
 }
 
@@ -338,7 +365,7 @@ PluginInstance* ResourceTracker::GetInstance(PP_Instance instance) {
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return NULL;
-  return found->second.instance;
+  return found->second->instance;
 }
 
 PP_Module ResourceTracker::AddModule(PluginModule* module) {

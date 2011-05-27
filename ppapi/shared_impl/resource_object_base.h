@@ -11,6 +11,8 @@ namespace thunk {
 class PPB_Audio_API;
 class PPB_AudioConfig_API;
 class PPB_AudioTrusted_API;
+class PPB_Broker_API;
+class PPB_Buffer_API;
 class PPB_Font_API;
 class PPB_Graphics2D_API;
 class PPB_ImageData_API;
@@ -22,6 +24,8 @@ class ResourceObjectBase {
   virtual thunk::PPB_Audio_API* AsAudio_API() { return NULL; }
   virtual thunk::PPB_AudioConfig_API* AsAudioConfig_API() { return NULL; }
   virtual thunk::PPB_AudioTrusted_API* AsAudioTrusted_API() { return NULL; }
+  virtual thunk::PPB_Buffer_API* AsBuffer_API() { return NULL; }
+  virtual thunk::PPB_Broker_API* AsBroker_API() { return NULL; }
   virtual thunk::PPB_Font_API* AsFont_API() { return NULL; }
   virtual thunk::PPB_Graphics2D_API* AsGraphics2D_API() { return NULL; }
   virtual thunk::PPB_ImageData_API* AsImageData_API() { return NULL; }
@@ -40,6 +44,14 @@ inline thunk::PPB_AudioConfig_API* ResourceObjectBase::GetAs() {
 template<>
 inline thunk::PPB_AudioTrusted_API* ResourceObjectBase::GetAs() {
   return AsAudioTrusted_API();
+}
+template<>
+inline thunk::PPB_Broker_API* ResourceObjectBase::GetAs() {
+  return AsBroker_API();
+}
+template<>
+inline thunk::PPB_Buffer_API* ResourceObjectBase::GetAs() {
+  return AsBuffer_API();
 }
 template<>
 inline thunk::PPB_Font_API* ResourceObjectBase::GetAs() {

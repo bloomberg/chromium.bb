@@ -20,8 +20,8 @@ namespace proxy {
 
 class SerializedVarReturnValue;
 
-class PPB_Font_Proxy : public ::ppapi::FunctionGroupBase,
-                       public ::ppapi::thunk::PPB_Font_FunctionAPI,
+class PPB_Font_Proxy : public ppapi::FunctionGroupBase,
+                       public ppapi::thunk::PPB_Font_FunctionAPI,
                        public InterfaceProxy {
  public:
   PPB_Font_Proxy(Dispatcher* dispatcher, const void* target_interface);
@@ -30,7 +30,7 @@ class PPB_Font_Proxy : public ::ppapi::FunctionGroupBase,
   static const Info* GetInfo();
 
   // FunctionGroupBase overrides.
-  virtual ::ppapi::thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI() OVERRIDE;
+  virtual ppapi::thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI() OVERRIDE;
 
   // PPB_Font_FunctionAPI implementation.
   virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;

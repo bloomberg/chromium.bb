@@ -8,56 +8,12 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
+using ::ppapi::thunk::PPB_Broker_API;
+
 namespace webkit {
 namespace ppapi {
 
 namespace {
-
-// PPB_BrokerTrusted ----------------------------------------------------
-
-PP_Resource CreateTrusted(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-  scoped_refptr<PPB_Broker_Impl> broker(new PPB_Broker_Impl(instance));
-  return broker->GetReference();
-}
-
-PP_Bool IsBrokerTrusted(PP_Resource resource) {
-  scoped_refptr<PPB_Broker_Impl> broker =
-      Resource::GetAs<PPB_Broker_Impl>(resource);
-  return BoolToPPBool(!!broker);
-}
-
-int32_t Connect(PP_Resource broker_id,
-                PP_CompletionCallback connect_callback) {
-  scoped_refptr<PPB_Broker_Impl> broker =
-      Resource::GetAs<PPB_Broker_Impl>(broker_id);
-  if (!broker)
-    return PP_ERROR_BADRESOURCE;
-  if (!connect_callback.func) {
-    // Synchronous calls are not supported.
-    return PP_ERROR_BADARGUMENT;
-  }
-  return broker->Connect(broker->instance()->delegate(), connect_callback);
-}
-
-int32_t GetHandle(PP_Resource broker_id, int32_t* handle) {
-  scoped_refptr<PPB_Broker_Impl> broker =
-      Resource::GetAs<PPB_Broker_Impl>(broker_id);
-  if (!broker)
-    return PP_ERROR_BADRESOURCE;
-  if (!handle)
-    return PP_ERROR_BADARGUMENT;
-  return broker->GetHandle(handle);
-}
-
-const PPB_BrokerTrusted ppb_brokertrusted = {
-  &CreateTrusted,
-  &IsBrokerTrusted,
-  &Connect,
-  &GetHandle,
-};
 
 // TODO(ddorwin): Put conversion functions in a common place and/or add an
 // invalid value to sync_socket.h.
@@ -92,13 +48,29 @@ PPB_Broker_Impl::~PPB_Broker_Impl() {
   pipe_handle_ = PlatformFileToInt(base::kInvalidPlatformFileValue);
 }
 
-const PPB_BrokerTrusted* PPB_Broker_Impl::GetTrustedInterface() {
-  return &ppb_brokertrusted;
+// static
+PP_Resource PPB_Broker_Impl::Create(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return 0;
+  scoped_refptr<PPB_Broker_Impl> broker(new PPB_Broker_Impl(instance));
+  return broker->GetReference();
 }
 
-int32_t PPB_Broker_Impl::Connect(
-    PluginDelegate* plugin_delegate,
-    PP_CompletionCallback connect_callback) {
+PPB_Broker_Impl* PPB_Broker_Impl::AsPPB_Broker_Impl() {
+  return this;
+}
+
+PPB_Broker_API* PPB_Broker_Impl::AsBroker_API() {
+  return this;
+}
+
+int32_t PPB_Broker_Impl::Connect(PP_CompletionCallback connect_callback) {
+  if (!connect_callback.func) {
+    // Synchronous calls are not supported.
+    return PP_ERROR_BADARGUMENT;
+  }
+
   // TODO(ddorwin): Return PP_ERROR_FAILED if plugin is in-process.
 
   if (broker_) {
@@ -116,7 +88,7 @@ int32_t PPB_Broker_Impl::Connect(
       instance()->module()->GetCallbackTracker(), resource_id,
       connect_callback);
 
-  broker_ = plugin_delegate->ConnectToPpapiBroker(this);
+  broker_ = instance()->delegate()->ConnectToPpapiBroker(this);
   if (!broker_) {
     scoped_refptr<TrackedCompletionCallback> callback;
     callback.swap(connect_callback_);
@@ -128,16 +100,16 @@ int32_t PPB_Broker_Impl::Connect(
 }
 
 int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
+  if (pipe_handle_ == PlatformFileToInt(base::kInvalidPlatformFileValue))
+    return PP_ERROR_FAILED;  // Handle not set yet.
   *handle = pipe_handle_;
   return PP_OK;
 }
 
-PPB_Broker_Impl* PPB_Broker_Impl::AsPPB_Broker_Impl() {
-  return this;
-}
-
 // Transfers ownership of the handle to the plugin.
 void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
+  DCHECK(pipe_handle_ ==
+         PlatformFileToInt(base::kInvalidPlatformFileValue));
   DCHECK(result == PP_OK ||
          handle == PlatformFileToInt(base::kInvalidPlatformFileValue));
 

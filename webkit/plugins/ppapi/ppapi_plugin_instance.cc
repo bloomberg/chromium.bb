@@ -27,6 +27,8 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_buffer_api.h"
 #include "printing/units.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
@@ -82,6 +84,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
+using ::ppapi::thunk::PPB_Buffer_API;
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
@@ -1304,9 +1307,12 @@ PluginDelegate::PlatformContext3D* PluginInstance::CreateContext3D() {
 
 bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
                                     WebKit::WebCanvas* canvas) {
-  scoped_refptr<PPB_Buffer_Impl> buffer(
-      Resource::GetAs<PPB_Buffer_Impl>(print_output));
-  if (!buffer.get() || !buffer->is_mapped() || !buffer->size()) {
+  ::ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
+  if (enter.failed())
+    return false;
+
+  BufferAutoMapper mapper(enter.object());
+  if (!mapper.data() || !mapper.size()) {
     NOTREACHED();
     return false;
   }
@@ -1328,14 +1334,14 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   // (NativeMetafile and PreviewMetafile must have compatible formats,
   // i.e. both PDF for this to work).
   printing::Metafile* metafile =
-    printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
   DCHECK(metafile != NULL);
   if (metafile)
-    ret = metafile->InitFromData(buffer->mapped_buffer(), buffer->size());
+    ret = metafile->InitFromData(mapper.data(), mapper.size());
 #elif defined(OS_MACOSX)
   printing::NativeMetafile metafile;
   // Create a PDF metafile and render from there into the passed in context.
-  if (metafile.InitFromData(buffer->mapped_buffer(), buffer->size())) {
+  if (metafile.InitFromData(mapper.data(), mapper.size())) {
     // Flip the transform.
 #if defined(USE_SKIA)
     gfx::SkiaBitLocker bit_locker(canvas);
@@ -1362,7 +1368,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   if (metafile) {
     // We only have a metafile when doing print preview, so we just want to
     // pass the PDF off to preview.
-    ret = metafile->InitFromData(buffer->mapped_buffer(), buffer->size());
+    ret = metafile->InitFromData(mapper.data(), mapper.size());
   } else {
     // On Windows, we now need to render the PDF to the DC that backs the
     // supplied canvas.
@@ -1384,9 +1390,9 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
         static_cast<float>(current_print_settings_.dpi);
     ModifyWorldTransform(dc, &xform, MWT_LEFTMULTIPLY);
 
-    ret = render_proc(buffer->mapped_buffer(), buffer->size(), 0, dc,
-                      current_print_settings_.dpi, current_print_settings_.dpi,
-                      0, 0, size_in_pixels.width(),
+    ret = render_proc(static_cast<unsigned char*>(mapper.data()), mapper.size(),
+                      0, dc, current_print_settings_.dpi,
+                      current_print_settings_.dpi, 0, 0, size_in_pixels.width(),
                       size_in_pixels.height(), true, false, true, true);
     skia::EndPlatformPaint(canvas);
   }

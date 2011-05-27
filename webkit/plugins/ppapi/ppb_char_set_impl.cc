@@ -12,51 +12,47 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
 
+using ::ppapi::thunk::PPB_CharSet_FunctionAPI;
+
 namespace webkit {
 namespace ppapi {
 
-namespace {
+PPB_CharSet_Impl::PPB_CharSet_Impl(PluginInstance* instance)
+    : instance_(instance) {
+}
 
-char* UTF16ToCharSet(PP_Instance /* instance */,
-                     const uint16_t* utf16, uint32_t utf16_len,
-                     const char* output_char_set,
-                     PP_CharSet_ConversionError on_error,
-                     uint32_t* output_length) {
+PPB_CharSet_Impl::~PPB_CharSet_Impl() {
+}
+
+PPB_CharSet_FunctionAPI* PPB_CharSet_Impl::AsCharSet_FunctionAPI() {
+  return this;
+}
+
+char* PPB_CharSet_Impl::UTF16ToCharSet(PP_Instance instance,
+                                       const uint16_t* utf16,
+                                       uint32_t utf16_len,
+                                       const char* output_char_set,
+                                       PP_CharSet_ConversionError on_error,
+                                       uint32_t* output_length) {
   return ::ppapi::CharSetImpl::UTF16ToCharSet(
       PluginModule::GetCore(), utf16, utf16_len, output_char_set, on_error,
       output_length);
 }
 
-uint16_t* CharSetToUTF16(PP_Instance /* instance */,
-                         const char* input, uint32_t input_len,
-                         const char* input_char_set,
-                         PP_CharSet_ConversionError on_error,
-                         uint32_t* output_length) {
+uint16_t* PPB_CharSet_Impl::CharSetToUTF16(PP_Instance instance,
+                                           const char* input,
+                                           uint32_t input_len,
+                                           const char* input_char_set,
+                                           PP_CharSet_ConversionError on_error,
+                                           uint32_t* output_length) {
   return ::ppapi::CharSetImpl::CharSetToUTF16(
       PluginModule::GetCore(), input, input_len, input_char_set, on_error,
       output_length);
 }
 
-PP_Var GetDefaultCharSet(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_MakeUndefined();
-
-  std::string encoding = instance->delegate()->GetDefaultEncoding();
-  return StringVar::StringToPPVar(instance->module(), encoding);
-}
-
-const PPB_CharSet_Dev ppb_charset = {
-  &UTF16ToCharSet,
-  &CharSetToUTF16,
-  &GetDefaultCharSet
-};
-
-}  // namespace
-
-// static
-const struct PPB_CharSet_Dev* PPB_CharSet_Impl::GetInterface() {
-  return &ppb_charset;
+PP_Var PPB_CharSet_Impl::GetDefaultCharSet(PP_Instance instance) {
+  std::string encoding = instance_->delegate()->GetDefaultEncoding();
+  return StringVar::StringToPPVar(instance_->module(), encoding);
 }
 
 }  // namespace ppapi

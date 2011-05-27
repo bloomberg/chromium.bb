@@ -57,7 +57,7 @@ class PPB_Font_Impl : public Resource,
 class PPB_Font_FunctionImpl : public ::ppapi::FunctionGroupBase,
                               public ::ppapi::thunk::PPB_Font_FunctionAPI {
  public:
-  PPB_Font_FunctionImpl();
+  PPB_Font_FunctionImpl(PluginInstance* instance);
   ~PPB_Font_FunctionImpl();
 
   // FunctionGroupBase overrides.
@@ -67,6 +67,8 @@ class PPB_Font_FunctionImpl : public ::ppapi::FunctionGroupBase,
   virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;
 
  private:
+  PluginInstance* instance_;
+
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_FunctionImpl);
 };
 

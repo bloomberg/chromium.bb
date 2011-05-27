@@ -37,6 +37,8 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) = 0;
+  virtual PP_Resource CreateBroker(PP_Instance instance) = 0;
+  virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
   // Note: can't be called CreateFont due to Windows #defines.
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,
