@@ -146,31 +146,51 @@ FirstLastNameField* FirstLastNameField::ParseComponentNames(
   // so we match "initials" here (and just fill in a first name there,
   // American-style).
   // The ".*first$" matches fields ending in "first" (example in sample8.html).
-  if (!ParseField(scanner,
-                  l10n_util::GetStringUTF16(IDS_AUTOFILL_FIRST_NAME_RE),
-                  &v->first_name_)) {
-    return NULL;
-  }
-
-  // We check for a middle initial before checking for a middle name
-  // because at least one page (PC Connection.html) has a field marked
-  // as both (the label text is "MI" and the element name is
-  // "txtmiddlename"); such a field probably actually represents a
-  // middle initial.
-  if (ParseField(scanner,
-                l10n_util::GetStringUTF16(IDS_AUTOFILL_MIDDLE_INITIAL_RE),
-                &v->middle_name_)) {
-    v->middle_initial_ = true;
-  } else {
-    ParseField(scanner, l10n_util::GetStringUTF16(IDS_AUTOFILL_MIDDLE_NAME_RE),
-              &v->middle_name_);
-  }
-
   // The ".*last$" matches fields ending in "last" (example in sample8.html).
-  if (ParseField(scanner, l10n_util::GetStringUTF16(IDS_AUTOFILL_LAST_NAME_RE),
-                &v->last_name_)) {
-    return v.release();
+
+  // Allow name fields to appear in any order.
+  while (!scanner->IsEnd()) {
+    if (!v->first_name_ &&
+        ParseField(scanner,
+                   l10n_util::GetStringUTF16(IDS_AUTOFILL_FIRST_NAME_RE),
+                   &v->first_name_)) {
+      continue;
+    }
+
+    if (!v->last_name_ &&
+        ParseField(scanner,
+                   l10n_util::GetStringUTF16(IDS_AUTOFILL_LAST_NAME_RE),
+                   &v->last_name_)) {
+      continue;
+    }
+
+    // We check for a middle initial before checking for a middle name
+    // because at least one page (PC Connection.html) has a field marked
+    // as both (the label text is "MI" and the element name is
+    // "txtmiddlename"); such a field probably actually represents a
+    // middle initial.
+    if (!v->middle_name_ &&
+        ParseField(scanner,
+                   l10n_util::GetStringUTF16(IDS_AUTOFILL_MIDDLE_INITIAL_RE),
+                   &v->middle_name_)) {
+      v->middle_initial_ = true;
+      continue;
+    }
+
+    if (!v->middle_name_ &&
+        ParseField(scanner,
+                   l10n_util::GetStringUTF16(IDS_AUTOFILL_MIDDLE_NAME_RE),
+                   &v->middle_name_)) {
+      continue;
+    }
+
+    break;
   }
+
+  // Consider the match to be successful if we detected both first and last name
+  // fields.
+  if (v->first_name_ && v->last_name_)
+    return v.release();
 
   scanner->Rewind();
   return NULL;
