@@ -117,7 +117,7 @@ void ChangePictureOptionsHandler::TakePhoto(const ListValue* args) {
       GetBrowserWindow(),
       gfx::Rect(),
       new TakePhotoDialog());
-  window->SetIsAlwaysOnTop(true);
+  window->SetAlwaysOnTop(true);
   window->Show();
 }
 

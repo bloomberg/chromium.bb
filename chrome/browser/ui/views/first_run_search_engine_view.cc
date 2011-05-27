@@ -70,7 +70,7 @@ void ShowFirstRunDialog(Profile* profile,
           profile, randomize_search_engine_experiment));
   DCHECK(window);
 
-  window->SetIsAlwaysOnTop(true);
+  window->SetAlwaysOnTop(true);
   window->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);

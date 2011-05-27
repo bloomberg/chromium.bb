@@ -16,6 +16,16 @@
 #include "views/focus/focus_manager.h"
 #include "views/widget/native_widget_delegate.h"
 
+#if defined(OS_WIN)
+// Windows headers define macros for these function names which screw with us.
+#if defined(IsMaximized)
+#undef IsMaximized
+#endif
+#if defined(IsMinimized)
+#undef IsMinimized
+#endif
+#endif
+
 namespace gfx {
 class Canvas;
 class Path;
@@ -220,17 +230,36 @@ class Widget : public internal::NativeWidgetDelegate,
   void CloseNow();
 
   // Shows or hides the widget, without changing activation state.
-  void Show();
+  virtual void Show();
   void Hide();
+
+  // Activates the widget, assuming it already exists and is visible.
+  void Activate();
+
+  // Deactivates the widget, making the next window in the Z order the active
+  // window.
+  void Deactivate();
+
+  // Returns whether the Widget is the currently active window.
+  virtual bool IsActive() const;
+
+  // Sets the widget to be on top of all other widgets in the windowing system.
+  void SetAlwaysOnTop(bool on_top);
+
+  // Maximizes/minimizes/restores the window.
+  void Maximize();
+  void Minimize();
+  void Restore();
+
+  // Whether or not the window is maximized or minimized.
+  virtual bool IsMaximized() const;
+  bool IsMinimized() const;
 
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
   // underlying windowing system. Note that the caller must then schedule a
   // repaint to allow this change to take effect.
   void SetOpacity(unsigned char opacity);
-
-  // Sets the widget to be on top of all other widgets in the windowing system.
-  void SetAlwaysOnTop(bool on_top);
 
   // Returns the View at the root of the View hierarchy contained by this
   // Widget.
@@ -247,10 +276,7 @@ class Widget : public internal::NativeWidgetDelegate,
   bool is_secondary_widget() const { return is_secondary_widget_; }
 
   // Returns whether the Widget is visible to the user.
-  bool IsVisible() const;
-
-  // Returns whether the Widget is the currently active window.
-  bool IsActive() const;
+  virtual bool IsVisible() const;
 
   // Returns whether the Widget is customized for accessibility.
   bool IsAccessibleWidget() const;

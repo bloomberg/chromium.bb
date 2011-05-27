@@ -394,23 +394,55 @@ void NativeWidgetWin::Hide() {
   }
 }
 
-void NativeWidgetWin::SetOpacity(unsigned char opacity) {
-  layered_alpha_ = static_cast<BYTE>(opacity);
-}
-
-void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
-  if (on_top)
-    set_window_ex_style(window_ex_style() | WS_EX_TOPMOST);
-  else
-    set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
-}
-
 bool NativeWidgetWin::IsVisible() const {
   return !!::IsWindowVisible(hwnd());
 }
 
+void NativeWidgetWin::Activate() {
+  if (IsMinimized())
+    ::ShowWindow(GetNativeView(), SW_RESTORE);
+  ::SetWindowPos(GetNativeView(), HWND_TOP, 0, 0, 0, 0,
+                 SWP_NOSIZE | SWP_NOMOVE);
+  SetForegroundWindow(GetNativeView());
+}
+
+void NativeWidgetWin::Deactivate() {
+  HWND hwnd = ::GetNextWindow(GetNativeView(), GW_HWNDNEXT);
+  if (hwnd)
+    ::SetForegroundWindow(hwnd);
+}
+
 bool NativeWidgetWin::IsActive() const {
   return IsWindowActive(hwnd());
+}
+
+void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
+  ::SetWindowPos(GetNativeView(), on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
+                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+}
+
+void NativeWidgetWin::Maximize() {
+  ExecuteSystemMenuCommand(SC_MAXIMIZE);
+}
+
+void NativeWidgetWin::Minimize() {
+  ExecuteSystemMenuCommand(SC_MINIMIZE);
+}
+
+bool NativeWidgetWin::IsMaximized() const {
+  return !!::IsZoomed(GetNativeView());
+}
+
+bool NativeWidgetWin::IsMinimized() const {
+  return !!::IsIconic(GetNativeView());
+}
+
+void NativeWidgetWin::Restore() {
+  ExecuteSystemMenuCommand(SC_RESTORE);
+}
+
+void NativeWidgetWin::SetOpacity(unsigned char opacity) {
+  layered_alpha_ = static_cast<BYTE>(opacity);
 }
 
 bool NativeWidgetWin::IsAccessibleWidget() const {
@@ -995,6 +1027,11 @@ void NativeWidgetWin::SetInitialFocus() {
       GetWidget()->widget_delegate()->GetInitiallyFocusedView() : NULL;
   if (v)
     v->RequestFocus();
+}
+
+void NativeWidgetWin::ExecuteSystemMenuCommand(int command) {
+  if (command)
+    SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

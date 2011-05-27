@@ -177,20 +177,50 @@ void NativeWidgetViews::Hide() {
   view_->SetVisible(false);
 }
 
-void NativeWidgetViews::SetOpacity(unsigned char opacity) {
+bool NativeWidgetViews::IsVisible() const {
+  return view_->IsVisible();
+}
+
+void NativeWidgetViews::Activate() {
   NOTIMPLEMENTED();
+}
+
+void NativeWidgetViews::Deactivate() {
+  NOTIMPLEMENTED();
+}
+
+bool NativeWidgetViews::IsActive() const {
+  return active_;
 }
 
 void NativeWidgetViews::SetAlwaysOnTop(bool on_top) {
   NOTIMPLEMENTED();
 }
 
-bool NativeWidgetViews::IsVisible() const {
-  return view_->IsVisible();
+void NativeWidgetViews::Maximize() {
+  NOTIMPLEMENTED();
 }
 
-bool NativeWidgetViews::IsActive() const {
-  return active_;
+void NativeWidgetViews::Minimize() {
+  NOTIMPLEMENTED();
+}
+
+bool NativeWidgetViews::IsMaximized() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool NativeWidgetViews::IsMinimized() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void NativeWidgetViews::Restore() {
+  NOTIMPLEMENTED();
+}
+
+void NativeWidgetViews::SetOpacity(unsigned char opacity) {
+  NOTIMPLEMENTED();
 }
 
 bool NativeWidgetViews::IsAccessibleWidget() const {

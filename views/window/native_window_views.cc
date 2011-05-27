@@ -92,57 +92,12 @@ void NativeWindowViews::SetWindowBounds(const gfx::Rect& bounds,
   GetView()->SetBoundsRect(bounds);
 }
 
-void NativeWindowViews::HideWindow() {
-  GetView()->SetVisible(false);
-}
-
-void NativeWindowViews::Activate() {
-  NOTIMPLEMENTED();
-}
-
-void NativeWindowViews::Deactivate() {
-  NOTIMPLEMENTED();
-}
-
-void NativeWindowViews::Maximize() {
-  NOTIMPLEMENTED();
-}
-
-void NativeWindowViews::Minimize() {
-  NOTIMPLEMENTED();
-}
-
-void NativeWindowViews::Restore() {
-  NOTIMPLEMENTED();
-}
-
-bool NativeWindowViews::IsActive() const {
-  return NativeWidgetViews::IsActive();
-}
-
-bool NativeWindowViews::IsVisible() const {
-  return GetView()->IsVisible();
-}
-
-bool NativeWindowViews::IsMaximized() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool NativeWindowViews::IsMinimized() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void NativeWindowViews::SetFullscreen(bool fullscreen) {
 }
 
 bool NativeWindowViews::IsFullscreen() const {
   NOTIMPLEMENTED();
   return false;
-}
-
-void NativeWindowViews::SetAlwaysOnTop(bool always_on_top) {
 }
 
 void NativeWindowViews::SetUseDragFrame(bool use_drag_frame) {
@@ -153,10 +108,6 @@ NonClientFrameView* NativeWindowViews::CreateFrameViewForWindow() {
 }
 
 void NativeWindowViews::UpdateFrameAfterFrameChange() {
-}
-
-gfx::NativeWindow NativeWindowViews::GetNativeWindow() const {
-  return NULL;
 }
 
 bool NativeWindowViews::ShouldUseNativeFrame() const {

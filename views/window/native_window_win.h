@@ -151,25 +151,16 @@ class NativeWindowWin : public NativeWidgetWin,
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
-  virtual void HideWindow() OVERRIDE;
-  virtual void Activate() OVERRIDE;
-  virtual void Deactivate() OVERRIDE;
-  virtual void Maximize() OVERRIDE;
-  virtual void Minimize() OVERRIDE;
-  virtual void Restore() OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
-  virtual bool IsMaximized() const OVERRIDE;
-  virtual bool IsMinimized() const OVERRIDE;
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
-  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
+
+  // Overridden from NativeWidgetWin:
+  virtual bool IsActive() const OVERRIDE;
 
  private:
   // Information saved before going into fullscreen mode, used to restore the
@@ -211,9 +202,6 @@ class NativeWindowWin : public NativeWidgetWin,
   // value, safely wrapping the call in a ScopedRedrawLock to prevent frame
   // flicker.
   LRESULT CallDefaultNCActivateHandler(BOOL active);
-
-  // Executes the specified SC_command.
-  void ExecuteSystemMenuCommand(int command);
 
   // A delegate implementation that handles events received here.
   internal::NativeWindowDelegate* delegate_;
