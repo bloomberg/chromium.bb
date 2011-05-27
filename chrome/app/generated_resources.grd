@@ -2125,6 +2125,12 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         Yesterday
       </message>
       <!-- Download Shelf-->
+      <if expr="os == 'darwin'">
+        <message name="IDS_SHOW_ALL"
+                 desc="In Title Case: Button text on a button that opens the downloads page">
+          Show All
+        </message>
+      </if>
       <message name="IDS_SHOW_ALL_DOWNLOADS"
                desc="Link label shown at the corner of the download shelf">
         Show all downloads...
