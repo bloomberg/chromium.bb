@@ -1251,6 +1251,12 @@ class NotificationType {
     // In either case notification is sent and details contain a bool
     // that represents current value.
     REQUIRE_PIN_SETTING_CHANGE_ENDED,
+
+    // Sent by SIM unlock dialog when it has finished the EnterPin or
+    // EnterPuk dialog, either because the user cancelled, or entered a
+    // PIN or PUK.
+    ENTER_PIN_ENDED,
+
 #endif
 
     // Sent before the repost form warning is brought up.

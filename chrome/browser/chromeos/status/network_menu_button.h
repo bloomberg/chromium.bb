@@ -142,6 +142,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // otherwise just ignore it for current session.
   bool check_for_promo_;
 
+  // Cellular device SIM was locked when we last checked
+  bool was_sim_locked_;
+
   // The throb animation that does the wifi connecting animation.
   ui::ThrobAnimation animation_connecting_;
 

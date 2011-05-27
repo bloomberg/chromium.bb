@@ -327,9 +327,9 @@ const char* kErrorAaaFailed = "aaa-failed";
 
 // Flimflam error messages.
 const char* kErrorPassphraseRequiredMsg = "Passphrase required";
-const char* kErrorIncorrectPinMsg = "org.chromium.flimflam.Device.IncorrectPin";
-const char* kErrorPinBlockedMsg = "org.chromium.flimflam.Device.PinBlocked";
-const char* kErrorPinRequiredMsg = "org.chromium.flimflam.Device.PinRequired";
+const char* kErrorIncorrectPinMsg = "org.chromium.flimflam.Error.IncorrectPin";
+const char* kErrorPinBlockedMsg = "org.chromium.flimflam.Error.PinBlocked";
+const char* kErrorPinRequiredMsg = "org.chromium.flimflam.Error.PinRequired";
 
 const char* kUnknownString = "UNKNOWN";
 

@@ -54,6 +54,8 @@ InternetOptionsHandler::InternetOptionsHandler()
       use_settings_ui_(false) {
   registrar_.Add(this, NotificationType::REQUIRE_PIN_SETTING_CHANGE_ENDED,
       NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::ENTER_PIN_ENDED,
+      NotificationService::AllSources());
   chromeos::NetworkLibrary* netlib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   netlib->AddNetworkManagerObserver(this);
@@ -378,7 +380,17 @@ void InternetOptionsHandler::DisableWifiCallback(const ListValue* args) {
 void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  cros->EnableCellularNetworkDevice(true);
+  const chromeos::NetworkDevice* cellular = cros->FindCellularDevice();
+  if (!cellular) {
+    LOG(ERROR) << "Didn't find cellular device, it should have been available.";
+    cros->EnableCellularNetworkDevice(true);
+  } else if (cellular->sim_lock_state() == chromeos::SIM_UNLOCKED ||
+             cellular->sim_lock_state() == chromeos::SIM_UNKNOWN) {
+      cros->EnableCellularNetworkDevice(true);
+  } else {
+    chromeos::SimDialogDelegate::ShowDialog(GetNativeWindow(),
+        chromeos::SimDialogDelegate::SIM_DIALOG_UNLOCK);
+  }
 }
 
 void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
@@ -529,6 +541,21 @@ void InternetOptionsHandler::Observe(NotificationType type,
     dictionary.SetBoolean("requirePin", require_pin);
     web_ui_->CallJavascriptFunction(
         "options.InternetOptions.updateSecurityTab", dictionary);
+  } else if (type == NotificationType::ENTER_PIN_ENDED) {
+    // We make an assumption (which is valid for now) that the SIM
+    // unlock dialog is put up only when the user is trying to enable
+    // mobile data.
+    bool cancelled = *Details<bool>(details).ptr();
+    if (cancelled) {
+      chromeos::NetworkLibrary* cros =
+          chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      DictionaryValue dictionary;
+      FillNetworkInfo(&dictionary, cros);
+      web_ui_->CallJavascriptFunction(
+          "options.InternetOptions.setupAttributes", dictionary);
+    }
+    // The case in which the correct PIN was entered and the SIM is
+    // now unlocked is handled in NetworkMenuButton.
   }
 }
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,6 +106,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       left_badge_(NULL),
       mobile_data_bubble_(NULL),
       check_for_promo_(true),
+      was_sim_locked_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
@@ -116,6 +118,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
   const NetworkDevice* cellular = network_library->FindCellularDevice();
   if (cellular) {
     cellular_device_path_ = cellular->device_path();
+    was_sim_locked_ = cellular->is_sim_locked();
     network_library->AddNetworkDeviceObserver(cellular_device_path_, this);
   }
 }
@@ -158,6 +161,18 @@ void NetworkMenuButton::OnNetworkDeviceChanged(NetworkLibrary* cros,
                                                const NetworkDevice* device) {
   // Device status, such as SIMLock may have changed.
   OnNetworkChanged(cros, cros->active_network());
+  const NetworkDevice* cellular = cros->FindCellularDevice();
+  if (cellular) {
+    // We make an assumption (which is valid for now) that the SIM
+    // unlock dialog is put up only when the user is trying to enable
+    // mobile data. So if the SIM is now unlocked, initiate the
+    // enable operation that the user originally requested.
+    if (was_sim_locked_ && !cellular->is_sim_locked() &&
+        !cros->cellular_enabled()) {
+      cros->EnableCellularNetworkDevice(true);
+    }
+    was_sim_locked_ = cellular->is_sim_locked();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -411,6 +426,7 @@ void NetworkMenuButton::RefreshNetworkDeviceObserver(NetworkLibrary* cros) {
       cros->RemoveNetworkDeviceObserver(cellular_device_path_, this);
     }
     if (!new_cellular_device_path.empty()) {
+      was_sim_locked_ = cellular->is_sim_locked();
       cros->AddNetworkDeviceObserver(new_cellular_device_path, this);
     }
     cellular_device_path_ = new_cellular_device_path;

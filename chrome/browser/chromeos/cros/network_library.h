@@ -210,6 +210,10 @@ class NetworkDevice {
   const std::string& model_id() const { return model_id_; }
   const std::string& manufacturer() const { return manufacturer_; }
   SIMLockState sim_lock_state() const { return sim_lock_state_; }
+  bool is_sim_locked() const {
+    return sim_lock_state_ == SIM_LOCKED_PIN ||
+        sim_lock_state_ == SIM_LOCKED_PUK;
+  }
   const int sim_retries_left() const { return sim_retries_left_; }
   SIMPinRequire sim_pin_required() const { return sim_pin_required_; }
   const std::string& firmware_revision() const { return firmware_revision_; }

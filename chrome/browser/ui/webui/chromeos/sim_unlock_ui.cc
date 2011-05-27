@@ -198,6 +198,10 @@ class SimUnlockHandler : public WebUIMessageHandler,
   // has been ended (either updated or cancelled).
   void NotifyOnRequirePinChangeEnded(bool new_value);
 
+  // Notifies observers that the EnterPin or EnterPuk dialog has been
+  // completed (either cancelled or with entry of PIN/PUK).
+  void NotifyOnEnterPinEnded(bool cancelled);
+
   // Checks whether SIM card is in PUK locked state and proceeds to PUK input.
   void ProceedToPukInput();
 
@@ -381,6 +385,9 @@ void SimUnlockHandler::OnPinOperationCompleted(NetworkLibrary* cros,
   // NO_PIN_RETRIES_LEFT step.
   if (!(state_ == SIM_LOCKED_NO_PIN_TRIES_LEFT && error == PIN_ERROR_BLOCKED))
     ProcessSimCardState(cellular);
+  if (dialog_mode_ == SimDialogDelegate::SIM_DIALOG_UNLOCK &&
+      state_ == SIM_ABSENT_NOT_LOCKED)
+    NotifyOnEnterPinEnded(false);
 }
 
 void SimUnlockHandler::CancelDialog() {
@@ -392,6 +399,8 @@ void SimUnlockHandler::CancelDialog() {
     // changed and is not in process of changing at the moment.
     NotifyOnRequirePinChangeEnded(
         !(dialog_mode_ == SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON));
+  } else if (dialog_mode_ == SimDialogDelegate::SIM_DIALOG_UNLOCK) {
+    NotifyOnEnterPinEnded(true);
   }
 }
 
@@ -431,6 +440,13 @@ void SimUnlockHandler::EnterCode(const std::string& code,
       lib->UnblockPin(code, new_pin_);
       break;
   }
+}
+
+void SimUnlockHandler::NotifyOnEnterPinEnded(bool cancelled) {
+  NotificationService::current()->Notify(
+      NotificationType::ENTER_PIN_ENDED,
+      NotificationService::AllSources(),
+      Details<bool>(&cancelled));
 }
 
 void SimUnlockHandler::NotifyOnRequirePinChangeEnded(bool new_value) {

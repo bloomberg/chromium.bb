@@ -472,16 +472,14 @@ void NetworkMenuModel::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_CELLULAR) {
     const NetworkDevice* cellular = cros->FindCellularDevice();
     if (!cellular) {
-      LOG(ERROR) << "Not found cellular device, it should be available.";
+      LOG(ERROR) << "No cellular device found, it should be available.";
+      cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+    } else if (cellular->sim_lock_state() == SIM_UNLOCKED ||
+               cellular->sim_lock_state() == SIM_UNKNOWN) {
       cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
     } else {
-      if (cellular->sim_lock_state() == SIM_UNLOCKED ||
-          cellular->sim_lock_state() == SIM_UNKNOWN) {
-        cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
-      } else {
-        SimDialogDelegate::ShowDialog(owner_->GetNativeWindow(),
-            SimDialogDelegate::SIM_DIALOG_UNLOCK);
-      }
+      SimDialogDelegate::ShowDialog(owner_->GetNativeWindow(),
+                                    SimDialogDelegate::SIM_DIALOG_UNLOCK);
     }
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
@@ -817,7 +815,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       const NetworkDevice* cellular = cros->FindCellularDevice();
       bool is_locked = false;
       if (!cellular) {
-        LOG(ERROR) << "Not found cellular device, it should be available.";
+        LOG(ERROR) << "Didn't find cellular device.";
       } else {
         // If cellular is SIM locked then show "Enable" action.
         is_locked = cellular->sim_lock_state() == SIM_LOCKED_PIN ||
