@@ -4640,6 +4640,16 @@
    fun:_ZNSt5queueIN11MessageLoop11PendingTaskESt5dequeIS1_SaIS1_EEE4pushERKS1_
    fun:_ZN11MessageLoop18AddToIncomingQueueEPNS_11PendingTaskE
 }
+{
+   bug_84265
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12LoginHandler6CreateEPN3net17AuthChallengeInfoEPNS0_10URLRequestE
+   fun:_Z17CreateLoginPromptPN3net17AuthChallengeInfoEPNS_10URLRequestE
+   fun:_ZN22ResourceDispatcherHost14OnAuthRequiredEPN3net10URLRequestEPNS0_17AuthChallengeInfoE
+   fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
+}
+
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
