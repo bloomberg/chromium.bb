@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
 #include "ppapi/c/pp_errors.h"  // for PP_OK
+#include "ppapi/cpp/completion_callback.h"  // for pp::
 #include "ppapi/cpp/core.h"  // for pp::
 #include "ppapi/cpp/module.h"  // for pp::Module
 
