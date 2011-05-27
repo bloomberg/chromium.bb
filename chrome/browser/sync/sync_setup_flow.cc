@@ -23,12 +23,7 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
-#include "ui/base/l10n/l10n_font_util.h"
-#include "ui/gfx/font.h"
 
 namespace {
 
