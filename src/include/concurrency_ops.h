@@ -50,4 +50,26 @@ static INLINE void NaClWriteMemoryBarrier() {
 #endif
 
 
+static INLINE void NaClClearInstructionCache(void *start, void *end) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  /*
+   * Clearing the icache explicitly is not necessary on x86.  We could
+   * call gcc's __builtin___clear_cache() on x86, where it is a no-op,
+   * except that it is not available in Mac OS X's old version of gcc.
+   */
+  UNREFERENCED_PARAMETER(start);
+  UNREFERENCED_PARAMETER(end);
+#elif defined(__GNUC__)
+  __builtin___clear_cache(start, end);
+#else
+  /*
+   * Give an error in case we ever target a non-gcc compiler for ARM
+   * or for some other architecture that we might support in the
+   * future.
+   */
+# error "Don't know how to clear the icache on this architecture"
+#endif
+}
+
+
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_CONCURRENCY_OPS_H_ */

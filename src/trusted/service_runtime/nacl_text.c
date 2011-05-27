@@ -484,14 +484,15 @@ static INLINE void CopyCodeSafelyInitial(uint8_t  *dest,
   CopyBundleTails(dest, src, size, bundle_size);
   NaClWriteMemoryBarrier();
   CopyBundleHeads(dest, src, size, bundle_size);
+
   /*
-   * For security, we are fine; for correctness, another memory
-   * barrier is needed here.  We assume that there will be one later
-   * in the syscall processing and/or in the inter-thread
-   * communication needed for the code inserting thread to tell other
-   * threads that the newly inserted code is ready to use (and at what
-   * address it lives).
+   * Flush the processor's instruction cache.  This is not necessary
+   * for security, because any old cached instructions will just be
+   * safe halt instructions.  It is only necessary to ensure that
+   * untrusted code runs correctly when it tries to execute the
+   * dynamically-loaded code.
    */
+  NaClClearInstructionCache(dest, dest + size);
 }
 
 /*

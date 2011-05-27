@@ -127,6 +127,32 @@ void test_loading_code() {
   assert(rc == 1234);
 }
 
+/* This is mostly the same as test_loading_code() except that we
+   repeat the test many times within the same page.  Unlike the other
+   tests, this will consistently fail on ARM if we do not flush the
+   instruction cache, so it reproduces the bug
+   http://code.google.com/p/nativeclient/issues/detail?id=699 */
+void test_stress() {
+  void *load_area = allocate_code_space(1);
+  uint8_t *dest;
+  uint8_t *dest_max;
+  uint8_t buf[BUF_SIZE];
+
+  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
+
+  dest_max = (uint8_t *) load_area + DYNAMIC_CODE_PAGE_SIZE;
+  for (dest = load_area; dest < dest_max; dest += sizeof(buf)) {
+    int (*func)();
+    int rc;
+
+    rc = nacl_load_code(dest, buf, sizeof(buf));
+    assert(rc == 0);
+    func = (int (*)()) (uintptr_t) dest;
+    rc = func();
+    assert(rc == 1234);
+  }
+}
+
 /* The syscall may have to mmap() shared memory temporarily,
    so there is some interaction with page size.
    Check that we can load to non-page-aligned addresses. */
@@ -352,6 +378,7 @@ int TestMain() {
   RUN_TEST(test_branches_outside_chunk);
   RUN_TEST(test_end_of_code_region);
   RUN_TEST(test_hlt_filled_bundle);
+  RUN_TEST(test_stress);
 
   /* Test again to make sure we didn't run out of space. */
   RUN_TEST(test_loading_code);
