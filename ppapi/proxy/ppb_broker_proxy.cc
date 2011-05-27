@@ -234,9 +234,7 @@ void PPB_Broker_Proxy::OnMsgConnectComplete(
     return;
   }
 
-  PP_CompletionCallback callback = object->current_connect_callback_;
-  object->current_connect_callback_ = PP_MakeCompletionCallback(NULL, NULL);
-  PP_RunCompletionCallback(&callback, result);
+  PP_RunAndClearCompletionCallback(&object->current_connect_callback_, result);
 }
 
 // Callback on the host side.

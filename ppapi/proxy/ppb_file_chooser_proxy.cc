@@ -218,9 +218,8 @@ void PPB_FileChooser_Proxy::OnMsgChooseComplete(
   // because the plugin may trigger deleting the object from the callback, and
   // the FileChooser object will attempt to call the callback in its destructor
   // with the ABORTED status.
-  PP_CompletionCallback callback = object->current_show_callback_;
-  object->current_show_callback_ = PP_MakeCompletionCallback(NULL, NULL);
-  PP_RunCompletionCallback(&callback, result_code);
+  PP_RunAndClearCompletionCallback(&object->current_show_callback_,
+                                   result_code);
   // DANGER: May delete |object|!
 }
 

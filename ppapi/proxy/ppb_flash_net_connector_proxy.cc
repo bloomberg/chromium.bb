@@ -86,9 +86,7 @@ class FlashNetConnector : public PluginResource {
     StringToNetAddress(local_addr_as_string, local_addr_out_);
     StringToNetAddress(remote_addr_as_string, remote_addr_out_);
 
-    PP_CompletionCallback temp_callback = callback_;
-    callback_ = PP_BlockUntilComplete();
-    PP_RunCompletionCallback(&temp_callback, result);
+    PP_RunAndClearCompletionCallback(&callback_, result);
   }
 
  private:

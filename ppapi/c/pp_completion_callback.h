@@ -101,6 +101,7 @@ PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
                                         int32_t res) {
   cc->func(cc->user_data, res);
 }
+
 /**
  * @}
  */
@@ -120,6 +121,27 @@ PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
  */
 PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete() {
   return PP_MakeCompletionCallback(NULL, NULL);
+}
+
+/**
+ * Runs a callback and clears the reference to it.
+ *
+ * This is used when the null-ness of a completion callback is used as a signal
+ * for whether a completion callback has been registered. In this case, after
+ * the execution of the callback, it should be cleared.
+ *
+ * However, this introduces a conflict if the completion callback wants to
+ * schedule more work that involves the same completion callback again (for
+ * example, when reading data from an URLLoader, one would typically queue up
+ * another read callback). As a result, this function clears the pointer
+ * *before* the given callback is executed.
+ */
+PP_INLINE void PP_RunAndClearCompletionCallback(
+    struct PP_CompletionCallback* cc,
+    int32_t res) {
+  struct PP_CompletionCallback temp = *cc;
+  *cc = PP_BlockUntilComplete();
+  PP_RunCompletionCallback(&temp, res);
 }
 /**
  * @}

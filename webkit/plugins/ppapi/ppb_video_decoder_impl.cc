@@ -371,9 +371,7 @@ void PPB_VideoDecoder_Impl::NotifyAbortDone() {
     return;
 
   // Call the callback that was stored to be called when Abort is done.
-  PP_CompletionCallback callback = PP_BlockUntilComplete();
-  std::swap(callback, abort_callback_);
-  PP_RunCompletionCallback(&callback, PP_OK);
+  PP_RunAndClearCompletionCallback(&abort_callback_, PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(
@@ -383,9 +381,7 @@ void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(
 
   // Call the callback that was stored to be called when bitstream was sent for
   // decoding.
-  PP_CompletionCallback callback = PP_BlockUntilComplete();
-  std::swap(callback, bitstream_buffer_callback_);
-  PP_RunCompletionCallback(&callback, PP_OK);
+  PP_RunAndClearCompletionCallback(&bitstream_buffer_callback_, PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyFlushDone() {
@@ -393,18 +389,14 @@ void PPB_VideoDecoder_Impl::NotifyFlushDone() {
     return;
 
   // Call the callback that was stored to be called when Flush is done.
-  PP_CompletionCallback callback = PP_BlockUntilComplete();
-  std::swap(callback, flush_callback_);
-  PP_RunCompletionCallback(&callback, PP_OK);
+  PP_RunAndClearCompletionCallback(&flush_callback_, PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
   if (initialization_callback_.func == NULL)
     return;
 
-  PP_CompletionCallback callback = PP_BlockUntilComplete();
-  std::swap(callback, initialization_callback_);
-  PP_RunCompletionCallback(&callback, PP_OK);
+  PP_RunAndClearCompletionCallback(&initialization_callback_, PP_OK);
 }
 
 }  // namespace ppapi

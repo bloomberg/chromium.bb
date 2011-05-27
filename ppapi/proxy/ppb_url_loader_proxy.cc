@@ -581,11 +581,7 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBodyAck(
 
   // The plugin should be able to make a new request from their callback, so
   // we have to clear our copy first.
-  PP_CompletionCallback temp_callback = object->current_read_callback_;
-  object->current_read_callback_ = PP_BlockUntilComplete();
-  object->current_read_buffer_ = NULL;
-  object->current_read_buffer_size_ = 0;
-  PP_RunCompletionCallback(&temp_callback, result);
+  PP_RunAndClearCompletionCallback(&object->current_read_callback_, result);
 }
 
 void PPB_URLLoader_Proxy::RegisterStatusCallback(PP_Resource resource) {

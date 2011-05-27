@@ -156,10 +156,8 @@ void PPB_Surface3D_Impl::ViewFlushedPaint() {
     // We must clear swap_callback_ before issuing the callback. It will be
     // common for the plugin to issue another SwapBuffers in response to the
     // callback, and we don't want to think that a callback is already pending.
-    PP_CompletionCallback callback = PP_BlockUntilComplete();
-    std::swap(callback, swap_callback_);
     swap_initiated_ = false;
-    PP_RunCompletionCallback(&callback, PP_OK);
+    PP_RunAndClearCompletionCallback(&swap_callback_, PP_OK);
   }
 }
 
@@ -174,10 +172,8 @@ void PPB_Surface3D_Impl::OnSwapBuffers() {
   } else if (swap_callback_.func) {
     // If we're off-screen, no need to trigger compositing so run the callback
     // immediately.
-    PP_CompletionCallback callback = PP_BlockUntilComplete();
-    std::swap(callback, swap_callback_);
     swap_initiated_ = false;
-    PP_RunCompletionCallback(&callback, PP_OK);
+    PP_RunAndClearCompletionCallback(&swap_callback_, PP_OK);
   }
 }
 

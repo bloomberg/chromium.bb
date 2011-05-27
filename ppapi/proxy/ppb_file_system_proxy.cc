@@ -189,10 +189,7 @@ void PPB_FileSystem_Proxy::OnMsgOpenComplete(const HostResource& filesystem,
           filesystem));
   if (!object || !object->current_open_callback_.func)
     return;
-
-  PP_CompletionCallback callback = object->current_open_callback_;
-  object->current_open_callback_ = PP_MakeCompletionCallback(NULL, NULL);
-  PP_RunCompletionCallback(&callback, result);
+  PP_RunAndClearCompletionCallback(&object->current_open_callback_, result);
 }
 
 void PPB_FileSystem_Proxy::OpenCompleteInHost(
