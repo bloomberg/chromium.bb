@@ -50,7 +50,16 @@ bool TypedUrlModelAssociator::AssociateModels() {
       LOG(ERROR) << "Could not get the url's visits.";
       return false;
     }
-    DCHECK(!visit_vectors[ix->id()].empty());
+    // Sometimes (due to a bug elsewhere in the history or sync code, or due to
+    // a crash between adding a URL to the history database and updating the
+    // visit DB) the visit vector for a URL can be empty. If this happens, just
+    // create a new visit whose timestamp is the same as the last_visit time.
+    // This is a workaround for http://crbug.com/84258.
+    if (visit_vectors[ix->id()].empty()) {
+      history::VisitRow visit(
+          ix->id(), ix->last_visit(), 0, PageTransition::TYPED, 0);
+      visit_vectors[ix->id()].push_back(visit);
+    }
   }
 
   TypedUrlTitleVector titles;
@@ -259,11 +268,16 @@ int64 TypedUrlModelAssociator::GetSyncIdFromChromeId(
 void TypedUrlModelAssociator::Associate(
     const std::string* typed_url, int64 sync_id) {
   DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(!IsAssociated(*typed_url));
   DCHECK_NE(sync_api::kInvalidId, sync_id);
-  DCHECK(id_map_.find(*typed_url) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
   id_map_[*typed_url] = sync_id;
   id_map_inverse_[sync_id] = *typed_url;
+}
+
+bool TypedUrlModelAssociator::IsAssociated(const std::string& typed_url) {
+  DCHECK(expected_loop_ == MessageLoop::current());
+  return id_map_.find(typed_url) != id_map_.end();
 }
 
 void TypedUrlModelAssociator::Disassociate(int64 sync_id) {
@@ -298,11 +312,19 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
     }
   }
   if (new_urls) {
+#ifndef NDEBUG
+    // All of these URLs should already have been associated.
+    for (TypedUrlVector::const_iterator url = new_urls->begin();
+         url != new_urls->end(); ++url) {
+      DCHECK(IsAssociated(url->url().spec()));
+    }
+#endif
     history_backend_->AddPagesWithDetails(*new_urls, history::SOURCE_SYNCED);
   }
   if (updated_urls) {
     for (TypedUrlUpdateVector::const_iterator url = updated_urls->begin();
          url != updated_urls->end(); ++url) {
+      DCHECK(IsAssociated(url->second.url().spec()));
       if (!history_backend_->UpdateURL(url->first, url->second)) {
         LOG(ERROR) << "Could not update page: " << url->second.url().spec();
         return false;
@@ -312,8 +334,9 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
   if (new_visits) {
     for (TypedUrlVisitVector::const_iterator visits = new_visits->begin();
          visits != new_visits->end(); ++visits) {
-           if (!history_backend_->AddVisits(visits->first, visits->second,
-                                            history::SOURCE_SYNCED)) {
+      DCHECK(IsAssociated(visits->first.spec()));
+      if (!history_backend_->AddVisits(visits->first, visits->second,
+                                       history::SOURCE_SYNCED)) {
         LOG(ERROR) << "Could not add visits.";
         return false;
       }

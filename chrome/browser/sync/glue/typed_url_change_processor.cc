@@ -75,7 +75,13 @@ void TypedUrlChangeProcessor::HandleURLsModified(
           "Could not get the url's visits.");
       return;
     }
-    DCHECK(!visit_vectors[url->id()].empty());
+    // Make sure our visit vector is not empty by ensuring at least the most
+    // recent visit is found. Workaround for http://crbug.com/84258.
+    if (visit_vectors[url->id()].empty()) {
+      history::VisitRow visit(
+          url->id(), url->last_visit(), 0, PageTransition::TYPED, 0);
+      visit_vectors[url->id()].push_back(visit);
+    }
   }
 
   sync_api::WriteTransaction trans(share_handle());
@@ -130,8 +136,7 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
     for (std::set<GURL>::iterator url = details->urls.begin();
          url != details->urls.end(); ++url) {
       sync_api::WriteNode sync_node(&trans);
-      int64 sync_id =
-      model_associator_->GetSyncIdFromChromeId(url->spec());
+      int64 sync_id = model_associator_->GetSyncIdFromChromeId(url->spec());
       if (sync_api::kInvalidId != sync_id) {
         if (!sync_node.InitByIdLookup(sync_id)) {
           error_handler()->OnUnrecoverableError(FROM_HERE,
@@ -200,6 +205,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
           "Typed URL delete change does not have necessary specifics.";
       GURL url(changes[i].specifics.GetExtension(sync_pb::typed_url).url());
       history_backend_->DeleteURL(url);
+      model_associator_->Disassociate(changes[i].id);
       continue;
     }
 
@@ -227,6 +233,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       history::URLRow new_url =
           TypedUrlModelAssociator::TypedUrlSpecificsToURLRow(typed_url);
 
+      model_associator_->Associate(&new_url.url().spec(), changes[i].id);
       new_urls.push_back(new_url);
 
       // The latest visit gets added automatically, so skip it.

@@ -157,6 +157,10 @@ class TypedUrlModelAssociator
   typedef std::map<std::string, int64> TypedUrlToSyncIdMap;
   typedef std::map<int64, std::string> SyncIdToTypedUrlMap;
 
+  // Makes sure that the node with the specified tag is already in our
+  // association map.
+  bool IsAssociated(const std::string& node_tag);
+
   ProfileSyncService* sync_service_;
   history::HistoryBackend* history_backend_;
   int64 typed_url_node_id_;

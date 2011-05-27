@@ -89,3 +89,77 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, DisableEnableSync) {
 
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
+
+IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, AddOneDeleteOther) {
+  const string16 kHistoryUrl(
+      ASCIIToUTF16("http://www.add-one-delete-history.google.com/"));
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Populate one client with a URL, should sync to the other.
+  GURL new_url(kHistoryUrl);
+  AddUrlToHistory(0, new_url);
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(new_url, urls[0].url());
+
+  // Let sync finish.
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Both clients should have this URL.
+  AssertAllProfilesHaveSameURLsAsVerifier();
+
+  // Now, delete the URL from the second client.
+  DeleteUrlFromHistory(1, new_url);
+  urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+
+  // Let sync finish.
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Both clients should have this URL removed.
+  AssertAllProfilesHaveSameURLsAsVerifier();
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest,
+                       AddOneDeleteOtherAddAgain) {
+  const string16 kHistoryUrl(
+      ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Populate one client with a URL, should sync to the other.
+  GURL new_url(kHistoryUrl);
+  AddUrlToHistory(0, new_url);
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(new_url, urls[0].url());
+
+  // Let sync finish.
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Both clients should have this URL.
+  AssertAllProfilesHaveSameURLsAsVerifier();
+
+  // Now, delete the URL from the second client.
+  DeleteUrlFromHistory(1, new_url);
+  urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+
+  // Let sync finish.
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Both clients should have this URL removed.
+  AssertAllProfilesHaveSameURLsAsVerifier();
+
+  // Add it to the first client again, should succeed (tests that the deletion
+  // properly disassociates that URL).
+  AddUrlToHistory(0, new_url);
+
+  // Let sync finish.
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Both clients should have this URL added again.
+  AssertAllProfilesHaveSameURLsAsVerifier();
+}
+
+
+
