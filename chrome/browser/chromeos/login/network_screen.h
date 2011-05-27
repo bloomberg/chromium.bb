@@ -25,13 +25,13 @@ class NetworkScreen : public WizardScreen,
                       public NetworkLibrary::NetworkManagerObserver,
                       public NetworkScreenActor::Delegate {
  public:
-  explicit NetworkScreen(WizardScreenDelegate* delegate);
+  NetworkScreen(ScreenObserver* screen_observer, NetworkScreenActor* actor);
   virtual ~NetworkScreen();
 
   // WizardScreen implementation:
+  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
-  virtual gfx::Size GetScreenSize() const;
 
   // NetworkLibrary::NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib);

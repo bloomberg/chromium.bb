@@ -115,7 +115,7 @@ void RegisterLocalState(PrefService* local_state) {
   chromeos::AudioMixerAlsa::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
   chromeos::UserCrosSettingsProvider::RegisterPrefs(local_state);
-  WizardController::RegisterPrefs(local_state);
+  chromeos::WizardController::RegisterPrefs(local_state);
   chromeos::InputMethodMenu::RegisterPrefs(local_state);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
   chromeos::SignedSettingsTempStorage::RegisterPrefs(local_state);

@@ -317,8 +317,8 @@ void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
 void AboutPageHandler::CheckNow(const ListValue* args) {
   // Make sure that libcros is loaded and OOBE is complete.
   if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-      (!WizardController::default_controller() ||
-        WizardController::IsDeviceRegistered())) {
+      (!chromeos::WizardController::default_controller() ||
+        chromeos::WizardController::IsDeviceRegistered())) {
     chromeos::CrosLibrary::Get()->GetUpdateLibrary()->
         RequestUpdateCheck(NULL,   // no callback
                            NULL);  // no userdata

@@ -23,14 +23,17 @@ class NetworkScreenActor {
 
   virtual ~NetworkScreenActor() {}
 
+  // Sets screen this actor belongs to.
+  virtual void SetDelegate(Delegate* screen) = 0;
+
+  // Prepare the contents to showing.
+  virtual void PrepareToShow() = 0;
+
   // Shows the contents of the screen.
   virtual void Show() = 0;
 
   // Hides the contents of the screen.
   virtual void Hide() = 0;
-
-  // Returns the size of the screen contents.
-  virtual gfx::Size GetScreenSize() const = 0;
 
   // Shows error message in a bubble.
   virtual void ShowError(const string16& message) = 0;

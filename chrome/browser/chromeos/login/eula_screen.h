@@ -20,13 +20,13 @@ namespace chromeos {
 class EulaScreen : public WizardScreen,
                    public EulaScreenActor::Delegate {
  public:
-  explicit EulaScreen(WizardScreenDelegate* delegate);
+  EulaScreen(ScreenObserver* observer, EulaScreenActor* actor);
   virtual ~EulaScreen();
 
   // WizardScreen implementation:
+  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
-  virtual gfx::Size GetScreenSize() const;
 
   // EulaScreenActor::Delegate implementation:
   virtual bool IsTpmEnabled() const;

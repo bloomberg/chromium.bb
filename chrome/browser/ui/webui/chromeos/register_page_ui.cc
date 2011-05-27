@@ -166,8 +166,8 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
   // Make sure that chrome://register is available only during
   // OOBE wizard lifetime and when device has not been registered yet.
 #if defined(OS_CHROMEOS)
-  if (!WizardController::default_controller() ||
-      WizardController::IsDeviceRegistered()) {
+  if (!chromeos::WizardController::default_controller() ||
+      chromeos::WizardController::IsDeviceRegistered()) {
     scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
     SendResponse(request_id, empty_bytes);
     return;
@@ -221,7 +221,7 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   chromeos::StartupCustomizationDocument* customization =
     chromeos::StartupCustomizationDocument::GetInstance();
-  if (WizardController::default_controller() &&
+  if (chromeos::WizardController::default_controller() &&
       customization->IsReady()) {
     const std::string& url = customization->registration_url();
     VLOG(1) << "Loading registration form with URL: " << url;
@@ -263,8 +263,8 @@ void RegisterPageHandler::OnVersion(chromeos::VersionLoader::Handle handle,
 void RegisterPageHandler::SkipRegistration(const std::string& error_msg) {
 #if defined(OS_CHROMEOS)
   LOG(ERROR) << error_msg;
-  if (WizardController::default_controller())
-    WizardController::default_controller()->SkipRegistration();
+  if (chromeos::WizardController::default_controller())
+    chromeos::WizardController::default_controller()->SkipRegistration();
   else
     web_ui_->CallJavascriptFunction(kJsApiSkipRegistration);
 #endif

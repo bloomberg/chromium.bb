@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,11 @@
 
 class Browser;
 class Profile;
-class WizardController;
 
 namespace chromeos {
 
 class LoginDisplayHost;
+class WizardController;
 
 // Base class for test related to login wizard and its screens.
 // Instead of creating Chrome browser window it creates login wizard window
@@ -51,4 +51,3 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_IN_PROCESS_BROWSER_TEST_H_
-

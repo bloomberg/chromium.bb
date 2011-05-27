@@ -4,8 +4,19 @@
 
 #include "chrome/browser/chromeos/login/mock_update_screen.h"
 
-MockUpdateScreen::MockUpdateScreen(WizardScreenDelegate* d)
-    : chromeos::UpdateScreen(d) {
+namespace chromeos {
+
+MockUpdateScreen::MockUpdateScreen(ScreenObserver* screen_observer)
+    : UpdateScreen(screen_observer, new MockUpdateScreenActor) {
 }
 
-MockUpdateScreen::~MockUpdateScreen() {}
+MockUpdateScreen::~MockUpdateScreen() {
+}
+
+MockUpdateScreenActor::MockUpdateScreenActor() {
+}
+
+MockUpdateScreenActor::~MockUpdateScreenActor() {
+}
+
+}  // namespace chromeos

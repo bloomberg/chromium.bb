@@ -42,7 +42,7 @@ WebPageDomView* HTMLPageView::dom_view() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // HTMLPageScreen, public:
-HTMLPageScreen::HTMLPageScreen(WizardScreenDelegate* delegate,
+HTMLPageScreen::HTMLPageScreen(ViewScreenDelegate* delegate,
                                const std::string& url)
     : ViewScreen<HTMLPageView>(delegate), url_(url) {
 }
@@ -130,7 +130,7 @@ void HTMLPageScreen::CloseScreen(ScreenObserver::ExitCodes code) {
     input_method::EnableInputMethods(
         locale, input_method::kKeyboardLayoutsOnly, "");
   }
-  delegate()->GetObserver(this)->OnExit(code);
+  delegate()->GetObserver()->OnExit(code);
 }
 
 }  // namespace chromeos

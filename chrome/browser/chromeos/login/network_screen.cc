@@ -36,11 +36,13 @@ namespace chromeos {
 ///////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, public:
 
-NetworkScreen::NetworkScreen(::WizardScreenDelegate* delegate)
-    : WizardScreen(delegate),
+NetworkScreen::NetworkScreen(ScreenObserver* screen_observer,
+                             NetworkScreenActor* actor)
+    : WizardScreen(screen_observer),
       is_network_subscribed_(false),
       continue_pressed_(false),
-      actor_(new ViewsNetworkScreenActor(delegate, this)) {
+      actor_(actor) {
+  actor_->SetDelegate(this);
 }
 
 NetworkScreen::~NetworkScreen() {
@@ -51,6 +53,10 @@ NetworkScreen::~NetworkScreen() {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, WizardScreen implementation:
 
+void NetworkScreen::PrepareToShow() {
+  actor_->PrepareToShow();
+}
+
 void NetworkScreen::Show() {
   actor_->Show();
   Refresh();
@@ -58,11 +64,6 @@ void NetworkScreen::Show() {
 
 void NetworkScreen::Hide() {
   actor_->Hide();
-}
-
-gfx::Size NetworkScreen::GetScreenSize() const {
-  // TODO(avayvod): WizardController shouldn't need this info from screens.
-  return actor_->GetScreenSize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +119,7 @@ void NetworkScreen::NotifyOnConnection() {
   // TODO(nkostylev): Check network connectivity.
   UnsubscribeNetworkNotification();
   connection_timer_.Stop();
-  delegate()->GetObserver(this)->OnExit(ScreenObserver::NETWORK_CONNECTED);
+  get_screen_observer()->OnExit(ScreenObserver::NETWORK_CONNECTED);
 }
 
 void NetworkScreen::OnConnectionTimeout() {

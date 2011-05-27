@@ -20,11 +20,10 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "views/controls/button/button.h"
 
-class WizardScreenDelegate;
-
 namespace chromeos {
 
 class HelpAppLauncher;
+class ViewScreenDelegate;
 
 // Views-specific implementation of NetworkScreenActor. Hosts
 // NetworkSelectionView.
@@ -33,11 +32,12 @@ class ViewsNetworkScreenActor : public ViewScreen<NetworkSelectionView>,
                                 public NetworkScreenActor,
                                 public views::ButtonListener {
  public:
-  ViewsNetworkScreenActor(WizardScreenDelegate* delegate,
-                          Delegate* screen);
+  explicit ViewsNetworkScreenActor(ViewScreenDelegate* delegate);
   virtual ~ViewsNetworkScreenActor();
 
   // NetworkScreenActor implementation:
+  virtual void SetDelegate(Delegate* screen);
+  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
   virtual gfx::Size GetScreenSize() const;

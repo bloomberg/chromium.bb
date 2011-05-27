@@ -43,9 +43,9 @@ class EulaScreenActor {
 
   virtual ~EulaScreenActor() {}
 
+  virtual void PrepareToShow() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
-  virtual gfx::Size GetScreenSize() const = 0;
 
   // Returns true if user decided to report usage statistics.
   virtual bool IsUsageStatsChecked() const = 0;
@@ -55,4 +55,3 @@ class EulaScreenActor {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EULA_SCREEN_ACTOR_H_
-

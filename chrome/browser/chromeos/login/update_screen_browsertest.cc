@@ -73,14 +73,14 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   virtual void SetUpOnMainThread() {
     mock_screen_observer_.reset(new MockScreenObserver());
     ASSERT_TRUE(controller() != NULL);
-    controller()->set_observer(mock_screen_observer_.get());
     update_screen_ = controller()->GetUpdateScreen();
     ASSERT_TRUE(update_screen_ != NULL);
     ASSERT_EQ(controller()->current_screen(), update_screen_);
+    update_screen_->screen_observer_ = mock_screen_observer_.get();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
-    controller()->set_observer(NULL);
+    update_screen_->screen_observer_ = (controller());
     cros_mock_->test_api()->SetUpdateLibrary(NULL, true);
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }

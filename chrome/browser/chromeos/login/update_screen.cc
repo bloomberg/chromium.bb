@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
-#include "chrome/browser/chromeos/login/views_update_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "content/browser/browser_thread.h"
 
@@ -66,16 +65,15 @@ bool UpdateScreen::HasInstance(UpdateScreen* inst) {
 }
 
 
-UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
-    : WizardScreen(delegate),
+UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
+                           UpdateScreenActor* actor)
+    : WizardScreen(screen_observer),
       reboot_check_delay_(0),
       is_checking_for_update_(true),
       is_downloading_update_(false),
       is_ignore_update_deadlines_(false),
       is_shown_(false),
-      actor_(new ViewsUpdateScreenActor(delegate,
-                                        kUpdateScreenWidth,
-                                        kUpdateScreenHeight)) {
+      actor_(actor) {
   GetInstanceSet().insert(this);
 }
 
@@ -191,21 +189,21 @@ void UpdateScreen::Hide() {
   is_shown_ = false;
 }
 
-gfx::Size UpdateScreen::GetScreenSize() const {
-  return gfx::Size(kUpdateScreenWidth, kUpdateScreenHeight);
+void UpdateScreen::PrepareToShow() {
+  actor_->PrepareToShow();
 }
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
-  ScreenObserver* observer = delegate()->GetObserver(this);
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
 
   switch (reason) {
     case REASON_UPDATE_CANCELED:
-      observer->OnExit(ScreenObserver::UPDATE_NOUPDATE);
+      get_screen_observer()->OnExit(ScreenObserver::UPDATE_NOUPDATE);
       break;
     case REASON_UPDATE_INIT_FAILED:
-      observer->OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE);
+      get_screen_observer()->OnExit(
+          ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE);
       break;
     case REASON_UPDATE_NON_CRITICAL:
     case REASON_UPDATE_ENDED:
@@ -221,11 +219,11 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
             // Noncritical update, just exit screen as if there is no update.
             // no break
           case UPDATE_STATUS_IDLE:
-            observer->OnExit(ScreenObserver::UPDATE_NOUPDATE);
+            get_screen_observer()->OnExit(ScreenObserver::UPDATE_NOUPDATE);
             break;
           case UPDATE_STATUS_ERROR:
           case UPDATE_STATUS_REPORTING_ERROR_EVENT:
-            observer->OnExit(is_checking_for_update_ ?
+            get_screen_observer()->OnExit(is_checking_for_update_ ?
                 ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE :
                 ScreenObserver::UPDATE_ERROR_UPDATING);
             break;
@@ -247,7 +245,7 @@ void UpdateScreen::OnWaitForRebootTimeElapsed() {
 
 void UpdateScreen::MakeSureScreenIsShown() {
   if (!is_shown_)
-    delegate()->ShowCurrentScreen();
+    get_screen_observer()->ShowCurrentScreen();
 }
 
 void UpdateScreen::SetRebootCheckDelay(int seconds) {

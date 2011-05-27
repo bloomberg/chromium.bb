@@ -18,21 +18,6 @@
 #include "ui/gfx/rect.h"
 
 class PrefService;
-class WizardContentsView;
-
-namespace chromeos {
-class AccountScreen;
-class EnterpriseEnrollmentScreen;
-class EulaScreen;
-class ExistingUserController;
-class HTMLPageScreen;
-class LoginDisplayHost;
-class NetworkScreen;
-class RegistrationScreen;
-class UpdateScreen;
-class UserImageScreen;
-class WizardInProcessBrowserTest;
-}
 
 namespace gfx {
 class Rect;
@@ -43,14 +28,26 @@ class Views;
 class Widget;
 }
 
+namespace chromeos {
+
+class EnterpriseEnrollmentScreen;
+class EulaScreen;
+class ExistingUserController;
+class HTMLPageScreen;
+class LoginDisplayHost;
+class NetworkScreen;
+class OobeDisplay;
+class RegistrationScreen;
+class UpdateScreen;
+class UserImageScreen;
+class WizardScreen;
+
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public chromeos::ScreenObserver,
-                         public WizardScreenDelegate {
+class WizardController : public ScreenObserver {
  public:
-  explicit WizardController(chromeos::LoginDisplayHost* host,
-                            const gfx::Rect& screen_bounds);
-  virtual ~WizardController();
+  WizardController(LoginDisplayHost* host, OobeDisplay* oobe_display);
+  ~WizardController();
 
   // Returns the default wizard controller if it has been created.
   static WizardController* default_controller() {
@@ -89,25 +86,20 @@ class WizardController : public chromeos::ScreenObserver,
   // of the wizard screen.
   void Init(const std::string& first_screen_name);
 
-  // Returns the view that contains all the other views.
-  views::View* contents() { return contents_; }
-
   // Skips OOBE update screen if it's currently shown.
   void CancelOOBEUpdate();
 
   // Lazy initializers and getters for screens.
-  chromeos::NetworkScreen* GetNetworkScreen();
-  chromeos::AccountScreen* GetAccountScreen();
-  chromeos::UpdateScreen* GetUpdateScreen();
-  chromeos::UserImageScreen* GetUserImageScreen();
-  chromeos::EulaScreen* GetEulaScreen();
-  chromeos::RegistrationScreen* GetRegistrationScreen();
-  chromeos::HTMLPageScreen* GetHTMLPageScreen();
-  chromeos::EnterpriseEnrollmentScreen* GetEnterpriseEnrollmentScreen();
+  NetworkScreen* GetNetworkScreen();
+  UpdateScreen* GetUpdateScreen();
+  UserImageScreen* GetUserImageScreen();
+  EulaScreen* GetEulaScreen();
+  RegistrationScreen* GetRegistrationScreen();
+  HTMLPageScreen* GetHTMLPageScreen();
+  EnterpriseEnrollmentScreen* GetEnterpriseEnrollmentScreen();
 
   // Show specific screen.
   void ShowNetworkScreen();
-  void ShowAccountScreen();
   void ShowUpdateScreen();
   void ShowUserImageScreen();
   void ShowEulaScreen();
@@ -115,15 +107,16 @@ class WizardController : public chromeos::ScreenObserver,
   void ShowHTMLPageScreen();
   void ShowEnterpriseEnrollmentScreen();
 
+  // Determines which screen to show first by the parameter, shows it and
+  // sets it as the current one.
+  void ShowFirstScreen(const std::string& first_screen_name);
+
   // Shows images login screen.
   void ShowLoginScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }
-
-  // Overrides observer for testing.
-  void set_observer(ScreenObserver* observer) { observer_ = observer; }
 
   // Set URL to open on browser launch.
   void set_start_url(const GURL& start_url) { start_url_ = start_url; }
@@ -136,7 +129,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
-  static const char kAccountScreenName[];
   static const char kUpdateScreenName[];
   static const char kUserImageScreenName[];
   static const char kRegistrationScreenName[];
@@ -167,22 +159,13 @@ class WizardController : public chromeos::ScreenObserver,
   // Shows update screen and starts update process.
   void InitiateOOBEUpdate();
 
-  // Overridden from chromeos::ScreenObserver:
+  // Overridden from ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
+  virtual void ShowCurrentScreen();
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password);
   virtual void set_usage_statistics_reporting(bool val);
   virtual bool usage_statistics_reporting() const;
-
-  // Creates wizard screen window with the specified |bounds|.
-  // If |initial_show| initial animation (window & background) is shown.
-  // Otherwise only window is animated.
-  views::Widget* CreateScreenWindow(const gfx::Rect& bounds,
-                                    bool initial_show);
-
-  // Returns bounds for the wizard screen host window in screen coordinates.
-  // Calculates bounds using screen_bounds_.
-  gfx::Rect GetWizardScreenBounds(int screen_width, int screen_height) const;
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -194,52 +177,27 @@ class WizardController : public chromeos::ScreenObserver,
   // Changes status area visibility.
   void SetStatusAreaVisible(bool visible);
 
-  // Overridden from WizardScreenDelegate:
-  virtual views::View* GetWizardView();
-  virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen);
-  virtual void ShowCurrentScreen();
-
-  // Determines which screen to show first by the parameter, shows it and
-  // sets it as the current one.
-  void ShowFirstScreen(const std::string& first_screen_name);
-
   // Logs in the specified user via default login screen.
   void Login(const std::string& username, const std::string& password);
 
   // Sets delays to zero. MUST be used only for browser tests.
   static void SetZeroDelays();
 
-  // Widget we're showing in.
-  views::Widget* widget_;
-
-  // Contents view.
-  views::View* contents_;
-
-  // Used to calculate position of the wizard screen.
-  gfx::Rect screen_bounds_;
-
   // Screens.
-  scoped_ptr<chromeos::NetworkScreen> network_screen_;
-  scoped_ptr<chromeos::AccountScreen> account_screen_;
-  scoped_ptr<chromeos::UpdateScreen> update_screen_;
-  scoped_ptr<chromeos::UserImageScreen> user_image_screen_;
-  scoped_ptr<chromeos::EulaScreen> eula_screen_;
-  scoped_ptr<chromeos::RegistrationScreen> registration_screen_;
-  scoped_ptr<chromeos::HTMLPageScreen> html_page_screen_;
-  scoped_ptr<chromeos::EnterpriseEnrollmentScreen>
+  scoped_ptr<NetworkScreen> network_screen_;
+  scoped_ptr<UpdateScreen> update_screen_;
+  scoped_ptr<UserImageScreen> user_image_screen_;
+  scoped_ptr<EulaScreen> eula_screen_;
+  scoped_ptr<RegistrationScreen> registration_screen_;
+  scoped_ptr<HTMLPageScreen> html_page_screen_;
+  scoped_ptr<EnterpriseEnrollmentScreen>
       enterprise_enrollment_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;
 
-  // Holds whether this is initial show.
-  bool initial_show_;
-
   std::string username_;
   std::string password_;
-
-  // True if controller is active and should proceed things like Timer.
-  bool is_active_;
 
   // True if running official BUILD.
   bool is_official_build_;
@@ -251,10 +209,7 @@ class WizardController : public chromeos::ScreenObserver,
   std::string first_screen_name_;
 
   // OOBE/login display host.
-  chromeos::LoginDisplayHost* host_;
-
-  // NULL by default - controller itself is observer. Mock could be assigned.
-  ScreenObserver* observer_;
+  LoginDisplayHost* host_;
 
   // Default WizardController.
   static WizardController* default_controller_;
@@ -264,15 +219,20 @@ class WizardController : public chromeos::ScreenObserver,
 
   base::OneShotTimer<WizardController> smooth_show_timer_;
 
+  scoped_ptr<OobeDisplay> oobe_display_;
+
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.
   bool usage_statistics_reporting_;
 
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerTest, SwitchLanguage);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
   friend class WizardControllerFlowTest;
-  friend class chromeos::WizardInProcessBrowserTest;
+  friend class WizardInProcessBrowserTest;
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_CONTROLLER_H_

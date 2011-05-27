@@ -53,7 +53,7 @@ WebPageDomView* RegistrationView::dom_view() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, public:
-RegistrationScreen::RegistrationScreen(WizardScreenDelegate* delegate)
+RegistrationScreen::RegistrationScreen(ViewScreenDelegate* delegate)
     : ViewScreen<RegistrationView>(delegate) {
   if (!host_page_url_.get())
     set_registration_host_page_url(GURL(kRegistrationHostPageUrl));
@@ -153,7 +153,7 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
     input_method::EnableInputMethods(
         locale, input_method::kKeyboardLayoutsOnly, "");
   }
-  delegate()->GetObserver(this)->OnExit(code);
+  delegate()->GetObserver()->OnExit(code);
 }
 
 // static

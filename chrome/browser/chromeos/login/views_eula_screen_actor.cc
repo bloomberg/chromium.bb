@@ -6,7 +6,7 @@
 
 namespace chromeos {
 
-ViewsEulaScreenActor::ViewsEulaScreenActor(WizardScreenDelegate* delegate)
+ViewsEulaScreenActor::ViewsEulaScreenActor(ViewScreenDelegate* delegate)
     : ViewScreen<EulaView>(delegate),
       screen_(NULL) {
 }
@@ -18,16 +18,16 @@ EulaView* ViewsEulaScreenActor::AllocateView() {
   return new EulaView(this);
 }
 
+void ViewsEulaScreenActor::PrepareToShow() {
+  ViewScreen<EulaView>::PrepareToShow();
+}
+
 void ViewsEulaScreenActor::Show() {
   ViewScreen<EulaView>::Show();
 }
 
 void ViewsEulaScreenActor::Hide() {
   ViewScreen<EulaView>::Hide();
-}
-
-gfx::Size ViewsEulaScreenActor::GetScreenSize() const {
-  return ViewScreen<EulaView>::GetScreenSize();
 }
 
 bool ViewsEulaScreenActor::IsUsageStatsChecked() const {

@@ -18,7 +18,7 @@ namespace chromeos {
 const int kLockRetryIntervalMs = 500;
 
 EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
-    WizardScreenDelegate* delegate)
+    ViewScreenDelegate* delegate)
     : ViewScreen<EnterpriseEnrollmentView>(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
   // Init the TPM if it has not been done until now (in debug build we might
@@ -63,13 +63,13 @@ void EnterpriseEnrollmentScreen::CancelEnrollment() {
   auth_fetcher_.reset();
   registrar_.reset();
   g_browser_process->browser_policy_connector()->StopAutoRetry();
-  ScreenObserver* observer = delegate()->GetObserver(this);
+  ScreenObserver* observer = delegate()->GetObserver();
   observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
 }
 
 void EnterpriseEnrollmentScreen::CloseConfirmation() {
   auth_fetcher_.reset();
-  ScreenObserver* observer = delegate()->GetObserver(this);
+  ScreenObserver* observer = delegate()->GetObserver();
   observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
 }
 

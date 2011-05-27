@@ -20,7 +20,7 @@ class UserImageScreen: public ViewScreen<UserImageView>,
                        public UserImageView::Delegate,
                        public NotificationObserver {
  public:
-  explicit UserImageScreen(WizardScreenDelegate* delegate);
+  explicit UserImageScreen(ViewScreenDelegate* delegate);
   virtual ~UserImageScreen();
 
   // Overridden from ViewScreen:

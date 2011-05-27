@@ -16,7 +16,7 @@ namespace chromeos {
 class ViewsEulaScreenActor : public ViewScreen<EulaView>,
                              public EulaScreenActor {
  public:
-  explicit ViewsEulaScreenActor(WizardScreenDelegate* delegate);
+  explicit ViewsEulaScreenActor(ViewScreenDelegate* delegate);
   virtual ~ViewsEulaScreenActor();
 
   Delegate* screen() { return screen_; }
@@ -25,9 +25,9 @@ class ViewsEulaScreenActor : public ViewScreen<EulaView>,
   virtual EulaView* AllocateView();
 
   // EulaScreenActor implementation:
+  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
-  virtual gfx::Size GetScreenSize() const;
   virtual bool IsUsageStatsChecked() const;
   virtual void SetDelegate(Delegate* delegate);
 
@@ -40,5 +40,3 @@ class ViewsEulaScreenActor : public ViewScreen<EulaView>,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEWS_EULA_SCREEN_ACTOR_H_
-
-

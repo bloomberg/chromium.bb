@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/chromeos/login/views_eula_screen_actor.h"
 
 namespace {
 
@@ -19,13 +18,16 @@ const char kGoogleEulaUrl[] = "about:terms";
 
 namespace chromeos {
 
-EulaScreen::EulaScreen(::WizardScreenDelegate* delegate)
-    : WizardScreen(delegate),
-      actor_(new ViewsEulaScreenActor(delegate)) {
+EulaScreen::EulaScreen(ScreenObserver* observer, EulaScreenActor* actor)
+    : WizardScreen(observer), actor_(actor) {
   actor_->SetDelegate(this);
 }
 
 EulaScreen::~EulaScreen() {
+}
+
+void EulaScreen::PrepareToShow() {
+  actor_->PrepareToShow();
 }
 
 void EulaScreen::Show() {
@@ -42,10 +44,6 @@ void EulaScreen::Show() {
 
 void EulaScreen::Hide() {
   actor_->Hide();
-}
-
-gfx::Size EulaScreen::GetScreenSize() const {
-  return actor_->GetScreenSize();
 }
 
 bool EulaScreen::IsTpmEnabled() const {
@@ -74,9 +72,9 @@ GURL EulaScreen::GetOemEulaUrl() const {
 }
 
 void EulaScreen::OnExit(bool accepted) {
-  ScreenObserver* observer = delegate()->GetObserver(this);
-  observer->set_usage_statistics_reporting(actor_->IsUsageStatsChecked());
-  observer->OnExit(accepted
+  get_screen_observer()->set_usage_statistics_reporting(
+      actor_->IsUsageStatsChecked());
+  get_screen_observer()->OnExit(accepted
                    ? ScreenObserver::EULA_ACCEPTED
                    : ScreenObserver::EULA_BACK);
 }
@@ -86,8 +84,7 @@ std::string* EulaScreen::GetTpmPasswordStorage() {
 }
 
 bool EulaScreen::IsUsageStatsEnabled() const {
-  const ScreenObserver* observer = delegate()->GetObserver(this);
-  return observer->usage_statistics_reporting();
+  return get_screen_observer()->usage_statistics_reporting();
 }
 
 }  // namespace chromeos

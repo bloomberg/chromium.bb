@@ -37,19 +37,22 @@ namespace chromeos {
 // ViewsNetworkScreenActor, public:
 
 ViewsNetworkScreenActor::ViewsNetworkScreenActor(
-    ::WizardScreenDelegate* delegate,
-    Delegate* screen)
+    ViewScreenDelegate* delegate)
     : ViewScreen<NetworkSelectionView>(
         delegate,
         kWelcomeScreenWidth,
         kWelcomeScreenHeight),
       bubble_(NULL),
-      screen_(screen) {
+      screen_(NULL) {
   language_switch_menu_.set_menu_alignment(views::Menu2::ALIGN_TOPLEFT);
 }
 
 ViewsNetworkScreenActor::~ViewsNetworkScreenActor() {
   ClearErrors();
+}
+
+void ViewsNetworkScreenActor::SetDelegate(Delegate* screen) {
+  screen_ = screen;
 }
 
 bool ViewsNetworkScreenActor::IsErrorShown() const {
@@ -58,6 +61,10 @@ bool ViewsNetworkScreenActor::IsErrorShown() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewsNetworkScreenActor, NetworkScreenActor implementation:
+void ViewsNetworkScreenActor::PrepareToShow() {
+  ViewScreen<NetworkSelectionView>::PrepareToShow();
+}
+
 void ViewsNetworkScreenActor::Show() {
   ViewScreen<NetworkSelectionView>::Show();
 }

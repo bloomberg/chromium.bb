@@ -16,7 +16,7 @@
 
 namespace chromeos {
 
-// Forward declaration.
+class ScreenObserver;
 class UpdateScreenActor;
 
 // Controller for the update screen. It does not depend on the specific
@@ -25,13 +25,13 @@ class UpdateScreenActor;
 class UpdateScreen: public UpdateLibrary::Observer,
                     public WizardScreen {
  public:
-  explicit UpdateScreen(WizardScreenDelegate* delegate);
+  UpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
   virtual ~UpdateScreen();
 
   // Overridden from WizardScreen.
+  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
-  virtual gfx::Size GetScreenSize() const;
 
   // Checks for updates and performs an update if needed. Made virtual to
   // simplify mocking.

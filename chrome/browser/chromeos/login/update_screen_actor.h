@@ -8,6 +8,9 @@
 
 namespace chromeos {
 
+class WizardScreen;
+class ScreenObserver;
+
 class UpdateScreenActor {
  public:
   virtual ~UpdateScreenActor() {}
@@ -17,6 +20,8 @@ class UpdateScreenActor {
 
   // Hides the screen.
   virtual void Hide() = 0;
+
+  virtual void PrepareToShow() = 0;
 
   // Shows manual reboot info message.
   virtual void ShowManualRebootInfo() = 0;

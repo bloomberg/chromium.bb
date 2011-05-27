@@ -9,19 +9,16 @@
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/update_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
-#include "chrome/browser/chromeos/login/wizard_screen.h"
 
 namespace chromeos {
 
-class ViewsUpdateScreenActor : public DefaultViewScreen<chromeos::UpdateView>,
+class ViewsUpdateScreenActor : public DefaultViewScreen<UpdateView>,
                                public UpdateScreenActor {
  public:
-  ViewsUpdateScreenActor(WizardScreenDelegate* delegate,
-                         int width,
-                         int height);
-
+  explicit ViewsUpdateScreenActor(ViewScreenDelegate* delegate);
   virtual ~ViewsUpdateScreenActor() {}
 
+  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
   virtual void ShowManualRebootInfo();

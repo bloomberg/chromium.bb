@@ -4,12 +4,24 @@
 
 #include "chrome/browser/chromeos/login/views_update_screen_actor.h"
 
+namespace {
+
+// Considering 10px shadow from each side.
+const int kUpdateScreenWidth = 580;
+const int kUpdateScreenHeight = 305;
+
+}  // namespace
+
 namespace chromeos {
 
-ViewsUpdateScreenActor::ViewsUpdateScreenActor(WizardScreenDelegate* delegate,
-                                               int width,
-                                               int height)
-    : DefaultViewScreen<chromeos::UpdateView>(delegate, width, height) {
+ViewsUpdateScreenActor::ViewsUpdateScreenActor(ViewScreenDelegate* delegate)
+    : DefaultViewScreen<chromeos::UpdateView>(delegate,
+                                              kUpdateScreenWidth,
+                                              kUpdateScreenWidth) {
+}
+
+void ViewsUpdateScreenActor::PrepareToShow() {
+  DefaultViewScreen<chromeos::UpdateView>::PrepareToShow();
 }
 
 void ViewsUpdateScreenActor::Show() {

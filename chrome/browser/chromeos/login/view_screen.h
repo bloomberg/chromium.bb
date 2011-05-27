@@ -11,19 +11,45 @@
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "ui/gfx/size.h"
 
+namespace views {
+class View;
+}  // namespace views
+
+namespace chromeos {
+
+class ScreenObserver;
+
+// Interface that ViewOobeDisplay exposes to its screens.
+class ViewScreenDelegate {
+ public:
+  // Returns top level view of ViewOobeDisplay.
+  virtual views::View* GetWizardView() = 0;
+
+  // Returns observer screen should notify.
+  virtual ScreenObserver* GetObserver() = 0;
+
+  // This method have to be used before screen showing.
+  virtual void SetScreenSize(const gfx::Size& size) = 0;
+
+ protected:
+  virtual ~ViewScreenDelegate() {}
+};
+
 template <class V>
 class ViewScreen : public WizardScreen {
  public:
   // Create screen with default size.
-  explicit ViewScreen(WizardScreenDelegate* delegate);
+  explicit ViewScreen(ViewScreenDelegate* delegate);
 
   // Create screen with the specified size.
-  ViewScreen(WizardScreenDelegate* delegate, int width, int height);
+  ViewScreen(ViewScreenDelegate* delegate, int width, int height);
   virtual ~ViewScreen();
 
   // Overridden from WizardScreen:
+  virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
+
   virtual gfx::Size GetScreenSize() const { return size_; }
 
   V* view() { return view_; }
@@ -38,9 +64,13 @@ class ViewScreen : public WizardScreen {
   // Refresh screen state.
   virtual void Refresh() {}
 
+  ViewScreenDelegate* delegate() { return delegate_; }
+
  private:
   // For testing automation
   friend class AutomationProvider;
+
+  ViewScreenDelegate* delegate_;
 
   V* view_;
 
@@ -53,28 +83,30 @@ class ViewScreen : public WizardScreen {
 template <class V>
 class DefaultViewScreen : public ViewScreen<V> {
  public:
-  explicit DefaultViewScreen(WizardScreenDelegate* delegate)
+  explicit DefaultViewScreen(ViewScreenDelegate* delegate)
         : ViewScreen<V>(delegate) {}
-  DefaultViewScreen(WizardScreenDelegate* delegate, int width, int height)
+  DefaultViewScreen(ViewScreenDelegate* delegate, int width, int height)
       : ViewScreen<V>(delegate, width, height) {}
   V* AllocateView() {
-    return new V(ViewScreen<V>::delegate()->GetObserver(this));
+    return new V(ViewScreen<V>::delegate()->GetObserver());
   }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // ViewScreen, public:
 template <class V>
-ViewScreen<V>::ViewScreen(WizardScreenDelegate* delegate)
-    : WizardScreen(delegate),
+ViewScreen<V>::ViewScreen(ViewScreenDelegate* delegate)
+    : WizardScreen(delegate->GetObserver()),
+      delegate_(delegate),
       view_(NULL),
-      size_(chromeos::login::kWizardScreenWidth,
-            chromeos::login::kWizardScreenHeight) {
+      size_(login::kWizardScreenWidth,
+            login::kWizardScreenHeight) {
 }
 
 template <class V>
-ViewScreen<V>::ViewScreen(WizardScreenDelegate* delegate, int width, int height)
-    : WizardScreen(delegate),
+ViewScreen<V>::ViewScreen(ViewScreenDelegate* delegate, int width, int height)
+    : WizardScreen(delegate->GetObserver()),
+      delegate_(delegate),
       view_(NULL),
       size_(width, height) {
 }
@@ -91,6 +123,11 @@ ViewScreen<V>::~ViewScreen() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // ViewScreen, WizardScreen implementation:
+template <class V>
+void ViewScreen<V>::PrepareToShow() {
+  delegate()->SetScreenSize(size_);
+}
+
 template <class V>
 void ViewScreen<V>::Show() {
   if (!view_) {
@@ -124,5 +161,7 @@ void ViewScreen<V>::CreateView() {
   view_->Init();
   view_->SetVisible(false);
 }
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_

@@ -43,6 +43,9 @@ class ScreenObserver {
   // Method called by a screen when user's done with it.
   virtual void OnExit(ExitCodes exit_code) = 0;
 
+  // Forces current screen showing.
+  virtual void ShowCurrentScreen() = 0;
+
   // Notify about new user names and password. It is used to autologin
   // just created user without asking the same info once again.
   virtual void OnSetUserNamePassword(const std::string& username,

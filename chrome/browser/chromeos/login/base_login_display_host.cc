@@ -33,6 +33,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/timezone.h"
 
+// TODO(altimofeev): move to ViewsLoginDisplayHost
+#include "chrome/browser/chromeos/login/views_oobe_display.h"
+
 #if defined(TOUCH_UI)
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/dom_login_display_host.h"
@@ -123,8 +126,15 @@ void BaseLoginDisplayHost::StartWizard(
     const GURL& start_url) {
   DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
   // Create and show the wizard.
-  wizard_controller_.reset();  // Only one controller in a time.
-  wizard_controller_.reset(new WizardController(this, background_bounds_));
+  // Note, dtor of the old WizardController should be called before ctor of the
+  // new one, because "default_controller()" is updated there. So pure "reset()"
+  // is done before new controller creation.
+  wizard_controller_.reset();
+
+  ViewsOobeDisplay* oobe_display = new ViewsOobeDisplay(background_bounds_);
+  wizard_controller_.reset(new WizardController(this, oobe_display));
+  oobe_display->SetScreenObserver(wizard_controller_.get());
+
   wizard_controller_->set_start_url(start_url);
   ShowBackground();
   if (!WizardController::IsDeviceRegistered())
@@ -215,10 +225,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
 
   // Check whether we need to execute OOBE process.
-  bool oobe_complete = WizardController::IsOobeCompleted();
+  bool oobe_complete = chromeos::WizardController::IsOobeCompleted();
   bool show_login_screen =
       (first_screen_name.empty() && oobe_complete) ||
-      first_screen_name == WizardController::kLoginScreenName;
+      first_screen_name == chromeos::WizardController::kLoginScreenName;
 
   // TODO(nkostylev) Create LoginDisplayHost instance based on flag.
 #if defined(TOUCH_UI)
@@ -262,7 +272,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
         // Don't need to schedule pref save because setting initial local
         // will enforce preference saving.
         prefs->SetString(prefs::kApplicationLocale, locale);
-        WizardController::SetInitialLocale(locale);
+        chromeos::WizardController::SetInitialLocale(locale);
         // Determine keyboard layout from OEM customization (if provided) or
         // initial locale and save it in preferences.
         DetermineAndSaveHardwareKeyboard(locale, layout);

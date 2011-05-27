@@ -48,7 +48,7 @@ class EnterpriseEnrollmentScreen
       public GaiaAuthConsumer,
       public policy::CloudPolicySubsystem::Observer {
  public:
-  explicit EnterpriseEnrollmentScreen(WizardScreenDelegate* delegate);
+  explicit EnterpriseEnrollmentScreen(ViewScreenDelegate* delegate);
   virtual ~EnterpriseEnrollmentScreen();
 
   // EnterpriseEnrollmentController implementation:

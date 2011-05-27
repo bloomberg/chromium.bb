@@ -14,9 +14,9 @@
 #include "chrome/browser/chromeos/login/web_page_screen.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
 
-class WizardScreenDelegate;
-
 namespace chromeos {
+
+class ViewScreenDelegate;
 
 class HTMLPageDomView : public WebPageDomView {
  public:
@@ -51,7 +51,7 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
                        public WebPageScreen,
                        public WebPageDelegate {
  public:
-  HTMLPageScreen(WizardScreenDelegate* delegate, const std::string& url);
+  HTMLPageScreen(ViewScreenDelegate* delegate, const std::string& url);
   virtual ~HTMLPageScreen();
 
   // WebPageDelegate implementation:

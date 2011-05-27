@@ -15,8 +15,6 @@
 #include "content/common/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
-class WizardController;
-
 namespace views {
 class Widget;
 }
@@ -24,6 +22,7 @@ class Widget;
 namespace chromeos {
 
 class ExistingUserController;
+class WizardController;
 
 // An abstract base class that defines OOBE/login screen host.
 // It encapsulates controllers, background integration and flow.

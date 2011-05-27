@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
+#include "chrome/browser/chromeos/login/views_oobe_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,11 +28,16 @@ class EnterpriseEnrollmentScreenTest : public WizardInProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentScreenTest, TestCancel) {
   ASSERT_TRUE(controller() != NULL);
+
   MockScreenObserver mock_screen_observer;
-  controller()->set_observer(&mock_screen_observer);
+  ViewsOobeDisplay* views_oobe_display =
+      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_.get());
+  views_oobe_display->SetScreenObserver(&mock_screen_observer);
+
   EnterpriseEnrollmentScreen* enterprise_enrollment_screen =
       controller()->GetEnterpriseEnrollmentScreen();
   ASSERT_TRUE(enterprise_enrollment_screen != NULL);
+
   ASSERT_EQ(controller()->current_screen(), enterprise_enrollment_screen);
 
   EXPECT_CALL(mock_screen_observer,
@@ -39,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentScreenTest, TestCancel) {
   enterprise_enrollment_screen->CancelEnrollment();
   Mock::VerifyAndClearExpectations(&mock_screen_observer);
 
-  controller()->set_observer(NULL);
+  views_oobe_display->SetScreenObserver(NULL);
 }
 
 }  // namespace chromeos

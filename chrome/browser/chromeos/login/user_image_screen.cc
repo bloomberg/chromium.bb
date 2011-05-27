@@ -25,7 +25,7 @@ const int kFrameHeight = 480;
 
 }  // namespace
 
-UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
+UserImageScreen::UserImageScreen(ViewScreenDelegate* delegate)
     : ViewScreen<UserImageView>(delegate),
       camera_controller_(this) {
   camera_controller_.set_frame_width(kFrameWidth);
@@ -91,7 +91,7 @@ void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
   user_manager->SetLoggedInUserImage(image);
   user_manager->SaveUserImage(user.email(), image);
   if (delegate())
-    delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+    delegate()->GetObserver()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
 
 void UserImageScreen::OnDefaultImageSelected(int index) {
@@ -110,7 +110,7 @@ void UserImageScreen::OnDefaultImageSelected(int index) {
       user.email(),
       GetDefaultImagePath(static_cast<size_t>(index)));
   if (delegate())
-    delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+    delegate()->GetObserver()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
 
 void UserImageScreen::Observe(NotificationType type,

@@ -22,9 +22,10 @@ class URLRequestJob;
 class GURL;
 class Profile;
 class SiteContents;
-class WizardScreenDelegate;
 
 namespace chromeos {
+
+class ViewScreenDelegate;
 
 // Class that renders host registration page.
 class RegistrationDomView : public WebPageDomView {
@@ -63,7 +64,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
                            public WebPageScreen,
                            public WebPageDelegate {
  public:
-  explicit RegistrationScreen(WizardScreenDelegate* delegate);
+  explicit RegistrationScreen(ViewScreenDelegate* delegate);
 
   // WebPageDelegate implementation:
   virtual void OnPageLoaded();

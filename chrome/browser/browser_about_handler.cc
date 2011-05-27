@@ -284,7 +284,7 @@ class ChromeOSTermsHandler
   ChromeOSTermsHandler(AboutSource* source, int request_id)
     : source_(source),
       request_id_(request_id),
-      locale_(WizardController::GetInitialLocale()) {
+      locale_(chromeos::WizardController::GetInitialLocale()) {
   }
 
   void StartOnUIThread() {
