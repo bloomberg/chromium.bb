@@ -447,9 +447,16 @@ class PrebuiltUploader(object):
   def _UploadPrebuilt(self, package_path, url_suffix):
     """Upload host or board prebuilt files to Google Storage space.
 
+    This function checks to see if we have any new binaries, and, if so,
+    uploads them.
+
     Args:
       package_path: The path to the packages dir.
       url_suffix: The remote subdirectory where we should upload the packages.
+
+    Returns:
+      True if any prebuilts were uploaded.
+      False otherwise.
     """
 
     # Process Packages file, removing duplicates and filtered packages.
@@ -457,6 +464,9 @@ class PrebuiltUploader(object):
     pkg_index.SetUploadLocation(self._binhost_base_url, url_suffix)
     pkg_index.RemoveFilteredPackages(ShouldFilterPackage)
     uploads = pkg_index.ResolveDuplicateUploads(self._pkg_indexes)
+
+    if not uploads:
+      return False
 
     # Write Packages file.
     tmp_packages_file = pkg_index.WriteToNamedTemporaryFile()
@@ -486,6 +496,8 @@ class PrebuiltUploader(object):
       for cmd in cmds:
         if not _RetryRun(cmd, cwd=package_path):
           raise UploadFailed('Could not run %r' % cmd)
+
+    return True
 
   def _UploadBoardTarball(self, board_path, url_suffix):
     """Upload a tarball of the board at the specified path to Google Storage.
@@ -539,18 +551,18 @@ class PrebuiltUploader(object):
     package_path = os.path.join(build_path, _HOST_PACKAGES_PATH)
     url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
-    self._UploadPrebuilt(package_path, packages_url_suffix)
 
-    # Record URL where prebuilts were uploaded.
-    url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
-                            packages_url_suffix.rstrip('/'))
-    if git_sync:
-      git_file = os.path.join(build_path, _PREBUILT_MAKE_CONF[_HOST_TARGET])
-      RevGitFile(git_file, url_value, key=key)
-    if sync_binhost_conf:
-      binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'host',
-          '%s-%s.conf' % (_HOST_TARGET, key))
-      UpdateBinhostConfFile(binhost_conf, key, url_value)
+    if self._UploadPrebuilt(package_path, packages_url_suffix):
+      # Record URL where prebuilts were uploaded.
+      url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
+                              packages_url_suffix.rstrip('/'))
+      if git_sync:
+        git_file = os.path.join(build_path, _PREBUILT_MAKE_CONF[_HOST_TARGET])
+        RevGitFile(git_file, url_value, key=key)
+      if sync_binhost_conf:
+        binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'host',
+            '%s-%s.conf' % (_HOST_TARGET, key))
+        UpdateBinhostConfFile(binhost_conf, key, url_value)
 
   def _SyncBoardPrebuilts(self, board, build_path, version, key, git_sync,
                           sync_binhost_conf, upload_board_tarball):
@@ -580,23 +592,24 @@ class PrebuiltUploader(object):
       tar_process.start()
 
     # Upload prebuilts.
-    self._UploadPrebuilt(package_path, packages_url_suffix)
+    uploaded = self._UploadPrebuilt(package_path, packages_url_suffix)
 
     # Make sure we finished uploading the board tarballs.
     if upload_board_tarball:
       tar_process.join()
       assert tar_process.exitcode == 0
 
-    # Record URL where prebuilts were uploaded.
-    url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
-                            packages_url_suffix.rstrip('/'))
-    if git_sync:
-      git_file = DeterminePrebuiltConfFile(build_path, board)
-      RevGitFile(git_file, url_value, key=key)
-    if sync_binhost_conf:
-      binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'target',
-          '%s-%s.conf' % (board, key))
-      UpdateBinhostConfFile(binhost_conf, key, url_value)
+    if uploaded:
+      # Record URL where prebuilts were uploaded.
+      url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
+                              packages_url_suffix.rstrip('/'))
+      if git_sync:
+        git_file = DeterminePrebuiltConfFile(build_path, board)
+        RevGitFile(git_file, url_value, key=key)
+      if sync_binhost_conf:
+        binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'target',
+            '%s-%s.conf' % (board, key))
+        UpdateBinhostConfFile(binhost_conf, key, url_value)
 
 
 def usage(parser, msg):
