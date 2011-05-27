@@ -1,0 +1,126 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+body {
+  background: -webkit-linear-gradient(#131925, #04070B);
+  color: white;
+  margin: 0;
+  padding: 0;
+  -webkit-user-select: none;
+}
+
+div.row {
+  margin-top: 5px;
+}
+
+.ime {
+  border: 1px solid gray;
+  color: #dbdbdb;
+  display: inline-block;
+  font-family: sans-serif;
+  margin: 0;
+  text-align: center;
+}
+
+.panel {
+  border: 0;
+  clear: both;
+  margin-left: 5px;
+  text-align: left;
+}
+
+.button {
+  background: -webkit-linear-gradient(#5a616f, #505662);
+}
+.button:active {
+  background: -webkit-linear-gradient(#505662, #5a616f);
+}
+
+.auxiliary:active {
+  background: -webkit-linear-gradient(#5a616f, #505662);
+}
+
+.key {
+  border: 1px solid gray;
+  color: #dbdbdb;
+  float: left;
+  font-family: sans-serif;
+  text-align: center;
+  -webkit-border-radius: 4px;
+}
+
+.r0 {
+  background: -webkit-linear-gradient(#5a616f, #505662);
+}
+.r0:active {
+  background: -webkit-linear-gradient(#505662, #5a616f);
+}
+
+.r1 {
+  background: -webkit-linear-gradient(#505662, #41464f);
+}
+.r1:active {
+  background: -webkit-linear-gradient(#41464f, #505662);
+}
+
+.r2 {
+  background: -webkit-linear-gradient(#41464f, #32373d);
+}
+.r2:active {
+  background: -webkit-linear-gradient(#32373d, #41464f);
+}
+
+div.moddown {
+  background: -webkit-linear-gradient(#0d0d0d, #1e2026);
+  border-color: #304a9b;
+}
+
+.ncr0,
+.ncr1,
+.ncr2,
+.ncr3 {
+  background: -webkit-linear-gradient(#1f2127, #1b1e22);
+}
+
+.ncr0:active,
+.ncr1:active,
+.ncr2:active,
+.ncr3:active {
+  background: -webkit-linear-gradient(#0d0d0d, #1e2026);
+}
+
+.image-key {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 100%;
+  width: 100%;
+}
+
+.backspace {
+  background-image: url("del.svg");
+}
+
+.tab {
+  background-image: url("tab.svg");
+}
+
+.return {
+  background-image: url("ret.svg");
+}
+
+.mic {
+  background-image: url("mic.svg");
+}
+
+.shift {
+  background-image: url("shift.svg");
+}
+
+.hide {
+  background-image: url("keyboard.svg");
+}
+

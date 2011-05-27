@@ -5,7 +5,8 @@
   "description": "Virtual Keyboard",
   "incognito" : "split",
   "permissions": [
-    "experimental"
+    "experimental",
+    "chrome://resources/"
   ],
   "chrome_url_overrides": {
     "keyboard": "index.html"

@@ -578,7 +578,7 @@ var allRows = [];  // Populated during start()
  */
 function getRowHeight() {
   var x = window.innerWidth;
-  var y = window.innerHeight;
+  var y = window.innerHeight - IME_HEIGHT - 2;
   return (x > kKeyboardAspect * y) ?
       (height = Math.floor(y / 4)) :
       (height = Math.floor(x / (kKeyboardAspect * 4)));
@@ -663,6 +663,8 @@ window.onresize = function() {
   for (var i = 0; i < allRows.length; ++i) {
     allRows[i].resize(height);
   }
+
+  updateIme();
 }
 
 /**
@@ -671,6 +673,9 @@ window.onresize = function() {
  */
 window.onload = function() {
   var body = document.getElementById('b');
+
+  initIme(body);
+
   for (var i = 0; i < KEYS.length; ++i) {
     allRows.push(new Row(i, KEYS[i]));
   }
@@ -682,6 +687,5 @@ window.onload = function() {
 
   window.onresize();
 }
-
 // TODO(bryeung): would be nice to leave less gutter (without causing
 // rendering issues with floated divs wrapping at some sizes).
