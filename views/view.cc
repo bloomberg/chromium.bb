@@ -333,7 +333,7 @@ gfx::Size View::GetPreferredSize() {
   return gfx::Size();
 }
 
-int View::GetBaseline() {
+int View::GetBaseline() const {
   return -1;
 }
 

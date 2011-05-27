@@ -153,7 +153,7 @@ class Label : public View {
 
   // Overridden from View:
   virtual gfx::Insets GetInsets() const;
-  virtual int GetBaseline() OVERRIDE;
+  virtual int GetBaseline() const OVERRIDE;
   // Overridden to compute the size required to display this label.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   // Return the height necessary to display this label with the provided width.

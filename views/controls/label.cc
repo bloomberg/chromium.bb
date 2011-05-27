@@ -176,7 +176,7 @@ gfx::Insets Label::GetInsets() const {
   return insets;
 }
 
-int Label::GetBaseline() {
+int Label::GetBaseline() const {
   return GetInsets().top() + font_.GetBaseline();
 }
 
