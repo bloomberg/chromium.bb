@@ -170,10 +170,10 @@ class CustomThreadWatcher : public ThreadWatcher {
     DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
     UpdateWaitState(STARTED_WAITING);
 
-    State exit_state;
+    State exit_state = INITIALIZED;
     // Keep the thread that is running the tests waiting until ThreadWatcher
     // object's state changes to the expected_state or until wait_time elapses.
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < ThreadWatcher::kPingCount; ++i) {
         TimeTicks end_time = TimeTicks::Now() + wait_time;
         {
           base::AutoLock auto_lock(custom_lock_);
@@ -198,11 +198,11 @@ class CustomThreadWatcher : public ThreadWatcher {
     DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
     UpdateWaitState(STARTED_WAITING);
 
-    CheckResponseState exit_state;
+    CheckResponseState exit_state = UNKNOWN;
     // Keep the thread that is running the tests waiting until ThreadWatcher
     // object's check_response_state_ changes to the expected_state or until
     // wait_time elapses.
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < ThreadWatcher::kPingCount; ++i) {
         TimeTicks end_time = TimeTicks::Now() + wait_time;
         {
           base::AutoLock auto_lock(custom_lock_);

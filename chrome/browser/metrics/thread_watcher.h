@@ -133,6 +133,7 @@ class ThreadWatcher {
 
  private:
   friend class ThreadWatcherList;
+  friend class CustomThreadWatcher;
 
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, Registration);
@@ -151,7 +152,7 @@ class ThreadWatcher {
 
   // This method resets unresponsive_count_ to zero because watched thread is
   // responding to the ping message with a pong message.
-  void GotGoodResponse();
+  void ResetHangCounters();
 
   // This method records watched thread is not responding to the ping message.
   // It increments unresponsive_count_ by 1.
@@ -225,7 +226,7 @@ class ThreadWatcher {
   int unresponsive_count_;
 
   // This is set to true when we would have crashed the browser because the
-  // watched thread hasn't responded atleast 3 times. It is reset to false when
+  // watched thread hasn't responded atleast 6 times. It is reset to false when
   // watched thread responds with a pong message.
   bool hung_processing_complete_;
 
