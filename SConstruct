@@ -1281,11 +1281,12 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
     pyautolib_dir = env.DownloadedChromeBinary().dir
 
   pyauto_python = ''
-  if env.Bit('host_windows'):
-    # On Windows, we use a hermetically sealed version of python.
+  if not env.Bit('host_mac'):
+    # On Linux, we use the system default version of python (2.6).
+    # On Windows, we use a hermetically sealed version of python (also 2.6).
     pyauto_python = '${PYTHON}'
   else:
-    # On Posix, we match the version of python used to build pyautolib.
+    # On Mac, we match the version of python used to build pyautolib (2.5).
     pyauto_python = 'python2.5'
 
   # Pass on the chrome flags to pyauto as one string.

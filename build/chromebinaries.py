@@ -14,7 +14,7 @@ BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
 
 directory_pattern = re.compile('<Prefix>([\w\d]+/[\d]+)/?</Prefix>', re.I)
 
-# (os, arch) -> (base_directory, archive_name)
+# (os, arch) -> (base_directory, archive_name, pyautopy_name, pyautolib_name)
 # Used from constructing the full URL for a snapshot
 SNAPSHOT_MAP = {
            ('windows', 'x86-32'): ('Win',
@@ -28,11 +28,11 @@ SNAPSHOT_MAP = {
            ('linux', 'x86-32'): ('Linux',
                                  'chrome-linux.zip',
                                  'chrome-linux.test/pyautolib.py',
-                                 'chrome-linux.test/lib.target/_pyautolib.so'),
+                                 'chrome-linux.test/_pyautolib.so'),
            ('linux', 'x86-64'): ('Linux_x64',
                                  'chrome-linux.zip',
                                  'chrome-linux.test/pyautolib.py',
-                                 'chrome-linux.test/lib.target/_pyautolib.so'),
+                                 'chrome-linux.test/_pyautolib.so'),
            }
 
 
