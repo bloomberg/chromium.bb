@@ -283,6 +283,9 @@ def GrabRemotePackageIndex(binhost_url):
     A PackageIndex object, if the Packages file can be retrieved. If the
     server returns status code 404, None is returned.
   """
+  # TODO(davidjames): Implement fetching for gs:// protocol.
+  if not binhost_url.startswith('http'):
+    return None
 
   url = '%s/Packages' % binhost_url.rstrip('/')
   try:
