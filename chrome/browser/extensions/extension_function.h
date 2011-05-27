@@ -205,7 +205,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   }
 
  protected:
-  template<BrowserThread::ID id> friend struct BrowserThread::DeleteOnThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<UIThreadExtensionFunction>;
 
   virtual ~UIThreadExtensionFunction();
