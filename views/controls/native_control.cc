@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
@@ -178,7 +178,6 @@ NativeControl::NativeControl() : hwnd_view_(NULL),
                                  horizontal_alignment_(CENTER),
                                  fixed_height_(-1),
                                  vertical_alignment_(CENTER) {
-  enabled_ = true;
   focusable_ = true;
 }
 
@@ -199,8 +198,8 @@ void NativeControl::ValidateNativeControl() {
     container_ = new NativeControlContainer(this);
     container_->Init();
     hwnd_view_->Attach(*container_);
-    if (!enabled_)
-      EnableWindow(GetNativeControlHWND(), enabled_);
+    if (!IsEnabled())
+      EnableWindow(GetNativeControlHWND(), IsEnabled());
 
     // This message ensures that the focus border is shown.
     ::SendMessage(container_->GetControl(),
@@ -312,13 +311,10 @@ void NativeControl::SetVisible(bool f) {
   }
 }
 
-void NativeControl::SetEnabled(bool enabled) {
-  if (enabled_ != enabled) {
-    View::SetEnabled(enabled);
-    if (GetNativeControlHWND()) {
-      EnableWindow(GetNativeControlHWND(), enabled_);
-    }
-  }
+void NativeControl::OnEnabledChanged() {
+  View::OnEnabledChanged();
+  if (GetNativeControlHWND())
+    EnableWindow(GetNativeControlHWND(), IsEnabled());
 }
 
 void NativeControl::OnPaint(gfx::Canvas* canvas) {

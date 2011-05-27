@@ -88,12 +88,9 @@ void Link::Init() {
 Link::~Link() {
 }
 
-void Link::SetEnabled(bool flag) {
-  if (flag != enabled_) {
-    enabled_ = flag;
-    ValidateStyle();
-    SchedulePaint();
-  }
+void Link::OnEnabledChanged() {
+  ValidateStyle();
+  View::OnEnabledChanged();
 }
 
 std::string Link::GetClassName() const {
@@ -101,7 +98,7 @@ std::string Link::GetClassName() const {
 }
 
 gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
-  if (!enabled_)
+  if (!IsEnabled())
     return NULL;
 #if defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
@@ -112,14 +109,15 @@ gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
 }
 
 bool Link::OnMousePressed(const MouseEvent& event) {
-  if (!enabled_ || (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
+  if (!IsEnabled() ||
+      (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
     return false;
   SetHighlighted(true);
   return true;
 }
 
 bool Link::OnMouseDragged(const MouseEvent& event) {
-  SetHighlighted(enabled_ &&
+  SetHighlighted(IsEnabled() &&
                  (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
                  HitTest(event.location()));
   return true;
@@ -129,7 +127,8 @@ void Link::OnMouseReleased(const MouseEvent& event) {
   // Change the highlight first just in case this instance is deleted
   // while calling the controller
   OnMouseCaptureLost();
-  if (enabled_ && (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
+  if (IsEnabled() &&
+      (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
       HitTest(event.location())) {
     // Focus the link on click.
     RequestFocus();
@@ -205,7 +204,7 @@ void Link::SetHighlighted(bool f) {
 }
 
 void Link::ValidateStyle() {
-  if (enabled_) {
+  if (IsEnabled()) {
     if (!(font().GetStyle() & gfx::Font::UNDERLINED)) {
       Label::SetFont(
           font().DeriveFont(0, font().GetStyle() | gfx::Font::UNDERLINED));

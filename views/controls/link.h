@@ -32,7 +32,7 @@ class Link : public Label {
   void set_listener(LinkListener* listener) { listener_ = listener; }
 
   // Overridden from View:
-  virtual void SetEnabled(bool flag) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;

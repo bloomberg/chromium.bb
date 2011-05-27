@@ -58,7 +58,7 @@ class NativeButtonBase : public Button {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void SetEnabled(bool flag) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 

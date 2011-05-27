@@ -78,7 +78,7 @@ class Combobox : public View {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;

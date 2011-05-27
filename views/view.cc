@@ -95,13 +95,13 @@ Widget* View::GetChildWidget() {
 // Creation and lifetime -------------------------------------------------------
 
 View::View()
-    : enabled_(true),
-      focusable_(false),
+    : focusable_(false),
       parent_owned_(true),
       id_(0),
       group_(-1),
       parent_(NULL),
       is_visible_(true),
+      enabled_(true),
       registered_for_visible_bounds_notification_(false),
       clip_x_(0.0),
       clip_y_(0.0),
@@ -353,22 +353,21 @@ int View::GetHeightForWidth(int w) {
   return GetPreferredSize().height();
 }
 
-void View::SetVisible(bool flag) {
-  if (flag != is_visible_) {
-    // If the tab is currently visible, schedule paint to
-    // refresh parent
-    if (IsVisible())
+void View::SetVisible(bool visible) {
+  if (visible != is_visible_) {
+    // If the tab is currently visible, schedule paint to refresh parent.
+    if (is_visible_)
       SchedulePaint();
     else
       ResetTexture();
 
-    is_visible_ = flag;
+    is_visible_ = visible;
 
     // This notifies all sub-views recursively.
-    PropagateVisibilityNotifications(this, flag);
+    PropagateVisibilityNotifications(this, is_visible_);
 
     // If we are newly visible, schedule paint.
-    if (IsVisible())
+    if (is_visible_)
       SchedulePaint();
   }
 }
@@ -381,15 +380,19 @@ bool View::IsVisibleInRootView() const {
   return IsVisible() && parent() ? parent()->IsVisibleInRootView() : false;
 }
 
-void View::SetEnabled(bool state) {
-  if (enabled_ != state) {
-    enabled_ = state;
-    SchedulePaint();
+void View::SetEnabled(bool enabled) {
+  if (enabled != enabled_) {
+    enabled_ = enabled;
+    OnEnabledChanged();
   }
 }
 
 bool View::IsEnabled() const {
   return enabled_;
+}
+
+void View::OnEnabledChanged() {
+  SchedulePaint();
 }
 
 // Transformations -------------------------------------------------------------

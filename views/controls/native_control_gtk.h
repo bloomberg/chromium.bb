@@ -19,7 +19,7 @@ class NativeControlGtk : public NativeViewHost {
   virtual ~NativeControlGtk();
 
   // Overridden from View:
-  virtual void SetEnabled(bool enabled);
+  virtual void OnEnabledChanged();
 
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);

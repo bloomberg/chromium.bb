@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 #pragma once
 
-#include "views/controls/button/button.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "views/controls/button/button.h"
 
 namespace ui {
 class ThrobAnimation;
@@ -75,7 +75,7 @@ class CustomButton : public Button,
   // Overridden from View:
   virtual void SetHotTracked(bool flag) OVERRIDE;
   virtual bool IsHotTracked() const OVERRIDE;
-  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;

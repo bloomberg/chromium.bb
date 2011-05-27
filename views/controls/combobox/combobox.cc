@@ -78,8 +78,8 @@ void Combobox::Layout() {
   }
 }
 
-void Combobox::SetEnabled(bool flag) {
-  View::SetEnabled(flag);
+void Combobox::OnEnabledChanged() {
+  View::OnEnabledChanged();
   if (native_wrapper_)
     native_wrapper_->UpdateEnabled();
 }

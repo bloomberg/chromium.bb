@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class ProgressBar : public View {
       OVERRIDE;
 
   // Sets the enabled state.
-  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
 
   // Accessibility accessors, overridden from View.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

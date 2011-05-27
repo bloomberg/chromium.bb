@@ -164,8 +164,8 @@ void NativeButtonBase::Layout() {
   }
 }
 
-void NativeButtonBase::SetEnabled(bool flag) {
-  Button::SetEnabled(flag);
+void NativeButtonBase::OnEnabledChanged() {
+  Button::OnEnabledChanged();
   if (native_wrapper_)
     native_wrapper_->UpdateEnabled();
 }

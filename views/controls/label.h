@@ -161,7 +161,7 @@ class Label : public View {
   // GetPreferredSize().height() if the receiver is not multi-line.
   virtual int GetHeightForWidth(int w);
   // Sets the enabled state. Setting the enabled state resets the color.
-  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   // Mouse enter/exit are overridden to render mouse over background color.
   // These invoke SetContainsMouse as necessary.

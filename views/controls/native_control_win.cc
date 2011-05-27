@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,12 +58,10 @@ bool NativeControlWin::ProcessMessage(UINT message,
 ////////////////////////////////////////////////////////////////////////////////
 // NativeControlWin, View overrides:
 
-void NativeControlWin::SetEnabled(bool enabled) {
-  if (IsEnabled() != enabled) {
-    View::SetEnabled(enabled);
-    if (native_view())
-      EnableWindow(native_view(), IsEnabled());
-  }
+void NativeControlWin::OnEnabledChanged() {
+  View::OnEnabledChanged();
+  if (native_view())
+    EnableWindow(native_view(), IsEnabled());
 }
 
 void NativeControlWin::ViewHierarchyChanged(bool is_add, View* parent,

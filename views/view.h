@@ -305,7 +305,7 @@ class View : public AcceleratorTarget {
   virtual int GetHeightForWidth(int w);
 
   // Set whether the receiving view is visible. Painting is scheduled as needed
-  virtual void SetVisible(bool flag);
+  virtual void SetVisible(bool visible);
 
   // Return whether a view is visible
   virtual bool IsVisible() const;
@@ -317,7 +317,7 @@ class View : public AcceleratorTarget {
   // Set whether this view is enabled. A disabled view does not receive keyboard
   // or mouse inputs. If flag differs from the current value, SchedulePaint is
   // invoked.
-  virtual void SetEnabled(bool flag);
+  void SetEnabled(bool enabled);
 
   // Returns whether the view is enabled.
   virtual bool IsEnabled() const;
@@ -938,9 +938,9 @@ class View : public AcceleratorTarget {
   // its ancestors. This is used for clipping NativeViewHost.
   virtual void OnVisibleBoundsChanged();
 
-  // TODO(beng): eliminate in protected.
-  // Whether this view is enabled.
-  bool enabled_;
+  // Override to be notified when the enabled state of this View has
+  // changed. The default implementation calls SchedulePaint() on this View.
+  virtual void OnEnabledChanged();
 
   // Tree operations -----------------------------------------------------------
 
@@ -1321,8 +1321,11 @@ class View : public AcceleratorTarget {
   // This View's bounds in the parent coordinate system.
   gfx::Rect bounds_;
 
-  // Visible state
+  // Whether this view is visible.
   bool is_visible_;
+
+  // Whether this view is enabled.
+  bool enabled_;
 
   // Whether or not RegisterViewForVisibleBoundsNotification on the RootView
   // has been invoked.

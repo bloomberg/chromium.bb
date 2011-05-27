@@ -90,10 +90,10 @@ int Checkbox::GetHeightForWidth(int w) {
   return label_->GetHeightForWidth(std::max(prefsize.height(), w - width));
 }
 
-void Checkbox::SetEnabled(bool enabled) {
-  NativeButtonBase::SetEnabled(enabled);
+void Checkbox::OnEnabledChanged() {
+  NativeButtonBase::OnEnabledChanged();
   if (label_)
-    label_->SetEnabled(enabled);
+    label_->SetEnabled(IsEnabled());
 }
 
 void Checkbox::Layout() {

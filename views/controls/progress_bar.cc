@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
@@ -304,10 +304,8 @@ bool ProgressBar::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return !tooltip_text_.empty();
 }
 
-void ProgressBar::SetEnabled(bool enabled) {
-  if (enabled == enabled_)
-    return;
-  View::SetEnabled(enabled);
+void ProgressBar::OnEnabledChanged() {
+  View::OnEnabledChanged();
   // TODO(denisromanov): Need to switch progress bar color here?
 }
 

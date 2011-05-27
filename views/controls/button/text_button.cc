@@ -560,14 +560,11 @@ gfx::Size TextButtonBase::GetMinimumSize() {
   return max_text_size_;
 }
 
-void TextButtonBase::SetEnabled(bool enabled) {
-  if (enabled != IsEnabled()) {
-    CustomButton::SetEnabled(enabled);
-  }
+void TextButtonBase::OnEnabledChanged() {
   // We should always call UpdateColor() since the state of the button might be
   // changed by other functions like CustomButton::SetState().
   UpdateColor();
-  SchedulePaint();
+  CustomButton::OnEnabledChanged();
 }
 
 std::string TextButtonBase::GetClassName() const {

@@ -206,11 +206,9 @@ int Label::GetHeightForWidth(int w) {
   return h + GetInsets().height();
 }
 
-void Label::SetEnabled(bool enabled) {
-  if (enabled == enabled_)
-    return;
-  View::SetEnabled(enabled);
-  SetColor(enabled ? kEnabledColor : kDisabledColor);
+void Label::OnEnabledChanged() {
+  View::OnEnabledChanged();
+  SetColor(IsEnabled() ? kEnabledColor : kDisabledColor);
 }
 
 std::string Label::GetClassName() const {

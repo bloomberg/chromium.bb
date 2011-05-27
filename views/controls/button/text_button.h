@@ -188,7 +188,7 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Text colors.

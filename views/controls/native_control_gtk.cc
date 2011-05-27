@@ -151,12 +151,10 @@ NativeControlGtk::~NativeControlGtk() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeControlGtk, View overrides:
 
-void NativeControlGtk::SetEnabled(bool enabled) {
-  if (IsEnabled() != enabled) {
-    View::SetEnabled(enabled);
-    if (native_view())
-      gtk_widget_set_sensitive(native_view(), IsEnabled());
-  }
+void NativeControlGtk::OnEnabledChanged() {
+  View::OnEnabledChanged();
+  if (native_view())
+    gtk_widget_set_sensitive(native_view(), IsEnabled());
 }
 
 void NativeControlGtk::ViewHierarchyChanged(bool is_add, View* parent,

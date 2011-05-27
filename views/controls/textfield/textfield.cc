@@ -377,8 +377,8 @@ TextInputClient* Textfield::GetTextInputClient() {
   return native_wrapper_ ? native_wrapper_->GetTextInputClient() : NULL;
 }
 
-void Textfield::SetEnabled(bool enabled) {
-  View::SetEnabled(enabled);
+void Textfield::OnEnabledChanged() {
+  View::OnEnabledChanged();
   if (native_wrapper_)
     native_wrapper_->UpdateEnabled();
 }

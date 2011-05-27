@@ -32,7 +32,7 @@ std::string ResizeArea::GetClassName() const {
 }
 
 gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
-  if (!enabled_)
+  if (!IsEnabled())
     return NULL;
 #if defined(OS_WIN)
   static HCURSOR g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);

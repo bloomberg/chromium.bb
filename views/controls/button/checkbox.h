@@ -45,7 +45,7 @@ class Checkbox : public NativeButtonBase {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int w) OVERRIDE;
-  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
