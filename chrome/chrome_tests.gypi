@@ -2705,6 +2705,7 @@
       ],
     },  # target safe_browsing_tests
     {
+      # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'startup_tests',
       'type': 'executable',
       'msvs_guid': 'D3E6C0FD-54C7-4FF2-9AE1-72F2DAFD820C',
@@ -2847,6 +2848,7 @@
       ],
     },
     {
+      # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'page_cycler_tests',
       'type': 'executable',
       'msvs_guid': 'C9E0BD1D-B175-4A91-8380-3FDC81FAB9D7',
@@ -2906,7 +2908,17 @@
       ],
       'sources': [
         # TODO(darin): Move other UIPerfTests here.
+        'test/memory_test/memory_test.cc',
+        'test/page_cycler/page_cycler_test.cc',
         'test/perf/frame_rate/frame_rate_tests.cc',
+        'test/startup/feature_startup_test.cc',
+        'test/startup/shutdown_test.cc',
+        'test/startup/startup_test.cc',
+        'test/tab_switching/tab_switching_test.cc',
+        'test/ui/dromaeo_benchmark_uitest.cc',
+        'test/ui/sunspider_uitest.cc',
+        'test/ui/v8_benchmark_uitest.cc',
+        'test/url_fetch_test/url_fetch_test.cc',
       ],
       'conditions': [
         ['OS=="win" and buildtype=="Official"', {
@@ -2919,11 +2931,45 @@
               },
             },
           },
-        },],
+        }],
+        ['OS=="win"', {
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        }],
+        ['OS=="mac"', {
+          # See the comment in this section of the unit_tests target for an
+          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
+          'dependencies+++': [
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         }],
         ['toolkit_views==1', {
@@ -2934,6 +2980,7 @@
       ],
     },
     {
+      # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'tab_switching_test',
       'type': 'executable',
       'msvs_guid': 'A34770EA-A574-43E8-9327-F79C04770E98',
@@ -2972,6 +3019,7 @@
       ],
     },
     {
+      # TODO(darin): Remove in favor of performance_ui_tests.
       'target_name': 'memory_test',
       'type': 'executable',
       'msvs_guid': 'A5F831FD-9B9C-4FEF-9FBA-554817B734CE',
