@@ -85,6 +85,10 @@ prog_env.ComponentProgram('debug_mode_test.nexe',
                            template_obj],
                           EXTRA_LIBS=['nacl_dyncode'])
 
+prog_env.ComponentProgram('dyncode_demand_alloc_test.nexe',
+                          ['dyncode_demand_alloc_test.c'],
+                          EXTRA_LIBS=['nacl_dyncode'])
+
 tests = [
     prog_env.CommandSelLdrTestNacl(
         'dynamic_load_test.out',
@@ -111,6 +115,14 @@ tests = [
         # NOTE: the data we are loading does not pass the validator
         sel_ldr_flags=["-c"],
         command=[prog_env.File('debug_mode_test.nexe')],
+        ),
+    # This tests, from untrusted code, that dyncode pages are
+    # inaccessible before they are allocated.
+    prog_env.CommandSelLdrTestNacl(
+        'dyncode_demand_alloc_test.out',
+        command=[prog_env.File('dyncode_demand_alloc_test.nexe')],
+        exit_status='untrusted_segfault',
+        stdout_golden=prog_env.File('dyncode_demand_alloc_test.stdout'),
         ),
   ]
 if not prog_env.Bit('target_arm'):

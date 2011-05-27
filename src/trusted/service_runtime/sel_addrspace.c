@@ -157,20 +157,10 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
           start_addr, region_size,
           start_addr + region_size);
   if (0 != region_size) {
-    err = NaCl_mprotect((void *) start_addr,
-                        region_size,
-                        PROT_READ | PROT_EXEC);
-    if (0 != err) {
-      NaClLog(LOG_ERROR,
-              ("NaClMemoryProtection: "
-               "NaCl_mprotect(0x%08"NACL_PRIxPTR", "
-               "0x%08"NACL_PRIxS", 0x%x) failed, "
-               "error %d (trampoline)\n"),
-              start_addr, region_size, PROT_READ | PROT_EXEC,
-              err);
-      return LOAD_MPROTECT_FAIL;
-    }
     /*
+     * Page protections for this region have already been set up by
+     * nacl_text.c.
+     *
      * We record the mapping for consistency with other fixed
      * mappings, but the record is not actually used.  Overmapping is
      * prevented by a separate range check, which is done by

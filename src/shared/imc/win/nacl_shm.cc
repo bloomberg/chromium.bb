@@ -10,6 +10,7 @@
 #include <windows.h>
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 
 namespace nacl {
 
@@ -30,7 +31,7 @@ Handle CreateMemoryObject(size_t length, bool executable) {
 void* Map(void* start, size_t length, int prot, int flags,
           Handle memory, off_t offset) {
   static DWORD prot_to_access[] = {
-    FILE_MAP_READ,  // TBD
+    0,  // NACL_ABI_PROT_NONE is not accepted: see below.
     FILE_MAP_READ,
     FILE_MAP_WRITE,
     FILE_MAP_ALL_ACCESS,
@@ -39,6 +40,16 @@ void* Map(void* start, size_t length, int prot, int flags,
     FILE_MAP_WRITE | FILE_MAP_EXECUTE,
     FILE_MAP_ALL_ACCESS | FILE_MAP_EXECUTE
   };
+
+  if (prot == NACL_ABI_PROT_NONE) {
+    // There is no corresponding FILE_MAP_* option for PROT_NONE.  In
+    // any case, this would not be very useful because the permissions
+    // cannot later be increased beyond what was passed to
+    // MapViewOfFileEx(), unlike in Unix.
+    NaClLog(LOG_INFO, "nacl::Map: PROT_NONE not supported\n");
+    SetLastError(ERROR_INVALID_PARAMETER);
+    return kMapFailed;
+  }
 
   if (!(flags & (kMapShared | kMapPrivate))) {
     SetLastError(ERROR_INVALID_PARAMETER);

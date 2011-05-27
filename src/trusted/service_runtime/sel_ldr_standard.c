@@ -322,6 +322,26 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   }
 
   /*
+   * Make sure the static image pages are marked writable before we try
+   * to write them.
+   */
+  NaClLog(2, "Loading into memory\n");
+  ret = NaCl_mprotect((void *) (nap->mem_start + NACL_TRAMPOLINE_START),
+                      NaClRoundAllocPage(nap->data_end) - NACL_TRAMPOLINE_START,
+                      PROT_READ | PROT_WRITE);
+  if (0 != ret) {
+    NaClLog(LOG_FATAL,
+            "NaClAppLoadFile: Failed to make image pages writable. "
+            "Error code 0x%x\n",
+            ret);
+  }
+  subret = NaClElfImageLoad(image, gp, nap->addr_bits, nap->mem_start);
+  if (LOAD_OK != subret) {
+    ret = subret;
+    goto done;
+  }
+
+  /*
    * NB: mem_map object has been initialized, but is empty.
    * NaClMakeDynamicTextShared does not touch it.
    *
@@ -378,24 +398,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     NaClEnableOuterSandbox();
   }
 #endif
-
-  /*
-   * Make sure the static image pages are marked writable before we try
-   * to write them.
-   */
-  NaClLog(2, "Loading into memory\n");
-  ret = NaCl_mprotect((void*) (nap->mem_start + NACL_TRAMPOLINE_START),
-    NaClRoundAllocPage(nap->data_end) - NACL_TRAMPOLINE_START,
-    PROT_READ|PROT_WRITE);
-  if (ret) {
-      NaClLog(LOG_FATAL, "Couldn't get writeable pages for image. "
-                         "Error code 0x%X\n", ret);
-  }
-  subret = NaClElfImageLoad(image, gp, nap->addr_bits, nap->mem_start);
-  if (LOAD_OK != subret) {
-    ret = subret;
-    goto done;
-  }
 
   /*
    * NaClFillEndOfTextRegion will fill with halt instructions the

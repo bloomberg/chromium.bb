@@ -107,6 +107,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   if (!NaClMutexCtor(&nap->dynamic_load_mutex)) {
     goto cleanup_effp_dtor;
   }
+  nap->dynamic_page_bitmap = NULL;
 
   nap->dynamic_regions = NULL;
   nap->num_dynamic_regions = 0;

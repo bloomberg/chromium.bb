@@ -143,12 +143,8 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   /* post-condition: if NULL == start_addr, then NACL_ABI_MAP_FIXED not set */
 
   /*
-   * prot must be not be PROT_NONE nor contain other than PROT_{READ|WRITE}
+   * prot must not contain bits other than PROT_{READ|WRITE|EXEC}.
    */
-  if (NACL_ABI_PROT_NONE == prot) {
-    NaClLog(LOG_INFO, "NaClDescImcShmMap: PROT_NONE not supported\n");
-    return -NACL_ABI_EINVAL;
-  }
   if (0 != (~(NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE | NACL_ABI_PROT_EXEC)
             & prot)) {
     NaClLog(LOG_INFO,

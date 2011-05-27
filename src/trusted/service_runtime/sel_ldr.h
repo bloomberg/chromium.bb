@@ -247,6 +247,12 @@ struct NaClApp {
   int                       use_shm_for_dynamic_text;
   struct NaClDesc           *text_shm;
   struct NaClMutex          dynamic_load_mutex;
+  /*
+   * This records which pages in text_shm have been allocated.  When a
+   * page is allocated, it is filled with halt instructions and then
+   * made executable by untrusted code.
+   */
+  uint8_t                   *dynamic_page_bitmap;
 
   /*
    * The array of dynamic_regions is maintained in sorted order

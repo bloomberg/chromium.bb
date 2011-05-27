@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "native_client/src/include/concurrency_ops.h"
+#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -29,6 +30,25 @@
 
 /* initial size of the malloced buffer for dynamic regions */
 static const int kMinDynamicRegionsAllocated = 32;
+
+static const int kBitsPerByte = 8;
+
+static uint8_t *BitmapAllocate(uint32_t indexes) {
+  uint32_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
+  uint8_t *bitmap = malloc(byte_count);
+  if (bitmap != NULL) {
+    memset(bitmap, 0, byte_count);
+  }
+  return bitmap;
+}
+
+static int BitmapIsBitSet(uint8_t *bitmap, uint32_t index) {
+  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
+}
+
+static void BitmapSetBit(uint8_t *bitmap, uint32_t index) {
+  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
+}
 
 /*
  * Private subclass of NaClDescEffector, used only in this file.
@@ -90,10 +110,11 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   struct NaClDescEffectorShm  shm_effector;
   int                         shm_effector_initialized = 0;
   uintptr_t                   shm_vaddr_base;
-  uintptr_t                   shm_offset;
+  int                         mmap_protections;
   uintptr_t                   mmap_ret;
 
   uintptr_t                   shm_upper_bound;
+  uintptr_t                   text_sysaddr;
 
   shm_vaddr_base = NaClEndOfStaticText(nap);
   NaClLog(4,
@@ -163,75 +184,71 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   }
   shm_effector_initialized = 1;
 
+  text_sysaddr = NaClUserToSys(nap, shm_vaddr_base);
+
+  /* Existing memory is anonymous paging file backed. */
+  NaCl_page_free((void *) text_sysaddr, dynamic_text_size);
+
   /*
-   * Map shm in place of text.  We currently do this eagerly, which
-   * can result in excess memory/swap traffic.
+   * Unix allows us to map pages with PROT_NONE initially and later
+   * increase the mapping permissions with mprotect().
    *
-   * TODO(bsy): consider using NX and doing this lazily, or mapping a
-   * canonical HLT-filled 64K shm repeatedly, and only remapping with
-   * a "real" shm text as needed.
+   * Windows does not allow this, however: the initial permissions are
+   * an upper bound on what the permissions may later be changed to
+   * with VirtualProtect().  Given this, using PROT_NONE at this point
+   * does not even make sense.  So we map with read+exec and
+   * immediately turn down the permissions, so that we can later
+   * re-enable read+exec page by page.
    */
-  for (shm_offset = 0;
-       shm_offset < dynamic_text_size;
-       shm_offset += NACL_MAP_PAGESIZE) {
-    uintptr_t text_vaddr = shm_vaddr_base + shm_offset;
-    uintptr_t text_sysaddr = NaClUserToSys(nap, text_vaddr);
+#if NACL_WINDOWS
+  mmap_protections = NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC;
+#else
+  mmap_protections = NACL_ABI_PROT_NONE;
+#endif
+  NaClLog(4,
+          "NaClMakeDynamicTextShared: Map(,,0x%"NACL_PRIxPTR",size = 0x%x,"
+          " prot=0x%x, flags=0x%x, offset=0)\n",
+          text_sysaddr,
+          (int) dynamic_text_size,
+          mmap_protections,
+          NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED);
+  mmap_ret = (*((struct NaClDescVtbl const *) shm->base.base.vtbl)->
+              Map)((struct NaClDesc *) shm,
+                   (struct NaClDescEffector *) &shm_effector,
+                   (void *) text_sysaddr,
+                   dynamic_text_size,
+                   mmap_protections,
+                   NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
+                   0);
+  if (text_sysaddr != mmap_ret) {
+    NaClLog(LOG_FATAL, "Could not map in shm for dynamic text region\n");
+  }
 
-    /* Existing memory is anonymous paging file backed. */
-    NaCl_page_free((void *) text_sysaddr, NACL_MAP_PAGESIZE);
+#if NACL_WINDOWS
+  {
+    /*
+     * We need a loop here because the Map() call above creates one
+     * mapping per page.  However, there is no need for it to do that
+     * for the dynamic code area.
+     * TODO(mseaborn): Create a single mapping here.
+     */
+    uintptr_t offset;
+    for (offset = 0; offset < dynamic_text_size; offset += NACL_MAP_PAGESIZE) {
+      DWORD old_prot;
+      if (!VirtualProtect((void *) (text_sysaddr + offset), NACL_MAP_PAGESIZE,
+                          PAGE_NOACCESS, &old_prot)) {
+        NaClLog(LOG_FATAL,
+                "NaClMakeDynamicTextShared: VirtualProtect() failed to "
+                "set page permissions to PAGE_NOACCESS\n");
+      }
+    }
+  }
+#endif
 
-    NaClLog(4,
-            "NaClMakeDynamicTextShared: Map(,,0x%"NACL_PRIxPTR",size = 0x%x,"
-            " prot=0x%x, flags=0x%x, offset=0x%"NACL_PRIxPTR"\n",
-            text_sysaddr,
-            NACL_MAP_PAGESIZE,
-            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-            NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-            shm_offset);
-    mmap_ret = (*((struct NaClDescVtbl const *)
-                  shm->base.base.vtbl)->
-                Map)((struct NaClDesc *) shm,
-                     (struct NaClDescEffector *) &shm_effector,
-                     (void *) text_sysaddr,
-                     NACL_MAP_PAGESIZE,
-                     NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                     NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-                     shm_offset);
-    if (text_sysaddr != mmap_ret) {
-      NaClLog(LOG_FATAL,
-              "Could not map in shm for dynamic text region, HLT filling.\n");
-    }
-    NaClFillMemoryRegionWithHalt((void *) text_sysaddr, NACL_MAP_PAGESIZE);
-    if (-1 == (*((struct NaClDescVtbl const *)
-                 shm->base.base.vtbl)->
-               UnmapUnsafe)((struct NaClDesc *) shm,
-                            ((struct NaClDescEffector *)
-                             &shm_effector),
-                            (void *) text_sysaddr,
-                            NACL_MAP_PAGESIZE)) {
-      NaClLog(LOG_FATAL,
-              "Could not unmap shm for dynamic text region, post HLT fill.\n");
-    }
-    NaClLog(4,
-            "NaClMakeDynamicTextShared: Map(,,0x%"NACL_PRIxPTR",size = 0x%x,"
-            " prot=0x%x, flags=0x%x, offset=0x%"NACL_PRIxPTR"\n",
-            text_sysaddr,
-            NACL_MAP_PAGESIZE,
-            NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
-            NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-            shm_offset);
-    mmap_ret = (*((struct NaClDescVtbl const *)
-                  shm->base.base.vtbl)->
-                Map)((struct NaClDesc *) shm,
-                     (struct NaClDescEffector *) &shm_effector,
-                     (void *) text_sysaddr,
-                     NACL_MAP_PAGESIZE,
-                     NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
-                     NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-                     shm_offset);
-    if (text_sysaddr != mmap_ret) {
-      NaClLog(LOG_FATAL, "Could not map in shm for dynamic text region\n");
-    }
+  nap->dynamic_page_bitmap =
+    BitmapAllocate((uint32_t) (dynamic_text_size / NACL_MAP_PAGESIZE));
+  if (NULL == nap->dynamic_page_bitmap) {
+    NaClLog(LOG_FATAL, "NaClMakeDynamicTextShared: BitmapAllocate() failed\n");
   }
 
   nap->text_shm = &shm->base;
@@ -495,6 +512,30 @@ static INLINE void CopyCodeSafelyInitial(uint8_t  *dest,
   NaClClearInstructionCache(dest, dest + size);
 }
 
+static void MakeDynamicCodePageVisible(struct NaClApp *nap,
+                                       uint32_t page_index,
+                                       uint8_t *writable_addr) {
+  void *user_addr;
+
+  if (BitmapIsBitSet(nap->dynamic_page_bitmap, page_index)) {
+    /* The page is already visible: nothing to do. */
+    return;
+  }
+  user_addr = (void *) NaClUserToSys(nap, nap->dynamic_text_start
+                                     + page_index * NACL_MAP_PAGESIZE);
+
+  /* Sanity check:  Ensure the page is not already in use. */
+  CHECK(*writable_addr == 0);
+
+  NaClFillMemoryRegionWithHalt(writable_addr, NACL_MAP_PAGESIZE);
+
+  if (NaCl_mprotect(user_addr, NACL_MAP_PAGESIZE, PROT_READ | PROT_EXEC) != 0) {
+    NaClLog(LOG_FATAL, "MakeDynamicCodePageVisible: NaCl_mprotect() failed\n");
+  }
+
+  BitmapSetBit(nap->dynamic_page_bitmap, page_index);
+}
+
 /*
  * Maps a writable version of the code at [offset, offset+size) and returns a
  * pointer to the new mapping. Internally caches the last mapping between
@@ -552,6 +593,10 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
      * update that cached version
      */
     if (size > 0) {
+      uint32_t page_index;
+      uint32_t end_page_index;
+      uint8_t *writable_addr;
+
       uintptr_t mapping = (*((struct NaClDescVtbl const *)
             shm->base.vtbl)->
               Map)(shm,
@@ -564,6 +609,16 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
       if (NaClPtrIsNegErrno(&mapping)) {
         return 0;
       }
+
+      writable_addr = (uint8_t *) mapping;
+      end_page_index = (offset + size) / NACL_MAP_PAGESIZE;
+      for (page_index = offset / NACL_MAP_PAGESIZE;
+           page_index < end_page_index;
+           page_index++) {
+        MakeDynamicCodePageVisible(nap, page_index, writable_addr);
+        writable_addr += NACL_MAP_PAGESIZE;
+      }
+
       nap->dynamic_mapcache_offset = offset;
       nap->dynamic_mapcache_size = size;
       nap->dynamic_mapcache_ret = mapping;
