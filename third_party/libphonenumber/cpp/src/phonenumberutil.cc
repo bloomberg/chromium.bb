@@ -72,7 +72,7 @@ scoped_ptr<map<char32, char> > all_plus_number_grouping_symbols;
 // The kPlusSign signifies the international prefix.
 const char kPlusSign[] = "+";
 
-const char kPlusChars[] = "+＋";
+const char kPlusChars[] = "+\xEF\xBC\x8B";
 scoped_ptr<const reg_exp::RegularExpression> plus_chars_pattern;
 
 const char kRfc3966ExtnPrefix[] = ";ext=";
@@ -88,7 +88,7 @@ scoped_ptr<const reg_exp::RegularExpression> unique_international_prefix;
 
 // Digits accepted in phone numbers.
 // Both Arabic-Indic and Eastern Arabic-Indic are supported.
-const char kValidDigits[] = "0-9０-９٠-٩۰-۹";
+const char kValidDigits[] = "0-9\xEF\xBC\x90-\xEF\xBC\x99\xD9\xA0-\xD9\xA9\xDB\xB0-\xDB\xB9";
 // We accept alpha characters in phone numbers, ASCII only. We store lower-case
 // here only since our regular expressions are case-insensitive.
 const char kValidAlpha[] = "a-z";
@@ -140,7 +140,7 @@ scoped_ptr<const reg_exp::RegularExpression> unwanted_end_char_pattern;
 // itself. In emacs, you can use M-x unicode-what to query information about the
 // unicode character.
 const char kValidPunctuation[] =
-    "-x‐-―−ー－-／  ​⁠　()（）［］.\\[\\]/~⁓∼～";
+    "-x\xE2\x80\x90-\xE2\x80\x95\xE2\x88\x92\xE3\x83\xBC\xEF\xBC\x8D-\xEF\xBC\x8F \xC2\xA0\xE2\x80\x8B\xE2\x81\xA0\xE3\x80\x80()\xEF\xBC\x88\xEF\xBC\x89\xEF\xBC\xBB\xEF\xBC\xBD.\\[\\]/~\xE2\x81\x93\xE2\x88\xBC\xEF\xBD\x9E";
 
 // Regular expression of viable phone numbers. This is location independent.
 // Checks we have at least three leading digits, and only valid punctuation,
@@ -454,7 +454,7 @@ char32 ToUnicodeCodepoint(const char* unicode_char) {
 // defined order.
 void CreateRegularExpressions() {
   unique_international_prefix.reset(
-      reg_exp::CreateRegularExpression("[\\d]+(?:[~⁓∼～][\\d]+)?"));
+      reg_exp::CreateRegularExpression("[\\d]+(?:[~\xE2\x81\x93\xE2\x88\xBC\xEF\xBD\x9E][\\d]+)?"));
   first_group_capturing_pattern.reset(
       reg_exp::CreateRegularExpression("(\\$1)"));
   carrier_code_pattern.reset(
@@ -476,16 +476,16 @@ void CreateRegularExpressions() {
       StrCat("[", kPlusChars, "]*(?:[", kValidPunctuation, "]*[", kValidDigits,
              "]){3,}[", kValidAlpha, kValidPunctuation, kValidDigits, "]*")));
   // Canonical-equivalence doesn't seem to be an option with RE2, so we allow
-  // two options for representing the ó - the character itself, and one in the
+  // two options for representing the \xC3\xB3 - the character itself, and one in the
   // unicode decomposed form with the combining acute accent. Note that there
   // are currently three capturing groups for the extension itself - if this
   // number is changed, MaybeStripExtension needs to be updated.
   const string capturing_extn_digits = StrCat("([", kValidDigits, "]{1,7})");
   known_extn_patterns.reset(new string(
       StrCat(kRfc3966ExtnPrefix, capturing_extn_digits, "|"
-             "[  \\t,]*(?:ext(?:ensi(?:ó?|ó))?n?|ｅｘｔｎ?|[,xｘ#＃~～]|"
-             "int|ｉｎｔ|anexo)"
-             "[:\\.．]?[  \\t,-]*", capturing_extn_digits, "#?|"
+             "[ \xC2\xA0\\t,]*(?:ext(?:ensi(?:o\xCC\x81?|\xC3\xB3))?n?|\xEF\xBD\x85\xEF\xBD\x98\xEF\xBD\x94\xEF\xBD\x8E?|[,x\xEF\xBD\x98#\xEF\xBC\x83~\xEF\xBD\x9E]|"
+             "int|\xEF\xBD\x89\xEF\xBD\x8E\xEF\xBD\x94|anexo)"
+             "[:\\.\xEF\xBC\x8E]?[ \xC2\xA0\\t,-]*", capturing_extn_digits, "#?|"
              "[- ]+([", kValidDigits, "]{1,5})#")));
   extn_pattern.reset(reg_exp::CreateRegularExpression(
       StrCat("(?i)(?:", *known_extn_patterns, ")$").c_str()));
@@ -509,35 +509,35 @@ void InitializeStaticMapsAndSets() {
   all_plus_number_grouping_symbols->insert(
       make_pair(ToUnicodeCodepoint("-"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("－"), '-'));
+      make_pair(ToUnicodeCodepoint("\xEF\xBC\x8D"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("‐"), '-'));
+      make_pair(ToUnicodeCodepoint("\xE2\x80\x90"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("‑"), '-'));
+      make_pair(ToUnicodeCodepoint("\xE2\x80\x91"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("‒"), '-'));
+      make_pair(ToUnicodeCodepoint("\xE2\x80\x92"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("–"), '-'));
+      make_pair(ToUnicodeCodepoint("\xE2\x80\x93"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("—"), '-'));
+      make_pair(ToUnicodeCodepoint("\xE2\x80\x94"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("―"), '-'));
+      make_pair(ToUnicodeCodepoint("\xE2\x80\x95"), '-'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("−"), '-'));
+      make_pair(ToUnicodeCodepoint("\xE2\x88\x92"), '-'));
   all_plus_number_grouping_symbols->insert(
       make_pair(ToUnicodeCodepoint("/"), '/'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("／"), '/'));
+      make_pair(ToUnicodeCodepoint("\xEF\xBC\x8F"), '/'));
   all_plus_number_grouping_symbols->insert(
       make_pair(ToUnicodeCodepoint(" "), ' '));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("　"), ' '));
+      make_pair(ToUnicodeCodepoint("\xE3\x80\x80"), ' '));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("⁠"), ' '));
+      make_pair(ToUnicodeCodepoint("\xE2\x81\xA0"), ' '));
   all_plus_number_grouping_symbols->insert(
       make_pair(ToUnicodeCodepoint("."), '.'));
   all_plus_number_grouping_symbols->insert(
-      make_pair(ToUnicodeCodepoint("．"), '.'));
+      make_pair(ToUnicodeCodepoint("\xEF\xBC\x8E"), '.'));
   // Only the upper-case letters are added here - the lower-case versions are
   // added programmatically.
   alpha_mappings->insert(make_pair(ToUnicodeCodepoint("A"), '2'));
@@ -849,7 +849,7 @@ void PhoneNumberUtil::Format(const PhoneNumber& number,
   // Note here that all NANPA formatting rules are contained by US, so we use
   // that to format NANPA numbers. The same applies to Russian Fed regions -
   // rules are contained by Russia. French Indian Ocean country rules are
-  // contained by Réunion.
+  // contained by R\xC3\xA9union.
   string region_code;
   GetRegionCodeForCountryCode(country_calling_code, &region_code);
   if (!HasValidRegionCode(region_code, country_calling_code,
@@ -1015,7 +1015,7 @@ void PhoneNumberUtil::FormatOutOfCountryCallingNumber(
     // For regions that share a country calling code, the country calling code
     // need not be dialled. This also applies when dialling within a region, so
     // this if clause covers both these cases.
-    // Technically this is the case for dialling from la Réunion to other
+    // Technically this is the case for dialling from la R\xC3\xA9union to other
     // overseas departments of France (French Guiana, Martinique, Guadeloupe),
     // but not vice versa - so we don't cover this edge case for now and for
     // those cases return the version including country calling code.

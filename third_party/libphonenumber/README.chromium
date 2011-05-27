@@ -22,7 +22,8 @@ Additional files, not in the original library:
 Until the changes are upstreamed library is included directly, with a patch
 in patches/version186.patch applied. The patch adds plugability to the regular
 expression engine, its RE2 (default) implementation, and the unit-test for the
-changes.
+changes. The second patch utf8_v186.patch is applied to allow compilation on
+some multi-byte locales.
 
 The folders included in our repository for now are
   cpp/
