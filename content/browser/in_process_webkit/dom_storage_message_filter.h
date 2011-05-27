@@ -51,7 +51,7 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
   void OnKey(int64 storage_area_id, unsigned index, NullableString16* key);
   void OnGetItem(int64 storage_area_id, const string16& key,
                  NullableString16* value);
-  void OnSetItem(int render_view_id, int64 storage_area_id, const string16& key,
+  void OnSetItem(int64 storage_area_id, const string16& key,
                  const string16& value, const GURL& url,
                  WebKit::WebStorageArea::Result* result,
                  NullableString16* old_value);

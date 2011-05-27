@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,8 +68,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_GetItem,
                             NullableString16 /* value */)
 
 // Set a value that's associated with a key in a storage area.
-IPC_SYNC_MESSAGE_CONTROL5_2(DOMStorageHostMsg_SetItem,
-                            int /* routing_id */,
+IPC_SYNC_MESSAGE_CONTROL4_2(DOMStorageHostMsg_SetItem,
                             int64 /* storage_area_id */,
                             string16 /* key */,
                             string16 /* value */,

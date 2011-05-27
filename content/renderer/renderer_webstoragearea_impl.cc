@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,14 +7,10 @@
 #include "content/common/dom_storage_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebURL;
-using WebKit::WebView;
 
 RendererWebStorageAreaImpl::RendererWebStorageAreaImpl(
     int64 namespace_id, const WebString& origin) {
@@ -49,19 +45,10 @@ WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
 
 void RendererWebStorageAreaImpl::setItem(
     const WebString& key, const WebString& value, const WebURL& url,
-    WebStorageArea::Result& result, WebString& old_value_webkit,
-    WebFrame* web_frame) {
-  int32 render_view_id = MSG_ROUTING_CONTROL;
-  if (web_frame) {
-    RenderView* render_view = RenderView::FromWebView(web_frame->view());
-    if (render_view)
-      render_view_id = render_view->routing_id();
-  }
-  DCHECK(render_view_id != MSG_ROUTING_CONTROL);
-
+    WebStorageArea::Result& result, WebString& old_value_webkit) {
   NullableString16 old_value;
   RenderThread::current()->Send(new DOMStorageHostMsg_SetItem(
-      render_view_id, storage_area_id_, key, value, url, &result, &old_value));
+      storage_area_id_, key, value, url, &result, &old_value));
   old_value_webkit = old_value;
 }
 

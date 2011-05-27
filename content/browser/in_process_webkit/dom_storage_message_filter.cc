@@ -157,7 +157,7 @@ void DOMStorageMessageFilter::OnGetItem(int64 storage_area_id,
 }
 
 void DOMStorageMessageFilter::OnSetItem(
-    int render_view_id, int64 storage_area_id, const string16& key,
+    int64 storage_area_id, const string16& key,
     const string16& value, const GURL& url,
     WebKit::WebStorageArea::Result* result, NullableString16* old_value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
