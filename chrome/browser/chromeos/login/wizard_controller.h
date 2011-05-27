@@ -47,7 +47,7 @@ class WizardScreen;
 class WizardController : public ScreenObserver {
  public:
   WizardController(LoginDisplayHost* host, OobeDisplay* oobe_display);
-  ~WizardController();
+  virtual ~WizardController();
 
   // Returns the default wizard controller if it has been created.
   static WizardController* default_controller() {
