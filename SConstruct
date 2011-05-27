@@ -1314,7 +1314,7 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
   http_data_dir = 'native_client' + staging_dir.replace(main_dir, '')
 
   command = (GetHeadlessPrefix(env) +
-             [pyauto_python, test, pyautolib_dir, '-v',
+             [pyauto_python, test, pyautolib_dir,
               '--http-data-dir=%s' % http_data_dir,
               '--chrome-flags="%s"' % chrome_flags])
   command.extend(args)
@@ -1350,15 +1350,13 @@ pre_base_env.AddMethod(PyAutoTester)
 
 
 # Disabled for ARM (because Chrome binaries for ARM are not available), on the
-# Chrome bots (because PyAuto is not expected to be available on them), when
+# Chrome bots (because PyAuto is not expected to be available on them) and when
 # 32-bit test binaries are run on a 64-bit machine (because 32-bit python is not
-# available on 64-bit machines) and on Windows (because loading a nexe in Chrome
-# using a local HTTP server is broken on Windows).
+# available on 64-bit machines).
 def PyAutoTesterIsBroken(env):
   return (PPAPIBrowserTesterIsBroken(env) or
           'chrome_browser_path' in ARGUMENTS or
-          (env.Bit('build_x86_32') and platform.architecture()[0] == '64bit') or
-          env.Bit('host_windows'))
+          (env.Bit('build_x86_32') and platform.architecture()[0] == '64bit'))
 
 pre_base_env.AddMethod(PyAutoTesterIsBroken)
 
