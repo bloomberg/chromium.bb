@@ -67,7 +67,23 @@ const char* kPrefsToObserve[] = {
   prefs::kAlternateErrorPagesEnabled,
   prefs::kDefaultCharset,
   prefs::kDefaultZoomLevel,
-  prefs::kEnableReferrers
+  prefs::kEnableReferrers,
+  prefs::kWebKitAllowDisplayingInsecureContent,
+  prefs::kWebKitAllowRunningInsecureContent,
+  prefs::kWebKitDefaultFixedFontSize,
+  prefs::kWebKitDefaultFontSize,
+  prefs::kWebKitFixedFontFamily,
+  prefs::kWebKitJavaEnabled,
+  prefs::kWebKitJavascriptEnabled,
+  prefs::kWebKitLoadsImagesAutomatically,
+  prefs::kWebKitMinimumFontSize,
+  prefs::kWebKitMinimumLogicalFontSize,
+  prefs::kWebKitPluginsEnabled,
+  prefs::kWebKitSansSerifFontFamily,
+  prefs::kWebKitSerifFontFamily,
+  prefs::kWebKitStandardFontFamily,
+  prefs::kWebkitTabsToLinks,
+  prefs::kWebKitUsesUniversalDetector
 };
 
 const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
