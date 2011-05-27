@@ -12,7 +12,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "media/base/callback.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
@@ -215,7 +214,7 @@ const int kUsVkeyToKeysym[256] = {
 };
 
 void EventExecutorMac::InjectKeyEvent(const KeyEvent* event, Task* done) {
-  media::AutoTaskRunner done_runner(done);
+  base::ScopedTaskRunner done_runner(done);
 
   int key_code = event->keycode();
   if (key_code >= 0 && key_code < 256) {
@@ -251,7 +250,7 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent* event, Task* done) {
 }
 
 void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
-  media::AutoTaskRunner done_runner(done);
+  base::ScopedTaskRunner done_runner(done);
 
   if (event->has_x() && event->has_y()) {
     // TODO(wez): Checking the validity of the MouseEvent should be done in core

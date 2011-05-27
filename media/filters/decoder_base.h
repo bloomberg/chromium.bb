@@ -102,7 +102,7 @@ class DecoderBase : public Decoder {
   // be called from within the Filter::Stop() method prior to stopping the
   // base class.
   virtual void DoStop(Task* done_cb) {
-    AutoTaskRunner done_runner(done_cb);
+    base::ScopedTaskRunner run_done_cb(done_cb);
   }
 
   // Derived class can implement this method and perform seeking logic prior

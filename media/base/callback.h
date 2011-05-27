@@ -4,9 +4,9 @@
 
 // Some basic utilities for aiding in the management of Tasks and Callbacks.
 //
-// AutoTaskRunner, and its brother AutoCallbackRunner are the scoped_ptr
-// equivalents for callbacks.  They are useful for ensuring a callback is
-// executed and delete in the face of multiple return points in a function.
+// AutoCallbackRunner is akin to scoped_ptr for callbacks.  It is useful for
+// ensuring a callback is executed and delete in the face of multiple return
+// points in a function.
 //
 // TaskToCallbackAdapter converts a Task to a Callback0::Type since the two type
 // hierarchies are strangely separate.
@@ -26,23 +26,6 @@
 #include "base/task.h"
 
 namespace media {
-
-class AutoTaskRunner {
- public:
-  // Takes ownership of the task.
-  explicit AutoTaskRunner(Task* task)
-      : task_(task) {
-  }
-
-  ~AutoTaskRunner();
-
-  Task* release() { return task_.release(); }
-
- private:
-  scoped_ptr<Task> task_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoTaskRunner);
-};
 
 class AutoCallbackRunner {
  public:
@@ -75,38 +58,6 @@ class TaskToCallbackAdapter : public Callback0::Type {
   scoped_ptr<Task> task_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskToCallbackAdapter);
-};
-
-template <typename CallbackType>
-class CleanupCallback : public CallbackType {
- public:
-  explicit CleanupCallback(CallbackType* callback) : callback_(callback) {}
-
-  virtual ~CleanupCallback() {
-    for (size_t i = 0; i < run_when_done_.size(); i++) {
-      run_when_done_[i]->Run();
-      delete run_when_done_[i];
-    }
-  }
-
-  virtual void RunWithParams(const typename CallbackType::TupleType& params) {
-    callback_->RunWithParams(params);
-  }
-
-  template <typename T>
-  void DeleteWhenDone(T* ptr) {
-    RunWhenDone(new DeleteTask<T>(ptr));
-  }
-
-  void RunWhenDone(Task* ptr) {
-    run_when_done_.push_back(ptr);
-  }
-
- private:
-  scoped_ptr<CallbackType> callback_;
-  std::vector<Task*> run_when_done_;
-
-  DISALLOW_COPY_AND_ASSIGN(CleanupCallback);
 };
 
 }  // namespace media

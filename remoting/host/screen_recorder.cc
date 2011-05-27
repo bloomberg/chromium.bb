@@ -11,7 +11,6 @@
 #include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "media/base/callback.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
 #include "remoting/proto/control.pb.h"
@@ -151,7 +150,7 @@ void ScreenRecorder::DoStart() {
 void ScreenRecorder::DoStop(Task* done_task) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  media::AutoTaskRunner done_runner(done_task);
+  base::ScopedTaskRunner done_runner(done_task);
 
   // We might have not started when we receive a stop command, simply run the
   // task and then return.
@@ -167,7 +166,7 @@ void ScreenRecorder::DoStop(Task* done_task) {
         FROM_HERE,
         NewTracedMethod(this,
                         &ScreenRecorder::DoStopOnNetworkThread,
-                        done_runner.release()));
+                        done_runner.Release()));
     return;
   }
 }
