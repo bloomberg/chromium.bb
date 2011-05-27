@@ -255,8 +255,6 @@
   fun:pcache1AllocPage
   fun:pcache1Fetch
   fun:sqlite3PcacheFetch
-  ...
-  fun::history::*
 }
 
 {
@@ -264,8 +262,6 @@
   ThreadSanitizer:Race
   fun:sqlite3StatusSet
   fun:pcache1Alloc
-  ...
-  fun:history::*
 }
 
 ############################
