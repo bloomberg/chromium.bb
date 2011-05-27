@@ -729,7 +729,7 @@ TEST_F(URLFetcherProtectTest, Overload) {
   net::URLRequestThrottlerManager* manager =
       net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
   manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
@@ -752,7 +752,7 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   net::URLRequestThrottlerManager* manager =
       net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
   manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
@@ -776,7 +776,7 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
       net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
       new net::URLRequestThrottlerEntry(
-          manager, 200, 3, 100, 2.0, 0.0, 150000));
+          manager, "", 200, 3, 100, 2.0, 0.0, 150000));
   // Total time if *not* for not doing automatic backoff would be 150s.
   // In reality it should be "as soon as server responds".
   manager->OverrideEntryForTests(url, entry);
@@ -822,7 +822,7 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
       net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
       new net::URLRequestThrottlerEntry(
-          manager, 200, 3, 2000, 2.0, 0.0, 4000));
+          manager, "", 200, 3, 2000, 2.0, 0.0, 4000));
   manager->OverrideEntryForTests(url, entry);
 
   // Create a separate thread that will create the URLFetcher.  The current
@@ -852,7 +852,7 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
       net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
       new net::URLRequestThrottlerEntry(
-          manager, 4000, 1, 2000, 2.0, 0.0, 4000));
+          manager, "", 4000, 1, 2000, 2.0, 0.0, 4000));
   manager->OverrideEntryForTests(url, entry);
   // Fake that a request has just started.
   entry->ReserveSendingTimeForNextRequest(base::TimeTicks());

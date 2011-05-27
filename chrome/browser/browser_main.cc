@@ -52,6 +52,7 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
@@ -203,6 +204,10 @@
 #if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
 #include "views/touchui/touch_factory.h"
 #endif
+
+namespace net {
+class NetLog;
+}  // namespace net
 
 // BrowserMainParts ------------------------------------------------------------
 
@@ -722,15 +727,23 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
     net::SpdySessionPool::set_max_sessions_per_domain(value);
   }
 
-  net::URLRequestThrottlerManager::GetInstance()->set_enable_thread_checks(
-      true);
-
   SetDnsCertProvenanceCheckerFactory(CreateChromeDnsCertProvenanceChecker);
 
   if (parsed_command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
     // Enable WebSocket over SPDY.
     net::WebSocketJob::set_websocket_over_spdy_enabled(true);
   }
+}
+
+void InitializeURLRequestThrottlerManager(net::NetLog* net_log) {
+  net::URLRequestThrottlerManager::GetInstance()->set_enable_thread_checks(
+      true);
+
+  // TODO(joi): Passing the NetLog here is temporary; once I switch the
+  // URLRequestThrottlerManager to be part of the URLRequestContext it will
+  // come from there. Doing it this way for now (2011/5/12) to try to fail
+  // fast in case A/B experiment gives unexpected results.
+  net::URLRequestThrottlerManager::GetInstance()->set_net_log(net_log);
 }
 
 // Creates key child threads. We need to do this explicitly since
@@ -1409,6 +1422,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
                                       CommandLine::ForCurrentProcess());
 
   InitializeNetworkOptions(parsed_command_line);
+  InitializeURLRequestThrottlerManager(browser_process->net_log());
 
   // Initialize histogram synchronizer system. This is a singleton and is used
   // for posting tasks via NewRunnableMethod. Its deleted when it goes out of

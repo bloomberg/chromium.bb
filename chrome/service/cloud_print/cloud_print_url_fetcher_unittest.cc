@@ -324,7 +324,7 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   net::URLRequestThrottlerManager* manager =
       net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
   manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url, 11);
@@ -348,7 +348,7 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, FLAKY_GiveUp) {
   net::URLRequestThrottlerManager* manager =
       net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, 200, 3, 1, 2.0, 0.0, 256));
+      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
   manager->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url, 11);

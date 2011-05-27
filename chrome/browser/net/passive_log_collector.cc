@@ -55,6 +55,8 @@ PassiveLogCollector::PassiveLogCollector()
       ALLOW_THIS_IN_INITIALIZER_LIST(url_request_tracker_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(socket_stream_tracker_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(http_stream_job_tracker_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          exponential_backoff_throttling_tracker_(this)),
       num_events_seen_(0) {
 
   // Define the mapping between source types and the tracker objects.
@@ -73,6 +75,8 @@ PassiveLogCollector::PassiveLogCollector()
   trackers_[net::NetLog::SOURCE_DISK_CACHE_ENTRY] = &disk_cache_entry_tracker_;
   trackers_[net::NetLog::SOURCE_MEMORY_CACHE_ENTRY] = &mem_cache_entry_tracker_;
   trackers_[net::NetLog::SOURCE_HTTP_STREAM_JOB] = &http_stream_job_tracker_;
+  trackers_[net::NetLog::SOURCE_EXPONENTIAL_BACKOFF_THROTTLING] =
+      &exponential_backoff_throttling_tracker_;
   // Make sure our mapping is up-to-date.
   for (size_t i = 0; i < arraysize(trackers_); ++i)
     DCHECK(trackers_[i]) << "Unhandled SourceType: " << i;
@@ -642,5 +646,27 @@ PassiveLogCollector::HttpStreamJobTracker::DoAddEntry(
     return ACTION_MOVE_TO_GRAVEYARD;
   }
 
+  return ACTION_NONE;
+}
+
+//----------------------------------------------------------------------------
+// ExponentialBackoffThrottlingTracker
+//----------------------------------------------------------------------------
+
+const size_t PassiveLogCollector::
+    ExponentialBackoffThrottlingTracker::kMaxNumSources = 100;
+const size_t PassiveLogCollector::
+    ExponentialBackoffThrottlingTracker::kMaxGraveyardSize = 25;
+
+PassiveLogCollector::
+    ExponentialBackoffThrottlingTracker::ExponentialBackoffThrottlingTracker(
+        PassiveLogCollector* parent)
+        : SourceTracker(kMaxNumSources, kMaxGraveyardSize, parent) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::ExponentialBackoffThrottlingTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
   return ACTION_NONE;
 }

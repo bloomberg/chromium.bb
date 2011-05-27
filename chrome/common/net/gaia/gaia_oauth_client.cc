@@ -123,12 +123,11 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
   bool should_retry = false;
   HandleResponse(source, url, status, response_code, data, &should_retry);
   if (should_retry) {
-    // If the response code is greater than or equal to 500, then the back-off
-    // period has been increased at the network level; otherwise, explicitly
-    // call ReceivedContentWasMalformed() to count the current request as a
-    // failure and increase the back-off period.
-    if (response_code < 500)
-      request_->ReceivedContentWasMalformed();
+    // Explicitly call ReceivedContentWasMalformed() to ensure the current
+    // request gets counted as a failure for calculation of the back-off
+    // period.  If it was already a failure by status code, this call will
+    // be ignored.
+    request_->ReceivedContentWasMalformed();
     num_retries_++;
     request_->Start();
   } else {

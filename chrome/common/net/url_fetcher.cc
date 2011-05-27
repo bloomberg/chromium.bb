@@ -58,7 +58,12 @@ class URLFetcher::Core
   // safe to call this multiple times.
   void Stop();
 
-  // Reports that the received content was malformed.
+  // Reports that the received content was malformed (i.e. failed parsing
+  // or validation).  This makes the throttling logic that does exponential
+  // back-off when servers are having problems treat the current request as
+  // a failure.  Your call to this method will be ignored if your request is
+  // already considered a failure based on the HTTP response code or response
+  // headers.
   void ReceivedContentWasMalformed();
 
   // Overridden from net::URLRequest::Delegate:
@@ -805,6 +810,9 @@ void URLFetcher::Core::OnCompletedURLRequest(
     ++num_retries_;
     // Restarts the request if we still need to notify the delegate.
     if (delegate_) {
+      // Note that backoff_delay_ may be 0 because (a) the URLRequestThrottler
+      // code does not necessarily back off on the first error, and (b) it
+      // only backs off on some of the 5xx status codes.
       fetcher_->backoff_delay_ = backoff_release_time_ - base::TimeTicks::Now();
       if (fetcher_->backoff_delay_ < base::TimeDelta())
         fetcher_->backoff_delay_ = base::TimeDelta();
@@ -832,8 +840,18 @@ void URLFetcher::Core::InformDelegateFetchIsComplete() {
 
 void URLFetcher::Core::NotifyMalformedContent() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  if (url_throttler_entry_ != NULL)
-    url_throttler_entry_->ReceivedContentWasMalformed();
+  if (url_throttler_entry_ != NULL) {
+    int status_code = response_code_;
+    if (status_code == kInvalidHttpResponseCode) {
+      // The status code will generally be known by the time clients
+      // call the |ReceivedContentWasMalformed()| function (which ends up
+      // calling the current function) but if it's not, we need to assume
+      // the response was successful so that the total failure count
+      // used to calculate exponential back-off goes up.
+      status_code = 200;
+    }
+    url_throttler_entry_->ReceivedContentWasMalformed(status_code);
+  }
 }
 
 void URLFetcher::Core::ReleaseRequest() {
