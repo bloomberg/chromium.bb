@@ -21,7 +21,8 @@ namespace autofill_i18n {
 
 // Normalizes phone number, by changing digits in the extended fonts
 // (such as \xFF1x) into '0'-'9'. Also strips out non-digit characters.
-string16 NormalizePhoneNumber(const string16& value);
+string16 NormalizePhoneNumber(const string16& value,
+                              const std::string& locale);
 
 // Parses |value| to extract the components of a phone number.  |number|
 // returns the local number, |city_code| returns the city code, and

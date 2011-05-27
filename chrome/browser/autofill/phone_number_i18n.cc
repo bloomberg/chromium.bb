@@ -42,10 +42,27 @@ i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat UtilsTypeToPhoneLibType(
 
 namespace autofill_i18n {
 
-string16 NormalizePhoneNumber(const string16& value) {
-  std::string number(UTF16ToUTF8(value));
-  i18n::phonenumbers::PhoneNumberUtil::NormalizeDigitsOnly(&number);
-  return UTF8ToUTF16(number);
+string16 NormalizePhoneNumber(const string16& value,
+                              std::string const& locale) {
+  string16 number;
+  string16 city_code;
+  string16 country_code;
+  string16 result;
+  // Full number - parse it, split it and re-combine into canonical form.
+  if (!ParsePhoneNumber(value, locale, &country_code, &city_code, &number))
+    return string16();  // Parsing failed - do not store phone.
+  if (!autofill_i18n::ConstructPhoneNumber(
+          country_code, city_code, number,
+          locale,
+          (country_code.empty() ?
+              autofill_i18n::NATIONAL : autofill_i18n::INTERNATIONAL),
+          &result)) {
+    // Reconstruction failed - do not store phone.
+    return string16();
+  }
+  std::string result_utf8(UTF16ToUTF8(result));
+  i18n::phonenumbers::PhoneNumberUtil::NormalizeDigitsOnly(&result_utf8);
+  return UTF8ToUTF16(result_utf8);
 }
 
 bool ParsePhoneNumber(const string16& value,
@@ -94,6 +111,13 @@ bool ParsePhoneNumber(const string16& value,
   std::string subscriber_number;
 
   int area_length = phone_util->GetLengthOfGeographicalAreaCode(i18n_number);
+  int destination_length =
+      phone_util->GetLengthOfNationalDestinationCode(i18n_number);
+  // Some phones have a destination code in lieu of area code: mobile operators
+  // in Europe, toll and toll-free numbers in USA, etc. From our point of view
+  // these two types of codes are the same.
+  if (destination_length > area_length)
+    area_length = destination_length;
   if (area_length > 0) {
     area_code = national_significant_number.substr(0, area_length);
     subscriber_number = national_significant_number.substr(area_length);
@@ -149,12 +173,8 @@ bool ConstructPhoneNumber(const string16& country_code,
 
   int country_int = phone_util->GetCountryCodeForRegion(
       std::string(SanitizeLocaleCode(locale).c_str()));
-  if (!country_code.empty()) {
-    string16 country_code_stripped(country_code);
-    country_code_stripped = NormalizePhoneNumber(country_code_stripped);
-    if (!base::StringToInt(country_code_stripped, &country_int))
-      return false;
-  }
+  if (!country_code.empty() && !base::StringToInt(country_code, &country_int))
+    return false;
   if (country_int)
     i18n_number.set_country_code(country_int);
 

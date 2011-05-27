@@ -1492,6 +1492,57 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
                     expected_labels, expected_icons, expected_unique_ids);
 }
 
+TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  AutofillProfile* profile = new AutofillProfile;
+  profile->set_guid("00000000-0000-0000-0000-000000000103");
+  std::vector<string16> multi_values(1);
+  multi_values[0] = ASCIIToUTF16("Natty Bumppo");
+  profile->SetMultiInfo(NAME_FULL, multi_values);
+  multi_values[0] = ASCIIToUTF16("1800PRAIRIE");
+  profile->SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, multi_values);
+  autofill_manager_->AddProfile(profile);
+
+  const FormField& field = form.fields[9];
+  GetAutofillSuggestions(form, field);
+
+  // No suggestions provided, so send an empty vector as the results.
+  // This triggers the combined message send.
+  AutocompleteSuggestionsReturned(std::vector<string16>());
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  std::vector<string16> icons;
+  std::vector<int> unique_ids;
+  GetAutofillSuggestionsMessage(
+      &page_id, &values, &labels, &icons, &unique_ids);
+
+  string16 expected_values[] = {
+    ASCIIToUTF16("12345678901"),
+    ASCIIToUTF16("23456789012"),
+    ASCIIToUTF16("18007724743"),  // 1800PRAIRIE
+  };
+  // Inferred labels include full first relevant field, which in this case is
+  // the address line 1.
+  string16 expected_labels[] = {
+    ASCIIToUTF16("Elvis Aaron Presley"),
+    ASCIIToUTF16("Charles Hardin Holley"),
+    ASCIIToUTF16("Natty Bumppo"),
+  };
+  string16 expected_icons[] = {string16(), string16(), string16()};
+  int expected_unique_ids[] = {1, 2, 103};
+  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                    kDefaultPageID, arraysize(expected_values), expected_values,
+                    expected_labels, expected_icons, expected_unique_ids);
+}
+
 // Test that we correctly fill an address form.
 TEST_F(AutofillManagerTest, FillAddressForm) {
   // Set up our form data.

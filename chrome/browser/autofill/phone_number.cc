@@ -168,29 +168,12 @@ void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
 }
 
 bool PhoneNumber::NormalizePhone() {
-  bool success = true;
   // Empty number does not need normalization.
   if (number_.empty())
     return true;
 
-  string16 number;
-  string16 city_code;
-  string16 country_code;
-  // Full number - parse it, split it and re-combine into canonical form.
-  if (!autofill_i18n::ParsePhoneNumber(
-          number_, locale_, &country_code, &city_code, &number) ||
-      !autofill_i18n::ConstructPhoneNumber(
-          country_code, city_code, number,
-          locale_,
-          (country_code.empty() ?
-              autofill_i18n::NATIONAL : autofill_i18n::INTERNATIONAL),
-          &number_)) {
-    // Parsing failed -  do not store phone.
-    number_.clear();
-    success = false;
-  }
-  number_ = autofill_i18n::NormalizePhoneNumber(number_);
-  return success;
+  number_ = autofill_i18n::NormalizePhoneNumber(number_, locale_);
+  return !number_.empty();
 }
 
 void PhoneNumber::set_locale(const std::string& locale) {

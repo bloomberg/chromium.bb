@@ -25,6 +25,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -218,6 +219,30 @@ bool SectionIsAutofilled(const FormStructure* form_structure,
 
 bool FormIsHTTPS(FormStructure* form) {
   return form->source_url().SchemeIs(chrome::kHttpsScheme);
+}
+
+// Normalizes phones in multi-info. If |type| is anything but
+// PHONE_HOME_WHOLE_NUMBER or PHONE_FAX_WHOLE_NUMBER does nothing, as it is
+// either not a phone, or already normalized (parts of the phone parsed and
+// normalized from the PHONE_*_WHOLE_NUMBER). |locale| is a profile locale.
+// For whole number does normalization:
+//   (650)2345678 -> 6502345678
+//   1-800-FLOWERS -> 18003569377
+// If phone cannot be normalized, leaves it as it is.
+void NormalizePhoneMultiInfo(AutofillFieldType type,
+                             std::string const& locale,
+                             std::vector<string16>* values) {
+  DCHECK(values);
+  if (type != PHONE_HOME_WHOLE_NUMBER && type != PHONE_FAX_WHOLE_NUMBER)
+    return;
+  for (std::vector<string16>::iterator it = values->begin();
+       it != values->end();
+       ++it) {
+    string16 normalized_phone = autofill_i18n::NormalizePhoneNumber(*it,
+                                                                    locale);
+    if (!normalized_phone.empty())
+      *it = normalized_phone;
+  }
 }
 
 }  // namespace
@@ -780,6 +805,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
       // The value of the stored data for this field type in the |profile|.
       std::vector<string16> multi_values;
       profile->GetMultiInfo(type, &multi_values);
+      NormalizePhoneMultiInfo(type, profile->CountryCode(), &multi_values);
 
       for (size_t i = 0; i < multi_values.size(); ++i) {
         if (!multi_values[i].empty() &&
@@ -813,11 +839,24 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
       // The value of the stored data for this field type in the |profile|.
       std::vector<string16> multi_values;
       profile->GetMultiInfo(type, &multi_values);
+      NormalizePhoneMultiInfo(type, profile->CountryCode(), &multi_values);
 
       for (size_t i = 0; i < multi_values.size(); ++i) {
-        if (!multi_values[i].empty() &&
-            StringToLowerASCII(multi_values[i])
-                == StringToLowerASCII(field.value)) {
+        if (multi_values[i].empty())
+          continue;
+        string16 profile_value_lower_case(StringToLowerASCII(multi_values[i]));
+        string16 field_value_lower_case(StringToLowerASCII(field.value));
+        // Phone numbers could be split in US forms, so field value could be
+        // either prefix or suffix of the phone.
+        bool matched_phones = false;
+        if ((type == PHONE_HOME_NUMBER || type == PHONE_FAX_NUMBER) &&
+            !field_value_lower_case.empty() &&
+            (profile_value_lower_case.find(field_value_lower_case) !=
+             string16::npos)) {
+          matched_phones = true;
+        }
+        if (matched_phones ||
+            profile_value_lower_case == field_value_lower_case) {
           for (size_t j = 0; j < multi_values.size(); ++j) {
             if (!multi_values[j].empty()) {
               values->push_back(multi_values[j]);
@@ -918,6 +957,7 @@ void AutofillManager::FillFormField(const AutofillProfile* profile,
     } else {
       std::vector<string16> values;
       profile->GetMultiInfo(type, &values);
+      NormalizePhoneMultiInfo(type, profile->CountryCode(), &values);
       DCHECK(variant < values.size());
       field->value = values[variant];
     }
@@ -932,6 +972,7 @@ void AutofillManager::FillPhoneNumberField(const AutofillProfile* profile,
   // matches the "prefix" or "suffix" sizes and fill accordingly.
   std::vector<string16> values;
   profile->GetMultiInfo(type, &values);
+  NormalizePhoneMultiInfo(type, profile->CountryCode(), &values);
   DCHECK(variant < values.size());
   string16 number = values[variant];
   bool has_valid_suffix_and_prefix = (number.length() ==

@@ -14,23 +14,25 @@ using autofill_i18n::ComparePhones;
 using autofill_i18n::PhoneNumbersMatch;
 
 TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
-  // The string is split to avoid problem with MSVC compiler when it thinks
-  // 123 is a part of character code.
-  string16 phone1(UTF8ToUTF16("\x92\x32" "123\xe2\x8a\x90"));
-  EXPECT_EQ(NormalizePhoneNumber(phone1), ASCIIToUTF16("2123"));
+  // "Large" digits.
+  string16 phone1(UTF8ToUTF16("\xEF\xBC\x91\xEF\xBC\x96\xEF\xBC\x95\xEF\xBC\x90"
+                              "\xEF\xBC\x97\xEF\xBC\x94\xEF\xBC\x99\xEF\xBC\x98"
+                              "\xEF\xBC\x93\xEF\xBC\x92\xEF\xBC\x93"));
+  EXPECT_EQ(NormalizePhoneNumber(phone1, "US"), ASCIIToUTF16("16507498323"));
 
-  string16 phone2(UTF8ToUTF16(
-      "\xef\xbc\x92\x32\x92\x37\xd9\xa9\xce\xb2\xe2\x8a\x90"));
-  EXPECT_EQ(NormalizePhoneNumber(phone2), ASCIIToUTF16("2279"));
+  // Devanagari script digits.
+  string16 phone2(UTF8ToUTF16("\xD9\xA1\xD9\xA6\xD9\xA5\xD9\xA0\xD9\xA8\xD9\xA3"
+                              "\xD9\xA2\xD9\xA3\xD9\xA7\xD9\xA4\xD9\xA9"));
+  EXPECT_EQ(NormalizePhoneNumber(phone2, "US"), ASCIIToUTF16("16508323749"));
 
-  string16 phone3(UTF8ToUTF16("\xef\xbc\x92\x35\xd9\xa5"));
-  EXPECT_EQ(NormalizePhoneNumber(phone3), ASCIIToUTF16("255"));
+  string16 phone3(UTF8ToUTF16("16503334\xef\xbc\x92\x35\xd9\xa5"));
+  EXPECT_EQ(NormalizePhoneNumber(phone3, "US"), ASCIIToUTF16("16503334255"));
 
   string16 phone4(UTF8ToUTF16("+1(650)2346789"));
-  EXPECT_EQ(NormalizePhoneNumber(phone4), ASCIIToUTF16("16502346789"));
+  EXPECT_EQ(NormalizePhoneNumber(phone4, "US"), ASCIIToUTF16("16502346789"));
 
   string16 phone5(UTF8ToUTF16("6502346789"));
-  EXPECT_EQ(NormalizePhoneNumber(phone5), ASCIIToUTF16("6502346789"));
+  EXPECT_EQ(NormalizePhoneNumber(phone5, "US"), ASCIIToUTF16("6502346789"));
 }
 
 TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
@@ -195,16 +197,16 @@ TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
                                &country_code,
                                &city_code,
                                &number));
-  EXPECT_EQ(ASCIIToUTF16("278910112"), number);
-  EXPECT_EQ(ASCIIToUTF16(""), city_code);
+  EXPECT_EQ(ASCIIToUTF16("910112"), number);
+  EXPECT_EQ(ASCIIToUTF16("278"), city_code);
   EXPECT_EQ(ASCIIToUTF16("420"), country_code);
 
   EXPECT_TRUE(ParsePhoneNumber(phone12, "CZ",
                                &country_code,
                                &city_code,
                                &number));
-  EXPECT_EQ(ASCIIToUTF16("278910112"), number);
-  EXPECT_EQ(ASCIIToUTF16(""), city_code);
+  EXPECT_EQ(ASCIIToUTF16("910112"), number);
+  EXPECT_EQ(ASCIIToUTF16("278"), city_code);
   EXPECT_EQ(ASCIIToUTF16("420"), country_code);
 
   string16 phone13(ASCIIToUTF16("420 57-89.10.112"));
@@ -216,8 +218,8 @@ TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
                                &country_code,
                                &city_code,
                                &number));
-  EXPECT_EQ(ASCIIToUTF16("578910112"), number);
-  EXPECT_EQ(ASCIIToUTF16(""), city_code);
+  EXPECT_EQ(ASCIIToUTF16("910112"), number);
+  EXPECT_EQ(ASCIIToUTF16("578"), city_code);
   EXPECT_EQ(ASCIIToUTF16("420"), country_code);
 
   string16 phone14(ASCIIToUTF16("1-650-FLOWERS"));
@@ -227,6 +229,17 @@ TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
                                &number));
   EXPECT_EQ(ASCIIToUTF16("3569377"), number);
   EXPECT_EQ(ASCIIToUTF16("650"), city_code);
+  EXPECT_EQ(ASCIIToUTF16("1"), country_code);
+
+  // 800 is not an area code, but the destination code. In our library these
+  // codes should be treated the same as area codes.
+  string16 phone15(ASCIIToUTF16("1-800-FLOWERS"));
+  EXPECT_TRUE(ParsePhoneNumber(phone15, "US",
+                               &country_code,
+                               &city_code,
+                               &number));
+  EXPECT_EQ(ASCIIToUTF16("3569377"), number);
+  EXPECT_EQ(ASCIIToUTF16("800"), city_code);
   EXPECT_EQ(ASCIIToUTF16("1"), country_code);
 }
 
