@@ -78,14 +78,27 @@
           '<@(nacl_defines)',
         ],
       },
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)',
-          'files': [
-            '../native_client/irt_binaries/nacl_irt_x86_32.nexe',
-            '../native_client/irt_binaries/nacl_irt_x86_64.nexe',
-          ],
-        },
+      'conditions': [
+        ['target_arch=="ia32"', {
+           'copies': [
+             {
+               'destination': '<(PRODUCT_DIR)',
+               'files': [
+                 '../native_client/irt_binaries/nacl_irt_x86_32.nexe',
+               ],
+             },
+           ],
+        }],
+        ['target_arch=="x64" or OS=="win"', {
+           'copies': [
+             {
+               'destination': '<(PRODUCT_DIR)',
+               'files': [
+                 '../native_client/irt_binaries/nacl_irt_x86_64.nexe',
+               ],
+             },
+           ],
+        }],
       ],
     },
   ],
