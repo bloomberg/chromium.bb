@@ -72,6 +72,10 @@ class QuotaFileUtilTest : public testing::Test {
         quota_test_helper_.GetUsageCachePath());
   }
 
+  const FileSystemTestOriginHelper& test_helper() const {
+    return test_helper_;
+  }
+
  private:
   ScopedTempDir data_dir_;
   FileSystemTestOriginHelper local_test_helper_;
@@ -119,7 +123,9 @@ TEST_F(QuotaFileUtilTest, Truncate) {
             QuotaFileUtil::GetInstance()->Truncate(truncate_context.get(),
                                                    Path(file_name),
                                                    1020));
-  ASSERT_EQ(1020, GetCachedUsage());
+  ASSERT_EQ(1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   truncate_context.reset(NewContext());
   truncate_context->set_allowed_bytes_growth(0);
@@ -127,7 +133,9 @@ TEST_F(QuotaFileUtilTest, Truncate) {
             QuotaFileUtil::GetInstance()->Truncate(truncate_context.get(),
                                                    Path(file_name),
                                                    0));
-  ASSERT_EQ(0, GetCachedUsage());
+  ASSERT_EQ(0, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   truncate_context.reset(NewContext());
   truncate_context->set_allowed_bytes_growth(1020);
@@ -135,7 +143,9 @@ TEST_F(QuotaFileUtilTest, Truncate) {
             QuotaFileUtil::GetInstance()->Truncate(truncate_context.get(),
                                                    Path(file_name),
                                                    1021));
-  ASSERT_EQ(0, GetCachedUsage());
+  ASSERT_EQ(0, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 }
 
 TEST_F(QuotaFileUtilTest, CopyFile) {
@@ -156,7 +166,9 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
-  ASSERT_EQ(1020, GetCachedUsage());
+  ASSERT_EQ(1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -164,7 +176,9 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(obstacle_file),
                                                    1));
-  ASSERT_EQ(1021, GetCachedUsage());
+  ASSERT_EQ(1021, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
@@ -172,7 +186,9 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
             QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_file),
                                                Path(to_file1)));
-  ASSERT_EQ(2041, GetCachedUsage());
+  ASSERT_EQ(2041, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -180,7 +196,9 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
             QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_file),
                                                Path(to_file2)));
-  ASSERT_EQ(2041, GetCachedUsage());
+  ASSERT_EQ(2041, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -188,7 +206,9 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
             QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_file),
                                                Path(obstacle_file)));
-  ASSERT_EQ(3060, GetCachedUsage());
+  ASSERT_EQ(3060, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 }
 
 TEST_F(QuotaFileUtilTest, CopyDirectory) {
@@ -213,7 +233,9 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
-  ASSERT_EQ(1020, GetCachedUsage());
+  ASSERT_EQ(1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
@@ -221,7 +243,9 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
             QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_dir),
                                                Path(to_dir1)));
-  ASSERT_EQ(2040, GetCachedUsage());
+  ASSERT_EQ(2040, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -229,7 +253,9 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
             QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_dir),
                                                Path(to_dir2)));
-  ASSERT_EQ(2040, GetCachedUsage());
+  ASSERT_EQ(2040, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 }
 
 TEST_F(QuotaFileUtilTest, MoveFile) {
@@ -247,7 +273,9 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
-  ASSERT_EQ(1020, GetCachedUsage());
+  ASSERT_EQ(1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(0);
@@ -255,7 +283,9 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
             QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_file),
                                                Path(to_file)));
-  ASSERT_EQ(1020, GetCachedUsage());
+  ASSERT_EQ(1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
@@ -268,7 +298,9 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
-  ASSERT_EQ(2040, GetCachedUsage());
+  ASSERT_EQ(2040, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -276,7 +308,9 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(obstacle_file),
                                                    1));
-  ASSERT_EQ(2041, GetCachedUsage());
+  ASSERT_EQ(2041, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(0);
@@ -284,7 +318,9 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
             QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_file),
                                                Path(obstacle_file)));
-  ASSERT_EQ(2040, GetCachedUsage());
+  ASSERT_EQ(2040, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 }
 
 TEST_F(QuotaFileUtilTest, MoveDirectory) {
@@ -309,7 +345,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
-  ASSERT_EQ(1020, GetCachedUsage());
+  ASSERT_EQ(1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
@@ -317,7 +355,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
             QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_dir),
                                                Path(to_dir1)));
-  ASSERT_EQ(1020, GetCachedUsage());
+  ASSERT_EQ(1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
@@ -333,7 +373,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
-  ASSERT_EQ(2040, GetCachedUsage());
+  ASSERT_EQ(2040, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -341,7 +383,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
             QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_dir),
                                                Path(to_dir2)));
-  ASSERT_EQ(2040, GetCachedUsage());
+  ASSERT_EQ(2040, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 }
 
 TEST_F(QuotaFileUtilTest, Remove) {
@@ -370,7 +414,9 @@ TEST_F(QuotaFileUtilTest, Remove) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(file),
                                                    340));
-  ASSERT_EQ(340, GetCachedUsage());
+  ASSERT_EQ(340, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -378,7 +424,9 @@ TEST_F(QuotaFileUtilTest, Remove) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(dfile1),
                                                    1020));
-  ASSERT_EQ(1360, GetCachedUsage());
+  ASSERT_EQ(1360, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -386,7 +434,9 @@ TEST_F(QuotaFileUtilTest, Remove) {
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(dfile2),
                                                    120));
-  ASSERT_EQ(1480, GetCachedUsage());
+  ASSERT_EQ(1480, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -394,7 +444,9 @@ TEST_F(QuotaFileUtilTest, Remove) {
             QuotaFileUtil::GetInstance()->Delete(context.get(),
                                                  Path(file),
                                                  false));
-  ASSERT_EQ(1140, GetCachedUsage());
+  ASSERT_EQ(1140, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -402,7 +454,9 @@ TEST_F(QuotaFileUtilTest, Remove) {
             QuotaFileUtil::GetInstance()->Delete(context.get(),
                                                  Path(dir),
                                                  true));
-  ASSERT_EQ(0, GetCachedUsage());
+  ASSERT_EQ(0, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(test_helper().ComputeCurrentOriginUsage(),
+            test_helper().GetCachedOriginUsage());
 }
 
 }  // namespace fileapi
