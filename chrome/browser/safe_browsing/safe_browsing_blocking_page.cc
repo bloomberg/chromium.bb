@@ -125,13 +125,13 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     TabContents* tab_contents,
     const UnsafeResourceList& unsafe_resources)
     : ChromeInterstitialPage(tab_contents,
-                             IsMainPage(unsafe_resources),
+                             IsMainPageLoadBlocked(unsafe_resources),
                              unsafe_resources[0].url),
       sb_service_(sb_service),
-      is_main_frame_(IsMainPage(unsafe_resources)),
+      is_main_frame_load_blocked_(IsMainPageLoadBlocked(unsafe_resources)),
       unsafe_resources_(unsafe_resources) {
   RecordUserAction(SHOW);
-  if (!is_main_frame_) {
+  if (!is_main_frame_load_blocked_) {
     navigation_entry_index_to_remove_ =
         tab()->controller().last_committed_entry_index();
   } else {
@@ -302,7 +302,7 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
   // Check to see if we're blocking the main page, or a sub-resource on the
   // main page.
   string16 description1, description3, description5;
-  if (is_main_frame_) {
+  if (is_main_frame_load_blocked_) {
     description1 = l10n_util::GetStringFUTF16(
         IDS_SAFE_BROWSING_MALWARE_DESCRIPTION1, UTF8ToUTF16(url().host()));
   } else {
@@ -686,8 +686,16 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
 }
 
 // static
-bool SafeBrowsingBlockingPage::IsMainPage(
+bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
     const UnsafeResourceList& unsafe_resources) {
+  // Client-side phishing detection interstitials never block the main frame
+  // load, since they happen after the page is finished loading.
+  if (unsafe_resources[0].threat_type ==
+      SafeBrowsingService::CLIENT_SIDE_PHISHING_URL) {
+    return false;
+  }
+
+  // Otherwise, check the threat type.
   return unsafe_resources.size() == 1 &&
          unsafe_resources[0].resource_type == ResourceType::MAIN_FRAME;
 }

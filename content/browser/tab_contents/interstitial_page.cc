@@ -153,6 +153,7 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       original_child_id_(tab->render_view_host()->process()->id()),
       original_rvh_id_(tab->render_view_host()->routing_id()),
       should_revert_tab_title_(false),
+      tab_was_loading_(false),
       resource_dispatcher_host_notified_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(rvh_view_delegate_(
           new InterstitialPageRVHViewDelegate(this))) {
@@ -378,6 +379,7 @@ void InterstitialPage::DidNavigate(
   // by the UI tests) expects to consider a navigation as complete. Without
   // this, navigating in a UI test to a URL that triggers an interstitial would
   // hang.
+  tab_was_loading_ = tab_->is_loading();
   tab_->SetIsLoading(false, NULL);
 }
 
@@ -442,8 +444,9 @@ void InterstitialPage::Proceed() {
   Disable();
   action_taken_ = PROCEED_ACTION;
 
-  // Resumes the throbber.
-  tab_->SetIsLoading(true, NULL);
+  // Resumes the throbber, if applicable.
+  if (tab_was_loading_)
+    tab_->SetIsLoading(true, NULL);
 
   // If this is a new navigation, the old page is going away, so we cancel any
   // blocked requests for it.  If it is not a new navigation, then it means the

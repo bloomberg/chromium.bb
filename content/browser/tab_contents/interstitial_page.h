@@ -219,6 +219,10 @@ class InterstitialPage : public NotificationObserver,
   // it to its original value).
   bool should_revert_tab_title_;
 
+  // Whether or not the tab was loading resources when the interstitial was
+  // shown.  We restore this state if the user proceeds from the interstitial.
+  bool tab_was_loading_;
+
   // Whether the ResourceDispatcherHost has been notified to cancel/resume the
   // resource requests blocked for the RenderViewHost.
   bool resource_dispatcher_host_notified_;

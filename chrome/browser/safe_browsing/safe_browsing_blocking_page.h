@@ -128,8 +128,10 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
                                         const UnsafeResourceList& resources,
                                         bool proceed);
 
-  // Returns true if the passed |unsafe_resources| is for the main page.
-  static bool IsMainPage(const UnsafeResourceList& unsafe_resources);
+  // Returns true if the passed |unsafe_resources| is blocking the load of
+  // the main page.
+  static bool IsMainPageLoadBlocked(
+      const UnsafeResourceList& unsafe_resources);
 
  private:
   friend class SafeBrowsingBlockingPageFactoryImpl;
@@ -138,8 +140,11 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
   SafeBrowsingService* sb_service_;
   MessageLoop* report_loop_;
 
-  // Whether the flagged resource is the main page (or a sub-resource is false).
-  bool is_main_frame_;
+  // True if the interstitial is blocking the main page because it is on one
+  // of our lists.  False if a subresource is being blocked, or in the case of
+  // client-side detection where the interstitial is shown after page load
+  // finishes.
+  bool is_main_frame_load_blocked_;
 
   // The index of a navigation entry that should be removed when DontProceed()
   // is invoked, -1 if not entry should be removed.
