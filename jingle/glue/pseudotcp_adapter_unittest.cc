@@ -251,7 +251,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
   int read_errors_;
 };
 
-class P2PTransportImplTest : public testing::Test {
+class PseudoTcpAdapterTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     host_socket_ = new FakeSocket();
@@ -272,7 +272,7 @@ class P2PTransportImplTest : public testing::Test {
   MessageLoop message_loop_;
 };
 
-TEST_F(P2PTransportImplTest, TestDataTransfer) {
+TEST_F(PseudoTcpAdapterTest, DataTransfer) {
   TestCompletionCallback host_connect_cb;
   TestCompletionCallback client_connect_cb;
 
@@ -288,7 +288,7 @@ TEST_F(P2PTransportImplTest, TestDataTransfer) {
   tester->CheckResults();
 }
 
-TEST_F(P2PTransportImplTest, TestLossyChannel) {
+TEST_F(PseudoTcpAdapterTest, LossyChannel) {
   host_socket_->set_loss_rate(0.1);
   client_socket_->set_loss_rate(0.1);
 
@@ -320,7 +320,7 @@ class DeleteOnConnected {
   scoped_ptr<PseudoTcpAdapter>* adapter_;
 };
 
-TEST_F(P2PTransportImplTest, TestDeleteOnConnected) {
+TEST_F(PseudoTcpAdapterTest, DeleteOnConnected) {
   // This test verifies that deleting the adapter mid-callback doesn't lead
   // to deleted structures being touched as the stack unrolls, so the failure
   // mode is a crash rather than a normal test failure.
