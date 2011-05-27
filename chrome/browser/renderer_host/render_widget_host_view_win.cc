@@ -834,14 +834,22 @@ void RenderWidgetHostViewWin::OnDestroy() {
 void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   DCHECK(render_widget_host_->process()->HasConnection());
 
-  // If the GPU process is rendering directly into the View,
-  // call the compositor directly.
-  RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
-  if (render_widget_host->is_accelerated_compositing_active()) {
+  // If the GPU process is rendering directly into the View, compositing is
+  // already triggered by damage to compositor_host_window_, so all we need to
+  // do here is clear borders during resize.
+  if (render_widget_host_ &&
+      render_widget_host_->is_accelerated_compositing_active()) {
     // We initialize paint_dc here so that BeginPaint()/EndPaint()
     // get called to validate the region.
     CPaintDC paint_dc(m_hWnd);
-    render_widget_host_->ScheduleComposite();
+    RECT host_rect, child_rect;
+    GetClientRect(&host_rect);
+    if (::GetClientRect(compositor_host_window_, &child_rect) &&
+        (child_rect.right < host_rect.right ||
+         child_rect.bottom < host_rect.bottom)) {
+      paint_dc.FillRect(&host_rect,
+          reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
+    }
     return;
   }
 
@@ -1479,6 +1487,12 @@ static void PaintCompositorHostWindow(HWND hWnd) {
   PAINTSTRUCT paint;
   BeginPaint(hWnd, &paint);
 
+  RenderWidgetHostViewWin* win = static_cast<RenderWidgetHostViewWin*>(
+      ui::GetWindowUserData(hWnd));
+  // Trigger composite to rerender window.
+  if (win)
+    win->ScheduleComposite();
+
   EndPaint(hWnd, &paint);
 }
 
@@ -1490,6 +1504,7 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
   case WM_ERASEBKGND:
     return 0;
   case WM_DESTROY:
+    ui::SetWindowUserData(hWnd, NULL);
     return 0;
   case WM_PAINT:
     PaintCompositorHostWindow(hWnd);
@@ -1497,6 +1512,11 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
   default:
     return DefWindowProc(hWnd, message, wParam, lParam);
   }
+}
+
+void RenderWidgetHostViewWin::ScheduleComposite() {
+  if (render_widget_host_)
+    render_widget_host_->ScheduleComposite();
 }
 
 // Creates a HWND within the RenderWidgetHostView that will serve as a host
@@ -1538,6 +1558,8 @@ gfx::PluginWindowHandle RenderWidgetHostViewWin::GetCompositingSurface() {
     WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
     0, 0, width, height, m_hWnd, 0, GetModuleHandle(NULL), 0);
   ui::CheckWindowCreated(compositor_host_window_);
+
+  ui::SetWindowUserData(compositor_host_window_, this);
 
   return static_cast<gfx::PluginWindowHandle>(compositor_host_window_);
 }

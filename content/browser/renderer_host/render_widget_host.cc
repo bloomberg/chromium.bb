@@ -444,14 +444,6 @@ void RenderWidgetHost::ScheduleComposite() {
     repaint_ack_pending_ = true;
     Send(new ViewMsg_Repaint(routing_id_, current_size_));
   }
-
-  // When we have asked the RenderWidget to resize, and we are still waiting on
-  // a response, block for a little while to see if we can't get a response.
-  // We always block on response because we do not have a backing store.
-  IPC::Message msg;
-  TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
-  if (process_->WaitForUpdateMsg(routing_id_, max_delay, &msg))
-    OnMessageReceived(msg);
 }
 
 void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {

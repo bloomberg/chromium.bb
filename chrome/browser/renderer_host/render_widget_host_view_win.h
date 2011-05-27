@@ -75,6 +75,8 @@ class RenderWidgetHostViewWin
 
   void CreateWnd(HWND parent);
 
+  void ScheduleComposite();
+
   DECLARE_WND_CLASS_EX(kRenderWidgetHostHWNDClass, CS_DBLCLKS, 0);
 
   BEGIN_MSG_MAP(RenderWidgetHostHWND)
