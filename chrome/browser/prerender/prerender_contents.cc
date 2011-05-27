@@ -451,12 +451,12 @@ void PrerenderContents::OnJSOutOfMemory() {
 }
 
 void PrerenderContents::OnRunJavaScriptMessage(
-    const std::wstring& message,
-    const std::wstring& default_prompt,
+    const string16& message,
+    const string16& default_prompt,
     const GURL& frame_url,
     const int flags,
     bool* did_suppress_message,
-    std::wstring* prompt_field) {
+    string16* prompt_field) {
   // Always suppress JavaScript messages if they're triggered by a page being
   // prerendered.
   *did_suppress_message = true;

@@ -40,12 +40,12 @@ class PrerenderRenderViewHostObserver : public RenderViewHostObserver {
  private:
   // Message handlers.
   void OnJSOutOfMemory();
-  void OnRunJavaScriptMessage(const std::wstring& message,
-                              const std::wstring& default_prompt,
+  void OnRunJavaScriptMessage(const string16& message,
+                              const string16& default_prompt,
                               const GURL& frame_url,
                               const int flags,
                               bool* did_suppress_message,
-                              std::wstring* prompt_field);
+                              string16* prompt_field);
   void OnRenderViewGone(int status, int exit_code);
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool is_main_frame,

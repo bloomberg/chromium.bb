@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -85,7 +86,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   iter = IPC::SyncMessage::GetDataIterator(alert_msg);
   ViewHostMsg_RunJavaScriptMessage::SendParam alert_param;
   ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
-  EXPECT_EQ(L"content got: 42", alert_param.a);
+  EXPECT_EQ(ASCIIToUTF16("content got: 42"), alert_param.a);
 }
 
 // Tests that the bindings for handling a new channel connection and channel
@@ -137,7 +138,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   void* iter = IPC::SyncMessage::GetDataIterator(alert_msg);
   ViewHostMsg_RunJavaScriptMessage::SendParam alert_param;
   ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
-  EXPECT_EQ(L"got: 42", alert_param.a);
+  EXPECT_EQ(ASCIIToUTF16("got: 42"), alert_param.a);
 
   // Now simulate the channel closing.
   render_thread_.sink().ClearMessages();
@@ -150,5 +151,5 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   ASSERT_TRUE(alert_msg);
   iter = IPC::SyncMessage::GetDataIterator(alert_msg);
   ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
-  EXPECT_EQ(L"disconnected: 24", alert_param.a);
+  EXPECT_EQ(ASCIIToUTF16("disconnected: 24"), alert_param.a);
 }

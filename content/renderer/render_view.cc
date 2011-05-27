@@ -1179,12 +1179,12 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
 }
 
 bool RenderView::RunJavaScriptMessage(int type,
-                                      const std::wstring& message,
-                                      const std::wstring& default_value,
+                                      const string16& message,
+                                      const string16& default_value,
                                       const GURL& frame_url,
-                                      std::wstring* result) {
+                                      string16* result) {
   bool success = false;
-  std::wstring result_temp;
+  string16 result_temp;
   if (!result)
     result = &result_temp;
 
@@ -1555,8 +1555,8 @@ bool RenderView::runFileChooser(
 void RenderView::runModalAlertDialog(
     WebFrame* frame, const WebString& message) {
   RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptAlert,
-                       UTF16ToWideHack(message),
-                       std::wstring(),
+                       message,
+                       string16(),
                        frame->url(),
                        NULL);
 }
@@ -1564,8 +1564,8 @@ void RenderView::runModalAlertDialog(
 bool RenderView::runModalConfirmDialog(
     WebFrame* frame, const WebString& message) {
   return RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptConfirm,
-                              UTF16ToWideHack(message),
-                              std::wstring(),
+                              message,
+                              string16(),
                               frame->url(),
                               NULL);
 }
@@ -1573,14 +1573,14 @@ bool RenderView::runModalConfirmDialog(
 bool RenderView::runModalPromptDialog(
     WebFrame* frame, const WebString& message, const WebString& default_value,
     WebString* actual_value) {
-  std::wstring result;
+  string16 result;
   bool ok = RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptPrompt,
-                                 UTF16ToWideHack(message),
-                                 UTF16ToWideHack(default_value),
+                                 message,
+                                 default_value,
                                  frame->url(),
                                  &result);
   if (ok)
-    actual_value->assign(WideToUTF16Hack(result));
+    actual_value->assign(result);
   return ok;
 }
 
@@ -1595,10 +1595,9 @@ bool RenderView::runModalBeforeUnloadDialog(
   bool success = false;
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptMessage.
-  std::wstring ignored_result;
+  string16 ignored_result;
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunBeforeUnloadConfirm(
-      routing_id_, frame->url(), UTF16ToWideHack(message), &success,
-      &ignored_result));
+      routing_id_, frame->url(), message, &success, &ignored_result));
   return success;
 }
 

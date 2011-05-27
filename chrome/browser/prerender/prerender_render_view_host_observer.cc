@@ -75,12 +75,12 @@ void PrerenderRenderViewHostObserver::OnJSOutOfMemory() {
 }
 
 void PrerenderRenderViewHostObserver::OnRunJavaScriptMessage(
-    const std::wstring& message,
-    const std::wstring& default_prompt,
+    const string16& message,
+    const string16& default_prompt,
     const GURL& frame_url,
     const int flags,
     bool* did_suppress_message,
-    std::wstring* prompt_field) {
+    string16* prompt_field) {
   prerender_contents_->OnRunJavaScriptMessage(message,
                                               default_prompt,
                                               frame_url,

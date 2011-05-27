@@ -130,8 +130,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual WebPreferences GetWebkitPrefs();
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
-                                    const std::wstring& message,
-                                    const std::wstring& default_prompt,
+                                    const string16& message,
+                                    const string16& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
@@ -190,7 +190,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Overridden from JavaScriptAppModalDialogDelegate:
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,
-                                  const std::wstring& prompt);
+                                  const std::wstring& user_input);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual TabContents* AsTabContents();

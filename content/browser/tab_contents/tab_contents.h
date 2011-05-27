@@ -449,7 +449,7 @@ class TabContents : public PageNavigator,
   // Overridden from JavaScriptAppModalDialogDelegate:
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,
-                                  const std::wstring& prompt);
+                                  const std::wstring& user_input);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual TabContents* AsTabContents();
@@ -668,14 +668,14 @@ class TabContents : public PageNavigator,
   virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition);
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
-                                    const std::wstring& message,
-                                    const std::wstring& default_prompt,
+                                    const string16& message,
+                                    const string16& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message);
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
-                                      const std::wstring& message,
+                                      const string16& message,
                                       IPC::Message* reply_msg);
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
   virtual WebPreferences GetWebkitPrefs();

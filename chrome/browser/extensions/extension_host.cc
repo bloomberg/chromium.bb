@@ -410,8 +410,8 @@ void ExtensionHost::DocumentOnLoadCompletedInMainFrame(RenderViewHost* rvh,
 }
 
 void ExtensionHost::RunJavaScriptMessage(const RenderViewHost* rvh,
-                                         const std::wstring& message,
-                                         const std::wstring& default_prompt,
+                                         const string16& message,
+                                         const string16& default_prompt,
                                          const GURL& frame_url,
                                          const int flags,
                                          IPC::Message* reply_msg,
@@ -432,8 +432,14 @@ void ExtensionHost::RunJavaScriptMessage(const RenderViewHost* rvh,
     // Unlike for page alerts, navigations aren't a good signal for when to
     // resume showing alerts, so we can't reasonably stop showing them even if
     // the extension is spammy.
-    RunJavascriptMessageBox(profile_, this, frame_url, flags, message,
-                            default_prompt, show_suppress_checkbox, reply_msg);
+    RunJavascriptMessageBox(profile_,
+                            this,
+                            frame_url,
+                            flags,
+                            UTF16ToWideHack(message),
+                            UTF16ToWideHack(default_prompt),
+                            show_suppress_checkbox,
+                            reply_msg);
   } else {
     // If we are suppressing messages, just reply as is if the user immediately
     // pressed "Cancel".
@@ -469,9 +475,11 @@ ExtensionHost* ExtensionHost::AsExtensionHost() {
 
 void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,
                                        bool success,
-                                       const std::wstring& prompt) {
+                                       const std::wstring& user_input) {
   last_javascript_message_dismissal_ = base::TimeTicks::Now();
-  render_view_host()->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
+  render_view_host()->JavaScriptDialogClosed(reply_msg,
+                                             success,
+                                             WideToUTF16Hack(user_input));
 }
 
 void ExtensionHost::SetSuppressMessageBoxes(bool suppress_message_boxes) {

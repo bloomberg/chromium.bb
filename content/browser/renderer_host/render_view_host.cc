@@ -480,9 +480,9 @@ void RenderViewHost::SelectAll() {
   UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
 }
 
-void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
-                                                bool success,
-                                                const std::wstring& prompt) {
+void RenderViewHost::JavaScriptDialogClosed(IPC::Message* reply_msg,
+                                            bool success,
+                                            const string16& user_input) {
   process()->set_ignore_input_events(false);
   bool is_waiting =
       is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_;
@@ -490,7 +490,7 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   ViewHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
-                                                     success, prompt);
+                                                     success, user_input);
   Send(reply_msg);
 
   // If we are waiting for an unload or beforeunload ack and the user has
@@ -995,8 +995,8 @@ void RenderViewHost::OnMsgSelectionChanged(const std::string& text,
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(
-    const std::wstring& message,
-    const std::wstring& default_prompt,
+    const string16& message,
+    const string16& default_prompt,
     const GURL& frame_url,
     const int flags,
     IPC::Message* reply_msg) {
@@ -1010,7 +1010,7 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
 }
 
 void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
-                                                 const std::wstring& message,
+                                                 const string16& message,
                                                  IPC::Message* reply_msg) {
   // While a JS before unload dialog is showing, tabs in the same process
   // shouldn't process input events.

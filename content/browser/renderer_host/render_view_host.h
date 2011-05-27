@@ -252,9 +252,9 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Notifies the RenderView that the JavaScript message that was shown was
   // closed by the user.
-  void JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
-                                  bool success,
-                                  const std::wstring& prompt);
+  void JavaScriptDialogClosed(IPC::Message* reply_msg,
+                              bool success,
+                              const string16& user_input);
 
   // Notifies the renderer that a a drag operation that it started has ended,
   // either in a drop or by being cancelled.
@@ -418,13 +418,13 @@ class RenderViewHost : public RenderWidgetHost {
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgSelectionChanged(const std::string& text, const ui::Range& range);
   void OnMsgPasteFromSelectionClipboard();
-  void OnMsgRunJavaScriptMessage(const std::wstring& message,
-                                 const std::wstring& default_prompt,
+  void OnMsgRunJavaScriptMessage(const string16& message,
+                                 const string16& default_prompt,
                                  const GURL& frame_url,
                                  const int flags,
                                  IPC::Message* reply_msg);
   void OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
-                                   const std::wstring& message,
+                                   const string16& message,
                                    IPC::Message* reply_msg);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,

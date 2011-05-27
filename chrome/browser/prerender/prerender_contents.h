@@ -118,12 +118,12 @@ class PrerenderContents : public NotificationObserver,
   bool MatchesURL(const GURL& url, GURL* matching_url) const;
 
   void OnJSOutOfMemory();
-  void OnRunJavaScriptMessage(const std::wstring& message,
-                              const std::wstring& default_prompt,
+  void OnRunJavaScriptMessage(const string16& message,
+                              const string16& default_prompt,
                               const GURL& frame_url,
                               const int flags,
                               bool* did_suppress_message,
-                              std::wstring* prompt_field);
+                              string16* prompt_field);
   virtual void OnRenderViewGone(int status, int exit_code);
 
   // TabContentsObserver implementation.

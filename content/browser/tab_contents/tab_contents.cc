@@ -1587,8 +1587,8 @@ void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
 
 void TabContents::RunJavaScriptMessage(
     const RenderViewHost* rvh,
-    const std::wstring& message,
-    const std::wstring& default_prompt,
+    const string16& message,
+    const string16& default_prompt,
     const GURL& frame_url,
     const int flags,
     IPC::Message* reply_msg,
@@ -1621,8 +1621,14 @@ void TabContents::RunJavaScriptMessage(
             chrome::kJavascriptMessageExpectedDelay))
       show_suppress_checkbox = true;
 
-    RunJavascriptMessageBox(profile(), this, frame_url, flags, message,
-                            default_prompt, show_suppress_checkbox, reply_msg);
+    RunJavascriptMessageBox(profile(),
+                            this,
+                            frame_url,
+                            flags,
+                            UTF16ToWideHack(message),
+                            UTF16ToWideHack(default_prompt),
+                            show_suppress_checkbox,
+                            reply_msg);
   } else {
     // If we are suppressing messages, just reply as is if the user immediately
     // pressed "Cancel".
@@ -1631,19 +1637,18 @@ void TabContents::RunJavaScriptMessage(
 }
 
 void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
-                                         const std::wstring& message,
+                                         const string16& message,
                                          IPC::Message* reply_msg) {
   if (delegate())
     delegate()->WillRunBeforeUnloadConfirm();
   bool suppress_this_message = rvh->is_swapped_out() ||
       (delegate() && delegate()->ShouldSuppressDialogs());
   if (suppress_this_message) {
-    render_view_host()->JavaScriptMessageBoxClosed(reply_msg, true,
-                                                   std::wstring());
+    render_view_host()->JavaScriptDialogClosed(reply_msg, true, string16());
     return;
   }
   is_showing_before_unload_dialog_ = true;
-  RunBeforeUnloadDialog(this, message, reply_msg);
+  RunBeforeUnloadDialog(this, UTF16ToWideHack(message), reply_msg);
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
@@ -1838,7 +1843,7 @@ gfx::NativeWindow TabContents::GetMessageBoxRootWindow() {
 
 void TabContents::OnMessageBoxClosed(IPC::Message* reply_msg,
                                      bool success,
-                                     const std::wstring& prompt) {
+                                     const std::wstring& user_input) {
   last_javascript_message_dismissal_ = base::TimeTicks::Now();
   if (is_showing_before_unload_dialog_ && !success) {
     // If a beforeunload dialog is canceled, we need to stop the throbber from
@@ -1848,7 +1853,9 @@ void TabContents::OnMessageBoxClosed(IPC::Message* reply_msg,
     tab_close_start_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
-  render_view_host()->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
+  render_view_host()->JavaScriptDialogClosed(reply_msg,
+                                             success,
+                                             WideToUTF16Hack(user_input));
 }
 
 void TabContents::SetSuppressMessageBoxes(bool suppress_message_boxes) {

@@ -1574,12 +1574,12 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_GoToEntryAtOffset,
                     int /* offset (from current) of history item to get */)
 
 IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
-                           std::wstring /* in - alert message */,
-                           std::wstring /* in - default prompt */,
+                           string16     /* in - alert message */,
+                           string16     /* in - default prompt */,
                            GURL         /* in - originating page URL */,
                            int          /* in - dialog flags */,
                            bool         /* out - success */,
-                           std::wstring /* out - prompt field */)
+                           string16     /* out - user_input field */)
 
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenURL,
@@ -1718,10 +1718,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
 // page. Replies true if yes, false otherwise, the reply string is ignored,
 // but is included so that we can use OnJavaScriptMessageBoxClosed.
 IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_RunBeforeUnloadConfirm,
-                           GURL,        /* in - originating frame URL */
-                           std::wstring /* in - alert message */,
-                           bool         /* out - success */,
-                           std::wstring /* out - This is ignored.*/)
+                           GURL,     /* in - originating frame URL */
+                           string16  /* in - alert message */,
+                           bool      /* out - success */,
+                           string16  /* out - This is ignored.*/)
 
 // Sent when the renderer process is done processing a DataReceived
 // message.

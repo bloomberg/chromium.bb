@@ -693,10 +693,10 @@ class RenderView : public RenderWidget,
                WebKit::WebNavigationPolicy policy);
 
   bool RunJavaScriptMessage(int type,
-                            const std::wstring& message,
-                            const std::wstring& default_value,
+                            const string16& message,
+                            const string16& default_value,
                             const GURL& frame_url,
-                            std::wstring* result);
+                            string16* result);
 
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);

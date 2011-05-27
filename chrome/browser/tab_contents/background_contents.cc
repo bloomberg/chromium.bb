@@ -103,8 +103,8 @@ void BackgroundContents::DidNavigate(
 
 void BackgroundContents::RunJavaScriptMessage(
     const RenderViewHost* rvh,
-    const std::wstring& message,
-    const std::wstring& default_prompt,
+    const string16& message,
+    const string16& default_prompt,
     const GURL& frame_url,
     const int flags,
     IPC::Message* reply_msg,
@@ -139,8 +139,10 @@ void BackgroundContents::Observe(NotificationType type,
 
 void BackgroundContents::OnMessageBoxClosed(IPC::Message* reply_msg,
                                             bool success,
-                                            const std::wstring& prompt) {
-  render_view_host_->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
+                                            const std::wstring& user_input) {
+  render_view_host()->JavaScriptDialogClosed(reply_msg,
+                                             success,
+                                             WideToUTF16Hack(user_input));
 }
 
 gfx::NativeWindow BackgroundContents::GetMessageBoxRootWindow() {

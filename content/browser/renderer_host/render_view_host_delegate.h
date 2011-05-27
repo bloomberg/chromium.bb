@@ -363,15 +363,15 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
-                                    const std::wstring& message,
-                                    const std::wstring& default_prompt,
+                                    const string16& message,
+                                    const string16& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) {}
 
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
-                                      const std::wstring& message,
+                                      const string16& message,
                                       IPC::Message* reply_msg) {}
 
   // Return a dummy RendererPreferences object that will be used by the renderer

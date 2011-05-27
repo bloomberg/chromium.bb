@@ -1632,7 +1632,7 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
   IPC::Message* dummy_message = new IPC::Message;
   bool did_suppress_message = false;
   contents()->RunJavaScriptMessage(contents()->render_view_host(),
-      L"This is an informative message", L"OK",
+      ASCIIToUTF16("This is an informative message"), ASCIIToUTF16("OK"),
       kGURL, ui::MessageBoxFlags::kIsJavascriptAlert, dummy_message,
       &did_suppress_message);
   EXPECT_TRUE(did_suppress_message);
