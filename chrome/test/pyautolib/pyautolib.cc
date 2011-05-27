@@ -27,7 +27,7 @@ PyUITestSuiteBase::~PyUITestSuiteBase() {
   Shutdown();
 }
 
-void PyUITestSuiteBase::Initialize(const FilePath& browser_dir) {
+void PyUITestSuiteBase::InitializeWithPath(const FilePath& browser_dir) {
   SetBrowserDirectory(browser_dir);
   UITestSuite::Initialize();
 }

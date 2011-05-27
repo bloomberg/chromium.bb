@@ -26,9 +26,9 @@
 class PyUITestSuiteBase : public UITestSuite {
  public:
   PyUITestSuiteBase(int argc, char** argv);
-  ~PyUITestSuiteBase();
+  virtual ~PyUITestSuiteBase();
 
-  void Initialize(const FilePath& browser_dir);
+  void InitializeWithPath(const FilePath& browser_dir);
 
   void SetCrSourceRoot(const FilePath& path);
 
@@ -44,7 +44,7 @@ class PyUITestBase : public UITestBase {
 
   // Constructor. Lookup pyauto.py for doc on these args.
   PyUITestBase(bool clear_profile, std::wstring homepage);
-  ~PyUITestBase();
+  virtual ~PyUITestBase();
 
   // Initialize the setup. Should be called before launching the browser.
   // |browser_dir| is the path to dir containing chromium binaries.

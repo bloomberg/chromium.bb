@@ -3727,6 +3727,7 @@
           ],
           'cflags': [
              '-Wno-uninitialized',
+             '-Wno-self-assign',  # to keep clang happy for generated code.
           ],
           'sources': [
             'test/automation/proxy_launcher.cc',

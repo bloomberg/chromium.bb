@@ -3235,7 +3235,7 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     # Figure out path to chromium binaries
     browser_dir = os.path.normpath(os.path.dirname(pyautolib.__file__))
     logging.debug('Loading pyauto libs from %s', browser_dir)
-    self.Initialize(pyautolib.FilePath(browser_dir))
+    self.InitializeWithPath(pyautolib.FilePath(browser_dir))
     os.environ['PATH'] = browser_dir + os.pathsep + os.environ['PATH']
 
     unittest.TestSuite.__init__(self)

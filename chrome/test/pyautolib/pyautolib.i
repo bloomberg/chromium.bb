@@ -167,10 +167,11 @@ class PyUITestSuiteBase {
  public:
   %feature("docstring", "Create the suite.") PyUITestSuiteBase;
   PyUITestSuiteBase(int argc, char** argv);
-  ~PyUITestSuiteBase();
+  virtual ~PyUITestSuiteBase();
 
-  %feature("docstring", "Initialize from the path to browser dir.") Initialize;
-  void Initialize(const FilePath& browser_dir);
+  %feature("docstring", "Initialize from the path to browser dir.")
+      InitializeWithPath;
+  void InitializeWithPath(const FilePath& browser_dir);
   %feature("docstring", "Set chrome source root path, used in some tests")
       SetCrSourceRoot;
   void SetCrSourceRoot(const FilePath& path);
