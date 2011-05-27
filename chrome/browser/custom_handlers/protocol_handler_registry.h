@@ -37,6 +37,7 @@ class ProtocolHandlerRegistry
     virtual void RegisterExternalHandler(const std::string& protocol);
     virtual void DeregisterExternalHandler(const std::string& protocol);
     virtual bool IsExternalHandlerRegistered(const std::string& protocol);
+    virtual void RegisterWithOSAsDefaultClient(const std::string& protocol);
   };
 
   typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;

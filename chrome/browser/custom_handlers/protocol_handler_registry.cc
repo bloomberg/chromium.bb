@@ -12,6 +12,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
@@ -50,6 +51,8 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
   }
   if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol())) {
     delegate_->RegisterExternalHandler(handler.protocol());
+    if (!is_loading_)
+      delegate_->RegisterWithOSAsDefaultClient(handler.protocol());
   }
   InsertHandler(handler);
   NotifyChanged();
@@ -378,6 +381,15 @@ void ProtocolHandlerRegistry::Delegate::RegisterExternalHandler(
 
 void ProtocolHandlerRegistry::Delegate::DeregisterExternalHandler(
     const std::string& protocol) {
+}
+
+void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
+    const std::string& protocol) {
+  // The worker is automatically freed when it is no longer needed due
+  // to reference counting.
+  scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker;
+  worker = new ShellIntegration::DefaultProtocolClientWorker(NULL, protocol);
+  worker->StartSetAsDefault();
 }
 
 bool ProtocolHandlerRegistry::Delegate::IsExternalHandlerRegistered(
