@@ -15,9 +15,11 @@ namespace pp {
 
 class Instance;
 
+#ifndef PPAPI_VAR_REMOVE_SCRIPTING
 namespace deprecated {
 class ScriptableObject;
 }
+#endif
 
 class Var {
  public:
@@ -50,9 +52,6 @@ class Var {
     var_ = var;
     needs_release_ = false;
   }
-
-  // Takes ownership of the given pointer.
-  Var(Instance* instance, deprecated::ScriptableObject* object);
 
   Var(const Var& other);
 
@@ -101,6 +100,10 @@ class Var {
   // in debug mode, and return an empty string.
   std::string AsString() const;
 
+#ifndef PPAPI_VAR_REMOVE_SCRIPTING
+  // Takes ownership of the given pointer.
+  Var(Instance* instance, deprecated::ScriptableObject* object);
+
   // This assumes the object is of type object. If it's not, it will assert in
   // debug mode. If it is not an object or not a ScriptableObject type, returns
   // NULL.
@@ -126,6 +129,7 @@ class Var {
            const Var& arg3, Var* exception = NULL);
   Var Call(const Var& method_name, const Var& arg1, const Var& arg2,
            const Var& arg3, const Var& arg4, Var* exception = NULL);
+#endif  // ifndef PPAPI_VAR_REMOVE_SCRIPTING
 
   // Returns a const reference to the PP_Var managed by this Var object.
   const PP_Var& pp_var() const {
