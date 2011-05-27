@@ -1041,10 +1041,14 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
   if (current_size > 0) {
     // Prune any entries which are in front of the current entry.
     // Also prune the current entry if we are to replace the current entry.
-    int prune_up_to = replace ? last_committed_entry_index_ - 1
-                              : last_committed_entry_index_;
+    // last_committed_entry_index_ must be updated here since calls to
+    // NotifyPrunedEntries() below may re-enter and we must make sure
+    // last_committed_entry_index_ is not left in an invalid state.
+    if (replace)
+      --last_committed_entry_index_;
+
     int num_pruned = 0;
-    while (prune_up_to < (current_size - 1)) {
+    while (last_committed_entry_index_ < (current_size - 1)) {
       num_pruned++;
       entries_.pop_back();
       current_size--;
