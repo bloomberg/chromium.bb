@@ -397,7 +397,7 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
       break;
 
     case BINDSTATUS_REDIRECTING:
-      url_.empty();
+      url_.clear();
       if (status_text)
         url_ = status_text;
       break;
