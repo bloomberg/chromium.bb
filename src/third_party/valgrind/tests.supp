@@ -21,3 +21,15 @@
   fun:TestErrorCheckingMutex
   fun:main
 }
+
+{
+  issue1866
+  ThreadSanitizer:Race
+  fun:NaClLogSetVerbosity_mu
+  fun:NaClLogSetVerbosity
+  fun:NaClLogModuleInitExtended
+  fun:NaClLogModuleInit
+  fun:NaClPlatformInit
+  fun:NaClNrdAllModulesInit
+  fun:SelLdrTest::SetUp
+}

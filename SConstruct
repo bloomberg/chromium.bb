@@ -326,7 +326,8 @@ def ExpandArguments():
     print 'buildbot=tsan-trusted expands to the following arguments:'
     SetArgument('run_under',
                 'src/third_party/valgrind/tsan.sh,' +
-                '--error-exitcode=1')
+                '--error-exitcode=1,' +
+                '--suppressions=src/third_party/valgrind/tests.supp')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
   elif ARGUMENTS.get('buildbot'):
