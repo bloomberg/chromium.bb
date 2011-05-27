@@ -1560,7 +1560,7 @@
         "test\/proxy_form_controller_test.js",
         "test\/unittest.css"
       ],
-      "source_hash": "66e4d25657813092740fb46e1282821d6b6ae3de",
+      "source_hash": "0c0cf2e2ee68a9a25ae2926447e8c0cff4ba7406",
       "zip_path": "examples\/extensions\/proxy_configuration.zip"
     },
     {

@@ -2,27 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Stub out the `chrome.proxy` API
+// Stub out the `chrome.proxy`, `chrome.i18n`, and `chrome.extension` APIs
 chrome = chrome || {
-   proxy: {
-     settings: {
-       get: function() {},
-       clear: function() {},
-       set: function() {}
+  proxy: {
+    settings: {
+      get: function() {},
+      clear: function() {},
+      set: function() {}
+    }
+  },
+  i18n: {
+    getMessage: function(x) { return x; }
+  },
+  extension: {
+    sendRequest: function() {},
+    isAllowedIncognitoAccess: function(funk) {
+      funk(true);
     }
   }
 };
-// Stub out i18n
-chrome.i18n = chrome.i18n || {
-  getMessage: function(x) { return x; }
-};
-// Stub out messaging and access.
-chrome.extension = chrome.extension || {
-  sendRequest: function() {},
-  isAllowedIncognitoAccess: function(funk) {
-    funk(true);
-  }
-};
+
 var fixture = document.getElementById('fixture');
 var baselineHTML = fixture.innerHTML;
 var groupIDs = [ProxyFormController.ProxyTypes.DIRECT,
@@ -47,8 +46,6 @@ var mockFunctionFactory = function(returnValue, logging) {
   return funky;
 };
 
-var chrome = chrome || {};
-
 var proxyform = new Test.Unit.Runner({
   setup: function() {
     fixture.innerHTML = baselineHTML;
@@ -57,19 +54,17 @@ var proxyform = new Test.Unit.Runner({
     this.clickEvent_.initMouseEvent('click', true, true, window,
         0, 0, 0, 0, 0, false, false, false, false, 0, null);
     // Reset mock functions.
-    chrome = {
-       proxy: {
-         settings: {
-           get: mockFunctionFactory({
-                  value: {mode: 'system' },
-                  levelOfControl: 'controllable_by_this_extension' }),
-           clear: mockFunctionFactory({
-                    value: {mode: 'system' },
-                    levelOfControl: 'controllable_by_this_extension' }),
-           set: mockFunctionFactory({
-                  value: {mode: 'system' },
-                  levelOfControl: 'controllable_by_this_extension' })
-        }
+    chrome.proxy = {
+      settings: {
+        get: mockFunctionFactory({
+               value: {mode: 'system' },
+               levelOfControl: 'controllable_by_this_extension' }),
+        clear: mockFunctionFactory({
+                 value: {mode: 'system' },
+                 levelOfControl: 'controllable_by_this_extension' }),
+        set: mockFunctionFactory({
+               value: {mode: 'system' },
+               levelOfControl: 'controllable_by_this_extension' })
       }
     };
   },
@@ -149,7 +144,7 @@ var proxyform = new Test.Unit.Runner({
     // Wait for async calls to fire
     this.wait(100, function() {
       this.assertEqual(
-          2,
+          6,
           chrome.proxy.settings.get.getCallList().length);
       this.assert(
           document.getElementById(ProxyFormController.ProxyTypes.SYSTEM)
