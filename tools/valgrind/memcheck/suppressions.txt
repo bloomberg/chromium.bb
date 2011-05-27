@@ -4598,6 +4598,48 @@
    fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvRKN4base9TimeTicksEjE6Tuple2IS4_jEED0Ev
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
 }
+{
+   bug_84223
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_18NPThingy8AllocateEP4_NPPP7NPClass
+   fun:_NPN_CreateObject
+   fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
+   fun:_ZN11NPAPIClient20NPObjectIdentityTest9SetWindowEP9_NPWindow
+   fun:NPP_SetWindow
+   fun:_ZN6webkit5npapi14PluginInstance13NPP_SetWindowEP9_NPWindow
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl17WindowedSetWindowEv
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl22WindowedUpdateGeometryERKN3gfx4RectES5_
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl14UpdateGeometryERKN3gfx4RectES5_
+   fun:_ZN14WebPluginProxy14UpdateGeometryERKN3gfx4RectES3_RKiS5_b
+   fun:_ZN21WebPluginDelegateStub16OnUpdateGeometryERK30PluginMsg_UpdateGeometry_Param
+}
+{
+   bug_84224_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocator*MessageLoop11PendingTaskEE8allocate*
+   fun:_ZN*_Deque_baseIN11MessageLoop11PendingTaskESaIS1_*_M_allocate_*
+   ...
+   fun:_ZNSt5dequeIN11MessageLoop11PendingTaskESaIS1_EE9push_backERKS1_
+   fun:_ZNSt5queueIN11MessageLoop11PendingTaskESt5dequeIS1_SaIS1_EEE4pushERKS1_
+   fun:_ZN11MessageLoop18AddToIncomingQueueEPNS_11PendingTaskE
+}
+{
+   bug_84224_b
+   Memcheck:Addr4
+   fun:_ZN13scoped_refptrIN4base8internal18InvokerStorageBaseEEC2ERKS3_
+   fun:_ZN13scoped_refptrIN4base8internal18InvokerStorageBaseEEC1ERKS3_
+   fun:_ZN4base8internal12CallbackBaseC2ERKS1_
+   fun:_ZN4base8CallbackIFvvEEC2ERKS2_
+   fun:_ZN4base8CallbackIFvvEEC1ERKS2_
+   fun:_ZN11MessageLoop11PendingTaskC2ERKS0_
+   fun:_ZN11MessageLoop11PendingTaskC1ERKS0_
+   fun:_ZN9__gnu_cxx13new_allocatorIN11MessageLoop11PendingTaskEE9constructEPS2_RKS2_
+   fun:_ZNSt5dequeIN11MessageLoop11PendingTaskESaIS1_EE9push_backERKS1_
+   fun:_ZNSt5queueIN11MessageLoop11PendingTaskESt5dequeIS1_SaIS1_EEE4pushERKS1_
+   fun:_ZN11MessageLoop18AddToIncomingQueueEPNS_11PendingTaskE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
