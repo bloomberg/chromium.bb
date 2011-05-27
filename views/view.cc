@@ -1165,7 +1165,6 @@ void View::PaintComposite() {
     return;
 
   if (texture_.get()) {
-    // TODO: if dirty_region doesn't itersect bounds, return.
     ui::Transform transform;
     GetTransformRelativeTo(NULL, &transform);
     texture_->Draw(transform);

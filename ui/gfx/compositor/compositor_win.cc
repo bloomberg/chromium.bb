@@ -155,7 +155,7 @@ void ViewTexture::SetBitmap(const SkBitmap& bitmap,
     DCHECK(texture_.get());
     D3D10_BOX dst_box = { origin.x(), origin.y(), 0,
                           origin.x() + bitmap.width(),
-                          origin.y() + bitmap.height(), 0 };
+                          origin.y() + bitmap.height(), 1 };
     device_->UpdateSubresource(texture_.get(), 0, &dst_box,
                                converted_data.get(), bitmap.width() * 4, 0);
   }
