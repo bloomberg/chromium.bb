@@ -227,10 +227,6 @@ void JingleClient::DoInitialize() {
                                cricket::PORTALLOCATOR_DISABLE_RELAY);
   }
 
-  // TODO(sergeyu): Reenable TCP when 80245 is fixed.
-  port_allocator_->set_flags(
-      port_allocator_->flags() | cricket::PORTALLOCATOR_DISABLE_TCP);
-
   // TODO(ajwong): The strategy needs a "start" command or something.  Right
   // now, Init() implicitly starts processing events.  Thus, we must have the
   // other fields of JingleClient initialized first, otherwise the state-change
