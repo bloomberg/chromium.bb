@@ -2,32 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MEDIAPLAYER_UI_H_
-#define CHROME_BROWSER_UI_WEBUI_MEDIAPLAYER_UI_H_
+#ifndef CHROME_BROWSER_CHROMEOS_MEDIA_MEDIA_PLAYER_H_
+#define CHROME_BROWSER_CHROMEOS_MEDIA_MEDIA_PLAYER_H_
 #pragma once
 
 #include <set>
 #include <vector>
 
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
+#include "base/memory/singleton.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
-#include "net/base/directory_lister.h"
+
 #include "net/url_request/url_request.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 class Browser;
 class GURL;
-class MediaplayerHandler;
 class Profile;
 
 class MediaPlayer : public NotificationObserver,
                     public net::URLRequest::Interceptor {
  public:
+  struct MediaUrl;
+  typedef std::vector<MediaUrl> UrlVector;
+
   virtual ~MediaPlayer();
 
   // Enqueues this file into the current playlist.  If the mediaplayer is
@@ -61,29 +62,28 @@ class MediaPlayer : public NotificationObserver,
   // Force the playlist window to be closed.
   void ClosePlaylistWindow();
 
-  // Sets the currently playing element to the given offset.
-  void SetPlaylistOffset(int offset);
+  // Sets the currently playing element to the given positions.
+  void SetPlaylistPosition(int position);
 
-  // Set a new playback handler to give events to, along with the
-  // tab contents of the page which holds the mediaplayer. it is expected
-  // That only one of these will exist at any given time.
-  void SetNewHandler(MediaplayerHandler* handler,
-                     TabContents* contents);
+  // Returns current playlist.
+  const UrlVector& GetPlaylist() const;
 
-  // Removes the handler.
-  void RemoveHandler(MediaplayerHandler* handler);
+  // Returns current playlist position.
+  int GetPlaylistPosition() const;
 
-  // Registers a new playlist handler which receives events from the
-  // mediaplayer, along with the tab contents which has the playlist in it.
-  void RegisterNewPlaylistHandler(MediaplayerHandler* handler,
-                                  TabContents* contents);
+  // Set flag that error occuires while playing the url.
+  void SetPlaybackError(GURL const& url);
 
-  // Removes the playlist handler.
-  void RemovePlaylistHandler(MediaplayerHandler* handler);
-
-  // Notfiys the mediaplayer that the playlist changed. This could be
+  // Notfies the mediaplayer that the playlist changed. This could be
   // called from the mediaplayer itself for example.
   void NotifyPlaylistChanged();
+
+  // Retuen true if playback requested. Resets this flag.
+  bool GetPendingPlayRequestAndReset();
+
+  // Requests starting playback of the current playlist item when the
+  // mediaplayer get the playlist updated.
+  void SetPlaybackRequest();
 
   // Always returns NULL because we don't want to attempt a redirect
   // before seeing the detected mime type of the request.
@@ -107,7 +107,18 @@ class MediaPlayer : public NotificationObserver,
  private:
   friend struct DefaultSingletonTraits<MediaPlayer>;
 
+  // The current playlist of urls.
+  UrlVector current_playlist_;
+  // The position into the current_playlist_ of the currently playing item.
+  int current_position_;
+
+  bool pending_playback_request_;
+
   MediaPlayer();
+
+  GURL GetOriginUrl() const;
+  GURL GetMediaplayerPlaylistUrl() const;
+  GURL GetMediaPlayerUrl() const;
 
   // Popup the mediaplayer, this shows the browser, and sets up its
   // locations correctly.
@@ -117,16 +128,7 @@ class MediaPlayer : public NotificationObserver,
   // chrome://mediaplayer#playlist
   void PopupPlaylist(Browser* creator);
 
-  // Registers the listeners for the close events on the browser windows.
-  void RegisterListeners();
-
-  // Set when the register handler is called.  When the media player is
-  // closed, this pointer is set back to NULL.
-  MediaplayerHandler* handler_;
-
-  // Set when the register playlist handler is called. When the playlist
-  // is closed, this pointer is set back to NULL.
-  MediaplayerHandler* playlist_;
+  void EnqueueMediaFileUrl(const GURL& url);
 
   // Browser containing the playlist. Used to force closes. This is created
   // By the PopupPlaylist call, and is NULLed out when the window is closed.
@@ -137,35 +139,23 @@ class MediaPlayer : public NotificationObserver,
   // is closed.
   Browser* mediaplayer_browser_;
 
-  // List of URLs that were enqueued during the time that the mediaplayer
-  // had not poped up yet. This is claered out after the mediaplayer pops up.
-  std::vector<GURL> unhandled_urls_;
-
   // Used to register for events on the windows, like to listen for closes.
   NotificationRegistrar registrar_;
-
-  // Tab contents of the mediaplayer.  Used to listen for events
-  // which would cause the mediaplayer to be closed.  These are cleared out
-  // when the mediaplayer is closed.
-  TabContents* mediaplayer_tab_;
-
-  // Tab contents of the playlist tab. used to listen for events which would
-  // cause the mediaplayer to be closed.  These are cleared out when the
-  // playlist is closed.
-  TabContents* playlist_tab_;
 
   // List of mimetypes that the mediaplayer should listen to.  Used for
   // interceptions of url GETs.
   std::set<std::string> supported_mime_types_;
+  friend class MediaPlayerBrowserTest;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);
 };
 
-class MediaplayerUI : public WebUI {
- public:
-  explicit MediaplayerUI(TabContents* contents);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaplayerUI);
+struct MediaPlayer::MediaUrl {
+  MediaUrl() {}
+  explicit MediaUrl(const GURL& newurl)
+      : url(newurl),
+        haderror(false) {}
+  GURL url;
+  bool haderror;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MEDIAPLAYER_UI_H_
+#endif  // CHROME_BROWSER_CHROMEOS_MEDIA_MEDIA_PLAYER_H_

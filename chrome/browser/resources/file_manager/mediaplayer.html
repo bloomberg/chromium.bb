@@ -121,11 +121,11 @@ body {
 }
 
 .soundiconhigh {
-  /* background: TODO(serya): Restore mediaplayer_vol_high.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_vol_high.png');
 }
 
 .soundiconmuted {
-  /* background: TODO(serya): Restore mediaplayer_vol_mute.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_vol_mute.png');
 }
 
 .soundiconhigh,
@@ -154,13 +154,13 @@ body {
 }
 
 .fullscreenicon {
-  /* background: TODO(serya): Restore mediaplayer_full_screen.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_full_screen.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
 }
 
 .fullscreenexiticon {
-  /* background: TODO(serya): Restore mediaplayer_full_screen_exit.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_full_screen_exit.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
 }
@@ -183,7 +183,7 @@ body {
 }
 
 .playicon {
-  /* background: TODO(serya): Restore mediaplayer_play.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_play.png');
   background-repeat: no-repeat;
   background-position: 9px 8px;
 }
@@ -197,7 +197,7 @@ body {
 }
 
 .pauseicon {
-  /* background: Restore mediaplayer_pause.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_pause.png');
   background-repeat: no-repeat;
   background-position: 9px 8px;
 }
@@ -210,7 +210,7 @@ body {
 }
 
 .previcon {
-  /* background: TODO(serya): Restore mediaplayer_prev.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_prev.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
 }
@@ -250,7 +250,7 @@ body {
 }
 
 .nexticon {
-  /* background: TODO(serya): Restore mediaplayer_next.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_next.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
 }
@@ -264,7 +264,7 @@ body {
 }
 
 .playlisticon {
-  /* background: TODO(serya): Restore mediaplayer_playlist.png after moving mediaplayer to extension. */
+  background: url('images/mediaplayer_playlist.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
 }
@@ -287,8 +287,8 @@ body {
 }
 
 </style>
-<script src="shared/js/local_strings.js"></script>
-<script src="shared/js/media_common.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/media_common.js"></script>
 <script>
 
 function $(o) {
@@ -310,6 +310,14 @@ var fullScreen = false;
  * Window onload handler, sets up the page.
  */
 function load() {
+  chrome.fileBrowserPrivate.getStrings(function(strings) {
+    localStrings = new LocalStrings(strings);
+
+    init();
+  });
+}
+
+function init() {
   document.body.addEventListener('dragover', function(e) {
     if (e.preventDefault) e.preventDefault();
   });
@@ -318,8 +326,11 @@ function load() {
   });
   document.body.addEventListener('keydown', onkeydown);
 
-  localStrings = new LocalStrings();
-  chrome.send('getCurrentPlaylist', []);
+  chrome.mediaPlayerPrivate.getPlaylist(true, getPlaylistCallback);
+  
+  chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(function() {
+    chrome.mediaPlayerPrivate.getPlaylist(true, getPlaylistCallback);
+  });
 }
 
 function onMediaProgress() {
@@ -349,12 +360,11 @@ function onLoadedProgress(e) {
 function onMediaError(e) {
   console.log('Got new error');
   console.log(e);
-  chrome.send('playbackError', ['Error playing back',
-      currentPlaylist[currentItem].path]);
+  chrome.mediaPlayerPrivate.setPlaybackError(currentPlaylist[currentItem].path);
   if (currentPlaylist.length == 1) {
-    $('error').textContent = localStrings.getString('errorstring');
+    $('error').textContent = localStrings.getString('PLAYBACK_ERROR');
   } else {
-    chrome.send("showPlaylist", []);
+    chrome.mediaPlayerPrivate.togglePlaylistPanel();
   }
   onMediaComplete();
 }
@@ -380,8 +390,7 @@ function onMediaComplete() {
   mediaElement.removeEventListener("play", onMediaPlay, true);
   mediaElement.removeEventListener("pause", onMediaPause, true);
   mediaElement.onerror = undefined;
-  chrome.send('currentOffsetChanged', ['' + currentItem]);
-  playMediaFile(currentPlaylist[currentItem].path);
+  chrome.mediaPlayerPrivate.playAt(currentItem);
 }
 
 function onMediaPlay() {
@@ -441,7 +450,7 @@ function prevButtonClick() {
     currentItem = -1;
     return;
   }
-  chrome.send('currentOffsetChanged', ['' + currentItem]);
+  chrome.mediaPlayerPrivate.playAt(currentItem);
   playMediaFile(currentPlaylist[currentItem].path);
 }
 
@@ -451,7 +460,7 @@ function nextButtonClick() {
     currentItem = -1;
     return;
   }
-  chrome.send('currentOffsetChanged', ['' + currentItem]);
+  chrome.mediaPlayerPrivate.playAt(currentItem);
   playMediaFile(currentPlaylist[currentItem].path);
 }
 
@@ -776,7 +785,7 @@ function toggleFullscreen() {
     fullscreenicon.classList.remove('fullscreenexiticon');
     fullscreenicon.classList.add('fullscreenicon');
   }
-  chrome.send('toggleFullscreen', ['']);
+  chrome.mediaPlayerPrivate.toggleFullscreen();
 }
 
 function onMetadataAvail() {
@@ -825,52 +834,21 @@ function stopAllPlayback() {
   }
 }
 
-function playlistChanged(info, playlist) {
-  if (info.force) {
-    currentPlaylist = playlist;
-    stopAllPlayback();
-    if (playlist.length >= 1) {
-      if (info.currentOffset) {
-        currentItem = info.currentOffset;
-      } else {
-        currentItem = 0;
-      }
-      var item = playlist[currentItem];
-      chrome.send('currentOffsetChanged', ['' + currentItem]);
-      playMediaFile(item.path);
-    }
-  } else {
-    var media = getMediaElement();
-    currentPlaylist = playlist;
-    // Only need to handle the case where we are not playing
-    // since if it is currently playing, it will just move
-    // to the next file when the current is complete.
-    if (media == null) {
-      for (var x = 0; x < playlist.length; x++) {
-        if (playlist[x].path == info.path) {
-          // found the newly added item.
-          currentItem = x;
-          chrome.send('currentOffsetChanged', ['' + currentItem]);
-          playMediaFile(playlist[x].path);
-          return;
-        }
-      }
-      if (playlist.length > 0) {
-        currentItem = 0;
-        chrome.send('currentOffsetChanged', ['' + currentItem]);
-        playMediaFile(playlist[0].path);
-      }
-    }
+function getPlaylistCallback(playlist) {
+  currentPlaylist = playlist.items;
+  currentItem = playlist.position;
+  
+  if (playlist.pendingPlaybackRequest) {
+    playMediaFile(currentPlaylist[currentItem].path);
   }
 }
 
 function togglePlaylist() {
-  chrome.send("togglePlaylist", []);
+  chrome.mediaPlayerPrivate.togglePlaylistPanel();
 }
 
 function playMediaFile(url) {
   $('error').textContent = '';
-  console.log('playfile '+url);
   $('title').textContent = '';
   if (pathIsVideoFile(url) ) {
     playVideoFile(url);

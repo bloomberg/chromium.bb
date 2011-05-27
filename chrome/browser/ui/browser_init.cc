@@ -95,7 +95,6 @@
 #include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
-#include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #endif
 
 #if defined(HAVE_XINPUT2)

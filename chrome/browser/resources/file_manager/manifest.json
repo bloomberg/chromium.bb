@@ -11,6 +11,7 @@
   "permissions": [
     "fileBrowserHandler",
     "fileBrowserPrivate",
+    "mediaPlayerPrivate",
     "unlimitedStorage",
     "chrome://extension-icon/",
     "chrome://resources/"

@@ -8,11 +8,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -22,11 +22,16 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
 
+#define FILEBROWSER_URL(PATH) \
+    ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/" PATH)
 // This is the "well known" url for the file manager extension from
 // browser/resources/file_manager.  In the future we may provide a way to swap
 // out this file manager for an aftermarket part, but not yet.
-const char kBaseFileBrowserUrl[] =
-    "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/main.html";
+const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
+const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
+const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
+#undef FILEBROWSER_URL
+
 // List of file extension we can open in tab.
 const char* kBrowserSupportedExtensions[] = {
     ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".txt", ".html", ".htm"
@@ -65,6 +70,16 @@ GURL FileManagerUtil::GetFileBrowserUrl() {
 }
 
 // static
+GURL FileManagerUtil::GetMediaPlayerUrl() {
+  return GURL(kMediaPlayerUrl);
+}
+
+// static
+GURL FileManagerUtil::GetMediaPlayerPlaylistUrl() {
+  return GURL(kMediaPlayerPlaylistUrl);
+}
+
+// static
 bool FileManagerUtil::ConvertFileToFileSystemUrl(
     Profile* profile, const FilePath& full_file_path, const GURL& origin_url,
     GURL* url) {
@@ -76,28 +91,14 @@ bool FileManagerUtil::ConvertFileToFileSystemUrl(
     return false;
 
   // Find if this file path is managed by the external provider.
-  std::vector<FilePath> root_dirs = provider->GetRootDirectories();
-  for (std::vector<FilePath>::iterator iter = root_dirs.begin();
-       iter != root_dirs.end();
-       ++iter) {
-    FilePath path;
-    std::vector<FilePath::StringType> components;
-    const FilePath& root_path = *iter;
-    root_path.GetComponents(&components);
-    if (!components.size()) {
-      NOTREACHED();
-      continue;
-    }
-    if (root_path.AppendRelativePath(full_file_path, &path)) {
-      GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
-          fileapi::kFileSystemTypeExternal);
-      std::string final_url = base_url.spec();
-      FilePath relative_path(components[components.size() - 1]);
-      *url = GURL(base_url.spec() + relative_path.Append(path).value());
-      return true;
-    }
-  }
-  return false;
+  FilePath virtual_path;
+  if (!provider->GetVirtualPath(full_file_path, &virtual_path))
+    return false;
+
+  GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
+      fileapi::kFileSystemTypeExternal);
+  *url = GURL(base_url.spec() + virtual_path.value());
+  return true;
 }
 
 // static

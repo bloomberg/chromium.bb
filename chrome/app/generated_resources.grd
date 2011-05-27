@@ -8627,6 +8627,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_MANY_FILES_SELECTED" desc="Many files selected.">
         $1 files selected, $2
       </message>
+      <message name="IDS_FILE_BROWSER_PLAYBACK_ERROR" desc="Error playing back.">
+        Error playing back
+      </message>
 
       <!-- Bookmark manager -->
       <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">

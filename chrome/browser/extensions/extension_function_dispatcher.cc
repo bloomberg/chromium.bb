@@ -67,6 +67,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
+#include "chrome/browser/extensions/extension_mediaplayer_private_api.h"
 #endif
 
 // FactoryRegistry -------------------------------------------------------------
@@ -335,6 +336,12 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SelectFilesFunction>();
   RegisterFunction<ViewFilesFunction>();
 
+  // Mediaplayer
+  RegisterFunction<PlayAtMediaplayerFunction>();
+  RegisterFunction<SetPlaybackErrorMediaplayerFunction>();
+  RegisterFunction<GetPlaylistMediaplayerFunction>();
+  RegisterFunction<TogglePlaylistPanelMediaplayerFunction>();
+  RegisterFunction<ToggleFullscreenMediaplayerFunction>();
 #if defined(TOUCH_UI)
   // Input
   RegisterFunction<SendHandwritingStrokeFunction>();

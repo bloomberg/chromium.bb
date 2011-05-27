@@ -70,7 +70,11 @@ class ExternalFileSystemMountPointProvider
   // Adds a new mount point.
   virtual void AddMountPoint(FilePath mount_point) = 0;
   // Remove a mount point.
-  virtual void RemoveMountPoint(FilePath mount_point)  = 0;
+  virtual void RemoveMountPoint(FilePath mount_point) = 0;
+  // Gets virtual path by known filesystem path. Returns false when filesystem
+  // path is not exposed by this provider.
+  virtual bool GetVirtualPath(const FilePath& filesystem_path,
+                              FilePath* virtual_path) = 0;
 };
 
 }  // namespace fileapi

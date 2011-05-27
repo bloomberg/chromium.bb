@@ -52,6 +52,8 @@ class CrosMountPointProvider
       const std::string& extension_id) OVERRIDE;
   virtual void AddMountPoint(FilePath mount_point) OVERRIDE;
   virtual void RemoveMountPoint(FilePath mount_point) OVERRIDE;
+  virtual bool GetVirtualPath(const FilePath& filesystem_path,
+                              FilePath* virtual_path) OVERRIDE;
 
  private:
   class GetFileSystemRootPathTask;

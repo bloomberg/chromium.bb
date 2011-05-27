@@ -52,7 +52,7 @@ body {
 }
 
 </style>
-<script src="shared/js/local_strings.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
 <script>
 
 function $(o) {
@@ -82,7 +82,10 @@ function load() {
   document.body.addEventListener('drop', function(e) {
     if (e.preventDefault) e.preventDefault();
   });
-  chrome.send("getCurrentPlaylist", []);
+  chrome.mediaPlayerPrivate.getPlaylist(false, getPlaylistCallback);
+  chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(function() {
+    chrome.mediaPlayerPrivate.getPlaylist(false, getPlaylistCallback);
+  });
 };
 
 function getDisplayNameFromPath(path) {
@@ -96,7 +99,7 @@ function getDisplayNameFromPath(path) {
 };
 
 function setPlaylistOffset(offset) {
-  chrome.send("setCurrentPlaylistOffset", ['' + offset]);
+  chrome.mediaPlayerPrivate.playAt(offset);
 };
 
 function updateUI() {
@@ -139,9 +142,9 @@ function updateUI() {
   }
 };
 
-function playlistChanged(info, playlist) {
-  currentPlaylist = playlist;
-  currentOffset = info.currentOffset;
+function getPlaylistCallback(playlist) {
+  currentPlaylist = playlist.items;
+  currentOffset = playlist.position;
   updateUI();
 };
 </script>

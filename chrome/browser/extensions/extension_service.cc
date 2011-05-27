@@ -84,6 +84,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_path_manager.h"
@@ -565,6 +566,7 @@ void ExtensionService::InitEventRouters() {
   file_browser_event_router_.reset(
       new ExtensionFileBrowserEventRouter(profile_));
   file_browser_event_router_->ObserveFileSystemEvents();
+  ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)

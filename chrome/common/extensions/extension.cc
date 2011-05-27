@@ -280,6 +280,7 @@ const char Extension::kGeolocationPermission[] = "geolocation";
 const char Extension::kHistoryPermission[] = "history";
 const char Extension::kIdlePermission[] = "idle";
 const char Extension::kManagementPermission[] = "management";
+const char Extension::kMediaPlayerPrivatePermission[] = "mediaPlayerPrivate";
 const char Extension::kNotificationPermission[] = "notifications";
 const char Extension::kProxyPermission[] = "proxy";
 const char Extension::kTabPermission[] = "tabs";
@@ -309,6 +310,7 @@ const Extension::Permission Extension::kPermissions[] = {
   { kHistoryPermission,               PermissionMessage::ID_BROWSING_HISTORY },
   { kIdlePermission,                  PermissionMessage::ID_NONE },
   { kManagementPermission,            PermissionMessage::ID_MANAGEMENT },
+  { kMediaPlayerPrivatePermission,    PermissionMessage::ID_NONE },
   { kNotificationPermission,          PermissionMessage::ID_NONE },
   { kProxyPermission,                 PermissionMessage::ID_NONE },
   { kTabPermission,                   PermissionMessage::ID_TABS },
@@ -334,6 +336,7 @@ const size_t Extension::kNumHostedAppPermissions =
 const char* const Extension::kComponentPrivatePermissionNames[] = {
     Extension::kFileBrowserPrivatePermission,
     Extension::kWebstorePrivatePermission,
+    Extension::kMediaPlayerPrivatePermission,
     Extension::kChromeosInfoPrivatePermission,
 };
 const size_t Extension::kNumComponentPrivatePermissions =

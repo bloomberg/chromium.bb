@@ -95,8 +95,6 @@
         <include name="IDR_KEYBOARD_OVERLAY_DATA_JS" file="resources\keyboard_overlay_data.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_KEYBOARD_OVERLAY_HTML" file="resources\keyboard_overlay.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_KEYBOARD_OVERLAY_JS" file="resources\keyboard_overlay.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MOBILE_SETUP_PAGE_HTML" file="resources\mobile_setup.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NOTIFICATION_ICON_LINK_HTML" file="resources\notification_icon_link.html" type="BINDATA" />
         <include name="IDR_OFFLINE_LOAD_HTML" file="resources\offline_load.html" flattenhtml="true" type="BINDATA" />

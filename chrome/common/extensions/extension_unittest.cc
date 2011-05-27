@@ -1034,6 +1034,7 @@ TEST(ExtensionTest, PermissionMessages) {
   // These are private.
   skip.insert(Extension::kWebstorePrivatePermission);
   skip.insert(Extension::kFileBrowserPrivatePermission);
+  skip.insert(Extension::kMediaPlayerPrivatePermission);
   skip.insert(Extension::kChromePrivatePermission);
   skip.insert(Extension::kChromeosInfoPrivatePermission);
   skip.insert(Extension::kWebSocketProxyPrivatePermission);

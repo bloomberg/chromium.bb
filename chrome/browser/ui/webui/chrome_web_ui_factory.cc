@@ -47,7 +47,6 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
-#include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #endif
 
 #if defined(TOUCH_UI)
@@ -182,8 +181,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<ImageBurnUI>;
   if (url.host() == chrome::kChromeUIKeyboardOverlayHost)
     return &NewWebUI<KeyboardOverlayUI>;
-  if (url.host() == chrome::kChromeUIMediaplayerHost)
-    return &NewWebUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<MobileSetupUI>;
   if (url.host() == chrome::kChromeUIProxySettingsHost)

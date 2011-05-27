@@ -173,5 +173,19 @@ std::vector<FilePath> CrosMountPointProvider::GetRootDirectories() const {
   return root_dirs;
 }
 
+bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,
+                                           FilePath* virtual_path) {
+  for (MountPointMap::const_iterator iter = mount_point_map_.begin();
+       iter != mount_point_map_.end();
+       ++iter) {
+    FilePath mount_prefix = iter->second.Append(iter->first);
+    *virtual_path = FilePath(iter->first);
+    if (mount_prefix.AppendRelativePath(filesystem_path, virtual_path)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace chromeos
 

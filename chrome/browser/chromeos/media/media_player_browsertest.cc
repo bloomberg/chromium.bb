@@ -5,17 +5,15 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-
-namespace {
 
 class MediaPlayerBrowserTest : public InProcessBrowserTest {
  public:
@@ -25,37 +23,23 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
     return GURL("http://localhost:1337/files/plugin/sample_mp3.mp3");
   }
 
-  bool IsPlayerVisible() {
+  bool IsBrowserVisible(Browser* browser) {
+    if (browser == NULL)
+      return false;
     for (BrowserList::const_iterator it = BrowserList::begin();
          it != BrowserList::end(); ++it) {
-      if ((*it)->is_type_panel() && (*it)->is_app()) {
-        const GURL& url =
-            (*it)->GetTabContentsAt((*it)->active_index())->GetURL();
-
-        if (url.SchemeIs(chrome::kChromeUIScheme) &&
-            url.host() == chrome::kChromeUIMediaplayerHost) {
-          return true;
-        }
-      }
+      if ((*it)->is_type_panel() && (*it)->is_app() && (*it) == browser)
+        return true;
     }
     return false;
   }
 
-  bool IsPlaylistVisible() {
-    for (BrowserList::const_iterator it = BrowserList::begin();
-         it != BrowserList::end(); ++it) {
-      if ((*it)->is_type_panel() && (*it)->is_app()) {
-        const GURL& url =
-            (*it)->GetTabContentsAt((*it)->active_index())->GetURL();
+  bool IsPlayerVisible() {
+    return IsBrowserVisible(MediaPlayer::GetInstance()->mediaplayer_browser_);
+  }
 
-        if (url.SchemeIs(chrome::kChromeUIScheme) &&
-            url.host() == chrome::kChromeUIMediaplayerHost &&
-            url.ref() == "playlist") {
-          return true;
-        }
-      }
-    }
-    return false;
+  bool IsPlaylistVisible() {
+    return IsBrowserVisible(MediaPlayer::GetInstance()->playlist_browser_);
   }
 };
 
@@ -92,4 +76,3 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, PopupPlaylist) {
   EXPECT_TRUE(IsPlaylistVisible());
 }
 
-}  // namespace

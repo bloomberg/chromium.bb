@@ -17,6 +17,9 @@ class FileManagerUtil {
  public:
   // Gets base file browser url.
   static GURL GetFileBrowserUrl();
+  static GURL GetMediaPlayerUrl();
+  static GURL GetMediaPlayerPlaylistUrl();
+
   // Converts |full_file_path| into external filesystem: url. Returns false
   // if |full_file_path| is not managed by the external filesystem provider.
   static bool ConvertFileToFileSystemUrl(Profile* profile,

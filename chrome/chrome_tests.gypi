@@ -2286,6 +2286,7 @@
         'browser/chromeos/login/wizard_controller_browsertest.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.h',
+        'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/network_state_notifier_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/chromeos/panels/panel_browsertest.cc',
@@ -2429,7 +2430,6 @@
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
-        'browser/ui/webui/mediaplayer_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
         'browser/ui/webui/settings_browsertest.cc',
         'browser/ui/webui/test_chrome_web_ui_factory_browsertest.cc',
@@ -2485,7 +2485,7 @@
             ['exclude', '^browser/chromeos'],
           ],
           'sources!': [
-            'browser/ui/webui/mediaplayer_browsertest.cc',
+            'browser/chromeos/media/media_player_browsertest.cc',
           ],
         }, { #else: OS == "chromeos"
           'sources!': [

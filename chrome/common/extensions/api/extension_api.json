@@ -5112,6 +5112,110 @@
     ]
   },
   {
+    "namespace": "mediaPlayerPrivate",
+    "nodoc": "true",
+    "types": [
+      {
+        "id": "Playlist",
+        "type": "object",
+        "description": "Mediaplayer playlist stored in the browser (it extsts even if the mediaplayer is closed).",
+        "properties": {
+          "items": {
+            "name": "items",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": { "type": "string", "description": "URL of mediafile (in 'filesystem:' scheme for local files)." },
+                "error": { "type": "boolean", "description": "True if the file has failed to play ('playbackError' with its URL called)." }
+              }
+            }
+          },
+          "position": {
+            "type": "integer",
+            "description": "Index of item in the 'items' array to play next."
+          },
+          "pendingPlaybackRequest": {
+            "type": "boolean",
+            "optional": "true",
+            "description": "Informs that a request to play current item has been received. This flag is reset automatically."
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "playAt",
+        "description": "Sets playlist positions and sets flag of pending play request. Then fires the onPlaylistChanged event.",
+        "parameters": [
+          {
+            "name": "position",
+            "type": "integer",
+            "description": "New position in the playlist."
+          }
+        ]
+      },
+      {
+        "name": "setPlaybackError",
+        "description": "Marks the URL as failed to play one. Mediaplayer will visually marks such an item. Then fires the onPlaylistChanged event.",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "URL failed to play."
+          }
+        ]
+      },
+      {
+        "name": "getPlaylist",
+        "type": "function",
+        "description": "Returns current play list, position and flag of penging play request.",
+        "parameters": [
+          {
+            "name": "resetPendingPlaybackRequest",
+            "type": "boolean",
+            "description": "If true the result will include pending playback request status and this status will be reset."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback to retrieve the playlist.",
+            "parameters": [
+              {
+                "name": "playlist",
+                "$ref": "Playlist",
+                "description": "Mediaplayer playlist stored in the browser (it extsts even if the mediaplayer is closed)."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "togglePlaylistPanel",
+        "description": "Shows or hides the playlist panel.",
+        "parameters": []
+      },
+      {
+        "name": "toggleFullscreen",
+        "description": "Switches fullscreen mode on/off for the mediaplayer.",
+        "parameters": []
+      },
+      {
+        "name": "showPlaylistPanel",
+        "description": "Shows the playlist panel.",
+        "parameters": []
+      }
+    ],
+    "events": [
+      {
+        "name": "onPlaylistChanged",
+        "type": "function",
+        "descrition": "Notifies that playlist content or state has been changed. Data could be retrieved via 'getPlaylist'.",
+        "parameters": []
+      }
+    ]
+  },
+  {
     "namespace":"webstorePrivate",
     "nodoc": "true",
     "functions": [

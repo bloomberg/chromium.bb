@@ -1622,8 +1622,11 @@ FileManager.prototype = {
       return;
     }
 
-    var i = this.currentList_.selectionModel.leadIndex;
-    var entry = this.dataModel_.item(i);
+    var entry = this.selection.leadEntry;
+    if (!entry) {
+      console.log('Invalid selection');
+      return;
+    }
 
     if (entry.isDirectory)
       return this.changeDirectory(entry.fullPath);

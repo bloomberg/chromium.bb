@@ -293,6 +293,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static const char kHistoryPermission[];
   static const char kIdlePermission[];
   static const char kManagementPermission[];
+  static const char kMediaPlayerPrivatePermission[];
   static const char kNotificationPermission[];
   static const char kProxyPermission[];
   static const char kTabPermission[];

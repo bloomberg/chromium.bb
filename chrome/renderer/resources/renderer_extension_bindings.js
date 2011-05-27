@@ -321,6 +321,7 @@ var chrome = chrome || {};
       "history",
       "idle",
       "management",
+      "mediaPlayerPrivate",
       "omnibox",
       "pageAction",
       "pageActions",
