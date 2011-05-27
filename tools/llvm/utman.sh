@@ -569,6 +569,7 @@ steal-glibc() {
                libc-2.9.so libc.so libc.so.6 \
                runnable-ld.so libcrt_platform.a \
                libnacl.a libnacl.so \
+               ld-2.9.so \
                libstdc++.so libstdc++.so.6 libstdc++.a libstdc++.so.6.0.13 \
                libm-2.9.so libm.a libm.so libm.so.6 \
                ldscripts/elf_nacl.x ldscripts/elf64_nacl.x \
@@ -576,21 +577,21 @@ steal-glibc() {
                ldscripts/elf_nacl.x.static ldscripts/elf64_nacl.x.static"
 
   for lib in ${LIBS1} ; do
-    cp "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/32/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/32/${lib}" \
        "${PNACL_X8632_GLIBC_ROOT}"
-    cp "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/${lib}" \
        "${PNACL_X8664_GLIBC_ROOT}"
   done
 
   for lib in ${LIBS2} ; do
-    cp "${NNACL_GLIBC_ROOT}/nacl64/lib32/${lib}" "${PNACL_X8632_GLIBC_ROOT}"
-    cp "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_GLIBC_ROOT}"
+    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib32/${lib}" "${PNACL_X8632_GLIBC_ROOT}"
+    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_GLIBC_ROOT}"
   done
 
   # ld-linux has different naming across 32/64
-  cp "${NNACL_GLIBC_ROOT}"/nacl64/lib32/ld-linux.so.2 \
+  cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib32/ld-linux.so.2 \
      "${PNACL_X8632_GLIBC_ROOT}"
-  cp "${NNACL_GLIBC_ROOT}"/nacl64/lib/ld-linux-x86-64.so.2 \
+  cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib/ld-linux-x86-64.so.2 \
      "${PNACL_X8664_GLIBC_ROOT}"
 }
 
