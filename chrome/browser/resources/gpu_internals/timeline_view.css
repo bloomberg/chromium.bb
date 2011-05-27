@@ -16,8 +16,17 @@ found in the LICENSE file.
   overflow: auto;
 }
 
-.timeline-view > .timeline > .timeline {
+.timeline-view .timeline-container {
   -webkit-box-flex: 1;
+  display: -webkit-box;
+  overflow: auto;
+}
+
+.timeline-view .timeline-container > * {
+  -webkit-box-flex: 1;
+}
+.timeline-view .summary-container * {
+  -webkit-user-select: text;
 }
 
 .timeline-view .summary-container {

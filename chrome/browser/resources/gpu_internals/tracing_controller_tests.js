@@ -44,6 +44,62 @@ var allTracingControllerTestDataSets;
          {'cat':'PERF','pid':22630,'tid':22631,'ts':827,'ph':'B','name':'A','args':{}},
          {'cat':'PERF','pid':22630,'tid':22631,'ts':854,'ph':'E','name':'A','args':{}}
        ]
+     },
+     {
+       name: "tall_trace",
+       events: [
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":826,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":827,"ph":"B","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":828,"ph":"E","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":829,"ph":"B","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":832,"ph":"E","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":833,"ph":"E","name":"","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22631,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22631,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22632,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22632,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22633,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22633,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22634,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22634,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22635,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22635,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22636,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22636,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22637,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22637,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22638,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22638,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22639,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22639,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22610,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22610,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22611,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22611,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22612,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22612,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22613,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22613,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22614,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22614,"ts":848,"ph":"E","name":"A","args":{}},
+
+         {"cat":"PERF","pid":22630,"tid":22615,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22615,"ts":848,"ph":"E","name":"A","args":{}},
+       ]
      }
    ];
    allTracingControllerTestDataSets = dataSets;

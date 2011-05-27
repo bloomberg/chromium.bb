@@ -13,14 +13,16 @@ cr.define('gpu', function() {
    * @constructor
    * @extends {gpu.Tab}
    */
-  ProfilingView = cr.ui.define(gpu.Tab);
+  ProfilingView = cr.ui.define(cr.ui.TabPanel);
 
   ProfilingView.prototype = {
-    __proto__: gpu.Tab.prototype,
+    __proto__: cr.ui.TabPanel.prototype,
 
     traceEvents_: [],
 
     decorate: function() {
+      cr.ui.TabPanel.prototype.decorate.apply(this);
+
       // make the <list>/add/save/record element
       this.controlDiv_ = document.createElement('div');
       this.controlDiv_.className = 'control';
@@ -52,6 +54,8 @@ cr.define('gpu', function() {
       this.container_.appendChild(this.timelineView_);
       this.appendChild(this.container_);
 
+      document.addEventListener('keypress', this.onKeypress_.bind(this));
+
       tracingController.addEventListener('traceEnded',
           this.onRecordDone_.bind(this));
       tracingController.addEventListener('loadTraceFileComplete',
@@ -71,6 +75,14 @@ cr.define('gpu', function() {
       this.saveBn_.disabled = !hasEvents;
 
       this.timelineView_.traceEvents = this.traceEvents_;
+    },
+
+    onKeypress_: function(event) {
+      if (event.keyCode == 114 && !tracingController.isTracingEnabled) {
+        if (!this.selected)
+          this.selected = true;
+        this.onRecord_();
+      }
     },
 
     ///////////////////////////////////////////////////////////////////////////

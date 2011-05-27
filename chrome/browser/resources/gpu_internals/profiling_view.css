@@ -15,13 +15,12 @@ found in the LICENSE file.
 
 #profiling-view > .control {
   display: -webkit-box;
-  overflow: auto;
+  border-bottom: 1px solid #555;
 }
 
 #profiling-view > .container {
   display: -webkit-box;
   -webkit-box-flex: 1;
-  overflow: auto;
 }
 
 .profiling-overlay {

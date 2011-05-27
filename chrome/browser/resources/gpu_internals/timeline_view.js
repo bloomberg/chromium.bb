@@ -53,10 +53,10 @@ cr.define('gpu', function() {
       var summaryContainer_ = document.createElement('div');
       summaryContainer_.className = 'summary-container';
 
-      this.summary_ = document.createElement('pre');
-      this.summary_.className = 'summary';
+      this.summaryEl_ = document.createElement('pre');
+      this.summaryEl_.className = 'summary';
 
-      summaryContainer_.appendChild(this.summary_);
+      summaryContainer_.appendChild(this.summaryEl_);
       this.appendChild(this.timelineContainer_);
       this.appendChild(summaryContainer_);
 
@@ -88,9 +88,10 @@ cr.define('gpu', function() {
       console.log('selection changed');
       var timeline = this.timeline_;
       var selection = timeline.selection;
-      var outputDiv = this.summary_;
       if (!selection.length) {
-        outputDiv.textContent = timeline.keyHelp;
+        var oldScrollTop = this.timelineContainer_.scrollTop;
+        this.summaryEl_.textContent = timeline.keyHelp;
+        this.timelineContainer_.scrollTop = oldScrollTop;
         return;
       }
 
@@ -169,7 +170,9 @@ cr.define('gpu', function() {
       }
 
       // done
-      outputDiv.textContent = text;
+      var oldScrollTop = this.timelineContainer_.scrollTop;
+      this.summaryEl_.textContent = text;
+      this.timelineContainer_.scrollTop = oldScrollTop;
     }
   };
 

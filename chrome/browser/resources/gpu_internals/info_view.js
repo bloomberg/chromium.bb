@@ -14,13 +14,13 @@ cr.define('gpu', function() {
    * @constructor
    * @extends {Tab}
    */
-  var InfoView = cr.ui.define(gpu.Tab);
+  var InfoView = cr.ui.define(cr.ui.TabPanel);
 
   InfoView.prototype = {
-    __proto__: gpu.Tab.prototype,
+    __proto__: cr.ui.TabPanel.prototype,
 
     decorate: function() {
-      gpu.Tab.prototype.decorate.apply(this);
+      cr.ui.TabPanel.prototype.decorate.apply(this);
 
       browserBridge.addEventListener('gpuInfoUpdate', this.refresh.bind(this));
       browserBridge.addEventListener('logMessagesChange',

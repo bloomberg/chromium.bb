@@ -146,7 +146,7 @@ cr.define('gpu', function() {
 
 
       // Threadstate
-      const numColorIds = 12;
+      const numColorIds = 30;
       function ThreadState(tid) {
         this.openSlices = [];
         this.openNonNestedSlices = {};
@@ -160,8 +160,9 @@ cr.define('gpu', function() {
           // coloring across traces.
           var hash = 0;
           for (var i = 0; i < name.length; ++i)
-            hash = (hash + 37 * hash + name.charCodeAt(i)) % 0xFFFFFFFF;
+            hash = (hash + 37 * hash + 11 * name.charCodeAt(i)) % 0xFFFFFFFF;
           nameToColorMap[name] = hash % numColorIds;
+          console.log(name, nameToColorMap[name]);
         }
         return nameToColorMap[name];
       }

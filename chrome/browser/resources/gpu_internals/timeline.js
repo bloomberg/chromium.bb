@@ -183,9 +183,9 @@ cr.define('gpu', function() {
       }.bind(this), 250);
 
       document.addEventListener('keypress', this.onKeypress_.bind(this));
-      this.addEventListener('mousedown', this.onMouseDown_.bind(this));
-      this.addEventListener('mousemove', this.onMouseMove_.bind(this));
-      this.addEventListener('mouseup', this.onMouseUp_.bind(this));
+      document.addEventListener('mousedown', this.onMouseDown_.bind(this));
+      this.onMouseMoveBoundToThis_ = this.onMouseMove_.bind(this);
+      this.onMouseUpBoundToThis_ = this.onMouseUp_.bind(this);
       this.lastMouseViewPos_ = {x: 0, y: 0};
 
       this.selection_ = [];
@@ -341,11 +341,13 @@ cr.define('gpu', function() {
     },
 
     showDragBox_: function() {
-      this.dragBox_.hidden = false;
     },
 
     hideDragBox_: function() {
-      this.dragBox_.hidden = true;
+      this.dragBox_.style.left = '-1000px';
+      this.dragBox_.style.top = '-1000px';
+      this.dragBox_.style.width = 0;
+      this.dragBox_.style.height = 0;
     },
 
     setDragBoxPosition_: function(eDown, eCur) {
@@ -373,15 +375,13 @@ cr.define('gpu', function() {
     },
 
     onGridToggle_: function(left) {
-      if (!this.selection_ || this.selection_.length != 1) {
-        window.alert('You must have an item selected to turn on the grid.');
-        return;
-      }
       var tb;
       if (left)
-        tb = this.selection_[0].slice.start;
+        tb = Math.min.apply(Math, this.selection_.map(
+            function(x) { return x.slice.start; }));
       else
-        tb = this.selection_[0].slice.end;
+        tb = Math.max.apply(Math, this.selection_.map(
+            function(x) { return x.slice.end; }));
 
       // Shift the timebase left until its just left of minTimestamp.
       var numInterfvalsSinceStart = Math.ceil((tb - this.model_.minTimestamp) /
@@ -392,11 +392,18 @@ cr.define('gpu', function() {
     },
 
     onMouseDown_: function(e) {
+      if (e.clientX < this.offsetLeft ||
+          e.clientX >= this.offsetLeft + this.offsetWidth ||
+          e.clientY < this.offsetTop ||
+          e.clientY >= this.offsetTop + this.offsetHeight)
+        return;
+
       var canv = this.firstCanvas;
       var pos = {
         x: e.clientX - canv.offsetLeft,
         y: e.clientY - canv.offsetTop
       };
+
       var wX = this.viewport_.xViewToWorld(pos.x);
 
       // Update the drag box position
@@ -404,10 +411,13 @@ cr.define('gpu', function() {
       this.setDragBoxPosition_(e, e);
       this.dragBeginEvent_ = e;
       e.preventDefault();
+
+      document.addEventListener('mousemove', this.onMouseMoveBoundToThis_);
+      document.addEventListener('mouseup', this.onMouseUpBoundToThis_);
     },
 
     onMouseMove_: function(e) {
-      if (!this.firstCanvas)
+      if (!this.firstCanvas || !this.dragBeginEvent_)
         return;
       var canv = this.firstCanvas;
       var pos = {
@@ -457,8 +467,9 @@ cr.define('gpu', function() {
           var track = this.tracks_.children[i];
 
           // Only check tracks that insersect the rect.
-          var a = Math.max(loY, track.offsetTop);
-          var b = Math.min(hiY, track.offsetTop + track.offsetHeight);
+          var trackClientRect = track.getBoundingClientRect();
+          var a = Math.max(loY, trackClientRect.top);
+          var b = Math.min(hiY, trackClientRect.bottom);
           if (a <= b) {
             track.pickRange(loWX, hiWX, loY, hiY, addHit);
           }
@@ -470,6 +481,10 @@ cr.define('gpu', function() {
           this.selection_[i].slice.selected = true;
         }
         this.invalidate();  // Cause tracks to redraw.
+
+        // Remove move listeners.
+        document.removeEventListener('mousemove', this.onMouseMoveBoundToThis_);
+        document.removeEventListener('mouseup', this.onMouseUpBoundToThis_);
       }
     }
   };
