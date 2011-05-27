@@ -168,10 +168,19 @@ PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
 PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
   DebugPrintf("PPP_Instance::HandleDocumentLoad: instance=%"NACL_PRIu32", "
               "url_loader=%"NACL_PRIu32"\n", instance, url_loader);
-  // TODO(sehr): implement HandleDocumentLoad.
-  NACL_UNIMPLEMENTED();
-  UNREFERENCED_PARAMETER(instance);
-  UNREFERENCED_PARAMETER(url_loader);
+
+  int32_t result = 0;
+  NaClSrpcError srpc_result =
+      PppInstanceRpcClient::PPP_Instance_HandleDocumentLoad(
+          GetMainSrpcChannel(instance),
+          instance,
+          url_loader,
+          &result);
+
+  DebugPrintf("PPP_Instance::HandleDocumentLoad: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK && result)
+    return PP_TRUE;
   return PP_FALSE;
 }
 
