@@ -197,7 +197,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
                    WebKit::WebNode* node,
                    bool send_expected_page_count,
                    int* page_count,
-                   printing::Metafile* metafile);
+                   printing::Metafile* metafile,
+                   bool is_preview);
 #endif  // defined(OS_WIN)
 
   // Helper methods -----------------------------------------------------------

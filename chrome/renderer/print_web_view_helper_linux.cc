@@ -33,16 +33,9 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   if (!metafile.Init())
     return false;
 
-  // Record the begin time.
-  base::TimeTicks begin_time = base::TimeTicks::Now();
-
-  if (!RenderPages(params, frame, node, false, &page_count, &metafile))
+  if (!RenderPages(params, frame, node, false, &page_count, &metafile, true))
     return false;
 
-  // Calculate the time taken to render the requested page for preview and add
-  // the net time in the histogram.
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderTime",
-                      base::TimeTicks::Now() - begin_time);
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
@@ -78,7 +71,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
     return false;
 
   if (!RenderPages(params, frame, node, send_expected_page_count, &page_count,
-                   &metafile)) {
+                   &metafile, false)) {
     return false;
   }
 
@@ -155,7 +148,8 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebNode* node,
                                      bool send_expected_page_count,
                                      int* page_count,
-                                     printing::Metafile* metafile) {
+                                     printing::Metafile* metafile,
+                                     bool is_preview) {
   PrintMsg_Print_Params printParams = params.params;
 
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
@@ -170,6 +164,8 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
   }
   if (!*page_count)
     return false;
+
+  base::TimeTicks begin_time = base::TimeTicks::Now();
 
   PrintMsg_PrintPage_Params page_params;
   page_params.params = printParams;
@@ -186,8 +182,17 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
     }
   }
 
+  if (is_preview) {
+    UMA_HISTOGRAM_TIMES("PrintPreview.RenderToPDFTime",
+                        base::TimeTicks::Now() - begin_time);
+  }
+
   metafile->FinishDocument();
 
+  if (is_preview) {
+    UMA_HISTOGRAM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
+                        base::TimeTicks::Now() - begin_time);
+  }
   return true;
 }
 

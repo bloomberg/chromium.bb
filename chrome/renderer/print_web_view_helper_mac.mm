@@ -74,7 +74,7 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   gfx::Rect content_area(printParams.margin_left, printParams.margin_top,
                          printParams.printable_size.width(),
                          printParams.printable_size.height());
-  // Record the begin time.
+
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   if (params.pages.empty()) {
@@ -91,12 +91,13 @@ bool PrintWebViewHelper::CreatePreviewDocument(
     }
   }
 
-  // Calculate the time taken to render the requested page for preview and add
-  // the net time in the histogram.
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderTime",
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderToPDFTime",
                       base::TimeTicks::Now() - begin_time);
 
   metafile.FinishDocument();
+
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
+                      base::TimeTicks::Now() - begin_time);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
   preview_params.data_size = metafile.GetDataSize();

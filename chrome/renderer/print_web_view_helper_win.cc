@@ -142,7 +142,6 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   float shrink = static_cast<float>(print_params.desired_dpi /
                                     print_params.dpi);
 
-  // Record the begin time.
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   if (params.pages.empty()) {
@@ -160,6 +159,9 @@ bool PrintWebViewHelper::CreatePreviewDocument(
     }
   }
 
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderToPDFTime",
+                      base::TimeTicks::Now() - begin_time);
+
   // Ensure that printing has finished before we start cleaning up and
   // allocating buffers; this causes prep_frame_view to flush anything pending
   // into the metafile. Then we can get the final size and copy it into a
@@ -169,9 +171,7 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   if (!metafile->FinishDocument())
     NOTREACHED();
 
-  // Calculate the time taken to render the requested page for preview and add
-  // the net time in the histogram.
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderTime",
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
                       base::TimeTicks::Now() - begin_time);
 
   // Get the size of the compiled metafile.
