@@ -46,7 +46,7 @@ const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
 // URL that will be opened on when user logs in first time on the device.
 const char kGetStartedURLPattern[] =
-    "http://services.google.com/chromeos/gettingstarted/index-%s.html";
+    "http://www.gstatic.com/chromebook/gettingstarted/index-%s.html";
 
 // URL for account creation.
 const char kCreateAccountURL[] =
