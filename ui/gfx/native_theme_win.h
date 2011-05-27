@@ -247,6 +247,7 @@ class NativeThemeWin : public NativeTheme {
                             const gfx::Rect& rect,
                             UINT type,
                             UINT state,
+                            bool is_selected,
                             State control_state) const;
 
   // Returns a handle to the theme data.

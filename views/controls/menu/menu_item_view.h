@@ -363,10 +363,12 @@ class MenuItemView : public View {
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
 #if defined(OS_WIN)
-  // Paints the check/radio button indicator. |part_id| is the id passed to the
-  // native theme drawing routines.
+  enum SelectionState { SELECTED, UNSELECTED };
+
+  // Paints the check/radio button indicator.
   void PaintCheck(gfx::Canvas* canvas,
                   gfx::NativeTheme::State state,
+                  SelectionState selection_state,
                   const MenuConfig& config);
 #endif
 

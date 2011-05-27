@@ -595,7 +595,8 @@ HRESULT NativeThemeWin::PaintMenuArrow(HDC hdc,
     pfc_state = DFCS_MENUARROW;
   else
     pfc_state = DFCS_MENUARROWRIGHT;
-  return PaintFrameControl(hdc, rect, DFC_MENU, pfc_state, state);
+  return PaintFrameControl(hdc, rect, DFC_MENU, pfc_state, extra.is_selected,
+                           state);
 }
 
 HRESULT NativeThemeWin::PaintMenuBackground(HDC hdc,
@@ -644,7 +645,8 @@ HRESULT NativeThemeWin::PaintMenuCheck(
   if (handle && draw_theme_)
     return draw_theme_(handle, hdc, MENU_POPUPCHECK, state_id, &rect_win, NULL);
 
-  return PaintFrameControl(hdc, rect, DFC_MENU, DFCS_MENUCHECK, state);
+  return PaintFrameControl(hdc, rect, DFC_MENU, DFCS_MENUCHECK,
+                           extra.is_selected, state);
 }
 
 HRESULT NativeThemeWin::PaintMenuGutter(HDC hdc,
@@ -670,7 +672,7 @@ HRESULT NativeThemeWin::PaintMenuItemBackground(
       state_id = MPI_NORMAL;
       break;
     case kDisabled:
-      state_id = MPI_DISABLED;
+      state_id = extra.is_selected ? MPI_DISABLEDHOT : MPI_DISABLED;
       break;
     case kHovered:
       state_id = MPI_HOT;
@@ -1208,6 +1210,7 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
                                           const gfx::Rect& rect,
                                           UINT type,
                                           UINT state,
+                                          bool is_selected,
                                           State control_state) const {
   const int width = rect.width();
   const int height = rect.height();
@@ -1239,7 +1242,7 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
       text_color_key = COLOR_MENUTEXT;
       break;
     case gfx::NativeTheme::kDisabled:
-      bg_color_key = COLOR_MENU;
+      bg_color_key = is_selected ? COLOR_HIGHLIGHT : COLOR_MENU;
       text_color_key = COLOR_GRAYTEXT;
       break;
     default:

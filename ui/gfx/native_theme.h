@@ -99,10 +99,16 @@ class NativeTheme {
 
   struct MenuArrowExtraParams {
     bool pointing_right;
+    // Used for the disabled state to indicate if the item is both disabled and
+    // selected.
+    bool is_selected;
   };
 
   struct MenuCheckExtraParams {
     bool is_radio;
+    // Used for the disabled state to indicate if the item is both disabled and
+    // selected.
+    bool is_selected;
   };
 
   struct MenuItemExtraParams {

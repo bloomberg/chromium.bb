@@ -35,6 +35,7 @@ MenuConfig* MenuConfig::Create() {
 
   NativeTheme::ExtraParams extra;
   extra.menu_check.is_radio = false;
+  extra.menu_check.is_selected = false;
   gfx::Size check_size = NativeTheme::instance()->GetPartSize(
       NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
   if (!check_size.IsEmpty()) {

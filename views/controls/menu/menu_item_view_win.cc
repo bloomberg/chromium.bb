@@ -31,15 +31,24 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
       (mode == PB_NORMAL && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
        !has_children());
-  int state = render_selection ? MPI_HOT :
-                                 (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
+  int default_sys_color;
+  int state;
   NativeTheme::State control_state;
 
-  if (!IsEnabled()) {
-    control_state = NativeTheme::kDisabled;
+  if (IsEnabled()) {
+    if (render_selection) {
+      control_state = NativeTheme::kHovered;
+      state = MPI_HOT;
+      default_sys_color = COLOR_HIGHLIGHTTEXT;
+    } else {
+      control_state = NativeTheme::kNormal;
+      state = MPI_NORMAL;
+      default_sys_color = COLOR_MENUTEXT;
+    }
   } else {
-    control_state = render_selection ? NativeTheme::kHovered:
-                                       NativeTheme::kNormal;
+    state = MPI_DISABLED;
+    default_sys_color = COLOR_GRAYTEXT;
+    control_state = NativeTheme::kDisabled;
   }
 
   // The gutter is rendered before the background.
@@ -71,14 +80,13 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
   if ((type_ == RADIO || type_ == CHECKBOX) &&
       GetDelegate()->IsItemChecked(GetCommand())) {
-    PaintCheck(canvas, control_state, config);
+    PaintCheck(canvas, control_state, render_selection ? SELECTED : UNSELECTED,
+               config);
   }
 
   // Render the foreground.
   // Menu color is specific to Vista, fallback to classic colors if can't
   // get color.
-  int default_sys_color = render_selection ? COLOR_HIGHLIGHTTEXT :
-      (IsEnabled() ? COLOR_MENUTEXT : COLOR_GRAYTEXT);
   SkColor fg_color = gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
       gfx::NativeThemeWin::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
       default_sys_color);
@@ -127,6 +135,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     // right direction.
     gfx::NativeTheme::ExtraParams extra;
     extra.menu_arrow.pointing_right = !base::i18n::IsRTL();
+    extra.menu_arrow.is_selected = render_selection;
     gfx::NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
         gfx::NativeTheme::kMenuPopupArrow, control_state, arrow_bounds, extra);
   }
@@ -134,6 +143,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
 void MenuItemView::PaintCheck(gfx::Canvas* canvas,
                               NativeTheme::State state,
+                              SelectionState selection_state,
                               const MenuConfig& config) {
   int icon_width;
   int icon_height;
@@ -151,6 +161,7 @@ void MenuItemView::PaintCheck(gfx::Canvas* canvas,
       (height() - top_margin - GetBottomMargin() - icon_height) / 2;
   NativeTheme::ExtraParams extra;
   extra.menu_check.is_radio = type_ == RADIO;
+  extra.menu_check.is_selected = selection_state == SELECTED;
 
   // Draw the background.
   gfx::Rect bg_bounds(0, 0, icon_x + icon_width, height());

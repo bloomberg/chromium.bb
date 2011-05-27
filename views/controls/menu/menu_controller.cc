@@ -1593,7 +1593,7 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(MenuItemView* parent,
 
 void MenuController::OpenSubmenuChangeSelectionIfCan() {
   MenuItemView* item = pending_state_.item;
-  if (item->HasSubmenu()) {
+  if (item->HasSubmenu() && item->IsEnabled()) {
     if (item->GetSubmenu()->GetMenuItemCount() > 0) {
       SetSelection(item->GetSubmenu()->GetMenuItemAt(0),
                    SELECTION_UPDATE_IMMEDIATELY);
