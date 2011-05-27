@@ -64,10 +64,6 @@ base::Thread* TestingBrowserProcess::cache_thread() {
   return NULL;
 }
 
-base::Thread* TestingBrowserProcess::gpu_thread() {
-  return NULL;
-}
-
 WatchDogThread* TestingBrowserProcess::watchdog_thread() {
   return NULL;
 }

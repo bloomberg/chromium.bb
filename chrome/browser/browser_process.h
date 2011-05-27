@@ -134,9 +134,6 @@ class BrowserProcess {
   // Returns the thread that is used for background cache operations.
   virtual base::Thread* cache_thread() = 0;
 
-  // Returns the thread that issues GPU calls.
-  virtual base::Thread* gpu_thread() = 0;
-
 #if defined(USE_X11)
   // Returns the thread that is used to process UI requests in cases where
   // we can't route the request to the UI thread. Note that this thread

@@ -55,7 +55,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual base::Thread* db_thread();
   virtual base::Thread* process_launcher_thread();
   virtual base::Thread* cache_thread();
-  virtual base::Thread* gpu_thread();
 #if defined(USE_X11)
   virtual base::Thread* background_x11_thread();
 #endif
@@ -189,9 +188,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_cache_thread_;
   scoped_ptr<base::Thread> cache_thread_;
-
-  bool created_gpu_thread_;
-  scoped_ptr<base::Thread> gpu_thread_;
 
   bool created_watchdog_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;

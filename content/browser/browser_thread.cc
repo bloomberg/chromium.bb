@@ -17,7 +17,6 @@ static const char* browser_thread_names[BrowserThread::ID_COUNT] = {
   "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
   "Chrome_CacheThread",  // CACHE
   "Chrome_IOThread",  // IO
-  "Chrome_GpuThread",  // GPU
 #if defined(USE_X11)
   "Chrome_Background_X11Thread",  // BACKGROUND_X11
 #endif

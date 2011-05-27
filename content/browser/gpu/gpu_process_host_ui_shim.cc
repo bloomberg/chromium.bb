@@ -4,18 +4,15 @@
 
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 
-#include "base/command_line.h"
 #include "base/id_map.h"
 #include "base/process_util.h"
 #include "base/debug/trace_event.h"
-#include "chrome/browser/browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_messages.h"
 
 #if defined(OS_LINUX)
@@ -23,7 +20,6 @@
 #include <gdk/gdkwindow.h>  // NOLINT
 #include <gdk/gdkx.h>  // NOLINT
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/gtk_native_view_id_manager.h"
 #include "ui/gfx/size.h"
 #endif  // defined(OS_LINUX)
 namespace {
@@ -53,41 +49,6 @@ class SendOnIOThreadTask : public Task {
   scoped_ptr<IPC::Message> msg_;
 };
 
-class UIThreadSender : public IPC::Channel::Sender {
- public:
-  virtual bool Send(IPC::Message* msg) {
-  // The GPU process must never send a synchronous IPC message to the browser
-  // process. This could result in deadlock. Unfortunately linux does this for
-  // GpuHostMsg_ResizeXID. TODO(apatrick): fix this before issuing any GL calls
-  // on the browser process' GPU thread.
-#if !defined(OS_LINUX)
-    DCHECK(!msg->is_sync());
-#endif
-
-    // When the GpuChannelManager sends an IPC, post it to the UI thread without
-    // using IPC.
-    bool success = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        new RouteToGpuProcessHostUIShimTask(0, *msg));
-
-    delete msg;
-    return success;
-  }
-};
-
-void ForwardMessageToGpuThread(GpuChannelManager* gpu_channel_manager,
-                               IPC::Message* msg) {
-  bool success = gpu_channel_manager->OnMessageReceived(*msg);
-
-  // If the message was not handled, it is likely it was intended for the
-  // GpuChildThread, which does not exist in single process and in process GPU
-  // mode.
-  DCHECK(success);
-
-  delete msg;
-}
-
 }  // namespace
 
 RouteToGpuProcessHostUIShimTask::RouteToGpuProcessHostUIShimTask(
@@ -107,18 +68,8 @@ void RouteToGpuProcessHostUIShimTask::Run() {
 }
 
 GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
-    : host_id_(host_id),
-      gpu_channel_manager_(NULL),
-      ui_thread_sender_(NULL) {
+    : host_id_(host_id) {
   g_hosts_by_id.AddWithID(this, host_id_);
-  if (host_id == 0) {
-    ui_thread_sender_ = new UIThreadSender;
-    gpu_channel_manager_ = new GpuChannelManager(
-        ui_thread_sender_,
-        NULL,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        g_browser_process->shutdown_event());
-  }
 }
 
 // static
@@ -150,24 +101,9 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
 
 bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
-
-  bool success;
-
-  if (host_id_ == 0) {
-    success = BrowserThread::PostTask(
-        BrowserThread::GPU,
-        FROM_HERE,
-        NewRunnableFunction(ForwardMessageToGpuThread,
-                            gpu_channel_manager_,
-                            msg));
-  } else {
-    success = BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        new SendOnIOThreadTask(host_id_, msg));
-  }
-
-  return success;
+  return BrowserThread::PostTask(BrowserThread::IO,
+                                 FROM_HERE,
+                                 new SendOnIOThreadTask(host_id_, msg));
 }
 
 bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
@@ -200,20 +136,6 @@ void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Remove(host_id_);
-
-  // Ensure these are destroyed on the GPU thread.
-  if (gpu_channel_manager_) {
-    BrowserThread::DeleteSoon(BrowserThread::GPU,
-                              FROM_HERE,
-                              gpu_channel_manager_);
-    gpu_channel_manager_ = NULL;
-  }
-  if (ui_thread_sender_) {
-    BrowserThread::DeleteSoon(BrowserThread::GPU,
-                              FROM_HERE,
-                              ui_thread_sender_);
-    ui_thread_sender_ = NULL;
-  }
 }
 
 bool GpuProcessHostUIShim::OnControlMessageReceived(

@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/string_piece.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_data_manager.h"
@@ -18,6 +19,8 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/gpu/gpu_child_thread.h"
+#include "content/gpu/gpu_process.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
@@ -114,6 +117,51 @@ GpuProcessHost::SurfaceRef::~SurfaceRef() {
 }
 #endif  // defined(OS_LINUX)
 
+// This class creates a GPU thread (instead of a GPU process), when running
+// with --in-process-gpu or --single-process.
+class GpuMainThread : public base::Thread {
+ public:
+  explicit GpuMainThread(const std::string& channel_id)
+      : base::Thread("Chrome_InProcGpuThread"),
+        channel_id_(channel_id),
+        gpu_process_(NULL),
+        child_thread_(NULL) {
+  }
+
+  ~GpuMainThread() {
+    Stop();
+  }
+
+ protected:
+  virtual void Init() {
+    // TODO: Currently, ChildProcess supports only a single static instance,
+    // which is a problem in --single-process mode, where both gpu and renderer
+    // should be able to create separate instances.
+    if (GpuProcess::current()) {
+      child_thread_ = new GpuChildThread(channel_id_);
+    } else {
+      gpu_process_ = new GpuProcess();
+      // The process object takes ownership of the thread object, so do not
+      // save and delete the pointer.
+      gpu_process_->set_main_thread(new GpuChildThread(channel_id_));
+    }
+  }
+
+  virtual void CleanUp() {
+    delete gpu_process_;
+    if (child_thread_)
+      delete child_thread_;
+  }
+
+ private:
+  std::string channel_id_;
+  // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
+  GpuProcess* gpu_process_;
+  GpuChildThread* child_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
+};
+
 // static
 GpuProcessHost* GpuProcessHost::GetForRenderer(
     int renderer_id, content::CauseForGpuLaunch cause) {
@@ -136,28 +184,6 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
     return NULL;
 
   int host_id;
-  /* TODO(apatrick): this is currently broken because this function is called on
-     the IO thread from GpuMessageFilter, and we don't have an IO thread object
-     when running the GPU code in the browser at the moment.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
-    if (!g_browser_process->gpu_thread())
-      return NULL;
-
-    // Initialize GL on the GPU thread.
-    // TODO(apatrick): Handle failure to initialize (asynchronously).
-    if (!BrowserThread::PostTask(
-        BrowserThread::GPU,
-        FROM_HERE,
-        NewRunnableFunction(&gfx::GLContext::InitializeOneOff))) {
-      return NULL;
-    }
-
-    host_id = 0;
-  } else {
-    host_id = ++g_last_host_id;
-  }
-  */
   host_id = ++g_last_host_id;
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLaunchCause",
@@ -195,10 +221,17 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
 GpuProcessHost::GpuProcessHost(int host_id)
     : BrowserChildProcessHost(GPU_PROCESS),
       host_id_(host_id),
-      gpu_process_(base::kNullProcessHandle) {
+      gpu_process_(base::kNullProcessHandle),
+      in_process_(false) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
+    in_process_ = true;
+
+  // If the 'single GPU process' policy ever changes, we still want to maintain
+  // it for 'gpu thread' mode and only create one instance of host and thread.
+  DCHECK(!in_process_ || g_hosts_by_id.IsEmpty());
+
   g_hosts_by_id.AddWithID(this, host_id_);
-  if (host_id == 0)
-    gpu_process_ = base::GetCurrentProcessHandle();
 
   // Post a task to create the corresponding GpuProcessHostUIShim.  The
   // GpuProcessHostUIShim will be destroyed if either the browser exits,
@@ -236,7 +269,27 @@ bool GpuProcessHost::Init() {
   if (!CreateChannel())
     return false;
 
-  if (!LaunchGpuProcess())
+  if (in_process_) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableGpuWatchdog);
+
+    in_process_gpu_thread_.reset(new GpuMainThread(channel_id()));
+
+    base::Thread::Options options;
+#if defined(OS_WIN)
+  // On Windows the GPU thread needs to pump the compositor child window's
+  // message loop. TODO(apatrick): make this an IO thread if / when we get rid
+  // of this child window. Unfortunately it might always be necessary for
+  // Windows XP because we cannot share the backing store textures between
+  // processes.
+  options.message_loop_type = MessageLoop::TYPE_UI;
+#else
+  options.message_loop_type = MessageLoop::TYPE_IO;
+#endif
+    in_process_gpu_thread_->StartWithOptions(options);
+
+    OnProcessLaunched();  // Fake a callback that the process is ready.
+  } else if (!LaunchGpuProcess())
     return false;
 
   return Send(new GpuMsg_Initialize());
@@ -426,16 +479,20 @@ void GpuProcessHost::OnProcessLaunched() {
   // Send the GPU process handle to the UI thread before it has to
   // respond to any requests to establish a GPU channel. The response
   // to such requests require that the GPU process handle be known.
+
+  base::ProcessHandle child_handle = in_process_ ?
+      base::GetCurrentProcessHandle() : handle();
+
 #if defined(OS_WIN)
   DuplicateHandle(base::GetCurrentProcessHandle(),
-                  handle(),
+                  child_handle,
                   base::GetCurrentProcessHandle(),
                   &gpu_process_,
                   PROCESS_DUP_HANDLE,
                   FALSE,
                   0);
 #else
-  gpu_process_ = handle();
+  gpu_process_ = child_handle;
 #endif
 }
 

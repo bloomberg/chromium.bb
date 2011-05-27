@@ -63,8 +63,6 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual base::Thread* cache_thread();
 
-  virtual base::Thread* gpu_thread();
-
   virtual WatchDogThread* watchdog_thread();
 
 #if defined(OS_CHROMEOS)

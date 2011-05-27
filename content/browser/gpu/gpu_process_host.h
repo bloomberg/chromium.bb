@@ -23,6 +23,8 @@ namespace IPC {
 class Message;
 }
 
+class GpuMainThread;
+
 class GpuProcessHost : public BrowserChildProcessHost,
                        public base::NonThreadSafe {
  public:
@@ -150,6 +152,12 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   // The handle for the GPU process or null if it is not known to be launched.
   base::ProcessHandle gpu_process_;
+
+  // Whether we are running a GPU thread inside the browser process instead
+  // of a separate GPU process.
+  bool in_process_;
+
+  scoped_ptr<GpuMainThread> in_process_gpu_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

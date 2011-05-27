@@ -117,7 +117,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_db_thread_(false),
       created_process_launcher_thread_(false),
       created_cache_thread_(false),
-      created_gpu_thread_(false),
       created_watchdog_thread_(false),
 #if defined(OS_CHROMEOS)
       created_web_socket_proxy_thread_(false),
@@ -240,7 +239,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // stopping the GPU thread. The GPU thread will close IPC channels to renderer
   // processes so this has to happen before stopping the IO thread.
   GpuProcessHostUIShim::DestroyAll();
-  gpu_thread_.reset();
 
   // Need to stop io_thread_ before resource_dispatcher_host_, since
   // io_thread_ may still deref ResourceDispatcherHost and handle resource
@@ -423,13 +421,6 @@ base::Thread* BrowserProcessImpl::cache_thread() {
   if (!created_cache_thread_)
     CreateCacheThread();
   return cache_thread_.get();
-}
-
-base::Thread* BrowserProcessImpl::gpu_thread() {
-  DCHECK(CalledOnValidThread());
-  if (!created_gpu_thread_)
-    CreateGpuThread();
-  return gpu_thread_.get();
 }
 
 #if defined(USE_X11)
@@ -866,29 +857,6 @@ void BrowserProcessImpl::CreateCacheThread() {
   if (!thread->StartWithOptions(options))
     return;
   cache_thread_.swap(thread);
-}
-
-void BrowserProcessImpl::CreateGpuThread() {
-  DCHECK(!created_gpu_thread_ && !gpu_thread_.get());
-  created_gpu_thread_ = true;
-
-  scoped_ptr<base::Thread> thread(new BrowserThread(BrowserThread::GPU));
-
-  base::Thread::Options options;
-#if defined(OS_WIN)
-  // On Windows the GPU thread needs to pump the compositor child window's
-  // message loop. TODO(apatrick): make this an IO thread if / when we get rid
-  // of this child window. Unfortunately it might always be necessary for
-  // Windows XP because we cannot share the backing store textures between
-  // processes.
-  options.message_loop_type = MessageLoop::TYPE_UI;
-#else
-  options.message_loop_type = MessageLoop::TYPE_IO;
-#endif
-
-  if (!thread->StartWithOptions(options))
-    return;
-  gpu_thread_.swap(thread);
 }
 
 void BrowserProcessImpl::CreateWatchdogThread() {

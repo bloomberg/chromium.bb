@@ -14,13 +14,10 @@
 #include <queue>
 
 #include "base/callback.h"
+#include "base/task.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/gpu_feature_flags.h"
-#include "content/common/gpu/gpu_info.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 
 namespace gfx {
@@ -109,15 +106,6 @@ class GpuProcessHostUIShim
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
-
-  // In single process and in process GPU mode, this references the
-  // GpuChannelManager or null otherwise. It must be called and deleted on the
-  // GPU thread.
-  GpuChannelManager* gpu_channel_manager_;
-
-  // This is likewise single process / in process GPU specific. This is a Sender
-  // implementation that forwards IPC messages to this UI shim on the UI thread.
-  IPC::Channel::Sender* ui_thread_sender_;
 };
 
 #endif  // CONTENT_BROWSER_GPU_GPU_PROCESS_HOST_UI_SHIM_H_

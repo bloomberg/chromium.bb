@@ -67,9 +67,6 @@ class BrowserThread : public base::Thread {
     // This is the thread that processes IPC and network messages.
     IO,
 
-    // This thread issues calls to the GPU in the browser process.
-    GPU,
-
 #if defined(USE_X11)
     // This thread has a second connection to the X server and is used to
     // process UI requests when routing the request to the UI thread would risk

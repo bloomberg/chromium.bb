@@ -116,7 +116,11 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void GpuChildThread::OnInitialize() {
-  logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
+  // We don't need to pipe log messages if we are running the GPU thread in
+  // the browser process.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
+    logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might
