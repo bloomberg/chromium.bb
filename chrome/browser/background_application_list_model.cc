@@ -79,6 +79,18 @@ void GetServiceApplications(ExtensionService* service,
     if (BackgroundApplicationListModel::IsBackgroundApp(*extension))
       applications_result->push_back(extension);
   }
+
+  // Walk the list of terminated extensions also (just because an extension
+  // crashed doesn't mean we should ignore it).
+  extensions = service->terminated_extensions();
+  for (ExtensionList::const_iterator cursor = extensions->begin();
+       cursor != extensions->end();
+       ++cursor) {
+    const Extension* extension = *cursor;
+    if (BackgroundApplicationListModel::IsBackgroundApp(*extension))
+      applications_result->push_back(extension);
+  }
+
   std::string locale = g_browser_process->GetApplicationLocale();
   icu::Locale loc(locale.c_str());
   UErrorCode error = U_ZERO_ERROR;
