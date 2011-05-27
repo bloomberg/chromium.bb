@@ -1,14 +1,13 @@
-# See http://crbug.com/51145
-HttpNetworkTransactionTest.*
-HttpNetworkLayerTest.GET
-
 # See http://crbug.com/82391
 URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
 
+# Dr. Memory hits an assertion:
+# http://code.google.com/p/drmemory/issues/detail?id=422
+HttpAuthTest.*
+HttpAuthHandlerFactoryTest.*
+
 # TODO(timurrrr): investigate these
-ClientSocketPoolBaseTest.*
 CookieMonsterTest.GarbageCollectionTriggers
-SSLClientSocketTest.*
 ProxyResolverJS*
 ProxyResolverV8Test.*
 X509CertificateTest.*
