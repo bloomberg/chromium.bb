@@ -13,10 +13,10 @@
 #endif
 
 // static
-const int ThreadWatcher::kPingCount = 6;
+const int ThreadWatcher::kPingCount = 3;
 
 // static
-const int ThreadWatcher::kUnresponsiveCount = 6;
+const int ThreadWatcher::kUnresponsiveCount = 3;
 
 // ThreadWatcher methods and members.
 ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
@@ -79,7 +79,6 @@ void ThreadWatcher::ActivateThreadWatching() {
   if (active_) return;
   active_ = true;
   ping_count_ = kPingCount;
-  ResetHangCounters();
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(&ThreadWatcher::PostPingMessage));
@@ -100,7 +99,6 @@ void ThreadWatcher::WakeUp() {
 
   if (ping_count_ <= 0) {
     ping_count_ = kPingCount;
-    ResetHangCounters();
     PostPingMessage();
   } else {
     ping_count_ = kPingCount;
@@ -180,7 +178,7 @@ bool ThreadWatcher::OnCheckResponsiveness(uint64 ping_sequence_number) {
   if (ping_sequence_number_ != ping_sequence_number) {
     // Reset unresponsive_count_ to zero because we got a response from the
     // watched thread.
-    ResetHangCounters();
+    GotGoodResponse();
     return true;
   }
   // Record that we got no response from watched thread.
@@ -235,7 +233,7 @@ void ThreadWatcher::OnPingMessage(const BrowserThread::ID& thread_id,
   WatchDogThread::PostTask(FROM_HERE, callback_task);
 }
 
-void ThreadWatcher::ResetHangCounters() {
+void ThreadWatcher::GotGoodResponse() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   unresponsive_count_ = 0;
   hung_processing_complete_ = false;
@@ -245,7 +243,7 @@ void ThreadWatcher::GotNoResponse() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   // Record how other threads are responding when we don't get a response for
-  // ping message atleast kUnresponsiveCount times.
+  // ping message atleast kUnresponsiveCount (three) times.
   if (++unresponsive_count_ < kUnresponsiveCount)
     return;
 
@@ -284,9 +282,9 @@ void ThreadWatcher::GotNoResponse() {
 // static
 ThreadWatcherList* ThreadWatcherList::global_ = NULL;
 // static
-const int ThreadWatcherList::kSleepSeconds = 1;
+const int ThreadWatcherList::kSleepSeconds = 2;
 // static
-const int ThreadWatcherList::kUnresponsiveSeconds = 2;
+const int ThreadWatcherList::kUnresponsiveSeconds = 4;
 
 ThreadWatcherList::ThreadWatcherList()
     : last_wakeup_time_(base::TimeTicks::Now()) {
@@ -422,7 +420,7 @@ void ThreadWatcherList::Observe(NotificationType type,
   base::TimeTicks now = base::TimeTicks::Now();
   {
     base::AutoLock lock(lock_);
-    if (now - last_wakeup_time_ > base::TimeDelta::FromSeconds(kSleepSeconds)) {
+    if (now - last_wakeup_time_ > base::TimeDelta::FromSeconds(2)) {
       need_to_awaken = true;
       last_wakeup_time_ = now;
     }
