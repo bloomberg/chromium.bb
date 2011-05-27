@@ -96,14 +96,6 @@ body {
   font-size: 12px;
 }
 
-button.detail-view {
-  margin-right: 0;
-}
-
-button.thumbnail-view {
-  margin-left: 0;
-}
-
 button.detail-view > img,
 button.thumbnail-view > img {
   position: relative;
@@ -133,6 +125,12 @@ button.thumbnail-view > img {
   width: 120px;
   height: 120px;
   text-align: center;
+}
+
+.thumbnail-item > input[type="checkbox"] {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .thumbnail-item > div.img-container {
@@ -226,19 +224,50 @@ button.thumbnail-view > img {
   display: -webkit-box;
 }
 
+.detail-table li.table-row .table-row-cell:first-child div {
+  margin: 0px;
+}
+
+.file-checkbox {
+  -webkit-margin-end: 0px;
+  margin-top: 5px;
+  opacity: 0.1;
+}
+
+li.thumbnail-item .file-checkbox {
+  opacity: 0;
+}
+
+li.table-row:hover .file-checkbox,
+li.thumbnail-item:hover .file-checkbox {
+  opacity: 0.5;
+}
+
+.file-checkbox:hover,
+li.table-row[selected] .file-checkbox,
+li.thumbnail-item[selected] .file-checkbox {
+  opacity: 1 !important;
+}
+
 /* Column text containers. */
 .detail-name, .detail-size, .detail-date {
   padding-top: 2px;
 }
 
+.detail-icon-container {
+  -webkit-box-orient: horizontal;
+  -webkit-box-flex: 1;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+}
+
 /* The icon in the name column. */
 .detail-icon {
-  -webkit-margin-end: 3px;
-  -webkit-margin-start: 3px;
   background-image: url(../images/filetype_generic.png);
   background-position: center;
   background-repeat: no-repeat;
   height: 24px;
+  width: 24px;
 }
 
 /* Icon for files in the detail list. */

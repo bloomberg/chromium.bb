@@ -54,6 +54,10 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
+  this.showCheckboxes_ =
+      (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
+       this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
+
   // DirectoryEntry representing the current directory of the dialog.
   this.currentDirEntry_ = null;
 
@@ -67,7 +71,9 @@ function FileManager(dialogDom, rootEntries, params) {
   this.initDom_();
   this.initDialogType_();
 
-  this.onDetailSelectionChanged_();
+  this.summarizeSelection_();
+  this.updateOkButton_();
+  this.updatePreview_();
 
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
       this.onDiskChanged_.bind(this));
@@ -122,7 +128,6 @@ FileManager.prototype = {
     'video': /\.(mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
   };
 
-
   const previewArt = {
     'audio': 'images/filetype_large_audio.png',
     'folder': 'images/filetype_large_folder.png',
@@ -156,7 +161,6 @@ FileManager.prototype = {
   function strf(id, var_args) {
     return localStrings.getStringF.apply(localStrings, arguments);
   }
-
 
   /**
    * Checks if |parent_path| is parent file path of |child_path|.
@@ -626,7 +630,7 @@ FileManager.prototype = {
     this.grid_.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.grid_.selectionModel.addEventListener(
-        'change', this.onDetailSelectionChanged_.bind(this));
+        'change', this.onSelectionChanged_.bind(this));
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
@@ -641,9 +645,13 @@ FileManager.prototype = {
    * Initialize the file list table.
    */
   FileManager.prototype.initTable_ = function() {
+    var checkWidth = this.showCheckboxes_ ? 5 : 0;
+
     var columns = [
-        new cr.ui.table.TableColumn('cachedIconType_', '', 5.4),
-        new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'), 64),
+        new cr.ui.table.TableColumn('cachedIconType_', '',
+                                    5.4 + checkWidth),
+        new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
+                                    64 - checkWidth),
         new cr.ui.table.TableColumn('cachedSize_',
                                     str('SIZE_COLUMN_LABEL'), 15.5),
         new cr.ui.table.TableColumn('cachedMtime_',
@@ -664,7 +672,7 @@ FileManager.prototype = {
     this.table_.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.table_.selectionModel.addEventListener(
-        'change', this.onDetailSelectionChanged_.bind(this));
+        'change', this.onSelectionChanged_.bind(this));
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
@@ -861,9 +869,37 @@ FileManager.prototype = {
     checkCount();
   }
 
+  /**
+   * Render (and wire up) a checkbox to be used in either a detail or a
+   * thumbnail list item.
+   */
+  FileManager.prototype.renderCheckbox_ = function(entry) {
+    var input = this.document_.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.className = 'file-checkbox';
+    input.addEventListener('mousedown',
+                           this.onCheckboxMouseDownUp_.bind(this));
+    input.addEventListener('mouseup',
+                           this.onCheckboxMouseDownUp_.bind(this));
+    input.addEventListener('click',
+                           this.onCheckboxClick_.bind(this));
+
+    if (this.selection && this.selection.entries.indexOf(entry) != -1) {
+      // Our DOM nodes get discarded as soon as we're scrolled out of view,
+      // so we have to make sure the check state is correct when we're brought
+      // back to life.
+      input.checked = true;
+    }
+
+    return input;
+  }
+
   FileManager.prototype.renderThumbnail_ = function(entry) {
     var li = this.document_.createElement('li');
     li.className = 'thumbnail-item';
+
+    if (this.showCheckboxes_)
+      li.appendChild(this.renderCheckbox_(entry));
 
     var div = this.document_.createElement('div');
     div.className = 'img-container';
@@ -899,11 +935,19 @@ FileManager.prototype = {
    * @param {cr.ui.Table} table The table doing the rendering.
    */
   FileManager.prototype.renderIconType_ = function(entry, columnId, table) {
+    var div = this.document_.createElement('div');
+    div.className = 'detail-icon-container';
+
+    if (this.showCheckboxes_)
+      div.appendChild(this.renderCheckbox_(entry));
+
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
     entry.cachedIconType_ = getIconType(entry);
     icon.setAttribute('iconType', entry.cachedIconType_);
-    return icon;
+    div.appendChild(icon);
+
+    return div;
   };
 
   FileManager.prototype.getLabelForRootPath_ = function(path) {
@@ -1008,13 +1052,13 @@ FileManager.prototype = {
       directoryCount: 0,
       bytes: 0,
       iconType: null,
+      indexes: this.currentList_.selectionModel.selectedIndexes
     };
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
     this.taskButtons_.innerHTML = '';
 
-    var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
-    if (!selectedIndexes.length) {
+    if (!selection.indexes.length) {
       cr.dispatchSimpleEvent(this, 'selection-summarized');
       return;
     }
@@ -1023,8 +1067,8 @@ FileManager.prototype = {
     var byteCount = 0;
     var pendingFiles = [];
 
-    for (var i = 0; i < selectedIndexes.length; i++) {
-      var entry = this.dataModel_.item(selectedIndexes[i]);
+    for (var i = 0; i < selection.indexes.length; i++) {
+      var entry = this.dataModel_.item(selection.indexes[i]);
 
       selection.entries.push(entry);
       selection.urls.push(entry.toURL());
@@ -1450,16 +1494,92 @@ FileManager.prototype = {
     this.changeDirectory(event.srcElement.path);
   };
 
+  FileManager.prototype.onCheckboxMouseDownUp_ = function(event) {
+    // If exactly one file is selected and its checkbox is *not* clicked,
+    // then this should be treated as a "normal" click (ie. the previous
+    // selection should be cleared).
+    if (this.selection.totalCount == 1 && this.selection.entries[0].isFile) {
+      var selectedIndex = this.selection.indexes[0];
+      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
+      var checkbox = listItem.querySelector('input[type="checkbox"]');
+      if (!checkbox.checked)
+        return;
+    }
+
+    // Otherwise, treat clicking on a checkbox the same as a ctrl-click.
+    // The default properties of event.ctrlKey make it read-only, but
+    // don't prevent deletion, so we delete first, then set it true.
+    delete event.ctrlKey;
+    event.ctrlKey = true;
+  };
+
+  FileManager.prototype.onCheckboxClick_ = function(event) {
+    if (event.shiftKey) {
+      // Something about the timing of shift-clicks causes the checkbox
+      // to get selected and then very quickly unselected.  It appears that
+      // we forcibly select the checkbox as part of onSelectionChanged, and
+      // then the default action of this click event fires and toggles the
+      // checkbox back off.
+      //
+      // Since we're going to force checkboxes into the correct state for any
+      // multi-selection, we can prevent this shift click from toggling the
+      // checkbox and avoid the trouble.
+      event.preventDefault();
+    }
+  };
+
   /**
    * Update the UI when the selection model changes.
    *
    * @param {cr.Event} event The change event.
    */
-  FileManager.prototype.onDetailSelectionChanged_ = function(event) {
+  FileManager.prototype.onSelectionChanged_ = function(event) {
     var selectable;
 
     this.summarizeSelection_();
+    this.updateOkButton_();
+    this.updatePreview_();
 
+    var self = this;
+    setTimeout(function() { self.onSelectionChangeComplete_(event) }, 0);
+  };
+
+  FileManager.prototype.onSelectionChangeComplete_ = function(event) {
+    if (!this.showCheckboxes_)
+      return;
+
+    for (var i = 0; i < event.changes.length; i++) {
+      // Turn off any checkboxes for items that are no longer selected.
+      var selectedIndex = event.changes[i].index;
+      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
+      if (!listItem) {
+        // When changing directories, we get notified about list items
+        // that are no longer there.
+        continue;
+      }
+
+      if (!event.changes[i].selected) {
+        var checkbox = listItem.querySelector('input[type="checkbox"]');
+        checkbox.checked = false;
+      }
+    }
+
+    if (this.selection.fileCount > 1) {
+      // If more than one file is selected, make sure all checkboxes are lit
+      // up.
+      for (var i = 0; i < this.selection.entries.length; i++) {
+        if (!this.selection.entries[i].isFile)
+          continue;
+
+        var selectedIndex = this.selection.indexes[i];
+        var listItem = this.currentList_.getListItemByIndex(selectedIndex);
+        if (listItem)
+          listItem.querySelector('input[type="checkbox"]').checked = true;
+      }
+    }
+  };
+
+  FileManager.prototype.updateOkButton_ = function(event) {
     if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
       selectable = this.selection.directoryCount == 1 &&
           this.selection.fileCount == 0;
@@ -1489,7 +1609,6 @@ FileManager.prototype = {
     }
 
     this.okButton_.disabled = !selectable;
-    this.updatePreview_();
   };
 
   /**
