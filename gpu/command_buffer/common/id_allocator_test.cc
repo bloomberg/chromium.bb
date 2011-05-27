@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,9 @@ TEST_F(IdAllocatorTest, TestBasic) {
 TEST_F(IdAllocatorTest, TestAdvanced) {
   IdAllocator *allocator = id_allocator();
 
+  // Allocate the highest possible ID, to make life awkward.
+  allocator->AllocateIDAtOrAbove(-1);
+
   // Allocate a significant number of resources.
   const unsigned int kNumResources = 100;
   ResourceId ids[kNumResources];
@@ -93,6 +96,18 @@ TEST_F(IdAllocatorTest, AllocateIdAtOrAbove) {
   EXPECT_GT(id2, kOffset);
   ResourceId id3 = allocator->AllocateIDAtOrAbove(kOffset);
   EXPECT_GT(id3, kOffset);
+}
+
+// Checks that AllocateIdAtOrAbove wraps around at the maximum 32-bit value.
+TEST_F(IdAllocatorTest, AllocateIdAtOrAboveWrapsAround) {
+  const ResourceId kMaxPossibleOffset = -1;
+  IdAllocator* allocator = id_allocator();
+  ResourceId id1 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset);
+  EXPECT_EQ(kMaxPossibleOffset, id1);
+  ResourceId id2 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset);
+  EXPECT_EQ(1u, id2);
+  ResourceId id3 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset);
+  EXPECT_EQ(2u, id3);
 }
 
 }  // namespace gpu

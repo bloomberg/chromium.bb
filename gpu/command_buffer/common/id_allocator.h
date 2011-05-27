@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,9 +44,14 @@ class IdAllocator {
   // TODO(gman): This would work much better with ranges or a hash table.
   typedef std::set<ResourceId> ResourceIdSet;
 
-  ResourceId FindFirstFree() const;
+  // The highest ID on the used list.
+  ResourceId LastUsedId() const;
+
+  // Lowest ID that isn't on the used list. This is slow, use as a last resort.
+  ResourceId FindFirstUnusedId() const;
 
   ResourceIdSet used_ids_;
+  ResourceIdSet free_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(IdAllocator);
 };
