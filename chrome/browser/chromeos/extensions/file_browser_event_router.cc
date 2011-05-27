@@ -130,9 +130,10 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
     return;
   }
   if (disk->is_parent()) {
-    if (!disk->has_media())
+    if (!disk->has_media()) {
       HideDeviceNotification(disk->system_path());
-    return;
+      return;
+    }
   }
 
   // If disk is not mounted yet, give it a try.
