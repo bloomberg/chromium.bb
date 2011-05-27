@@ -6,7 +6,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
-#include "chrome/browser/chromeos/login/eula_view.h"
+#include "chrome/browser/chromeos/login/eula_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/mock_update_screen.h"

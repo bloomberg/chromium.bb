@@ -6,11 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EULA_VIEW_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
-#include "chrome/browser/chromeos/login/view_screen.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/button/button.h"
@@ -31,7 +27,7 @@ class DOMView;
 namespace chromeos {
 
 class HelpAppLauncher;
-class MetricsCrosSettingsProvider;
+class ViewsEulaScreenActor;
 
 // Delegate for TabContents that will show EULA.
 // Blocks context menu and other actions.
@@ -76,7 +72,7 @@ class EulaView
       public MessageBubbleDelegate,
       public EULATabContentsDelegate {
  public:
-  explicit EulaView(chromeos::ScreenObserver* observer);
+  explicit EulaView(ViewsEulaScreenActor* actor);
   virtual ~EulaView();
 
   // Initialize view controls and layout.
@@ -84,6 +80,9 @@ class EulaView
 
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
+
+  // Returns the state of usage stats checkbox.
+  bool IsUsageStatsChecked() const;
 
  protected:
   // views::View implementation.
@@ -128,7 +127,7 @@ class EulaView
   views::NativeButton* back_button_;
   views::NativeButton* continue_button_;
 
-  chromeos::ScreenObserver* observer_;
+  ViewsEulaScreenActor* actor_;
 
   // URL of the OEM EULA page (on disk).
   GURL oem_eula_page_;
@@ -140,23 +139,7 @@ class EulaView
   // it will be deleted on bubble closing.
   MessageBubble* bubble_;
 
-  // TPM password local storage. By convention, we clear the password
-  // from TPM as soon as we read it. We store it here locally until
-  // EULA screen is closed.
-  // TODO(glotov): Sanitize memory used to store password when
-  // it's destroyed.
-  std::string tpm_password_;
-
   DISALLOW_COPY_AND_ASSIGN(EulaView);
-};
-
-class EulaScreen : public DefaultViewScreen<EulaView> {
- public:
-  explicit EulaScreen(WizardScreenDelegate* delegate)
-      : DefaultViewScreen<EulaView>(delegate) {
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(EulaScreen);
 };
 
 }  // namespace chromeos

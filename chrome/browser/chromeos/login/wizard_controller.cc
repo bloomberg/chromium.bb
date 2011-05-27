@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
-#include "chrome/browser/chromeos/login/eula_view.h"
+#include "chrome/browser/chromeos/login/eula_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/html_page_screen.h"

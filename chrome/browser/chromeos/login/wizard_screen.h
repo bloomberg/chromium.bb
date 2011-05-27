@@ -27,6 +27,11 @@ class WizardScreenDelegate {
 
   // Returns observer screen should notify.
   virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen) = 0;
+  const chromeos::ScreenObserver* GetObserver(
+      const WizardScreen* screen) const {
+    return const_cast<WizardScreenDelegate*>(this)->GetObserver(
+        const_cast<WizardScreen*>(screen));
+  }
 
   // Forces the current screen to be shown immediately.
   virtual void ShowCurrentScreen() = 0;
@@ -51,6 +56,7 @@ class WizardScreen {
   virtual ~WizardScreen() {}
 
   WizardScreenDelegate* delegate() { return delegate_; }
+  const WizardScreenDelegate* delegate() const { return delegate_; }
 
  private:
   WizardScreenDelegate* delegate_;
