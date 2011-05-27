@@ -1161,4 +1161,62 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // TODO(shishir): Add a test for the case when the page having the
 // prerendering link already has an opener set.
 
+// Checks that a top-level page which would normally request an SSL client
+// certificate will never be seen since it's an https top-level resource.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
+  net::TestServer::HTTPSOptions https_options;
+  https_options.request_client_certificate = true;
+  net::TestServer https_server(https_options,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  PrerenderTestURL(https_url, FINAL_STATUS_HTTPS, 1);
+}
+
+// Checks that an SSL Client Certificate request that originates from a
+// subresource will cancel the prerendered page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderSSLClientCertSubresource) {
+  net::TestServer::HTTPSOptions https_options;
+  https_options.request_client_certificate = true;
+  net::TestServer https_server(https_options,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", https_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_image.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path,
+                   FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED,
+                   1);
+}
+
+// Checks that an SSL Client Certificate request that originates from an
+// iframe will cancel the prerendered page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
+  net::TestServer::HTTPSOptions https_options;
+  https_options.request_client_certificate = true;
+  net::TestServer https_server(https_options,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL(
+      "files/prerender/prerender_embedded_content.html");
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", https_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_iframe.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path,
+                   FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED,
+                   1);
+}
+
 }  // namespace prerender

@@ -74,3 +74,24 @@ void ChromeResourceDispatcherHostObserver::MutateLoadFlags(int child_id,
   if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id))
     *load_flags |= net::LOAD_PRERENDERING;
 }
+
+bool ChromeResourceDispatcherHostObserver::AcceptSSLClientCertificateRequest(
+    net::URLRequest* request, net::SSLCertRequestInfo* cert_request_info) {
+  if (request->load_flags() & net::LOAD_PREFETCH)
+    return false;
+
+  if (request->load_flags() & net::LOAD_PRERENDERING) {
+    int child_id, route_id;
+    if (ResourceDispatcherHost::RenderViewForRequest(
+            request, &child_id, &route_id)) {
+      if (prerender_tracker_->TryCancel(
+              child_id, route_id,
+              prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+

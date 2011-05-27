@@ -72,6 +72,13 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
     // to add or remove load flags.
     virtual void MutateLoadFlags(int child_id, int route_id,
                                  int* load_flags) = 0;
+
+    // Called when an SSL Client Certificate is requested. If false is returned,
+    // the request is canceled. Otherwise, the certificate is chosen.
+    virtual bool AcceptSSLClientCertificateRequest(
+        net::URLRequest* request,
+        net::SSLCertRequestInfo* cert_request_info) = 0;
+
    protected:
     Observer() {}
     virtual ~Observer() {}

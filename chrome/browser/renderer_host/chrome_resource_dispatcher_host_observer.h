@@ -34,6 +34,10 @@ class ChromeResourceDispatcherHostObserver
   virtual void MutateLoadFlags(int child_id, int route_id,
                                int* load_flags) OVERRIDE;
 
+  virtual bool AcceptSSLClientCertificateRequest(
+        net::URLRequest* request,
+        net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
+
  private:
   prerender::PrerenderTracker* prerender_tracker_;
 

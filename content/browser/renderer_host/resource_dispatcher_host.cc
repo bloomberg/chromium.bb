@@ -1096,6 +1096,11 @@ void ResourceDispatcherHost::OnCertificateRequested(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info) {
   DCHECK(request);
+  if (observer_ && !observer_->AcceptSSLClientCertificateRequest(
+          request, cert_request_info)) {
+    request->Cancel();
+    return;
+  }
 
   if (cert_request_info->client_certs.empty()) {
     // No need to query the user if there are no certs to choose from.
