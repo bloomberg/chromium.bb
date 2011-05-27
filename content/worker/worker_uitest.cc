@@ -271,7 +271,8 @@ TEST_F(WorkerTest, FLAKY_WorkerCloseFast) {
   RunWorkerFastLayoutTest("worker-close.html");
 }
 
-TEST_F(WorkerTest, WorkerConstructor) {
+// Flaky (on XP), http://crbug.com/84203.
+TEST_F(WorkerTest, FLAKY_WorkerConstructor) {
   RunWorkerFastLayoutTest("worker-constructor.html");
 }
 
