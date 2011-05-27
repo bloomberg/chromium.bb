@@ -33,14 +33,14 @@ TEST(WebKitContextTest, Basic) {
   scoped_refptr<WebKitContext> context1(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
           profile.GetSpecialStoragePolicy(),
-          false));
+          false, NULL, NULL));
   EXPECT_TRUE(profile.GetPath() == context1->data_path());
   EXPECT_TRUE(profile.IsOffTheRecord() == context1->is_incognito());
 
   scoped_refptr<WebKitContext> context2(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
           profile.GetSpecialStoragePolicy(),
-          false));
+          false, NULL, NULL));
   EXPECT_TRUE(context1->data_path() == context2->data_path());
   EXPECT_TRUE(context1->is_incognito() == context2->is_incognito());
 }
@@ -56,7 +56,7 @@ TEST(WebKitContextTest, PurgeMemory) {
   scoped_refptr<WebKitContext> context(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
           profile.GetSpecialStoragePolicy(),
-          false));
+          false, NULL, NULL));
   MockDOMStorageContext* mock_context = new MockDOMStorageContext(
       context.get(), profile.GetSpecialStoragePolicy());
   context->set_dom_storage_context(mock_context);  // Takes ownership.

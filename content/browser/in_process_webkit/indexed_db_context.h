@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/browser_thread.h"
 
 class GURL;
 class FilePath;
@@ -19,14 +20,24 @@ namespace WebKit {
 class WebIDBFactory;
 }
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace quota {
+class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-class IndexedDBContext {
+class IndexedDBContext :
+    public base::RefCountedThreadSafe<IndexedDBContext,
+                                      BrowserThread::DeleteOnWebKitThread> {
  public:
   IndexedDBContext(WebKitContext* webkit_context,
-                   quota::SpecialStoragePolicy* special_storage_policy);
+                   quota::SpecialStoragePolicy* special_storage_policy,
+                   quota::QuotaManagerProxy* quota_manager_proxy,
+                   base::MessageLoopProxy* webkit_thread_loop);
+
   ~IndexedDBContext();
 
   WebKit::WebIDBFactory* GetIDBFactory();
@@ -68,6 +79,8 @@ class IndexedDBContext {
   bool clear_local_state_on_exit_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+
+  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContext);
 };

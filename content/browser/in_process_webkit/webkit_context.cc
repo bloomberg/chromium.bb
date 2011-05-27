@@ -10,7 +10,9 @@
 WebKitContext::WebKitContext(
     bool is_incognito, const FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy,
-    bool clear_local_state_on_exit)
+    bool clear_local_state_on_exit,
+    quota::QuotaManagerProxy* quota_manager_proxy,
+    base::MessageLoopProxy* webkit_thread_loop)
     : data_path_(is_incognito ? FilePath() : data_path),
       is_incognito_(is_incognito),
       clear_local_state_on_exit_(clear_local_state_on_exit),
@@ -19,7 +21,8 @@ WebKitContext::WebKitContext(
               this, special_storage_policy))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           indexed_db_context_(new IndexedDBContext(
-              this, special_storage_policy))) {
+              this, special_storage_policy, quota_manager_proxy,
+              webkit_thread_loop))) {
 }
 
 WebKitContext::~WebKitContext() {
@@ -38,11 +41,6 @@ WebKitContext::~WebKitContext() {
 
   indexed_db_context_->set_clear_local_state_on_exit(
       clear_local_state_on_exit_);
-  IndexedDBContext* indexed_db_context = indexed_db_context_.release();
-  if (!BrowserThread::DeleteSoon(
-          BrowserThread::WEBKIT, FROM_HERE, indexed_db_context)) {
-    delete indexed_db_context;
-  }
 }
 
 void WebKitContext::PurgeMemory() {
