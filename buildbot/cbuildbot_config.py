@@ -77,7 +77,7 @@ manifest_version -- URL to git repo to store per-build manifest.
                     MANIFEST_VERSIONS_INT_URL
 """
 
-GS_PATH_DEFAULT = 'default'
+GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
 GERRIT_URL = 'ssh://gerrit.chromium.org:29418'
 GERRIT_INT_URL = 'ssh://gerrit-int.chromium.org:29419'
@@ -334,39 +334,94 @@ add_config('x86-mario-pre-flight-queue', [internal, {
   'push_overlays': 'private',
   'chrome_rev' : 'stable_release',
 
-  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
+  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
 }])
 
-# cbuild --board=x86-mario  master --official --chromeos --clean
-#   --upload-board-prebuilt --ctest --unittests --bvt
+add_config('arm-tegra2_seaboard-private-bin', [internal, arm, {
+  'board' : 'tegra2_seaboard',
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
+
+  'gspath' : None,
+}])
+
+add_config('arm-tegra2_kaen-private-bin', [internal, arm, {
+  'board' : 'tegra2_kaen',
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
+
+  'gspath' : 'gs://chromeos-tegra2_kaen/arm-tegra2_kaen-private-bin',
+}])
+
+add_config('arm-tegra2_aebl-private-bin', [internal, arm, {
+  'board' : 'tegra2_aebl',
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
+
+  'gspath' : 'gs://chromeos-tegra2_aebl/arm-tegra2_aebl-private-bin',
+}])
+
+add_config('arm-tegra2_dev-board-private-bin', [internal, arm, {
+  'board' : 'tegra2_dev-board',
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
+
+  'gspath' : None,
+}])
+
+add_config('x86-zgb-private-bin', [internal, {
+  'board' : 'x86-dogfood',
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
+
+  'gspath' : 'gs://chromeos-x86-zgb/x86-zgb-private-bin',
+}])
+
+add_config('x86-mario-private-bin', [internal, {
+  'board' : 'x86-dogfood',
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
+
+  'gspath' : 'gs://chromeos-x86-mario/x86-mario-private-bin',
+}])
+
+add_config('x86-alex-private-bin', [internal, {
+  'board' : 'x86-dogfood',
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': None,
+
+  'gspath' : 'gs://chromeos-x86-alex/x86-alex-private-bin',
+}])
+
 add_config('x86-mario-private-full', [internal, full, official, {
   'board' : 'x86-mario',
   'prebuilts' : False,
 }])
 
-# cbuild --board=x86-zgb  master --official --chromeos --clean
-#   --upload-board-prebuilt --ctest --unittests --bvt
 add_config('x86-zgb-private-full', [internal, full, official, {
   'board' : 'x86-zgb',
   'prebuilts' : False,
 }])
 
-# cbuild --board=x86-alex master --official --chromeos --clean
-#   --upload-board-prebuilt --unittests --bvt
 add_config('x86-alex-private-full', [internal, full, official, {
   'board' : 'x86-alex',
   'prebuilts' : False,
 }])
 
-# cbuild --board=tegra2_seaboard master --official --chromeos --clean
-#   --upload-board-prebuilt
-add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
-  'board' : 'arm-tegra2_seaboard',
-  'prebuilts' : False,
-}])
-
-# cbuild --board=tegra2_aebl  master --official --chromeos --clean
-#   --upload-board-prebuilt
 add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
   'board' : 'arm-tegra2_seaboard',
   'prebuilts' : False,
