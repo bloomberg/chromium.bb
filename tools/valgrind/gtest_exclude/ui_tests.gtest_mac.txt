@@ -218,3 +218,8 @@ NPAPIAutomationEnabledTest.LoadAllBlockedPlugins
 
 # Fails constantly. See http://crbug.com/84230.
 NPAPITesterBase.NPObjectIdentity
+
+# Flaky on valgrind test. See http://crbug.com/84257.
+AutomatedUITestBase.RestoreTab
+AutomationProxyTest4.BooleanValueIsEchoedByDomAutomationController 
+
