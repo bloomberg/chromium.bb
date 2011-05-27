@@ -184,8 +184,9 @@ cr.define('gpu', function() {
 
       document.addEventListener('keypress', this.onKeypress_.bind(this));
       document.addEventListener('mousedown', this.onMouseDown_.bind(this));
-      this.onMouseMoveBoundToThis_ = this.onMouseMove_.bind(this);
-      this.onMouseUpBoundToThis_ = this.onMouseUp_.bind(this);
+      document.addEventListener('mousemove', this.onMouseMove_.bind(this));
+      document.addEventListener('mouseup', this.onMouseUp_.bind(this));
+
       this.lastMouseViewPos_ = {x: 0, y: 0};
 
       this.selection_ = [];
@@ -411,13 +412,10 @@ cr.define('gpu', function() {
       this.setDragBoxPosition_(e, e);
       this.dragBeginEvent_ = e;
       e.preventDefault();
-
-      document.addEventListener('mousemove', this.onMouseMoveBoundToThis_);
-      document.addEventListener('mouseup', this.onMouseUpBoundToThis_);
     },
 
     onMouseMove_: function(e) {
-      if (!this.firstCanvas || !this.dragBeginEvent_)
+      if (!this.firstCanvas)
         return;
       var canv = this.firstCanvas;
       var pos = {
@@ -481,10 +479,6 @@ cr.define('gpu', function() {
           this.selection_[i].slice.selected = true;
         }
         this.invalidate();  // Cause tracks to redraw.
-
-        // Remove move listeners.
-        document.removeEventListener('mousemove', this.onMouseMoveBoundToThis_);
-        document.removeEventListener('mouseup', this.onMouseUpBoundToThis_);
       }
     }
   };
