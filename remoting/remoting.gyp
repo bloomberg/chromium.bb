@@ -7,6 +7,8 @@
     # TODO(dmaclach): can we pick this up some other way? Right now it's
     # duplicated from chrome.gyp
     'chromium_code': 1,
+    # Use a consistent MIME-type independent of branding.
+    'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
     'conditions': [
       ['OS=="mac"', {
         'conditions': [
@@ -29,11 +31,6 @@
         'plugin_extension': 'dll',
         'plugin_prefix': '',
       }],
-      ['branding=="Chrome"', {
-        'host_plugin_mime_type': 'application/vnd.google-chrome.remoting-host',
-      }, {  # else: branding!="Chrome"
-        'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
-      }],  # branding
     ],
   },
 

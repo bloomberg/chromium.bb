@@ -32,13 +32,9 @@ const char* kNaClPluginDescription = "Native Client Executable";
 const char* kRemotingViewerPluginName = "Remoting Viewer";
 const FilePath::CharType kRemotingViewerPluginPath[] =
     FILE_PATH_LITERAL("internal-remoting-viewer");
-#if defined(GOOGLE_CHROME_BUILD)
-const char* kRemotingViewerPluginMimeType =
-    "application/vnd.google-chrome.remoting-viewer";
-#else // CHROMIUM_BUILD
+// Use a consistent MIME-type regardless of branding.
 const char* kRemotingViewerPluginMimeType =
     "application/vnd.chromium.remoting-viewer";
-#endif
 // TODO(wez): Remove the old MIME-type once client code no longer needs it.
 const char* kRemotingViewerPluginOldMimeType =
     "pepper-application/x-chromoting";
