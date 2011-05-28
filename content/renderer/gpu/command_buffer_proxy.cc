@@ -24,7 +24,8 @@ CommandBufferProxy::CommandBufferProxy(
     int route_id)
     : num_entries_(0),
       channel_(channel),
-      route_id_(route_id) {
+      route_id_(route_id),
+      flush_count_(0) {
 }
 
 CommandBufferProxy::~CommandBufferProxy() {
@@ -153,7 +154,8 @@ void CommandBufferProxy::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  Send(new GpuCommandBufferMsg_AsyncFlush(route_id_, put_offset));
+  Send(new GpuCommandBufferMsg_AsyncFlush(
+      route_id_, put_offset, ++flush_count_));
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
@@ -166,6 +168,7 @@ gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
       if (Send(new GpuCommandBufferMsg_Flush(route_id_,
                                              put_offset,
                                              last_known_get,
+                                             ++flush_count_,
                                              &state)))
         OnUpdateState(state);
     }

@@ -48,6 +48,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       requested_attribs_(attribs),
       parent_texture_id_(parent_texture_id),
       route_id_(route_id),
+      last_flush_count_(0),
       renderer_id_(renderer_id),
       render_view_id_(render_view_id),
       watchdog_(watchdog),
@@ -195,10 +196,17 @@ void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {
 
 void GpuCommandBufferStub::OnFlush(int32 put_offset,
                                    int32 last_known_get,
+                                   int32 flush_count,
                                    IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
-  gpu::CommandBuffer::State state = command_buffer_->FlushSync(put_offset,
-                                                               last_known_get);
+  gpu::CommandBuffer::State state;
+  if (flush_count <= last_flush_count_) {
+    DLOG(INFO) << "!!OUT OF ORDER IPC!!";
+    state = command_buffer_->GetState();
+  } else {
+    last_flush_count_ = flush_count;
+    state = command_buffer_->FlushSync(put_offset, last_known_get);
+  }
   if (state.error == gpu::error::kLostContext &&
       gfx::GLContext::LosesAllContextsOnContextLost())
     channel_->LoseAllContexts();
@@ -207,9 +215,14 @@ void GpuCommandBufferStub::OnFlush(int32 put_offset,
   Send(reply_message);
 }
 
-void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset) {
+void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, int32 flush_count) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnAsyncFlush");
-  command_buffer_->Flush(put_offset);
+  if (flush_count > last_flush_count_) {
+    last_flush_count_ = flush_count;
+    command_buffer_->Flush(put_offset);
+  } else {
+    DLOG(INFO) << "!!OUT OF ORDER IPC!!";
+  }
   // TODO(piman): Do this everytime the scheduler finishes processing a batch of
   // commands.
   MessageLoop::current()->PostTask(FROM_HERE,

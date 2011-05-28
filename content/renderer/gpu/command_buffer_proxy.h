@@ -106,6 +106,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   IPC::Channel::Sender* channel_;
   int route_id_;
+  int flush_count_;
 
   scoped_ptr<Task> notify_repaint_task_;
 
