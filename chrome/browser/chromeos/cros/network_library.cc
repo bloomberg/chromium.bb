@@ -4394,7 +4394,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     WifiNetwork* wifi1 = new WifiNetwork("fw1");
     wifi1->set_name("Fake Wifi Connected");
     wifi1->set_strength(90);
-    wifi1->set_connected(true);
+    wifi1->set_connected(false);
+    wifi1->set_connecting(true);
     wifi1->set_active(true);
     wifi1->set_encryption(SECURITY_NONE);
     AddNetwork(wifi1);
@@ -4443,7 +4444,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     CellularNetwork* cellular1 = new CellularNetwork("fc1");
     cellular1->set_name("Fake Cellular");
     cellular1->set_strength(70);
-    cellular1->set_connected(true);
+    cellular1->set_connected(false);
+    cellular1->set_connecting(true);
     cellular1->set_active(true);
     cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
     cellular1->set_payment_url(std::string("http://www.google.com"));

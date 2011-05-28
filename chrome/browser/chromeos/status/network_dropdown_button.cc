@@ -32,7 +32,8 @@ NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
                      true),
       browser_mode_(browser_mode),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
-      parent_window_(parent_window) {
+      parent_window_(parent_window),
+      last_network_type_(TYPE_WIFI) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
@@ -51,7 +52,7 @@ void NetworkDropdownButton::AnimationProgressed(
     const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
     SetIcon(*IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
-                                      true));
+                                      last_network_type_));
     SchedulePaint();
   } else {
     MenuButton::AnimationProgressed(animation);
@@ -92,6 +93,7 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // Always show the active network, if any
     const Network* active_network = cros->active_network();
+    last_network_type_ = NetworkMenu::TypeForNetwork(active_network);
     if (active_network != NULL) {
       animation_connecting_.Stop();
       if (active_network->type() == TYPE_ETHERNET) {
@@ -101,12 +103,12 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
       } else if (active_network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi =
             static_cast<const WifiNetwork*>(active_network);
-        SetIcon(*IconForNetworkStrength(wifi, true));
+        SetIcon(*IconForNetworkStrength(wifi));
         SetText(UTF8ToWide(wifi->name()));
       } else if (active_network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(active_network);
-        SetIcon(*IconForNetworkStrength(cellular, true));
+        SetIcon(*IconForNetworkStrength(cellular));
         SetText(UTF8ToWide(cellular->name()));
       } else {
         NOTREACHED();
@@ -115,7 +117,7 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
       if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(-1);
-        SetIcon(*IconForNetworkConnecting(0, true));
+        SetIcon(*IconForNetworkConnecting(0, last_network_type_));
       }
       if (cros->wifi_connecting())
         SetText(UTF8ToWide(cros->wifi_network()->name()));

@@ -618,8 +618,8 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         }
       }
 
-      const SkBitmap* icon = NetworkMenu::IconForNetworkStrength(
-          wifi_networks[i], true);
+      const SkBitmap* icon =
+          NetworkMenu::IconForNetworkStrength(wifi_networks[i]);
       const SkBitmap* badge = wifi_networks[i]->encrypted() ?
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
       int flag = FLAG_WIFI;
@@ -640,7 +640,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_ARCS4),
         std::string(), FLAG_ADD_WIFI));
   }
 
@@ -691,12 +691,12 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         }
       }
 
-      const SkBitmap* icon = NetworkMenu::IconForNetworkStrength(
-          cell_networks[i], true);
-      const SkBitmap* badge = NetworkMenu::BadgeForNetworkTechnology(
-          cell_networks[i]);
-      const SkBitmap* roaming_badge = NetworkMenu::BadgeForRoamingStatus(
-          cell_networks[i]);
+      const SkBitmap* icon =
+          NetworkMenu::IconForNetworkStrength(cell_networks[i]);
+      const SkBitmap* badge =
+          NetworkMenu::BadgeForNetworkTechnology(cell_networks[i]);
+      const SkBitmap* roaming_badge =
+          NetworkMenu::BadgeForRoamingStatus(cell_networks[i]);
       int flag = FLAG_CELLULAR;
       bool isActive = active_cellular &&
           cell_networks[i]->service_path() == active_cellular->service_path() &&
@@ -764,7 +764,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
             ui::MenuModel::TYPE_COMMAND,
             l10n_util::GetStringUTF16(
                 IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
-            *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+            *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
             std::string(), FLAG_ADD_CELLULAR));
       }
     }
@@ -1026,12 +1026,12 @@ SkBitmap VPNMenuModel::IconForDisplay(const Network* network) {
       break;
     case TYPE_WIFI :
       icon = NetworkMenu::IconForNetworkStrength(
-          static_cast<const WifiNetwork*>(network), true);
+          static_cast<const WifiNetwork*>(network));
       break;
     case TYPE_CELLULAR : {
       const CellularNetwork* cellular =
           static_cast<const CellularNetwork*>(network);
-      icon = NetworkMenu::IconForNetworkStrength(cellular, true);
+      icon = NetworkMenu::IconForNetworkStrength(cellular);
       bottom_right_badge = NetworkMenu::BadgeForNetworkTechnology(cellular);
       top_left_badge = NetworkMenu::BadgeForRoamingStatus(cellular);
       break;
@@ -1043,6 +1043,20 @@ SkBitmap VPNMenuModel::IconForDisplay(const Network* network) {
 
   return NetworkMenu::IconForDisplay(icon, bottom_right_badge, top_left_badge,
                                      bottom_left_badge);
+}
+
+// static
+ConnectionType NetworkMenu::TypeForNetwork(const Network* network) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  if (network)
+    return network->type() == TYPE_CELLULAR ? TYPE_CELLULAR : TYPE_WIFI;
+
+  // This way if both wifi and cell are connecting we'll use wifi.
+  if (cros->wifi_connecting())
+    return TYPE_WIFI;
+  if (cros->cellular_connecting())
+    return TYPE_CELLULAR;
+  return TYPE_WIFI;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1141,13 +1155,6 @@ const int NetworkMenu::kBarsImages[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS3,
   IDR_STATUSBAR_NETWORK_BARS4,
 };
-// static
-const int NetworkMenu::kBarsImagesBlack[kNumBarsImages] = {
-  IDR_STATUSBAR_NETWORK_BARS1_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS2_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS3_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS4_BLACK,
-};
 
 // static
 const int NetworkMenu::kBarsImagesOrange[kNumBarsImages] = {
@@ -1156,21 +1163,28 @@ const int NetworkMenu::kBarsImagesOrange[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS3_ORANGE,
   IDR_STATUSBAR_NETWORK_BARS4_ORANGE,
 };
-#if 0
+
 // static
-const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
-  IDR_STATUSBAR_NETWORK_BARS1_RED,
-  IDR_STATUSBAR_NETWORK_BARS2_RED,
-  IDR_STATUSBAR_NETWORK_BARS3_RED,
-  IDR_STATUSBAR_NETWORK_BARS4_RED,
+SkBitmap NetworkMenu::kBarsImagesAnimating[kNumBarsImages];
+
+// static
+const int NetworkMenu::kNumArcsImages = 7;
+
+// NOTE: Use an array rather than just calculating a resource number to avoid
+// creating implicit ordering dependencies on the resource values.
+// static
+const int NetworkMenu::kArcsImages[kNumArcsImages] = {
+  IDR_STATUSBAR_NETWORK_ARCS1,
+  IDR_STATUSBAR_NETWORK_ARCS2,
+  IDR_STATUSBAR_NETWORK_ARCS3,
+  IDR_STATUSBAR_NETWORK_ARCS4,
+  IDR_STATUSBAR_NETWORK_ARCS5,
+  IDR_STATUSBAR_NETWORK_ARCS6,
+  IDR_STATUSBAR_NETWORK_ARCS7,
 };
-#endif
 
 // static
-SkBitmap NetworkMenu::kAnimatingImages[kNumBarsImages];
-
-// static
-SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumBarsImages];
+SkBitmap NetworkMenu::kArcsImagesAnimating[kNumArcsImages];
 
 NetworkMenu::NetworkMenu() : min_width_(kDefaultMinimumWidth) {
   main_menu_model_.reset(new MainMenuModel(this));
@@ -1200,48 +1214,54 @@ void NetworkMenu::UpdateMenu() {
 }
 
 // static
-const SkBitmap* NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi,
-                                                    bool black) {
+const SkBitmap* NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi) {
   DCHECK(wifi);
   if (wifi->strength() == 0) {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
-                IDR_STATUSBAR_NETWORK_BARS0);
+        IDR_STATUSBAR_NETWORK_ARCS0);
   }
   int index = static_cast<int>(wifi->strength() / 100.0 *
-      nextafter(static_cast<float>(kNumBarsImages), 0));
-  index = std::max(std::min(index, kNumBarsImages - 1), 0);
-  const int* images = black ? kBarsImagesBlack : kBarsImages;
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
+      nextafter(static_cast<float>(kNumArcsImages), 0));
+  index = std::max(std::min(index, kNumArcsImages - 1), 0);
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(kArcsImages[index]);
 }
 
 // static
 const SkBitmap* NetworkMenu::IconForNetworkStrength(
-    const CellularNetwork* cellular, bool black) {
+    const CellularNetwork* cellular) {
   DCHECK(cellular);
   // If no data, then we show 0 bars.
   if (cellular->strength() == 0 ||
       cellular->data_left() == CellularNetwork::DATA_NONE) {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
-                IDR_STATUSBAR_NETWORK_BARS0);
+        IDR_STATUSBAR_NETWORK_BARS0);
   }
   int index = static_cast<int>(cellular->strength() / 100.0 *
       nextafter(static_cast<float>(kNumBarsImages), 0));
   index = std::max(std::min(index, kNumBarsImages - 1), 0);
-  const int* images = black ? kBarsImagesBlack : kBarsImages;
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(kBarsImages[index]);
 }
 
 // static
 const SkBitmap* NetworkMenu::IconForNetworkConnecting(double animation_value,
-                                                      bool black) {
+                                                      ConnectionType type) {
   // Fade bars a bit and show the different bar states.
-  const int* source_image_ids = black ? kBarsImagesBlack : kBarsImages;
-  SkBitmap* images = black ? kAnimatingImagesBlack : kAnimatingImages;
+  int image_count;
+  const int* source_image_ids;
+  SkBitmap* images;
+
+  if (type == TYPE_WIFI) {
+    image_count = kNumArcsImages;
+    source_image_ids = kArcsImages;
+    images = kArcsImagesAnimating;
+  } else {
+    image_count = kNumBarsImages;
+    source_image_ids = kBarsImages;
+    images = kBarsImagesAnimating;
+  }
   int index = static_cast<int>(animation_value *
-      nextafter(static_cast<float>(kNumBarsImages), 0));
-  index = std::max(std::min(index, kNumBarsImages - 1), 0);
+      nextafter(static_cast<float>(image_count), 0));
+  index = std::max(std::min(index, image_count - 1), 0);
 
   // Lazily cache images.
   if (images[index].empty()) {

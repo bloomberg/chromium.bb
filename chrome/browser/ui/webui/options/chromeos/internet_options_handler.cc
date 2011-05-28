@@ -1130,7 +1130,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
     const SkBitmap* icon =
-        chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
+        chromeos::NetworkMenu::IconForNetworkStrength(*it);
     const SkBitmap* bottom_right_badge = (*it)->encrypted() ?
         rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
     const SkBitmap* bottom_left_badge =
@@ -1154,7 +1154,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   if (cros->wifi_enabled()) {
     list->Append(GetNetwork(
         kOtherNetworksFakePath,
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
         false,
         false,
@@ -1172,7 +1172,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
     const SkBitmap* icon =
-        chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
+        chromeos::NetworkMenu::IconForNetworkStrength(*it);
     const SkBitmap* bottom_right_badge =
         chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
     const SkBitmap* roaming_badge =
@@ -1199,7 +1199,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cros->cellular_enabled()) {
     list->Append(GetNetwork(
         kOtherNetworksFakePath,
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
         false,
         false,
@@ -1233,8 +1233,8 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 
     const SkBitmap* icon = network ?
         chromeos::NetworkMenu::IconForNetworkStrength(
-            static_cast<chromeos::WifiNetwork*>(network), true) :
-        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
+            static_cast<chromeos::WifiNetwork*>(network)) :
+        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
     // Place the secure badge on the icon if the remembered network is
     // encrypted (the matching detected network, if any, will have the same
     // encrypted property by definition).

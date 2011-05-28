@@ -161,6 +161,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // Factory for delaying showing promo notification.
   ScopedRunnableMethodFactory<NetworkMenuButton> method_factory_;
 
+  // The last network we connected to (or tried to).
+  ConnectionType last_network_type_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
 };
 

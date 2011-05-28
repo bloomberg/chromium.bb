@@ -108,7 +108,8 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       check_for_promo_(true),
       was_sim_locked_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      last_network_type_(TYPE_WIFI) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
@@ -146,7 +147,7 @@ void NetworkMenuButton::RegisterPrefs(PrefService* local_state) {
 void NetworkMenuButton::AnimationProgressed(const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
     SetIconOnly(IconForNetworkConnecting(
-        animation_connecting_.GetCurrentValue(), false));
+        animation_connecting_.GetCurrentValue(), last_network_type_));
     // No need to set the badge here, because it should already be set.
     SchedulePaint();
   } else {
@@ -338,20 +339,29 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
 
   if (!cros->Connected() && !cros->Connecting()) {
     animation_connecting_.Stop();
-    SetIconAndBadges(rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
-                     rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED),
-                     NULL);
+    if (last_network_type_ == TYPE_WIFI) {
+      SetIconAndBadges(
+          rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_ARCS0), NULL, NULL);
+    } else {
+      SetIconAndBadges(
+          rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+          rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED),
+          NULL);
+    }
     SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
         IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
     return;
   }
 
+  // Stash last network type away so we can show the right icon if we lose
+  // signal.
+  last_network_type_ = NetworkMenu::TypeForNetwork(network);
   if (cros->wifi_connecting() || cros->cellular_connecting()) {
     // Start the connecting animation if not running.
     if (!animation_connecting_.is_animating()) {
       animation_connecting_.Reset();
       animation_connecting_.StartThrobbing(-1);
-      SetIconOnly(IconForNetworkConnecting(0, false));
+      SetIconOnly(IconForNetworkConnecting(0, last_network_type_));
     }
     const WirelessNetwork* wireless = NULL;
     if (cros->wifi_connecting()) {
@@ -384,8 +394,7 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
                     IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET))));
       } else if (network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
-        SetIconAndBadges(IconForNetworkStrength(wifi, false),
-                         right_badge, left_badge);
+        SetIconAndBadges(IconForNetworkStrength(wifi), right_badge, left_badge);
         SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
             UTF8ToUTF16(wifi->name()))));
@@ -393,8 +402,8 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(network);
         right_badge = BadgeForNetworkTechnology(cellular);
-        SetIconAndBadges(IconForNetworkStrength(cellular, false),
-                         right_badge, left_badge);
+        SetIconAndBadges(
+            IconForNetworkStrength(cellular), right_badge, left_badge);
         SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
             UTF8ToUTF16(cellular->name()))));

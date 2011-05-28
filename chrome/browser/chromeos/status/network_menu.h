@@ -81,24 +81,20 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // This shared bitmap is owned by the resource bundle and should not be freed.
 
   // Returns the Icon for a network strength for a WifiNetwork |wifi|.
-  // |black| is used to specify whether to return a black icon for display
-  // on a light background or a white icon for display on a dark background.
   // Expected to never return NULL.
-  static const SkBitmap* IconForNetworkStrength(const WifiNetwork* wifi,
-                                                bool black);
+  static const SkBitmap* IconForNetworkStrength(const WifiNetwork* wifi);
   // Returns the Icon for a network strength for CellularNetwork |cellular|.
-  // |black| is used to specify whether to return a black icon for display
-  // on a light background or a white icon for display on a dark background.
   // Expected to never return NULL.
-  static const SkBitmap* IconForNetworkStrength(const CellularNetwork* cellular,
-                                                bool black);
+  static const SkBitmap* IconForNetworkStrength(
+      const CellularNetwork* cellular);
   // Returns the Icon for animating network connecting.
   // |animation_value| is the value from Animation.GetCurrentValue()
+  // |type| is the connection type
   // |black| is used to specify whether to return a black icon for display
   // on a light background or a white icon for display on a dark background.
   // Expected to never return NULL.
   static const SkBitmap* IconForNetworkConnecting(double animation_value,
-                                                  bool black);
+                                                  ConnectionType type);
 
   // Returns the Badge for a given network technology.
   // This returns different colored symbols depending on cellular data left.
@@ -131,6 +127,14 @@ class NetworkMenu : public views::ViewMenuDelegate {
                                  const SkBitmap* top_left_badge,
                                  const SkBitmap* bottom_left_badge);
 
+  // Returns the connection type which should be passed to subsequent calls
+  // to IconForNetworkConnecting(). If |network| is non NULL this will be the
+  // either TYPE_WIFI or TYPE_CELLULAR depending on the network. If |network|
+  // is NULL it will be the type of a connecting network, preferring TYPE_WIFI
+  // if both types are connecting. If no network is connecting and |network| is
+  // NULL, TYPE_WIFI will be returned.
+  static ConnectionType TypeForNetwork(const Network* network);
+
  protected:
   virtual views::MenuButton* GetMenuButton() = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
@@ -156,19 +160,16 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;
 
-  // The number of bars images for representing network strength.
+  // Bars images resources.
   static const int kNumBarsImages;
-
-  // Bars image resources.
   static const int kBarsImages[];
-  static const int kBarsImagesBlack[];
   static const int kBarsImagesOrange[];
-  // TODO(chocobo): Add this back when we decide to do colored bars again.
-  // static const int kBarsImagesVLowData[];
+  static SkBitmap kBarsImagesAnimating[];
 
-  // Animation images. These are created lazily.
-  static SkBitmap kAnimatingImages[];
-  static SkBitmap kAnimatingImagesBlack[];
+  // Arcs image resources.
+  static const int kNumArcsImages;
+  static const int kArcsImages[];
+  static SkBitmap kArcsImagesAnimating[];
 
   // The network menu.
   scoped_ptr<views::MenuItemView> network_menu_;
