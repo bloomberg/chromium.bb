@@ -168,7 +168,7 @@ void GetCacheParameters(ContextType type, FilePath* cache_path,
   *max_size = 0;
   if (!base::StringToInt(value, max_size)) {
     *max_size = 0;
-  } else if (max_size < 0) {
+  } else if (*max_size < 0) {
     *max_size = 0;
   }
 }
