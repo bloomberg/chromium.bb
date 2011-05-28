@@ -10522,6 +10522,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
         Connection Status:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_DHCP" desc="In settings Internet options, the label for use DHCP.">
+        Use DHCP
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_STATIC_IP" desc="In settings Internet options, the label for use static ip.">
+        Use static IP
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings Internet options, the label for IP address.">
         Address:
       </message>

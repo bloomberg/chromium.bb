@@ -211,27 +211,32 @@
           <td class="option-name" i18n-content="connectionState"></td>
           <td id="connectionState" class="option-value"></td>
         </tr>
-        <tr>
-          <td class="option-name" i18n-content="inetAddress"></td>
-          <td id="inetAddress" class="option-value"></td>
-        </tr>
-        <tr>
-          <td class="option-name" i18n-content="inetSubnetAddress"></td>
-           <td id="inetSubnetAddress" class="option-value"></td>
-        </tr>
-        <tr>
-          <td class="option-name" i18n-content="inetGateway"></td>
-          <td id="inetGateway" class="option-value"></td>
-        </tr>
-        <tr>
-          <td class="option-name" i18n-content="inetDns"></td>
-           <td id="inetDns" class="option-value"></td>
-        </tr>
         <tr id="hardwareAddressRow">
           <td class="option-name" i18n-content="hardwareAddress"></td>
            <td id="hardwareAddress" class="option-value"></td>
         </tr>
       </table>
+    </section>
+    <section id="ipconfigSection">
+      <div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="iptype" id="ipTypeDHCP" value="1">
+            <span i18n-content="useDHCP"></span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="iptype" id="ipTypeStatic" value="0">
+            <span i18n-content="useStaticIP"></span>
+          </label>
+        </div>
+        <div class="suboption">
+          <div id="ipConfigManagement" class="settings-list">
+            <list id="ipConfigList"></list>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
   <div id="security-tab"

@@ -148,7 +148,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD3(GetIPConfigs, NetworkIPConfigVector(const std::string&,
                                                    std::string*,
                                                    HardwareAddressFormat));
-  MOCK_METHOD1(GetHtmlInfo, std::string(int));
+  MOCK_METHOD1(SetIPConfig, void(const NetworkIPConfig&));
 };
 
 }  // namespace chromeos

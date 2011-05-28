@@ -8,7 +8,64 @@
 
 namespace chromeos {
 
-TEST(WifiNetworkTest, DecodeNonAsciiSSID) {
+namespace {
+
+int32 GetPrefixLength(std::string netmask) {
+  return NetworkIPConfig(std::string(), IPCONFIG_TYPE_UNKNOWN, std::string(),
+      netmask, std::string(), std::string()).GetPrefixLength();
+}
+
+}  // namespace
+
+TEST(NetworkLibraryTest, NetmaskToPrefixlen) {
+  // Valid netmasks
+  EXPECT_EQ(32, GetPrefixLength("255.255.255.255"));
+  EXPECT_EQ(31, GetPrefixLength("255.255.255.254"));
+  EXPECT_EQ(30, GetPrefixLength("255.255.255.252"));
+  EXPECT_EQ(29, GetPrefixLength("255.255.255.248"));
+  EXPECT_EQ(28, GetPrefixLength("255.255.255.240"));
+  EXPECT_EQ(27, GetPrefixLength("255.255.255.224"));
+  EXPECT_EQ(26, GetPrefixLength("255.255.255.192"));
+  EXPECT_EQ(25, GetPrefixLength("255.255.255.128"));
+  EXPECT_EQ(24, GetPrefixLength("255.255.255.0"));
+  EXPECT_EQ(23, GetPrefixLength("255.255.254.0"));
+  EXPECT_EQ(22, GetPrefixLength("255.255.252.0"));
+  EXPECT_EQ(21, GetPrefixLength("255.255.248.0"));
+  EXPECT_EQ(20, GetPrefixLength("255.255.240.0"));
+  EXPECT_EQ(19, GetPrefixLength("255.255.224.0"));
+  EXPECT_EQ(18, GetPrefixLength("255.255.192.0"));
+  EXPECT_EQ(17, GetPrefixLength("255.255.128.0"));
+  EXPECT_EQ(16, GetPrefixLength("255.255.0.0"));
+  EXPECT_EQ(15, GetPrefixLength("255.254.0.0"));
+  EXPECT_EQ(14, GetPrefixLength("255.252.0.0"));
+  EXPECT_EQ(13, GetPrefixLength("255.248.0.0"));
+  EXPECT_EQ(12, GetPrefixLength("255.240.0.0"));
+  EXPECT_EQ(11, GetPrefixLength("255.224.0.0"));
+  EXPECT_EQ(10, GetPrefixLength("255.192.0.0"));
+  EXPECT_EQ(9, GetPrefixLength("255.128.0.0"));
+  EXPECT_EQ(8, GetPrefixLength("255.0.0.0"));
+  EXPECT_EQ(7, GetPrefixLength("254.0.0.0"));
+  EXPECT_EQ(6, GetPrefixLength("252.0.0.0"));
+  EXPECT_EQ(5, GetPrefixLength("248.0.0.0"));
+  EXPECT_EQ(4, GetPrefixLength("240.0.0.0"));
+  EXPECT_EQ(3, GetPrefixLength("224.0.0.0"));
+  EXPECT_EQ(2, GetPrefixLength("192.0.0.0"));
+  EXPECT_EQ(1, GetPrefixLength("128.0.0.0"));
+  EXPECT_EQ(0, GetPrefixLength("0.0.0.0"));
+  // Invalid netmasks
+  EXPECT_EQ(-1, GetPrefixLength("255.255.255"));
+  EXPECT_EQ(-1, GetPrefixLength("255.255.255.255.255"));
+  EXPECT_EQ(-1, GetPrefixLength("255.255.255.255.0"));
+  EXPECT_EQ(-1, GetPrefixLength("255.255.255.256"));
+  EXPECT_EQ(-1, GetPrefixLength("255.255.255.1"));
+  EXPECT_EQ(-1, GetPrefixLength("255.255.240.255"));
+  EXPECT_EQ(-1, GetPrefixLength("255.0.0.255"));
+  EXPECT_EQ(-1, GetPrefixLength("255.255.255.FF"));
+  EXPECT_EQ(-1, GetPrefixLength("255,255,255,255"));
+  EXPECT_EQ(-1, GetPrefixLength("255 255 255 255"));
+}
+
+TEST(NetworkLibraryTest, DecodeNonAsciiSSID) {
 
   // Sets network name.
   {
@@ -60,4 +117,5 @@ TEST(WifiNetworkTest, DecodeNonAsciiSSID) {
     delete wifi;
   }
 }
+
 }  // namespace chromeos

@@ -4,6 +4,7 @@
 
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
 
   /////////////////////////////////////////////////////////////////////////////
   // InternetOptions class:
@@ -52,6 +53,7 @@ cr.define('options', function() {
         InternetOptions.setDetails();
       });
       $('detailsInternetLogin').addEventListener('click', function(event) {
+        InternetOptions.setDetails();
         InternetOptions.loginFromDetails();
       });
       $('activateDetails').addEventListener('click', function(event) {
@@ -81,14 +83,14 @@ cr.define('options', function() {
         $('cellularApn').value = "";
         $('cellularApnUsername').value = "";
         $('cellularApnPassword').value = "";
-        var data = $('inetAddress').data;
+        var data = $('connectionState').data;
         chrome.send('setApn', [String(data.servicePath),
                                String($('cellularApn').value),
                                String($('cellularApnUsername').value),
                                String($('cellularApnPassword').value)]);
       });
       $('cellularApnSet').addEventListener('click', function(event) {
-        var data = $('inetAddress').data;
+        var data = $('connectionState').data;
         chrome.send('setApn', [String(data.servicePath),
                                String($('cellularApn').value),
                                String($('cellularApnUsername').value),
@@ -157,7 +159,7 @@ cr.define('options', function() {
   InternetOptions.updataData = null;
 
   InternetOptions.loginFromDetails = function () {
-    var data = $('inetAddress').data;
+    var data = $('connectionState').data;
     var servicePath = data.servicePath;
     if (data.type == options.internet.Constants.TYPE_WIFI) {
       if (data.certInPkcs) {
@@ -179,7 +181,7 @@ cr.define('options', function() {
   };
 
   InternetOptions.activateFromDetails = function () {
-    var data = $('inetAddress').data;
+    var data = $('connectionState').data;
     var servicePath = data.servicePath;
     if (data.type == options.internet.Constants.TYPE_CELLULAR) {
       chrome.send('buttonClickCallback', [String(data.type),
@@ -190,13 +192,17 @@ cr.define('options', function() {
   };
 
   InternetOptions.setDetails = function () {
-    var data = $('inetAddress').data;
+    var data = $('connectionState').data;
     var servicePath = data.servicePath;
-    if (data.type == options.internet.Constants.TYPE_WIFI) {
-      chrome.send('setDetails',[String(servicePath),
-                                $('autoConnectNetwork').checked ?
-                                  "true" : "false"]);
-    }
+    chrome.send('setAutoConnect',[String(servicePath),
+         $('autoConnectNetwork').checked ? "true" : "false"]);
+    var ipConfigList = $('ipConfigList');
+    chrome.send('setIPConfig',[String(servicePath),
+                               $('ipTypeDHCP').checked ? "true" : "false",
+                               ipConfigList.dataModel.item(0).value,
+                               ipConfigList.dataModel.item(1).value,
+                               ipConfigList.dataModel.item(2).value,
+                               ipConfigList.dataModel.item(3).value]);
     OptionsPage.closeOverlay();
   };
 
@@ -311,12 +317,14 @@ cr.define('options', function() {
 
   InternetOptions.showDetailedInfo = function (data) {
     var detailsPage = DetailsInternetPage.getInstance();
+    // TODO(chocobo): Is this hack to cache the data here reasonable?
+    $('connectionState').data = data;
     $('buyplanDetails').hidden = true;
     $('activateDetails').hidden = true;
     $('detailsInternetLogin').hidden = data.connected;
 
+    detailsPage.deviceConnected = data.deviceConnected;
     detailsPage.connecting = data.connecting;
-
     detailsPage.connected = data.connected;
     if (data.connected) {
       $('inetTitle').textContent = localStrings.getString('inetStatus');
@@ -324,22 +332,87 @@ cr.define('options', function() {
       $('inetTitle').textContent = localStrings.getString('inetConnect');
     }
     $('connectionState').textContent = data.connectionState;
-    var address = $('inetAddress');
-    address.data = data;
-    if (data.ipconfigs && data.ipconfigs.length) {
-      // We will be displaying only the first ipconfig info for now until we
-      // start supporting multiple IP addresses per connection.
-      address.textContent = data.ipconfigs[0].address;
-      $('inetSubnetAddress').textContent = data.ipconfigs[0].subnetAddress;
-      $('inetGateway').textContent = data.ipconfigs[0].gateway;
-      $('inetDns').textContent = data.ipconfigs[0].dns;
-    } else {
-      // This is most likely a transient state due to device still connecting.
-      address.textContent = '?';
-      $('inetSubnetAddress').textContent = '?';
-      $('inetGateway').textContent = '?';
-      $('inetDns').textContent = '?';
+
+    var inetAddress = '';
+    var inetSubnetAddress = '';
+    var inetGateway = '';
+    var inetDns = '';
+    $('ipTypeDHCP').checked = true;
+    if (data.ipconfigStatic) {
+      inetAddress = data.ipconfigStatic.address;
+      inetSubnetAddress = data.ipconfigStatic.subnetAddress;
+      inetGateway = data.ipconfigStatic.gateway;
+      inetDns = data.ipconfigStatic.dns;
+      $('ipTypeStatic').checked = true;
+    } else if (data.ipconfigDHCP) {
+      inetAddress = data.ipconfigDHCP.address;
+      inetSubnetAddress = data.ipconfigDHCP.subnetAddress;
+      inetGateway = data.ipconfigDHCP.gateway;
+      inetDns = data.ipconfigDHCP.dns;
     }
+
+    var ipConfigList = $('ipConfigList');
+    ipConfigList.disabled = $('ipTypeDHCP').checked;
+    options.internet.IPConfigList.decorate(ipConfigList);
+    ipConfigList.autoExpands = true;
+    var model = new ArrayDataModel([]);
+    model.push({
+      'property': 'inetAddress',
+      'name': localStrings.getString('inetAddress'),
+      'value': inetAddress,
+    });
+    model.push({
+      'property': 'inetSubnetAddress',
+      'name': localStrings.getString('inetSubnetAddress'),
+      'value': inetSubnetAddress,
+    });
+    model.push({
+      'property': 'inetGateway',
+      'name': localStrings.getString('inetGateway'),
+      'value': inetGateway,
+    });
+    model.push({
+      'property': 'inetDns',
+      'name': localStrings.getString('inetDns'),
+      'value': inetDns,
+    });
+    ipConfigList.dataModel = model;
+
+    $('ipTypeDHCP').addEventListener('click', function(event) {
+      // disable ipConfigList and switch back to dhcp values (if any)
+      if (data.ipconfigDHCP) {
+        ipConfigList.dataModel.item(0).value = data.ipconfigDHCP.address;
+        ipConfigList.dataModel.item(1).value = data.ipconfigDHCP.subnetAddress;
+        ipConfigList.dataModel.item(2).value = data.ipconfigDHCP.gateway;
+        ipConfigList.dataModel.item(3).value = data.ipconfigDHCP.dns;
+      }
+      ipConfigList.dataModel.updateIndex(0);
+      ipConfigList.dataModel.updateIndex(1);
+      ipConfigList.dataModel.updateIndex(2);
+      ipConfigList.dataModel.updateIndex(3);
+      // Unselect all so we don't keep the currently selected field editable.
+      ipConfigList.selectionModel.unselectAll();
+      ipConfigList.disabled = true;
+    });
+
+    $('ipTypeStatic').addEventListener('click', function(event) {
+      // enable ipConfigList and switch back to static values (if any)
+      if (data.ipconfigStatic) {
+        ipConfigList.dataModel.item(0).value = data.ipconfigStatic.address;
+        ipConfigList.dataModel.item(1).value =
+          data.ipconfigStatic.subnetAddress;
+        ipConfigList.dataModel.item(2).value = data.ipconfigStatic.gateway;
+        ipConfigList.dataModel.item(3).value = data.ipconfigStatic.dns;
+      }
+      ipConfigList.dataModel.updateIndex(0);
+      ipConfigList.dataModel.updateIndex(1);
+      ipConfigList.dataModel.updateIndex(2);
+      ipConfigList.dataModel.updateIndex(3);
+      ipConfigList.disabled = false;
+      ipConfigList.focus();
+      ipConfigList.selectionModel.selectedIndex = 0;
+    });
+
     if (data.hardwareAddress) {
       $('hardwareAddress').textContent = data.hardwareAddress;
       $('hardwareAddressRow').style.display = 'table-row';

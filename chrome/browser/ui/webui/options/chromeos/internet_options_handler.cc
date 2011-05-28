@@ -126,6 +126,12 @@ void InternetOptionsHandler::GetLocalizedValues(
         l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY));
 
+  localized_strings->SetString("useDHCP",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_DHCP));
+  localized_strings->SetString("useStaticIP",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_STATIC_IP));
   localized_strings->SetString("connectionState",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE));
@@ -343,8 +349,10 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::LoginCertCallback));
   web_ui_->RegisterMessageCallback("loginToOtherNetwork",
       NewCallback(this, &InternetOptionsHandler::LoginToOtherCallback));
-  web_ui_->RegisterMessageCallback("setDetails",
-      NewCallback(this, &InternetOptionsHandler::SetDetailsCallback));
+  web_ui_->RegisterMessageCallback("setAutoConnect",
+      NewCallback(this, &InternetOptionsHandler::SetAutoConnectCallback));
+  web_ui_->RegisterMessageCallback("setIPConfig",
+      NewCallback(this, &InternetOptionsHandler::SetIPConfigCallback));
   web_ui_->RegisterMessageCallback("enableWifi",
       NewCallback(this, &InternetOptionsHandler::EnableWifiCallback));
   web_ui_->RegisterMessageCallback("disableWifi",
@@ -571,7 +579,7 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
   return plan_dict;
 }
 
-void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
+void InternetOptionsHandler::SetAutoConnectCallback(const ListValue* args) {
   std::string service_path;
   std::string auto_connect_str;
 
@@ -582,20 +590,48 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
     return;
   }
 
-  if (!chromeos::UserManager::Get()->current_user_is_owner()) {
-    LOG(WARNING) << "Non-owner tried to change a network.";
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::Network* network = cros->FindNetworkByPath(service_path);
+  if (!network)
+    return;
+
+  if (network->type() == chromeos::TYPE_WIFI) {
+    bool auto_connect = auto_connect_str == "true";
+    if (auto_connect != network->auto_connect())
+      network->SetAutoConnect(auto_connect);
+  }
+}
+
+void InternetOptionsHandler::SetIPConfigCallback(const ListValue* args) {
+  std::string service_path;
+  std::string dhcp_str;
+  std::string address;
+  std::string netmask;
+  std::string gateway;
+  std::string name_servers;
+
+  if (args->GetSize() < 6 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &dhcp_str) ||
+      !args->GetString(2, &address) ||
+      !args->GetString(3, &netmask) ||
+      !args->GetString(4, &gateway) ||
+      !args->GetString(5, &name_servers)) {
+    NOTREACHED();
     return;
   }
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* network = cros->FindWifiNetworkByPath(service_path);
+  chromeos::Network* network = cros->FindNetworkByPath(service_path);
   if (!network)
     return;
 
-  bool auto_connect = auto_connect_str == "true";
-  if (auto_connect != network->auto_connect())
-    network->SetAutoConnect(auto_connect);
+  cros->SetIPConfig(chromeos::NetworkIPConfig(network->device_path(),
+      dhcp_str == "true" ? chromeos::IPCONFIG_TYPE_DHCP :
+                           chromeos::IPCONFIG_TYPE_IPV4,
+      address, netmask, gateway, name_servers));
 }
 
 void InternetOptionsHandler::PopulateDictionaryDetails(
@@ -608,18 +644,19 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
   if (!hardware_address.empty())
     dictionary.SetString("hardwareAddress", hardware_address);
-  scoped_ptr<ListValue> ipconfig_list(new ListValue());
   for (chromeos::NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
        it != ipconfigs.end(); ++it) {
-    scoped_ptr<DictionaryValue> ipconfig_dict(new DictionaryValue());
     const chromeos::NetworkIPConfig& ipconfig = *it;
+    scoped_ptr<DictionaryValue> ipconfig_dict(new DictionaryValue());
     ipconfig_dict->SetString("address", ipconfig.address);
     ipconfig_dict->SetString("subnetAddress", ipconfig.netmask);
     ipconfig_dict->SetString("gateway", ipconfig.gateway);
     ipconfig_dict->SetString("dns", ipconfig.name_servers);
-    ipconfig_list->Append(ipconfig_dict.release());
+    if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP)
+      dictionary.Set("ipconfigDHCP", ipconfig_dict.release());
+    else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4)
+      dictionary.Set("ipconfigStatic", ipconfig_dict.release());
   }
-  dictionary.Set("ipconfigs", ipconfig_list.release());
 
   chromeos::ConnectionType type = net->type();
   dictionary.SetInteger("type", type);
@@ -629,6 +666,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetString("connectionState", net->GetStateString());
 
   if (type == chromeos::TYPE_WIFI) {
+    dictionary.SetBoolean("deviceConnected", cros->wifi_connected());
     const chromeos::WifiNetwork* wifi =
         cros->FindWifiNetworkByPath(net->service_path());
     if (!wifi) {
@@ -637,6 +675,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       PopulateWifiDetails(wifi, &dictionary);
     }
   } else if (type == chromeos::TYPE_CELLULAR) {
+    dictionary.SetBoolean("deviceConnected", cros->cellular_connected());
     const chromeos::CellularNetwork* cellular =
         cros->FindCellularNetworkByPath(net->service_path());
     if (!cellular) {
@@ -645,6 +684,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       PopulateCellularDetails(cros, cellular, &dictionary);
     }
   } else if (type == chromeos::TYPE_VPN) {
+    dictionary.SetBoolean("deviceConnected", cros->virtual_network_connected());
     const chromeos::VirtualNetwork* vpn =
         cros->FindVirtualNetworkByPath(net->service_path());
     if (!vpn) {
@@ -652,6 +692,8 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     } else {
       PopulateVPNDetails(vpn, &dictionary);
     }
+  } else if (type == chromeos::TYPE_ETHERNET) {
+    dictionary.SetBoolean("deviceConnected", cros->ethernet_connected());
   }
 
   web_ui_->CallJavascriptFunction(

@@ -243,7 +243,9 @@ cr.define('options.internet', function() {
           }
         }
         if (this.data.connected ||
-            this.data.networkType == Constants.TYPE_CELLULAR) {
+                this.data.networkType == Constants.TYPE_ETHERNET ||
+                this.data.networkType == Constants.TYPE_WIFI ||
+                this.data.networkType == Constants.TYPE_CELLULAR) {
           buttonsDiv.appendChild(
               this.createButton_('options_button', 'options',
                                  function(e) {

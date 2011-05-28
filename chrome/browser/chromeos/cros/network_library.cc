@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
+#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -206,6 +207,12 @@ const char* kPRLVersionProperty = "Cellular.PRLVersion"; // (INT16)
 const char* kSelectedNetworkProperty = "Cellular.SelectedNetwork";
 const char* kSupportNetworkScanProperty = "Cellular.SupportNetworkScan";
 const char* kFoundNetworksProperty = "Cellular.FoundNetworks";
+
+// Flimflam ip config property names.
+const char* kAddressProperty = "Address";
+const char* kPrefixlenProperty = "Prefixlen";
+const char* kGatewayProperty = "Gateway";
+const char* kNameServersProperty = "NameServers";
 
 // Flimflam type options.
 const char* kTypeEthernet = "ethernet";
@@ -1610,6 +1617,51 @@ NetworkIPConfig::NetworkIPConfig(
 }
 
 NetworkIPConfig::~NetworkIPConfig() {}
+
+int32 NetworkIPConfig::GetPrefixLength() const {
+  int count = 0;
+  int prefixlen = 0;
+  StringTokenizer t(netmask, ".");
+  while (t.GetNext()) {
+    // If there are more than 4 numbers, than it's invalid.
+    if (count == 4) {
+      return -1;
+    }
+    std::string token = t.token();
+    // If we already found the last mask and the current one is not
+    // "0" then the netmask is invalid. For example, 255.224.255.0
+    if (prefixlen / 8 != count) {
+      if (token != "0") {
+        return -1;
+      }
+    } else if (token == "255") {
+      prefixlen += 8;
+    } else if (token == "254") {
+      prefixlen += 7;
+    } else if (token == "252") {
+      prefixlen += 6;
+    } else if (token == "248") {
+      prefixlen += 5;
+    } else if (token == "240") {
+      prefixlen += 4;
+    } else if (token == "224") {
+      prefixlen += 3;
+    } else if (token == "192") {
+      prefixlen += 2;
+    } else if (token == "128") {
+      prefixlen += 1;
+    } else if (token == "0") {
+      prefixlen += 0;
+    } else {
+      // mask is not a valid number.
+      return -1;
+    }
+    count++;
+  }
+  if (count < 4)
+    return -1;
+  return prefixlen;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork::Apn
@@ -3202,8 +3254,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         }
         *hardware_address = ipconfig_status->hardware_address;
         FreeIPConfigStatus(ipconfig_status);
-        // Sort the list of ip configs by type.
-        std::sort(ipconfig_vector.begin(), ipconfig_vector.end());
       }
     }
 
@@ -3225,8 +3275,93 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return ipconfig_vector;
   }
 
- private:
+  virtual void SetIPConfig(const NetworkIPConfig& ipconfig) {
+    if (!EnsureCrosLoaded() || ipconfig.device_path.empty())
+      return;
 
+    IPConfig* ipconfig_dhcp = NULL;
+    IPConfig* ipconfig_static = NULL;
+
+    IPConfigStatus* ipconfig_status =
+        chromeos::ListIPConfigs(ipconfig.device_path.c_str());
+    if (ipconfig_status) {
+      for (int i = 0; i < ipconfig_status->size; i++) {
+        if (ipconfig_status->ips[i].type == chromeos::IPCONFIG_TYPE_DHCP)
+          ipconfig_dhcp = &ipconfig_status->ips[i];
+        else if (ipconfig_status->ips[i].type == chromeos::IPCONFIG_TYPE_IPV4)
+          ipconfig_static = &ipconfig_status->ips[i];
+      }
+    }
+
+    // If switching from dhcp to static, then create new static ip config.
+    IPConfigStatus* ipconfig_status2 = NULL;
+    if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4 && !ipconfig_static) {
+      // Create new static ip config.
+      chromeos::AddIPConfig(ipconfig.device_path.c_str(),
+                            chromeos::IPCONFIG_TYPE_IPV4);
+      // Now find the newly created IP config.
+      ipconfig_status2 = chromeos::ListIPConfigs(ipconfig.device_path.c_str());
+      if (ipconfig_status2) {
+        for (int i = 0; i < ipconfig_status2->size; i++) {
+          if (ipconfig_status2->ips[i].type == chromeos::IPCONFIG_TYPE_IPV4)
+            ipconfig_static = &ipconfig_status2->ips[i];
+        }
+      }
+    }
+
+    if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP) {
+      if (ipconfig_static) {
+        // User wants DHCP now. So delete the static ip config.
+        chromeos::RemoveIPConfig(ipconfig_static);
+      }
+    } else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4) {
+      if (ipconfig_static) {
+        // Save any changed details.
+        if (ipconfig.address != ipconfig_static->address) {
+          scoped_ptr<Value> value(Value::CreateStringValue(ipconfig.address));
+          chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
+                                               kAddressProperty,
+                                               value.get());
+        }
+        if (ipconfig.netmask != ipconfig_static->netmask) {
+          int32 prefixlen = ipconfig.GetPrefixLength();
+          if (prefixlen == -1) {
+            VLOG(1) << "IP config prefixlen is invalid for netmask "
+                    << ipconfig.netmask;
+          } else {
+            scoped_ptr<Value> value(Value::CreateIntegerValue(prefixlen));
+            chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
+                                                 kPrefixlenProperty,
+                                                 value.get());
+          }
+        }
+        if (ipconfig.gateway != ipconfig_static->gateway) {
+          scoped_ptr<Value> value(Value::CreateStringValue(ipconfig.gateway));
+          chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
+                                               kGatewayProperty,
+                                               value.get());
+        }
+        if (ipconfig.name_servers != ipconfig_static->name_servers) {
+          scoped_ptr<Value> value(
+              Value::CreateStringValue(ipconfig.name_servers));
+          chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
+                                               kNameServersProperty,
+                                               value.get());
+        }
+        // Remove dhcp ip config if there is one.
+        if (ipconfig_dhcp) {
+          chromeos::RemoveIPConfig(ipconfig_dhcp);
+        }
+      }
+    }
+
+    if (ipconfig_status)
+      chromeos::FreeIPConfigStatus(ipconfig_status);
+    if (ipconfig_status2)
+      chromeos::FreeIPConfigStatus(ipconfig_status2);
+  }
+
+ private:
   typedef std::map<std::string, Network*> NetworkMap;
   typedef std::map<std::string, int> PriorityMap;
   typedef std::map<std::string, NetworkDevice*> NetworkDeviceMap;
@@ -4675,6 +4810,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     hardware_address->clear();
     return NetworkIPConfigVector();
   }
+  virtual void SetIPConfig(const NetworkIPConfig& ipconfig) {}
 
  private:
   std::string ip_address_;

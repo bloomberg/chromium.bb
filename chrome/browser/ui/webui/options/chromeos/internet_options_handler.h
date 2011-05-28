@@ -77,7 +77,8 @@ class InternetOptionsHandler
   void LoginCallback(const ListValue* args);
   void LoginCertCallback(const ListValue* args);
   void LoginToOtherCallback(const ListValue* args);
-  void SetDetailsCallback(const ListValue* args);
+  void SetAutoConnectCallback(const ListValue* args);
+  void SetIPConfigCallback(const ListValue* args);
   void EnableWifiCallback(const ListValue* args);
   void DisableWifiCallback(const ListValue* args);
   void EnableCellularCallback(const ListValue* args);

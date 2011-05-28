@@ -45,8 +45,12 @@ cr.define('options.internet', function() {
      * @private
      */
     updateControls_: function() {
-      // Connection state related.
-      $('advancedSection').hidden = !this.connected;
+      // Only show ipconfig section if network is connected OR if nothing on
+      // this device is connected. This is so that you can fix the ip configs
+      // if you can't connect to any network.
+      // TODO(chocobo): Once ipconfig is moved to flimflam service objects,
+      //   we need to redo this logic to allow configuration of all networks.
+      $('ipconfigSection').hidden = !this.connected && this.deviceConnected;
 
       // Network type related.
       updateHidden(

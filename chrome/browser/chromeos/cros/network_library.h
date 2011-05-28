@@ -824,14 +824,14 @@ struct NetworkIPConfig {
                   const std::string& gateway, const std::string& name_servers);
   ~NetworkIPConfig();
 
-  // NetworkIPConfigs are sorted by tyoe.
-  bool operator< (const NetworkIPConfig& other) const {
-    return type < other.type;
-  }
-
-  std::string device_path;
+  // Gets the PrefixLength for an IPv4 netmask.
+  // For example, "255.255.255.0" => 24
+  // If the netmask is invalid, this will return -1;
+  // TODO(chocobo): Add support for IPv6.
+  int32 GetPrefixLength() const;
+  std::string device_path;  // This looks like "/device/0011aa22bb33"
   IPConfigType type;
-  std::string address;  // This looks like "/device/0011aa22bb33"
+  std::string address;
   std::string netmask;
   std::string gateway;
   std::string name_servers;
@@ -1161,6 +1161,11 @@ class NetworkLibrary {
       const std::string& device_path,
       std::string* hardware_address,
       HardwareAddressFormat) = 0;
+
+  // Sets an IP config. This is called when user changes from dhcp to static
+  // or vice versa or when user changes the ip config info.
+  // If nothing is changed, this method does nothing.
+  virtual void SetIPConfig(const NetworkIPConfig& ipconfig) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

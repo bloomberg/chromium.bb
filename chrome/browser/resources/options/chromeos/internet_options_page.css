@@ -90,10 +90,6 @@ html[dir='rtl'] .network-item-text {
   visibility: visible;
 }
 
-.network-item[connecting] > * > button {
-  visibility: hidden;
-}
-
 .network-item-box-spacer {
   -webkit-box-flex: 1;
 }
@@ -148,4 +144,13 @@ html[dir='rtl'] .network-item-text {
   -webkit-padding-start: 20px;
   background-repeat: no-repeat;
   background-image: url('warning.png');
+}
+
+#ipConfigList .name {
+  width: 40%;
+}
+
+#ipConfigList .value {
+  -webkit-box-flex: 1;
+  color: #666;
 }
