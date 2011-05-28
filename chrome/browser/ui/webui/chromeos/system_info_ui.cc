@@ -96,7 +96,8 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
       chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
   if (syslogs_lib) {
     syslogs_lib->RequestSyslogs(
-        false, false,
+        false,  // don't compress.
+        chromeos::SyslogsLibrary::SYSLOGS_SYSINFO,
         &consumer_,
         NewCallback(this, &SystemInfoUIHTMLSource::SyslogsComplete));
   }

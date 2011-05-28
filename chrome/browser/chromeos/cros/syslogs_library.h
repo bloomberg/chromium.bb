@@ -21,6 +21,13 @@ class SyslogsLibrary : public CancelableRequestProvider {
   typedef Callback2<LogDictionaryType*,
                     std::string*>::Type ReadCompleteCallback;
 
+  enum Context {
+    SYSLOGS_FEEDBACK,
+    SYSLOGS_SYSINFO,
+    SYSLOGS_NETWORK,
+    SYSLOGS_DEFAULT
+  };
+
   SyslogsLibrary() {}
   virtual ~SyslogsLibrary() {}
 
@@ -30,7 +37,8 @@ class SyslogsLibrary : public CancelableRequestProvider {
   // Returns the request handle. Call CancelRequest(Handle) to cancel
   // the request before the callback gets called.
   virtual Handle RequestSyslogs(
-      bool compress_logs, bool feedback_context,
+      bool compress_logs,
+      Context context,
       CancelableRequestConsumerBase* consumer,
       ReadCompleteCallback* callback) = 0;
 
