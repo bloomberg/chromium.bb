@@ -181,7 +181,8 @@ function load() {
   var path = document.location.pathname;
 
   if (path.length > 1) {
-    var pageName = path.slice(1);
+    // Skip starting slash and remove trailing slash (if any).
+    var pageName = path.slice(1).replace(/\/$/, '');
     // Show page, but don't update history (there's already an entry for it).
     OptionsPage.showPageByName(pageName, false);
   } else {

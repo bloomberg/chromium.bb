@@ -175,7 +175,7 @@ cr.define('options', function() {
     var page = this.getTopmostVisiblePage();
     var path = location.pathname;
     if (path)
-      path = path.slice(1);
+      path = path.slice(1).replace(/\/$/, '');  // Remove trailing slash.
     // The page is already in history (the user may have clicked the same link
     // twice). Do nothing.
     if (path == page.name)
