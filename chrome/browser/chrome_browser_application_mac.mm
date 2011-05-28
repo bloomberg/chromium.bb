@@ -8,6 +8,7 @@
 #import "base/mac/scoped_nsexception_enabler.h"
 #import "base/metrics/histogram.h"
 #import "base/memory/scoped_nsobject.h"
+#include "base/sys_info.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
@@ -200,9 +201,15 @@ BOOL SwizzleNSExceptionInit() {
 @implementation BrowserCrApplication
 
 + (void)initialize {
-  // Turn all deallocated Objective-C objects into zombies, keeping
-  // the most recent 10,000 of them on the treadmill.
-  ObjcEvilDoers::ZombieEnable(YES, 10000);
+  // Whitelist releases that are compatible with objc zombies.
+  int32 major_version = 0, minor_version = 0, bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(
+      &major_version, &minor_version, &bugfix_version);
+  if (major_version == 10 && (minor_version == 5 || minor_version == 6)) {
+    // Turn all deallocated Objective-C objects into zombies, keeping
+    // the most recent 10,000 of them on the treadmill.
+    ObjcEvilDoers::ZombieEnable(YES, 10000);
+  }
 }
 
 - init {
