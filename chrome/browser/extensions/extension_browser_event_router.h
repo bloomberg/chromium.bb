@@ -103,6 +103,27 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // and Observe/NAV_ENTRY_COMMITTED.
   void TabUpdated(TabContents* contents, bool did_navigate);
 
+  // The DispatchEvent methods forward events to the |profile|'s event router.
+  // The ExtensionBrowserEventRouter listens to events for all profiles,
+  // so we avoid duplication by dropping events destined for other profiles.
+  void DispatchEvent(Profile* profile,
+                     const char* event_name,
+                     const std::string& json_args);
+
+  void DispatchEventToExtension(Profile* profile,
+                                const std::string& extension_id,
+                                const char* event_name,
+                                const std::string& json_args);
+
+  void DispatchEventWithTab(Profile* profile,
+                            const std::string& extension_id,
+                            const char* event_name,
+                            const TabContents* tab_contents);
+
+  void DispatchSimpleBrowserEvent(Profile* profile,
+                                  const int window_id,
+                                  const char* event_name);
+
   // Packages |changed_properties| as a tab updated event for the tab |contents|
   // and dispatches the event to the extension.
   void DispatchTabUpdatedEvent(TabContents* contents,

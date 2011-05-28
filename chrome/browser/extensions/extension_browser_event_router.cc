@@ -61,52 +61,6 @@ DictionaryValue* ExtensionBrowserEventRouter::TabEntry::DidNavigate(
   return changed_properties;
 }
 
-static void DispatchEvent(Profile* profile,
-                          const char* event_name,
-                          const std::string& json_args) {
-  if (profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, profile, GURL());
-  }
-}
-
-static void DispatchEventToExtension(Profile* profile,
-                                     const std::string& extension_id,
-                                     const char* event_name,
-                                     const std::string& json_args) {
-  if (profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id, event_name, json_args, profile, GURL());
-  }
-}
-
-static void DispatchEventWithTab(Profile* profile,
-                                 const std::string& extension_id,
-                                 const char* event_name,
-                                 const TabContents* tab_contents) {
-  ListValue args;
-  args.Append(ExtensionTabUtil::CreateTabValue(tab_contents));
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  if (!extension_id.empty()) {
-    DispatchEventToExtension(profile, extension_id, event_name, json_args);
-  } else {
-    DispatchEvent(profile, event_name, json_args);
-  }
-}
-
-static void DispatchSimpleBrowserEvent(Profile* profile,
-                                       const int window_id,
-                                       const char* event_name) {
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(window_id));
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-
-  DispatchEvent(profile, event_name, json_args);
-}
-
 void ExtensionBrowserEventRouter::Init() {
   if (initialized_)
     return;
@@ -404,6 +358,61 @@ void ExtensionBrowserEventRouter::TabUpdated(TabContents* contents,
 
   if (changed_properties)
     DispatchTabUpdatedEvent(contents, changed_properties);
+}
+
+void ExtensionBrowserEventRouter::DispatchEvent(Profile* profile,
+                                                const char* event_name,
+                                                const std::string& json_args) {
+  if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
+    return;
+
+  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
+      event_name, json_args, profile, GURL());
+}
+
+void ExtensionBrowserEventRouter::DispatchEventToExtension(
+    Profile* profile,
+    const std::string& extension_id,
+    const char* event_name,
+    const std::string& json_args) {
+  if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
+    return;
+
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
+      extension_id, event_name, json_args, profile, GURL());
+}
+
+void ExtensionBrowserEventRouter::DispatchEventWithTab(
+    Profile* profile,
+    const std::string& extension_id,
+    const char* event_name,
+    const TabContents* tab_contents) {
+  if (!profile_->IsSameProfile(profile))
+    return;
+
+  ListValue args;
+  args.Append(ExtensionTabUtil::CreateTabValue(tab_contents));
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  if (!extension_id.empty()) {
+    DispatchEventToExtension(profile, extension_id, event_name, json_args);
+  } else {
+    DispatchEvent(profile, event_name, json_args);
+  }
+}
+
+void ExtensionBrowserEventRouter::DispatchSimpleBrowserEvent(
+    Profile* profile, const int window_id, const char* event_name) {
+  if (!profile_->IsSameProfile(profile))
+    return;
+
+  ListValue args;
+  args.Append(Value::CreateIntegerValue(window_id));
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+
+  DispatchEvent(profile, event_name, json_args);
 }
 
 void ExtensionBrowserEventRouter::DispatchTabUpdatedEvent(
