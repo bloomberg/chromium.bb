@@ -585,6 +585,10 @@ def main(argv):
   file_dir = os.path.dirname(os.path.realpath(__file__))
   tracking_branch = 'remotes/m/%s' % commands.GetManifestBranch(file_dir)
 
+  # Contains the array of packages we actually revved.
+  revved_packages = []
+  new_package_atoms = []
+
   for overlay, ebuilds in overlays.items():
     if not os.path.isdir(overlay):
       cros_build_lib.Warning("Skipping %s" % overlay)
@@ -606,9 +610,6 @@ def main(argv):
         cros_build_lib.Die('Unable to create stabilizing branch in %s' %
                            overlay)
 
-      # Contains the array of packages we actually revved.
-      revved_packages = []
-      new_package_atoms = []
       for ebuild in ebuilds:
         try:
           _Print('Working on %s' % ebuild.package)
@@ -626,11 +627,12 @@ def main(argv):
                   'and reset the git repo yourself.' % overlay)
           raise
 
-      CleanStalePackages(options.board, new_package_atoms)
-      if options.drop_file:
-        fh = open(options.drop_file, 'w')
-        fh.write(' '.join(revved_packages))
-        fh.close()
+  if command == 'commit':
+    CleanStalePackages(options.board, new_package_atoms)
+    if options.drop_file:
+      fh = open(options.drop_file, 'w')
+      fh.write(' '.join(revved_packages))
+      fh.close()
 
 
 if __name__ == '__main__':
