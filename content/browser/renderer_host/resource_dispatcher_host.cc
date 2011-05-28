@@ -1064,6 +1064,11 @@ void ResourceDispatcherHost::OnAuthRequired(
     return;
   }
 
+  if (observer_ && !observer_->AcceptAuthRequest(request, auth_info)) {
+    request->CancelAuth();
+    return;
+  }
+
   // Prevent third-party content from prompting for login, unless it is
   // a proxy that is trying to authenticate.  This is often the foundation
   // of a scam to extract credentials for another domain from the user.

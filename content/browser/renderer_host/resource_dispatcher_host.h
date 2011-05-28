@@ -79,6 +79,13 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
         net::URLRequest* request,
         net::SSLCertRequestInfo* cert_request_info) = 0;
 
+    // Called when authentication is required and credentials are needed. If
+    // false is returned, CancelAuth() is called on the URLRequest and the error
+    // page is shown. If true is returned, the user will be prompted for
+    // authentication credentials.
+    virtual bool AcceptAuthRequest(net::URLRequest* request,
+                                   net::AuthChallengeInfo* auth_info) = 0;
+
    protected:
     Observer() {}
     virtual ~Observer() {}

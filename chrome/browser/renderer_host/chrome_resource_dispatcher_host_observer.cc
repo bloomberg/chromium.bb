@@ -95,3 +95,23 @@ bool ChromeResourceDispatcherHostObserver::AcceptSSLClientCertificateRequest(
   return true;
 }
 
+bool ChromeResourceDispatcherHostObserver::AcceptAuthRequest(
+    net::URLRequest* request,
+    net::AuthChallengeInfo* auth_info) {
+  if (!(request->load_flags() & net::LOAD_PRERENDERING))
+    return true;
+
+  int child_id, route_id;
+  if (!ResourceDispatcherHost::RenderViewForRequest(
+          request, &child_id, &route_id)) {
+    NOTREACHED();
+    return true;
+  }
+
+  if (!prerender_tracker_->TryCancelOnIOThread(
+          child_id, route_id, prerender::FINAL_STATUS_AUTH_NEEDED)) {
+    return true;
+  }
+
+  return false;
+}

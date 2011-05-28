@@ -16,7 +16,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
-#include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
@@ -210,13 +209,6 @@ void PrerenderContents::StartPrerendering(
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 
-  // Register to cancel if Authentication is required.
-  notification_registrar_.Add(this, NotificationType::AUTH_NEEDED,
-                              NotificationService::AllSources());
-
-  notification_registrar_.Add(this, NotificationType::AUTH_CANCELLED,
-                              NotificationService::AllSources());
-
   // Register to inform new RenderViews that we're prerendering.
   notification_registrar_.Add(
       this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
@@ -301,22 +293,6 @@ void PrerenderContents::Observe(NotificationType type,
     case NotificationType::APP_TERMINATING:
       Destroy(FINAL_STATUS_APP_TERMINATING);
       return;
-
-    case NotificationType::AUTH_NEEDED:
-    case NotificationType::AUTH_CANCELLED: {
-      // Only respond to HTTP authentication notifications which
-      // are required for this prerendered page.
-      LoginNotificationDetails* details_ptr =
-          Details<LoginNotificationDetails>(details).ptr();
-      LoginHandler* handler = details_ptr->handler();
-      DCHECK(handler != NULL);
-      RenderViewHostDelegate* delegate = handler->GetRenderViewHostDelegate();
-      if (delegate == GetRenderViewHostDelegate()) {
-        Destroy(FINAL_STATUS_AUTH_NEEDED);
-        return;
-      }
-      break;
-    }
 
     case NotificationType::RESOURCE_RECEIVED_REDIRECT: {
       // RESOURCE_RECEIVED_REDIRECT can come for any resource on a page.

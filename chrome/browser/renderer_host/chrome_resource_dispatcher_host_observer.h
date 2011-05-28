@@ -38,6 +38,9 @@ class ChromeResourceDispatcherHostObserver
         net::URLRequest* request,
         net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
 
+  virtual bool AcceptAuthRequest(net::URLRequest* request,
+                                 net::AuthChallengeInfo* auth_info) OVERRIDE;
+
  private:
   prerender::PrerenderTracker* prerender_tracker_;
 
