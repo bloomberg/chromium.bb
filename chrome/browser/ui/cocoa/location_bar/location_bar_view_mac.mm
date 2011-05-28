@@ -277,13 +277,11 @@ void LocationBarViewMac::OnKillFocus() {
 }
 
 SkBitmap LocationBarViewMac::GetFavicon() const {
-  NOTIMPLEMENTED();
-  return SkBitmap();
+  return browser_->GetCurrentPageIcon();
 }
 
 string16 LocationBarViewMac::GetTitle() const {
-  NOTIMPLEMENTED();
-  return string16();
+  return browser_->GetWindowTitleForCurrentTab();
 }
 
 InstantController* LocationBarViewMac::GetInstant() {
