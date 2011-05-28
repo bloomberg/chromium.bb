@@ -20,6 +20,10 @@
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace {
 
 // Filename suffix for the bloom filter.
@@ -1055,6 +1059,11 @@ void SafeBrowsingDatabaseNew::UpdateCsdWhitelistStore() {
     CsdWhitelistAllUrls();
     return;
   }
+
+#if defined(OS_MACOSX)
+  base::mac::SetFileBackupExclusion(csd_whitelist_filename_);
+#endif
+
   LoadCsdWhitelist(full_hashes);
 }
 
@@ -1080,7 +1089,16 @@ void SafeBrowsingDatabaseNew::UpdateDownloadStore() {
                                      &add_prefixes_result,
                                      &add_full_hashes_result))
     RecordFailure(FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH);
-  return;
+
+  int64 size_64;
+  if (file_util::GetFileSize(download_filename_, &size_64)) {
+    UMA_HISTOGRAM_COUNTS("SB2.DownloadDatabaseKilobytes",
+                         static_cast<int>(size_64 / 1024));
+  }
+
+#if defined(OS_MACOSX)
+  base::mac::SetFileBackupExclusion(download_filename_);
+#endif
 }
 
 void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
@@ -1182,12 +1200,14 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   UMA_HISTOGRAM_COUNTS("SB2.FilterKilobytes",
                        browse_bloom_filter_->size() / 1024);
   int64 size_64;
-  if (file_util::GetFileSize(browse_filename_, &size_64))
+  if (file_util::GetFileSize(browse_filename_, &size_64)) {
     UMA_HISTOGRAM_COUNTS("SB2.BrowseDatabaseKilobytes",
                          static_cast<int>(size_64 / 1024));
-  if (file_util::GetFileSize(download_filename_, &size_64))
-    UMA_HISTOGRAM_COUNTS("SB2.DownloadDatabaseKilobytes",
-                         static_cast<int>(size_64 / 1024));
+  }
+
+#if defined(OS_MACOSX)
+  base::mac::SetFileBackupExclusion(browse_filename_);
+#endif
 }
 
 void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
@@ -1278,6 +1298,10 @@ void SafeBrowsingDatabaseNew::WriteBloomFilter() {
 
   if (!write_ok)
     RecordFailure(FAILURE_DATABASE_FILTER_WRITE);
+
+#if defined(OS_MACOSX)
+  base::mac::SetFileBackupExclusion(bloom_filter_filename_);
+#endif
 }
 
 void SafeBrowsingDatabaseNew::CsdWhitelistAllUrls() {

@@ -28,6 +28,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace safe_browsing {
 
 const int ClientSideDetectionService::kMaxReportsPerInterval = 3;
@@ -212,6 +216,9 @@ void ClientSideDetectionService::OpenModelFileDone(
     // The model file already exists.  There is no need to fetch the model.
     model_file_ = file.ReleaseValue();
     SetModelStatus(READY_STATUS);
+#if defined(OS_MACOSX)
+    base::mac::SetFileBackupExclusion(model_path_);
+#endif
   } else if (base::PLATFORM_FILE_ERROR_NOT_FOUND == error_code) {
     // We need to fetch the model since it does not exist yet.
     model_fetcher_.reset(URLFetcher::Create(0 /* ID is not used */,
@@ -247,6 +254,10 @@ void ClientSideDetectionService::CreateModelFileDone(
     // then run all the pending callbacks giving them an invalid model file.
     CloseModelFile();
     SetModelStatus(ERROR_STATUS);
+#if defined(OS_MACOSX)
+  } else {
+    base::mac::SetFileBackupExclusion(model_path_);
+#endif
   }
 }
 
