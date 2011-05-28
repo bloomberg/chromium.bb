@@ -157,7 +157,8 @@ function updateControlsWithSelectedPrinterCapabilities() {
   var selectedValue = printerList.options[selectedIndex].value;
   if (selectedValue == PRINT_TO_PDF) {
     updateWithPrinterCapabilities({'disableColorOption': true,
-                                   'setColorAsDefault': true});
+                                   'setColorAsDefault': true,
+                                   'disableCopiesOption': true});
   } else if (selectedValue == MANAGE_PRINTERS) {
     printerList.selectedIndex = lastSelectedPrinterIndex;
     chrome.send('managePrinters');
@@ -180,14 +181,21 @@ function updateControlsWithSelectedPrinterCapabilities() {
  */
 function updateWithPrinterCapabilities(settingInfo) {
   var disableColorOption = settingInfo.disableColorOption;
+  var disableCopiesOption = settingInfo.disableCopiesOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
   var colorOption = $('color');
   var bwOption = $('bw');
 
-  if (disableColorOption)
-    $('color-options').classList.add("hidden");
-  else
-    $('color-options').classList.remove("hidden");
+  if (disableCopiesOption) {
+    fadeOutElement($('copies-option'));
+    $('hr-before-copies').classList.remove('invisible');
+  } else {
+    fadeInElement($('copies-option'));
+    $('hr-before-copies').classList.add('invisible');
+  }
+
+  disableColorOption ? fadeOutElement($('color-options')) :
+      fadeInElement($('color-options'));
 
   if (colorOption.checked != setColorAsDefault) {
     colorOption.checked = setColorAsDefault;
@@ -455,10 +463,8 @@ function onPDFLoad() {
 
   $('dancing-dots').classList.add('invisible');
 
-  if (!previewModifiable) {
-    $('landscape').disabled = true;
-    $('portrait').disabled = true;
-  }
+  if (!previewModifiable)
+    fadeOutElement($('landscape-option'));
 
   updateCopiesButtonsState();
 }
@@ -564,11 +570,15 @@ function checkCompatiblePluginExists() {
  * Updates the state of print button depending on the user selection.
  * The button is enabled only when the following conditions are true.
  * 1) The selected page ranges are valid.
- * 2) The number of copies is valid.
+ * 2) The number of copies is valid (if applicable).
  */
 function updatePrintButtonState() {
-  $('print-button').disabled = (!isNumberOfCopiesValid() ||
-                                getSelectedPagesValidityLevel() != 1);
+  if (getSelectedPrinterName() == PRINT_TO_PDF) {
+    $('print-button').disabled = (getSelectedPagesValidityLevel() != 1);
+  } else {
+    $('print-button').disabled = (!isNumberOfCopiesValid() ||
+                                  getSelectedPagesValidityLevel() != 1);
+  }
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
@@ -596,7 +606,7 @@ function pageRangesFieldChanged() {
 
   if (validityLevel == 1) {
     individualPagesField.classList.remove('invalid');
-    hideInvalidHint(individualPagesHint);
+    fadeOutElement(individualPagesHint);
   } else {
     individualPagesField.classList.add('invalid');
     individualPagesHint.classList.remove('suggestion');
@@ -604,7 +614,7 @@ function pageRangesFieldChanged() {
         localStrings.getStringF('pageRangeInstruction',
                                 localStrings.getString(
                                     'examplePageRangeText'));
-    showInvalidHint(individualPagesHint);
+    fadeInElement(individualPagesHint);
   }
 
   resetPageRangeFieldTimer();
@@ -622,13 +632,13 @@ function updateCopiesButtonsState() {
     copiesField.classList.add('invalid');
     $('increment').disabled = false;
     $('decrement').disabled = false;
-    showInvalidHint($('copies-hint'));
+    fadeInElement($('copies-hint'));
   }
   else {
     copiesField.classList.remove('invalid');
     $('increment').disabled = (getCopies() == copiesField.max) ? true : false;
     $('decrement').disabled = (getCopies() == copiesField.min) ? true : false;
-    hideInvalidHint($('copies-hint'));
+    fadeOutElement($('copies-hint'));
   }
 }
 
@@ -637,10 +647,11 @@ function updateCopiesButtonsState() {
  *
  */
 function updatePrintSummary() {
-  var copies = getCopies();
+  var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
+  var copies = printToPDF ? 1 : getCopies();
   var printSummary = $('print-summary');
 
-  if (!isNumberOfCopiesValid()) {
+  if (!printToPDF && !isNumberOfCopiesValid()) {
     printSummary.innerHTML = localStrings.getString('invalidNumberOfCopies');
     return;
   }
@@ -656,7 +667,7 @@ function updatePrintSummary() {
   var numOfPagesText = '';
   var pagesLabel = '';
 
-  if (isTwoSided())
+  if (!printToPDF && isTwoSided())
     numOfSheets = Math.ceil(numOfSheets / 2);
   numOfSheets *= copies;
 
@@ -715,7 +726,7 @@ function onLayoutModeToggle() {
  * Sets the default values and sends a request to regenerate preview data.
  */
 function setDefaultValuesAndRegeneratePreview() {
-  hideInvalidHint($('individual-pages-hint'));
+  fadeOutElement($('individual-pages-hint'));
   totalPageCount = -1;
   previouslySelectedPages.length = 0;
   requestPrintPreview();

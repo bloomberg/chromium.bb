@@ -18,7 +18,7 @@ function addAnimation(code) {
   return name;
 }
 
-function showInvalidHint(el) {
+function fadeInElement(el) {
   if (el.classList.contains('visible'))
     return;
   el.classList.remove('closing');
@@ -31,9 +31,13 @@ function showInvalidHint(el) {
     '100% { opacity: 1; height: ' + height + 'px; }');
   el.style.webkitAnimationName = animName;
   el.classList.add('visible');
+  el.addEventListener('webkitAnimationEnd', function() {
+    el.style.height = '';
+    el.style.webkitAnimationName = '';
+  }, false );
 }
 
-function hideInvalidHint(el) {
+function fadeOutElement(el) {
   if (!el.classList.contains('visible'))
     return;
   el.style.webkitAnimationName = '';
