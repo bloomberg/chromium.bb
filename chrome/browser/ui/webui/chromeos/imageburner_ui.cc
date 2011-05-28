@@ -152,6 +152,20 @@ class ImageBurnUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// ImageBurnTaskProxy
+//
+////////////////////////////////////////////////////////////////////////////////
+
+ImageBurnTaskProxy::ImageBurnTaskProxy(Delegate* delegate) {
+    delegate_ = delegate->AsWeakPtr();
+    delegate_->DetachFromThread();
+}
+
+ImageBurnTaskProxy::~ImageBurnTaskProxy() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // ImageBurnHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -644,6 +658,16 @@ bool ImageBurnHandler::CheckNetwork() {
 // ImageBurnConfigFile
 //
 ////////////////////////////////////////////////////////////////////////////////
+ImageBurnConfigFile::ImageBurnConfigFile() {
+}
+
+ImageBurnConfigFile::ImageBurnConfigFile(const std::string& file_content) {
+  reset(file_content);
+}
+
+ImageBurnConfigFile::~ImageBurnConfigFile() {
+}
+
 void ImageBurnConfigFile::reset(const std::string& file_content) {
   clear();
 
@@ -693,6 +717,9 @@ ImageBurnStateMachine::ImageBurnStateMachine()
       download_started_(false),
       download_finished_(false),
       state_(INITIAL) {
+}
+
+ImageBurnStateMachine::~ImageBurnStateMachine() {
 }
 
 void ImageBurnStateMachine::OnError(int error_message_id) {

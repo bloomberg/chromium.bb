@@ -82,11 +82,11 @@ class ImageBurnDownloader {
 
 class ImageBurnConfigFile {
  public:
-  ImageBurnConfigFile() {}
+  ImageBurnConfigFile();
 
-  explicit ImageBurnConfigFile(const std::string& file_content) {
-    reset(file_content);
-  }
+  explicit ImageBurnConfigFile(const std::string& file_content);
+
+  ~ImageBurnConfigFile();
 
   void reset(const std::string& file_content);
 
@@ -125,7 +125,7 @@ class ImageBurnStateMachine {
   };
 
   ImageBurnStateMachine();
-  ~ImageBurnStateMachine() {}
+  ~ImageBurnStateMachine();
 
   bool image_download_requested() const { return image_download_requested_; }
   void OnImageDownloadRequested() { image_download_requested_ = true; }
@@ -286,10 +286,7 @@ class ImageBurnTaskProxy
     virtual void ImageDirCreatedOnUIThread(bool success) = 0;
   };
 
-  explicit ImageBurnTaskProxy(Delegate* delegate) {
-    delegate_ = delegate->AsWeakPtr();
-    delegate_->DetachFromThread();
-  }
+  explicit ImageBurnTaskProxy(Delegate* delegate);
 
   void CreateImageDir() {
     if (delegate_)
@@ -315,7 +312,7 @@ class ImageBurnTaskProxy
   base::WeakPtr<Delegate> delegate_;
 
   friend class base::RefCountedThreadSafe<ImageBurnTaskProxy>;
-  ~ImageBurnTaskProxy() {}
+  ~ImageBurnTaskProxy();
 
   DISALLOW_COPY_AND_ASSIGN(ImageBurnTaskProxy);
 };
@@ -387,14 +384,14 @@ class ImageBurnHandler
 
  public:
   // Part of ImageBurnTaskProxy::Delegate interface.
-  void CreateImageDirOnFileThread() OVERRIDE;
+  virtual void CreateImageDirOnFileThread() OVERRIDE;
 
   // Part of ImageBurnResourceManager::Delegate interface.
   virtual void OnImageDirCreated(bool success)
       OVERRIDE;
 
   // Part of ImageBurnTaskProxy::Delegate interface.
-  void ImageDirCreatedOnUIThread(bool success) OVERRIDE;
+  virtual void ImageDirCreatedOnUIThread(bool success) OVERRIDE;
 
   // Part of ImageBurnResourceManager::Delegate interface.
   virtual void OnConfigFileFetched(const ImageBurnConfigFile& config_file,
