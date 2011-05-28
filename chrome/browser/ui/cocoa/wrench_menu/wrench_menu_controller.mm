@@ -106,7 +106,7 @@ class ZoomLevelObserver : public NotificationObserver {
 }
 
 - (NSMenu*)bookmarkSubMenu {
-  NSString* title = l10n_util::GetNSString(IDS_BOOKMARKS_MENU);
+  NSString* title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARKS_MENU);
   return [[[self menu] itemWithTitle:title] submenu];
 }
 
