@@ -1518,20 +1518,20 @@
 {
    bug_82974a
    Heapcheck:Leak
-   fun:sqlite3_bind_parameter_index
+   fun:sqlite3MemMalloc
    fun:net::X509Certificate::CreateOSCertHandleFromBytes
 }
 {
    bug_82974b
    Heapcheck:Leak
-   fun:sqlite3_bind_parameter_index
+   fun:sqlite3MemMalloc
    fun:net::::PKIXVerifyCert
    fun:net::X509Certificate::Verify
 }
 {
    bug_82974c
    Heapcheck:Leak
-   fun:sqlite3_bind_parameter_index
+   fun:sqlite3MemMalloc
    fun:net::::ListCertsInSlot
    ...
    fun:net::CertDatabaseNSSTest::TearDown
@@ -1539,14 +1539,14 @@
 {
    bug_82974d
    Heapcheck:Leak
-   fun:sqlite3_bind_parameter_index
+   fun:sqlite3MemMalloc
    fun:net::CertDatabase::ListCerts
    fun:net::CertDatabaseNSSTest_ListCerts_Test::TestBody
 }
 {
    bug_82974e
    Heapcheck:Leak
-   fun:sqlite3_bind_parameter_index
+   fun:sqlite3MemMalloc
    fun:net::CertDatabase::DeleteCertAndKey
    fun:net::::CleanupSlotContents
    fun:net::CertDatabaseNSSTest::TearDown
