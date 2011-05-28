@@ -53,7 +53,7 @@ struct Firefox3Importer::BookmarkItem {
 };
 
 Firefox3Importer::Firefox3Importer() {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   locale_ = g_browser_process->GetApplicationLocale();
 #endif
@@ -66,7 +66,7 @@ void Firefox3Importer::StartImport(
     const importer::SourceProfile& source_profile,
     uint16 items,
     ImporterBridge* bridge) {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 #endif
   bridge_ = bridge;
@@ -406,7 +406,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
     } while (s.Step() && !cancelled());
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Ubuntu-flavored Firefox3 supports locale-specific search engines via
   // locale-named subdirectories. They fall back to en-US.
   // See http://crbug.com/53899

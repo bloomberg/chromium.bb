@@ -22,13 +22,13 @@
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
-#endif  // defined(OS_LINUX)
+#endif
 
 #define FPL FILE_PATH_LITERAL
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 namespace {
 
 // Provides mock environment variables values based on a stored map.

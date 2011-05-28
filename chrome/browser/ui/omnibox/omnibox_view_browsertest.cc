@@ -33,7 +33,7 @@
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #endif
@@ -112,7 +112,7 @@ const struct TestHistoryEntry {
   {"http://bar/", "Bar", kSearchText, 1, 0, false },
 };
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 // Returns the text stored in the PRIMARY clipboard.
 std::string GetPrimarySelectionText() {
   GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
@@ -1191,7 +1191,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   CtrlKeyPressedWithInlineAutocompleteTest();
 }
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 // TODO(oshima): enable these tests for views-implmentation when
 // these featuers are supported.
 

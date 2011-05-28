@@ -8,9 +8,9 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 // There's no OS-specific implementation of BrowserAccessibilityManager
-// on Linux, so just instantiate the base class.
+// on Unix, so just instantiate the base class.
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibility();

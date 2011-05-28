@@ -18,7 +18,7 @@
 extern "C" {
 int ChromeMain(int argc, const char** argv);
 
-#if defined(OS_LINUX) && defined(USE_TCMALLOC)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_TCMALLOC)
 int tc_set_new_mode(int mode);
 #endif
 }
@@ -33,7 +33,7 @@ int main(int argc, const char** argv) {
   // dependency on TCMalloc.  Really, we ought to have our allocator shim code
   // implement this EnableTerminationOnOutOfMemory() function.  Whateverz.  This
   // works for now.
-#if defined(OS_LINUX) && defined(USE_TCMALLOC)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_TCMALLOC)
   // For tcmalloc, we need to tell it to behave like new.
   tc_set_new_mode(1);
 #endif

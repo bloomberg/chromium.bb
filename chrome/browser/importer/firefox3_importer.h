@@ -82,7 +82,7 @@ class Firefox3Importer : public Importer {
   FilePath source_path_;
   FilePath app_path_;
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Stored because we can only access it from the UI thread. Not usable
   // in Mac because no access from out-of-process import.
   std::string locale_;

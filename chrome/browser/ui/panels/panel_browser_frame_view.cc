@@ -26,7 +26,7 @@
 #include "views/window/window.h"
 #include "views/window/window_shape.h"
 
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #include "views/window/hit_test.h"
 #endif
 

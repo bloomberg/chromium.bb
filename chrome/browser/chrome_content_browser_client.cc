@@ -53,7 +53,7 @@
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
-#endif  // OS_LINUX
+#endif
 
 #if defined(OS_WIN)
 #include "chrome/common/sandbox_policy.h"

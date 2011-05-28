@@ -57,7 +57,7 @@ class BalloonCollectionImpl : public BalloonCollection
   virtual void WillProcessMessage(const MSG& event) {}
   virtual void DidProcessMessage(const MSG& event);
 #endif
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   virtual void WillProcessEvent(GdkEvent* event) {}
   virtual void DidProcessEvent(GdkEvent* event);
 #endif

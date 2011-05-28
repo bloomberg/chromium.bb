@@ -14,10 +14,10 @@
 #include "base/message_loop.h"
 #include "base/message_pump_libevent.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "chrome/common/multi_process_lock.h"
 MultiProcessLock* TakeServiceRunningLock(bool waiting);
-#endif  // OS_LINUX
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/files/file_path_watcher.h"
@@ -72,10 +72,10 @@ struct ServiceProcessState::StateData
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
   base::files::FilePathWatcher executable_watcher_;
 #endif  // OS_MACOSX
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   scoped_ptr<MultiProcessLock> initializing_lock_;
   scoped_ptr<MultiProcessLock> running_lock_;
-#endif  // OS_LINUX
+#endif
   scoped_ptr<ServiceProcessShutdownMonitor> shut_down_monitor_;
   base::MessagePumpLibevent::FileDescriptorWatcher watcher_;
   int sockets_[2];

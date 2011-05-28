@@ -23,9 +23,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
-#endif  // defined(OS_LINUX)
+#endif
 
 #if defined(OS_WIN)
 #include "ui/gfx/icon_util.h"
@@ -221,7 +221,7 @@ void CreateShortcutTask::Run() {
 bool CreateShortcutTask::CreateShortcut() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string shortcut_template;

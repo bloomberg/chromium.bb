@@ -40,7 +40,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               int render_process_id,
                               int render_view_id,
                               net::CookieOptions* options);
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type);
 #endif

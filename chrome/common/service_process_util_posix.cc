@@ -91,9 +91,6 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
   DCHECK_EQ(old_action_.sa_handler, SIG_DFL);
   set_action_ = true;
 
-#if defined(OS_LINUX)
-  initializing_lock_.reset();
-#endif  // OS_LINUX
 #if defined(OS_MACOSX)
   *success = WatchExecutable();
   if (!*success) {
@@ -101,7 +98,9 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
     signal->Signal();
     return;
   }
-#endif  // OS_MACOSX
+#elif defined(OS_POSIX)
+  initializing_lock_.reset();
+#endif  // OS_POSIX
   signal->Signal();
 }
 
@@ -140,12 +139,12 @@ bool ServiceProcessState::SignalReady(
   CHECK(state_);
 
   scoped_ptr<Task> scoped_shutdown_task(shutdown_task);
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   state_->running_lock_.reset(TakeServiceRunningLock(true));
   if (state_->running_lock_.get() == NULL) {
     return false;
   }
-#endif // OS_LINUX
+#endif
   state_->shut_down_monitor_.reset(
       new ServiceProcessShutdownMonitor(scoped_shutdown_task.release()));
   if (pipe(state_->sockets_) < 0) {

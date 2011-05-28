@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #endif
 
@@ -255,8 +255,8 @@ void BrowserMainPartsPosix::PostMainMessageLoopStart() {
     }
   }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
   printing::PrintingContextCairo::SetCreatePrintDialogFunction(
       &PrintDialogGtk::CreatePrintDialog);
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif
 }

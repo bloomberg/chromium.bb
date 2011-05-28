@@ -356,7 +356,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Remoting requires NSS to function properly.
   if (!command_line.HasSwitch(switches::kSingleProcess) &&
       command_line.HasSwitch(switches::kEnableRemoting)) {
@@ -479,7 +479,7 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
   while (!v8::V8::IdleNotification()) {
   }
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && defined(USE_TCMALLOC)
+#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
   // Tell tcmalloc to release any free pages it's still holding.
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif

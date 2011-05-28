@@ -302,7 +302,7 @@ extern const char kCompressSystemFeedback[];
 extern const char kSkipChromeOSComponents[];
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 extern const char kScrollPixels[];
 #endif
 
