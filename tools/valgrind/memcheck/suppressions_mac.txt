@@ -1705,22 +1705,12 @@
    Memcheck:Cond
    fun:_ZN28PCMQueueOutAudioOutputStream13SwizzleLayoutIsEEvPT_j
    fun:_ZN28PCMQueueOutAudioOutputStream14RenderCallbackEPvP16OpaqueAudioQueueP16AudioQueueBuffer
-   fun:_ZN28PCMQueueOutAudioOutputStream5StartEPN17AudioOutputStream19AudioSourceCallbackE
-   fun:_ZN16AudioOutputProxy5StartEPN17AudioOutputStream19AudioSourceCallbackE
-   fun:_ZN5media21AudioOutputController6DoPlayEv
-   fun:_Z16DispatchToMethodIN5media21AudioOutputControllerEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN5media21AudioOutputControllerEMS1_FvvE6Tuple0E3RunEv
 }
 {
    bug_84142_b
    Memcheck:Value4
    fun:_ZN28PCMQueueOutAudioOutputStream13SwizzleLayoutIsEEvPT_j
    fun:_ZN28PCMQueueOutAudioOutputStream14RenderCallbackEPvP16OpaqueAudioQueueP16AudioQueueBuffer
-   fun:_ZN28PCMQueueOutAudioOutputStream5StartEPN17AudioOutputStream19AudioSourceCallbackE
-   fun:_ZN16AudioOutputProxy5StartEPN17AudioOutputStream19AudioSourceCallbackE
-   fun:_ZN5media21AudioOutputController6DoPlayEv
-   fun:_Z16DispatchToMethodIN5media21AudioOutputControllerEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN5media21AudioOutputControllerEMS1_FvvE6Tuple0E3RunEv
 }
 {
    bug_84142_c
