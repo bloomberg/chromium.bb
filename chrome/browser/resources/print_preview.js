@@ -340,12 +340,11 @@ function getSelectedPrinterName() {
  * Asks the browser to print the preview PDF based on current print settings.
  */
 function printFile() {
-  $('print-button').classList.add('loading');
-  $('cancel-button').classList.add('loading');
-  $('print-summary').innerHTML = localStrings.getString('printing');
-  removeEventListeners();
-
   if (getSelectedPrinterName() != PRINT_TO_PDF) {
+    $('print-button').classList.add('loading');
+    $('cancel-button').classList.add('loading');
+    $('print-summary').innerHTML = localStrings.getString('printing');
+    removeEventListeners();
     window.setTimeout(function() { chrome.send('print', [getSettingsJSON()]); },
                       1000);
   } else
