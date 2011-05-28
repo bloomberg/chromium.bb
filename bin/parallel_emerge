@@ -123,9 +123,9 @@ class EmergeData(object):
   packages.
   """
 
-  __slots__ = ["action", "cmdline_packages", "depgraph", "mtimedb", "opts",
-               "root_config", "scheduler_graph", "settings", "spinner",
-               "trees"]
+  __slots__ = ["action", "cmdline_packages", "depgraph", "favorites",
+               "mtimedb", "opts", "root_config", "scheduler_graph",
+               "settings", "spinner", "trees"]
 
   def __init__(self):
     # The action the user requested. If the user is installing packages, this
@@ -143,6 +143,9 @@ class EmergeData(object):
     # The emerge dependency graph. It'll contain all the packages involved in
     # this merge, along with their versions.
     self.depgraph = None
+
+    # The list of candidates to add to the world file.
+    self.favorites = None
 
     # A dict of the options passed to emerge. This dict has been cleaned up
     # a bit by parse_opts, so that it's a bit easier for the emerge code to
@@ -445,7 +448,7 @@ class DepGraphGenerator(object):
     # Ask portage to build a dependency graph. with the options we specified
     # above.
     params = create_depgraph_params(emerge_opts, emerge.action)
-    success, depgraph, _ = backtrack_depgraph(
+    success, depgraph, favorites = backtrack_depgraph(
         emerge.settings, emerge.trees, emerge_opts, params, emerge.action,
         packages, emerge.spinner)
     emerge.depgraph = depgraph
@@ -456,6 +459,7 @@ class DepGraphGenerator(object):
       sys.exit(1)
 
     emerge.depgraph = depgraph
+    emerge.favorites = favorites
 
     # Is it impossible to honor the user's request? Bail!
     if not success:
@@ -912,7 +916,7 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
         sys.stderr = output
         emerge.scheduler_graph.mergelist = install_list
         scheduler = Scheduler(settings, trees, mtimedb, opts, spinner,
-            favorites=[], graph_config=emerge.scheduler_graph)
+            favorites=emerge.favorites, graph_config=emerge.scheduler_graph)
         retcode = scheduler.merge()
       except Exception:
         traceback.print_exc(file=output)
@@ -1352,18 +1356,6 @@ def main():
   # Run the queued emerges.
   scheduler = EmergeQueue(deps_graph, emerge, deps.package_db, deps.show_output)
   scheduler.Run()
-
-  # Update world.
-  if ("--oneshot" not in emerge.opts and
-      "--pretend" not in emerge.opts):
-    world_set = emerge.root_config.sets["selected"]
-    new_world_pkgs = []
-    for pkg in emerge.cmdline_packages:
-      for db_pkg in final_db.match_pkgs(pkg):
-        print "Adding %s to world" % db_pkg.cp
-        new_world_pkgs.append(db_pkg.cp)
-    if new_world_pkgs:
-      world_set.update(new_world_pkgs)
 
   # Update environment (library cache, symlinks, etc.)
   if deps.board and "--pretend" not in emerge.opts:
