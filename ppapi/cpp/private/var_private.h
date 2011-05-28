@@ -11,6 +11,10 @@ namespace pp {
 
 class InstancePrivate;
 
+namespace deprecated {
+class ScriptableObject;
+}
+
 // VarPrivate is a version of Var that exposes the private scripting API.
 // It's designed to be mostly interchangable with Var since most callers will
 // be dealing with Vars from various places.

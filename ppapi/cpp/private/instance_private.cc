@@ -43,6 +43,12 @@ InstancePrivate::InstancePrivate(PP_Instance instance) : Instance(instance) {
 
 InstancePrivate::~InstancePrivate() {}
 
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
+Var InstancePrivate::GetInstanceObject() {
+  return Var();
+}
+#endif
+
 VarPrivate InstancePrivate::GetWindowObject() {
   if (!has_interface<PPB_Instance_Private>())
     return VarPrivate();

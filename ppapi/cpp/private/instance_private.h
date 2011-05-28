@@ -28,10 +28,10 @@ class InstancePrivate : public Instance {
   // @{
   /// @name PPP_Instance_Private methods for the plugin to override:
 
+#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
   /// See PPP_Instance_Private.GetInstanceObject.
-  // TODO(dmichael):  Put this virtual function here and remove the
-  //                  'Var GetInstanceObject()' version from pp::Instance.
-  //virtual VarPrivate GetInstanceObject();
+  virtual Var GetInstanceObject();
+#endif
 
   // @}
 
