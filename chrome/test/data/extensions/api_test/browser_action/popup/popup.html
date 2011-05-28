@@ -1,5 +1,10 @@
 <head>
 <script>
+function notify_pass() {
+  // We should be done.  Let the test harness know.
+  chrome.test.notifyPass();
+}
+
 function run_tests() {
   // Compute the size of the popup.
   var width = 0;
@@ -23,8 +28,9 @@ function run_tests() {
   localStorage.height = JSON.stringify(height);
   localStorage.width = JSON.stringify(width);
 
-  // We should be done.  Let the test harness know.
-  chrome.test.notifyPass();
+  // Allow for the pop-up resize to happen (asynchronously)
+  // before saying that the test is done.
+  window.setTimeout(notify_pass, 0);
 }
 </script>
 <style>
