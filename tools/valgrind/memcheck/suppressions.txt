@@ -4669,6 +4669,32 @@
    fun:_ZN7fileapi27FileSystemDirectoryDatabase16GetChildWithNameExRKSsPx
    fun:_ZN7fileapi27FileSystemDirectoryDatabase15GetFileWithPathERK8FilePathPx
 }
+{
+   bug_84304_a
+   Memcheck:Cond
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
+   fun:_ZN6icu_4612RegexMatcher4findEv
+   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
+   fun:_ZN8autofill11MatchStringERKSbItN4base20string16_char_traitsESaItEES5_
+   fun:_ZN9FormField5MatchEPK13AutofillFieldRKSbItN4base20string16_char_traitsESaItEEi
+   fun:_ZN9FormField15MatchAndAdvanceEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
+   fun:_ZN9FormField19ParseFieldSpecificsEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
+}
+{
+   bug_84304_b
+   Memcheck:Value4
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
+   fun:_ZN6icu_4612RegexMatcher4findEv
+   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
+   fun:_ZN8autofill11MatchStringERKSbItN4base20string16_char_traitsESaItEES5_
+   fun:_ZN9FormField5MatchEPK13AutofillFieldRKSbItN4base20string16_char_traitsESaItEEi
+   fun:_ZN9FormField15MatchAndAdvanceEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
+   fun:_ZN9FormField19ParseFieldSpecificsEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
