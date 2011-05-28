@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "unicode/regex.h"
 
 AutofillScanner::AutofillScanner(
     const std::vector<const AutofillField*>& fields)
@@ -43,3 +44,21 @@ void AutofillScanner::Rewind() {
 void AutofillScanner::SaveCursor() {
   saved_cursors_.push_back(cursor_);
 }
+
+namespace autofill {
+
+bool MatchString(const string16& input, const string16& pattern) {
+  UErrorCode status = U_ZERO_ERROR;
+  icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
+  icu::UnicodeString icu_input(input.data(), input.length());
+  icu::RegexMatcher matcher(icu_pattern, icu_input,
+                            UREGEX_CASE_INSENSITIVE, status);
+  DCHECK(U_SUCCESS(status));
+
+  UBool match = matcher.find(0, status);
+  DCHECK(U_SUCCESS(status));
+  return !!match;
+}
+
+}  // namespace autofill
+

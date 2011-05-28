@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/autofill-inl.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
+#include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
@@ -23,8 +24,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 namespace {
 
@@ -76,20 +75,15 @@ T* address_of(T& v) {
 bool IsValidEmail(const string16& value) {
   // This regex is more permissive than the official rfc2822 spec on the
   // subject, but it does reject obvious non-email addresses.
-  const string16 kEmailPattern =
-      ASCIIToUTF16("^[^@]+@[^@]+\\.[a-z]{2,6}$");
-  WebKit::WebRegularExpression re(WebKit::WebString(kEmailPattern),
-                                  WebKit::WebTextCaseInsensitive);
-  return re.match(WebKit::WebString(StringToLowerASCII(value))) != -1;
+  const string16 kEmailPattern = ASCIIToUTF16("^[^@]+@[^@]+\\.[a-z]{2,6}$");
+  return autofill::MatchString(value, kEmailPattern);
 }
 
 // Valid for US zip codes only.
 bool IsValidZip(const string16& value) {
   // Basic US zip code matching.
   const string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
-  WebKit::WebRegularExpression re(WebKit::WebString(kZipPattern),
-                                  WebKit::WebTextCaseInsensitive);
-  return re.match(WebKit::WebString(StringToLowerASCII(value))) != -1;
+  return autofill::MatchString(value, kZipPattern);
 }
 
 // Returns true if minimum requirements for import of a given |profile| have

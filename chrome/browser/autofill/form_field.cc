@@ -24,35 +24,12 @@
 #include "chrome/browser/autofill/name_field.h"
 #include "chrome/browser/autofill/phone_field.h"
 #include "grit/autofill_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
 using autofill::GetEcmlPattern;
 using autofill::HasECMLField;
-
-bool MatchName(const AutofillField* field, const string16& pattern) {
-  // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
-  // be fixed to take WebTextCaseInsensitive into account.
-  WebKit::WebRegularExpression re(WebKit::WebString(pattern),
-                                  WebKit::WebTextCaseInsensitive);
-  bool match = re.match(
-      WebKit::WebString(StringToLowerASCII(field->name))) != -1;
-  return match;
-}
-
-bool MatchLabel(const AutofillField* field, const string16& pattern) {
-  // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
-  // be fixed to take WebTextCaseInsensitive into account.
-  WebKit::WebRegularExpression re(WebKit::WebString(pattern),
-                                  WebKit::WebTextCaseInsensitive);
-  bool match = re.match(
-      WebKit::WebString(StringToLowerASCII(field->label))) != -1;
-  return match;
-}
 
 bool IsTextField(const string16& type) {
   return type == ASCIIToUTF16("text");
@@ -173,11 +150,15 @@ bool FormField::MatchAndAdvance(AutofillScanner* scanner,
 bool FormField::Match(const AutofillField* field,
                       const string16& pattern,
                       int match_type) {
-  if ((match_type & FormField::MATCH_LABEL) && MatchLabel(field, pattern))
-      return true;
+  if ((match_type & FormField::MATCH_LABEL) &&
+      autofill::MatchString(field->label, pattern)) {
+    return true;
+  }
 
-  if ((match_type & FormField::MATCH_NAME) && MatchName(field, pattern))
-      return true;
+  if ((match_type & FormField::MATCH_NAME) &&
+      autofill::MatchString(field->name, pattern)) {
+    return true;
+  }
 
   return false;
 }

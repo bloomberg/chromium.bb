@@ -833,7 +833,7 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
   form_structure->DetermineHeuristicTypes();
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
-  ASSERT_EQ(3U, form_structure->autofill_count());
+  EXPECT_EQ(3U, form_structure->autofill_count());
 
   // Address Line 1.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
@@ -1125,7 +1125,7 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
 
   // Expect the correct number of fields.
   ASSERT_EQ(5U, form_structure->field_count());
-  ASSERT_EQ(5U, form_structure->autofill_count());
+  EXPECT_EQ(5U, form_structure->autofill_count());
 
   // Name on Card.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());

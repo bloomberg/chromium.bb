@@ -14,13 +14,11 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -322,22 +320,20 @@ const string16 CreditCard::Label() const {
 
 void CreditCard::SetInfoForMonthInputType(const string16& value) {
   // Check if |text| is "yyyy-mm" format first, and check normal month format.
-  WebKit::WebRegularExpression re(WebKit::WebString("^[0-9]{4}\\-[0-9]{1,2}$"),
-                                  WebKit::WebTextCaseInsensitive);
-  bool match = re.match(WebKit::WebString(StringToLowerASCII(value))) != -1;
-  if (match) {
-    std::vector<string16> year_month;
-    base::SplitString(value, L'-', &year_month);
-    DCHECK_EQ((int)year_month.size(), 2);
-    int num = 0;
-    bool converted = false;
-    converted = base::StringToInt(year_month[0], &num);
-    DCHECK(converted);
-    SetExpirationYear(num);
-    converted = base::StringToInt(year_month[1], &num);
-    DCHECK(converted);
-    SetExpirationMonth(num);
-  }
+  if (!autofill::MatchString(value, UTF8ToUTF16("^[0-9]{4}-[0-9]{1,2}$")))
+    return;
+
+  std::vector<string16> year_month;
+  base::SplitString(value, L'-', &year_month);
+  DCHECK_EQ((int)year_month.size(), 2);
+  int num = 0;
+  bool converted = false;
+  converted = base::StringToInt(year_month[0], &num);
+  DCHECK(converted);
+  SetExpirationYear(num);
+  converted = base::StringToInt(year_month[1], &num);
+  DCHECK(converted);
+  SetExpirationMonth(num);
 }
 
 string16 CreditCard::ObfuscatedNumber() const {
