@@ -333,6 +333,10 @@ class Network {
             state == STATE_CARRIER);
   }
 
+  // Sends the well-known TPM PIN to flimflam via D-Bus, because flimflam may
+  // need it to access client certificates in the TPM for 802.1X, VPN, etc.
+  void SendTpmPin(const std::string& tpm_pin);
+
  protected:
   Network(const std::string& service_path, ConnectionType type);
 
@@ -680,7 +684,6 @@ class WifiNetwork : public WirelessNetwork {
   void SetEAPPhase2Auth(EAPPhase2Auth auth);
   void SetEAPServerCaCertNssNickname(const std::string& nss_nickname);
   void SetEAPClientCertPkcs11Id(const std::string& pkcs11_id);
-  void SetEAPPin(const std::string& tpm_pin);
   void SetEAPUseSystemCAs(bool use_system_cas);
   void SetEAPIdentity(const std::string& identity);
   void SetEAPAnonymousIdentity(const std::string& identity);

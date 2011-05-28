@@ -1272,6 +1272,12 @@ std::string Network::GetErrorString() const {
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
 
+void Network::SendTpmPin(const std::string& tpm_pin) {
+  // TODO(jamescook): Create a more specific D-Bus property for the TPM PIN.
+  // For now, this is the only one flimflam understands.
+  SetOrClearStringProperty(kEapPinProperty, tpm_pin, NULL);
+}
+
 void Network::InitIPAddress() {
   ip_address_.clear();
   // If connected, get ip config.
@@ -2194,10 +2200,6 @@ void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
                            &eap_client_cert_pkcs11_id_);
 }
 
-void WifiNetwork::SetEAPPin(const std::string& tpm_pin) {
-  SetOrClearStringProperty(kEapPinProperty, tpm_pin, NULL);
-}
-
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
   SetBooleanProperty(kEapUseSystemCAsProperty, use_system_cas,
                      &eap_use_system_cas_);
@@ -2876,16 +2878,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // For enterprise 802.1X networks, always provide TPM PIN when available.
     // flimflam uses the PIN if it needs to access certificates in the TPM and
     // ignores it otherwise.
-    if (wifi->encryption() == SECURITY_8021X) {
-      if (crypto::IsTPMTokenReady()) {
-        std::string token_name;
-        std::string user_pin;
-        crypto::GetTPMTokenInfo(&token_name, &user_pin);
-        wifi->SetEAPPin(user_pin);
-      } else {
-        LOG(WARNING) << "TPM token not ready";
-      }
-    }
+    if (wifi->encryption() == SECURITY_8021X)
+      wifi->SendTpmPin(GetTpmPin());
     CallConnectToNetwork(wifi);
   }
 
@@ -3014,6 +3008,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void ConnectToVirtualNetwork(VirtualNetwork* vpn) {
+    // flimflam needs the TPM PIN for some VPN networks to access client
+    // certificates, and ignores the PIN if it doesn't need them.
+    vpn->SendTpmPin(GetTpmPin());
     CallConnectToNetwork(vpn);
   }
 
@@ -3097,6 +3094,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     vpn->SetUserPassphrase(data.passphrase);
 
     CallConnectToNetwork(vpn);
+  }
+
+  std::string GetTpmPin() {
+    // Avoid making multiple synchronous D-Bus calls to cryptohome by caching
+    // the TPM PIN, which does not change during a session.
+    if (tpm_pin_.empty()) {
+      if (crypto::IsTPMTokenReady()) {
+        std::string unused;
+        crypto::GetTPMTokenInfo(&unused, &tpm_pin_);
+      } else {
+        LOG(WARNING) << "TPM token not ready";
+      }
+    }
+    return tpm_pin_;
   }
 
   virtual void DisconnectFromNetwork(const Network* network) {
@@ -4608,6 +4619,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // True if access network library is locked.
   bool is_locked_;
+
+  // TPM module user PIN, needed by flimflam to read certificates from TPM.
+  std::string tpm_pin_;
 
   // Type of pending SIM operation, SIM_OPERATION_NONE otherwise.
   SimOperationType sim_operation_;
