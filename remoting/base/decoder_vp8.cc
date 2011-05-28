@@ -47,9 +47,16 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
   // Initialize the codec as needed.
   if (!codec_) {
     codec_ = new vpx_codec_ctx_t();
+
+    // TODO(hclam): Scale the number of threads with number of cores of the
+    // machine.
+    vpx_codec_dec_cfg config;
+    config.w = 0;
+    config.h = 0;
+    config.threads = 2;
     vpx_codec_err_t ret =
         vpx_codec_dec_init(
-            codec_, vpx_codec_vp8_dx(), NULL, 0);
+            codec_, vpx_codec_vp8_dx(), &config, 0);
     if (ret != VPX_CODEC_OK) {
       LOG(INFO) << "Cannot initialize codec.";
       delete codec_;
