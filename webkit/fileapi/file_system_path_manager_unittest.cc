@@ -107,21 +107,24 @@ const struct IsRestrictedNameTest {
   FilePath::StringType name;
   bool expected_dangerous;
 } kIsRestrictedNameTestCases[] = {
-  // Name that has restricted names in it.
-  { FILE_PATH_LITERAL("con"), true, },
-  { FILE_PATH_LITERAL("Con.txt"), true, },
-  { FILE_PATH_LITERAL("Prn.png"), true, },
-  { FILE_PATH_LITERAL("AUX"), true, },
-  { FILE_PATH_LITERAL("nUl."), true, },
-  { FILE_PATH_LITERAL("coM1"), true, },
-  { FILE_PATH_LITERAL("COM3.com"), true, },
-  { FILE_PATH_LITERAL("cOM7"), true, },
-  { FILE_PATH_LITERAL("com9"), true, },
-  { FILE_PATH_LITERAL("lpT1"), true, },
-  { FILE_PATH_LITERAL("LPT4.com"), true, },
-  { FILE_PATH_LITERAL("lPT8"), true, },
-  { FILE_PATH_LITERAL("lPT9"), true, },
-  // Similar but safe cases.
+
+  // Names that contain strings that used to be restricted, but are now allowed.
+  { FILE_PATH_LITERAL("con"), false, },
+  { FILE_PATH_LITERAL("Con.txt"), false, },
+  { FILE_PATH_LITERAL("Prn.png"), false, },
+  { FILE_PATH_LITERAL("AUX"), false, },
+  { FILE_PATH_LITERAL("nUl."), false, },
+  { FILE_PATH_LITERAL("coM1"), false, },
+  { FILE_PATH_LITERAL("COM3.com"), false, },
+  { FILE_PATH_LITERAL("cOM7"), false, },
+  { FILE_PATH_LITERAL("com9"), false, },
+  { FILE_PATH_LITERAL("lpT1"), false, },
+  { FILE_PATH_LITERAL("LPT4.com"), false, },
+  { FILE_PATH_LITERAL("lPT8"), false, },
+  { FILE_PATH_LITERAL("lPT9"), false, },
+  { FILE_PATH_LITERAL("com1."), false, },
+
+  // Similar cases that have always been allowed.
   { FILE_PATH_LITERAL("con3"), false, },
   { FILE_PATH_LITERAL("PrnImage.png"), false, },
   { FILE_PATH_LITERAL("AUXX"), false, },
@@ -131,14 +134,15 @@ const struct IsRestrictedNameTest {
   { FILE_PATH_LITERAL("lpT0"), false, },
   { FILE_PATH_LITERAL("LPT.com"), false, },
 
-  // Ends with period or whitespace.
-  { FILE_PATH_LITERAL("b "), true, },
-  { FILE_PATH_LITERAL("b\t"), true, },
-  { FILE_PATH_LITERAL("b\n"), true, },
-  { FILE_PATH_LITERAL("b\r\n"), true, },
-  { FILE_PATH_LITERAL("b."), true, },
-  { FILE_PATH_LITERAL("b.."), true, },
-  // Similar but safe cases.
+  // Ends with period or whitespace--used to be banned, now OK.
+  { FILE_PATH_LITERAL("b "), false, },
+  { FILE_PATH_LITERAL("b\t"), false, },
+  { FILE_PATH_LITERAL("b\n"), false, },
+  { FILE_PATH_LITERAL("b\r\n"), false, },
+  { FILE_PATH_LITERAL("b."), false, },
+  { FILE_PATH_LITERAL("b.."), false, },
+
+  // Similar cases that have always been allowed.
   { FILE_PATH_LITERAL("b c"), false, },
   { FILE_PATH_LITERAL("b\tc"), false, },
   { FILE_PATH_LITERAL("b\nc"), false, },
@@ -148,27 +152,47 @@ const struct IsRestrictedNameTest {
   { FILE_PATH_LITERAL("b..c"), false, },
 
   // Name that has restricted chars in it.
+  { FILE_PATH_LITERAL("\\"), true, },
+  { FILE_PATH_LITERAL("/"), true, },
   { FILE_PATH_LITERAL("a\\b"), true, },
   { FILE_PATH_LITERAL("a/b"), true, },
-  { FILE_PATH_LITERAL("a<b"), true, },
-  { FILE_PATH_LITERAL("a>b"), true, },
-  { FILE_PATH_LITERAL("a:b"), true, },
-  { FILE_PATH_LITERAL("a?b"), true, },
-  { FILE_PATH_LITERAL("a|b"), true, },
   { FILE_PATH_LITERAL("ab\\"), true, },
-  { FILE_PATH_LITERAL("ab/.txt"), true, },
-  { FILE_PATH_LITERAL("ab<.txt"), true, },
-  { FILE_PATH_LITERAL("ab>.txt"), true, },
-  { FILE_PATH_LITERAL("ab:.txt"), true, },
-  { FILE_PATH_LITERAL("ab?.txt"), true, },
-  { FILE_PATH_LITERAL("ab|.txt"), true, },
+  { FILE_PATH_LITERAL("ab/"), true, },
   { FILE_PATH_LITERAL("\\ab"), true, },
   { FILE_PATH_LITERAL("/ab"), true, },
-  { FILE_PATH_LITERAL("<ab"), true, },
-  { FILE_PATH_LITERAL(">ab"), true, },
-  { FILE_PATH_LITERAL(":ab"), true, },
-  { FILE_PATH_LITERAL("?ab"), true, },
-  { FILE_PATH_LITERAL("|ab"), true, },
+  { FILE_PATH_LITERAL("ab/.txt"), true, },
+  { FILE_PATH_LITERAL("ab\\.txt"), true, },
+
+  // Names that contain chars that were formerly restricted, now OK.
+  { FILE_PATH_LITERAL("a<b"), false, },
+  { FILE_PATH_LITERAL("a>b"), false, },
+  { FILE_PATH_LITERAL("a:b"), false, },
+  { FILE_PATH_LITERAL("a?b"), false, },
+  { FILE_PATH_LITERAL("a|b"), false, },
+  { FILE_PATH_LITERAL("ab<.txt"), false, },
+  { FILE_PATH_LITERAL("ab>.txt"), false, },
+  { FILE_PATH_LITERAL("ab:.txt"), false, },
+  { FILE_PATH_LITERAL("ab?.txt"), false, },
+  { FILE_PATH_LITERAL("ab|.txt"), false, },
+  { FILE_PATH_LITERAL("<ab"), false, },
+  { FILE_PATH_LITERAL(">ab"), false, },
+  { FILE_PATH_LITERAL(":ab"), false, },
+  { FILE_PATH_LITERAL("?ab"), false, },
+  { FILE_PATH_LITERAL("|ab"), false, },
+
+  // Names that are restricted still.
+  { FILE_PATH_LITERAL(".."), true, },
+  { FILE_PATH_LITERAL("."), true, },
+
+  // Similar but safe cases.
+  { FILE_PATH_LITERAL(" ."), false, },
+  { FILE_PATH_LITERAL(". "), false, },
+  { FILE_PATH_LITERAL(" . "), false, },
+  { FILE_PATH_LITERAL(" .."), false, },
+  { FILE_PATH_LITERAL(".. "), false, },
+  { FILE_PATH_LITERAL(" .. "), false, },
+  { FILE_PATH_LITERAL("b."), false, },
+  { FILE_PATH_LITERAL(".b"), false, },
 };
 
 FilePath UTF8ToFilePath(const std::string& str) {

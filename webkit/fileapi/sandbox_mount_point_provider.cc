@@ -38,14 +38,12 @@ static const unsigned kOldFileSystemUniqueDirectoryNameLength =
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
 static const char* const kRestrictedNames[] = {
-  "con", "prn", "aux", "nul",
-  "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9",
-  "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+  ".", "..",
 };
 
 // Restricted chars.
 static const FilePath::CharType kRestrictedChars[] = {
-  '/', '\\', '<', '>', ':', '?', '*', '"', '|',
+  '/', '\\',
 };
 
 inline std::string FilePathStringToASCII(
@@ -382,19 +380,12 @@ bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
   if (filename.value().empty())
     return false;
 
-  if (IsWhitespace(filename.value()[filename.value().size() - 1]) ||
-      filename.value()[filename.value().size() - 1] == '.')
-    return true;
-
   std::string filename_lower = StringToLowerASCII(
       FilePathStringToASCII(filename.value()));
 
   for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
     // Exact match.
     if (filename_lower == kRestrictedNames[i])
-      return true;
-    // Starts with "RESTRICTED_NAME.".
-    if (filename_lower.find(std::string(kRestrictedNames[i]) + ".") == 0)
       return true;
   }
 
