@@ -17,7 +17,7 @@
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 namespace fileapi {
 
@@ -29,16 +29,15 @@ class QuotaFileUtilTest : public testing::Test {
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    FilePath base_dir = data_dir_.path().AppendASCII("filesystem");
-
-    // For path translation we rely on LocalFileSystemFileUtil::GetLocalPath().
-    local_test_helper_.SetUp(base_dir, LocalFileSystemFileUtil::GetInstance());
-    quota_test_helper_.SetUp(base_dir, QuotaFileUtil::GetInstance());
+    quota_test_helper_.SetUp(data_dir_.path(), QuotaFileUtil::GetInstance());
+    obfuscated_test_helper_.SetUp(
+        quota_test_helper_.file_system_context(), NULL);
+    base_dir_ = obfuscated_test_helper_.GetOriginRootPath();
   }
 
   void TearDown() {
-    local_test_helper_.TearDown();
     quota_test_helper_.TearDown();
+    obfuscated_test_helper_.TearDown();
   }
 
  protected:
@@ -47,7 +46,7 @@ class QuotaFileUtilTest : public testing::Test {
   }
 
   FilePath Path(const std::string& file_name) {
-    return local_test_helper_.GetLocalPathFromASCII(file_name);
+    return base_dir_.AppendASCII(file_name);
   }
 
   base::PlatformFileError CreateFile(const char* file_name,
@@ -73,7 +72,8 @@ class QuotaFileUtilTest : public testing::Test {
 
  private:
   ScopedTempDir data_dir_;
-  FileSystemTestOriginHelper local_test_helper_;
+  FilePath base_dir_;
+  FileSystemTestOriginHelper obfuscated_test_helper_;
   FileSystemTestOriginHelper quota_test_helper_;
   base::ScopedCallbackFactory<QuotaFileUtilTest> callback_factory_;
 

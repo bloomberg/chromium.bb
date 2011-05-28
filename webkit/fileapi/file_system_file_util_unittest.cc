@@ -73,46 +73,37 @@ class FileSystemFileUtilTest : public testing::Test {
       const GURL& src_origin, fileapi::FileSystemType src_type,
       const GURL& dest_origin, fileapi::FileSystemType dest_type,
       bool copy) {
-    ScopedTempDir src_dir;
-    ASSERT_TRUE(src_dir.CreateUniqueTempDir());
-    scoped_refptr<ObfuscatedFileSystemFileUtil> src_util(
-        new ObfuscatedFileSystemFileUtil(src_dir.path()));
+    ScopedTempDir base_dir;
+    ASSERT_TRUE(base_dir.CreateUniqueTempDir());
+    scoped_refptr<ObfuscatedFileSystemFileUtil> file_util(
+        new ObfuscatedFileSystemFileUtil(base_dir.path()));
     FileSystemTestOriginHelper src_helper(src_origin, src_type);
-    src_helper.SetUp(src_dir.path(),
-                            false,  // incognito
-                            false,  // unlimited quota
-                            NULL,  // quota::QuotaManagerProxy
-                            src_util.get());
-    ScopedTempDir dest_dir;
-    ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
-    scoped_refptr<ObfuscatedFileSystemFileUtil> dest_util(
-        new ObfuscatedFileSystemFileUtil(dest_dir.path()));
+    src_helper.SetUp(base_dir.path(),
+                     false,  // incognito
+                     false,  // unlimited quota
+                     NULL,  // quota::QuotaManagerProxy
+                     file_util.get());
     FileSystemTestOriginHelper dest_helper(dest_origin, dest_type);
-    dest_helper.SetUp(dest_dir.path(),
-                           false,  // incognito
-                           false,  // unlimited quota
-                           NULL,  // quota::QuotaManagerProxy
-                           dest_util.get());
+    dest_helper.SetUp(src_helper.file_system_context(), NULL);
 
     // Set up all the source data.
     scoped_ptr<FileSystemOperationContext> context;
     FilePath test_root(FILE_PATH_LITERAL("root directory"));
     for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
-      SCOPED_TRACE(testing::Message() << "Creating kCopyMoveTestCases " << i);
       const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
       FilePath path = test_root.Append(test_case.path);
       if (test_case.is_directory) {
         context.reset(NewContext(&src_helper));
         ASSERT_EQ(base::PLATFORM_FILE_OK,
-            src_util->CreateDirectory(context.get(), path, true, true));
+            file_util->CreateDirectory(context.get(), path, true, true));
       } else {
         context.reset(NewContext(&src_helper));
         bool created = false;
         ASSERT_EQ(base::PLATFORM_FILE_OK,
-            src_util->EnsureFileExists(context.get(), path, &created));
+            file_util->EnsureFileExists(context.get(), path, &created));
         ASSERT_TRUE(created);
         context.reset(NewContext(&src_helper));
-        ASSERT_EQ(base::PLATFORM_FILE_OK, src_util->Truncate(
+        ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->Truncate(
             context.get(), path, test_case.data_file_size));
       }
     }
@@ -121,8 +112,8 @@ class FileSystemFileUtilTest : public testing::Test {
     FileSystemContext* file_system_context = dest_helper.file_system_context();
     scoped_ptr<FileSystemOperationContext> copy_context(
         new FileSystemOperationContext(file_system_context, NULL));
-    copy_context->set_src_file_system_file_util(src_util);
-    copy_context->set_dest_file_system_file_util(dest_util);
+    copy_context->set_src_file_system_file_util(file_util);
+    copy_context->set_dest_file_system_file_util(file_util);
     copy_context->set_src_origin_url(src_helper.origin());
     copy_context->set_dest_origin_url(dest_helper.origin());
     copy_context->set_src_type(src_helper.type());
@@ -131,23 +122,21 @@ class FileSystemFileUtilTest : public testing::Test {
 
     if (copy)
       ASSERT_EQ(base::PLATFORM_FILE_OK,
-          src_util->Copy(copy_context.get(), test_root, test_root));
+          file_util->Copy(copy_context.get(), test_root, test_root));
     else
       ASSERT_EQ(base::PLATFORM_FILE_OK,
-          src_util->Move(copy_context.get(), test_root, test_root));
+          file_util->Move(copy_context.get(), test_root, test_root));
 
     // Validate that the destination paths are correct.
     for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
-      SCOPED_TRACE(testing::Message() << "Validating kCopyMoveTestCases " << i);
       const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
       FilePath path = test_root.Append(test_case.path);
-      SCOPED_TRACE(testing::Message() << "Path is " << test_case.path);
 
       base::PlatformFileInfo dest_file_info;
       FilePath data_path;
       context.reset(NewContext(&dest_helper));
       EXPECT_EQ(base::PLATFORM_FILE_OK,
-          dest_util->GetFileInfo(
+          file_util->GetFileInfo(
               context.get(), path, &dest_file_info, &data_path));
       if (test_case.is_directory) {
         EXPECT_TRUE(dest_file_info.is_directory);
@@ -164,12 +153,8 @@ class FileSystemFileUtilTest : public testing::Test {
     // Validate that the source paths are still there [for a copy] or gone [for
     // a move].
     for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
-      SCOPED_TRACE(testing::Message() << "Validating kCopyMoveTestCases " <<
-          i);
       const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
       FilePath path = test_root.Append(test_case.path);
-      SCOPED_TRACE(testing::Message() << "Path is " << test_case.path);
-
       base::PlatformFileInfo src_file_info;
       FilePath data_path;
       context.reset(NewContext(&src_helper));
@@ -179,7 +164,7 @@ class FileSystemFileUtilTest : public testing::Test {
       else
         expected_result = base::PLATFORM_FILE_ERROR_NOT_FOUND;
       EXPECT_EQ(expected_result,
-          src_util->GetFileInfo(
+          file_util->GetFileInfo(
               context.get(), path, &src_file_info, &data_path));
     }
   }

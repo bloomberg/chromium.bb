@@ -180,25 +180,41 @@ bool WorkerProcessHost::Init(int render_process_id) {
       id(), render_process_id);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableFileSystem)) {
-      // Grant most file permissions to this worker.
-      // PLATFORM_FILE_TEMPORARY, PLATFORM_FILE_HIDDEN and
-      // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
-      // requests them.
-      ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-          id(),
-          resource_context_->file_system_context()->
-              path_manager()->sandbox_provider()->base_path(),
-          base::PLATFORM_FILE_OPEN |
-          base::PLATFORM_FILE_CREATE |
-          base::PLATFORM_FILE_OPEN_ALWAYS |
-          base::PLATFORM_FILE_CREATE_ALWAYS |
-          base::PLATFORM_FILE_OPEN_TRUNCATED |
-          base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_WRITE |
-          base::PLATFORM_FILE_EXCLUSIVE_READ |
-          base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-          base::PLATFORM_FILE_ASYNC |
-          base::PLATFORM_FILE_WRITE_ATTRIBUTES);
+    // Grant most file permissions to this worker.
+    // PLATFORM_FILE_TEMPORARY, PLATFORM_FILE_HIDDEN and
+    // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
+    // requests them.
+    // This is for the filesystem sandbox.
+    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+        id(), resource_context_->file_system_context()->
+          path_manager()->sandbox_provider()->new_base_path(),
+        base::PLATFORM_FILE_OPEN |
+        base::PLATFORM_FILE_CREATE |
+        base::PLATFORM_FILE_OPEN_ALWAYS |
+        base::PLATFORM_FILE_CREATE_ALWAYS |
+        base::PLATFORM_FILE_OPEN_TRUNCATED |
+        base::PLATFORM_FILE_READ |
+        base::PLATFORM_FILE_WRITE |
+        base::PLATFORM_FILE_EXCLUSIVE_READ |
+        base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+        base::PLATFORM_FILE_ASYNC |
+        base::PLATFORM_FILE_WRITE_ATTRIBUTES |
+        base::PLATFORM_FILE_ENUMERATE);
+    // This is so that we can read and move stuff out of the old filesystem
+    // sandbox.
+    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+        id(), resource_context_->file_system_context()->
+          path_manager()->sandbox_provider()->old_base_path(),
+        base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
+            base::PLATFORM_FILE_WRITE_ATTRIBUTES |
+            base::PLATFORM_FILE_ENUMERATE);
+    // This is so that we can rename the old sandbox out of the way so that
+    // we know we've taken care of it.
+    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+        id(), resource_context_->file_system_context()->
+          path_manager()->sandbox_provider()->renamed_old_base_path(),
+        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
+            base::PLATFORM_FILE_WRITE);
   }
 
   // Call the embedder first so that their IPC filters have priority.

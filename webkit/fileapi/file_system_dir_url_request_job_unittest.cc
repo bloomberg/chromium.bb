@@ -15,7 +15,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
@@ -28,7 +27,10 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 namespace {
@@ -122,8 +124,20 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   void CreateDirectory(const base::StringPiece dir_name) {
-    FilePath path = root_path_.AppendASCII(dir_name);
-    ASSERT_TRUE(file_util::CreateDirectory(path));
+    FilePath path = FilePath().AppendASCII(dir_name);
+    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
+        sandbox_provider()->GetFileSystemFileUtil();
+    FileSystemOperationContext context(file_system_context_, file_util);
+    context.set_src_origin_url(GURL("http://remote"));
+    context.set_src_virtual_path(path);
+    context.set_src_type(fileapi::kFileSystemTypeTemporary);
+    context.set_allowed_bytes_growth(1024);
+
+    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateDirectory(
+        &context,
+        path,
+        false /* exclusive */,
+        false /* recursive */));
   }
 
   GURL CreateFileSystemURL(const std::string path) {

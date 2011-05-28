@@ -77,7 +77,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateOrOpen(
   if (!db->GetFileWithPath(virtual_path, &file_id)) {
     // The file doesn't exist.
     if (!(file_flags & (base::PLATFORM_FILE_CREATE |
-        base::PLATFORM_FILE_CREATE_ALWAYS)))
+        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_ALWAYS)))
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     FileId parent_id;
     if (!db->GetFileWithPath(virtual_path.DirName(), &parent_id))
@@ -878,7 +878,15 @@ bool ObfuscatedFileSystemFileUtil::MigrateFromOldSandbox(
   // TODO(ericu): Should we adjust the mtime of the root directory to match as
   // well?
   FilePath legacy_dest_dir = dest_root.Append(kLegacyDataDirectory);
-  return file_util::Move(src_root, legacy_dest_dir);
+
+  if (!file_util::Move(src_root, legacy_dest_dir)) {
+    LOG(WARNING) <<
+        "The final step of a migration failed; I'll try to clean up.";
+    db = NULL;
+    DestroyDirectoryDatabase(origin_url, type);
+    return false;
+  }
+  return true;
 }
 
 // static

@@ -76,12 +76,17 @@ class SandboxMountPointProvider
       const FilePath& unused,
       bool create);
 
+  // The legacy [pre-obfuscation] FileSystem directory name, kept around for
+  // migration and migration testing.
+  static const FilePath::CharType kOldFileSystemDirectory[];
   // The FileSystem directory name.
-  static const FilePath::CharType kFileSystemDirectory[];
+  static const FilePath::CharType kNewFileSystemDirectory[];
+  // Where we move the old filesystem directory if migration fails.
+  static const FilePath::CharType kRenamedOldFileSystemDirectory[];
 
-  const FilePath& base_path() const {
-    return base_path_;
-  }
+  FilePath old_base_path() const;
+  FilePath new_base_path() const;
+  FilePath renamed_old_base_path() const;
 
   // Checks if a given |name| contains any restricted names/chars in it.
   virtual bool IsRestrictedFileName(const FilePath& filename) const;
@@ -89,7 +94,7 @@ class SandboxMountPointProvider
   virtual std::vector<FilePath> GetRootDirectories() const;
 
   // Returns an origin enumerator of this provider.
-  // This method is supposed to be called on the file thread.
+  // This method can only be called on the file thread.
   OriginEnumerator* CreateOriginEnumerator() const;
 
   // Gets a base directory path of the sandboxed filesystem that is
@@ -107,7 +112,7 @@ class SandboxMountPointProvider
   // This method can only be called on the file thread.
   FilePath GetBaseDirectoryForOriginAndType(
       const GURL& origin_url,
-      fileapi::FileSystemType type,
+      FileSystemType type,
       bool create) const;
 
   FileSystemFileUtil* GetFileSystemFileUtil();
@@ -117,52 +122,51 @@ class SandboxMountPointProvider
   bool DeleteOriginDataOnFileThread(
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      fileapi::FileSystemType type);
+      FileSystemType type);
 
   // Quota util methods.
   virtual void GetOriginsForTypeOnFileThread(
-      fileapi::FileSystemType type,
+      FileSystemType type,
       std::set<GURL>* origins) OVERRIDE;
   virtual void GetOriginsForHostOnFileThread(
-      fileapi::FileSystemType type,
+      FileSystemType type,
       const std::string& host,
       std::set<GURL>* origins) OVERRIDE;
   virtual int64 GetOriginUsageOnFileThread(
       const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
+      FileSystemType type) OVERRIDE;
   virtual void NotifyOriginWasAccessedOnIOThread(
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
+      FileSystemType type) OVERRIDE;
   virtual void UpdateOriginUsageOnFileThread(
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      fileapi::FileSystemType type,
+      FileSystemType type,
       int64 delta) OVERRIDE;
   virtual void StartUpdateOriginOnFileThread(
       const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
+      FileSystemType type) OVERRIDE;
   virtual void EndUpdateOriginOnFileThread(
       const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
+      FileSystemType type) OVERRIDE;
 
   FileSystemQuotaUtil* quota_util() { return this; }
 
  private:
-  bool GetOriginBasePathAndName(
-      const GURL& origin_url,
-      FilePath* base_path,
-      FileSystemType type,
-      std::string* name);
-
   // Returns a path to the usage cache file.
   FilePath GetUsageCachePathForOriginAndType(
       const GURL& origin_url,
-      fileapi::FileSystemType type) const;
+      FileSystemType type) const;
+
+  FilePath OldCreateFileSystemRootPath(
+      const GURL& origin_url, FileSystemType type);
 
   class GetFileSystemRootPathTask;
 
   friend class FileSystemTestOriginHelper;
+  friend class SandboxMountPointProviderMigrationTest;
+  friend class SandboxMountPointProviderOriginEnumeratorTest;
 
   // The path_manager_ isn't owned by this instance; this instance is owned by
   // the path_manager_, and they have the same lifetime.
@@ -170,7 +174,7 @@ class SandboxMountPointProvider
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
 
-  const FilePath base_path_;
+  const FilePath profile_path_;
 
   scoped_refptr<ObfuscatedFileSystemFileUtil> sandbox_file_util_;
 

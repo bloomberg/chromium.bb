@@ -32,7 +32,10 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 namespace {
@@ -152,10 +155,47 @@ class FileSystemURLRequestJobTest : public testing::Test {
     TestRequestHelper(url, NULL, false);
   }
 
-  void WriteFile(const base::StringPiece file_name,
+  void CreateDirectory(const base::StringPiece& dir_name) {
+    FilePath path = FilePath().AppendASCII(dir_name);
+    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
+        sandbox_provider()->GetFileSystemFileUtil();
+    FileSystemOperationContext context(file_system_context_, file_util);
+    context.set_src_origin_url(GURL("http://remote"));
+    context.set_src_virtual_path(path);
+    context.set_src_type(fileapi::kFileSystemTypeTemporary);
+    context.set_allowed_bytes_growth(1024);
+
+    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateDirectory(
+        &context,
+        path,
+        false /* exclusive */,
+        false /* recursive */));
+  }
+
+  void WriteFile(const base::StringPiece& file_name,
                  const char* buf, int buf_size) {
-    FilePath path = origin_root_path_.AppendASCII(file_name);
-    ASSERT_EQ(buf_size, file_util::WriteFile(path, buf, buf_size));
+    FilePath path = FilePath().AppendASCII(file_name);
+    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
+        sandbox_provider()->GetFileSystemFileUtil();
+    FileSystemOperationContext context(file_system_context_, file_util);
+    context.set_src_origin_url(GURL("http://remote"));
+    context.set_src_virtual_path(path);
+    context.set_src_type(fileapi::kFileSystemTypeTemporary);
+    context.set_allowed_bytes_growth(1024);
+
+    base::PlatformFile handle = base::kInvalidPlatformFileValue;
+    bool created = false;
+    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateOrOpen(
+        &context,
+        path,
+        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+        &handle,
+        &created));
+    EXPECT_TRUE(created);
+    ASSERT_NE(base::kInvalidPlatformFileValue, handle);
+    ASSERT_EQ(buf_size,
+        base::WritePlatformFile(handle, 0 /* offset */, buf, buf_size));
+    base::ClosePlatformFile(handle);
   }
 
   GURL CreateFileSystemURL(const std::string& path) {
@@ -271,7 +311,7 @@ TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
 }
 
 TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
-  ASSERT_TRUE(file_util::CreateDirectory(origin_root_path_.AppendASCII("dir")));
+  CreateDirectory("dir");
   TestRequest(CreateFileSystemURL("dir"));
 
   EXPECT_EQ(1, delegate_->received_redirect_count());

@@ -103,9 +103,9 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   if (file_path)
 #if defined(OS_WIN)
     *file_path = FilePath(base::SysUTF8ToWide(path)).
-        NormalizeWindowsPathSeparators();
+        NormalizeWindowsPathSeparators().StripTrailingSeparators();
 #elif defined(OS_POSIX)
-    *file_path = FilePath(path);
+    *file_path = FilePath(path).StripTrailingSeparators();
 #endif
 
   return true;

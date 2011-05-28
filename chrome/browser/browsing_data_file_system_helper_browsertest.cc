@@ -119,14 +119,20 @@ class StopTestOnCallback {
       const std::vector<BrowsingDataFileSystemHelper::FileSystemInfo>&
           file_system_info_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    EXPECT_EQ(1UL, file_system_info_list.size());
-    BrowsingDataFileSystemHelper::FileSystemInfo info =
-        file_system_info_list.at(0);
-    EXPECT_EQ(info.origin, GURL(kTestOrigin3));
-    EXPECT_TRUE(info.has_persistent);
-    EXPECT_TRUE(info.has_temporary);
-    EXPECT_EQ(kEmptyFileSystemSize, info.usage_persistent);
-    EXPECT_EQ(kEmptyFileSystemSize, info.usage_temporary);
+    EXPECT_EQ(3UL, file_system_info_list.size());
+    for (size_t i = 0; i < file_system_info_list.size(); ++i) {
+      BrowsingDataFileSystemHelper::FileSystemInfo info =
+          file_system_info_list.at(0);
+      if (info.origin == GURL(kTestOrigin3)) {
+        EXPECT_TRUE(info.has_persistent);
+        EXPECT_TRUE(info.has_temporary);
+        EXPECT_EQ(kEmptyFileSystemSize, info.usage_persistent);
+        EXPECT_EQ(kEmptyFileSystemSize, info.usage_temporary);
+      } else {
+        EXPECT_FALSE(info.has_persistent);
+        EXPECT_FALSE(info.has_temporary);
+      }
+    }
     MessageLoop::current()->Quit();
   }
 

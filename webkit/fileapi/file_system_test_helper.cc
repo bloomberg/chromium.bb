@@ -64,12 +64,37 @@ void FileSystemTestOriginHelper::SetUp(
 }
 
 void FileSystemTestOriginHelper::SetUp(
+    FileSystemContext* file_system_context,
+    FileSystemFileUtil* file_util) {
+  DCHECK(file_system_context->path_manager());
+  DCHECK(file_system_context->path_manager()->sandbox_provider());
+
+  file_util_ = file_util;
+  file_system_context_ = file_system_context;
+  if (!file_util_)
+    file_util_ = file_system_context->path_manager()->sandbox_provider()->
+        GetFileSystemFileUtil();
+  DCHECK(file_util_);
+
+  // Prepare the origin's root directory.
+  file_system_context_->path_manager()->
+      ValidateFileSystemRootAndGetPathOnFileThread(
+          origin_, type_, FilePath(), true /* create */);
+
+  // Initialize the usage cache file.
+  FilePath usage_cache_path = file_system_context_->path_manager()
+      ->sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
+  FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
+}
+
+void FileSystemTestOriginHelper::SetUp(
     const FilePath& base_dir,
     bool incognito_mode,
     bool unlimited_quota,
     quota::QuotaManagerProxy* quota_manager_proxy,
     FileSystemFileUtil* file_util) {
   file_util_ = file_util ? file_util : LocalFileSystemFileUtil::GetInstance();
+  DCHECK(file_util_);
   file_system_context_ = new FileSystemContext(
       base::MessageLoopProxy::CreateForCurrentThread(),
       base::MessageLoopProxy::CreateForCurrentThread(),
@@ -92,8 +117,7 @@ void FileSystemTestOriginHelper::SetUp(
   // Initialize the usage cache file.
   FilePath usage_cache_path = file_system_context_->path_manager()
       ->sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
-  FileSystemUsageCache::UpdateUsage(
-      usage_cache_path, FileSystemUsageCache::kUsageFileSize);
+  FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
 
   // We expect the origin directory to be always empty, except for possibly
   // the usage cache file.  We record the initial usage file size here
@@ -138,8 +162,7 @@ FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
 }
 
 int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {
-  return FileSystemUsageCache::GetUsage(GetUsageCachePath()) -
-      FileSystemUsageCache::kUsageFileSize;
+  return FileSystemUsageCache::GetUsage(GetUsageCachePath());
 }
 
 int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
