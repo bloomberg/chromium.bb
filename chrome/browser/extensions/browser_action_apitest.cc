@@ -146,11 +146,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=70829
-// Only mac is okay.
+// Only mac is being actively worked on.
 #if !defined(OS_MACOSX)
 #define MAYBE_BrowserActionPopup DISABLED_BrowserActionPopup
 #else
-#define MAYBE_BrowserActionPopup BrowserActionPopup
+// http://code.google.com/p/chromium/issues/detail?id=84286
+#define MAYBE_BrowserActionPopup DISABLED_BrowserActionPopup
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
