@@ -1610,7 +1610,6 @@
    fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
 }
-
 {
    bug_84293_a
    Heapcheck:Leak
