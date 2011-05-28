@@ -15,13 +15,13 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/sandbox_policy.h"
 #include "chrome/nacl/nacl_launcher_thread.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "content/common/result_codes.h"
+#include "content/common/sandbox_policy.h"
 
 #if defined(OS_WIN)
 #include "chrome/nacl/broker_thread.h"

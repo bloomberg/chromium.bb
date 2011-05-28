@@ -204,6 +204,8 @@
         'common/sandbox_mac.h',
         'common/sandbox_mac.mm',
         'common/sandbox_methods_linux.h',
+        'common/sandbox_policy.cc',
+        'common/sandbox_policy.h',
         'common/section_util_win.cc',
         'common/section_util_win.h',
         'common/security_style.h',
@@ -258,6 +260,11 @@
           'dependencies': [
             '../third_party/angle/src/build_angle.gyp:libEGL',
             '../third_party/angle/src/build_angle.gyp:libGLESv2',
+          ],
+        }, {  # OS!="win"
+          'sources!': [
+            'common/sandbox_policy.cc',
+            'common/sandbox_policy.h',
           ],
         }],
         ['OS=="mac"', {

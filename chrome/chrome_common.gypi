@@ -69,8 +69,6 @@
           'common/profiling.h',
           'common/ref_counted_util.h',
           'common/safe_browsing/safebrowsing_messages.h',
-          'common/sandbox_policy.cc',
-          'common/sandbox_policy.h',
           'common/switch_utils.cc',
           'common/switch_utils.h',
           'common/time_format.cc',
@@ -328,11 +326,6 @@
         ['OS=="mac"', {
           'include_dirs': [
             '../third_party/GTM',
-          ],
-        }],
-        ['OS!="win"', {
-          'sources!': [
-            'common/sandbox_policy.cc',
           ],
         }],
         ['remoting==1', {

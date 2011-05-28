@@ -10,7 +10,7 @@
 #include "content/common/main_function_params.h"
 
 #if defined(OS_WIN)
-#include "chrome/common/sandbox_policy.h"
+#include "content/common/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "content/common/chrome_application_mac.h"
 #endif  // defined(OS_WIN)

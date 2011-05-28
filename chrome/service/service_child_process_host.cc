@@ -12,7 +12,7 @@
 
 #if defined(OS_WIN)
 #include "base/file_path.h"
-#include "chrome/common/sandbox_policy.h"
+#include "content/common/sandbox_policy.h"
 #endif  // defined(OS_WIN)
 
 ServiceChildProcessHost::ServiceChildProcessHost(ProcessType type)

@@ -20,7 +20,7 @@
 
 #if defined(OS_WIN)
 #include "base/file_path.h"
-#include "chrome/common/sandbox_policy.h"
+#include "content/common/sandbox_policy.h"
 #elif defined(OS_LINUX)
 #include "base/memory/singleton.h"
 #include "content/browser/zygote_host_linux.h"

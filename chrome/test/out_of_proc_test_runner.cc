@@ -30,7 +30,7 @@
 #if defined(OS_WIN)
 #include "base/base_switches.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/sandbox_policy.h"
+#include "content/common/sandbox_policy.h"
 #include "sandbox/src/dep.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/sandbox_types.h"

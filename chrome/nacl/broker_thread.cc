@@ -11,8 +11,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
-#include "chrome/common/sandbox_policy.h"
 #include "content/common/child_process.h"
+#include "content/common/sandbox_policy.h"
 #include "ipc/ipc_switches.h"
 
 NaClBrokerThread::NaClBrokerThread()

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/sandbox_policy.h"
+#include "content/common/sandbox_policy.h"
 
 #include <string>
 
@@ -16,7 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
-#include "content/browser/content_browser_client.h"
+#include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
@@ -394,7 +394,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   if (type == ChildProcessInfo::PLUGIN_PROCESS &&
       !browser_command_line.HasSwitch(switches::kNoSandbox) &&
-      content::GetContentClient()->browser()->SandboxPlugin(cmd_line, policy)) {
+      content::GetContentClient()->SandboxPlugin(cmd_line, policy)) {
     in_sandbox = true;
     AddDllEvictionPolicy(policy);
   }
