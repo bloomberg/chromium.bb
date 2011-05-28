@@ -9,9 +9,9 @@ vars = {
   "swig_revision": "69281",
   # These hashes need to be updated when nacl_revision is changed.
   # After changing nacl_revision, run gclient sync to get the new values.
-  "nacl_irt_hash_x86_32": "e12d25e9184690a5c22272d3991ea93b5476097e",
-  "nacl_irt_hash_x86_64": "423ce0d282f7e57b856be8e1ae46a60a05dc6f85",
-  "nacl_revision": "5445",
+  "nacl_irt_hash_x86_32": "6aff4ea5ebdf9d57bd2e01caa662efd58d6bae18",
+  "nacl_irt_hash_x86_64": "88deae19ead39075214964fc1511ce0e1f3a0fe9",
+  "nacl_revision": "5493",
   "nacl_tools_revision": "5308",
   "libjingle_revision": "63",
   "libvpx_revision": "81610",
