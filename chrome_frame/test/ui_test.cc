@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,7 +180,8 @@ TEST_P(FullTabUITest, CtrlF) {
 }
 
 // Test that ctrl+r does cause a refresh.
-TEST_P(FullTabUITest, CtrlR) {
+// http://code.google.com/p/chromium/issues/detail?id=84297
+TEST_P(FullTabUITest, FLAKY_CtrlR) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -219,7 +220,8 @@ TEST_P(FullTabUITest, CtrlW) {
 }
 
 // Test address bar navigation with Alt+d and URL.
-TEST_P(FullTabUITest, AltD) {
+// http://code.google.com/p/chromium/issues/detail?id=84297
+TEST_P(FullTabUITest, FLAKY_AltD) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
