@@ -96,6 +96,8 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual DownloadStatusUpdater* download_status_updater();
   virtual base::WaitableEvent* shutdown_event();
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
+  virtual BackgroundModeManager* background_mode_manager();
+  virtual StatusTray* status_tray();
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service();
   virtual bool plugin_finder_disabled() const;
@@ -154,6 +156,8 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreatePrintPreviewTabController();
   void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingDetectionService();
+  void CreateStatusTray();
+  void CreateBackgroundModeManager();
 
   bool IsSafeBrowsingDetectionServiceEnabled();
 
@@ -241,6 +245,10 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<NotificationService> main_notification_service_;
 
   scoped_ptr<TabCloseableStateWatcher> tab_closeable_state_watcher_;
+
+  scoped_ptr<BackgroundModeManager> background_mode_manager_;
+
+  scoped_ptr<StatusTray> status_tray_;
 
   bool created_safe_browsing_detection_service_;
   scoped_ptr<safe_browsing::ClientSideDetectionService>

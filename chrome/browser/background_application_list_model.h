@@ -32,11 +32,12 @@ class BackgroundApplicationListModel : public NotificationObserver {
    public:
     // Invoked when data that the model associates with the extension, such as
     // the Icon, has changed.
-    virtual void OnApplicationDataChanged(const Extension* extension);
+    virtual void OnApplicationDataChanged(const Extension* extension,
+                                          Profile* profile);
 
     // Invoked when the model detects a previously unknown extension and/or when
     // it no longer detects a previously known extension.
-    virtual void OnApplicationListChanged();
+    virtual void OnApplicationListChanged(Profile* profile);
 
    protected:
     virtual ~Observer();
@@ -110,11 +111,11 @@ class BackgroundApplicationListModel : public NotificationObserver {
 
   // Notifies observers that some of the data associated with this background
   // application, e. g. the Icon, has changed.
-  void OnApplicationDataChanged(const Extension* extension);
+  void SendApplicationDataChangedNotifications(const Extension* extension);
 
   // Notifies observers that at least one background application has been added
   // or removed.
-  void OnApplicationListChanged();
+  void SendApplicationListChangedNotifications();
 
   // Invoked by Observe for EXTENSION_LOADED notifications.
   void OnExtensionLoaded(Extension* extension);

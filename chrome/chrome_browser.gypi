@@ -258,8 +258,6 @@
         'browser/background_mode_manager.cc',
         'browser/background_mode_manager.h',
         'browser/background_mode_manager_chromeos.cc',
-        'browser/background_mode_manager_factory.cc',
-        'browser/background_mode_manager_factory.h',
         'browser/background_mode_manager_linux.cc',
         'browser/background_mode_manager_mac.mm',
         'browser/background_mode_manager_win.cc',

@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "content/common/notification_service.h"
 
+class BackgroundModeManager;
 class IOThread;
 class GoogleURLTracker;
 class NotificationUIManager;
@@ -84,6 +85,10 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual SidebarManager* sidebar_manager();
 
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
+
+  virtual BackgroundModeManager* background_mode_manager();
+
+  virtual StatusTray* status_tray();
 
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service();

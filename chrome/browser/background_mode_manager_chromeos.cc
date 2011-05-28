@@ -12,7 +12,8 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
 }
 
 void BackgroundModeManager::DisplayAppInstalledNotification(
-    const Extension* extension) {
+    const Extension* extension,
+    Profile* profile) {
   // No need to display anything on ChromeOS because all extensions run all
   // the time anyway.
 }

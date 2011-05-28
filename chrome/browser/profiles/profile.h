@@ -86,7 +86,6 @@ class SQLitePersistentCookieStore;
 class SSLConfigServiceManager;
 class SSLHostState;
 class SpellCheckHost;
-class StatusTray;
 class TemplateURLFetcher;
 class TemplateURLModel;
 class TokenService;
@@ -450,11 +449,6 @@ class Profile {
 
   // Returns the WebKitContext assigned to this profile.
   virtual WebKitContext* GetWebKitContext() = 0;
-
-  // Returns the StatusTray, which provides an API for displaying status icons
-  // in the system status tray. Returns NULL if status icons are not supported
-  // on this platform (or this is a unit test).
-  virtual StatusTray* GetStatusTray() = 0;
 
   // Marks the profile as cleanly shutdown.
   //

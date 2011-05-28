@@ -17,7 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/background_contents_service_factory.h"
-#include "chrome/browser/background_mode_manager_factory.h"
+#include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_signin.h"
@@ -62,7 +62,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
-#include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
@@ -368,7 +367,8 @@ void ProfileImpl::DoFinalInit() {
   // ChromeOS because Chrome is always running (no need for special keep-alive
   // or launch-on-startup support).
 #if !defined(OS_CHROMEOS)
-  BackgroundModeManagerFactory::GetForProfile(this);
+  if (g_browser_process->background_mode_manager())
+    g_browser_process->background_mode_manager()->RegisterProfile(this);
 #endif
 
   BackgroundContentsServiceFactory::GetForProfile(this);
@@ -752,12 +752,6 @@ VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
 
 ExtensionService* ProfileImpl::GetExtensionService() {
   return extension_service_.get();
-}
-
-StatusTray* ProfileImpl::GetStatusTray() {
-  if (!status_tray_.get())
-    status_tray_.reset(StatusTray::Create());
-  return status_tray_.get();
 }
 
 UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
