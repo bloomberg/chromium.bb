@@ -1728,3 +1728,11 @@
    ...
    fun:_ZN16CookiesTreeModel*
 }
+{
+   bug_84329
+   Memcheck:Addr4
+   fun:_ZN3WTF17ChromiumThreading16callOnMainThreadEPFvPvES1_
+   fun:_ZN3WTF16callOnMainThreadEPFvPvES0_
+   fun:_ZN6WebKit13WebWorkerBase24dispatchTaskToMainThreadEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
+   fun:_ZN6WebKit13WebWorkerBase21reportPendingActivityEb
+}
