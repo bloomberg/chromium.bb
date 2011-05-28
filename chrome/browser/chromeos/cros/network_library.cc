@@ -2198,6 +2198,9 @@ void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
   VLOG(1) << "SetEAPClientCertPkcs11Id " << pkcs11_id;
   SetOrClearStringProperty(kEapCertIDProperty, pkcs11_id,
                            &eap_client_cert_pkcs11_id_);
+  // flimflam requires both CertID and KeyID for TLS connections, despite
+  // the fact that by convention they are the same ID.
+  SetOrClearStringProperty(kEapKeyIDProperty, pkcs11_id, NULL);
 }
 
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
