@@ -12,8 +12,9 @@
 #include "content/browser/webui/web_ui.h"
 
 class FilePath;
-class PrintSystemTaskProxy;
 class FundamentalValue;
+class PrintSystemTaskProxy;
+class StringValue;
 
 namespace printing {
 class PrintBackend;
@@ -40,6 +41,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   friend class PrintSystemTaskProxy;
 
   TabContents* preview_tab();
+
+  // Get the default printer. |args| is unused.
+  void HandleGetDefaultPrinter(const ListValue* args);
 
   // Get the list of printers. |args| is unused.
   void HandleGetPrinters(const ListValue* args);
@@ -71,6 +75,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Send the printer capabilities to the Web UI.
   // |settings_info| contains printer capabilities information.
   void SendPrinterCapabilities(const DictionaryValue& settings_info);
+
+  // Send the default printer to the Web UI.
+  void SendDefaultPrinter(const StringValue& default_printer);
 
   // Send the list of printers to the Web UI.
   void SendPrinterList(const ListValue& printers,

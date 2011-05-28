@@ -162,6 +162,25 @@ class PrintSystemTaskProxy
         has_logged_printers_count_(has_logged_printers_count) {
   }
 
+  void GetDefaultPrinter() {
+    VLOG(1) << "Get default printer start";
+    StringValue* default_printer =
+        new StringValue(print_backend_->GetDefaultPrinterName());
+    VLOG(1) << "Get default printer finished, found: " << default_printer;
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &PrintSystemTaskProxy::SendDefaultPrinter,
+                          default_printer));
+  }
+
+  void SendDefaultPrinter(StringValue* default_printer) {
+    if (handler_)
+      handler_->SendDefaultPrinter(*default_printer);
+    delete default_printer;
+  }
+
   void EnumeratePrinters() {
     VLOG(1) << "Enumerate printers start";
     ListValue* printers = new ListValue;
@@ -329,6 +348,8 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 }
 
 void PrintPreviewHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback("getDefaultPrinter",
+      NewCallback(this, &PrintPreviewHandler::HandleGetDefaultPrinter));
   web_ui_->RegisterMessageCallback("getPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinters));
   web_ui_->RegisterMessageCallback("getPreview",
@@ -347,6 +368,17 @@ void PrintPreviewHandler::RegisterMessages() {
 
 TabContents* PrintPreviewHandler::preview_tab() {
   return web_ui_->tab_contents();
+}
+
+void PrintPreviewHandler::HandleGetDefaultPrinter(const ListValue*) {
+  scoped_refptr<PrintSystemTaskProxy> task =
+      new PrintSystemTaskProxy(AsWeakPtr(),
+                               print_backend_.get(),
+                               has_logged_printers_count_);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(task.get(),
+                        &PrintSystemTaskProxy::GetDefaultPrinter));
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
@@ -520,6 +552,11 @@ void PrintPreviewHandler::SendPrinterCapabilities(
   VLOG(1) << "Get printer capabilities finished";
   web_ui_->CallJavascriptFunction("updateWithPrinterCapabilities",
                                   settings_info);
+}
+
+void PrintPreviewHandler::SendDefaultPrinter(
+    const StringValue& default_printer) {
+  web_ui_->CallJavascriptFunction("setDefaultPrinter", default_printer);
 }
 
 void PrintPreviewHandler::SendPrinterList(

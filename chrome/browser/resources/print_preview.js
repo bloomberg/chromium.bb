@@ -49,7 +49,7 @@ function onLoad() {
   $('print-button').disabled = true;
   $('controls').onsubmit = function() { return false; };
   $('dancing-dots').classList.remove('invisible');
-  chrome.send('getPrinters');
+  chrome.send('getDefaultPrinter');
 }
 
 /**
@@ -362,6 +362,20 @@ function requestPrintPreview() {
 }
 
 /**
+ * Set the default printer. If there is one, generate a print preview.
+ * @param {string} Name of the default printer. Empty if none.
+ */
+function setDefaultPrinter(printer) {
+  // Add a placeholder value so the printer list looks valid.
+  addDestinationListOption('', '', true, true);
+  if (printer) {
+    $('printer-list')[0].value = printer;
+    updateControlsWithSelectedPrinterCapabilities();
+  }
+  chrome.send('getPrinters');
+}
+
+/**
  * Fill the printer list drop down.
  * Called from PrintPreviewHandler::SendPrinterList().
  * @param {Array} printers Array of printer info objects.
@@ -369,10 +383,23 @@ function requestPrintPreview() {
  */
 function setPrinters(printers, defaultPrinterIndex) {
   var printerList = $('printer-list');
+  // If there exists a dummy printer value, then setDefaultPrinter() already
+  // requested a preview, so no need to do it again.
+  var needPreview = (printerList[0].value == '');
   for (var i = 0; i < printers.length; ++i) {
+    // Check if we are looking at the default printer.
+    if (i == defaultPrinterIndex) {
+      // If the default printer from setDefaultPrinter() does not match the
+      // enumerated value, (re)generate the print preview.
+      if (printers[i].deviceName != printerList[0].value)
+        needPreview = true;
+    }
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
                              i == defaultPrinterIndex, false);
   }
+
+  // Remove the dummy printer added in setDefaultPrinter().
+  printerList.remove(0);
 
   if (printers.length != 0)
     addDestinationListOption('', '', false, true);
@@ -387,7 +414,9 @@ function setPrinters(printers, defaultPrinterIndex) {
                            MANAGE_PRINTERS, false, false);
 
   printerList.disabled = false;
-  updateControlsWithSelectedPrinterCapabilities();
+
+  if (needPreview)
+    updateControlsWithSelectedPrinterCapabilities();
 }
 
 /**
