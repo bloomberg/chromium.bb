@@ -91,7 +91,7 @@
         <include name="IDR_ACTIVE_DOWNLOADS_HTML" file="resources\active_downloads.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HTTP_AUTH_HTML" file="resources\http_auth.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_IMAGEBURNER_HTML" file="resources\imageburner.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_IMAGEBURNER_HTML" file="resources\image_burner.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_KEYBOARD_OVERLAY_CSS" file="resources\keyboard_overlay.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_KEYBOARD_OVERLAY_DATA_JS" file="resources\keyboard_overlay_data.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_KEYBOARD_OVERLAY_HTML" file="resources\keyboard_overlay.html" flattenhtml="true" type="BINDATA" />

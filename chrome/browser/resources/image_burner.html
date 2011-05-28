@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="UTF-8"></meta>
+<title i18n-content="title"></title>
+<style>
+html, body, ul, li {
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  height: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: #0066cc;
+}
+
+button {
+  width: 80px;
+  -webkit-margin-start: 15px;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 15pt;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 13pt;
+}
+
+header {
+  background-color: rgb(242, 247, 250);
+  border-bottom: 1px solid rgb(218, 236, 248);
+  padding: 50px;
+  -webkit-padding-start: 120px;
+}
+
+header p {
+  width: 800px;
+  margin-bottom: 0;
+}
+
+input {
+  margin-top: 7px;
+  margin-bottom: 7px;
+}
+
+li {
+  margin-bottom: 8px;
+  list-style: none;
+}
+
+p {
+  margin-top: 0;
+}
+
+progress {
+  width: 371px;
+  margin-bottom: 0;
+}
+
+ul {
+  webkit-margin-after: 25px;
+  webkit-margin-before: 0;
+}
+
+.aligned-to-start {
+  -webkit-padding-start: 120px;
+}
+
+.float-start {
+  float: left;
+}
+
+html[dir='rtl'] .float-start {
+  float-right;
+}
+
+.float-stop {
+  clear: both;
+}
+
+.default-text {
+  font-family: 'Chrome Droid Sans', 'Droid Sans Fallback', sans-serif;
+  margin-bottom: 0;
+}
+
+.normal-text {
+  font-size: 15;
+}
+
+.progress-text {
+  color: #666;
+  margin-bottom: 2px;
+  margin-top: 2px;
+}
+
+.select-option {
+  margin-top: 5px;
+}
+
+.new-line {
+  clear: both;
+}
+
+#main-content {
+  background-image: -webkit-linear-gradient(#FFFFFF, #EFF5FF);
+  padding: 35px;
+  -webkit-padding-start: 120px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 195px;
+}
+
+#status-icon {
+  position: absolute;
+  left: 32px;
+  right: 37px;
+  width: 64px;
+  height: 64px;
+  display: none;
+}
+
+#main-content.device-detected-none #status-icon {
+  background: url('shared/images/insert.png');
+  background-repeat: no-repeat;
+  display: block;
+}
+
+#main-content.device-detected-usb #status-icon {
+  background: url('shared/images/detected_usb.png');
+  background-repeat: no-repeat;
+  display: block;
+}
+
+#main-content.device-detected-sd #status-icon {
+  background: url('shared/images/detected_sd.png');
+  background-repeat: no-repeat;
+  display: block;
+}
+
+#progress-status-div {
+  display: none;
+}
+
+#main-content.progress #progress-status-div {
+  display: block;
+}
+
+#cancel-button {
+  display: none;
+  margin-top: -4px;
+  margin-bottom: 0;
+}
+
+#main-content.progress-canceble #cancel-button {
+  display: block;
+}
+
+#pending-time {
+  clear:both
+}
+
+#device-selection {
+  display: none;
+}
+
+#main-content.device-detected-mul #device-selection {
+  display: block;
+}
+
+#warning-icon{
+  width:25px;
+  height:26px;
+  -webkit-margin-end: 10px;
+  display: none;
+}
+
+#main-content.warning #warning-icon, #main-content.error #warning-icon {
+  background:url('shared/images/icon_warning.png');
+  background-repeat:no-repeat; 
+  display: block;
+}
+
+#main-content.success #warning-icon {
+  background:url('shared/images/icon_checkmark.png');
+  background-repeat:no-repeat; 
+  display: block;
+}
+
+#warning-div {
+  display:block;
+}
+
+#main-content.progress #warning-div {
+  display: none;
+}
+
+#warning-text {
+  max-width: 550px;
+  padding-top: 4px;
+}
+
+#main-content.success #warning-button, 
+#main-content.warning-no-conf #warning-button,
+#main-content.device-detected-none #warning-button {
+  display: none;
+}
+
+#main-content.error #warning-button {
+  clear: both;
+}
+
+</style>
+<script src="shared/js/util.js"></script>
+<script src="shared/js/local_strings.js"></script>
+<script>
+
+var localStrings;
+var browserBridge;
+
+// Class that keeps track of current burn process state.
+function State(strings) {
+  this.setStrings(strings);
+  this.changeState(State.StatesEnum.DEVICE_NONE);
+}
+
+State.StatesEnum = {
+  DEVICE_NONE : {
+    cssState : "device-detected-none",
+  },
+  DEVICE_USB : {
+    cssState : "device-detected-usb warning",
+  },
+  DEVICE_SD : {
+    cssState : "device-detected-sd warning",
+  },
+  DEVICE_MUL : {
+    cssState: "device-detected-mul warning",
+  },
+  ERROR_NO_NETWORK : {
+    cssState : "warning-no-conf",
+  },
+  ERROR_DEVICE_TOO_SMALL : {
+    cssState : "warning-no-conf",
+  },
+  PROGRESS_DOWNLOAD : {
+    cssState : "progress progress-canceble",
+  },
+  PROGRESS_UNZIP : {
+    cssState : "progress progress-canceble",
+  },
+  PROGRESS_BURN : {
+    cssState : "progress",
+  },
+  FAIL : {
+    cssState : "error",
+  },
+  SUCCESS : {
+    cssState : "success",
+  },
+};
+
+State.prototype = {
+  setStrings: function(strings) {
+    State.StatesEnum.DEVICE_NONE.statusText =
+        strings.getString('statusDevicesNone');
+    State.StatesEnum.DEVICE_NONE.warningText =
+        strings.getString('warningDevicesNone');
+    State.StatesEnum.DEVICE_USB.statusText =
+      strings.getString('statusDeviceUSB');
+    State.StatesEnum.DEVICE_SD.statusText = strings.getString('statusDeviceSD');
+    State.StatesEnum.DEVICE_MUL.statusText =
+        strings.getString('statusDevicesMultiple');
+    State.StatesEnum.ERROR_NO_NETWORK.statusText = 
+        strings.getString('statusNoConnection');
+    State.StatesEnum.ERROR_NO_NETWORK.warningText = 
+        strings.getString('warningNoConnection');
+    State.StatesEnum.ERROR_DEVICE_TOO_SMALL.statusText = 
+        strings.getString('statusNoSpace');
+    State.StatesEnum.PROGRESS_DOWNLOAD.statusText = 
+        strings.getString('statusDownloading');
+    State.StatesEnum.PROGRESS_UNZIP.statusText =
+        strings.getString('statusUnzip');
+    State.StatesEnum.PROGRESS_BURN.statusText = strings.getString('statusBurn');
+    State.StatesEnum.FAIL.statusText = strings.getString('statusError');
+    State.StatesEnum.SUCCESS.statusText = strings.getString('statusSuccess');
+    State.StatesEnum.SUCCESS.warningText = strings.getString('warningSuccess');
+  },
+
+  changeState: function(newState) {
+    if (newState == this.state)
+      return;
+    this.state = newState;
+
+    $('main-content').className = this.state.cssState;
+
+    $('status-text').textContent = this.state.statusText;
+
+    if (newState.warningText) {
+      $('warning-text').textContent = this.state.warningText;
+    }
+
+    if (this.isInitialState() && this.state != State.StatesEnum.DEVICE_NONE) {
+      $('warning-button').textContent = localStrings.getString('confirmButton');
+    } else if (this.state == State.StatesEnum.FAIL) {
+      $('warning-button').textContent =
+          localStrings.getString('retryButton');
+    }
+  },
+
+  gotoInitialState: function(deviceCount) {
+    if (deviceCount == 0) {
+      this.changeState(State.StatesEnum.DEVICE_NONE);
+    } else if (deviceCount == 1) {
+      this.changeState(State.StatesEnum.DEVICE_USB);
+    } else {
+      this.changeState(State.StatesEnum.DEVICE_MUL);
+    }
+  },
+
+  isInitialState: function() {
+    return (this.state == State.StatesEnum.DEVICE_NONE || 
+            this.state == State.StatesEnum.DEVICE_USB ||
+            this.state == State.StatesEnum.DEVICE_SD ||
+            this.state == State.StatesEnum.DEVICE_MUL);
+  },
+
+  equals: function(stateName) {
+    return this.state == stateName;
+  }
+};
+
+// Class that keeps track of available devices.
+function DeviceSelection() {
+  this.deviceCount = 0;
+};
+
+DeviceSelection.prototype = {
+  clearSelectList: function(list) {
+    list.innerHtml = '';
+  },
+
+  showDeviceSelection: function() {
+    if (this.deviceCount == 0) {
+      this.selectedDevice = undefined;
+    } else {
+      var devices = document.getElementsByClassName('selection-element');
+      this.selectDevice(devices[0].devicePath);
+    }
+    return this.deviceCount;
+  },
+
+  onDeviceSelected: function(label, filePath, devicePath) {
+    $('warning-button').onclick = 
+        browserBridge.sendBurnImageMessage.bind(browserBridge, filePath, 
+            devicePath);
+
+    this.selectedDevice = devicePath;
+
+    $('warning-text').textContent =
+        localStrings.getStringF('warningDevices', label);
+  },
+
+  selectDevice: function(path) {
+    var element = $('radio ' + path);
+    element.checked = true;
+    element.onclick.apply(element);
+  },
+
+  createNewDeviceElement: function(device) {
+    var element = document.createElement('li');
+    var radioButton = document.createElement('input');
+    radioButton.type = 'radio';
+    radioButton.name = 'device';
+    radioButton.value = device.label;
+    radioButton.id = 'radio ' + device.devicePath;
+    radioButton.className = 'float-start';
+    var deviceLabelText = document.createElement('p');
+    deviceLabelText.textContent = device.label;
+    deviceLabelText.className = 'select-option float-start';
+    var newLine = document.createElement('div');
+    newLine.className = 'new-line';
+    element.appendChild(radioButton);
+    element.appendChild(deviceLabelText);
+    element.appendChild(newLine);
+    element.id = 'select ' + device.devicePath;
+    element.devicePath = device.devicePath;
+    element.className = 'selection-element';
+    radioButton.onclick = this.onDeviceSelected.bind(this, 
+        device.label, device.filePath, device.devicePath); 
+    return element;
+  },
+
+  getDevicesCallback: function(devices) {
+    var selectListDOM = $('device-selection');
+    this.clearSelectList(selectListDOM);
+    this.deviceCount = devices.length; 
+    if (devices.length > 0) {
+      for (var i = 0; i < devices.length; i++) {
+        var element = this.createNewDeviceElement(devices[i]);
+        selectListDOM.appendChild(element);
+      }
+      this.selectDevice(devices[0].devicePath);
+    } else {
+      this.selectedDevice = undefined;
+    }
+    return this.deviceCount;
+  },
+
+  deviceAdded: function(device) {
+    var selectListDOM = $('device-selection');
+    selectListDOM.appendChild(this.createNewDeviceElement(device));
+    this.deviceCount++;
+    if (this.deviceCount == 1)
+      this.selectDevice(device.devicePath);
+    return this.deviceCount;
+  },
+
+  deviceRemoved: function(devicePath, allowSelect) {
+    var deviceSelectElement = $('select ' + devicePath);
+    deviceSelectElement.parentNode.removeChild(deviceSelectElement);
+    this.deviceCount--;
+    var devices = document.getElementsByClassName('selection-element');
+
+    if (allowSelect) {   
+      if (devices.length > 0) {
+        if (this.selectedDevice == devicePath)
+          this.selectDevice(devices[0].devicePath);
+      } else {
+        this.selectedDevice = undefined;
+      }
+    }
+    return this.deviceCount;
+  }
+};
+
+// Class that handles communication with chrome.
+function BrowserBridge() {
+  this.currentState = new State(localStrings);
+  this.devices = new DeviceSelection();
+  // We will use these often so it makes sence making them class members to
+  // avoid frequent document.getElementById calls. 
+  this.progressElement = $('progress-div');
+  this.progressText = $('progress-text');
+  this.progressTimeLeftText = $('pending-time');
+};
+
+BrowserBridge.prototype = {
+  sendCancelMessage: function() {
+    chrome.send("cancelBurnImage");
+  },
+
+  sendGetDevicesMessage: function() {
+    chrome.send("getDevices");
+  },
+
+  sendWebuiInitializedMessage: function() {
+    chrome.send("webuiInitialized");
+  },
+
+  sendBurnImageMessage: function(filePath, devicePath) {
+    chrome.send('burnImage', [devicePath, filePath]);
+  },
+
+  reportSuccess: function() {
+    this.currentState.changeState(State.StatesEnum.SUCCESS);
+  },
+
+  reportFail: function(errorMessage) { 
+    this.currentState.changeState(State.StatesEnum.FAIL);
+    $('warning-text').textContent = errorMessage;
+    $('warning-button').onclick = this.onBurnRetry.bind(this);
+  },
+
+  deviceAdded: function(device) {
+    var deviceCount = this.devices.deviceAdded(device);
+    if (this.currentState.isInitialState()) 
+      this.currentState.gotoInitialState(deviceCount);
+  },
+
+  deviceRemoved: function(device) {
+    var inInitialState = this.currentState.isInitialState();
+    var deviceCount = this.devices.deviceRemoved(device, inInitialState);
+    if (this.currentState.isInitialState()) 
+      this.currentState.gotoInitialState(deviceCount);
+  },
+
+  getDevicesCallback: function(devices) {
+    var deviceCount = this.devices.getDevicesCallback(devices);
+    this.currentState.gotoInitialState(deviceCount);
+    this.sendWebuiInitializedMessage();
+  },
+
+  updateProgress: function(update_signal) {
+    if (update_signal.progressType == 'download' && 
+        !this.currentState.equals(State.StatesEnum.PROGRESS_DOWNLOAD)) {
+      this.currentState.changeState(State.StatesEnum.PROGRESS_DOWNLOAD);
+    } else if (update_signal.progressType == 'unzip' &&
+        !this.currentState.equals(State.StatesEnum.PROGRESS_UNZIP)) {
+      this.currentState.changeState(State.StatesEnum.PROGRESS_UNZIP);
+    } else if (update_signal.progressType == 'burn' &&
+        !this.currentState.equals(State.StatesEnum.PROGRESS_BURN)) {
+      this.currentState.changeState(State.StatesEnum.PROGRESS_BURN);
+    }
+
+    if (!(update_signal.amountTotal > 0)) {
+      this.progressElement.removeAttribute('value');
+    } else {
+      this.progressElement.value = update_signal.amountFinished;
+      this.progressElement.max = update_signal.amountTotal;
+    }
+
+    this.progressText.textContent = update_signal.progressText; 
+    this.progressTimeLeftText.textContent = update_signal.timeLeftText;
+  },
+
+  reportNoNetwork: function() {
+    this.currentState.changeState(State.StatesEnum.ERROR_NO_NETWORK);
+  },
+
+  reportNetworkDetected: function() {
+    if (this.currentState.equals(State.StatesEnum.ERROR_NO_NETWORK)) {
+      var deviceCount = this.devices.showDeviceSelection();
+      this.currentState.gotoInitialState(deviceCount);
+    }
+  },
+
+  reportDeviceTooSmall: function(device_size) {
+    this.currentState.changeState(State.StatesEnum.ERROR_DEVICE_TOO_SMALL);
+    $('warning-text').textContent =
+        localStrings.getStringF('warningNoSpace', device_size);
+  },
+
+  // Processes click on "Retry" button in FAIL state.
+  onBurnRetry: function () {
+    var deviceCount = this.devices.showDeviceSelection();
+    this.currentState.gotoInitialState(deviceCount);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  localStrings = new LocalStrings();
+  browserBridge = new BrowserBridge();
+
+  $('cancel-button').onclick =
+      browserBridge.sendCancelMessage.bind(browserBridge);
+  browserBridge.sendGetDevicesMessage();
+});
+</script>
+</head>
+<body class="default-text">
+  <header id="burn-header">
+    <h1 i18n-content="headerTitle"></h1>
+    <p  i18n-content="headerDescription"></p>
+    <a id="more-info-link" jsvalues="href:moreInfoLink"
+        i18n-content="headerLink"></a>
+  </header>
+  <div id="main-content">
+    <div id="status-icon"></div>
+    <div id="status-info">
+      <h2 id="status-text" class="status-text"></h2>
+      <div id="progress-status-div">
+        <p id="progress-text" class="progress-text"></p>
+        <div id="progress-status" class="float-start">
+          <progress id="progress-div" class="float-start"></progress>
+          <button id="cancel-button" class="float-start" 
+              i18n-content="cancelButton">
+          </button>
+        </div>
+        <p id="pending-time" class="progress-text"></p>
+      </div>
+      <ul id="device-selection"></ul>
+      <div id="warning-div">
+        <div id="warning-icon" class="float-start"></div>
+        <p id="warning-text" class="float-start"></p>
+        <button id="warning-button" class="float-start"></button>
+      </div>
+      <div class="new-line"></div>
+    </div>
+    <div id="burn-footer"></div>
+  </div>
+</body>
+</html>

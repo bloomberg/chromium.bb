@@ -7,6 +7,7 @@
 #include <cstring>
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/common/zip.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -14,20 +15,27 @@ namespace chromeos {
 class BurnLibraryImpl : public BurnLibrary,
                         public base::SupportsWeakPtr<BurnLibraryImpl> {
  public:
-
   BurnLibraryImpl();
   virtual ~BurnLibraryImpl();
 
   // BurnLibrary implementation.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual bool DoBurn(const FilePath& from_path, const FilePath& to_path);
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void DoBurn(const FilePath& source_path,
+                      const std::string& image_name,
+                      const FilePath& target_file_path,
+                      const FilePath& target_device_path) OVERRIDE;
+  virtual void CancelBurnImage() OVERRIDE;
 
-  bool BurnImage(const FilePath& from_path, const FilePath& to_path);
-  void UpdateBurnStatus(const ImageBurnStatus& status, BurnEventType evt);
+  // Called by BurnLibraryTaskProxy.
+  void UnzipImage();
+  void OnImageUnzipped();
 
  private:
   void Init();
+  void BurnImage();
+  static void DevicesUnmountedCallback(void* object, bool success);
+  void UpdateBurnStatus(const ImageBurnStatus& status, BurnEvent evt);
   static void BurnStatusChangedHandler(void* object,
                                        const BurnStatus& status,
                                        BurnEventType evt);
@@ -36,8 +44,16 @@ class BurnLibraryImpl : public BurnLibrary,
   ObserverList<BurnLibrary::Observer> observers_;
   BurnStatusConnection burn_status_connection_;
 
-  // Holds a path that is currently being burnt to.
-  std::string target_path_;
+  FilePath source_zip_file_;
+  std::string source_image_file_;
+  std::string source_image_name_;
+  std::string target_file_path_;
+  std::string target_device_path_;
+
+  bool unzipping_;
+  bool cancelled_;
+  bool burning_;
+  bool block_burn_signals_;
 
   DISALLOW_COPY_AND_ASSIGN(BurnLibraryImpl);
 };
@@ -45,11 +61,20 @@ class BurnLibraryImpl : public BurnLibrary,
 class BurnLibraryTaskProxy
     : public base::RefCountedThreadSafe<BurnLibraryTaskProxy> {
  public:
-  explicit BurnLibraryTaskProxy(const base::WeakPtr<BurnLibraryImpl>& library);
+  explicit BurnLibraryTaskProxy(const base::WeakPtr<BurnLibraryImpl>& library)
+      : library_(library) {
+    library_->DetachFromThread();
+  }
 
-  void BurnImage(const FilePath& from_path, const FilePath& to_path);
+  void UnzipImage() {
+    if (library_)
+      library_->UnzipImage();
+  }
 
-  void UpdateBurnStatus(ImageBurnStatus* status, BurnEventType evt);
+  void ImageUnzipped() {
+    if (library_)
+      library_->OnImageUnzipped();
+  }
 
  private:
   base::WeakPtr<BurnLibraryImpl> library_;
@@ -59,12 +84,15 @@ class BurnLibraryTaskProxy
   DISALLOW_COPY_AND_ASSIGN(BurnLibraryTaskProxy);
 };
 
-BurnLibraryImpl::BurnLibraryImpl() {
+BurnLibraryImpl::BurnLibraryImpl() : unzipping_(false),
+                                     cancelled_(false),
+                                     burning_(false),
+                                     block_burn_signals_(false) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-      Init();
-    } else {
-      LOG(ERROR) << "Cros Library has not been loaded";
-    }
+    Init();
+  } else {
+    LOG(ERROR) << "Cros Library has not been loaded";
+  }
 }
 
 BurnLibraryImpl::~BurnLibraryImpl() {
@@ -73,91 +101,152 @@ BurnLibraryImpl::~BurnLibraryImpl() {
   }
 }
 
+void BurnLibraryImpl::Init() {
+  burn_status_connection_ = MonitorBurnStatus(&BurnStatusChangedHandler, this);
+}
+
 void BurnLibraryImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
+  if (unzipping_ && !cancelled_)
+    UpdateBurnStatus(ImageBurnStatus(), UNZIP_STARTED);
 }
 
 void BurnLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool BurnLibraryImpl::DoBurn(const FilePath& from_path,
-                             const FilePath& to_path) {
-  BurnLibraryTaskProxy* task = new BurnLibraryTaskProxy(AsWeakPtr());
-  task->AddRef();
-  task->BurnImage(from_path, to_path);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(task, &BurnLibraryTaskProxy::BurnImage,
-                        from_path, to_path));
-  return true;
+void BurnLibraryImpl::CancelBurnImage() {
+  // At the moment, we cannot really stop uzipping or burning. Instead we
+  // prevent events from being send to listeners.
+  if (burning_)
+    block_burn_signals_ = true;
+  cancelled_ = true;
 }
 
-bool BurnLibraryImpl::BurnImage(const FilePath& from_path,
-                                const FilePath& to_path) {
-  // Make sure we run on file thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Check if there is a target path already being burnt to.
-  if (target_path_ == "") {
-    target_path_ = to_path.value();
-  } else {
-    return false;
+void BurnLibraryImpl::DoBurn(const FilePath& source_path,
+    const std::string& image_name,
+    const FilePath& target_file_path,
+    const FilePath& target_device_path) {
+  if (unzipping_) {
+    // We have unzip in progress, maybe it was "cancelled" before and did not
+    // finish yet. In that case, let's pretend cancel did not happen.
+    cancelled_ = false;
+    UpdateBurnStatus(ImageBurnStatus(), UNZIP_STARTED);
+    return;
   }
 
-  StartBurn(from_path.value().c_str(), to_path.value().c_str(),
-            burn_status_connection_);
-  return true;
+  source_zip_file_ = source_path;
+  source_image_file_.clear();
+  source_image_name_ = image_name;
+  target_file_path_ = target_file_path.value();
+  target_device_path_ = target_device_path.value();
+
+  unzipping_ = true;
+  cancelled_ = false;
+  UpdateBurnStatus(ImageBurnStatus(), UNZIP_STARTED);
+
+  scoped_refptr<BurnLibraryTaskProxy> task =
+      new BurnLibraryTaskProxy(AsWeakPtr());
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(task.get(), &BurnLibraryTaskProxy::UnzipImage));
+}
+
+void BurnLibraryImpl::UnzipImage() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (Unzip(source_zip_file_, source_zip_file_.DirName())) {
+    source_image_file_ =
+        source_zip_file_.DirName().Append(source_image_name_).value();
+  }
+
+  scoped_refptr<BurnLibraryTaskProxy> task =
+      new BurnLibraryTaskProxy(AsWeakPtr());
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(task.get(), &BurnLibraryTaskProxy::ImageUnzipped));
+}
+
+void BurnLibraryImpl::OnImageUnzipped() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  bool success = !source_image_file_.empty();
+  UpdateBurnStatus(ImageBurnStatus(), (success ? UNZIP_COMPLETE : UNZIP_FAIL));
+
+  unzipping_ = false;
+  if (cancelled_) {
+    cancelled_ = false;
+    return;
+  }
+
+  if (!success)
+    return;
+
+  burning_ = true;
+
+  chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountDeviceRecursive(
+      target_device_path_.c_str(), &BurnLibraryImpl::DevicesUnmountedCallback,
+      this);
+}
+
+void BurnLibraryImpl::DevicesUnmountedCallback(void* object, bool success) {
+  DCHECK(object);
+  BurnLibraryImpl* self = static_cast<BurnLibraryImpl*>(object);
+  if (success) {
+    self->BurnImage();
+  } else {
+    self->UpdateBurnStatus(ImageBurnStatus(self->target_file_path_.c_str(),
+        0, 0, "Error unmounting device"), BURN_FAIL);
+  }
+}
+
+void BurnLibraryImpl::BurnImage() {
+  RequestBurn(source_image_file_.c_str(), target_file_path_.c_str(),
+      &BurnLibraryImpl::BurnStatusChangedHandler, this);
 }
 
 void BurnLibraryImpl::BurnStatusChangedHandler(void* object,
-                                               const BurnStatus& status,
-                                               BurnEventType evt) {
-  BurnLibraryImpl* burn = static_cast<BurnLibraryImpl*>(object);
+    const BurnStatus& status, BurnEventType evt) {
+  DCHECK(object);
+  BurnLibraryImpl* self = static_cast<BurnLibraryImpl*>(object);
 
-  // Copy burn status because it will be freed after returning from this method.
-  ImageBurnStatus* status_copy = new ImageBurnStatus(status);
-
-  BurnLibraryTaskProxy* task = new BurnLibraryTaskProxy(burn->AsWeakPtr());
-  task->AddRef();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task, &BurnLibraryTaskProxy::UpdateBurnStatus,
-                        status_copy, evt));
-}
-
-void BurnLibraryImpl::Init() {
-  burn_status_connection_ = MonitorBurnStatus(&BurnStatusChangedHandler, this);
+// Copy burn status because it will be freed after returning from this method.
+  ImageBurnStatus status_copy(status);
+  BurnEvent event = UNKNOWN;
+  switch (evt) {
+    case(BURN_CANCELED):
+      event = BURN_FAIL;
+      break;
+    case(BURN_COMPLETE):
+      event = BURN_SUCCESS;
+      break;
+    case(BURN_UPDATED):
+    case(BURN_STARTED):
+      event = BURN_UPDATE;
+      break;
+  }
+  self->UpdateBurnStatus(status_copy, event);
 }
 
 void BurnLibraryImpl::UpdateBurnStatus(const ImageBurnStatus& status,
-                                       BurnEventType evt) {
-  // Make sure we run on UI thread.
+                                       BurnEvent evt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // If burn is finished, remove target paths from paths being burnt to.
-  // This has to be done in thread-safe way, hence using task proxy class.
-  if ((evt == BURN_CANCELED || evt == BURN_COMPLETE) &&
-      target_path_ == status.target_path)
-    target_path_ = "";
+  if (cancelled_)
+    return;
 
-  FOR_EACH_OBSERVER(Observer, observers_, ProgressUpdated(this, evt, status));
+  if (evt == BURN_FAIL || evt == BURN_SUCCESS) {
+    burning_ = false;
+    if (block_burn_signals_) {
+      block_burn_signals_ = false;
+      return;
+    }
+  }
+
+  if (block_burn_signals_ && evt == BURN_UPDATE)
+    return;
+
+  FOR_EACH_OBSERVER(Observer, observers_,
+      BurnProgressUpdated(this, evt, status));
 }
-
-BurnLibraryTaskProxy::BurnLibraryTaskProxy(
-                        const base::WeakPtr<BurnLibraryImpl>& library)
-                            : library_(library) {
-}
-
-void BurnLibraryTaskProxy::BurnImage(const FilePath& from_path,
-                                     const FilePath& to_path) {
-  library_->BurnImage(from_path, to_path);
-}
-
-void BurnLibraryTaskProxy::UpdateBurnStatus(ImageBurnStatus* status,
-                                            BurnEventType evt) {
-  library_->UpdateBurnStatus(*status, evt);
-  delete status;
-}
-
 
 class BurnLibraryStubImpl : public BurnLibrary {
  public:
@@ -165,11 +254,14 @@ class BurnLibraryStubImpl : public BurnLibrary {
   virtual ~BurnLibraryStubImpl() {}
 
   // BurnLibrary overrides.
-  virtual void AddObserver(Observer* observer) {}
-  virtual void RemoveObserver(Observer* observer) {}
-  virtual bool DoBurn(const FilePath& from_path, const FilePath& to_path) {
-    return false;
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual void DoBurn(const FilePath& source_path,
+                      const std::string& image_name,
+                      const FilePath& target_file_path,
+                      const FilePath& target_device_path) OVERRIDE {
   }
+  virtual void CancelBurnImage() OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(BurnLibraryStubImpl);
 };
