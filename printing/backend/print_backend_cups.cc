@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,6 +86,8 @@ class PrintBackendCUPS : public PrintBackend {
   // PrintBackend implementation.
   virtual bool EnumeratePrinters(PrinterList* printer_list);
 
+  virtual std::string GetDefaultPrinterName();
+
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info);
 
@@ -151,6 +153,13 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
   VLOG(1) << "CUPS: Enumerated " << printer_list->size() << " printers.";
   return true;
+}
+
+std::string PrintBackendCUPS::GetDefaultPrinterName() {
+  // TODO(thestig) Figure out why cupsGetDefault() lies about the default
+  // printer. :-(
+  // Return an empty string for now.
+  return std::string();
 }
 
 bool PrintBackendCUPS::GetPrinterCapsAndDefaults(

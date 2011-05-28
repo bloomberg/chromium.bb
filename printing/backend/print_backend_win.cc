@@ -42,6 +42,8 @@ class PrintBackendWin : public PrintBackend {
 
   virtual bool EnumeratePrinters(PrinterList* printer_list);
 
+  virtual std::string GetDefaultPrinterName();
+
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info);
 
@@ -64,19 +66,13 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
   if (!ret)
     return false;
 
-  // Getting the name of the default printer.
-  DWORD size = MAX_PATH;
-  TCHAR default_printer_name[MAX_PATH];
-  BOOL default_printer_exists = ::GetDefaultPrinter(
-      default_printer_name, &size);
-
+  std::string default_printer = GetDefaultPrinterName();
   PRINTER_INFO_2* printer_info =
       reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
   for (DWORD index = 0; index < count_returned; index++) {
     PrinterBasicInfo info;
     info.printer_name = WideToUTF8(printer_info[index].pPrinterName);
-    if (default_printer_exists)
-      info.is_default = (info.printer_name == WideToUTF8(default_printer_name));
+    info.is_default = (info.printer_name == default_printer);
     if (printer_info[index].pComment)
       info.printer_description = WideToUTF8(printer_info[index].pComment);
     info.printer_status = printer_info[index].Status;
@@ -89,6 +85,14 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
     printer_list->push_back(info);
   }
   return true;
+}
+
+std::string PrintBackendWin::GetDefaultPrinterName() {
+  DWORD size = MAX_PATH;
+  TCHAR default_printer_name[MAX_PATH];
+  if (!::GetDefaultPrinter(default_printer_name, &size))
+    return std::string();
+  return WideToUTF8(default_printer_name);
 }
 
 bool PrintBackendWin::GetPrinterCapsAndDefaults(

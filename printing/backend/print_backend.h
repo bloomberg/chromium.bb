@@ -54,6 +54,9 @@ class PrintBackend : public base::RefCountedThreadSafe<PrintBackend> {
   // Enumerates the list of installed local and network printers.
   virtual bool EnumeratePrinters(PrinterList* printer_list) = 0;
 
+  // Get the default printer name. Empty string if no default printer.
+  virtual std::string GetDefaultPrinterName() = 0;
+
   // Gets the capabilities and defaults for a specific printer.
   virtual bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
