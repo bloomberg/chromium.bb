@@ -886,8 +886,8 @@ def PanProjectChecks(input_api, output_api,
   """
   excluded_paths = excluded_paths or  tuple()
   text_files = text_files or (
-      r'.*\.txt',
-      r'.*\.json',
+      r'.+\.txt$',
+      r'.+\.json$',
   )
   project_name = project_name or 'Chromium'
   license_header = license_header or (
@@ -909,9 +909,8 @@ def PanProjectChecks(input_api, output_api,
   black_list = input_api.DEFAULT_BLACK_LIST + excluded_paths
   white_list = input_api.DEFAULT_WHITE_LIST + text_files
   sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
-  text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
-                                                    white_list=white_list)
-
+  text_files = lambda x: input_api.FilterSourceFile(
+      x, black_list=black_list, white_list=white_list)
 
   snapshot_memory = []
   def snapshot(msg):

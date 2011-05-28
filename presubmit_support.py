@@ -187,15 +187,15 @@ class InputApi(object):
   # perspective. Don't modify this list from a presubmit script!
   DEFAULT_WHITE_LIST = (
       # C++ and friends
-      r".*\.c$", r".*\.cc$", r".*\.cpp$", r".*\.h$", r".*\.m$", r".*\.mm$",
-      r".*\.inl$", r".*\.asm$", r".*\.hxx$", r".*\.hpp$", r".*\.s$", r".*\.S$",
+      r".+\.c$", r".+\.cc$", r".+\.cpp$", r".+\.h$", r".+\.m$", r".+\.mm$",
+      r".+\.inl$", r".+\.asm$", r".+\.hxx$", r".+\.hpp$", r".+\.s$", r".+\.S$",
       # Scripts
-      r".*\.js$", r".*\.py$", r".*\.sh$", r".*\.rb$", r".*\.pl$", r".*\.pm$",
+      r".+\.js$", r".+\.py$", r".+\.sh$", r".+\.rb$", r".+\.pl$", r".+\.pm$",
       # No extension at all, note that ALL CAPS files are black listed in
       # DEFAULT_BLACK_LIST below.
       r"(^|.*?[\\\/])[^.]+$",
       # Other
-      r".*\.java$", r".*\.mk$", r".*\.am$",
+      r".+\.java$", r".+\.mk$", r".+\.am$",
   )
 
   # Path regexp that should be excluded from being considered containing source
