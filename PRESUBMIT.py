@@ -44,6 +44,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.canned_checks.PanProjectChecks(
       input_api, output_api, excluded_paths=_EXCLUDED_PATHS))
   results.extend(_CheckNoInterfacesInBase(input_api, output_api))
+  results.extend(_CheckAuthorizedAuthor(input_api, output_api))
   return results
 
 
@@ -88,6 +89,31 @@ def _CheckSubversionConfig(input_api, output_api):
         output_api.PresubmitNotifyResult(
             'Can\'t find your subversion config file.\n' + error_msg)
     ]
+  return []
+
+
+def _CheckAuthorizedAuthor(input_api, output_api):
+  """For non-googler/chromites committers, verify the author's email address is
+  in AUTHORS.
+  """
+  author = input_api.change.author_email
+  if (author is None or author.endswith('@chromium.org') or
+      author.endswith('@google.com')):
+    return []
+  authors_path = input_apit.os_path.join(
+      input_api.PresubmitLocalPath(), 'AUTHORS')
+  valid_authors = (
+      input_api.re.match(r'[^#]+\s+\<(.+?)\>\s*$', line)
+      for line in open(authors_path))
+  valid_authors = [item.group(1) for item in valid_authors if item]
+  if not author in valid_authors:
+    return [output_api.PresubmitPromptWarning(
+        ('%s is not in AUTHORS file. If you are a new contributor, please visit'
+        '\n'
+        'http://www.chromium.org/developers/contributing-code and read the '
+        '"Legal" section\n'
+        'If you are a chromite, verify the contributor signed the CLA.') %
+        author)]
   return []
 
 
