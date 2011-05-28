@@ -2,6 +2,7 @@ Name: mesa
 Version: 7.9
 URL: http://www.mesa3d.org/
 License File: MesaLib/docs/COPYING
+Security Critical: Yes
 
 Description:
 This directory contains a copy of these MesaLib components:
@@ -83,3 +84,7 @@ Later modifications (see chromium.patch):
 - Suppressed spurious compiler warning from gcc in eglCompareConfig by
   reorganizing the .h a little
 
+- Corrected the comparison in src/mesa/main/teximage.c line 2801 to check
+  if width > 0 && height > 0 && depth > 0, instead of checking
+  width > 0 && height > 0 && height > 0 . See
+  https://bugs.freedesktop.org/show_bug.cgi?id=37648

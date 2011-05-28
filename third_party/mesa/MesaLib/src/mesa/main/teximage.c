@@ -2798,7 +2798,7 @@ _mesa_TexSubImage3D( GLenum target, GLint level,
                                   format, type, texImage)) {
          /* error was recorded */
       }
-      else if (width > 0 && height > 0 && height > 0) {
+      else if (width > 0 && height > 0 && depth > 0) {
          /* If we have a border, xoffset=-1 is legal.  Bias by border width */
          xoffset += texImage->Border;
          yoffset += texImage->Border;
