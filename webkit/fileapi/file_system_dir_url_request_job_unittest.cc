@@ -92,6 +92,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     request_.reset(NULL);
     delegate_.reset(NULL);
 
+    // This shouldn't be necessary, but it shuts HeapChecker up.
+    file_system_context_ = NULL;
+
     net::URLRequest::RegisterProtocolFactory("filesystem", NULL);
   }
 

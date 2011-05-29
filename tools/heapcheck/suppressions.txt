@@ -1610,20 +1610,3 @@
    fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
 }
-{
-   bug_84293_a
-   Heapcheck:Leak
-   ...
-   fun:leveldb::DB::Open
-   fun:fileapi::FileSystemDirectoryDatabase::Init
-   fun:fileapi::FileSystemDirectoryDatabase::GetChildWithName
-   fun:fileapi::FileSystemDirectoryDatabase::GetFileWithPath
-   fun:fileapi::ObfuscatedFileSystemFileUtil::*
-}
-{
-   bug_84293_b
-   Heapcheck:Leak
-   ...
-   fun:fileapi::ObfuscatedFileSystemFileUtil::GetDirectoryDatabase
-   fun:fileapi::ObfuscatedFileSystemFileUtil::*
-}
