@@ -6,6 +6,9 @@
 
 namespace quota {
 
+MockSpecialStoragePolicy::MockSpecialStoragePolicy() {}
+MockSpecialStoragePolicy::~MockSpecialStoragePolicy() {}
+
 bool MockSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
   return protected_.find(origin) != protected_.end();
 }

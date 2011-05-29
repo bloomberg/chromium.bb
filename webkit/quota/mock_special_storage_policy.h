@@ -14,7 +14,8 @@ namespace quota {
 
 class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
-  MockSpecialStoragePolicy() {}
+  MockSpecialStoragePolicy();
+  virtual ~MockSpecialStoragePolicy();
 
   virtual bool IsStorageProtected(const GURL& origin);
   virtual bool IsStorageUnlimited(const GURL& origin);
