@@ -43,6 +43,7 @@ class QuotaTemporaryStorageEvictor {
   void OnGotUsageAndQuotaForEviction(
       QuotaStatusCode status,
       int64 usage,
+      int64 unlimited_usage,
       int64 quota,
       int64 available_disk_space);
   void OnGotLRUOrigin(const GURL& origin);

@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/mock_storage_client.h"
 #include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_manager.h"
@@ -26,14 +27,6 @@ using WebKit::WebStorageQuotaError;
 using WebKit::WebStorageQuotaType;
 
 namespace quota {
-
-namespace {
-struct MockOriginData {
-  const char* origin;
-  StorageType type;
-  int64 usage;
-};
-}  // anonymous namespace
 
 class QuotaManagerTest : public testing::Test {
  protected:
@@ -49,11 +42,13 @@ class QuotaManagerTest : public testing::Test {
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    mock_special_storage_policy_ = new MockSpecialStoragePolicy;
     quota_manager_ = new QuotaManager(
         false /* is_incognito */,
         data_dir_.path(),
         MessageLoopProxy::CreateForCurrentThread(),
-        MessageLoopProxy::CreateForCurrentThread());
+        MessageLoopProxy::CreateForCurrentThread(),
+        mock_special_storage_policy_);
     additional_callback_count_ = 0;
   }
 
@@ -66,13 +61,8 @@ class QuotaManagerTest : public testing::Test {
  protected:
   MockStorageClient* CreateClient(
       const MockOriginData* mock_data, size_t mock_data_size) {
-    MockStorageClient* client = new MockStorageClient(quota_manager_->proxy());
-    for (size_t i = 0; i < mock_data_size; ++i) {
-      client->AddMockOriginData(GURL(mock_data[i].origin),
-                                mock_data[i].type,
-                                mock_data[i].usage);
-    }
-    return client;
+    return new MockStorageClient(quota_manager_->proxy(),
+                                 mock_data, mock_data_size);
   }
 
   void RegisterClient(MockStorageClient* client) {
@@ -127,6 +117,7 @@ class QuotaManagerTest : public testing::Test {
   void GetGlobalUsage(StorageType type) {
     type_ = kStorageTypeUnknown;
     usage_ = -1;
+    unlimited_usage_ = -1;
     quota_manager_->GetGlobalUsage(type,
         callback_factory_.NewCallback(
             &QuotaManagerTest::DidGetGlobalUsage));
@@ -176,6 +167,7 @@ class QuotaManagerTest : public testing::Test {
   void GetUsageAndQuotaForEviction() {
     quota_status_ = kQuotaStatusUnknown;
     usage_ = -1;
+    unlimited_usage_ = -1;
     quota_ = -1;
     available_space_ = -1;
     quota_manager_->GetUsageAndQuotaForEviction(
@@ -257,9 +249,11 @@ class QuotaManagerTest : public testing::Test {
     quota_ = quota;
   }
 
-  void DidGetGlobalUsage(StorageType type, int64 usage) {
+  void DidGetGlobalUsage(StorageType type, int64 usage,
+                         int64 unlimited_usage) {
     type_ = type;
     usage_ = usage;
+    unlimited_usage_ = unlimited_usage;
   }
 
   void DidGetHostUsage(const std::string& host,
@@ -279,9 +273,10 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DidGetUsageAndQuotaForEviction(QuotaStatusCode status,
-      int64 usage, int64 quota, int64 available_space) {
+      int64 usage, int64 unlimited_usage, int64 quota, int64 available_space) {
     quota_status_ = status;
     usage_ = usage;
+    unlimited_usage_ = unlimited_usage;
     quota_ = quota;
     available_space_ = available_space;
   }
@@ -312,10 +307,15 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_ = quota_manager;
   }
 
+  MockSpecialStoragePolicy* mock_special_storage_policy() const {
+    return mock_special_storage_policy_.get();
+  }
+
   QuotaStatusCode status() const { return quota_status_; }
   const std::string& host() const { return host_; }
   StorageType type() const { return type_; }
   int64 usage() const { return usage_; }
+  int64 unlimited_usage() const { return unlimited_usage_; }
   int64 quota() const { return quota_; }
   int64 available_space() const { return available_space_; }
   const GURL& lru_origin() const { return lru_origin_; }
@@ -330,11 +330,13 @@ class QuotaManagerTest : public testing::Test {
   base::ScopedCallbackFactory<QuotaManagerTest> callback_factory_;
 
   scoped_refptr<QuotaManager> quota_manager_;
+  scoped_refptr<MockSpecialStoragePolicy> mock_special_storage_policy_;
 
   QuotaStatusCode quota_status_;
   std::string host_;
   StorageType type_;
   int64 usage_;
+  int64 unlimited_usage_;
   int64 quota_;
   int64 available_space_;
   GURL lru_origin_;
@@ -371,7 +373,7 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Simple) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
-  EXPECT_EQ(quota_returned_for_foo - 10, quota());
+  EXPECT_EQ(quota_returned_for_foo, quota());
 }
 
 TEST_F(QuotaManagerTest, GetUsage_NoClient) {
@@ -396,10 +398,12 @@ TEST_F(QuotaManagerTest, GetUsage_NoClient) {
   GetGlobalUsage(kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0, usage());
+  EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0, usage());
+  EXPECT_EQ(0, unlimited_usage());
 }
 
 TEST_F(QuotaManagerTest, GetUsage_EmptyClient) {
@@ -425,10 +429,12 @@ TEST_F(QuotaManagerTest, GetUsage_EmptyClient) {
   GetGlobalUsage(kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0, usage());
+  EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0, usage());
+  EXPECT_EQ(0, unlimited_usage());
 }
 
 TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
@@ -454,14 +460,17 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
 
-  // The returned quota must be equal to (global_quota - other_origins_usage).
-  EXPECT_EQ(100 - (5 + 7 + 30), quota());
+  const int kPerHostQuota = 100 / QuotaManager::kPerHostTemporaryPortion;
+
+  // The host's quota should be its full portion of the global quota
+  // since global usage is under the global quota.
+  EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuota(GURL("http://bar.com/"), kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(5 + 7, usage());
-  EXPECT_EQ(100 - (10 + 20 + 30), quota());
+  EXPECT_EQ(kPerHostQuota, quota());
 }
 
 TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
@@ -469,11 +478,14 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
     { "http://foo.com/",     kStorageTypeTemporary,  10 },
     { "http://bar.com/",     kStorageTypeTemporary,  20 },
     { "http://bar.com/",     kStorageTypePersistent, 50 },
+    { "http://unlimited/",   kStorageTypePersistent,  1 },
   };
   static const MockOriginData kData2[] = {
     { "https://foo.com/",    kStorageTypeTemporary,  30 },
     { "http://example.com/", kStorageTypePersistent, 40 },
+    { "http://unlimited/",   kStorageTypeTemporary,   1 },
   };
+  mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   RegisterClient(CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1)));
   RegisterClient(CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2)));
 
@@ -487,15 +499,29 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(50, usage());
 
+  GetUsageAndQuota(GURL("http://unlimited/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(1, usage());
+  EXPECT_EQ(kint64max, quota());
+
+  GetUsageAndQuota(GURL("http://unlimited/"), kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(1, usage());
+  EXPECT_EQ(kint64max, quota());
+
   GetGlobalUsage(kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(10 + 20 + 30, usage());
+  EXPECT_EQ(10 + 20 + 30 + 1, usage());
+  EXPECT_EQ(1, unlimited_usage());
 
   GetGlobalUsage(kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(40 + 50, usage());
+  EXPECT_EQ(40 + 50 + 1, usage());
+  EXPECT_EQ(1, unlimited_usage());
 }
 
 void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
@@ -511,11 +537,9 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
 
-  client->ModifyMockOriginDataSize(GURL("http://foo.com/"), type, 30);
-  client->ModifyMockOriginDataSize(GURL("http://foo.com:1/"), type, -5);
-
-  // Modifying (adding) a new origin for an existing host.
-  client->ModifyMockOriginDataSize(GURL("https://foo.com/"), type, 1);
+  client->ModifyOriginAndNotify(GURL("http://foo.com/"), type, 30);
+  client->ModifyOriginAndNotify(GURL("http://foo.com:1/"), type, -5);
+  client->AddOriginAndNotify(GURL("https://foo.com/"), type, 1);
 
   GetUsageAndQuota(GURL("http://foo.com/"), type);
   MessageLoop::current()->RunAllPending();
@@ -523,8 +547,7 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
   EXPECT_EQ(10 + 20 + 30 - 5 + 1, usage());
   int foo_usage = usage();
 
-  // Modifying (adding) a new origin.
-  client->ModifyMockOriginDataSize(GURL("http://bar.com/"), type, 40);
+  client->AddOriginAndNotify(GURL("http://bar.com/"), type, 40);
   GetUsageAndQuota(GURL("http://bar.com/"), type);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
@@ -533,6 +556,7 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
   GetGlobalUsage(type);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(foo_usage + 40, usage());
+  EXPECT_EQ(0, unlimited_usage());
 }
 
 TEST_F(QuotaManagerTest, GetTemporaryUsage_WithModify) {
@@ -550,13 +574,15 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   SetTemporaryGlobalQuota(100);
   MessageLoop::current()->RunAllPending();
 
+  const int kPerHostQuota = 100 / QuotaManager::kPerHostTemporaryPortion;
+
   GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
   GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
   GetUsageAndQuota(GURL("http://foo.com/"), kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
-  EXPECT_EQ(100 - 13, quota());
+  EXPECT_EQ(kPerHostQuota, quota());
 
   set_additional_callback_count(0);
   RunAdditionalUsageAndQuotaTask(GURL("http://foo.com/"),
@@ -567,7 +593,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
-  EXPECT_EQ(100 - 13, quota());
+  EXPECT_EQ(kPerHostQuota, quota());
   EXPECT_EQ(2, additional_callback_count());
 }
 
@@ -593,6 +619,98 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
   set_quota_manager(NULL);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaErrorAbort, status());
+}
+
+TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Overbudget) {
+  static const MockOriginData kData[] = {
+    { "http://usage1/",    kStorageTypeTemporary,   1 },
+    { "http://usage10/",   kStorageTypeTemporary,  10 },
+    { "http://usage200/",  kStorageTypeTemporary, 200 },
+  };
+  RegisterClient(CreateClient(kData, ARRAYSIZE_UNSAFE(kData)));
+  SetTemporaryGlobalQuota(100);
+  MessageLoop::current()->RunAllPending();
+
+  const int kPerHostQuota = 100 / QuotaManager::kPerHostTemporaryPortion;
+
+  GetUsageAndQuota(GURL("http://usage1/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(1, usage());
+  EXPECT_EQ(1, quota());  // should be clamped to our current usage
+
+  GetUsageAndQuota(GURL("http://usage10/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(10, usage());
+  EXPECT_EQ(10, quota());
+
+  GetUsageAndQuota(GURL("http://usage200/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(200, usage());
+  EXPECT_EQ(kPerHostQuota, quota());  // should be clamped to the nominal quota
+}
+
+TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
+  static const MockOriginData kData[] = {
+    { "http://usage10/",   kStorageTypeTemporary,    10 },
+    { "http://usage50/",   kStorageTypeTemporary,    50 },
+    { "http://unlimited/", kStorageTypeTemporary,  4000 },
+  };
+  mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  // Test when not overbugdet.
+  SetTemporaryGlobalQuota(1000);
+  MessageLoop::current()->RunAllPending();
+
+  const int kPerHostQuotaFor1000 =
+      1000 / QuotaManager::kPerHostTemporaryPortion;
+
+  GetUsageAndQuota(GURL("http://usage10/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(10, usage());
+  EXPECT_EQ(kPerHostQuotaFor1000, quota());
+
+  GetUsageAndQuota(GURL("http://usage50/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(50, usage());
+  EXPECT_EQ(kPerHostQuotaFor1000, quota());
+
+  GetUsageAndQuota(GURL("http://unlimited/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(4000, usage());
+  EXPECT_EQ(kint64max, quota());
+
+  // Test when overbugdet.
+  SetTemporaryGlobalQuota(100);
+  MessageLoop::current()->RunAllPending();
+
+  const int kPerHostQuotaFor100 =
+      100 / QuotaManager::kPerHostTemporaryPortion;
+
+  GetUsageAndQuota(GURL("http://usage10/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(10, usage());
+  EXPECT_EQ(kPerHostQuotaFor100, quota());
+
+  GetUsageAndQuota(GURL("http://usage50/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(50, usage());
+  EXPECT_EQ(kPerHostQuotaFor100, quota());
+
+  GetUsageAndQuota(GURL("http://unlimited/"), kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(4000, usage());
+  EXPECT_EQ(kint64max, quota());
 }
 
 TEST_F(QuotaManagerTest, OriginInUse) {
@@ -749,10 +867,12 @@ TEST_F(QuotaManagerTest, GetUsage_Simple) {
   GetGlobalUsage(kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 1 + 20 + 600000);
+  EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 300 + 4000 + 50000 + 7000000);
+  EXPECT_EQ(0, unlimited_usage());
 
   GetHostUsage("foo.com", kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
@@ -780,30 +900,34 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
   GetGlobalUsage(kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 1 + 20 + 600000);
+  EXPECT_EQ(0, unlimited_usage());
 
-  client->ModifyMockOriginDataSize(
+  client->ModifyOriginAndNotify(
       GURL("http://foo.com/"), kStorageTypePersistent, 80000000);
 
   GetGlobalUsage(kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 1 + 20 + 600000 + 80000000);
+  EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 300 + 4000 + 50000 + 7000000);
+  EXPECT_EQ(0, unlimited_usage());
 
-  client->ModifyMockOriginDataSize(
+  client->ModifyOriginAndNotify(
       GURL("http://foo.com/"), kStorageTypeTemporary, 1);
 
   GetGlobalUsage(kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 300 + 4000 + 50000 + 7000000 + 1);
+  EXPECT_EQ(0, unlimited_usage());
 
   GetHostUsage("buz.com", kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(usage(), 4000 + 50000);
 
-  client->ModifyMockOriginDataSize(
+  client->ModifyOriginAndNotify(
       GURL("http://buz.com/"), kStorageTypeTemporary, 900000000);
 
   GetHostUsage("buz.com", kStorageTypeTemporary);
@@ -910,9 +1034,10 @@ TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
     { "http://foo.com/",   kStorageTypeTemporary,        1 },
     { "http://foo.com:1/", kStorageTypeTemporary,       20 },
     { "http://foo.com/",   kStorageTypePersistent,     300 },
-    { "http://bar.com/",   kStorageTypeTemporary,     4000 },
+    { "http://unlimited/", kStorageTypeTemporary,     4000 },
   };
 
+  mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
   RegisterClient(client);
 
@@ -923,6 +1048,7 @@ TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4021, usage());
+  EXPECT_EQ(4000, unlimited_usage());
   EXPECT_EQ(10000000, quota());
   EXPECT_LE(0, available_space());
 }

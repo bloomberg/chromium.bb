@@ -436,6 +436,8 @@
         '../../plugins/ppapi/ppapi_unittest.h',
         '../../plugins/ppapi/resource_tracker_unittest.cc',
         '../../plugins/ppapi/url_request_info_unittest.cc',
+        '../../quota/mock_special_storage_policy.cc',
+        '../../quota/mock_special_storage_policy.h',
         '../../quota/mock_storage_client.cc',
         '../../quota/mock_storage_client.h',
         '../../quota/quota_database_unittest.cc',

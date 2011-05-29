@@ -18,15 +18,23 @@ namespace quota {
 
 class QuotaManagerProxy;
 
+struct MockOriginData {
+  const char* origin;
+  StorageType type;
+  int64 usage;
+};
+
 // Mock storage class for testing.
 class MockStorageClient : public QuotaClient {
  public:
-  explicit MockStorageClient(QuotaManagerProxy* quota_manager_proxy);
+  MockStorageClient(QuotaManagerProxy* quota_manager_proxy,
+                    const MockOriginData* mock_data, size_t mock_data_size);
   virtual ~MockStorageClient();
 
   // To add or modify mock data in this client.
-  void AddMockOriginData(const GURL& origin_url, StorageType type, int64 size);
-  void ModifyMockOriginDataSize(
+  void AddOriginAndNotify(
+      const GURL& origin_url, StorageType type, int64 size);
+  void ModifyOriginAndNotify(
       const GURL& origin_url, StorageType type, int64 delta);
 
   // QuotaClient methods.

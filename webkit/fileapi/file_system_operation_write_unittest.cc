@@ -42,7 +42,8 @@ class MockQuotaManager : public QuotaManager {
   MockQuotaManager(const FilePath& base_dir, int64 quota)
       : QuotaManager(false /* is_incognito */, base_dir,
                      base::MessageLoopProxy::CreateForCurrentThread(),
-                     base::MessageLoopProxy::CreateForCurrentThread()),
+                     base::MessageLoopProxy::CreateForCurrentThread(),
+                     NULL /* special_storage_policy */),
         usage_(0),
         quota_(quota) {}
 

@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/quota/special_storage_policy.h"
 
 namespace {
 
@@ -297,6 +298,7 @@ bool QuotaDatabase::SetGlobalQuota(StorageType type, int64 quota) {
 bool QuotaDatabase::GetLRUOrigin(
     StorageType type,
     const std::set<GURL>& exceptions,
+    SpecialStoragePolicy* special_storage_policy,
     GURL* origin) {
   DCHECK(origin);
   if (!LazyOpen(false))
@@ -313,10 +315,13 @@ bool QuotaDatabase::GetLRUOrigin(
 
   while (statement.Step()) {
     GURL url(statement.ColumnString(0));
-    if (exceptions.find(url) == exceptions.end()) {
-      *origin = url;
-      return true;
-    }
+    if (exceptions.find(url) != exceptions.end())
+      continue;
+    if (special_storage_policy &&
+        special_storage_policy->IsStorageUnlimited(url))
+      continue;
+    *origin = url;
+    return true;
   }
 
   *origin = GURL();

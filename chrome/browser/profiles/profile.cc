@@ -701,7 +701,8 @@ class OffTheRecordProfileImpl : public Profile,
         IsOffTheRecord(),
         GetPath(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        GetExtensionSpecialStoragePolicy());
 
     // Each consumer is responsible for registering its QuotaClient during
     // its construction.

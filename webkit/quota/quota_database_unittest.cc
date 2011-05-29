@@ -15,6 +15,7 @@
 #include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_database.h"
 
 namespace {
@@ -168,7 +169,8 @@ class QuotaDatabaseTest : public testing::Test {
 
     std::set<GURL> exceptions;
     GURL origin;
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                NULL, &origin));
     EXPECT_TRUE(origin.is_empty());
 
     const GURL kOrigin1("http://a/");
@@ -188,19 +190,33 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(db.SetOriginLastAccessTime(
         kOrigin4, kStorageTypePersistent, base::Time::FromInternalValue(40)));
 
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                NULL, &origin));
     EXPECT_EQ(kOrigin1.spec(), origin.spec());
 
+    // Test that unlimited origins are exluded from eviction, but
+    // protected origins are not excluded.
+    scoped_refptr<MockSpecialStoragePolicy> policy(
+        new MockSpecialStoragePolicy);
+    policy->AddUnlimited(kOrigin1);
+    policy->AddProtected(kOrigin2);
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                policy, &origin));
+    EXPECT_EQ(kOrigin2.spec(), origin.spec());
+
     exceptions.insert(kOrigin1);
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                NULL, &origin));
     EXPECT_EQ(kOrigin2.spec(), origin.spec());
 
     exceptions.insert(kOrigin2);
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                NULL, &origin));
     EXPECT_EQ(kOrigin3.spec(), origin.spec());
 
     exceptions.insert(kOrigin3);
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                NULL, &origin));
     EXPECT_TRUE(origin.is_empty());
 
     EXPECT_TRUE(db.SetOriginLastAccessTime(
@@ -211,12 +227,14 @@ class QuotaDatabaseTest : public testing::Test {
 
     // Querying again to see if the deletion has worked.
     exceptions.clear();
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                NULL, &origin));
     EXPECT_EQ(kOrigin2.spec(), origin.spec());
 
     exceptions.insert(kOrigin1);
     exceptions.insert(kOrigin2);
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
+                                NULL, &origin));
     EXPECT_TRUE(origin.is_empty());
   }
 

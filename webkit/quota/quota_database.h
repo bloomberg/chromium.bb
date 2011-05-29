@@ -28,6 +28,8 @@ class GURL;
 
 namespace quota {
 
+class SpecialStoragePolicy;
+
 // All the methods of this class must run on the DB thread.
 class QuotaDatabase {
  public:
@@ -55,11 +57,13 @@ class QuotaDatabase {
   bool GetGlobalQuota(StorageType type, int64* quota);
   bool SetGlobalQuota(StorageType type, int64 quota);
 
-  // Sets |origin| the least recently used origin of origins not included in
-  // |exceptions|.  It returns false when it failed in accessing the database.
+  // Sets |origin| to the least recently used origin of origins not included
+  // in |exceptions| and not granted the special unlimited storage right.
+  // It returns false when it failed in accessing the database.
   // |origin| is set to empty when there is no matching origin.
   bool GetLRUOrigin(StorageType type,
                     const std::set<GURL>& exceptions,
+                    SpecialStoragePolicy* special_storage_policy,
                     GURL* origin);
 
   // Returns false if SetOriginDatabaseBootstrapped has never

@@ -42,10 +42,16 @@ class MockStorageClientIDSequencer {
 
 }  // anonymous namespace
 
-MockStorageClient::MockStorageClient(QuotaManagerProxy* quota_manager_proxy)
+MockStorageClient::MockStorageClient(
+    QuotaManagerProxy* quota_manager_proxy,
+    const MockOriginData* mock_data, size_t mock_data_size)
     : quota_manager_proxy_(quota_manager_proxy),
       id_(MockStorageClientIDSequencer::GetInstance()->NextMockID()),
       runnable_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  for (size_t i = 0; i < mock_data_size; ++i) {
+    origin_data_[make_pair(GURL(mock_data[i].origin), mock_data[i].type)] =
+        mock_data[i].usage;
+  }
 }
 
 MockStorageClient::~MockStorageClient() {
@@ -56,21 +62,20 @@ MockStorageClient::~MockStorageClient() {
       deletion_callbacks_.begin(), deletion_callbacks_.end());
 }
 
-void MockStorageClient::AddMockOriginData(
+void MockStorageClient::AddOriginAndNotify(
     const GURL& origin_url, StorageType type, int64 size) {
+  DCHECK(origin_data_.find(make_pair(origin_url, type)) == origin_data_.end());
+  DCHECK_GE(size, 0);
   origin_data_[make_pair(origin_url, type)] = size;
+  quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, size);
 }
 
-void MockStorageClient::ModifyMockOriginDataSize(
+void MockStorageClient::ModifyOriginAndNotify(
     const GURL& origin_url, StorageType type, int64 delta) {
   OriginDataMap::iterator find = origin_data_.find(make_pair(origin_url, type));
-  if (find == origin_data_.end()) {
-    DCHECK_GE(delta, 0);
-    AddMockOriginData(origin_url, type, delta);
-  } else {
-    find->second += delta;
-    DCHECK_GE(find->second, 0);
-  }
+  DCHECK(find != origin_data_.end());
+  find->second += delta;
+  DCHECK_GE(find->second, 0);
 
   // TODO(tzik): Check quota to prevent usage exceed
   quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, delta);

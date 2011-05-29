@@ -53,14 +53,20 @@ void QuotaTemporaryStorageEvictor::ConsiderEviction() {
 void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     QuotaStatusCode status,
     int64 usage,
+    int64 unlimited_usage,
     int64 quota,
     int64 available_disk_space) {
   DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK_GE(usage, unlimited_usage);  // unlimited_usage is a subset of usage
+
+  usage -= unlimited_usage;
 
   if (status == kQuotaStatusOk &&
       (usage > quota * kUsageRatioToStartEviction ||
        min_available_disk_space_to_start_eviction_ > available_disk_space)) {
     // Space is getting tight. Get the least recently used origin and continue.
+    // TODO(michaeln): if the reason for eviction is low physical disk space,
+    // make 'unlimited' origins subject to eviction too.
     quota_eviction_handler_->GetLRUOrigin(kStorageTypeTemporary,
         callback_factory_.NewCallback(
             &QuotaTemporaryStorageEvictor::OnGotLRUOrigin));

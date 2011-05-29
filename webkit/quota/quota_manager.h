@@ -23,6 +23,7 @@
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
+#include "webkit/quota/special_storage_policy.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -44,8 +45,9 @@ class QuotaEvictionHandler {
 
   typedef Callback1<const GURL&>::Type GetLRUOriginCallback;
   typedef Callback1<QuotaStatusCode>::Type EvictOriginDataCallback;
-  typedef Callback4<QuotaStatusCode,
+  typedef Callback5<QuotaStatusCode,
                     int64 /* usage */,
+                    int64 /* unlimited_usage */,
                     int64 /* quota */,
                     int64 /* physical_available */ >::Type
       GetUsageAndQuotaForEvictionCallback;
@@ -82,7 +84,8 @@ class QuotaManager : public QuotaTaskObserver,
   QuotaManager(bool is_incognito,
                const FilePath& profile_path,
                base::MessageLoopProxy* io_thread,
-               base::MessageLoopProxy* db_thread);
+               base::MessageLoopProxy* db_thread,
+               SpecialStoragePolicy* special_storage_policy);
 
   virtual ~QuotaManager();
 
@@ -134,16 +137,25 @@ class QuotaManager : public QuotaTaskObserver,
   void SetPersistentHostQuota(const std::string& host,
                               int64 new_quota,
                               HostQuotaCallback* callback);
-
-  void GetGlobalUsage(StorageType type, UsageCallback* callback);
+  void GetGlobalUsage(StorageType type, GlobalUsageCallback* callback);
   void GetHostUsage(const std::string& host, StorageType type,
                     HostUsageCallback* callback);
 
+  bool IsStorageUnlimited(const GURL& origin) const {
+    return special_storage_policy_.get() &&
+           special_storage_policy_->IsStorageUnlimited(origin);
+  }
+
+  // Used to determine the total size of the temp pool.
   static const int64 kTemporaryStorageQuotaDefaultSize;
   static const int64 kTemporaryStorageQuotaMaxSize;
-  static const char kDatabaseName[];
-
   static const int64 kIncognitoDefaultTemporaryQuota;
+
+  // Determines the portion of the temp pool that can be
+  // utilized by a single host (ie. 5 for 20%).
+  static const int kPerHostTemporaryPortion;
+
+  static const char kDatabaseName[];
 
  private:
   class DatabaseTaskBase;
@@ -179,6 +191,7 @@ class QuotaManager : public QuotaTaskObserver,
           num_evicted_clients(0),
           num_eviction_error(0),
           usage(0),
+          unlimited_usage(0),
           quota(0) {}
     virtual ~EvictionContext() {}
 
@@ -190,6 +203,7 @@ class QuotaManager : public QuotaTaskObserver,
     scoped_ptr<GetUsageAndQuotaForEvictionCallback>
         get_usage_and_quota_callback;
     int64 usage;
+    int64 unlimited_usage;
     int64 quota;
   };
 
@@ -233,7 +247,8 @@ class QuotaManager : public QuotaTaskObserver,
       QuotaStatusCode status,
       StorageType type,
       int64 quota);
-  void DidGetGlobalUsageForEviction(StorageType type, int64 usage);
+  void DidGetGlobalUsageForEviction(StorageType type, int64 usage,
+                                    int64 unlimited_usage);
 
   // QuotaEvictionHandler.
   virtual void GetLRUOrigin(
@@ -247,7 +262,8 @@ class QuotaManager : public QuotaTaskObserver,
       GetUsageAndQuotaForEvictionCallback* callback) OVERRIDE;
 
   void DidInitializeTemporaryGlobalQuota(int64 quota);
-  void DidRunInitialGetTemporaryGlobalUsage(StorageType type, int64 usage);
+  void DidRunInitialGetTemporaryGlobalUsage(StorageType type, int64 usage,
+                                            int64 unlimited_usage);
   void DidGetDatabaseLRUOrigin(const GURL& origin);
 
   void DeleteOnCorrectThread() const;
@@ -269,6 +285,8 @@ class QuotaManager : public QuotaTaskObserver,
 
   scoped_ptr<UsageTracker> temporary_usage_tracker_;
   scoped_ptr<UsageTracker> persistent_usage_tracker_;
+  // TODO(michaeln): Need a way to clear the cache, drop and
+  // reinstantiate the trackers when they're not handling requests.
 
   EvictionContext eviction_context_;
 
@@ -279,6 +297,8 @@ class QuotaManager : public QuotaTaskObserver,
 
   // Map from origin to count.
   std::map<GURL, int> origins_in_use_;
+
+  scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
   base::ScopedCallbackFactory<QuotaManager> callback_factory_;
 
@@ -322,7 +342,6 @@ class QuotaManagerProxy
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManagerProxy);
 };
-
 
 }  // namespace quota
 

@@ -25,6 +25,7 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
  public:
   MockQuotaEvictionHandler(QuotaTemporaryStorageEvictorTest *test)
       : quota_(0),
+        unlimited_usage_(0),
         available_space_(0),
         test_(test) {}
 
@@ -43,7 +44,8 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
       GetUsageAndQuotaForEvictionCallback* callback) OVERRIDE {
     if (task_for_get_usage_and_quota_.get())
       task_for_get_usage_and_quota_->Run();
-    callback->Run(quota::kQuotaStatusOk, GetUsage(), quota_, available_space_);
+    callback->Run(quota::kQuotaStatusOk, GetUsage(), unlimited_usage_,
+                  quota_, available_space_);
     delete callback;
   }
 
@@ -68,6 +70,9 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
 
   void set_quota(int64 quota) {
     quota_ = quota;
+  }
+  void set_unlimited_usage(int64 usage) {
+    unlimited_usage_ = usage;
   }
   void set_available_space(int64 available_space) {
     available_space_ = available_space;
@@ -107,6 +112,7 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
   }
 
   int64 quota_;
+  int64 unlimited_usage_;
   int64 available_space_;
   std::list<GURL> origin_order_;
   std::map<GURL, int64> origins_;
@@ -288,6 +294,20 @@ TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(150 + 300, quota_eviction_handler()->GetUsage());
+}
+
+TEST_F(QuotaTemporaryStorageEvictorTest, UnlimitedExclusionEvictionTest) {
+  quota_eviction_handler()->AddOrigin(GURL("http://www.z.com"), 3000);
+  quota_eviction_handler()->AddOrigin(GURL("http://www.y.com"), 200);
+  quota_eviction_handler()->AddOrigin(GURL("http://www.x.com"), 500000);
+  quota_eviction_handler()->set_unlimited_usage(500000);
+  quota_eviction_handler()->set_quota(5000);
+  quota_eviction_handler()->set_available_space(1000000000);
+  EXPECT_EQ(3000 + 200 + 500000, quota_eviction_handler()->GetUsage());
+  temporary_storage_evictor()->Start();
+  MessageLoop::current()->RunAllPending();
+  // Nothing should have been evicted.
+  EXPECT_EQ(3000 + 200 + 500000, quota_eviction_handler()->GetUsage());
 }
 
 }  // namespace quota

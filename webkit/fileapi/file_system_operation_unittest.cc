@@ -41,7 +41,8 @@ class MockQuotaManager : public QuotaManager {
                    StorageType type)
     : QuotaManager(false /* is_incognito */, base_dir,
                    base::MessageLoopProxy::CreateForCurrentThread(),
-                   base::MessageLoopProxy::CreateForCurrentThread()),
+                   base::MessageLoopProxy::CreateForCurrentThread(),
+                   NULL),
       origin_(origin),
       type_(type),
       usage_(0),

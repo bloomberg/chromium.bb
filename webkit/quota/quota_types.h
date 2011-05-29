@@ -36,6 +36,7 @@ enum QuotaStatusCode {
 
 // Common callback types that are used throughout in the quota module.
 typedef Callback2<StorageType, int64>::Type UsageCallback;
+typedef Callback3<StorageType, int64, int64>::Type GlobalUsageCallback;
 typedef Callback3<QuotaStatusCode,
                   StorageType,
                   int64>::Type QuotaCallback;
@@ -138,6 +139,8 @@ class CallbackQueue4 : public CallbackQueueBase<CallbackType4> {
 
 typedef CallbackQueue2<UsageCallback*,
                        StorageType, int64> UsageCallbackQueue;
+typedef CallbackQueue3<GlobalUsageCallback*,
+                       StorageType, int64, int64> GlobalUsageCallbackQueue;
 typedef CallbackQueue3<QuotaCallback*,
                        QuotaStatusCode,
                        StorageType, int64> QuotaCallbackQueue;
