@@ -110,8 +110,8 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // A count of how many requests received to show manage printers dialog.
   int manage_printers_dialog_request_count_;
 
-  // A count of how many times print preview failed.
-  int print_preview_failed_count_;
+  // Whether we have already logged a failed print preview.
+  bool reported_failed_preview_;
 
   // Whether we have already logged the number of printers this session.
   bool has_logged_printers_count_;

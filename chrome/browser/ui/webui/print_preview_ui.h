@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/time.h"
 #include "content/browser/webui/web_ui.h"
 
 class PrintPreviewUIHTMLSource;
@@ -37,6 +38,7 @@ class PrintPreviewUI : public WebUI {
 
  private:
   scoped_refptr<PrintPreviewUIHTMLSource> html_source_;
+  base::TimeTicks initial_preview_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

@@ -190,8 +190,10 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
   metafile->FinishDocument();
 
   if (is_preview) {
-    UMA_HISTOGRAM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
-                        base::TimeTicks::Now() - begin_time);
+    int preview_page_count = params.pages.size() ? params.pages.size() :
+                                                   *page_count;
+    ReportPreviewGenerationTime(base::TimeTicks::Now() - begin_time,
+                                preview_page_count);
   }
   return true;
 }

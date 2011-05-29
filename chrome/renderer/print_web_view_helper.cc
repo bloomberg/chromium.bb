@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
@@ -658,6 +659,40 @@ bool PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
   print_settings.params.supports_alpha_blend = true;
   // TODO(kmadhusu): Handle print selection.
   return CreatePreviewDocument(print_settings, frame, node);
+}
+
+void PrintWebViewHelper::ReportPreviewGenerationTime(base::TimeDelta time,
+                                                     int pages) {
+  if (pages <= 0) {
+    // This shouldn't happen, but this makes sure it doesn't affect the
+    // statistics if it does.
+    return;
+  }
+
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderAndGeneratePDFTime", time);
+
+  if (pages == 1) {
+    UMA_HISTOGRAM_TIMES(
+        "PrintPreview.RenderAndGeneratePDFTime.1Page", time);
+  } else if (pages == 2) {
+    UMA_HISTOGRAM_TIMES(
+        "PrintPreview.RenderAndGeneratePDFTime.2Pages", time);
+  } else if (pages <= 10) {
+    UMA_HISTOGRAM_TIMES(
+        "PrintPreview.RenderAndGeneratePDFTime.3-10Pages", time);
+  } else if (pages <= 25) {
+    UMA_HISTOGRAM_TIMES(
+        "PrintPreview.RenderAndGeneratePDFTime.11-25Pages", time);
+  } else if (pages <= 50) {
+    UMA_HISTOGRAM_TIMES(
+        "PrintPreview.RenderAndGeneratePDFTime.26-50Pages", time);
+  } else if (pages <= 100) {
+    UMA_HISTOGRAM_TIMES(
+        "PrintPreview.RenderAndGeneratePDFTime.51-100Pages", time);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "PrintPreview.RenderAndGeneratePDFTime.101+Pages", time);
+  }
 }
 
 #if defined(OS_POSIX)

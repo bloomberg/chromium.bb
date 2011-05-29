@@ -171,8 +171,10 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   if (!metafile->FinishDocument())
     NOTREACHED();
 
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
-                      base::TimeTicks::Now() - begin_time);
+  int preview_page_count = params.pages.size() ? params.pages.size() :
+                                                 page_count;
+  ReportPreviewGenerationTime(base::TimeTicks::Now() - begin_time,
+                              preview_page_count);
 
   // Get the size of the compiled metafile.
   uint32 buf_size = metafile->GetDataSize();

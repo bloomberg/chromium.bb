@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 
 #include "base/values.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
@@ -13,7 +14,8 @@
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : WebUI(contents),
-      html_source_(new PrintPreviewUIHTMLSource()) {
+      html_source_(new PrintPreviewUIHTMLSource()),
+      initial_preview_start_time_(base::TimeTicks::Now()) {
   // PrintPreviewUI owns |handler|.
   PrintPreviewHandler* handler = new PrintPreviewHandler();
   AddMessageHandler(handler->Attach(this));
@@ -40,6 +42,13 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                               bool modifiable) {
   VLOG(1) << "Print preview request finished with "
           << expected_pages_count << " pages";
+  if (!initial_preview_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("PrintPreview.InitalDisplayTime",
+                        base::TimeTicks::Now() - initial_preview_start_time_);
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.Initial",
+                         expected_pages_count);
+    initial_preview_start_time_ = base::TimeTicks();
+  }
   FundamentalValue pages_count(expected_pages_count);
   StringValue title(job_title);
   FundamentalValue is_preview_modifiable(modifiable);

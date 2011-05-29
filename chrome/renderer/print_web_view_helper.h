@@ -230,6 +230,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   bool GetPrintFrame(WebKit::WebFrame** frame);
 
+  void ReportPreviewGenerationTime(base::TimeDelta time, int pages);
+
   // Script Initiated Printing ------------------------------------------------
 
   // Returns true if script initiated printing occurs too often.
