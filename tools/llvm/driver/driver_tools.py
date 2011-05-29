@@ -173,6 +173,7 @@ DriverPatterns = [
 #
 ######################################################################
 
+# TODO(pdox): Move the environment & parser into a separate .py file
 class env(object):
   data = {}
   stack = []
@@ -280,20 +281,26 @@ class env(object):
   #
   # str = empty | string literal
   # expr = str | expr '$' '{' bracket_expr '}' expr
-  # bracket_expr = varname | boolname ? expr | boolname ? expr : expr
-  # boolname = varname | !varname | #varname | !#varname
+  # bracket_expr = varname | boolexpr ? expr | boolexpr ? expr : expr
+  # boolexpr = boolval | boolval '&&' boolexpr | boolval '||' boolexpr
+  # boolval = varname | !varname | #varname | !#varname | varname '==' str
   # varname = str | varname '%' bracket_expr '%' varname
   #
   # Do not call these functions outside of class env.
   # The env.eval method is the external interface to the evaluator.
   ######################################################################
 
+  # Evaluate a string literal
+  @classmethod
+  def eval_str(cls, s, pos, terminators):
+    (_,i) = FindFirst(s, pos, terminators)
+    return (s[pos:i], i)
+
   # Evaluate %var% substitutions inside a variable name.
   # Returns (the_actual_variable_name, endpos)
   # Terminated by } character
   @classmethod
   def eval_varname(cls, s, pos, terminators):
-    #print "eval_varname(%s,%d,%s)" % (s, pos, ' '.join(terminators))
     (_,i) = FindFirst(s, pos, ['%'] + terminators)
     leftpart = s[pos:i].strip(' ')
     if i == len(s) or s[i] in terminators:
@@ -306,15 +313,20 @@ class env(object):
     (rightpart, k) = cls.eval_varname(s, j+1, terminators)
 
     fullname = leftpart + middlepart + rightpart
-    fullname = fullname.strip(' ')
+    fullname = fullname.strip()
     return (fullname, k)
 
-  # Evaluate the inside of a ${} or %%.
-  # Returns the (the_evaluated_string, endpos)
+  # Absorb whitespace
   @classmethod
-  def eval_bracket_expr(cls, s, pos, terminators):
-    #print "eval_bracket_expr(%s,%d,%s)" % (s, pos, ' '.join(terminators))
+  def eval_whitespace(cls, s, pos):
     i = pos
+    while i < len(s) and s[i] == ' ':
+      i += 1
+    return (None, i)
+
+  @classmethod
+  def eval_bool_val(cls, s, pos, terminators):
+    (_,i) = cls.eval_whitespace(s, pos)
 
     if s[i] == '!':
       negated = True
@@ -322,17 +334,18 @@ class env(object):
     else:
       negated = False
 
+    (_,i) = cls.eval_whitespace(s, i)
+
     if s[i] == '#':
       uselen = True
       i += 1
     else:
       uselen = False
 
-
-    (varname, j) = cls.eval_varname(s, i, ['?']+terminators)
+    (varname, j) = cls.eval_varname(s, i, ['=']+terminators)
     if j == len(s):
       # This is an error condition one level up. Don't evaluate anything.
-      return ('', j)
+      return (False, j)
 
     if varname not in cls.data:
       ParseError(s, i, j, "Undefined variable '%s'" % varname)
@@ -340,43 +353,99 @@ class env(object):
 
     (contents, _) = cls.eval_expr(vardata, 0, terminators)
 
-    if s[j] != '?':
-      endpos = j
+    if s[j] == '=':
+      # String equality test
+      if j+1 == len(s) or s[j+1] != '=':
+        ParseError(s, j, j, "Unexpected token")
+      if uselen:
+        ParseError(s, j, j, "Cannot combine == and #")
+      (literal_str,j) = cls.eval_str(s, j+2, [' ']+terminators)
+      (_,j) = cls.eval_whitespace(s, j)
+      if j == len(s):
+        return (False, j) # Error one level up
+    else:
+      literal_str = None
+
+    if uselen:
+      val = (len(contents) != 0)
+    elif literal_str is not None:
+      val = (contents == literal_str)
+    else:
+      if contents not in ('0','1'):
+        ParseError(s, j, j,
+          "%s evaluated to %s, which is not a boolean!" % (varname, contents))
+      val = bool(int(contents))
+    return (negated ^ val, j)
+
+  # Evaluate a boolexpr
+  @classmethod
+  def eval_bool_expr(cls, s, pos, terminators):
+    (boolval1, i) = cls.eval_bool_val(s, pos, ['&','|']+terminators)
+    if i == len(s):
+      # This is an error condition one level up. Don't evaluate anything.
+      return (False, i)
+
+    if s[i] in ('&','|'):
+      # and/or expression
+      if i+1 == len(s) or s[i+1] != s[i]:
+        ParseError(s, i, i, "Unexpected token")
+      is_and = (s[i] == '&')
+
+      (boolval2, j) = cls.eval_bool_expr(s, i+2, terminators)
+      if j == len(s):
+        # This is an error condition one level up.
+        return (False, j)
+
+      if is_and:
+        return (boolval1 and boolval2, j)
+      else:
+        return (boolval1 or boolval2, j)
+
+    return (boolval1, i)
+
+  # Evaluate the inside of a ${} or %%.
+  # Returns the (the_evaluated_string, endpos)
+  @classmethod
+  def eval_bracket_expr(cls, s, pos, terminators):
+    (m,_) = FindFirst(s, pos, ['?']+terminators)
+    if m != '?':
+      # Regular variable substitution
+      (varname,i) = cls.eval_varname(s, pos, terminators)
+      if len(s) == i:
+        return ('', i)  # Error one level up
+      if varname not in cls.data:
+        ParseError(s, pos, i, "Undefined variable '%s'" % varname)
+      vardata = cls.data[varname]
+      (contents, _) = cls.eval_expr(vardata, 0, terminators)
+      return (contents, i)
     else:
       # Ternary Mode
-      if uselen:
-        boolval = (len(contents) != 0)
-      else:
-        if contents not in ('0','1'):
-          ParseError(s, j, j,
-            "%s evaluated to %s, which is not a boolean!" % (varname, contents))
-        boolval = bool(int(contents))
-      is_cond_true = negated ^ boolval
-      (if_true_expr, k) = cls.eval_expr(s, j+1, [':']+terminators)
-      if k == len(s):
-        # This is an error condition one level up.
-        return ('', k)
+      (is_cond_true,i) = cls.eval_bool_expr(s, pos, ['?']+terminators)
+      assert(i < len(s) and s[i] == '?')
 
-      if s[k] == ':':
-        (if_false_expr,k) = cls.eval_expr(s, k+1, terminators)
-        if k == len(s):
+      (if_true_expr, j) = cls.eval_expr(s, i+1, [':']+terminators)
+      if j == len(s):
+        return ('', j) # Error one level up
+
+      if s[j] == ':':
+        (if_false_expr,j) = cls.eval_expr(s, j+1, terminators)
+        if j == len(s):
           # This is an error condition one level up.
-          return ('', k)
+          return ('', j)
       else:
         if_false_expr = ''
 
       if is_cond_true:
-        contents = if_true_expr.strip(' ')
+        contents = if_true_expr.strip()
       else:
-        contents = if_false_expr.strip(' ')
-      endpos = k
-    return (contents, endpos)
+        contents = if_false_expr.strip()
+
+      return (contents, j)
 
   # Evaluate an expression with ${} in string s, starting at pos.
   # Returns (the_evaluated_expression, endpos)
   @classmethod
   def eval_expr(cls, s, pos, terminators):
-    #print "eval_expr(%s,%d,%s)" % (s, pos, ' '.join(terminators))
     (m,i) = FindFirst(s, pos, ['${'] + terminators)
     leftpart = s[pos:i]
     if i == len(s) or m in terminators:
