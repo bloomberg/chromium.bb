@@ -190,8 +190,9 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
   metafile->FinishDocument();
 
   if (is_preview) {
-    int preview_page_count = params.pages.size() ? params.pages.size() :
-                                                   *page_count;
+    int preview_page_count = params.pages.size();
+    if (!preview_page_count)
+      preview_page_count = *page_count;
     ReportPreviewGenerationTime(base::TimeTicks::Now() - begin_time,
                                 preview_page_count);
   }
