@@ -151,6 +151,9 @@ class UserScript {
   // against.
   const URLPatternList& url_patterns() const { return url_set_.patterns(); }
   void add_url_pattern(const URLPattern& pattern);
+  const URLPatternList& exclude_url_patterns() const {
+    return exclude_url_set_.patterns(); }
+  void add_exclude_url_pattern(const URLPattern& pattern);
 
   // List of js scripts for this user script
   FileList& js_scripts() { return js_scripts_; }
@@ -207,6 +210,7 @@ class UserScript {
   // URLPatterns that determine pages to inject the script into. These are
   // only used with scripts that are part of extensions.
   URLPatternSet url_set_;
+  URLPatternSet exclude_url_set_;
 
   // List of js scripts defined in content_scripts
   FileList js_scripts_;

@@ -60,9 +60,18 @@ void UserScript::add_url_pattern(const URLPattern& pattern) {
   url_set_.AddPattern(pattern);
 }
 
+void UserScript::add_exclude_url_pattern(const URLPattern& pattern) {
+  exclude_url_set_.AddPattern(pattern);
+}
+
 bool UserScript::MatchesURL(const GURL& url) const {
   if (!url_set_.is_empty()) {
     if (!url_set_.MatchesURL(url))
+      return false;
+  }
+
+  if (!exclude_url_set_.is_empty()) {
+    if (exclude_url_set_.MatchesURL(url))
       return false;
   }
 

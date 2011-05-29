@@ -112,9 +112,22 @@ can have the following properties:</p>
     <td><code>matches</code></td>
     <td>array of strings</td>
     <td><em>Required.</em>
-    Controls the pages this content script will be injected into.
+    Specifies which pages this content script will be injected into.
     See <a href="match_patterns.html">Match Patterns</a>
-    for more details on the syntax of these strings.</td>
+    for more details on the syntax of these strings
+    and <a href="#match-patterns-globs">Match patterns and globs</a>
+    for information on how to exclude URLs.</td>
+  </tr>
+  <tr>
+    <td><code>exclude_matches</code></td>
+    <td>array of strings</td>
+    <td><em>Optional.</em>
+    Excludes pages that this content script would otherwise be
+    injected into.
+    See <a href="match_patterns.html">Match Patterns</a>
+    for more details on the syntax of these strings
+    and <a href="#match-patterns-globs">Match patterns and globs</a>
+    for information on how to exclude URLs.</td>
   </tr>
   <tr>
     <td><code>css<code></td>
@@ -163,24 +176,39 @@ can have the following properties:</p>
     <td><code>include_globs</code></td>
     <td>array of string</td>
     <td><em>Optional.</em>
-    Applied after <code>matches</code> to control the pages that this content script will be injected into. Intended to emulate the <a href="http://wiki.greasespot.net/Metadata_Block#.40include"><code>@include</code></a> Greasemonkey keyword. See <a href="#include-exclude-globs">Include and exclude globs</a> below for more details.</td>
+    Applied after <code>matches</code> to include only those URLs that also match this glob. Intended to emulate the <a href="http://wiki.greasespot.net/Metadata_Block#.40include"><code>@include</code></a> Greasemonkey keyword.
+    See <a href="#match-patterns-globs">Match patterns and globs</a> below for more details.</td>
   </tr>
   <tr>
     <td><code>exclude_globs</code></td>
     <td>array of string</td>
     <td><em>Optional.</em>
-    Applied after <code>matches</code> to control the pages that this content script will be injected into. Intended to emulate the <a href="http://wiki.greasespot.net/Metadata_Block#.40include"><code>@exclude</code></a> Greasemonkey keyword. See <a href="#include-exclude-globs">Include and exclude globs</a> below for more details.</td>
+    Applied after <code>matches</code> to exclude URLs that match this glob.
+    Intended to emulate the <a href="http://wiki.greasespot.net/Metadata_Block#.40include"><code>@exclude</code></a> Greasemonkey keyword.
+    See <a href="#match-patterns-globs">Match patterns and globs</a> below for more details.</td>
   </tr>
 </table>
 
-<h3 id="include-exclude-globs">Include and exclude globs</h3>
+<h3 id="match-patterns-globs">Match patterns and globs</h3>
 
 <p>
-The content script will be injected into a page if its URL matches any <code>matches</code> pattern and any <code>include_globs</code> pattern, as long as the URL doesn't also match an <code>exclude_globs</code> pattern. Because the <code>matches</code> property is required, <code>include_globs</code> and <code>exclude_globs</code> can only be used to limit which pages will be affected.
+The content script will be injected into a page if its URL matches any <code>matches</code> pattern and any <code>include_globs</code> pattern, as long as the URL doesn't also match an <code>exclude_matches</code> or <code>exclude_globs</code> pattern.
+
+Because the <code>matches</code> property is required, <code>exclude_matches</code>, <code>include_globs</code>, and <code>exclude_globs</code> can only be used to limit which pages will be affected.
 </p>
 
+<p>
+For example, assume <code>matches</code> is <code>["http://*.nytimes.com/*"]</code>:
 </p>
-However, these glob properties follow a different syntax than <code>matches</code>, which is much more flexible.  Acceptable strings are URLs that may contain "wildcard" asterisks and question marks. The asterisk (*) is used to match any string of any length (including the empty string); the question mark (?) is used to match any single character.
+<ul>
+<li>If <code>exclude_matches</code> is <code>["*://*/*business*"]</code>, then the content script would be injected into "http://www.nytimes.com/health" but not into "http://www.nytimes.com/business".</li>
+<li>If <code>include_globs</code> is <code>["*nytimes.com/???s/*"]</code>, then the content script would be injected into "http:/www.nytimes.com/arts/index.html" and "http://www.nytimes.com/jobs/index.html" but not into "http://www.nytimes.com/sports/index.html".</li>
+<li>If <code>exclude_globs</code> is <code>["*science*"]</code>, then the content script would be injected into "http://www.nytimes.com" but not into "http://science.nytimes.com" or "http://www.nytimes.com/science".</li>
+</ul>
+<p>
+
+<p>
+Glob properties follow a different, more flexible syntax than <a href="match_patterns.html">match patterns</a>.  Acceptable glob strings are URLs that may contain "wildcard" asterisks and question marks. The asterisk (*) matches any string of any length (including the empty string); the question mark (?) matches any single character.
 </p>
 
 <p>

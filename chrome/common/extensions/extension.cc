@@ -762,7 +762,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     result->set_match_all_frames(all_frames);
   }
 
-  // matches
+  // matches (required)
   ListValue* matches = NULL;
   if (!content_script->GetList(keys::kMatches, &matches)) {
     *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatches,
@@ -810,6 +810,44 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     }
 
     result->add_url_pattern(pattern);
+  }
+
+  // exclude_matches
+  if (content_script->HasKey(keys::kExcludeMatches)) {  // optional
+    ListValue* exclude_matches = NULL;
+    if (!content_script->GetList(keys::kExcludeMatches, &exclude_matches)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidExcludeMatches,
+          base::IntToString(definition_index));
+      return false;
+    }
+
+    for (size_t j = 0; j < exclude_matches->GetSize(); ++j) {
+      std::string match_str;
+      if (!exclude_matches->GetString(j, &match_str)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidExcludeMatch,
+            base::IntToString(definition_index),
+            base::IntToString(j),
+            errors::kExpectString);
+        return false;
+      }
+
+      URLPattern pattern(UserScript::kValidUserScriptSchemes);
+      if (CanExecuteScriptEverywhere())
+        pattern.set_valid_schemes(URLPattern::SCHEME_ALL);
+      URLPattern::ParseResult parse_result = pattern.Parse(match_str,
+                                                           parse_strictness);
+      if (parse_result != URLPattern::PARSE_SUCCESS) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidExcludeMatch,
+            base::IntToString(definition_index), base::IntToString(j),
+            URLPattern::GetParseResultString(parse_result));
+        return false;
+      }
+
+      result->add_exclude_url_pattern(pattern);
+    }
   }
 
   // include/exclude globs (mostly for Greasemonkey compatibility)
@@ -1031,7 +1069,7 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
       result->SetPopupUrl(ExtensionAction::kDefaultTabId, url);
     } else {
       DCHECK(!result->HasPopup(ExtensionAction::kDefaultTabId))
-          << "Shouldn't be posible for the popup to be set.";
+          << "Shouldn't be possible for the popup to be set.";
     }
   }
 

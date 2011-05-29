@@ -20,6 +20,7 @@ const char* kDefaultLocale = "default_locale";
 const char* kDescription = "description";
 const char* kDevToolsPage = "devtools_page";
 const char* kExcludeGlobs = "exclude_globs";
+const char* kExcludeMatches = "exclude_matches";
 const char* kFileFilters = "file_filters";
 const char* kFileBrowserHandlers = "file_browser_handlers";
 const char* kHomepageURL = "homepage_url";
@@ -162,6 +163,10 @@ const char* kInvalidDescription =
     "Invalid value for 'description'.";
 const char* kInvalidDevToolsPage =
     "Invalid value for 'devtools_page'.";
+const char* kInvalidExcludeMatch =
+    "Invalid value for 'content_scripts[*].exclude_matches[*]': *";
+const char* kInvalidExcludeMatches =
+    "Invalid value for 'content_scripts[*].exclude_matches'.";
 const char* kInvalidFileBrowserHandler =
     "Invalid value for 'file_browser_handers'.";
 const char* kInvalidFileFiltersList =
@@ -209,7 +214,7 @@ const char* kInvalidManifest =
 const char* kInvalidMatch =
     "Invalid value for 'content_scripts[*].matches[*]': *";
 const char* kInvalidMatchCount =
-    "Invalid value for 'content_scripts[*].matches'. There must be at least"
+    "Invalid value for 'content_scripts[*].matches'. There must be at least "
     "one match specified.";
 const char* kInvalidMatches =
     "Required value 'content_scripts[*].matches' is missing or invalid.";

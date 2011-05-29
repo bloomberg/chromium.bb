@@ -15,7 +15,7 @@ static const int kAllSchemes =
     URLPattern::SCHEME_FTP |
     URLPattern::SCHEME_CHROMEUI;
 
-TEST(ExtensionUserScriptTest, Match1) {
+TEST(ExtensionUserScriptTest, Glob_HostString) {
   UserScript script;
   script.add_glob("*mail.google.com*");
   script.add_glob("*mail.yahoo.com*");
@@ -34,7 +34,7 @@ TEST(ExtensionUserScriptTest, Match1) {
   EXPECT_FALSE(script.MatchesURL(GURL("http://mail.google.com/foo")));
 }
 
-TEST(ExtensionUserScriptTest, Match2) {
+TEST(ExtensionUserScriptTest, Glob_TrailingSlash) {
   UserScript script;
   script.add_glob("*mail.google.com/");
   // GURL normalizes the URL to have a trailing "/"
@@ -43,7 +43,7 @@ TEST(ExtensionUserScriptTest, Match2) {
   EXPECT_FALSE(script.MatchesURL(GURL("http://mail.google.com/foo")));
 }
 
-TEST(ExtensionUserScriptTest, Match3) {
+TEST(ExtensionUserScriptTest, Glob_TrailingSlashStar) {
   UserScript script;
   script.add_glob("http://mail.google.com/*");
   // GURL normalizes the URL to have a trailing "/"
@@ -52,7 +52,7 @@ TEST(ExtensionUserScriptTest, Match3) {
   EXPECT_FALSE(script.MatchesURL(GURL("https://mail.google.com/foo")));
 }
 
-TEST(ExtensionUserScriptTest, Match4) {
+TEST(ExtensionUserScriptTest, Glob_Star) {
   UserScript script;
   script.add_glob("*");
   EXPECT_TRUE(script.MatchesURL(GURL("http://foo.com/bar")));
@@ -62,7 +62,7 @@ TEST(ExtensionUserScriptTest, Match4) {
   EXPECT_TRUE(script.MatchesURL(GURL("file://localhost/foo/bar")));
 }
 
-TEST(ExtensionUserScriptTest, Match5) {
+TEST(ExtensionUserScriptTest, Glob_StringAnywhere) {
   UserScript script;
   script.add_glob("*foo*");
   EXPECT_TRUE(script.MatchesURL(GURL("http://foo.com/bar")));
@@ -70,7 +70,7 @@ TEST(ExtensionUserScriptTest, Match5) {
   EXPECT_FALSE(script.MatchesURL(GURL("http://baz.org")));
 }
 
-TEST(ExtensionUserScriptTest, Match6) {
+TEST(ExtensionUserScriptTest, UrlPattern) {
   URLPattern pattern(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("http://*/foo*", URLPattern::PARSE_STRICT));
@@ -81,6 +81,54 @@ TEST(ExtensionUserScriptTest, Match6) {
   EXPECT_FALSE(script.MatchesURL(GURL("http://monkey.com/hotdog")));
 
   // NOTE: URLPattern is tested more extensively in url_pattern_unittest.cc.
+}
+
+TEST(ExtensionUserScriptTest, ExcludeUrlPattern) {
+  UserScript script;
+
+  URLPattern pattern(kAllSchemes);
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("http://*.nytimes.com/*", URLPattern::PARSE_STRICT));
+  script.add_url_pattern(pattern);
+
+  URLPattern exclude(kAllSchemes);
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            exclude.Parse("*://*/*business*", URLPattern::PARSE_STRICT));
+  script.add_exclude_url_pattern(exclude);
+
+  EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com/health")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://www.nytimes.com/business")));
+  EXPECT_TRUE(script.MatchesURL(GURL("http://business.nytimes.com")));
+}
+
+TEST(ExtensionUserScriptTest, UrlPatternAndIncludeGlobs) {
+  UserScript script;
+
+  URLPattern pattern(kAllSchemes);
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("http://*.nytimes.com/*", URLPattern::PARSE_STRICT));
+  script.add_url_pattern(pattern);
+
+  script.add_glob("*nytimes.com/???s/*");
+
+  EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com/arts/1.html")));
+  EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com/jobs/1.html")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://www.nytimes.com/sports/1.html")));
+}
+
+TEST(ExtensionUserScriptTest, UrlPatternAndExcludeGlobs) {
+  UserScript script;
+
+  URLPattern pattern(kAllSchemes);
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("http://*.nytimes.com/*", URLPattern::PARSE_STRICT));
+  script.add_url_pattern(pattern);
+
+  script.add_exclude_glob("*science*");
+
+  EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://science.nytimes.com")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://www.nytimes.com/science")));
 }
 
 TEST(ExtensionUserScriptTest, UrlPatternGlobInteraction) {

@@ -348,6 +348,19 @@ TEST_F(ExtensionManifestTest, InvalidContentScriptMatchPattern) {
               URLPattern::PARSE_ERROR_HAS_COLON)));
 }
 
+TEST_F(ExtensionManifestTest, ExcludeMatchPatterns) {
+  LoadAndExpectSuccess("exclude_matches.json");
+  LoadAndExpectSuccess("exclude_matches_empty.json");
+
+  LoadAndExpectError("exclude_matches_not_list.json",
+                     "Invalid value for 'content_scripts[0].exclude_matches'.");
+
+  LoadAndExpectError("exclude_matches_invalid_host.json",
+                     "Invalid value for "
+                     "'content_scripts[0].exclude_matches[0]': "
+                     "Invalid host wildcard.");
+}
+
 TEST_F(ExtensionManifestTest, ExperimentalPermission) {
   LoadAndExpectError("experimental.json", errors::kExperimentalFlagRequired);
   CommandLine old_command_line = *CommandLine::ForCurrentProcess();
