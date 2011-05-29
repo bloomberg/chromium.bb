@@ -31,6 +31,7 @@ found in the LICENSE file.
     <script src="spdyview.js"></script>
     <script src="serviceprovidersview.js"></script>
     <script src="httpthrottlingview.js"></script>
+    <script src="logsview.js"></script>
   </head>
   <body onload="onLoaded()">
     <!-- Tab switcher for main categories. -->
@@ -48,6 +49,7 @@ found in the LICENSE file.
         <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
         <li><a href="#tests" id=testTab>Tests</a></li>
         <li><a href="#hsts" id=hstsTab>HSTS</a></li>
+        <li><a href="#logs" id=logsTab style="display: none;">Logs</a></li>
       </ul>
       <div style="clear: both;"></div>
     </div>
@@ -473,5 +475,25 @@ function displayHelpForBugDump() {
     </div>
     <div id=detailsLogBox></div>
     <div id=detailsTimelineBox></div>
+    
+    <!-- ============================ Logs View ============================ -->
+    <div id=logsTabContent style="display: none;">
+      <h4>Network Log Data</h4>
+      <button id=logsGlobalShowBtn class=logsGlobalButton>Show all...</button>
+      <button id=logsGlobalHideBtn class=logsGlobalButton>Hide all...</button>
+      <button id=logsRefreshBtn class=logsGlobalButton>Refresh logs...</button>
+      <div style="clear: both"></div>
+      <table width=100% class=styledTable>
+        <thead>
+          <tr id=logTableHeaderRow>
+            <th width=10%>Log Name</th>
+            <th width=8%></th>
+            <th width=82%>Log</th>
+          </tr>
+        </thead>
+        <tbody id=logTable>
+        </tbody>
+      </table>
+    </div>
   </body>
 </html>

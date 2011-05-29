@@ -109,6 +109,55 @@ body {
   color: red;
 }
 
+.logCellEmpty {
+  background-color: gray;
+}
+
+.logCellText, .logCellLog {
+  background-color: white;
+}
+
+.logRowCollapsed .logCellLog {
+  display: none;
+}
+
+.logRowExpanded .logCellLog {
+  display: table-cell;
+}
+
+.logTableButtonColumn {
+  text-align: center;
+}
+
+.logButton {
+  width: 85px;
+}
+
+.logsGlobalButton {
+  width: 135px;
+  float: left;
+  margin: 5px;
+  margin-top: 0;
+}
+
+#logTable td {
+  padding: 0 5px;
+  padding-top: 3px;
+  vertical-align: top;
+  line-height: 17px;
+  font-family: 'Courier New', monospace;
+  white-space: pre;
+  font-size: 12px;
+}
+
+#logTableHeaderRow th {
+  text-align: left;
+}
+
+#logsTabContent {
+  padding: 5px;
+}
+
 .tabSwitcher {
   margin-top: 10px;
   margin-left: 10px;

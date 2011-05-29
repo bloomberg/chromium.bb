@@ -126,6 +126,15 @@ function onLoaded() {
   var httpThrottlingView = new HttpThrottlingView(
       'httpThrottlingTabContent', 'enableHttpThrottlingCheckbox');
 
+  var logsView;
+  if (g_browser.isChromeOS()) {
+    logsView = new LogsView('logsTabContent',
+                            'logTable',
+                            'logsGlobalShowBtn',
+                            'logsGlobalHideBtn',
+                            'logsRefreshBtn');
+  }
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher = new TabSwitcherView('categoryTabHandles');
   g_browser.setTabSwitcher(categoryTabSwitcher);
@@ -143,6 +152,8 @@ function onLoaded() {
   categoryTabSwitcher.addTab('testTab', testView, false);
   categoryTabSwitcher.addTab('hstsTab', hstsView, false);
   categoryTabSwitcher.addTab('httpThrottlingTab', httpThrottlingView, false);
+  if (g_browser.isChromeOS())
+    categoryTabSwitcher.addTab('logsTab', logsView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
@@ -292,6 +303,10 @@ BrowserBridge.prototype.isPlatformWindows = function() {
   return /Win/.test(navigator.platform);
 };
 
+BrowserBridge.prototype.isChromeOS = function() {
+  return /CrOS/.test(navigator.userAgent);
+};
+
 BrowserBridge.prototype.sendGetProxySettings = function() {
   // The browser will call receivedProxySettings on completion.
   chrome.send('getProxySettings');
@@ -383,7 +398,15 @@ BrowserBridge.prototype.enableHttpThrottling = function(enable) {
 
 BrowserBridge.prototype.loadLogFile = function() {
   chrome.send('loadLogFile');
-}
+};
+
+BrowserBridge.prototype.refreshSystemLogs = function() {
+  chrome.send('refreshSystemLogs');
+};
+
+BrowserBridge.prototype.getSystemLog = function(log_key, cellId) {
+  chrome.send('getSystemLog', [log_key, cellId]);
+};
 
 //------------------------------------------------------------------------------
 // Messages received from the browser
@@ -608,6 +631,10 @@ BrowserBridge.prototype.loadedLogFile = function(logFileContents) {
       'Entries with invalid data may be caused by version differences.\n\n' +
       'See console for more information.');
   }
+}
+
+BrowserBridge.prototype.getSystemLogCallback = function(result) {
+  document.getElementById(result.cellId).textContent = result.log;
 }
 
 //------------------------------------------------------------------------------

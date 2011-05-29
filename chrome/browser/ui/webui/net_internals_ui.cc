@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/net_internals_ui.h"
 
 #include <algorithm>
+#include <list>
 #include <string>
 #include <utility>
 #include <vector>
@@ -61,6 +62,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#ifdef OS_CHROMEOS
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/syslogs_library.h"
+#endif
 #ifdef OS_WIN
 #include "chrome/browser/net/service_providers_win.h"
 #endif
@@ -172,6 +177,10 @@ class NetInternalsMessageHandler
   // Javascript message handlers.
   void OnRendererReady(const ListValue* list);
   void OnEnableHttpThrottling(const ListValue* list);
+#ifdef OS_CHROMEOS
+  void OnRefreshSystemLogs(const ListValue* list);
+  void OnGetSystemLog(const ListValue* list);
+#endif
 
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -204,6 +213,61 @@ class NetInternalsMessageHandler
     const FilePath path_;
   };
 
+#ifdef OS_CHROMEOS
+  // Class that is used for getting network related ChromeOS logs.
+  // Logs are fetched from ChromeOS libcros on user request, and only when we
+  // don't yet have a copy of logs. If a copy is present, we send back data from
+  // it, else we save request and answer to it when we get logs from libcros.
+  // If needed, we also send request for system logs to libcros.
+  // Logs refresh has to be done explicitly, by deleting old logs and then
+  // loading them again.
+  class SystemLogsGetter {
+   public:
+    SystemLogsGetter(NetInternalsMessageHandler* handler,
+                     chromeos::SyslogsLibrary* syslog_lib);
+    ~SystemLogsGetter();
+
+    // Deletes logs copy we currently have, and resets logs_requested and
+    // logs_received flags.
+    void DeleteSystemLogs();
+    // Starts log fetching. If logs copy is present, requested logs are sent
+    // back.
+    // If syslogs load request hasn't been sent to libcros yet, we do that now,
+    // and postpone sending response.
+    // Request data is specified by args:
+    //   $1 : key of the log we are interested in.
+    //   $2 : string used to identify request.
+    void RequestSystemLog(const ListValue* args);
+    // Requests logs from libcros, but only if we don't have a copy.
+    void LoadSystemLogs();
+    // Processes callback from libcros containing system logs. Postponed
+    // request responses are sent.
+    void OnSystemLogsLoaded(chromeos::LogDictionaryType* sys_info,
+                            std::string* ignored_content);
+
+   private:
+    // Struct we save postponed log request in.
+    struct SystemLogRequest {
+      std::string log_key;
+      std::string cell_id;
+    };
+
+    // Processes request.
+    void SendLogs(const SystemLogRequest& request);
+
+    NetInternalsMessageHandler* handler_;
+    chromeos::SyslogsLibrary* syslogs_library_;
+    // List of postponed requests.
+    std::list<SystemLogRequest> requests_;
+    scoped_ptr<chromeos::LogDictionaryType> logs_;
+    bool logs_received_;
+    bool logs_requested_;
+    CancelableRequestConsumer consumer_;
+    // Libcros request handle.
+    CancelableRequestProvider::Handle syslogs_request_id_;
+  };
+#endif
+
   // The pref member about whether HTTP throttling is enabled, which needs to
   // be accessed on the UI thread.
   BooleanPrefMember http_throttling_enabled_;
@@ -214,6 +278,11 @@ class NetInternalsMessageHandler
 
   // This is the "real" message handler, which lives on the IO thread.
   scoped_refptr<IOThreadImpl> proxy_;
+
+#ifdef OS_CHROMEOS
+  // Class that handles getting and filtering system logs.
+  scoped_ptr<SystemLogsGetter> syslogs_getter_;
+#endif
 
   // Used for loading log files.
   scoped_refptr<SelectFileDialog> select_log_file_dialog_;
@@ -291,7 +360,6 @@ class NetInternalsMessageHandler::IOThreadImpl
 #ifdef OS_WIN
   void OnGetServiceProviders(const ListValue* list);
 #endif
-
   void OnSetLogLevel(const ListValue* list);
 
   // ChromeNetLog::ThreadSafeObserver implementation:
@@ -482,6 +550,10 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
 
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             web_ui->GetProfile()->GetRequestContext());
+#ifdef OS_CHROMEOS
+  syslogs_getter_.reset(new SystemLogsGetter(this,
+      chromeos::CrosLibrary::Get()->GetSyslogsLibrary()));
+#endif
   renderer_ready_io_callback_.reset(
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
 
@@ -582,7 +654,14 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "getServiceProviders",
       proxy_->CreateCallback(&IOThreadImpl::OnGetServiceProviders));
 #endif
-
+#ifdef OS_CHROMEOS
+  web_ui_->RegisterMessageCallback(
+      "refreshSystemLogs",
+      NewCallback(this, &NetInternalsMessageHandler::OnRefreshSystemLogs));
+  web_ui_->RegisterMessageCallback(
+      "getSystemLog",
+      NewCallback(this, &NetInternalsMessageHandler::OnGetSystemLog));
+#endif
   web_ui_->RegisterMessageCallback(
       "setLogLevel",
       proxy_->CreateCallback(&IOThreadImpl::OnSetLogLevel));
@@ -660,6 +739,100 @@ void NetInternalsMessageHandler::ReadLogFileTask::Run() {
                                  new StringValue(file_contents));
 }
 
+#ifdef OS_CHROMEOS
+////////////////////////////////////////////////////////////////////////////////
+//
+// NetInternalsMessageHandler::SystemLogsGetter
+//
+////////////////////////////////////////////////////////////////////////////////
+
+NetInternalsMessageHandler::SystemLogsGetter::SystemLogsGetter(
+    NetInternalsMessageHandler* handler,
+    chromeos::SyslogsLibrary* syslog_lib)
+    : handler_(handler),
+      syslogs_library_(syslog_lib),
+      logs_(NULL),
+      logs_received_(false),
+      logs_requested_(false) {
+  if (!syslogs_library_)
+    LOG(ERROR) << "System logs library not loaded";
+}
+
+NetInternalsMessageHandler::SystemLogsGetter::~SystemLogsGetter() {
+  DeleteSystemLogs();
+}
+
+void NetInternalsMessageHandler::SystemLogsGetter::DeleteSystemLogs() {
+  if (syslogs_library_ && logs_requested_ && !logs_received_) {
+    syslogs_library_->CancelRequest(syslogs_request_id_);
+  }
+  logs_requested_ = false;
+  logs_received_ = false;
+  logs_.reset();
+}
+
+void NetInternalsMessageHandler::SystemLogsGetter::RequestSystemLog(
+    const ListValue* args) {
+  if (!logs_requested_) {
+    DCHECK(!logs_received_);
+    LoadSystemLogs();
+  }
+  SystemLogRequest log_request;
+  args->GetString(0, &log_request.log_key);
+  args->GetString(1, &log_request.cell_id);
+
+  if (logs_received_) {
+    SendLogs(log_request);
+  } else {
+    requests_.push_back(log_request);
+  }
+}
+
+void NetInternalsMessageHandler::SystemLogsGetter::LoadSystemLogs() {
+  if (logs_requested_ || !syslogs_library_)
+    return;
+  logs_requested_ = true;
+  syslogs_request_id_ = syslogs_library_->RequestSyslogs(
+      false,  // compress logs.
+      chromeos::SyslogsLibrary::SYSLOGS_NETWORK,
+      &consumer_,
+      NewCallback(
+          this,
+          &NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded));
+}
+
+void NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded(
+    chromeos::LogDictionaryType* sys_info, std::string* ignored_content) {
+  DCHECK(!ignored_content);
+  logs_.reset(sys_info);
+  logs_received_ = true;
+  for (std::list<SystemLogRequest>::iterator request_it = requests_.begin();
+       request_it != requests_.end();
+       ++request_it) {
+    SendLogs(*request_it);
+  }
+  requests_.clear();
+}
+
+void NetInternalsMessageHandler::SystemLogsGetter::SendLogs(
+    const SystemLogRequest& request) {
+  scoped_ptr<DictionaryValue> result(new DictionaryValue());
+  chromeos::LogDictionaryType::iterator log_it = logs_->find(request.log_key);
+  if (log_it != logs_->end()) {
+    if (!log_it->second.empty()) {
+      result->SetString("log", log_it->second);
+    } else {
+      result->SetString("log", "<no relevant lines found>");
+    }
+  } else {
+    result->SetString("log", "<invalid log name>");
+  }
+  result->SetString("cellId", request.cell_id);
+
+  handler_->CallJavascriptFunction(L"g_browser.getSystemLogCallback",
+                                   result.get());
+}
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 //
 // NetInternalsMessageHandler::IOThreadImpl
@@ -1319,6 +1492,19 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
 
   CallJavascriptFunction(L"g_browser.receivedServiceProviders",
                          service_providers);
+}
+#endif
+
+#ifdef OS_CHROMEOS
+void NetInternalsMessageHandler::OnRefreshSystemLogs(const ListValue* list) {
+  DCHECK(syslogs_getter_.get());
+  syslogs_getter_->DeleteSystemLogs();
+  syslogs_getter_->LoadSystemLogs();
+}
+
+void NetInternalsMessageHandler::OnGetSystemLog(const ListValue* list) {
+  DCHECK(syslogs_getter_.get());
+  syslogs_getter_->RequestSystemLog(list);
 }
 #endif
 
