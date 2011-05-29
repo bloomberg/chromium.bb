@@ -405,6 +405,7 @@ extern const char kNTPWebStorePromoId[];
 extern const char kNTPWebStorePromoHeader[];
 extern const char kNTPWebStorePromoButton[];
 extern const char kNTPWebStorePromoLink[];
+extern const char kNTPWebStorePromoLogo[];
 extern const char kNTPWebStorePromoExpire[];
 
 extern const char kGpuBlacklist[];

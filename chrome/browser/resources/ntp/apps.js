@@ -67,6 +67,8 @@ function getAppsCallback(data) {
     appsPromoLink.href = data.promoLink;
     appsPromoLink.textContent = data.promoButton;
     appsPromoLink.ping = appsPromoPing;
+    $('apps-promo').style.background =
+          "url('" + data.promoLogo + "') no-repeat";
     $('apps-promo-hide').textContent = data.promoExpire;
 
     // ... then display the promo.

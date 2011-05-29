@@ -176,7 +176,7 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
                      "    \"answers\": ["
                      "       {"
                      "        \"answer_id\": \"341252\","
-                     "        \"name\": \"webstore_promo:15\","
+                     "        \"name\": \"webstore_promo:15:\","
                      "        \"question\": \"The header!\","
                      "        \"inproduct_target\": \"The button label!\","
                      "        \"inproduct\": \"http://link.com\","
@@ -201,6 +201,8 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
   EXPECT_EQ("The button label!", AppsPromo::GetPromoButtonText());
   EXPECT_EQ(GURL("http://link.com"), AppsPromo::GetPromoLink());
   EXPECT_EQ("No thanks, hide this.", AppsPromo::GetPromoExpireText());
+  EXPECT_EQ(GURL("chrome://theme/IDR_WEBSTORE_ICON"),
+            AppsPromo::GetPromoLogo());
 }
 
 TEST_F(PromoResourceServiceTest, IsBuildTargeted) {

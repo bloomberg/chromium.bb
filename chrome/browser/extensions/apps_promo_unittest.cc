@@ -19,6 +19,7 @@ const char kPromoId[] = "23123123";
 const char kPromoHeader[] = "Get great apps!";
 const char kPromoButton[] = "Click for apps!";
 const char kPromoLink[] = "http://apps.com";
+const char kPromoLogo[] = "chrome://theme/IDR_WEBSTORE_ICON";
 const char kPromoExpire[] = "No thanks.";
 
 } // namespace
@@ -73,8 +74,8 @@ TEST_F(ExtensionAppsPromo, HappyPath) {
   EXPECT_FALSE(promo_just_expired);
 
   // Once the promo is set, we show both the promo and app launcher.
-  AppsPromo::SetPromo(
-      kPromoId, kPromoHeader, kPromoButton, GURL(kPromoLink), kPromoExpire);
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(""));
 
   EXPECT_TRUE(AppsPromo::IsPromoSupportedForLocale());
   EXPECT_TRUE(apps_promo()->ShouldShowAppLauncher(installed_ids));
@@ -113,8 +114,8 @@ TEST_F(ExtensionAppsPromo, HappyPath) {
 // Tests get and set of promo content.
 TEST_F(ExtensionAppsPromo, PromoPrefs) {
   // Store a promo....
-  AppsPromo::SetPromo(
-      kPromoId, kPromoHeader, kPromoButton, GURL(kPromoLink), kPromoExpire);
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(""));
 
   // ... then make sure AppsPromo can access it.
   EXPECT_EQ(kPromoId, AppsPromo::GetPromoId());
@@ -122,6 +123,8 @@ TEST_F(ExtensionAppsPromo, PromoPrefs) {
   EXPECT_EQ(kPromoButton, AppsPromo::GetPromoButtonText());
   EXPECT_EQ(GURL(kPromoLink), AppsPromo::GetPromoLink());
   EXPECT_EQ(kPromoExpire, AppsPromo::GetPromoExpireText());
+  // The promo logo should be the default value.
+  EXPECT_EQ(GURL(kPromoLogo), AppsPromo::GetPromoLogo());
   EXPECT_TRUE(AppsPromo::IsPromoSupportedForLocale());
 
   AppsPromo::ClearPromo();
@@ -130,7 +133,35 @@ TEST_F(ExtensionAppsPromo, PromoPrefs) {
   EXPECT_EQ("", AppsPromo::GetPromoButtonText());
   EXPECT_EQ(GURL(""), AppsPromo::GetPromoLink());
   EXPECT_EQ("", AppsPromo::GetPromoExpireText());
+  EXPECT_EQ(GURL(kPromoLogo), AppsPromo::GetPromoLogo());
   EXPECT_FALSE(AppsPromo::IsPromoSupportedForLocale());
+
+  // Make sure we can set the logo to something other than the default.
+  std::string promo_logo = "data:image/png;base64,iVBORw0kGgoAAAN";
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(promo_logo));
+  EXPECT_EQ(GURL(promo_logo), AppsPromo::GetPromoLogo());
+  EXPECT_TRUE(AppsPromo::IsPromoSupportedForLocale());
+
+  // Verify that the default is returned instead of http or https URLs.
+  promo_logo = "http://google.com/logo.png";
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(promo_logo));
+  EXPECT_EQ(GURL(kPromoLogo), AppsPromo::GetPromoLogo());
+  EXPECT_TRUE(AppsPromo::IsPromoSupportedForLocale());
+
+  promo_logo = "https://google.com/logo.png";
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(promo_logo));
+  EXPECT_EQ(GURL(kPromoLogo), AppsPromo::GetPromoLogo());
+  EXPECT_TRUE(AppsPromo::IsPromoSupportedForLocale());
+
+  // Try an invalid URL.
+  promo_logo = "sldkfjlsdn";
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(promo_logo));
+  EXPECT_EQ(GURL(kPromoLogo), AppsPromo::GetPromoLogo());
+  EXPECT_TRUE(AppsPromo::IsPromoSupportedForLocale());
 }
 
 // Tests that the apps section is maxmized when showing a promo for the first
@@ -144,8 +175,8 @@ TEST_F(ExtensionAppsPromo, UpdatePromoFocus) {
   EXPECT_FALSE(promo_just_expired);
 
   // Set the promo content.
-  AppsPromo::SetPromo(
-      kPromoId, kPromoHeader, kPromoButton, GURL(kPromoLink), kPromoExpire);
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(""));
 
   // After asking if we should show the promo, the
   EXPECT_TRUE(AppsPromo::IsPromoSupportedForLocale());

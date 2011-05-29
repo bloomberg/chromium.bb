@@ -309,6 +309,7 @@ void PromoResourceService::UnpackWebStoreSignal(
   std::string promo_button = "";
   std::string promo_link = "";
   std::string promo_expire = "";
+  std::string promo_logo = "";
   int target_builds = 0;
 
   if (!parsed_json.GetDictionary("topic", &topic_dict) ||
@@ -321,19 +322,27 @@ void PromoResourceService::UnpackWebStoreSignal(
       continue;
     DictionaryValue* a_dic =
         static_cast<DictionaryValue*>(*answer_iter);
+
+    // The "name" field has three different values packed into it, each
+    // separated by a ':'.
     std::string name;
     if (!a_dic->GetString("name", &name))
       continue;
 
+    // (1) the string "webstore_promo"
     size_t split = name.find(":");
-    if (split == std::string::npos)
+    if (split == std::string::npos || name.substr(0, split) != "webstore_promo")
       continue;
 
-    std::string promo_signal = name.substr(0, split);
-
-    if (promo_signal != "webstore_promo" ||
-        !base::StringToInt(name.substr(split+1), &target_builds))
+    // (2) an integer specifying which builds the promo targets
+    name = name.substr(split+1);
+    split = name.find(':');
+    if (split == std::string::npos ||
+        !base::StringToInt(name.substr(0, split), &target_builds))
       continue;
+
+    // (3) optional text that specifies a URL of a logo image
+    promo_logo = name.substr(split+1);
 
     if (!a_dic->GetString(kAnswerIdProperty, &promo_id) ||
         !a_dic->GetString(kWebStoreHeaderProperty, &promo_header) ||
@@ -344,8 +353,8 @@ void PromoResourceService::UnpackWebStoreSignal(
 
     if (IsThisBuildTargeted(target_builds)) {
       // Store the first web store promo that targets the current build.
-      AppsPromo::SetPromo(
-          promo_id, promo_header, promo_button, GURL(promo_link), promo_expire);
+      AppsPromo::SetPromo(promo_id, promo_header, promo_button,
+                          GURL(promo_link), promo_expire, GURL(promo_logo));
       signal_found = true;
       break;
     }

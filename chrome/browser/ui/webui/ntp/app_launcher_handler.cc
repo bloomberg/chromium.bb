@@ -269,6 +269,7 @@ void AppLauncherHandler::FillPromoDictionary(DictionaryValue* dictionary) {
   dictionary->SetString("promoHeader", AppsPromo::GetPromoHeaderText());
   dictionary->SetString("promoButton", AppsPromo::GetPromoButtonText());
   dictionary->SetString("promoLink", AppsPromo::GetPromoLink().spec());
+  dictionary->SetString("promoLogo", AppsPromo::GetPromoLogo().spec());
   dictionary->SetString("promoExpire", AppsPromo::GetPromoExpireText());
 }
 

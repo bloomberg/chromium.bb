@@ -164,7 +164,7 @@ class PromoResourceService
   //     "answers": [
   //       {
   //         "answer_id": "1143011",
-  //         "name": "webstore_promo:15",
+  //         "name": "webstore_promo:15:",
   //         "question": "Browse thousands of apps and games for Chrome.",
   //         "inproduct_target": "Visit the Chrome Web Store",
   //         "inproduct": "https://chrome.google.com/webstore?hl=en",
@@ -182,7 +182,9 @@ class PromoResourceService
   //   tooltip: the text for the "hide this" link on the promo
   //   name: starts with "webstore_promo" to identify the signal. the second
   //         part contains the release channels targeted (bitwise or of
-  //         BuildTypes)
+  //         BuildTypes). The third part is optional and specifies the URL of
+  //         the logo image. In the example above, the URL is empty so the
+  //         default webstore logo will be used.
   //   answer_id: the promo's id
   void UnpackWebStoreSignal(const DictionaryValue& parsed_json);
 

@@ -142,7 +142,6 @@ menu > button.default {
 }
 
 html.apps-promo-visible #apps-promo {
-  background: url('chrome://theme/IDR_WEBSTORE_ICON') no-repeat;
   height: 125px;
   -webkit-padding-start: 125px;
   display: table-cell;
@@ -200,4 +199,3 @@ html[dir=rtl] .app.web-store-entry.loner {
   padding: 2px 10px;
   white-space: nowrap;
 }
-

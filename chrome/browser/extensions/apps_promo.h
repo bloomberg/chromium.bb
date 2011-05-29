@@ -39,15 +39,20 @@ class AppsPromo {
   // Gets the promo link.
   static GURL GetPromoLink();
 
+  // Gets the URL of the promo logo image.
+  static GURL GetPromoLogo();
+
   // Gets the text for the promo "hide this" link.
   static std::string GetPromoExpireText();
 
-  // Called to set the current promo data.
+  // Called to set the current promo data. The default web store logo will be
+  // used if |logo| is empty or not valid.
   static void SetPromo(const std::string& id,
                        const std::string& header_text,
                        const std::string& button_text,
                        const GURL& link,
-                       const std::string& expire_text);
+                       const std::string& expire_text,
+                       const GURL& logo);
 
   explicit AppsPromo(PrefService* prefs);
   ~AppsPromo();

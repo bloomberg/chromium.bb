@@ -15,6 +15,13 @@
 
 const int AppsPromo::kDefaultAppsCounterMax = 10;
 
+namespace {
+
+// The default logo for the promo.
+const char kDefaultPromoLogo[] = "chrome://theme/IDR_WEBSTORE_ICON";
+
+} // namespace
+
 // static
 void AppsPromo::RegisterPrefs(PrefService* local_state) {
   std::string empty;
@@ -22,6 +29,7 @@ void AppsPromo::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoHeader, empty);
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoButton, empty);
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoLink, empty);
+  local_state->RegisterStringPref(prefs::kNTPWebStorePromoLogo, empty);
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoExpire, empty);
 }
 
@@ -47,6 +55,7 @@ void AppsPromo::ClearPromo() {
   local_state->ClearPref(prefs::kNTPWebStorePromoHeader);
   local_state->ClearPref(prefs::kNTPWebStorePromoButton);
   local_state->ClearPref(prefs::kNTPWebStorePromoLink);
+  local_state->ClearPref(prefs::kNTPWebStorePromoLogo);
   local_state->ClearPref(prefs::kNTPWebStorePromoExpire);
 }
 
@@ -75,6 +84,15 @@ GURL AppsPromo::GetPromoLink() {
 }
 
 // static
+GURL AppsPromo::GetPromoLogo() {
+  PrefService* local_state = g_browser_process->local_state();
+  GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
+  if (logo_url.is_valid() && logo_url.SchemeIs("data"))
+    return logo_url;
+  return GURL(kDefaultPromoLogo);
+}
+
+// static
 std::string AppsPromo::GetPromoExpireText() {
   PrefService* local_state = g_browser_process->local_state();
   return local_state->GetString(prefs::kNTPWebStorePromoExpire);
@@ -85,12 +103,14 @@ void AppsPromo::SetPromo(const std::string& id,
                          const std::string& header_text,
                          const std::string& button_text,
                          const GURL& link,
-                         const std::string& expire_text) {
+                         const std::string& expire_text,
+                         const GURL& logo) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kNTPWebStorePromoId, id);
   local_state->SetString(prefs::kNTPWebStorePromoButton, button_text);
   local_state->SetString(prefs::kNTPWebStorePromoHeader, header_text);
   local_state->SetString(prefs::kNTPWebStorePromoLink, link.spec());
+  local_state->SetString(prefs::kNTPWebStorePromoLogo, logo.spec());
   local_state->SetString(prefs::kNTPWebStorePromoExpire, expire_text);
 }
 
@@ -103,6 +123,7 @@ bool AppsPromo::IsPromoSupportedForLocale() {
       local_state->HasPrefPath(prefs::kNTPWebStorePromoHeader) &&
       local_state->HasPrefPath(prefs::kNTPWebStorePromoButton) &&
       local_state->HasPrefPath(prefs::kNTPWebStorePromoLink) &&
+      local_state->HasPrefPath(prefs::kNTPWebStorePromoLogo) &&
       local_state->HasPrefPath(prefs::kNTPWebStorePromoExpire);
 }
 
