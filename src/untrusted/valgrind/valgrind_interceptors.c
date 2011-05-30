@@ -485,11 +485,11 @@ void VG_NACL_LIBPTHREAD_FUNC(ZuZupthreadZuinitializeZuminimal)(void) {
 void VG_NACL_NONE_FUNC(ncZuthreadZustarter)(size_t func, size_t state) {
   OrigFn fn;
   int local_stack_var = 0;
-  VALGRIND_GET_ORIG_FN(fn);
 
   /* Let the tool guess where the stack starts. */
   VG_CREQ_v_W(TSREQ_THR_STACK_TOP, (size_t)&local_stack_var);
 
+  VALGRIND_GET_ORIG_FN(fn);
   CALL_FN_v_WW(fn, func, state);
 }
 
