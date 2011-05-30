@@ -7,16 +7,25 @@
 #include "base/eintr_wrapper.h"
 #include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
+#include "base/hash_tables.h"
+#include "base/metrics/histogram.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/pdf/SkPDFDevice.h"
 #include "third_party/skia/include/pdf/SkPDFDocument.h"
+#include "third_party/skia/include/pdf/SkPDFFont.h"
 #include "third_party/skia/include/pdf/SkPDFPage.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+
+namespace {
+  typedef base::hash_map<SkFontID, SkAdvancedTypefaceMetrics::FontType>
+      FontTypeMap;
+};
 
 namespace printing {
 
@@ -24,6 +33,7 @@ struct PdfMetafileSkiaData {
   SkRefPtr<SkPDFDevice> current_page_;
   SkPDFDocument pdf_doc_;
   SkDynamicMemoryWStream pdf_stream_;
+  FontTypeMap font_type_stats_;
 };
 
 PdfMetafileSkia::~PdfMetafileSkia() {}
@@ -71,6 +81,13 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
 bool PdfMetafileSkia::FinishPage() {
   DCHECK(data_->current_page_.get());
 
+  const SkTDArray<SkPDFFont*>& font_resources =
+      data_->current_page_->getFontResources();
+  for (int i = 0; i < font_resources.count(); i++) {
+    SkFontID key = font_resources[i]->typeface()->uniqueID();
+    data_->font_type_stats_[key] = font_resources[i]->getType();
+  }
+
   data_->pdf_doc_.appendPage(data_->current_page_);
   data_->current_page_ = NULL;
   return true;
@@ -83,6 +100,16 @@ bool PdfMetafileSkia::FinishDocument() {
 
   if (data_->current_page_.get())
     FinishPage();
+
+  for (FontTypeMap::const_iterator it = data_->font_type_stats_.begin();
+       it != data_->font_type_stats_.end();
+       it++) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PrintPreview.FontType",
+        it->second,
+        SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1);
+  }
+
   return data_->pdf_doc_.emitPDF(&data_->pdf_stream_);
 }
 
