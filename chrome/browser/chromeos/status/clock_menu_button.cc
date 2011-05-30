@@ -88,30 +88,10 @@ void ClockMenuButton::UpdateText() {
   const bool use_24hour_clock =
       host_->GetProfile() &&
       host_->GetProfile()->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
-  if (use_24hour_clock) {
-    SetText(UTF16ToWide(base::TimeFormatTimeOfDayWithHourClockType(
-        time, base::k24HourClock)));
-  } else {
-    // Remove the am/pm field if it's present.
-    scoped_ptr<icu::DateFormat> formatter(
-        icu::DateFormat::createTimeInstance(icu::DateFormat::kShort));
-    icu::UnicodeString time_string;
-    icu::FieldPosition ampm_field(icu::DateFormat::kAmPmField);
-    formatter->format(
-        static_cast<UDate>(time.ToDoubleT() * 1000), time_string, ampm_field);
-    int ampm_length = ampm_field.getEndIndex() - ampm_field.getBeginIndex();
-    if (ampm_length) {
-      int begin = ampm_field.getBeginIndex();
-      // Doesn't include any spacing before the field.
-      if (begin)
-        begin--;
-      time_string.removeBetween(begin, ampm_field.getEndIndex());
-    }
-    string16 time_string16 =
-        string16(time_string.getBuffer(),
-                 static_cast<size_t>(time_string.length()));
-    SetText(UTF16ToWide(time_string16));
-  }
+  SetText(UTF16ToWide(base::TimeFormatTimeOfDayWithHourClockType(
+      time,
+      use_24hour_clock ? base::k24HourClock : base::k12HourClock,
+      base::kDropAmPm)));
   SetTooltipText(UTF16ToWide(base::TimeFormatShortDate(time)));
   SchedulePaint();
 }
