@@ -20,13 +20,8 @@
 #import "chrome/browser/ui/cocoa/download/download_shelf_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen_controller.h"
 #import "chrome/browser/ui/cocoa/hover_button.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image.h"
 
 // Download shelf autoclose behavior:
 //
@@ -76,8 +71,6 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
 - (void)closed;
 - (BOOL)canAutoClose;
 
-- (void)updateTheme;
-- (void)themeDidChangeNotification:(NSNotification*)notification;
 - (void)viewFrameDidChange:(NSNotification*)notification;
 
 - (void)installTrackingArea;
@@ -123,22 +116,12 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
   DCHECK(hoverCloseButton_);
 
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter addObserver:self
-                    selector:@selector(themeDidChangeNotification:)
-                        name:kBrowserThemeDidChangeNotification
-                      object:nil];
-
   [[self animatableView] setResizeDelegate:resizeDelegate_];
   [[self view] setPostsFrameChangedNotifications:YES];
   [defaultCenter addObserver:self
                     selector:@selector(viewFrameDidChange:)
                         name:NSViewFrameDidChangeNotification
                       object:[self view]];
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* favicon = rb.GetNativeImageNamed(IDR_DOWNLOADS_FAVICON);
-  DCHECK(favicon);
-  [image_ setImage:favicon];
 
   // These notifications are declared in fullscreen_controller, and are posted
   // without objects.
@@ -161,11 +144,6 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
   [super dealloc];
 }
 
-// Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)notification {
-  [self updateTheme];
-}
-
 // Called after the frame's rect has changed; usually when the height is
 // animated.
 - (void)viewFrameDidChange:(NSNotification*)notification {
@@ -181,25 +159,6 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
     [view setFrame:frame];
   }
   currentShelfHeight_ = newShelfHeight;
-}
-
-// Adapt appearance to the current theme. Called after theme changes and before
-// this is shown for the first time.
-- (void)updateTheme {
-  NSColor* color = nil;
-
-  if (bridge_.get() && bridge_->browser() && bridge_->browser()->profile()) {
-    ui::ThemeProvider* provider =
-        ThemeServiceFactory::GetForProfile(bridge_->browser()->profile());
-
-    color =
-        provider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT, false);
-  }
-
-  if (!color)
-    color = [HyperlinkButtonCell defaultTextColor];
-
-  [showAllDownloadsCell_ setTextColor:color];
 }
 
 - (AnimatableView*)animatableView {
@@ -250,9 +209,6 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
 - (void)showDownloadShelf:(BOOL)enable {
   if ([self isVisible] == enable)
     return;
-
-  if ([[self view] window])
-    [self updateTheme];
 
   // Animate the shelf out, but not in.
   // TODO(rohitrao): We do not animate on the way in because Cocoa is already

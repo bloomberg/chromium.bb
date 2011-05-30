@@ -583,8 +583,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     ThemeService* themeProvider = static_cast<ThemeService*>(
         [[controlView window] themeProvider]);
     NSColor* color = themeProvider ?
-        themeProvider->GetNSColorTint(ThemeService::TINT_BUTTONS,
-                                      true) :
+        themeProvider->GetNSColorTint(ThemeService::TINT_BUTTONS, true) :
         [NSColor blackColor];
 
     if (isTemplate && themeProvider && themeProvider->UsingDefaultTheme()) {
@@ -636,9 +635,9 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 // We can't use GTMFadeTruncatingTextFieldCell because there's no easy way to
 // get it to work with NSButtonCell.
 // TODO(jeremy): Move this to GTM.
-- (NSRect)drawTitle:(NSAttributedString *)title
+- (NSRect)drawTitle:(NSAttributedString*)title
           withFrame:(NSRect)cellFrame
-             inView:(NSView *)controlView {
+             inView:(NSView*)controlView {
   NSSize size = [title size];
 
   // Empirically, Cocoa will draw an extra 2 pixels past NSWidth(cellFrame)

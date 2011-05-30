@@ -38,10 +38,6 @@ class DownloadShelf;
 
 @interface DownloadShelfController : NSViewController<NSTextViewDelegate> {
  @private
-  IBOutlet HyperlinkButtonCell* showAllDownloadsCell_;
-
-  IBOutlet NSImageView* image_;
-
   IBOutlet HoverButton* hoverCloseButton_;
 
   BOOL barIsVisible_;

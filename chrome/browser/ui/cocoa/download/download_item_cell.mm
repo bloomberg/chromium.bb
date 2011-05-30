@@ -10,7 +10,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #import "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/download/download_item_cell.h"
+#import "chrome/browser/ui/cocoa/download/background_theme.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
@@ -20,8 +20,6 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-
-namespace {
 
 // Distance from top border to icon.
 const CGFloat kImagePaddingTop = 7;
@@ -78,8 +76,6 @@ const int kCompleteAnimationDuration = 2.5;
 // Duration of the 'download interrupted' animation, in seconds.
 const int kInterruptedAnimationDuration = 2.5;
 
-}
-
 // This is a helper class to animate the fading out of the status text.
 @interface DownloadItemCellAnimation : NSAnimation {
   DownloadItemCell* cell_;
@@ -89,82 +85,6 @@ const int kInterruptedAnimationDuration = 2.5;
                 animationCurve:(NSAnimationCurve)animationCurve;
 @end
 
-class BackgroundTheme : public ui::ThemeProvider {
-public:
-  BackgroundTheme(ui::ThemeProvider* provider);
-
-  virtual void Init(Profile* profile) { }
-  virtual SkBitmap* GetBitmapNamed(int id) const { return nil; }
-  virtual SkColor GetColor(int id) const { return SkColor(); }
-  virtual bool GetDisplayProperty(int id, int* result) const { return false; }
-  virtual bool ShouldUseNativeFrame() const { return false; }
-  virtual bool HasCustomImage(int id) const { return false; }
-  virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
-  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const;
-  virtual NSColor* GetNSColor(int id, bool allow_default) const;
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
-  virtual NSGradient* GetNSGradient(int id) const;
-
-private:
-  ui::ThemeProvider* provider_;
-  scoped_nsobject<NSGradient> buttonGradient_;
-  scoped_nsobject<NSGradient> buttonPressedGradient_;
-  scoped_nsobject<NSColor> borderColor_;
-};
-
-BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
-    provider_(provider) {
-  NSColor* bgColor = [NSColor colorWithCalibratedRed:241/255.0
-                                               green:245/255.0
-                                                blue:250/255.0
-                                               alpha:77/255.0];
-  NSColor* clickedColor = [NSColor colorWithCalibratedRed:239/255.0
-                                                    green:245/255.0
-                                                     blue:252/255.0
-                                                    alpha:51/255.0];
-
-  borderColor_.reset(
-      [[NSColor colorWithCalibratedWhite:0 alpha:36/255.0] retain]);
-  buttonGradient_.reset([[NSGradient alloc]
-      initWithColors:[NSArray arrayWithObject:bgColor]]);
-  buttonPressedGradient_.reset([[NSGradient alloc]
-      initWithColors:[NSArray arrayWithObject:clickedColor]]);
-}
-
-NSImage* BackgroundTheme::GetNSImageNamed(int id, bool allow_default) const {
-  return nil;
-}
-
-NSColor* BackgroundTheme::GetNSImageColorNamed(int id,
-                                               bool allow_default) const {
-  return nil;
-}
-
-NSColor* BackgroundTheme::GetNSColor(int id, bool allow_default) const {
-  return provider_->GetNSColor(id, allow_default);
-}
-
-NSColor* BackgroundTheme::GetNSColorTint(int id, bool allow_default) const {
-  if (id == ThemeService::TINT_BUTTONS)
-    return borderColor_.get();
-
-  return provider_->GetNSColorTint(id, allow_default);
-}
-
-NSGradient* BackgroundTheme::GetNSGradient(int id) const {
-  switch (id) {
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON:
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON_INACTIVE:
-      return buttonGradient_.get();
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED:
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE:
-      return buttonPressedGradient_.get();
-    default:
-      return provider_->GetNSGradient(id);
-  }
-}
-
 @interface DownloadItemCell(Private)
 - (void)updateTrackingAreas:(id)sender;
 - (void)hideSecondaryTitle;
@@ -172,7 +92,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
        progressed:(NSAnimationProgress)progress;
 - (NSString*)elideTitle:(int)availableWidth;
 - (NSString*)elideStatus:(int)availableWidth;
-- (ui::ThemeProvider*)backgroundThemeWrappingProvider:(ui::ThemeProvider*)provider;
+- (ui::ThemeProvider*)backgroundThemeWrappingProvider:
+    (ui::ThemeProvider*)provider;
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part;
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part;
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame;
@@ -432,7 +353,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
       false));
 }
 
-- (ui::ThemeProvider*)backgroundThemeWrappingProvider:(ui::ThemeProvider*)provider {
+- (ui::ThemeProvider*)backgroundThemeWrappingProvider:
+    (ui::ThemeProvider*)provider {
   if (!themeProvider_.get()) {
     themeProvider_.reset(new BackgroundTheme(provider));
   }
@@ -487,8 +409,6 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  // Constants from Cole.  Will kConstant them once the feedback loop
-  // is complete.
   NSRect drawFrame = NSInsetRect(cellFrame, 1.5, 1.5);
   NSRect innerFrame = NSInsetRect(cellFrame, 2, 2);
 
@@ -621,10 +541,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   }
 
   // Draw icon
-  NSRect imageRect = NSZeroRect;
-  imageRect.size = [[self image] size];
   [[self image] drawInRect:[self imageRectForBounds:cellFrame]
-                  fromRect:imageRect
+                  fromRect:NSZeroRect
                  operation:NSCompositeSourceOver
                   fraction:[self isEnabled] ? 1.0 : 0.5
               neverFlipped:YES];
