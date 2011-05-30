@@ -1276,6 +1276,7 @@
         'browser/browsing_data_file_system_helper_unittest.cc',
         'browser/browsing_data_indexed_db_helper_unittest.cc',
         'browser/browsing_data_local_storage_helper_unittest.cc',
+        'browser/browsing_data_remover_unittest.cc',
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/chromeos/cros/network_library.cc',
         'browser/chromeos/cros/network_library.h',

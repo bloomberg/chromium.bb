@@ -131,13 +131,15 @@ void BrowsingDataRemover::Remove(int remove_mask) {
 
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history.
-    waiting_for_clear_networking_history_ = true;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &BrowsingDataRemover::ClearNetworkingHistory,
-            g_browser_process->io_thread()));
+    if (g_browser_process->io_thread()) {
+      waiting_for_clear_networking_history_ = true;
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &BrowsingDataRemover::ClearNetworkingHistory,
+              g_browser_process->io_thread()));
+    }
 
     // As part of history deletion we also delete the auto-generated keywords.
     TemplateURLModel* keywords_model = profile_->GetTemplateURLModel();
@@ -339,7 +341,8 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
   // cookies and passwords.  Simplest just to always clear it.  Must be cleared
   // after the cache, as cleaning up the disk cache exposes some of the history
   // in the NetLog.
-  g_browser_process->net_log()->ClearAllPassivelyCapturedEvents();
+  if (g_browser_process->net_log())
+    g_browser_process->net_log()->ClearAllPassivelyCapturedEvents();
 
   removing_ = false;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnBrowsingDataRemoverDone());
