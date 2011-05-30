@@ -5,7 +5,7 @@ URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
 # http://code.google.com/p/drmemory/issues/detail?id=422
 HttpAuthTest.*
 HttpAuthHandlerFactoryTest.*
-X509CertificateTest.UnoSoftCertParsing
+X509CertificateTest.*
 
 # Slow
 CookieMonsterTest.GarbageCollectionTriggers
