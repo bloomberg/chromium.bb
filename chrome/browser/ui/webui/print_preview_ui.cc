@@ -4,31 +4,43 @@
 
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 
-#include "base/values.h"
 #include "base/metrics/histogram.h"
+#include "base/string_util.h"
+#include "base/values.h"
+#include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
-#include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : WebUI(contents),
-      html_source_(new PrintPreviewUIHTMLSource()),
       initial_preview_start_time_(base::TimeTicks::Now()) {
   // PrintPreviewUI owns |handler|.
   PrintPreviewHandler* handler = new PrintPreviewHandler();
   AddMessageHandler(handler->Attach(this));
 
-  // Set up the chrome://print/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source_);
+  // Set up the chrome://print/ data source.
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      new PrintPreviewDataSource());
+
+  // Store the PrintPreviewUIAddress as a string.
+  // "0x" + deadc0de + '\0' = 2 + 2 * sizeof(this) + 1;
+  char preview_ui_addr[2 + (2 * sizeof(this)) + 1];
+  base::snprintf(preview_ui_addr, sizeof(preview_ui_addr), "%p", this);
+  preview_ui_addr_str_ = preview_ui_addr;
 }
 
 PrintPreviewUI::~PrintPreviewUI() {
+  print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
 }
 
-PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
-  return html_source_.get();
+void PrintPreviewUI::GetPrintPreviewData(scoped_refptr<RefCountedBytes>* data) {
+  print_preview_data_service()->GetDataEntry(preview_ui_addr_str_, data);
+}
+
+void PrintPreviewUI::SetPrintPreviewData(const RefCountedBytes* data) {
+    print_preview_data_service()->SetDataEntry(preview_ui_addr_str_, data);
 }
 
 void PrintPreviewUI::OnInitiatorTabClosed(
@@ -52,6 +64,11 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   FundamentalValue pages_count(expected_pages_count);
   StringValue title(job_title);
   FundamentalValue is_preview_modifiable(modifiable);
+  StringValue ui_identifier(preview_ui_addr_str_);
   CallJavascriptFunction("updatePrintPreview", pages_count, title,
-                         is_preview_modifiable);
+                         is_preview_modifiable, ui_identifier);
+}
+
+PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
+  return PrintPreviewDataService::GetInstance();
 }

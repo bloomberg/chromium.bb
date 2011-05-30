@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
+#include "chrome/browser/ui/webui/print_preview_data_source.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "base/message_loop.h"
-#include "base/shared_memory.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -108,28 +108,25 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
 
 }  // namespace
 
-PrintPreviewUIHTMLSource::PrintPreviewUIHTMLSource()
-    : DataSource(chrome::kChromeUIPrintHost, MessageLoop::current()),
-      data_(std::make_pair(static_cast<base::SharedMemory*>(NULL), 0U)) {
+PrintPreviewDataSource::PrintPreviewDataSource()
+    : DataSource(chrome::kChromeUIPrintHost, MessageLoop::current()) {
 }
 
-PrintPreviewUIHTMLSource::~PrintPreviewUIHTMLSource() {
-  delete data_.first;
+PrintPreviewDataSource::~PrintPreviewDataSource() {
 }
 
-void PrintPreviewUIHTMLSource::GetPrintPreviewData(PrintPreviewData* data) {
-  *data = data_;
-}
+void PrintPreviewDataSource::StartDataRequest(const std::string& path,
+                                              bool is_incognito,
+                                              int request_id) {
+  scoped_refptr<RefCountedBytes> data(new RefCountedBytes);
 
-void PrintPreviewUIHTMLSource::SetPrintPreviewData(
-    const PrintPreviewData& data) {
-  delete data_.first;
-  data_ = data;
-}
+  bool preview_data_requested = EndsWith(path, "/print.pdf", true);
+  if (preview_data_requested) {
+    size_t index = path.rfind("/print.pdf");
+    PrintPreviewDataService::GetInstance()->GetDataEntry(path.substr(0, index),
+                                                         &data);
+  }
 
-void PrintPreviewUIHTMLSource::StartDataRequest(const std::string& path,
-                                                bool is_incognito,
-                                                int request_id) {
   if (path.empty()) {
     // Print Preview Index page.
     DictionaryValue localized_strings;
@@ -148,19 +145,11 @@ void PrintPreviewUIHTMLSource::StartDataRequest(const std::string& path,
 
     SendResponse(request_id, html_bytes);
     return;
-  } else if (path == "print.pdf" && data_.first) {
+  } else if (preview_data_requested && data->front()) {
     // Print Preview data.
-    char* preview_data = reinterpret_cast<char*>(data_.first->memory());
-    uint32 preview_data_size = data_.second;
-
-    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-    html_bytes->data.resize(preview_data_size);
-    std::vector<unsigned char>::iterator it = html_bytes->data.begin();
-    for (uint32 i = 0; i < preview_data_size; ++i, ++it)
-      *it = *(preview_data + i);
-    SendResponse(request_id, html_bytes);
+    SendResponse(request_id, data);
     return;
-  } else {
+ } else {
     // Invalid request.
     scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
     SendResponse(request_id, empty_bytes);
@@ -168,11 +157,8 @@ void PrintPreviewUIHTMLSource::StartDataRequest(const std::string& path,
   }
 }
 
-std::string PrintPreviewUIHTMLSource::GetMimeType(
-    const std::string& path) const {
-  // Print Preview Index page.
+std::string PrintPreviewDataSource::GetMimeType(const std::string& path) const {
   if (path.empty())
-    return "text/html";
-  // Print Preview data.
-  return "application/pdf";
+    return "text/html";  // Print Preview Index Page.
+  return "application/pdf";  // Print Preview data
 }

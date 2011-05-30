@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/print_preview_message_handler.h"
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
-#include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -88,9 +88,17 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  PrintPreviewUIHTMLSource* html_source = print_preview_ui->html_source();
-  html_source->SetPrintPreviewData(
-      std::make_pair(shared_buf, params.data_size));
+
+  char* preview_data = static_cast<char*>(shared_buf->memory());
+  uint32 preview_data_size = params.data_size;
+
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(preview_data_size);
+  std::vector<unsigned char>::iterator it = html_bytes->data.begin();
+  for (uint32 i = 0; i < preview_data_size; ++i, ++it)
+    *it = *(preview_data + i);
+
+  print_preview_ui->SetPrintPreviewData(html_bytes.get());
   print_preview_ui->OnPreviewDataIsAvailable(
       params.expected_pages_count,
       wrapper->print_view_manager()->RenderSourceName(),

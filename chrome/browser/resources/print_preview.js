@@ -504,9 +504,9 @@ function onPDFLoad() {
  * @param {number} pageCount The expected total pages count.
  * @param {string} jobTitle The print job title.
  * @param {boolean} modifiable If the preview is modifiable.
- *
+ * @param {string} previewUid Preview unique identifier.
  */
-function updatePrintPreview(pageCount, jobTitle, modifiable) {
+function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
   var tempPrintSettings = new PrintSettings();
   tempPrintSettings.save();
 
@@ -540,7 +540,7 @@ function updatePrintPreview(pageCount, jobTitle, modifiable) {
   // Update the current tab title.
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
-  createPDFPlugin();
+  createPDFPlugin(previewUid);
   updatePrintSummary();
   updatePrintButtonState();
   addEventListeners();
@@ -548,8 +548,9 @@ function updatePrintPreview(pageCount, jobTitle, modifiable) {
 
 /**
  * Create the PDF plugin or reload the existing one.
+ * @param {string} previewUid Preview unique identifier.
  */
-function createPDFPlugin() {
+function createPDFPlugin(previewUid) {
   // Enable the print button.
   if (!$('printer-list').disabled) {
     $('print-button').disabled = false;
@@ -572,7 +573,7 @@ function createPDFPlugin() {
   var pdfPlugin = document.createElement('embed');
   pdfPlugin.setAttribute('id', 'pdf-viewer');
   pdfPlugin.setAttribute('type', 'application/pdf');
-  pdfPlugin.setAttribute('src', 'chrome://print/print.pdf');
+  pdfPlugin.setAttribute('src', 'chrome://print/' + previewUid + '/print.pdf');
   var mainView = $('mainview');
   mainView.appendChild(pdfPlugin);
   pdfPlugin.onload('onPDFLoad()');

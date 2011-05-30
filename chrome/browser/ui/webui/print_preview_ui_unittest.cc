@@ -3,20 +3,26 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/shared_memory.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
-#include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
-typedef BrowserWithTestWindowTest PrintPreviewUIHTMLSourceTest;
+namespace {
+
+const unsigned char blob1[] =
+    "12346102356120394751634516591348710478123649165419234519234512349134";
+
+}  // namespace
+
+typedef BrowserWithTestWindowTest PrintPreviewUITest;
 
 // Create/Get a preview tab for initiator tab.
-TEST_F(PrintPreviewUIHTMLSourceTest, PrintPreviewData) {
+TEST_F(PrintPreviewUITest, PrintPreviewData) {
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
 #endif
@@ -40,21 +46,21 @@ TEST_F(PrintPreviewUIHTMLSourceTest, PrintPreviewData) {
   PrintPreviewUI* preview_ui =
       reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());
   ASSERT_TRUE(preview_ui != NULL);
-  PrintPreviewUIHTMLSource* html_source = preview_ui->html_source();
 
-  PrintPreviewUIHTMLSource::PrintPreviewData data;
-  html_source->GetPrintPreviewData(&data);
-  EXPECT_EQ(NULL, data.first);
-  EXPECT_EQ(0U, data.second);
+  scoped_refptr<RefCountedBytes> data(new RefCountedBytes);
+  preview_ui->GetPrintPreviewData(&data);
+  EXPECT_EQ(NULL, data->front());
+  EXPECT_EQ(0U, data->size());
 
-  PrintPreviewUIHTMLSource::PrintPreviewData dummy_data =
-      std::make_pair(new base::SharedMemory(), 1234);
+  std::vector<unsigned char> preview_data(blob1, blob1 + sizeof(blob1));
+  scoped_refptr<RefCountedBytes> dummy_data(new RefCountedBytes(preview_data));
 
-  html_source->SetPrintPreviewData(dummy_data);
-  html_source->GetPrintPreviewData(&data);
-  EXPECT_EQ(dummy_data, data);
+  preview_ui->SetPrintPreviewData(dummy_data.get());
+  preview_ui->GetPrintPreviewData(&data);
+  EXPECT_EQ(dummy_data->size(), data->size());
+  EXPECT_EQ(dummy_data.get(), data.get());
 
   // This should not cause any memory leaks.
-  dummy_data.first = new base::SharedMemory();
-  html_source->SetPrintPreviewData(dummy_data);
+  dummy_data = new RefCountedBytes();
+  preview_ui->SetPrintPreviewData(dummy_data);
 }

@@ -8,6 +8,7 @@
 
 #include "base/i18n/file_util_icu.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/print_messages.h"
@@ -619,16 +619,16 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
-  PrintPreviewUIHTMLSource::PrintPreviewData data;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  print_preview_ui->html_source()->GetPrintPreviewData(&data);
-  if (!data.first || !data.second) {
+  scoped_refptr<RefCountedBytes> data(new RefCountedBytes());
+  print_preview_ui->GetPrintPreviewData(&data);
+  if (!data->front()) {
     NOTREACHED();
     return;
   }
 
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
-  metafile->InitFromData(data.first->memory(), data.second);
+  metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
 
   // Updating last_saved_path_ to the newly selected folder.
   *last_saved_path_ = path.DirName();

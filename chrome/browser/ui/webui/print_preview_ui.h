@@ -9,17 +9,25 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/time.h"
+#include "chrome/browser/printing/print_preview_data_service.h"
 #include "content/browser/webui/web_ui.h"
 
-class PrintPreviewUIHTMLSource;
+class PrintPreviewDataService;
 
 class PrintPreviewUI : public WebUI {
  public:
   explicit PrintPreviewUI(TabContents* contents);
   virtual ~PrintPreviewUI();
 
-  PrintPreviewUIHTMLSource* html_source();
+  // Gets the print preview |data|. The data is valid as long as the
+  // PrintPreviewDataService is valid and SetPrintPreviewData() does not get
+  // called.
+  void GetPrintPreviewData(scoped_refptr<RefCountedBytes>* data);
+
+  // Sets the print preview |data|.
+  void SetPrintPreviewData(const RefCountedBytes* data);
 
   // Notify the Web UI renderer that preview data is available.
   // |expected_pages_count| specifies the total number of pages.
@@ -37,8 +45,13 @@ class PrintPreviewUI : public WebUI {
   void OnInitiatorTabClosed(const std::string& initiator_tab_url);
 
  private:
-  scoped_refptr<PrintPreviewUIHTMLSource> html_source_;
+  // Helper function
+  PrintPreviewDataService* print_preview_data_service();
+
   base::TimeTicks initial_preview_start_time_;
+
+  // Store the PrintPreviewUI address string.
+  std::string preview_ui_addr_str_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };
