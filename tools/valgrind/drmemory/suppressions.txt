@@ -354,6 +354,12 @@ UNINITIALIZED READ
 ...
 RPCRT4.dll!NdrClientCall2
 
+# http://code.google.com/p/drmemory/issues/detail?id=425
+UNINITIALIZED READ
+CLBCatQ.DLL!DestroyStgDatabase
+CLBCatQ.DLL!PostError
+CLBCatQ.DLL!PostError
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
