@@ -233,7 +233,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 // Make sure that when we don't do anything about the crashed extension
 // and close the browser, it doesn't crash. The browser is closed implicitly
 // at the end of each browser test.
+#if defined(OS_LINUX)
+// Occasional crash on Linux tests (dbg) http://crbug.com/79204
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, FLAKY_ShutdownWhileCrashed) {
+#else
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ShutdownWhileCrashed) {
+#endif
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   CrashExtension(size_before);
