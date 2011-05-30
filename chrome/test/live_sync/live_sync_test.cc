@@ -340,7 +340,8 @@ void LiveSyncTest::ReadPasswordFile() {
 void LiveSyncTest::SetupMockGaiaResponses() {
   username_ = "user@gmail.com";
   password_ = "password";
-  factory_.reset(new FakeURLFetcherFactory());
+  integration_factory_.reset(new URLFetcherFactory());
+  factory_.reset(new FakeURLFetcherFactory(integration_factory_.get()));
   factory_->SetFakeResponse(kClientLoginUrl, "SID=sid\nLSID=lsid", true);
   factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);
   factory_->SetFakeResponse(kIssueAuthTokenUrl, "auth", true);

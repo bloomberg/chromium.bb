@@ -13,6 +13,9 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/test/testing_profile.h"
+#include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/test/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -74,6 +77,12 @@ class SyncBackendHostTest : public testing::Test {
 };
 
 TEST_F(SyncBackendHostTest, InitShutdown) {
+  std::string k_mock_url = "http://www.example.com";
+  FakeURLFetcherFactory test_factory_;
+  test_factory_.SetFakeResponse(k_mock_url + "/time?command=get_time", "",
+      false);
+  URLFetcher::set_factory(&test_factory_);
+
   TestingProfile profile;
   profile.CreateRequestContext();
 
@@ -90,12 +99,13 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   credentials.email = "user@example.com";
   credentials.sync_token = "sync_token";
   backend.Initialize(&mock_frontend,
-                     GURL("http://www.example.com"),
+                     GURL(k_mock_url),
                      syncable::ModelTypeSet(),
                      profile.GetRequestContext(),
                      credentials,
                      true);
   backend.Shutdown(false);
+  URLFetcher::set_factory(NULL);
 }
 
 TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {

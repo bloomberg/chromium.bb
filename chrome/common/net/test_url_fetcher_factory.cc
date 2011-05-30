@@ -148,6 +148,9 @@ class FakeURLFetcher : public URLFetcher {
 
 FakeURLFetcherFactory::FakeURLFetcherFactory() {}
 
+FakeURLFetcherFactory::FakeURLFetcherFactory(
+    URLFetcher::Factory* default_factory) : default_factory_(default_factory) {}
+
 FakeURLFetcherFactory::~FakeURLFetcherFactory() {}
 
 URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
@@ -157,9 +160,13 @@ URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
     URLFetcher::Delegate* d) {
   FakeResponseMap::const_iterator it = fake_responses_.find(url);
   if (it == fake_responses_.end()) {
-    // If we don't have a baked response for that URL we return NULL.
-    DLOG(ERROR) << "No baked response for URL: " << url.spec();
-    return NULL;
+    if (default_factory_ == NULL) {
+      // If we don't have a baked response for that URL we return NULL.
+      DLOG(ERROR) << "No baked response for URL: " << url.spec();
+      return NULL;
+    } else {
+      return default_factory_->CreateURLFetcher(id, url, request_type, d);
+    }
   }
   return new FakeURLFetcher(url, request_type, d,
                             it->second.first, it->second.second);
@@ -174,4 +181,16 @@ void FakeURLFetcherFactory::SetFakeResponse(const std::string& url,
 
 void FakeURLFetcherFactory::ClearFakeReponses() {
   fake_responses_.clear();
+}
+
+URLFetcherFactory::URLFetcherFactory() {}
+
+URLFetcherFactory::~URLFetcherFactory() {}
+
+URLFetcher* URLFetcherFactory::CreateURLFetcher(
+    int id,
+    const GURL& url,
+    URLFetcher::RequestType request_type,
+    URLFetcher::Delegate* d) {
+  return new URLFetcher(url, request_type, d);
 }

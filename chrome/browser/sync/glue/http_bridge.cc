@@ -216,8 +216,8 @@ void HttpBridge::MakeAsynchronousPost() {
   if (fetch_state_.aborted)
     return;
 
-  fetch_state_.url_poster = new URLFetcher(url_for_request_,
-                                           URLFetcher::POST, this);
+  fetch_state_.url_poster = URLFetcher::Create(0, url_for_request_,
+                                               URLFetcher::POST, this);
   fetch_state_.url_poster->set_request_context(context_getter_for_request_);
   fetch_state_.url_poster->set_upload_data(content_type_, request_content_);
   fetch_state_.url_poster->set_extra_request_headers(extra_headers_);

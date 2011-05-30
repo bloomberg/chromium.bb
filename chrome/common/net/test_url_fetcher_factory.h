@@ -174,9 +174,14 @@ class TestURLFetcherFactory : public URLFetcher::Factory {
 class FakeURLFetcherFactory : public URLFetcher::Factory {
  public:
   FakeURLFetcherFactory();
+  // FakeURLFetcherFactory that will delegate creating URLFetcher for unknown
+  // url to the given factory.
+  explicit FakeURLFetcherFactory(URLFetcher::Factory* default_factory);
   virtual ~FakeURLFetcherFactory();
 
-  // If no fake response is set for the given URL this method will return NULL.
+  // If no fake response is set for the given URL this method will delegate the
+  // call to |default_factory_| if it is not NULL, or return NULL if it is
+  // NULL.
   // Otherwise, it will return a URLFetcher object which will respond with the
   // pre-baked response that the client has set by calling SetFakeResponse().
   virtual URLFetcher* CreateURLFetcher(int id,
@@ -197,8 +202,26 @@ class FakeURLFetcherFactory : public URLFetcher::Factory {
  private:
   typedef std::map<GURL, std::pair<std::string, bool> > FakeResponseMap;
   FakeResponseMap fake_responses_;
+  URLFetcher::Factory* default_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
+};
+
+// This is an implementation of URLFetcher::Factory that will create a real
+// URLFetcher. It can be use in conjunction with a FakeURLFetcherFactory in
+// integration tests to control the behavior of some requests but execute
+// all the other ones.
+class URLFetcherFactory : public URLFetcher::Factory {
+ public:
+  URLFetcherFactory();
+  virtual ~URLFetcherFactory();
+
+  // This method will create a real URLFetcher.
+  virtual URLFetcher* CreateURLFetcher(int id,
+                                       const GURL& url,
+                                       URLFetcher::RequestType request_type,
+                                       URLFetcher::Delegate* d);
+
 };
 
 #endif  // CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_

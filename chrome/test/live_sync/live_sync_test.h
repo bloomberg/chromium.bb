@@ -24,6 +24,7 @@ class CommandLine;
 class Profile;
 class ProfileSyncServiceHarness;
 class FakeURLFetcherFactory;
+class URLFetcherFactory;
 
 namespace net {
 class ProxyConfig;
@@ -241,6 +242,9 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // Fake URLFetcher factory used to mock out GAIA signin.
   scoped_ptr<FakeURLFetcherFactory> factory_;
+
+  // URLFetcher factory used to contact sync server.
+  scoped_ptr<URLFetcherFactory> integration_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };
