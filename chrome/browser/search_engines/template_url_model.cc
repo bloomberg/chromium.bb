@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -1205,6 +1206,8 @@ void TemplateURLModel::SetDefaultSearchProviderNoNotify(
     if (url_ref && url_ref->HasGoogleBaseURLs()) {
       GoogleURLTracker::RequestServerCheck();
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+      // Needs to be evaluated. See http://crbug.com/62328.
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
       RLZTracker::RecordProductEvent(rlz_lib::CHROME,
                                      rlz_lib::CHROME_OMNIBOX,
                                      rlz_lib::SET_TO_GOOGLE);
