@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -236,6 +237,8 @@ bool InMemoryURLIndex::RestoreFromCacheFile() {
   // That is: ensure that the database has not been modified since the cache
   // was last saved. DB file modification date is inadequate. There are no
   // SQLite table checksums automatically stored.
+  // FIXME(mrossetti): Move File IO to another thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   FilePath file_path;
   if (!GetCacheFilePath(&file_path) || !file_util::PathExists(file_path))
@@ -269,6 +272,8 @@ bool InMemoryURLIndex::RestoreFromCacheFile() {
 }
 
 bool InMemoryURLIndex::SaveToCacheFile() {
+  // FIXME(mrossetti): Move File IO to another thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   InMemoryURLIndexCacheItem index_cache;
   SavePrivateData(&index_cache);
