@@ -78,6 +78,7 @@ class InternetOptionsHandler
   void LoginCertCallback(const ListValue* args);
   void LoginToOtherCallback(const ListValue* args);
   void SetAutoConnectCallback(const ListValue* args);
+  void SetSharedCallback(const ListValue* args);
   void SetIPConfigCallback(const ListValue* args);
   void EnableWifiCallback(const ListValue* args);
   void DisableWifiCallback(const ListValue* args);
@@ -87,15 +88,14 @@ class InternetOptionsHandler
   void SetApnCallback(const ListValue* args);
   void SetSimCardLockCallback(const ListValue* args);
   void ChangePinCallback(const ListValue* args);
+  void ShareNetworkCallback(const ListValue* args);
 
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.
-  void PopulateDictionaryDetails(const chromeos::Network* net,
-                                 chromeos::NetworkLibrary* cros);
+  void PopulateDictionaryDetails(const chromeos::Network* network);
   void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
                            DictionaryValue* dictionary);
-  void PopulateCellularDetails(chromeos::NetworkLibrary* cros,
-                               const chromeos::CellularNetwork* cellular,
+  void PopulateCellularDetails(const chromeos::CellularNetwork* cellular,
                                DictionaryValue* dictionary);
   void PopulateVPNDetails(const chromeos::VirtualNetwork* vpn,
                           DictionaryValue* dictionary);
@@ -113,6 +113,7 @@ class InternetOptionsHandler
                         bool connectable,
                         chromeos::ConnectionType connection_type,
                         bool remembered,
+                        bool shared,
                         chromeos::ActivationState activation_state,
                         bool restricted_ip);
 
@@ -123,14 +124,16 @@ class InternetOptionsHandler
   // Creates the map of remembered networks.
   ListValue* GetRememberedList();
   // Fills network information into JS dictionary for displaying network lists.
-  void FillNetworkInfo(DictionaryValue* dictionary,
-                       chromeos::NetworkLibrary* cros);
+  void FillNetworkInfo(DictionaryValue* dictionary);
   // Refreshes the display of network information.
-  void RefreshNetworkData(chromeos::NetworkLibrary* cros);
+  void RefreshNetworkData();
   // Adds observers for wireless networks, if any, so that we can dynamically
   // display the correct icon for that network's signal strength and, in the
   // case of cellular networks, network technology and roaming status.
-  void MonitorNetworks(chromeos::NetworkLibrary* cros);
+  void MonitorNetworks();
+
+  // Convenience pointer to netwrok library (will not change).
+  chromeos::NetworkLibrary* cros_;
 
   // A boolean flag of whether to use WebUI for connect UI. True to use WebUI
   // and false to use Views dialogs.

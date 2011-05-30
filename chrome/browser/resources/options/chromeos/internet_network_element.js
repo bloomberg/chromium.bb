@@ -177,8 +177,8 @@ cr.define('options.internet', function() {
         return;
       }
 
-      // Only show status text for networks other than "remembered".
-      if (!this.data.remembered) {
+      // Only show status text if not empty.
+      if (this.data.networkStatus) {
         var statusEl = this.ownerDocument.createElement('div');
         statusEl.className = 'network-status-label';
         statusEl.textContent = this.data.networkStatus;
@@ -264,10 +264,6 @@ cr.define('options.internet', function() {
                                    self.data.servicePath,
                                    'forget']);
                      });
-        if (!AccountsOptions.currentUserIsOwner()) {
-          // Disable this for guest non-Owners.
-          button.disabled = true;
-        }
 
         buttonsDiv.appendChild(button);
       }

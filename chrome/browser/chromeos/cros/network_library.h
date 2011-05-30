@@ -162,6 +162,13 @@ enum EAPPhase2Auth {
   EAP_PHASE_2_AUTH_CHAP     = 5
 };
 
+// Misc enums
+enum NetworkProfileType {
+  PROFILE_NONE,    // Not in any profile (not remembered).
+  PROFILE_SHARED,  // In the local profile, shared by all users on device.
+  PROFILE_USER     // In the user provile, not visible to other users.
+};
+
 // Simple wrapper for property Cellular.FoundNetworks.
 struct FoundCellularNetwork {
   FoundCellularNetwork();
@@ -306,8 +313,12 @@ class Network {
   bool favorite() const { return favorite_; }
   bool auto_connect() const { return auto_connect_; }
   ConnectivityState connectivity_state() const { return connectivity_state_; }
+  bool save_credentials() const { return save_credentials_; }
+
   bool added() const { return added_; }
   bool notify_failure() const { return notify_failure_; }
+  const std::string& profile_path() const { return profile_path_; }
+  NetworkProfileType profile_type() const { return profile_type_; }
 
   const std::string& unique_id() const { return unique_id_; }
 
@@ -316,10 +327,12 @@ class Network {
   // We don't have a setter for |favorite_| because to unfavorite a network is
   // equivalent to forget a network, so we call forget network on cros for
   // that.  See ForgetWifiNetwork().
+
   void SetAutoConnect(bool auto_connect);
 
-  // Sets network name.
   void SetName(const std::string& name);
+
+  void SetSaveCredentials(bool save_credentials);
 
   // Return a string representation of the state code.
   std::string GetStateString() const;
@@ -327,6 +340,10 @@ class Network {
   // Return a string representation of the error code.
   std::string GetErrorString() const;
 
+  // Return true if the network must be in the user profile (e.g. has certs).
+  virtual bool RequiresUserProfile() const;
+
+  // Static helper function.
   static bool IsConnectingState(ConnectionState state) {
     return (state == STATE_ASSOCIATION ||
             state == STATE_CONFIGURATION ||
@@ -343,6 +360,9 @@ class Network {
   // Parse name/value pairs from libcros.
   virtual bool ParseValue(int index, const Value* value);
   virtual void ParseInfo(const DictionaryValue* info);
+
+  // Erase cached credentials, used when "Save password" is unchecked.
+  virtual void EraseCredentials();
 
   // Methods to asynchronously set network service properties
   virtual void SetStringProperty(const char* prop, const std::string& str,
@@ -368,6 +388,7 @@ class Network {
   bool favorite_;
   bool auto_connect_;
   ConnectivityState connectivity_state_;
+  bool save_credentials_;  // save passphrase and EAP credentials to disk.
 
   // Unique identifier, set the first time the network is parsed.
   std::string unique_id_;
@@ -387,9 +408,14 @@ class Network {
     connectivity_state_ = connectivity_state;
   }
   void set_added(bool added) { added_ = added; }
+  void set_profile_path(const std::string& path) { profile_path_ = path; }
+  void set_profile_type(NetworkProfileType type) { profile_type_ = type; }
 
   // Set the state and update flags if necessary.
   void SetState(ConnectionState state);
+
+  // Set the profile path and update the flimfalm property.
+  void SetProfilePath(const std::string& profile_path);
 
   // Initialize the IP address field
   void InitIPAddress();
@@ -403,6 +429,12 @@ class Network {
   // Set to true when a new connection failure occurs; cleared when observers
   // are notified.
   bool notify_failure_;
+
+  // Profile path for networks.
+  std::string profile_path_;
+
+  // Set to profile type based on profile_path_.
+  NetworkProfileType profile_type_;
 
   // These must not be modified after construction.
   std::string service_path_;
@@ -463,6 +495,7 @@ class VirtualNetwork : public Network {
   // Network overrides.
   virtual bool ParseValue(int index, const Value* value);
   virtual void ParseInfo(const DictionaryValue* info);
+  virtual void EraseCredentials();
 
   // VirtualNetwork private methods.
   bool ParseProviderValue(int index, const Value* value);
@@ -669,7 +702,6 @@ class WifiNetwork : public WirelessNetwork {
   const std::string& eap_anonymous_identity() const {
     return eap_anonymous_identity_; }
   const std::string& eap_passphrase() const { return eap_passphrase_; }
-  bool save_credentials() const { return save_credentials_; }
 
   const std::string& GetPassphrase() const;
 
@@ -688,10 +720,9 @@ class WifiNetwork : public WirelessNetwork {
   void SetEAPIdentity(const std::string& identity);
   void SetEAPAnonymousIdentity(const std::string& identity);
   void SetEAPPassphrase(const std::string& passphrase);
-  void SetSaveCredentials(bool save_credentials);
 
-  // Erase cached credentials, used when "Save password" is unchecked.
-  void EraseCredentials();
+  // Network overrides.
+  virtual bool RequiresUserProfile() const;
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
@@ -704,6 +735,9 @@ class WifiNetwork : public WirelessNetwork {
   bool IsCertificateLoaded() const;
 
  private:
+  // Network overrides.
+  virtual void EraseCredentials();
+
   // WirelessNetwork overrides.
   virtual bool ParseValue(int index, const Value* value);
   virtual void ParseInfo(const DictionaryValue* info);
@@ -740,8 +774,6 @@ class WifiNetwork : public WirelessNetwork {
   std::string eap_identity_;
   std::string eap_anonymous_identity_;
   std::string eap_passphrase_;
-  // Tells flimflam to save passphrase and EAP credentials to disk.
-  bool save_credentials_;
 
   // Internal state (not stored in flimflam).
   // Passphrase set by user (stored for UI).
@@ -1013,6 +1045,10 @@ class NetworkLibrary {
   virtual Network* FindNetworkFromRemembered(
       const Network* remembered) const = 0;
 
+  // Return a pointer to the remembered network, if it exists, or NULL.
+  virtual Network* FindRememberedNetworkByPath(
+      const std::string& path) const = 0;
+
   // Retrieves the data plans associated with |path|, NULL if there are no
   // associated plans.
   virtual const CellularDataPlanVector* GetDataPlans(
@@ -1053,6 +1089,9 @@ class NetworkLibrary {
 
   // Request a scan for new wifi networks.
   virtual void RequestNetworkScan() = 0;
+
+  // Return true if more than one Profile exists.
+  virtual bool HasMultipleProfiles() = 0;
 
   // Reads out the results of the last wifi scan. These results are not
   // pre-cached in the library, so the call may block whilst the results are
@@ -1124,6 +1163,10 @@ class NetworkLibrary {
 
   // Forget the wifi network corresponding to service_path.
   virtual void ForgetWifiNetwork(const std::string& service_path) = 0;
+
+  // Move the network to the shared/global profile.
+  virtual void SetNetworkProfile(const std::string& service_path,
+                                 NetworkProfileType type) = 0;
 
   // Returns home carrier ID if available, otherwise empty string is returned.
   // Carrier ID format: <carrier name> (country). Ex.: "Verizon (us)".

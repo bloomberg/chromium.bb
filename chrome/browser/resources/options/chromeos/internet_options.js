@@ -196,6 +196,10 @@ cr.define('options', function() {
     var servicePath = data.servicePath;
     chrome.send('setAutoConnect',[String(servicePath),
          $('autoConnectNetwork').checked ? "true" : "false"]);
+
+    chrome.send('setShared',[String(servicePath),
+         $('sharedNetwork').checked ? "true" : "false"]);
+
     var ipConfigList = $('ipConfigList');
     chrome.send('setIPConfig',[String(servicePath),
                                $('ipTypeDHCP').checked ? "true" : "false",
@@ -428,10 +432,9 @@ cr.define('options', function() {
       detailsPage.gsm = false;
       $('inetSsid').textContent = data.ssid;
       $('autoConnectNetwork').checked = data.autoConnect;
-      if (!AccountsOptions.currentUserIsOwner()) {
-        // Disable this for guest non-Owners.
-        $('autoConnectNetwork').disabled = true;
-      }
+      $('autoConnectNetwork').disabled = !data.remembered;
+      $('sharedNetwork').checked = data.shared;
+      $('sharedNetwork').disabled = !data.remembered || !data.shareable;
       detailsPage.password = data.encrypted;
     } else if(data.type == 5) {
       if (!data.gsm)

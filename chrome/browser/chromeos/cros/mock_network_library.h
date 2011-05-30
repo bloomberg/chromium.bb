@@ -67,15 +67,14 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(FindCellularDevice, const NetworkDevice*(void));
   MOCK_CONST_METHOD0(FindWifiDevice, const NetworkDevice*(void));
   MOCK_CONST_METHOD0(FindEthernetDevice, const NetworkDevice*(void));
-  MOCK_CONST_METHOD1(FindNetworkByPath,
-                     Network*(const std::string&));
-  MOCK_CONST_METHOD1(FindWifiNetworkByPath,
-                     WifiNetwork*(const std::string&));
+  MOCK_CONST_METHOD1(FindNetworkByPath, Network*(const std::string&));
+  MOCK_CONST_METHOD1(FindWifiNetworkByPath, WifiNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindCellularNetworkByPath,
                      CellularNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindVirtualNetworkByPath,
                      VirtualNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindNetworkFromRemembered,Network*(const Network*));
+  MOCK_CONST_METHOD1(FindRememberedNetworkByPath, Network*(const std::string&));
   MOCK_CONST_METHOD1(GetDataPlans,
                      CellularDataPlanVector*(const std::string&));
   MOCK_CONST_METHOD1(GetSignificantDataPlan,
@@ -91,6 +90,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(SetCellularDataRoamingAllowed, void(bool));
 
   MOCK_METHOD0(RequestNetworkScan, void(void));
+  MOCK_METHOD0(HasMultipleProfiles, bool(void));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(const std::string&));
@@ -124,6 +124,8 @@ class MockNetworkLibrary : public NetworkLibrary {
 
   MOCK_METHOD1(DisconnectFromNetwork, void(const Network*));
   MOCK_METHOD1(ForgetWifiNetwork, void(const std::string&));
+  MOCK_METHOD2(SetNetworkProfile, void(const std::string&,
+                                       NetworkProfileType));
   MOCK_CONST_METHOD0(GetCellularHomeCarrierId, std::string(void));
 
   MOCK_CONST_METHOD0(ethernet_available, bool(void));
