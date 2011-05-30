@@ -841,12 +841,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
 }
 
 // Tests that focus goes where expected when using reload.
-// http://crbug.com/84415, broken by http://trac.webkit.org/changeset/87628.
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReload) {
-#else
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
-#endif
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
