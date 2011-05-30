@@ -25,6 +25,32 @@ BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
       initWithColors:[NSArray arrayWithObject:clickedColor]]);
 }
 
+BackgroundTheme::~BackgroundTheme() {}
+
+SkBitmap* BackgroundTheme::GetBitmapNamed(int id) const {
+  return nil;
+}
+
+SkColor BackgroundTheme::GetColor(int id) const {
+  return SkColor();
+}
+
+bool BackgroundTheme::GetDisplayProperty(int id, int* result) const {
+  return false;
+}
+
+bool BackgroundTheme::ShouldUseNativeFrame() const {
+  return false;
+}
+
+bool BackgroundTheme::HasCustomImage(int id) const {
+  return false;
+}
+
+RefCountedMemory* BackgroundTheme::GetRawData(int id) const {
+  return NULL;
+}
+
 NSImage* BackgroundTheme::GetNSImageNamed(int id, bool allow_default) const {
   return nil;
 }

@@ -14,14 +14,15 @@
 class BackgroundTheme : public ui::ThemeProvider {
 public:
   BackgroundTheme(ui::ThemeProvider* provider);
+  virtual ~BackgroundTheme();
 
-  virtual void Init(Profile* profile) { }
-  virtual SkBitmap* GetBitmapNamed(int id) const { return nil; }
-  virtual SkColor GetColor(int id) const { return SkColor(); }
-  virtual bool GetDisplayProperty(int id, int* result) const { return false; }
-  virtual bool ShouldUseNativeFrame() const { return false; }
-  virtual bool HasCustomImage(int id) const { return false; }
-  virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
+  virtual void Init(Profile* profile) {}
+  virtual SkBitmap* GetBitmapNamed(int id) const;
+  virtual SkColor GetColor(int id) const;
+  virtual bool GetDisplayProperty(int id, int* result) const;
+  virtual bool ShouldUseNativeFrame() const;
+  virtual bool HasCustomImage(int id) const;
+  virtual RefCountedMemory* GetRawData(int id) const;
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
   virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const;
   virtual NSColor* GetNSColor(int id, bool allow_default) const;
