@@ -26,13 +26,6 @@
 }
 
 {
-   exit_status1
-   ThreadSanitizer:Race
-   ...
-   fun:NaClCommonSysExit
-}
-
-{
    glibc_free4
    Memcheck:Addr4
    fun:_int_free
@@ -58,6 +51,27 @@
    Memcheck:Addr1
    fun:_int_malloc
    fun:malloc
+}
+
+# This is a real race in thread termination.
+# http://code.google.com/p/nativeclient/issues/detail?id=1715
+{
+   exit_status1
+   ThreadSanitizer:Race
+   fun:NaClSysCommonThreadSuicide
+   fun:NaClCommonSysThreadExit
+   fun:NaClSysThread_Exit
+   fun:NaClSysThread_ExitDecoder
+}
+
+# This is the same as exit_status1, but with a different order of racy accesses.
+# http://code.google.com/p/nativeclient/issues/detail?id=1715
+{
+   exit_status2
+   ThreadSanitizer:Race
+   fun:NaClCommonSysExit
+   fun:NaClSysExit
+   fun:NaClSysExitDecoder
 }
 
 # Generic ld.so suppressions.
