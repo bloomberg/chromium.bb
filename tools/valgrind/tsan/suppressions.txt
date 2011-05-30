@@ -411,25 +411,6 @@
   fun:openDatabase
 }
 
-{
-  bug_82894 Missing libsqlite3 symbol
-  ThreadSanitizer:Race
-  ...
-  obj:*libsqlite3.so*
-  obj:*libsqlite3.so*
-  obj:*libsqlite3.so*
-  obj:*libsqlite3.so*
-  ...
-  fun:sdb_*
-  ...
-  fun:NSC_*
-  ...
-  fun:PK11_*
-  ...
-  fun:crypto::::NSSInitSingleton::OpenUserDB
-  fun:crypto::::NSSInitSingleton::OpenTestNSSDB
-}
-
 ############################
 # Races in V8
 
