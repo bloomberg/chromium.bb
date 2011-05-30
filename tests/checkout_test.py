@@ -307,6 +307,7 @@ class SvnCheckout(SvnBaseTest):
   def testException(self):
     self._check_exception(
         self._get_co(True),
+        'While running patch -p1 --forward --force;\n'
         'patching file svn_utils_test.txt\n'
         'Hunk #1 FAILED at 3.\n'
         '1 out of 1 hunk FAILED -- saving rejects to file '
@@ -325,8 +326,10 @@ class SvnCheckout(SvnBaseTest):
       self.assertEquals(e.filename, 'svn_utils_test.txt')
       self.assertEquals(
           e.status,
-          "patching file svn_utils_test.txt\n"
-          "svn: Cannot set 'svn:ignore' on a file ('svn_utils_test.txt')\n")
+          'While running svn propset svn:ignore foo svn_utils_test.txt '
+          '--non-interactive;\n'
+          'patching file svn_utils_test.txt\n'
+          'svn: Cannot set \'svn:ignore\' on a file (\'svn_utils_test.txt\')\n')
     co.prepare()
     svn_props = [('svn:eol-style', 'LF'), ('foo', 'bar')]
     co.apply_patch(

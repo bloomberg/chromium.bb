@@ -177,16 +177,17 @@ class SvnMixIn(object):
   # configuration directory is not necessary.
   non_interactive = False
 
-  def _add_svn_flags(self, args, non_interactive):
+  def _add_svn_flags(self, args, non_interactive, credentials=True):
     args = ['svn'] + args
     if not self.svn_config.default:
       args.extend(['--config-dir', self.svn_config.svn_config_dir])
     if not self.svn_config.default or self.non_interactive or non_interactive:
       args.append('--non-interactive')
-    if self.commit_user:
-      args.extend(['--username', self.commit_user])
-    if self.commit_pwd:
-      args.extend(['--password', self.commit_pwd])
+    if credentials:
+      if self.commit_user:
+        args.extend(['--username', self.commit_user])
+      if self.commit_pwd:
+        args.extend(['--password', self.commit_pwd])
     return args
 
   def _check_call_svn(self, args, **kwargs):
@@ -196,13 +197,14 @@ class SvnMixIn(object):
     return subprocess2.check_call_out(
         self._add_svn_flags(args, False), **kwargs)
 
-  def _check_output_svn(self, args, **kwargs):
+  def _check_output_svn(self, args, credentials=True, **kwargs):
     """Runs svn and throws an exception if the command failed.
 
      Returns the output.
     """
     kwargs.setdefault('cwd', self.project_path)
-    return subprocess2.check_output(self._add_svn_flags(args, True), **kwargs)
+    return subprocess2.check_output(
+        self._add_svn_flags(args, True, credentials), **kwargs)
 
   @staticmethod
   def _parse_svn_info(output, key):
@@ -248,9 +250,13 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
     post_processor = post_processor or []
     for p in patches:
       try:
+        # It is important to use credentials=False otherwise credentials could
+        # leak in the error message. Credentials are not necessary here for the
+        # following commands anyway.
         stdout = ''
         if p.is_delete:
-          stdout += self._check_output_svn(['delete', p.filename, '--force'])
+          stdout += self._check_output_svn(
+              ['delete', p.filename, '--force'], credentials=False)
         else:
           new = not os.path.exists(p.filename)
 
@@ -266,7 +272,7 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
           for dir_to_create in reversed(dirs_to_create):
             os.mkdir(os.path.join(self.project_path, dir_to_create))
             stdout += self._check_output_svn(
-                ['add', dir_to_create, '--force'])
+                ['add', dir_to_create, '--force'], credentials=False)
 
           if p.is_binary:
             with open(os.path.join(self.project_path, p.filename), 'wb') as f:
@@ -276,21 +282,29 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             stdout += subprocess2.check_output(
                 cmd, stdin=p.get(), cwd=self.project_path)
           if new:
-            stdout += self._check_output_svn(['add', p.filename, '--force'])
+            stdout += self._check_output_svn(
+                ['add', p.filename, '--force'], credentials=False)
           for prop in p.svn_properties:
             stdout += self._check_output_svn(
-                ['propset', prop[0], prop[1], p.filename])
-          for prop, value in self.svn_config.auto_props.iteritems():
+                ['propset', prop[0], prop[1], p.filename], credentials=False)
+          for prop, values in self.svn_config.auto_props.iteritems():
             if fnmatch.fnmatch(p.filename, prop):
-              stdout += self._check_output_svn(
-                  ['propset'] + value.split('=', 1) + [p.filename])
+              for value in values.split(';'):
+                if '=' not in value:
+                  params = [value, '*']
+                else:
+                  params = value.split('=', 1)
+                stdout += self._check_output_svn(
+                    ['propset'] + params + [p.filename], credentials=False)
         for post in post_processor:
           post(self, p)
       except OSError, e:
         raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
       except subprocess.CalledProcessError, e:
         raise PatchApplicationFailed(
-            p.filename, '%s%s' % (stdout, getattr(e, 'stdout', '')))
+            p.filename,
+            'While running %s;\n%s%s' % (
+              ' '.join(e.cmd), stdout, getattr(e, 'stdout', '')))
 
   def commit(self, commit_message, user):
     logging.info('Committing patch for %s' % user)
