@@ -808,6 +808,7 @@ void PluginInstance::SetWebKitFocus(bool has_focus) {
   bool old_plugin_focus = PluginHasFocus();
   has_webkit_focus_ = has_focus;
   if (PluginHasFocus() != old_plugin_focus) {
+    delegate()->PluginFocusChanged(PluginHasFocus());
     instance_interface_->DidChangeFocus(pp_instance(),
                                         BoolToPPBool(PluginHasFocus()));
   }

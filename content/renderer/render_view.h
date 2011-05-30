@@ -306,6 +306,9 @@ class RenderView : public RenderWidget,
   WebKit::WebPlugin* CreatePluginNoCheck(WebKit::WebFrame* frame,
                                          const WebKit::WebPluginParams& params);
 
+  // Informs the render view that a PPAPI plugin has gained or lost focus.
+  void PpapiPluginFocusChanged();
+
 #if defined(OS_MACOSX)
   // Informs the render view that the given plugin has gained or lost focus.
   void PluginFocusChanged(bool focused, int plugin_id);
@@ -610,6 +613,13 @@ class RenderView : public RenderWidget,
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
   virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
+  virtual void OnImeSetComposition(
+      const string16& text,
+      const std::vector<WebKit::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end) OVERRIDE;
+  virtual void OnImeConfirmComposition(const string16& text) OVERRIDE;
+  virtual WebKit::WebTextInputType GetTextInputType() OVERRIDE;
 
  private:
   // For unit tests.

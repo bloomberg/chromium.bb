@@ -17,6 +17,9 @@ MockPluginDelegate::MockPluginDelegate() {
 MockPluginDelegate::~MockPluginDelegate() {
 }
 
+void MockPluginDelegate::PluginFocusChanged(bool focused) {
+}
+
 void MockPluginDelegate::PluginCrashed(PluginInstance* instance) {
 }
 

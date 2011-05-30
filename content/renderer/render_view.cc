@@ -89,6 +89,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
@@ -3938,6 +3939,60 @@ void RenderView::OnSetFocus(bool enable) {
 
     // Notify all Pepper plugins.
     pepper_delegate_.OnSetFocus(enable);
+  }
+}
+
+void RenderView::PpapiPluginFocusChanged() {
+  UpdateInputMethod();
+}
+
+void RenderView::OnImeSetComposition(
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  // Until PPAPI has an interface for handling IME events, we skip sending
+  // OnImeSetComposition. Otherwise the composition is canceled when a
+  // non-editable DOM element is focused.
+  //
+  // TODO(kinaba) This temporal remedy can be removed after PPAPI is extended
+  // with an IME handling interface.
+  if (!pepper_delegate_.IsPluginFocused()) {
+    RenderWidget::OnImeSetComposition(text,
+                                      underlines,
+                                      selection_start,
+                                      selection_end);
+  }
+}
+
+void RenderView::OnImeConfirmComposition(const string16& text) {
+  if (pepper_delegate_.IsPluginFocused()) {
+    // TODO(kinaba) Until PPAPI has an interface for handling IME events, we
+    // send character events.
+    for (size_t i = 0; i < text.size(); ++i) {
+      WebKit::WebKeyboardEvent char_event;
+      char_event.type = WebKit::WebInputEvent::Char;
+      char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
+      char_event.modifiers = 0;
+      char_event.windowsKeyCode = text[i];
+      char_event.nativeKeyCode = text[i];
+      char_event.text[0] = text[i];
+      char_event.unmodifiedText[0] = text[i];
+      if (webwidget_)
+        webwidget_->handleInputEvent(char_event);
+    }
+  } else {
+    RenderWidget::OnImeConfirmComposition(text);
+  }
+}
+
+WebKit::WebTextInputType RenderView::GetTextInputType() {
+  if (pepper_delegate_.IsPluginFocused()) {
+    // TODO(kinaba) Until PPAPI has an interface for handling IME events, we
+    // consider all the parts of PPAPI plugins are accepting text inputs.
+    return WebKit::WebTextInputTypeText;
+  } else {
+    return RenderWidget::GetTextInputType();
   }
 }
 

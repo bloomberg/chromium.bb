@@ -15,6 +15,7 @@ class MockPluginDelegate : public PluginDelegate {
   MockPluginDelegate();
   ~MockPluginDelegate();
 
+  virtual void PluginFocusChanged(bool focused);
   virtual void PluginCrashed(PluginInstance* instance);
   virtual void InstanceCreated(PluginInstance* instance);
   virtual void InstanceDeleted(PluginInstance* instance);

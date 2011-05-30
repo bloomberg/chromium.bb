@@ -1252,13 +1252,11 @@ void RenderWidget::UpdateInputMethod() {
   if (!input_method_is_active_)
     return;
 
-  WebTextInputType new_type = WebKit::WebTextInputTypeNone;
+  WebTextInputType new_type = GetTextInputType();
   WebRect new_caret_bounds;
 
-  if (webwidget_) {
-    new_type = webwidget_->textInputType();
-    new_caret_bounds = webwidget_->caretOrSelectionBounds();
-  }
+  if (webwidget_)
+   new_caret_bounds = webwidget_->caretOrSelectionBounds();
 
   // Only sends text input type and caret bounds to the browser process if they
   // are changed.
@@ -1268,6 +1266,12 @@ void RenderWidget::UpdateInputMethod() {
     Send(new ViewHostMsg_ImeUpdateTextInputState(
         routing_id(), new_type, new_caret_bounds));
   }
+}
+
+WebKit::WebTextInputType RenderWidget::GetTextInputType() {
+  if (webwidget_)
+    return webwidget_->textInputType();
+  return WebKit::WebTextInputTypeNone;
 }
 
 WebScreenInfo RenderWidget::screenInfo() {

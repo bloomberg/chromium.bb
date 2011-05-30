@@ -199,12 +199,12 @@ class RenderWidget : public IPC::Channel::Listener,
   void OnMouseCaptureLost();
   virtual void OnSetFocus(bool enable);
   void OnSetInputMethodActive(bool is_active);
-  void OnImeSetComposition(
+  virtual void OnImeSetComposition(
       const string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  void OnImeConfirmComposition(const string16& text);
+  virtual void OnImeConfirmComposition(const string16& text);
   void OnMsgPaintAtSize(const TransportDIB::Handle& dib_id,
                         int tag,
                         const gfx::Size& page_size,
@@ -272,6 +272,10 @@ class RenderWidget : public IPC::Channel::Listener,
   // Checks if the input method state and caret position have been changed.
   // If they are changed, the new value will be sent to the browser process.
   void UpdateInputMethod();
+
+  // Override point to obtain that the current input method state and caret
+  // position.
+  virtual WebKit::WebTextInputType GetTextInputType();
 
   // Tells the renderer it does not have focus. Used to prevent us from getting
   // the focus on our own when the browser did not focus us.

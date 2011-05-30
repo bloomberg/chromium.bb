@@ -230,6 +230,9 @@ class PluginDelegate {
     virtual ~PpapiBroker() {}
   };
 
+  // Notification that the given plugin is focused or unfocused.
+  virtual void PluginFocusChanged(bool focused) = 0;
+
   // Notification that the given plugin has crashed. When a plugin crashes, all
   // instances associated with that plugin will notify that they've crashed via
   // this function.

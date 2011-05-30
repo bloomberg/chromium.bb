@@ -564,7 +564,8 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
     : render_view_(render_view),
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),
-      id_generator_(0) {
+      id_generator_(0),
+      is_pepper_plugin_focused_(false) {
 }
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
@@ -740,6 +741,12 @@ PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
   return NULL;
 }
 
+void PepperPluginDelegateImpl::PluginFocusChanged(bool focused) {
+  is_pepper_plugin_focused_ = focused;
+  if (render_view_)
+    render_view_->PpapiPluginFocusChanged();
+}
+
 void PepperPluginDelegateImpl::PluginCrashed(
     webkit::ppapi::PluginInstance* instance) {
   render_view_->PluginCrashed(instance->module()->path());
@@ -909,6 +916,10 @@ void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
          active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->SetContentAreaFocus(has_focus);
+}
+
+bool PepperPluginDelegateImpl::IsPluginFocused() const {
+  return is_pepper_plugin_focused_;
 }
 
 bool PepperPluginDelegateImpl::OpenFileSystem(

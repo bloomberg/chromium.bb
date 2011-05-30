@@ -161,7 +161,11 @@ class PepperPluginDelegateImpl
   // notifies all of the plugins.
   void OnSetFocus(bool has_focus);
 
+  // Returns whether or not a Pepper plugin is focused.
+  bool IsPluginFocused() const;
+
   // PluginDelegate implementation.
+  virtual void PluginFocusChanged(bool focused) OVERRIDE;
   virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance);
   virtual void InstanceCreated(
       webkit::ppapi::PluginInstance* instance);
@@ -302,6 +306,9 @@ class PepperPluginDelegateImpl
 
   typedef IDMap<scoped_refptr<PpapiBrokerImpl>, IDMapOwnPointer> BrokerMap;
   BrokerMap pending_connect_broker_;
+
+  // Whether or not the focus is on a PPAPI plugin
+  bool is_pepper_plugin_focused_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };
