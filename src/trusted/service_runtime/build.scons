@@ -562,9 +562,8 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 
 # Mac does not support thread local storage via "__thread" so do not run this
 # test on Mac.
-if not env.Bit('mac'):
-
-
+# This test is thread-unsafe by design. Don't run it under Valgrind.
+if not env.Bit('mac') and not env.IsRunningUnderValgrind():
   nacl_tls_unittest = env.ComponentProgram('nacl_tls_unittest',
                                            ['nacl_tls_unittest.c'],
                                            EXTRA_LIBS=['platform',
