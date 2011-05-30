@@ -701,8 +701,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
                                  false, false);  // No interstitial showing.
 }
 
+#if defined(OS_CHROMEOS)
+// This test seems to be flaky on chromiumos.
+// http://crbug.com/84419
+#define MAYBE_TestRefNavigation FLAKY_TestRefNavigation
+#else
+#define MAYBE_TestRefNavigation TestRefNavigation
+#endif
+
 // Test that navigating to a #ref does not change a bad security state.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRefNavigation) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   ui_test_utils::NavigateToURL(browser(),
