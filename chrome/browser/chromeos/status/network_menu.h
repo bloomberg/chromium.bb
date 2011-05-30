@@ -90,8 +90,6 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // Returns the Icon for animating network connecting.
   // |animation_value| is the value from Animation.GetCurrentValue()
   // |type| is the connection type
-  // |black| is used to specify whether to return a black icon for display
-  // on a light background or a white icon for display on a dark background.
   // Expected to never return NULL.
   static const SkBitmap* IconForNetworkConnecting(double animation_value,
                                                   ConnectionType type);
@@ -112,6 +110,8 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // Badge is supposed to be shown on in bottom left corner of the icon.
   static const SkBitmap* BadgeForPrivateNetworkStatus(const Network* network);
 
+  // Returns an Icon for a given network.
+  static SkBitmap IconForNetwork(const Network* network);
   // This method will convert the |icon| bitmap to the correct size for display.
   // |icon| must be non-NULL.
   // If |badge| icon is not NULL, it will be drawn on top of the icon in

@@ -8,6 +8,12 @@
           i18n-content="wifiNetworkTabLabel"></span>
       <span class="active-tab-label" i18n-content="wifiNetworkTabLabel"></span>
     </span>
+    <span id="vpnNavTab" class="tab vpn-details"
+        tab-contents="vpnTab">
+      <span class="tab-label"
+          i18n-content="vpnTabLabel"></span>
+      <span class="active-tab-label" i18n-content="vpnTabLabel"></span>
+    </span>
     <span id="cellularPlanNavTab" class="tab cellular-details cdma-only"
         tab-contents="cellularPlanTab">
       <span class="tab-label"
@@ -70,6 +76,28 @@
               </label>
             </div>
           </td>
+        </tr>
+      </table>
+    </section>
+  </div>
+  <div id="vpnTab" class="subpages-tab-contents vpn-details">
+    <section>
+      <table class="option-control-table">
+        <tr>
+          <td class="option-name" i18n-content="inetServiceName"></td>
+          <td id="inetServiceName" class="option-value"></td>
+        </tr>
+        <tr>
+          <td class="option-name" i18n-content="inetServerHostname"></td>
+          <td id="inetServerHostname" class="option-value"></td>
+        </tr>
+        <tr>
+          <td class="option-name" i18n-content="inetProviderType"></td>
+          <td id="inetProviderType" class="option-value"></td>
+        </tr>
+        <tr>
+          <td class="option-name" i18n-content="inetUsername"></td>
+          <td id="inetUsername" class="option-value"></td>
         </tr>
       </table>
     </section>

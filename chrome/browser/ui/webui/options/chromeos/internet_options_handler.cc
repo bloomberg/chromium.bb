@@ -85,6 +85,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("wireless_title",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK));
+  localized_strings->SetString("vpn_title",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK));
   localized_strings->SetString("remembered_title",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK));
@@ -111,6 +114,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("wifiNetworkTabLabel",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI));
+  localized_strings->SetString("vpnTabLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN));
   localized_strings->SetString("cellularPlanTabLabel",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN));
@@ -152,6 +158,7 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS));
 
+  // Wifi Tab.
   localized_strings->SetString("accessLockedMsg",
       l10n_util::GetStringUTF16(
           IDS_STATUSBAR_NETWORK_LOCKED));
@@ -206,6 +213,21 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE));
 
+  // VPN Tab.
+  localized_strings->SetString("inetServiceName",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME));
+  localized_strings->SetString("inetServerHostname",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME));
+  localized_strings->SetString("inetProviderType",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE));
+  localized_strings->SetString("inetUsername",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME));
+
+  // Cellular Tab.
   localized_strings->SetString("serviceName",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME));
@@ -489,7 +511,7 @@ void InternetOptionsHandler::OnNetworkChanged(
 void InternetOptionsHandler::MonitorNetworks() {
   cros_->RemoveObserverForAllNetworks(this);
   const chromeos::WifiNetwork* wifi_network = cros_->wifi_network();
-  if (wifi_network != NULL)
+  if (wifi_network)
     cros_->AddNetworkObserver(wifi_network->service_path(), this);
   // Always monitor the cellular networks, if any, so that changes
   // in network technology, roaming status, and signal strength
@@ -500,6 +522,9 @@ void InternetOptionsHandler::MonitorNetworks() {
     chromeos::CellularNetwork* cell_network = cell_networks[i];
     cros_->AddNetworkObserver(cell_network->service_path(), this);
   }
+  const chromeos::VirtualNetwork* virtual_network = cros_->virtual_network();
+  if (virtual_network)
+    cros_->AddNetworkObserver(virtual_network->service_path(), this);
 }
 
 void InternetOptionsHandler::OnCellularDataPlanChanged(
@@ -794,7 +819,10 @@ void InternetOptionsHandler::PopulateCellularDetails(
 void InternetOptionsHandler::PopulateVPNDetails(
     const chromeos::VirtualNetwork* vpn,
     DictionaryValue* dictionary) {
-  // TODO(altimofeev): implement this.
+  dictionary->SetString("service_name", vpn->name());
+  dictionary->SetString("server_hostname", vpn->server_hostname());
+  dictionary->SetString("provider_type", vpn->GetProviderTypeString());
+  dictionary->SetString("username", vpn->username());
 }
 
 void InternetOptionsHandler::SetActivationButtonVisibility(
@@ -1084,24 +1112,16 @@ ListValue* InternetOptionsHandler::GetNetwork(
 }
 
 ListValue* InternetOptionsHandler::GetWiredList() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   ListValue* list = new ListValue();
 
   // If ethernet is not enabled, then don't add anything.
   if (cros_->ethernet_enabled()) {
     const chromeos::EthernetNetwork* ethernet_network =
         cros_->ethernet_network();
-    const SkBitmap* icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
-    const SkBitmap* bottom_right_badge = !ethernet_network ||
-        (!ethernet_network->connecting() && !ethernet_network->connected()) ?
-            rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED) : NULL;
-    const SkBitmap* bottom_left_badge =
-        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(ethernet_network);
     if (ethernet_network) {
       list->Append(GetNetwork(
           ethernet_network->service_path(),
-          chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge, NULL,
-                                                bottom_left_badge),
+          chromeos::NetworkMenu::IconForNetwork(ethernet_network),
           l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
           ethernet_network->connecting(),
           ethernet_network->connected(),
@@ -1120,24 +1140,12 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   ListValue* list = new ListValue();
 
-  const chromeos::Network* active_network = cros_->active_network();
-  bool has_vpn = active_network && cros_->virtual_network();
-  bool vpn_on_wireless = has_vpn &&
-      active_network->type() == chromeos::TYPE_WIFI;
   const chromeos::WifiNetworkVector& wifi_networks = cros_->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
-    const SkBitmap* icon =
-        chromeos::NetworkMenu::IconForNetworkStrength(*it);
-    const SkBitmap* bottom_right_badge = (*it)->encrypted() ?
-        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
-    const SkBitmap* bottom_left_badge =
-        vpn_on_wireless && active_network == (*it) ?
-        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(NULL) : NULL;
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge, NULL,
-                                              bottom_left_badge),
+        chromeos::NetworkMenu::IconForNetwork(*it),
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1165,25 +1173,13 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         false));
   }
 
-  bool vpn_on_cellular = has_vpn &&
-                         active_network->type() == chromeos::TYPE_CELLULAR;
   const chromeos::CellularNetworkVector cellular_networks =
       cros_->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
-    const SkBitmap* icon =
-        chromeos::NetworkMenu::IconForNetworkStrength(*it);
-    const SkBitmap* bottom_right_badge =
-        chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
-    const SkBitmap* roaming_badge =
-        chromeos::NetworkMenu::BadgeForRoamingStatus(*it);
-    const SkBitmap* bottom_left_badge =
-        vpn_on_cellular && active_network == (*it) ?
-        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(NULL) : NULL;
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge,
-                                              roaming_badge, bottom_left_badge),
+        chromeos::NetworkMenu::IconForNetwork(*it),
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1215,15 +1211,36 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   return list;
 }
 
+ListValue* InternetOptionsHandler::GetVPNList() {
+  ListValue* list = new ListValue();
+
+  const chromeos::VirtualNetworkVector& virtual_networks =
+      cros_->virtual_networks();
+  for (chromeos::VirtualNetworkVector::const_iterator it =
+      virtual_networks.begin(); it != virtual_networks.end(); ++it) {
+    list->Append(GetNetwork(
+        (*it)->service_path(),
+        chromeos::NetworkMenu::IconForNetwork(*it),
+        (*it)->name(),
+        (*it)->connecting(),
+        (*it)->connected(),
+        (*it)->connectable(),
+        chromeos::TYPE_VPN,
+        false,
+        false,
+        chromeos::ACTIVATION_STATE_UNKNOWN,
+        false));
+  }
+
+  return list;
+}
+
 ListValue* InternetOptionsHandler::GetRememberedList() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   ListValue* list = new ListValue();
 
   const chromeos::WifiNetworkVector& remembered_wifi_networks =
       cros_->remembered_wifi_networks();
-  const chromeos::Network* active_network = cros_->active_network();
-  bool vpn_on_wireless = active_network && cros_->virtual_network() &&
-                         active_network->type() == chromeos::TYPE_WIFI;
 
   for (chromeos::WifiNetworkVector::const_iterator rit =
            remembered_wifi_networks.begin();
@@ -1240,17 +1257,14 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     // encrypted property by definition).
     const SkBitmap* bottom_right_badge = remembered->encrypted() ?
         rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
-    const SkBitmap* bottom_left_badge =
-        vpn_on_wireless && active_network == wifi ?
-        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(NULL) : NULL;
     // Set in_active_profile.
     bool shared =
         cros_->HasMultipleProfiles() &&
         remembered->profile_type() == chromeos::PROFILE_SHARED;
     list->Append(GetNetwork(
         remembered->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge, NULL,
-                                              bottom_left_badge),
+        chromeos::NetworkMenu::IconForDisplay(
+            icon, bottom_right_badge, NULL, NULL),
         remembered->name(),
         wifi ? wifi->connecting() : false,
         wifi ? wifi->connected() : false,
@@ -1268,6 +1282,7 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
   dictionary->SetBoolean("accessLocked", cros_->IsLocked());
   dictionary->Set("wiredList", GetWiredList());
   dictionary->Set("wirelessList", GetWirelessList());
+  dictionary->Set("vpnList", GetVPNList());
   dictionary->Set("rememberedList", GetRememberedList());
   dictionary->SetBoolean("wifiAvailable", cros_->wifi_available());
   dictionary->SetBoolean("wifiEnabled", cros_->wifi_enabled());

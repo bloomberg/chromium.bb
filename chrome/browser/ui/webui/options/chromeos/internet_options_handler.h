@@ -121,6 +121,8 @@ class InternetOptionsHandler
   ListValue* GetWiredList();
   // Creates the map of wireless networks.
   ListValue* GetWirelessList();
+  // Creates the map of virtual networks.
+  ListValue* GetVPNList();
   // Creates the map of remembered networks.
   ListValue* GetRememberedList();
   // Fills network information into JS dictionary for displaying network lists.

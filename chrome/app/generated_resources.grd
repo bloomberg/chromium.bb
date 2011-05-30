@@ -10240,13 +10240,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
         Date and time
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK">
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK" desc="Title for section in settings/internet for list of wired networks (usually one)">
         Wired network
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK">
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK" desc="Title for section in settings/internet for list of wireless networks (wifi and cellular)">
         Wireless networks
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK">
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK" desc="Title for section in settings/internet for list of Virtual Private Networks (VPN)">
+        Private networks
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK" desc="Title for section in settings/internet for list of remembered (favirote) networks">
         Remembered networks
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
@@ -10372,8 +10375,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
         Take photo
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for the wifi tab.">
         Wi-Fi
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN" desc="In settings Internet options, the title for the VPN (Virtual Private Network) tab.">
+        VPN
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
         Plan

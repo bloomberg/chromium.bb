@@ -26,6 +26,7 @@ cr.define('options.internet', function() {
   Constants.TYPE_WIMAX     = 3;
   Constants.TYPE_BLUETOOTH = 4;
   Constants.TYPE_CELLULAR  = 5;
+  Constants.TYPE_VPN       = 6;
 
   /**
    * Creates a new network list div.
@@ -244,6 +245,7 @@ cr.define('options.internet', function() {
         }
         if (this.data.connected ||
                 this.data.networkType == Constants.TYPE_ETHERNET ||
+                this.data.networkType == Constants.TYPE_VPN ||
                 this.data.networkType == Constants.TYPE_WIFI ||
                 this.data.networkType == Constants.TYPE_CELLULAR) {
           buttonsDiv.appendChild(

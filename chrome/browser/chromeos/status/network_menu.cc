@@ -1020,6 +1020,11 @@ SkBitmap VPNMenuModel::IconForDisplay(const Network* network) {
   const SkBitmap* bottom_left_badge =
       NetworkMenu::BadgeForPrivateNetworkStatus(NULL);
 
+  // We should always have an underlying network for VPN, but if we ever don't
+  // (presumably an edge case), just return an empty icon.
+  if (!network)
+    return SkBitmap();
+
   switch (network->type()) {
     case TYPE_ETHERNET :
       icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
@@ -1240,6 +1245,59 @@ const SkBitmap* NetworkMenu::IconForNetworkStrength(
       nextafter(static_cast<float>(kNumBarsImages), 0));
   index = std::max(std::min(index, kNumBarsImages - 1), 0);
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(kBarsImages[index]);
+}
+
+// static
+SkBitmap NetworkMenu::IconForNetwork(const Network* network) {
+  DCHECK(network);
+
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  const SkBitmap* icon;
+  const SkBitmap* bottom_right_badge = NULL;
+  const SkBitmap* bottom_left_badge = NULL;
+
+  switch (network->type()) {
+    case TYPE_ETHERNET: {
+      icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+      if (!network->connecting() && !network->connected())
+        bottom_right_badge =
+            rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+      bottom_left_badge = BadgeForPrivateNetworkStatus(network);
+      return IconForDisplay(
+          icon, bottom_right_badge, NULL, bottom_left_badge);
+    }
+    case TYPE_WIFI: {
+      const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
+      icon = IconForNetworkStrength(wifi);
+      if (wifi->encrypted())
+        bottom_right_badge = rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE);
+      bottom_left_badge = BadgeForPrivateNetworkStatus(wifi);
+      return IconForDisplay(
+          icon, bottom_right_badge, NULL, bottom_left_badge);
+    }
+    case TYPE_CELLULAR: {
+      const CellularNetwork* cellular =
+          static_cast<const CellularNetwork*>(network);
+      icon = IconForNetworkStrength(cellular);
+      bottom_right_badge = BadgeForNetworkTechnology(cellular);
+      const SkBitmap* roaming_badge = BadgeForRoamingStatus(cellular);
+      bottom_left_badge = BadgeForPrivateNetworkStatus(cellular);
+      return IconForDisplay(
+          icon, bottom_right_badge, roaming_badge, bottom_left_badge);
+    }
+    case TYPE_VPN: {
+      return VPNMenuModel::IconForDisplay(cros->connected_network());
+    }
+    default:
+      LOG(WARNING) << "Request for icon for unsupported type: "
+                   << network->type();
+      icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_STATUSBAR_NETWORK_BARS0);
+      return *icon;
+  }
 }
 
 // static

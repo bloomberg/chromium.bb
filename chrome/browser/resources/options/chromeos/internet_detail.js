@@ -59,6 +59,9 @@ cr.define('options.internet', function() {
       updateHidden(
           cr.doc.querySelectorAll('#detailsInternetPage .wifi-details'),
           !this.wireless);
+      updateHidden(
+          cr.doc.querySelectorAll('#detailsInternetPage .vpn-details'),
+          !this.vpn);
 
       // Cell plan related
       $('planList').hidden = this.cellplanloading;
@@ -97,6 +100,14 @@ cr.define('options.internet', function() {
    * @type {boolean}
    */
   cr.defineProperty(DetailsInternetPage, 'wireless',
+      cr.PropertyKind.JS,
+      DetailsInternetPage.prototype.updateControls_);
+
+  /**
+   * Whether the underlying network is a vpn. Only used for display purpose.
+   * @type {boolean}
+   */
+  cr.defineProperty(DetailsInternetPage, 'vpn',
       cr.PropertyKind.JS,
       DetailsInternetPage.prototype.updateControls_);
 

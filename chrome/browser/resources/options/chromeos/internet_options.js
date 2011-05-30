@@ -39,6 +39,8 @@ cr.define('options', function() {
       $('wired-list').load(templateData.wiredList);
       options.internet.NetworkElement.decorate($('wireless-list'));
       $('wireless-list').load(templateData.wirelessList);
+      options.internet.NetworkElement.decorate($('vpn-list'));
+      $('vpn-list').load(templateData.vpnList);
       options.internet.NetworkElement.decorate($('remembered-list'));
       $('remembered-list').load(templateData.rememberedList);
 
@@ -46,6 +48,7 @@ cr.define('options', function() {
 
       $('wired-section').hidden = (templateData.wiredList.length == 0);
       $('wireless-section').hidden = (templateData.wirelessList.length == 0);
+      $('vpn-section').hidden = (templateData.vpnList.length == 0);
       $('remembered-section').hidden =
           (templateData.rememberedList.length == 0);
       InternetOptions.setupAttributes(templateData);
@@ -133,6 +136,7 @@ cr.define('options', function() {
       $('wireless-buttons').hidden = accesslocked;
       $('wired-section').hidden = accesslocked;
       $('wireless-section').hidden = accesslocked;
+      $('vpn-section').hidden = accesslocked;
       $('remembered-section').hidden = accesslocked;
 
       // Don't change hidden attribute on OptionsPage divs directly beucase it
@@ -276,10 +280,12 @@ cr.define('options', function() {
     } else {
       $('wired-list').load(data.wiredList);
       $('wireless-list').load(data.wirelessList);
+      $('vpn-list').load(data.vpnList);
       $('remembered-list').load(data.rememberedList);
 
       $('wired-section').hidden = (data.wiredList.length == 0);
       $('wireless-section').hidden = (data.wirelessList.length == 0);
+      $('vpn-section').hidden = (data.vpnList.length == 0);
       InternetOptions.setupAttributes(data);
       $('remembered-section').hidden = (data.rememberedList.length == 0);
       InternetOptions.updateData = null;
@@ -427,6 +433,7 @@ cr.define('options', function() {
     if (data.type == 2) {
       OptionsPage.showTab($('wifiNetworkNavTab'));
       detailsPage.wireless = true;
+      detailsPage.vpn = false;
       detailsPage.ethernet = false;
       detailsPage.cellular = false;
       detailsPage.gsm = false;
@@ -443,6 +450,7 @@ cr.define('options', function() {
         OptionsPage.showTab($('cellularConnNavTab'));
       detailsPage.ethernet = false;
       detailsPage.wireless = false;
+      detailsPage.vpn = false;
       detailsPage.cellular = true;
       if (data.carrierUrl) {
         var a = $('carrierUrl');
@@ -499,10 +507,22 @@ cr.define('options', function() {
         detailsPage.nocellplan = true;
         detailsPage.cellplanloading = false;
       }
+    } else if (data.type == 6) {
+      OptionsPage.showTab($('vpnNavTab'));
+      detailsPage.wireless = false;
+      detailsPage.vpn = true;
+      detailsPage.ethernet = false;
+      detailsPage.cellular = false;
+      detailsPage.gsm = false;
+      $('inetServiceName').textContent = data.service_name;
+      $('inetServerHostname').textContent = data.server_hostname;
+      $('inetProviderType').textContent = data.provider_type;
+      $('inetUsername').textContent = data.username;
     } else {
       OptionsPage.showTab($('internetNavTab'));
       detailsPage.ethernet = true;
       detailsPage.wireless = false;
+      detailsPage.vpn = false;
       detailsPage.cellular = false;
       detailsPage.gsm = false;
     }
