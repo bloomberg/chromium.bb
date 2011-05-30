@@ -134,8 +134,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
 
     // Run multiple evictions in a single RunAllPending() when interval_ms == 0
     temporary_storage_evictor_.reset(new QuotaTemporaryStorageEvictor(
-        quota_eviction_handler_.get(),
-        0, base::MessageLoopProxy::CreateForCurrentThread()));
+        quota_eviction_handler_.get(), 0));
   }
 
   void TearDown() {
@@ -177,6 +176,10 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
     return temporary_storage_evictor_.get();
   }
 
+  void set_repeated_eviction(bool repeated_eviction) const {
+    return temporary_storage_evictor_->set_repeated_eviction(repeated_eviction);
+  }
+
   int num_get_usage_and_quota_for_eviction() const {
     return num_get_usage_and_quota_for_eviction_;
   }
@@ -204,6 +207,7 @@ TEST_F(QuotaTemporaryStorageEvictorTest, SimpleEvictionTest) {
   quota_eviction_handler()->set_quota(4000);
   quota_eviction_handler()->set_available_space(1000000000);
   EXPECT_EQ(3000 + 200 + 500, quota_eviction_handler()->GetUsage());
+  set_repeated_eviction(false);
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(200 + 500, quota_eviction_handler()->GetUsage());
@@ -217,6 +221,7 @@ TEST_F(QuotaTemporaryStorageEvictorTest, MultipleEvictionTest) {
   quota_eviction_handler()->set_quota(4000);
   quota_eviction_handler()->set_available_space(1000000000);
   EXPECT_EQ(20 + 2900 + 450 + 400, quota_eviction_handler()->GetUsage());
+  set_repeated_eviction(false);
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(450 + 400, quota_eviction_handler()->GetUsage());
@@ -244,7 +249,6 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionTest) {
           initial_total_size - d_size,
           initial_total_size - d_size + e_size - c_size));
   EXPECT_EQ(initial_total_size, quota_eviction_handler()->GetUsage());
-  temporary_storage_evictor()->set_repeated_eviction(true);
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(initial_total_size - d_size + e_size - c_size - b_size,
@@ -274,7 +278,6 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionWithAccessOriginTest) {
           initial_total_size - d_size,
           initial_total_size - d_size + e_size - b_size));
   EXPECT_EQ(initial_total_size, quota_eviction_handler()->GetUsage());
-  temporary_storage_evictor()->set_repeated_eviction(true);
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(initial_total_size - d_size + e_size - b_size - a_size,
@@ -291,6 +294,7 @@ TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
   quota_eviction_handler()->set_available_space(
       default_min_available_disk_space_to_start_eviction() - 350);
   EXPECT_EQ(294 + 120 + 150 + 300, quota_eviction_handler()->GetUsage());
+  set_repeated_eviction(false);
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(150 + 300, quota_eviction_handler()->GetUsage());
@@ -304,6 +308,7 @@ TEST_F(QuotaTemporaryStorageEvictorTest, UnlimitedExclusionEvictionTest) {
   quota_eviction_handler()->set_quota(5000);
   quota_eviction_handler()->set_available_space(1000000000);
   EXPECT_EQ(3000 + 200 + 500000, quota_eviction_handler()->GetUsage());
+  set_repeated_eviction(false);
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   // Nothing should have been evicted.

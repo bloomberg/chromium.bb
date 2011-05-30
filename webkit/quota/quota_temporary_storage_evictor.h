@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_callback_factory.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "webkit/quota/quota_types.h"
 
@@ -20,20 +21,14 @@ namespace quota {
 
 class QuotaEvictionHandler;
 
-class QuotaTemporaryStorageEvictor {
+class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
  public:
   QuotaTemporaryStorageEvictor(
       QuotaEvictionHandler* quota_eviction_handler,
-      int64 interval_ms,
-      scoped_refptr<base::MessageLoopProxy> io_thread);
+      int64 interval_ms);
   virtual ~QuotaTemporaryStorageEvictor();
 
   void Start();
-
-  bool repeated_eviction() const { return repeated_eviction_; }
-  void set_repeated_eviction(bool repeated_eviction) {
-    repeated_eviction_ = repeated_eviction;
-  }
 
  private:
   friend class QuotaTemporaryStorageEvictorTest;
@@ -49,6 +44,11 @@ class QuotaTemporaryStorageEvictor {
   void OnGotLRUOrigin(const GURL& origin);
   void OnEvictionComplete(QuotaStatusCode status);
 
+  // This is only used for tests.
+  void set_repeated_eviction(bool repeated_eviction) {
+    repeated_eviction_ = repeated_eviction;
+  }
+
   static const double kUsageRatioToStartEviction;
   static const int64 kDefaultMinAvailableDiskSpaceToStartEviction;
 
@@ -59,7 +59,6 @@ class QuotaTemporaryStorageEvictor {
 
   int64 interval_ms_;
   bool repeated_eviction_;
-  scoped_refptr<base::MessageLoopProxy> io_thread_;
 
   base::OneShotTimer<QuotaTemporaryStorageEvictor> timer_;
 

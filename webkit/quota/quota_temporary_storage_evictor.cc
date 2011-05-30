@@ -4,7 +4,6 @@
 
 #include "webkit/quota/quota_temporary_storage_evictor.h"
 
-#include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -16,14 +15,12 @@ const int64 QuotaTemporaryStorageEvictor::
 
 QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     QuotaEvictionHandler* quota_eviction_handler,
-    int64 interval_ms,
-    scoped_refptr<base::MessageLoopProxy> io_thread)
+    int64 interval_ms)
     : min_available_disk_space_to_start_eviction_(
           kDefaultMinAvailableDiskSpaceToStartEviction),
       quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
-      repeated_eviction_(false),
-      io_thread_(io_thread),
+      repeated_eviction_(true),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(quota_eviction_handler);
 }
@@ -32,7 +29,7 @@ QuotaTemporaryStorageEvictor::~QuotaTemporaryStorageEvictor() {
 }
 
 void QuotaTemporaryStorageEvictor::Start() {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   StartEvictionTimerWithDelay(0);
 }
 
@@ -56,7 +53,7 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     int64 unlimited_usage,
     int64 quota,
     int64 available_disk_space) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   DCHECK_GE(usage, unlimited_usage);  // unlimited_usage is a subset of usage
 
   usage -= unlimited_usage;
@@ -72,6 +69,7 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
             &QuotaTemporaryStorageEvictor::OnGotLRUOrigin));
   } else if (repeated_eviction_) {
     // No action required, sleep for a while and check again later.
+    // TODO(dmikurube): Stop repeating if error happens frequently.
     StartEvictionTimerWithDelay(interval_ms_);
   }
 
@@ -80,7 +78,7 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
 }
 
 void QuotaTemporaryStorageEvictor::OnGotLRUOrigin(const GURL& origin) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   if (origin.is_empty()) {
     if (repeated_eviction_)
@@ -95,7 +93,12 @@ void QuotaTemporaryStorageEvictor::OnGotLRUOrigin(const GURL& origin) {
 
 void QuotaTemporaryStorageEvictor::OnEvictionComplete(
     QuotaStatusCode status) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
+
+  // Just calling ConsiderEviction() here is ok.  No need to deal with the
+  // case that all of the Delete operations fail for a certain origin.  It
+  // doesn't result in trying to evict the same origin permanently.  The
+  // evictor skips origins which had deletion errors a few times.
 
   // We many need to get rid of more space so reconsider immediately.
   ConsiderEviction();

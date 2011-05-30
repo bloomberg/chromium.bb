@@ -1013,8 +1013,27 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   MessageLoop::current()->RunAllPending();
   int64 predelete_host_pers = usage();
 
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kData1); ++i)
+    quota_manager()->NotifyStorageAccessed(QuotaClient::kMockStart,
+        GURL(kData1[i].origin), kData1[i].type);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kData2); ++i)
+    quota_manager()->NotifyStorageAccessed(QuotaClient::kMockStart,
+        GURL(kData2[i].origin), kData2[i].type);
+  MessageLoop::current()->RunAllPending();
+
   EvictOriginData(GURL("http://foo.com/"), kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
+
+  DumpLastAccessTimeTable();
+  MessageLoop::current()->RunAllPending();
+
+  typedef LastAccessTimeTableEntries::const_iterator iterator;
+  for (iterator itr(last_access_time_table().begin()),
+                end(last_access_time_table().end());
+       itr != end; ++itr) {
+    if (itr->type == kStorageTypeTemporary)
+      EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
+  }
 
   GetGlobalUsage(kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
@@ -1023,6 +1042,91 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   GetHostUsage("foo.com", kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(predelete_host_tmp - (1 + 50000), usage());
+
+  GetHostUsage("foo.com", kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_pers, usage());
+}
+
+TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
+  static const MockOriginData kData[] = {
+    { "http://foo.com/",   kStorageTypeTemporary,        1 },
+    { "http://foo.com:1/", kStorageTypeTemporary,       20 },
+    { "http://foo.com/",   kStorageTypePersistent,     300 },
+    { "http://bar.com/",   kStorageTypeTemporary,     4000 },
+  };
+  static const int kNumberOfTemporaryOrigins = 3;
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  GetGlobalUsage(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_global_tmp = usage();
+
+  GetHostUsage("foo.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_tmp = usage();
+
+  GetHostUsage("foo.com", kStorageTypePersistent);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_pers = usage();
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kData); ++i)
+    quota_manager()->NotifyStorageAccessed(QuotaClient::kMockStart,
+        GURL(kData[i].origin), kData[i].type);
+  MessageLoop::current()->RunAllPending();
+
+  client->AddOriginToErrorSet(GURL("http://foo.com/"), kStorageTypeTemporary);
+
+  for (int i = 0;
+       i < QuotaManager::kThresholdOfErrorsToBeBlacklisted + 1;
+       ++i) {
+    EvictOriginData(GURL("http://foo.com/"), kStorageTypeTemporary);
+    MessageLoop::current()->RunAllPending();
+    EXPECT_EQ(kQuotaErrorInvalidModification, status());
+  }
+
+  DumpLastAccessTimeTable();
+  MessageLoop::current()->RunAllPending();
+
+  bool found_origin_in_database = false;
+  typedef LastAccessTimeTableEntries::const_iterator iterator;
+  for (iterator itr(last_access_time_table().begin()),
+                end(last_access_time_table().end());
+       itr != end; ++itr) {
+    if (itr->type == kStorageTypeTemporary &&
+        GURL("http://foo.com/") == itr->origin) {
+      found_origin_in_database = true;
+      break;
+    }
+  }
+  // The origin "http://foo.com/" should be in the database.
+  EXPECT_TRUE(found_origin_in_database);
+
+  for (size_t i = 0; i < kNumberOfTemporaryOrigins - 1; ++i) {
+    GetLRUOrigin(kStorageTypeTemporary);
+    MessageLoop::current()->RunAllPending();
+    EXPECT_FALSE(lru_origin().is_empty());
+    // The origin "http://foo.com/" should not be in the LRU list.
+    EXPECT_NE(std::string("http://foo.com/"), lru_origin().spec());
+    DeleteOriginFromDatabase(lru_origin(), kStorageTypeTemporary);
+    MessageLoop::current()->RunAllPending();
+  }
+
+  // Now the LRU list must be empty.
+  GetLRUOrigin(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(lru_origin().is_empty());
+
+  // Deleting origins from the database should not affect the results of the
+  // following checks.
+  GetGlobalUsage(kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_global_tmp, usage());
+
+  GetHostUsage("foo.com", kStorageTypeTemporary);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_tmp, usage());
 
   GetHostUsage("foo.com", kStorageTypePersistent);
   MessageLoop::current()->RunAllPending();

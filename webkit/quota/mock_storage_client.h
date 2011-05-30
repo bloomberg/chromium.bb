@@ -37,6 +37,8 @@ class MockStorageClient : public QuotaClient {
   void ModifyOriginAndNotify(
       const GURL& origin_url, StorageType type, int64 delta);
 
+  void AddOriginToErrorSet(const GURL& origin_url, StorageType type);
+
   // QuotaClient methods.
   virtual QuotaClient::ID id() const OVERRIDE;
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
@@ -69,6 +71,8 @@ class MockStorageClient : public QuotaClient {
 
   typedef std::map<std::pair<GURL, StorageType>, int64> OriginDataMap;
   OriginDataMap origin_data_;
+  typedef std::set<std::pair<GURL, StorageType> > ErrorOriginSet;
+  ErrorOriginSet error_origins_;
 
   std::set<GetUsageCallback*> usage_callbacks_;
   std::set<GetOriginsCallback*> origins_callbacks_;

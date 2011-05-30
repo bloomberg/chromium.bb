@@ -81,6 +81,11 @@ void MockStorageClient::ModifyOriginAndNotify(
   quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, delta);
 }
 
+void MockStorageClient::AddOriginToErrorSet(
+    const GURL& origin_url, StorageType type) {
+  error_origins_.insert(make_pair(origin_url, type));
+}
+
 QuotaClient::ID MockStorageClient::id() const {
   return id_;
 }
@@ -172,8 +177,17 @@ void MockStorageClient::RunDeleteOriginData(
     const GURL& origin_url,
     StorageType type,
     DeletionCallback* callback_ptr) {
-  OriginDataMap::iterator itr
-      = origin_data_.find(make_pair(origin_url, type));
+  scoped_ptr<DeletionCallback> callback(callback_ptr);
+  ErrorOriginSet::iterator itr_error =
+      error_origins_.find(make_pair(origin_url, type));
+  if (itr_error != error_origins_.end()) {
+    deletion_callbacks_.erase(callback_ptr);
+    callback->Run(kQuotaErrorInvalidModification);
+    return;
+  }
+
+  OriginDataMap::iterator itr =
+      origin_data_.find(make_pair(origin_url, type));
   if (itr != origin_data_.end()) {
     int64 delta = itr->second;
     quota_manager_proxy_->
@@ -181,7 +195,6 @@ void MockStorageClient::RunDeleteOriginData(
     origin_data_.erase(itr);
   }
 
-  scoped_ptr<DeletionCallback> callback(callback_ptr);
   deletion_callbacks_.erase(callback_ptr);
   callback->Run(kQuotaStatusOk);
 }

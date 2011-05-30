@@ -33,6 +33,7 @@ class FilePath;
 namespace quota {
 
 class QuotaDatabase;
+class QuotaTemporaryStorageEvictor;
 class UsageTracker;
 
 struct QuotaManagerDeleter;
@@ -157,6 +158,10 @@ class QuotaManager : public QuotaTaskObserver,
 
   static const char kDatabaseName[];
 
+  static const int kThresholdOfErrorsToBeBlacklisted;
+
+  static const int kEvictionIntervalInMilliSeconds;
+
  private:
   class DatabaseTaskBase;
   class InitializeTask;
@@ -187,13 +192,17 @@ class QuotaManager : public QuotaTaskObserver,
 
   struct EvictionContext {
     EvictionContext()
-        : num_eviction_requested_clients(0),
+        : evicted_type(kStorageTypeUnknown),
+          num_eviction_requested_clients(0),
           num_evicted_clients(0),
           num_eviction_error(0),
           usage(0),
           unlimited_usage(0),
           quota(0) {}
     virtual ~EvictionContext() {}
+
+    GURL evicted_origin;
+    StorageType evicted_type;
 
     scoped_ptr<EvictOriginDataCallback> evict_origin_data_callback;
     int num_eviction_requested_clients;
@@ -214,6 +223,7 @@ class QuotaManager : public QuotaTaskObserver,
   friend struct QuotaManagerDeleter;
   friend class QuotaManagerProxy;
   friend class QuotaManagerTest;
+  friend class QuotaTemporaryStorageEvictor;
 
   // This initialization method is lazily called on the IO thread
   // when the first quota manager API is called.
@@ -288,6 +298,7 @@ class QuotaManager : public QuotaTaskObserver,
   // TODO(michaeln): Need a way to clear the cache, drop and
   // reinstantiate the trackers when they're not handling requests.
 
+  scoped_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
   EvictionContext eviction_context_;
 
   UsageAndQuotaDispatcherTaskMap usage_and_quota_dispatchers_;
@@ -297,6 +308,8 @@ class QuotaManager : public QuotaTaskObserver,
 
   // Map from origin to count.
   std::map<GURL, int> origins_in_use_;
+  // Map from origin to error count.
+  std::map<GURL, int> origins_in_error_;
 
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 

@@ -18,6 +18,7 @@
 #include "base/sys_info.h"
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_database.h"
+#include "webkit/quota/quota_temporary_storage_evictor.h"
 #include "webkit/quota/quota_types.h"
 #include "webkit/quota/usage_tracker.h"
 
@@ -57,18 +58,25 @@ int64 GetInitialTemporaryStorageQuotaSize(const FilePath& path,
   return QuotaManager::kTemporaryStorageQuotaMaxSize;
 }
 
-const int64 MBytes = 1024 * 1024;
+const int64 kMBytes = 1024 * 1024;
+const int kMinutesInMilliSeconds = 60 * 1000;
+
 }  // anonymous namespace
 
 // TODO(kinuko): We will need to have different sizes for different platforms
 // (e.g. larger for desktop etc) and may want to have them in preferences.
-const int64 QuotaManager::kTemporaryStorageQuotaDefaultSize = 50 * MBytes;
-const int64 QuotaManager::kTemporaryStorageQuotaMaxSize = 1 * 1024 * MBytes;
-const int64 QuotaManager::kIncognitoDefaultTemporaryQuota = 50 * MBytes;
+const int64 QuotaManager::kTemporaryStorageQuotaDefaultSize = 50 * kMBytes;
+const int64 QuotaManager::kTemporaryStorageQuotaMaxSize = 1 * 1024 * kMBytes;
+const int64 QuotaManager::kIncognitoDefaultTemporaryQuota = 50 * kMBytes;
 
 const int QuotaManager::kPerHostTemporaryPortion = 5;  // 20%
 
 const char QuotaManager::kDatabaseName[] = "QuotaManager";
+
+const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
+
+const int QuotaManager::kEvictionIntervalInMilliSeconds =
+    30 * kMinutesInMilliSeconds;
 
 // This class is for posting GetUsage/GetQuota tasks, gathering
 // results and dispatching GetAndQuota callbacks.
@@ -531,6 +539,7 @@ class QuotaManager::GetLRUOriginTask
       scoped_refptr<base::MessageLoopProxy> db_message_loop,
       StorageType type,
       const std::map<GURL, int>& origins_in_use,
+      const std::map<GURL, int>& origins_in_error,
       GetLRUOriginCallback *callback)
       : DatabaseTaskBase(manager, database, db_message_loop),
         type_(type),
@@ -540,6 +549,12 @@ class QuotaManager::GetLRUOriginTask
          p != origins_in_use.end();
          ++p) {
       if (p->second > 0)
+        exceptions_.insert(p->first);
+    }
+    for (std::map<GURL, int>::const_iterator p = origins_in_error.begin();
+         p != origins_in_error.end();
+         ++p) {
+      if (p->second > QuotaManager::kThresholdOfErrorsToBeBlacklisted)
         exceptions_.insert(p->first);
     }
   }
@@ -1066,7 +1081,7 @@ void QuotaManager::GetLRUOrigin(
   }
   scoped_refptr<GetLRUOriginTask> task(new GetLRUOriginTask(
       this, database_.get(), db_thread_, type, origins_in_use_,
-      callback_factory_.NewCallback(
+      origins_in_error_, callback_factory_.NewCallback(
           &QuotaManager::DidGetDatabaseLRUOrigin)));
   task->Start();
 }
@@ -1075,11 +1090,8 @@ void QuotaManager::DidOriginDataEvicted(
     QuotaStatusCode status) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
-  if (status != kQuotaStatusOk) {
+  if (status != kQuotaStatusOk)
     ++eviction_context_.num_eviction_error;
-    // TODO(dmikurube): The origin with some error should have lower priority in
-    // the next eviction?
-  }
 
   ++eviction_context_.num_evicted_clients;
   DCHECK(eviction_context_.num_evicted_clients <=
@@ -1089,8 +1101,15 @@ void QuotaManager::DidOriginDataEvicted(
     eviction_context_.num_eviction_requested_clients = 0;
     eviction_context_.num_evicted_clients = 0;
 
-    // TODO(dmikurube): Call DeleteOriginFromDatabase here.
-    eviction_context_.evict_origin_data_callback->Run(kQuotaStatusOk);
+    if (eviction_context_.num_eviction_error == 0) {
+      DeleteOriginFromDatabase(eviction_context_.evicted_origin,
+                               eviction_context_.evicted_type);
+      eviction_context_.evict_origin_data_callback->Run(kQuotaStatusOk);
+    } else {
+      origins_in_error_[eviction_context_.evicted_origin]++;
+      eviction_context_.evict_origin_data_callback->Run(
+          kQuotaErrorInvalidModification);
+    }
     eviction_context_.evict_origin_data_callback.reset();
   }
 }
@@ -1114,7 +1133,10 @@ void QuotaManager::EvictOriginData(
 
   eviction_context_.num_eviction_requested_clients = num_clients;
   eviction_context_.num_evicted_clients = 0;
+  eviction_context_.num_eviction_error = 0;
 
+  eviction_context_.evicted_origin = origin;
+  eviction_context_.evicted_type = type;
   eviction_context_.evict_origin_data_callback.reset(callback);
   for (QuotaClientList::iterator p = clients_.begin();
        p != clients_.end();
@@ -1173,7 +1195,10 @@ void QuotaManager::GetUsageAndQuotaForEviction(
 }
 
 void QuotaManager::StartEviction() {
-  // TODO(kinuko,dmikurube): kick the first eviction here.
+  DCHECK(!temporary_storage_evictor_.get());
+  temporary_storage_evictor_.reset(new QuotaTemporaryStorageEvictor(this,
+      kEvictionIntervalInMilliSeconds));
+  temporary_storage_evictor_->Start();
 }
 
 void QuotaManager::DidInitializeTemporaryGlobalQuota(int64 quota) {
