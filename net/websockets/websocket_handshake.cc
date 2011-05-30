@@ -215,10 +215,8 @@ uint32 RandUint32(uint32 min, uint32 max) {
   DCHECK(min <= max);
 
   uint64 range = static_cast<int64>(max) - min + 1;
-  uint64 number = base::RandUint64();
-  // TODO(ukai): fix to be uniform.
-  // the distribution of the result of modulo will be biased.
-  uint32 result = min + static_cast<uint32>(number % range);
+  uint64 number = base::RandGenerator(range);
+  uint32 result = min + static_cast<uint32>(number);
   DCHECK(result >= min && result <= max);
   return result;
 }
