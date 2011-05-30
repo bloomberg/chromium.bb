@@ -230,7 +230,13 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   bool GetPrintFrame(WebKit::WebFrame** frame);
 
-  void ReportPreviewGenerationTime(base::TimeDelta time, int pages);
+  // This reports the current time - |start_time| as the time to render
+  // a page and returns the current time.
+  base::TimeTicks ReportPreviewPageRenderTime(base::TimeTicks start_time);
+  void ReportTotalPreviewGenerationTime(int selected_pages_length,
+                                        int total_pages,
+                                        base::TimeDelta render_time,
+                                        base::TimeDelta total_time);
 
   // Script Initiated Printing ------------------------------------------------
 

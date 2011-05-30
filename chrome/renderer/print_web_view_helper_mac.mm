@@ -76,11 +76,13 @@ bool PrintWebViewHelper::CreatePreviewDocument(
                          printParams.printable_size.height());
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
+  base::TimeTicks page_begin_time = begin_time;
 
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       RenderPage(printParams.page_size, content_area, scale_factor, i, frame,
                  &metafile);
+      page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
@@ -88,19 +90,18 @@ bool PrintWebViewHelper::CreatePreviewDocument(
         break;
       RenderPage(printParams.page_size, content_area, scale_factor,
                  static_cast<int>(params.pages[i]), frame, &metafile);
+      page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
     }
   }
 
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderToPDFTime",
-                      base::TimeTicks::Now() - begin_time);
+  base::TimeDelta render_time = base::TimeTicks::Now() - begin_time;
 
+  prep_frame_view.FinishPrinting();
   metafile.FinishDocument();
 
-  int preview_page_count = params.pages.size();
-  if (!preview_page_count)
-    preview_page_count = page_count;
-  ReportPreviewGenerationTime(base::TimeTicks::Now() - begin_time,
-                              preview_page_count);
+  ReportTotalPreviewGenerationTime(params.pages.size(), page_count,
+                                   render_time,
+                                   base::TimeTicks::Now() - begin_time);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
   preview_params.data_size = metafile.GetDataSize();

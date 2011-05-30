@@ -55,18 +55,6 @@ const char kColorDevice[] = "ColorDevice";
 const char kPskColor[] = "psk:Color";
 #endif
 
-// UMA histogram names and buckets.
-const char kUserAction[] = "PrintPreview.UserAction";
-const char kManagePrinters[] = "PrintPreview.ManagePrinters";
-const char kNumberOfPrinters[] = "PrintPreview.NumberOfPrinters";
-const char kPrintSettings[] = "PrintPreview.PrintSettings";
-const char kRegeneratePreviewRequestsRcvdBeforeCancel[] =
-    "PrintPreview.RegeneratePreviewRequest.BeforeCancel";
-const char kRegeneratePreviewRequestsRcvdBeforePrint[] =
-    "PrintPreview.RegeneratePreviewRequest.BeforePrint";
-const char kPagesPrintedToPDF[] = "PrintPreview.PageCount.PrintToPDF";
-const char kPagesPrintedToPrinter[] = "PrintPreview.PageCount.PrintToPrinter";
-
 enum UserActionBuckets {
   PRINT_TO_PRINTER,
   PRINT_TO_PDF,
@@ -88,6 +76,15 @@ enum PrintSettingsBuckets {
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
+void ReportUserActionHistogram(enum UserActionBuckets event) {
+  UMA_HISTOGRAM_ENUMERATION("PrintPreview.UserAction", event,
+                            USERACTION_BUCKET_BOUNDARY);
+}
+
+void ReportPrintSettingHistogram(enum PrintSettingsBuckets setting) {
+  UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintSettings", setting,
+                            PRINT_SETTINGS_BUCKET_BOUNDARY);
+}
 
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
@@ -139,34 +136,20 @@ int GetPageCountFromSettingsDictionary(const DictionaryValue& settings) {
 // Track the popularity of print settings and report the stats.
 void ReportPrintSettingsStats(const DictionaryValue& settings) {
   bool landscape;
-  if (settings.GetBoolean(printing::kSettingLandscape, &landscape)) {
-    UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
-                              landscape ? LANDSCAPE : PORTRAIT,
-                              PRINT_SETTINGS_BUCKET_BOUNDARY);
-  }
+  if (settings.GetBoolean(printing::kSettingLandscape, &landscape))
+    ReportPrintSettingHistogram(landscape ? LANDSCAPE : PORTRAIT);
 
   bool collate;
-  if (settings.GetBoolean(printing::kSettingCollate, &collate)) {
-    if (collate) {
-      UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
-                                COLLATE,
-                                PRINT_SETTINGS_BUCKET_BOUNDARY);
-    }
-  }
+  if (settings.GetBoolean(printing::kSettingCollate, &collate) && collate)
+    ReportPrintSettingHistogram(COLLATE);
 
   int duplex_mode;
-  if (settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode)) {
-    UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
-                              duplex_mode ? DUPLEX : SIMPLEX,
-                              PRINT_SETTINGS_BUCKET_BOUNDARY);
-  }
+  if (settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode))
+    ReportPrintSettingHistogram(duplex_mode ? DUPLEX : SIMPLEX);
 
   bool is_color;
-  if (settings.GetBoolean(printing::kSettingColor, &is_color)) {
-    UMA_HISTOGRAM_ENUMERATION(kPrintSettings,
-                              is_color ? COLOR : BLACK_AND_WHITE,
-                              PRINT_SETTINGS_BUCKET_BOUNDARY);
-  }
+  if (settings.GetBoolean(printing::kSettingColor, &is_color))
+    ReportPrintSettingHistogram(is_color ? COLOR : BLACK_AND_WHITE);
 }
 
 }  // namespace
@@ -212,7 +195,8 @@ class PrintSystemTaskProxy
 
     if (!has_logged_printers_count_) {
       // Record the total number of printers.
-      UMA_HISTOGRAM_COUNTS(kNumberOfPrinters, printer_list.size());
+      UMA_HISTOGRAM_COUNTS("PrintPreview.NumberOfPrinters",
+                           printer_list.size());
     }
 
     int i = 0;
@@ -361,9 +345,7 @@ PrintPreviewHandler::PrintPreviewHandler()
       manage_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false) {
-  UMA_HISTOGRAM_ENUMERATION(kUserAction,
-                            PREVIEW_STARTED,
-                            USERACTION_BUCKET_BOUNDARY);
+  ReportUserActionHistogram(PREVIEW_STARTED);
 }
 
 PrintPreviewHandler::~PrintPreviewHandler() {
@@ -425,9 +407,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab) {
     if (!reported_failed_preview_) {
-      UMA_HISTOGRAM_ENUMERATION(kUserAction,
-                                PREVIEW_FAILED,
-                                USERACTION_BUCKET_BOUNDARY);
+      ReportUserActionHistogram(PREVIEW_FAILED);
       reported_failed_preview_ = true;
     }
     web_ui_->CallJavascriptFunction("printPreviewFailed");
@@ -447,7 +427,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
   // Record the number of times the user requests to regenerate preview data
   // before printing.
-  UMA_HISTOGRAM_COUNTS(kRegeneratePreviewRequestsRcvdBeforePrint,
+  UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
                        regenerate_preview_request_count_);
 
   TabContents* initiator_tab = GetInitiatorTab();
@@ -467,10 +447,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
       TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 
   if (print_to_pdf) {
-    UMA_HISTOGRAM_ENUMERATION(kUserAction,
-                              PRINT_TO_PDF,
-                              USERACTION_BUCKET_BOUNDARY);
-    UMA_HISTOGRAM_COUNTS(kPagesPrintedToPDF,
+    ReportUserActionHistogram(PRINT_TO_PDF);
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF",
                          GetPageCountFromSettingsDictionary(*settings));
 
     // Pre-populating select file dialog with print job title.
@@ -491,10 +469,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     SelectFile(default_filename);
   } else {
     ReportPrintSettingsStats(*settings);
-    UMA_HISTOGRAM_ENUMERATION(kUserAction,
-                              PRINT_TO_PRINTER,
-                              USERACTION_BUCKET_BOUNDARY);
-    UMA_HISTOGRAM_COUNTS(kPagesPrintedToPrinter,
+    ReportUserActionHistogram(PRINT_TO_PRINTER);
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter",
                          GetPageCountFromSettingsDictionary(*settings));
     g_browser_process->background_printing_manager()->OwnTabContents(
         preview_tab_wrapper);
@@ -528,9 +504,7 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
 
 void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
   ReportStats();
-  UMA_HISTOGRAM_ENUMERATION(kUserAction,
-                            FALLBACK_TO_ADVANCED_SETTINGS_DIALOG,
-                            USERACTION_BUCKET_BOUNDARY);
+  ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
   TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
@@ -551,20 +525,18 @@ void PrintPreviewHandler::HandleManagePrinters(const ListValue* args) {
 
 void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* args) {
   ReportStats();
-  UMA_HISTOGRAM_ENUMERATION(kUserAction,
-                            CANCEL,
-                            USERACTION_BUCKET_BOUNDARY);
+  ReportUserActionHistogram(CANCEL);
 
   // Record the number of times the user requests to regenerate preview data
   // before cancelling.
-  UMA_HISTOGRAM_COUNTS(kRegeneratePreviewRequestsRcvdBeforeCancel,
+  UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforeCancel",
                        regenerate_preview_request_count_);
 
   ActivateInitiatorTabAndClosePreviewTab();
 }
 
 void PrintPreviewHandler::ReportStats() {
-  UMA_HISTOGRAM_COUNTS(kManagePrinters,
+  UMA_HISTOGRAM_COUNTS("PrintPreview.ManagePrinters",
                        manage_printers_dialog_request_count_);
 }
 

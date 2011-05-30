@@ -661,38 +661,32 @@ bool PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
   return CreatePreviewDocument(print_settings, frame, node);
 }
 
-void PrintWebViewHelper::ReportPreviewGenerationTime(base::TimeDelta time,
-                                                     int pages) {
-  if (pages <= 0) {
+base::TimeTicks PrintWebViewHelper::ReportPreviewPageRenderTime(
+    base::TimeTicks start_time) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderPDFPageTime", now - start_time);
+  return now;
+}
+
+void PrintWebViewHelper::ReportTotalPreviewGenerationTime(
+        int selected_pages_length, int total_pages,
+        base::TimeDelta render_time, base::TimeDelta total_time) {
+
+  if (selected_pages_length == 0)
+    selected_pages_length = total_pages;
+
+  if (selected_pages_length <= 0) {
     // This shouldn't happen, but this makes sure it doesn't affect the
     // statistics if it does.
     return;
   }
 
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderAndGeneratePDFTime", time);
-
-  if (pages == 1) {
-    UMA_HISTOGRAM_TIMES(
-        "PrintPreview.RenderAndGeneratePDFTime.1Page", time);
-  } else if (pages == 2) {
-    UMA_HISTOGRAM_TIMES(
-        "PrintPreview.RenderAndGeneratePDFTime.2Pages", time);
-  } else if (pages <= 10) {
-    UMA_HISTOGRAM_TIMES(
-        "PrintPreview.RenderAndGeneratePDFTime.3-10Pages", time);
-  } else if (pages <= 25) {
-    UMA_HISTOGRAM_TIMES(
-        "PrintPreview.RenderAndGeneratePDFTime.11-25Pages", time);
-  } else if (pages <= 50) {
-    UMA_HISTOGRAM_TIMES(
-        "PrintPreview.RenderAndGeneratePDFTime.26-50Pages", time);
-  } else if (pages <= 100) {
-    UMA_HISTOGRAM_TIMES(
-        "PrintPreview.RenderAndGeneratePDFTime.51-100Pages", time);
-  } else {
-    UMA_HISTOGRAM_TIMES(
-        "PrintPreview.RenderAndGeneratePDFTime.101+Pages", time);
-  }
+  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderToPDFTime",
+                             render_time);
+  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
+                             total_time);
+  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTimeAvgPerPage",
+                             total_time / selected_pages_length);
 }
 
 #if defined(OS_POSIX)

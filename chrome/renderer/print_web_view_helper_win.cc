@@ -143,11 +143,13 @@ bool PrintWebViewHelper::CreatePreviewDocument(
                                     print_params.dpi);
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
+  base::TimeTicks page_begin_time = begin_time;
 
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       float scale_factor = shrink;
       RenderPage(print_params, &scale_factor, i, true, frame, &metafile);
+      page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
@@ -156,11 +158,11 @@ bool PrintWebViewHelper::CreatePreviewDocument(
       float scale_factor = shrink;
       RenderPage(print_params, &scale_factor,
                  static_cast<int>(params.pages[i]), true, frame, &metafile);
+      page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
     }
   }
 
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderToPDFTime",
-                      base::TimeTicks::Now() - begin_time);
+  base::TimeDelta render_time = base::TimeTicks::Now() - begin_time;
 
   // Ensure that printing has finished before we start cleaning up and
   // allocating buffers; this causes prep_frame_view to flush anything pending
@@ -171,11 +173,9 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   if (!metafile->FinishDocument())
     NOTREACHED();
 
-  int preview_page_count = params.pages.size();
-  if (!preview_page_count)
-    preview_page_count = page_count;
-  ReportPreviewGenerationTime(base::TimeTicks::Now() - begin_time,
-                              preview_page_count);
+  ReportTotalPreviewGenerationTime(params.pages.size(), page_count,
+                                   render_time,
+                                   base::TimeTicks::Now() - begin_time);
 
   // Get the size of the compiled metafile.
   uint32 buf_size = metafile->GetDataSize();
