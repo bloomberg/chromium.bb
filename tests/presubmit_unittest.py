@@ -2029,11 +2029,12 @@ mac|success|blew
           expected_host = host_url
 
       owner_email = 'john@example.com'
-      messages = list('{"sender": "' + a + '","text": "lgtm"}' for
-                      a in approvers)
       if not rietveld_response:
-        rietveld_response = ('{"owner_email": "' + owner_email + '",'
-                            '"messages": [' + ','.join(messages) + ']}')
+        messages = (
+          '{"sender": "%s", "text": "I approve", "approval": true}' % a
+          for a in approvers)
+        rietveld_response = '{"owner_email": "%s", "messages": [%s]}' % (
+            owner_email, ','.join(messages))
       input_api.urllib2.urlopen(
           expected_host + '/api/1?messages=true').AndReturn(
           StringIO.StringIO(rietveld_response))
@@ -2050,32 +2051,20 @@ mac|success|blew
     self.assertEquals(output.getvalue(), expected_output)
 
   def testCannedCheckOwners_LGTMPhrases(self):
-    def phrase_test(phrase, approvers=None, expected_output=''):
+    def phrase_test(approval, approvers=None, expected_output=''):
       if approvers is None:
         approvers = set(['ben@example.com'])
       self.AssertOwnersWorks(approvers=approvers,
-          rietveld_response='{"owner_email": "john@example.com",' +
-                            '"messages": [{"sender": "ben@example.com",' +
-                                          '"text": "' + phrase + '"}]}',
+          rietveld_response=(
+            '{"owner_email": "john@example.com",'
+            '"messages": [{"sender": "ben@example.com",'
+            '  "text": "foo", "approval": %s}]}') % approval,
           expected_output=expected_output)
 
-    phrase_test('LGTM')
-    phrase_test('\\nlgtm')
-    phrase_test('> foo\\n> bar\\nlgtm\\n')
-    phrase_test('> LGTM', approvers=set(),
+    phrase_test('true')
+    phrase_test('false', approvers=set(),
                 expected_output='Missing LGTM from someone other than '
                                 'john@example.com\n')
-
-    # TODO(dpranke): these probably should pass.
-    phrase_test('Looks Good To Me', approvers=set(),
-                expected_output='Missing LGTM from someone other than '
-                                'john@example.com\n')
-    phrase_test('looks good to me', approvers=set(),
-                expected_output='Missing LGTM from someone other than '
-                                'john@example.com\n')
-
-    # TODO(dpranke): this probably shouldn't pass.
-    phrase_test('no lgtm for you')
 
   def testCannedCheckOwners_HTTPS_HostURL(self):
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),

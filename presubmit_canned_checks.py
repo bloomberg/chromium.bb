@@ -761,60 +761,18 @@ def _RietveldOwnerAndApprovers(input_api, email_regexp):
   if not host.startswith('http://') and not host.startswith('https://'):
     host = 'http://' + host
   url = '%s/api/%s?messages=true' % (host, input_api.change.issue)
-
-  f = input_api.urllib2.urlopen(url)
-  issue_props = input_api.json.load(f)
-  messages = issue_props.get('messages', [])
+  issue_props = input_api.json.load(input_api.urllib2.urlopen(url))
   owner_email = issue_props['owner_email']
-  owner_regexp = input_api.re.compile(input_api.re.escape(owner_email))
-  approvers = _GetApprovers(messages, email_regexp, owner_regexp)
 
-  return (owner_email, set(approvers))
-
-
-def _IsApprovingComment(text):
-  """Implements the logic for parsing a change comment for approval."""
-
-  # Any comment that contains a non-quoted line containing an 'lgtm' is an
-  # approval.
-  #
-  # TODO(dpranke): this differs from the logic used inside Google in a few
-  # ways. Inside Google,
-  #
-  # 1) the approving phrase must appear at the beginning of the first non
-  #    quoted-line in the comment.'
-  # 2) "LG", "Looks Good", and "Looks Good to Me" are also acceptable.
-  # 3) Subsequent comments from the reviewer can rescind approval, unless
-  #    the phrase "LGTM++" was used.
-  # We should consider implementing some or all of this here.
-  for l in text.splitlines():
-    l = l.strip().lower()
-    if l.startswith('>'):
-      continue
-
-    if 'lgtm' in l:
-      return True
-  return False
-
-
-def _GetApprovers(messages, email_regexp, owner_regexp):
-  """Returns the set of approvers for a change given the owner and messages.
-
-  Messages should be a list of dicts containing 'sender' and 'text' keys."""
-
-  # TODO(dpranke): This mimics the logic in
-  # /tools/commit-queue/verifiers/reviewer_lgtm.py
-  # We should share the code and/or remove the check there where it is
-  # redundant (since the commit queue also enforces the presubmit checks).
   def match_reviewer(r):
-    return email_regexp.match(r) and not owner_regexp.match(r)
+    return email_regexp.match(r) and r != owner_email
 
-  approvers = []
-  for m in messages:
-    sender = m['sender']
-    if _IsApprovingComment(m['text']) and match_reviewer(sender):
-      approvers.append(sender)
-  return set(approvers)
+  messages = issue_props.get('messages', [])
+  approvers = set(
+      m['sender'] for m in messages
+      if m.get('approval') and match_reviewer(m['sender']))
+
+  return owner_email, approvers
 
 
 def _CheckConstNSObject(input_api, output_api, source_file_filter):
