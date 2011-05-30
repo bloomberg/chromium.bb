@@ -1,3 +1,7 @@
+2011-05-30  Stefan Moisei  <vortex37@gmail.com>
+
+	* tables/ro.ctb: Updates to Romanian table.
+
 2011-05-25  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/brl_checks.c (check_translation): Print the outbuf using a
