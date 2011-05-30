@@ -489,7 +489,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, DISABLED_TestScrollBalloonToVisible) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationTest, TestActivateDeactivate) {
+// Seems to be flaky. http://crbug.com/84427
+IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestActivateDeactivate) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
   NotificationPanelTester* tester = panel->GetTester();
