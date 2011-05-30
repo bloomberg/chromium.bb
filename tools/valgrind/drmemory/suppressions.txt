@@ -360,6 +360,18 @@ CLBCatQ.DLL!DestroyStgDatabase
 CLBCatQ.DLL!PostError
 CLBCatQ.DLL!PostError
 
+# http://code.google.com/p/drmemory/issues/detail?id=426
+UNINITIALIZED READ
+...
+USER32.dll!DrawText*
+
+LEAK
+IMM32.dll!ImmGetIMCCSize
+IMM32.dll!ImmLockClientImc
+IMM32.dll!ImmDisableIME
+IMM32.dll!ImmSetActiveContext
+USER32.dll!IMPSetIMEA
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -401,10 +413,6 @@ SHELL32.dll!Ordinal*
 UNADDRESSABLE ACCESS
 ...
 GDI32.dll!CreateDC*
-
-UNINITIALIZED READ
-...
-USER32.dll!DrawText*
 
 UNINITIALIZED READ
 ...
