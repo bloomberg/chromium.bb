@@ -1387,9 +1387,15 @@ void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
     return;
   }
 
-  if (!defer_start) {
-    InsertIntoResourceQueue(request, *info);
+  // TODO(cbentzel): Should we isolate this to resource handlers instead of
+  // adding an interface to the observer?
+  if (!defer_start && observer_ && filter_) {
+    defer_start = observer_->ShouldDeferStart(request,
+                                              filter_->resource_context());
   }
+
+  if (!defer_start)
+    InsertIntoResourceQueue(request, *info);
 }
 
 void ResourceDispatcherHost::InsertIntoResourceQueue(

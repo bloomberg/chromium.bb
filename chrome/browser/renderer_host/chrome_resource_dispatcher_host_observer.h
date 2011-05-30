@@ -18,9 +18,11 @@ class ChromeResourceDispatcherHostObserver
     : public ResourceDispatcherHost::Observer {
  public:
   // This class does not take ownership of the tracker but merely holds a
-  // reference to it to avoid accessing g_browser_process. The PrerenderTracker
-  // will be destroyed after the observer.
-  explicit ChromeResourceDispatcherHostObserver(
+  // reference to it to avoid accessing g_browser_process.
+  // Both |resource_dispatcher_host| and |prerender_tracker| must outlive
+  // |this|.
+  ChromeResourceDispatcherHostObserver(
+      ResourceDispatcherHost* resource_dispatcher_host,
       prerender::PrerenderTracker* prerender_tracker);
   virtual ~ChromeResourceDispatcherHostObserver();
 
@@ -30,6 +32,10 @@ class ChromeResourceDispatcherHostObserver
       const ResourceHostMsg_Request& request_data,
       const content::ResourceContext& resource_context,
       const GURL& referrer) OVERRIDE;
+
+  virtual bool ShouldDeferStart(
+      net::URLRequest* request,
+      const content::ResourceContext& resource_context) OVERRIDE;
 
   virtual void MutateLoadFlags(int child_id, int route_id,
                                int* load_flags) OVERRIDE;
@@ -42,6 +48,7 @@ class ChromeResourceDispatcherHostObserver
                                  net::AuthChallengeInfo* auth_info) OVERRIDE;
 
  private:
+  ResourceDispatcherHost* resource_dispatcher_host_;
   prerender::PrerenderTracker* prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostObserver);

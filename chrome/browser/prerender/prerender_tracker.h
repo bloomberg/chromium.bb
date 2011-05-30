@@ -8,15 +8,39 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "googleurl/src/gurl.h"
 
 namespace prerender {
 
 class PrerenderManager;
 struct RenderViewInfo;
+
+// An URLCounter keeps track of the number of occurrences of a prerendered URL.
+class URLCounter : public base::NonThreadSafe {
+ public:
+  URLCounter();
+  ~URLCounter();
+
+  // Determines whether the URL is contained in the set.
+  bool MatchesURL(const GURL& url) const;
+
+  // Adds a URL to the set.
+  void AddURL(const GURL& url);
+
+  // Removes a number of URLs from the set.
+  void RemoveURLs(const std::vector<GURL>& urls);
+
+ private:
+  typedef std::map<GURL, int> URLCountMap;
+  URLCountMap url_count_map_;
+};
 
 // PrerenderTracker is responsible for keeping track of all prerendering
 // RenderViews and their statuses.  Its list is guaranteed to be up to date
@@ -53,6 +77,18 @@ class PrerenderTracker {
   bool TryCancelOnIOThread(int child_id, int route_id,
                            FinalStatus final_status);
 
+  // Potentially delay a resource request on the IO thread to prevent a double
+  // get.
+  bool PotentiallyDelayRequestOnIOThread(
+      const GURL& gurl,
+      const base::WeakPtr<PrerenderManager>& prerender_manager,
+      int child_id,
+      int route_id,
+      int request_id);
+
+  void AddPrerenderURLOnUIThread(const GURL& url);
+  void RemovePrerenderURLsOnUIThread(const std::vector<GURL>& urls);
+
   // Gets the FinalStatus of the specified prerendered RenderView.  Returns
   // |true| and sets |final_status| to the status of the RenderView if it
   // is found, returns false otherwise.
@@ -66,7 +102,6 @@ class PrerenderTracker {
 
  private:
   friend class PrerenderContents;
-
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerNull);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerUsed);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerCancelled);
@@ -75,7 +110,6 @@ class PrerenderTracker {
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerMultiple);
 
   typedef std::pair<int, int> ChildRouteIdPair;
-
   // Map of child/route id pairs to final statuses.
   typedef std::map<ChildRouteIdPair, RenderViewInfo> FinalStatusMap;
   // Set of child/route id pairs that may be prerendering.
@@ -118,6 +152,8 @@ class PrerenderTracker {
   static void RemovePrerenderOnIOThreadTask(
       const ChildRouteIdPair& child_route_id_pair);
 
+  static PrerenderTracker* GetDefault();
+
   // |final_status_map_lock_| protects access to |final_status_map_|.
   mutable base::Lock final_status_map_lock_;
   // Map containing child/route id pairs and their final statuses.  Must only be
@@ -129,6 +165,10 @@ class PrerenderTracker {
   // the IO thread.  May contain entries that have since been displayed.  Only
   // used to prevent locking when not needed.
   PossiblyPrerenderingChildRouteIdPairs possibly_prerendering_io_thread_set_;
+
+  // |url_counter_| keeps track of the top-level URLs which are being
+  // prerendered. It must only be accessed on the IO thread.
+  URLCounter url_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderTracker);
 };

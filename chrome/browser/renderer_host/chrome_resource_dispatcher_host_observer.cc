@@ -9,12 +9,15 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/common/resource_messages.h"
 #include "net/base/load_flags.h"
 
 ChromeResourceDispatcherHostObserver::ChromeResourceDispatcherHostObserver(
+    ResourceDispatcherHost* resource_dispatcher_host,
     prerender::PrerenderTracker* prerender_tracker)
-    : prerender_tracker_(prerender_tracker) {
+    : resource_dispatcher_host_(resource_dispatcher_host),
+      prerender_tracker_(prerender_tracker) {
 }
 
 ChromeResourceDispatcherHostObserver::~ChromeResourceDispatcherHostObserver() {
@@ -65,6 +68,16 @@ bool ChromeResourceDispatcherHostObserver::ShouldBeginRequest(
   }
 
   return true;
+}
+
+bool ChromeResourceDispatcherHostObserver::ShouldDeferStart(
+    net::URLRequest* request,
+    const content::ResourceContext& resource_context) {
+  ResourceDispatcherHostRequestInfo* info =
+      resource_dispatcher_host_->InfoForRequest(request);
+  return prerender_tracker_->PotentiallyDelayRequestOnIOThread(
+      request->url(), resource_context.prerender_manager(),
+      info->child_id(), info->route_id(), info->request_id());
 }
 
 void ChromeResourceDispatcherHostObserver::MutateLoadFlags(int child_id,

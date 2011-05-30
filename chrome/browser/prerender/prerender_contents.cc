@@ -280,6 +280,9 @@ PrerenderContents::~PrerenderContents() {
   // destroy it.
   if (prerender_contents_.get())
     delete ReleasePrerenderContents();
+
+  // The following URLs are no longer rendering.
+  prerender_tracker_->RemovePrerenderURLsOnUIThread(alias_urls_);
 }
 
 void PrerenderContents::Observe(NotificationType type,
@@ -406,6 +409,7 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
     return false;
   }
   alias_urls_.push_back(url);
+  prerender_tracker_->AddPrerenderURLOnUIThread(url);
   return true;
 }
 

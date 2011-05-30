@@ -169,6 +169,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void MarkTabContentsAsNotPrerendered(TabContents* tab_contents);
   bool IsTabContentsPrerendered(TabContents* tab_contents) const;
   bool WouldTabContentsBePrerendered(TabContents* tab_contents) const;
+  bool IsOldRenderViewHost(const RenderViewHost* render_view_host) const;
 
   // Records that some visible tab navigated (or was redirected) to the
   // provided URL.

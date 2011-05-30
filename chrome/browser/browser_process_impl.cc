@@ -750,7 +750,8 @@ void BrowserProcessImpl::CreateResourceDispatcherHost() {
   resource_dispatcher_host_->Initialize();
 
   resource_dispatcher_host_observer_.reset(
-      new ChromeResourceDispatcherHostObserver(prerender_tracker()));
+      new ChromeResourceDispatcherHostObserver(resource_dispatcher_host_.get(),
+                                               prerender_tracker()));
   resource_dispatcher_host_->set_observer(
       resource_dispatcher_host_observer_.get());
 

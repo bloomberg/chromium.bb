@@ -73,6 +73,14 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
     virtual void MutateLoadFlags(int child_id, int route_id,
                                  int* load_flags) = 0;
 
+    // Called to determine whether a request's start should be deferred. This
+    // is only called if the ResourceHandler associated with the request does
+    // not ask for a deferral. A return value of true will defer the start of
+    // the request, false will continue the request.
+    virtual bool ShouldDeferStart(
+        net::URLRequest* request,
+        const content::ResourceContext& resource_context) = 0;
+
     // Called when an SSL Client Certificate is requested. If false is returned,
     // the request is canceled. Otherwise, the certificate is chosen.
     virtual bool AcceptSSLClientCertificateRequest(

@@ -785,6 +785,18 @@ void PrerenderManager::DeleteOldTabContents() {
   }
 }
 
+bool PrerenderManager::IsOldRenderViewHost(
+    const RenderViewHost* render_view_host) const {
+  for (std::list<TabContentsWrapper*>::const_iterator it =
+           old_tab_contents_list_.begin();
+       it != old_tab_contents_list_.end();
+       ++it) {
+    if ((*it)->tab_contents()->render_view_host() == render_view_host)
+      return true;
+  }
+  return false;
+}
+
 void PrerenderManager::PeriodicCleanup() {
   DCHECK(CalledOnValidThread());
   DeleteOldTabContents();

@@ -294,4 +294,45 @@ TEST_F(PrerenderTrackerTest, PrerenderTrackerMultiple) {
   EXPECT_FALSE(prerender_tracker()->IsPrerenderingOnIOThread(1, 2));
 }
 
+// Tests that Prerender tracking works correctly
+TEST_F(PrerenderTrackerTest, URLCounter) {
+  URLCounter url_counter;
+  GURL example_url("http://www.example.com");
+  GURL gmail_url("https://www.gmail.com");
+
+  EXPECT_FALSE(url_counter.MatchesURL(example_url));
+  EXPECT_FALSE(url_counter.MatchesURL(gmail_url));
+
+  url_counter.AddURL(example_url);
+  url_counter.AddURL(example_url);
+  url_counter.AddURL(gmail_url);
+  EXPECT_TRUE(url_counter.MatchesURL(example_url));
+  EXPECT_TRUE(url_counter.MatchesURL(gmail_url));
+
+  std::vector<GURL> remove_urls;
+  remove_urls.push_back(example_url);
+  remove_urls.push_back(gmail_url);
+  url_counter.RemoveURLs(remove_urls);
+  EXPECT_TRUE(url_counter.MatchesURL(example_url));
+  EXPECT_FALSE(url_counter.MatchesURL(gmail_url));
+
+  remove_urls.clear();
+  remove_urls.push_back(example_url);
+  url_counter.RemoveURLs(remove_urls);
+  EXPECT_FALSE(url_counter.MatchesURL(example_url));
+  EXPECT_FALSE(url_counter.MatchesURL(gmail_url));
+
+  url_counter.AddURL(example_url);
+  url_counter.AddURL(example_url);
+  EXPECT_TRUE(url_counter.MatchesURL(example_url));
+  EXPECT_FALSE(url_counter.MatchesURL(gmail_url));
+
+  remove_urls.clear();
+  remove_urls.push_back(example_url);
+  remove_urls.push_back(example_url);
+  url_counter.RemoveURLs(remove_urls);
+  EXPECT_FALSE(url_counter.MatchesURL(example_url));
+  EXPECT_FALSE(url_counter.MatchesURL(gmail_url));
+}
+
 }  // namespace prerender

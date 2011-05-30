@@ -9,10 +9,126 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/resource_messages.h"
 #include "net/base/load_flags.h"
 
 namespace prerender {
+
+namespace {
+
+void CancelDeferredRequestOnIOThread(
+    ResourceDispatcherHost* resource_dispatcher_host,
+    int child_id, int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  resource_dispatcher_host->CancelRequest(child_id, request_id, false);
+}
+
+void StartDeferredRequestOnIOThread(
+    ResourceDispatcherHost* resource_dispatcher_host,
+    int child_id, int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  resource_dispatcher_host->StartDeferredRequest(child_id, request_id);
+}
+
+bool ShouldCancelRequest(
+    const base::WeakPtr<PrerenderManager>& prerender_manager_ptr,
+    int child_id,
+    int route_id) {
+  // Check if the RenderViewHost associated with (child_id, route_id) no
+  // longer exists, or has already been swapped out for a prerendered page.
+  // If that happens, then we do not want to issue the request which originated
+  // from it. Otherwise, keep it going.
+  // The RenderViewHost may exist for a couple of different reasons: such as
+  // being an XHR from the originating page, being included as an iframe,
+  // being requested as a favicon or stylesheet, and many other corner cases.
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(child_id, route_id);
+  if (!render_view_host)
+    return true;
+  PrerenderManager* prerender_manager = prerender_manager_ptr.get();
+  return (prerender_manager &&
+          prerender_manager->IsOldRenderViewHost(render_view_host));
+}
+
+void HandleDelayedRequestOnUIThread(
+    const base::WeakPtr<PrerenderManager>& prerender_manager,
+    int child_id,
+    int route_id,
+    int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ResourceDispatcherHost* resource_dispatcher_host =
+      g_browser_process->resource_dispatcher_host();
+  CHECK(resource_dispatcher_host);
+  if (ShouldCancelRequest(prerender_manager, child_id, route_id)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(&CancelDeferredRequestOnIOThread,
+                            resource_dispatcher_host, child_id, request_id));
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(&StartDeferredRequestOnIOThread,
+                            resource_dispatcher_host, child_id, request_id));
+  }
+}
+
+void AddURL(const GURL& url, URLCounter* counter) {
+  DCHECK(counter);
+  counter->AddURL(url);
+}
+
+void RemoveURLs(const std::vector<GURL>& urls, URLCounter* counter) {
+  DCHECK(counter);
+  counter->RemoveURLs(urls);
+}
+
+}  // namespace
+
+URLCounter::URLCounter() {
+  // URLCounter is currently constructed on the UI thread but
+  // accessed on the IO thread.
+  DetachFromThread();
+}
+
+URLCounter::~URLCounter() {
+  // URLCounter is currently destructed on the UI thread but
+  // accessed on the IO thread.
+  DetachFromThread();
+}
+
+bool URLCounter::MatchesURL(const GURL& url) const {
+  DCHECK(CalledOnValidThread());
+  URLCountMap::const_iterator it = url_count_map_.find(url);
+  if (it == url_count_map_.end())
+    return false;
+  DCHECK(it->second > 0);
+  return true;
+}
+
+void URLCounter::AddURL(const GURL& url) {
+  DCHECK(CalledOnValidThread());
+  URLCountMap::iterator it = url_count_map_.find(url);
+  if (it == url_count_map_.end())
+    url_count_map_[url] = 1;
+  else
+    it->second++;
+}
+
+void URLCounter::RemoveURLs(const std::vector<GURL>& urls) {
+  DCHECK(CalledOnValidThread());
+  for (std::vector<GURL>::const_iterator it = urls.begin();
+       it != urls.end();
+       ++it) {
+    URLCountMap::iterator map_entry = url_count_map_.find(*it);
+    DCHECK(url_count_map_.end() != map_entry);
+    DCHECK(map_entry->second > 0);
+    --map_entry->second;
+    if (map_entry->second == 0)
+      url_count_map_.erase(map_entry);
+  }
+}
 
 struct RenderViewInfo {
   explicit RenderViewInfo(PrerenderManager* prerender_manager)
@@ -60,6 +176,41 @@ bool PrerenderTracker::TryCancelOnIOThread(
   if (!IsPrerenderingOnIOThread(child_id, route_id))
     return false;
   return TryCancel(child_id, route_id, final_status);
+}
+
+bool PrerenderTracker::PotentiallyDelayRequestOnIOThread(
+    const GURL& gurl,
+    const base::WeakPtr<PrerenderManager>& prerender_manager,
+    int process_id,
+    int route_id,
+    int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!url_counter_.MatchesURL(gurl))
+    return false;
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(&HandleDelayedRequestOnUIThread,
+                          prerender_manager,
+                          process_id,
+                          route_id,
+                          request_id));
+  return true;
+}
+
+void PrerenderTracker::AddPrerenderURLOnUIThread(const GURL& url) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      NewRunnableFunction(&AddURL, url, &url_counter_));
+}
+
+void PrerenderTracker::RemovePrerenderURLsOnUIThread(
+    const std::vector<GURL>& urls) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      NewRunnableFunction(&RemoveURLs, urls, &url_counter_));
 }
 
 bool PrerenderTracker::GetFinalStatus(int child_id, int route_id,
@@ -181,17 +332,20 @@ void PrerenderTracker::RemovePrerenderOnIOThread(
 }
 
 // static
+PrerenderTracker* PrerenderTracker::GetDefault() {
+  return g_browser_process->prerender_tracker();
+}
+
+// static
 void PrerenderTracker::AddPrerenderOnIOThreadTask(
     const ChildRouteIdPair& child_route_id_pair) {
-  g_browser_process->prerender_tracker()->AddPrerenderOnIOThread(
-      child_route_id_pair);
+  GetDefault()->AddPrerenderOnIOThread(child_route_id_pair);
 }
 
 // static
 void PrerenderTracker::RemovePrerenderOnIOThreadTask(
     const ChildRouteIdPair& child_route_id_pair) {
-  g_browser_process->prerender_tracker()->RemovePrerenderOnIOThread(
-      child_route_id_pair);
+  GetDefault()->RemovePrerenderOnIOThread(child_route_id_pair);
 }
 
 }  // namespace prerender
