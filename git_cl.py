@@ -463,9 +463,8 @@ or verify this branch is set up to track another (via the --track argument to
   def GetDescription(self, pretty=False):
     if not self.has_description:
       if self.GetIssue():
-        path = '/' + self.GetIssue() + '/description'
-        rpc_server = self.RpcServer()
-        self.description = rpc_server.Send(path).strip()
+        self.description = self.RpcServer().get_description(
+            int(self.GetIssue())).strip()
       self.has_description = True
     if pretty:
       wrapper = textwrap.TextWrapper()
@@ -494,10 +493,9 @@ or verify this branch is set up to track another (via the --track argument to
     self.has_patchset = False
 
   def GetPatchSetDiff(self, issue):
-    # Grab the last patchset of the issue first.
-    data = json.loads(self.RpcServer().Send('/api/%s' % issue))
-    patchset = data['patchsets'][-1]
-    return self.RpcServer().Send(
+    patchset = self.RpcServer().get_issue_properties(
+        int(issue), False)['patchsets'][-1]
+    return self.RpcServer().get(
         '/download/issue%s_%s.diff' % (issue, patchset))
 
   def SetIssue(self, issue):
@@ -564,20 +562,23 @@ or verify this branch is set up to track another (via the --track argument to
     return output
 
   def CloseIssue(self):
-    rpc_server = self.RpcServer()
-    # Newer versions of Rietveld require us to pass an XSRF token to POST, so
-    # we fetch it from the server.  (The version used by Chromium has been
-    # modified so the token isn't required when closing an issue.)
-    xsrf_token = rpc_server.Send('/xsrf_token',
-                                 extra_headers={'X-Requesting-XSRF-Token': '1'})
+    return self.RpcServer().close_issue(int(self.GetIssue()))
 
-    # You cannot close an issue with a GET.
-    # We pass an empty string for the data so it is a POST rather than a GET.
-    data = [("description", self.description),
-            ("xsrf_token", xsrf_token)]
-    ctype, body = upload.EncodeMultipartFormData(data, [])
-    rpc_server.Send(
-        '/' + self.GetIssue() + '/close', payload=body, content_type=ctype)
+  def SetFlag(self, flag, value):
+    """Patchset must match."""
+    if not self.GetPatchset():
+      DieWithError('The patchset needs to match. Send another patchset.')
+    try:
+      return self.RpcServer().set_flag(
+          int(self.GetIssue()), int(self.GetPatchset()), flag, value)
+    except urllib2.HTTPError, e:
+      if e.code == 404:
+        DieWithError('The issue %s doesn\'t exist.' % self.GetIssue())
+      if e.code == 403:
+        DieWithError(
+            ('Access denied to issue %s. Maybe the patchset %s doesn\'t '
+             'match?') % (self.GetIssue(), self.GetPatchset()))
+      raise
 
   def RpcServer(self):
     """Returns an upload.RpcServer() to access this review's rietveld instance.
@@ -913,6 +914,8 @@ def CMDupload(parser, args):
                     dest="from_logs",
                     help="""Squashes git commit logs into change description and
                             uses message as subject""")
+  parser.add_option('-c', '--use-commit-queue', action='store_true',
+                    help='tell the commit queue to commit this patchset')
   (options, args) = parser.parse_args(args)
 
   # Make sure index is up-to-date before running diff-index.
@@ -1021,6 +1024,9 @@ def CMDupload(parser, args):
   if not cl.GetIssue():
     cl.SetIssue(issue)
   cl.SetPatchset(patchset)
+
+  if options.use_commit_queue:
+    cl.SetFlag('commit', '1')
   return 0
 
 
@@ -1265,6 +1271,8 @@ def CMDpatch(parser, args):
     return 1
   issue_arg = args[0]
 
+  # TODO(maruel): Use apply_issue.py
+
   if re.match(r'\d+', issue_arg):
     # Input is an issue id.  Figure out the URL.
     issue = issue_arg
@@ -1378,8 +1386,20 @@ def CMDtree(parser, args):
 def CMDupstream(parser, args):
   """print the name of the upstream branch, if any"""
   _, args = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
   cl = Changelist()
   print cl.GetUpstreamBranch()
+  return 0
+
+
+def CMDset_commit(parser, args):
+  """set the commit bit"""
+  _, args = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
+  cl = Changelist()
+  cl.SetFlag('commit', '1')
   return 0
 
 
