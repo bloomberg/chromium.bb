@@ -128,14 +128,14 @@ void PluginDataRemover::OnError() {
 }
 
 void PluginDataRemover::OnClearSiteDataResult(bool success) {
-  LOG_IF(DFATAL, !success) << "ClearSiteData returned error";
+  LOG_IF(ERROR, !success) << "ClearSiteData returned error";
   UMA_HISTOGRAM_TIMES("ClearPluginData.time",
                       base::Time::Now() - remove_start_time_);
   SignalDone();
 }
 
 void PluginDataRemover::OnTimeout() {
-  LOG_IF(DFATAL, is_removing_) << "Timed out";
+  LOG_IF(ERROR, is_removing_) << "Timed out";
   SignalDone();
 }
 
