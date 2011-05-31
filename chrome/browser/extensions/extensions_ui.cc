@@ -572,7 +572,7 @@ void ExtensionsDOMHandler::HandleSelectFilePathMessage(const ListValue* args) {
   CHECK(args->GetString(1, &operation));
 
   SelectFileDialog::Type type = SelectFileDialog::SELECT_FOLDER;
-  static SelectFileDialog::FileTypeInfo info;
+  SelectFileDialog::FileTypeInfo info;
   int file_type_index = 0;
   if (select_type == "file")
     type = SelectFileDialog::SELECT_OPEN_FILE;
