@@ -100,7 +100,7 @@ def _CheckAuthorizedAuthor(input_api, output_api):
   if (author is None or author.endswith('@chromium.org') or
       author.endswith('@google.com')):
     return []
-  authors_path = input_apit.os_path.join(
+  authors_path = input_api.os_path.join(
       input_api.PresubmitLocalPath(), 'AUTHORS')
   valid_authors = (
       input_api.re.match(r'[^#]+\s+\<(.+?)\>\s*$', line)
