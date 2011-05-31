@@ -362,7 +362,11 @@ void NativeWindowGtk::SaveWindowPosition() {
 void NativeWindowGtk::OnDestroy(GtkWidget* widget) {
   delegate_->OnNativeWindowDestroying();
   NativeWidgetGtk::OnDestroy(widget);
+}
+
+void NativeWindowGtk::OnDestroyed(GObject *where_the_object_was) {
   delegate_->OnNativeWindowDestroyed();
+  NativeWidgetGtk::OnDestroyed(where_the_object_was);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -375,4 +379,3 @@ NativeWindow* NativeWindow::CreateNativeWindow(
 }
 
 }  // namespace views
-

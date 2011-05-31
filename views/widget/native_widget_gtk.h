@@ -257,6 +257,13 @@ class NativeWidgetGtk : public NativeWidget,
   CHROMEGTK_CALLBACK_1(NativeWidgetGtk, gboolean, OnWindowStateEvent,
                        GdkEventWindowState*);
 
+  // Invoked when the widget is destroyed and right before the object
+  // destruction. Useful for overriding.
+  virtual void OnDestroyed(GObject *where_the_object_was);
+  static void OnDestroyedThunk(gpointer data, GObject *where_the_object_was) {
+    reinterpret_cast<NativeWidgetGtk*>(data)->OnDestroyed(where_the_object_was);
+  }
+
   // Invoked when gtk grab is stolen by other GtkWidget in the same
   // application.
   virtual void HandleGtkGrabBroke();

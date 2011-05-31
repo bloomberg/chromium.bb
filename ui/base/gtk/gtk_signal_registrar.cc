@@ -7,6 +7,7 @@
 #include <glib-object.h>
 
 #include "base/logging.h"
+#include "ui/base/gtk/g_object_destructor_filo.h"
 
 namespace ui {
 
@@ -17,7 +18,8 @@ GtkSignalRegistrar::~GtkSignalRegistrar() {
   for (HandlerMap::iterator list_iter = handler_lists_.begin();
        list_iter != handler_lists_.end(); ++list_iter) {
     GObject* object = list_iter->first;
-    g_object_weak_unref(object, WeakNotifyThunk, this);
+    GObjectDestructorFILO::GetInstance()->Disconnect(
+        object, WeakNotifyThunk, this);
 
     HandlerList& handlers = list_iter->second;
     for (HandlerList::iterator ids_iter = handlers.begin();
@@ -51,7 +53,8 @@ glong GtkSignalRegistrar::ConnectInternal(gpointer instance,
 
   HandlerMap::iterator iter = handler_lists_.find(object);
   if (iter == handler_lists_.end()) {
-    g_object_weak_ref(object, WeakNotifyThunk, this);
+    GObjectDestructorFILO::GetInstance()->Connect(
+        object, WeakNotifyThunk, this);
     handler_lists_[object] = HandlerList();
     iter = handler_lists_.find(object);
   }

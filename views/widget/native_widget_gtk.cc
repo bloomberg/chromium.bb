@@ -20,15 +20,16 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
+#include "ui/base/gtk/g_object_destructor_filo.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/path.h"
-#include "views/views_delegate.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method_gtk.h"
+#include "views/views_delegate.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
@@ -321,11 +322,17 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
 }
 
 NativeWidgetGtk::~NativeWidgetGtk() {
+  if (widget_) {
+    ui::GObjectDestructorFILO::GetInstance()->Disconnect(
+        G_OBJECT(widget_), &OnDestroyedThunk, this);
+    if (ownership_ != Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+      CloseNow();
+  }
+  DCHECK(ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET ||
+         widget_ == NULL);
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
-  DCHECK(ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET ||
-         widget_ == NULL);
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
   // TODO(altimofeev): investigate why OnDestroy could not be called.
@@ -720,6 +727,9 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   g_signal_connect(G_OBJECT(widget_), "window-state-event",
                    G_CALLBACK(&OnWindowStateEventThunk), this);
 
+  ui::GObjectDestructorFILO::GetInstance()->Connect(
+      G_OBJECT(widget_), &OnDestroyedThunk, this);
+
   tooltip_manager_.reset(new TooltipManagerGtk(this));
 
   // Register for tooltips.
@@ -923,10 +933,10 @@ void NativeWidgetGtk::MoveAbove(gfx::NativeView native_view) {
 }
 
 void NativeWidgetGtk::SetShape(gfx::NativeRegion region) {
-  DCHECK(widget_);
-  DCHECK(widget_->window);
-  gdk_window_shape_combine_region(widget_->window, region, 0, 0);
-  gdk_region_destroy(region);
+  if (widget_ && widget_->window) {
+    gdk_window_shape_combine_region(widget_->window, region, 0, 0);
+    gdk_region_destroy(region);
+  }
 }
 
 void NativeWidgetGtk::Close() {
@@ -1373,13 +1383,13 @@ void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
     ActiveWindowWatcherX::RemoveObserver(this);
   // Note that this handler is hooked to GtkObject::destroy.
   // NULL out pointers here since we might still be in an observer list
-  // until delstion happens.
+  // until deletion happens.
   widget_ = window_contents_ = NULL;
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
-    // Delays the deletion of this NativeWidgetGtk as we want its children to
-    // have access to it when destroyed.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  }
+}
+
+void NativeWidgetGtk::OnDestroyed(GObject *where_the_object_was) {
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete this;
 }
 
 void NativeWidgetGtk::OnShow(GtkWidget* widget) {
