@@ -22,11 +22,12 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"
@@ -68,6 +69,43 @@ const char* const kValidHttpMethods[] = {
 };
 
 }  // namespace
+
+class PrerenderManager::OnCloseTabContentsDeleter : public TabContentsDelegate {
+ public:
+  OnCloseTabContentsDeleter(PrerenderManager* manager,
+                            TabContentsWrapper* tab)
+      : manager_(manager),
+        tab_(tab) {
+    tab_->tab_contents()->set_delegate(this);
+  }
+
+  virtual void CloseContents(TabContents* source) OVERRIDE {
+    manager_->ScheduleDeleteOldTabContents(tab_.release(), this);
+  }
+
+  virtual bool ShouldSuppressDialogs() OVERRIDE {
+    return true;
+  }
+
+  // TabContentsDelegate implementation (pure virtual methods). Since we are
+  // waiting for the tab to close, none of this matters.
+  virtual void OpenURLFromTab(TabContents*, const GURL&, const GURL&,
+      WindowOpenDisposition, PageTransition::Type) OVERRIDE {}
+  virtual void NavigationStateChanged(const TabContents*, unsigned) OVERRIDE {}
+  virtual void AddNewContents(TabContents*, TabContents*, WindowOpenDisposition,
+      const gfx::Rect&, bool) OVERRIDE {}
+  virtual void ActivateContents(TabContents*) OVERRIDE {}
+  virtual void DeactivateContents(TabContents*) OVERRIDE {}
+  virtual void LoadingStateChanged(TabContents*) OVERRIDE {}
+  virtual void MoveContents(TabContents*, const gfx::Rect&) OVERRIDE {}
+  virtual void UpdateTargetURL(TabContents*, const GURL&) OVERRIDE {}
+
+ private:
+  PrerenderManager* manager_;
+  scoped_ptr<TabContentsWrapper> tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnCloseTabContentsDeleter);
+};
 
 // static
 int PrerenderManager::prerenders_per_session_count_ = 0;
@@ -526,9 +564,15 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     pending_prerender_list_.erase(pending_it);
   }
 
-  old_tab_contents_list_.push_back(old_tab_contents);
-  // Destroy the old TabContents relatively promptly to reduce resource usage.
-  PostCleanupTask();
+  if (old_tab_contents->tab_contents()->NeedToFireBeforeUnload()) {
+    // Schedule the delete to occur after the tab has run its unload handlers.
+    on_close_tab_contents_deleters_.push_back(
+        new OnCloseTabContentsDeleter(this, old_tab_contents));
+    old_tab_contents->render_view_host()->FirePageBeforeUnload(false);
+  } else {
+    // No unload handler to run, so delete asap.
+    ScheduleDeleteOldTabContents(old_tab_contents, NULL);
+  }
   return true;
 }
 
@@ -919,6 +963,22 @@ void PrerenderManager::CleanUpOldNavigations() {
     if (navigations_.front().time_ > cutoff)
       break;
     navigations_.pop_front();
+  }
+}
+
+void PrerenderManager::ScheduleDeleteOldTabContents(
+    TabContentsWrapper* tab,
+    OnCloseTabContentsDeleter* deleter) {
+  old_tab_contents_list_.push_back(tab);
+  PostCleanupTask();
+
+  if (deleter) {
+    ScopedVector<OnCloseTabContentsDeleter>::iterator i = std::find(
+        on_close_tab_contents_deleters_.begin(),
+        on_close_tab_contents_deleters_.end(),
+        deleter);
+    DCHECK(i != on_close_tab_contents_deleters_.end());
+    on_close_tab_contents_deleters_.erase(i);
   }
 }
 

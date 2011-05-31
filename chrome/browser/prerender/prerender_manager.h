@@ -12,6 +12,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/threading/non_thread_safe.h"
@@ -206,6 +207,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   struct PrerenderContentsData;
   struct NavigationRecord;
 
+  class OnCloseTabContentsDeleter;
+
   // Adds a pending preload issued by the prerendering RenderView identified by
   // |child_route_id_pair|.  If and when that prerendering RenderView is used,
   // the specified prerender will start.
@@ -271,6 +274,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Cleans up old NavigationRecord's.
   void CleanUpOldNavigations();
 
+  // Arrange for the given tab contents to be deleted asap. If deleter is not
+  // NULL, deletes that as well.
+  void ScheduleDeleteOldTabContents(TabContentsWrapper* tab,
+                                    OnCloseTabContentsDeleter* deleter);
+
   // Specifies whether prerendering is currently enabled for this
   // manager. The value can change dynamically during the lifetime
   // of the PrerenderManager.
@@ -332,6 +340,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Cancels pending tasks on deletion.
   ScopedRunnableMethodFactory<PrerenderManager> runnable_method_factory_;
+
+  ScopedVector<OnCloseTabContentsDeleter> on_close_tab_contents_deleters_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };
