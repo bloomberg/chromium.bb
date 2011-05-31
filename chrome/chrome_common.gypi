@@ -377,8 +377,18 @@
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac"', {
-            'dependencies': [
-              '../build/linux/system.gyp:ssl',
+            'conditions': [
+              ['use_openssl==1', {
+                 'dependencies': [
+                   '../third_party/openssl/openssl.gyp:openssl',
+                 ],
+               },
+               { # else !use_openssl
+                'dependencies': [
+                  '../build/linux/system.gyp:nss',
+                ],
+               },
+              ],
             ],
           },
           {  # else: OS is not in the above list

@@ -215,7 +215,7 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         ['OS=="win"', {
@@ -476,7 +476,7 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
@@ -2027,7 +2027,7 @@
           ],
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [
@@ -2571,7 +2571,7 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources': [
@@ -3212,7 +3212,7 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
             'packed_resources'
           ],
         }],
@@ -3336,7 +3336,7 @@
         ['toolkit_uses_gtk == 1', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
-             '../build/linux/system.gyp:ssl',
+             '../build/linux/system.gyp:nss',
            ],
         }],
         ['OS=="mac"', {
@@ -3484,7 +3484,7 @@
         ['toolkit_uses_gtk == 1', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
-             '../build/linux/system.gyp:ssl',
+             '../build/linux/system.gyp:nss',
            ],
         }],
         ['toolkit_views==1', {
