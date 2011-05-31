@@ -387,3 +387,11 @@ TEST_F(ProtocolHandlerRegistryTest, TestProtocolsWithNoDefaultAreHandled) {
   ASSERT_EQ((size_t) 1, handled_protocols.size());
   ASSERT_EQ("test", handled_protocols[0]);
 }
+
+TEST_F(ProtocolHandlerRegistryTest, TestDisablePreventsHandling) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  ASSERT_TRUE(registry()->IsHandledProtocol("test"));
+  registry()->Disable();
+  ASSERT_FALSE(registry()->IsHandledProtocol("test"));
+}

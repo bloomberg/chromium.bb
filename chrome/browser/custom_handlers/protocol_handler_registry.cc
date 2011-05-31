@@ -271,7 +271,7 @@ bool ProtocolHandlerRegistry::IsHandledProtocol(
 bool ProtocolHandlerRegistry::IsHandledProtocolInternal(
     const std::string& scheme) const {
   lock_.AssertAcquired();
-  return !GetHandlerForInternal(scheme).IsEmpty();
+  return enabled_ && !GetHandlerForInternal(scheme).IsEmpty();
 }
 
 void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
