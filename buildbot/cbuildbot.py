@@ -85,6 +85,9 @@ def RunBuildStages(bot_id, options, build_config):
 
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()
+      if build_config['build_type'] == 'chroot':
+        stages.Results.Report(sys.stdout)
+        return stages.Results.Success()
 
     if options.uprev:
       stages.UprevStage(bot_id, options, build_config).Run()
@@ -145,14 +148,13 @@ def RunBuildStages(bot_id, options, build_config):
       stages.Results.SaveCompletedStages(save_file)
 
   stages.Results.Report(sys.stdout)
-
   return stages.Results.Success()
 
 def main():
   # Parse options
   usage = "usage: %prog [options] cbuildbot_config"
   parser = optparse.OptionParser(usage=usage)
-  parser.add_option('--buildbot', action='store_false',  dest='debug',
+  parser.add_option('--buildbot', action='store_false', dest='debug',
                     help='This is running on a buildbot')
   parser.add_option('-r', '--buildroot',
                     help='root directory where build occurs', default=".")

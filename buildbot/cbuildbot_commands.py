@@ -231,6 +231,7 @@ def SetupBoard(buildroot, board, fast, usepkg):
     cmd.append('--nofast')
 
   cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
+  # TODO(sosa): Add prebuilt call for boards in build_type == chroot.
 
 
 def Build(buildroot, emptytree, build_autotest, fast, usepkg, extra_env=None):

@@ -420,7 +420,6 @@ class BuildBoardStage(BuilderStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
   def _PerformStage(self):
     chroot_path = os.path.join(self._build_root, 'chroot')
-    board_path = os.path.join(chroot_path, 'build', self._build_config['board'])
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
       commands.MakeChroot(
           buildroot=self._build_root,
@@ -428,9 +427,24 @@ class BuildBoardStage(BuilderStage):
           fast=self._build_config['fast'],
           usepkg=self._build_config['usepkg_chroot'])
 
-    if not os.path.isdir(board_path):
+    # If board is a string, convert to array.
+    if isinstance(self._build_config['board'], str):
+      board = [self._build_config['board']]
+    else:
+      assert self._build_config == 'chroot', 'Board array requires chroot type.'
+      board = self._build_config['board']
+
+    assert isinstance(board, list), 'Board was neither an array or a string.'
+
+    # Iterate through boards to setup.
+    for board_to_build in board:
+      # Only build the board if the directory does not exist.
+      board_path = os.path.join(chroot_path, 'build', board_to_build)
+      if os.path.exists(board_path):
+        continue
+
       commands.SetupBoard(self._build_root,
-                          board=self._build_config['board'],
+                          board=board_to_build,
                           fast=self._build_config['fast'],
                           usepkg=self._build_config['usepkg_setup_board'])
 

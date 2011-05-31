@@ -7,7 +7,8 @@
 Each dictionary entry is in turn a dictionary of config_param->value.
 
 config_param's:
-board -- The board of the image to build.
+board -- The board of the image to build.  If build_type is chroot, may
+         be an array of boards to setup.
 
 master -- This bot pushes changes to the overlays.
 important -- Master bot uses important bots to determine overall status.
@@ -57,7 +58,7 @@ gs_path -- Google Storage path to offload files to.
            'default' - 'gs://chromeos-archive/' + bot_id
            value - Upload to explicit path
 
-build_type -- Type of builder [binary | full | chrome].
+build_type -- Type of builder [binary | full | chrome | chroot].
 prebuilts -- Upload prebuilts for this build.
 
 test_mod -- Create a test mod image for archival.
@@ -209,6 +210,12 @@ def add_config(name, updates):
 #
 # External Builds
 #
+
+add_config('chroot-builder', [full, {
+  'board' : ['x86-generic', 'arm-generic', 'amd64-host'],
+  'build_type' : 'chroot',
+  'usepkg_chroot' : True,
+}])
 
 add_config('x86-generic-pre-flight-queue', [{
   'board' : 'x86-generic',
