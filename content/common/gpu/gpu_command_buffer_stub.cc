@@ -134,7 +134,9 @@ void GpuCommandBufferStub::OnInitialize(
   if (command_buffer_->Initialize(&shared_memory, size)) {
     gpu::GpuScheduler* parent_processor =
         parent_ ? parent_->scheduler_.get() : NULL;
-    scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), NULL));
+    scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
+                                           channel_,
+                                           NULL));
     if (scheduler_->Initialize(
         handle_,
         initial_size_,

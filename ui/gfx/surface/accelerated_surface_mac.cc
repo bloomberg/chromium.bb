@@ -35,14 +35,14 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
     return false;
 
-  gl_surface_.reset(gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
+  gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
   if (!gl_surface_.get()) {
     Destroy();
     return false;
   }
 
-  gl_context_.reset(gfx::GLContext::CreateGLContext(share_context,
-                                                    gl_surface_.get()));
+  gl_context_ = gfx::GLContext::CreateGLContext(share_context,
+                                                gl_surface_.get());
   if (!gl_context_.get()) {
     Destroy();
     return false;
@@ -66,8 +66,8 @@ void AcceleratedSurface::Destroy() {
   }
   transport_dib_.reset();
 
-  gl_context_.reset();
-  gl_surface_.reset();
+  gl_context_ = NULL;
+  gl_surface_ = NULL;
 }
 
 // Call after making changes to the surface which require a visual update.

@@ -1227,5 +1227,10 @@
     c.Init(latch_id);
   }
 
+  void SetSurfaceCHROMIUM(GLint surface_id) {
+    gles2::SetSurfaceCHROMIUM& c = GetCmdSpace<gles2::SetSurfaceCHROMIUM>();
+    c.Init(surface_id);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

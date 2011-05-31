@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface_stub.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::_;
@@ -2932,6 +2933,46 @@ TEST_F(GLES2DecoderTest, WaitLatch) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, latches[kLastValidLatchId]);
 }
+
+TEST_F(GLES2DecoderTest, SetSurfaceCHROMIUMChangesSurfaceForExistentSurface) {
+  const int kSurfaceId = 1;
+  scoped_refptr<gfx::GLSurfaceStub> surface(new gfx::GLSurfaceStub);
+
+  EXPECT_CALL(*surface_manager_.get(), LookupSurface(kSurfaceId))
+      .WillOnce(Return(surface.get()))
+      .RetiresOnSaturation();
+
+  SetSurfaceCHROMIUM cmd;
+  cmd.Init(kSurfaceId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  EXPECT_EQ(surface.get(), decoder_->GetGLSurface());
+}
+
+TEST_F(GLES2DecoderTest,
+    SetSurfaceCHROMIUMDoesNotChangeSurfaceWhenSurfaceDoesNotExist) {
+  const int kExistentSurfaceId = 1;
+  const int kNonexistentSurfaceId = 2;
+  scoped_refptr<gfx::GLSurfaceStub> surface(new gfx::GLSurfaceStub);
+
+  EXPECT_CALL(*surface_manager_.get(), LookupSurface(kExistentSurfaceId))
+      .WillOnce(Return(surface.get()))
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*surface_manager_.get(), LookupSurface(kNonexistentSurfaceId))
+      .WillOnce(Return(static_cast<gfx::GLSurface*>(NULL)))
+      .RetiresOnSaturation();
+
+  SetSurfaceCHROMIUM cmd;
+  cmd.Init(kExistentSurfaceId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  cmd.Init(kNonexistentSurfaceId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  EXPECT_EQ(surface.get(), decoder_->GetGLSurface());
+}
+
 
 // TODO(gman): BufferData
 
