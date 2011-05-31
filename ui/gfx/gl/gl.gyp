@@ -36,9 +36,9 @@
       'target_name': 'gl',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/ui.gyp:ui_base',
         '<(DEPTH)/ui/ui.gyp:ui_gfx',
       ],
       'variables': {
