@@ -16,10 +16,16 @@ namespace {
 
 class CollectedCookiesWindowControllerTest
     : public TabContentsWrapperTestHarness {
+ public:
+  CollectedCookiesWindowControllerTest()
+      : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {
+  }
+
+ private:
+  BrowserThread ui_thread_;
 };
 
 TEST_F(CollectedCookiesWindowControllerTest, Construction) {
-  BrowserThread ui_thread(BrowserThread::UI, MessageLoop::current());
   CollectedCookiesWindowController* controller =
       [[CollectedCookiesWindowController alloc]
           initWithTabContents:contents()];

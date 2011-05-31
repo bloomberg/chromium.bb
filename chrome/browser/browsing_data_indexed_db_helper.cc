@@ -85,7 +85,7 @@ void BrowsingDataIndexedDBHelperImpl::StartFetching(
 
 void BrowsingDataIndexedDBHelperImpl::CancelNotification() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.reset(NULL);
+  completion_callback_.reset();
 }
 
 void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBFile(
@@ -302,4 +302,9 @@ void CannedBrowsingDataIndexedDBHelper::NotifyInUIThread() {
     completion_callback_.reset();
   }
   is_fetching_ = false;
+}
+
+void CannedBrowsingDataIndexedDBHelper::CancelNotification() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  completion_callback_.reset();
 }

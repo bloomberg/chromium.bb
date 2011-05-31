@@ -104,7 +104,7 @@ class CannedBrowsingDataIndexedDBHelper
   // BrowsingDataIndexedDBHelper methods.
   virtual void StartFetching(
       Callback1<const std::vector<IndexedDBInfo>& >::Type* callback);
-  virtual void CancelNotification() {}
+  virtual void CancelNotification();
   virtual void DeleteIndexedDBFile(const FilePath& file_path) {}
 
  private:

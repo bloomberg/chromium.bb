@@ -100,7 +100,7 @@ class CannedBrowsingDataFileSystemHelper
   // BrowsingDataFileSystemHelper methods.
   virtual void StartFetching(
       Callback1<const std::vector<FileSystemInfo>& >::Type* callback);
-  virtual void CancelNotification() {}
+  virtual void CancelNotification();
   virtual void DeleteFileSystemOrigin(const GURL& origin) {}
 
  private:

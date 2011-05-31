@@ -1721,14 +1721,6 @@
    fun:_ZN28PCMQueueOutAudioOutputStream4OpenEv
 }
 {
-   bug_84226
-   Memcheck:Addr4
-   ...
-   fun:_ZN*vectorIN28BrowsingDataFileSystemHelper14FileSystemInfoESaIS1_*
-   ...
-   fun:_ZN16CookiesTreeModel*
-}
-{
    bug_84329
    Memcheck:Addr4
    fun:_ZN3WTF17ChromiumThreading16callOnMainThreadEPFvPvES1_

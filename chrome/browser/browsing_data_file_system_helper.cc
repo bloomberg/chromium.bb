@@ -89,7 +89,7 @@ void BrowsingDataFileSystemHelperImpl::StartFetching(
 
 void BrowsingDataFileSystemHelperImpl::CancelNotification() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.reset(NULL);
+  completion_callback_.reset();
 }
 
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
@@ -238,6 +238,7 @@ bool CannedBrowsingDataFileSystemHelper::empty() const {
 
 void CannedBrowsingDataFileSystemHelper::StartFetching(
     Callback1<const std::vector<FileSystemInfo>& >::Type* callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
   is_fetching_ = true;
@@ -275,15 +276,26 @@ void CannedBrowsingDataFileSystemHelper::StartFetching(
   }
   pending_file_system_info_.clear();
 
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &CannedBrowsingDataFileSystemHelper::Notify));
+//  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
+//      &CannedBrowsingDataFileSystemHelper::Notify));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &CannedBrowsingDataFileSystemHelper::Notify));
 }
 
 void CannedBrowsingDataFileSystemHelper::Notify() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
   if (completion_callback_ != NULL) {
     completion_callback_->Run(file_system_info_);
     completion_callback_.reset();
   }
   is_fetching_ = false;
+}
+
+void CannedBrowsingDataFileSystemHelper::CancelNotification() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  completion_callback_.reset();
 }
