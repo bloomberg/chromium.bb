@@ -39,6 +39,7 @@
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
 #endif
+#include <stddef.h>
 #include <set>
 #include "base/stl_allocator.h"
 #include "base/spinlock.h"
@@ -97,10 +98,6 @@ class MemoryRegionMap {
   // Full shutdown is attempted when the number of Shutdown() calls equals
   // the number of Init() calls.
   static bool Shutdown();
-
-  // Check that our hooks are still in place and crash if not.
-  // No need for locking.
-  static void CheckMallocHooks();
 
   // Locks to protect our internal data structures.
   // These also protect use of arena_ if our Init() has been done.
@@ -231,7 +228,7 @@ class MemoryRegionMap {
     static void *Allocate(size_t n) {
       return LowLevelAlloc::AllocWithArena(n, arena_);
     }
-    static void Free(const void *p) {
+    static void Free(const void *p, size_t /* n */) {
       LowLevelAlloc::Free(const_cast<void*>(p));
     }
   };
@@ -260,7 +257,6 @@ class MemoryRegionMap {
   union RegionSetRep;
 
  private:
-
   // representation ===========================================================
 
   // Counter of clients of this module that have called Init().

@@ -44,13 +44,16 @@
 #endif
 #include <vector>
 #include "base/logging.h"
+#include "common.h"
 #include <google/malloc_extension.h>
 
 using std::vector;
 
 int main(int argc, char** argv) {
-  static const int kAllocSize = 36<<10; // Bigger than tcmalloc page size
-  static const int kTotalAlloc = 400 << 20; // Allocate 400MB in total
+  // Make kAllocSize one page larger than the maximum small object size.
+  static const int kAllocSize = kMaxSize + kPageSize;
+  // Allocate 400MB in total.
+  static const int kTotalAlloc = 400 << 20;
   static const int kAllocIterations = kTotalAlloc / kAllocSize;
 
   // Allocate lots of objects
@@ -59,6 +62,11 @@ int main(int argc, char** argv) {
     saved[i] = new char[kAllocSize];
   }
 
+  // Check the current "slack".
+  size_t slack_before;
+  MallocExtension::instance()->GetNumericProperty("tcmalloc.slack_bytes",
+                                                  &slack_before);
+
   // Free alternating ones to fragment heap
   size_t free_bytes = 0;
   for (int i = 0; i < saved.size(); i += 2) {
@@ -66,10 +74,13 @@ int main(int argc, char** argv) {
     free_bytes += kAllocSize;
   }
 
-  // Check that slack is within 10% of expected
-  size_t slack;
+  // Check that slack delta is within 10% of expected.
+  size_t slack_after;
   MallocExtension::instance()->GetNumericProperty("tcmalloc.slack_bytes",
-                                                  &slack);
+                                                  &slack_after);
+  CHECK_GE(slack_after, slack_before);
+  size_t slack = slack_after - slack_before;
+
   CHECK_GT(double(slack), 0.9*free_bytes);
   CHECK_LT(double(slack), 1.1*free_bytes);
 

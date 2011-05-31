@@ -130,7 +130,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\base\dynamic_annotations.cc">
+				RelativePath="..\..\src\base\dynamic_annotations.c">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
@@ -504,23 +504,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\stacktrace_with_context.cc">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\src\windows; ..\..\src"
-						RuntimeLibrary="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\src\windows; ..\..\src"
-						RuntimeLibrary="2"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\..\src\stack_trace_table.cc">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -556,6 +539,23 @@
 			</File>
 			<File
 				RelativePath="..\..\src\base\spinlock.cc">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="..\..\src\windows;..\..\src"
+						RuntimeLibrary="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="..\..\src\windows;..\..\src"
+						RuntimeLibrary="2"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\base\spinlock_internal.cc">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
@@ -656,13 +656,37 @@
 				RelativePath="..\..\src\base\low_level_alloc.h">
 			</File>
 			<File
-				RelativePath="..\..\src\base\spinlock.h">
+				RelativePath="..\..\src\base\atomicops-internals-arm-gcc.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\atomicops-internals-linuxppc.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\atomicops-internals-macosx.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\atomicops-internals-x86-msvc.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\atomicops-internals-x86.h">
 			</File>
 			<File
 				RelativePath="..\..\src\base\atomicops.h">
 			</File>
 			<File
-				RelativePath="..\..\src\base\atomicops-internals-x86-msvc.h">
+				RelativePath="..\..\src\base\spinlock.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\spinlock_internal.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\spinlock_linux-inl.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\spinlock_posix-inl.h">
+			</File>
+			<File
+				RelativePath="..\..\src\base\spinlock_win32-inl.h">
 			</File>
 			<File
 				RelativePath="..\..\src\google\malloc_extension.h">

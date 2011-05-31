@@ -31,6 +31,7 @@
 // Author: Arun Sharma
 
 #include "config_for_unittests.h"
+#include "system-alloc.h"
 #include <stdio.h>
 #if defined HAVE_STDINT_H
 #include <stdint.h>             // to get uintptr_t
@@ -38,8 +39,10 @@
 #include <inttypes.h>           // another place uintptr_t might be defined
 #endif
 #include <sys/types.h>
-#include "base/logging.h"
-#include "system-alloc.h"
+#include <algorithm>
+#include "base/logging.h"               // for Check_GEImpl, Check_LTImpl, etc
+#include <google/malloc_extension.h>    // for MallocExtension::instance
+#include "common.h"                     // for kAddressBits
 
 class ArraySysAllocator : public SysAllocator {
 public:
@@ -53,6 +56,11 @@ public:
 
   void* Alloc(size_t size, size_t *actual_size, size_t alignment) {
     invoked_ = true;
+
+    if (size > kArraySize) {
+      return NULL;
+    }
+
     void *result = &array_[ptr_];
     uintptr_t ptr = reinterpret_cast<uintptr_t>(result);
 
@@ -73,8 +81,9 @@ public:
     return reinterpret_cast<void *>(ptr);
   }
 
-  void DumpStats(TCMalloc_Printer* printer) {
+  void DumpStats() {
   }
+  void FlagsInitialized() {}
 
 private:
   static const int kArraySize = 8 * 1024 * 1024;
@@ -87,7 +96,7 @@ const int ArraySysAllocator::kArraySize;
 ArraySysAllocator a;
 
 static void TestBasicInvoked() {
-  RegisterSystemAllocator(&a, 0);
+  MallocExtension::instance()->SetSystemAllocator(&a);
 
   // An allocation size that is likely to trigger the system allocator.
   // XXX: this is implementation specific.
@@ -98,8 +107,31 @@ static void TestBasicInvoked() {
   CHECK(a.invoked_);
 }
 
+#if 0  // could port this to various OSs, but won't bother for now
+TEST(AddressBits, CpuVirtualBits) {
+  // Check that kAddressBits is as least as large as either the number of bits
+  // in a pointer or as the number of virtual bits handled by the processor.
+  // To be effective this test must be run on each processor model.
+  const int kPointerBits = 8 * sizeof(void*);
+  const int kImplementedVirtualBits = NumImplementedVirtualBits();
+
+  CHECK_GE(kAddressBits, min(kImplementedVirtualBits, kPointerBits));
+}
+#endif
+
+static void TestBasicRetryFailTest() {
+  // Check with the allocator still works after a failed allocation.
+  void* p = malloc(1ULL << 50);  // Asking for 1P ram
+  CHECK(p == NULL);
+
+  char* q = new char[1024];
+  CHECK(q != NULL);
+  delete [] q;
+}
+
 int main(int argc, char** argv) {
   TestBasicInvoked();
+  TestBasicRetryFailTest();
 
   printf("PASS\n");
   return 0;

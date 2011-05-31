@@ -4,10 +4,19 @@
 # make sure we're interpreted by some minimal autoconf
 AC_PREREQ(2.57)
 
-AC_INIT(google-perftools, 1.5, opensource@google.com)
+AC_INIT(google-perftools, 1.7, opensource@google.com)
+# Update this value for every release!  (A:B:C will map to foo.so.(A-C).C.B)
+# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+TCMALLOC_SO_VERSION=1:0:1
+PROFILER_SO_VERSION=1:0:1
+
+AC_SUBST(TCMALLOC_SO_VERSION)
+AC_SUBST(PROFILER_SO_VERSION)
+
 # The argument here is just something that should be in the current directory
 # (for sanity checking)
 AC_CONFIG_SRCDIR(README)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([dist-zip])
 AM_CONFIG_HEADER(src/config.h)
@@ -81,7 +90,14 @@ AM_PROG_CC_C_O      # shrug: autogen.sh suddenly needs this for some reason
 
 # Check if we have an objcopy installed that supports -W
 AC_CHECK_TOOL([OBJCOPY], [objcopy], [])
-AM_CONDITIONAL(HAVE_OBJCOPY_WEAKEN, ["$OBJCOPY" -W malloc /bin/ls /dev/null])
+AS_IF([test -n "$OBJCOPY"], [dnl
+  AC_CACHE_CHECK([if $OBJCOPY supports -W], gpt_cv_objcopy_weaken, [dnl
+    AC_LINK_IFELSE([void foo() {} int main() {return 0;}], [dnl
+      AS_IF(["$OBJCOPY" -W foo conftest$ac_exeext /dev/null],
+      	    [gpt_cv_objcopy_weaken=yes], [gpt_cv_objcopy_weaken=no])],
+    [gpt_cv_objcopy_weaken=no])])],
+  [gpt_cv_objcopy_weaken=no])
+AM_CONDITIONAL(HAVE_OBJCOPY_WEAKEN, test $gpt_cv_objcopy_weaken = yes)
 
 case $host_os in
   *mingw*)
@@ -114,6 +130,8 @@ AC_CHECK_FUNCS(sbrk)            # for tcmalloc to get memory
 AC_CHECK_FUNCS(geteuid)         # for turning off services when run as root
 AC_CHECK_HEADERS(features.h)    # for vdso_support.h
 AC_CHECK_HEADERS(malloc.h)      # some systems define stuff there, others not
+AC_CHECK_HEADERS(sys/malloc.h)  # where some versions of OS X put malloc.h
+AC_CHECK_HEADERS(malloc/malloc.h)  # another place OS X puts malloc.h (?)
 AC_CHECK_HEADERS(glob.h)        # for heap-profile-table (cleaning up profiles)
 AC_CHECK_HEADERS(execinfo.h)    # for stacktrace? and heapchecker_unittest
 AC_CHECK_HEADERS(libunwind.h)   # for stacktrace
@@ -131,6 +149,8 @@ AC_CHECK_HEADERS(grp.h)         # for heapchecker_unittest
 AC_CHECK_HEADERS(pwd.h)         # for heapchecker_unittest
 AC_CHECK_HEADERS(sys/resource.h)         # for memalign_unittest.cc
 AC_CHECK_HEADERS(valgrind.h)    # we have a local copy if this isn't found
+AC_CHECK_HEADERS(sys/cdefs.h)   # Where glibc defines __THROW
+AC_CHECK_HEADERS(features.h)    # Where __GLIBC__ is defined
 # We also need <ucontext.h>/<sys/ucontext.h>, but we get those from
 # AC_PC_FROM_UCONTEXT, below.
 
@@ -157,7 +177,8 @@ fi
 # This workaround comes from
 #    http://cygwin.com/ml/cygwin/2004-11/msg00138.html
 case "$host" in
-  *-*-cygwin*) ac_cv_func_mmap_fixed_mapped=yes
+  *-*-cygwin*)
+	       ac_cv_func_mmap_fixed_mapped=yes
                AC_DEFINE(HAVE_MMAP, 1,
                          [Define to 1 if you have a working `mmap' system call.])
                ;;
@@ -301,6 +322,18 @@ AC_DEFINE(PERFTOOLS_DLL_DECL,,
 	   internally, to compile the DLL, and every DLL source file
 	   #includes "config.h" before anything else.])
 
+# In theory, config.h files shouldn't need a header guard, but we do,
+# because we (maybe) #include windows/mingw.h from within config.h,
+# and it #includes other .h files.  These all have header guards, so
+# the end result is if config.h is #included twice, its #undefs get
+# evaluated twice, but all the ones in mingw.h/etc only get evaluated
+# once, potentially causing trouble.  c.f.
+#   http://code.google.com/p/google-perftools/issues/detail?id=246
+AH_TOP([
+#ifndef GOOGLE_PERFTOOLS_CONFIG_H_
+#define GOOGLE_PERFTOOLS_CONFIG_H_
+])
+
 # MinGW uses autoconf, but also needs the windows shim routines
 # (since it doesn't have its own support for, say, pthreads).
 # This requires us to #include a special header file, and also to
@@ -309,6 +342,8 @@ AH_BOTTOM([
 #ifdef __MINGW32__
 #include "windows/mingw.h"
 #endif
+
+#endif  /* #ifndef GOOGLE_PERFTOOLS_CONFIG_H_ */
 ])
 AM_CONDITIONAL(MINGW, expr $host : '.*-mingw' >/dev/null 2>&1)
 
@@ -336,5 +371,5 @@ AM_CONDITIONAL(WITH_STACK_TRACE, test "$enable_cpu_profiler" = yes -o \
                                       "$enable_heap_checker" = yes)
 
 # Write generated configuration file
-AC_CONFIG_FILES([Makefile src/google/tcmalloc.h])
+AC_CONFIG_FILES([Makefile src/google/tcmalloc.h src/windows/google/tcmalloc.h])
 AC_OUTPUT

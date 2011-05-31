@@ -28,25 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ---
- * This file is a Posix-specific part of spinlock.cc
+ * This file is a Posix-specific part of spinlock_internal.cc
  */
 
-#include <sched.h>
-#include <time.h>
+#include <config.h>
+#include <errno.h>
+#ifdef HAVE_SCHED_H
+#include <sched.h>      /* For sched_yield() */
+#endif
+#include <time.h>       /* For nanosleep() */
 
-static void SpinLockWait(volatile Atomic32 *w) {
+namespace base {
+namespace internal {
+
+void SpinLockDelay(volatile Atomic32 *w, int32 value, int loop) {
   int save_errno = errno;
-  struct timespec tm;
-  tm.tv_sec = 0;
-  tm.tv_nsec = 1000000;
-  if (base::subtle::NoBarrier_Load(w) != 0) {
+  if (loop == 0) {
+  } else if (loop == 1) {
     sched_yield();
-  }
-  while (base::subtle::Acquire_CompareAndSwap(w, 0, 1) != 0) {
+  } else {
+    struct timespec tm;
+    tm.tv_sec = 0;
+    tm.tv_nsec = 1000000;
     nanosleep(&tm, NULL);
   }
   errno = save_errno;
 }
 
-static void SpinLockWake(volatile Atomic32 *w) {
+void SpinLockWake(volatile Atomic32 *w, bool all) {
 }
+
+} // namespace internal
+} // namespace base

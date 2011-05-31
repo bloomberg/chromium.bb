@@ -31,10 +31,16 @@
 // Author: Sanjay Ghemawat <opensource@google.com>
 
 #include <config.h>
-#include "page_heap.h"
-
-#include "static_vars.h"
-#include "system-alloc.h"
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>                   // for PRIuPTR
+#endif
+#include <google/malloc_extension.h>      // for MallocRange, etc
+#include "base/basictypes.h"
+#include "base/commandlineflags.h"
+#include "internal_logging.h"  // for ASSERT, TCMalloc_Printer, etc
+#include "page_heap_allocator.h"  // for PageHeapAllocator
+#include "static_vars.h"       // for Static
+#include "system-alloc.h"      // for TCMalloc_SystemAlloc, etc
 
 DEFINE_double(tcmalloc_release_rate,
               EnvToDouble("TCMALLOC_RELEASE_RATE", 1.0),
@@ -61,64 +67,55 @@ PageHeap::PageHeap()
   }
 }
 
-// Returns the minimum number of pages necessary to ensure that an
-// allocation of size n can be aligned to the given alignment.
-static Length AlignedAllocationSize(Length n, size_t alignment) {
-  ASSERT(alignment >= kPageSize);
-  return n + tcmalloc::pages(alignment - kPageSize);
-}
-
-Span* PageHeap::New(Length n, size_t sc, size_t align) {
+Span* PageHeap::SearchFreeAndLargeLists(Length n) {
   ASSERT(Check());
   ASSERT(n > 0);
 
-  if (align < kPageSize) {
-    align = kPageSize;
-  }
-
-  Length aligned_size = AlignedAllocationSize(n, align);
-
   // Find first size >= n that has a non-empty list
-  for (Length s = aligned_size; s < kMaxPages; s++) {
+  for (Length s = n; s < kMaxPages; s++) {
     Span* ll = &free_[s].normal;
     // If we're lucky, ll is non-empty, meaning it has a suitable span.
     if (!DLL_IsEmpty(ll)) {
       ASSERT(ll->next->location == Span::ON_NORMAL_FREELIST);
-      return Carve(ll->next, n, sc, align);
+      return Carve(ll->next, n);
     }
     // Alternatively, maybe there's a usable returned span.
     ll = &free_[s].returned;
     if (!DLL_IsEmpty(ll)) {
       ASSERT(ll->next->location == Span::ON_RETURNED_FREELIST);
-      return Carve(ll->next, n, sc, align);
+      return Carve(ll->next, n);
     }
-    // Still no luck, so keep looking in larger classes.
   }
+  // No luck in free lists, our last chance is in a larger class.
+  return AllocLarge(n);  // May be NULL
+}
 
-  Span* result = AllocLarge(n, sc, align);
-  if (result != NULL) return result;
+Span* PageHeap::New(Length n) {
+  ASSERT(Check());
+  ASSERT(n > 0);
 
-  // Grow the heap and try again
-  if (!GrowHeap(aligned_size)) {
+  Span* result = SearchFreeAndLargeLists(n);
+  if (result != NULL)
+    return result;
+
+  // Grow the heap and try again.
+  if (!GrowHeap(n)) {
     ASSERT(Check());
     return NULL;
   }
-
-  return AllocLarge(n, sc, align);
+  return SearchFreeAndLargeLists(n);
 }
 
-Span* PageHeap::AllocLarge(Length n, size_t sc, size_t align) {
-  // Find the best span (closest to n in size).
+Span* PageHeap::AllocLarge(Length n) {
+  // find the best span (closest to n in size).
   // The following loops implements address-ordered best-fit.
   Span *best = NULL;
-
-  Length aligned_size = AlignedAllocationSize(n, align);
 
   // Search through normal list
   for (Span* span = large_.normal.next;
        span != &large_.normal;
        span = span->next) {
-    if (span->length >= aligned_size) {
+    if (span->length >= n) {
       if ((best == NULL)
           || (span->length < best->length)
           || ((span->length == best->length) && (span->start < best->start))) {
@@ -132,7 +129,7 @@ Span* PageHeap::AllocLarge(Length n, size_t sc, size_t align) {
   for (Span* span = large_.returned.next;
        span != &large_.returned;
        span = span->next) {
-    if (span->length >= aligned_size) {
+    if (span->length >= n) {
       if ((best == NULL)
           || (span->length < best->length)
           || ((span->length == best->length) && (span->start < best->start))) {
@@ -142,18 +139,19 @@ Span* PageHeap::AllocLarge(Length n, size_t sc, size_t align) {
     }
   }
 
-  return best == NULL ? NULL : Carve(best, n, sc, align);
+  return best == NULL ? NULL : Carve(best, n);
 }
 
 Span* PageHeap::Split(Span* span, Length n) {
   ASSERT(0 < n);
   ASSERT(n < span->length);
-  ASSERT((span->location != Span::IN_USE) || span->sizeclass == 0);
+  ASSERT(span->location == Span::IN_USE);
+  ASSERT(span->sizeclass == 0);
   Event(span, 'T', n);
 
   const int extra = span->length - n;
   Span* leftover = NewSpan(span->start + n, extra);
-  leftover->location = span->location;
+  ASSERT(leftover->location == Span::IN_USE);
   Event(leftover, 'U', extra);
   RecordSpan(leftover);
   pagemap_.set(span->start + n - 1, span); // Update map from pageid to span
@@ -162,44 +160,25 @@ Span* PageHeap::Split(Span* span, Length n) {
   return leftover;
 }
 
-Span* PageHeap::Carve(Span* span, Length n, size_t sc, size_t align) {
+Span* PageHeap::Carve(Span* span, Length n) {
   ASSERT(n > 0);
   ASSERT(span->location != Span::IN_USE);
-  ASSERT(align >= kPageSize);
-
-  Length align_pages = align >> kPageShift;
+  const int old_location = span->location;
   RemoveFromFreeList(span);
-
-  if (span->start & (align_pages - 1)) {
-    Length skip_for_alignment = align_pages - (span->start & (align_pages - 1));
-    Span* aligned = Split(span, skip_for_alignment);
-    PrependToFreeList(span); // Skip coalescing - no candidates possible
-    span = aligned;
-  }
+  span->location = Span::IN_USE;
+  Event(span, 'A', n);
 
   const int extra = span->length - n;
   ASSERT(extra >= 0);
   if (extra > 0) {
-    Span* leftover = Split(span, n);
-    PrependToFreeList(leftover);
+    Span* leftover = NewSpan(span->start + n, extra);
+    leftover->location = old_location;
+    Event(leftover, 'S', extra);
+    RecordSpan(leftover);
+    PrependToFreeList(leftover);  // Skip coalescing - no candidates possible
+    span->length = n;
+    pagemap_.set(span->start + n - 1, span);
   }
-
-  span->location = Span::IN_USE;
-  span->sizeclass = sc;
-  Event(span, 'A', n);
-
-  // Cache sizeclass info eagerly.  Locking is not necessary.
-  // (Instead of being eager, we could just replace any stale info
-  // about this span, but that seems to be no better in practice.)
-  CacheSizeClass(span->start, sc);
-
-  if (sc != kLargeSizeClass) {
-    for (Length i = 1; i < n; i++) {
-      pagemap_.set(span->start + i, span);
-      CacheSizeClass(span->start + i, sc);
-    }
-  }
-
   ASSERT(Check());
   return span;
 }
@@ -351,12 +330,53 @@ Length PageHeap::ReleaseAtLeastNPages(Length num_pages) {
   return released_pages;
 }
 
-static double MB(uint64_t bytes) {
+void PageHeap::RegisterSizeClass(Span* span, size_t sc) {
+  // Associate span object with all interior pages as well
+  ASSERT(span->location == Span::IN_USE);
+  ASSERT(GetDescriptor(span->start) == span);
+  ASSERT(GetDescriptor(span->start+span->length-1) == span);
+  Event(span, 'C', sc);
+  span->sizeclass = sc;
+  for (Length i = 1; i < span->length-1; i++) {
+    pagemap_.set(span->start+i, span);
+  }
+}
+
+static double MiB(uint64_t bytes) {
   return bytes / 1048576.0;
 }
 
-static double PagesToMB(uint64_t pages) {
+static double PagesToMiB(uint64_t pages) {
   return (pages << kPageShift) / 1048576.0;
+}
+
+void PageHeap::GetClassSizes(int64 class_sizes_normal[kMaxPages],
+                             int64 class_sizes_returned[kMaxPages],
+                             int64* normal_pages_in_spans,
+                             int64* returned_pages_in_spans) {
+
+  for (int s = 0; s < kMaxPages; s++) {
+    if (class_sizes_normal != NULL) {
+      class_sizes_normal[s] = DLL_Length(&free_[s].normal);
+    }
+    if (class_sizes_returned != NULL) {
+      class_sizes_returned[s] = DLL_Length(&free_[s].returned);
+    }
+  }
+
+  if (normal_pages_in_spans != NULL) {
+    *normal_pages_in_spans = 0;
+    for (Span* s = large_.normal.next; s != &large_.normal; s = s->next) {
+      *normal_pages_in_spans += s->length;;
+    }
+  }
+
+  if (returned_pages_in_spans != NULL) {
+    *returned_pages_in_spans = 0;
+    for (Span* s = large_.returned.next; s != &large_.returned; s = s->next) {
+      *returned_pages_in_spans += s->length;
+    }
+  }
 }
 
 void PageHeap::Dump(TCMalloc_Printer* out) {
@@ -367,8 +387,9 @@ void PageHeap::Dump(TCMalloc_Printer* out) {
     }
   }
   out->printf("------------------------------------------------\n");
-  out->printf("PageHeap: %d sizes; %6.1f MB free; %6.1f MB unmapped\n",
-              nonempty_sizes, MB(stats_.free_bytes), MB(stats_.unmapped_bytes));
+  out->printf("PageHeap: %d sizes; %6.1f MiB free; %6.1f MiB unmapped\n",
+              nonempty_sizes, MiB(stats_.free_bytes),
+              MiB(stats_.unmapped_bytes));
   out->printf("------------------------------------------------\n");
   uint64_t total_normal = 0;
   uint64_t total_returned = 0;
@@ -380,14 +401,14 @@ void PageHeap::Dump(TCMalloc_Printer* out) {
       uint64_t r_pages = s * r_length;
       total_normal += n_pages;
       total_returned += r_pages;
-      out->printf("%6u pages * %6u spans ~ %6.1f MB; %6.1f MB cum"
-                  "; unmapped: %6.1f MB; %6.1f MB cum\n",
+      out->printf("%6u pages * %6u spans ~ %6.1f MiB; %6.1f MiB cum"
+                  "; unmapped: %6.1f MiB; %6.1f MiB cum\n",
                   s,
                   (n_length + r_length),
-                  PagesToMB(n_pages + r_pages),
-                  PagesToMB(total_normal + total_returned),
-                  PagesToMB(r_pages),
-                  PagesToMB(total_returned));
+                  PagesToMiB(n_pages + r_pages),
+                  PagesToMiB(total_normal + total_returned),
+                  PagesToMiB(r_pages),
+                  PagesToMiB(total_returned));
     }
   }
 
@@ -397,27 +418,27 @@ void PageHeap::Dump(TCMalloc_Printer* out) {
   int r_spans = 0;
   out->printf("Normal large spans:\n");
   for (Span* s = large_.normal.next; s != &large_.normal; s = s->next) {
-    out->printf("   [ %6" PRIuPTR " pages ] %6.1f MB\n",
-                s->length, PagesToMB(s->length));
+    out->printf("   [ %6" PRIuPTR " pages ] %6.1f MiB\n",
+                s->length, PagesToMiB(s->length));
     n_pages += s->length;
     n_spans++;
   }
   out->printf("Unmapped large spans:\n");
   for (Span* s = large_.returned.next; s != &large_.returned; s = s->next) {
-    out->printf("   [ %6" PRIuPTR " pages ] %6.1f MB\n",
-                s->length, PagesToMB(s->length));
+    out->printf("   [ %6" PRIuPTR " pages ] %6.1f MiB\n",
+                s->length, PagesToMiB(s->length));
     r_pages += s->length;
     r_spans++;
   }
   total_normal += n_pages;
   total_returned += r_pages;
-  out->printf(">255   large * %6u spans ~ %6.1f MB; %6.1f MB cum"
-              "; unmapped: %6.1f MB; %6.1f MB cum\n",
+  out->printf(">255   large * %6u spans ~ %6.1f MiB; %6.1f MiB cum"
+              "; unmapped: %6.1f MiB; %6.1f MiB cum\n",
               (n_spans + r_spans),
-              PagesToMB(n_pages + r_pages),
-              PagesToMB(total_normal + total_returned),
-              PagesToMB(r_pages),
-              PagesToMB(total_returned));
+              PagesToMiB(n_pages + r_pages),
+              PagesToMiB(total_normal + total_returned),
+              PagesToMiB(r_pages),
+              PagesToMiB(total_returned));
 }
 
 bool PageHeap::GetNextRange(PageID start, base::MallocRange* r) {

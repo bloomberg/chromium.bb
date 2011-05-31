@@ -3,6 +3,7 @@ Short Name: google-perftools
 URL: http://google-perftools.googlecode.com/
 Version: unknown
 Revision: 93
+Security Critical: yes
 
 Description:
 This contains Chromium's locally patched copy of tcmalloc.
@@ -26,8 +27,8 @@ Contents:
 
     The current revision is:
 
-      Last Changed Rev: 93
-      Last Changed Date: 2010-04-22 21:29:02 +0400 (Thu, 22 Apr 2010)
+      Last Changed Rev: 109
+      Last Changed Date: 2011-05-20 01:37:12 +0400 (Fri, 20 May 2011)
 
 
 

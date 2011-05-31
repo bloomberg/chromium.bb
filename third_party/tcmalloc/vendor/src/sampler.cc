@@ -35,23 +35,23 @@
 #include "sampler.h"
 
 #include <algorithm>  // For min()
-#include <cmath>
+#include <math.h>
+#include "base/commandlineflags.h"
 
 using std::min;
 
 // The approximate gap in bytes between sampling actions.
 // I.e., we take one sample approximately once every
 // tcmalloc_sample_parameter bytes of allocation
-// i.e. about once every 512KB.
+// i.e. about once every 512KB if value is 1<<19.
 #ifdef NO_TCMALLOC_SAMPLES
 DEFINE_int64(tcmalloc_sample_parameter, 0,
              "Unused: code is compiled with NO_TCMALLOC_SAMPLES");
 #else
 DEFINE_int64(tcmalloc_sample_parameter,
-             EnvToInt64("TCMALLOC_SAMPLE_PARAMETER", 1<<19),
+             EnvToInt64("TCMALLOC_SAMPLE_PARAMETER", 0),
              "The approximate gap in bytes between sampling actions. "
-             "This must be between 1 and 1<<58.");
-// Note: there are other places in this file where the number 19 occurs.
+             "This must be between 1 and 2^58.");
 #endif
 
 namespace tcmalloc {

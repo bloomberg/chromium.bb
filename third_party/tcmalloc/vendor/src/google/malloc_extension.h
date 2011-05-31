@@ -50,6 +50,7 @@
 #include <stdint.h>
 #endif
 #include <string>
+#include <vector>
 
 // Annoying stuff for windows -- makes sure clients can import these functions
 #ifndef PERFTOOLS_DLL_DECL
@@ -68,6 +69,22 @@ typedef std::string MallocExtensionWriter;
 namespace base {
 struct MallocRange;
 }
+
+// Interface to a pluggable system allocator.
+class SysAllocator {
+ public:
+  SysAllocator() {
+  }
+  virtual ~SysAllocator();
+
+  // Allocates "size"-byte of memory from system aligned with "alignment".
+  // Returns NULL if failed. Otherwise, the returned pointer p up to and
+  // including (p + actual_size -1) have been allocated.
+  virtual void* Alloc(size_t size, size_t *actual_size, size_t alignment) = 0;
+
+  // Notification that command-line flags have been initialized.
+  virtual void FlagsInitialized() = 0;
+};
 
 // The default implementations of the following routines do nothing.
 // All implementations should be thread-safe; the current one
@@ -101,13 +118,23 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // Outputs to "writer" a sample of live objects and the stack traces
   // that allocated these objects.  The format of the returned output
   // is equivalent to the output of the heap profiler and can
-  // therefore be passed to "pprof".
+  // therefore be passed to "pprof". This function is equivalent to
+  // ReadStackTraces. The main difference is that this function returns
+  // serialized data appropriately formatted for use by the pprof tool.
+  // NOTE: by default, tcmalloc does not do any heap sampling, and this
+  //       function will always return an empty sample.  To get useful
+  //       data from GetHeapSample, you must also set the environment
+  //       variable TCMALLOC_SAMPLE_PARAMETER to a value such as 524288.
   virtual void GetHeapSample(MallocExtensionWriter* writer);
 
   // Outputs to "writer" the stack traces that caused growth in the
   // address space size.  The format of the returned output is
   // equivalent to the output of the heap profiler and can therefore
-  // be passed to "pprof".
+  // be passed to "pprof". This function is equivalent to
+  // ReadHeapGrowthStackTraces. The main difference is that this function
+  // returns serialized data appropriately formatted for use by the
+  // pprof tool.  (This does not depend on, or require,
+  // TCMALLOC_SAMPLE_PARAMETER.)
   virtual void GetHeapGrowthStacks(MallocExtensionWriter* writer);
 
   // Invokes func(arg, range) for every controlled memory
@@ -145,21 +172,22 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   //      Number of bytes used across all thread caches.
   //      This property is not writable.
   //
-  // "tcmalloc.slack_bytes"
-  //      Number of bytes allocated from system, but not currently in
-  //      use by malloced objects.  I.e., bytes available for
-  //      allocation without needing more bytes from system.  It is
-  //      the sum of pageheap_free_bytes and pageheap_unmapped_bytes.
-  //      This property is not writable.
-  //
   // "tcmalloc.pageheap_free_bytes"
-  //      Number of bytes in free, mapped pages in pageheap
-  //      This property is not writable.
+  //      Number of bytes in free, mapped pages in page heap.  These
+  //      bytes can be used to fulfill allocation requests.  They
+  //      always count towards virtual memory usage, and unless the
+  //      underlying memory is swapped out by the OS, they also count
+  //      towards physical memory usage.  This property is not writable.
   //
   // "tcmalloc.pageheap_unmapped_bytes"
-  //      Number of bytes in free, unmapped pages in pageheap
-  //      This property is not writable.
-  //
+  //        Number of bytes in free, unmapped pages in page heap.
+  //        These are bytes that have been released back to the OS,
+  //        possibly by one of the MallocExtension "Release" calls.
+  //        They can be used to fulfill allocation requests, but
+  //        typically incur a page fault.  They always count towards
+  //        virtual memory usage, and depending on the OS, typically
+  //        do not count towards physical memory usage.  This property
+  //        is not writable.
   // -------------------------------------------------------------------
 
   // Get the named "property"'s value.  Returns true if the property
@@ -194,6 +222,27 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // Most malloc implementations ignore this routine.
   virtual void MarkThreadBusy();
 
+  // Gets the system allocator used by the malloc extension instance. Returns
+  // NULL for malloc implementations that do not support pluggable system
+  // allocators.
+  virtual SysAllocator* GetSystemAllocator();
+
+  // Sets the system allocator to the specified.
+  //
+  // Users could register their own system allocators for malloc implementation
+  // that supports pluggable system allocators, such as TCMalloc, by doing:
+  //   alloc = new MyOwnSysAllocator();
+  //   MallocExtension::instance()->SetSystemAllocator(alloc);
+  // It's up to users whether to fall back (recommended) to the default
+  // system allocator (use GetSystemAllocator() above) or not. The caller is
+  // responsible to any necessary locking.
+  // See tcmalloc/system-alloc.h for the interface and
+  //     tcmalloc/memfs_malloc.cc for the examples.
+  //
+  // It's a no-op for malloc implementations that do not support pluggable
+  // system allocators.
+  virtual void SetSystemAllocator(SysAllocator *a);
+
   // Try to release num_bytes of free memory back to the operating
   // system for reuse.  Use this extension with caution -- to get this
   // memory back may require faulting pages back in by the OS, and
@@ -218,6 +267,7 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // SIZE bytes may reserve more bytes, but will never reserve less.
   // (Currently only implemented in tcmalloc, other implementations
   // always return SIZE.)
+  // This is equivalent to malloc_good_size() in OS X.
   virtual size_t GetEstimatedAllocatedSize(size_t size);
 
   // Returns the actual number N of bytes reserved by tcmalloc for the
@@ -231,6 +281,8 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // from that -- and should not have been freed yet.  p may be NULL.
   // (Currently only implemented in tcmalloc; other implementations
   // will return 0.)
+  // This is equivalent to malloc_size() in OS X, malloc_usable_size()
+  // in glibc, and _msize() for windows.
   virtual size_t GetAllocatedSize(void* p);
 
   // The current malloc implementation.  Always non-NULL.
@@ -240,7 +292,45 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // malloc implementation during initialization.
   static void Register(MallocExtension* implementation);
 
- protected:
+  // Returns detailed information about malloc's freelists. For each list,
+  // return a FreeListInfo:
+  struct FreeListInfo {
+    size_t min_object_size;
+    size_t max_object_size;
+    size_t total_bytes_free;
+    const char* type;
+  };
+  // Each item in the vector refers to a different freelist. The lists
+  // are identified by the range of allocations that objects in the
+  // list can satisfy ([min_object_size, max_object_size]) and the
+  // type of freelist (see below). The current size of the list is
+  // returned in total_bytes_free (which count against a processes
+  // resident and virtual size).
+  //
+  // Currently supported types are:
+  //
+  // "tcmalloc.page{_unmapped}" - tcmalloc's page heap. An entry for each size
+  //          class in the page heap is returned. Bytes in "page_unmapped"
+  //          are no longer backed by physical memory and do not count against
+  //          the resident size of a process.
+  //
+  // "tcmalloc.large{_unmapped}" - tcmalloc's list of objects larger
+  //          than the largest page heap size class. Only one "large"
+  //          entry is returned. There is no upper-bound on the size
+  //          of objects in the large free list; this call returns
+  //          kint64max for max_object_size.  Bytes in
+  //          "large_unmapped" are no longer backed by physical memory
+  //          and do not count against the resident size of a process.
+  //
+  // "tcmalloc.central" - tcmalloc's central free-list. One entry per
+  //          size-class is returned. Never unmapped.
+  //
+  // "debug.free_queue" - free objects queued by the debug allocator
+  //                      and not returned to tcmalloc.
+  //
+  // "tcmalloc.thread" - tcmalloc's per-thread caches. Never unmapped.
+  virtual void GetFreeListSizes(std::vector<FreeListInfo>* v);
+
   // Get a list of stack traces of sampled allocation points.  Returns
   // a pointer to a "new[]-ed" result array, and stores the sample
   // period in "sample_period".
