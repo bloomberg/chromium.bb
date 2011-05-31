@@ -2186,21 +2186,6 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
-   bug_44966a
-   Memcheck:Addr8
-   fun:event_del
-   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher26StopWatchingFileDescriptorEv
-   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcherD1Ev
-   fun:*MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
-}
-{
-   bug_44966b
-   Memcheck:Addr4
-   fun:event_del
-   ...
-   fun:*FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
-}
-{
    bug_45254_InitExtensions_Leak
    Memcheck:Leak
    fun:_Znw*
