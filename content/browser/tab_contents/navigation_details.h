@@ -20,16 +20,7 @@ namespace content {
 struct LoadCommittedDetails {
   // By default, the entry will be filled according to a new main frame
   // navigation.
-  LoadCommittedDetails()
-      : entry(NULL),
-        type(NavigationType::UNKNOWN),
-        previous_entry_index(-1),
-        is_auto(false),
-        did_replace_entry(false),
-        is_in_page(false),
-        is_main_frame(true),
-        http_status_code(0) {
-  }
+  LoadCommittedDetails();
 
   // The committed entry. This will be the active entry in the controller.
   NavigationEntry* entry;

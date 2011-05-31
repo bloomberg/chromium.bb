@@ -312,6 +312,7 @@
         'browser/tab_contents/interstitial_page.h',
         'browser/tab_contents/navigation_controller.cc',
         'browser/tab_contents/navigation_controller.h',
+        'browser/tab_contents/navigation_details.cc',
         'browser/tab_contents/navigation_details.h',
         'browser/tab_contents/navigation_entry.cc',
         'browser/tab_contents/navigation_entry.h',
