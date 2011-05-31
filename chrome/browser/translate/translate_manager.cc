@@ -45,20 +45,6 @@
 
 namespace {
 
-// Mapping from a locale name to a language code name.
-// Locale names not included are translated as is.
-struct LocaleToCLDLanguage {
-  const char* locale_language;  // Language Chrome locale is in.
-  const char* cld_language;     // Language the CLD reports.
-};
-LocaleToCLDLanguage kLocaleToCLDLanguages[] = {
-    { "en-GB", "en" },
-    { "en-US", "en" },
-    { "es-419", "es" },
-    { "pt-BR", "pt" },
-    { "pt-PT", "pt" },
-};
-
 // The list of languages the Google translation server supports.
 // For information, here is the list of languages that Chrome can be run in
 // but that the translation server does not support:
@@ -178,21 +164,25 @@ void TranslateManager::GetSupportedLanguages(
 // static
 std::string TranslateManager::GetLanguageCode(
     const std::string& chrome_locale) {
-  for (size_t i = 0; i < arraysize(kLocaleToCLDLanguages); ++i) {
-    if (chrome_locale == kLocaleToCLDLanguages[i].locale_language)
-      return kLocaleToCLDLanguages[i].cld_language;
-  }
-  return chrome_locale;
+  // Only remove the country code for country specific languages we don't
+  // support specifically yet.
+  if (IsSupportedLanguage(chrome_locale))
+    return chrome_locale;
+
+  size_t hypen_index = chrome_locale.find('-');
+  if (hypen_index == std::string::npos)
+    return chrome_locale;
+  return chrome_locale.substr(0, hypen_index);
 }
 
 // static
 bool TranslateManager::IsSupportedLanguage(const std::string& page_language) {
-  if (supported_languages_.Pointer()->empty()) {
+  std::set<std::string>* supported_languages = supported_languages_.Pointer();
+  if (supported_languages->empty()) {
     for (size_t i = 0; i < arraysize(kSupportedLanguages); ++i)
-      supported_languages_.Pointer()->insert(kSupportedLanguages[i]);
+      supported_languages->insert(kSupportedLanguages[i]);
   }
-  return supported_languages_.Pointer()->find(page_language) !=
-      supported_languages_.Pointer()->end();
+  return supported_languages->find(page_language) != supported_languages->end();
 }
 
 void TranslateManager::Observe(NotificationType type,
@@ -389,9 +379,10 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
 
   std::string target_lang = GetTargetLanguage();
+  std::string language_code = GetLanguageCode(page_lang);
   // Nothing to do if either the language Chrome is in or the language of the
   // page is not supported by the translation server.
-  if (target_lang.empty() || !IsSupportedLanguage(page_lang)) {
+  if (target_lang.empty() || !IsSupportedLanguage(language_code)) {
     return;
   }
 
@@ -400,9 +391,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // - similar languages (ex: en-US to en).
   // - any user black-listed URLs or user selected language combination.
   // - any language the user configured as accepted languages.
-  if (!IsTranslatableURL(entry->url()) || page_lang == target_lang ||
-      !TranslatePrefs::CanTranslate(prefs, page_lang, entry->url()) ||
-      IsAcceptLanguage(tab, page_lang)) {
+  if (!IsTranslatableURL(entry->url()) || language_code == target_lang ||
+      !TranslatePrefs::CanTranslate(prefs, language_code, entry->url()) ||
+      IsAcceptLanguage(tab, language_code)) {
     return;
   }
 
@@ -412,9 +403,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // page's text is sent to the translate server.
   std::string auto_target_lang;
   if (!tab->profile()->IsOffTheRecord() &&
-      TranslatePrefs::ShouldAutoTranslate(prefs, page_lang,
+      TranslatePrefs::ShouldAutoTranslate(prefs, language_code,
           &auto_target_lang)) {
-    TranslatePage(tab, page_lang, auto_target_lang);
+    TranslatePage(tab, language_code, auto_target_lang);
     return;
   }
 
@@ -424,13 +415,14 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   std::string auto_translate_to = helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
-    TranslatePage(tab, page_lang, auto_translate_to);
+    TranslatePage(tab, language_code, auto_translate_to);
     return;
   }
 
   // Prompts the user if he/she wants the page translated.
   wrapper->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
-      TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, page_lang, target_lang));
+      TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, language_code,
+          target_lang));
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -445,12 +437,12 @@ void TranslateManager::InitiateTranslationPosted(
   if (helper->language_state().translation_pending())
     return;
 
-  InitiateTranslation(tab, page_lang);
+  InitiateTranslation(tab, GetLanguageCode(page_lang));
 }
 
 void TranslateManager::TranslatePage(TabContents* tab_contents,
-                                      const std::string& source_lang,
-                                      const std::string& target_lang) {
+                                     const std::string& source_lang,
+                                     const std::string& target_lang) {
   NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
   if (!entry) {
     NOTREACHED();

@@ -460,7 +460,7 @@ TEST_F(TranslateManagerTest, TestAllLanguages) {
     // 70-79
     false, false, false, false, true, true, false, true, false, false,
     // 80-89
-    false, false, false, false, false, false, false, false, false, false,
+    false, true, true, false, false, false, false, false, false, false,
     // 90-99
     false, true, false, false, false, false, false, true, false, false,
     // 100-109
@@ -476,7 +476,7 @@ TEST_F(TranslateManagerTest, TestAllLanguages) {
     // 150-159
     false, false, false, false, false, false, false, false, false, false,
     // 160
-    false
+    true
   };
 
   GURL url("http://www.google.com");
