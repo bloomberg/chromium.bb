@@ -199,6 +199,7 @@ class GClientSmoke(GClientSmokeBase):
          ('solutions = [\n'
           '  { "name"        : "src",\n'
           '    "url"         : "%strunk/src",\n'
+          '    "deps_file"   : "DEPS",\n'
           '    "custom_deps" : {\n'
           '    },\n'
           '    "safesync_url": "",\n'
@@ -209,6 +210,7 @@ class GClientSmoke(GClientSmokeBase):
          ('solutions = [\n'
           '  { "name"        : "src",\n'
           '    "url"         : "%srepo_1",\n'
+          '    "deps_file"   : "DEPS",\n'
           '    "custom_deps" : {\n'
           '    },\n'
           '    "safesync_url": "",\n'
@@ -219,9 +221,21 @@ class GClientSmoke(GClientSmokeBase):
          'solutions = [\n'
          '  { "name"        : "foo",\n'
          '    "url"         : "foo",\n'
+         '    "deps_file"   : "DEPS",\n'
          '    "custom_deps" : {\n'
          '    },\n'
          '    "safesync_url": "faa",\n'
+         '  },\n'
+         ']\n')
+
+    test(['config', 'foo', '--deps', 'blah'],
+         'solutions = [\n'
+         '  { "name"        : "foo",\n'
+         '    "url"         : "foo",\n'
+         '    "deps_file"   : "blah",\n'
+         '    "custom_deps" : {\n'
+         '    },\n'
+          '    "safesync_url": "",\n'
          '  },\n'
          ']\n')
 
@@ -672,6 +686,7 @@ class GClientSmokeSVN(GClientSmokeBase):
            'solutions = [\n'
            '  { "name"        : "src",\n'
            '    "url"         : "%(base)s/src",\n'
+           '    "deps_file"   : "DEPS",\n'
            '    "custom_deps" : {\n'
            '      "foo/bar": None,\n'
            '      "invalid": None,\n'
@@ -685,6 +700,28 @@ class GClientSmokeSVN(GClientSmokeBase):
            ']\n\n' %
           { 'base': self.svn_base + 'trunk' })
     self.check((out, '', 0), results)
+
+  def testRevInfoAltDeps(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.svn_base + 'trunk/src/', '--deps-file',
+                  'DEPS.alt'])
+    self.gclient(['sync'])
+    results = self.gclient(['revinfo', '--snapshot'])
+    out = ('# Snapshot generated with gclient revinfo --snapshot\n'
+           'solutions = [\n'
+           '  { "name"        : "src",\n'
+           '    "url"         : "%(base)s/src",\n'
+           '    "deps_file"   : "DEPS.alt",\n'
+           '    "custom_deps" : {\n'
+           '      "src/other2": \'%(base)s/other@2\',\n'
+           '    },\n'
+           '    "safesync_url": "",\n'
+           '  },\n'
+           ']\n\n' %
+          { 'base': self.svn_base + 'trunk' })
+    self.check((out, '', 0), results)
+
 
   def testWrongDirectory(self):
     # Check that we're not using a .gclient configuration which only talks

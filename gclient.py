@@ -138,7 +138,6 @@ class GClientKeywords(object):
 
 class Dependency(GClientKeywords, gclient_utils.WorkItem):
   """Object that represents a dependency checkout."""
-  DEPS_FILE = 'DEPS'
 
   def __init__(self, parent, name, url, safesync_url, custom_deps,
                custom_vars, deps_file, should_process):
@@ -154,7 +153,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     self.custom_deps = custom_deps or {}
     self.deps_hooks = []
     self.dependencies = []
-    self.deps_file = deps_file or self.DEPS_FILE
+    self.deps_file = deps_file
     # A cache of the files affected by the current operation, necessary for
     # hooks.
     self._file_list = []
@@ -266,7 +265,8 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     }
     filepath = os.path.join(self.root_dir(), self.name, self.deps_file)
     if not os.path.isfile(filepath):
-      logging.info('%s: No DEPS file found at %s' % (self.name, filepath))
+      logging.info('%s: No %s file found at %s' % (self.name, self.deps_file,
+                                                   filepath))
     else:
       deps_content = gclient_utils.FileRead(filepath)
       logging.debug(deps_content)
@@ -331,7 +331,7 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
                 'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
                 (name, tree[name].hierarchy(), self.hierarchy()))
       self.dependencies.append(Dependency(self, name, url, None, None, None,
-          None, should_process))
+          self.deps_file, should_process))
     logging.debug('Loaded: %s' % str(self))
 
   # Arguments number differs from overridden method
@@ -585,6 +585,7 @@ class GClient(Dependency):
 solutions = [
   { "name"        : "%(solution_name)s",
     "url"         : "%(solution_url)s",
+    "deps_file"   : "%(deps_file)s",
     "custom_deps" : {
     },
     "safesync_url": "%(safesync_url)s",
@@ -595,6 +596,7 @@ solutions = [
   DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
   { "name"        : "%(solution_name)s",
     "url"         : "%(solution_url)s",
+    "deps_file"   : "%(deps_file)s",
     "custom_deps" : {
 %(solution_deps)s    },
     "safesync_url": "%(safesync_url)s",
@@ -611,7 +613,8 @@ solutions = [
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    Dependency.__init__(self, None, None, None, None, None, None, None, True)
+    Dependency.__init__(self, None, None, None, None, None, None, 'unused',
+                        True)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -642,7 +645,7 @@ solutions = [
             s.get('safesync_url', None),
             s.get('custom_deps', {}),
             s.get('custom_vars', {}),
-            None,
+            s.get('deps_file', 'DEPS'),
             True))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
@@ -668,10 +671,12 @@ solutions = [
         os.path.join(path, options.config_filename)))
     return client
 
-  def SetDefaultConfig(self, solution_name, solution_url, safesync_url):
+  def SetDefaultConfig(self, solution_name, deps_file, solution_url,
+                       safesync_url):
     self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name': solution_name,
       'solution_url': solution_url,
+      'deps_file': deps_file,
       'safesync_url' : safesync_url,
     })
 
@@ -846,6 +851,7 @@ solutions = [
         new_gclient += self.DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
             'solution_name': d.name,
             'solution_url': d.url,
+            'deps_file': d.deps_file,
             'safesync_url' : d.safesync_url or '',
             'solution_deps': ''.join(custom_deps),
         }
@@ -964,6 +970,11 @@ URL.
                          'probably can\'t contain any newlines.')
   parser.add_option('--name',
                     help='overrides the default name for the solution')
+  parser.add_option('--deps-file', default='DEPS',
+                    help='overrides the default name for the DEPS file for the'
+                         'main solutions and all sub-dependencies')
+  parser.add_option('--git-deps', action='store_true',
+                    help='sets the deps file to ".DEPS.git" instead of "DEPS"')
   (options, args) = parser.parse_args(args)
   if ((options.spec and args) or len(args) > 2 or
       (not options.spec and not args)):
@@ -982,10 +993,13 @@ URL.
     else:
       # specify an alternate relpath for the given URL.
       name = options.name
+    deps_file = options.deps_file
+    if options.git_deps:
+      deps_file = '.DEPS.git'
     safesync_url = ''
     if len(args) > 1:
       safesync_url = args[1]
-    client.SetDefaultConfig(name, base_url, safesync_url)
+    client.SetDefaultConfig(name, deps_file, base_url, safesync_url)
   client.SaveConfig()
   return 0
 

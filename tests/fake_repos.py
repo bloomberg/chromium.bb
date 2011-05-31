@@ -433,7 +433,7 @@ class FakeRepos(FakeReposBase):
          '-q', '--non-interactive', '--no-auth-cache',
          '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
     assert os.path.isdir(join(self.svn_checkout, '.svn'))
-    def file_system(rev, DEPS):
+    def file_system(rev, DEPS, DEPS_ALT=None):
       fs = {
         'origin': 'svn@%(rev)d\n',
         'trunk/origin': 'svn/trunk@%(rev)d\n',
@@ -447,6 +447,8 @@ class FakeRepos(FakeReposBase):
       for k in fs.iterkeys():
         fs[k] = fs[k] % { 'rev': rev }
       fs['trunk/src/DEPS'] = DEPS
+      if DEPS_ALT:
+        fs['trunk/src/DEPS.alt'] = DEPS_ALT
       return fs
 
     # Testing:
@@ -462,7 +464,7 @@ class FakeRepos(FakeReposBase):
     # TODO(maruel):
     # - $matching_files
     # - use_relative_paths
-    fs = file_system(1, """
+    DEPS = """
 vars = {
   'DummyVariable': 'third_party',
 }
@@ -474,7 +476,15 @@ deps_os = {
   'mac': {
     'src/third_party/prout': '/trunk/third_party/prout',
   },
-}""" % { 'svn_base': self.svn_base })
+}""" % { 'svn_base': self.svn_base }
+
+    DEPS_ALT = """
+deps = {
+  'src/other2': '%(svn_base)strunk/other@2'
+}
+""" % { 'svn_base': self.svn_base }
+
+    fs = file_system(1, DEPS, DEPS_ALT)
     self._commit_svn(fs)
 
     fs = file_system(2, """
