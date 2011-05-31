@@ -1289,7 +1289,7 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
     # On Mac, we match the version of python used to build pyautolib (2.5).
     pyauto_python = 'python2.5'
 
-  # Pass on the chrome flags to pyauto as one string.
+  # Construct chrome flags and pass them on to pyauto as one string.
   chrome_flags = ''
   if not env.Bit('disable_dynamic_plugin_loading'):
     chrome_flags += ('--register-pepper-plugins=%s;application/x-nacl' %
@@ -1297,6 +1297,11 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
     chrome_flags += ' --no-sandbox'
   else:
     chrome_flags += '--enable-nacl'
+
+  # Silence chrome's complaints that we are running without a sandbox and that
+  # the chrome source code is missing from the NaCl bots.
+  # Note: Fatal errors in chrome will still be logged at this level.
+  chrome_flags += ' --log-level=3'
 
   osenv = []
   if not env.Bit('disable_dynamic_plugin_loading'):
@@ -1307,6 +1312,15 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
 
     # Enable experimental JavaScript APIs.
     osenv.append('NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1')
+
+  # On Posix, make sure that nexe logs do not pollute the console output.
+  # Note: If a test fails, the contents of the page are explicitly logged to
+  # the console, including any errors the nexe might have encountered.
+  # TODO(rsimha): Figure out a better way to do this in the long run.
+  if not env.Bit('host_windows'):
+    osenv.append('NACL_EXE_STDOUT=/dev/null')
+    osenv.append('NACL_EXE_STDERR=/dev/null')
+
   # Construct a relative path to the staging directory from where pyauto's HTTP
   # server should serve files. The relative path is the portion of $STAGING_DIR
   # that follows $MAIN_DIR, prefixed with 'native_client'.
