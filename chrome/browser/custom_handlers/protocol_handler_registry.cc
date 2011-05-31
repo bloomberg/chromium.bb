@@ -6,13 +6,14 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
@@ -30,6 +31,12 @@ ProtocolHandlerRegistry::ProtocolHandlerRegistry(Profile* profile,
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
+  DCHECK(default_client_observers_.empty());
+}
+
+void ProtocolHandlerRegistry::Finalize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  STLDeleteElements(&default_client_observers_);
 }
 
 const ProtocolHandlerRegistry::ProtocolHandlerList*
@@ -144,6 +151,7 @@ ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
 }
 
 void ProtocolHandlerRegistry::Load() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock auto_lock(lock_);
   is_loading_ = true;
   PrefService* prefs = profile_->GetPrefs();
@@ -170,6 +178,20 @@ void ProtocolHandlerRegistry::Load() {
     IgnoreProtocolHandler(ProtocolHandler::CreateProtocolHandler(*p));
   }
   is_loading_ = false;
+
+  // For each default protocol handler, check that we are still registered
+  // with the OS as the default application.
+  for (ProtocolHandlerMap::const_iterator p = default_handlers_.begin();
+       p != default_handlers_.end(); ++p) {
+    ProtocolHandler handler = p->second;
+    DefaultClientObserver* observer = new DefaultClientObserver(this);
+    scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker;
+    worker = new ShellIntegration::DefaultProtocolClientWorker(
+        observer, handler.protocol());
+    observer->SetWorker(worker);
+    default_client_observers_.push_back(observer);
+    worker->StartCheckIsDefault();
+  }
 }
 
 void ProtocolHandlerRegistry::Save() {
@@ -277,22 +299,36 @@ bool ProtocolHandlerRegistry::IsHandledProtocolInternal(
 void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
   {
     base::AutoLock auto_lock(lock_);
-    ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
-    ProtocolHandlerList::iterator p =
-        std::find(handlers.begin(), handlers.end(), handler);
-    if (p != handlers.end()) {
-      handlers.erase(p);
-    }
+    RemoveHandlerInternal(handler);
+  }
+  NotifyChanged();
+}
 
-    ProtocolHandlerMap::iterator q = default_handlers_.find(handler.protocol());
-    if (q != default_handlers_.end() && q->second == handler) {
-      default_handlers_.erase(q);
-    }
+void ProtocolHandlerRegistry::RemoveHandlerInternal(
+    const ProtocolHandler& handler) {
+  ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
+  ProtocolHandlerList::iterator p =
+      std::find(handlers.begin(), handlers.end(), handler);
+  if (p != handlers.end()) {
+    handlers.erase(p);
+  }
+  ProtocolHandlerMap::iterator q = default_handlers_.find(handler.protocol());
+  if (q != default_handlers_.end() && q->second == handler) {
+    default_handlers_.erase(q);
+  }
 
-    if (!IsHandledProtocolInternal(handler.protocol())) {
-      delegate_->DeregisterExternalHandler(handler.protocol());
-    }
-    Save();
+  if (!IsHandledProtocolInternal(handler.protocol())) {
+    delegate_->DeregisterExternalHandler(handler.protocol());
+  }
+  Save();
+}
+
+void ProtocolHandlerRegistry::RemoveDefaultHandler(const std::string& scheme) {
+  {
+    base::AutoLock auto_lock(lock_);
+    ProtocolHandler current_default = GetHandlerForInternal(scheme);
+    if (!current_default.IsEmpty())
+      RemoveHandlerInternal(current_default);
   }
   NotifyChanged();
 }
@@ -479,4 +515,33 @@ bool ProtocolHandlerRegistry::Delegate::IsExternalHandlerRegistered(
   // NOTE(koz): This function is safe to call from any thread, despite living
   // in ProfileIOData.
   return ProfileIOData::IsHandledProtocol(protocol);
+}
+
+// DefaultClientObserver ------------------------------------------------------
+
+ProtocolHandlerRegistry::DefaultClientObserver::DefaultClientObserver(
+    ProtocolHandlerRegistry* registry)
+    : registry_(registry), worker_(NULL) {
+  DCHECK(registry_);
+}
+
+ProtocolHandlerRegistry::DefaultClientObserver::~DefaultClientObserver() {
+  if (worker_)
+    worker_->ObserverDestroyed();
+}
+
+void
+ProtocolHandlerRegistry::DefaultClientObserver::SetDefaultWebClientUIState(
+    ShellIntegration::DefaultWebClientUIState state) {
+  if (worker_) {
+    if (state == ShellIntegration::STATE_NOT_DEFAULT)
+      registry_->RemoveDefaultHandler(worker_->protocol());
+  } else {
+    NOTREACHED();
+  }
+}
+
+void ProtocolHandlerRegistry::DefaultClientObserver::SetWorker(
+    ShellIntegration::DefaultProtocolClientWorker* worker) {
+  worker_ = worker;
 }

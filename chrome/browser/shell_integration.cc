@@ -92,6 +92,7 @@ void ShellIntegration::DefaultWebClientWorker::StartSetAsDefault() {
 void ShellIntegration::DefaultWebClientWorker::ObserverDestroyed() {
   // Our associated view has gone away, so we shouldn't call back to it if
   // our worker thread returns after the view is dead.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observer_ = NULL;
 }
 

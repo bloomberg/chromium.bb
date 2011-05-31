@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_integration.h"
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -41,9 +42,35 @@ class ProtocolHandlerRegistry
     virtual void RegisterWithOSAsDefaultClient(const std::string& protocol);
   };
 
+  class DefaultClientObserver
+      : public ShellIntegration::DefaultWebClientObserver {
+   public:
+    explicit DefaultClientObserver(ProtocolHandlerRegistry* registry);
+    virtual ~DefaultClientObserver();
+
+    // Get response from the worker regarding whether Chrome is the default
+    // handler for the protocol.
+    virtual void SetDefaultWebClientUIState(
+        ShellIntegration::DefaultWebClientUIState state);
+
+    // Give the observer a handle to the worker, so we can find out the protocol
+    // when we're called and also tell the worker if we get deleted.
+    void SetWorker(ShellIntegration::DefaultProtocolClientWorker* worker);
+
+   private:
+    // This is a raw pointer, not reference counted, intentionally. In general
+    // subclasses of DefaultWebClientObserver are not able to be refcounted
+    // e.g. the browser options page
+    ProtocolHandlerRegistry* registry_;
+    scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker_;
+
+    DISALLOW_COPY_AND_ASSIGN(DefaultClientObserver);
+  };
+
   typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
   typedef std::vector<ProtocolHandler> ProtocolHandlerList;
   typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
+  typedef std::vector<DefaultClientObserver*> DefaultClientObserverList;
 
   ProtocolHandlerRegistry(Profile* profile, Delegate* delegate);
   ~ProtocolHandlerRegistry();
@@ -97,6 +124,9 @@ class ProtocolHandlerRegistry
   // Removes the given protocol handler from the registry.
   void RemoveHandler(const ProtocolHandler& handler);
 
+  // Remove the default handler for the given protocol.
+  void RemoveDefaultHandler(const std::string& scheme);
+
   // Returns the default handler for this protocol, or an empty handler if none
   // exists.
   const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
@@ -112,6 +142,10 @@ class ProtocolHandlerRegistry
   // Puts this registry in the disabled state - registered protocol handlers
   // will not handle requests.
   void Disable();
+
+  // This is called by the UI thread when the system is shutting down. This
+  // does finalization which must be done on the UI thread.
+  void Finalize();
 
   // Registers the preferences that we store registered protocol handlers in.
   static void RegisterPrefs(PrefService* prefService);
@@ -137,6 +171,9 @@ class ProtocolHandlerRegistry
   // Returns the default handler for this protocol, or an empty handler if none
   // exists.
   const ProtocolHandler& GetHandlerForInternal(const std::string& scheme) const;
+
+  // Removes the given protocol handler from the registry.
+  void RemoveHandlerInternal(const ProtocolHandler& handler);
 
   // Saves a user's registered protocol handlers.
   void Save();
@@ -203,6 +240,8 @@ class ProtocolHandlerRegistry
   // conditions from concurrent access from the IO and UI threads.
   // TODO(koz): Remove the necessity of this lock by using message passing.
   mutable base::Lock lock_;
+
+  DefaultClientObserverList default_client_observers_;
 
   friend class ProtocolHandlerRegistryTest;
 

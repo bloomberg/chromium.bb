@@ -140,6 +140,10 @@ class ProtocolHandlerRegistryTest : public RenderViewHostTestHarness {
     ProtocolHandlerRegistry::RegisterPrefs(pref_service());
   }
 
+  virtual void TearDown() {
+    registry_->Finalize();
+  }
+
   BrowserThread ui_thread_;
   FakeDelegate* delegate_;
   scoped_ptr<TestingProfile> profile_;
