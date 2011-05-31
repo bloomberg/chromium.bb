@@ -153,7 +153,6 @@ DriverPatterns = [
   ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))"),
-  ( ('--add-llc-option', '(.+)'),      "env.append('LLC_FLAGS_COMMON', $0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),

@@ -39,7 +39,7 @@ EXTRA_ENV = {
   'STRIP_FLAGS_all'  : '-s',
   'STRIP_FLAGS_debug': '-S',
 
-  'PNACL_TRANSLATE_FLAGS': '${SHARED ? -shared}',
+  'PNACL_TRANSLATE_FLAGS': '${PIC ? -fPIC}',
 
   'OPT_FLAGS': '-std-compile-opts ${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%}',
   'OPT_LEVEL': '-O3',
@@ -97,6 +97,8 @@ env.update(EXTRA_ENV)
 
 LDPatterns = [
   ( '--pnacl-native-hack', "env.set('NATIVE_HACK', '1')"),
+  ( ('--add-translate-option', '(.+)'),
+                       "env.append('PNACL_TRANSLATE_FLAGS', $0)"),
 
   ( '-o(.+)',          "env.set('OUTPUT', $0)"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', $0)"),
@@ -415,8 +417,7 @@ def DoTranslate(infile, outfile, mode = ''):
   args = [infile, '-o', outfile]
   if mode:
     args += [mode]
-  if env.getbool('PIC'):
-    args += ['-fPIC']
+  args += env.get('PNACL_TRANSLATE_FLAGS')
   RunDriver('pnacl-translate', args)
 
 def DoNativeLink(infile, outfile, native_left, native_right):
