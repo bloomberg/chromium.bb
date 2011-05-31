@@ -40,9 +40,9 @@ function load() {
   cr.ui.decorate('select[pref]', options.PrefSelect);
   cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
-  cr.ui.decorate('#content-settings-page input[type=radio]',
+  cr.ui.decorate('#content-settings-page input[type=radio]:not(.handler-radio)',
       options.ContentSettingsRadio);
-  cr.ui.decorate('#handlers-section input[type=radio]',
+  cr.ui.decorate('#content-settings-page input[type=radio].handler-radio',
       options.HandlersEnabledRadio);
 
   var menuOffPattern = /(^\?|&)menu=off($|&)/;
