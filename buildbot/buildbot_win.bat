@@ -111,7 +111,8 @@ call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
 
-if "%TOOLCHAIN%" equ "glibc" goto NoNeedForPlugin
+:: Avoid building the plugin twice on 32-bit systems
+if "%BITS%" equ 32 goto NoNeedForPlugin
 echo @@@BUILD_STEP plugin_compile@@@
 setlocal
 call vcvarsall.bat x86 && call scons.bat -j 8 ^
@@ -130,8 +131,16 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
 
-:: TODO(bradchen): add dynamic_library_browser_tests
-::  when DSOs are added to Windows toolchain build
+if "%TOOLCHAIN%" neq "glibc" goto AfterDSOTests
+echo @@@BUILD_STEP dynamic_library_browser_tests%BITS%@@@
+setlocal
+call vcvarsall.bat %VCBITS% && call scons.bat ^
+ DOXYGEN=..\third_party\doxygen\win\doxygen ^
+ %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc ^
+ dynamic_library_browser_tests platform=x86-%BITS%
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
+:AfterDSOTests
 
 if "%TOOLCHAIN%" equ "glibc" goto AfterTests
 echo @@@BUILD_STEP medium_tests@@@
