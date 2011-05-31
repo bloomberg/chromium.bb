@@ -143,7 +143,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // If the plugin instance is backed by a texture, return its texture ID in the
   // compositor's namespace. Otherwise return 0. Returns 0 by default.
-  virtual unsigned GetBackingTextureId();
+  unsigned GetBackingTextureId();
 
   // Commit the backing texture to the screen once the side effects some
   // rendering up to an offscreen SwapBuffers are visible.
