@@ -9,6 +9,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/layout_test_http_server.h"
 #include "chrome/test/ui/ui_test.h"
 
 namespace {
@@ -108,8 +109,10 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   FilePath path;
   // The root directory for the http server does not matter in this case,
   // but we have to pick something.
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  StartHttpServerWithPort(path, 1365);
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  // TODO(phajdan.jr): Use net/test/test_server instead of layout test server.
+  LayoutTestHttpServer http_server(path, 1365);
+  ASSERT_TRUE(http_server.Start());
   GURL localhost = GURL("http://localhost:1365");
   NavigateToURL(localhost);
 
@@ -136,7 +139,7 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   ASSERT_STREQ(L"1", title_wstring.c_str());
 
   // Do not forget to stop the server.
-  StopHttpServer();
+  ASSERT_TRUE(http_server.Stop());
 }
 
 // Flaky, http://crbug.com/59441.

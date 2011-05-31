@@ -351,14 +351,6 @@ class UITest : public UITestBase, public PlatformTest {
 
   virtual ProxyLauncher* CreateProxyLauncher();
 
-  // Synchronously launches local http server normally used to run LayoutTests.
-  void StartHttpServer(const FilePath& root_directory);
-
-  // Launches local http server on the specified port.
-  void StartHttpServerWithPort(const FilePath& root_directory, int port);
-
-  void StopHttpServer();
-
   // Count the number of active browser processes launched by this test.
   // The count includes browser sub-processes.
   bool GetBrowserProcessCount(int* count) WARN_UNUSED_RESULT;

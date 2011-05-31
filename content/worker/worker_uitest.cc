@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/layout_test_http_server.h"
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/worker_host/worker_service.h"
@@ -437,10 +438,11 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   worker_test_dir = worker_test_dir.AppendASCII("workers");
   InitializeForLayoutTest(http_test_dir, worker_test_dir, kHttpPort);
 
-  StartHttpServer(new_http_root_dir_);
+  LayoutTestHttpServer http_server(new_http_root_dir_, kHttpPort);
+  ASSERT_TRUE(http_server.Start());
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], kHttpPort);
-  StopHttpServer();
+  ASSERT_TRUE(http_server.Stop());
 }
 
 TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
@@ -468,10 +470,11 @@ TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   ui_test_utils::TestWebSocketServer websocket_server;
   ASSERT_TRUE(websocket_server.Start(websocket_root_dir));
 
-  StartHttpServer(new_http_root_dir_);
+  LayoutTestHttpServer http_server(new_http_root_dir_, kHttpPort);
+  ASSERT_TRUE(http_server.Start());
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], kHttpPort);
-  StopHttpServer();
+  ASSERT_TRUE(http_server.Stop());
 }
 
 TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
@@ -506,10 +509,11 @@ TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
   worker_test_dir = worker_test_dir.AppendASCII("workers");
   InitializeForLayoutTest(http_test_dir, worker_test_dir, kHttpPort);
 
-  StartHttpServer(new_http_root_dir_);
+  LayoutTestHttpServer http_server(new_http_root_dir_, kHttpPort);
+  ASSERT_TRUE(http_server.Start());
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], kHttpPort);
-  StopHttpServer();
+  ASSERT_TRUE(http_server.Stop());
 }
 
 // Flaky, http://crbug.com/34996.
@@ -740,10 +744,11 @@ class WorkerFileSystemTest : public WorkerTest {
                              FilePath().AppendASCII("workers")
                                        .AppendASCII("script-tests"));
 
-    StartHttpServer(new_http_root_dir_);
+    LayoutTestHttpServer http_server(new_http_root_dir_, 8000);
+    ASSERT_TRUE(http_server.Start());
     for (int i = 0; i < num_tests; ++i)
       RunLayoutTest(tests[i], 8000);
-    StopHttpServer();
+    ASSERT_TRUE(http_server.Stop());
 
     // Navigate to a blank page so that any workers are cleaned up.
     // This helps leaks trackers do a better job of reporting.

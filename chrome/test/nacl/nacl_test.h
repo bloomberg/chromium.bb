@@ -6,6 +6,7 @@
 #define CHROME_TEST_NACL_NACL_TEST_H_
 #pragma once
 
+#include "chrome/test/layout_test_http_server.h"
 #include "chrome/test/ui/ui_test.h"
 
 class FilePath;
@@ -24,7 +25,7 @@ class NaClTest : public UITest {
 
   // Get the path to the native_client/tests directory, the root of testing
   // data.
-  FilePath GetTestRootDir();
+  static FilePath GetTestRootDir();
 
   // Waits for a test case (identified by path) to finish.
   void WaitForFinish(const FilePath& filename, int wait_time);
@@ -53,6 +54,8 @@ class NaClTest : public UITest {
   // This test uses an HTML file that lists nexes for different architectures
   // in the "nexes" property
   bool multiarch_test_;
+
+  LayoutTestHttpServer http_server_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClTest);
 };

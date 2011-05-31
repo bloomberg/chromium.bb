@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "chrome/test/layout_test_http_server.h"
 #include "chrome/test/ui/ui_layout_test.h"
 
 class AppCacheUITest : public UILayoutTest {
@@ -16,10 +17,11 @@ class AppCacheUITest : public UILayoutTest {
     appcache_test_dir = appcache_test_dir.AppendASCII("appcache");
     InitializeForLayoutTest(http_test_dir, appcache_test_dir, kHttpPort);
 
-    StartHttpServer(new_http_root_dir_);
+    LayoutTestHttpServer http_server(new_http_root_dir_, kHttpPort);
+    ASSERT_TRUE(http_server.Start());
     for (int i = 0; i < num_tests; ++i)
       RunLayoutTest(tests[i], kHttpPort);
-    StopHttpServer();
+    ASSERT_TRUE(http_server.Stop());
   }
 
  protected:

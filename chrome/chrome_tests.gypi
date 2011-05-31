@@ -248,6 +248,8 @@
         'test/automated_ui_tests/automated_ui_test_base.h',
         'test/automation/proxy_launcher.cc',
         'test/automation/proxy_launcher.h',
+        'test/layout_test_http_server.cc',
+        'test/layout_test_http_server.h',
         'test/ui/javascript_test_util.cc',
         'test/ui/npapi_test_helper.cc',
         'test/ui/npapi_test_helper.h',

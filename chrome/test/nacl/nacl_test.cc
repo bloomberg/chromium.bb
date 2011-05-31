@@ -24,7 +24,9 @@ const FilePath::CharType kBaseUrl[] =
 }  // namespace
 
 NaClTest::NaClTest()
-    : UITest(), use_x64_nexes_(false), multiarch_test_(false) {
+    : use_x64_nexes_(false),
+      multiarch_test_(false),
+      http_server_(GetTestRootDir(), 5103) {
   launch_arguments_.AppendSwitch(switches::kEnableNaCl);
 
   // Currently we disable some of the sandboxes.  See:
@@ -38,9 +40,10 @@ NaClTest::NaClTest()
 
 NaClTest::~NaClTest() {}
 
+// static
 FilePath NaClTest::GetTestRootDir() {
   FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
   return path.AppendASCII("native_client");
 }
 
@@ -92,10 +95,10 @@ void NaClTest::SetUp() {
 
   UITest::SetUp();
 
-  StartHttpServerWithPort(nacl_test_dir, 5103);
+  ASSERT_TRUE(http_server_.Start());
 }
 
 void NaClTest::TearDown() {
-  StopHttpServer();
+  ASSERT_TRUE(http_server_.Stop());
   UITest::TearDown();
 }
