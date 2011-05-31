@@ -635,23 +635,6 @@ select {
   font-family: 'Open Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
-@font-face {
-  font-family: 'Open Sans';
-  src: url(_fonts/OpenSans-Regular.ttf);
-}
-
-@font-face {
-  font-family: 'Open Sans';
-  font-weight: 600;
-  src: url(_fonts/OpenSans-Semibold.ttf);
-}
-
-@font-face {
-  font-family: 'Open Sans';
-  font-weight: bold;
-  src: url(_fonts/OpenSans-Bold.ttf);
-}
-
 #mainview {
   -webkit-box-flex: 1;
   -webkit-user-select: none;
