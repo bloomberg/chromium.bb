@@ -95,6 +95,11 @@ PlatformFileError FileSystemFileUtil::GetFileInfo(
     FilePath* platform_file_path) {
   if (!file_util::PathExists(file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  // TODO(rkc): Fix this hack once we have refactored file_util to handle
+  // symlinks correctly.
+  // http://code.google.com/p/chromium-os/issues/detail?id=15948
+  if (file_util::IsLink(file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (!file_util::GetFileInfo(file_path, file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
   *platform_file_path = file_path;
@@ -122,7 +127,12 @@ PlatformFileError FileSystemFileUtil::ReadDirectory(
     // This will just give the entry's name instead of entire path
     // if we use current.value().
     entry.name = file_util::FileEnumerator::GetFilename(info).value();
-    entries->push_back(entry);
+    // TODO(rkc): Fix this also once we've refactored file_util
+    // http://code.google.com/p/chromium-os/issues/detail?id=15948
+    // This currently just prevents a file from showing up at all
+    // if it's a link, hence preventing arbitary 'read' exploits.
+    if (!file_util::IsLink(file_path.Append(entry.name)))
+      entries->push_back(entry);
   }
   return base::PLATFORM_FILE_OK;
 }
