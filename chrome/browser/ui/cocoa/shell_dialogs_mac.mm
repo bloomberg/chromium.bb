@@ -196,7 +196,7 @@ void SelectFileDialogImpl::SelectFileImpl(
     if (file_types->include_all_files)
       [dialog setAllowsOtherFileTypes:YES];
 
-    if (!file_types->extension_description_overrides.empty()) {
+    if (file_types->extension_description_overrides.size() > 1) {
       NSView* accessory_view = GetAccessoryView(file_types, file_type_index);
       [dialog setAccessoryView:accessory_view];
     }
