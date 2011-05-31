@@ -93,11 +93,11 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
   int DoWrite();
   int DoCreate();
 
-  // WaitForDataReadyDone is the terminal state of the read operation.
-  int WaitForDataReadyDone();
+  // DoWaitForDataReadyDone is the terminal state of the read operation.
+  int DoWaitForDataReadyDone();
 
-  // SetDone is the terminal state of the write operation.
-  int SetDone();
+  // DoSetDone is the terminal state of the write operation.
+  int DoSetDone();
 
   // IsCallbackPending returns true if we have a pending callback.
   bool IsCallbackPending() const;

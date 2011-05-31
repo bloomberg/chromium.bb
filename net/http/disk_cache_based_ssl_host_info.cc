@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ void DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
         rv = DoReadComplete(rv);
         break;
       case WAIT_FOR_DATA_READY_DONE:
-        rv = WaitForDataReadyDone();
+        rv = DoWaitForDataReadyDone();
         break;
       case CREATE:
         rv = DoCreate();
@@ -135,7 +135,7 @@ void DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
         rv = DoWriteComplete(rv);
         break;
       case SET_DONE:
-        rv = SetDone();
+        rv = DoSetDone();
         break;
       default:
         rv = OK;
@@ -226,7 +226,7 @@ int DiskCacheBasedSSLHostInfo::DoCreate() {
   return backend_->CreateEntry(key(), callback_->entry_pointer(), callback_);
 }
 
-int DiskCacheBasedSSLHostInfo::WaitForDataReadyDone() {
+int DiskCacheBasedSSLHostInfo::DoWaitForDataReadyDone() {
   CompletionCallback* callback;
 
   DCHECK(!ready_);
@@ -247,7 +247,7 @@ int DiskCacheBasedSSLHostInfo::WaitForDataReadyDone() {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::SetDone() {
+int DiskCacheBasedSSLHostInfo::DoSetDone() {
   if (entry_)
     entry_->Close();
   entry_ = NULL;

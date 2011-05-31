@@ -79,8 +79,8 @@ class SSLHostInfo {
   const State& state() const;
   State* mutable_state();
 
-  // If |cert_valid()| returns true, then this contains the result of verifying
-  // the certificate.
+  // If WaitForCertVerification reports the certificate verification has
+  // completed, then this contains the result of verifying the certificate.
   const CertVerifyResult& cert_verify_result() const;
 
   // WaitForCertVerification returns ERR_IO_PENDING if the certificate chain in
