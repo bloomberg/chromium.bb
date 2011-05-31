@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,8 +61,8 @@ class ImportsTest(pyauto.PyUITest):
 
     # Expected items for tests.
     self._history_items = ['Google', 'Google News', u'Google \ub3c4\uc11c']
-    self._bookmark_bar_items = ['Google News']
-    self._bookmark_folder_items = ['Google', u'Google \ub3c4\uc11c']
+    self._bookmark_bar_items = ['Google News', 'Google', u'Google \ub3c4\uc11c']
+    self._bookmark_folder_items = []
     self._password_items = ['etouchqa@gmail.com', 'macqa05']
     self._home_page = 'http://news.google.com/'
 
@@ -132,7 +132,6 @@ class ImportsTest(pyauto.PyUITest):
       bookmark_bar: True if the bookmarks are part of the bookmark bar.
                     False otherwise.
     """
-    confirmed_titles = set()
     bookmarks = self.GetBookmarkModel()
     if bookmark_bar:
       node = bookmarks.BookmarkBar()
