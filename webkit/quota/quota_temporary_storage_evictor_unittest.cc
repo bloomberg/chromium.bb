@@ -27,12 +27,19 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
       : quota_(0),
         unlimited_usage_(0),
         available_space_(0),
+        error_on_evict_origin_data_(false),
+        error_on_get_usage_and_quota_(false),
         test_(test) {}
 
   virtual void EvictOriginData(
       const GURL& origin,
       StorageType type,
       EvictOriginDataCallback* callback) OVERRIDE {
+    if (error_on_evict_origin_data_) {
+      callback->Run(quota::kQuotaErrorInvalidModification);
+      delete callback;
+      return;
+    }
     int64 origin_usage = EnsureOriginRemoved(origin);
     if (origin_usage >= 0)
       available_space_ += origin_usage;
@@ -42,6 +49,11 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
 
   virtual void GetUsageAndQuotaForEviction(
       GetUsageAndQuotaForEvictionCallback* callback) OVERRIDE {
+    if (error_on_get_usage_and_quota_) {
+      callback->Run(quota::kQuotaErrorInvalidAccess, 0, 0, 0, 0);
+      delete callback;
+      return;
+    }
     if (task_for_get_usage_and_quota_.get())
       task_for_get_usage_and_quota_->Run();
     callback->Run(quota::kQuotaStatusOk, GetUsage(), unlimited_usage_,
@@ -80,6 +92,12 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
   void set_task_for_get_usage_and_quota(CancelableTask* task) {
     task_for_get_usage_and_quota_.reset(task);
   }
+  void set_error_on_evict_origin_data(bool error_on_evict_origin_data) {
+    error_on_evict_origin_data_ = error_on_evict_origin_data;
+  }
+  void set_error_on_get_usage_and_quota(bool error_on_get_usage_and_quota) {
+    error_on_get_usage_and_quota_ = error_on_get_usage_and_quota;
+  }
 
   // Simulates an access to |origin|.  It reorders the internal LRU list.
   // It internally uses AddOrigin().
@@ -116,6 +134,8 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
   int64 available_space_;
   std::list<GURL> origin_order_;
   std::map<GURL, int64> origins_;
+  bool error_on_evict_origin_data_;
+  bool error_on_get_usage_and_quota_;
 
   QuotaTemporaryStorageEvictorTest *test_;
   scoped_ptr<CancelableTask> task_for_get_usage_and_quota_;
@@ -148,16 +168,18 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
       const GURL& origin_to_be_accessed,
       int expected_usage_after_first,
       int expected_usage_after_second) {
+    EXPECT_GE(4, num_get_usage_and_quota_for_eviction_);
     switch (num_get_usage_and_quota_for_eviction_) {
-    case 1:
+    case 2:
       EXPECT_EQ(expected_usage_after_first,
                 quota_eviction_handler()->GetUsage());
-      quota_eviction_handler()->AddOrigin(origin_to_be_added.first,
-                                          origin_to_be_added.second);
+      if (!origin_to_be_added.first.is_empty())
+        quota_eviction_handler()->AddOrigin(origin_to_be_added.first,
+                                            origin_to_be_added.second);
       if (!origin_to_be_accessed.is_empty())
         quota_eviction_handler()->AccessOrigin(origin_to_be_accessed);
       break;
-    case 2:
+    case 3:
       EXPECT_EQ(expected_usage_after_second,
                 quota_eviction_handler()->GetUsage());
       temporary_storage_evictor()->set_repeated_eviction(false);
@@ -211,6 +233,19 @@ TEST_F(QuotaTemporaryStorageEvictorTest, SimpleEvictionTest) {
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(200 + 500, quota_eviction_handler()->GetUsage());
+
+  std::map<std::string, int64> stats;
+  temporary_storage_evictor()->GetStatistics(&stats);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnEvictingOrigin)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnGettingUsageAndQuota)]);
+  EXPECT_EQ(1, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictedOrigins)]);
+  EXPECT_EQ(1, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictionRounds)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfSkippedEvictionRounds)]);
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, MultipleEvictionTest) {
@@ -225,6 +260,19 @@ TEST_F(QuotaTemporaryStorageEvictorTest, MultipleEvictionTest) {
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(450 + 400, quota_eviction_handler()->GetUsage());
+
+  std::map<std::string, int64> stats;
+  temporary_storage_evictor()->GetStatistics(&stats);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnEvictingOrigin)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnGettingUsageAndQuota)]);
+  EXPECT_EQ(2, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictedOrigins)]);
+  EXPECT_EQ(1, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictionRounds)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfSkippedEvictionRounds)]);
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionTest) {
@@ -253,7 +301,62 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionTest) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(initial_total_size - d_size + e_size - c_size - b_size,
             quota_eviction_handler()->GetUsage());
+  EXPECT_EQ(5, num_get_usage_and_quota_for_eviction());
+
+  std::map<std::string, int64> stats;
+  temporary_storage_evictor()->GetStatistics(&stats);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnEvictingOrigin)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnGettingUsageAndQuota)]);
+  EXPECT_EQ(3, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictedOrigins)]);
+  EXPECT_EQ(2, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictionRounds)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfSkippedEvictionRounds)]);
+}
+
+TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionSkippedTest) {
+  const int64 a_size = 400;
+  const int64 b_size = 150;
+  const int64 c_size = 120;
+  const int64 d_size = 292;
+  const int64 initial_total_size = a_size + b_size + c_size + d_size;
+
+  quota_eviction_handler()->AddOrigin(GURL("http://www.d.com"), d_size);
+  quota_eviction_handler()->AddOrigin(GURL("http://www.c.com"), c_size);
+  quota_eviction_handler()->AddOrigin(GURL("http://www.b.com"), b_size);
+  quota_eviction_handler()->AddOrigin(GURL("http://www.a.com"), a_size);
+  quota_eviction_handler()->set_quota(1000);
+  quota_eviction_handler()->set_available_space(1000000000);
+  quota_eviction_handler()->set_task_for_get_usage_and_quota(
+      runnable_factory_.NewRunnableMethod(
+          &QuotaTemporaryStorageEvictorTest::TaskForRepeatedEvictionTest,
+          std::make_pair(GURL(), 0),
+          GURL(),
+          initial_total_size - d_size,
+          initial_total_size - d_size));
+  EXPECT_EQ(initial_total_size, quota_eviction_handler()->GetUsage());
+  set_repeated_eviction(true);
+  temporary_storage_evictor()->Start();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(initial_total_size - d_size,
+            quota_eviction_handler()->GetUsage());
   EXPECT_EQ(4, num_get_usage_and_quota_for_eviction());
+
+  std::map<std::string, int64> stats;
+  temporary_storage_evictor()->GetStatistics(&stats);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnEvictingOrigin)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnGettingUsageAndQuota)]);
+  EXPECT_EQ(1, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictedOrigins)]);
+  EXPECT_EQ(3, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictionRounds)]);
+  EXPECT_EQ(1, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfSkippedEvictionRounds)]);
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionWithAccessOriginTest) {
@@ -282,7 +385,20 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionWithAccessOriginTest) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(initial_total_size - d_size + e_size - b_size - a_size,
             quota_eviction_handler()->GetUsage());
-  EXPECT_EQ(4, num_get_usage_and_quota_for_eviction());
+  EXPECT_EQ(5, num_get_usage_and_quota_for_eviction());
+
+  std::map<std::string, int64> stats;
+  temporary_storage_evictor()->GetStatistics(&stats);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnEvictingOrigin)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnGettingUsageAndQuota)]);
+  EXPECT_EQ(3, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictedOrigins)]);
+  EXPECT_EQ(2, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictionRounds)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfSkippedEvictionRounds)]);
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
@@ -298,6 +414,19 @@ TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(150 + 300, quota_eviction_handler()->GetUsage());
+
+  std::map<std::string, int64> stats;
+  temporary_storage_evictor()->GetStatistics(&stats);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnEvictingOrigin)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfErrorsOnGettingUsageAndQuota)]);
+  EXPECT_EQ(2, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictedOrigins)]);
+  EXPECT_EQ(1, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfEvictionRounds)]);
+  EXPECT_EQ(0, stats[std::string(QuotaTemporaryStorageEvictor::
+      kStatsLabelNumberOfSkippedEvictionRounds)]);
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, UnlimitedExclusionEvictionTest) {

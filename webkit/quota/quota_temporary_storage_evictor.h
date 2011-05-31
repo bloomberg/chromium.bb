@@ -6,6 +6,9 @@
 #define WEBKIT_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
 #pragma once
 
+#include <map>
+#include <string>
+
 #include "base/memory/scoped_callback_factory.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
@@ -23,12 +26,33 @@ class QuotaEvictionHandler;
 
 class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
  public:
+  struct Statistics {
+    Statistics()
+        : num_errors_on_evicting_origin(0),
+          num_errors_on_getting_usage_and_quota(0),
+          num_evicted_origins(0),
+          num_eviction_rounds(0),
+          num_skipped_eviction_rounds(0) {}
+    int64 num_errors_on_evicting_origin;
+    int64 num_errors_on_getting_usage_and_quota;
+    int64 num_evicted_origins;
+    int64 num_eviction_rounds;
+    int64 num_skipped_eviction_rounds;
+  };
+
   QuotaTemporaryStorageEvictor(
       QuotaEvictionHandler* quota_eviction_handler,
       int64 interval_ms);
   virtual ~QuotaTemporaryStorageEvictor();
 
+  void GetStatistics(std::map<std::string, int64>* statistics);
   void Start();
+
+  static const char kStatsLabelNumberOfErrorsOnEvictingOrigin[];
+  static const char kStatsLabelNumberOfErrorsOnGettingUsageAndQuota[];
+  static const char kStatsLabelNumberOfEvictedOrigins[];
+  static const char kStatsLabelNumberOfEvictionRounds[];
+  static const char kStatsLabelNumberOfSkippedEvictionRounds[];
 
  private:
   friend class QuotaTemporaryStorageEvictorTest;
@@ -51,14 +75,18 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
 
   static const double kUsageRatioToStartEviction;
   static const int64 kDefaultMinAvailableDiskSpaceToStartEviction;
+  static const int kThresholdOfErrorsToStopEviction;
 
   const int64 min_available_disk_space_to_start_eviction_;
 
   // Not owned; quota_eviction_handler owns us.
   QuotaEvictionHandler* quota_eviction_handler_;
 
+  Statistics statistics_;
+
   int64 interval_ms_;
   bool repeated_eviction_;
+  int num_evicted_origins_in_round_;
 
   base::OneShotTimer<QuotaTemporaryStorageEvictor> timer_;
 

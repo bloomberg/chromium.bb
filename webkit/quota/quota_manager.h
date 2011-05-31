@@ -134,6 +134,8 @@ class QuotaManager : public QuotaTaskObserver,
   void GetHostUsage(const std::string& host, StorageType type,
                     HostUsageCallback* callback);
 
+  void GetStatistics(std::map<std::string, std::string>* statistics);
+
   bool IsStorageUnlimited(const GURL& origin) const {
     return special_storage_policy_.get() &&
            special_storage_policy_->IsStorageUnlimited(origin);

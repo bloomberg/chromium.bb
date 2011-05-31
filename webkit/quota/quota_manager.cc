@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_database.h"
@@ -935,6 +936,19 @@ void QuotaManager::GetHostUsage(const std::string& host, StorageType type,
                                 HostUsageCallback* callback) {
   LazyInitialize();
   GetUsageTracker(type)->GetHostUsage(host, callback);
+}
+
+void QuotaManager::GetStatistics(
+    std::map<std::string, std::string>* statistics) {
+  DCHECK(statistics);
+  if (temporary_storage_evictor_.get()) {
+    std::map<std::string, int64> stats;
+    temporary_storage_evictor_->GetStatistics(&stats);
+    for (std::map<std::string, int64>::iterator p = stats.begin();
+         p != stats.end();
+         ++p)
+      (*statistics)[p->first] = base::Int64ToString(p->second);
+  }
 }
 
 void QuotaManager::LazyInitialize() {
