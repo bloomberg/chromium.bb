@@ -630,7 +630,6 @@ body #individual-pages {
 
 body,
 button,
-input[type='checkbox']:checked:before,
 input[type='text'],
 select {
   font-family: 'Open Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
