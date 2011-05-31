@@ -849,16 +849,6 @@ void QuotaManager::GetUsageAndQuota(
   }
 }
 
-void QuotaManager::RequestQuota(
-    const GURL& origin, StorageType type,
-    int64 requested_size,
-    RequestQuotaCallback* callback) {
-  LazyInitialize();
-  // TODO(kinuko): implement me.
-  callback->Run(kQuotaErrorNotSupported, 0);
-  delete callback;
-}
-
 void QuotaManager::GetAvailableSpace(AvailableSpaceCallback* callback) {
   scoped_refptr<AvailableSpaceQueryTask> task(
       new AvailableSpaceQueryTask(this, db_thread_, profile_path_, callback));

@@ -36,20 +36,20 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/device_orientation/message_filter.h"
+#include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
-#include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
-#include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/audio_renderer_host.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
+#include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 #include "content/browser/renderer_host/gpu_message_filter.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
@@ -404,7 +404,9 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
-  channel_->AddFilter(new QuotaDispatcherHost(profile()->GetQuotaManager()));
+  channel_->AddFilter(new QuotaDispatcherHost(
+      id(), profile()->GetQuotaManager(),
+      content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

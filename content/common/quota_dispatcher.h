@@ -38,7 +38,8 @@ class QuotaDispatcher : public IPC::Channel::Listener {
   void QueryStorageUsageAndQuota(const GURL& gurl,
                                  WebKit::WebStorageQuotaType type,
                                  WebKit::WebStorageQuotaCallbacks* callbacks);
-  void RequestStorageQuota(const GURL& gurl,
+  void RequestStorageQuota(int render_view_id,
+                           const GURL& gurl,
                            WebKit::WebStorageQuotaType type,
                            unsigned long long requested_size,
                            WebKit::WebStorageQuotaCallbacks* callbacks);

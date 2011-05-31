@@ -32,12 +32,12 @@ class FilePath;
 
 namespace quota {
 
+struct QuotaManagerDeleter;
+
 class QuotaDatabase;
+class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;
 class UsageTracker;
-
-struct QuotaManagerDeleter;
-class QuotaManagerProxy;
 
 // An interface called by QuotaTemporaryStorageEvictor.
 class QuotaEvictionHandler {
@@ -79,8 +79,6 @@ class QuotaManager : public QuotaTaskObserver,
   typedef Callback3<QuotaStatusCode,
                     int64 /* usage */,
                     int64 /* quota */>::Type GetUsageAndQuotaCallback;
-  typedef Callback2<QuotaStatusCode,
-                    int64 /* granted_quota */>::Type RequestQuotaCallback;
 
   QuotaManager(bool is_incognito,
                const FilePath& profile_path,
@@ -98,12 +96,6 @@ class QuotaManager : public QuotaTaskObserver,
   virtual void GetUsageAndQuota(const GURL& origin,
                                 StorageType type,
                                 GetUsageAndQuotaCallback* callback);
-
-  // Called by webapps.
-  void RequestQuota(const GURL& origin,
-                    StorageType type,
-                    int64 requested_size,
-                    RequestQuotaCallback* callback);
 
   // Called by clients via proxy.
   // Client storage should call this method when storage is accessed.

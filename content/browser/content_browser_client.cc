@@ -80,6 +80,10 @@ bool ContentBrowserClient::AllowSetCookie(
   return true;
 }
 
+QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
+  return NULL;
+}
+
 #if defined(OS_LINUX)
 int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
   return -1;

@@ -15,6 +15,7 @@ class CommandLine;
 class GURL;
 class PluginProcessHost;
 class Profile;
+class QuotaPermissionContext;
 class RenderViewHost;
 class TabContents;
 class WorkerProcessHost;
@@ -100,6 +101,9 @@ class ContentBrowserClient {
                               int render_process_id,
                               int render_view_id,
                               net::CookieOptions* options);
+
+  // Create and return a new quota permission context.
+  virtual QuotaPermissionContext* CreateQuotaPermissionContext();
 
 #if defined(OS_LINUX)
   // Can return an optional fd for crash handling, otherwise returns -1.

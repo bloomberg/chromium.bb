@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_plugin_message_filter.h"
+#include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/chrome_worker_message_filter.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -302,6 +303,11 @@ bool ChromeContentBrowserClient::AllowSetCookie(
           render_process_id, render_view_id, url, cookie_line, *options,
           !allow));
   return allow;
+}
+
+QuotaPermissionContext*
+ChromeContentBrowserClient::CreateQuotaPermissionContext() {
+  return new ChromeQuotaPermissionContext();
 }
 
 #if defined(OS_LINUX)

@@ -48,6 +48,7 @@ void QuotaDispatcher::QueryStorageUsageAndQuota(
 }
 
 void QuotaDispatcher::RequestStorageQuota(
+    int render_view_id,
     const GURL& origin_url,
     WebStorageQuotaType type,
     unsigned long long requested_size,
@@ -55,7 +56,7 @@ void QuotaDispatcher::RequestStorageQuota(
   DCHECK(callbacks);
   int request_id = pending_quota_callbacks_.Add(callbacks);
   ChildThread::current()->Send(new QuotaHostMsg_RequestStorageQuota(
-      request_id, origin_url, type, requested_size));
+      render_view_id, request_id, origin_url, type, requested_size));
 }
 
 void QuotaDispatcher::DidGrantStorageQuota(

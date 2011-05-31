@@ -36,7 +36,8 @@ IPC_MESSAGE_CONTROL3(QuotaHostMsg_QueryStorageUsageAndQuota,
                      GURL /* origin_url */,
                      WebKit::WebStorageQuotaType /* type */)
 
-IPC_MESSAGE_CONTROL4(QuotaHostMsg_RequestStorageQuota,
+IPC_MESSAGE_CONTROL5(QuotaHostMsg_RequestStorageQuota,
+                     int /* render_view_id */,
                      int /* request_id */,
                      GURL /* origin_url */,
                      WebKit::WebStorageQuotaType /* type */,

@@ -12592,6 +12592,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       Report abuse
     </message>
 
+    <!-- Quota messages -->
+    <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the user's local computer (e.g. for persistent-type filesystem).">
+      <ph name="URL">
+        $1<ex>html5rocks.com</ex>
+      </ph> wants to permanently store data on your local computer.
+    </message>
+    <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's local computer (e.g. for persistent-type filesystem).">
+      <ph name="URL">
+        $1<ex>html5rocks.com</ex>
+      </ph> wants to permanently store large data on your local computer.
+    </message>
+
     </messages>
     <includes>
       <if expr="pp_ifdef('_google_chrome')">

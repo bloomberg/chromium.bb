@@ -2840,7 +2840,7 @@ void RenderView::requestStorageQuota(
     return;
   }
   ChildThread::current()->quota_dispatcher()->RequestStorageQuota(
-      GURL(origin.toString()), type, requested_size, callbacks);
+      routing_id(), GURL(origin.toString()), type, requested_size, callbacks);
 }
 
 // webkit_glue::WebPluginPageDelegate -----------------------------------------

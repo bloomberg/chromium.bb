@@ -20,28 +20,42 @@ namespace quota {
 class QuotaManager;
 }
 
+class QuotaPermissionContext;
+
 class QuotaDispatcherHost : public BrowserMessageFilter {
  public:
-  QuotaDispatcherHost(quota::QuotaManager* quota_manager);
+  QuotaDispatcherHost(int process_id,
+                      quota::QuotaManager* quota_manager,
+                      QuotaPermissionContext* permission_context);
   virtual ~QuotaDispatcherHost();
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
  private:
+  class RequestDispatcher;
+  class QueryUsageAndQuotaDispatcher;
+  class RequestQuotaDispatcher;
+
   void OnQueryStorageUsageAndQuota(
       int request_id,
       const GURL& origin_url,
       WebKit::WebStorageQuotaType type);
   void OnRequestStorageQuota(
+      int render_view_id,
       int request_id,
       const GURL& origin_url,
       WebKit::WebStorageQuotaType type,
       int64 requested_size);
 
-  quota::QuotaManager* quota_manager_;
+  // The ID of this process.
+  int process_id_;
 
-  class RequestDispatcher;
+  quota::QuotaManager* quota_manager_;
+  scoped_refptr<QuotaPermissionContext> permission_context_;
+
   IDMap<RequestDispatcher, IDMapOwnPointer> outstanding_requests_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(QuotaDispatcherHost);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_QUOTA_DISPATCHER_HOST_H_
