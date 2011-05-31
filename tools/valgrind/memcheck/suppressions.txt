@@ -873,7 +873,7 @@
    Histograms via FactoryGet including Stats for disk_cache
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN10disk_cache14StatsHistogram24StatsHistogramFactoryGet*
+   fun:_ZN10disk_cache14StatsHistogram10FactoryGet*
 }
 
 #-----------------------------------------------------------------------
