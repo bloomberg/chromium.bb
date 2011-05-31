@@ -119,14 +119,14 @@ class TreeNode : public TreeModelNode {
   }
 
   // Returns the node at |index|.
-  NodeType* GetChild(int index) {
-    DCHECK(index >= 0 && index < child_count());
-    return children_[index];
-  }
   const NodeType* GetChild(int index) const {
     DCHECK_LE(0, index);
     DCHECK_GT(child_count(), index);
     return children_[index];
+  }
+  NodeType* GetChild(int index) {
+    return const_cast<NodeType*>(
+        static_cast<const NodeType&>(*this).GetChild(index));
   }
 
   // Returns the parent of this object, or NULL if it's the root.
