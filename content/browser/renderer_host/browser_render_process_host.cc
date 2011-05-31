@@ -573,7 +573,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableP2PApi,
 #endif
     switches::kEnablePepperTesting,
-    switches::kEnableQuota,
     switches::kEnableRemoting,
     switches::kEnableResourceContentSettings,
 #if defined(OS_MACOSX)

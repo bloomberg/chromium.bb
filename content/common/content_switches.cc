@@ -151,9 +151,6 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
-// Enable quota support for storage API.
-const char kEnableQuota[]                   = "enable-quota";
-
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";

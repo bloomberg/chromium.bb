@@ -805,6 +805,7 @@ QuotaManager::QuotaManager(bool is_incognito,
     proxy_(new QuotaManagerProxy(
         ALLOW_THIS_IN_INITIALIZER_LIST(this), io_thread)),
     db_disabled_(false),
+    eviction_disabled_(false),
     io_thread_(io_thread),
     db_thread_(db_thread),
     need_initialize_origins_(false),
@@ -1197,11 +1198,7 @@ void QuotaManager::DidInitializeTemporaryGlobalQuota(int64 quota) {
       db_disabled_ ? kQuotaErrorInvalidAccess : kQuotaStatusOk,
       kStorageTypeTemporary, quota);
 
-  if (db_disabled_)
-    return;
-
-  // TODO(kinuko): Remove this switch when we turn on eviction by default.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableQuotaEviction))
+  if (db_disabled_ || eviction_disabled_)
     return;
 
   if (!need_initialize_origins_) {

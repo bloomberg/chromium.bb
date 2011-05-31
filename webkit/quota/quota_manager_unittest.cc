@@ -49,6 +49,8 @@ class QuotaManagerTest : public testing::Test {
         MessageLoopProxy::CreateForCurrentThread(),
         MessageLoopProxy::CreateForCurrentThread(),
         mock_special_storage_policy_);
+    // Don't (automatically) start the eviction for testing.
+    quota_manager_->eviction_disabled_ = true;
     additional_callback_count_ = 0;
   }
 

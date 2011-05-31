@@ -275,6 +275,7 @@ class QuotaManager : public QuotaTaskObserver,
 
   scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_disabled_;
+  bool eviction_disabled_;
   scoped_refptr<base::MessageLoopProxy> io_thread_;
   scoped_refptr<base::MessageLoopProxy> db_thread_;
   mutable scoped_ptr<QuotaDatabase> database_;
