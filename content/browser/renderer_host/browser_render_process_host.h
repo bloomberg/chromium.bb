@@ -83,6 +83,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   void OnShutdownRequest();
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
+  void OnRevealFolderInOS(const FilePath& path);
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.

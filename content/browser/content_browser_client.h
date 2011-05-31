@@ -12,6 +12,7 @@
 
 class BrowserRenderProcessHost;
 class CommandLine;
+class FilePath;
 class GURL;
 class PluginProcessHost;
 class Profile;
@@ -104,6 +105,9 @@ class ContentBrowserClient {
 
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext();
+
+  // Shows the given path using the OS file manager.
+  virtual void RevealFolderInOS(const FilePath& path);
 
 #if defined(OS_LINUX)
   // Can return an optional fd for crash handling, otherwise returns -1.

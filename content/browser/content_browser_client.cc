@@ -84,6 +84,9 @@ QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return NULL;
 }
 
+void ContentBrowserClient::RevealFolderInOS(const FilePath& path) {
+}
+
 #if defined(OS_LINUX)
 int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
   return -1;

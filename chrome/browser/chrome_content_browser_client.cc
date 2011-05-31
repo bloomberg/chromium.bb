@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -308,6 +309,18 @@ bool ChromeContentBrowserClient::AllowSetCookie(
 QuotaPermissionContext*
 ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();
+}
+
+void ChromeContentBrowserClient::RevealFolderInOS(const FilePath& path) {
+  // On Mac, this call needs to be done on the UI thread.  On other platforms,
+  // do it on the FILE thread so we don't slow down UI.
+#if defined(OS_MACOSX)
+  platform_util::OpenItem(path);
+#else
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&platform_util::OpenItem, path));
+#endif
 }
 
 #if defined(OS_LINUX)

@@ -800,6 +800,7 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP_EX()
 
@@ -965,4 +966,10 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 void BrowserRenderProcessHost::OnUserMetricsRecordAction(
     const std::string& action) {
   UserMetrics::RecordComputedAction(action);
+}
+
+void BrowserRenderProcessHost::OnRevealFolderInOS(const FilePath& path) {
+  // Only honor the request if appropriate persmissions are granted.
+  if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path))
+    content::GetContentClient()->browser()->RevealFolderInOS(path);
 }

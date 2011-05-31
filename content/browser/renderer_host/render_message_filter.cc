@@ -19,7 +19,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -368,7 +367,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
         render_widget_helper_->DidReceiveUpdateMsg(message))
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
                         OnCheckNotificationPermission)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
 #if defined(OS_MACOSX)
@@ -390,28 +388,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
-}
-
-void RenderMessageFilter::OnRevealFolderInOS(const FilePath& path) {
-#if defined(OS_MACOSX)
-  const BrowserThread::ID kThreadID = BrowserThread::UI;
-#else
-  const BrowserThread::ID kThreadID = BrowserThread::FILE;
-#endif
-  if (!BrowserThread::CurrentlyOn(kThreadID)) {
-    // Only honor the request if appropriate persmissions are granted.
-    if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
-          render_process_id_, path)) {
-      BrowserThread::PostTask(
-          kThreadID, FROM_HERE,
-          NewRunnableMethod(
-              this, &RenderMessageFilter::OnRevealFolderInOS, path));
-    }
-    return;
-  }
-
-  DCHECK(BrowserThread::CurrentlyOn(kThreadID));
-  platform_util::OpenItem(path);
 }
 
 void RenderMessageFilter::OnDestruct() const {

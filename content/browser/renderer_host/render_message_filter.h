@@ -173,8 +173,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCheckNotificationPermission(const GURL& source_url,
                                      int* permission_level);
 
-  void OnRevealFolderInOS(const FilePath& path);
-
 // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
   // in the renderer on POSIX due to the sandbox.
