@@ -13,9 +13,9 @@ struct PP_Var;
 
 /**
  * @file
- * This file defines the PPP_Messaging structure - a series of pointers to
- * methods that you must implement if you wish to handle messages posted to the
- * module instance via calls to postMessage on the associated DOM element.
+ * This file defines the PPP_Messaging interface containing pointers to
+ * functions that you must implement to handle postMessage messages
+ * on the associated DOM element.
  *
  */
 
@@ -24,21 +24,29 @@ struct PP_Var;
  */
 
 /**
- * The PPP_Messaging interface contains pointers to a series of functions
- * that you must implement if you wish to handle messages posted to the module
- * instance via calls to postMessage on the associated DOM element.
+ * The PPP_Messaging interface contains pointers to functions that you must
+ * implement to handle postMessage events on the associated DOM element.
  */
 struct PPP_Messaging {
   /**
-   * HandleMessage is a pointer to a function that the browser will call when
-   * @a postMessage() is invoked on the DOM element for the module instance in
-   * JavaScript. Note that @a postMessage() in the JavaScript interface is
+   * HandleMessage is a pointer to a function that the browser calls when
+   * PostMessage() is invoked on the DOM element for the module instance in
+   * JavaScript. Note that PostMessage() in the JavaScript interface is
    * asynchronous, meaning JavaScript execution will not be blocked while
-   * @a HandleMessage() is processing the given @a message.
+   * HandleMessage() is processing the message.
    *
-   * For example:
+   * @param[in] instance A PP_Instance indentifying one instance of a module.
+   * @param[in] message A PP_Var containing the data to be sent to JavaScript.
+   * Message can have an int32_t, double, bool, or string value (objects
+   * are not supported).
    *
-   * @verbatim
+   * <strong>Example:</strong>
+   *
+   * The following JavaScript code invokes HandleMessage, passing the module
+   * instance on which it was invoked, with <code>message</code> being a
+   * string PP_Var containing "Hello world!"
+   *
+   * @code
    *
    * <body>
    *   <object id="plugin"
@@ -48,11 +56,8 @@ struct PPP_Messaging {
    *   </script>
    * </body>
    *
-   * @endverbatim
+   * @endcode
    *
-   * This will result in @a HandleMessage being invoked, passing the module
-   * instance on which it was invoked, with @a message being a string PP_Var
-   * containing "Hello world!".
    */
   void (*HandleMessage)(PP_Instance instance, struct PP_Var message);
 };

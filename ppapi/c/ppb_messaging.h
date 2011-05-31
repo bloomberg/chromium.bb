@@ -13,44 +13,44 @@
 
 /**
  * @file
- * This file defines the PPB_Messaging interface implemented by the browser.
- * The PPB_Messaging interface contains pointers to functions related to
- * sending messages to JavaScript message event listeners on the DOM element
- * associated with a specific module instance.
+ * This file defines the PPB_Messaging interface implemented by the browser
+ * related to sending messages to DOM elements associated with a specific
+ * module instance.
  *
  * @addtogroup Interfaces
  * @{
  */
 
 /**
- * The PPB_Messaging interface contains pointers to functions related to
+ * The PPB_Messaging interface contains a pointer to a function related to
  * sending messages to JavaScript message event listeners on the DOM element
  * associated with a specific module instance.
  */
 struct PPB_Messaging {
   /**
-   * @a PostMessage is a pointer to a function which asynchronously invokes any
+   * PostMessage is a pointer to a function that asynchronously invokes any
    * listeners for message events on the DOM element for the given module
-   * instance. This means that a call to @a PostMessage will not block while the
-   * message is processed.
+   * instance. A call to PostMessage() will not block while the message is
+   * processed.
    *
-   * @param message is a PP_Var containing the data to be sent to JavaScript.
-   * Currently, it can have an int32_t, double, bool, or string value (objects
-   * are not supported.)
+   * @param[in] instance A PP_Instance indentifying one instance of a module.
+   * @param[in] message A PP_Var containing the data to be sent to JavaScript.
+   * Message can have an int32_t, double, bool, or string value (objects
+   * are not supported).
    *
    * Listeners for message events in JavaScript code will receive an object
-   * conforming to the MessageEvent interface. In particular, the value of @a
-   * message will be contained as a property called @a data in the received
+   * conforming to the HTML 5 MessageEvent interface. Specifically, the value of
+   * message will be contained as a property called data in the received
    * MessageEvent.
    *
-   * This is analogous to listening for messages from Web Workers.
+   * This messaging system is similar to the system used for listening for
+   * messages from Web Workers. Refer to
+   * http://www.whatwg.org/specs/web-workers/current-work/ for further
+   * information.
    *
-   * See:
-   *   http://www.whatwg.org/specs/web-workers/current-work/
+   * <strong>Example:</strong>
    *
-   * For example:
-   *
-   * @verbatim
+   * @code
    *
    * <body>
    *   <object id="plugin"
@@ -63,18 +63,22 @@ struct PPB_Messaging {
    *   </script>
    * </body>
    *
-   * @endverbatim
+   * @endcode
    *
-   * If the module instance then invokes @a PostMessage() as follows:
-   * <code>
+   * The module instance then invokes PostMessage() as follows:
+   *
+   * @code
+   *
+   *
    *  char hello_world[] = "Hello world!";
    *  PP_Var hello_var = ppb_var_if->VarFromUtf8(instance,
    *                                             hello_world,
    *                                             sizeof(hello_world));
    *  ppb_messaging_if->PostMessage(instance, hello_var);
-   * </code>
    *
-   * The browser will pop-up an alert saying "Hello world!".
+   * @endcode
+   *
+   * The browser will pop-up an alert saying "Hello world!"
    */
   void (*PostMessage)(PP_Instance instance, struct PP_Var message);
 };
