@@ -154,8 +154,10 @@ void CommandBufferProxy::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  Send(new GpuCommandBufferMsg_AsyncFlush(
-      route_id_, put_offset, ++flush_count_));
+  IPC::Message *message = new GpuCommandBufferMsg_AsyncFlush(
+      route_id_, put_offset, ++flush_count_);
+  message->set_unblock(true);
+  Send(message);
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,

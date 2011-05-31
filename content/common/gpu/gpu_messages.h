@@ -355,7 +355,7 @@ IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetState,
 IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_Flush,
                            int32 /* put_offset */,
                            int32 /* last_known_get */,
-                           int32 /* flush_count */,
+                           uint32 /* flush_count */,
                            gpu::CommandBuffer::State /* state */)
 
 // Asynchronously synchronize the put and get offsets of both processes.
@@ -363,7 +363,7 @@ IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_Flush,
 // is returned via an UpdateState message.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_AsyncFlush,
                     int32 /* put_offset */,
-                    int32 /* flush_count */)
+                    uint32 /* flush_count */)
 
 // Return the current state of the command buffer following a request via
 // an AsyncGetState or AsyncFlush message. (This message is sent from the

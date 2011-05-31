@@ -85,9 +85,9 @@ class GpuCommandBufferStub
   void OnGetState(IPC::Message* reply_message);
   void OnFlush(int32 put_offset,
                int32 last_known_get,
-               int32 flush_count,
+               uint32 flush_count,
                IPC::Message* reply_message);
-  void OnAsyncFlush(int32 put_offset, int32 flush_count);
+  void OnAsyncFlush(int32 put_offset, uint32 flush_count);
   void OnCreateTransferBuffer(int32 size,
                               int32 id_request,
                               IPC::Message* reply_message);
@@ -125,7 +125,7 @@ class GpuCommandBufferStub
   std::vector<int32> requested_attribs_;
   uint32 parent_texture_id_;
   int32 route_id_;
-  int32 last_flush_count_;
+  uint32 last_flush_count_;
 
   // The following two fields are used on Mac OS X to identify the window
   // for the rendering results on the browser side.

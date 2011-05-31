@@ -196,12 +196,14 @@ void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {
 
 void GpuCommandBufferStub::OnFlush(int32 put_offset,
                                    int32 last_known_get,
-                                   int32 flush_count,
+                                   uint32 flush_count,
                                    IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
   gpu::CommandBuffer::State state;
-  if (flush_count <= last_flush_count_) {
-    DLOG(INFO) << "!!OUT OF ORDER IPC!!";
+  if (flush_count - last_flush_count_ >= 0x8000000U) {
+    // We received this message out-of-order. This should not happen but is here
+    // to catch regressions. Ignore the message.
+    NOTREACHED() << "Received an AsyncFlush message out-of-order";
     state = command_buffer_->GetState();
   } else {
     last_flush_count_ = flush_count;
@@ -215,13 +217,15 @@ void GpuCommandBufferStub::OnFlush(int32 put_offset,
   Send(reply_message);
 }
 
-void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, int32 flush_count) {
+void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, uint32 flush_count) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnAsyncFlush");
-  if (flush_count > last_flush_count_) {
+  if (flush_count - last_flush_count_ < 0x8000000U) {
     last_flush_count_ = flush_count;
     command_buffer_->Flush(put_offset);
   } else {
-    DLOG(INFO) << "!!OUT OF ORDER IPC!!";
+    // We received this message out-of-order. This should not happen but is here
+    // to catch regressions. Ignore the message.
+    NOTREACHED() << "Received a Flush message out-of-order";
   }
   // TODO(piman): Do this everytime the scheduler finishes processing a batch of
   // commands.
