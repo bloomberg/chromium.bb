@@ -216,6 +216,7 @@
       '-notifications.NotificationsTest.testNavigateAwayWithPermissionInfobar',
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       '-notifications.NotificationsTest.testPermissionInfobarAppears',
+      '-notifications.NotificationsTest.testKillNotificationProcess',
 
       # sync tests were running into a secondary passphrase. crosbug.com/15016.
       '-sync',
