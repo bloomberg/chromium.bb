@@ -131,7 +131,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
 #if defined(OS_MACOSX)
   void OnLoadFont(const FontDescriptor& font,
                   uint32* handle_size,
-                  base::SharedMemoryHandle* handle);
+                  base::SharedMemoryHandle* handle,
+                  uint32* font_id);
 #endif
 
 #if defined(OS_WIN)  // This hack is Windows-specific.

@@ -32,9 +32,11 @@ class FontLoader {
   //  |font_data| - shared memory buffer containing the raw data for the font
   // file.
   //  |font_data_size| - size of data contained in |font_data|.
+  //  |font_id| - unique identifier for the on-disk file we load for the font.
   static bool LoadFontIntoBuffer(NSFont* font_to_encode,
                                  base::SharedMemory* font_data,
-                                 uint32* font_data_size);
+                                 uint32* font_data_size,
+                                 uint32* font_id);
 
   // Given a shared memory buffer containing the raw data for a font file, load
   // the font and return a container ref.

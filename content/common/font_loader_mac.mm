@@ -16,9 +16,13 @@
 // static
 bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
                                     base::SharedMemory* font_data,
-                                    uint32* font_data_size) {
-  CHECK(font_data && font_data_size);
+                                    uint32* font_data_size,
+                                    uint32* font_id) {
+  CHECK(font_data);
+  CHECK(font_data_size);
+  CHECK(font_id);
   *font_data_size = 0;
+  *font_id = 0;
 
   // Used only for logging.
   std::string font_name([[font_to_encode fontName] UTF8String]);
@@ -35,6 +39,17 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   if (!ats_font) {
     LOG(ERROR) << "Conversion to ATSFontRef failed for " << font_name;
     return false;
+  }
+
+  // Retrieve the ATSFontContainerRef corresponding to the font file we want to
+  // load. This is a unique identifier that allows the caller determine if the
+  // font file in question is already loaded.
+  COMPILE_ASSERT(sizeof(ATSFontContainerRef) == sizeof(font_id),
+      uint32_cant_hold_fontcontainer_ref);
+  ATSFontContainerRef fontContainer = kATSFontContainerRefUnspecified;
+  if (ATSFontGetContainer(ats_font, 0, &fontContainer) != noErr) {
+      LOG(ERROR) << "Failed to get font container ref for " << font_name;
+      return false;
   }
 
   // ATSFontRef -> File path.
@@ -79,6 +94,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   }
 
   *font_data_size = font_file_size_32;
+  *font_id = fontContainer;
   return true;
 }
 

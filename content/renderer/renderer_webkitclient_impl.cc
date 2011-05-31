@@ -113,7 +113,10 @@ class RendererWebKitClientImpl::SandboxSupport
 #if defined(OS_WIN)
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)
+  // TODO(jeremy): Remove once WebKit side of patch lands - crbug.com/72727 .
   virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
+  virtual bool loadFont(
+      NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID);
 #elif defined(OS_LINUX)
   virtual WebKit::WebString getFontFamilyForCharacters(
       const WebKit::WebUChar* characters,
@@ -463,30 +466,45 @@ void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
 
 #elif defined(OS_MACOSX)
 
-bool RendererWebKitClientImpl::SandboxSupport::loadFont(NSFont* srcFont,
-    ATSFontContainerRef* out) {
+// TODO(jeremy): Remove once WebKit side of patch lands - crbug.com/72727 .
+bool RendererWebKitClientImpl::SandboxSupport::loadFont(
+    NSFont* srcFont, ATSFontContainerRef* out) {
+  uint32 temp;
+  return loadFont(srcFont, out, &temp);
+}
+
+bool RendererWebKitClientImpl::SandboxSupport::loadFont(
+    NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID) {
   DCHECK(srcFont);
-  DCHECK(out);
+  DCHECK(container);
+  DCHECK(fontID);
 
   uint32 font_data_size;
   FontDescriptor src_font_descriptor(srcFont);
   base::SharedMemoryHandle font_data;
   if (!RenderThread::current()->Send(new ViewHostMsg_LoadFont(
-        src_font_descriptor, &font_data_size, &font_data))) {
+        src_font_descriptor, &font_data_size, &font_data, fontID))) {
     LOG(ERROR) << "Sending ViewHostMsg_LoadFont() IPC failed for " <<
         src_font_descriptor.font_name;
-    *out = kATSFontContainerRefUnspecified;
+    *container = kATSFontContainerRefUnspecified;
+    *fontID = 0;
     return false;
   }
 
-  if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle()) {
+  if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
+      *fontID == 0) {
     LOG(ERROR) << "Bad response from ViewHostMsg_LoadFont() for " <<
         src_font_descriptor.font_name;
-    *out = kATSFontContainerRefUnspecified;
+    *container = kATSFontContainerRefUnspecified;
+    *fontID = 0;
     return false;
   }
 
-  return FontLoader::ATSFontContainerFromBuffer(font_data, font_data_size, out);
+  // TODO(jeremy): Need to call back into WebKit to make sure that the font
+  // isn't already activated, based on the font id.  If it's already
+  // activated, don't reactivate it here - crbug.com/72727 .
+  return FontLoader::ATSFontContainerFromBuffer(font_data, font_data_size,
+      container);
 }
 
 #endif

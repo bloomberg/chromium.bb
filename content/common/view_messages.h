@@ -1633,10 +1633,11 @@ IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
 
 #if defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_LoadFont,
+IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,
                            FontDescriptor /* font to load */,
                            uint32 /* buffer size */,
-                           base::SharedMemoryHandle /* font data */)
+                           base::SharedMemoryHandle /* font data */,
+                           uint32 /* font id */)
 #endif
 
 #if defined(OS_WIN)

@@ -533,16 +533,19 @@ void RenderMessageFilter::OnCookiesEnabled(
 #if defined(OS_MACOSX)
 void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
                                      uint32* handle_size,
-                                     base::SharedMemoryHandle* handle) {
+                                     base::SharedMemoryHandle* handle,
+                                     uint32* font_id) {
   base::SharedMemory font_data;
   uint32 font_data_size = 0;
   bool ok = FontLoader::LoadFontIntoBuffer(font.ToNSFont(), &font_data,
-                &font_data_size);
-  if (!ok || font_data_size == 0) {
+                &font_data_size, font_id);
+  if (!ok || font_data_size == 0 || *font_id == 0) {
     LOG(ERROR) << "Couldn't load font data for " << font.font_name <<
-        " ok=" << ok << " font_data_size=" << font_data_size;
+        " ok=" << ok << " font_data_size=" << font_data_size <<
+        " font id=" << *font_id;
     *handle_size = 0;
     *handle = base::SharedMemory::NULLHandle();
+    *font_id = 0;
     return;
   }
 

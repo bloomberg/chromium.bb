@@ -162,10 +162,12 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
 
   base::SharedMemory font_data;
   uint32 font_data_size;
+  uint32 font_id;
   NSFont* srcFont = [NSFont fontWithName:@"Geeza Pro" size:16.0];
   EXPECT_TRUE(FontLoader::LoadFontIntoBuffer(srcFont,
-                  &font_data, &font_data_size));
+                  &font_data, &font_data_size, &font_id));
   EXPECT_GT(font_data_size, 0U);
+  EXPECT_GT(font_id, 0U);
 
   file_util::WriteFileDescriptor(fileno(temp_file),
       static_cast<const char *>(font_data.memory()), font_data_size);
