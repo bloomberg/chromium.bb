@@ -189,11 +189,30 @@ init_gl(struct window *window)
 }
 
 static void
+sync_callback(void *data)
+{
+	int *done = data;
+
+	*done = 1;
+}
+
+static void
 create_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_visual *visual;
 	EGLBoolean ret;
+	int done = 0;
+	
+	if (!display->premultiplied_argb_visual) {
+		wl_display_sync_callback(display->display, sync_callback, &done);
+		while (!done)
+			wl_display_iterate(display->display, display->mask);
+		if (!display->premultiplied_argb_visual) {
+			fprintf(stderr, "premultiplied argb visual missing\n");
+			exit(1);
+		}
+	}
 
 	window->surface = wl_compositor_create_surface(display->compositor);
 	visual = display->premultiplied_argb_visual;
@@ -333,6 +352,8 @@ main(int argc, char **argv)
 	wl_display_add_global_listener(display.display,
 				       display_handle_global, &display);
 
+	wl_display_get_fd(display.display, event_mask_update, &display);
+
 	init_egl(&display);
 	create_surface(&window);
 	init_gl(&window);
@@ -340,7 +361,6 @@ main(int argc, char **argv)
 	wl_display_frame_callback(display.display, window.surface,
 				  redraw, &window);
 
-	wl_display_get_fd(display.display, event_mask_update, &display);
 	while (true)
 		wl_display_iterate(display.display, display.mask);
 
