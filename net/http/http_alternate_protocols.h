@@ -30,7 +30,7 @@ class NET_API HttpAlternateProtocols {
     UNINITIALIZED,
   };
 
-  struct PortProtocolPair {
+  struct NET_API PortProtocolPair {
     bool Equals(const PortProtocolPair& other) const {
       return port == other.port && protocol == other.protocol;
     }
