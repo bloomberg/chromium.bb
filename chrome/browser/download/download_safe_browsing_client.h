@@ -74,14 +74,25 @@ class DownloadSBClient
   };
 
   friend class base::RefCountedThreadSafe<DownloadSBClient>;
+  friend class DownloadSBClientTest_UrlHit_Test;
+  friend class DownloadSBClientTest_DigestHit_Test;
+
+  // Set the |sb_service_| manually for testing purposes.
+  void SetSBService(SafeBrowsingService* service) {
+    sb_service_ = service;
+  }
+
   virtual ~DownloadSBClient();
 
   // Call DownloadManager on UI thread for download URL or hash check.
   void SafeBrowsingCheckUrlDone(SafeBrowsingService::UrlCheckResult result);
-  void SafeBrowsingCheckHashDone(SafeBrowsingService::UrlCheckResult result);
+  void SafeBrowsingCheckHashDone(SafeBrowsingService::UrlCheckResult result,
+                                 const std::string& hash);
 
-  // Report malware hits to safebrowsing service.
-  void ReportMalware(SafeBrowsingService::UrlCheckResult result);
+  // Report malware hits to safebrowsing service.  |hash| should be empty if
+  // this is an URL check result.
+  void ReportMalware(SafeBrowsingService::UrlCheckResult result,
+                     const std::string& hash);
 
   // Update the UMA stats.
   void UpdateDownloadCheckStats(SBStatsType stat_type);

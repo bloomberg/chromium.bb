@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_manager.h"
@@ -111,7 +112,8 @@ void DownloadSBClient::OnDownloadHashCheckResult(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &DownloadSBClient::SafeBrowsingCheckHashDone,
-                        result));
+                        result,
+                        hash));
   Release();
 }
 
@@ -129,13 +131,14 @@ void DownloadSBClient::SafeBrowsingCheckUrlDone(
     UpdateDownloadCheckStats(DOWNLOAD_URL_CHECKS_TOTAL);
     if (is_dangerous) {
       UpdateDownloadCheckStats(DOWNLOAD_URL_CHECKS_MALWARE);
-      ReportMalware(result);
+      ReportMalware(result, std::string());
     }
   }
 }
 
 void DownloadSBClient::SafeBrowsingCheckHashDone(
-    SafeBrowsingService::UrlCheckResult result) {
+    SafeBrowsingService::UrlCheckResult result,
+    const std::string& hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "SafeBrowsingCheckHashDone with result: " << result;
 
@@ -148,21 +151,24 @@ void DownloadSBClient::SafeBrowsingCheckHashDone(
     UpdateDownloadCheckStats(DOWNLOAD_HASH_CHECKS_TOTAL);
     if (is_dangerous) {
       UpdateDownloadCheckStats(DOWNLOAD_HASH_CHECKS_MALWARE);
-      ReportMalware(result);
+      ReportMalware(result, hash);
     }
   }
 }
 
 void DownloadSBClient::ReportMalware(
-    SafeBrowsingService::UrlCheckResult result) {
+    SafeBrowsingService::UrlCheckResult result,
+    const std::string& hash) {
   std::string post_data;
+  if (!hash.empty())
+    post_data += base::HexEncode(hash.data(), hash.size()) + "\n";
   for (size_t i = 0; i < url_chain_.size(); ++i)
     post_data += url_chain_[i].spec() + "\n";
 
   sb_service_->ReportSafeBrowsingHit(url_chain_.back(),  // malicious_url
                                      url_chain_.front(), // page_url
                                      referrer_url_,
-                                     true,
+                                     true,  // is_subresource
                                      result,
                                      post_data);
 }
