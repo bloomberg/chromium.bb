@@ -116,7 +116,7 @@ bool PrefProxyConfigTracker::PrefConfigToNetConfig(
   switch (mode) {
     case ProxyPrefs::MODE_SYSTEM:
       // Use system settings.
-      return true;
+      return false;
     case ProxyPrefs::MODE_DIRECT:
       // Ignore all the other proxy config preferences if the use of a proxy
       // has been explicitly disabled.

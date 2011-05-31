@@ -263,6 +263,22 @@ TEST_F(PrefProxyConfigServiceTest, Fallback) {
   proxy_config_service_->RemoveObserver(&observer);
 }
 
+TEST_F(PrefProxyConfigServiceTest, ExplicitSystemSettings) {
+  pref_service_->SetRecommendedPref(
+      prefs::kProxy,
+      ProxyConfigDictionary::CreateAutoDetect());
+  pref_service_->SetUserPref(
+      prefs::kProxy,
+      ProxyConfigDictionary::CreateSystem());
+  loop_.RunAllPending();
+
+  // Test if we actually use the system setting, which is |kFixedPacUrl|.
+  net::ProxyConfig actual_config;
+  EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
+            proxy_config_service_->GetLatestProxyConfig(&actual_config));
+  EXPECT_EQ(GURL(kFixedPacUrl), actual_config.pac_url());
+}
+
 // Test parameter object for testing command line proxy configuration.
 struct CommandLineTestParams {
   // Explicit assignment operator, so testing::TestWithParam works with MSVC.
