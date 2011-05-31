@@ -90,6 +90,7 @@
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       'sync',
+      '-sync',  # causes browser crash. crbug.com/84494
       'test_basic',
       'themes',
     ],
