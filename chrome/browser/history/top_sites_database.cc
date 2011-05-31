@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,9 @@
 
 namespace history {
 
-static const int kVersionNumber = 1;
+// From the version 1 to 2, one column was added. Old versions of Chrome
+// should be able to read version 2 files just fine.
+static const int kVersionNumber = 2;
 
 TopSitesDatabase::TopSitesDatabase() : may_need_history_migration_(false) {
 }
@@ -51,14 +53,30 @@ bool TopSitesDatabase::Init(const FilePath& db_name) {
       return false;
   }
 
+  // Scope initialization in a transaction so we can't be partially
+  // initialized.
+  sql::Transaction transaction(db_.get());
+  transaction.Begin();
+
   if (!meta_table_.Init(db_.get(), kVersionNumber, kVersionNumber))
     return false;
 
   if (!InitThumbnailTable())
     return false;
 
+  if (meta_table_.GetVersionNumber() == 1) {
+    if (!UpgradeToVersion2()) {
+      LOG(WARNING) << "Unable to upgrade top sites database to version 2.";
+      return false;
+    }
+  }
+
   // Version check.
   if (meta_table_.GetVersionNumber() != kVersionNumber)
+    return false;
+
+  // Initialization is complete.
+  if (!transaction.Commit())
     return false;
 
   return true;
@@ -75,7 +93,8 @@ bool TopSitesDatabase::InitThumbnailTable() {
                       "boring_score DOUBLE DEFAULT 1.0, "
                       "good_clipping INTEGER DEFAULT 0, "
                       "at_top INTEGER DEFAULT 0, "
-                      "last_updated INTEGER DEFAULT 0) ")) {
+                      "last_updated INTEGER DEFAULT 0, "
+                      "load_completed INTEGER DEFAULT 0) ")) {
       LOG(WARNING) << db_->GetErrorMessage();
       return false;
     }
@@ -83,12 +102,23 @@ bool TopSitesDatabase::InitThumbnailTable() {
   return true;
 }
 
+bool TopSitesDatabase::UpgradeToVersion2() {
+  // Add 'load_completed' column.
+  if (!db_->Execute(
+          "ALTER TABLE thumbnails ADD load_completed INTEGER DEFAULT 0")) {
+    NOTREACHED();
+    return false;
+  }
+  meta_table_.SetVersionNumber(2);
+  return true;
+}
+
 void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
-                                             URLToImagesMap* thumbnails) {
+                                         URLToImagesMap* thumbnails) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT url, url_rank, title, thumbnail, redirects, "
-      "boring_score, good_clipping, at_top, last_updated "
+      "boring_score, good_clipping, at_top, last_updated, load_completed "
       "FROM thumbnails ORDER BY url_rank "));
 
   if (!statement) {
@@ -118,6 +148,7 @@ void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
     thumbnail.thumbnail_score.at_top = statement.ColumnBool(7);
     thumbnail.thumbnail_score.time_at_snapshot =
         base::Time::FromInternalValue(statement.ColumnInt64(8));
+    thumbnail.thumbnail_score.load_completed = statement.ColumnBool(9);
 
     (*thumbnails)[gurl] = thumbnail;
   }
@@ -163,7 +194,8 @@ void TopSitesDatabase::UpdatePageThumbnail(
       SQL_FROM_HERE,
       "UPDATE thumbnails SET "
       "title = ?, thumbnail = ?, redirects = ?, "
-      "boring_score = ?, good_clipping = ?, at_top = ?, last_updated = ? "
+      "boring_score = ?, good_clipping = ?, at_top = ?, last_updated = ?, "
+      "load_completed = ? "
       "WHERE url = ? "));
   if (!statement)
     return;
@@ -179,7 +211,8 @@ void TopSitesDatabase::UpdatePageThumbnail(
   statement.BindBool(4, score.good_clipping);
   statement.BindBool(5, score.at_top);
   statement.BindInt64(6, score.time_at_snapshot.ToInternalValue());
-  statement.BindString(7, url.url.spec());
+  statement.BindBool(7, score.load_completed);
+  statement.BindString(8, url.url.spec());
   if (!statement.Run())
     NOTREACHED() << db_->GetErrorMessage();
 }
@@ -193,8 +226,8 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
       SQL_FROM_HERE,
       "INSERT OR REPLACE INTO thumbnails "
       "(url, url_rank, title, thumbnail, redirects, "
-      "boring_score, good_clipping, at_top, last_updated) "
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      "boring_score, good_clipping, at_top, last_updated, load_completed) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   if (!statement)
     return;
 
@@ -211,6 +244,7 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
   statement.BindBool(6, score.good_clipping);
   statement.BindBool(7, score.at_top);
   statement.BindInt64(8, score.time_at_snapshot.ToInternalValue());
+  statement.BindBool(9, score.load_completed);
   if (!statement.Run())
     NOTREACHED() << db_->GetErrorMessage();
 

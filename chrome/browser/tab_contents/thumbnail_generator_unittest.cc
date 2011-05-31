@@ -387,6 +387,7 @@ TEST(ThumbnailGeneratorSimpleTest, ShouldUpdateThumbnail) {
   good_score.at_top = true;
   good_score.good_clipping = true;
   good_score.boring_score = 0.0;
+  good_score.load_completed = true;
   top_sites->AddKnownURL(kGoodURL, good_score);
 
   // Should be false, as the existing thumbnail is good enough (i.e. don't

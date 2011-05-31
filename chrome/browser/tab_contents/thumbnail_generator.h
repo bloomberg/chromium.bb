@@ -15,6 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/timer.h"
 #include "content/browser/renderer_host/backing_store.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -28,7 +29,8 @@ namespace history {
 class TopSites;
 }
 
-class ThumbnailGenerator : NotificationObserver {
+class ThumbnailGenerator : public NotificationObserver,
+                           public TabContentsObserver {
  public:
   typedef Callback1<const SkBitmap&>::Type ThumbnailReadyCallback;
   // The result of clipping. This can be used to determine if the
@@ -121,6 +123,10 @@ class ThumbnailGenerator : NotificationObserver {
                                     history::TopSites* top_sites,
                                     const GURL& url);
 
+  // TabContentsObserver overrides.
+  virtual void DidStartLoading();
+  virtual void StopNavigation();
+
  private:
   virtual void WidgetDidReceivePaintAtSizeAck(
       RenderWidgetHost* widget,
@@ -147,7 +153,9 @@ class ThumbnailGenerator : NotificationObserver {
                    linked_ptr<AsyncRequestInfo> > ThumbnailCallbackMap;
   ThumbnailCallbackMap callback_map_;
 
-  TabContents* tab_contents_;
+  TabContentsObserver::Registrar tab_contents_observer_registrar_;
+
+  bool load_interrupted_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailGenerator);
 };

@@ -264,6 +264,19 @@
   fun:pcache1Alloc
 }
 
+{
+  bug_84467_a (Could be benign. See bug for details)
+  ThreadSanitizer:Race
+  fun:unixTempFileDir
+}
+
+{
+  bug_84467_b (Could be benign. See bug for details)
+  ThreadSanitizer:Race
+  fun:pcache1Fetch
+  fun:sqlite3PcacheFetch
+}
+
 ############################
 # Data races in tests
 

@@ -1406,6 +1406,7 @@
         'browser/history/text_database_manager_unittest.cc',
         'browser/history/text_database_unittest.cc',
         'browser/history/thumbnail_database_unittest.cc',
+        'browser/history/top_sites_database_unittest.cc',
         'browser/history/top_sites_unittest.cc',
         'browser/history/url_database_unittest.cc',
         'browser/history/visit_database_unittest.cc',
