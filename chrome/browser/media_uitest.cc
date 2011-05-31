@@ -66,12 +66,15 @@ class MediaTest : public UITest {
 };
 
 #if defined(OS_MACOSX)
-// http://crbug.com/84170 - VideoBearTheora and VideoBearWav are flaky on Mac.
+// http://crbug.com/84170 - VideoBearTheora, VideoBearWav and VideoBearWebm
+// are flaky on Mac.
 #define MAYBE_VideoBearTheora FLAKY_VideoBearTheora
 #define MAYBE_VideoBearWav FLAKY_VideoBearWav
+#define MAYBE_VideoBearWebm FLAKY_VideoBearWebm
 #else
 #define MAYBE_VideoBearTheora VideoBearTheora
 #define MAYBE_VideoBearWav  VideoBearWav
+#define MAYBE_VideoBearWebm VideoBearWebm
 #endif
 
 TEST_F(MediaTest, MAYBE_VideoBearTheora) {
@@ -82,7 +85,7 @@ TEST_F(MediaTest, VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
 
-TEST_F(MediaTest, VideoBearWebm) {
+TEST_F(MediaTest, MAYBE_VideoBearWebm) {
   PlayVideo("bear.webm");
 }
 
