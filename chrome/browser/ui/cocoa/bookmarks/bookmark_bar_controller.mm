@@ -846,12 +846,13 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Position the off-the-side chevron to the left of the otherBookmarks button.
 - (void)positionOffTheSideButton {
   NSRect frame = [offTheSideButton_ frame];
+  frame.size.height = bookmarks::kBookmarkFolderButtonHeight;
   if (otherBookmarksButton_.get()) {
     frame.origin.x = ([otherBookmarksButton_ frame].origin.x -
                       (frame.size.width +
                        bookmarks::kBookmarkHorizontalPadding));
-    [offTheSideButton_ setFrame:frame];
   }
+  [offTheSideButton_ setFrame:frame];
 }
 
 // Configure the off-the-side button (e.g. specify the node range,
