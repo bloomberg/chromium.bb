@@ -16,6 +16,8 @@ class ResourceCreationAPI;
 
 class FunctionGroupBase {
  public:
+  virtual ~FunctionGroupBase() {}
+
   // Dynamic casting for this object. Returns the pointer to the given type if
   // it's supported.
   virtual thunk::PPB_CharSet_FunctionAPI* AsCharSet_FunctionAPI() {

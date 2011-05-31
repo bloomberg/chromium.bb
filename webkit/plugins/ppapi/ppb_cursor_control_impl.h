@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ class PPB_CursorControl_Impl
       public ::ppapi::thunk::PPB_CursorControl_FunctionAPI {
  public:
   PPB_CursorControl_Impl(PluginInstance* instance);
-  ~PPB_CursorControl_Impl();
+  virtual ~PPB_CursorControl_Impl();
 
   // FunctionGroupBase overrides.
   virtual ::ppapi::thunk::PPB_CursorControl_FunctionAPI*

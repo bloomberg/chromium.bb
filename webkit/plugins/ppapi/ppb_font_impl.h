@@ -58,7 +58,7 @@ class PPB_Font_FunctionImpl : public ::ppapi::FunctionGroupBase,
                               public ::ppapi::thunk::PPB_Font_FunctionAPI {
  public:
   PPB_Font_FunctionImpl(PluginInstance* instance);
-  ~PPB_Font_FunctionImpl();
+  virtual ~PPB_Font_FunctionImpl();
 
   // FunctionGroupBase overrides.
   virtual ::ppapi::thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI();
