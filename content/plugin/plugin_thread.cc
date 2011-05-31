@@ -39,6 +39,33 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
+namespace {
+
+class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
+ public:
+  EnsureTerminateMessageFilter() {}
+  ~EnsureTerminateMessageFilter() {}
+
+ private:
+  virtual void OnChannelError() {
+    // How long we wait before forcibly shutting down the process.
+    const int kPluginProcessTerminateTimeoutMs = 3000;
+    // Ensure that we don't wait indefinitely for the plugin to shutdown.
+    // as the browser does not terminate plugin processes on shutdown.
+    // We achieve this by posting an exit process task on the IO thread.
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &EnsureTerminateMessageFilter::Terminate),
+        kPluginProcessTerminateTimeoutMs);
+  }
+
+  void Terminate() {
+    base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
+  }
+};
+
+}  // namespace
+
 static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
     base::LINKER_INITIALIZED);
 
@@ -91,6 +118,7 @@ PluginThread::PluginThread()
   // Certain plugins, such as flash, steal the unhandled exception filter
   // thus we never get crash reports when they fault. This call fixes it.
   message_loop()->set_exception_restoration(true);
+  channel()->AddFilter(new EnsureTerminateMessageFilter());
 }
 
 PluginThread::~PluginThread() {

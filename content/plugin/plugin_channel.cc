@@ -32,18 +32,8 @@ class PluginReleaseTask : public Task {
   }
 };
 
-class PluginProcessExitTask : public Task {
- public:
-  void Run() {
-    base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
-  }
-};
-
 // How long we wait before releasing the plugin process.
 const int kPluginReleaseTimeMs = 5 * 60 * 1000;  // 5 minutes
-
-// How long we wait before forcibly shutting down the process.
-const int kPluginProcessTerminateTimeoutMs = 3000;
 
 }  // namespace
 
@@ -97,15 +87,6 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
 
  private:
   void OnFilterAdded(IPC::Channel* channel) { channel_ = channel; }
-
-  virtual void OnChannelError() {
-    // Ensure that we don't wait indefinitely for the plugin to shutdown.
-    // as the browser does not terminate plugin processes on shutdown.
-    // We achieve this by posting an exit process task on the IO thread.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            new PluginProcessExitTask(),
-                                            kPluginProcessTerminateTimeoutMs);
-  }
 
   bool OnMessageReceived(const IPC::Message& message) {
     IPC_BEGIN_MESSAGE_MAP(PluginChannel::MessageFilter, message)
