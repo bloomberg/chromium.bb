@@ -529,7 +529,16 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       return false;
     }
     set_plugin_base_url(base_var.AsString());
-    if (manifest_url != NULL) {
+    if (manifest_url == NULL) {
+      // TODO(sehr,polina): this should be a hard error when scripting
+      // the src property is no longer allowed.
+      PLUGIN_PRINTF(("PluginPpapi::Init:"
+                     " WARNING: no 'src' property, so no manifest loaded.\n"));
+      if (NULL != LookupArgument(kNaClManifestAttribute)) {
+        PLUGIN_PRINTF(("PluginPpapi::Init:"
+                       " WARNING: 'nacl' property is incorrect. Use 'src'.\n"));
+      }
+    } else {
       // Issue a GET for the manifest_url.  The manifest file will be parsed to
       // determine the nexe URL.
       // Sets src property to full manifest URL.
