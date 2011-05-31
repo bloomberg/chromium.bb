@@ -22,12 +22,18 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+namespace {
+  typedef base::hash_map<SkFontID, SkAdvancedTypefaceMetrics::FontType>
+      FontTypeMap;
+};
+
 namespace printing {
 
 struct PdfMetafileSkiaData {
   SkRefPtr<SkPDFDevice> current_page_;
   SkPDFDocument pdf_doc_;
   SkDynamicMemoryWStream pdf_stream_;
+  FontTypeMap font_type_stats_;
 };
 
 PdfMetafileSkia::~PdfMetafileSkia() {}
@@ -75,6 +81,13 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
 bool PdfMetafileSkia::FinishPage() {
   DCHECK(data_->current_page_.get());
 
+  const SkTDArray<SkPDFFont*>& font_resources =
+      data_->current_page_->getFontResources();
+  for (int i = 0; i < font_resources.count(); i++) {
+    SkFontID key = font_resources[i]->typeface()->uniqueID();
+    data_->font_type_stats_[key] = font_resources[i]->getType();
+  }
+
   data_->pdf_doc_.appendPage(data_->current_page_);
   data_->current_page_ = NULL;
   return true;
@@ -88,22 +101,13 @@ bool PdfMetafileSkia::FinishDocument() {
   if (data_->current_page_.get())
     FinishPage();
 
-  base::hash_set<SkFontID> font_set;
-
-  const SkTDArray<SkPDFPage*>& pages = data_->pdf_doc_.getPages();
-  for (int page_number = 0; page_number < pages.count(); page_number++) {
-    const SkTDArray<SkPDFFont*>& font_resources =
-        pages[page_number]->getFontResources();
-    for (int font = 0; font < font_resources.count(); font++) {
-      SkFontID font_id = font_resources[font]->typeface()->uniqueID();
-      if (font_set.find(font_id) == font_set.end()) {
-        font_set.insert(font_id);
-        UMA_HISTOGRAM_ENUMERATION(
-            "PrintPreview.FontType",
-            font_resources[font]->getType(),
-            SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1);
-      }
-    }
+  for (FontTypeMap::const_iterator it = data_->font_type_stats_.begin();
+       it != data_->font_type_stats_.end();
+       it++) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PrintPreview.FontType",
+        it->second,
+        SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1);
   }
 
   return data_->pdf_doc_.emitPDF(&data_->pdf_stream_);
