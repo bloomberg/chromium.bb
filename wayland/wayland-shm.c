@@ -119,7 +119,7 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 	struct wl_shm_buffer *buffer;
 	void *data;
 
-	if (visual->object.interface != &wl_visual_interface) {
+	if (!visual || visual->object.interface != &wl_visual_interface) {
 		wl_client_post_error(client, &shm->object,
 				     WL_SHM_ERROR_INVALID_VISUAL,
 				     "invalid visual");
