@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "chrome/common/chrome_constants.h"
@@ -41,11 +42,11 @@ class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
 
 class SiteInstanceTestBrowserClient : public content::ContentBrowserClient {
  public:
-  virtual content::WebUIFactory* GetWebUIFactory() {
+  virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
     return &factory_;
   }
 
-  virtual bool IsURLSameAsAnySiteInstance(const GURL& url) {
+  virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE {
     return url.spec() == kSameAsAnyInstanceURL;
   }
 

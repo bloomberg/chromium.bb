@@ -6,13 +6,14 @@
 #define CHROME_COMMON_CHROME_CONTENT_PLUGIN_CLIENT_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/plugin/content_plugin_client.h"
 
 namespace chrome {
 
 class ChromeContentPluginClient : public content::ContentPluginClient {
  public:
-  virtual void PluginProcessStarted(const string16& plugin_name);
+  virtual void PluginProcessStarted(const string16& plugin_name) OVERRIDE;
 };
 
 }  // namespace chrome

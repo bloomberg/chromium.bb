@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/content_renderer_client.h"
 
@@ -33,39 +34,39 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   ChromeContentRendererClient();
   ~ChromeContentRendererClient();
 
-  virtual void RenderThreadStarted();
-  virtual void RenderViewCreated(RenderView* render_view);
-  virtual void SetNumberOfViews(int number_of_views);
-  virtual SkBitmap* GetSadPluginBitmap();
-  virtual std::string GetDefaultEncoding();
+  virtual void RenderThreadStarted() OVERRIDE;
+  virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
+  virtual void SetNumberOfViews(int number_of_views) OVERRIDE;
+  virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
+  virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual WebKit::WebPlugin* CreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+      const WebKit::WebPluginParams& params) OVERRIDE;
   virtual void ShowErrorPage(RenderView* render_view,
                              WebKit::WebFrame* frame,
-                             int http_status_code);
+                             int http_status_code) OVERRIDE;
   virtual std::string GetNavigationErrorHtml(
       const WebKit::WebURLRequest& failed_request,
-      const WebKit::WebURLError& error);
-  virtual bool RunIdleHandlerWhenWidgetsHidden();
-  virtual bool AllowPopup(const GURL& creator);
+      const WebKit::WebURLError& error) OVERRIDE;
+  virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;
+  virtual bool AllowPopup(const GURL& creator) OVERRIDE;
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
                           bool is_content_initiated,
-                          bool* send_referrer);
+                          bool* send_referrer) OVERRIDE;
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
                                const GURL& url,
-                               GURL* new_url);
-  virtual FilePath GetMediaLibraryPath();
-  virtual bool ShouldPumpEventsDuringCookieMessage();
-  virtual void DidCreateScriptContext(WebKit::WebFrame* frame);
-  virtual void DidDestroyScriptContext(WebKit::WebFrame* frame);
-  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame);
+                               GURL* new_url) OVERRIDE;
+  virtual FilePath GetMediaLibraryPath() OVERRIDE;
+  virtual bool ShouldPumpEventsDuringCookieMessage() OVERRIDE;
+  virtual void DidCreateScriptContext(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidDestroyScriptContext(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame) OVERRIDE;
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
-                                             size_t length);
-  virtual bool IsLinkVisited(unsigned long long link_hash);
-  virtual void PrefetchHostName(const char* hostname, size_t length);
+                                             size_t length) OVERRIDE;
+  virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
+  virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
 
   // For testing.
   void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);
