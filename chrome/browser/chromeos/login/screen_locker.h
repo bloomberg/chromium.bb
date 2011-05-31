@@ -116,6 +116,10 @@ class ScreenLocker : public LoginStatusConsumer,
   // Returns a view that has given view |id|, or null if it doesn't exist.
   views::View* GetViewByID(int id);
 
+  // Allow a LoginStatusConsumer to listen for
+  // the same login events that ScreenLocker does.
+  void SetLoginStatusConsumer(chromeos::LoginStatusConsumer* consumer);
+
   // Initialize ScreenLocker class. It will listen to
   // LOGIN_USER_CHANGED notification so that the screen locker accepts
   // lock event only after a user is logged in.
@@ -241,6 +245,10 @@ class ScreenLocker : public LoginStatusConsumer,
   base::Time start_time_;
   // The time when the authentication is started.
   base::Time authentication_start_time_;
+
+  // Delegate to forward all login status events to.
+  // Tests can use this to receive login status events.
+  LoginStatusConsumer* login_status_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
 };

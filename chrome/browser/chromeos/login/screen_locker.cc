@@ -718,7 +718,8 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
       // http://crosbug.com/1881
       unlock_on_input_(user_.email().empty()),
       locked_(false),
-      start_time_(base::Time::Now()) {
+      start_time_(base::Time::Now()),
+      login_status_consumer_(NULL) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 }
@@ -846,6 +847,9 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
         l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
 
   ShowErrorBubble(UTF16ToWide(msg), BubbleBorder::BOTTOM_LEFT);
+
+  if (login_status_consumer_)
+    login_status_consumer_->OnLoginFailure(error);
 }
 
 void ScreenLocker::OnLoginSuccess(
@@ -874,6 +878,10 @@ void ScreenLocker::OnLoginSuccess(
 
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
+
+  if (login_status_consumer_)
+    login_status_consumer_->OnLoginSuccess(username, password,
+                                           unused, pending_requests);
 }
 
 void ScreenLocker::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
@@ -1009,6 +1017,11 @@ void ScreenLocker::OnGrabInputs() {
 
 views::View* ScreenLocker::GetViewByID(int id) {
   return lock_widget_->GetRootView()->GetViewByID(id);
+}
+
+void ScreenLocker::SetLoginStatusConsumer(
+    chromeos::LoginStatusConsumer* consumer) {
+  login_status_consumer_ = consumer;
 }
 
 // static

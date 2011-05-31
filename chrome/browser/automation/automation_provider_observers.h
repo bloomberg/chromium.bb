@@ -768,13 +768,37 @@ class ScreenLockUnlockObserver : public NotificationObserver {
   virtual void Observe(NotificationType type, const NotificationSource& source,
                        const NotificationDetails& details);
 
+ protected:
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
   bool lock_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockUnlockObserver);
+};
+
+// Watches SCREEN_LOCK_STATE_CHANGED notifications like the
+// ScreenLockUnlockObserver, but additionally adds itself as an observer
+// to a screen locker in order to monitor unlock failure cases.
+class ScreenUnlockObserver : public ScreenLockUnlockObserver,
+                             public chromeos::LoginStatusConsumer {
+ public:
+  ScreenUnlockObserver(AutomationProvider* automation,
+                       IPC::Message* reply_message);
+  virtual ~ScreenUnlockObserver();
+
+  virtual void OnLoginFailure(const chromeos::LoginFailure& error);
+
+  virtual void OnLoginSuccess(
+      const std::string& username,
+      const std::string& password,
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenUnlockObserver);
 };
 
 class NetworkScanObserver

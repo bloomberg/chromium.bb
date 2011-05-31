@@ -2849,6 +2849,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Waits until screen is unlocked.
     Screen locker should be active for this to work.
 
+    Returns:
+      An error string if an error occured.
+      None otherwise.
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
@@ -2856,7 +2860,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'command': 'UnlockScreen',
         'password': password,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return result.get('error_string')
 
   def SignoutInScreenLocker(self):
     """Signs out of chromeos using the screen locker's "Sign out" feature.

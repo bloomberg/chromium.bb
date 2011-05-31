@@ -216,7 +216,7 @@ void TestingAutomationProvider::UnlockScreen(DictionaryValue* args,
     return;
   }
 
-  new ScreenLockUnlockObserver(this, reply_message, false);
+  new ScreenUnlockObserver(this, reply_message);
   screen_locker->Authenticate(ASCIIToUTF16(password));
 }
 
