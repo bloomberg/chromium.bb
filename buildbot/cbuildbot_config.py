@@ -344,7 +344,7 @@ add_config('arm-tegra2_seaboard-private-bin', [internal, arm, {
   'rev_overlays': 'both',
   'push_overlays': None,
 
-  'gspath' : None,
+  'gs_path' : None,
 }])
 
 add_config('arm-tegra2_kaen-private-bin', [internal, arm, {
@@ -354,7 +354,7 @@ add_config('arm-tegra2_kaen-private-bin', [internal, arm, {
   'rev_overlays': 'both',
   'push_overlays': None,
 
-  'gspath' : 'gs://chromeos-tegra2_kaen/arm-tegra2_kaen-private-bin',
+  'gs_path' : None,
 }])
 
 add_config('arm-tegra2_aebl-private-bin', [internal, arm, {
@@ -364,7 +364,7 @@ add_config('arm-tegra2_aebl-private-bin', [internal, arm, {
   'rev_overlays': 'both',
   'push_overlays': None,
 
-  'gspath' : 'gs://chromeos-tegra2_aebl/arm-tegra2_aebl-private-bin',
+  'gs_path' : None,
 }])
 
 add_config('arm-tegra2_dev-board-private-bin', [internal, arm, {
@@ -374,7 +374,7 @@ add_config('arm-tegra2_dev-board-private-bin', [internal, arm, {
   'rev_overlays': 'both',
   'push_overlays': None,
 
-  'gspath' : None,
+  'gs_path' : None,
 }])
 
 add_config('x86-zgb-private-bin', [internal, {
@@ -384,7 +384,7 @@ add_config('x86-zgb-private-bin', [internal, {
   'rev_overlays': 'both',
   'push_overlays': None,
 
-  'gspath' : 'gs://chromeos-x86-zgb/x86-zgb-private-bin',
+  'gs_path' : None,
 }])
 
 add_config('x86-mario-private-bin', [internal, {
@@ -394,7 +394,7 @@ add_config('x86-mario-private-bin', [internal, {
   'rev_overlays': 'both',
   'push_overlays': None,
 
-  'gspath' : 'gs://chromeos-x86-mario/x86-mario-private-bin',
+  'gs_path' : None,
 }])
 
 add_config('x86-alex-private-bin', [internal, {
@@ -404,7 +404,7 @@ add_config('x86-alex-private-bin', [internal, {
   'rev_overlays': 'both',
   'push_overlays': None,
 
-  'gspath' : 'gs://chromeos-x86-alex/x86-alex-private-bin',
+  'gs_path' : None,
 }])
 
 add_config('x86-mario-private-full', [internal, full, official, {
