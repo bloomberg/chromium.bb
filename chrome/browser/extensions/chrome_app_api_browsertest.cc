@@ -96,24 +96,27 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   EXPECT_TRUE(app_details.get());
   EXPECT_TRUE(app_details->Equals(extension->manifest_value()));
 
-
-  // Test that trying to set window.chrome.app.isInstalled throws
-  // an exception.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+  // Try to change app.isInstalled.  Should silently fail, so
+  // that isInstalled should have the initial value.
+  ASSERT_TRUE(
+      ui_test_utils::ExecuteJavaScriptAndExtractString(
           browser()->GetSelectedTabContents()->render_view_host(),
           L"",
           L"window.domAutomationController.send("
           L"    function() {"
-          L"      try {"
-          L"        window.chrome.app.isInstalled = false;"
-          L"        return 'BAD: Should have thrown by now...';"
-          L"      } catch (e) {"
-          L"        return 'GOOD: Saw expected error.';"
-          L"      }"
+          L"        var value = window.chrome.app.isInstalled;"
+          L"        window.chrome.app.isInstalled = !value;"
+          L"        if (window.chrome.app.isInstalled == value) {"
+          L"            return 'true';"
+          L"        } else {"
+          L"            return 'false';"
+          L"        }"
           L"    }()"
           L");",
-          &result));
-  EXPECT_EQ("GOOD: Saw expected error.", result);
+         &result));
+
+  // Should not be able to alter window.chrome.app.isInstalled from javascript";
+  EXPECT_EQ("true", result);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {

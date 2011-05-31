@@ -21,3 +21,8 @@ BUGCR84161 : fast/dom/register-protocol-handler.html = TEXT
 
 // Just needs rebasing, suppressing until all baselines are available.
 BUGADAMK WIN : svg/zoom/page/zoom-foreignObject.svg = IMAGE TEXT IMAGE+TEXT
+
+// Webkit test does not follow ES5 spec on this, will upstream
+// new expectations.
+BUGRICOW : fast/js/property-getters-and-setters.html = TEXT
+
