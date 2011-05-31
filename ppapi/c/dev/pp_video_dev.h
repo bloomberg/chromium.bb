@@ -15,6 +15,10 @@
 
 // Enumeration defining global dictionary ranges for various purposes that are
 // used to handle the configurations of the video decoder.
+//
+// IMPORTANT! Dictionary keys and corresponding values MUST match the ones found
+// in VideoDecodeAccelerator interface in Chromium media stack
+// (media/video/video_decode_accelerator.h)!
 enum PP_VideoAttributeDictionary {
   PP_VIDEOATTR_DICTIONARY_TERMINATOR = 0,
 
@@ -70,10 +74,9 @@ enum PP_VideoAttributeDictionary {
   PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_FEATURE_WEIGHTEDPREDICTION,
 
   PP_VIDEOATTR_DICTIONARY_COLOR_FORMAT_BASE = 0x1000,
-  // This specifies the output color format for a decoded frame.
-  //
-  // Value represents 32-bit RGBA format where each component is 8-bit.
-  PP_VIDEOATTR_COLORFORMAT_RGBA
+  // This specifies the output color format for a decoded frame. Value is one
+  // of the values in PP_ColorFormat_Dev enumeration.
+  PP_VIDEOATTR_PICTUREFORMATKEY_COLORFORMAT
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoAttributeDictionary, 4);
 typedef int32_t PP_VideoConfigElement;
@@ -152,6 +155,15 @@ enum PP_H264PayloadFormat_Dev {
   PP_H264PAYLOADFORMAT_FOUR_BYTE_INTERLEAVED_LENGTH = 1 << 4
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_H264PayloadFormat_Dev, 4);
+
+// Enumeration for various color formats.
+enum PP_ColorFormat_Dev {
+  // Value represents 32-bit RGBA format where each component is 8-bit in order
+  // R-G-B-A. Regardless of endianness of the architecture color components are
+  // stored in this order in the memory.
+  PP_VIDEOATTR_COLORFORMAT_RGBA = 0
+};
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_ColorFormat_Dev, 4);
 
 // Enumeration to determine which type of memory for buffer is used.
 enum PP_PictureBufferType_Dev {
