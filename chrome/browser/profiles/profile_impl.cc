@@ -682,6 +682,9 @@ ProfileImpl::~ProfileImpl() {
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
 
+  if (protocol_handler_registry_)
+    protocol_handler_registry_->Finalize();
+
   // This causes the Preferences file to be written to disk.
   MarkAsCleanShutdown();
 }
