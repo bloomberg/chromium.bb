@@ -122,7 +122,7 @@ class DownloadItem : public NotificationObserver {
                const GURL& url,
                bool is_otr);
 
-  ~DownloadItem();
+  virtual ~DownloadItem();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
