@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,6 +61,7 @@ kStringIds = [
   'IDS_INSTALL_UNCOMPRESSION_FAILED',
   'IDS_INSTALL_INVALID_ARCHIVE',
   'IDS_INSTALL_INSUFFICIENT_RIGHTS',
+  'IDS_INSTALL_NO_PRODUCTS_TO_UPDATE',
   'IDS_UNINSTALL_FAILED',
   'IDS_UNINSTALL_COMPLETE',
   'IDS_INSTALL_DIR_IN_USE',

@@ -148,7 +148,7 @@ void AddExistingMultiInstalls(const InstallationState& original_state,
                               InstallerState* installer_state) {
   if (installer_state->is_multi_install()) {
     // TODO(grt): Find all occurrences of such arrays and generalize/centralize.
-    BrowserDistribution::Type product_checks[] = {
+    static const BrowserDistribution::Type product_checks[] = {
       BrowserDistribution::CHROME_BROWSER,
       BrowserDistribution::CHROME_FRAME
     };
@@ -366,8 +366,20 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
 bool CheckPreInstallConditions(const InstallationState& original_state,
                                InstallerState* installer_state,
                                installer::InstallStatus* status) {
+  // See what products are already installed in multi mode.  When we do multi
+  // installs, we must upgrade all installations since they share the binaries.
+  AddExistingMultiInstalls(original_state, installer_state);
+
   const Products& products = installer_state->products();
-  DCHECK(products.size());
+  if (products.empty()) {
+    // We haven't been given any products on which to operate.
+    LOG(ERROR)
+        << "Not given any products to install and no products found to update.";
+    *status = installer::CHROME_NOT_INSTALLED;
+    installer_state->WriteInstallerResult(*status,
+        IDS_INSTALL_NO_PRODUCTS_TO_UPDATE_BASE, NULL);
+    return false;
+  }
 
   if (!CheckMultiInstallConditions(original_state, installer_state, status))
     return false;
@@ -435,10 +447,6 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
       return false;
     }
   }
-
-  // See what products are already installed in multi mode.  When we do multi
-  // installs, we must upgrade all installations since they share the binaries.
-  AddExistingMultiInstalls(original_state, installer_state);
 
   // If no previous installation of Chrome, make sure installation directory
   // either does not exist or can be deleted (i.e. is not locked by some other
@@ -678,6 +686,7 @@ installer::InstallStatus InstallProducts(
       ->UpdateInstallStatus(system_install, archive_type, install_status);
   if (CheckPreInstallConditions(original_state, installer_state,
                                 &install_status)) {
+    VLOG(1) << "Installing to " << installer_state->target_path().value();
     install_status = InstallProductsHelper(
         original_state, cmd_line, prefs, *installer_state, &archive_type);
   }
@@ -1169,7 +1178,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     }
   } else {
     // If --uninstall option is not specified, we assume it is install case.
-    VLOG(1) << "Installing to " << installer_state.target_path().value();
     install_status = InstallProducts(original_state, cmd_line, prefs,
         &installer_state);
   }
