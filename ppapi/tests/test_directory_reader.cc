@@ -29,6 +29,46 @@ std::string IntegerToString(int value) {
   return result;
 }
 
+int32_t DeleteDirectoryRecursively(pp::FileRef_Dev* dir,
+                                   TestCompletionCallback* callback) {
+  if (!dir || !callback)
+    return PP_ERROR_BADARGUMENT;
+
+  int32_t rv = PP_OK;
+  pp::DirectoryReader_Dev directory_reader(*dir);
+  std::vector<pp::DirectoryEntry_Dev> entries;
+  pp::DirectoryEntry_Dev entry;
+  do {
+    rv = directory_reader.GetNextEntry(&entry, *callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback->WaitForResult();
+    if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+      return rv;
+    if (!entry.is_null())
+      entries.push_back(entry);
+  } while (!entry.is_null());
+
+  for (std::vector<pp::DirectoryEntry_Dev>::const_iterator it = entries.begin();
+       it != entries.end(); ++it) {
+    pp::FileRef_Dev file_ref = it->file_ref();
+    if (it->file_type() == PP_FILETYPE_DIRECTORY) {
+      rv = DeleteDirectoryRecursively(&file_ref, callback);
+      if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+        return rv;
+    } else {
+      rv = file_ref.Delete(*callback);
+      if (rv == PP_OK_COMPLETIONPENDING)
+        rv = callback->WaitForResult();
+      if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+        return rv;
+    }
+  }
+  rv = dir->Delete(*callback);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback->WaitForResult();
+  return rv;
+}
+
 }  // namespace
 
 bool TestDirectoryReader::Init() {
@@ -49,51 +89,57 @@ std::string TestDirectoryReader::TestGetNextFile() {
   if (rv != PP_OK)
     return ReportError("FileSystem::Open", rv);
 
-  pp::FileRef_Dev dir_ref(file_system, "/");
-  pp::FileRef_Dev file_ref_1(file_system, "/file_1");
-  pp::FileRef_Dev file_ref_2(file_system, "/file_2");
-  pp::FileRef_Dev file_ref_3(file_system, "/file_3");
+  // Setup testing directories and files.
+  const char* test_dir_name = "/test_get_next_file";
+  const char* file_prefix = "file_";
+  const char* dir_prefix = "dir_";
 
-  pp::FileIO_Dev file_io_1(instance_);
-  rv = file_io_1.Open(file_ref_1, PP_FILEOPENFLAG_CREATE, callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileIO::Open", rv);
-  pp::FileIO_Dev file_io_2(instance_);
-  rv = file_io_2.Open(file_ref_2, PP_FILEOPENFLAG_CREATE, callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileIO::Open", rv);
-  pp::FileIO_Dev file_io_3(instance_);
-  rv = file_io_3.Open(file_ref_3, PP_FILEOPENFLAG_CREATE, callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileIO::Open", rv);
+  pp::FileRef_Dev test_dir(file_system, test_dir_name);
+  rv = DeleteDirectoryRecursively(&test_dir, &callback);
+  if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+    return ReportError("DeleteDirectoryRecursively", rv);
 
-  pp::FileRef_Dev dir_ref_1(file_system, "/dir_1");
-  pp::FileRef_Dev dir_ref_2(file_system, "/dir_2");
-  pp::FileRef_Dev dir_ref_3(file_system, "/dir_3");
-  rv = dir_ref_1.MakeDirectory(callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileRef::MakeDirectory", rv);
-  rv = dir_ref_2.MakeDirectory(callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileRef::MakeDirectory", rv);
-  rv = dir_ref_3.MakeDirectory(callback);
+  rv = test_dir.MakeDirectory(callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileRef::MakeDirectory", rv);
 
+  std::set<std::string> expected_file_names;
+  for (int i = 1; i < 4; ++i) {
+    char buffer[40];
+    sprintf(buffer, "%s/%s%d", test_dir_name, file_prefix, i);
+    pp::FileRef_Dev file_ref(file_system, buffer);
+
+    pp::FileIO_Dev file_io(instance_);
+    rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK)
+      return ReportError("FileIO::Open", rv);
+
+    expected_file_names.insert(buffer);
+  }
+
+  std::set<std::string> expected_dir_names;
+  for (int i = 1; i < 4; ++i) {
+    char buffer[40];
+    sprintf(buffer, "%s/%s%d", test_dir_name, dir_prefix, i);
+    pp::FileRef_Dev file_ref(file_system, buffer);
+
+    rv = file_ref.MakeDirectory(callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK)
+      return ReportError("FileRef::MakeDirectory", rv);
+
+    expected_dir_names.insert(buffer);
+  }
+
+  // Test that |GetNextEntry()| is able to enumerate all directories and files
+  // that we created.
   {
-    pp::DirectoryReader_Dev directory_reader(dir_ref);
+    pp::DirectoryReader_Dev directory_reader(test_dir);
     std::vector<pp::DirectoryEntry_Dev> entries;
     pp::DirectoryEntry_Dev entry;
     do {
@@ -106,21 +152,13 @@ std::string TestDirectoryReader::TestGetNextFile() {
         entries.push_back(entry);
     } while (!entry.is_null());
 
-    if (entries.size() != 6)
-      return "Expected 6 entries, got " + IntegerToString(entries.size());
-
-    std::set<std::string> expected_file_names;
-    expected_file_names.insert("/file_1");
-    expected_file_names.insert("/file_2");
-    expected_file_names.insert("/file_3");
-
-    std::set<std::string> expected_dir_names;
-    expected_dir_names.insert("/dir_1");
-    expected_dir_names.insert("/dir_2");
-    expected_dir_names.insert("/dir_3");
+    size_t sum = expected_file_names.size() + expected_dir_names.size();
+    if (entries.size() != sum)
+      return "Expected " + IntegerToString(sum) + " entries, got " +
+             IntegerToString(entries.size());
 
     for (std::vector<pp::DirectoryEntry_Dev>::const_iterator it =
-             entries.begin(); it != entries.end(); it++) {
+             entries.begin(); it != entries.end(); ++it) {
       pp::FileRef_Dev file_ref = it->file_ref();
       std::string file_path = file_ref.GetPath().AsString();
       std::set<std::string>::iterator found =
@@ -149,7 +187,7 @@ std::string TestDirectoryReader::TestGetNextFile() {
     pp::DirectoryEntry_Dev entry;
     callback.reset_run_count();
     // Note that the directory reader will be deleted immediately.
-    rv = pp::DirectoryReader_Dev(dir_ref).GetNextEntry(&entry, callback);
+    rv = pp::DirectoryReader_Dev(test_dir).GetNextEntry(&entry, callback);
     if (callback.run_count() > 0)
       return "DirectoryReader::GetNextEntry ran callback synchronously.";
 
@@ -171,5 +209,5 @@ std::string TestDirectoryReader::TestGetNextFile() {
     }
   }
 
-  return "";
+  PASS();
 }

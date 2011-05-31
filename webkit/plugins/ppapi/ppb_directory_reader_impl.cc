@@ -124,7 +124,7 @@ int32_t PPB_DirectoryReader_Impl::GetNextEntry(
 
 void PPB_DirectoryReader_Impl::AddNewEntries(
     const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
-  DCHECK(!entries.empty());
+  DCHECK(!entries.empty() || !has_more);
   has_more_ = has_more;
   std::string dir_path = directory_ref_->GetPath();
   if (dir_path[dir_path.size() - 1] != '/')

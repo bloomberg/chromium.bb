@@ -177,8 +177,7 @@ TEST_F(PPAPITest, FileRef) {
   RunTestViaHTTP("FileRef");
 }
 
-// http://crbug.com/63239
-TEST_F(PPAPITest, DISABLED_DirectoryReader) {
+TEST_F(PPAPITest, DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
 
