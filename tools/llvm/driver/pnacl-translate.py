@@ -23,8 +23,10 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-linux-gnu',
   'TRIPLE_X8664': 'x86_64-none-linux-gnu',
 
-
-  'LLC_FLAGS_COMMON' : '-asm-verbose=false ${PIC ? -relocation-model=pic}',
+  'LLC_FLAGS_COMMON': '-asm-verbose=false ' +
+                      '${PIC ? -relocation-model=pic} ' +
+                      '${PIC && ARCH==X8664 && !USE_GLIBC ? ' +
+                      '  -force-tls-non-pic }',
   'LLC_FLAGS_ARM'    :
     # The following options might come in hand and are left here as comments:
     # TODO(robertm): describe their purpose
