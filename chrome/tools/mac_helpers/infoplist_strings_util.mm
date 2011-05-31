@@ -216,8 +216,8 @@ int main(int argc, char* const argv[]) {
 
     uint32_t name_id = IDS_PRODUCT_NAME;
     const char* name_id_str = "IDS_PRODUCT_NAME";
-    uint32_t short_name_id = IDS_SHORT_PRODUCT_NAME;
-    const char* short_name_id_str = "IDS_SHORT_PRODUCT_NAME";
+    uint32_t short_name_id = IDS_APP_MENU_PRODUCT_NAME;
+    const char* short_name_id_str = "IDS_APP_MENU_PRODUCT_NAME";
     if (strcmp(app_type, kAppType_Helper) == 0) {
       name_id = IDS_HELPER_NAME;
       name_id_str = "IDS_HELPER_NAME";
