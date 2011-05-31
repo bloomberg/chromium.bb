@@ -335,9 +335,6 @@ NativeWidgetGtk::~NativeWidgetGtk() {
   input_method_.reset();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
-  // TODO(altimofeev): investigate why OnDestroy could not be called.
-  if (!child_)
-    ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 GtkWindow* NativeWidgetGtk::GetTransientParent() const {
