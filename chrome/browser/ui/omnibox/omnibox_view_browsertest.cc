@@ -1173,7 +1173,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
   NonSubstitutingKeywordTest();
 }
 
+#if defined(OS_MACOSX)
+// Flaky on Mac 10.6 http://crbug.com/84420
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_DeleteItem) {
+#else
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
+#endif
   DeleteItemTest();
 }
 
