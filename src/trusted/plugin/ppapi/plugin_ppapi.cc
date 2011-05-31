@@ -640,9 +640,8 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
                  static_cast<void*>(this)));
   if (ppapi_proxy_ == NULL) {
     // Store this event and replay it when the proxy becomes available.
-    // TODO(elijahtaylor,bbudge) uncomment these two lines
-    // replayHandleDocumentLoad = true;
-    // replayHandleDocumentLoadURLLoader = url_loader;
+    replayHandleDocumentLoad = true;
+    replayHandleDocumentLoadURLLoader = url_loader;
     // Returning false allows the caller release its reference to the
     // URL loader.
     return false;
@@ -820,8 +819,9 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   }
   if (replayHandleDocumentLoad) {
     replayHandleDocumentLoad = false;
-    if (!HandleDocumentLoad(replayHandleDocumentLoadURLLoader))
-      replayHandleDocumentLoadURLLoader.Close();
+    HandleDocumentLoad(replayHandleDocumentLoadURLLoader);
+    // Release our reference on this loader.
+    replayHandleDocumentLoadURLLoader = pp::URLLoader();
   }
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (success=true)\n"));
   return true;
