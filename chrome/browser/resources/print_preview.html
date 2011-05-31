@@ -13,104 +13,102 @@
 </head>
 <body>
   <div class="sidebar">
-    <form id="controls">
-      <header>
-        <h1 i18n-content="title"></h1>
-        <div id="print-header">
-          <span id="print-summary"></span>
-          <button id="print-button" i18n-content="printButton" class="default"
-              autofocus></button>
-          <button id="cancel-button" i18n-content="cancelButton"></button>
+    <header>
+      <h1 i18n-content="title"></h1>
+      <div id="print-header">
+        <span id="print-summary"></span>
+        <button id="print-button" i18n-content="printButton" class="default"
+            autofocus></button>
+        <button id="cancel-button" i18n-content="cancelButton"></button>
+      </div>
+    </header>
+    <div id="main">
+      <div class="two-column">
+        <h1 i18n-content="destinationLabel"></h1>
+        <select id="printer-list"></select>
+      </div>
+      <hr>
+      <div class="two-column">
+        <h1 i18n-content="pagesLabel"></h1>
+        <div>
+          <input id="all-pages" name="pages" checked type="radio"
+              label="all-pages-label"/>
+          <label id="all-pages-label" for="all-pages"
+              i18n-content="optionAllPages"></label>
         </div>
-      </header>
-      <div id="main">
-        <div class="two-column">
-          <h1 i18n-content="destinationLabel"></h1>
-          <select id="printer-list"></select>
-        </div>
-        <hr>
-        <div class="two-column">
-          <h1 i18n-content="pagesLabel"></h1>
-          <div>
-            <input id="all-pages" name="pages" checked type="radio"
-                label="all-pages-label"/>
-            <label id="all-pages-label" for="all-pages"
-                i18n-content="optionAllPages"></label>
-          </div>
-          <div>
-            <input id="print-pages" name="pages" type="radio"/>
-            <label for="print-pages">
-              <input id="individual-pages" type="text"
-                  i18n-values="placeholder:examplePageRangeText"
-                  name="individual-pages"/>
-            </label>
-            <span id="individual-pages-hint" class="hint"
-                i18n-content="pageRangeInstruction"></span>
-          </div>
-        </div>
-        <hr id="hr-before-copies" class="invisible">
-        <div id="copies-option" class="two-column option visible">
-          <h1 i18n-content="copiesLabel"></h1>
-          <div>
-            <div>
-              <input id="copies" type="text" name="copies" value="1" min="1"
-                  max="999" maxlength="3" class="number small"/>
-              <button id="increment">+</button>
-              <button id="decrement">–</button>
-              <span id="collate-option" hidden>
-                <input id="collate" name="collate" type="checkbox" />
-                <label for="collate" i18n-content="optionCollate"></label>
-              </span>
-            </div>
-            <span id="copies-hint" class="hint invalid"
-                i18n-content="copiesInstruction"></span>
-            <div id="two-sided-div">
-              <input id="two-sided" name="two-sided" type="checkbox"/>
-              <label for="two-sided" i18n-content="optionTwoSided"></label>
-            </div>
-          </div>
-        </div>
-        <hr>
-        <div id="landscape-option" class="two-column option visible">
-          <h1 i18n-content="layoutLabel"></h1>
-          <div>
-            <div>
-              <input id="portrait" type="radio" name="layout" checked
-                  label="portrait-label"/>
-              <label id="portrait-label" for="portrait"
-                  i18n-content="optionPortrait"></label>
-            </div>
-            <div>
-              <input id="landscape" type="radio" name="layout"
-                  label="landscape-label"/>
-              <label id="landscape-label" for="landscape"
-                  i18n-content="optionLandscape"></label>
-            </div>
-          </div>
-        </div>
-        <hr>
-        <div id="color-options" class="two-column option">
-          <h1 i18n-content="optionColor"></h1>
-          <div>
-            <div>
-              <input id="color" type="radio" name="color" label="color-label"/>
-              <label id="color-label" for="color"
-                  i18n-content="optionColor"></label>
-            </div>
-            <div>
-              <input id="bw" type="radio" name="color" checked
-                  label="bw-label"/>
-              <label id="bw-label" for="bw" i18n-content="optionBw"></label>
-            </div>
-          </div>
-        </div>
-        <hr>
-        <div id="system-dialog-div">
-          <a id="system-dialog-link" href="#"
-              i18n-content="systemDialogOption"></a>
+        <div>
+          <input id="print-pages" name="pages" type="radio"/>
+          <label for="print-pages">
+            <input id="individual-pages" type="text"
+                i18n-values="placeholder:examplePageRangeText"
+                name="individual-pages"/>
+          </label>
+          <span id="individual-pages-hint" class="hint"
+              i18n-content="pageRangeInstruction"></span>
         </div>
       </div>
-    </form>
+      <hr id="hr-before-copies" class="invisible">
+      <div id="copies-option" class="two-column option visible">
+        <h1 i18n-content="copiesLabel"></h1>
+        <div>
+          <div>
+            <input id="copies" type="text" name="copies" value="1" min="1"
+                max="999" maxlength="3" class="number small"/>
+            <button id="increment">+</button>
+            <button id="decrement">–</button>
+            <span id="collate-option" hidden>
+              <input id="collate" name="collate" type="checkbox" />
+              <label for="collate" i18n-content="optionCollate"></label>
+            </span>
+          </div>
+          <span id="copies-hint" class="hint invalid"
+              i18n-content="copiesInstruction"></span>
+          <div id="two-sided-div">
+            <input id="two-sided" name="two-sided" type="checkbox"/>
+            <label for="two-sided" i18n-content="optionTwoSided"></label>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div id="landscape-option" class="two-column option visible">
+        <h1 i18n-content="layoutLabel"></h1>
+        <div>
+          <div>
+            <input id="portrait" type="radio" name="layout" checked
+                label="portrait-label"/>
+            <label id="portrait-label" for="portrait"
+                i18n-content="optionPortrait"></label>
+          </div>
+          <div>
+            <input id="landscape" type="radio" name="layout"
+                label="landscape-label"/>
+            <label id="landscape-label" for="landscape"
+                i18n-content="optionLandscape"></label>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div id="color-options" class="two-column option">
+        <h1 i18n-content="optionColor"></h1>
+        <div>
+          <div>
+            <input id="color" type="radio" name="color" label="color-label"/>
+            <label id="color-label" for="color"
+                i18n-content="optionColor"></label>
+          </div>
+          <div>
+            <input id="bw" type="radio" name="color" checked
+                label="bw-label"/>
+            <label id="bw-label" for="bw" i18n-content="optionBw"></label>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div id="system-dialog-div">
+        <a id="system-dialog-link" href="#"
+            i18n-content="systemDialogOption"></a>
+      </div>
+    </div>
   </div>
   <div id="mainview">
     <div id="dancing-dots" class="invisible">

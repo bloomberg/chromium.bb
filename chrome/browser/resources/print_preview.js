@@ -47,7 +47,6 @@ function onLoad() {
 
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
-  $('controls').onsubmit = function() { return false; };
   $('dancing-dots').classList.remove('invisible');
   chrome.send('getDefaultPrinter');
 }
@@ -205,19 +204,6 @@ function updateWithPrinterCapabilities(settingInfo) {
 }
 
 /**
- * Disables or enables all controls in the options pane except for the cancel
- * button.
- */
-function setControlsDisabled(disabled) {
-  var elementList = $('controls').elements;
-  for (var i = 0; i < elementList.length; ++i) {
-    if (elementList[i] == $('cancel-button'))
-      continue;
-    elementList[i].disabled = disabled;
-  }
-}
-
-/**
  * Validates the copies text field value.
  * NOTE: An empty copies field text is considered valid because the blur event
  * listener of this field will set it back to a default value.
@@ -363,7 +349,7 @@ function requestPrintPreview() {
 
 /**
  * Set the default printer. If there is one, generate a print preview.
- * @param {string} Name of the default printer. Empty if none.
+ * @param {string} printer Name of the default printer. Empty if none.
  */
 function setDefaultPrinter(printer) {
   // Add a placeholder value so the printer list looks valid.
@@ -465,8 +451,7 @@ function displayErrorMessage(errorMessage, showButton) {
   else
     $('reopen-page').classList.add('hidden');
 
-  setControlsDisabled(true);
-
+  removeEventListeners();
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
     $('mainview').removeChild(pdfViewer);
