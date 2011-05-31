@@ -462,9 +462,7 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
       remoting::ChromotingHost::Create(&host_context_, host_config,
                                        access_verifier.release());
   host->AddStatusObserver(register_request);
-
-  // TODO(wez): Improve our authentication framework.
-  host->set_preauthenticated(true);
+  host->set_me2mom(true);
 
   // Nothing went wrong, so lets save the host, config and request.
   host_ = host;

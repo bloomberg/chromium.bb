@@ -36,7 +36,7 @@ class EventExecutorMac : public EventExecutor {
   MessageLoop* message_loop_;
   Capturer* capturer_;
   int last_x_, last_y_;
-  int modifiers_, mouse_buttons_;
+  int mouse_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);
 };
@@ -44,8 +44,7 @@ class EventExecutorMac : public EventExecutor {
 EventExecutorMac::EventExecutorMac(
     MessageLoop* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
-      capturer_(capturer), last_x_(0), last_y_(0), modifiers_(0),
-      mouse_buttons_(0) {
+      capturer_(capturer), last_x_(0), last_y_(0), mouse_buttons_(0) {
 }
 
 // Hard-coded mapping from Virtual Key codes to Mac KeySyms.
@@ -220,31 +219,9 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent* event, Task* done) {
   if (key_code >= 0 && key_code < 256) {
     int key_sym = kUsVkeyToKeysym[key_code];
     if (key_sym != -1) {
-      base::mac::ScopedCFTypeRef<CGEventRef> kbd_event(
-          CGEventCreateKeyboardEvent(0, kUsVkeyToKeysym[key_code],
-                                     event->pressed()));
-      int this_modifier = 0;
-      switch (key_sym) {
-        case kVK_Shift: case kVK_RightShift:
-          this_modifier = kCGEventFlagMaskShift;
-          break;
-        case kVK_Control: case kVK_RightControl:
-          this_modifier = kCGEventFlagMaskControl;
-          break;
-        case kVK_Command:
-          this_modifier = kCGEventFlagMaskCommand;
-          break;
-        case kVK_Option: case kVK_RightOption:
-          this_modifier = kCGEventFlagMaskAlternate;
-          break;
-      }
-      if (this_modifier && event->pressed()) {
-        modifiers_ |= this_modifier;
-      } else if (this_modifier && !event->pressed()) {
-        modifiers_ &= ~this_modifier;
-      }
-      CGEventSetFlags(kbd_event, modifiers_);
-      CGEventPost(kCGSessionEventTap, kbd_event);
+      // We use the deprecated event injection API because the new one doesn't
+      // work with switched-out sessions (curtain mode).
+      CGPostKeyboardEvent(0, key_sym, event->pressed());
     }
   }
 }

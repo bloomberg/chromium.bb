@@ -63,7 +63,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_curtained_(false),
-      preauthenticated_(false) {
+      is_me2mom_(false) {
   DCHECK(desktop_environment_.get());
 }
 
@@ -180,7 +180,8 @@ void ChromotingHost::AddStatusObserver(
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
   VLOG(1) << "Connection to client established.";
-  if (preauthenticated_) {
+  if (is_me2mom_) {
+    // TODO(wez): Improve our authentication framework.
     context_->main_message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &ChromotingHost::ProcessPreAuthentication,
@@ -406,7 +407,7 @@ bool ChromotingHost::HasAuthenticatedClients() const {
 void ChromotingHost::EnableCurtainMode(bool enable) {
   // TODO(jamiewalch): This will need to be more sophisticated when we think
   // about proper crash recovery and daemon mode.
-  if (enable == is_curtained_)
+  if (is_me2mom_ || enable == is_curtained_)
     return;
   desktop_environment_->curtain()->EnableCurtainMode(enable);
   is_curtained_ = enable;

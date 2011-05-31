@@ -123,8 +123,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);
 
-  void set_preauthenticated(bool preauthenticated) {
-    preauthenticated_ = preauthenticated;
+  void set_me2mom(bool is_me2mom) {
+    is_me2mom_ = is_me2mom;
   }
 
  private:
@@ -211,7 +211,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Whether or not the host is running in "Me2Mom" mode, in which connections
   // are pre-authenticated, and hence the local login challenge can be bypassed.
-  bool preauthenticated_;
+  bool is_me2mom_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };

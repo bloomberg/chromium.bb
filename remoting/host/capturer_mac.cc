@@ -133,8 +133,9 @@ class CapturerMac : public Capturer {
   virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
-  void FastBlit(const VideoFrameBuffer& buffer);
-  void SlowBlit(const VideoFrameBuffer& buffer);
+  void GlBlitFast(const VideoFrameBuffer& buffer);
+  void GlBlitSlow(const VideoFrameBuffer& buffer);
+  void CgBlit(const VideoFrameBuffer& buffer, const InvalidRects& rects);
   void CaptureRects(const InvalidRects& rects,
                     CaptureCompletedCallback* callback);
 
@@ -166,6 +167,10 @@ class CapturerMac : public Capturer {
   // The current buffer with valid data for reading.
   int current_buffer_;
 
+  // The last buffer into which we captured, or NULL for the first capture for
+  // a particular screen resolution.
+  uint8* last_buffer_;
+
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
 
@@ -177,6 +182,7 @@ class CapturerMac : public Capturer {
 CapturerMac::CapturerMac()
     : cgl_context_(NULL),
       current_buffer_(0),
+      last_buffer_(NULL),
       pixel_format_(media::VideoFrame::RGB32),
       capturing_(true) {
   // TODO(dmaclach): move this initialization out into session_manager,
@@ -224,7 +230,18 @@ void CapturerMac::ScreenConfigurationChanged() {
   ReleaseBuffers();
   InvalidRects rects;
   helper_.SwapInvalidRects(rects);
+  last_buffer_ = NULL;
+
   CGDirectDisplayID mainDevice = CGMainDisplayID();
+  int width = CGDisplayPixelsWide(mainDevice);
+  int height = CGDisplayPixelsHigh(mainDevice);
+  InvalidateScreen(gfx::Size(width, height));
+
+  if (CGDisplayIsBuiltin(mainDevice)) {
+    VLOG(3) << "OpenGL support not available.";
+    return;
+  }
+
   CGLPixelFormatAttribute attributes[] = {
     kCGLPFAFullScreen,
     kCGLPFADisplayMask,
@@ -243,9 +260,6 @@ void CapturerMac::ScreenConfigurationChanged() {
   CGLSetFullScreen(cgl_context_);
   CGLSetCurrentContext(cgl_context_);
 
-  int width = CGDisplayPixelsWide(mainDevice);
-  int height = CGDisplayPixelsHigh(mainDevice);
-  InvalidateScreen(gfx::Size(width, height));
   size_t buffer_size = width * height * sizeof(uint32_t);
   pixel_buffer_object_.Init(cgl_context_, buffer_size);
 }
@@ -278,16 +292,26 @@ void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
     VideoFrameBuffer& current_buffer = buffers_[current_buffer_];
     current_buffer.Update();
 
-    if (pixel_buffer_object_.get() != 0) {
-      FastBlit(current_buffer);
+    bool flip = true;  // GL capturers need flipping.
+    if (cgl_context_) {
+      if (pixel_buffer_object_.get() != 0) {
+        GlBlitFast(current_buffer);
+      } else {
+        GlBlitSlow(current_buffer);
+      }
     } else {
-      SlowBlit(current_buffer);
+      CgBlit(current_buffer, rects);
+      flip = false;
     }
 
     DataPlanes planes;
-    planes.data[0] = current_buffer.ptr() +
-        (current_buffer.size().height() - 1) * current_buffer.bytes_per_row();
-    planes.strides[0] = -current_buffer.bytes_per_row();
+    planes.data[0] = current_buffer.ptr();
+    planes.strides[0] = current_buffer.bytes_per_row();
+    if (flip) {
+      planes.strides[0] = -planes.strides[0];
+      planes.data[0] +=
+          (current_buffer.size().height() - 1) * current_buffer.bytes_per_row();
+    }
 
     data = new CaptureData(planes, gfx::Size(current_buffer.size()),
                            pixel_format());
@@ -301,7 +325,7 @@ void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   delete callback;
 }
 
-void CapturerMac::FastBlit(const VideoFrameBuffer& buffer) {
+void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer) {
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_.get());
   glReadPixels(0, 0, buffer.size().width(), buffer.size().height(),
@@ -319,14 +343,14 @@ void CapturerMac::FastBlit(const VideoFrameBuffer& buffer) {
     // If glUnmapBuffer returns false, then the contents of the data store are
     // undefined. This might be because the screen mode has changed, in which
     // case it will be recreated in ScreenConfigurationChanged, but releasing
-    // the object here is the best option. Capturing will fall back on SlowBlit
-    // until such time as the pixel buffer object is recreated.
+    // the object here is the best option. Capturing will fall back on
+    // GlBlitSlow until such time as the pixel buffer object is recreated.
     pixel_buffer_object_.Release();
   }
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 }
 
-void CapturerMac::SlowBlit(const VideoFrameBuffer& buffer) {
+void CapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glReadBuffer(GL_FRONT);
   glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
@@ -338,6 +362,30 @@ void CapturerMac::SlowBlit(const VideoFrameBuffer& buffer) {
   glReadPixels(0, 0, buffer.size().width(), buffer.size().height(),
                GL_BGRA, GL_UNSIGNED_BYTE, buffer.ptr());
   glPopClientAttrib();
+}
+
+void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
+                         const InvalidRects& rects) {
+  if (last_buffer_)
+    memcpy(buffer.ptr(), last_buffer_,
+           buffer.bytes_per_row() * buffer.size().height());
+  last_buffer_ = buffer.ptr();
+  CGDirectDisplayID main_display = CGMainDisplayID();
+  uint8* display_base_address =
+      reinterpret_cast<uint8*>(CGDisplayBaseAddress(main_display));
+  int src_bytes_per_row = CGDisplayBytesPerRow(main_display);
+  int src_bytes_per_pixel = CGDisplayBitsPerPixel(main_display) / 8;
+  for (InvalidRects::iterator i = rects.begin(); i != rects.end(); ++i) {
+    int src_row_offset =  i->x() * src_bytes_per_pixel;
+    int dst_row_offset = i->x() * sizeof(uint32_t);
+    int rect_width_in_bytes = i->width() * src_bytes_per_pixel;
+    int ymax = i->height() + i->y();
+    for (int y = i->y(); y < ymax; ++y) {
+      memcpy(buffer.ptr() + y * buffer.bytes_per_row() + dst_row_offset,
+             display_base_address + y * src_bytes_per_row + src_row_offset,
+             rect_width_in_bytes);
+    }
+  }
 }
 
 const gfx::Size& CapturerMac::size_most_recent() const {

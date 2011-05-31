@@ -176,7 +176,7 @@ class SimpleHost {
       host = ChromotingHost::Create(&context, config,
                                     access_verifier.release());
     }
-    host->set_preauthenticated(is_me2mom_);
+    host->set_me2mom(is_me2mom_);
 
     if (protocol_config_.get()) {
       host->set_protocol_config(protocol_config_.release());

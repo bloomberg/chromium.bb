@@ -404,4 +404,38 @@ TEST_F(ChromotingHostTest, CurtainModeFailSecond) {
   message_loop_.Run();
 }
 
+ACTION_P(SetBool, var) { *var = true; }
+
+TEST_F(ChromotingHostTest, CurtainModeMe2Mom) {
+  host_->Start(NewRunnableFunction(&PostQuitTask, &message_loop_));
+  host_->set_me2mom(true);
+
+  EXPECT_CALL(client_stub_, BeginSessionResponse(_, _))
+      .WillOnce(RunDoneTask());
+
+  // When the video packet is received we first shutdown ChromotingHost
+  // then execute the done task.
+  bool curtain_activated = false;
+  {
+    InSequence s;
+    // Can't just expect Times(0) because if it fails then the host will
+    // not be shut down and the message loop will never exit.
+    EXPECT_CALL(*curtain_, EnableCurtainMode(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(SetBool(&curtain_activated));
+    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+        .WillOnce(DoAll(
+            InvokeWithoutArgs(host_.get(), &ChromotingHost::Shutdown),
+            RunDoneTask()))
+        .RetiresOnSaturation();
+    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+        .Times(AnyNumber());
+    EXPECT_CALL(*connection_.get(), Disconnect())
+        .RetiresOnSaturation();
+  }
+  SimulateClientConnection(0, true);
+  message_loop_.Run();
+  host_->set_me2mom(false);
+  EXPECT_THAT(curtain_activated, false);
+}
 }  // namespace remoting
