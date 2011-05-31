@@ -81,7 +81,8 @@ class PluginsCheck(pyauto.PyUITest):
     if self.IsChromeOS():
       self.assertEqual(len(plugins_list), len(browser_plugins_list),
           'The number of plugins on the system do not match the number in the '
-          'whitelist.')
+          'whitelist.\n\tSystem list: %s\n\tWhitelist: %s' %
+          (pprint.pformat(browser_plugins_list), pprint.pformat(plugins_list)))
 
 
 if __name__ == '__main__':
