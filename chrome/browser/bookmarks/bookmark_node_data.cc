@@ -198,17 +198,26 @@ bool BookmarkNodeData::ClipboardContainsBookmarks() {
 }
 #else
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
-  bookmark_pasteboard_helper_mac::WriteToClipboard(elements, profile_path_);
+  bookmark_pasteboard_helper_mac::WriteToClipboard(elements,
+                                                   profile_path_.value());
 }
 
 bool BookmarkNodeData::ReadFromClipboard() {
-  return bookmark_pasteboard_helper_mac::ReadFromClipboard(elements,
-                                                           &profile_path_);
+  // TODO(evan): bookmark_pasteboard_helper_mac should just use FilePaths.
+  FilePath::StringType buf;
+  if (!bookmark_pasteboard_helper_mac::ReadFromClipboard(elements, &buf))
+    return false;
+  profile_path_ = FilePath(buf);
+  return true;
 }
 
 bool BookmarkNodeData::ReadFromDragClipboard() {
-  return bookmark_pasteboard_helper_mac::ReadFromDragClipboard(elements,
-                                                               &profile_path_);
+  // TODO(evan): bookmark_pasteboard_helper_mac should just use FilePaths.
+  FilePath::StringType buf;
+  if (!bookmark_pasteboard_helper_mac::ReadFromDragClipboard(elements, &buf))
+    return false;
+  profile_path_ = FilePath(buf);
+  return true;
 }
 
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
@@ -262,7 +271,7 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
 
 void BookmarkNodeData::WriteToPickle(Profile* profile, Pickle* pickle) const {
   FilePath path = profile ? profile->GetPath() : FilePath();
-  FilePath::WriteStringTypeToPickle(pickle, path.value());
+  path.WriteToPickle(pickle);
   pickle->WriteSize(elements.size());
 
   for (size_t i = 0; i < elements.size(); ++i)
@@ -272,8 +281,7 @@ void BookmarkNodeData::WriteToPickle(Profile* profile, Pickle* pickle) const {
 bool BookmarkNodeData::ReadFromPickle(Pickle* pickle) {
   void* data_iterator = NULL;
   size_t element_count;
-  if (FilePath::ReadStringTypeFromPickle(pickle, &data_iterator,
-                                         &profile_path_) &&
+  if (profile_path_.ReadFromPickle(pickle, &data_iterator) &&
       pickle->ReadSize(&data_iterator, &element_count)) {
     std::vector<Element> tmp_elements;
     tmp_elements.resize(element_count);
@@ -321,10 +329,10 @@ void BookmarkNodeData::SetOriginatingProfile(Profile* profile) {
   DCHECK(profile_path_.empty());
 
   if (profile)
-    profile_path_ = profile->GetPath().value();
+    profile_path_ = profile->GetPath();
 }
 
 bool BookmarkNodeData::IsFromProfile(Profile* profile) const {
   // An empty path means the data is not associated with any profile.
-  return !profile_path_.empty() && profile_path_ == profile->GetPath().value();
+  return !profile_path_.empty() && profile_path_ == profile->GetPath();
 }
