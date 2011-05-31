@@ -28,7 +28,12 @@ static const int kStartGpuBlacklistFetchDelay = 6000;
 // Delay between calls to update the gpu blacklist (48 hours).
 static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
-}  // namespace
+std::string GetChromeVersionString() {
+  chrome::VersionInfo version_info;
+  return version_info.is_valid() ? version_info.Version() : "0";
+}
+
+}  // namespace anonymous
 
 const char* GpuBlacklistUpdater::kDefaultGpuBlacklistURL =
     "https://dl.google.com/dl/edgedl/chrome/gpu/software_rendering_list.json";
@@ -43,9 +48,7 @@ GpuBlacklistUpdater::GpuBlacklistUpdater()
                          kStartGpuBlacklistFetchDelay,
                          kCacheUpdateDelay) {
   prefs_->RegisterDictionaryPref(prefs::kGpuBlacklist);
-  const DictionaryValue* gpu_blacklist_cache =
-      prefs_->GetDictionary(prefs::kGpuBlacklist);
-  LoadGpuBlacklist(*gpu_blacklist_cache);
+  InitializeGpuBlacklist();
 }
 
 GpuBlacklistUpdater::~GpuBlacklistUpdater() { }
@@ -53,59 +56,37 @@ GpuBlacklistUpdater::~GpuBlacklistUpdater() { }
 void GpuBlacklistUpdater::Unpack(const DictionaryValue& parsed_json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prefs_->Set(prefs::kGpuBlacklist, parsed_json);
-  LoadGpuBlacklist(parsed_json);
+  UpdateGpuBlacklist(parsed_json, false);
 }
 
-void GpuBlacklistUpdater::LoadGpuBlacklist(
-    const DictionaryValue& gpu_blacklist_cache) {
+void GpuBlacklistUpdater::InitializeGpuBlacklist() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<GpuBlacklist> gpu_blacklist;
-  // We first load it from the browser resources, and then check if the cached
-  // version is more up-to-date.
-  static const base::StringPiece gpu_blacklist_json(
+  // We first load it from the browser resources.
+  const base::StringPiece gpu_blacklist_json(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_GPU_BLACKLIST));
-  chrome::VersionInfo version_info;
-  std::string chrome_version_string =
-      version_info.is_valid() ? version_info.Version() : "0";
-  gpu_blacklist.reset(new GpuBlacklist(chrome_version_string));
-  if (!gpu_blacklist->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true))
-    return;
-
-  uint16 version_major, version_minor;
-  bool succeed = gpu_blacklist->GetVersion(&version_major, &version_minor);
+  GpuBlacklist* built_in_list = new GpuBlacklist(GetChromeVersionString());
+  bool succeed = built_in_list->LoadGpuBlacklist(
+      gpu_blacklist_json.as_string(), true);
   DCHECK(succeed);
-  VLOG(1) << "Using software rendering list version "
-          << version_major << "." << version_minor;
+  GpuDataManager::GetInstance()->SetBuiltInGpuBlacklist(built_in_list);
 
-  uint16 cached_version_major, cached_version_minor;
-  if (GpuBlacklist::GetVersion(gpu_blacklist_cache,
-                               &cached_version_major,
-                               &cached_version_minor)) {
-    if (gpu_blacklist.get() != NULL) {
-      uint16 current_version_major, current_version_minor;
-      if (gpu_blacklist->GetVersion(&current_version_major,
-                                    &current_version_minor) &&
-          (cached_version_major > current_version_major ||
-           (cached_version_major == current_version_major &&
-            cached_version_minor > current_version_minor))) {
-        chrome::VersionInfo version_info;
-        std::string chrome_version_string =
-            version_info.is_valid() ? version_info.Version() : "0";
-        scoped_ptr<GpuBlacklist> updated_list(
-            new GpuBlacklist(chrome_version_string));
-        if (updated_list->LoadGpuBlacklist(gpu_blacklist_cache, true)) {
-          gpu_blacklist.reset(updated_list.release());
-          VLOG(1) << "Using software rendering list version "
-              << cached_version_major << "." << cached_version_minor;
-        }
-      }
-    }
+  // Then we check if the cached version is more up-to-date.
+  const DictionaryValue* gpu_blacklist_cache =
+      prefs_->GetDictionary(prefs::kGpuBlacklist);
+  DCHECK(gpu_blacklist_cache);
+  UpdateGpuBlacklist(*gpu_blacklist_cache, true);
+}
+
+void GpuBlacklistUpdater::UpdateGpuBlacklist(
+    const DictionaryValue& gpu_blacklist_cache, bool preliminary) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<GpuBlacklist> gpu_blacklist(
+      new GpuBlacklist(GetChromeVersionString()));
+  if (gpu_blacklist->LoadGpuBlacklist(gpu_blacklist_cache, true)) {
+    GpuDataManager::GetInstance()->UpdateGpuBlacklist(
+        gpu_blacklist.release(), preliminary);
   }
-
-  // Need to initialize GpuDataManager to load the current GPU blacklist,
-  // collect preliminary GPU info, and run through GPU blacklist.
-  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-  gpu_data_manager->UpdateGpuBlacklist(gpu_blacklist.release());
 }

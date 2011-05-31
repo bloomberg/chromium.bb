@@ -20,7 +20,10 @@ class GpuBlacklistUpdater : public WebResourceService {
 
   virtual void Unpack(const DictionaryValue& parsed_json);
 
-  void LoadGpuBlacklist(const DictionaryValue& gpu_blacklist_cache);
+  void InitializeGpuBlacklist();
+
+  void UpdateGpuBlacklist(
+      const DictionaryValue& gpu_blacklist_cache, bool preliminary);
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklistUpdater);
 };

@@ -67,9 +67,15 @@ class GpuDataManager {
   // in correspondance to preliminary gpu feature flags.
   void AppendRendererCommandLine(CommandLine* command_line);
 
+  // Gives ownership of the built-in blacklist.  This is always called on the
+  // UI thread.
+  void SetBuiltInGpuBlacklist(GpuBlacklist* built_in_list);
+
   // Gives ownership of the latest blacklist.  This is always called on the UI
   // thread.
-  void UpdateGpuBlacklist(GpuBlacklist* gpu_blacklist);
+  // TODO(zmo): Get rid of preliminary because it should not be exposed to
+  // outside GpuDataManager.
+  void UpdateGpuBlacklist(GpuBlacklist* updated_list, bool preliminary);
 
  private:
   friend struct DefaultSingletonTraits<GpuDataManager>;
@@ -92,6 +98,7 @@ class GpuDataManager {
 
   bool gpu_feature_flags_set_;
   GpuFeatureFlags gpu_feature_flags_;
+  GpuFeatureFlags preliminary_gpu_feature_flags_;
 
   GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;

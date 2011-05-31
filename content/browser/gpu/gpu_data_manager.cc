@@ -45,12 +45,16 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
 }
 
 void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
-  base::AutoLock auto_lock(gpu_info_lock_);
-  if (!gpu_info_.Merge(gpu_info))
-    return;
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    if (!gpu_info_.Merge(gpu_info))
+      return;
 
-  RunGpuInfoUpdateCallbacks();
-  content::GetContentClient()->SetGpuInfo(gpu_info_);
+    RunGpuInfoUpdateCallbacks();
+    content::GetContentClient()->SetGpuInfo(gpu_info_);
+  }
+
+  UpdateGpuFeatureFlags();
 }
 
 const GPUInfo& GpuDataManager::gpu_info() const {
@@ -101,15 +105,14 @@ GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
 }
 
 bool GpuDataManager::GpuAccessAllowed() {
-  uint32 flags = gpu_feature_flags_.flags();
-
-  // This will in effect block access to all GPU features if any of them
-  // is blacklisted.
-  // TODO(vangelis): Restructure the code to make it possible to selectively
-  // blaclist gpu features.
-  return !(flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas ||
-           flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing ||
-           flags & GpuFeatureFlags::kGpuFeatureWebgl);
+  // We only need to block GPU process if more features are disallowed other
+  // than those in the preliminary gpu feature flags because the latter work
+  // through renderer commandline switches.
+  // However, if accelerated_compositing is not allowed, then we should always
+  // deny gpu access.
+  uint32 mask = (~(preliminary_gpu_feature_flags_.flags())) |
+                GpuFeatureFlags::kGpuFeatureAcceleratedCompositing;
+  return (gpu_feature_flags_.flags() & mask) == 0;
 }
 
 void GpuDataManager::AddGpuInfoUpdateCallback(Callback0::Type* callback) {
@@ -155,14 +158,51 @@ void GpuDataManager::AppendRendererCommandLine(
   }
 }
 
-void GpuDataManager::UpdateGpuBlacklist(GpuBlacklist* gpu_blacklist) {
+void GpuDataManager::SetBuiltInGpuBlacklist(GpuBlacklist* built_in_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gpu_blacklist_.reset(gpu_blacklist);
+  DCHECK(built_in_list);
+  uint16 version_major, version_minor;
+  bool succeed = built_in_list->GetVersion(
+      &version_major, &version_minor);
+  DCHECK(succeed);
+  gpu_blacklist_.reset(built_in_list);
   UpdateGpuFeatureFlags();
+  preliminary_gpu_feature_flags_ = gpu_feature_flags_;
+  VLOG(1) << "Using software rendering list version "
+          << version_major << "." << version_minor;
+}
+
+void GpuDataManager::UpdateGpuBlacklist(
+    GpuBlacklist* gpu_blacklist, bool preliminary) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(gpu_blacklist);
+
+  scoped_ptr<GpuBlacklist> updated_list(gpu_blacklist);
+
+  uint16 updated_version_major, updated_version_minor;
+  if (!updated_list->GetVersion(
+          &updated_version_major, &updated_version_minor))
+    return;
+
+  uint16 current_version_major, current_version_minor;
+  bool succeed = gpu_blacklist_->GetVersion(
+      &current_version_major, &current_version_minor);
+  DCHECK(succeed);
+  if (updated_version_major < current_version_major ||
+      (updated_version_major == current_version_major &&
+       updated_version_minor <= current_version_minor))
+    return;
+
+  gpu_blacklist_.reset(updated_list.release());
+  UpdateGpuFeatureFlags();
+  if (preliminary)
+    preliminary_gpu_feature_flags_ = gpu_feature_flags_;
+  VLOG(1) << "Using software rendering list version "
+          << updated_version_major << "." << updated_version_minor;
 }
 
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {
-  if(!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &GpuDataManager::RunGpuInfoUpdateCallbacks));
     return;
@@ -175,7 +215,11 @@ void GpuDataManager::RunGpuInfoUpdateCallbacks() {
 }
 
 void GpuDataManager::UpdateGpuFeatureFlags() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &GpuDataManager::UpdateGpuFeatureFlags));
+    return;
+  }
 
   GpuBlacklist* gpu_blacklist = GetGpuBlacklist();
   if (gpu_blacklist == NULL)
