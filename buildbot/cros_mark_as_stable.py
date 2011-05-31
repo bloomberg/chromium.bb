@@ -582,8 +582,8 @@ def main(argv):
     blacklist = _BlackListManager()
     _BuildEBuildDictionary(overlays, options.all, package_list, blacklist)
 
-  file_dir = os.path.dirname(os.path.realpath(__file__))
-  tracking_branch = 'remotes/m/%s' % commands.GetManifestBranch(file_dir)
+  tracking_branch = cros_build_lib.GetManifestDefaultBranch(options.srcroot)
+  tracking_branch = 'remotes/m/' + tracking_branch
 
   # Contains the array of packages we actually revved.
   revved_packages = []
@@ -622,7 +622,7 @@ def main(argv):
             revved_packages.append(ebuild.package)
             new_package_atoms.append('=%s' % new_package)
         except (OSError, IOError):
-          cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package,
+          cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package +
                   'Note you will have to go into %s '
                   'and reset the git repo yourself.' % overlay)
           raise

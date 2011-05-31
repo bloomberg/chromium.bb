@@ -46,6 +46,21 @@ def _GetConfig(config_name, options):
   return result
 
 
+def _GetChromiteTrackingBranch():
+  """Returns the current Chromite tracking_branch.
+
+  If Chromite is on a detached HEAD, we assume it's the manifest branch.
+  """
+  cwd = os.path.dirname(os.path.realpath(__file__))
+  current_branch = cros_lib.GetCurrentBranch(cwd)
+  if current_branch:
+    (remote, tracking_branch) = cros_lib.GetPushBranch(current_branch, cwd)
+  else:
+    tracking_branch = cros_lib.GetManifestDefaultBranch(cwd)
+
+  return tracking_branch
+
+
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
 
@@ -59,7 +74,7 @@ def RunBuildStages(bot_id, options, build_config):
   if build_config['chromeos_official']:
     os.environ['CHROMEOS_OFFICIAL'] = '1'
 
-  tracking_branch = commands.GetChromiteTrackingBranch()
+  tracking_branch = _GetChromiteTrackingBranch()
   stages.BuilderStage.SetTrackingBranch(tracking_branch)
 
   build_success = False
@@ -76,8 +91,7 @@ def RunBuildStages(bot_id, options, build_config):
       # If we are doing an incremental checkout, make sure we are running on a
       # buildroot checked out to same branch as chromite.  Use
       # <build_root>/src/scripts as the spot check.
-      buildroot_repo = os.path.join(options.buildroot, 'src', 'scripts')
-      manifest_branch = commands.GetManifestBranch(buildroot_repo)
+      manifest_branch = cros_lib.GetManifestDefaultBranch(options.buildroot)
       if manifest_branch != tracking_branch:
         cros_lib.Die('Chromite is not on same branch as buildroot checkout\n' +
                      'Chromite is on branch %s.\n' % tracking_branch +

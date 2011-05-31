@@ -41,6 +41,8 @@ class CBuildBotTest(mox.MoxTestBase):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
 
     self.build_config['chromeos_official'] = True
+    self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
+    cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
 
     # Clean up before
     if 'CHROMEOS_OFFICIAL' in os.environ:
@@ -66,6 +68,8 @@ class CBuildBotTest(mox.MoxTestBase):
     """Verify that CHROMEOS_OFFICIAL is not always set."""
 
     self.build_config['chromeos_official'] = False
+    self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
+    cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
 
     # Clean up before
     if 'CHROMEOS_OFFICIAL' in os.environ:

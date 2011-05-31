@@ -330,6 +330,28 @@ def ReinterpretPathForChroot(path):
   return new_path
 
 
+def GetCurrentBranch(cwd):
+  """Returns current branch of a repo, and None if repo is on detached HEAD."""
+  try:
+    current_branch = RunCommand(['git', 'symbolic-ref', 'HEAD'], cwd=cwd,
+                                redirect_stdout=True).output.strip()
+    current_branch = current_branch.replace('refs/heads/', '')
+  except RunCommandError:
+    return None
+  return current_branch
+
+
+def GetManifestDefaultBranch(cwd):
+  """Gets the manifest checkout branch from the manifest."""
+  manifest = RunCommand(['repo', 'manifest', '-o', '-'], redirect_stdout=True,
+                        cwd=cwd).output
+  m = re.search(r'<default[^>]*revision="(refs/heads/[^"]*)"', manifest)
+  assert m, "Can't find default revision in manifest"
+  ref = m.group(1)
+  assert ref.startswith('refs/heads/')
+  return ref.replace('refs/heads/', '')
+
+
 def GetPushBranch(branch, cwd):
   """Gets the appropriate push branch for the specified branch / directory.
 
@@ -346,11 +368,12 @@ def GetPushBranch(branch, cwd):
     cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
     info[key] = RunCommand(cmd, redirect_stdout=True, cwd=cwd).output.strip()
   if not info['merge'].startswith('refs/heads/'):
-    manifest = RunCommand(['repo', 'manifest', '-o', '-'], redirect_stdout=True,
-                          cwd=cwd).output
-    m = re.search(r'<default[^>]*revision="(refs/heads/[^"]*)"', manifest)
-    assert m, "Can't find default revision in manifest"
-    info['merge'] = m.group(1)
+    # If tracking branch is a revision, use the default manifest branch.
+    # This won't work for projects like kernel that override the default
+    # manifest branch.  But we are not pushing to them, so things are
+    # good for now.
+    info['merge'] = 'refs/heads/' + GetManifestDefaultBranch(cwd)
+
   assert info['merge'].startswith('refs/heads/')
   return info['remote'], info['merge'].replace('refs/heads/', '')
 
