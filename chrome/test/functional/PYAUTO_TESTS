@@ -84,8 +84,6 @@
       # crbug.com/83827
       '-popups.PopupsTest.testUnblockedPopupShowsInHistory',
       'prefs',
-      # crbug.com/84015
-      '-prefs.PrefsTest.testJavaScriptEnableDisable',
       'search_engines',
       'shortcuts',
       'special_tabs',
