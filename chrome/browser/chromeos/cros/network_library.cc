@@ -132,7 +132,6 @@ const char* kOfflineModeProperty = "OfflineMode";
 const char* kSignalStrengthProperty = "Strength";
 const char* kNameProperty = "Name";
 const char* kStateProperty = "State";
-const char* kConnectivityStateProperty = "ConnectivityState";
 const char* kTypeProperty = "Type";
 const char* kDeviceProperty = "Device";
 const char* kProfileProperty = "Profile";
@@ -290,14 +289,11 @@ const char* kStateCarrier = "carrier";
 const char* kStateAssociation = "association";
 const char* kStateConfiguration = "configuration";
 const char* kStateReady = "ready";
+const char* kStatePortal = "portal";
+const char* kStateOnline = "online";
 const char* kStateDisconnect = "disconnect";
 const char* kStateFailure = "failure";
 const char* kStateActivationFailure = "activation-failure";
-
-// Flimflam connectivity state options.
-const char* kConnStateUnrestricted = "unrestricted";
-const char* kConnStateRestricted = "restricted";
-const char* kConnStateNone = "none";
 
 // Flimflam network technology options.
 const char* kNetworkTechnology1Xrtt = "1xRTT";
@@ -334,6 +330,9 @@ const char* kErrorNeedEvdo = "need-evdo";
 const char* kErrorNeedHomeNetwork = "need-home-network";
 const char* kErrorOtaspFailed = "otasp-failed";
 const char* kErrorAaaFailed = "aaa-failed";
+const char* kErrorInternal = "internal-error";
+const char* kErrorDNSLookupFailed = "dns-lookup-failed";
+const char* kErrorHTTPGetFailed = "http-get-failed";
 
 // Flimflam error messages.
 const char* kErrorPassphraseRequiredMsg = "Passphrase required";
@@ -541,7 +540,6 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kCertPathProperty, PROPERTY_INDEX_CERT_PATH },
   { kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
   { kConnectedTechnologiesProperty, PROPERTY_INDEX_CONNECTED_TECHNOLOGIES },
-  { kConnectivityStateProperty, PROPERTY_INDEX_CONNECTIVITY_STATE },
   { kDefaultTechnologyProperty, PROPERTY_INDEX_DEFAULT_TECHNOLOGY },
   { kDeviceProperty, PROPERTY_INDEX_DEVICE },
   { kDevicesProperty, PROPERTY_INDEX_DEVICES },
@@ -672,6 +670,8 @@ static ConnectionState ParseState(const std::string& state) {
     { kStateDisconnect, STATE_DISCONNECT },
     { kStateFailure, STATE_FAILURE },
     { kStateActivationFailure, STATE_ACTIVATION_FAILURE },
+    { kStatePortal, STATE_PORTAL },
+    { kStateOnline, STATE_ONLINE },
   };
   static StringToEnum<ConnectionState> parser(
       table, arraysize(table), STATE_UNKNOWN);
@@ -691,6 +691,9 @@ static ConnectionError ParseError(const std::string& error) {
     { kErrorNeedHomeNetwork, ERROR_NEED_HOME_NETWORK },
     { kErrorOtaspFailed, ERROR_OTASP_FAILED },
     { kErrorAaaFailed, ERROR_AAA_FAILED },
+    { kErrorInternal, ERROR_INTERNAL },
+    { kErrorDNSLookupFailed, ERROR_DNS_LOOKUP_FAILED },
+    { kErrorHTTPGetFailed, ERROR_HTTP_GET_FAILED },
   };
   static StringToEnum<ConnectionError> parser(
       table, arraysize(table), ERROR_UNKNOWN);
@@ -719,17 +722,6 @@ static ActivationState ParseActivationState(const std::string& state) {
   };
   static StringToEnum<ActivationState> parser(
       table, arraysize(table), ACTIVATION_STATE_UNKNOWN);
-  return parser.Get(state);
-}
-
-static ConnectivityState ParseConnectivityState(const std::string& state) {
-  static StringToEnum<ConnectivityState>::Pair table[] = {
-    { kConnStateUnrestricted, CONN_STATE_UNRESTRICTED },
-    { kConnStateRestricted, CONN_STATE_RESTRICTED },
-    { kConnStateNone, CONN_STATE_NONE },
-  };
-  static StringToEnum<ConnectivityState> parser(
-      table, arraysize(table), CONN_STATE_UNKNOWN);
   return parser.Get(state);
 }
 
@@ -1059,7 +1051,6 @@ Network::Network(const std::string& service_path, ConnectionType type)
       is_active_(false),
       favorite_(false),
       auto_connect_(false),
-      connectivity_state_(CONN_STATE_UNKNOWN),
       save_credentials_(false),
       priority_order_(0),
       added_(false),
@@ -1150,14 +1141,6 @@ bool Network::ParseValue(int index, const Value* value) {
       return value->GetAsBoolean(&favorite_);
     case PROPERTY_INDEX_AUTO_CONNECT:
       return value->GetAsBoolean(&auto_connect_);
-    case PROPERTY_INDEX_CONNECTIVITY_STATE: {
-      std::string connectivity_state_string;
-      if (value->GetAsString(&connectivity_state_string)) {
-        connectivity_state_ = ParseConnectivityState(connectivity_state_string);
-        return true;
-      }
-      break;
-    }
     case PROPERTY_INDEX_SAVE_CREDENTIALS:
       return value->GetAsBoolean(&save_credentials_);
     default:
@@ -1274,6 +1257,10 @@ std::string Network::GetStateString() const {
     case STATE_ACTIVATION_FAILURE:
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE);
+    case STATE_PORTAL:
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_PORTAL);
+    case STATE_ONLINE:
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_ONLINE);
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
@@ -1308,6 +1295,14 @@ std::string Network::GetErrorString() const {
       return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED);
     case ERROR_AAA_FAILED:
       return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED);
+    case ERROR_INTERNAL:
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_INTERNAL);
+    case ERROR_DNS_LOOKUP_FAILED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED);
+    case ERROR_HTTP_GET_FAILED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED);
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
@@ -1833,16 +1828,6 @@ bool CellularNetwork::ParseValue(int index, const Value* value) {
       }
       break;
     }
-    case PROPERTY_INDEX_CONNECTIVITY_STATE: {
-      // Save previous state before calling WirelessNetwork::ParseValue.
-      ConnectivityState prev_state = connectivity_state_;
-      if (WirelessNetwork::ParseValue(index, value)) {
-        if (connectivity_state_ != prev_state)
-          RefreshDataPlansIfNeeded();
-        return true;
-      }
-      break;
-    }
     default:
       return WirelessNetwork::ParseValue(index, value);
   }
@@ -1917,24 +1902,6 @@ std::string CellularNetwork::GetNetworkTechnologyString() const {
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_CELLULAR_TECHNOLOGY_UNKNOWN);
       break;
-  }
-}
-
-std::string CellularNetwork::GetConnectivityStateString() const {
-  // These strings do not appear in the UI, so no need to localize them
-  switch (connectivity_state_) {
-    case CONN_STATE_UNRESTRICTED:
-      return "unrestricted";
-      break;
-    case CONN_STATE_RESTRICTED:
-      return "restricted";
-      break;
-    case CONN_STATE_NONE:
-      return "none";
-      break;
-    case CONN_STATE_UNKNOWN:
-    default:
-      return "unknown";
   }
 }
 

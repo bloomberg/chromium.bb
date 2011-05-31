@@ -12,7 +12,7 @@ namespace chromeos {
 
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
     : has_active_network_(false),
-      connectivity_state_(chromeos::CONN_STATE_UNKNOWN),
+      connection_state_(chromeos::STATE_UNKNOWN),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 
   chromeos::NetworkLibrary* lib =
@@ -24,9 +24,7 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
-#if defined(CONNECTIVITY_DETECTION)
   lib->RemoveObserverForAllNetworks(this);
-#endif
 }
 
 void NetworkChangeNotifierChromeos::OnNetworkManagerChanged(
@@ -35,7 +33,7 @@ void NetworkChangeNotifierChromeos::OnNetworkManagerChanged(
 }
 
 bool NetworkChangeNotifierChromeos::IsCurrentlyOffline() const {
-  return connectivity_state_ != chromeos::CONN_STATE_UNRESTRICTED;
+  return connection_state_ != chromeos::STATE_ONLINE;
 }
 
 void NetworkChangeNotifierChromeos::UpdateNetworkState(
@@ -47,10 +45,8 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
       (network && (!has_active_network_ ||
                    network->service_path() != service_path_ ||
                    network->ip_address() != ip_address_))) {
-#if defined(CONNECTIVITY_DETECTION)
     if (has_active_network_)
       lib->RemoveObserverForAllNetworks(this);
-#endif
     if (!network) {
       has_active_network_ = false;
       service_path_.clear();
@@ -59,9 +55,7 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
       has_active_network_ = true;
       service_path_ = network->service_path();
       ip_address_ = network->ip_address();
-#if defined(CONNECTIVITY_DETECTION)
       lib->AddNetworkObserver(network->service_path(), this);
-#endif
     }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -70,7 +64,6 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
   }
 }
 
-#if defined(CONNECTIVITY_DETECTION)
 void NetworkChangeNotifierChromeos::OnNetworkChanged(
     chromeos::NetworkLibrary* cros,
     const chromeos::Network* network) {
@@ -81,16 +74,26 @@ void NetworkChangeNotifierChromeos::OnNetworkChanged(
   // Active network changed?
   if (network->service_path() != service_path_) {
     UpdateNetworkState(cros);
-    return;
   }
-  if (network->connectivity_state() != connectivity_state_) {
-    connectivity_state_ = network->connectivity_state();
+
+  // We don't care about all transitions of ConnectionState.  OnlineStateChange
+  // notification should trigger if
+  //   a) we were online and went offline
+  //   b) we were offline and went online
+  //   c) switched to/from captive portal
+  chromeos::ConnectionState new_connection_state = network->connection_state();
+  bool is_online = (new_connection_state == chromeos::STATE_ONLINE);
+  bool was_online = (connection_state_ == chromeos::STATE_ONLINE);
+  bool is_portal = (new_connection_state == chromeos::STATE_PORTAL);
+  bool was_portal = (connection_state_ == chromeos::STATE_PORTAL);
+
+  if (is_online != was_online || is_portal != was_portal) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         method_factory_.NewRunnableMethod(
-          &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
+           &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
   }
+  connection_state_ = new_connection_state;
 }
-#endif
 
 }  // namespace net

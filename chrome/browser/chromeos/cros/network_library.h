@@ -58,14 +58,9 @@ enum ConnectionState {
   STATE_READY              = 5,
   STATE_DISCONNECT         = 6,
   STATE_FAILURE            = 7,
-  STATE_ACTIVATION_FAILURE = 8
-};
-
-enum ConnectivityState {
-  CONN_STATE_UNKNOWN      = 0,
-  CONN_STATE_UNRESTRICTED = 1,
-  CONN_STATE_RESTRICTED   = 2,
-  CONN_STATE_NONE         = 3
+  STATE_ACTIVATION_FAILURE = 8,
+  STATE_PORTAL             = 9,
+  STATE_ONLINE             = 10
 };
 
 // Network enums (see flimflam/include/network.h)
@@ -141,6 +136,9 @@ enum ConnectionError {
   ERROR_NEED_HOME_NETWORK = 9,
   ERROR_OTASP_FAILED      = 10,
   ERROR_AAA_FAILED        = 11,
+  ERROR_INTERNAL          = 12,
+  ERROR_DNS_LOOKUP_FAILED  = 13,
+  ERROR_HTTP_GET_FAILED   = 14,
 };
 
 // We are currently only supporting setting a single EAP Method.
@@ -295,12 +293,16 @@ class Network {
   ConnectionState connection_state() const { return state_; }
   bool connecting() const { return IsConnectingState(state_); }
   bool configuring() const { return state_ == STATE_CONFIGURATION; }
-  bool connected() const { return state_ == STATE_READY; }
+  bool connected() const { return state_ == STATE_READY ||
+                                  state_ == STATE_ONLINE ||
+                                  state_ == STATE_PORTAL; }
   bool connecting_or_connected() const { return connecting() || connected(); }
   bool failed() const { return state_ == STATE_FAILURE; }
   bool failed_or_disconnected() const {
     return failed() || state_ == STATE_IDLE;
   }
+  bool ready() const { return state_ == STATE_READY; }
+  bool online() const { return state_ == STATE_ONLINE; }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
   // Is this network connectable. Currently, this is mainly used by 802.1x
@@ -312,7 +314,6 @@ class Network {
   bool is_active() const { return is_active_; }
   bool favorite() const { return favorite_; }
   bool auto_connect() const { return auto_connect_; }
-  ConnectivityState connectivity_state() const { return connectivity_state_; }
   bool save_credentials() const { return save_credentials_; }
 
   bool added() const { return added_; }
@@ -387,7 +388,6 @@ class Network {
   bool is_active_;
   bool favorite_;
   bool auto_connect_;
-  ConnectivityState connectivity_state_;
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
 
   // Unique identifier, set the first time the network is parsed.
@@ -399,14 +399,11 @@ class Network {
     state_ = (connecting ? STATE_ASSOCIATION : STATE_IDLE);
   }
   void set_connected(bool connected) {
-    state_ = (connected ? STATE_READY : STATE_IDLE);
+    state_ = (connected ? STATE_ONLINE : STATE_IDLE);
   }
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_active(bool is_active) { is_active_ = is_active; }
   void set_error(ConnectionError error) { error_ = error; }
-  void set_connectivity_state(ConnectivityState connectivity_state) {
-    connectivity_state_ = connectivity_state;
-  }
   void set_added(bool added) { added_ = added; }
   void set_profile_path(const std::string& path) { profile_path_ = path; }
   void set_profile_type(NetworkProfileType type) { profile_type_ = type; }
@@ -605,7 +602,7 @@ class CellularNetwork : public WirelessNetwork {
   }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
   bool restricted_pool() const {
-    return connectivity_state() == CONN_STATE_RESTRICTED;
+    return state_ == STATE_PORTAL;
   }
   bool needs_new_plan() const {
     return restricted_pool() && connected() && activated();
@@ -630,8 +627,6 @@ class CellularNetwork : public WirelessNetwork {
 
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
-  // Return a string representation of connectivity state.
-  std::string GetConnectivityStateString() const;
   // Return a string representation of activation state.
   std::string GetActivationStateString() const;
   // Return a string representation of roaming state.

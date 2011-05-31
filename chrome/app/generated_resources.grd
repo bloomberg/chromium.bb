@@ -11768,6 +11768,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED" desc="Network state in about:network: Unrecognized">
         Unrecognized state
       </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_PORTAL" desc="Network state in about:network: Portal">
+        Portal state
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_ONLINE" desc="Network state in about:network: Online">
+        Online state
+      </message>
 
       <!-- Network error strings for ChromeOS -->
       <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error in about:network: UNKNOWN">
@@ -11805,6 +11811,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED" desc="Network error in about:network: AAA_FAILED">
         AAA check failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_INTERNAL" desc="Network error in about:network: INTERNAL">
+        Internal error
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED" desc="Network error in about:network: DNS_LOOKUP_FAILED">
+        DNS lookup failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED" desc="Network error in about:network: HTTP_GET_FAILED">
+        HTTP get failed
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_UNRECOGNIZED" desc="Network error in about:network: Unrecognized">
         Unrecognized error

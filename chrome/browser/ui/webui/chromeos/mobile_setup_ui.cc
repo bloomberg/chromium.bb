@@ -739,8 +739,6 @@ void MobileSetupHandler::EvaluateCellularNetwork(
   LOG(WARNING) << "Cellular:\n  service=" << network->GetStateString().c_str()
       << "\n  ui=" << GetStateDescription(state_)
       << "\n  activation=" << network->GetActivationStateString().c_str()
-      << "\n  connectivity="
-      << network->GetConnectivityStateString().c_str()
       << "\n  error=" << network->GetErrorString().c_str()
       << "\n  setvice_path=" << network->service_path().c_str();
   switch (state_) {
@@ -842,29 +840,30 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         switch (network->activation_state()) {
           case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
           case chromeos::ACTIVATION_STATE_ACTIVATED:
-            if (network->connectivity_state() ==
-                         chromeos::CONN_STATE_NONE) {
-              LOG(WARNING) << "No connectivity for device "
-                           << network->service_path().c_str();
-              // If we are connected but there is no connectivity at all,
-              // restart the whole process again.
-              if (activation_attempt_ < kMaxActivationAttempt) {
-                activation_attempt_++;
-                LOG(WARNING) << "Reconnect attempt #"
-                             << activation_attempt_;
-                ForceReconnect(network, kFailedReconnectDelayMS);
-                evaluating_ = false;
-                return;
+            if (network->restricted_pool()) {
+              if (network->error() == chromeos::ERROR_DNS_LOOKUP_FAILED) {
+                LOG(WARNING) << "No connectivity for device "
+                             << network->service_path().c_str();
+                // If we are connected but there is no connectivity at all,
+                // restart the whole process again.
+                if (activation_attempt_ < kMaxActivationAttempt) {
+                  activation_attempt_++;
+                  LOG(WARNING) << "Reconnect attempt #"
+                               << activation_attempt_;
+                  ForceReconnect(network, kFailedReconnectDelayMS);
+                  evaluating_ = false;
+                  return;
+                } else {
+                  new_state = PLAN_ACTIVATION_ERROR;
+                  UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetryFailure", 1);
+                  error_description = GetErrorMessage(kFailedConnectivity);
+                }
               } else {
-                new_state = PLAN_ACTIVATION_ERROR;
-                UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetryFailure", 1);
-                error_description = GetErrorMessage(kFailedConnectivity);
+                // If we have already received payment, don't show the payment
+                // page again. We should try to reconnect after some
+                // time instead.
+                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
               }
-            } else if (network->connectivity_state() ==
-                           chromeos::CONN_STATE_RESTRICTED) {
-              // If we have already received payment, don't show the payment
-              // page again. We should try to reconnect after some time instead.
-              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
             } else if (network->activation_state() ==
                            chromeos::ACTIVATION_STATE_ACTIVATED) {
               new_state = PLAN_ACTIVATION_DONE;
@@ -888,9 +887,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         switch (network->activation_state()) {
           case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
           case chromeos::ACTIVATION_STATE_ACTIVATED:
-            if (network->connectivity_state() == chromeos::CONN_STATE_NONE ||
-                network->connectivity_state() ==
-                    chromeos::CONN_STATE_RESTRICTED) {
+            if (network->restricted_pool()) {
               LOG(WARNING) << "Still no connectivity after OTASP for device "
                            << network->service_path().c_str();
               // If we have already received payment, don't show the payment
@@ -907,8 +904,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
                 UMA_HISTOGRAM_COUNTS("Cellular.PostPaymentConnectFailure", 1);
                 error_description = GetErrorMessage(kFailedConnectivity);
               }
-            } else if (network->connectivity_state() ==
-                           chromeos::CONN_STATE_UNRESTRICTED) {
+            } else if (network->online()) {
               new_state = PLAN_ACTIVATION_DONE;
             }
             break;

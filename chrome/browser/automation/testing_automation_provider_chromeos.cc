@@ -347,8 +347,6 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
       item->SetString("usage_url", cellular_networks[i]->usage_url());
       item->SetString("network_technology",
                       cellular_networks[i]->GetNetworkTechnologyString());
-      item->SetString("connectivity_state",
-                      cellular_networks[i]->GetConnectivityStateString());
       item->SetString("activation_state",
                       cellular_networks[i]->GetActivationStateString());
       item->SetString("roaming_state",

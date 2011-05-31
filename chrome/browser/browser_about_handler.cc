@@ -448,7 +448,6 @@ static std::string ToHtmlTableRow(const chromeos::Network* network) {
     const chromeos::CellularNetwork* cell =
         static_cast<const chromeos::CellularNetwork*>(network);
     str += WrapWithTH(cell->GetNetworkTechnologyString());
-    str += WrapWithTH(cell->GetConnectivityStateString());
     str += WrapWithTH(cell->GetActivationStateString());
     str += WrapWithTH(cell->GetRoamingStateString());
   }

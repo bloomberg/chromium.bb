@@ -15,9 +15,7 @@ namespace chromeos {
 
 class NetworkChangeNotifierChromeos
     : public net::NetworkChangeNotifier,
-#if defined(CONNECTIVITY_DETECTION)
-    public chromeos::NetworkLibrary::NetworkObserver,
-#endif
+      public chromeos::NetworkLibrary::NetworkObserver,
       public chromeos::NetworkLibrary::NetworkManagerObserver {
  public:
   NetworkChangeNotifierChromeos();
@@ -30,19 +28,17 @@ class NetworkChangeNotifierChromeos
   // NetworkManagerObserver overrides:
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj) OVERRIDE;
 
-#if defined(CONNECTIVITY_DETECTION)
   // NetworkObserver overrides:
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* cros,
                                 const chromeos::Network* network) OVERRIDE;
-#endif
 
   // Updates data members that keep the track the network stack state.
   void UpdateNetworkState(chromeos::NetworkLibrary* cros);
 
   // True if we previously had an active network around.
   bool has_active_network_;
-  // Current active network's connectivity state.
-  chromeos::ConnectivityState connectivity_state_;
+  // Current active network's connection state.
+  chromeos::ConnectionState connection_state_;
   // Current active network's service path.
   std::string service_path_;
   // Current active network's IP address.
