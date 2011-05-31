@@ -47,7 +47,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.10",
+  "version": "1.11",
   "entries": [
     {
       "id": 1,
@@ -205,12 +205,17 @@
     },
     {
       "id": 16,
-      "description": "Multisampling is buggy in ATI Mac drivers.",
-      "cr_bugs": [67752],
+      "description": "Multisampling is buggy in some ATI Mac cards.",
+      "cr_bugs": [67752, 83153],
       "os": {
         "type": "macosx"
       },
       "vendor_id": "0x1002",
+      "exceptions": [
+        {
+          "device_id": ["0x6760", "0x9488"]
+        }
+      ],
       "blacklist": [
         "multisampling"
       ]

@@ -212,6 +212,8 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
   DCHECK(value);
   scoped_ptr<GpuBlacklistEntry> entry(new GpuBlacklistEntry());
 
+  size_t dictionary_entry_count = 0;
+
   if (top_level) {
     uint32 id;
     if (!value->GetInteger("id", reinterpret_cast<int*>(&id)) ||
@@ -219,11 +221,13 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed id entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   std::string description;
   if (value->GetString("description", &description)) {
     entry->description_ = description;
+    dictionary_entry_count++;
   } else {
     entry->description_ = "The GPU is unavailable for an unexplained reason.";
   }
@@ -239,6 +243,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
         return NULL;
       }
     }
+    dictionary_entry_count++;
   }
 
   ListValue* webkit_bugs;
@@ -252,6 +257,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
         return NULL;
       }
     }
+    dictionary_entry_count++;
   }
 
   DictionaryValue* os_value = NULL;
@@ -272,6 +278,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed os entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   std::string vendor_id;
@@ -280,6 +287,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed vendor_id entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   ListValue* device_id_list;
@@ -292,6 +300,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
         return NULL;
       }
     }
+    dictionary_entry_count++;
   }
 
   DictionaryValue* driver_vendor_value = NULL;
@@ -304,6 +313,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed driver_vendor entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   DictionaryValue* driver_version_value = NULL;
@@ -319,6 +329,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed driver_version entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   DictionaryValue* driver_date_value = NULL;
@@ -334,6 +345,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed driver_date entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   DictionaryValue* gl_renderer_value = NULL;
@@ -346,6 +358,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed gl_renderer entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   if (top_level) {
@@ -368,6 +381,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       LOG(WARNING) << "Malformed blacklist entry " << entry->id();
       return NULL;
     }
+    dictionary_entry_count++;
   }
 
   if (top_level) {
@@ -387,9 +401,19 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
         }
         entry->AddException(exception);
       }
+      dictionary_entry_count++;
     }
+
+    DictionaryValue* browser_version_value = NULL;
+    // browser_version is processed in LoadGpuBlacklist().
+    if (value->GetDictionary("browser_version", &browser_version_value))
+      dictionary_entry_count++;
   }
 
+  if (value->size() != dictionary_entry_count) {
+    LOG(WARNING) << "Malformed entry " << entry->id();
+    return NULL;
+  }
   return entry.release();
 }
 

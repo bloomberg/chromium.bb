@@ -452,3 +452,24 @@ TEST_F(GpuBlacklistTest, ChromeVersionEntry) {
             static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
 }
 
+TEST_F(GpuBlacklistTest, MalformedVendor) {
+  // vendor_id is defined as list instead of string.
+  const std::string malformed_vendor_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"vendor_id\": \"[0x10de]\",\n"
+      "      \"blacklist\": [\n"
+      "        \"accelerated_2d_canvas\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  GpuBlacklist blacklist("1.0");
+
+  EXPECT_FALSE(blacklist.LoadGpuBlacklist(malformed_vendor_json, false));
+}
+
