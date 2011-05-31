@@ -86,12 +86,26 @@ bool GtkNativeViewManager::GetXIDForId(XID* output, gfx::NativeViewId id) {
   base::AutoLock locked(lock_);
 
   std::map<gfx::NativeViewId, NativeViewInfo>::const_iterator i =
-    id_to_info_.find(id);
+      id_to_info_.find(id);
 
   if (i == id_to_info_.end())
     return false;
 
   *output = i->second.x_window_id;
+  return true;
+}
+
+bool GtkNativeViewManager::GetNativeViewForId(gfx::NativeView* output,
+                                              gfx::NativeViewId id) {
+  base::AutoLock locked(lock_);
+
+  std::map<gfx::NativeViewId, NativeViewInfo>::const_iterator i =
+      id_to_info_.find(id);
+
+  if (i == id_to_info_.end())
+    return false;
+
+  *output = i->second.widget;
   return true;
 }
 
@@ -197,7 +211,6 @@ void GtkNativeViewManager::OnRealize(gfx::NativeView widget) {
 }
 
 void GtkNativeViewManager::OnUnrealize(gfx::NativeView widget) {
-  base::AutoLock unrealize_locked(unrealize_lock_);
   base::AutoLock locked(lock_);
 
   const gfx::NativeViewId id = GetWidgetId(widget);

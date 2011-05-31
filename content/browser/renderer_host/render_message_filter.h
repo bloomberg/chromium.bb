@@ -135,19 +135,20 @@ class RenderMessageFilter : public BrowserMessageFilter {
                   uint32* font_id);
 #endif
 
-#if defined(OS_WIN)  // This hack is Windows-specific.
+#if defined(OS_WIN)
+  // On Windows, we handle these on the IO thread to avoid a deadlock with
+  // plugins.  On non-Windows systems, we need to handle them on the UI thread.
+  void OnGetScreenInfo(gfx::NativeViewId window,
+                       WebKit::WebScreenInfo* results);
+  void OnGetWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
+  void OnGetRootWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
+
+  // This hack is Windows-specific.
   // Cache fonts for the renderer. See RenderMessageFilter::OnPreCacheFont
   // implementation for more details.
   void OnPreCacheFont(LOGFONT font);
 #endif
 
-#if !defined(OS_MACOSX)
-  // Not handled in the IO thread on Mac.
-  void OnGetScreenInfo(gfx::NativeViewId window,
-                       WebKit::WebScreenInfo* results);
-  void OnGetWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
-  void OnGetRootWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
-#endif
   void OnGetPlugins(bool refresh,
                     std::vector<webkit::npapi::WebPluginInfo>* plugins);
   void OnGetPluginInfo(int routing_id,
@@ -173,7 +174,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCheckNotificationPermission(const GURL& source_url,
                                      int* permission_level);
 
-// Used to ask the browser to allocate a block of shared memory for the
+  // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
   // in the renderer on POSIX due to the sandbox.
   void OnAllocateSharedMemoryBuffer(uint32 buffer_size,

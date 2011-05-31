@@ -170,10 +170,12 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnMsgImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidActivateAcceleratedCompositing,
                         OnMsgDidActivateAcceleratedCompositing)
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
+#endif
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged,
                         OnMsgPluginFocusChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme,
@@ -188,7 +190,8 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnAcceleratedSurfaceSetTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
-#elif defined(TOOLKIT_USES_GTK)
+#endif
+#if defined(TOOLKIT_USES_GTK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
                         OnMsgCreatePluginContainer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,

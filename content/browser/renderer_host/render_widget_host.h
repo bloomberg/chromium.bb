@@ -460,11 +460,13 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   void OnMsgDidActivateAcceleratedCompositing(bool activated);
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
   void OnMsgGetScreenInfo(gfx::NativeViewId view,
                           WebKit::WebScreenInfo* results);
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
   void OnMsgGetRootWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
+#endif
+#if defined(OS_MACOSX)
   void OnMsgPluginFocusChanged(bool focused, int plugin_id);
   void OnMsgStartPluginIme();
   void OnAllocateFakePluginWindowHandle(bool opaque,
@@ -481,7 +483,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                                            TransportDIB::Handle transport_dib);
   void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
                                           uint64 surface_id);
-#elif defined(OS_POSIX)
+#endif
+#if defined(TOOLKIT_USES_GTK)
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
 #endif

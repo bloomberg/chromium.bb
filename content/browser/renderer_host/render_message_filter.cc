@@ -304,13 +304,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
                                                    BrowserThread::ID* thread) {
   switch (message.type()) {
-#if defined(USE_X11)
-    case ViewHostMsg_GetScreenInfo::ID:
-    case ViewHostMsg_GetWindowRect::ID:
-    case ViewHostMsg_GetRootWindowRect::ID:
-      *thread = BrowserThread::BACKGROUND_X11;
-      break;
-#endif
     // Can't load plugins on IO thread.
     case ViewHostMsg_GetPlugins::ID:
     // The PluginService::GetPluginInfo may need to load the plugins.  Don't do
@@ -327,15 +320,16 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                             bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, message, *message_was_ok)
-    // On Linux we need to dispatch these messages to the UI2 thread
-    // because we cannot make X calls from the IO thread.  Mac
-    // doesn't have windowed plug-ins so we handle the messages in
-    // the UI thread.  On Windows, we intercept the messages and
-    // handle them directly.
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
+    // On Windows, we handle these on the IO thread to avoid a deadlock with
+    // plugins.  On non-Windows systems, we need to handle them on the UI
+    // thread.
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnGetRootWindowRect)
+
+    // This hack is Windows-specific.
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
 
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
@@ -350,9 +344,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_CookiesEnabled, OnCookiesEnabled)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
-#endif
-#if defined(OS_WIN)  // This hack is Windows-specific.
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)

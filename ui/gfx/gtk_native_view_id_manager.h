@@ -61,6 +61,11 @@ class GtkNativeViewManager {
   // |*xid| is set to 0.
   bool GetXIDForId(XID* xid, gfx::NativeViewId id);
 
+  // May be called from the UI thread:
+  //
+  // Same as GetXIDForId except it returns the NativeView (GtkWidget*).
+  bool GetNativeViewForId(gfx::NativeView* xid, gfx::NativeViewId id);
+
   // Must be called from the UI thread because we may need the associated
   // widget to create a window.
   //
@@ -90,8 +95,6 @@ class GtkNativeViewManager {
   void OnUnrealize(gfx::NativeView widget);
   void OnDestroy(gfx::NativeView widget);
 
-  base::Lock& unrealize_lock() { return unrealize_lock_; }
-
  private:
   // This object is a singleton:
   GtkNativeViewManager();
@@ -106,11 +109,6 @@ class GtkNativeViewManager {
   };
 
   gfx::NativeViewId GetWidgetId(gfx::NativeView id);
-
-  // This lock can be used to block GTK from unrealizing windows. This is needed
-  // when the BACKGROUND_X11 thread is using a window obtained via GetXIDForId,
-  // and can't allow the X11 resource to be deleted.
-  base::Lock unrealize_lock_;
 
   // protects native_view_to_id_ and id_to_info_
   base::Lock lock_;
