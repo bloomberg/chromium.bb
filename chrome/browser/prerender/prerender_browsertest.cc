@@ -403,11 +403,9 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // loading, rather than the page directly navigated to, need to
     // handle browser navigation directly.
     browser()->OpenURL(src_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
-
-    TestPrerenderContents* prerender_contents = NULL;
     ui_test_utils::RunMessageLoop();
 
-    prerender_contents =
+    TestPrerenderContents* prerender_contents =
         static_cast<TestPrerenderContents*>(
             prerender_manager()->FindEntry(dest_url_));
 
@@ -433,7 +431,9 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   void NavigateToURLImpl(const GURL& dest_url) const {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
+    PrerenderContents* prerender_contents =
+        prerender_manager()->FindEntry(dest_url_);
+    ASSERT_TRUE(prerender_contents != NULL);
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
     // the current tab.  As that tab is going to end up deleted, and may never
@@ -443,8 +443,14 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // As PrerenderTestURL waits until the prerendered page has completely
     // loaded, there is no race between loading |dest_url| and swapping the
     // prerendered TabContents into the tab.
-    browser()->OpenURL(dest_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
-    ui_test_utils::RunMessageLoop();
+    FinalStatus final_status = prerender_contents->final_status();
+    if (ShouldRenderPrerenderedPageCorrectly(final_status) &&
+        final_status != FINAL_STATUS_USED) {
+      ui_test_utils::NavigateToURL(browser(), dest_url);
+    } else {
+      browser()->OpenURL(dest_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+      ui_test_utils::RunMessageLoop();
+    }
 
     // Make sure the PrerenderContents found earlier was used or removed.
     EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) == NULL);
@@ -920,9 +926,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRendererCrash) {
 
 // Checks that we correctly use a prerendered page when navigating to a
 // fragment.
-// DISABLED: http://crbug.com/84154
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderPageNavigateFragment) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNavigateFragment) {
   PrerenderTestURL("files/prerender/prerender_fragment.html",
                    FINAL_STATUS_FRAGMENT_MISMATCH,
                    1);
@@ -942,9 +946,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that we correctly use a prerendered page when we prerender a fragment
 // but navigate to a different fragment on the same page.
-// DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderFragmentNavigateFragment) {
+                       PrerenderFragmentNavigateFragment) {
   PrerenderTestURL("files/prerender/prerender_fragment.html#other_fragment",
                    FINAL_STATUS_FRAGMENT_MISMATCH,
                    1);
@@ -965,9 +968,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that we correctly use a prerendered page when the page uses a crient
 // redirect to refresh to a fragment on the same page.
-// DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClientRedirectToFragment) {
+                       PrerenderClientRedirectToFragment) {
   PrerenderTestURL(
       CreateClientRedirect("files/prerender/prerender_fragment.html"),
       FINAL_STATUS_FRAGMENT_MISMATCH,
