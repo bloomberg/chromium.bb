@@ -665,7 +665,7 @@ class DownloadTest : public InProcessBrowserTest {
                                      bool expected_chromeos) {
 #if defined(OS_CHROMEOS)
     EXPECT_EQ(expected_chromeos,
-              ActiveDownloadsUI::GetPopup(browser->profile()));
+              NULL != ActiveDownloadsUI::GetPopup(browser->profile()));
 #else
     EXPECT_EQ(expected_non_chromeos,
               browser->window()->IsDownloadShelfVisible());
