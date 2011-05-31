@@ -207,7 +207,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   PepperPluginRegistry::GetInstance();
 
   {
-#if !defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
     RenderProcessImpl render_process;
@@ -219,7 +219,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     } else {
       LOG(ERROR) << "Running without renderer sandbox";
     }
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
     render_process.set_main_thread(new RenderThread());
 #endif

@@ -406,7 +406,7 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
     scheduler_->decoder()->ResizeOffscreenFrameBuffer(size);
     scheduler_->decoder()->UpdateOffscreenFrameBufferSize();
   } else {
-#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
     gpu_channel_manager->Send(
         new GpuHostMsg_ResizeView(renderer_id_,
@@ -420,7 +420,7 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
 }
 
 void GpuCommandBufferStub::ViewResized() {
-#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
   DCHECK(handle_ != gfx::kNullPluginWindow);
   scheduler_->SetScheduled(true);
 

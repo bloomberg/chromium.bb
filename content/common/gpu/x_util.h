@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_config.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 
 // Forward declares ------------------------------------------------------------
 //
@@ -42,6 +42,6 @@ class ScopedPtrXFree {
   void operator()(void* x) const;
 };
 
-#endif  // OS_LINUX
+#endif  // USE_X11
 
 #endif  // CHROME_GPU_X_UTIL_H_

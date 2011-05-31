@@ -56,7 +56,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSandboxSupport.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <string>
 #include <map>
 
@@ -117,7 +117,7 @@ class RendererWebKitClientImpl::SandboxSupport
   virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
   virtual bool loadFont(
       NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID);
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
   virtual WebKit::WebString getFontFamilyForCharacters(
       const WebKit::WebUChar* characters,
       size_t numCharacters,
@@ -436,34 +436,6 @@ bool RendererWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
   return RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(logfont));
 }
 
-#elif defined(OS_LINUX)
-
-WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
-    const WebKit::WebUChar* characters,
-    size_t num_characters,
-    const char* preferred_locale) {
-  base::AutoLock lock(unicode_font_families_mutex_);
-  const string16 key(characters, num_characters);
-  const std::map<string16, std::string>::const_iterator iter =
-      unicode_font_families_.find(key);
-  if (iter != unicode_font_families_.end())
-    return WebString::fromUTF8(iter->second);
-
-  const std::string family_name =
-      child_process_sandbox_support::getFontFamilyForCharacters(
-          characters,
-          num_characters,
-          preferred_locale);
-  unicode_font_families_.insert(make_pair(key, family_name));
-  return WebString::fromUTF8(family_name);
-}
-
-void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
-    const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
-  child_process_sandbox_support::getRenderStyleForStrike(family, sizeAndStyle,
-                                                         out);
-}
-
 #elif defined(OS_MACOSX)
 
 // TODO(jeremy): Remove once WebKit side of patch lands - crbug.com/72727 .
@@ -505,6 +477,34 @@ bool RendererWebKitClientImpl::SandboxSupport::loadFont(
   // activated, don't reactivate it here - crbug.com/72727 .
   return FontLoader::ATSFontContainerFromBuffer(font_data, font_data_size,
       container);
+}
+
+#elif defined(OS_POSIX)
+
+WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
+    const WebKit::WebUChar* characters,
+    size_t num_characters,
+    const char* preferred_locale) {
+  base::AutoLock lock(unicode_font_families_mutex_);
+  const string16 key(characters, num_characters);
+  const std::map<string16, std::string>::const_iterator iter =
+      unicode_font_families_.find(key);
+  if (iter != unicode_font_families_.end())
+    return WebString::fromUTF8(iter->second);
+
+  const std::string family_name =
+      child_process_sandbox_support::getFontFamilyForCharacters(
+          characters,
+          num_characters,
+          preferred_locale);
+  unicode_font_families_.insert(make_pair(key, family_name));
+  return WebString::fromUTF8(family_name);
+}
+
+void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
+    const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
+  child_process_sandbox_support::getRenderStyleForStrike(family, sizeAndStyle,
+                                                         out);
 }
 
 #endif

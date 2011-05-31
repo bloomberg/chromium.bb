@@ -55,7 +55,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
   }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   match_edit_command = false;
 #endif
 }
@@ -80,7 +80,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(uint16 character,
   os_event = NULL;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   match_edit_command = false;
 #endif
 }

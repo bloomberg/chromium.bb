@@ -21,14 +21,12 @@
 #if defined(OS_WIN)
 #include "base/file_path.h"
 #include "content/common/sandbox_policy.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+#include "chrome/browser/mach_broker_mac.h"
+#elif defined(OS_POSIX)
 #include "base/memory/singleton.h"
 #include "content/browser/zygote_host_linux.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/mach_broker_mac.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -46,7 +44,7 @@ class ChildProcessLauncher::Context
         client_thread_id_(BrowserThread::UI),
         starting_(true),
         terminate_child_on_shutdown_(true)
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
         , zygote_(false)
 #endif
         {
@@ -115,7 +113,7 @@ class ChildProcessLauncher::Context
     handle = sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
 #elif defined(OS_POSIX)
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     // On Linux, we need to add some extra file descriptors for crash handling.
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
@@ -139,7 +137,7 @@ class ChildProcessLauncher::Context
           ipcfd,
           kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       if (crash_signal_fd >= 0) {
         fds_to_map.push_back(std::make_pair(
             crash_signal_fd,
@@ -152,7 +150,7 @@ class ChildProcessLauncher::Context
             sandbox_fd,
             kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
       }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
       bool launched = false;
 #if defined(OS_MACOSX)
@@ -188,20 +186,20 @@ class ChildProcessLauncher::Context
         NewRunnableMethod(
             this,
             &ChildProcessLauncher::Context::Notify,
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
             use_zygote,
 #endif
             handle));
   }
 
   void Notify(
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       bool zygote,
 #endif
       base::ProcessHandle handle) {
     starting_ = false;
     process_.set_handle(handle);
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     zygote_ = zygote;
 #endif
     if (client_) {
@@ -224,7 +222,7 @@ class ChildProcessLauncher::Context
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
         NewRunnableFunction(
             &ChildProcessLauncher::Context::TerminateInternal,
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
             zygote_,
 #endif
             process_.handle()));
@@ -244,7 +242,7 @@ class ChildProcessLauncher::Context
 #endif
 
   static void TerminateInternal(
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       bool zygote,
 #endif
       base::ProcessHandle handle) {
@@ -254,13 +252,13 @@ class ChildProcessLauncher::Context
     process.Terminate(ResultCodes::NORMAL_EXIT);
     // On POSIX, we must additionally reap the child.
 #if defined(OS_POSIX)
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
     if (zygote) {
       // If the renderer was created via a zygote, we have to proxy the reaping
       // through the zygote process.
       ZygoteHost::GetInstance()->EnsureProcessTerminated(handle);
     } else
-#endif  // OS_LINUX
+#endif  // !OS_MACOSX
     {
       ProcessWatcher::EnsureProcessTerminated(handle);
     }
@@ -280,7 +278,7 @@ class ChildProcessLauncher::Context
   // shutdown. Default behavior is to terminate the child.
   bool terminate_child_on_shutdown_;
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   bool zygote_;
 #endif
 };
@@ -326,7 +324,7 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
     int* exit_code) {
   base::TerminationStatus status;
   base::ProcessHandle handle = context_->process_.handle();
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   if (context_->zygote_) {
     status = ZygoteHost::GetInstance()->GetTerminationStatus(handle, exit_code);
   } else

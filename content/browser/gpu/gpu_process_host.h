@@ -131,7 +131,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   std::queue<linked_ptr<CreateCommandBufferCallback> >
       create_command_buffer_requests_;
 
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
   typedef std::pair<int32 /* renderer_id */,
                     int32 /* render_view_id */> ViewID;
 

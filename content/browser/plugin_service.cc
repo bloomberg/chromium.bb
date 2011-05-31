@@ -31,7 +31,7 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 using ::base::files::FilePathWatcher;
 #endif
 
@@ -45,9 +45,7 @@ static void NotifyPluginsOfActivation() {
     plugin->OnAppActivation();
   }
 }
-#endif
-
-#if defined(OS_LINUX)
+#elif defined(OS_POSIX)
 // Delegate class for monitoring directories.
 class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
   virtual void OnFilePathChanged(const FilePath& path) OVERRIDE {
@@ -102,7 +100,12 @@ PluginService::PluginService()
       hklm_watcher_.StartWatching(hklm_event_.get(), this);
     }
   }
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
+  // We need to know when the browser comes forward so we can bring modal plugin
+  // windows forward too.
+  registrar_.Add(this, NotificationType::APP_ACTIVATED,
+                 NotificationService::AllSources());
+#elif defined(OS_POSIX)
   // Also find plugins in a user-specific plugins dir,
   // e.g. ~/.config/chromium/Plugins.
   FilePath user_data_dir;
@@ -110,12 +113,11 @@ PluginService::PluginService()
     webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(
         user_data_dir.Append("Plugins"));
   }
-#endif
+
 // The FilePathWatcher produces too many false positives on MacOS (access time
 // updates?) which will lead to enforcing updates of the plugins way too often.
 // On ChromeOS the user can't install plugins anyway and on Windows all
 // important plugins register themselves in the registry so no need to do that.
-#if defined(OS_LINUX)
   file_watcher_delegate_ = new PluginDirWatcherDelegate();
   // Get the list of all paths for registering the FilePathWatchers
   // that will track and if needed reload the list of plugins on runtime.
@@ -140,12 +142,6 @@ PluginService::PluginService()
             watcher, plugin_dirs[i], file_watcher_delegate_));
     file_watchers_.push_back(watcher);
   }
-#endif
-#if defined(OS_MACOSX)
-  // We need to know when the browser comes forward so we can bring modal plugin
-  // windows forward too.
-  registrar_.Add(this, NotificationType::APP_ACTIVATED,
-                 NotificationService::AllSources());
 #endif
   registrar_.Add(this, NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
@@ -497,7 +493,7 @@ PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
   return info;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 // static
 void PluginService::RegisterFilePathWatcher(
     FilePathWatcher *watcher,

@@ -92,7 +92,7 @@ class GpuProcessHostUIShim
 
   void OnLogMessage(int level, const std::string& header,
       const std::string& message);
-#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
   void OnResizeView(int32 renderer_id,
                     int32 render_view_id,
                     int32 command_buffer_route_id,

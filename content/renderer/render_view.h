@@ -881,7 +881,7 @@ class RenderView : public RenderWidget,
   // periodic timer so we don't send too many messages.
   void SyncNavigationState();
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   void UpdateFontRenderingFromRendererPrefs();
 #else
   void UpdateFontRenderingFromRendererPrefs() {}

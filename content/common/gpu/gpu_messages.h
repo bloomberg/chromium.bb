@@ -161,7 +161,7 @@ IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
-#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
 // Tells the GPU process that the browser process has finished resizing the
 // view.
 IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
@@ -253,7 +253,7 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
 // Response from GPU to a GpuMsg_Synchronize message.
 IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)
 
-#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
 // Resize the window that is being drawn into. It's important that this
 // resize be synchronized with the swapping of the front and back buffers.
 IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,

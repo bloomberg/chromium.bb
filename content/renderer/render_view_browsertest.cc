@@ -376,7 +376,7 @@ TEST_F(RenderViewTest, OnSetTextDirection) {
 // Test that we can receive correct DOM events when we send input events
 // through the RenderWidget::OnHandleInputEvent() function.
 TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
   // Load an HTML page consisting of one <input> element and three
   // contentediable <div> elements.
   // The <input> element is used for sending keyboard events, and the <div>
@@ -524,7 +524,7 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
 // This test is for preventing regressions caused only when we use non-US
 // keyboards, such as Issue 10846.
 TEST_F(RenderViewTest, InsertCharacters) {
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
   static const struct {
     MockKeyboard::Layout layout;
     const wchar_t* expected_result;

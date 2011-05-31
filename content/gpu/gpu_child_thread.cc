@@ -89,7 +89,7 @@ bool GpuChildThread::Send(IPC::Message* msg) {
   // process. This could result in deadlock. Unfortunately linux does this for
   // GpuHostMsg_ResizeXID. TODO(apatrick): fix this before issuing any GL calls
   // on the browser process' GPU thread.
-#if !defined(OS_LINUX)
+#if !defined(TOOLKIT_USES_GTK)
     DCHECK(!msg->is_sync());
 #endif
 

@@ -17,7 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebSandboxSupport.h"
 #elif defined(OS_MACOSX)
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSandboxSupport.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
 #include "content/common/child_process_sandbox_support_linux.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
@@ -32,7 +32,7 @@ class PpapiWebKitClientImpl::SandboxSupport : public WebSandboxSupport {
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)
   virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
   virtual WebString getFontFamilyForCharacters(
       const WebUChar* characters,
       size_t numCharacters,
@@ -69,7 +69,7 @@ bool PpapiWebKitClientImpl::SandboxSupport::loadFont(NSFont* srcFont,
   return false;
 }
 
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
 
 WebString PpapiWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
     const WebUChar* characters,

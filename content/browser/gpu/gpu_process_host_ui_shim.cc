@@ -15,13 +15,13 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/gpu/gpu_messages.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 // These two #includes need to come after gpu_messages.h.
 #include <gdk/gdkwindow.h>  // NOLINT
 #include <gdk/gdkx.h>  // NOLINT
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/size.h"
-#endif  // defined(OS_LINUX)
+#endif
 namespace {
 
 // One of the linux specific headers defines this as a macro.
@@ -145,7 +145,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
-#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
@@ -170,7 +170,7 @@ void GpuProcessHostUIShim::OnLogMessage(
   GpuDataManager::GetInstance()->AddLogMessage(dict);
 }
 
-#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
 
 void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
                                         int32 render_view_id,
@@ -185,7 +185,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
       // Resize the window synchronously. The GPU process must not issue GL
       // calls on the command buffer until the window is the size it expects it
       // to be.
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
       GdkWindow* window = reinterpret_cast<GdkWindow*>(
           gdk_xid_table_lookup(handle));
       if (window) {

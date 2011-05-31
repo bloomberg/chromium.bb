@@ -2,24 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/zygote_host_linux.h"
+
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <sys/epoll.h>
-#include <sys/prctl.h>
-#include <sys/signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-#if defined(CHROMIUM_SELINUX)
-#include <selinux/selinux.h>
-#include <selinux/context.h>
-#endif
-
-#include "content/browser/zygote_host_linux.h"
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -51,6 +43,19 @@
 #include "seccompsandbox/sandbox.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "unicode/timezone.h"
+
+#if defined(OS_LINUX)
+#include <sys/epoll.h>
+#include <sys/prctl.h>
+#include <sys/signal.h>
+#else
+#include <signal.h>
+#endif
+
+#if defined(CHROMIUM_SELINUX)
+#include <selinux/selinux.h>
+#include <selinux/context.h>
+#endif
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
     !defined(__clang__)
