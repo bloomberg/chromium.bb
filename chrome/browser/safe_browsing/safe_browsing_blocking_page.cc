@@ -77,6 +77,12 @@ static const char* const kPrivacyLinkHtml =
     "<a href=\"\" onclick=\"sendCommand('showPrivacy'); return false;\" "
     "onmousedown=\"return false;\">%s</a>";
 
+// After a malware interstitial where the user opted-in to the report
+// but clicked "proceed anyway", we delay the call to
+// MalwareDetails::FinishCollection() by this much time (in
+// milliseconds).
+static const int64 kMalwareDetailsProceedDelayMilliSeconds = 3000;
+
 // The commands returned by the page when the user performs an action.
 static const char* const kShowDiagnosticCommand = "showDiagnostic";
 static const char* const kReportErrorCommand = "reportError";
@@ -127,6 +133,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     : ChromeInterstitialPage(tab_contents,
                              IsMainPageLoadBlocked(unsafe_resources),
                              unsafe_resources[0].url),
+      malware_details_proceed_delay_ms_(
+          kMalwareDetailsProceedDelayMilliSeconds),
       sb_service_(sb_service),
       is_main_frame_load_blocked_(IsMainPageLoadBlocked(unsafe_resources)),
       unsafe_resources_(unsafe_resources) {
@@ -507,7 +515,8 @@ void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
 
 void SafeBrowsingBlockingPage::Proceed() {
   RecordUserAction(PROCEED);
-  FinishMalwareDetails();  // Send the malware details, if we opted to.
+  // Send the malware details, if we opted to.
+  FinishMalwareDetails(malware_details_proceed_delay_ms_);
 
   NotifySafeBrowsingService(sb_service_, unsafe_resources_, true);
 
@@ -545,7 +554,8 @@ void SafeBrowsingBlockingPage::DontProceed() {
   }
 
   RecordUserAction(DONT_PROCEED);
-  FinishMalwareDetails();  // Send the malware details, if we opted to.
+  // Send the malware details, if we opted to.
+  FinishMalwareDetails(0);  // No delay
 
   NotifySafeBrowsingService(sb_service_, unsafe_resources_, false);
 
@@ -611,7 +621,7 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   UserMetrics::RecordComputedAction(action);
 }
 
-void SafeBrowsingBlockingPage::FinishMalwareDetails() {
+void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   if (malware_details_ == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
 
@@ -622,10 +632,11 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails() {
   bool value;
   if (pref && pref->GetValue()->GetAsBoolean(&value) && value) {
     // Finish the malware details collection, send it over.
-    BrowserThread::PostTask(
+    BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
-            malware_details_.get(), &MalwareDetails::FinishCollection));
+            malware_details_.get(), &MalwareDetails::FinishCollection),
+        delay_ms);
   }
 }
 

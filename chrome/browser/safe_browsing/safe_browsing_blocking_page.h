@@ -81,6 +81,12 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
                            TabContents* tab_contents,
                            const UnsafeResourceList& unsafe_resources);
 
+  // After a malware interstitial where the user opted-in to the
+  // report but clicked "proceed anyway", we delay the call to
+  // MalwareDetails::FinishCollection() by this much time (in
+  // milliseconds), in order to get data from the blocked resource itself.
+  int64 malware_details_proceed_delay_ms_;
+
  private:
   enum BlockingPageEvent {
     SHOW,
@@ -115,7 +121,7 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
   // pending malware details object, we look at the user's
   // preferences, and if the option to send malware details is
   // enabled, the report is scheduled to be sent on the |sb_service_|.
-  void FinishMalwareDetails();
+  void FinishMalwareDetails(int64 delay_ms);
 
   // A list of SafeBrowsingService::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
@@ -133,7 +139,6 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
   static bool IsMainPageLoadBlocked(
       const UnsafeResourceList& unsafe_resources);
 
- private:
   friend class SafeBrowsingBlockingPageFactoryImpl;
 
   // For reporting back user actions.

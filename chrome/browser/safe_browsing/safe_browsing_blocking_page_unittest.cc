@@ -27,6 +27,8 @@ class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
                                TabContents* tab_contents,
                                const UnsafeResourceList& unsafe_resources)
       : SafeBrowsingBlockingPage(service, tab_contents, unsafe_resources) {
+    // Don't delay details at all for the unittest.
+    malware_details_proceed_delay_ms_ = 0;
   }
 
   // Overriden from InterstitialPage.  Don't create a view.
