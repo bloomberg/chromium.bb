@@ -521,9 +521,9 @@ class TabStripModel : public NotificationObserver {
                                   int to_index,
                                   bool user_gesture);
 
-  // Notifies the observers the selection changed. |old_selected_index| gives
-  // the old selected index.
-  void NotifySelectionChanged(int old_selected_index);
+  // Notifies the observers the active tab changed. |old_active_index| gives
+  // the old active index.
+  void NotifyActiveTabChanged(int old_active_index);
 
   // Returns the number of New Tab tabs in the TabStripModel.
   int GetNewTabCount() const;

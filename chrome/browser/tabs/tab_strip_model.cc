@@ -572,7 +572,7 @@ void TabStripModel::ExtendSelectionTo(int index) {
   int old_active = active_index();
   selection_model_.SetSelectionFromAnchorTo(index);
   // This may not have resulted in a change, but we assume it did.
-  NotifySelectionChanged(old_active);
+  NotifyActiveTabChanged(old_active);
 }
 
 void TabStripModel::ToggleSelectionAt(int index) {
@@ -593,13 +593,13 @@ void TabStripModel::ToggleSelectionAt(int index) {
     selection_model_.set_anchor(index);
     selection_model_.set_active(index);
   }
-  NotifySelectionChanged(old_active);
+  NotifyActiveTabChanged(old_active);
 }
 
 void TabStripModel::AddSelectionFromAnchorTo(int index) {
   int old_active = active_index();
   selection_model_.AddSelectionFromAnchorTo(index);
-  NotifySelectionChanged(old_active);
+  NotifyActiveTabChanged(old_active);
 }
 
 bool TabStripModel::IsTabSelected(int index) const {
@@ -613,7 +613,7 @@ void TabStripModel::SetSelectionFromModel(
   int old_active_index = active_index();
   selection_model_.Copy(source);
   // This may not have resulted in a change, but we assume it did.
-  NotifySelectionChanged(old_active_index);
+  NotifyActiveTabChanged(old_active_index);
 }
 
 void TabStripModel::AddTabContents(TabContentsWrapper* contents,
@@ -1225,10 +1225,10 @@ void TabStripModel::NotifyTabSelectedIfChanged(TabContentsWrapper* old_contents,
                                      active_index(), user_gesture));
 }
 
-void TabStripModel::NotifySelectionChanged(int old_selected_index) {
+void TabStripModel::NotifyActiveTabChanged(int old_active_index) {
   TabContentsWrapper* old_tab =
-      old_selected_index == TabStripSelectionModel::kUnselectedIndex ?
-      NULL : GetTabContentsAt(old_selected_index);
+      old_active_index == TabStripSelectionModel::kUnselectedIndex ?
+      NULL : GetTabContentsAt(old_active_index);
   TabContentsWrapper* new_tab =
       active_index() == TabStripSelectionModel::kUnselectedIndex ?
       NULL : GetTabContentsAt(active_index());
