@@ -246,8 +246,6 @@ class ShellIntegration {
     DefaultProtocolClientWorker(DefaultWebClientObserver* observer,
                                 const std::string& protocol);
 
-    const std::string& protocol() const { return protocol_; }
-
    private:
     virtual ~DefaultProtocolClientWorker() {}
 
