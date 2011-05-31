@@ -115,8 +115,9 @@ void SearchString(PP_Instance instance,
       results == NULL ||
       count == NULL)
     return;
-  nacl_abi_size_t string_size = utf16_length(string);
-  nacl_abi_size_t term_size = utf16_length(term);
+  // Calculate string lengths, including terminal nulls.
+  nacl_abi_size_t string_length = utf16_length(string) + 1;
+  nacl_abi_size_t term_length = utf16_length(term) + 1;
   const int MAX_FIND_RESULTS = 8192;
   nacl_abi_size_t find_results_size =
       MAX_FIND_RESULTS * kPpbPrivateFindResultBytes;
@@ -125,9 +126,9 @@ void SearchString(PP_Instance instance,
       PpbPdfRpcClient::PPB_PDF_SearchString(
           GetMainSrpcChannel(),
           instance,
-          string_size * sizeof(unsigned short),
+          string_length * sizeof(unsigned short),
           reinterpret_cast<char*>(const_cast<unsigned short*>(string)),
-          term_size * sizeof(unsigned short),
+          term_length * sizeof(unsigned short),
           reinterpret_cast<char*>(const_cast<unsigned short*>(term)),
           static_cast<int32_t>(case_sensitive),
           &find_results_size,
