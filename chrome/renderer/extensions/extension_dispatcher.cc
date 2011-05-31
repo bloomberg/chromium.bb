@@ -153,6 +153,9 @@ void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
 
 void ExtensionDispatcher::OnUnloaded(const std::string& id) {
   extensions_.Remove(id);
+  // If the extension is later reloaded with a different set of permissions,
+  // we'd like it to get a new isolated world ID, so that it can pick up the
+  // changed origin whitelist.
   UserScriptSlave::RemoveIsolatedWorld(id);
 }
 
