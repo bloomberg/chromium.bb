@@ -69,11 +69,8 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
   if (IsRegisteredInternal(handler)) {
     return;
   }
-  if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol())) {
+  if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol()))
     delegate_->RegisterExternalHandler(handler.protocol());
-    if (!is_loading_)
-      delegate_->RegisterWithOSAsDefaultClient(handler.protocol());
-  }
   InsertHandler(handler);
 }
 
@@ -415,6 +412,12 @@ void ProtocolHandlerRegistry::RegisterPrefs(PrefService* pref_service) {
 
 void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
   lock_.AssertAcquired();
+  ProtocolHandlerMap::const_iterator p = default_handlers_.find(
+      handler.protocol());
+  // If we're not loading, and we are setting a default for a new protocol,
+  // register with the OS.
+  if (!is_loading_ && p == default_handlers_.end())
+      delegate_->RegisterWithOSAsDefaultClient(handler.protocol());
   default_handlers_.erase(handler.protocol());
   default_handlers_.insert(std::make_pair(handler.protocol(), handler));
 }

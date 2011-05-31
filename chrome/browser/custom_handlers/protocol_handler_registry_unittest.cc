@@ -26,20 +26,34 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
         registered_protocols_.find(protocol) == registered_protocols_.end());
     registered_protocols_.insert(protocol);
   }
+
   virtual void DeregisterExternalHandler(const std::string& protocol) {
     registered_protocols_.erase(protocol);
   }
 
-  bool IsExternalHandlerRegistered(const std::string& protocol) {
+  virtual void RegisterWithOSAsDefaultClient(const std::string& protocol) {
+    ASSERT_TRUE(os_registered_protocols_.find(protocol) ==
+        os_registered_protocols_.end());
+    os_registered_protocols_.insert(protocol);
+  }
+
+  virtual bool IsExternalHandlerRegistered(const std::string& protocol) {
     return registered_protocols_.find(protocol) != registered_protocols_.end();
+  }
+
+  bool IsRegisteredWithOS(const std::string& protocol) {
+    return os_registered_protocols_.find(protocol) !=
+        os_registered_protocols_.end();
   }
 
   void Reset() {
     registered_protocols_.clear();
+    os_registered_protocols_.clear();
   }
 
  private:
   std::set<std::string> registered_protocols_;
+  std::set<std::string> os_registered_protocols_;
 };
 
 class NotificationCounter : public NotificationObserver {
@@ -398,4 +412,23 @@ TEST_F(ProtocolHandlerRegistryTest, TestDisablePreventsHandling) {
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
   registry()->Disable();
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
+  ProtocolHandler ph_do1 = CreateProtocolHandler("do", "test1");
+  ProtocolHandler ph_do2 = CreateProtocolHandler("do", "test2");
+  ProtocolHandler ph_dont = CreateProtocolHandler("dont", "test");
+
+  ASSERT_FALSE(delegate()->IsRegisteredWithOS("do"));
+  ASSERT_FALSE(delegate()->IsRegisteredWithOS("dont"));
+
+  registry()->OnAcceptRegisterProtocolHandler(ph_do1);
+  ASSERT_TRUE(delegate()->IsRegisteredWithOS("do"));
+
+  // This should not register with the OS, if it does the delegate
+  // will assert for us.
+  registry()->OnAcceptRegisterProtocolHandler(ph_do2);
+
+  registry()->OnDenyRegisterProtocolHandler(ph_dont);
+  ASSERT_FALSE(delegate()->IsRegisteredWithOS("dont"));
 }
