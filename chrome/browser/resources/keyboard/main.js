@@ -578,7 +578,7 @@ var allRows = [];  // Populated during start()
  */
 function getRowHeight() {
   var x = window.innerWidth;
-  var y = window.innerHeight - (imeEnabled ? IME_HEIGHT - 2 : 0);
+  var y = window.innerHeight - (imeui ? IME_HEIGHT - 2 : 0);
   return (x > kKeyboardAspect * y) ?
       (height = Math.floor(y / 4)) :
       (height = Math.floor(x / (kKeyboardAspect * 4)));
