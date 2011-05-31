@@ -256,6 +256,35 @@ void many_args_wrapping_test() {
   assert(zz_wrap_me0(1, 2, 3, 4, 5, 6, 7) == 7 * 28);
 }
 
+/*----------------------------------------------------------------------
+ Test that wrapped functions are called with correct stack alignment.
+*/
+
+struct AlignedType {
+  int blah;
+} __attribute__((aligned(16)));
+
+void check_alignment(void* p) {
+  assert(((size_t)p) % 16 == 0);
+}
+
+NOINLINE void wrap_me_check_alignment() {
+  struct AlignedType var;
+  check_alignment(&var);
+}
+
+NOINLINE void I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_check_alignment)() {
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+  CALL_FN_v_v(fn);
+}
+
+NOINLINE
+void function_alignment_wrapping_test() {
+  SHOW_ME;
+  wrap_me_check_alignment();
+}
+
 
 NOINLINE
 void strcmp_test() {
@@ -306,6 +335,7 @@ int main() {
   if (1) test_printf();
   if (1) function_wrapping_test();
   if (1) many_args_wrapping_test();
+  if (1) function_alignment_wrapping_test();
   if (1) strcmp_test();
   if (1) calloc_realloc_test();
   SHOW_ME;

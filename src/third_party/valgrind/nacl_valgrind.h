@@ -325,6 +325,17 @@ typedef
                      ".align 32; "                                \
                      __SPECIAL_INSTRUCTION_PREAMBLE
 
+/*
+ * GCC does not preserve 16-byte stack alignment in leaf functions, which
+ * becomes a problem when such a function includes a Valgrind client request. To
+ * make sure that client requests are always called with aligned stack, we add a
+ * call to this non-inlinable function to all client request macros. This turns
+ * every function that does client requests into a non-leaf function.
+ */
+static __attribute__((noinline)) void force_stack_alignment(void) {
+  asm ("");
+}
+
 #define VALGRIND_DO_CLIENT_REQUEST(                               \
         _zzq_rlval, _zzq_default, _zzq_request,                   \
         _zzq_arg1, _zzq_arg2, _zzq_arg3, _zzq_arg4, _zzq_arg5)    \
@@ -344,6 +355,7 @@ typedef
                      : "cc", "memory"                             \
                     );                                            \
     _zzq_rlval = _zzq_result;                                     \
+    force_stack_alignment();                                      \
   }
 
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
@@ -357,6 +369,7 @@ typedef
                      : "cc", "memory"                             \
                     );                                            \
     _zzq_orig->nraddr = __addr;                                   \
+    force_stack_alignment();                                      \
   }
 
 /* NaCl: the instruction after xchgq should be 32-byte aligned. */
@@ -1237,6 +1250,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_W(lval, orig, arg1)                             \
@@ -1283,6 +1297,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_WWW(lval, orig, arg1,arg2,arg3)                 \
@@ -1309,6 +1324,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_WWWW(lval, orig, arg1,arg2,arg3,arg4)           \
@@ -1337,6 +1353,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_5W(lval, orig, arg1,arg2,arg3,arg4,arg5)        \
@@ -1367,6 +1384,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_6W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6)   \
@@ -1399,6 +1417,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_7W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6,   \
@@ -1417,7 +1436,7 @@ typedef
       _argvec[7] = (uint64_t)(arg7);                         \
       __asm__ volatile(                                                 \
          CFI_PROLOGUE                                                   \
-         "naclssp $128, %%r15\n\t"                                      \
+         "naclssp $136, %%r15\n\t"                                      \
          "pushq %%nacl:56(%%r15,%%rax)\n\t"                             \
          "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                        \
          "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                        \
@@ -1427,13 +1446,14 @@ typedef
          "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                        \
          "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */     \
          VALGRIND_CALL_NOREDIR_RAX                                      \
-         "naclasp $136,%%r15\n\t"                                       \
+         "naclasp $144,%%r15\n\t"                                       \
          CFI_EPILOGUE                                                   \
          : /*out*/   "=a" (_res)                                        \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX, __FP_IN_RBX        \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS                \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_8W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6,   \
@@ -1471,6 +1491,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_9W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6,   \
@@ -1491,7 +1512,7 @@ typedef
       _argvec[9] = (uint64_t)(arg9);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
+         "naclssp $136, %%r15\n\t"                                \
          "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
          "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
          "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
@@ -1503,13 +1524,14 @@ typedef
          "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
          "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $152,%%r15\n\t"                                 \
+         "naclasp $160,%%r15\n\t"                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_10W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6,  \
@@ -1551,6 +1573,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_11W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6,  \
@@ -1573,7 +1596,7 @@ typedef
       _argvec[11] = (uint64_t)(arg11);                       \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
+         "naclssp $136, %%r15\n\t"                                \
          "pushq %%nacl:88(%%r15,%%rax)\n\t"                                    \
          "pushq %%nacl:80(%%r15,%%rax)\n\t"                                    \
          "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
@@ -1587,13 +1610,14 @@ typedef
          "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
          "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $168,%%r15\n\t"                                 \
+         "naclasp $176,%%r15\n\t"                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #define CALL_FN_W_12W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6,  \
@@ -1639,6 +1663,7 @@ typedef
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
       );                                                          \
       lval = (__typeof__(lval)) _res;                             \
+      force_stack_alignment();                                    \
    } while (0)
 
 #endif /* PLAT_amd64_linux || PLAT_amd64_darwin || PLAT_amd64_native_client */
