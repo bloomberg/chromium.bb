@@ -333,10 +333,9 @@ void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {
 #endif
 }
 
-scoped_refptr<CrxInstaller> OpenChromeExtension(
-    Profile* profile,
-    DownloadManager* download_manager,
-    const DownloadItem& download_item) {
+void OpenChromeExtension(Profile* profile,
+                         DownloadManager* download_manager,
+                         const DownloadItem& download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download_item.is_extension_install());
 
@@ -356,19 +355,18 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
                                   download_item.mime_type())) {
     installer->InstallUserScript(download_item.full_path(),
                                  download_item.GetURL());
-  } else {
-    bool is_gallery_download = service->IsDownloadFromGallery(
-        download_item.GetURL(), download_item.referrer_url());
-    installer->set_original_mime_type(download_item.original_mime_type());
-    installer->set_apps_require_extension_mime_type(true);
-    installer->set_original_url(download_item.GetURL());
-    installer->set_is_gallery_install(is_gallery_download);
-    installer->set_allow_silent_install(is_gallery_download);
-    installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
-    installer->InstallCrx(download_item.full_path());
+    return;
   }
 
-  return installer;
+  bool is_gallery_download = service->IsDownloadFromGallery(
+      download_item.GetURL(), download_item.referrer_url());
+  installer->set_original_mime_type(download_item.original_mime_type());
+  installer->set_apps_require_extension_mime_type(true);
+  installer->set_original_url(download_item.GetURL());
+  installer->set_is_gallery_install(is_gallery_download);
+  installer->set_allow_silent_install(is_gallery_download);
+  installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
+  installer->InstallCrx(download_item.full_path());
 }
 
 void RecordDownloadCount(DownloadCountTypes type) {

@@ -22,7 +22,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_state_info.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -30,7 +29,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // A DownloadItem normally goes through the following states:
@@ -363,8 +361,12 @@ void DownloadItem::Completed() {
   UpdateObservers();
   download_manager_->DownloadCompleted(id());
   download_util::RecordDownloadCount(download_util::COMPLETED_COUNT);
+
+  // Handle chrome extensions explicitly and skip the shell execute.
   if (is_extension_install()) {
-    // Extensions should already have been unpacked and opened.
+    download_util::OpenChromeExtension(download_manager_->profile(),
+                                       download_manager_,
+                                       *this);
     auto_opened_ = true;
   } else if (open_when_complete() ||
              download_manager_->ShouldOpenFileBasedOnExtension(
@@ -379,57 +381,6 @@ void DownloadItem::Completed() {
     auto_opened_ = true;
     UpdateObservers();
   }
-}
-
-void DownloadItem::StartCrxInstall() {
-  DCHECK(is_extension_install());
-  DCHECK(all_data_saved_);
-
-  // We keep a scoped_refptr to the installer.  This ensures that
-  // the installer continues to exist as long as we need to reference
-  // it.  Our reference will be removed when installation completes,
-  // and NotificationType::CRX_INSTALLER_DONE fires.
-  scoped_refptr<CrxInstaller> crx_installer =
-      download_util::OpenChromeExtension(
-          download_manager_->profile(),
-          download_manager_,
-          *this);
-
-  // We are only listening for events from the installer we started.
-  registrar_.Add(this,
-                 NotificationType::CRX_INSTALLER_DONE,
-                 Source<CrxInstaller>(crx_installer.get()));
-
-  // The status text and percent complete indicator will change now
-  // that we are installing a CRX.  Update observers so that they pick
-  // up the change.
-  UpdateObservers();
-
-  // At this point, we hold a reference to the installer and are
-  // listening for CRX_INSTALLER_DONE from that installer.
-  // If we are around when CRX_INSTALLER_DONE fires, Observe() will
-  // unreference |crx_installer_| and remove the listener from
-  // |registrar_|.  If this download item is destroyed (user cancels,
-  // browser quits, etc) then |crx_installer_| goes out of scope,
-  // removing our reference.  |registrar_|'s destructor will remove
-  // the listener for CRX_INSTALLER_DONE.
-}
-
-// NotificationObserver implementation.
-void DownloadItem::Observe(NotificationType type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
-  DCHECK(type == NotificationType::CRX_INSTALLER_DONE);
-
-  // No need to listen for CRX_INSTALLER_DONE anymore.
-  registrar_.Remove(this,
-                    NotificationType::CRX_INSTALLER_DONE,
-                    source);
-
-  auto_opened_ = true;
-  DCHECK(all_data_saved_);
-
-  Completed();
 }
 
 void DownloadItem::Interrupted(int64 size, int os_error) {
@@ -491,13 +442,6 @@ int64 DownloadItem::CurrentSpeed() const {
 }
 
 int DownloadItem::PercentComplete() const {
-  // We don't have an accurate way to estimate the time to unpack a CRX.
-  // The slowest part is re-encoding images, and time to do this depends on
-  // the contents of the image.  If a CRX is being unpacked, indicate that
-  // we do not know how close to completion we are.
-  if (IsCrxInstallRuning())
-    return -1;
-
   return (total_bytes_ > 0) ?
       static_cast<int>(received_bytes_ * 100.0 /
           total_bytes_) :
@@ -534,7 +478,6 @@ void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
     return;
   }
 
-  DCHECK(!is_extension_install());
   Completed();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -550,12 +493,6 @@ void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
   DCHECK(NeedsRename());
 
   Rename(full_path);
-
-  if (is_extension_install()) {
-    StartCrxInstall();
-    // Completed() will be called when the installer finishes.
-    return;
-  }
 
   Completed();
 }
