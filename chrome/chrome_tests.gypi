@@ -1739,6 +1739,7 @@
         'browser/ui/cocoa/nsimage_cache_unittest.mm',
         'browser/ui/cocoa/nsmenuitem_additions_unittest.mm',
         'browser/ui/cocoa/objc_method_swizzle_unittest.mm',
+        'browser/ui/cocoa/objc_zombie_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
         'browser/ui/cocoa/page_info_bubble_controller_unittest.mm',
         'browser/ui/cocoa/profile_menu_button_unittest.mm',

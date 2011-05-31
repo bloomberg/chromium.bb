@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,6 +124,9 @@ void ZombieDealloc(id self, SEL _cmd) {
 
   // Destroy the instance by calling C++ destructors and clearing it
   // to something unlikely to work well if someone references it.
+  // NOTE(shess): |object_dispose()| will call |object_cxxDestruct()|
+  // again when the zombie falls off the treadmill!  But by then |isa|
+  // will be something without destructors, so it won't hurt anything.
   (*g_object_cxxDestruct)(self);
   memset(self, '!', size);
 
@@ -162,7 +165,7 @@ void ZombieDealloc(id self, SEL _cmd) {
 
   // Do the free out here to prevent any chance of deadlock.
   if (zombieToFree.object)
-    free(zombieToFree.object);
+    object_dispose(zombieToFree.object);
 }
 
 // Attempt to determine the original class of zombie |object|.
@@ -369,7 +372,7 @@ BOOL ZombieEnable(BOOL zombieAllObjects,
   if (oldZombies) {
     for (size_t i = 0; i < oldCount; ++i) {
       if (oldZombies[i].object)
-        free(oldZombies[i].object);
+        object_dispose(oldZombies[i].object);
     }
     free(oldZombies);
   }
@@ -405,7 +408,7 @@ void ZombieDisable() {
   if (oldZombies) {
     for (size_t i = 0; i < oldCount; ++i) {
       if (oldZombies[i].object)
-        free(oldZombies[i].object);
+        object_dispose(oldZombies[i].object);
     }
     free(oldZombies);
   }
