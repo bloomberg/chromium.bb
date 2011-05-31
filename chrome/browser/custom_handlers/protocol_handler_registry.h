@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,9 +58,6 @@ class ProtocolHandlerRegistry
   // given protocol handler again.
   void OnIgnoreRegisterProtocolHandler(const ProtocolHandler& handler);
 
-  // Makes this ProtocolHandler the default handler for its protocol.
-  void SetDefault(const ProtocolHandler& handler);
-
   // Clears the default for the provided protocol.
   void ClearDefault(const std::string& scheme);
 
@@ -69,19 +67,12 @@ class ProtocolHandlerRegistry
   // Loads a user's registered protocol handlers.
   void Load();
 
-  // Saves a user's registered protocol handlers.
-  void Save();
-
-  // Returns the default handler for this protocol, or an empty handler if none
-  // exists.
-  const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
-
   // Returns the offset in the list of handlers for a protocol of the default
   // handler for that protocol.
   int GetHandlerIndex(const std::string& scheme) const;
 
   // Get the list of protocol handlers for the given scheme.
-  const ProtocolHandlerList* GetHandlersFor(const std::string& scheme) const;
+  ProtocolHandlerList GetHandlersFor(const std::string& scheme) const;
 
   // Yields a list of the protocols handled by this registry.
   void GetHandledProtocols(std::vector<std::string>* output) const;
@@ -96,17 +87,18 @@ class ProtocolHandlerRegistry
   // Returns true if the protocol handler is being ignored.
   bool IsIgnored(const ProtocolHandler& handler) const;
 
+  // Causes the given protocol handler to not be ignored anymore.
+  void RemoveIgnoredHandler(const ProtocolHandler& handler);
+
   // Returns true if the protocol has a registered protocol handler.
   bool IsHandledProtocol(const std::string& scheme) const;
 
   // Removes the given protocol handler from the registry.
   void RemoveHandler(const ProtocolHandler& handler);
 
-  // Causes the given protocol handler to not be ignored anymore.
-  void RemoveIgnoredHandler(const ProtocolHandler& handler);
-
-  // Registers the preferences that we store registered protocol handlers in.
-  static void RegisterPrefs(PrefService* prefService);
+  // Returns the default handler for this protocol, or an empty handler if none
+  // exists.
+  const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
 
   // Creates a URL request job for the given request if there is a matching
   // protocol handler, returns NULL otherwise.
@@ -120,10 +112,40 @@ class ProtocolHandlerRegistry
   // will not handle requests.
   void Disable();
 
+  // Registers the preferences that we store registered protocol handlers in.
+  static void RegisterPrefs(PrefService* prefService);
+
   bool enabled() const { return enabled_; }
 
  private:
   friend class base::RefCountedThreadSafe<ProtocolHandlerRegistry>;
+
+  // Returns true if the protocol has a registered protocol handler.
+  bool IsHandledProtocolInternal(const std::string& scheme) const;
+
+  // Returns true if this handler is the default handler for its protocol.
+  bool IsDefaultInternal(const ProtocolHandler& handler) const;
+
+  // Returns true if we allow websites to register handlers for the given
+  // scheme.
+  bool CanSchemeBeOverriddenInternal(const std::string& scheme) const;
+
+  // Returns true if an identical protocol handler has already been registered.
+  bool IsRegisteredInternal(const ProtocolHandler& handler) const;
+
+  // Returns the default handler for this protocol, or an empty handler if none
+  // exists.
+  const ProtocolHandler& GetHandlerForInternal(const std::string& scheme) const;
+
+  // Saves a user's registered protocol handlers.
+  void Save();
+
+  // Returns a pointer to the list of handlers registered for the given scheme,
+  // or NULL if there are none.
+  const ProtocolHandlerList* GetHandlerList(const std::string& scheme) const;
+
+  // Makes this ProtocolHandler the default handler for its protocol.
+  void SetDefault(const ProtocolHandler& handler);
 
   // Insert the given ProtocolHandler into the registry.
   void InsertHandler(const ProtocolHandler& handler);
@@ -174,6 +196,14 @@ class ProtocolHandlerRegistry
 
   // Whether or not we are loading.
   bool is_loading_;
+
+  // This lock ensures that only a single thread is accessing this object at a
+  // time, that is, it covers the entire class. This is to prevent race
+  // conditions from concurrent access from the IO and UI threads.
+  // TODO(koz): Remove the necessity of this lock by using message passing.
+  mutable base::Lock lock_;
+
+  friend class ProtocolHandlerRegistryTest;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };

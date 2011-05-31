@@ -33,8 +33,9 @@ ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
 }
 
 const ProtocolHandlerRegistry::ProtocolHandlerList*
-ProtocolHandlerRegistry::GetHandlersFor(
+ProtocolHandlerRegistry::GetHandlerList(
     const std::string& scheme) const {
+  lock_.AssertAcquired();
   ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.find(scheme);
   if (p == protocol_handlers_.end()) {
     return NULL;
@@ -42,11 +43,23 @@ ProtocolHandlerRegistry::GetHandlersFor(
   return &p->second;
 }
 
+ProtocolHandlerRegistry::ProtocolHandlerList
+ProtocolHandlerRegistry::GetHandlersFor(
+    const std::string& scheme) const {
+  base::AutoLock auto_lock(lock_);
+  ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.find(scheme);
+  if (p == protocol_handlers_.end()) {
+    return ProtocolHandlerList();
+  }
+  return p->second;
+}
+
 void ProtocolHandlerRegistry::RegisterProtocolHandler(
     const ProtocolHandler& handler) {
-  DCHECK(CanSchemeBeOverridden(handler.protocol()));
+  DCHECK(CanSchemeBeOverriddenInternal(handler.protocol()));
   DCHECK(!handler.IsEmpty());
-  if (IsRegistered(handler)) {
+  lock_.AssertAcquired();
+  if (IsRegisteredInternal(handler)) {
     return;
   }
   if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol())) {
@@ -59,6 +72,7 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
 }
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
+  lock_.AssertAcquired();
   ProtocolHandlerMultiMap::iterator p =
       protocol_handlers_.find(handler.protocol());
 
@@ -74,28 +88,31 @@ void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
 
 void ProtocolHandlerRegistry::IgnoreProtocolHandler(
     const ProtocolHandler& handler) {
+  lock_.AssertAcquired();
   ignored_protocol_handlers_.push_back(handler);
 }
 
 void ProtocolHandlerRegistry::Enable() {
+  base::AutoLock auto_lock(lock_);
   if (enabled_) {
     return;
   }
   enabled_ = true;
-  for (ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.begin();
-       p != protocol_handlers_.end(); ++p) {
+  ProtocolHandlerMap::const_iterator p;
+  for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
     delegate_->RegisterExternalHandler(p->first);
   }
   NotifyChanged();
 }
 
 void ProtocolHandlerRegistry::Disable() {
+  base::AutoLock auto_lock(lock_);
   if (!enabled_) {
     return;
   }
   enabled_ = false;
-  for (ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.begin();
-       p != protocol_handlers_.end(); ++p) {
+  ProtocolHandlerMap::const_iterator p;
+  for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
     delegate_->DeregisterExternalHandler(p->first);
   }
   NotifyChanged();
@@ -103,6 +120,7 @@ void ProtocolHandlerRegistry::Disable() {
 
 std::vector<const DictionaryValue*>
 ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
+  lock_.AssertAcquired();
   std::vector<const DictionaryValue*> result;
   PrefService* prefs = profile_->GetPrefs();
   if (!prefs->HasPrefPath(pref_name)) {
@@ -123,6 +141,7 @@ ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
 }
 
 void ProtocolHandlerRegistry::Load() {
+  base::AutoLock auto_lock(lock_);
   is_loading_ = true;
   PrefService* prefs = profile_->GetPrefs();
   if (prefs->HasPrefPath(prefs::kCustomHandlersEnabled)) {
@@ -151,6 +170,7 @@ void ProtocolHandlerRegistry::Load() {
 }
 
 void ProtocolHandlerRegistry::Save() {
+  lock_.AssertAcquired();
   if (is_loading_) {
     return;
   }
@@ -167,7 +187,14 @@ void ProtocolHandlerRegistry::Save() {
 
 bool ProtocolHandlerRegistry::CanSchemeBeOverridden(
     const std::string& scheme) const {
-  const ProtocolHandlerList* handlers = GetHandlersFor(scheme);
+  base::AutoLock auto_lock(lock_);
+  return CanSchemeBeOverriddenInternal(scheme);
+}
+
+bool ProtocolHandlerRegistry::CanSchemeBeOverriddenInternal(
+    const std::string& scheme) const {
+  lock_.AssertAcquired();
+  const ProtocolHandlerList* handlers = GetHandlerList(scheme);
   // If we already have a handler for this scheme, we can add more.
   if (handlers != NULL && !handlers->empty())
     return true;
@@ -177,16 +204,16 @@ bool ProtocolHandlerRegistry::CanSchemeBeOverridden(
 
 void ProtocolHandlerRegistry::GetHandledProtocols(
     std::vector<std::string>* output) const {
-  ProtocolHandlerMultiMap::const_iterator p;
-  for (p = protocol_handlers_.begin(); p != protocol_handlers_.end(); ++p) {
-    if (!p->second.empty()) {
-      output->push_back(p->first);
-    }
+  base::AutoLock auto_lock(lock_);
+  ProtocolHandlerMap::const_iterator p;
+  for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
+    output->push_back(p->first);
   }
 }
 
 void ProtocolHandlerRegistry::RemoveIgnoredHandler(
     const ProtocolHandler& handler) {
+  base::AutoLock auto_lock(lock_);
   ProtocolHandlerList::iterator p = std::find(
       ignored_protocol_handlers_.begin(), ignored_protocol_handlers_.end(),
       handler);
@@ -199,7 +226,14 @@ void ProtocolHandlerRegistry::RemoveIgnoredHandler(
 
 bool ProtocolHandlerRegistry::IsRegistered(
     const ProtocolHandler& handler) const {
-  const ProtocolHandlerList* handlers = GetHandlersFor(handler.protocol());
+  base::AutoLock auto_lock(lock_);
+  return IsRegisteredInternal(handler);
+}
+
+bool ProtocolHandlerRegistry::IsRegisteredInternal(
+    const ProtocolHandler& handler) const {
+  lock_.AssertAcquired();
+  const ProtocolHandlerList* handlers = GetHandlerList(handler.protocol());
   if (!handlers) {
     return false;
   }
@@ -208,6 +242,7 @@ bool ProtocolHandlerRegistry::IsRegistered(
 }
 
 bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
+  base::AutoLock auto_lock(lock_);
   ProtocolHandlerList::const_iterator i;
   for (i = ignored_protocol_handlers_.begin();
        i != ignored_protocol_handlers_.end(); ++i) {
@@ -220,10 +255,18 @@ bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
 
 bool ProtocolHandlerRegistry::IsHandledProtocol(
     const std::string& scheme) const {
-  return !GetHandlerFor(scheme).IsEmpty();
+  base::AutoLock auto_lock(lock_);
+  return IsHandledProtocolInternal(scheme);
+}
+
+bool ProtocolHandlerRegistry::IsHandledProtocolInternal(
+    const std::string& scheme) const {
+  lock_.AssertAcquired();
+  return !GetHandlerForInternal(scheme).IsEmpty();
 }
 
 void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
+  base::AutoLock auto_lock(lock_);
   ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
   ProtocolHandlerList::iterator p =
       std::find(handlers.begin(), handlers.end(), handler);
@@ -236,7 +279,7 @@ void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
     default_handlers_.erase(q);
   }
 
-  if (!IsHandledProtocol(handler.protocol())) {
+  if (!IsHandledProtocolInternal(handler.protocol())) {
     delegate_->DeregisterExternalHandler(handler.protocol());
   }
   Save();
@@ -245,7 +288,8 @@ void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
 
 net::URLRequestJob* ProtocolHandlerRegistry::MaybeCreateJob(
     net::URLRequest* request) const {
-  ProtocolHandler handler = GetHandlerFor(request->url().scheme());
+  base::AutoLock auto_lock(lock_);
+  ProtocolHandler handler = GetHandlerForInternal(request->url().scheme());
   if (handler.IsEmpty()) {
     return NULL;
   }
@@ -257,6 +301,7 @@ net::URLRequestJob* ProtocolHandlerRegistry::MaybeCreateJob(
 }
 
 Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
+  lock_.AssertAcquired();
   ListValue* protocol_handlers = new ListValue();
 
   for (ProtocolHandlerMultiMap::iterator i = protocol_handlers_.begin();
@@ -264,7 +309,7 @@ Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
     for (ProtocolHandlerList::iterator j = i->second.begin();
          j != i->second.end(); ++j) {
       DictionaryValue* encoded = j->Encode();
-      if (IsDefault(*j)) {
+      if (IsDefaultInternal(*j)) {
         encoded->Set("default", Value::CreateBooleanValue(true));
       }
       protocol_handlers->Append(encoded);
@@ -274,6 +319,7 @@ Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
 }
 
 Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
+  lock_.AssertAcquired();
   ListValue* handlers = new ListValue();
 
   for (ProtocolHandlerList::iterator i = ignored_protocol_handlers_.begin();
@@ -285,19 +331,23 @@ Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
 
 void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(
     const ProtocolHandler& handler) {
+  base::AutoLock auto_lock(lock_);
   RegisterProtocolHandler(handler);
   SetDefault(handler);
   Save();
+  NotifyChanged();
 }
 
 void ProtocolHandlerRegistry::OnDenyRegisterProtocolHandler(
     const ProtocolHandler& handler) {
+  base::AutoLock auto_lock(lock_);
   RegisterProtocolHandler(handler);
   Save();
 }
 
 void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
     const ProtocolHandler& handler) {
+  base::AutoLock auto_lock(lock_);
   IgnoreProtocolHandler(handler);
   Save();
 }
@@ -312,24 +362,38 @@ void ProtocolHandlerRegistry::RegisterPrefs(PrefService* pref_service) {
 }
 
 void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
+  lock_.AssertAcquired();
   default_handlers_.erase(handler.protocol());
   default_handlers_.insert(std::make_pair(handler.protocol(), handler));
-  Save();
-  NotifyChanged();
 }
 
 void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
+  base::AutoLock auto_lock(lock_);
   default_handlers_.erase(scheme);
   Save();
   NotifyChanged();
 }
 
 bool ProtocolHandlerRegistry::IsDefault(const ProtocolHandler& handler) const {
-  return GetHandlerFor(handler.protocol()) == handler;
+  base::AutoLock auto_lock(lock_);
+  return IsDefaultInternal(handler);
+}
+
+bool ProtocolHandlerRegistry::IsDefaultInternal(
+    const ProtocolHandler& handler) const {
+  lock_.AssertAcquired();
+  return GetHandlerForInternal(handler.protocol()) == handler;
 }
 
 const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerFor(
     const std::string& scheme) const {
+  base::AutoLock auto_lock(lock_);
+  return GetHandlerForInternal(scheme);
+}
+
+const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerForInternal(
+    const std::string& scheme) const {
+  lock_.AssertAcquired();
   ProtocolHandlerMap::const_iterator p = default_handlers_.find(scheme);
   if (p != default_handlers_.end()) {
     return p->second;
@@ -338,10 +402,11 @@ const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerFor(
 }
 
 int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
-  const ProtocolHandler& handler = GetHandlerFor(scheme);
+  base::AutoLock auto_lock(lock_);
+  const ProtocolHandler& handler = GetHandlerForInternal(scheme);
   if (handler.IsEmpty())
     return -1;
-  const ProtocolHandlerList* handlers = GetHandlersFor(scheme);
+  const ProtocolHandlerList* handlers = GetHandlerList(scheme);
   if (!handlers)
     return -1;
 
@@ -355,6 +420,7 @@ int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
 }
 
 void ProtocolHandlerRegistry::NotifyChanged() {
+  lock_.AssertAcquired();
   if (is_loading_)
     return;
 
@@ -394,5 +460,7 @@ void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
 
 bool ProtocolHandlerRegistry::Delegate::IsExternalHandlerRegistered(
     const std::string& protocol) {
+  // NOTE(koz): This function is safe to call from any thread, despite living
+  // in ProfileIOData.
   return ProfileIOData::IsHandledProtocol(protocol);
 }

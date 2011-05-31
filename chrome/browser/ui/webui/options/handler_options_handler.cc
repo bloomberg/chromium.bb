@@ -71,10 +71,10 @@ DictionaryValue* HandlerOptionsHandler::GetHandlersForProtocol(
       registry->GetHandlerIndex(protocol));
 
   ListValue* handler_list = new ListValue();
-  const ProtocolHandlerRegistry::ProtocolHandlerList* handlers =
+  ProtocolHandlerRegistry::ProtocolHandlerList handlers =
       registry->GetHandlersFor(protocol);
   ProtocolHandlerRegistry::ProtocolHandlerList::const_iterator handler;
-  for (handler = handlers->begin(); handler != handlers->end(); ++handler) {
+  for (handler = handlers.begin(); handler != handlers.end(); ++handler) {
     ListValue* handlerValue = new ListValue();
     handlerValue->Append(Value::CreateStringValue(handler->url().spec()));
     handlerValue->Append(Value::CreateStringValue(handler->title()));
@@ -139,7 +139,7 @@ void HandlerOptionsHandler::SetDefault(const ListValue* args) {
   CHECK(args->GetList(0, &list));
   const ProtocolHandler& handler(ParseHandlerFromArgs(list));
   CHECK(!handler.IsEmpty());
-  GetProtocolHandlerRegistry()->SetDefault(handler);
+  GetProtocolHandlerRegistry()->OnAcceptRegisterProtocolHandler(handler);
 }
 
 ProtocolHandler HandlerOptionsHandler::ParseHandlerFromArgs(
