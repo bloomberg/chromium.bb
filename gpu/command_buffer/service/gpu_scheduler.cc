@@ -19,7 +19,6 @@ using ::base::SharedMemory;
 namespace gpu {
 
 GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
-                           SurfaceManager* surface_manager,
                            gles2::ContextGroup* group)
     : command_buffer_(command_buffer),
       commands_per_update_(100),
@@ -30,7 +29,7 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
 #endif
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(command_buffer);
-  decoder_.reset(gles2::GLES2Decoder::Create(surface_manager, group));
+  decoder_.reset(gles2::GLES2Decoder::Create(group));
   decoder_->set_engine(this);
 }
 
@@ -56,8 +55,8 @@ GpuScheduler::~GpuScheduler() {
 }
 
 bool GpuScheduler::InitializeCommon(
-    const scoped_refptr<gfx::GLSurface>& surface,
-    const scoped_refptr<gfx::GLContext>& context,
+    gfx::GLSurface* surface,
+    gfx::GLContext* context,
     const gfx::Size& size,
     const gles2::DisallowedExtensions& disallowed_extensions,
     const char* allowed_extensions,

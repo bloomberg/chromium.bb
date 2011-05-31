@@ -50,24 +50,23 @@ bool GLSurface::InitializeOneOff() {
 
 // TODO(apatrick): support ViewGLSurface on mac.
 #if 0
-scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
-    gfx::PluginWindowHandle window) {
+GLSurface* GLSurface::CreateViewGLSurface(gfx::PluginWindowHandle window) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(
+      scoped_ptr<NativeViewGLSurfaceOSMesa> surface(
           new NativeViewGLSurfaceOSMesa(window));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceCGL(
+      scoped_ptr<NativeViewGLSurfaceCGL> surface(new NativeViewGLSurfaceCGL(
           window));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationMockGL:
       return new GLSurfaceStub;
@@ -78,23 +77,22 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 }
 #endif
 
-scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    const gfx::Size& size) {
+GLSurface* GLSurface::CreateOffscreenGLSurface(const gfx::Size& size) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
-                                                           size));
+      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
+                                                              size));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceCGL(size));
+      scoped_ptr<PbufferGLSurfaceCGL> surface(new PbufferGLSurfaceCGL(size));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationMockGL:
       return new GLSurfaceStub;

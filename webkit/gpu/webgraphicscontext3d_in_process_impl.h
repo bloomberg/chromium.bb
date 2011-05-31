@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -468,8 +468,8 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   std::list<WGC3Denum> synthetic_errors_list_;
   std::set<WGC3Denum> synthetic_errors_set_;
 
-  scoped_refptr<gfx::GLContext> gl_context_;
-  scoped_refptr<gfx::GLSurface> gl_surface_;
+  scoped_ptr<gfx::GLContext> gl_context_;
+  scoped_ptr<gfx::GLSurface> gl_surface_;
 
   ShaderSourceMap shader_source_map_;
 

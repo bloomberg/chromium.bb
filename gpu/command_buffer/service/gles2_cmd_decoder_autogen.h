@@ -2600,12 +2600,5 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleSetSurfaceCHROMIUM(
-    uint32 immediate_data_size, const gles2::SetSurfaceCHROMIUM& c) {
-  GLint surface_id = static_cast<GLint>(c.surface_id);
-  DoSetSurfaceCHROMIUM(surface_id);
-  return error::kNoError;
-}
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

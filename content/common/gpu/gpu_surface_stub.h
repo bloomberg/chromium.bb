@@ -8,7 +8,8 @@
 
 #if defined(ENABLE_GPU)
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -17,13 +18,12 @@ class GpuChannel;
 
 class GpuSurfaceStub
     : public IPC::Channel::Listener,
-      public IPC::Message::Sender {
+      public IPC::Message::Sender,
+      public base::SupportsWeakPtr<GpuSurfaceStub> {
  public:
   // Takes ownership of surface.
   GpuSurfaceStub(GpuChannel* channel, int route_id, gfx::GLSurface* surface);
   virtual ~GpuSurfaceStub();
-
-  gfx::GLSurface* surface() const { return surface_.get(); }
 
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -40,7 +40,7 @@ class GpuSurfaceStub
   GpuChannel* channel_;
 
   int route_id_;
-  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_ptr<gfx::GLSurface> surface_;
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceStub);
 };
 

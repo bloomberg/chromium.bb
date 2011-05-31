@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -135,7 +134,8 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   // and from there to the window, and WebViewImpl::paint already
   // correctly handles the case where the compositor is active but
   // the output needs to go to a WebCanvas.
-  gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
+  gl_surface_.reset(gfx::GLSurface::CreateOffscreenGLSurface(
+      gfx::Size(1, 1)));
   if (!gl_surface_.get()) {
     if (!is_gles2_)
       return false;
@@ -149,13 +149,14 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     // necessary.
     webView->mainFrame()->collectGarbage();
 
-    gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    gl_surface_.reset(
+        gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
     if (!gl_surface_.get())
       return false;
   }
 
-  gl_context_ = gfx::GLContext::CreateGLContext(share_context,
-                                                gl_surface_.get());
+  gl_context_.reset(gfx::GLContext::CreateGLContext(share_context,
+                                                    gl_surface_.get()));
   if (!gl_context_.get()) {
     if (!is_gles2_)
       return false;
@@ -169,8 +170,8 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     // necessary.
     webView->mainFrame()->collectGarbage();
 
-    gl_context_ = gfx::GLContext::CreateGLContext(share_context,
-                                                  gl_surface_.get());
+    gl_context_.reset(gfx::GLContext::CreateGLContext(share_context,
+                                                      gl_surface_.get()));
     if (!gl_context_.get())
       return false;
   }
@@ -189,7 +190,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     attributes_.antialias = false;
 
   if (!gl_context_->MakeCurrent(gl_surface_.get())) {
-    gl_context_ = NULL;
+    gl_context_.reset();
     return false;
   }
 

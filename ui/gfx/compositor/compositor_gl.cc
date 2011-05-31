@@ -71,8 +71,8 @@ class CompositorGL : public Compositor {
   bool InitShaders();
 
   // The GL context used for compositing.
-  scoped_refptr<gfx::GLSurface> gl_surface_;
-  scoped_refptr<gfx::GLContext> gl_context_;
+  scoped_ptr<gfx::GLSurface> gl_surface_;
+  scoped_ptr<gfx::GLContext> gl_context_;
   gfx::Size size_;
 
   // Shader program, attributes and uniforms.
@@ -205,8 +205,8 @@ void TextureGL::Draw(const ui::Transform& transform) {
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
     : started_(false) {
-  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
-  gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get());
+  gl_surface_.reset(gfx::GLSurface::CreateViewGLSurface(widget));
+  gl_context_.reset(gfx::GLContext::CreateGLContext(NULL, gl_surface_.get())),
   gl_context_->MakeCurrent(gl_surface_.get());
   if (!InitShaders())
     LOG(ERROR) << "Unable to initialize shaders (context = "
@@ -372,8 +372,8 @@ class CompositorGL : public Compositor {
   void RestoreTransform() OVERRIDE;
 
   // The GL context used for compositing.
-  scoped_refptr<gfx::GLSurface> gl_surface_;
-  scoped_refptr<gfx::GLContext> gl_context_;
+  scoped_ptr<gfx::GLSurface> gl_surface_;
+  scoped_ptr<gfx::GLContext> gl_context_;
 
   // Keep track of whether compositing has started or not.
   bool started_;
@@ -383,8 +383,8 @@ class CompositorGL : public Compositor {
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
     : started_(false) {
-  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
-  gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get());
+  gl_surface_.reset(gfx::GLSurface::CreateViewGLSurface(widget));
+  gl_context_.reset(gfx::GLContext::CreateGLContext(NULL, gl_surface_.get()));
 }
 
 void CompositorGL::NotifyStart() {

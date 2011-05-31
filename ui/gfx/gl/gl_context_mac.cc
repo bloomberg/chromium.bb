@@ -16,23 +16,22 @@
 
 namespace gfx {
 
-scoped_refptr<GLContext> GLContext::CreateGLContext(
-    GLContext* shared_context,
-    GLSurface* compatible_surface) {
+GLContext* GLContext::CreateGLContext(GLContext* shared_context,
+                                      GLSurface* compatible_surface) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLContext> context(new GLContextCGL);
+      scoped_ptr<GLContextCGL> context(new GLContextCGL);
       if (!context->Initialize(shared_context, compatible_surface))
         return NULL;
 
-      return context;
+      return context.release();
     }
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLContext> context(new GLContextOSMesa);
+      scoped_ptr<GLContextOSMesa> context(new GLContextOSMesa);
       if (!context->Initialize(shared_context, compatible_surface))
         return NULL;
 
-      return context;
+      return context.release();
     }
     case kGLImplementationMockGL:
       return new GLContextStub;

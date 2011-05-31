@@ -8979,40 +8979,6 @@ COMPILE_ASSERT(offsetof(WaitLatchCHROMIUM, header) == 0,
 COMPILE_ASSERT(offsetof(WaitLatchCHROMIUM, latch_id) == 4,
                OffsetOf_WaitLatchCHROMIUM_latch_id_not_4);
 
-struct SetSurfaceCHROMIUM {
-  typedef SetSurfaceCHROMIUM ValueType;
-  static const CommandId kCmdId = kSetSurfaceCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(GLint _surface_id) {
-    SetHeader();
-    surface_id = _surface_id;
-  }
-
-  void* Set(void* cmd, GLint _surface_id) {
-    static_cast<ValueType*>(cmd)->Init(_surface_id);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  int32 surface_id;
-};
-
-COMPILE_ASSERT(sizeof(SetSurfaceCHROMIUM) == 8,
-               Sizeof_SetSurfaceCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(SetSurfaceCHROMIUM, header) == 0,
-               OffsetOf_SetSurfaceCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(SetSurfaceCHROMIUM, surface_id) == 4,
-               OffsetOf_SetSurfaceCHROMIUM_surface_id_not_4);
-
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

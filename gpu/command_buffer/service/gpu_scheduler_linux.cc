@@ -31,13 +31,13 @@ bool GpuScheduler::Initialize(
   }
 
   // Create either a view or pbuffer based GLSurface.
-  scoped_refptr<gfx::GLSurface> surface;
+  scoped_ptr<gfx::GLSurface> surface;
   if (window) {
     DCHECK(!parent_handle);
 
-    surface = gfx::GLSurface::CreateViewGLSurface(window);
+    surface.reset(gfx::GLSurface::CreateViewGLSurface(window));
   } else {
-    surface = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    surface.reset(gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
   }
 
   if (!surface.get()) {
@@ -47,7 +47,7 @@ bool GpuScheduler::Initialize(
   }
 
   // Create a GLContext and attach the surface.
-  scoped_refptr<gfx::GLContext> context(
+  scoped_ptr<gfx::GLContext> context(
       gfx::GLContext::CreateGLContext(parent_context, surface.get()));
   if (!context.get()) {
     LOG(ERROR) << "CreateGLContext failed.\n";
@@ -55,8 +55,8 @@ bool GpuScheduler::Initialize(
     return false;
   }
 
-  return InitializeCommon(surface,
-                          context,
+  return InitializeCommon(surface.release(),
+                          context.release(),
                           size,
                           disallowed_extensions,
                           allowed_extensions,

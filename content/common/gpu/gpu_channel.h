@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/surface_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_surface_stub.h"
 #include "content/common/message_router.h"
@@ -32,15 +31,10 @@ class MessageLoopProxy;
 class WaitableEvent;
 }
 
-namespace gfx {
-class GLSurface;
-}
-
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
 class GpuChannel : public IPC::Channel::Listener,
                    public IPC::Message::Sender,
-                   public gpu::SurfaceManager,
                    public base::RefCountedThreadSafe<GpuChannel> {
  public:
   // Takes ownership of the renderer process handle.
@@ -91,9 +85,6 @@ class GpuChannel : public IPC::Channel::Listener,
 #endif
 
   void LoseAllContexts();
-
-  // Look up a GLSurface by ID. In this case the ID is the IPC routing ID.
-  gfx::GLSurface* LookupSurface(int surface_id);
 
   // Get the TransportTexture by ID.
   TransportTexture* GetTransportTexture(int32 route_id);

@@ -40,9 +40,7 @@ class ContextGroup;
 class GpuScheduler : public CommandBufferEngine {
  public:
   // If a group is not passed in one will be created.
-  GpuScheduler(CommandBuffer* command_buffer,
-               SurfaceManager* surface_manager,
-               gles2::ContextGroup* group);
+  GpuScheduler(CommandBuffer* command_buffer, gles2::ContextGroup* group);
 
   // This constructor is for unit tests.
   GpuScheduler(CommandBuffer* command_buffer,
@@ -141,8 +139,8 @@ class GpuScheduler : public CommandBufferEngine {
  protected:
   // Perform common initialization. Takes ownership of GLSurface and GLContext.
   bool InitializeCommon(
-      const scoped_refptr<gfx::GLSurface>& surface,
-      const scoped_refptr<gfx::GLContext>& context,
+      gfx::GLSurface* surface,
+      gfx::GLContext* context,
       const gfx::Size& size,
       const gles2::DisallowedExtensions& disallowed_extensions,
       const char* allowed_extensions,

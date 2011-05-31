@@ -243,32 +243,31 @@ bool NativeViewGLSurfaceOSMesa::UpdateSize() {
   return true;
 }
 
-scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
-    gfx::PluginWindowHandle window) {
+GLSurface* GLSurface::CreateViewGLSurface(gfx::PluginWindowHandle window) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(
+      scoped_ptr<NativeViewGLSurfaceOSMesa> surface(
           new NativeViewGLSurfaceOSMesa(window));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(
+      scoped_ptr<NativeViewGLSurfaceEGL> surface(new NativeViewGLSurfaceEGL(
           window));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceGLX(
+      scoped_ptr<NativeViewGLSurfaceGLX> surface(new NativeViewGLSurfaceGLX(
           window));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationMockGL:
       return new GLSurfaceStub;
@@ -278,30 +277,29 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   }
 }
 
-scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    const gfx::Size& size) {
+GLSurface* GLSurface::CreateOffscreenGLSurface(const gfx::Size& size) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
-                                                           size));
+      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
+                                                              size));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(size));
+      scoped_ptr<PbufferGLSurfaceEGL> surface(new PbufferGLSurfaceEGL(size));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceGLX(size));
+      scoped_ptr<PbufferGLSurfaceGLX> surface(new PbufferGLSurfaceGLX(size));
       if (!surface->Initialize())
         return NULL;
 
-      return surface;
+      return surface.release();
     }
     case kGLImplementationMockGL:
       return new GLSurfaceStub;

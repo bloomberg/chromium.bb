@@ -30,8 +30,8 @@ class MockGLES2Decoder : public GLES2Decoder {
   virtual ~MockGLES2Decoder();
 
   MOCK_METHOD8(Initialize,
-               bool(const scoped_refptr<gfx::GLSurface>& surface,
-                    const scoped_refptr<gfx::GLContext>& context,
+               bool(gfx::GLSurface* surface,
+                    gfx::GLContext* context,
                     const gfx::Size& size,
                     const DisallowedExtensions& disallowed_extensions,
                     const char* allowed_extensions,
