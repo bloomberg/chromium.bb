@@ -23,6 +23,7 @@
 #include "chrome/browser/automation/testing_automation_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
@@ -983,8 +984,10 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     // This avoids us getting into an infinite loop asking ourselves to open
     // a URL, should the handler be (incorrectly) configured to be us. Anyone
     // asking us to open such a URL should really ask the handler directly.
-    if (!process_startup &&
-        !ProfileIOData::IsHandledURL(tabs[i].url))
+    bool handled_by_chrome = ProfileIOData::IsHandledURL(tabs[i].url) ||
+        (profile_ && profile_->GetProtocolHandlerRegistry()->IsHandledProtocol(
+            tabs[i].url.scheme()));
+    if (!process_startup && !handled_by_chrome)
       continue;
 
     int add_types = first_tab ? TabStripModel::ADD_ACTIVE :
