@@ -74,8 +74,9 @@ class ProtocolHandlerRegistry
   // Get the list of protocol handlers for the given scheme.
   ProtocolHandlerList GetHandlersFor(const std::string& scheme) const;
 
-  // Yields a list of the protocols handled by this registry.
-  void GetHandledProtocols(std::vector<std::string>* output) const;
+  // Yields a list of the protocols that have handlers registered in this
+  // registry.
+  void GetRegisteredProtocols(std::vector<std::string>* output) const;
 
   // Returns true if we allow websites to register handlers for the given
   // scheme.

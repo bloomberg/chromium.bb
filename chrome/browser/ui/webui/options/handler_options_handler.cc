@@ -88,7 +88,7 @@ void HandlerOptionsHandler::UpdateHandlerList() {
 #if defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
   ProtocolHandlerRegistry* registry = GetProtocolHandlerRegistry();
   std::vector<std::string> protocols;
-  registry->GetHandledProtocols(&protocols);
+  registry->GetRegisteredProtocols(&protocols);
 
   ListValue handlers;
   for (std::vector<std::string>::iterator protocol = protocols.begin();

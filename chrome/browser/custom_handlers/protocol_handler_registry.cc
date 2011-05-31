@@ -68,7 +68,6 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
       delegate_->RegisterWithOSAsDefaultClient(handler.protocol());
   }
   InsertHandler(handler);
-  NotifyChanged();
 }
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
@@ -93,27 +92,31 @@ void ProtocolHandlerRegistry::IgnoreProtocolHandler(
 }
 
 void ProtocolHandlerRegistry::Enable() {
-  base::AutoLock auto_lock(lock_);
-  if (enabled_) {
-    return;
-  }
-  enabled_ = true;
-  ProtocolHandlerMap::const_iterator p;
-  for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
-    delegate_->RegisterExternalHandler(p->first);
+  {
+    base::AutoLock auto_lock(lock_);
+    if (enabled_) {
+      return;
+    }
+    enabled_ = true;
+    ProtocolHandlerMap::const_iterator p;
+    for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
+      delegate_->RegisterExternalHandler(p->first);
+    }
   }
   NotifyChanged();
 }
 
 void ProtocolHandlerRegistry::Disable() {
-  base::AutoLock auto_lock(lock_);
-  if (!enabled_) {
-    return;
-  }
-  enabled_ = false;
-  ProtocolHandlerMap::const_iterator p;
-  for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
-    delegate_->DeregisterExternalHandler(p->first);
+  {
+    base::AutoLock auto_lock(lock_);
+    if (!enabled_) {
+      return;
+    }
+    enabled_ = false;
+    ProtocolHandlerMap::const_iterator p;
+    for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
+      delegate_->DeregisterExternalHandler(p->first);
+    }
   }
   NotifyChanged();
 }
@@ -202,26 +205,32 @@ bool ProtocolHandlerRegistry::CanSchemeBeOverriddenInternal(
   return !delegate_->IsExternalHandlerRegistered(scheme);
 }
 
-void ProtocolHandlerRegistry::GetHandledProtocols(
+void ProtocolHandlerRegistry::GetRegisteredProtocols(
     std::vector<std::string>* output) const {
   base::AutoLock auto_lock(lock_);
-  ProtocolHandlerMap::const_iterator p;
-  for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
-    output->push_back(p->first);
+  ProtocolHandlerMultiMap::const_iterator p;
+  for (p = protocol_handlers_.begin(); p != protocol_handlers_.end(); ++p) {
+    if (!p->second.empty())
+      output->push_back(p->first);
   }
 }
 
 void ProtocolHandlerRegistry::RemoveIgnoredHandler(
     const ProtocolHandler& handler) {
-  base::AutoLock auto_lock(lock_);
-  ProtocolHandlerList::iterator p = std::find(
-      ignored_protocol_handlers_.begin(), ignored_protocol_handlers_.end(),
-      handler);
-  if (p != ignored_protocol_handlers_.end()) {
-    ignored_protocol_handlers_.erase(p);
-    Save();
-    NotifyChanged();
+  bool should_notify = false;
+  {
+    base::AutoLock auto_lock(lock_);
+    ProtocolHandlerList::iterator p = std::find(
+        ignored_protocol_handlers_.begin(), ignored_protocol_handlers_.end(),
+        handler);
+    if (p != ignored_protocol_handlers_.end()) {
+      ignored_protocol_handlers_.erase(p);
+      Save();
+      should_notify = true;
+    }
   }
+  if (should_notify)
+    NotifyChanged();
 }
 
 bool ProtocolHandlerRegistry::IsRegistered(
@@ -266,23 +275,25 @@ bool ProtocolHandlerRegistry::IsHandledProtocolInternal(
 }
 
 void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
-  base::AutoLock auto_lock(lock_);
-  ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
-  ProtocolHandlerList::iterator p =
-      std::find(handlers.begin(), handlers.end(), handler);
-  if (p != handlers.end()) {
-    handlers.erase(p);
-  }
+  {
+    base::AutoLock auto_lock(lock_);
+    ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
+    ProtocolHandlerList::iterator p =
+        std::find(handlers.begin(), handlers.end(), handler);
+    if (p != handlers.end()) {
+      handlers.erase(p);
+    }
 
-  ProtocolHandlerMap::iterator q = default_handlers_.find(handler.protocol());
-  if (q != default_handlers_.end() && q->second == handler) {
-    default_handlers_.erase(q);
-  }
+    ProtocolHandlerMap::iterator q = default_handlers_.find(handler.protocol());
+    if (q != default_handlers_.end() && q->second == handler) {
+      default_handlers_.erase(q);
+    }
 
-  if (!IsHandledProtocolInternal(handler.protocol())) {
-    delegate_->DeregisterExternalHandler(handler.protocol());
+    if (!IsHandledProtocolInternal(handler.protocol())) {
+      delegate_->DeregisterExternalHandler(handler.protocol());
+    }
+    Save();
   }
-  Save();
   NotifyChanged();
 }
 
@@ -331,18 +342,23 @@ Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
 
 void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(
     const ProtocolHandler& handler) {
-  base::AutoLock auto_lock(lock_);
-  RegisterProtocolHandler(handler);
-  SetDefault(handler);
-  Save();
+  {
+    base::AutoLock auto_lock(lock_);
+    RegisterProtocolHandler(handler);
+    SetDefault(handler);
+    Save();
+  }
   NotifyChanged();
 }
 
 void ProtocolHandlerRegistry::OnDenyRegisterProtocolHandler(
     const ProtocolHandler& handler) {
-  base::AutoLock auto_lock(lock_);
-  RegisterProtocolHandler(handler);
-  Save();
+  {
+    base::AutoLock auto_lock(lock_);
+    RegisterProtocolHandler(handler);
+    Save();
+  }
+  NotifyChanged();
 }
 
 void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
@@ -368,9 +384,11 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
 }
 
 void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
-  base::AutoLock auto_lock(lock_);
-  default_handlers_.erase(scheme);
-  Save();
+  {
+    base::AutoLock auto_lock(lock_);
+    default_handlers_.erase(scheme);
+    Save();
+  }
   NotifyChanged();
 }
 
@@ -420,10 +438,8 @@ int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
 }
 
 void ProtocolHandlerRegistry::NotifyChanged() {
-  lock_.AssertAcquired();
-  if (is_loading_)
-    return;
-
+  // NOTE(koz): This must not hold the lock because observers watching for this
+  // event may call back into ProtocolHandlerRegistry.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotificationService::current()->Notify(
       NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,

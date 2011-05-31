@@ -531,21 +531,18 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
   if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
     return;
 
-  ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
-  if (!registry->enabled())
-    return;
-
   ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
+
+  ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
+  if (!registry->enabled() || registry->IsRegistered(handler))
+    return;
+
   if (!handler.IsEmpty() &&
       registry->CanSchemeBeOverridden(handler.protocol())) {
-    AddInfoBar(registry->IsRegistered(handler) ?
-        static_cast<InfoBarDelegate*>(new SimpleAlertInfoBarDelegate(
-            tab_contents(), NULL, l10n_util::GetStringFUTF16(
-                IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED,
-                handler.title(), UTF8ToUTF16(handler.protocol())), true)) :
-      new RegisterProtocolHandlerInfoBarDelegate(tab_contents(), registry,
-                                                 handler));
+    AddInfoBar(new RegisterProtocolHandlerInfoBarDelegate(tab_contents(),
+                                                          registry,
+                                                          handler));
   }
 }
 

@@ -71,6 +71,30 @@ class NotificationCounter : public NotificationObserver {
   NotificationRegistrar notification_registrar_;
 };
 
+class QueryProtocolHandlerOnChange : public NotificationObserver {
+ public:
+  explicit QueryProtocolHandlerOnChange(ProtocolHandlerRegistry* registry)
+    : registry_(registry),
+      called_(false),
+      notification_registrar_() {
+    notification_registrar_.Add(this,
+        NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+        NotificationService::AllSources());
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    std::vector<std::string> output;
+    registry_->GetRegisteredProtocols(&output);
+    called_ = true;
+  }
+
+  ProtocolHandlerRegistry* registry_;
+  bool called_;
+  NotificationRegistrar notification_registrar_;
+};
+
 
 class ProtocolHandlerRegistryTest : public RenderViewHostTestHarness {
  protected:
@@ -309,15 +333,15 @@ TEST_F(ProtocolHandlerRegistryTest, TestGetHandlersFor) {
   ASSERT_EQ(ph3, handlers[2]);
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestGetHandledProtocols) {
+TEST_F(ProtocolHandlerRegistryTest, TestGetRegisteredProtocols) {
   std::vector<std::string> protocols;
-  registry()->GetHandledProtocols(&protocols);
+  registry()->GetRegisteredProtocols(&protocols);
   ASSERT_EQ((size_t) 0, protocols.size());
 
   registry()->GetHandlersFor("test");
 
   protocols.clear();
-  registry()->GetHandledProtocols(&protocols);
+  registry()->GetRegisteredProtocols(&protocols);
   ASSERT_EQ((size_t) 0, protocols.size());
 }
 
@@ -345,4 +369,21 @@ TEST_F(ProtocolHandlerRegistryTest, TestNotifications) {
   registry()->RemoveHandler(ph1);
   ASSERT_TRUE(counter.notified());
   counter.Clear();
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestReentrantNotifications) {
+  QueryProtocolHandlerOnChange queryer(registry());
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  ASSERT_TRUE(queryer.called_);
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestProtocolsWithNoDefaultAreHandled) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->ClearDefault("test");
+  std::vector<std::string> handled_protocols;
+  registry()->GetRegisteredProtocols(&handled_protocols);
+  ASSERT_EQ((size_t) 1, handled_protocols.size());
+  ASSERT_EQ("test", handled_protocols[0]);
 }
