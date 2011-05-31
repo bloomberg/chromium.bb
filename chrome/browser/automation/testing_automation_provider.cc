@@ -4073,14 +4073,19 @@ void TestingAutomationProvider::GetThemeInfo(
 
 namespace {
 
-ListValue* GetHostPermissions(const Extension* ext) {
+ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
+  URLPatternList pattern_list;
+  if (effective_perm)
+    pattern_list = ext->GetEffectiveHostPermissions().patterns();
+  else
+    pattern_list = ext->host_permissions();
+
   ListValue* permissions = new ListValue;
-  const URLPatternList pattern_list =
-      ext->GetEffectiveHostPermissions().patterns();
   for (URLPatternList::const_iterator perm = pattern_list.begin();
        perm != pattern_list.end(); ++perm) {
     permissions->Append(new StringValue(perm->GetAsString()));
   }
+
   return permissions;
 }
 
@@ -4124,7 +4129,10 @@ void TestingAutomationProvider::GetExtensionsInfo(
                                extension->background_url().spec());
     extension_value->SetString("options_url",
                                extension->options_url().spec());
-    extension_value->Set("host_permissions", GetHostPermissions(extension));
+    extension_value->Set("host_permissions",
+                         GetHostPermissions(extension, false));
+    extension_value->Set("effective_host_permissions",
+                         GetHostPermissions(extension, true));
     extension_value->Set("api_permissions", GetAPIPermissions(extension));
     extensions_values->Append(extension_value);
   }

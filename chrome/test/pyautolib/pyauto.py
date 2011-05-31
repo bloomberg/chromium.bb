@@ -1363,6 +1363,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       [ { u'api_permissions': [u'bookmarks', u'experimental', u'tabs'],
           u'background_url': u'',
           u'description': u'Bookmark Manager',
+          u'effective_host_permissions': [u'chrome://favicon/*',
+                                          u'chrome://resources/*'],
           u'host_permissions': [u'chrome://favicon/*', u'chrome://resources/*'],
           u'id': u'eemcgdkfndhakfknompkggombfjjjeno',
           u'name': u'Bookmark Manager',
@@ -1379,6 +1381,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                                background.html',
           u'description': u'Extension which lets you read your Facebook news \
                             feed and wall. You can also post status updates.',
+          u'effective_host_permissions': [...],
           u'host_permissions': [...],
           u'id': u'lkdedmbpkaiahjjibfdmpoefffnbdkli',
           u'name': u'Facebook for Google Chrome',
