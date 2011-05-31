@@ -55,16 +55,34 @@ class CompositorGL : public Compositor {
   void MakeCurrent();
   gfx::Size GetSize();
 
+  GLuint program();
+  GLuint a_pos_loc();
+  GLuint a_tex_loc();
+  GLuint u_tex_loc();
+  GLuint u_mat_loc();
+
  private:
   // Overridden from Compositor.
   virtual Texture* CreateTexture() OVERRIDE;
   virtual void NotifyStart() OVERRIDE;
   virtual void NotifyEnd() OVERRIDE;
 
+  // Specific to CompositorGL.
+  bool InitShaders();
+
   // The GL context used for compositing.
   scoped_ptr<gfx::GLSurface> gl_surface_;
   scoped_ptr<gfx::GLContext> gl_context_;
   gfx::Size size_;
+
+  // Shader program, attributes and uniforms.
+  // TODO(wjmaclean): Make these static so they ca be shared in a single
+  // context.
+  GLuint program_;
+  GLuint a_pos_loc_;
+  GLuint a_tex_loc_;
+  GLuint u_tex_loc_;
+  GLuint u_mat_loc_;
 
   // Keep track of whether compositing has started or not.
   bool started_;
@@ -105,13 +123,6 @@ void TextureGL::SetBitmap(const SkBitmap& bitmap,
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Map ARGB -> RGBA, remembering the we are transferring using
-    // GL_UNSIGNED_BYTE transfer, so endian-ness comes into play.
-    // TODO(wjmaclean) Verify this will work with eglImage.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R_EXT, GL_BLUE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B_EXT, GL_RED);
-
   } else if (size_ != overall_size) {  // Size has changed.
     size_ = overall_size;
     glBindTexture(GL_TEXTURE_2D, texture_id_);
@@ -142,54 +153,54 @@ void TextureGL::Draw(const ui::Transform& transform) {
   t.ConcatTranslate(-window_size.width()/2.0f, -window_size.height()/2.0f);
   t.ConcatScale(2.0f/window_size.width(), 2.0f/window_size.height());
 
-  glEnable(GL_TEXTURE_2D);
+  DCHECK(compositor_->program());
+  glUseProgram(compositor_->program());
+
+  glActiveTexture(GL_TEXTURE0);
+  glUniform1i(compositor_->u_tex_loc(), 0);
   glBindTexture(GL_TEXTURE_2D, texture_id_);
 
-  if (!t.matrix().isIdentity()) {
-    float m[16];
-    const SkMatrix& matrix = t.matrix(); // *mat;
+  GLfloat m[16];
+  const SkMatrix& matrix = t.matrix();
 
-    // Convert 3x3 view transform matrix (row major) into 4x4 GL matrix (column
-    // major). Assume 2-D rotations/translations restricted to XY plane.
+  // Convert 3x3 view transform matrix (row major) into 4x4 GL matrix (column
+  // major). Assume 2-D rotations/translations restricted to XY plane.
 
-    m[ 0] = matrix[0];
-    m[ 1] = matrix[3];
-    m[ 2] = 0;
-    m[ 3] = matrix[6];
+  m[ 0] = matrix[0];
+  m[ 1] = matrix[3];
+  m[ 2] = 0;
+  m[ 3] = matrix[6];
 
-    m[ 4] = matrix[1];
-    m[ 5] = matrix[4];
-    m[ 6] = 0;
-    m[ 7] = matrix[7];
+  m[ 4] = matrix[1];
+  m[ 5] = matrix[4];
+  m[ 6] = 0;
+  m[ 7] = matrix[7];
 
-    m[ 8] = 0;
-    m[ 9] = 0;
-    m[10] = 1;
-    m[11] = 0;
+  m[ 8] = 0;
+  m[ 9] = 0;
+  m[10] = 1;
+  m[11] = 0;
 
-    m[12] = matrix[2];
-    m[13] = matrix[5];
-    m[14] = 0;
-    m[15] = matrix[8];
+  m[12] = matrix[2];
+  m[13] = matrix[5];
+  m[14] = 0;
+  m[15] = matrix[8];
 
-    glLoadMatrixf(m);
-  } else {
-    glLoadIdentity();
-  }
+  const GLfloat vertices[] = { -1., -1., +0., +0., +1.,
+                               +1., -1., +0., +1., +1.,
+                               +1., +1., +0., +1., +0.,
+                               -1., +1., +0., +0., +0. };
 
-  glBegin(GL_QUADS);
-  glColor4f(1.0, 1.0, 1.0, 1.0);
-  glTexCoord2d(0.0, 1.0); glVertex2d(-1, -1);
-  glTexCoord2d(1.0, 1.0); glVertex2d( 1, -1);
-  glTexCoord2d(1.0, 0.0); glVertex2d( 1,  1);
-  glTexCoord2d(0.0, 0.0); glVertex2d(-1,  1);
-  glEnd();
+  glVertexAttribPointer(compositor_->a_pos_loc(), 3, GL_FLOAT,
+                        GL_FALSE, 5 * sizeof(GLfloat), vertices);
+  glVertexAttribPointer(compositor_->a_tex_loc(), 2, GL_FLOAT,
+                        GL_FALSE, 5 * sizeof(GLfloat), &vertices[3]);
+  glEnableVertexAttribArray(compositor_->a_pos_loc());
+  glEnableVertexAttribArray(compositor_->a_tex_loc());
 
-  if (!t.matrix().isIdentity()) {
-    glLoadIdentity();
-  }
+  glUniformMatrix4fv(compositor_->u_mat_loc(), 1, GL_FALSE, m);
 
-  glDisable(GL_TEXTURE_2D);
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
@@ -197,6 +208,9 @@ CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
   gl_surface_.reset(gfx::GLSurface::CreateViewGLSurface(widget));
   gl_context_.reset(gfx::GLContext::CreateGLContext(NULL, gl_surface_.get())),
   gl_context_->MakeCurrent(gl_surface_.get());
+  if (!InitShaders())
+    LOG(ERROR) << "Unable to initialize shaders (context = "
+               << static_cast<void*>(gl_context_.get()) << ")" ;
   glColorMask(true, true, true, true);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -211,6 +225,26 @@ void CompositorGL::MakeCurrent() {
 
 gfx::Size CompositorGL::GetSize() {
   return gl_surface_->GetSize();
+}
+
+GLuint CompositorGL::program() {
+  return program_;
+}
+
+GLuint CompositorGL::a_pos_loc() {
+  return a_pos_loc_;
+}
+
+GLuint CompositorGL::a_tex_loc() {
+  return a_tex_loc_;
+}
+
+GLuint CompositorGL::u_tex_loc() {
+  return u_tex_loc_;
+}
+
+GLuint CompositorGL::u_mat_loc() {
+  return u_mat_loc_;
 }
 
 Texture* CompositorGL::CreateTexture() {
@@ -238,16 +272,87 @@ void CompositorGL::NotifyEnd() {
   started_ = false;
 }
 
+namespace {
+
+GLuint CompileShader(GLenum type, const GLchar* source) {
+  GLuint shader = glCreateShader(type);
+  if (!shader)
+    return 0;
+
+  glShaderSource(shader, 1, &source, 0);
+  glCompileShader(shader);
+
+  GLint compiled;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+  if (!compiled) {
+    GLint info_len = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_len);
+
+    if (info_len > 0) {
+      char* info_log = reinterpret_cast<char*> (
+          malloc(sizeof(info_log[0]) * info_len));
+      glGetShaderInfoLog(shader, info_len, NULL, info_log);
+
+      LOG(ERROR) << "Compile error: " <<  info_log;
+      free(info_log);
+      return 0;
+    }
+  }
+  return shader;
+}
+
+} // namespace (anonymous)
+
+bool CompositorGL::InitShaders() {
+  const GLchar* vertex_shader_source =
+        "attribute vec4 a_position;"
+        "attribute vec2 a_texCoord;"
+        "uniform mat4 u_matViewProjection;"
+        "varying vec2 v_texCoord;"
+        "void main()"
+        "{"
+        "  gl_Position = u_matViewProjection * a_position;"
+        "  v_texCoord = a_texCoord;"
+        "}";
+  GLuint vertex_shader = CompileShader(GL_VERTEX_SHADER, vertex_shader_source);
+  if (!vertex_shader)
+    return false;
+
+  const GLchar* frag_shader_source =
+        "#ifdef GL_ES\n"
+        "precision mediump float;\n"
+        "#endif\n"
+        "uniform sampler2D u_tex;"
+        "varying vec2 v_texCoord;"
+        "void main()"
+        "{"
+        "  gl_FragColor = texture2D(u_tex, v_texCoord).zyxw;"
+        "}";
+  GLuint frag_shader = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  if (!frag_shader)
+    return false;
+
+  program_ = glCreateProgram();
+  glAttachShader(program_, vertex_shader);
+  glAttachShader(program_, frag_shader);
+  glLinkProgram(program_);
+  if (glGetError() != GL_NO_ERROR)
+    return false;
+
+  // Store locations of program inputs.
+  a_pos_loc_ = glGetAttribLocation(program_, "a_position");
+  a_tex_loc_ = glGetAttribLocation(program_, "a_texCoord");
+  u_tex_loc_ = glGetUniformLocation(program_, "u_tex");
+  u_mat_loc_ = glGetUniformLocation(program_, "u_matViewProjection");
+
+  return true;
+}
+
 } // namespace
 
 // static
 Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
-  // TODO(backer) Remove this when GL thread patch lands. Should be init'd
-  // by the new GPU thread.
-  // http://codereview.chromium.org/6677055/
-  gfx::InitializeGLBindings(gfx::kGLImplementationDesktopGL);
-  gfx::GLSurfaceGLX::InitializeOneOff();
-
+ gfx::GLSurface::InitializeOneOff();
  if (gfx::GetGLImplementation() != gfx::kGLImplementationNone)
    return new glHidden::CompositorGL(widget);
   return NULL;

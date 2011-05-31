@@ -38,11 +38,6 @@
           'sources!': [
             'compositor.cc',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lGL',
-            ],
-          },
         }],
         ['OS == "win" and views_compositor == 1', {
           'sources!': [
