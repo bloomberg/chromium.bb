@@ -14,11 +14,8 @@
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 #include "chrome/browser/google/google_update.h"
-#endif
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/version_loader.h"
 #endif
 
 namespace views {
@@ -39,7 +36,7 @@ class Profile;
 class AboutChromeView : public views::View,
                         public views::DialogDelegate,
                         public views::LinkListener
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
                         , public GoogleUpdateStatusListener
 #endif
                         {
@@ -78,7 +75,7 @@ class AboutChromeView : public views::View,
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   // Overridden from GoogleUpdateStatusListener:
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
                                GoogleUpdateErrorCode error_code,
@@ -86,18 +83,11 @@ class AboutChromeView : public views::View,
 #endif
 
  private:
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   // Update the UI to show the status of the upgrade.
   void UpdateStatus(GoogleUpdateUpgradeResult result,
                     GoogleUpdateErrorCode error_code);
 #endif
-
-#if defined(OS_CHROMEOS)
-  // Callback from chromeos::VersionLoader giving the version.
-  void OnOSVersion(chromeos::VersionLoader::Handle handle,
-                   std::string version);
-#endif
-
 
   Profile* profile_;
 
@@ -139,7 +129,7 @@ class AboutChromeView : public views::View,
   // Determines the order of the two links we draw in the main label.
   bool chromium_url_appears_first_;
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   // The class that communicates with Google Update to find out if an update is
   // available and asks it to start an upgrade.
   scoped_refptr<GoogleUpdate> google_updater_;
@@ -156,14 +146,6 @@ class AboutChromeView : public views::View,
 
   // Whether text direction is left-to-right or right-to-left.
   bool text_direction_is_rtl_;
-
-#if defined(OS_CHROMEOS)
-  // Handles asynchronously loading the version.
-  chromeos::VersionLoader loader_;
-
-  // Used to request the version.
-  CancelableRequestConsumer consumer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AboutChromeView);
 };

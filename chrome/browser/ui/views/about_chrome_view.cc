@@ -46,13 +46,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/restart_message_box.h"
 #include "chrome/installer/util/install_util.h"
 #endif  // defined(OS_WIN)
-
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process.h"
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 namespace {
 // The pixel width of the version text field. Ideally, we'd like to have the
@@ -121,7 +118,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
 
   Init();
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   google_updater_ = new GoogleUpdate();
   google_updater_->set_status_listener(this);
 #endif
@@ -133,7 +130,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
 }
 
 AboutChromeView::~AboutChromeView() {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   // The Google Updater will hold a pointer to us until it reports status, so we
   // need to let it know that we will no longer be listening.
   if (google_updater_)
@@ -222,13 +219,7 @@ void AboutChromeView::Init() {
   AddChildView(version_label_);
 
   os_version_label_ = new views::Textfield(views::Textfield::STYLE_MULTILINE);
-#if defined(OS_CHROMEOS)
-  loader_.GetVersion(&consumer_,
-                     NewCallback(this, &AboutChromeView::OnOSVersion),
-                     chromeos::VersionLoader::VERSION_FULL);
-#else
   os_version_label_->SetText(UTF8ToUTF16(version_info.OSType()));
-#endif
   os_version_label_->SetReadOnly(true);
   os_version_label_->RemoveBorder();
   os_version_label_->SetTextColor(SK_ColorBLACK);
@@ -541,10 +532,6 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
         // CheckForUpdate(false, ...) means don't upgrade yet.
         google_updater_->CheckForUpdate(false, window());
       }
-#elif defined(OS_CHROMEOS)
-      UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR);
-      // CheckForUpdate(false, ...) means don't upgrade yet.
-      google_updater_->CheckForUpdate(false, window());
 #endif
     } else {
       parent->RemoveChildView(&update_label_);
@@ -625,7 +612,7 @@ bool AboutChromeView::IsModal() const {
 }
 
 bool AboutChromeView::Accept() {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   // Set the flag to restore the last session on shutdown.
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
@@ -655,30 +642,10 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
   }
 
   Browser* browser = BrowserList::GetLastActive();
-#if defined(OS_CHROMEOS)
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-#else
   browser->OpenURL(url, GURL(), NEW_WINDOW, PageTransition::LINK);
-#endif
 }
 
-#if defined(OS_CHROMEOS)
-void AboutChromeView::OnOSVersion(
-    chromeos::VersionLoader::Handle handle,
-    std::string version) {
-
-  // This is a hack to "wrap" the very long Test Build version after
-  // the version number, the remaining text won't be visible but can
-  // be selected, copied, pasted.
-  std::string::size_type pos = version.find(" (Test Build");
-  if (pos != std::string::npos)
-    version.replace(pos, 1, "\n");
-
-  os_version_label_->SetText(UTF8ToUTF16(version));
-}
-#endif
-
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, GoogleUpdateStatusListener implementation:
 
@@ -698,7 +665,7 @@ void AboutChromeView::OnReportResults(GoogleUpdateUpgradeResult result,
 
 void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
                                    GoogleUpdateErrorCode error_code) {
-#if !defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#if !defined(GOOGLE_CHROME_BUILD)
   // For Chromium builds it would show an error message.
   // But it looks weird because in fact there is no error,
   // just the update server is not available for non-official builds.
@@ -741,7 +708,6 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       // out of date. Chrome OS doesn't quite have this issue since the
       // OS/App are updated together. If a newer version of the OS has been
       // staged then UPGRADE_SUCESSFUL will be returned.
-#if defined(OS_WIN)
       // Google Update reported that Chrome is up-to-date. Now make sure that we
       // are running the latest version and if not, notify the user by falling
       // into the next case of UPGRADE_SUCCESSFUL.
@@ -757,19 +723,12 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
           Version::GetVersionFromString(current_version_));
       if (!installed_version.get() ||
           (installed_version->CompareTo(*running_version) <= 0)) {
-#endif
         UserMetrics::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));
-#if defined(OS_CHROMEOS)
-        std::wstring update_label_text = UTF16ToWide(l10n_util::GetStringFUTF16(
-            IDS_UPGRADE_ALREADY_UP_TO_DATE,
-            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-#else
         std::wstring update_label_text = l10n_util::GetStringFUTF16(
             IDS_UPGRADE_ALREADY_UP_TO_DATE,
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
             ASCIIToUTF16(current_version_));
-#endif
         if (base::i18n::IsRTL()) {
           update_label_text.push_back(
               static_cast<wchar_t>(base::i18n::kLeftToRightMark));
@@ -777,9 +736,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         update_label_.SetText(update_label_text);
         show_success_indicator = true;
         break;
-#if defined(OS_WIN)
       }
-#endif
       // No break here as we want to notify user about upgrade if there is one.
     }
     case UPGRADE_SUCCESSFUL: {
