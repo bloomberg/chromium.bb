@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -33,7 +33,19 @@ class ThemesTest(pyauto.PyUITest):
     self.assertTrue(self.SetTheme(pyauto.FilePath(crx_file)))
     theme = self.GetThemeInfo()
     self.assertEqual('camo theme', theme['name'])
-    # TODO: verify "theme installed" infobar
+    # Verify "theme installed" infobar shows up
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
+  def testThemeInFullScreen(self):
+    """Verify theme can be installed in FullScreen mode."""
+    self.ApplyAccelerator(pyauto.IDC_FULLSCREEN )
+    self.assertFalse(self.GetThemeInfo())  # Verify there's no theme at startup
+    crx_file = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
+    self.assertTrue(self.SetTheme(pyauto.FilePath(crx_file)))
+    theme = self.GetThemeInfo()
+    self.assertEqual('camo theme', theme['name'])
 
   def testThemeReset(self):
     """Verify theme reset."""
