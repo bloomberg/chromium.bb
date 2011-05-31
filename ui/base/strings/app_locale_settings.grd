@@ -97,6 +97,9 @@
     <output filename="app_locale_settings_hi.pak" type="data_package" lang="hi" />
     <output filename="app_locale_settings_hr.pak" type="data_package" lang="hr" />
     <output filename="app_locale_settings_hu.pak" type="data_package" lang="hu" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="app_locale_settings_hy.pak" type="data_package" lang="hy" />
+    </if>
     <output filename="app_locale_settings_id.pak" type="data_package" lang="id" />
     <output filename="app_locale_settings_it.pak" type="data_package" lang="it" />
     <output filename="app_locale_settings_ja.pak" type="data_package" lang="ja" />

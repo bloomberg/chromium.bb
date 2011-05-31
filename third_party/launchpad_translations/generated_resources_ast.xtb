@@ -112,8 +112,6 @@
 <translation id="1425975335069981043">Itinerancia:</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1430915738399379752">Imprentar</translation>
-<translation id="1437307674059038925">Si uses un sirvidor proxy, comprueba la to configuración del proxy o verifica col to alministrador de rede
-p'asegurate de que'l sirvidor proxy ta furrulando.</translation>
 <translation id="144136026008224475">Obtener más estensiones &gt;&gt;</translation>
 <translation id="1441458099223378239">Nun soi quien a acceder a la mio cuenta.</translation>
 <translation id="144518587530125858">Nun se pudo cargar el camín «<ph name="IMAGE_PATH"/>» del tema.</translation>
@@ -288,7 +286,6 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="1657406563541664238">Collabora na meyora de <ph name="PRODUCT_NAME"/> unviando automáticamente a Google estadístiques d'usu ya informes d'erros.</translation>
 <translation id="1661245713600520330">Esta páxina llista tolos módulos cargaos nel procesu principal y los módulos rexistraos pa cargase darréu.</translation>
 <translation id="1666788816626221136">Tienes certificaos rexistraos que nun correspuenden a nenguna otra categoría:</translation>
-<translation id="1684638090259711957">Amestar un nuevu patrón d'esceición</translation>
 <translation id="1691063574428301566">L'equipu va reiniciase cuando se complete l'anovamientu.</translation>
 <translation id="1692799361700686467">Activáronse les cookies de dellos sitios.</translation>
 <translation id="1701567960725324452">Si detienes la sincronización, los datos almacenaos nesti equipu y los almacenaos na to cuenta de Google, van permanecer en dambos sitios. Sía que non, los datos nuevos o los cambeos que faigas nos tos datos nun se van sincronizar ente ellos.</translation>
@@ -393,7 +390,6 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="208047771235602537">¿Quies colar de <ph name="PRODUCT_NAME"/> con una descarga en procesu?</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="2086712242472027775">La to cuenta nun funciona en <ph name="PRODUCT_NAME"/>. Contauta col alministrador del dominiu o usa una cuenta normal de Google pa entrar.</translation>
-<translation id="2089090684895656482">Menor</translation>
 <translation id="2090876986345970080">Configuración de seguridá del sistema</translation>
 <translation id="2096368010154057602">Departamentu</translation>
 <translation id="2099686503067610784">¿Quies desaniciar el certificáu de sirvidor «<ph name="CERTIFICATE_NAME"/>»?</translation>
@@ -730,7 +726,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> nun pudo completar la instalación, pero continuará executándose dende la imaxe de discu.</translation>
 <translation id="2635102990349508383">Los detalles de la cuenta entá nun s'introduxeron.</translation>
 <translation id="2653266418988778031">Si desanicies el certificáu de CA, el restolador yá nun va poder confiar en dengún certificáu emitíu por esa entidá emisora de certificaos.</translation>
-<translation id="2657327428424666237"><ph name="BEGIN_LINK"/>Vuelvi a cargar<ph name="END_LINK"/> esta páxina web más sero.</translation>
 <translation id="2662952950313424742">Sirvidor DNS especificáu pol sirvidor, qu'usará Chrome pa resoluciones DNS en vez del predetermináu.</translation>
 <translation id="2674170444375937751">¿De xuru que quies desaniciar estes páxines del historial?</translation>
 <translation id="2686759344028411998">Nun pudo deteutase dengún de los módulos cargaos.</translation>
@@ -818,7 +813,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3092544800441494315">Incluir esta captura de pantalla:</translation>
 <translation id="3093473105505681231">Axustes de llingües y correutores ortográficos...</translation>
 <translation id="3095995014811312755">versión</translation>
-<translation id="309628958563171656">Sensibilidá:</translation>
 <translation id="3100609564180505575">Módulos (<ph name="TOTAL_COUNT"/>) - conflictos conocíos: <ph name="BAD_COUNT"/>, posibles: <ph name="SUSPICIOUS_COUNT"/></translation>
 <translation id="3101709781009526431">Data y hora</translation>
 <translation id="3105917916468784889">Facer captura de pantalla</translation>
@@ -996,7 +990,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3531250013160506608">Caxa de testu de contraseña</translation>
 <translation id="3539028630945755931">［］／</translation>
 <translation id="354211537509721945">Los anovamientos tán desactivaos pol alministrador</translation>
-<translation id="3549436232897695316">cotexar</translation>
 <translation id="3551320343578183772">Zarrar llingüeta</translation>
 <translation id="3561217442734750519">El valor d'entrada de la clave privada tien de ser una ruta válida.</translation>
 <translation id="3569713929051927529">Amestar carpeta...</translation>
@@ -1023,7 +1016,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3627671146180677314">Tiempu de renovación de certificáu de Netscape</translation>
 <translation id="3631337165634322335">Les siguientes esceiciones aplíquense namái que a la sesión d'incógnitu actual.</translation>
 <translation id="3634128551318479970">''' - '''</translation>
-<translation id="3638865692466101147">Vista previa d'imprentación - <ph name="PREVIEW_TAB_TITLE"/></translation>
 <translation id="3646789916214779970">Restablecer tema predetermináu</translation>
 <translation id="3665650519256633768">Resultaos de la gueta</translation>
 <translation id="3665842570601375360">Seguridá:</translation>
@@ -1057,11 +1049,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3800503346337426623">Omitir aniciar de sesión y restolar como invitáu</translation>
 <translation id="380271916710942399">Certificáu de sirvidor non incluyíu</translation>
 <translation id="3803991353670408298">Amiesta otru métodu d'entrada enantes de desaniciar esti.</translation>
-<translation id="99648783926443049">Dir a
-          <ph name="BEGIN_BOLD"/>
-          Menú de llave inglesa &gt; Configuración &gt; Avanzaes &gt; Cambiar la configuración del proxy
-          <ph name="END_BOLD"/>
-          y asegúrate d'afitar la configuración a «ensin proxy» o «direutu».</translation>
 <translation id="1000498691615767391">Seleiciona un direutoriu p'abrir</translation>
 <translation id="1006316751839332762">Contraseña de cifráu</translation>
 <translation id="1065449928621190041">Tecláu Francés Canadiense</translation>
@@ -1127,7 +1114,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3725367690636977613">páxines</translation>
 <translation id="3733127536501031542">Sirvidor SSL con certificáu Step-Up</translation>
 <translation id="3749289110408117711">Nome del ficheru</translation>
-<translation id="3753317529742723206">¿Quies usar <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) pa remanar <ph name="PROTOCOL"/>:// enllaces, en cuenta de <ph name="REPLACED_HANDLER_TITLE"/> dende agora?</translation>
 <translation id="3775432569830822555">Certificáu de sirvidor SSL</translation>
 <translation id="3781488789734864345">Escueyi una rede móvil</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -1158,7 +1144,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="604124094241169006">Automáticu</translation>
-<translation id="6042308850641462728">Más</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6110555300980107810">NA</translation>
@@ -1222,10 +1207,8 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="1901769927849168791">Tarxeta SD deteutada</translation>
 <translation id="1956724372173215413">Calca Alt+Mayús pa camudar ente los métodos d'entrada.</translation>
-<translation id="2055443983279698110">Sofitu esperimental de la barra de menú de GNOME.</translation>
 <translation id="2074739700630368799">Chrome OS pa empreses permite coneutar el to preséu a Google Apps pal to dominiu, lo que te permite llocalizar y remanar el to preséu dende'l panel de Google Apps pal to dominiu.</translation>
 <translation id="2246340272688122454">Descargando imaxe recuperada...</translation>
-<translation id="2301734184722385097">¿Quixisti dicir: «<ph name="PREDICTED_PAGE_RANGE"/>» ?</translation>
 <translation id="2367657048471519165">Afitar <ph name="PRODUCT_NAME"/> como'l mio restolador web predetermináu</translation>
 <translation id="2409527877874991071">Introducir un nome nuevu</translation>
 <translation id="2475982808118771221">Hebo un fallu</translation>
@@ -1278,4 +1261,9 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3947376313153737208">Nun hai seleición</translation>
 <translation id="3949593566929137881">Pon el PIN de la tarxeta SIM</translation>
 <translation id="3950820424414687140">Rexistrase</translation>
+<translation id="1486096554574027028">Guetar contraseñes</translation>
+<translation id="2489435327075806094">Velocidá del punteru:</translation>
+<translation id="2492538245231809938">Tipos de datos encriptaos</translation>
+<translation id="2498131838700757846">Activar el motor esperimental LevelDB pa IndexedDB.</translation>
+<translation id="2589855374197350858">Tipos de Datos Encriptaos</translation>
 </translationbundle>

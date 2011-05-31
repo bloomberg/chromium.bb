@@ -103,6 +103,9 @@ be available for now. -->
     <output filename="chromium_strings_hi.pak" type="data_package" lang="hi" />
     <output filename="chromium_strings_hr.pak" type="data_package" lang="hr" />
     <output filename="chromium_strings_hu.pak" type="data_package" lang="hu" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_hy.pak" type="data_package" lang="hy" />
+    </if>
     <output filename="chromium_strings_id.pak" type="data_package" lang="id" />
     <output filename="chromium_strings_it.pak" type="data_package" lang="it" />
     <output filename="chromium_strings_ja.pak" type="data_package" lang="ja" />
@@ -157,6 +160,7 @@ be available for now. -->
       <file path="../../third_party/launchpad_translations/chromium_strings_fr.xtb" lang="fr" />
       <file path="../../third_party/launchpad_translations/chromium_strings_gl.xtb" lang="gl" />
       <file path="../../third_party/launchpad_translations/chromium_strings_he.xtb" lang="he" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_hy.xtb" lang="hy" />
       <file path="../../third_party/launchpad_translations/chromium_strings_id.xtb" lang="id" />
       <file path="../../third_party/launchpad_translations/chromium_strings_it.xtb" lang="it" />
       <file path="../../third_party/launchpad_translations/chromium_strings_ka.xtb" lang="ka" />

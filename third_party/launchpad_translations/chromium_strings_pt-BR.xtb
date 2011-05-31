@@ -7,7 +7,7 @@
 <translation id="1708666629004767631">Há uma nova e mais segura versão do Chromium disponível.</translation>
 <translation id="1967743265616885482">Um módulo com o mesmo nome está em conflito com Chromium.</translation>
 <translation id="205900032229966545">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado expirado. Não há informações disponíveis que indiquem se esse certificado foi comprometido desde o seu término. Isto significa que o Chromium não pode garantir que você está se comunicando com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um hacker. Você não deveria continuar.</translation>
-<translation id="2407806170074302369">Sobre o plugin &quot;Chromium Frame&quot;...</translation>
+<translation id="2407806170074302369">Sobre o plug-in &quot;Chromium Frame&quot;...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2558235863893655150">Você deseja que o Chromium salve suas senhas?</translation>
 <translation id="2572494885440352020">Ajudante do Chromium</translation>
@@ -103,4 +103,5 @@
 <translation id="5994107996638824097">Desculpe! Cromium não inclui o visualizador de PDF integrado do Google Chrome, que é necessário para mostrar o preview de impressão.</translation>
 <translation id="3296368748942286671">Continuar executando aplicativos no fundo ao fechar o Chromium</translation>
 <translation id="872034308864968620">Deixar o Chromium executando no fundo</translation>
+<translation id="1774152462503052664">Vamos executar o Chromium em segundo plano</translation>
 </translationbundle>

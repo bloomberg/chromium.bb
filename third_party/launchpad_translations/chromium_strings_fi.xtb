@@ -74,4 +74,11 @@
 <translation id="378917192836375108">Chromium mahdollistaa soiton verkkosivulla olevaan puhelinnumeroon Skypea käyttäen!</translation>
 <translation id="5994107996638824097">Valitettavasti Chromium ei sisällä Google Chromeen sisällytettyä PDF-katselusovellusta, joka on vaadittu tulostuksen esikatselua varten.</translation>
 <translation id="6055895534982063517">Chromiumista on saatavilla uusi versio; se on nopeampi kuin koskaan aiemmin.</translation>
+<translation id="1774152462503052664">Salli Chromiumin suoritus taustalla</translation>
+<translation id="2886012850691518054">Valinnainen: auta parantamaan Chromiumia lähettämällä automaattisesti käyttötilastoja ja kaatumisraportteja Googlelle.</translation>
+<translation id="3849925841547750267">Valitettavasti Mozilla Firefoxin asetukset eivät ole käytettävissä sen ollessa käynnissä. Sulje kaikki Firefoxin ikkunat ja napsauta &quot;Jatka&quot; tuodaksesi asetukset Chromiumiin.</translation>
+<translation id="4077262827416206768">Sulje kaikki Chromiumin ikkunat ja käynnistä Chromium uudelleen ottaaksesi käyttöön tämän muutoksen.</translation>
+<translation id="5947389362804196214">Asetuksiesi luku epäonnistui.\n\nJotkin toiminnot eivät välttämättä ole käytettävissä ja muutoksia asetuksiin ei tallenneta.</translation>
+<translation id="872034308864968620">Salli Chromiumin suoritus taustalla</translation>
+<translation id="8974095189086268230">Chromium OS:n toiminnan mahdollistaa <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmistot<ph name="END_LINK_CROS_OSS"/>.</translation>
 </translationbundle>

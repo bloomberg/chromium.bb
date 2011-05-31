@@ -138,6 +138,9 @@ below:
     <output filename="webkit_strings_hi.pak" type="data_package" lang="hi" />
     <output filename="webkit_strings_hr.pak" type="data_package" lang="hr" />
     <output filename="webkit_strings_hu.pak" type="data_package" lang="hu" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="webkit_strings_hy.pak" type="data_package" lang="hy" />
+    </if>
     <output filename="webkit_strings_id.pak" type="data_package" lang="id" />
     <output filename="webkit_strings_it.pak" type="data_package" lang="it" />
     <output filename="webkit_strings_ja.pak" type="data_package" lang="ja" />
@@ -205,6 +208,7 @@ below:
     <file path="resources/webkit_strings_hi.xtb" lang="hi" />
     <file path="resources/webkit_strings_hr.xtb" lang="hr" />
     <file path="resources/webkit_strings_hu.xtb" lang="hu" />
+    <file path="../../third_party/launchpad_translations/webkit_strings_hy.xtb" lang="hy" />
     <file path="resources/webkit_strings_id.xtb" lang="id" />
     <file path="resources/webkit_strings_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->

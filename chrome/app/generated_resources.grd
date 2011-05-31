@@ -110,6 +110,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
     <output filename="generated_resources_hi.pak" type="data_package" lang="hi" />
     <output filename="generated_resources_hr.pak" type="data_package" lang="hr" />
     <output filename="generated_resources_hu.pak" type="data_package" lang="hu" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="generated_resources_hy.pak" type="data_package" lang="hy" />
+    </if>
     <output filename="generated_resources_id.pak" type="data_package" lang="id" />
     <output filename="generated_resources_it.pak" type="data_package" lang="it" />
     <output filename="generated_resources_ja.pak" type="data_package" lang="ja" />
@@ -178,6 +181,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
     <file path="resources/generated_resources_hi.xtb" lang="hi" />
     <file path="resources/generated_resources_hr.xtb" lang="hr" />
     <file path="resources/generated_resources_hu.xtb" lang="hu" />
+    <file path="../../third_party/launchpad_translations/generated_resources_hy.xtb" lang="hy" />
     <file path="resources/generated_resources_id.xtb" lang="id" />
     <file path="resources/generated_resources_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
