@@ -31,7 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -202,8 +202,8 @@ void TranslateManager::Observe(NotificationType type,
     case NotificationType::NAV_ENTRY_COMMITTED: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
-      NavigationController::LoadCommittedDetails* load_details =
-          Details<NavigationController::LoadCommittedDetails>(details).ptr();
+      content::LoadCommittedDetails* load_details =
+          Details<content::LoadCommittedDetails>(details).ptr();
       NavigationEntry* entry = controller->GetActiveEntry();
       if (!entry) {
         NOTREACHED();

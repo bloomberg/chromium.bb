@@ -10,9 +10,14 @@
 #include <set>
 
 #include "chrome/common/content_settings.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "googleurl/src/gurl.h"
 
 class GeolocationContentSettingsMap;
+class Profile;
+
+namespace content {
+struct LoadCommittedDetails;
+}
 
 // This class manages the geolocation state per tab, and provides information
 // and presentation data about the geolocation usage.
@@ -31,7 +36,7 @@ class GeolocationSettingsState {
 
   // Delegated by TabContents to indicate a navigation has happened and we
   // may need to clear our settings.
-  void DidNavigate(const NavigationController::LoadCommittedDetails& details);
+  void DidNavigate(const content::LoadCommittedDetails& details);
 
   void ClearStateMap();
 

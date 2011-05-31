@@ -10,7 +10,6 @@
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/notification_observer.h"
@@ -120,7 +119,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
 
   // Updates Geolocation settings on navigation.
   void GeolocationDidNavigate(
-      const NavigationController::LoadCommittedDetails& details);
+      const content::LoadCommittedDetails& details);
 
   // Returns whether a particular kind of content has been blocked for this
   // page.
@@ -158,7 +157,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
   // TabContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,

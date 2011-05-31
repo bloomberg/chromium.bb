@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
@@ -29,7 +30,7 @@ class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
 
   // TabContentsObserver overrides:
   virtual void DidNavigateAnyFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
@@ -50,7 +51,7 @@ TabFinder::TabContentsObserverImpl::~TabContentsObserverImpl() {
 }
 
 void TabFinder::TabContentsObserverImpl::DidNavigateAnyFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   finder_->DidNavigateAnyFramePostCommit(tab_contents(), details, params);
 }
@@ -136,7 +137,7 @@ void TabFinder::Init() {
 
 void TabFinder::DidNavigateAnyFramePostCommit(
     TabContents* source,
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   CancelRequestsFor(source);
 

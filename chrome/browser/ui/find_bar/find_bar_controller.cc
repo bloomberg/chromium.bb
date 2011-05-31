@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -126,8 +127,8 @@ void FindBarController::Observe(NotificationType type,
     NavigationController* source_controller =
         Source<NavigationController>(source).ptr();
     if (source_controller == &tab_contents_->controller()) {
-      NavigationController::LoadCommittedDetails* commit_details =
-          Details<NavigationController::LoadCommittedDetails>(details).ptr();
+      content::LoadCommittedDetails* commit_details =
+          Details<content::LoadCommittedDetails>(details).ptr();
       PageTransition::Type transition_type =
           commit_details->entry->transition_type();
       // We hide the FindInPage window when the user navigates away, except on

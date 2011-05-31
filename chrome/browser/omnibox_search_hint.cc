@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -56,7 +57,7 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -99,7 +100,7 @@ HintInfoBar::~HintInfoBar() {
 }
 
 bool HintInfoBar::ShouldExpire(
-    const NavigationController::LoadCommittedDetails& details) const {
+    const content::LoadCommittedDetails& details) const {
   return details.is_user_initiated_main_frame_load() && should_expire_;
 }
 

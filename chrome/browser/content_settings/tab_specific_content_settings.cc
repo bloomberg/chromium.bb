@@ -20,6 +20,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_service.h"
@@ -395,7 +396,7 @@ void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
-      const NavigationController::LoadCommittedDetails& details) {
+      const content::LoadCommittedDetails& details) {
   geolocation_settings_state_.DidNavigate(details);
 }
 
@@ -423,7 +424,7 @@ bool TabSpecificContentSettings::OnMessageReceived(
 }
 
 void TabSpecificContentSettings::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   if (!details.is_in_page) {
     // Clear "blocked" flags.

@@ -213,7 +213,7 @@ class RenderViewHostTestTabContentsObserver : public TabContentsObserver {
   virtual ~RenderViewHostTestTabContentsObserver() {}
 
   virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) {
     observed_socket_address_ = params.socket_address;
     ++navigation_count_;

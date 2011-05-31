@@ -28,7 +28,7 @@ BookmarkTabHelper::~BookmarkTabHelper() {
 }
 
 void BookmarkTabHelper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& /*details*/,
+    const content::LoadCommittedDetails& /*details*/,
     const ViewHostMsg_FrameNavigate_Params& /*params*/) {
   UpdateStarredStateForCurrentURL();
 }

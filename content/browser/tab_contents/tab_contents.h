@@ -588,11 +588,11 @@ class TabContents : public PageNavigator,
   // not provided since it may be invalid/changed after being committed. The
   // current navigation entry is in the NavigationController at this point.
   void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
   void DidNavigateAnyFramePostCommit(
       RenderViewHost* render_view_host,
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
   // Closes all constrained windows.

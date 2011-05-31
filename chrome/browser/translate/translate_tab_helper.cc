@@ -30,7 +30,7 @@ bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void TranslateTabHelper::DidNavigateAnyFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Let the LanguageState clear its state.
   language_state_.DidNavigate(details);

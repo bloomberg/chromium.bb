@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -47,7 +47,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -83,7 +83,7 @@ KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {
 }
 
 bool KeystonePromotionInfoBarDelegate::ShouldExpire(
-    const NavigationController::LoadCommittedDetails& details) const {
+    const content::LoadCommittedDetails& details) const {
   return details.is_user_initiated_main_frame_load() && can_expire_;
 }
 

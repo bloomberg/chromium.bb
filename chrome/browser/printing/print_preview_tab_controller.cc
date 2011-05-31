@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -77,7 +78,7 @@ void PrintPreviewTabController::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   TabContents* source_tab = NULL;
-  NavigationController::LoadCommittedDetails* detail_info = NULL;
+  content::LoadCommittedDetails* detail_info = NULL;
 
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_DESTROYED: {
@@ -88,8 +89,7 @@ void PrintPreviewTabController::Observe(NotificationType type,
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
       source_tab = controller->tab_contents();
-      detail_info =
-          Details<NavigationController::LoadCommittedDetails>(details).ptr();
+      detail_info = Details<content::LoadCommittedDetails>(details).ptr();
       break;
     }
     default: {

@@ -15,8 +15,8 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/notification_service.h"
 
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
@@ -80,7 +80,7 @@ SkBitmap* ExtensionTabHelper::GetExtensionAppIcon() {
 }
 
 void ExtensionTabHelper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   if (details.is_in_page)
     return;

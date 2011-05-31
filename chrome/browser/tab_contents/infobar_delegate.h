@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class ConfirmInfoBarDelegate;
@@ -23,6 +22,9 @@ class TranslateInfoBarDelegate;
 
 namespace gfx {
 class Image;
+}
+namespace content {
+struct LoadCommittedDetails;
 }
 
 // An interface implemented by objects wishing to control an InfoBar.
@@ -57,7 +59,7 @@ class InfoBarDelegate {
   // is navigated. The default behavior is to return true if the user initiated
   // navigation somewhere else or reloaded.
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const;
+      const content::LoadCommittedDetails& details) const;
 
   // Called when the user clicks on the close button to dismiss the infobar.
   virtual void InfoBarDismissed();
@@ -95,7 +97,7 @@ class InfoBarDelegate {
 
   // Returns true if the navigation is to a new URL or a reload occured.
   bool ShouldExpireInternal(
-      const NavigationController::LoadCommittedDetails& details) const;
+      const content::LoadCommittedDetails& details) const;
 
  private:
   // The unique id of the active NavigationEntry of the TabContents that we were

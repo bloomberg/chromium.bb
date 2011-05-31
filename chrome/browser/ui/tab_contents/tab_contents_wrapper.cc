@@ -48,6 +48,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -382,8 +383,8 @@ void TabContentsWrapper::Observe(NotificationType type,
       DCHECK(&tab_contents_->controller() ==
              Source<NavigationController>(source).ptr());
 
-      NavigationController::LoadCommittedDetails& committed_details =
-          *(Details<NavigationController::LoadCommittedDetails>(details).ptr());
+      content::LoadCommittedDetails& committed_details =
+          *(Details<content::LoadCommittedDetails>(details).ptr());
 
       // NOTE: It is not safe to change the following code to count upwards or
       // use iterators, as the RemoveInfoBar() call synchronously modifies our

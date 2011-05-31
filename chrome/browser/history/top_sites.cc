@@ -26,7 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -817,8 +817,8 @@ void TopSites::Observe(NotificationType type,
     StartQueryForMostVisited();
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     if (!IsFull()) {
-      NavigationController::LoadCommittedDetails* load_details =
-          Details<NavigationController::LoadCommittedDetails>(details).ptr();
+      content::LoadCommittedDetails* load_details =
+          Details<content::LoadCommittedDetails>(details).ptr();
       if (!load_details)
         return;
       const GURL& url = load_details->entry->url();

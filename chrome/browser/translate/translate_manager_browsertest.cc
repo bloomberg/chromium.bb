@@ -23,7 +23,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
@@ -224,16 +224,16 @@ class NavEntryCommittedObserver : public NotificationObserver {
                        const NotificationDetails& details) {
     DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
     details_ =
-        *(Details<NavigationController::LoadCommittedDetails>(details).ptr());
+        *(Details<content::LoadCommittedDetails>(details).ptr());
   }
 
-  const NavigationController::LoadCommittedDetails&
+  const content::LoadCommittedDetails&
       get_load_commited_details() const {
     return details_;
   }
 
  private:
-  NavigationController::LoadCommittedDetails details_;
+  content::LoadCommittedDetails details_;
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
@@ -573,7 +573,7 @@ TEST_F(TranslateManagerTest, Reload) {
   Reload();
 
   // Ensures it is really handled a reload.
-  const NavigationController::LoadCommittedDetails& nav_details =
+  const content::LoadCommittedDetails& nav_details =
       nav_observer.get_load_commited_details();
   EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
   EXPECT_EQ(NavigationType::EXISTING_PAGE, nav_details.type);
@@ -603,7 +603,7 @@ TEST_F(TranslateManagerTest, ReloadFromLocationBar) {
 
   // Test that we are really getting a same page navigation, the test would be
   // useless if it was not the case.
-  const NavigationController::LoadCommittedDetails& nav_details =
+  const content::LoadCommittedDetails& nav_details =
       nav_observer.get_load_commited_details();
   EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
   EXPECT_EQ(NavigationType::SAME_PAGE, nav_details.type);

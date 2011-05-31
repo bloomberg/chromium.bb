@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -54,7 +54,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details)
+      const content::LoadCommittedDetails& details)
       const OVERRIDE {
     return false;
   }

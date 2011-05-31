@@ -14,6 +14,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -354,7 +355,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
 }
 
 bool TranslateInfoBarDelegate::ShouldExpire(
-    const NavigationController::LoadCommittedDetails& details) const {
+    const content::LoadCommittedDetails& details) const {
   // Note: we allow closing this infobar even if the main frame navigation
   // was programmatic and not initiated by the user - crbug.com/70261 .
   if (!details.is_user_initiated_main_frame_load() && !details.is_main_frame)

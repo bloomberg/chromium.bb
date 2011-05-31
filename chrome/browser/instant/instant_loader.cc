@@ -31,7 +31,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -940,8 +940,8 @@ void InstantLoader::Observe(NotificationType type,
   }
 #endif
   if (type.value == NotificationType::NAV_ENTRY_COMMITTED) {
-    NavigationController::LoadCommittedDetails* load_details =
-        Details<NavigationController::LoadCommittedDetails>(details).ptr();
+    content::LoadCommittedDetails* load_details =
+        Details<content::LoadCommittedDetails>(details).ptr();
     if (load_details->is_main_frame) {
       if (load_details->http_status_code == kHostBlacklistStatusCode) {
         delegate_->AddToBlacklist(this, load_details->entry->url());

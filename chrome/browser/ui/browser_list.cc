@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
@@ -50,8 +50,8 @@ class BrowserActivityObserver : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
-    const NavigationController::LoadCommittedDetails& load =
-        *Details<NavigationController::LoadCommittedDetails>(details).ptr();
+    const content::LoadCommittedDetails& load =
+        *Details<content::LoadCommittedDetails>(details).ptr();
     if (!load.is_main_frame || load.is_auto || load.is_in_page)
       return;  // Don't log for subframes or other trivial types.
 

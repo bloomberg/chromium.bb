@@ -27,7 +27,7 @@ class BookmarkTabHelper : public NotificationObserver,
 
   // TabContentsObserver overrides:
   virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
 
   // NotificationObserver overrides:

@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/icon_messages.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -124,7 +125,7 @@ void FaviconTabHelper::NavigateToPendingEntry(
 }
 
 void FaviconTabHelper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Get the favicon, either from history or request it from the net.
   FetchFavicon(details.entry->url());

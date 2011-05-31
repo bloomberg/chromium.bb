@@ -6,6 +6,7 @@
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +30,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
 
   NavigationEntry entry;
   entry.set_url(url_0);
-  NavigationController::LoadCommittedDetails load_committed_details;
+  content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = &entry;
   state.DidNavigate(load_committed_details);
 
@@ -126,7 +127,7 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
 
   NavigationEntry entry;
   entry.set_url(url_0);
-  NavigationController::LoadCommittedDetails load_committed_details;
+  content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = &entry;
   state.DidNavigate(load_committed_details);
 

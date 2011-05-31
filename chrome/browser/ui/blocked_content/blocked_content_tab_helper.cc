@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 
@@ -26,7 +27,7 @@ BlockedContentTabHelper::~BlockedContentTabHelper() {
 }
 
 void BlockedContentTabHelper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.

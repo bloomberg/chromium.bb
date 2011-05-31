@@ -62,7 +62,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/result_codes.h"
 #include "grit/chromium_strings.h"
@@ -142,7 +142,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -185,7 +185,7 @@ DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
 }
 
 bool DefaultBrowserInfoBarDelegate::ShouldExpire(
-    const NavigationController::LoadCommittedDetails& details) const {
+    const content::LoadCommittedDetails& details) const {
   return details.is_user_initiated_main_frame_load() && should_expire_;
 }
 

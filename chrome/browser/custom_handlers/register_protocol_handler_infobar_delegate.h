@@ -22,7 +22,7 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
                                          ProtocolHandler handler);
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(const NavigationController::LoadCommittedDetails&
+  virtual bool ShouldExpire(const content::LoadCommittedDetails&
       details) const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;

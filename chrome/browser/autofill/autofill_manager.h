@@ -20,7 +20,6 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class AutofillField;
@@ -59,7 +58,7 @@ class AutofillManager : public TabContentsObserver,
 
   // TabContentsObserver implementation.
   virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
   virtual bool OnMessageReceived(const IPC::Message& message);
 

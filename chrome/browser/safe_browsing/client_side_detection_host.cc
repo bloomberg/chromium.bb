@@ -23,7 +23,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -289,7 +289,7 @@ bool ClientSideDetectionHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // TODO(noelutz): move this DCHECK to TabContents and fix all the unit tests
   // that don't call this method on the UI thread.

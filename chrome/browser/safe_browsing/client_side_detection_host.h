@@ -39,7 +39,7 @@ class ClientSideDetectionHost : public TabContentsObserver {
   // callbacks that could show an interstitial, and check to see whether
   // we should classify the new URL.
   virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
  private:

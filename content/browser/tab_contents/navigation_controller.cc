@@ -18,6 +18,7 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -42,13 +43,13 @@ const int kInvalidateAllButShelves =
 void NotifyPrunedEntries(NavigationController* nav_controller,
                          bool from_front,
                          int count) {
-  NavigationController::PrunedDetails details;
+  content::PrunedDetails details;
   details.from_front = from_front;
   details.count = count;
   NotificationService::current()->Notify(
       NotificationType::NAV_LIST_PRUNED,
       Source<NavigationController>(nav_controller),
-      Details<NavigationController::PrunedDetails>(&details));
+      Details<content::PrunedDetails>(&details));
 }
 
 // Ensure the given NavigationEntry has a valid state, so that WebKit does not
@@ -499,7 +500,7 @@ void NavigationController::DocumentLoadedInFrame() {
 bool NavigationController::RendererDidNavigate(
     const ViewHostMsg_FrameNavigate_Params& params,
     int extra_invalidate_flags,
-    LoadCommittedDetails* details) {
+    content::LoadCommittedDetails* details) {
 
   // Save the previous state before we clobber it.
   if (GetLastCommittedEntry()) {
@@ -1090,11 +1091,11 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
 }
 
 void NavigationController::NotifyNavigationEntryCommitted(
-    LoadCommittedDetails* details,
+    content::LoadCommittedDetails* details,
     int extra_invalidate_flags) {
   details->entry = GetActiveEntry();
   NotificationDetails notification_details =
-      Details<LoadCommittedDetails>(details);
+      Details<content::LoadCommittedDetails>(details);
 
   // We need to notify the ssl_manager_ before the tab_contents_ so the
   // location bar will have up-to-date information about the security style
@@ -1136,12 +1137,12 @@ void NavigationController::LoadIfNecessary() {
 
 void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
                                               int index) {
-  EntryChangedDetails det;
+  content::EntryChangedDetails det;
   det.changed_entry = entry;
   det.index = index;
   NotificationService::current()->Notify(NotificationType::NAV_ENTRY_CHANGED,
-                                         Source<NavigationController>(this),
-                                         Details<EntryChangedDetails>(&det));
+      Source<NavigationController>(this),
+      Details<content::EntryChangedDetails>(&det));
 }
 
 void NavigationController::FinishRestore(int selected_index,

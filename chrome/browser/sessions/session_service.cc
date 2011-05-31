@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -547,7 +547,7 @@ void SessionService::Observe(NotificationType type,
     case NotificationType::NAV_LIST_PRUNED: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
-      Details<NavigationController::PrunedDetails> pruned_details(details);
+      Details<content::PrunedDetails> pruned_details(details);
       if (pruned_details->from_front) {
         TabNavigationPathPrunedFromFront(controller->window_id(),
                                          controller->session_id(),
@@ -565,7 +565,7 @@ void SessionService::Observe(NotificationType type,
     case NotificationType::NAV_ENTRY_CHANGED: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
-      Details<NavigationController::EntryChangedDetails> changed(details);
+      Details<content::EntryChangedDetails> changed(details);
       UpdateTabNavigation(controller->window_id(), controller->session_id(),
                           changed->index, *changed->changed_entry);
       break;
@@ -581,7 +581,7 @@ void SessionService::Observe(NotificationType type,
       UpdateTabNavigation(controller->window_id(), controller->session_id(),
                           current_entry_index,
                           *controller->GetEntryAtIndex(current_entry_index));
-      Details<NavigationController::LoadCommittedDetails> changed(details);
+      Details<content::LoadCommittedDetails> changed(details);
       if (changed->type == NavigationType::NEW_PAGE ||
         changed->type == NavigationType::EXISTING_PAGE) {
         RecordSessionUpdateHistogramData(NotificationType::NAV_ENTRY_COMMITTED,

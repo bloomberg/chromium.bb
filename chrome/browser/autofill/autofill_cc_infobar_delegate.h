@@ -12,13 +12,15 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class CreditCard;
 class PersonalDataManager;
 class SkBitmap;
 class TabContents;
+namespace content {
+struct LoadCommittedDetails;
+}
 
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.
@@ -36,7 +38,7 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;

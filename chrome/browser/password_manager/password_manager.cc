@@ -158,7 +158,7 @@ void PasswordManager::DidStopLoading() {
 }
 
 void PasswordManager::DidNavigateAnyFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) {
   if (params.password_form.origin.is_valid())
     ProvisionallySavePassword(params.password_form);

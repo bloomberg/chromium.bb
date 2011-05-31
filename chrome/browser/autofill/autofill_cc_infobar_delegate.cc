@@ -41,7 +41,7 @@ void AutofillCCInfoBarDelegate::LogUserAction(
 }
 
 bool AutofillCCInfoBarDelegate::ShouldExpire(
-    const NavigationController::LoadCommittedDetails& details) const {
+    const content::LoadCommittedDetails& details) const {
   // The user has submitted a form, causing the page to navigate elsewhere. We
   // don't want the infobar to be expired at this point, because the user won't
   // get a chance to answer the question.

@@ -32,7 +32,7 @@ SearchEngineTabHelper::~SearchEngineTabHelper() {
 }
 
 void SearchEngineTabHelper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& /*details*/,
+    const content::LoadCommittedDetails& /*details*/,
     const ViewHostMsg_FrameNavigate_Params& params) {
   GenerateKeywordIfNecessary(params);
 }

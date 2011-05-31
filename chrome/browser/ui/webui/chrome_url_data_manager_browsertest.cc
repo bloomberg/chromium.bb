@@ -5,7 +5,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
@@ -27,7 +27,7 @@ class NavigationNotificationObserver : public NotificationObserver {
     DCHECK_EQ(NotificationType::NAV_ENTRY_COMMITTED, type.value);
     got_navigation_ = true;
     http_status_code_ =
-        Details<NavigationController::LoadCommittedDetails>(details)->
+        Details<content::LoadCommittedDetails>(details)->
         http_status_code;
   }
 

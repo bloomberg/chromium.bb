@@ -8,6 +8,7 @@
 
 #include <cmath>
 
+#include "base/logging.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "ui/base/animation/slide_animation.h"

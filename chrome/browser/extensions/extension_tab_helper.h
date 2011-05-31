@@ -16,6 +16,10 @@ class Extension;
 class TabContentsWrapper;
 struct WebApplicationInfo;
 
+namespace content {
+struct LoadCommittedDetails;
+}
+
 // Per-tab extension helper. Also handles non-extension apps.
 class ExtensionTabHelper : public TabContentsObserver,
                            public ExtensionFunctionDispatcher::Delegate,
@@ -75,7 +79,7 @@ class ExtensionTabHelper : public TabContentsObserver,
  private:
   // TabContentsObserver overrides.
   virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message);
 

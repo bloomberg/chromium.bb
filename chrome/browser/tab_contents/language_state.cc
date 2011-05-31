@@ -4,7 +4,7 @@
 
 #include "chrome/browser/tab_contents/language_state.h"
 
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 
 LanguageState::LanguageState(NavigationController* nav_controller)
@@ -19,7 +19,7 @@ LanguageState::~LanguageState() {
 }
 
 void LanguageState::DidNavigate(
-    const NavigationController::LoadCommittedDetails& details) {
+    const content::LoadCommittedDetails& details) {
   in_page_navigation_ = details.is_in_page;
   if (in_page_navigation_ || !details.is_main_frame)
     return;  // Don't reset our states, the page has not changed.

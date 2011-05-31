@@ -13,13 +13,17 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/history/history_types.h"
 #include "content/browser/cancelable_request.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class Browser;
 class GURL;
 class TabContents;
+struct ViewHostMsg_FrameNavigate_Params;
+
+namespace content {
+struct LoadCommittedDetails;
+}
 
 // TabFinder is used to locate a tab by URL. TabFinder matches tabs based
 // on the tabs current url, or the start of the redirect chain.
@@ -62,7 +66,7 @@ class TabFinder : public NotificationObserver {
   // Forwarded from TabContentsObserverImpl.
   void DidNavigateAnyFramePostCommit(
       TabContents* source,
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
   // Returns true if the tab's current url is |url|, or the start of the

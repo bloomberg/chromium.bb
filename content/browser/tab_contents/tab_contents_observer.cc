@@ -5,6 +5,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 TabContentsObserver::Registrar::Registrar(TabContentsObserver* observer)
@@ -34,12 +35,12 @@ void TabContentsObserver::NavigateToPendingEntry(
 }
 
 void TabContentsObserver::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
 }
 
 void TabContentsObserver::DidNavigateAnyFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
 }
 

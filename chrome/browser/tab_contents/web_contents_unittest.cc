@@ -18,7 +18,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/constrained_window.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/bindings_policy.h"
@@ -217,7 +217,7 @@ TEST_F(TabContentsTest, UpdateTitle) {
   InitNavigateParams(&params, 0, GURL(chrome::kAboutBlankURL),
                      PageTransition::TYPED);
 
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   controller().RendererDidNavigate(params, 0, &details);
 
   contents()->UpdateTitle(rvh(), 0, L"    Lots O' Whitespace\n");
@@ -239,7 +239,7 @@ TEST_F(TabContentsTest, NTPViewSource) {
 
   ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, kGURL, PageTransition::TYPED);
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   controller().RendererDidNavigate(params, 0, &details);
   // Also check title and url.
   EXPECT_EQ(ASCIIToUTF16(kUrl), contents()->GetTitle());

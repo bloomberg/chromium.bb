@@ -7,10 +7,12 @@
 #pragma once
 
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class ThemeService;
 class Extension;
+class Profile;
 class SkBitmap;
 class TabContents;
 

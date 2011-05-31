@@ -45,10 +45,10 @@ class TabContentsObserver : public IPC::Channel::Listener,
       const GURL& url,
       NavigationController::ReloadType reload_type);
   virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
   virtual void DidNavigateAnyFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
   // |render_view_host| is the RenderViewHost for which the provisional load is
   // happening.

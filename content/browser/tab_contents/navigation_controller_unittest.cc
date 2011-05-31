@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -320,7 +321,7 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
 
   // Before that commits, do a new navigation.
   const GURL kNewURL("http://see");
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   rvh()->SendNavigate(3, kNewURL);
 
   // There should no longer be any pending entry, and the third navigation we
@@ -770,7 +771,7 @@ TEST_F(NavigationControllerTest, Redirect) {
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
@@ -826,7 +827,7 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
@@ -872,7 +873,7 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
@@ -912,7 +913,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
@@ -948,7 +949,7 @@ TEST_F(NavigationControllerTest, SubframeOnEmptyPage) {
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_EQ(0U, notifications.size());
 }
@@ -975,7 +976,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
   // Navigating should do nothing.
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_EQ(0U, notifications.size());
 
@@ -1006,7 +1007,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
   // This should generate a new entry.
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
@@ -1090,7 +1091,7 @@ TEST_F(NavigationControllerTest, InPage) {
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
   // This should generate a new entry.
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
@@ -1171,7 +1172,7 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
   // This should NOT generate a new entry.
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check2AndReset(
       NotificationType::NAV_LIST_PRUNED,
@@ -1222,7 +1223,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 
     // This should NOT generate a new entry.
-    NavigationController::LoadCommittedDetails details;
+    content::LoadCommittedDetails details;
     EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
     EXPECT_TRUE(notifications.Check2AndReset(
         NotificationType::NAV_LIST_PRUNED,
@@ -1247,7 +1248,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 
     // This SHOULD generate a new entry.
-    NavigationController::LoadCommittedDetails details;
+    content::LoadCommittedDetails details;
     EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
     EXPECT_TRUE(notifications.Check1AndReset(
         NotificationType::NAV_ENTRY_COMMITTED));
@@ -1281,7 +1282,7 @@ class PrunedListener : public NotificationObserver {
                        const NotificationDetails& details) {
     if (type == NotificationType::NAV_LIST_PRUNED) {
       notification_count_++;
-      details_ = *(Details<NavigationController::PrunedDetails>(details).ptr());
+      details_ = *(Details<content::PrunedDetails>(details).ptr());
     }
   }
 
@@ -1289,7 +1290,7 @@ class PrunedListener : public NotificationObserver {
   int notification_count_;
 
   // Details from the last NAV_LIST_PRUNED.
-  NavigationController::PrunedDetails details_;
+  content::PrunedDetails details_;
 
  private:
   NotificationRegistrar registrar_;
@@ -1379,7 +1380,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   params.gesture = NavigationGestureUser;
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   our_controller.RendererDidNavigate(params, 0, &details);
 
   // There should be no longer any pending entry and one committed one. This
@@ -1644,7 +1645,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(subframe));
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));
 
   // Nothing should have changed.
@@ -1671,7 +1672,7 @@ TEST_F(NavigationControllerTest, ViewSourceRedirect) {
   params.is_post = false;
   params.content_state =
       webkit_glue::CreateHistoryStateForURL(GURL(result_url));
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   controller().RendererDidNavigate(params, 0, &details);
 
   EXPECT_EQ(ASCIIToUTF16(kExpected), contents()->GetTitle());
@@ -1735,7 +1736,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url1_sub));
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
 
   // This should return false meaning that nothing was actually updated.
   EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));

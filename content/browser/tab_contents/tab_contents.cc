@@ -33,6 +33,7 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -1063,7 +1064,7 @@ WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
 }
 
 void TabContents::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   if (opener_web_ui_type_ != WebUI::kNoWebUI) {
     // If this is a window.open navigation, use the same WebUI as the renderer
@@ -1109,7 +1110,7 @@ void TabContents::DidNavigateMainFramePostCommit(
 
 void TabContents::DidNavigateAnyFramePostCommit(
     RenderViewHost* render_view_host,
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // If we navigate, start showing messages again. This does nothing to prevent
   // a malicious script from spamming messages, since the script could just
@@ -1374,7 +1375,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   if (PageTransition::IsMainFrame(params.transition))
     contents_mime_type_ = params.contents_mime_type;
 
-  NavigationController::LoadCommittedDetails details;
+  content::LoadCommittedDetails details;
   bool did_navigate = controller_.RendererDidNavigate(
       params, extra_invalidate_flags, &details);
 

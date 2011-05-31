@@ -27,7 +27,7 @@ class LanguageState {
 
   // Should be called when the page did a new navigation (whether it is a main
   // frame or sub-frame navigation).
-  void DidNavigate(const NavigationController::LoadCommittedDetails& details);
+  void DidNavigate(const content::LoadCommittedDetails& details);
 
   // Should be called when the language of the page has been determined.
   // |page_translatable| when false indicates that the browser should not offer

@@ -52,7 +52,7 @@ class PasswordManager : public LoginModel,
   // TabContentsObserver overrides.
   virtual void DidStopLoading();
   virtual void DidNavigateAnyFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
+      const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
   virtual bool OnMessageReceived(const IPC::Message& message);
 

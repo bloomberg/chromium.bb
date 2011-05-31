@@ -8,7 +8,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -42,7 +42,7 @@ void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
 scoped_refptr<history::HistoryAddPageArgs>
 HistoryTabHelper::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   scoped_refptr<history::HistoryAddPageArgs> add_page_args(
       new history::HistoryAddPageArgs(
@@ -76,14 +76,14 @@ bool HistoryTabHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void HistoryTabHelper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Allow the new page to set the title again.
   received_page_title_ = false;
 }
 
 void HistoryTabHelper::DidNavigateAnyFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // Update history. Note that this needs to happen after the entry is complete,
   // which WillNavigate[Main,Sub]Frame will do before this function is called.

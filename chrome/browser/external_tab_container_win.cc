@@ -38,6 +38,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/native_web_keyboard_event.h"
@@ -368,7 +369,7 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
         params.page_id = -1;
         params.transition = PageTransition::LINK;
 
-        NavigationController::LoadCommittedDetails details;
+        content::LoadCommittedDetails details;
         details.did_replace_entry = false;
 
         scoped_refptr<history::HistoryAddPageArgs> add_page_args(
@@ -728,8 +729,8 @@ void ExternalTabContainer::Observe(NotificationType type,
           return;
         }
 
-        const NavigationController::LoadCommittedDetails* commit =
-            Details<NavigationController::LoadCommittedDetails>(details).ptr();
+        const content::LoadCommittedDetails* commit =
+            Details<content::LoadCommittedDetails>(details).ptr();
 
         if (commit->http_status_code >= kHttpClientErrorStart &&
             commit->http_status_code <= kHttpServerErrorEnd) {

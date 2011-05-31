@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "net/base/net_util.h"
 
@@ -27,7 +28,7 @@ void GeolocationSettingsState::OnGeolocationPermissionSet(
 }
 
 void GeolocationSettingsState::DidNavigate(
-    const NavigationController::LoadCommittedDetails& details) {
+    const content::LoadCommittedDetails& details) {
   if (details.entry)
     embedder_url_ = details.entry->url();
   if (state_map_.empty())

@@ -296,7 +296,7 @@ void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
 }
 
 void AutofillManager::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
+    const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   Reset();
 }
