@@ -189,10 +189,6 @@ ImeUi.prototype = {
    * @return {void}
    */
   candidateClicked: function(index) {
-    if (!chrome.experimental) {
-      console.log('candidateClicked(' + index + '): experimental is disabled.');
-      return;
-    }
     chrome.experimental.inputUI.candidateClicked(index, 1);
   },
 
@@ -201,10 +197,6 @@ ImeUi.prototype = {
    * @return {void}
    */
   pageUp: function() {
-    if (!chrome.experimental) {
-      console.log('pageUp: experimental is disabled.');
-      return;
-    }
     chrome.experimental.inputUI.pageUp();
   },
 
@@ -213,10 +205,6 @@ ImeUi.prototype = {
    * @return {void}
    */
   pageDown: function() {
-    if (!chrome.experimental) {
-      console.log('pageDown: experimental is diabled.');
-      return;
-    }
     chrome.experimental.inputUI.pageDown();
   },
 };
@@ -229,8 +217,16 @@ var imeui = null;
  * @return {void}
  */
 function initIme(element) {
-  // imeui has been initialized.
   if (imeui) {
+    // ime ui has been initialized.
+    return;
+  }
+
+  try {
+    // Register self to receive input method UI events.
+    chrome.experimental.inputUI.register();
+  } catch (e) {
+    // The ime is not enabled in chromium.
     return;
   }
 
@@ -242,12 +238,6 @@ function initIme(element) {
   var clearingDiv = document.createElement('div');
   clearingDiv.style.clear = 'both';
   element.appendChild(clearingDiv);
-
-  if (!chrome.experimental)
-    return;
-
-  // Register self to receive input method UI events.
-  chrome.experimental.inputUI.register();
 
   // Install events handlers.
   chrome.experimental.inputUI.onSetCursorLocation.addListener(
