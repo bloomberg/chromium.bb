@@ -278,8 +278,7 @@ class View : public AcceleratorTarget {
   // function takes into account the mirroring setting for each View and
   // therefore it will return the mirrored version of the visible bounds if
   // need be.
-  // TODO(beng): const.
-  gfx::Rect GetVisibleBounds();
+  gfx::Rect GetVisibleBounds() const;
 
   // Return the bounds of the View in screen coordinate system.
   gfx::Rect GetScreenBounds() const;

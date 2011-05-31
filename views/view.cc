@@ -291,22 +291,21 @@ gfx::Insets View::GetInsets() const {
   return insets;
 }
 
-gfx::Rect View::GetVisibleBounds() {
+gfx::Rect View::GetVisibleBounds() const {
   if (!IsVisibleInRootView())
     return gfx::Rect();
   gfx::Rect vis_bounds(0, 0, width(), height());
   gfx::Rect ancestor_bounds;
-  View* view = this;
+  const View* view = this;
   int root_x = 0;
   int root_y = 0;
   while (view != NULL && !vis_bounds.IsEmpty()) {
     root_x += view->GetMirroredX();
     root_y += view->y();
     vis_bounds.Offset(view->GetMirroredX(), view->y());
-    View* ancestor = view->parent();
+    const View* ancestor = view->parent();
     if (ancestor != NULL) {
-      ancestor_bounds.SetRect(0, 0, ancestor->width(),
-        ancestor->height());
+      ancestor_bounds.SetRect(0, 0, ancestor->width(), ancestor->height());
       vis_bounds = vis_bounds.Intersect(ancestor_bounds);
     } else if (!view->GetWidget()) {
       // If the view has no Widget, we're not visible. Return an empty rect.
