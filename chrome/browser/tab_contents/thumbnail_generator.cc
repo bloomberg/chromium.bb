@@ -120,9 +120,7 @@ struct ThumbnailGenerator::AsyncRequestInfo {
   RenderWidgetHost* renderer;  // Not owned.
 };
 
-ThumbnailGenerator::ThumbnailGenerator()
-    : tab_contents_observer_registrar_(this),
-      load_interrupted_(false) {
+ThumbnailGenerator::ThumbnailGenerator() : tab_contents_(NULL) {
   // The BrowserProcessImpl creates this non-lazily. If you add nontrivial
   // stuff here, be sure to convert it to being lazily created.
   //
@@ -134,7 +132,7 @@ ThumbnailGenerator::~ThumbnailGenerator() {
 }
 
 void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
-  tab_contents_observer_registrar_.Observe(tab_contents);
+  tab_contents_ = tab_contents;
 
   if (registrar_.IsEmpty()) {
     // Even though we deal in RenderWidgetHosts, we only care about its
@@ -142,9 +140,9 @@ void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
     // for RenderViewHosts that aren't in tabs, or RenderWidgetHosts that
     // aren't views like select popups.
     registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                   Source<TabContents>(tab_contents));
+                   Source<TabContents>(tab_contents_));
     registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
-                   Source<TabContents>(tab_contents));
+                   Source<TabContents>(tab_contents_));
   }
 }
 
@@ -341,9 +339,9 @@ void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
   // tab_contents_ can be NULL, if StartThumbnailing() is not called, but
   // MonitorRenderer() is called. The use case is found in
   // chrome/test/ui_test_utils.cc.
-  if (!tab_contents())
+  if (!tab_contents_)
     return;
-  UpdateThumbnailIfNecessary(tab_contents());
+  UpdateThumbnailIfNecessary(tab_contents_);
 }
 
 void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
@@ -447,7 +445,6 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   score.good_clipping =
       (clip_result == ThumbnailGenerator::kTallerThanWide ||
        clip_result == ThumbnailGenerator::kNotClipped);
-  score.load_completed = (!tab_contents->is_loading() && !load_interrupted_);
 
   top_sites->SetPageThumbnail(url, thumbnail, score);
   VLOG(1) << "Thumbnail taken for " << url << ": " << score.ToString();
@@ -480,14 +477,4 @@ bool ThumbnailGenerator::ShouldUpdateThumbnail(Profile* profile,
     return false;
 
   return true;
-}
-
-void ThumbnailGenerator::DidStartLoading() {
-  load_interrupted_ = false;
-}
-
-void ThumbnailGenerator::StopNavigation() {
-  // This function gets called when the page loading is interrupted by the
-  // stop button.
-  load_interrupted_ = true;
 }

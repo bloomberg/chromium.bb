@@ -10,7 +10,6 @@
 #include <string>
 
 #include "app/sql/meta_table.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
@@ -67,15 +66,9 @@ class TopSitesDatabase {
   bool RemoveURL(const MostVisitedURL& url);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, UpgradeToVersion2);
-
   // Creates the thumbnail table, returning true if the table already exists
   // or was successfully created.
   bool InitThumbnailTable();
-
-  // Upgrades the thumbnail table to version 2, returning true if the
-  // upgrade was successful.
-  bool UpgradeToVersion2();
 
   // Adds a new URL to the database.
   void AddPageThumbnail(const MostVisitedURL& url,

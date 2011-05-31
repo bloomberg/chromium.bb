@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,13 +66,8 @@ TEST(ThumbnailScoreTest, ShouldConsiderUpdating) {
   score.good_clipping = true;
   EXPECT_TRUE(score.ShouldConsiderUpdating());
 
-  // at_top is important, but still not enough.
+  // at_top is important. Finally, the thumbnail is new and interesting enough.
   score.at_top = true;
-  EXPECT_TRUE(score.ShouldConsiderUpdating());
-
-  // load_completed is important. Finally, the thumbnail is new and
-  // interesting enough.
-  score.load_completed = true;
   EXPECT_FALSE(score.ShouldConsiderUpdating());
 
   // Make it very boring, but it won't change the result. The boring score

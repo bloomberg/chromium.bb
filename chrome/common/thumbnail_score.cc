@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,25 +15,27 @@ const double ThumbnailScore::kThumbnailMaximumBoringness = 0.94;
 const double ThumbnailScore::kThumbnailDegradePerHour = 0.01;
 
 // Calculates a numeric score from traits about where a snapshot was
-// taken. The lower the better. We store the raw components in the
-// database because I'm sure this will evolve and I don't want to break
-// databases.
-static int GetThumbnailType(const ThumbnailScore& score) {
-  int type = 0;
-  if (!score.at_top)
-    type += 1;
-  if (!score.good_clipping)
-    type += 2;
-  if (!score.load_completed)
-    type += 3;
-  return type;
+// taken. We store the raw components in the database because I'm sure
+// this will evolve and I don't want to break databases.
+static int GetThumbnailType(bool good_clipping, bool at_top) {
+  if (good_clipping && at_top) {
+    return 0;
+  } else if (good_clipping && !at_top) {
+    return 1;
+  } else if (!good_clipping && at_top) {
+    return 2;
+  } else if (!good_clipping && !at_top) {
+    return 3;
+  } else {
+    NOTREACHED();
+    return -1;
+  }
 }
 
 ThumbnailScore::ThumbnailScore()
     : boring_score(1.0),
       good_clipping(false),
       at_top(false),
-      load_completed(false),
       time_at_snapshot(Time::Now()),
       redirect_hops_from_dest(0) {
 }
@@ -42,7 +44,6 @@ ThumbnailScore::ThumbnailScore(double score, bool clipping, bool top)
     : boring_score(score),
       good_clipping(clipping),
       at_top(top),
-      load_completed(false),
       time_at_snapshot(Time::Now()),
       redirect_hops_from_dest(0) {
 }
@@ -52,7 +53,6 @@ ThumbnailScore::ThumbnailScore(double score, bool clipping, bool top,
     : boring_score(score),
       good_clipping(clipping),
       at_top(top),
-      load_completed(false),
       time_at_snapshot(time),
       redirect_hops_from_dest(0) {
 }
@@ -73,20 +73,19 @@ bool ThumbnailScore::Equals(const ThumbnailScore& rhs) const {
 
 std::string ThumbnailScore::ToString() const {
   return StringPrintf("boring_score: %f, at_top %d, good_clipping %d, "
-                      "load_completed: %d, "
                       "time_at_snapshot: %f, redirect_hops_from_dest: %d",
                       boring_score,
                       at_top,
                       good_clipping,
-                      load_completed,
                       time_at_snapshot.ToDoubleT(),
                       redirect_hops_from_dest);
 }
 
 bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
                                 const ThumbnailScore& replacement) {
-  int current_type = GetThumbnailType(current);
-  int replacement_type = GetThumbnailType(replacement);
+  int current_type = GetThumbnailType(current.good_clipping, current.at_top);
+  int replacement_type = GetThumbnailType(replacement.good_clipping,
+                                          replacement.at_top);
   if (replacement_type < current_type) {
     // If we have a better class of thumbnail, add it if it meets
     // certain minimum boringness.
@@ -132,7 +131,7 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
 bool ThumbnailScore::ShouldConsiderUpdating() {
   const TimeDelta time_elapsed = Time::Now() - time_at_snapshot;
   if (time_elapsed < kUpdateThumbnailTime &&
-      good_clipping && at_top && load_completed) {
+      good_clipping && at_top) {
     // The current thumbnail is new and has good properties.
     return false;
   }
