@@ -284,7 +284,7 @@ void Panel::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
 }
 
 void Panel::UserChangedTheme() {
-  NOTIMPLEMENTED();
+  browser_window_->UserChangedTheme();
 }
 
 int Panel::GetExtraRenderViewHeight() const {

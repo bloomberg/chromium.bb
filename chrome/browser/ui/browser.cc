@@ -3565,7 +3565,8 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_UNLOADED: {
-      window()->GetLocationBar()->UpdatePageActions();
+      if (window()->GetLocationBar())
+        window()->GetLocationBar()->UpdatePageActions();
 
       // Close any tabs from the unloaded extension.
       const Extension* extension =
@@ -3583,13 +3584,15 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_PROCESS_TERMINATED: {
-      window()->GetLocationBar()->InvalidatePageActions();
+      if (window()->GetLocationBar())
+        window()->GetLocationBar()->InvalidatePageActions();
       break;
     }
 
     case NotificationType::EXTENSION_UNINSTALLED:
     case NotificationType::EXTENSION_LOADED:
-      window()->GetLocationBar()->UpdatePageActions();
+      if (window()->GetLocationBar())
+        window()->GetLocationBar()->UpdatePageActions();
       break;
 
     case NotificationType::BROWSER_THEME_CHANGED:
@@ -3724,7 +3727,8 @@ void Browser::SwapTabContents(TabContentsWrapper* old_tab_contents,
 
 void Browser::SetSuggestedText(const string16& text,
                                InstantCompleteBehavior behavior) {
-  window()->GetLocationBar()->SetSuggestedText(text, behavior);
+  if (window()->GetLocationBar())
+    window()->GetLocationBar()->SetSuggestedText(text, behavior);
 }
 
 gfx::Rect Browser::GetInstantBounds() {
