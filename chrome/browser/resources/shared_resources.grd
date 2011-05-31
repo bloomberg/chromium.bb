@@ -110,6 +110,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/i18n_process.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_I18N_TEMPLATE"
                file="shared/js/i18n_template.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_JSTEMPLATE_COMPILED"
+               file="shared/js/jstemplate_compiled.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_LOCAL_STRINGS"
                file="shared/js/local_strings.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_MEDIA_COMMON"

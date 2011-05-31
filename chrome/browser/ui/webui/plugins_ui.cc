@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -31,31 +31,30 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+
+static const char kStringsJsFile[] = "strings.js";
+static const char kPluginsJsFile[] = "plugins.js";
 
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// PluginsHTMLSource
+// PluginsUIHTMLSource
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-class PluginsUIHTMLSource : public ChromeURLDataManager::DataSource {
+class PluginsUIHTMLSource : public ChromeWebUIDataSource {
  public:
-  PluginsUIHTMLSource()
-      : DataSource(chrome::kChromeUIPluginsHost, MessageLoop::current()) {}
+  PluginsUIHTMLSource();
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
+  virtual std::string GetMimeType(const std::string&) const;
 
  private:
   ~PluginsUIHTMLSource() {}
@@ -63,67 +62,54 @@ class PluginsUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(PluginsUIHTMLSource);
 };
 
+PluginsUIHTMLSource::PluginsUIHTMLSource()
+    : ChromeWebUIDataSource(chrome::kChromeUIPluginsHost) {
+  AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
+  AddLocalizedString("pluginsDetailsModeLink",
+                     IDS_PLUGINS_DETAILS_MODE_LINK);
+  AddLocalizedString("pluginsNoneInstalled", IDS_PLUGINS_NONE_INSTALLED);
+  AddLocalizedString("pluginDisabled", IDS_PLUGINS_DISABLED_PLUGIN);
+  AddLocalizedString("pluginDisabledByPolicy",
+                     IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN);
+  AddLocalizedString("pluginCannotBeEnabledDueToPolicy",
+                     IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY);
+  AddLocalizedString("pluginEnabledByPolicy",
+                     IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN);
+  AddLocalizedString("pluginCannotBeDisabledDueToPolicy",
+                     IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY);
+  AddLocalizedString("pluginDownload", IDS_PLUGINS_DOWNLOAD);
+  AddLocalizedString("pluginName", IDS_PLUGINS_NAME);
+  AddLocalizedString("pluginVersion", IDS_PLUGINS_VERSION);
+  AddLocalizedString("pluginDescription", IDS_PLUGINS_DESCRIPTION);
+  AddLocalizedString("pluginPath", IDS_PLUGINS_PATH);
+  AddLocalizedString("pluginMimeTypes", IDS_PLUGINS_MIME_TYPES);
+  AddLocalizedString("pluginMimeTypesMimeType",
+                     IDS_PLUGINS_MIME_TYPES_MIME_TYPE);
+  AddLocalizedString("pluginMimeTypesDescription",
+                     IDS_PLUGINS_MIME_TYPES_DESCRIPTION);
+  AddLocalizedString("pluginMimeTypesFileExtensions",
+                     IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS);
+  AddLocalizedString("disable", IDS_PLUGINS_DISABLE);
+  AddLocalizedString("enable", IDS_PLUGINS_ENABLE);
+  AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
+}
+
 void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
                                            bool is_incognito,
                                            int request_id) {
-  // Strings used in the JsTemplate file.
-  DictionaryValue localized_strings;
-  localized_strings.SetString("pluginsTitle",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_TITLE));
-  localized_strings.SetString("pluginsDetailsModeLink",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DETAILS_MODE_LINK));
-  localized_strings.SetString("pluginsNoneInstalled",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_NONE_INSTALLED));
-  localized_strings.SetString("pluginDisabled",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN));
-  localized_strings.SetString("pluginDisabledByPolicy",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN));
-  localized_strings.SetString("pluginCannotBeEnabledDueToPolicy",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY));
-  localized_strings.SetString("pluginEnabledByPolicy",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN));
-  localized_strings.SetString("pluginCannotBeDisabledDueToPolicy",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY));
-  localized_strings.SetString("pluginDownload",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DOWNLOAD));
-  localized_strings.SetString("pluginName",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_NAME));
-  localized_strings.SetString("pluginVersion",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_VERSION));
-  localized_strings.SetString("pluginDescription",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DESCRIPTION));
-  localized_strings.SetString("pluginPath",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_PATH));
-  localized_strings.SetString("pluginMimeTypes",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES));
-  localized_strings.SetString("pluginMimeTypesMimeType",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES_MIME_TYPE));
-  localized_strings.SetString("pluginMimeTypesDescription",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES_DESCRIPTION));
-  localized_strings.SetString("pluginMimeTypesFileExtensions",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS));
-  localized_strings.SetString("disable",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLE));
-  localized_strings.SetString("enable",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_ENABLE));
-  localized_strings.SetString("noPlugins",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_NO_PLUGINS));
+  if (path == kStringsJsFile) {
+    SendLocalizedStringsAsJSON(request_id);
+  } else {
+    int idr = (path == kPluginsJsFile) ? IDR_PLUGINS_JS : IDR_PLUGINS_HTML;
+    SendFromResourceBundle(request_id, idr);
+  }
+}
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
+std::string PluginsUIHTMLSource::GetMimeType(const std::string& path) const {
+  if (path == kStringsJsFile || path == kPluginsJsFile)
+    return "application/javascript";
 
-  static const base::StringPiece plugins_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_PLUGINS_HTML));
-  std::string full_html(plugins_html.data(), plugins_html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  return "text/html";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
