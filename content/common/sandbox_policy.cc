@@ -396,7 +396,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       !browser_command_line.HasSwitch(switches::kNoSandbox) &&
       content::GetContentClient()->SandboxPlugin(cmd_line, policy)) {
     in_sandbox = true;
-    AddDllEvictionPolicy(policy);
   }
 
   if (!in_sandbox) {
@@ -405,7 +404,9 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return process;
   }
 
-  if (type == ChildProcessInfo::GPU_PROCESS) {
+  if (type == ChildProcessInfo::PLUGIN_PROCESS) {
+    AddDllEvictionPolicy(policy);
+  } else if (type == ChildProcessInfo::GPU_PROCESS) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
   } else if (type == ChildProcessInfo::PPAPI_PLUGIN_PROCESS) {
