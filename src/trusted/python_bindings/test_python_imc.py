@@ -144,12 +144,24 @@ class ImcTest(unittest.TestCase):
     self.assertEquals(received, ("message from test_prog", ()))
 
   def test_send_error(self):
-    # Note that this assumes prompt garbage collection.
-    sock = MakeSocketPair()[0]
-    self.assertRaises(Exception, lambda: sock.imc_sendmsg("data", ()))
+    # On Mac OS X, sometimes closing one endpoint of a socket pair
+    # does not immediately cause writes to the other endpoint to fail.
+    # Unix domain sockets are probably behaving non-deterministically
+    # on OS X, but it is also possible that NaCl's IMC layer
+    # introduces this problem.  In any case, this test doesn't intend
+    # to test close()+sendmsg() themselves; it only intends to test
+    # that the Python wrapper for imc_sendmsg() handles errors
+    # correctly.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=1462
+    if sys.platform != 'darwin':
+      # Note that this assumes prompt Python garbage collection, which
+      # is a safe assumption with CPython.
+      sock = MakeSocketPair()[0]
+      self.assertRaises(Exception, lambda: sock.imc_sendmsg("data", ()))
 
   def test_recv_error(self):
-    # Note that this assumes prompt garbage collection.
+    # Note that this assumes prompt Python garbage collection, which
+    # is a safe assumption with CPython.
     sock = MakeSocketPair()[0]
     self.assertRaises(Exception, lambda: sock.imc_recvmsg(100))
 
