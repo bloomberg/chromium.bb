@@ -680,7 +680,7 @@ WebKitContext* TestingProfile::GetWebKitContext() {
     webkit_context_ = new WebKitContext(
           IsOffTheRecord(), GetPath(),
           GetExtensionSpecialStoragePolicy(),
-          false, NULL, NULL);
+          false);
   }
   return webkit_context_;
 }

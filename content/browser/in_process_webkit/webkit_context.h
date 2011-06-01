@@ -15,12 +15,7 @@
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/indexed_db_context.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace quota {
-class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
@@ -35,9 +30,7 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
  public:
   WebKitContext(bool is_incognito, const FilePath& data_path,
                 quota::SpecialStoragePolicy* special_storage_policy,
-                bool clear_local_state_on_exit,
-                quota::QuotaManagerProxy* quota_manager_proxy,
-                base::MessageLoopProxy* webkit_thread_loop);
+                bool clear_local_state_on_exit);
 
   const FilePath& data_path() const { return data_path_; }
   bool is_incognito() const { return is_incognito_; }
@@ -85,7 +78,7 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
   bool clear_local_state_on_exit_;
 
   scoped_ptr<DOMStorageContext> dom_storage_context_;
-  scoped_refptr<IndexedDBContext> indexed_db_context_;
+  scoped_ptr<IndexedDBContext> indexed_db_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebKitContext);
 };
