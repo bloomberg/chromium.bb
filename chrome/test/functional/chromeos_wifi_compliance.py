@@ -24,8 +24,18 @@ class ChromeosWifiCompliance(chromeos_network.PyNetworkUITest):
     router = self.GetRouterConfig(router_name)
     self.RouterPower(router_name, True)
 
-    self.assertTrue(self.WaitUntilWifiNetworkAvailable(router['ssid']),
-                    'Wifi network %s never showed up.' % router['ssid'])
+    # If the wifi network is expected to be invisible, the following
+    # line should timeout which is expected.
+    wifi_visible = self.WaitUntilWifiNetworkAvailable(router['ssid'],
+                                                 is_hidden=router.get('hidden'))
+
+    # Note, we expect wifi_visible and 'hidden' status to be opposites.
+    # The test fails if the network visibility is not as expected.
+    if wifi_visible == router.get('hidden', False):
+      self.fail('We expected wifi network "%s" to be %s, but it was not.' %
+                (router['ssid'],
+                 {True: 'hidden', False: 'visible'}[router.get('hidden',
+                 False)]))
 
     # Verify connect did not have any errors.
     error = self.ConnectToWifiRouter(router_name)
@@ -78,7 +88,7 @@ class ChromeosWifiCompliance(chromeos_network.PyNetworkUITest):
 
   def testConnectNfiniti(self):
     """Test connecting to the Nfiniti router."""
-    self._BasicConnectRouterCompliance('Belkin_N+')
+    self._BasicConnectRouterCompliance('Nfiniti')
 
   def testConnectSMCWBR145(self):
     """Test connecting to the SMC WBR 145 router."""

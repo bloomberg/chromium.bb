@@ -422,7 +422,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     data_file = os.path.join(filename)
     contents = open(data_file).read()
     try:
-      ret = eval(contents, {'__builtins__': None}, None)
+      ret = eval(contents)
     except:
       print >>sys.stderr, '%s is an invalid data file.' % data_file
       raise
