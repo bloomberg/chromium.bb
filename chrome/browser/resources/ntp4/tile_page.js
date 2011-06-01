@@ -716,6 +716,7 @@ cr.define('ntp4', function() {
           this.tileGrid_.insertBefore(
               currentlyDraggingTile,
               this.tileElements_[adjustedIndex]);
+          this.tileMoved(currentlyDraggingTile);
         } else {
           this.addOutsideData(e.dataTransfer, adjustedIndex);
         }
@@ -787,6 +788,14 @@ cr.define('ntp4', function() {
       // This should not get called unless there is a non-default
       // implementation.
       assert(false);
+    },
+
+    /**
+     * Called when a tile has been moved (via dragging). Override this to make
+     * backend updates.
+     * @param {Node} draggedTile The tile that was dropped.
+     */
+    tileMoved: function(draggedTile) {
     },
   };
 

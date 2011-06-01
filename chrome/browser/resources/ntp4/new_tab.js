@@ -234,10 +234,6 @@ cr.define('ntp4', function() {
       appsPages[pageIndex].appendApp(app);
     }
 
-    // Add a couple blank apps pages for testing. TODO(estade): remove this.
-    appendTilePage(new ntp4.AppsPage('Foo'));
-    appendTilePage(new ntp4.AppsPage('Bar'));
-
     // Tell the slider about the pages
     updateSliderCards();
 

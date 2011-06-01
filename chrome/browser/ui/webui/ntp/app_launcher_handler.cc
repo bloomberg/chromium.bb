@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -488,6 +491,11 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
     if (app_order->GetString(i, &value))
       extension_ids.push_back(value);
   }
+
+  // Don't update the page; it already knows the apps have been reordered.
+  scoped_ptr<AutoReset<bool> > auto_reset;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
 
   extensions_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
   extensions_service_->extension_prefs()->SetAppLauncherOrder(extension_ids);

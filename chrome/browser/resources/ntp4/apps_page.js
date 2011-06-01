@@ -29,7 +29,6 @@ cr.define('ntp4', function() {
       assert(this.appData.id, 'Got an app without an ID');
 
       this.className = 'app';
-      this.setAttribute('app-id', this.appData.id);
 
       var appImg = this.ownerDocument.createElement('img');
       appImg.src = this.appData.icon_big;
@@ -76,6 +75,10 @@ cr.define('ntp4', function() {
 
       // Don't allow the click to trigger a link or anything
       e.preventDefault();
+    },
+
+    get appId() {
+      return this.appData.id;
     },
   };
 
@@ -196,6 +199,21 @@ cr.define('ntp4', function() {
 
       var data = {url: url, title: title};
       this.addTileAt(new Link(data), index);
+    },
+
+    /** @inheritDoc */
+    tileMoved: function(draggedTile) {
+      if (!(draggedTile.firstChild instanceof App))
+        return;
+
+      var appIds = [];
+      for (var i = 0; i < this.tileElements_.length; i++) {
+        var tileContents = this.tileElements_[i].firstChild;
+        if (tileContents instanceof App)
+          appIds.push(tileContents.appId);
+      }
+
+      chrome.send('reorderApps', [draggedTile.firstChild.appId, appIds]);
     },
   };
 
