@@ -915,6 +915,8 @@ void TabContents::OnDidRunInsecureContent(
             << target_url.possibly_invalid_spec();
   UserMetrics::RecordAction(UserMetricsAction("SSL.RanInsecureContent"));
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
+  displayed_insecure_content_ = true;
+  SSLManager::NotifySSLInternalStateChanged();
 }
 
 void TabContents::OnDocumentLoadedInFrame(int64 frame_id) {
