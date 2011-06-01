@@ -164,7 +164,7 @@ void GetExtensionAndQuery(const std::string& url,
   // We receive the url with chrome://fileicon/ stripped but GURL expects it.
   const GURL gurl("chrome://fileicon/" + url);
   const std::string path = gurl.path();
-  *extension = StringToLowerASCII(FilePath().AppendASCII(path).Extension());
+  *extension = StringToLowerASCII(FilePath(path).Extension());
   *query = gurl.query();
 }
 
@@ -204,7 +204,6 @@ int UrlToIDR(const std::string& url) {
       idr = idrbysize.idr_large_;
     }
   }
-  DCHECK_NE(-1, idr) << " Missing fileicon for: " << url;
   if (idr == -1) {
     if (size == IconLoader::SMALL) {
       idr = kGenericIdrs.idr_small_;
