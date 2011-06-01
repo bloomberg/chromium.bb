@@ -516,8 +516,7 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   // Generate the thumbnail here if the in-browser thumbnailing isn't
   // enabled. TODO(satorux): Remove this and related code once
   // crbug.com/65936 is complete.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInBrowserThumbnailing)) {
+  if (!switches::IsInBrowserThumbnailingEnabled()) {
     CaptureThumbnail();
   }
 

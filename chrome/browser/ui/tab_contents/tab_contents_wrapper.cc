@@ -136,8 +136,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   webnavigation_observer_.reset(
       new ExtensionWebNavigationTabObserver(contents));
   // Start the in-browser thumbnailing if the feature is enabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInBrowserThumbnailing)) {
+  if (switches::IsInBrowserThumbnailingEnabled()) {
     thumbnail_generation_observer_.reset(new ThumbnailGenerator);
     thumbnail_generation_observer_->StartThumbnailing(tab_contents_.get());
   }
