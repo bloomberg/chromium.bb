@@ -1124,7 +1124,20 @@ bool BaseNode::ContainsString(const std::string& lowercase_query) const {
   // Now convert to lower case.
   StringToLowerASCII(&temp);
 
-  return temp.find(lowercase_query) != std::string::npos;
+  if (temp.find(lowercase_query) != std::string::npos)
+    return true;
+
+  // Now go through all the string fields to see if the value is there.
+  for (int i = syncable::STRING_FIELDS_BEGIN; i < syncable::STRING_FIELDS_END;
+       ++i) {
+    std::string value = GetEntry()->Get(
+        static_cast<syncable::StringField>(i));
+
+    StringToLowerASCII(&value);
+    if (value.find(lowercase_query) != std::string::npos)
+      return true;
+  }
+  return false;
 }
 
 SyncManager::ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData() {}
