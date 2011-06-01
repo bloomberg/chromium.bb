@@ -5,26 +5,4 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// The need for rebaselines is conflicting with the TIMEOUT expectation upstream
-BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-color-attr.html = IMAGE TIMEOUT
-BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-attr.html = IMAGE TIMEOUT
-BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-color-prop.html = IMAGE TIMEOUT
-BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html = IMAGE TIMEOUT
-BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/filters/feDropShadow.svg = IMAGE TIMEOUT
-
-// Failure introduced by Chromium r83848.
-BUG_HCLAM : fast/url/ipv6.html = TEXT
-
-// Probably just need rebaselining, but putting here to get the @DEPS builders green.
-BUGCR84161 : fast/dom/navigator-detached-no-crash.html = TEXT
-BUGCR84161 : fast/dom/register-protocol-handler.html = TEXT
-
-// Just needs rebasing, suppressing until all baselines are available.
-BUGADAMK WIN : svg/zoom/page/zoom-foreignObject.svg = IMAGE TEXT IMAGE+TEXT
-
-// Webkit test does not follow ES5 spec on this, will upstream
-// new expectations.
-BUGRICOW : fast/js/property-getters-and-setters.html = TEXT
-
-// Temporary suppression while I investigate.
-BUGABARTH : svg/as-image/svg-as-background-with-viewBox.html = FAIL
+// PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
