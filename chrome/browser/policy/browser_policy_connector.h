@@ -78,6 +78,7 @@ class BrowserPolicyConnector {
 
   BrowserPolicyConnector();
 
+  static BrowserPolicyConnector* CreateForTests();
   static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
   static ConfigurationPolicyProvider* CreateRecommendedPlatformProvider();
 

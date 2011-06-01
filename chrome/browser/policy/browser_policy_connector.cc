@@ -45,6 +45,16 @@ BrowserPolicyConnector* BrowserPolicyConnector::Create() {
   return new BrowserPolicyConnector();
 }
 
+// static
+BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
+  const policy::ConfigurationPolicyProvider::PolicyDefinitionList*
+      policy_list = policy::ConfigurationPolicyPrefStore::
+      GetChromePolicyDefinitionList();
+  return new BrowserPolicyConnector(
+      new policy::DummyConfigurationPolicyProvider(policy_list),
+      new policy::DummyConfigurationPolicyProvider(policy_list));
+}
+
 BrowserPolicyConnector::BrowserPolicyConnector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   managed_platform_provider_.reset(CreateManagedPlatformProvider());

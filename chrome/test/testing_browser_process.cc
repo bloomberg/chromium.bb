@@ -88,15 +88,9 @@ PrefService* TestingBrowserProcess::local_state() {
 
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
-  if (!browser_policy_connector_.get()) {
-    const policy::ConfigurationPolicyProvider::PolicyDefinitionList*
-        policy_list = policy::ConfigurationPolicyPrefStore::
-        GetChromePolicyDefinitionList();
+  if (!browser_policy_connector_.get())
     browser_policy_connector_.reset(
-        new policy::BrowserPolicyConnector(
-            new policy::DummyConfigurationPolicyProvider(policy_list),
-            new policy::DummyConfigurationPolicyProvider(policy_list)));
-  }
+        policy::BrowserPolicyConnector::CreateForTests());
   return browser_policy_connector_.get();
 }
 

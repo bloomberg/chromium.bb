@@ -202,9 +202,9 @@ void AdvancedOptionsHandler::Initialize() {
 #endif
 
   banner_handler_.reset(
-      new OptionsManagedBannerHandler(web_ui_,
-                                      ASCIIToUTF16("AdvancedOptions"),
-                                      OPTIONS_PAGE_ADVANCED));
+      OptionsManagedBannerHandler::Create(web_ui_,
+                                          ASCIIToUTF16("AdvancedOptions"),
+                                          OPTIONS_PAGE_ADVANCED));
 }
 
 WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {

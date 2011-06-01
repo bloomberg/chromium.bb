@@ -63,14 +63,15 @@ PrefServiceMockBuilder::WithRecommendedCloudPrefs(PrefStore* store) {
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithManagedPlatformProvider(
     policy::ConfigurationPolicyProvider* provider) {
-  managed_platform_prefs_ = new policy::ConfigurationPolicyPrefStore(provider);
+  managed_platform_prefs_ = policy::ConfigurationPolicyPrefStore::Create(
+      provider);
   return *this;
 }
 
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithManagedCloudProvider(
     policy::ConfigurationPolicyProvider* provider) {
-  managed_cloud_prefs_ = new policy::ConfigurationPolicyPrefStore(provider);
+  managed_cloud_prefs_ = policy::ConfigurationPolicyPrefStore::Create(provider);
   return *this;
 }
 
@@ -78,14 +79,15 @@ PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithRecommendedPlatformProvider(
     policy::ConfigurationPolicyProvider* provider) {
   recommended_platform_prefs_ =
-      new policy::ConfigurationPolicyPrefStore(provider);
+      policy::ConfigurationPolicyPrefStore::Create(provider);
   return *this;
 }
 
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithRecommendedCloudProvider(
     policy::ConfigurationPolicyProvider* provider) {
-  recommended_cloud_prefs_ = new policy::ConfigurationPolicyPrefStore(provider);
+  recommended_cloud_prefs_ = policy::ConfigurationPolicyPrefStore::Create(
+      provider);
   return *this;
 }
 

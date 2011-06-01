@@ -136,9 +136,9 @@ void BrowserOptionsHandler::Initialize() {
   UpdateStartupPages();
   UpdateSearchEngines();
   banner_handler_.reset(
-      new OptionsManagedBannerHandler(web_ui_,
-                                      ASCIIToUTF16("BrowserOptions"),
-                                      OPTIONS_PAGE_GENERAL));
+      OptionsManagedBannerHandler::Create(web_ui_,
+                                          ASCIIToUTF16("BrowserOptions"),
+                                          OPTIONS_PAGE_GENERAL));
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
 }

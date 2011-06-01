@@ -31,7 +31,8 @@ class ConfigurationPolicyPrefStore
  public:
   // The ConfigurationPolicyPrefStore does not take ownership of the
   // passed-in |provider|.
-  explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
+  static ConfigurationPolicyPrefStore* Create(
+      ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
@@ -66,6 +67,8 @@ class ConfigurationPolicyPrefStore
       GetChromePolicyDefinitionList();
 
  private:
+  explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
+
   // Refreshes policy information, rereading policy from the provider and
   // sending out change notifications as appropriate.
   void Refresh();

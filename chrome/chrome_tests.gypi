@@ -1507,6 +1507,7 @@
         'browser/prefs/pref_value_map_unittest.cc',
         'browser/prefs/pref_value_store_unittest.cc',
         'browser/prefs/proxy_config_dictionary_unittest.cc',
+        'browser/prefs/proxy_policy_unittest.cc',
         'browser/prefs/proxy_prefs_unittest.cc',
         'browser/prefs/scoped_user_pref_update_unittest.cc',
         'browser/prefs/session_startup_pref_unittest.cc',
@@ -1993,6 +1994,12 @@
         ['touchui==0', {
           'sources/': [
             ['exclude', '^browser/ui/webui/chromeos/login/'],
+          ],
+        }],
+        ['configuration_policy==0', {
+          'sources/': [
+            ['exclude', '^browser/policy/'],
+            ['exclude', '^browser/prefs/proxy_policy_unittest.cc'],
           ],
         }],
         ['chromeos==1', {

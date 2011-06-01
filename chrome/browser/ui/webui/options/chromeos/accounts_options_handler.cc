@@ -118,7 +118,7 @@ void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
 void AccountsOptionsHandler::Initialize() {
   DCHECK(web_ui_);
   banner_handler_.reset(
-      new OptionsManagedBannerHandler(web_ui_,
+      OptionsManagedBannerHandler::Create(web_ui_,
                                       ASCIIToUTF16("AccountsOptions"),
                                       OPTIONS_PAGE_ACCOUNTS));
 }

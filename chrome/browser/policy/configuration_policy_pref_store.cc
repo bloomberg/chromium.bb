@@ -848,18 +848,10 @@ bool ConfigurationPolicyPrefKeeper::HasProxyPolicy(
   return true;
 }
 
-ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
-    ConfigurationPolicyProvider* provider)
-    : provider_(provider),
-      initialization_complete_(false) {
-  if (provider_) {
-    // Read initial policy.
-    policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
-    registrar_.Init(provider_, this);
-    initialization_complete_ = provider->IsInitializationComplete();
-  } else {
-    initialization_complete_ = true;
-  }
+// static
+ConfigurationPolicyPrefStore* ConfigurationPolicyPrefStore::Create(
+    ConfigurationPolicyProvider* provider) {
+  return new ConfigurationPolicyPrefStore(provider);
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
@@ -1109,6 +1101,20 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
     entries + arraysize(entries),
   };
   return &policy_list;
+}
+
+ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
+    ConfigurationPolicyProvider* provider)
+    : provider_(provider),
+      initialization_complete_(false) {
+  if (provider_) {
+    // Read initial policy.
+    policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
+    registrar_.Init(provider_, this);
+    initialization_complete_ = provider->IsInitializationComplete();
+  } else {
+    initialization_complete_ = true;
+  }
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {

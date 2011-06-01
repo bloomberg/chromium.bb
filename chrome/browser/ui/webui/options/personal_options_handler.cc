@@ -357,9 +357,9 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 
 void PersonalOptionsHandler::Initialize() {
   banner_handler_.reset(
-      new OptionsManagedBannerHandler(web_ui_,
-                                      ASCIIToUTF16("PersonalOptions"),
-                                      OPTIONS_PAGE_CONTENT));
+      OptionsManagedBannerHandler::Create(web_ui_,
+                                          ASCIIToUTF16("PersonalOptions"),
+                                          OPTIONS_PAGE_CONTENT));
 
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
