@@ -22,7 +22,7 @@
 const CGFloat kBubblePointYOffset = 2.0;
 
 LocationIconDecoration::LocationIconDecoration(LocationBarViewMac* owner)
-    : owner_(owner) {
+    : drag_frame_(NSZeroRect), owner_(owner) {
 }
 
 LocationIconDecoration::~LocationIconDecoration() {
@@ -101,8 +101,11 @@ NSImage* LocationIconDecoration::GetDragImage() {
   // Get the title.
   NSString* title = base::SysUTF16ToNSString(owner_->GetTitle());
   // If no title, just use icon.
-  if (![title length])
+  if (![title length]) {
+    NSSize iconSize = [iconImage size];
+    drag_frame_ = NSMakeRect(0, 0, iconSize.width, iconSize.height);
     return iconImage;
+  }
 
   // Set the look of the title.
   NSDictionary* attrs =
@@ -138,11 +141,16 @@ NSImage* LocationIconDecoration::GetDragImage() {
   DrawTruncatedTitle(richTitle, targetTextRect);
   [dragImage unlockFocus];
 
+  drag_frame_ = NSMakeRect(0, 0, dragImageSize.width, dragImageSize.height);
+
   return dragImage;
 }
 
 NSRect LocationIconDecoration::GetDragImageFrame(NSRect frame) {
-  return GetDrawRectInFrame(frame);
+  // If GetDragImage has never been called, drag_frame_ has not been calculated.
+  if (NSIsEmptyRect(drag_frame_))
+    GetDragImage();
+  return drag_frame_;
 }
 
 NSPoint LocationIconDecoration::GetBubblePointInFrame(NSRect frame) {

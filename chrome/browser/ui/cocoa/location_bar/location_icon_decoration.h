@@ -36,6 +36,7 @@ class LocationIconDecoration : public ImageDecoration {
   virtual NSString* GetToolTip();
 
  private:
+  NSRect drag_frame_;
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
 

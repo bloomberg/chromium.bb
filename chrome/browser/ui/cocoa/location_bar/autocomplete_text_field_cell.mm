@@ -341,16 +341,13 @@ size_t CalculatePositionsInFrame(
 
       NSRect dragImageRect = decoration->GetDragImageFrame(decorationRect);
 
-      // If the original click is not within |dragImageRect|, then
-      // center the image under the mouse.  Otherwise, will drag from
-      // where the click was on the image.
+      // Center under mouse horizontally, with cursor below so the image
+      // can be seen.
       const NSPoint mousePoint =
           [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
-      if (!NSMouseInRect(mousePoint, dragImageRect, [controlView isFlipped])) {
-        dragImageRect.origin =
-            NSMakePoint(mousePoint.x - NSWidth(dragImageRect) / 2.0,
-                        mousePoint.y - NSHeight(dragImageRect) / 2.0);
-      }
+      dragImageRect.origin =
+          NSMakePoint(mousePoint.x - NSWidth(dragImageRect) / 2.0,
+                      mousePoint.y - NSHeight(dragImageRect));
 
       // -[NSView dragImage:at:*] wants the images lower-left point,
       // regardless of -isFlipped.  Converting the rect to window base
