@@ -85,9 +85,6 @@ const int BookmarkBarView::kNewtabBarHeight = 57;
 // Padding between buttons.
 static const int kButtonPadding = 0;
 
-// Command ids used in the menu allowing the user to choose when we're visible.
-static const int kAlwaysShowCommandID = 1;
-
 // Icon to display when one isn't found for the page.
 static SkBitmap* kDefaultFavicon = NULL;
 
@@ -345,7 +342,7 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
       bookmark_menu_(NULL),
       bookmark_drop_menu_(NULL),
       other_bookmarked_button_(NULL),
-      show_folder_drop_menu_task_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(show_folder_method_factory_(this)),
       sync_error_button_(NULL),
       sync_service_(NULL),
       overflow_button_(NULL),
@@ -462,21 +459,10 @@ bool BookmarkBarView::is_animating() {
   return size_animation_->is_animating();
 }
 
-int BookmarkBarView::GetBookmarkButtonCount() {
-  // We contain five non-bookmark button views: other bookmarks, bookmarks
-  // separator, chevrons (for overflow), the instruction label and the sync
-  // error button.
-  return child_count() - 5;
-}
-
-views::TextButton* BookmarkBarView::GetBookmarkButton(int index) {
-  DCHECK(index >= 0 && index < GetBookmarkButtonCount());
-  return static_cast<views::TextButton*>(GetChildViewAt(index));
-}
-
-const BookmarkNode* BookmarkBarView::GetNodeForButtonAt(const gfx::Point& loc,
-                                                        int* start_index) {
-  *start_index = 0;
+const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
+    const gfx::Point& loc,
+    int* model_start_index) {
+  *model_start_index = 0;
 
   if (loc.x() < 0 || loc.x() >= width() || loc.y() < 0 || loc.y() >= height())
     return NULL;
@@ -495,7 +481,7 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAt(const gfx::Point& loc,
   // Then the overflow button.
   if (overflow_button_->IsVisible() &&
       overflow_button_->bounds().Contains(adjusted_loc)) {
-    *start_index = GetFirstHiddenNodeIndex();
+    *model_start_index = GetFirstHiddenNodeIndex();
     return model_->GetBookmarkBarNode();
   }
 
@@ -520,10 +506,9 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
   return static_cast<views::MenuButton*>(GetChildViewAt(index));
 }
 
-void BookmarkBarView::GetAnchorPositionAndStartIndexForButton(
+void BookmarkBarView::GetAnchorPositionForButton(
     views::MenuButton* button,
-    MenuItemView::AnchorPosition* anchor,
-    int* start_index) {
+    MenuItemView::AnchorPosition* anchor) {
   if (button == other_bookmarked_button_ || button == overflow_button_)
     *anchor = MenuItemView::TOPRIGHT;
   else
@@ -536,11 +521,6 @@ void BookmarkBarView::GetAnchorPositionAndStartIndexForButton(
     else
       *anchor = MenuItemView::TOPRIGHT;
   }
-
-  if (button == overflow_button_)
-    *start_index = GetFirstHiddenNodeIndex();
-  else
-    *start_index = 0;
 }
 
 views::MenuItemView* BookmarkBarView::GetMenu() {
@@ -1113,7 +1093,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
         disposition_from_event_flags, PageTransition::AUTO_BOOKMARK);
   } else {
     bookmark_utils::OpenAll(GetWindow()->GetNativeWindow(), profile_,
-        GetPageNavigator(), node, disposition_from_event_flags);
+        page_navigator_, node, disposition_from_event_flags);
   }
   UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
@@ -1153,7 +1133,7 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
   bool close_on_remove =
       (parent == profile_->GetBookmarkModel()->other_node() &&
        parent->child_count() == 1);
-  BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), GetProfile(),
+  BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), profile_,
                                  navigator, parent, nodes, close_on_remove);
   controller.RunMenuAt(p);
 }
@@ -1223,6 +1203,27 @@ void BookmarkBarView::Init() {
   size_animation_.reset(new ui::SlideAnimation(this));
 }
 
+int BookmarkBarView::GetBookmarkButtonCount() {
+  // We contain five non-bookmark button views: other bookmarks, bookmarks
+  // separator, chevrons (for overflow), the instruction label and the sync
+  // error button.
+  return child_count() - 5;
+}
+
+views::TextButton* BookmarkBarView::GetBookmarkButton(int index) {
+  DCHECK(index >= 0 && index < GetBookmarkButtonCount());
+  return static_cast<views::TextButton*>(GetChildViewAt(index));
+}
+
+int BookmarkBarView::GetFirstHiddenNodeIndex() {
+  const int bb_count = GetBookmarkButtonCount();
+  for (int i = 0; i < bb_count; ++i) {
+    if (!GetBookmarkButton(i)->IsVisible())
+      return i;
+  }
+  return bb_count;
+}
+
 MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   MenuButton* button = new BookmarkFolderButton(
       this,
@@ -1280,7 +1281,7 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   if (node->is_url()) {
     BookmarkButton* button = new BookmarkButton(this, node->GetURL(),
-        UTF16ToWide(node->GetTitle()), GetProfile());
+        UTF16ToWide(node->GetTitle()), profile_);
     ConfigureButton(node, button);
     return button;
   } else {
@@ -1401,8 +1402,7 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
 }
 
 void BookmarkBarView::StopShowFolderDropMenuTimer() {
-  if (show_folder_drop_menu_task_)
-    show_folder_drop_menu_task_->Cancel();
+  show_folder_method_factory_.RevokeAll();
 }
 
 void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
@@ -1412,11 +1412,12 @@ void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
     ShowDropFolderForNode(node);
     return;
   }
-  DCHECK(!show_folder_drop_menu_task_);
-  show_folder_drop_menu_task_ = new ShowFolderDropMenuTask(this, node);
-  int delay = views::GetMenuShowDelay();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          show_folder_drop_menu_task_, delay);
+  show_folder_method_factory_.RevokeAll();
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      show_folder_method_factory_.NewRunnableMethod(
+          &BookmarkBarView::ShowDropFolderForNode, node),
+      views::GetMenuShowDelay());
 }
 
 int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
@@ -1535,15 +1536,6 @@ void BookmarkBarView::WriteBookmarkDragData(const BookmarkNode* node,
   DCHECK(node && data);
   BookmarkNodeData drag_data(node);
   drag_data.Write(profile_, data);
-}
-
-int BookmarkBarView::GetFirstHiddenNodeIndex() {
-  const int bb_count = GetBookmarkButtonCount();
-  for (int i = 0; i < bb_count; ++i) {
-    if (!GetBookmarkButton(i)->IsVisible())
-      return i;
-  }
-  return bb_count;
 }
 
 void BookmarkBarView::StartThrobbing(const BookmarkNode* node,

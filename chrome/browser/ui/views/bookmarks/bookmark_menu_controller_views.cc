@@ -47,9 +47,7 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar,
   views::MenuButton* menu_button = bookmark_bar_->GetMenuButtonForNode(node_);
   DCHECK(menu_button);
   MenuItemView::AnchorPosition anchor;
-  int start_index;
-  bookmark_bar_->GetAnchorPositionAndStartIndexForButton(
-      menu_button, &anchor, &start_index);
+  bookmark_bar_->GetAnchorPositionForButton(menu_button, &anchor);
   RunMenuAt(menu_button, anchor, for_drop);
 }
 
@@ -166,15 +164,14 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
   gfx::Point bookmark_bar_loc(screen_point);
   views::View::ConvertPointToView(NULL, bookmark_bar_, &bookmark_bar_loc);
   int start_index;
-  const BookmarkNode* node =
-      bookmark_bar_->GetNodeForButtonAt(bookmark_bar_loc, &start_index);
+  const BookmarkNode* node = bookmark_bar_->GetNodeForButtonAtModelIndex(
+      bookmark_bar_loc, &start_index);
   if (!node || !node->is_folder())
     return NULL;
 
   menu_delegate_->SetActiveMenu(node, start_index);
   *button = bookmark_bar_->GetMenuButtonForNode(node);
-  bookmark_bar_->GetAnchorPositionAndStartIndexForButton(
-      *button, anchor, &start_index);
+  bookmark_bar_->GetAnchorPositionForButton(*button, anchor);
   *has_mnemonics = false;
   return this->menu();
 }
