@@ -183,14 +183,21 @@ class SafeBrowsingService
   // If the request contained a chain of redirects, |url| is the last url
   // in the chain, and |original_url| is the first one (the root of the
   // chain). Otherwise, |original_url| = |url|.
-  virtual void DisplayBlockingPage(const GURL& url,
-                                   const GURL& original_url,
-                                   const std::vector<GURL>& redirect_urls,
-                                   ResourceType::Type resource_type,
-                                   UrlCheckResult result,
-                                   Client* client,
-                                   int render_process_host_id,
-                                   int render_view_id);
+  void DisplayBlockingPage(const GURL& url,
+                           const GURL& original_url,
+                           const std::vector<GURL>& redirect_urls,
+                           ResourceType::Type resource_type,
+                           UrlCheckResult result,
+                           Client* client,
+                           int render_process_host_id,
+                           int render_view_id);
+
+  // Same as above but gets invoked on the UI thread.
+  virtual void DoDisplayBlockingPage(const UnsafeResource& resource);
+
+  // Returns true if we already displayed an interstitial for that resource.
+  // Called on the UI thread.
+  bool IsWhitelisted(const UnsafeResource& resource);
 
   // Called on the IO thread when the SafeBrowsingProtocolManager has received
   // the full hash results for prefix hits detected in the database.
@@ -365,9 +372,6 @@ class SafeBrowsingService
   bool HandleOneCheck(SafeBrowsingCheck* check,
                       const std::vector<SBFullHashResult>& full_hashes);
 
-  // Invoked on the UI thread to show the blocking page.
-  void DoDisplayBlockingPage(const UnsafeResource& resource);
-
   // Call protocol manager on IO thread to report hits of unsafe contents.
   void ReportSafeBrowsingHitOnIOThread(const GURL& malicious_url,
                                        const GURL& page_url,
@@ -404,6 +408,9 @@ class SafeBrowsingService
                           CancelableTask* task,
                           int64 timeout_ms);
 
+  // Adds the given entry to the whitelist.  Called on the UI thread.
+  void UpdateWhitelist(UnsafeResource resource);
+
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
@@ -424,6 +431,7 @@ class SafeBrowsingService
   // Handles interaction with SafeBrowsing servers.
   SafeBrowsingProtocolManager* protocol_manager_;
 
+  // Only access this whitelist from the UI thread.
   std::vector<WhiteListedEntry> white_listed_entries_;
 
   // Whether the service is running. 'enabled_' is used by SafeBrowsingService

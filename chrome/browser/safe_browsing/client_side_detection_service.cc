@@ -192,6 +192,7 @@ void ClientSideDetectionService::SendModelToProcess(
   ::DuplicateHandle(::GetCurrentProcess(), model_file_, process->GetHandle(),
                     &file, 0, false, DUPLICATE_SAME_ACCESS);
 #endif
+  VLOG(2) << "Sending phishing model to renderer";
   process->Send(new SafeBrowsingMsg_SetPhishingModel(file));
 }
 

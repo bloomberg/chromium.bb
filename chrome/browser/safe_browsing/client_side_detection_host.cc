@@ -158,6 +158,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (!sb_service_ || sb_service_->MatchCsdWhitelistUrl(url)) {
       // We're done.  There is no point in going back to the UI thread.
+      VLOG(1) << "Skipping phishing classification for URL: " << url
+              << " because it matches the csd whitelist";
       UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
                                 NO_CLASSIFY_MATCH_CSD_WHITELIST,
                                 NO_CLASSIFY_MAX);
@@ -207,6 +209,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // Everything checks out, so start classification.
     // |tab_contents_| is safe to call as we will be destructed
     // before it is.
+    VLOG(1) << "Instruct renderer to start phishing detection for URL: "
+            << params_.url;
     RenderViewHost* rvh = tab_contents_->render_view_host();
     rvh->Send(new SafeBrowsingMsg_StartPhishingDetection(
         rvh->routing_id(), params_.url));
@@ -341,6 +345,8 @@ void ClientSideDetectionHost::OnDetectedPhishingSite(
     // There shouldn't be any pending requests because we revoke them everytime
     // we navigate away.
     DCHECK(!cb_factory_.HasPendingCallbacks());
+    VLOG(2) << "Start sending client phishing request for URL: "
+            << verdict->url();
     csd_service_->SendClientReportPhishingRequest(
         verdict.release(),  // The service takes ownership of the verdict.
         cb_factory_.NewCallback(
@@ -351,32 +357,29 @@ void ClientSideDetectionHost::OnDetectedPhishingSite(
 void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
                                                        bool is_phishing) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(2) << "Received server phishing verdict for URL:" << phishing_url
+          << " is_phishing:" << is_phishing;
   if (is_phishing &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClientSidePhishingInterstitial)) {
     DCHECK(tab_contents());
-    // TODO(noelutz): this is not perfect.  It's still possible that the
-    // user browses away before the interstitial is shown.  Maybe we should
-    // stop all pending navigations?
     if (sb_service_) {
-      // TODO(noelutz): refactor the SafeBrowsing service class and the
-      // SafeBrowsing blocking page class so that we don't need to depend
-      // on the SafeBrowsingService here and so that we don't need to go
-      // through the IO message loop.
-      std::vector<GURL> redirect_urls;
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          NewRunnableMethod(sb_service_.get(),
-                            &SafeBrowsingService::DisplayBlockingPage,
-                            phishing_url, phishing_url,
-                            redirect_urls,
-                            // We only classify the main frame URL.
-                            ResourceType::MAIN_FRAME,
-                            SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
-                            new CsdClient() /* will delete itself */,
-                            tab_contents()->GetRenderProcessHost()->id(),
-                            tab_contents()->render_view_host()->routing_id()));
+      SafeBrowsingService::UnsafeResource resource;
+      resource.url = phishing_url;
+      resource.original_url = phishing_url;
+      resource.resource_type = ResourceType::MAIN_FRAME;
+      resource.threat_type = SafeBrowsingService::CLIENT_SIDE_PHISHING_URL;
+      resource.render_process_host_id =
+          tab_contents()->GetRenderProcessHost()->id();
+      resource.render_view_id =
+          tab_contents()->render_view_host()->routing_id();
+      if (!sb_service_->IsWhitelisted(resource)) {
+        // We need to stop any pending navigations, otherwise the interstital
+        // might not get created properly.
+        tab_contents()->controller().DiscardNonCommittedEntries();
+        resource.client = new CsdClient();  // Will delete itself
+        sb_service_->DoDisplayBlockingPage(resource);
+      }
     }
   }
 }

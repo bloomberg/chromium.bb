@@ -73,9 +73,7 @@ class MockSafeBrowsingService : public SafeBrowsingService {
   MockSafeBrowsingService() {}
   virtual ~MockSafeBrowsingService() {}
 
-  MOCK_METHOD8(DisplayBlockingPage,
-               void(const GURL&, const GURL&, const std::vector<GURL>&,
-                    ResourceType::Type, UrlCheckResult, Client*, int, int));
+  MOCK_METHOD1(DoDisplayBlockingPage, void(const UnsafeResource& resource));
   MOCK_METHOD1(MatchCsdWhitelistUrl, bool(const GURL&));
 
   // Helper function which calls OnBlockingPageComplete for this client
@@ -242,18 +240,11 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
-  // Make sure DisplayBlockingPage is not going to be called.
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(_, _, _, _, _, _, _, _)).Times(0);
+  // Make sure DoDisplayBlockingPage is not going to be called.
+  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_)).Times(0);
   cb->Run(GURL(verdict.url()), false);
   delete cb;
-  // If there was a message posted on the IO thread to display the
-  // interstitial page we know that it would have been posted before
-  // we put the quit message there.
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          NewRunnableFunction(&QuitUIMessageLoop));
-  MessageLoop::current()->Run();
+  MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
 
@@ -273,13 +264,11 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
-  // Make sure DisplayBlockingPage is not going to be called.
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(_, _, _, _, _, _, _, _)).Times(0);
+  // Make sure DoDisplayBlockingPage is not going to be called.
+  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_)).Times(0);
   cb->Run(GURL(verdict.url()), false);
   delete cb;
-
-  FlushIOMessageLoop();
+  MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
 
@@ -303,24 +292,23 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
-  SafeBrowsingService::Client* client;
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(
-                  phishing_url,
-                  phishing_url,
-                  _,
-                  ResourceType::MAIN_FRAME,
-                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
-                  _ /* a CsdClient object */,
-                  contents()->GetRenderProcessHost()->id(),
-                  contents()->render_view_host()->routing_id()))
-      .WillOnce(SaveArg<5>(&client));
-
+  SafeBrowsingService::UnsafeResource resource;
+  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
+      .WillOnce(SaveArg<0>(&resource));
   cb->Run(phishing_url, true);
   delete cb;
 
-  FlushIOMessageLoop();
+  MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
+  EXPECT_EQ(phishing_url, resource.url);
+  EXPECT_EQ(phishing_url, resource.original_url);
+  EXPECT_EQ(ResourceType::MAIN_FRAME, resource.resource_type);
+  EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
+            resource.threat_type);
+  EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
+            resource.render_process_host_id);
+  EXPECT_EQ(contents()->render_view_host()->routing_id(),
+            resource.render_view_id);
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
@@ -329,7 +317,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
       NewRunnableMethod(
           sb_service_.get(),
           &MockSafeBrowsingService::InvokeOnBlockingPageComplete,
-          client));
+          resource.client));
   // Since the CsdClient object will be deleted on the UI thread I need
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
@@ -378,29 +366,25 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
 
   // We expect that the interstitial is shown for the second phishing URL and
   // not for the first phishing URL.
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(phishing_url, phishing_url,_, _, _, _, _, _))
-      .Times(0);
-  SafeBrowsingService::Client* client;
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(
-                  other_phishing_url,
-                  other_phishing_url,
-                  _,
-                  ResourceType::MAIN_FRAME,
-                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
-                  _ /* a CsdClient object */,
-                  contents()->GetRenderProcessHost()->id(),
-                  contents()->render_view_host()->routing_id()))
-      .WillOnce(SaveArg<5>(&client));
-
+  SafeBrowsingService::UnsafeResource resource;
+  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
+      .WillOnce(SaveArg<0>(&resource));
   cb->Run(phishing_url, true);  // Should have no effect.
   delete cb;
   cb_other->Run(other_phishing_url, true);  // Should show interstitial.
   delete cb_other;
 
-  FlushIOMessageLoop();
+  MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
+  EXPECT_EQ(other_phishing_url, resource.url);
+  EXPECT_EQ(other_phishing_url, resource.original_url);
+  EXPECT_EQ(ResourceType::MAIN_FRAME, resource.resource_type);
+  EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
+            resource.threat_type);
+  EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
+            resource.render_process_host_id);
+  EXPECT_EQ(contents()->render_view_host()->routing_id(),
+            resource.render_view_id);
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
@@ -409,7 +393,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
       NewRunnableMethod(
           sb_service_.get(),
           &MockSafeBrowsingService::InvokeOnBlockingPageComplete,
-          client));
+          resource.client));
   // Since the CsdClient object will be deleted on the UI thread I need
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
@@ -583,20 +567,23 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   url = GURL("http://host8.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kTrue, NULL,
                                 NULL);
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(Eq(url), Eq(url), _, _, _, _, _, _))
-      .WillOnce(DeleteArg<5>());
+
+  SafeBrowsingService::UnsafeResource resource;
+  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
+      .WillOnce(SaveArg<0>(&resource));
+
   NavigateAndCommit(url);
   // Wait for CheckCsdWhitelist to be called on the IO thread.
   FlushIOMessageLoop();
   // Wait for CheckCache() to be called on the UI thread.
   MessageLoop::current()->RunAllPending();
-  // Wait for DisplayBlockingPage to be called on the IO thread.
-  FlushIOMessageLoop();
   // Now we check that all expected functions were indeed called on the two
   // service objects.
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
+  EXPECT_EQ(url, resource.url);
+  EXPECT_EQ(url, resource.original_url);
+  delete resource.client;
   msg = process()->sink().GetFirstMessageMatching(
       SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);

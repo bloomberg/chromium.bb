@@ -341,23 +341,6 @@ void SafeBrowsingService::DisplayBlockingPage(
     int render_process_host_id,
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Check if the user has already ignored our warning for this render_view
-  // and domain.
-  for (size_t i = 0; i < white_listed_entries_.size(); ++i) {
-    const WhiteListedEntry& entry = white_listed_entries_[i];
-    if (entry.render_process_host_id == render_process_host_id &&
-        entry.render_view_id == render_view_id &&
-        entry.result == result &&
-        entry.domain ==
-        net::RegistryControlledDomainService::GetDomainAndRegistry(url)) {
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &SafeBrowsingService::NotifyClientBlockingComplete,
-          client, true));
-      return;
-    }
-  }
-
   UnsafeResource resource;
   resource.url = url;
   resource.original_url = original_url;
@@ -453,14 +436,12 @@ void SafeBrowsingService::OnBlockingPageDone(
     NotifyClientBlockingComplete(resource.client, proceed);
 
     if (proceed) {
-      // Whitelist this domain and warning type for the given tab.
-      WhiteListedEntry entry;
-      entry.render_process_host_id = resource.render_process_host_id;
-      entry.render_view_id = resource.render_view_id;
-      entry.domain = net::RegistryControlledDomainService::GetDomainAndRegistry(
-            resource.url);
-      entry.result = resource.threat_type;
-      white_listed_entries_.push_back(entry);
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          NewRunnableMethod(this,
+                            &SafeBrowsingService::UpdateWhitelist,
+                            resource));
     }
   }
 }
@@ -988,6 +969,18 @@ bool SafeBrowsingService::HandleOneCheck(
 
 void SafeBrowsingService::DoDisplayBlockingPage(
     const UnsafeResource& resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Check if the user has already ignored our warning for this render_view
+  // and domain.
+  if (IsWhitelisted(resource)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &SafeBrowsingService::NotifyClientBlockingComplete,
+                          resource.client, true));
+    return;
+  }
+
   // The tab might have been closed.
   TabContents* wc =
       tab_util::GetTabContentsByID(resource.render_process_host_id,
@@ -1195,4 +1188,42 @@ void SafeBrowsingService::StartDownloadCheck(SafeBrowsingCheck* check,
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, check->timeout_task, timeout_ms);
+}
+
+void SafeBrowsingService::UpdateWhitelist(UnsafeResource resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Whitelist this domain and warning type for the given tab.
+  WhiteListedEntry entry;
+  entry.render_process_host_id = resource.render_process_host_id;
+  entry.render_view_id = resource.render_view_id;
+  entry.domain = net::RegistryControlledDomainService::GetDomainAndRegistry(
+      resource.url);
+  entry.result = resource.threat_type;
+  white_listed_entries_.push_back(entry);
+}
+
+bool SafeBrowsingService::IsWhitelisted(const UnsafeResource& resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Check if the user has already ignored our warning for this render_view
+  // and domain.
+  for (size_t i = 0; i < white_listed_entries_.size(); ++i) {
+    const WhiteListedEntry& entry = white_listed_entries_[i];
+    if (entry.render_process_host_id == resource.render_process_host_id &&
+        entry.render_view_id == resource.render_view_id &&
+        // Threat type must be the same or in the case of phishing they can
+        // either be client-side phishing URL or a SafeBrowsing phishing URL.
+        // If we show one type of phishing warning we don't want to show a
+        // second phishing warning.
+        (entry.result == resource.threat_type ||
+         (entry.result == URL_PHISHING &&
+          resource.threat_type == CLIENT_SIDE_PHISHING_URL) ||
+         (entry.result == CLIENT_SIDE_PHISHING_URL &&
+          resource.threat_type == URL_PHISHING))  &&
+        entry.domain ==
+        net::RegistryControlledDomainService::GetDomainAndRegistry(
+            resource.url)) {
+      return true;
+    }
+  }
+  return false;
 }
