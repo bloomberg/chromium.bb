@@ -57,22 +57,6 @@
 #include <sys/wait.h>
 #endif
 
-// Make sure we have ho zombies from CGIs.
-static void
-signal_handler(int sig_num) {
-  switch (sig_num) {
-#ifdef OS_POSIX
-  case SIGCHLD:
-    while (waitpid(-1, &sig_num, WNOHANG) > 0) { }
-    break;
-#elif OS_WIN
-  case 0:  // The win compiler demands at least 1 case statement.
-#endif
-  default:
-    break;
-  }
-}
-
 namespace webdriver {
 
 void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
@@ -216,9 +200,8 @@ int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-#if OS_POSIX
+#if defined(OS_POSIX)
   signal(SIGPIPE, SIG_IGN);
-  signal(SIGCHLD, &signal_handler);
 #endif
   srand((unsigned int)time(NULL));
 
