@@ -71,8 +71,6 @@ void SumAnimatingBarHeight(GtkWidget* widget, gpointer userdata) {
 
 }  // namespace
 
-// InfoBarContainerGtk, public: ------------------------------------------------
-
 InfoBarContainerGtk::InfoBarContainerGtk(Profile* profile)
     : profile_(profile),
       tab_contents_(NULL),
@@ -87,21 +85,23 @@ InfoBarContainerGtk::~InfoBarContainerGtk() {
 }
 
 void InfoBarContainerGtk::ChangeTabContents(TabContentsWrapper* contents) {
-  if (tab_contents_)
-    registrar_.RemoveAll();
+  registrar_.RemoveAll();
 
   gtk_util::RemoveAllChildren(widget());
   UpdateToolbarInfoBarState(NULL, false);
 
   tab_contents_ = contents;
   if (tab_contents_) {
-    UpdateInfoBars();
     Source<TabContents> source(tab_contents_->tab_contents());
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
                    source);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
                    source);
+    for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
+      InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
+      AddInfoBar(delegate, false);
+    }
   }
 }
 
@@ -114,8 +114,6 @@ int InfoBarContainerGtk::TotalHeightOfAnimatingBars() const {
   gtk_container_foreach(GTK_CONTAINER(widget()), SumAnimatingBarHeight, &sum);
   return sum;
 }
-
-// InfoBarContainerGtk, NotificationObserver implementation: -------------------
 
 void InfoBarContainerGtk::Observe(NotificationType type,
                                   const NotificationSource& source,
@@ -133,15 +131,6 @@ void InfoBarContainerGtk::Observe(NotificationType type,
     AddInfoBar(delegates->second, false);
   } else {
     NOTREACHED();
-  }
-}
-
-// InfoBarContainerGtk, private: -----------------------------------------------
-
-void InfoBarContainerGtk::UpdateInfoBars() {
-  for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
-    InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
-    AddInfoBar(delegate, false);
   }
 }
 

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -41,15 +42,10 @@ class InfoBarContainerGtk : public NotificationObserver {
   int TotalHeightOfAnimatingBars() const;
 
  private:
-  // Overridden from NotificationObserver:
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Constructs the InfoBars needed to reflect the state of the current
-  // TabContents associated with this container. No animations are run during
-  // this process.
-  void UpdateInfoBars();
+                       const NotificationDetails& details) OVERRIDE;
 
   // Makes the calls to show an arrow for |delegate| (either on the browser
   // toolbar or on the next infobar up).
