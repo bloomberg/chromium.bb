@@ -73,20 +73,20 @@ class TreeNode : public TreeModelNode {
 
   virtual ~TreeNode() {}
 
-  // Adds a TreeNode as a child of this one, at |index|.
+  // Adds |node| as a child of this one, at |index|.
   virtual void Add(NodeType* node, int index) {
     DCHECK(node);
     DCHECK_LE(0, index);
     DCHECK_GE(child_count(), index);
     // If the node has a parent, remove it from its parent.
-    NodeType* parent = node->parent();
+    NodeType* parent = node->parent_;
     if (parent)
       parent->Remove(node);
     node->parent_ = static_cast<NodeType*>(this);
     children_->insert(children_->begin() + index, node);
   }
 
-  // Remove |node| from this Node and returns it. It's up to the caller to
+  // Removes |node| from this node and returns it. It's up to the caller to
   // delete it.
   virtual NodeType* Remove(NodeType* node) {
     typename std::vector<NodeType*>::iterator i =
@@ -107,14 +107,12 @@ class TreeNode : public TreeModelNode {
   // Returns the number of children.
   int child_count() const { return static_cast<int>(children_->size()); }
 
-  // Returns the number of all nodes in teh subtree rooted at this node,
+  // Returns the number of all nodes in the subtree rooted at this node,
   // including this node.
   int GetTotalNodeCount() const {
     int count = 1;  // Start with one to include the node itself.
-    for (size_t i = 0; i < children_->size(); ++i) {
-      const TreeNode<NodeType>* child = children_[i];
-      count += child->GetTotalNodeCount();
-    }
+    for (size_t i = 0; i < children_->size(); ++i)
+      count += children_[i]->GetTotalNodeCount();
     return count;
   }
 
@@ -129,7 +127,7 @@ class TreeNode : public TreeModelNode {
         static_cast<const NodeType&>(*this).GetChild(index));
   }
 
-  // Returns the parent of this object, or NULL if it's the root.
+  // Returns the parent node, or NULL if this is the root node.
   const NodeType* parent() const { return parent_; }
   NodeType* parent() { return parent_; }
 
