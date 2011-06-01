@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -480,9 +481,13 @@ void Navigate(NavigateParams* params) {
           tab_contents())->OnUserGesture();
     }
 
-    // Perform the actual navigation.
-    params->target_contents->controller().LoadURL(url, params->referrer,
-                                                  params->transition);
+    // Try to handle non-navigational URLs that popup dialogs and such, these
+    // should not actually navigate.
+    if (!HandleNonNavigationAboutURL(url)) {
+      // Perform the actual navigation.
+      params->target_contents->controller().LoadURL(url, params->referrer,
+                                                    params->transition);
+    }
   } else {
     // |target_contents| was specified non-NULL, and so we assume it has already
     // been navigated appropriately. We need to do nothing more other than

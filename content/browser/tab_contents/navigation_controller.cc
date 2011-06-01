@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -264,13 +263,6 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
       policy->IsDisabledScheme(entry->virtual_url().scheme())) {
     VLOG(1) << "URL not loaded because the scheme is blocked by policy: "
             << entry->url();
-    delete entry;
-    return;
-  }
-
-  // Handle non-navigational URLs that popup dialogs and such, these should not
-  // actually navigate.
-  if (HandleNonNavigationAboutURL(entry->url())) {
     delete entry;
     return;
   }

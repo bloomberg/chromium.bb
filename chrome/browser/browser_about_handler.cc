@@ -1413,14 +1413,12 @@ void InitializeAboutDataSource(Profile* profile) {
   profile->GetChromeURLDataManager()->AddDataSource(new AboutSource(profile));
 }
 
-// This function gets called with the fixed-up chrome: URLs, so we have to
-// compare against those instead of "about:blah".
 bool HandleNonNavigationAboutURL(const GURL& url) {
   // about:ipc is currently buggy, so we disable it for official builds.
 #if !defined(OFFICIAL_BUILD)
 
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && defined(IPC_MESSAGE_LOG_ENABLED)
-  if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {
+  if (LowerCaseEqualsASCII(url.spec(), chrome::kAboutIPCURL)) {
     // Run the dialog. This will re-use the existing one if it's already up.
     browser::ShowAboutIPCDialog();
     return true;
