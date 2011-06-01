@@ -56,7 +56,6 @@
           'sel_ldr.c',
           'sel_ldr-inl.c',
           'sel_ldr_standard.c',
-          'sel_ldr_thread_interface.c',
           'sel_main_chrome.c',
           'sel_mem.c',
           'sel_qualify.c',

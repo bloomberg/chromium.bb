@@ -2336,7 +2336,21 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  NaClVmHoleWaitToStartThread(natp->nap);
+  NaClXMutexLock(&natp->nap->mu);
+
+  /* ensure no virtual memory hole may appear */
+  while (natp->nap->vm_hole_may_exist) {
+    NaClXCondVarWait(&natp->nap->cv, &natp->nap->mu);
+  }
+
+  ++natp->nap->threads_launching;
+  NaClXMutexUnlock(&natp->nap->mu);
+  /*
+   * NB: Dropped lock, so many threads launching can starve VM
+   * operations.  If this becomes a problem in practice, we can use a
+   * reader/writer lock so that a waiting writer will block new
+   * readers.
+   */
 
   retval = NaClCreateAdditionalThread(natp->nap,
                                       (uintptr_t) prog_ctr,

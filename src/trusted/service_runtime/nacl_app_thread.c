@@ -15,7 +15,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_stack_safety.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
 
 void WINAPI NaClThreadLauncher(void *state) {
@@ -41,7 +40,16 @@ void WINAPI NaClThreadLauncher(void *state) {
   natp->thread_num = NaClAddThreadMu(natp->nap, natp);
   NaClXMutexUnlock(&natp->nap->threads_mu);
 
-  NaClVmHoleThreadStackIsSafe(natp->nap);
+  NaClXMutexLock(&natp->nap->mu);
+
+  if (0 == --natp->nap->threads_launching) {
+    /*
+     * Wake up the threads waiting to do VM operations.
+     */
+    NaClXCondVarBroadcast(&natp->nap->cv);
+  }
+
+  NaClXMutexUnlock(&natp->nap->mu);
 
   NaClStackSafetyNowOnUntrustedStack();  /* real soon now! */
 

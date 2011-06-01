@@ -38,11 +38,6 @@ typedef void *(*NaClThreadIfStartFunction)(struct NaClThreadInterface *tdb);
  * Windows to cover the temporary VM hole that can be created due to
  * mmap-like operations, and serves to ensure that trusted thread
  * stacks don't get allocated inside the untrusted address space.
- *
- * The newly constructed thread does not start until its StartThread
- * virtual function is invoked.  After Start is invoked, the ownership
- * of the reference returned by the factory is passed to the newly
- * started thread.
  */
 typedef int (*NaClThreadIfFactoryFunction)(
     void                        *factory_data,
@@ -55,8 +50,6 @@ struct NaClThreadInterface {
   struct NaClRefCount             base NACL_IS_REFCOUNT_SUBCLASS;
   NaClThreadIfFactoryFunction     factory;
   void                            *factory_data;
-  size_t                          thread_stack_size;
-  int                             thread_started;
   struct NaClThread               thread;
   NaClThreadIfStartFunction       fn_ptr;
   void                            *thread_data;
@@ -64,10 +57,6 @@ struct NaClThreadInterface {
 
 struct NaClThreadInterfaceVtbl {
   struct NaClRefCountVtbl       vbase;
-
-  /* start thread may fail */
-  int                           (*StartThread)(
-      struct NaClThreadInterface *self);
 
   /*
    * Will be invoked in new thread prior to fn_ptr.
@@ -87,42 +76,30 @@ struct NaClThreadInterfaceVtbl {
 
 extern struct NaClThreadInterfaceVtbl const kNaClThreadInterfaceVtbl;
 
-void NaClThreadInterfaceDtor(struct NaClRefCount *vself);
-
-int NaClThreadInterfaceStartThread(struct NaClThreadInterface  *self);
-
-void NaClThreadInterfaceLaunchCallback(struct NaClThreadInterface *self);
-
-void NaClThreadInterfaceExit(struct NaClThreadInterface *self,
-                             void                       *exit_code);
-
 /*
- * The protected Ctor is intended for use by subclasses of
- * NaClThreadInterface.
+ * The PlacementFactory is intended for use by subclasses of
+ * NaClThreadInterface that only need to initialize a few data members
+ * etc that can be done *before* the base class factory runs.  The
+ * reason that it cannot be used in the standard/conventional way is
+ * that the thread is started before the PlacementFactory returns, so
+ * unless there is additional synchronization, the subclass factory
+ * cannot do further initialization after invoking PlacementFactory.
+ * NB: the subclass can provide a chained fn_ptr that finishes the
+ * subclass object initialization before calling the real user fn_ptr,
+ * but that's a little ugly.
  */
-int NaClThreadInterfaceCtor_protected(
-    struct NaClThreadInterface    *self,
+int NaClThreadInterfaceThreadPlacementFactory(
     NaClThreadIfFactoryFunction   factory,
     void                          *factory_data,
     NaClThreadIfStartFunction     fn_ptr,
     void                          *thread_data,
-    size_t                        thread_stack_size);
+    size_t                        thread_stack_size,
+    struct NaClRefCountVtbl const *vtbl_ptr,
+    struct NaClThreadInterface    *out_new_thread);
 
 int NaClThreadInterfaceThreadFactory(
     void                        *factory_data,
     NaClThreadIfStartFunction   fn_ptr,
-    void                        *thread_data,
-    size_t                      thread_stack_size,
-    struct NaClThreadInterface  **out_new_thread);
-
-/*
- * A common use case is to use a factory to construct a thread and
- * launch it, so we provide a utility for doing so.
- */
-int NaClThreadInterfaceConstructAndStartThread(
-    NaClThreadIfFactoryFunction factory_fn,
-    void                        *factory_data,
-    NaClThreadIfStartFunction   thread_fn_ptr,
     void                        *thread_data,
     size_t                      thread_stack_size,
     struct NaClThreadInterface  **out_new_thread);

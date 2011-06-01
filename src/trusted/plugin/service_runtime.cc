@@ -61,10 +61,10 @@ void LogToJavaScriptConsole(nacl::WeakRef<LogToJavaScriptConsoleResource>* wr,
   nacl::scoped_ptr<LogToJavaScriptConsoleResource> p;
   wr->ReleaseAndUnref(&p);
   if (p == NULL) {
-    NaClLog(1, "LogToJavaScriptConsole: Weak ref died\n");
+    NaClLog(0, "LogToJavaScriptConsole: Weak ref died\n");
     return;
   }
-  NaClLog(1, "LogToJavaScriptConsole: Weak ref okay: %p\n",
+  NaClLog(0, "LogToJavaScriptConsole: Weak ref okay: %p\n",
           reinterpret_cast<void*>(p.get()));
   p->plugin->browser_interface()->AddToConsole(p->plugin->instance_id(),
                                                p->message);

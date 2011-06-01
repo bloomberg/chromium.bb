@@ -8,7 +8,6 @@
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
 
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
@@ -25,33 +24,41 @@ void WINAPI NaClThreadInterfaceStart(void *data) {
           "NaClThreadInterface: Exit member function did not exit thread\n");
 }
 
-int NaClThreadInterfaceCtor_protected(
-    struct NaClThreadInterface    *self,
+int NaClThreadInterfaceThreadPlacementFactory(
     NaClThreadIfFactoryFunction   factory,
     void                          *factory_data,
     NaClThreadIfStartFunction     fn_ptr,
     void                          *thread_data,
-    size_t                        thread_stack_size) {
+    size_t                        thread_stack_size,
+    struct NaClRefCountVtbl const *vtbl_ptr,
+    struct NaClThreadInterface    *in_out_new_thread) {
+  int rv;
 
   NaClLog(3, "Entered NaClThreadInterfaceThreadPlacementFactory\n");
-  if (!NaClRefCountCtor((struct NaClRefCount *) self)) {
-    NaClLog(3,
-            "NaClThreadInterfaceThreadPlacementFactory,"
-            " NaClRefCountCtor base class ctor failed\n");
+  if (!NaClRefCountCtor((struct NaClRefCount *) in_out_new_thread)) {
     return 0;
   }
 
-  self->factory = factory;
-  self->factory_data = factory_data;
-  self->thread_stack_size = thread_stack_size;
-  self->fn_ptr = fn_ptr;
-  self->thread_data = thread_data;
-  self->thread_started = 0;
-  NACL_VTBL(NaClRefCount, self) =
-      (struct NaClRefCountVtbl const *) &kNaClThreadInterfaceVtbl,
+  in_out_new_thread->factory = factory;
+  in_out_new_thread->factory_data = factory_data;
+  in_out_new_thread->fn_ptr = fn_ptr;
+  in_out_new_thread->thread_data = thread_data;
+  NACL_VTBL(NaClRefCount, in_out_new_thread) = vtbl_ptr;
+  rv = NaClThreadCtor(&in_out_new_thread->thread,
+                      NaClThreadInterfaceStart,
+                      in_out_new_thread,
+                      thread_stack_size);
+  if (!rv) {
+    in_out_new_thread->fn_ptr = NULL;
+    in_out_new_thread->thread_data = NULL;
+    NACL_VTBL(NaClRefCount, in_out_new_thread) = &kNaClRefCountVtbl;
+    (*NACL_VTBL(NaClRefCount, in_out_new_thread)->Dtor)(
+        (struct NaClRefCount *) in_out_new_thread);
+  }
   NaClLog(3,
-          "Leaving NaClThreadInterfaceThreadPlacementFactory, returning 1\n");
-  return 1;
+          "Leaving NaClThreadInterfaceThreadPlacementFactory, returning %d\n",
+          rv);
+  return rv;
 }
 
 int NaClThreadInterfaceThreadFactory(
@@ -63,28 +70,29 @@ int NaClThreadInterfaceThreadFactory(
   struct NaClThreadInterface  *new_thread;
   int                         rv;
 
-  NaClLog(3, "Entered NaClThreadInterfaceThreadFactory\n");
+  NaClLog(2, "Entered NaClThreadInterfaceThreadFactory\n");
   new_thread = malloc(sizeof *new_thread);
   if (NULL == new_thread) {
-    NaClLog(3, "NaClThreadInterfaceThreadFactory: no memory!\n");
+    NaClLog(2, "NaClThreadInterfaceThreadFactory: no memory!\n");
     return 0;
   }
   if (0 != (rv =
-            NaClThreadInterfaceCtor_protected(
-                new_thread,
+            NaClThreadInterfaceThreadPlacementFactory(
                 NaClThreadInterfaceThreadFactory,
                 factory_data,
                 fn_ptr,
                 thread_data,
-                thread_stack_size))) {
+                thread_stack_size,
+                (struct NaClRefCountVtbl const *) &kNaClThreadInterfaceVtbl,
+                new_thread))) {
     *out_new_thread = new_thread;
-    NaClLog(3,
+    NaClLog(2,
             "NaClThreadInterfaceThreadFactory: new thread 0x%"NACL_PRIxPTR"\n",
             (uintptr_t) new_thread);
     new_thread = NULL;
   }
   free(new_thread);
-  NaClLog(3,
+  NaClLog(2,
           "Leaving NaClThreadInterfaceThreadFactory, returning %d\n",
           rv);
   return rv;
@@ -93,28 +101,10 @@ int NaClThreadInterfaceThreadFactory(
 void NaClThreadInterfaceDtor(struct NaClRefCount *vself) {
   struct NaClThreadInterface *self =
       (struct NaClThreadInterface *) vself;
-  CHECK(self->thread_started == 0);
   self->fn_ptr = NULL;
   self->thread_data = NULL;
   NACL_VTBL(NaClRefCount, self) = &kNaClRefCountVtbl;
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
-}
-
-int NaClThreadInterfaceStartThread(struct NaClThreadInterface  *self) {
-  int rv;
-
-  NaClLog(3, "Entered NaClThreadInterfaceStartThread\n");
-  CHECK(self->thread_started == 0);
-
-  rv = NaClThreadCtor(&self->thread,
-                      NaClThreadInterfaceStart,
-                      self,
-                      self->thread_stack_size);
-  if (rv) {
-    self->thread_started = 1;
-  }
-  NaClLog(3, "Leaving NaClThreadInterfaceStartThread, rv=%d\n", rv);
-  return rv;
 }
 
 /*
@@ -133,7 +123,6 @@ void NaClThreadInterfaceExit(struct NaClThreadInterface *self,
   NaClLog(3,
           "NaClThreadInterfaceExit: thread 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
-  self->thread_started = 0;  /* on way out */
   NaClRefCountUnref((struct NaClRefCount *) self);
   /* only keep low order bits of the traditional void* return */
   NaClThreadExit((int) (uintptr_t) exit_code);
@@ -143,49 +132,6 @@ struct NaClThreadInterfaceVtbl const kNaClThreadInterfaceVtbl = {
   {
     NaClThreadInterfaceDtor,
   },
-  NaClThreadInterfaceStartThread,
   NaClThreadInterfaceLaunchCallback,
   NaClThreadInterfaceExit,
 };
-
-int NaClThreadInterfaceConstructAndStartThread(
-    NaClThreadIfFactoryFunction factory_fn,
-    void                        *factory_data,
-    NaClThreadIfStartFunction   thread_fn_ptr,
-    void                        *thread_data,
-    size_t                      thread_stack_size,
-    struct NaClThreadInterface  **out_new_thread) {
-  struct NaClThreadInterface  *new_thread;
-
-  if (!(*factory_fn)(factory_data,
-                     thread_fn_ptr,
-                     thread_data,
-                     thread_stack_size,
-                     &new_thread)) {
-    NaClLog(3,
-            ("NaClThreadInterfaceConstructAndStartThread:"
-             " factory 0x%"NACL_PRIxPTR" failed to produce!\n"),
-            (uintptr_t) factory_fn);
-    new_thread = NULL;
-    goto abort;
-  }
-  if (!(*NACL_VTBL(NaClThreadInterface, new_thread)->StartThread)(
-          new_thread)) {
-    NaClLog(3,
-            ("NaClThreadInterfaceConstructAndStartThread:"
-             " factory 0x%"NACL_PRIxPTR" produced a thread 0x%"NACL_PRIxPTR
-             " that won't start!\n"),
-            (uintptr_t) factory_fn,
-            (uintptr_t) new_thread);
-    NaClRefCountUnref((struct NaClRefCount *) new_thread);
-    new_thread = NULL;
-    goto abort;
-  }
-  NaClLog(4,
-          ("NaClThreadInterfaceConstructAndStartThread: thread 0x%"NACL_PRIxPTR
-           " started\n"),
-          (uintptr_t) new_thread);
-abort:
-  *out_new_thread = new_thread;
-  return new_thread != NULL;
-}
