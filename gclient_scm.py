@@ -488,7 +488,6 @@ class GitWrapper(SCMWrapper):
       clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
       detach_head = False
     else:
-      clone_cmd.append('--no-checkout')
       detach_head = True
     if options.verbose:
       clone_cmd.append('--verbose')
