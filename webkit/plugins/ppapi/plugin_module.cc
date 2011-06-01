@@ -72,6 +72,7 @@
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_console_impl.h"
 #include "webkit/plugins/ppapi/ppb_crypto_impl.h"
@@ -239,6 +240,13 @@ const void* GetInterface(const char* name) {
   DCHECK(IsMainThread());
 
   std::string name_prefix(GetInterfacePrefix(name));
+
+  // Allow custom interface factories first stab at the GetInterface call.
+  const void* custom_interface =
+      PpapiInterfaceFactoryManager::GetInstance()->GetInterface(name);
+  if (custom_interface)
+    return custom_interface;
+
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
   if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)

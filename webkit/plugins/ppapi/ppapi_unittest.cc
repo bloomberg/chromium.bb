@@ -8,6 +8,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace webkit {
@@ -114,6 +115,52 @@ void PpapiUnittest::ShutdownModule() {
 
 void PpapiUnittest::PluginModuleDead(PluginModule* /* dead_module */) {
   // Nothing needed (this is necessary to make the module compile).
+}
+
+// Tests whether custom PPAPI interface factories are called when PPAPI
+// interfaces are requested.
+class PpapiCustomInterfaceFactoryTest
+    : public testing::Test,
+      public webkit::ppapi::PluginDelegate::ModuleLifetime {
+ public:
+  PpapiCustomInterfaceFactoryTest() {}
+  virtual ~PpapiCustomInterfaceFactoryTest() {}
+
+  bool result() {
+    return result_;
+  }
+
+  void reset_result() {
+    result_ = false;
+  }
+
+  static void* InterfaceFactory(const std::string& interface_name) {
+    result_ = true;
+    return NULL;
+  }
+
+ private:
+  static bool result_;
+  // ModuleLifetime implementation.
+  virtual void PluginModuleDead(PluginModule* dead_module) {}
+};
+
+bool PpapiCustomInterfaceFactoryTest::result_ = false;
+
+// This test validates whether custom PPAPI interface factories are invoked in
+// response to PluginModule::GetPluginInterface calls.
+TEST_F(PpapiCustomInterfaceFactoryTest, BasicFactoryTest) {
+  PpapiInterfaceFactoryManager::GetInstance()->RegisterFactory(
+      PpapiCustomInterfaceFactoryTest::InterfaceFactory);
+  (*PluginModule::GetLocalGetInterfaceFunc())("DummyInterface");
+  EXPECT_TRUE(result());
+
+  reset_result();
+  PpapiInterfaceFactoryManager::GetInstance()->UnregisterFactory(
+      PpapiCustomInterfaceFactoryTest::InterfaceFactory);
+
+  (*PluginModule::GetLocalGetInterfaceFunc())("DummyInterface");
+  EXPECT_FALSE(result());
 }
 
 }  // namespace ppapi

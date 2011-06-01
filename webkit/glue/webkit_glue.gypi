@@ -226,6 +226,8 @@
         '../plugins/ppapi/plugin_module.h',
         '../plugins/ppapi/plugin_object.cc',
         '../plugins/ppapi/plugin_object.h',
+        '../plugins/ppapi/ppapi_interface_factory.cc',
+        '../plugins/ppapi/ppapi_interface_factory.h',
         '../plugins/ppapi/ppapi_plugin_instance.cc',
         '../plugins/ppapi/ppapi_plugin_instance.h',
         '../plugins/ppapi/ppapi_webplugin_impl.cc',
