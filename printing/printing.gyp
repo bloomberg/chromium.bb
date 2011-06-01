@@ -11,13 +11,13 @@
       'target_name': 'printing',
       'type': 'static_library',
       'dependencies': [
+        '../app/app.gyp:app_base',  # Only required for Font support
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../ui/ui.gyp:ui_base',  # Only required for Font support.
       ],
       'msvs_guid': '9E5416B9-B91B-4029-93F4-102C1AD5CAF4',
       'include_dirs': [

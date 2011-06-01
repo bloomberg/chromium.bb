@@ -92,6 +92,7 @@
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
+            '../app/app.gyp:app_base',
             '../build/linux/system.gyp:gtk',
           ],
           'conditions': [

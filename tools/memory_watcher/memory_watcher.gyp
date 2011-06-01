@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,8 +9,8 @@
       'type': 'shared_library',
       'msvs_guid': '3BD81303-4E14-4559-AA69-B30C3BAB08DD',
       'dependencies': [
+        '../../app/app.gyp:app_base',
         '../../base/base.gyp:base',
-        '../../ui/ui.gyp:ui_base',
       ],
       'defines': [
         'BUILD_MEMORY_WATCHER',
