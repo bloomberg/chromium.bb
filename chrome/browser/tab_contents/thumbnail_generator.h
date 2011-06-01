@@ -126,6 +126,7 @@ class ThumbnailGenerator : public NotificationObserver,
   // TabContentsObserver overrides.
   virtual void DidStartLoading();
   virtual void StopNavigation();
+  virtual void TabContentsDestroyed(TabContents* tab);
 
  private:
   virtual void WidgetDidReceivePaintAtSizeAck(
