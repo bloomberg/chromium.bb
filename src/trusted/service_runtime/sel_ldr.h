@@ -48,7 +48,6 @@
 
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 
-
 EXTERN_C_BEGIN
 
 #define NACL_SERVICE_PORT_DESCRIPTOR    3
@@ -189,9 +188,6 @@ struct NaClApp {
   struct NaClDesc           *service_port;
   struct NaClDesc           *service_address;
 
-  struct NaClNameService    *name_service;  /* default name server */
-  struct NaClDesc           *name_service_conn_cap;
-
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
 
@@ -209,6 +205,13 @@ struct NaClApp {
    */
   int                       vm_hole_may_exist;
   int                       threads_launching;
+
+  /*
+   * Name service must launch after mu, cv, vm_hole_may_exit,
+   * threads_launching are initialized.
+   */
+  struct NaClNameService    *name_service;  /* default name server */
+  struct NaClDesc           *name_service_conn_cap;
 
   struct NaClSecureService        *secure_service;
   struct NaClSecureReverseClient  *reverse_client;
@@ -585,23 +588,9 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
+void NaClVmHoleWaitToStartThread(struct NaClApp *nap);
 
-/*
- * Used in mmap code to prepare the untrusted module for mmap.
- * Specifically, on *x this is a no-op, but on Windows where mmap does
- * not atomically replace mappings and we have to unmap (VirtualFree
- * or UnmapViewOfFile) before installing new mappings, we stop all
- * other untrusted threads using SuspendThread in
- * NaClAppBeginMapRaceProtection and then ResumeThread in
- * NaClAppEndMapRaceProtection.  These functions must be called after
- * all the necessary locks for the bracketed intervening operations,
- * since no other thread that might otherwise release locks is able to
- * run.
- */
-void NaClAppBeginMapRaceProtection_AppMu(struct NaClAppThread *natp);
-
-void NaClAppEndMapRaceProtection_AppMu(struct NaClAppThread *natp);
-
+void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap);
 
 void NaClGdbHook(struct NaClApp const *nap);
 

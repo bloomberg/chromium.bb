@@ -309,15 +309,17 @@ int NaClSimpleServiceAcceptAndSpawnHandler(
   CHECK(NULL == conn->thread);
 
   /* ownership of |conn| reference is passed to the thread */
-  if (!(*self->thread_factory_fn)(self->thread_factory_data,
-                                  RpcHandlerBase,
-                                  conn,
-                                  NACL_KERN_STACK_SIZE,
-                                  &conn->thread)) {
-    NaClLog(LOG_WARNING,
-            "NaClSimpleServiceAcceptAndSpawnHandler: could not spawn thread\n");
+  if (!NaClThreadInterfaceConstructAndStartThread(
+          self->thread_factory_fn,
+          self->thread_factory_data,
+          RpcHandlerBase,
+          conn,
+          NACL_KERN_STACK_SIZE,
+          &conn->thread)) {
+    NaClLog(4, "NaClSimpleServiceAcceptAndSpawnHandler: no thread\n");
     NaClRefCountUnref((struct NaClRefCount *) conn);
     conn = NULL;
+    conn->thread = NULL;
     status = -NACL_ABI_EAGAIN;
     goto abort;
   }
@@ -356,13 +358,18 @@ static void *AcceptThread(struct NaClThreadInterface *tif) {
 
 int NaClSimpleServiceStartServiceThread(struct NaClSimpleService *server) {
   NaClLog(4, "NaClSimpleServiceStartServiceThread: spawning thread\n");
-  if (!(*server->thread_factory_fn)(server->thread_factory_data,
-                                    AcceptThread,
-                                    NaClRefCountRef(&server->base),
-                                    NACL_KERN_STACK_SIZE,
-                                    &server->acceptor)) {
-    NaClLog(4, "NaClSimpleServiceStartServiceThread: failed\n");
+  CHECK(server->acceptor == NULL);
+
+  if (!NaClThreadInterfaceConstructAndStartThread(
+          server->thread_factory_fn,
+          server->thread_factory_data,
+          AcceptThread,
+          NaClRefCountRef(&server->base),
+          NACL_KERN_STACK_SIZE,
+          &server->acceptor)) {
+    NaClLog(4, "NaClSimpleServiceStartServiceThread: no thread\n");
     NaClRefCountUnref(&server->base);  /* undo ref in Ctor call arglist */
+    server->acceptor = NULL;
     return 0;
   }
   NaClLog(4, "NaClSimpleServiceStartServiceThread: success\n");

@@ -129,14 +129,16 @@ int NaClSimpleRevClientStartServiceThread(struct NaClSimpleRevClient *self) {
     NaClLog(LOG_FATAL,
             "NaClSimpleRevClientStartServiceThread: dup - already started\n");
   }
-  if (!(*self->thread_factory_fn)(self->thread_factory_data,
-                                  RevRpcHandlerBase,
-                                  ((struct NaClSimpleRevClient *)
-                                   NaClRefCountRef(
-                                       (struct NaClRefCount *) self)),
-                                  NACL_KERN_STACK_SIZE,
-                                  &self->acceptor)) {
+  if (!NaClThreadInterfaceConstructAndStartThread(
+          self->thread_factory_fn,
+          self->thread_factory_data,
+          RevRpcHandlerBase,
+          NaClRefCountRef((struct NaClRefCount *) self),
+          NACL_KERN_STACK_SIZE,
+          &self->acceptor)) {
+    NaClLog(4, "NaClSimpleRevClientStartServiceThread: no thread\n");
     NaClRefCountUnref((struct NaClRefCount *) self);
+    self->acceptor = NULL;
     return 0;
   }
   return 1;
@@ -204,14 +206,14 @@ int NaClSimpleRevServiceConnectAndSpawnHandler(
             (*NACL_VTBL(NaClDesc, self->conn_cap)->ConnectAddr)(
                 self->conn_cap, &conn))) {
     /* failed */
-    NaClLog(4, "NaClSimpleRevServiceConnectAndSpawnHandler: connect failed\n");
+    NaClLog(3, "NaClSimpleRevServiceConnectAndSpawnHandler: connect failed\n");
     return status;
   }
   if (0 != (status =
             (*NACL_VTBL(NaClSimpleRevService, self)->RevConnectionFactory)(
                 self, conn, instance_data, &rev_conn))) {
     NaClDescUnref(conn);
-    NaClLog(4,
+    NaClLog(3,
             ("NaClSimpleRevServiceConnectAndSpawnHandler: factory failed,"
              " error %d\n"),
             status);
@@ -222,16 +224,19 @@ int NaClSimpleRevServiceConnectAndSpawnHandler(
    * Spawn thread to use the NaClSimpleRevConnection.
    */
   /* rev_conn not visible to other threads, ownership passed to thread */
-  if (!(*self->thread_factory_fn)(self->thread_factory_data,
-                                  ConnRpcBase,
-                                  (void *) rev_conn,
-                                  NACL_KERN_STACK_SIZE,
-                                  &rev_conn->thread)) {
+  if (!NaClThreadInterfaceConstructAndStartThread(
+          self->thread_factory_fn,
+          self->thread_factory_data,
+          ConnRpcBase,
+          (void *) rev_conn,
+          NACL_KERN_STACK_SIZE,
+          &rev_conn->thread)) {
     /*
      * no thread, clean up
      */
+    NaClLog(3, "NaClSimpleRevServiceConnectAndSpawnHandler: no thread\n");
     NaClRefCountUnref((struct NaClRefCount *) rev_conn);
-    NaClLog(4, "NaClSimpleRevServiceConnectAndSpawnHandler: no thread\n");
+    rev_conn->thread = NULL;
     return -NACL_ABI_EAGAIN;
   }
   /* thread owns rev_conn */
