@@ -373,9 +373,6 @@ private:
     static HINSTANCE instance_handle_;
 #endif
 
-    // True if developer extras should be enabled.
-    static bool developer_extras_enabled_;
-
     // True when the app is being run using the --layout-tests switch.
     static bool layout_test_mode_;
 

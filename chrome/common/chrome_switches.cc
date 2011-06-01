@@ -207,9 +207,6 @@ const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
-// Browser flag to disable the web inspector for all renderers.
-const char kDisableDevTools[]               = "disable-dev-tools";
-
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
