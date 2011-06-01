@@ -225,6 +225,15 @@ void NativeWidgetViews::Restore() {
   NOTIMPLEMENTED();
 }
 
+void NativeWidgetViews::SetFullscreen(bool fullscreen) {
+  NOTIMPLEMENTED();
+}
+
+bool NativeWidgetViews::IsFullscreen() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void NativeWidgetViews::SetOpacity(unsigned char opacity) {
   NOTIMPLEMENTED();
 }

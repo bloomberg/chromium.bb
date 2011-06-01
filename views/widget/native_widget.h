@@ -154,6 +154,8 @@ class NativeWidget {
   virtual bool IsMaximized() const = 0;
   virtual bool IsMinimized() const = 0;
   virtual void Restore() = 0;
+  virtual void SetFullscreen(bool fullscreen) = 0;
+  virtual bool IsFullscreen() const = 0;
   virtual void SetOpacity(unsigned char opacity) = 0;
   virtual bool IsAccessibleWidget() const = 0;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const = 0;

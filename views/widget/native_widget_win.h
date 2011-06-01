@@ -109,6 +109,15 @@ class NativeWidgetWin : public ui::WindowImpl,
   // Clear a view that has recently been removed on a hierarchy change.
   void ClearAccessibilityViewEvent(View* view);
 
+  // Hides the window if it hasn't already been force-hidden. The force hidden
+  // count is tracked, so calling multiple times is allowed, you just have to
+  // be sure to call PopForceHidden the same number of times.
+  void PushForceHidden();
+
+  // Decrements the force hidden count, showing the window if we have reached
+  // the top of the stack. See PushForceHidden.
+  void PopForceHidden();
+
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());
   }
@@ -209,6 +218,8 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
   virtual void Restore() OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
@@ -219,6 +230,15 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
 
  protected:
+  // Information saved before going into fullscreen mode, used to restore the
+  // window afterwards.
+  struct SavedWindowInfo {
+    bool maximized;
+    LONG style;
+    LONG ex_style;
+    RECT window_rect;
+  };
+
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg) OVERRIDE;
   virtual void DidProcessMessage(const MSG& msg) OVERRIDE;
@@ -411,6 +431,10 @@ class NativeWidgetWin : public ui::WindowImpl,
 
   const gfx::Rect& invalid_rect() const { return invalid_rect_; }
 
+  // Saved window information from before entering fullscreen mode.
+  // TODO(beng): move to private once GetRestoredBounds() moves onto Widget.
+  SavedWindowInfo saved_window_info_;
+
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
 
@@ -524,6 +548,15 @@ class NativeWidgetWin : public ui::WindowImpl,
 
   // Indicates if the |input_method_| is an InputMethodWin instance.
   bool is_input_method_win_;
+
+  // True if we're in fullscreen mode.
+  bool fullscreen_;
+
+  // If this is greater than zero, we should prevent attempts to make the window
+  // visible when we handle WM_WINDOWPOSCHANGING. Some calls like
+  // ShowWindow(SW_RESTORE) make the window visible in addition to restoring it,
+  // when all we want to do is restore it.
+  int force_hidden_count_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };

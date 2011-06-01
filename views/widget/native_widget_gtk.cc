@@ -1020,6 +1020,17 @@ void NativeWidgetGtk::Restore() {
     gtk_window_deiconify(GetNativeWindow());
 }
 
+void NativeWidgetGtk::SetFullscreen(bool fullscreen) {
+  if (fullscreen)
+    gtk_window_fullscreen(GetNativeWindow());
+  else
+    gtk_window_unfullscreen(GetNativeWindow());
+}
+
+bool NativeWidgetGtk::IsFullscreen() const {
+  return window_state_ & GDK_WINDOW_STATE_FULLSCREEN;
+}
+
 void NativeWidgetGtk::SetOpacity(unsigned char opacity) {
   opacity_ = opacity;
   if (widget_) {

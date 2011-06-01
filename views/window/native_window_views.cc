@@ -85,14 +85,6 @@ void NativeWindowViews::SetAccessibleState(
     ui::AccessibilityTypes::State state) {
 }
 
-void NativeWindowViews::SetFullscreen(bool fullscreen) {
-}
-
-bool NativeWindowViews::IsFullscreen() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void NativeWindowViews::SetUseDragFrame(bool use_drag_frame) {
 }
 

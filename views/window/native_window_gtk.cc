@@ -285,17 +285,6 @@ const Window* NativeWindowGtk::GetWindow() const {
   return delegate_->AsWindow();
 }
 
-void NativeWindowGtk::SetFullscreen(bool fullscreen) {
-  if (fullscreen)
-    gtk_window_fullscreen(GetNativeWindow());
-  else
-    gtk_window_unfullscreen(GetNativeWindow());
-}
-
-bool NativeWindowGtk::IsFullscreen() const {
-  return window_state_ & GDK_WINDOW_STATE_FULLSCREEN;
-}
-
 void NativeWindowGtk::SetUseDragFrame(bool use_drag_frame) {
   NOTIMPLEMENTED();
 }

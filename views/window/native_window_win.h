@@ -55,15 +55,6 @@ class NativeWindowWin : public NativeWidgetWin,
     focus_on_creation_ = focus_on_creation;
   }
 
-  // Hides the window if it hasn't already been force-hidden. The force hidden
-  // count is tracked, so calling multiple times is allowed, you just have to
-  // be sure to call PopForceHidden the same number of times.
-  void PushForceHidden();
-
-  // Decrements the force hidden count, showing the window if we have reached
-  // the top of the stack. See PushForceHidden.
-  void PopForceHidden();
-
   // Returns the system set window title font.
   static gfx::Font GetWindowTitleFont();
 
@@ -149,8 +140,6 @@ class NativeWindowWin : public NativeWidgetWin,
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
-  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
-  virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
@@ -161,15 +150,6 @@ class NativeWindowWin : public NativeWidgetWin,
   virtual bool IsActive() const OVERRIDE;
 
  private:
-  // Information saved before going into fullscreen mode, used to restore the
-  // window afterwards.
-  struct SavedWindowInfo {
-    bool maximized;
-    LONG style;
-    LONG ex_style;
-    RECT window_rect;
-  };
-
   // If necessary, enables all ancestors.
   void RestoreEnabledIfNecessary();
 
@@ -212,12 +192,6 @@ class NativeWindowWin : public NativeWidgetWin,
   // true.
   bool restored_enabled_;
 
-  // True if we're in fullscreen mode.
-  bool fullscreen_;
-
-  // Saved window information from before entering fullscreen mode.
-  SavedWindowInfo saved_window_info_;
-
   // True if this window is the active top level window.
   bool is_active_;
 
@@ -235,12 +209,6 @@ class NativeWindowWin : public NativeWidgetWin,
   // The following factory is used to ignore SetWindowPos() calls for short time
   // periods.
   ScopedRunnableMethodFactory<NativeWindowWin> ignore_pos_changes_factory_;
-
-  // If this is greater than zero, we should prevent attempts to make the window
-  // visible when we handle WM_WINDOWPOSCHANGING. Some calls like
-  // ShowWindow(SW_RESTORE) make the window visible in addition to restoring it,
-  // when all we want to do is restore it.
-  int force_hidden_count_;
 
   // Set to true when the user presses the right mouse button on the caption
   // area. We need this so we can correctly show the context menu on mouse-up.

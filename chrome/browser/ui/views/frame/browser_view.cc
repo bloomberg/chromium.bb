@@ -99,6 +99,7 @@
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
+#include "views/window/native_window.h"
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
@@ -106,7 +107,7 @@
 #include "chrome/browser/jumplist_win.h"
 #include "ui/base/message_box_win.h"
 #include "ui/base/view_prop.h"
-#include "views/window/native_window_win.h"
+#include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
@@ -2260,8 +2261,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif
   }
 #if defined(OS_WIN)
-  static_cast<views::NativeWindowWin*>(frame_->native_window())->
-      PushForceHidden();
+  static_cast<views::NativeWidgetWin*>(
+      frame_->native_window()->AsNativeWidget())->
+          PushForceHidden();
 #endif
 
   // Notify bookmark bar, so it can set itself to the appropriate drawing state.
@@ -2302,8 +2304,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   ignore_layout_ = false;
   Layout();
 #if defined(OS_WIN)
-  static_cast<views::NativeWindowWin*>(frame_->native_window())->
-      PopForceHidden();
+  static_cast<views::NativeWidgetWin*>(
+      frame_->native_window()->AsNativeWidget())->
+          PopForceHidden();
 #endif
 }
 

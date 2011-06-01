@@ -265,6 +265,10 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual bool IsMaximized() const;
   bool IsMinimized() const;
 
+  // Accessors for fullscreen state.
+  void SetFullscreen(bool fullscreen);
+  bool IsFullscreen() const;
+
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
   // underlying windowing system. Note that the caller must then schedule a

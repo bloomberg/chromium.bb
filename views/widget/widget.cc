@@ -261,6 +261,14 @@ bool Widget::IsMinimized() const {
   return native_widget_->IsMinimized();
 }
 
+void Widget::SetFullscreen(bool fullscreen) {
+  native_widget_->SetFullscreen(fullscreen);
+}
+
+bool Widget::IsFullscreen() const {
+  return native_widget_->IsFullscreen();
+}
+
 void Widget::SetOpacity(unsigned char opacity) {
   native_widget_->SetOpacity(opacity);
 }

@@ -116,14 +116,6 @@ void Window::DisableInactiveRendering() {
   non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
 }
 
-void Window::SetFullscreen(bool fullscreen) {
-  native_window_->SetFullscreen(fullscreen);
-}
-
-bool Window::IsFullscreen() const {
-  return native_window_->IsFullscreen();
-}
-
 void Window::SetUseDragFrame(bool use_drag_frame) {
   native_window_->SetUseDragFrame(use_drag_frame);
 }

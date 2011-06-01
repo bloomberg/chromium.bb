@@ -200,7 +200,9 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       previous_cursor_(NULL),
-      is_input_method_win_(false) {
+      is_input_method_win_(false),
+      fullscreen_(false),
+      force_hidden_count_(0) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
@@ -242,6 +244,18 @@ void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
       ++it) {
     if (*it == view)
       *it = NULL;
+  }
+}
+
+void NativeWidgetWin::PushForceHidden() {
+  if (force_hidden_count_++ == 0)
+    Hide();
+}
+
+void NativeWidgetWin::PopForceHidden() {
+  if (--force_hidden_count_ <= 0) {
+    force_hidden_count_ = 0;
+    ShowWindow(SW_SHOW);
   }
 }
 
@@ -500,6 +514,66 @@ bool NativeWidgetWin::IsMinimized() const {
 
 void NativeWidgetWin::Restore() {
   ExecuteSystemMenuCommand(SC_RESTORE);
+}
+
+void NativeWidgetWin::SetFullscreen(bool fullscreen) {
+  if (fullscreen_ == fullscreen)
+    return;  // Nothing to do.
+
+  // Reduce jankiness during the following position changes by hiding the window
+  // until it's in the final position.
+  PushForceHidden();
+
+  // Size/position/style window appropriately.
+  if (!fullscreen_) {
+    // Save current window information.  We force the window into restored mode
+    // before going fullscreen because Windows doesn't seem to hide the
+    // taskbar if the window is in the maximized state.
+    saved_window_info_.maximized = IsMaximized();
+    if (saved_window_info_.maximized)
+      Restore();
+    saved_window_info_.style = GetWindowLong(GWL_STYLE);
+    saved_window_info_.ex_style = GetWindowLong(GWL_EXSTYLE);
+    GetWindowRect(&saved_window_info_.window_rect);
+  }
+
+  fullscreen_ = fullscreen;
+
+  if (fullscreen_) {
+    // Set new window style and size.
+    MONITORINFO monitor_info;
+    monitor_info.cbSize = sizeof(monitor_info);
+    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
+                   &monitor_info);
+    gfx::Rect monitor_rect(monitor_info.rcMonitor);
+    SetWindowLong(GWL_STYLE,
+                  saved_window_info_.style & ~(WS_CAPTION | WS_THICKFRAME));
+    SetWindowLong(GWL_EXSTYLE,
+                  saved_window_info_.ex_style & ~(WS_EX_DLGMODALFRAME |
+                  WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+    SetWindowPos(NULL, monitor_rect.x(), monitor_rect.y(),
+                 monitor_rect.width(), monitor_rect.height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+  } else {
+    // Reset original window style and size.  The multiple window size/moves
+    // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
+    // repainted.  Better-looking methods welcome.
+    gfx::Rect new_rect(saved_window_info_.window_rect);
+    SetWindowLong(GWL_STYLE, saved_window_info_.style);
+    SetWindowLong(GWL_EXSTYLE, saved_window_info_.ex_style);
+    SetWindowPos(NULL, new_rect.x(), new_rect.y(), new_rect.width(),
+                 new_rect.height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    if (saved_window_info_.maximized)
+      Maximize();
+  }
+
+  // Undo our anti-jankiness hacks.
+  PopForceHidden();
+}
+
+bool NativeWidgetWin::IsFullscreen() const {
+  return fullscreen_;
 }
 
 void NativeWidgetWin::SetOpacity(unsigned char opacity) {
@@ -1037,6 +1111,12 @@ void NativeWidgetWin::OnVScroll(int scroll_type,
 }
 
 void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
+  if (force_hidden_count_) {
+    // Prevent the window from being made visible if we've been asked to do so.
+    // See comment in header as to why we might want this.
+    window_pos->flags &= ~SWP_SHOWWINDOW;
+  }
+
   SetMsgHandled(FALSE);
 }
 

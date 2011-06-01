@@ -88,10 +88,6 @@ class Window : public Widget,
   // leads to sync problems.
   void DisableInactiveRendering();
 
-  // Accessors for fullscreen state.
-  void SetFullscreen(bool fullscreen);
-  bool IsFullscreen() const;
-
   // Sets whether or not the window should show its frame as a "transient drag
   // frame" - slightly transparent and without the standard window controls.
   void SetUseDragFrame(bool use_drag_frame);
