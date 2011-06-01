@@ -37,6 +37,15 @@ class TabContents;
 // TabContents and to provide necessary functionality.
 class TabContentsDelegate {
  public:
+  // When a main frame navigation occurs CreateMainFrameCommitDetails() is
+  // invoked. The |MainFrameCommitDetails| returned from
+  // CreateMainFrameCommitDetails() are then passed to
+  // DidNavigateMainFramePostCommit. This allows the delegate to save state
+  // before the commit and get that state after the commit.
+  struct MainFrameCommitDetails {
+    virtual ~MainFrameCommitDetails() {}
+  };
+
   // Opens a new URL inside the passed in TabContents (if source is 0 open
   // in the current front-most tab), unless |disposition| indicates the url
   // should be opened in a new tab or window.
@@ -276,6 +285,16 @@ class TabContentsDelegate {
 
   // Notification that a worker associated with this tab has crashed.
   virtual void WorkerCrashed();
+
+  // See description above MainFrameCommitDetails for details. Default returns
+  // NULL. Caller owns return value.
+  virtual MainFrameCommitDetails* CreateMainFrameCommitDetails(
+      TabContents* tab);
+
+  // See description above MainFrameCommitDetails for details.
+  virtual void DidNavigateMainFramePostCommit(
+      TabContents* tab,
+      const MainFrameCommitDetails& details);
 
  protected:
   virtual ~TabContentsDelegate();

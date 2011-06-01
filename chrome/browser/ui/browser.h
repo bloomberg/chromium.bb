@@ -784,6 +784,12 @@ class Browser : public TabHandlerDelegate,
     DETACH_TYPE_EMPTY
   };
 
+  struct BrowserMainFrameCommitDetails : public MainFrameCommitDetails {
+    virtual ~BrowserMainFrameCommitDetails() {}
+
+    bool bookmark_bar_visible;
+  };
+
   // Overridden from TabContentsDelegate:
   virtual void OpenURLFromTab(TabContents* source,
                               const GURL& url,
@@ -838,6 +844,11 @@ class Browser : public TabHandlerDelegate,
       NavigationType::Type navigation_type);
   virtual void ContentRestrictionsChanged(TabContents* source);
   virtual void WorkerCrashed();
+  virtual MainFrameCommitDetails* CreateMainFrameCommitDetails(
+      TabContents* tab);
+  virtual void DidNavigateMainFramePostCommit(
+      TabContents* tab,
+      const MainFrameCommitDetails& details);
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,

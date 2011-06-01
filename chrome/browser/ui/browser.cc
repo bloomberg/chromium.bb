@@ -2862,6 +2862,9 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
   // able to ack. But we know we can close it.
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
                  Source<TabContents>(contents->tab_contents()));
+
+  registrar_.Add(this, NotificationType::INTERSTITIAL_ATTACHED,
+                 Source<TabContents>(contents->tab_contents()));
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
@@ -3388,6 +3391,29 @@ void Browser::WorkerCrashed() {
       l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
 }
 
+TabContentsDelegate::MainFrameCommitDetails*
+    Browser::CreateMainFrameCommitDetails(TabContents* tab) {
+  if (tab != GetSelectedTabContents())
+    return NULL;
+
+  BrowserMainFrameCommitDetails* details = new BrowserMainFrameCommitDetails;
+  details->bookmark_bar_visible = GetSelectedTabContentsWrapper()->
+      bookmark_tab_helper()->ShouldShowBookmarkBar();
+  return details;  // Caller takes ownership.
+}
+
+void Browser::DidNavigateMainFramePostCommit(
+    TabContents* tab,
+    const MainFrameCommitDetails& details) {
+  bool visible = static_cast<const BrowserMainFrameCommitDetails&>(details).
+      bookmark_bar_visible;
+  if (tab == GetSelectedTabContents() && visible !=
+      GetSelectedTabContentsWrapper()->bookmark_tab_helper()->
+      ShouldShowBookmarkBar()) {
+    window()->ShelfVisibilityChanged();
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabContentsWrapperDelegate implementation:
 
@@ -3656,6 +3682,10 @@ void Browser::Observe(NotificationType type,
       }
       break;
     }
+
+    case NotificationType::INTERSTITIAL_ATTACHED:
+      window()->ShelfVisibilityChanged();
+      break;
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
@@ -4073,11 +4103,6 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
         TabStripModelObserver::TITLE_NOT_LOADING);
   }
 
-  if (changed_flags & TabContents::INVALIDATE_BOOKMARK_BAR) {
-    window()->ShelfVisibilityChanged();
-    changed_flags &= ~TabContents::INVALIDATE_BOOKMARK_BAR;
-  }
-
   // If the only updates were synchronously handled above, we're done.
   if (changed_flags == 0)
     return;
@@ -4485,6 +4510,8 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
     ClearUnloadState(contents->tab_contents(), false);
   }
 
+  registrar_.Remove(this, NotificationType::INTERSTITIAL_ATTACHED,
+                    Source<TabContents>(contents->tab_contents()));
   registrar_.Remove(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
                     Source<TabContents>(contents->tab_contents()));
 }

@@ -33,8 +33,7 @@
 
 namespace {
 
-const int kInvalidateAllButShelves =
-    0xFFFFFFFF & ~TabContents::INVALIDATE_BOOKMARK_BAR;
+const int kInvalidateAll = 0xFFFFFFFF;
 
 // Invoked when entries have been pruned, or removed. For example, if the
 // current entries are [google, digg, yahoo], with the current entry google,
@@ -471,7 +470,7 @@ void NavigationController::AddTransientEntry(NavigationEntry* entry) {
   DiscardTransientEntry();
   entries_.insert(entries_.begin() + index, linked_ptr<NavigationEntry>(entry));
   transient_entry_index_ = index;
-  tab_contents_->NotifyNavigationStateChanged(kInvalidateAllButShelves);
+  tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 }
 
 void NavigationController::LoadURL(const GURL& url, const GURL& referrer,
@@ -491,7 +490,6 @@ void NavigationController::DocumentLoadedInFrame() {
 
 bool NavigationController::RendererDidNavigate(
     const ViewHostMsg_FrameNavigate_Params& params,
-    int extra_invalidate_flags,
     content::LoadCommittedDetails* details) {
 
   // Save the previous state before we clobber it.
@@ -546,8 +544,8 @@ bool NavigationController::RendererDidNavigate(
       // the caller that nothing has happened.
       if (pending_entry_) {
         DiscardNonCommittedEntries();
-        extra_invalidate_flags |= TabContents::INVALIDATE_URL;
-        tab_contents_->NotifyNavigationStateChanged(extra_invalidate_flags);
+        tab_contents_->NotifyNavigationStateChanged(
+            TabContents::INVALIDATE_URL);
       }
       return false;
     default:
@@ -583,7 +581,7 @@ bool NavigationController::RendererDidNavigate(
   details->is_main_frame = PageTransition::IsMainFrame(params.transition);
   details->serialized_security_info = params.security_info;
   details->http_status_code = params.http_status_code;
-  NotifyNavigationEntryCommitted(details, extra_invalidate_flags);
+  NotifyNavigationEntryCommitted(details);
 
   return true;
 }
@@ -1012,7 +1010,7 @@ void NavigationController::DiscardNonCommittedEntries() {
   // If there was a transient entry, invalidate everything so the new active
   // entry state is shown.
   if (transient) {
-    tab_contents_->NotifyNavigationStateChanged(kInvalidateAllButShelves);
+    tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
   }
 }
 
@@ -1083,8 +1081,7 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
 }
 
 void NavigationController::NotifyNavigationEntryCommitted(
-    content::LoadCommittedDetails* details,
-    int extra_invalidate_flags) {
+    content::LoadCommittedDetails* details) {
   details->entry = GetActiveEntry();
   NotificationDetails notification_details =
       Details<content::LoadCommittedDetails>(details);
@@ -1097,8 +1094,7 @@ void NavigationController::NotifyNavigationEntryCommitted(
   // TODO(pkasting): http://b/1113079 Probably these explicit notification paths
   // should be removed, and interested parties should just listen for the
   // notification below instead.
-  tab_contents_->NotifyNavigationStateChanged(
-      kInvalidateAllButShelves | extra_invalidate_flags);
+  tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 
   NotificationService::current()->Notify(
       NotificationType::NAV_ENTRY_COMMITTED,

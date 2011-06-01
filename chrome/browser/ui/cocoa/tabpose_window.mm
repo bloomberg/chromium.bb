@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
@@ -237,8 +238,8 @@ void ThumbnailLoader::LoadThumbnail() {
   bool always_show_bookmark_bar =
       contents_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   bool has_detached_bookmark_bar =
-      contents_->tab_contents()->ShouldShowBookmarkBar() &&
-          !always_show_bookmark_bar;
+      contents_->bookmark_tab_helper()->ShouldShowBookmarkBar() &&
+      !always_show_bookmark_bar;
   if (has_detached_bookmark_bar)
     topOffset += bookmarks::kNTPBookmarkBarHeight;
 

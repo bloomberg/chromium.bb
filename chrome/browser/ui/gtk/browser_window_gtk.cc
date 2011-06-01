@@ -35,6 +35,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -1252,17 +1253,17 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
   if (!IsBookmarkBarSupported())
     return;
 
-  TabContents* contents = GetDisplayedTabContents();
+  TabContentsWrapper* tab = GetDisplayedTab();
   bool show_bar = false;
 
-  if (contents) {
-    bookmark_bar_->SetProfile(contents->profile());
-    bookmark_bar_->SetPageNavigator(contents);
+  if (tab) {
+    bookmark_bar_->SetProfile(tab->profile());
+    bookmark_bar_->SetPageNavigator(tab->tab_contents());
     show_bar = true;
   }
 
-  if (show_bar && contents && !contents->ShouldShowBookmarkBar()) {
-    PrefService* prefs = contents->profile()->GetPrefs();
+  if (show_bar && tab && !tab->bookmark_tab_helper()->ShouldShowBookmarkBar()) {
+    PrefService* prefs = tab->profile()->GetPrefs();
     show_bar = prefs->GetBoolean(prefs::kShowBookmarkBar) &&
                prefs->GetBoolean(prefs::kEnableBookmarkBar) &&
                !IsFullscreen();
@@ -1325,9 +1326,9 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
 
   GetLocationBar()->location_entry()->ClosePopup();
 
-  TabContents* tab_contents = GetDisplayedTabContents();
-  if (tab_contents) {
-    RenderViewHost* rvh = tab_contents->render_view_host();
+  TabContentsWrapper* tab = GetDisplayedTab();
+  if (tab) {
+    RenderViewHost* rvh = tab->tab_contents()->render_view_host();
     rvh->Send(new ViewMsg_MoveOrResizeStarted(rvh->routing_id()));
   }
 
@@ -1536,8 +1537,8 @@ void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {
     PlaceBookmarkBar(is_floating);
 }
 
-TabContents* BrowserWindowGtk::GetDisplayedTabContents() {
-  return contents_container_->GetVisibleTabContents();
+TabContentsWrapper* BrowserWindowGtk::GetDisplayedTab() {
+  return contents_container_->GetVisibleTab();
 }
 
 void BrowserWindowGtk::QueueToolbarRedraw() {

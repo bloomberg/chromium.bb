@@ -25,6 +25,9 @@ class BookmarkTabHelper : public NotificationObserver,
   BookmarkTabHelperDelegate* delegate() const { return delegate_; }
   void set_delegate(BookmarkTabHelperDelegate* d) { delegate_ = d; }
 
+  // Returns true if the bookmark bar should be shown detached.
+  bool ShouldShowBookmarkBar();
+
   // TabContentsObserver overrides:
   virtual void DidNavigateMainFramePostCommit(
       const content::LoadCommittedDetails& details,

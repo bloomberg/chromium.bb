@@ -206,9 +206,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // This should only be called by the bookmark bar itself.
   void BookmarkBarIsFloating(bool is_floating);
 
-  // Returns the tab contents we're currently displaying in the tab contents
-  // container.
-  TabContents* GetDisplayedTabContents();
+  // Returns the tab we're currently displaying in the tab contents container.
+  TabContentsWrapper* GetDisplayedTab();
 
   static void RegisterUserPrefs(PrefService* prefs);
 

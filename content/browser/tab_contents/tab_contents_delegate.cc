@@ -185,5 +185,15 @@ bool TabContentsDelegate::ShouldShowHungRendererDialog() {
 void TabContentsDelegate::WorkerCrashed() {
 }
 
+TabContentsDelegate::MainFrameCommitDetails*
+TabContentsDelegate::CreateMainFrameCommitDetails(TabContents* tab) {
+  return NULL;
+}
+
+void TabContentsDelegate::DidNavigateMainFramePostCommit(
+    TabContents* tab,
+    const MainFrameCommitDetails& details) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
 }

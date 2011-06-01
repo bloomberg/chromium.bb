@@ -21,7 +21,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "chrome/browser/ui/views/event_utils.h"
@@ -437,8 +439,9 @@ bool BookmarkBarView::IsAlwaysShown() const {
 }
 
 bool BookmarkBarView::OnNewTabPage() const {
-  return (browser_ && browser_->GetSelectedTabContents() &&
-          browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
+  return (browser_ && browser_->GetSelectedTabContentsWrapper() &&
+          browser_->GetSelectedTabContentsWrapper()->bookmark_tab_helper()->
+          ShouldShowBookmarkBar());
 }
 
 int BookmarkBarView::GetToolbarOverlap(bool return_max) const {

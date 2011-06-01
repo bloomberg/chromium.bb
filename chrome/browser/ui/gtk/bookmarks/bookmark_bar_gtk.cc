@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_menu_controller_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -398,8 +400,9 @@ bool BookmarkBarGtk::IsAnimating() {
 }
 
 bool BookmarkBarGtk::OnNewTabPage() {
-  return (browser_ && browser_->GetSelectedTabContents() &&
-          browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
+  return (browser_ && browser_->GetSelectedTabContentsWrapper() &&
+          browser_->GetSelectedTabContentsWrapper()->bookmark_tab_helper()->
+          ShouldShowBookmarkBar());
 }
 
 void BookmarkBarGtk::Loaded(BookmarkModel* model) {
@@ -631,8 +634,9 @@ bool BookmarkBarGtk::ShouldBeFloating() {
     return false;
 
   return (!IsAlwaysShown() || (window_ && window_->IsFullscreen())) &&
-      window_ && window_->GetDisplayedTabContents() &&
-      window_->GetDisplayedTabContents()->ShouldShowBookmarkBar();
+      window_ && window_->GetDisplayedTab() &&
+      window_->GetDisplayedTab()->bookmark_tab_helper()->
+      ShouldShowBookmarkBar();
 }
 
 void BookmarkBarGtk::UpdateFloatingState() {

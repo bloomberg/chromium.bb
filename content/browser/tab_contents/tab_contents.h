@@ -72,9 +72,7 @@ class TabContents : public PageNavigator,
                                           // state changed.
     INVALIDATE_LOAD            = 1 << 2,  // The loading state has changed.
     INVALIDATE_PAGE_ACTIONS    = 1 << 3,  // Page action icons have changed.
-    INVALIDATE_BOOKMARK_BAR    = 1 << 4,  // State of ShouldShowBookmarkBar
-                                          // changed.
-    INVALIDATE_TITLE           = 1 << 5,  // The title changed.
+    INVALIDATE_TITLE           = 1 << 4,  // The title changed.
   };
 
   // |base_tab_contents| is used if we want to size the new tab contents view
@@ -118,6 +116,10 @@ class TabContents : public PageNavigator,
   RenderProcessHost* GetRenderProcessHost() const;
   RenderViewHost* render_view_host() const {
     return render_manager_.current_host();
+  }
+
+  WebUI* committed_web_ui() const {
+    return render_manager_.web_ui();
   }
 
   WebUI* web_ui() const {
@@ -349,9 +351,6 @@ class TabContents : public PageNavigator,
   virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh);
 
   // Toolbars and such ---------------------------------------------------------
-
-  // Returns true if a Bookmark Bar should be shown for this tab.
-  virtual bool ShouldShowBookmarkBar();
 
   // Called when a ConstrainedWindow we own is about to be closed.
   void WillClose(ConstrainedWindow* window);

@@ -226,11 +226,7 @@ class NavigationController {
   //
   // In the case that nothing has changed, the details structure is undefined
   // and it will return false.
-  //
-  // |extra_invalidate_flags| are an additional set of flags (InvalidateTypes)
-  // added to the flags sent to the delegate's NotifyNavigationStateChanged.
   bool RendererDidNavigate(const ViewHostMsg_FrameNavigate_Params& params,
-                           int extra_invalidate_flags,
                            content::LoadCommittedDetails* details);
 
   // Notifies us that we just became active. This is used by the TabContents
@@ -383,11 +379,7 @@ class NavigationController {
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.
-  //
-  // |extra_invalidate_flags| are an additional set of flags (InvalidateTypes)
-  // added to the flags sent to the delegate's NotifyNavigationStateChanged.
-  void NotifyNavigationEntryCommitted(content::LoadCommittedDetails* details,
-                                      int extra_invalidate_flags);
+  void NotifyNavigationEntryCommitted(content::LoadCommittedDetails* details);
 
   // Updates the virtual URL of an entry to match a new URL, for cases where
   // the real renderer URL is derived from the virtual URL, like view-source:

@@ -666,28 +666,6 @@ void TabContents::SetFocusToLocationBar(bool select_all) {
     delegate()->SetFocusToLocationBar(select_all);
 }
 
-bool TabContents::ShouldShowBookmarkBar() {
-  if (showing_interstitial_page())
-    return false;
-
-  // See GetWebUIForCurrentState() comment for more info. This case is very
-  // similar, but for non-first loads, we want to use the committed entry. This
-  // is so the bookmarks bar disappears at the same time the page does.
-  if (controller_.GetLastCommittedEntry()) {
-    // Not the first load, always use the committed Web UI.
-    return (render_manager_.web_ui() == NULL) ?
-        false : render_manager_.web_ui()->force_bookmark_bar_visible();
-  }
-
-  // When it's the first load, we know either the pending one or the committed
-  // one will have the Web UI in it (see GetWebUIForCurrentState), and only one
-  // of them will be valid, so we can just check both.
-  if (render_manager_.pending_web_ui())
-    return render_manager_.pending_web_ui()->force_bookmark_bar_visible();
-  return (render_manager_.web_ui() == NULL) ?
-      false : render_manager_.web_ui()->force_bookmark_bar_visible();
-}
-
 void TabContents::WillClose(ConstrainedWindow* window) {
   ConstrainedWindowList::iterator i(
       std::find(child_windows_.begin(), child_windows_.end(), window));
@@ -1349,15 +1327,12 @@ void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
 
 void TabContents::DidNavigate(RenderViewHost* rvh,
                               const ViewHostMsg_FrameNavigate_Params& params) {
-  int extra_invalidate_flags = 0;
+  scoped_ptr<TabContentsDelegate::MainFrameCommitDetails> commit_details;
 
   if (PageTransition::IsMainFrame(params.transition)) {
-    bool was_bookmark_bar_visible = ShouldShowBookmarkBar();
-
+    if (delegate())
+      commit_details.reset(delegate()->CreateMainFrameCommitDetails(this));
     render_manager_.DidNavigateMainFrame(rvh);
-
-    if (was_bookmark_bar_visible != ShouldShowBookmarkBar())
-      extra_invalidate_flags |= INVALIDATE_BOOKMARK_BAR;
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet.
@@ -1376,8 +1351,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     contents_mime_type_ = params.contents_mime_type;
 
   content::LoadCommittedDetails details;
-  bool did_navigate = controller_.RendererDidNavigate(
-      params, extra_invalidate_flags, &details);
+  bool did_navigate = controller_.RendererDidNavigate(params, &details);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
@@ -1412,8 +1386,11 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   // necessary, please).
 
   // Run post-commit tasks.
-  if (details.is_main_frame)
+  if (details.is_main_frame) {
     DidNavigateMainFramePostCommit(details, params);
+    if (delegate() && commit_details.get())
+      delegate()->DidNavigateMainFramePostCommit(this, *commit_details);
+  }
   DidNavigateAnyFramePostCommit(rvh, details, params);
 }
 

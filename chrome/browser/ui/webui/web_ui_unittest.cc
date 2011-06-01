@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
@@ -36,7 +37,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
     // Check the things the pending Web UI should have set.
     EXPECT_FALSE(contents->ShouldDisplayURL());
     EXPECT_FALSE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
-    EXPECT_TRUE(contents->ShouldShowBookmarkBar());
+    EXPECT_TRUE(wrapper->bookmark_tab_helper()->ShouldShowBookmarkBar());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
     // Now commit the load.
@@ -46,7 +47,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
     // The same flags should be set as before now that the load has committed.
     EXPECT_FALSE(contents->ShouldDisplayURL());
     EXPECT_FALSE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
-    EXPECT_TRUE(contents->ShouldShowBookmarkBar());
+    EXPECT_TRUE(wrapper->bookmark_tab_helper()->ShouldShowBookmarkBar());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
     // Start a pending navigation to a regular page.
@@ -57,7 +58,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
     // should reflect the old one (bookmark bar) until it has committed.
     EXPECT_TRUE(contents->ShouldDisplayURL());
     EXPECT_TRUE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
-    EXPECT_TRUE(contents->ShouldShowBookmarkBar());
+    EXPECT_TRUE(wrapper->bookmark_tab_helper()->ShouldShowBookmarkBar());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
 
     // Commit the regular page load. Note that we must send it to the "pending"
@@ -77,7 +78,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
     // The state should now reflect a regular page.
     EXPECT_TRUE(contents->ShouldDisplayURL());
     EXPECT_TRUE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
-    EXPECT_FALSE(contents->ShouldShowBookmarkBar());
+    EXPECT_FALSE(wrapper->bookmark_tab_helper()->ShouldShowBookmarkBar());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
   }
 
@@ -117,7 +118,8 @@ TEST_F(WebUITest, WebUIToWebUI) {
   EXPECT_FALSE(contents()->ShouldDisplayURL());
   EXPECT_FALSE(
       contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
-  EXPECT_TRUE(contents()->ShouldShowBookmarkBar());
+  EXPECT_TRUE(
+      contents_wrapper()->bookmark_tab_helper()->ShouldShowBookmarkBar());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 }
 
@@ -130,14 +132,16 @@ TEST_F(WebUITest, StandardToWebUI) {
   // The state should now reflect the default.
   EXPECT_TRUE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
-  EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
+  EXPECT_FALSE(
+      contents_wrapper()->bookmark_tab_helper()->ShouldShowBookmarkBar());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // Commit the load, the state should be the same.
   rvh()->SendNavigate(1, std_url);
   EXPECT_TRUE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
-  EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
+  EXPECT_FALSE(
+      contents_wrapper()->bookmark_tab_helper()->ShouldShowBookmarkBar());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // Start a pending load for a WebUI.
@@ -145,7 +149,8 @@ TEST_F(WebUITest, StandardToWebUI) {
   controller().LoadURL(new_tab_url, GURL(), PageTransition::LINK);
   EXPECT_FALSE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
-  EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
+  EXPECT_FALSE(
+      contents_wrapper()->bookmark_tab_helper()->ShouldShowBookmarkBar());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 
   // Committing Web UI is tested above.

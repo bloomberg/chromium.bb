@@ -82,10 +82,8 @@ void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
   }
 }
 
-TabContents* TabContentsContainerGtk::GetVisibleTabContents() {
-  if (preview_)
-    return preview_->tab_contents();
-  return tab_ ? tab_->tab_contents() : NULL;
+TabContentsWrapper* TabContentsContainerGtk::GetVisibleTab() {
+  return preview_ ? preview_ : tab_;
 }
 
 void TabContentsContainerGtk::SetPreview(TabContentsWrapper* preview) {

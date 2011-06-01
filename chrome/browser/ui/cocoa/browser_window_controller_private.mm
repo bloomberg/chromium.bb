@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -22,6 +23,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -480,9 +482,8 @@ willPositionSheet:(NSWindow*)sheet
     return NO;
 
   DCHECK(browser_.get());
-  TabContents* contents = browser_->GetSelectedTabContents();
-  return (contents &&
-          contents->ShouldShowBookmarkBar() &&
+  TabContentsWrapper* tab = browser_->GetSelectedTabContentsWrapper();
+  return (tab && tab->bookmark_tab_helper()->ShouldShowBookmarkBar() &&
           ![previewableContentsController_ isShowingPreview]);
 }
 
