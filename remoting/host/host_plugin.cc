@@ -21,10 +21,6 @@
 #include "base/task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
-#endif
-#include "media/base/media.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -41,6 +37,22 @@
 #define OSCALL __declspec(dllexport)
 #else
 #define OSCALL __attribute__((visibility("default")))
+#endif
+
+#if defined(OS_WIN)
+// TODO(wez): libvpx expects these 64-bit division functions to be provided
+// by libgcc.a, which we aren't linked against.  These implementations can
+// be removed once we have native MSVC libvpx builds for Windows.
+extern "C" {
+
+int64_t __cdecl __divdi3(int64_t a, int64_t b) {
+  return a / b;
+}
+uint64_t __cdecl __udivdi3(uint64_t a, uint64_t b) {
+  return a / b;
+}
+
+}
 #endif
 
 /*
@@ -398,29 +410,6 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
                                       &auth_service);
   if (auth_token.empty()) {
     SetException("connect: auth_service_with_token argument has empty token");
-    return false;
-  }
-
-  // TODO(wez): Load the media libraries to get the VP8 encoder.
-  // This won't be needed once we link libvpx in statically.
-  FilePath media_path;
-#if defined(OS_MACOSX)
-  // MainAppBundlePath returns the Chromium Helper bundle, which in dev builds
-  // sits alongside the Framework bundle, which contains the Libraries we need.
-  media_path = base::mac::MainAppBundlePath();
-  media_path = media_path.DirName();
-  media_path =
-      media_path.Append(FILE_PATH_LITERAL("Chromium Framework.framework"));
-  media_path =
-      media_path.Append(FILE_PATH_LITERAL("Libraries"));
-#else
-  if (!PathService::Get(base::DIR_EXE, &media_path)) {
-    SetException("Failed to find media path");
-    return false;
-  }
-#endif
-  if (!media::InitializeMediaLibrary(media_path)) {
-    SetException("Failed to load media library");
     return false;
   }
 
