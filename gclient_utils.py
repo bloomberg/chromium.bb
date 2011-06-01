@@ -362,7 +362,8 @@ def MakeFileAnnotated(fileobj):
     obj[0] += out
     while '\n' in obj[0]:
       line, remaining = obj[0].split('\n', 1)
-      new_fileobj.old_annotated_write('%d>%s\n' % (index, line))
+      if line:
+        new_fileobj.old_annotated_write('%d>%s\n' % (index, line))
       obj[0] = remaining
 
   def full_flush():
@@ -383,7 +384,8 @@ def MakeFileAnnotated(fileobj):
 
     # Don't keep the lock while writting. Will append \n when it shouldn't.
     for orphan in orphans:
-      new_fileobj.old_annotated_write('%d>%s\n' % (orphan[0], orphan[1]))
+      if orphan[1]:
+        new_fileobj.old_annotated_write('%d>%s\n' % (orphan[0], orphan[1]))
 
   new_fileobj.write = annotated_write
   new_fileobj.full_flush = full_flush
