@@ -61,22 +61,33 @@ class NaClTest(pyauto.PyUITest):
         if num_nexes + page_nexes <= max_nexes:
           self.GetBrowserWindow(0).GetTab(num_tabs).NavigateToURL(pyauto.GURL(
             self.GetHttpURLForDataPath(page_url)))
+          # Print combination of tests to output
+          print '---> pyauto multiple_nexes: Tab', num_tabs, 'running',
+          print page_url, 'featuring', page_nexes, 'nexes.'
           num_nexes = num_nexes + page_nexes
           num_tabs = num_tabs + 1
         num_attempts = num_attempts + 1
 
       # Wait for all the tabs to fully load.
       for i in range(0, num_tabs):
+        print '---> pyauto multiple_nexes: Loading tab', str(i) + '...',
         nacl_utils.WaitForNexeLoad(self, tab_index=i)
+        print 'done!'
+      print '---> pyauto multiple_nexes: All nexes loaded.'
 
       # Make sure every tab successfully passed test(s).
       for i in range(0, num_tabs):
+        print '---> pyauto multiple_nexes: Verifying tab ', str(i) + '...',
         nacl_utils.VerifyAllTestsPassed(self, tab_index=i)
+        print 'done!'
+      print '---> pyauto multiple_nexes: All nexes verified.'
 
       # Surf away from each tab and verify no crash occurred.
       for i in range(0, num_tabs):
+        print '---> pyauto multiple_nexes: Surf back on tab ', str(i) + '...',
         self.GetBrowserWindow(0).GetTab(i).GoBack()
         self.assertEqual(original_title, self.GetActiveTabTitle())
+        print 'done!'
 
   def testLoadMultipleNexesInOneTab(self):
     """Load multiple nexes in one tab and load them one after another."""
@@ -88,19 +99,32 @@ class NaClTest(pyauto.PyUITest):
     # Navigate to a nexe and make sure it loads. Repeate for all nexes.
     for page_info in NaClTest.nexes:
       page_url, page_nexes = page_info
+      print '---> pyauto multiple_nexes: Navigating to', str(page_url) + '...',
       self.NavigateToURL(self.GetHttpURLForDataPath(page_url))
+      print 'done!'
+      print '---> pyauto multiple_nexes: Loading', str(page_url) + '...',
       nacl_utils.WaitForNexeLoad(self)
+      print 'done!'
+      print '---> pyauto multiple_nexes: Verifying', str(page_url) + '...',
       nacl_utils.VerifyAllTestsPassed(self)
+      print 'done!'
 
     # Keep hitting the back button and make sure all the nexes load.
+    print '---> pyauto multiple_nexes: Surfing back:'
     for i in range(0, len(NaClTest.nexes) - 1):
       self.GetBrowserWindow(0).GetTab(0).GoBack()
+      print '---> pyauto multiple_nexes: Loading...',
       nacl_utils.WaitForNexeLoad(self)
+      print 'done!'
+      print '---> pyauto multiple_nexes: Verifying...',
       nacl_utils.VerifyAllTestsPassed(self)
+      print 'done!'
 
     # Go back one last time and make sure we ended up where we started.
+    print '---> pyauto multiple_nexes: Checking for about:version...',
     self.GetBrowserWindow(0).GetTab(0).GoBack()
     self.assertEqual(original_title, self.GetActiveTabTitle())
+    print 'done!'
 
 
 if __name__ == '__main__':
