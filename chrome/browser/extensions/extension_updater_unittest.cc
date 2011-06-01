@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -14,6 +15,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -176,12 +178,32 @@ class ServiceForManifestTests : public MockService {
 
 class ServiceForDownloadTests : public MockService {
  public:
-  virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path,
-                               const GURL& download_url) {
+  ServiceForDownloadTests()
+      : MockService() {
+  }
+
+  // Add a fake crx installer to be returned by a call to UpdateExtension()
+  // with a specific ID.  Caller keeps ownership of |crx_installer|.
+  void AddFakeCrxInstaller(std::string& id,
+                           CrxInstaller* crx_installer) {
+    fake_crx_installers_[id] = crx_installer;
+  }
+
+  bool UpdateExtension(
+      const std::string& id,
+      const FilePath& extension_path,
+      const GURL& download_url,
+      CrxInstaller** out_crx_installer) OVERRIDE {
     extension_id_ = id;
     install_path_ = extension_path;
     download_url_ = download_url;
+
+    if (ContainsKey(fake_crx_installers_, id)) {
+      *out_crx_installer = fake_crx_installers_[id];
+      return true;
+    }
+
+    return false;
   }
 
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
@@ -202,6 +224,12 @@ class ServiceForDownloadTests : public MockService {
   }
 
  private:
+  // Hold the set of ids that UpdateExtension() should fake success on.
+  // UpdateExtension(id, ...) will return true iff fake_crx_installers_
+  // contains key |id|.  |out_install_notification_source| will be set
+  // to Source<CrxInstaller(fake_crx_installers_[i]).
+  std::map<std::string, CrxInstaller*> fake_crx_installers_;
+
   std::string extension_id_;
   FilePath install_path_;
   GURL download_url_;
@@ -553,7 +581,8 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
-    ExtensionUpdater updater(service.get(), service->extension_prefs(),
+    ExtensionUpdater updater(service.get(),
+                             service->extension_prefs(),
                              service->pref_service(),
                              service->profile(),
                              kUpdateFrequencySecs);
@@ -739,7 +768,11 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(NULL);
   }
 
-  static void TestMultipleExtensionDownloading() {
+  // Two extensions are updated.  If |updates_start_running| is true, the
+  // mock extensions service has UpdateExtension(...) return true, and
+  // the test is responsible for creating fake CrxInstallers.  Otherwise,
+  // UpdateExtension() returns false, signaling install failures.
+  static void TestMultipleExtensionDownloading(bool updates_start_running) {
     MessageLoopForUI message_loop;
     BrowserThread ui_thread(BrowserThread::UI, &message_loop);
     BrowserThread file_thread(BrowserThread::FILE, &message_loop);
@@ -754,6 +787,8 @@ class ExtensionUpdaterTest : public testing::Test {
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
     updater.Start();
+
+    EXPECT_FALSE(updater.crx_install_is_running_);
 
     GURL url1("http://localhost/extension1.crx");
     GURL url2("http://localhost/extension2.crx");
@@ -776,6 +811,33 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
+
+    // We need some CrxInstallers, and CrxInstallers require a real
+    // ExtensionService.  Create one on the testing profile.  Any action
+    // the CrxInstallers take is on the testing profile's extension
+    // service, not on our mock |service|.  This allows us to fake
+    // the CrxInstaller actions we want.
+    TestingProfile profile;
+    profile.CreateExtensionService(
+        CommandLine::ForCurrentProcess(),
+        FilePath(),
+        false);
+    profile.GetExtensionService()->set_extensions_enabled(true);
+    profile.GetExtensionService()->set_show_extensions_prompts(false);
+
+    scoped_refptr<CrxInstaller> fake_crx1(
+        profile.GetExtensionService()->MakeCrxInstaller(NULL));
+    scoped_refptr<CrxInstaller> fake_crx2(
+        profile.GetExtensionService()->MakeCrxInstaller(NULL));
+
+    if (updates_start_running) {
+      // Add fake CrxInstaller to be returned by service.UpdateExtension().
+      service.AddFakeCrxInstaller(id1, fake_crx1.get());
+      service.AddFakeCrxInstaller(id2, fake_crx2.get());
+    } else {
+      // If we don't add fake CRX installers, the mock service fakes a failure
+      // starting the install.
+    }
 
     fetcher->set_url(url1);
     fetcher->set_status(net::URLRequestStatus());
@@ -805,12 +867,34 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher->SetResponseFilePath(extension_file_path2);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     message_loop.RunAllPending();
+
+    if (updates_start_running) {
+      EXPECT_TRUE(updater.crx_install_is_running_);
+
+      // The second install should not have run, because the first has not
+      // sent a notification that it finished.
+      EXPECT_EQ(id1, service.extension_id());
+      EXPECT_EQ(url1, service.download_url());
+
+      // Fake install notice.  This should start the second installation,
+      // which will be checked below.
+      fake_crx1->NotifyCrxInstallComplete();
+
+      EXPECT_TRUE(updater.crx_install_is_running_);
+    }
+
     EXPECT_EQ(id2, service.extension_id());
     EXPECT_EQ(url2, service.download_url());
     EXPECT_FALSE(service.install_path().empty());
 
     // Make sure the correct crx contents were passed for the update call.
     EXPECT_EQ(extension_file_path2, service.install_path());
+
+    if (updates_start_running) {
+      EXPECT_TRUE(updater.crx_install_is_running_);
+      fake_crx2->NotifyCrxInstallComplete();
+    }
+    EXPECT_FALSE(updater.crx_install_is_running_);
   }
 
   // Test requests to both a Google server and a non-google server. This allows
@@ -1018,8 +1102,11 @@ TEST(ExtensionUpdaterTest, TestBlacklistDownloading) {
   ExtensionUpdaterTest::TestBlacklistDownloading();
 }
 
-TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloading) {
-  ExtensionUpdaterTest::TestMultipleExtensionDownloading();
+TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesFail) {
+  ExtensionUpdaterTest::TestMultipleExtensionDownloading(false);
+}
+TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesSucceed) {
+  ExtensionUpdaterTest::TestMultipleExtensionDownloading(true);
 }
 
 TEST(ExtensionUpdaterTest, TestGalleryRequests) {

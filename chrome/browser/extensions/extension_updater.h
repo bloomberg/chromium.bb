@@ -9,6 +9,7 @@
 #include <deque>
 #include <map>
 #include <set>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -164,7 +165,8 @@ class ManifestFetchesBuilder {
 // updater->Start();
 // ....
 // updater->Stop();
-class ExtensionUpdater : public URLFetcher::Delegate {
+class ExtensionUpdater : public URLFetcher::Delegate,
+                         public NotificationObserver {
  public:
   // Holds a pointer to the passed |service|, using it for querying installed
   // extensions and installing updated ones. The |frequency_seconds| parameter
@@ -219,6 +221,20 @@ class ExtensionUpdater : public URLFetcher::Delegate {
     GURL url;
     std::string package_hash;
     std::string version;
+  };
+
+  // FetchedCRXFile holds information about a CRX file we fetched to disk,
+  // but have not yet installed.
+  struct FetchedCRXFile {
+    FetchedCRXFile();
+    FetchedCRXFile(const std::string& id,
+                   const FilePath& path,
+                   const GURL& download_url);
+    ~FetchedCRXFile();
+
+    std::string id;
+    FilePath path;
+    GURL download_url;
   };
 
   // These are needed for unit testing, to help identify the correct mock
@@ -310,6 +326,16 @@ class ExtensionUpdater : public URLFetcher::Delegate {
   // Removes a set of ids from in_progress_ids_.
   void RemoveFromInProgress(const std::set<std::string>& ids);
 
+  // If a CRX file has been fetched but not installed, and no install is
+  // currently running, start installing.  Returns true if an install was
+  // started.
+  bool MaybeInstallCRXFile();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Whether Start() has been called but not Stop().
   bool alive_;
 
@@ -347,6 +373,16 @@ class ExtensionUpdater : public URLFetcher::Delegate {
 
   // The ids of extensions that have in-progress update checks.
   std::set<std::string> in_progress_ids_;
+
+  // Observes CRX installs we initiate.
+  NotificationRegistrar registrar_;
+
+  // True when a CrxInstaller is doing an install.  Used in MaybeUpdateCrxFile()
+  // to keep more than one install from running at once.
+  bool crx_install_is_running_;
+
+  // Fetched CRX files waiting to be installed.
+  std::stack<FetchedCRXFile> fetched_crx_files_;
 
   FRIEND_TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory);
   FRIEND_TEST(ExtensionUpdaterTest, TestAfterStopBehavior);

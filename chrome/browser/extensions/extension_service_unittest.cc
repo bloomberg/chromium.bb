@@ -665,7 +665,7 @@ class ExtensionServiceTest
         previous_enabled_extension_count +
         service_->disabled_extensions()->size();
 
-    service_->UpdateExtension(id, path, GURL());
+    service_->UpdateExtension(id, path, GURL(), NULL);
     loop_.RunAllPending();
 
     std::vector<std::string> errors = GetErrors();

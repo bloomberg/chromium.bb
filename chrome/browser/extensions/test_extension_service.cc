@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,10 +19,13 @@ PendingExtensionManager* TestExtensionService::pending_extension_manager() {
   return NULL;
 }
 
-void TestExtensionService::UpdateExtension(const std::string& id,
-                                           const FilePath& path,
-                                           const GURL& download_url) {
+bool TestExtensionService::UpdateExtension(
+    const std::string& id,
+    const FilePath& path,
+    const GURL& download_url,
+    CrxInstaller** out_crx_installer) {
   ADD_FAILURE();
+  return NULL;
 }
 
 const Extension* TestExtensionService::GetExtensionById(

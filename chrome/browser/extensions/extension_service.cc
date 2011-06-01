@@ -600,9 +600,11 @@ void ExtensionService::Init() {
   GarbageCollectExtensions();
 }
 
-void ExtensionService::UpdateExtension(const std::string& id,
-                                       const FilePath& extension_path,
-                                       const GURL& download_url) {
+bool ExtensionService::UpdateExtension(
+    const std::string& id,
+    const FilePath& extension_path,
+    const GURL& download_url,
+    CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PendingExtensionInfo pending_extension_info;
@@ -621,7 +623,8 @@ void ExtensionService::UpdateExtension(const std::string& id,
             NewRunnableFunction(
                 extension_file_util::DeleteFile, extension_path, false)))
       NOTREACHED();
-    return;
+
+    return false;
   }
 
   // We want a silent install only for non-pending extensions and
@@ -640,6 +643,11 @@ void ExtensionService::UpdateExtension(const std::string& id,
   installer->set_original_url(download_url);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
   installer->InstallCrx(extension_path);
+
+  if (out_crx_installer)
+    *out_crx_installer = installer;
+
+  return true;
 }
 
 void ExtensionService::ReloadExtension(const std::string& extension_id) {

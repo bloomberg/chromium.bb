@@ -150,6 +150,8 @@ class CrxInstaller
   }
 
  private:
+  friend class ExtensionUpdaterTest;
+
   virtual ~CrxInstaller();
 
   // Converts the source user script to an extension.

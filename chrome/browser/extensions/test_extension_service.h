@@ -11,6 +11,8 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 
+class CrxInstaller;
+
 // Implemention of ExtensionServiceInterface with default
 // implementations for methods that add failures.  You should subclass
 // this and override the methods you care about.
@@ -21,9 +23,12 @@ class TestExtensionService : public ExtensionServiceInterface {
   // ExtensionServiceInterface implementation.
   virtual const ExtensionList* extensions() const OVERRIDE;
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE;
-  virtual void UpdateExtension(const std::string& id,
-                               const FilePath& path,
-                               const GURL& download_url) OVERRIDE;
+
+  virtual bool UpdateExtension(
+      const std::string& id,
+      const FilePath& path,
+      const GURL& download_url,
+      CrxInstaller** out_crx_installer) OVERRIDE;
   virtual const Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
   virtual const Extension* GetInstalledExtension(

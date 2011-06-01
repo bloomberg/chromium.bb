@@ -64,9 +64,14 @@ class ExtensionServiceInterface {
   virtual ~ExtensionServiceInterface() {}
   virtual const ExtensionList* extensions() const = 0;
   virtual PendingExtensionManager* pending_extension_manager() = 0;
-  virtual void UpdateExtension(const std::string& id,
-                               const FilePath& path,
-                               const GURL& download_url) = 0;
+
+  // Install an update.  Return true if the install can be started.
+  // Set out_crx_installer to the installer if one was started.
+  virtual bool UpdateExtension(
+      const std::string& id,
+      const FilePath& path,
+      const GURL& download_url,
+      CrxInstaller** out_crx_installer) = 0;
   virtual const Extension* GetExtensionById(const std::string& id,
                                             bool include_disabled) const = 0;
   virtual const Extension* GetInstalledExtension(
@@ -262,9 +267,11 @@ class ExtensionService
   // |extension_path|.
   // TODO(aa): This method can be removed. ExtensionUpdater could use
   // CrxInstaller directly instead.
-  virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path,
-                               const GURL& download_url) OVERRIDE;
+  virtual bool UpdateExtension(
+      const std::string& id,
+      const FilePath& extension_path,
+      const GURL& download_url,
+      CrxInstaller** out_crx_installer) OVERRIDE;
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
