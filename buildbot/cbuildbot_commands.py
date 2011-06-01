@@ -172,12 +172,8 @@ def ManifestCheckout(buildroot, tracking_branch, next_manifest,
   print "TRACKING BRANCH: %s" % tracking_branch
   print "NEXT MANIFEST: %s" % next_manifest
 
-  branch = 'master'
-  branch_parts = tracking_branch.split('/')
-  if len(branch_parts) >= 2:
-    branch = branch_parts[1]
-
-  repository.RepoRepository(url, buildroot, branch=branch).Sync(next_manifest)
+  repository.RepoRepository(url, buildroot,
+                            branch=tracking_branch).Sync(next_manifest)
 
 
 def FullCheckout(buildroot, tracking_branch,

@@ -33,7 +33,7 @@ class RepoRepository(object):
   def __init__(self, repo_url, directory, branch=None, clobber=False):
     self.repo_url = repo_url
     self.directory = directory
-    self.branch = None
+    self.branch = branch
 
     if clobber or not os.path.exists(os.path.join(self.directory, '.repo')):
       cros_lib.RunCommand(['sudo', 'rm', '-rf', self.directory], error_ok=True)
