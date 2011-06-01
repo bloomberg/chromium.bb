@@ -13,6 +13,8 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
+import constants
+
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -593,8 +595,4 @@ def PushImages(buildroot, board, branch_name, archive_dir):
         '--branch=%s' % branch_name,
         archive_dir]
 
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-
-  # It may be necessary to set "--nolatest" for some builds in the
-  # future.
-  cros_lib.RunCommand(cmd, cwd=cwd)
+  cros_lib.RunCommand(cmd, cwd=constants.CROSTOOLS_DIR)

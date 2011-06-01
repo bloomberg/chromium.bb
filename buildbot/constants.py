@@ -6,3 +6,6 @@ import os
 
 SOURCE_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
 CROSUTILS_LIB_DIR = os.path.join(SOURCE_ROOT, 'src/scripts/lib')
+
+# This is only true on buildbots
+CROSTOOLS_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'crostools')

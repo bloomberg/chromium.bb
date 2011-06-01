@@ -467,7 +467,7 @@ class CBuildBotTest(mox.MoxTestBase):
                          '--board=board_name',
                          '--branch=branch_name',
                          '/archive/dir'],
-                        cwd='/bob/src/scripts')
+                        cwd=mox.StrContains('crostools'))
 
     self.mox.ReplayAll()
     commands.PushImages(buildroot, board, branch_name, archive_dir)
