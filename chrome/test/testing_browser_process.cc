@@ -46,12 +46,6 @@ IOThread* TestingBrowserProcess::io_thread() {
   return NULL;
 }
 
-#if defined(OS_LINUX)
-base::Thread* TestingBrowserProcess::background_x11_thread() {
-  return NULL;
-}
-#endif
-
 base::Thread* TestingBrowserProcess::file_thread() {
   return NULL;
 }

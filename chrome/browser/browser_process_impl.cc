@@ -228,11 +228,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // down while the IO and FILE threads are still alive.
   browser_policy_connector_.reset();
 
-#if defined(USE_X11)
-  // The IO thread must outlive the BACKGROUND_X11 thread.
-  background_x11_thread_.reset();
-#endif
-
   // Wait for removing plugin data to finish before shutting down the IO thread.
   WaitForPluginDataRemoverToFinish();
 
@@ -424,16 +419,6 @@ base::Thread* BrowserProcessImpl::cache_thread() {
     CreateCacheThread();
   return cache_thread_.get();
 }
-
-#if defined(USE_X11)
-base::Thread* BrowserProcessImpl::background_x11_thread() {
-  DCHECK(CalledOnValidThread());
-  // The BACKGROUND_X11 thread is created when the IO thread is created.
-  if (!created_io_thread_)
-    CreateIOThread();
-  return background_x11_thread_.get();
-}
-#endif
 
 WatchDogThread* BrowserProcessImpl::watchdog_thread() {
   DCHECK(CalledOnValidThread());
@@ -786,16 +771,6 @@ void BrowserProcessImpl::CreateIOThread() {
       PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
     webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
   }
-
-#if defined(USE_X11)
-  // The lifetime of the BACKGROUND_X11 thread is a subset of the IO thread so
-  // we start it now.
-  scoped_ptr<base::Thread> background_x11_thread(
-      new BrowserProcessSubThread(BrowserThread::BACKGROUND_X11));
-  if (!background_x11_thread->Start())
-    return;
-  background_x11_thread_.swap(background_x11_thread);
-#endif
 
   scoped_ptr<IOThread> thread(new IOThread(
       local_state(), net_log_.get(), extension_event_router_forwarder_.get()));

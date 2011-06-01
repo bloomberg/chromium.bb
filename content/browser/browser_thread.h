@@ -67,13 +67,6 @@ class BrowserThread : public base::Thread {
     // This is the thread that processes IPC and network messages.
     IO,
 
-#if defined(USE_X11)
-    // This thread has a second connection to the X server and is used to
-    // process UI requests when routing the request to the UI thread would risk
-    // deadlock.
-    BACKGROUND_X11,
-#endif
-
 #if defined(OS_CHROMEOS)
     // This thread runs websocket to TCP proxy.
     // TODO(dilmah): remove this thread, instead implement this functionality

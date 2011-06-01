@@ -136,15 +136,6 @@ class BrowserProcess {
   // Returns the thread that is used for background cache operations.
   virtual base::Thread* cache_thread() = 0;
 
-#if defined(USE_X11)
-  // Returns the thread that is used to process UI requests in cases where
-  // we can't route the request to the UI thread. Note that this thread
-  // should only be used by the IO thread and this method is only safe to call
-  // from the UI thread so, if you've ended up here, something has gone wrong.
-  // This method is only included for uniformity.
-  virtual base::Thread* background_x11_thread() = 0;
-#endif
-
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;
 

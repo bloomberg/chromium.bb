@@ -54,10 +54,6 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual IOThread* io_thread();
 
-#if defined(OS_LINUX)
-  virtual base::Thread* background_x11_thread();
-#endif
-
   virtual base::Thread* file_thread();
 
   virtual base::Thread* db_thread();

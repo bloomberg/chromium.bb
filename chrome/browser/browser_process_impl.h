@@ -55,9 +55,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual base::Thread* db_thread();
   virtual base::Thread* process_launcher_thread();
   virtual base::Thread* cache_thread();
-#if defined(USE_X11)
-  virtual base::Thread* background_x11_thread();
-#endif
   virtual WatchDogThread* watchdog_thread();
 #if defined(OS_CHROMEOS)
   virtual base::Thread* web_socket_proxy_thread();

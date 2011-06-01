@@ -609,52 +609,6 @@ void FreePixmap(Display* display, XID pixmap) {
   XFreePixmap(display, pixmap);
 }
 
-// Called on BACKGROUND_X11 thread.
-Display* GetSecondaryDisplay() {
-  static Display* display = NULL;
-  if (!display) {
-    display = XOpenDisplay(NULL);
-    CHECK(display);
-  }
-
-  return display;
-}
-
-// Called on BACKGROUND_X11 thread.
-bool GetWindowGeometry(int* x, int* y, unsigned* width, unsigned* height,
-                       XID window) {
-  Window root_window, child_window;
-  unsigned border_width, depth;
-  int temp;
-
-  if (!XGetGeometry(GetSecondaryDisplay(), window, &root_window, &temp, &temp,
-                    width, height, &border_width, &depth))
-    return false;
-  if (!XTranslateCoordinates(GetSecondaryDisplay(), window, root_window,
-                             0, 0 /* input x, y */, x, y /* output x, y */,
-                             &child_window))
-    return false;
-
-  return true;
-}
-
-// Called on BACKGROUND_X11 thread.
-bool GetWindowParent(XID* parent_window, bool* parent_is_root, XID window) {
-  XID root_window, *children;
-  unsigned num_children;
-
-  Status s = XQueryTree(GetSecondaryDisplay(), window, &root_window,
-                        parent_window, &children, &num_children);
-  if (!s)
-    return false;
-
-  if (children)
-    XFree(children);
-
-  *parent_is_root = root_window == *parent_window;
-  return true;
-}
-
 bool GetWindowManagerName(std::string* wm_name) {
   DCHECK(wm_name);
   int wm_window = 0;

@@ -17,9 +17,6 @@ static const char* browser_thread_names[BrowserThread::ID_COUNT] = {
   "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
   "Chrome_CacheThread",  // CACHE
   "Chrome_IOThread",  // IO
-#if defined(USE_X11)
-  "Chrome_Background_X11Thread",  // BACKGROUND_X11
-#endif
 #if defined(OS_CHROMEOS)
   "Chrome_WebSocketproxyThread",  // WEB_SOCKET_PROXY
 #endif

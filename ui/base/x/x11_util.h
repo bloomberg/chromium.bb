@@ -144,29 +144,6 @@ void PutARGBImage(Display* display, void* visual, int depth, XID pixmap,
 void FreePicture(Display* display, XID picture);
 void FreePixmap(Display* display, XID pixmap);
 
-// These functions are for performing X opertions outside of the UI thread.
-
-// Return the Display for the secondary X connection. We keep a second
-// connection around for making X requests outside of the UI thread.
-// This function may only be called from the BACKGROUND_X11 thread.
-Display* GetSecondaryDisplay();
-
-// Since one cannot include both WebKit header and Xlib headers in the same
-// file (due to collisions), we wrap all the Xlib functions that we need here.
-// These functions must be called on the BACKGROUND_X11 thread since they
-// reference GetSecondaryDisplay().
-
-// Get the position of the given window in screen coordinates as well as its
-// current size.
-bool GetWindowGeometry(int* x, int* y, unsigned* width, unsigned* height,
-                       XID window);
-
-// Find the immediate parent of an X window.
-//
-// parent_window: (output) the parent window of |window|, or 0.
-// parent_is_root: (output) true iff the parent of |window| is the root window.
-bool GetWindowParent(XID* parent_window, bool* parent_is_root, XID window);
-
 // Get the window manager name.
 bool GetWindowManagerName(std::string* name);
 
