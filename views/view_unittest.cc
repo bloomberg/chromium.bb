@@ -1413,22 +1413,6 @@ TEST_F(ButtonDropDownTest, RegularClickTest) {
   EXPECT_EQ(test_dialog_->last_pressed_button_, test_dialog_->button_drop_);
 }
 
-#if defined(OS_WIN)
-// Ensure that dragging downwards on the button shows the menu while keeping the
-// button depressed.
-TEST_F(ButtonDropDownTest, DragMenuTest) {
-  test_dialog_->last_pressed_button_ = NULL;
-  MouseEvent press_event(ui::ET_MOUSE_PRESSED, 1, 1, ui::EF_LEFT_BUTTON_DOWN);
-  MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, 1, 99, ui::EF_LEFT_BUTTON_DOWN);
-  test_dialog_->ExpectShowDropMenu();
-  button_as_view_->OnMousePressed(press_event);
-  button_as_view_->OnMouseDragged(drag_event);
-  // The button should not get a press event as a result of the drag. This would
-  // revert the button into an unpressed state while the menu is open.
-  EXPECT_TRUE(test_dialog_->last_pressed_button_ == NULL);
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // View hierarchy / Visibility changes
 ////////////////////////////////////////////////////////////////////////////////

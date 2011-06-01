@@ -293,6 +293,11 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
     EXPECT_EQ(i + kFirstItemIndex, submodel->last_activation());
     submodel->set_last_activation(-1);
   }
+
+  // Check that selecting the root item is safe.  The MenuModel does
+  // not care about the root so MenuModelAdapter should do nothing
+  // (not hit the NOTREACHED check) when the root is selected.
+  static_cast<views::MenuDelegate*>(&delegate)->SelectionChanged(menu.get());
 }
 
 }  // namespace views

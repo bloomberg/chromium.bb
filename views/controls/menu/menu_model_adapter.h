@@ -43,6 +43,7 @@ class MenuModelAdapter : public MenuDelegate {
   virtual bool IsItemChecked(int id) const OVERRIDE;
   virtual void SelectionChanged(MenuItemView* menu) OVERRIDE;
   virtual void WillShowMenu(MenuItemView* menu) OVERRIDE;
+  virtual void WillHideMenu(MenuItemView* menu) OVERRIDE;
 
  private:
   // Implementation of BuildMenu().  index_offset is both input and output;

@@ -188,6 +188,9 @@ class MenuDelegate {
 
   // Invoked prior to a menu being shown.
   virtual void WillShowMenu(MenuItemView* menu);
+
+  // Invoked prior to a menu being hidden.
+  virtual void WillHideMenu(MenuItemView* menu);
 };
 
 }  // namespace views

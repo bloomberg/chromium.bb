@@ -79,13 +79,15 @@ class MenuItemView : public View {
   // ID used to identify empty menu items.
   static const int kEmptyMenuItemViewID;
 
-  // Different types of menu items.
+  // Different types of menu items.  EMPTY is a special type for empty
+  // menus that is only used internally.
   enum Type {
     NORMAL,
     SUBMENU,
     CHECKBOX,
     RADIO,
-    SEPARATOR
+    SEPARATOR,
+    EMPTY
   };
 
   // Where the menu should be anchored to.

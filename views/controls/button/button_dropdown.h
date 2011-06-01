@@ -8,7 +8,10 @@
 
 #include "base/task.h"
 #include "views/controls/button/image_button.h"
-#include "views/controls/menu/menu_2.h"
+
+namespace ui {
+class MenuModel;
+}  // namespace ui
 
 namespace views {
 
@@ -51,7 +54,6 @@ class ButtonDropDown : public ImageButton {
 
   // The model that populates the attached menu.
   ui::MenuModel* model_;
-  scoped_ptr<Menu2> menu_;
 
   // Y position of mouse when left mouse button is pressed
   int y_position_on_lbuttondown_;

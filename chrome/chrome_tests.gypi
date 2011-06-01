@@ -461,6 +461,7 @@
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+        'browser/ui/views/button_dropdown_test.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
         'browser/ui/views/menu_item_view_test.cc',
@@ -486,6 +487,7 @@
           'sources!': [
             # TODO(port)
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+            'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/menu_item_view_test.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',
@@ -513,6 +515,7 @@
             # TODO(port)
             'browser/debugger/devtools_sanity_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+            'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/menu_item_view_test.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',

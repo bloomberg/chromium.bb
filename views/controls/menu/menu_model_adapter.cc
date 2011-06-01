@@ -94,7 +94,7 @@ const gfx::Font& MenuModelAdapter::GetLabelFont(int id) const {
     return font ? *font : MenuDelegate::GetLabelFont(id);
   }
 
-  NOTREACHED();
+  // This line may be reached for the empty menu item.
   return MenuDelegate::GetLabelFont(id);
 }
 
@@ -119,6 +119,10 @@ bool MenuModelAdapter::IsItemChecked(int id) const {
 }
 
 void MenuModelAdapter::SelectionChanged(MenuItemView* menu) {
+  // Ignore selection of the root menu.
+  if (menu == menu->GetRootMenuItem())
+    return;
+
   const int id = menu->GetCommand();
   ui::MenuModel* model = menu_model_;
   int index = 0;
@@ -136,6 +140,18 @@ void MenuModelAdapter::WillShowMenu(MenuItemView* menu) {
       menu_map_.find(menu);
   if (map_iterator != menu_map_.end()) {
     map_iterator->second->MenuWillShow();
+    return;
+  }
+
+  NOTREACHED();
+}
+
+void MenuModelAdapter::WillHideMenu(MenuItemView* menu) {
+  // Look up the menu model for this menu.
+  const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =
+      menu_map_.find(menu);
+  if (map_iterator != menu_map_.end()) {
+    map_iterator->second->MenuClosed();
     return;
   }
 

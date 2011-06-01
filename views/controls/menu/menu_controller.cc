@@ -758,8 +758,15 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   }
 
   // Notify the old path it isn't selected.
-  for (size_t i = paths_differ_at; i < current_size; ++i)
+  MenuDelegate* current_delegate =
+      current_path.empty() ? NULL : current_path.front()->GetDelegate();
+  for (size_t i = paths_differ_at; i < current_size; ++i) {
+    if (current_delegate &&
+        current_path[i]->GetType() == MenuItemView::SUBMENU) {
+      current_delegate->WillHideMenu(current_path[i]);
+    }
     current_path[i]->SetSelected(false);
+  }
 
   // Notify the new path it is selected.
   for (size_t i = paths_differ_at; i < new_size; ++i)

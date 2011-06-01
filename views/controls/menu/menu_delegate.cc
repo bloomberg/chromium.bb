@@ -119,4 +119,7 @@ int MenuDelegate::GetMaxWidthForMenu(MenuItemView* menu) {
 void MenuDelegate::WillShowMenu(MenuItemView* menu) {
 }
 
+void MenuDelegate::WillHideMenu(MenuItemView* menu) {
+}
+
 }  // namespace views

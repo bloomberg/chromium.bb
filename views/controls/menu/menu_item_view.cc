@@ -36,7 +36,7 @@ namespace {
 class EmptyMenuMenuItem : public MenuItemView {
  public:
   explicit EmptyMenuMenuItem(MenuItemView* parent)
-      : MenuItemView(parent, 0, NORMAL) {
+      : MenuItemView(parent, 0, EMPTY) {
     // Set this so that we're not identified as a normal menu item.
     SetID(kEmptyMenuItemViewID);
     SetTitle(UTF16ToWide(
@@ -136,6 +136,7 @@ void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {
       break;
     case NORMAL:
     case SEPARATOR:
+    case EMPTY:
       // No additional accessibility states currently for these menu states.
       break;
   }
@@ -260,6 +261,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(int index,
                                           const std::wstring& label,
                                           const SkBitmap& icon,
                                           Type type) {
+  DCHECK_NE(type, EMPTY);
   DCHECK_LE(0, index);
   if (!submenu_)
     CreateSubmenu();
@@ -563,9 +565,9 @@ void MenuItemView::Init(MenuItemView* parent,
   has_icons_ = false;
 
   // Don't request enabled status from the root menu item as it is just
-  // a container for real items.
+  // a container for real items.  EMPTY items will be disabled.
   MenuDelegate* root_delegate = GetDelegate();
-  if (parent && root_delegate)
+  if (parent && type != EMPTY && root_delegate)
     SetEnabled(root_delegate->IsCommandEnabled(command));
 }
 

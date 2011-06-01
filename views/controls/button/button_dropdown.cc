@@ -10,8 +10,11 @@
 #include "grit/app_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/controls/menu/view_menu_delegate.h"
+#include "ui/base/models/menu_model.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/widget/widget.h"
+#include "views/window/window.h"
 
 namespace views {
 
@@ -118,41 +121,56 @@ bool ButtonDropDown::ShouldEnterPushedState(const MouseEvent& event) {
 }
 
 void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
-  if (model_) {
-    gfx::Rect lb = GetLocalBounds();
+  gfx::Rect lb = GetLocalBounds();
 
-    // Both the menu position and the menu anchor type change if the UI layout
-    // is right-to-left.
-    gfx::Point menu_position(lb.origin());
-    menu_position.Offset(0, lb.height() - 1);
-    if (base::i18n::IsRTL())
-      menu_position.Offset(lb.width() - 1, 0);
+  // Both the menu position and the menu anchor type change if the UI layout
+  // is right-to-left.
+  gfx::Point menu_position(lb.origin());
+  menu_position.Offset(0, lb.height() - 1);
+  if (base::i18n::IsRTL())
+    menu_position.Offset(lb.width() - 1, 0);
 
-    View::ConvertPointToScreen(this, &menu_position);
+  View::ConvertPointToScreen(this, &menu_position);
 
 #if defined(OS_WIN)
-    int left_bound = GetSystemMetrics(SM_XVIRTUALSCREEN);
+  int left_bound = GetSystemMetrics(SM_XVIRTUALSCREEN);
 #else
-    int left_bound = 0;
-    NOTIMPLEMENTED();
+  int left_bound = 0;
+  NOTIMPLEMENTED();
 #endif
-    if (menu_position.x() < left_bound)
-      menu_position.set_x(left_bound);
+  if (menu_position.x() < left_bound)
+    menu_position.set_x(left_bound);
 
-    // Make the button look depressed while the menu is open.
-    SetState(BS_PUSHED);
-    menu_.reset(new Menu2(model_));
-    menu_->RunMenuAt(menu_position, Menu2::ALIGN_TOPLEFT);
+  // Make the button look depressed while the menu is open.
+  SetState(BS_PUSHED);
 
-    // Need to explicitly clear mouse handler so that events get sent
-    // properly after the menu finishes running. If we don't do this, then
-    // the first click to other parts of the UI is eaten.
-    SetMouseHandler(NULL);
+  // Create and run menu.  Display an empty menu if model is NULL.
+  if (model_) {
+    MenuModelAdapter menu_delegate(model_);
+    MenuItemView menu(&menu_delegate);
+    menu_delegate.BuildMenu(&menu);
 
-    // Set the state back to normal after the drop down menu is closed.
-    if (state_ != BS_DISABLED)
-      SetState(BS_NORMAL);
+    menu.RunMenuAt(GetWindow()->GetNativeWindow(), NULL,
+                   gfx::Rect(menu_position, gfx::Size(0, 0)),
+                   views::MenuItemView::TOPLEFT,
+                   true);
+  } else {
+    MenuDelegate menu_delegate;
+    MenuItemView menu(&menu_delegate);
+    menu.RunMenuAt(GetWindow()->GetNativeWindow(), NULL,
+                   gfx::Rect(menu_position, gfx::Size(0, 0)),
+                   views::MenuItemView::TOPLEFT,
+                   true);
   }
+
+  // Need to explicitly clear mouse handler so that events get sent
+  // properly after the menu finishes running. If we don't do this, then
+  // the first click to other parts of the UI is eaten.
+  SetMouseHandler(NULL);
+
+  // Set the state back to normal after the drop down menu is closed.
+  if (state_ != BS_DISABLED)
+    SetState(BS_NORMAL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
