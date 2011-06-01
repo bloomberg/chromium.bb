@@ -761,18 +761,22 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->SetString("errorState", cellular->GetErrorString());
   dictionary->SetString("supportUrl", cellular->payment_url());
   dictionary->SetBoolean("needsPlan", cellular->needs_new_plan());
+
   dictionary->SetBoolean("gsm", cellular->is_gsm());
   const chromeos::CellularNetwork::Apn& apn = cellular->apn();
   dictionary->SetString("apn", apn.apn);
   dictionary->SetString("apn_network_id", apn.network_id);
   dictionary->SetString("apn_username", apn.username);
   dictionary->SetString("apn_password", apn.password);
+
   const chromeos::CellularNetwork::Apn& last_good_apn =
       cellular->last_good_apn();
   dictionary->SetString("last_good_apn", last_good_apn.apn);
   dictionary->SetString("last_good_apn_network_id", last_good_apn.network_id);
   dictionary->SetString("last_good_apn_username", last_good_apn.username);
   dictionary->SetString("last_good_apn_password", last_good_apn.password);
+
+  dictionary->SetBoolean("autoConnect", cellular->auto_connect());
 
   // Device settings.
   const chromeos::NetworkDevice* device =

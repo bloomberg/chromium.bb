@@ -189,9 +189,15 @@ cr.define('options', function() {
   InternetOptions.setDetails = function () {
     var data = $('connectionState').data;
     var servicePath = data.servicePath;
-    chrome.send('setAutoConnect',[String(servicePath),
-         $('autoConnectNetwork').checked ? "true" : "false"]);
-
+    if (data.type == options.internet.Constants.TYPE_WIFI) {
+      chrome.send('setAutoConnect',
+                  [String(servicePath),
+                   $('autoConnectNetworkWifi').checked ? "true" : "false"]);
+    } else if (data.type == options.internet.Constants.TYPE_CELLULAR) {
+      chrome.send('setAutoConnect',
+                  [String(servicePath),
+                   $('autoConnectNetworkCellular').checked ? "true" : "false"]);
+    }
     chrome.send('setShared',[String(servicePath),
          $('sharedNetwork').checked ? "true" : "false"]);
 
@@ -399,7 +405,7 @@ cr.define('options', function() {
       // This is most likely a device without a hardware address.
       $('hardwareAddressRow').style.display = 'none';
     }
-    if (data.type == 2) {
+    if (data.type == options.internet.Constants.TYPE_WIFI) {
       OptionsPage.showTab($('wifiNetworkNavTab'));
       detailsPage.wireless = true;
       detailsPage.vpn = false;
@@ -407,12 +413,12 @@ cr.define('options', function() {
       detailsPage.cellular = false;
       detailsPage.gsm = false;
       $('inetSsid').textContent = data.ssid;
-      $('autoConnectNetwork').checked = data.autoConnect;
-      $('autoConnectNetwork').disabled = !data.remembered;
+      $('autoConnectNetworkWifi').checked = data.autoConnect;
+      $('autoConnectNetworkWifi').disabled = !data.remembered;
       $('sharedNetwork').checked = data.shared;
       $('sharedNetwork').disabled = !data.remembered || !data.shareable;
       detailsPage.password = data.encrypted;
-    } else if(data.type == 5) {
+    } else if(data.type == options.internet.Constants.TYPE_CELLULAR) {
       if (!data.gsm)
         OptionsPage.showTab($('cellularPlanNavTab'));
       else
@@ -460,6 +466,8 @@ cr.define('options', function() {
         $('sim-card-lock-enabled').checked = data.simCardLockEnabled;
         InternetOptions.enableSecurityTab(true);
       }
+      $('autoConnectNetworkCellular').checked = data.autoConnect;
+      $('autoConnectNetworkCellular').disabled = false;
 
       $('buyplanDetails').hidden = !data.showBuyButton;
       $('activateDetails').hidden = !data.showActivateButton;
@@ -476,7 +484,7 @@ cr.define('options', function() {
         detailsPage.nocellplan = true;
         detailsPage.cellplanloading = false;
       }
-    } else if (data.type == 6) {
+    } else if (data.type == options.internet.Constants.TYPE_VPN) {
       OptionsPage.showTab($('vpnNavTab'));
       detailsPage.wireless = false;
       detailsPage.vpn = true;
