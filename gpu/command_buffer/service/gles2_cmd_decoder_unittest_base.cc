@@ -55,6 +55,7 @@ void GLES2DecoderTestBase::InitDecoder(
     const char* extensions, bool has_alpha_backbuffer) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
+  surface_manager_.reset(new StrictMock<MockSurfaceManager>);
   group_ = ContextGroup::Ref(new ContextGroup());
 
   InSequence sequence;
@@ -133,7 +134,7 @@ void GLES2DecoderTestBase::InitDecoder(
 
   context_ = new gfx::GLContextStub;
 
-  decoder_.reset(GLES2Decoder::Create(group_.get()));
+  decoder_.reset(GLES2Decoder::Create(surface_manager_.get(), group_.get()));
   decoder_->Initialize(
       surface_, context_, surface_->GetSize(), DisallowedExtensions(),
       NULL, std::vector<int32>(), NULL, 0);

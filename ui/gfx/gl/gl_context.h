@@ -9,16 +9,16 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 
 namespace gfx {
 
 class GLSurface;
 
 // Encapsulates an OpenGL context, hiding platform specific management.
-class GLContext {
+class GLContext : public base::RefCounted<GLContext> {
  public:
-  GLContext() {}
-  virtual ~GLContext() {}
+  GLContext();
 
   // Initializes the GL context to be compatible with the given surface. The GL
   // context can be made with other surface's of the same type. The compatible
@@ -56,12 +56,17 @@ class GLContext {
   // Create a GL context that is compatible with the given surface.
   // |share_context|, if non-NULL, is a context which the
   // internally created OpenGL context shares textures and other resources.
-  static GLContext* CreateGLContext(GLContext* shared_context,
-                                    GLSurface* compatible_surface);
+  static scoped_refptr<GLContext> CreateGLContext(
+      GLContext* shared_context,
+      GLSurface* compatible_surface);
 
   static bool LosesAllContextsOnContextLost();
 
+ protected:
+  virtual ~GLContext();
+
  private:
+  friend class base::RefCounted<GLContext>;
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };
 

@@ -214,6 +214,7 @@ GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* exte
 GL_APICALL void         GL_APIENTRY glSetLatchCHROMIUM (GLuint latch_id);
 GL_APICALL void         GL_APIENTRY glWaitLatchCHROMIUM (GLuint latch_id);
 GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glSetSurfaceCHROMIUM (GLint surface_id);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -419,6 +420,7 @@ _CMD_ID_TABLE = {
   'RequestExtensionCHROMIUM':                                  450,
   'SetLatchCHROMIUM':                                          451,
   'WaitLatchCHROMIUM':                                         452,
+  'SetSurfaceCHROMIUM':                                        453,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1488,6 +1490,12 @@ _FUNCTION_INFO = {
   },
   'ReleaseShaderCompiler': {
     'decoder_func': 'DoReleaseShaderCompiler',
+    'unit_test': False,
+  },
+  'SetSurfaceCHROMIUM': {
+    'decoder_func': 'DoSetSurfaceCHROMIUM',
+    'extension': True,
+    'chromium': True,
     'unit_test': False,
   },
   'ShaderBinary': {'type': 'Custom'},

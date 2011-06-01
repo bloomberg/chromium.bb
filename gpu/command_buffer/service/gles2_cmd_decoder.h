@@ -22,6 +22,8 @@ class GLSurface;
 
 namespace gpu {
 
+class SurfaceManager;
+
 namespace gles2 {
 
 class ContextGroup;
@@ -40,7 +42,8 @@ class GLES2Decoder : public CommonDecoder {
   typedef error::Error Error;
 
   // Creates a decoder.
-  static GLES2Decoder* Create(ContextGroup* group);
+  static GLES2Decoder* Create(SurfaceManager* surface_manager,
+                              ContextGroup* group);
 
   virtual ~GLES2Decoder();
 
@@ -68,8 +71,8 @@ class GLES2Decoder : public CommonDecoder {
   //      parent's namespace.
   // Returns:
   //   true if successful.
-  virtual bool Initialize(gfx::GLSurface* surface,
-                          gfx::GLContext* context,
+  virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
+                          const scoped_refptr<gfx::GLContext>& context,
                           const gfx::Size& size,
                           const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,

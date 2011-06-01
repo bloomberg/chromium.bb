@@ -18,20 +18,20 @@
 
 namespace {
 
-gfx::GLSurface* InitializeGLSurface() {
-  scoped_ptr<gfx::GLSurface> surface(gfx::GLSurface::CreateOffscreenGLSurface(
-      gfx::Size(1, 1)));
+scoped_refptr<gfx::GLSurface> InitializeGLSurface() {
+  scoped_refptr<gfx::GLSurface> surface(
+      gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
   if (!surface.get()) {
     LOG(ERROR) << "gfx::GLContext::CreateOffscreenGLSurface failed";
     return NULL;
   }
 
-  return surface.release();
+  return surface;
 }
 
-gfx::GLContext* InitializeGLContext(gfx::GLSurface* surface) {
+scoped_refptr<gfx::GLContext> InitializeGLContext(gfx::GLSurface* surface) {
 
-  scoped_ptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(NULL,
+  scoped_refptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(NULL,
                                                                      surface));
   if (!context.get()) {
     LOG(ERROR) << "gfx::GLContext::CreateGLContext failed";
@@ -43,7 +43,7 @@ gfx::GLContext* InitializeGLContext(gfx::GLSurface* surface) {
     return NULL;
   }
 
-  return context.release();
+  return context;
 }
 
 std::string GetGLString(unsigned int pname) {
@@ -84,11 +84,11 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
     return false;
   }
 
-  scoped_ptr<gfx::GLSurface> surface(InitializeGLSurface());
+  scoped_refptr<gfx::GLSurface> surface(InitializeGLSurface());
   if (!surface.get())
     return false;
 
-  scoped_ptr<gfx::GLContext> context(InitializeGLContext(surface.get()));
+  scoped_refptr<gfx::GLContext> context(InitializeGLContext(surface.get()));
   if (!context.get())
     return false;
 

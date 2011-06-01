@@ -13,6 +13,12 @@
 
 namespace gfx {
 
+GLContext::GLContext() {
+}
+
+GLContext::~GLContext() {
+}
+
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent(NULL));
   const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));

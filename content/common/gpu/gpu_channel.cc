@@ -126,6 +126,14 @@ void GpuChannel::LoseAllContexts() {
   gpu_channel_manager_->LoseAllContexts();
 }
 
+gfx::GLSurface* GpuChannel::LookupSurface(int surface_id) {
+  GpuSurfaceStub *surface_stub = surfaces_.Lookup(surface_id);
+  if (!surface_stub)
+    return NULL;
+
+  return surface_stub->surface();
+}
+
 void GpuChannel::CreateViewCommandBuffer(
     gfx::PluginWindowHandle window,
     int32 render_view_id,
@@ -259,7 +267,7 @@ void GpuChannel::OnCreateOffscreenSurface(const gfx::Size& size,
   *route_id = MSG_ROUTING_NONE;
 
 #if defined(ENABLE_GPU)
-  scoped_ptr<gfx::GLSurface> surface(
+  scoped_refptr<gfx::GLSurface> surface(
        gfx::GLSurface::CreateOffscreenGLSurface(size));
   if (!surface.get())
     return;

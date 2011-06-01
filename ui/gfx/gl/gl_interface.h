@@ -427,6 +427,8 @@ class GLInterface {
 
   virtual void GetFenceivNV(GLuint fence, GLenum pname, GLint *params) = 0;
 
+  virtual void SetSurfaceCHROMIUM(GLuint id) = 0;
+
  private:
   static GLInterface* interface_;
 };

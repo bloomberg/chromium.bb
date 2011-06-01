@@ -34,6 +34,7 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
+#include "gpu/command_buffer/service/surface_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -661,7 +662,8 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
 class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                          public GLES2Decoder {
  public:
-  explicit GLES2DecoderImpl(ContextGroup* group);
+  explicit GLES2DecoderImpl(SurfaceManager* surface_manager,
+                            ContextGroup* group);
 
   // Overridden from AsyncAPIInterface.
   virtual Error DoCommand(unsigned int command,
@@ -672,8 +674,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual const char* GetCommandName(unsigned int command_id) const;
 
   // Overridden from GLES2Decoder.
-  virtual bool Initialize(gfx::GLSurface* surface,
-                          gfx::GLContext* context,
+  virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
+                          const scoped_refptr<gfx::GLContext>& context,
                           const gfx::Size& size,
                           const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,
@@ -1229,6 +1231,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   void DoResizeCHROMIUM(GLuint width, GLuint height);
 
+  void DoSetSurfaceCHROMIUM(GLint surface_id);
+
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
@@ -1339,9 +1343,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   #undef GLES2_CMD_OP
 
+  // Maps surface IDs to GLSurface.
+  gpu::SurfaceManager* surface_manager_;
+
   // The GL context this decoder renders to on behalf of the client.
-  scoped_ptr<gfx::GLSurface> surface_;
-  scoped_ptr<gfx::GLContext> context_;
+  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<gfx::GLContext> context_;
 
   // The ContextGroup for this decoder uses to track resources.
   ContextGroup::Ref group_;
@@ -1767,12 +1774,15 @@ GLenum FrameBuffer::CheckStatus() {
   return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
 }
 
-GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
-  return new GLES2DecoderImpl(group);
+GLES2Decoder* GLES2Decoder::Create(SurfaceManager* surface_manager,
+                                   ContextGroup* group) {
+  return new GLES2DecoderImpl(surface_manager, group);
 }
 
-GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
+GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
+                                   ContextGroup* group)
     : GLES2Decoder(),
+      surface_manager_(surface_manager),
       group_(ContextGroup::Ref(group ? group : new ContextGroup())),
       error_bits_(0),
       util_(0),  // TODO(gman): Set to actual num compress texture formats.
@@ -1831,8 +1841,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
 }
 
 bool GLES2DecoderImpl::Initialize(
-    gfx::GLSurface* surface,
-    gfx::GLContext* context,
+    const scoped_refptr<gfx::GLSurface>& surface,
+    const scoped_refptr<gfx::GLContext>& context,
     const gfx::Size& size,
     const DisallowedExtensions& disallowed_extensions,
     const char* allowed_extensions,
@@ -1842,13 +1852,15 @@ bool GLES2DecoderImpl::Initialize(
   DCHECK(context);
   DCHECK(!context_.get());
 
-  // Take ownership of the GLSurface. TODO(apatrick): the decoder should not
-  // own the surface. It should be possible to freely switch the surface the
-  // context renders to.
-  surface_.reset(surface);
+  // Take ownership of the GLSurface. TODO(apatrick): once the parent / child
+  // context is retired, the decoder should not take an initial surface as
+  // an argument to this function.
+  // Maybe create a short lived offscreen GLSurface for the purpose of
+  // initializing the decoder's GLContext.
+  surface_ = surface;
 
   // Take ownership of the GLContext.
-  context_.reset(context);
+  context_ = context;
 
   // Keep only a weak pointer to the parent so we don't unmap its client
   // frame buffer after it has been destroyed.
@@ -2567,7 +2579,7 @@ void GLES2DecoderImpl::Destroy() {
 
   if (context_.get())
     context_->Destroy();
-  context_.reset();
+  context_ = NULL;
 
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();
@@ -2625,6 +2637,14 @@ void GLES2DecoderImpl::DoResizeCHROMIUM(GLuint width, GLuint height) {
     gfx::Size size(width, height);
     resize_callback_->Run(size);
   }
+}
+
+void GLES2DecoderImpl::DoSetSurfaceCHROMIUM(GLint surface_id) {
+  gfx::GLSurface* surface = surface_manager_->LookupSurface(surface_id);
+  if (!surface)
+    return;
+
+  surface_ = surface;
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -6428,7 +6448,9 @@ error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
   if (!latch) {
     return error::kOutOfBounds;
   }
-  base::subtle::NoBarrier_Store(latch, 1);
+  base::subtle::Atomic32 old =
+      base::subtle::NoBarrier_CompareAndSwap(latch, 0, 1);
+  DCHECK(old == 0);
   if (!latch_callback_.is_null())
     latch_callback_.Run(true);
   return error::kNoError;

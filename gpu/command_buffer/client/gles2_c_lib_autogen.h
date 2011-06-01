@@ -889,6 +889,10 @@ void GLES2RateLimitOffscreenContextCHROMIUM() {
   GPU_CLIENT_LOG("RateLimitOffscreenContextCHROMIUM" << "(" << ")");
   gles2::GetGLContext()->RateLimitOffscreenContextCHROMIUM();
 }
+void GLES2SetSurfaceCHROMIUM(GLint surface_id) {
+  GPU_CLIENT_LOG("SetSurfaceCHROMIUM" << "(" << surface_id << ")");
+  gles2::GetGLContext()->SetSurfaceCHROMIUM(surface_id);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 
