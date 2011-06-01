@@ -265,6 +265,17 @@
 }
 
 {
+  bug_84094_c  (Could be benign. See bug for details)
+  ThreadSanitizer:Race
+  ...
+  fun:pcache1Unpin
+  fun:pcacheUnpin
+  fun:sqlite3PcacheMakeClean
+  fun:sqlite3PcacheCleanAll
+}
+
+
+{
   bug_84467_a (Could be benign. See bug for details)
   ThreadSanitizer:Race
   fun:unixTempFileDir
