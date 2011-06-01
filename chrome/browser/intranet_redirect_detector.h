@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "chrome/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_resolver_proc.h"
 #include "net/base/network_change_notifier.h"

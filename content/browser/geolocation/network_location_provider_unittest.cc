@@ -7,9 +7,9 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/network_location_provider.h"
+#include "content/common/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

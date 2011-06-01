@@ -23,7 +23,7 @@
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "chrome/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 class Extension;

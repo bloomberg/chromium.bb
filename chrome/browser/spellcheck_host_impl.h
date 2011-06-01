@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellcheck_host_observer.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/url_fetcher.h"
 
 // This class implements the SpellCheckHost interface to provide the
 // functionalities listed below:

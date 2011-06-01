@@ -16,7 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "chrome/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 
 class AutofillMetrics;
 class FormStructure;

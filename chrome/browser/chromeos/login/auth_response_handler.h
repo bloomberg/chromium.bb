@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 
 class GURL;
 

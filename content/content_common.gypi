@@ -227,6 +227,8 @@
         'common/unix_domain_socket_posix.h',
         'common/url_constants.cc',
         'common/url_constants.h',
+        'common/url_fetcher.cc',
+        'common/url_fetcher.h',
         'common/video_capture_messages.h',
         'common/view_messages.h',
         'common/view_types.cc',

@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 namespace chromeos {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
-#define CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
+#ifndef CONTENT_COMMON_TEST_URL_FETCHER_FACTORY_H_
+#define CONTENT_COMMON_TEST_URL_FETCHER_FACTORY_H_
 #pragma once
 
 #include <list>
@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include "chrome/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "googleurl/src/gurl.h"
 
@@ -224,4 +224,4 @@ class URLFetcherFactory : public URLFetcher::Factory {
 
 };
 
-#endif  // CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
+#endif  // CONTENT_COMMON_TEST_URL_FETCHER_FACTORY_H_

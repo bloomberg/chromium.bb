@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 
 #include <set>
 
@@ -17,7 +17,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/io_buffer.h"

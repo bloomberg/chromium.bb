@@ -6,7 +6,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "chrome/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
+#include "crypto/nss_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -97,6 +98,7 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
     io_message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
 
 #if defined(USE_NSS)
+    crypto::EnsureNSSInit();
     net::EnsureOCSPInit();
 #endif
   }

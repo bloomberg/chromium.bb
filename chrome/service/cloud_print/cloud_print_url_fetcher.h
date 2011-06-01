@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/net/url_fetcher.h"
+#include "content/common/url_fetcher.h"
 
 class DictionaryValue;
 class GURL;

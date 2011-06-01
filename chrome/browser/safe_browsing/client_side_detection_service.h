@@ -32,9 +32,9 @@
 #include "base/platform_file.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 

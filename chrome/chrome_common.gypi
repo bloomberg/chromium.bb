@@ -347,8 +347,6 @@
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
         'common/net/predictor_common.h',
-        'common/net/url_fetcher.cc',
-        'common/net/url_fetcher.h',
         'common/net/gaia/gaia_auth_consumer.cc',
         'common/net/gaia/gaia_auth_consumer.h',
         'common/net/gaia/gaia_auth_fetcher.cc',

@@ -13,11 +13,11 @@
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
+#include "content/common/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------

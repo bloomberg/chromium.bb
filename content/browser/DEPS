@@ -78,8 +78,6 @@ include_rules = [
   "+chrome/common/chrome_paths.h",
   "+chrome/common/logging_chrome.h",
 
-  "+chrome/common/net/url_fetcher.h",
-
   # ONLY USED BY TESTS
   "+chrome/browser/net/url_request_failed_dns_job.h",
   "+chrome/browser/net/url_request_mock_http_job.h",

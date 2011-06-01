@@ -14,8 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "chrome/service/service_process.h"
+#include "content/common/url_fetcher.h"
 
 std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
   std::string ret;

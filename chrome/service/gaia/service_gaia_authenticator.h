@@ -10,8 +10,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
+#include "content/common/url_fetcher.h"
 
 namespace base {
 class MessageLoopProxy;
