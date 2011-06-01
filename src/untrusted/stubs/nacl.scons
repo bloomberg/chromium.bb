@@ -49,11 +49,13 @@ else:
 # them from newlib, while pnacl's newlib is arch neutral
 if env.Bit('bitcode'):
   setjmp = [env.StaticObject('setjmp.o', ['setjmp_%s.S' % platform])]
+  unwind_support = env.StaticObject('unwind_support.o', ['unwind_support.c'])
 else:
   setjmp = []
+  unwind_support = []
 
 tls = [env.StaticObject('tls.o', ['tls_%s.c' % platform])]
 
-crt_platform = env.StaticLibrary('crt_platform', tls + setjmp)
+crt_platform = env.StaticLibrary('crt_platform', tls + setjmp + unwind_support)
 
 env.AddObjectToSdk([crt1, crt_platform] + bookends, is_platform=True)
