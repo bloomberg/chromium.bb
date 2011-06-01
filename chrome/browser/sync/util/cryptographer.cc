@@ -22,7 +22,7 @@ Cryptographer::Cryptographer() : default_nigori_(NULL) {
 Cryptographer::~Cryptographer() {}
 
 void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
-  if (is_ready()) {
+  if (is_initialized()) {
     NOTREACHED();
     return;
   }
@@ -171,7 +171,7 @@ bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
 
 bool Cryptographer::GetBootstrapToken(std::string* token) const {
   DCHECK(token);
-  if (!is_ready())
+  if (!is_initialized())
     return false;
 
   return PackBootstrapToken(default_nigori_->second.get(), token);

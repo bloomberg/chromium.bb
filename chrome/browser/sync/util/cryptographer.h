@@ -103,8 +103,11 @@ class Cryptographer {
   // successfully decrypted and installed.
   bool DecryptPendingKeys(const KeyParams& params);
 
+  bool is_initialized() const { return !nigoris_.empty() && default_nigori_; }
+
   // Returns whether this Cryptographer is ready to encrypt and decrypt data.
-  bool is_ready() const { return !nigoris_.empty() && default_nigori_; }
+  bool is_ready() const { return is_initialized() &&
+                          has_pending_keys() == false; }
 
   // Returns whether there is a pending set of keys that needs to be decrypted.
   bool has_pending_keys() const { return NULL != pending_keys_.get(); }
