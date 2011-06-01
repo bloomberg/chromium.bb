@@ -725,13 +725,7 @@ void ProfileSyncService::ShowLoginDialog(WebUI* web_ui) {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
-
-  if (web_ui) {
-    web_ui->CallJavascriptFunction("options.SyncSetupOverlay.showSyncDialog");
-  } else {
-    BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
-  }
+  ShowSyncSetup(web_ui, SyncSetupWizard::GAIA_LOGIN);
 
   NotifyObservers();
 }
@@ -739,7 +733,7 @@ void ProfileSyncService::ShowLoginDialog(WebUI* web_ui) {
 void ProfileSyncService::ShowErrorUI(WebUI* web_ui) {
   if (IsPassphraseRequired()) {
     if (IsUsingSecondaryPassphrase())
-      PromptForExistingPassphrase();
+      PromptForExistingPassphrase(web_ui);
     else
       NOTREACHED();  // Migration no longer supported.
 
@@ -763,23 +757,27 @@ void ProfileSyncService::ShowConfigure(WebUI* web_ui, bool sync_everything) {
   }
 
   if (sync_everything)
-    wizard_.Step(SyncSetupWizard::SYNC_EVERYTHING);
+    ShowSyncSetup(web_ui, SyncSetupWizard::SYNC_EVERYTHING);
   else
-    wizard_.Step(SyncSetupWizard::CONFIGURE);
-
-  if (web_ui)
-    web_ui->CallJavascriptFunction("options.SyncSetupOverlay.showSyncDialog");
-  else
-    BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
+    ShowSyncSetup(web_ui, SyncSetupWizard::CONFIGURE);
 }
 
-void ProfileSyncService::PromptForExistingPassphrase() {
+void ProfileSyncService::PromptForExistingPassphrase(WebUI* web_ui) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
   }
 
-  wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
+  ShowSyncSetup(web_ui, SyncSetupWizard::ENTER_PASSPHRASE);
+}
+
+void ProfileSyncService::ShowSyncSetup(WebUI* web_ui,
+                                       SyncSetupWizard::State state) {
+  wizard_.Step(state);
+  if (web_ui)
+    web_ui->CallJavascriptFunction("options.SyncSetupOverlay.showSyncDialog");
+  else
+    BrowserList::GetLastActive()->ShowOptionsTab(chrome::kSyncSetupSubPage);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {

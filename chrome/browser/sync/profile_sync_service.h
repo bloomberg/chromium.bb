@@ -262,7 +262,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // NULL if one doesn't exist or the calling code doesn't know.
   void ShowConfigure(WebUI* web_ui, bool sync_everything);
 
-  void PromptForExistingPassphrase();
+  void PromptForExistingPassphrase(WebUI* web_ui);
+
+  void ShowSyncSetup(WebUI* web_ui, SyncSetupWizard::State state);
 
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(
