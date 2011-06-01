@@ -153,7 +153,6 @@ full = {
   'chroot_replace' : True,
 
   'quick_unit' : False,
-  'quick_vm' : True,
 
   'build_type': 'full',
   'archive_build_debug' : True,
@@ -164,6 +163,7 @@ full = {
 
 internal = {
   'git_url' : MANIFEST_INT_URL,
+  'quick_vm' : False,
 }
 
 #
@@ -179,7 +179,6 @@ release = {
   'manifest_version' : MANIFEST_VERSIONS_INT_URL,
   'push_image' : True,
   'upload_symbols' : True,
-
   # --official
   # --officialversion
 }
@@ -245,6 +244,7 @@ add_config('x86-mario-pre-flight-queue', [internal, {
   'master' : True,
 
   'uprev' : True,
+  'quick_vm' : True,
   'rev_overlays': 'both',
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
@@ -331,18 +331,6 @@ add_config('x86-pineview-full', [full, {
 #
 # Internal Builds
 #
-
-add_config('x86-mario-pre-flight-queue', [internal, {
-  'board' : 'x86-mario',
-  'master' : True,
-
-  'uprev' : True,
-  'rev_overlays': 'both',
-  'push_overlays': 'private',
-  'chrome_rev' : 'stable_release',
-
-  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
-}])
 
 add_config('arm-tegra2_seaboard-private-bin', [internal, arm, {
   'board' : 'tegra2_seaboard',
