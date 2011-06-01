@@ -283,6 +283,8 @@
         'browser/renderer_host/x509_user_cert_resource_handler.h',
         'browser/renderer_host/video_capture_controller.cc',
         'browser/renderer_host/video_capture_controller.h',
+        'browser/renderer_host/video_capture_controller_event_handler.cc',
+        'browser/renderer_host/video_capture_controller_event_handler.h',
         'browser/renderer_host/video_capture_host.cc',
         'browser/renderer_host/video_capture_host.h',
         'browser/resolve_proxy_msg_helper.cc',

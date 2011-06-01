@@ -322,7 +322,7 @@ class VideoCaptureHostTest : public testing::Test {
     EXPECT_CALL(*host_, OnStateChanged(kRouteId, kDeviceId,
                                        media::VideoCapture::kError))
         .Times(1);
-    VideoCaptureController::ControllerId id(kRouteId, kDeviceId);
+    VideoCaptureControllerID id(kRouteId, kDeviceId);
     host_->OnError(id);
     SyncWithVideoCaptureManagerThread();
   }

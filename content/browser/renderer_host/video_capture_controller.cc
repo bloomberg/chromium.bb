@@ -18,9 +18,9 @@
 static const size_t kNoOfDIBS = 3;
 
 VideoCaptureController::VideoCaptureController(
-    ControllerId id,
+    const VideoCaptureControllerID& id,
     base::ProcessHandle render_process,
-    EventHandler* event_handler)
+    VideoCaptureControllerEventHandler* event_handler)
     : render_handle_(render_process),
       report_ready_to_delete_(false),
       event_handler_(event_handler),

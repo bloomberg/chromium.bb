@@ -44,7 +44,7 @@
 #include "ipc/ipc_message.h"
 
 class VideoCaptureHost : public BrowserMessageFilter,
-                         public VideoCaptureController::EventHandler {
+                         public VideoCaptureControllerEventHandler {
  public:
   VideoCaptureHost();
 
@@ -54,16 +54,16 @@ class VideoCaptureHost : public BrowserMessageFilter,
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
-  // VideoCaptureController::EventHandler implementation.
-  virtual void OnError(VideoCaptureController::ControllerId id);
-  virtual void OnBufferReady(VideoCaptureController::ControllerId id,
+  // VideoCaptureControllerEventHandler implementation.
+  virtual void OnError(const VideoCaptureControllerID& id);
+  virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              TransportDIB::Handle handle,
                              base::Time timestamp);
-  virtual void OnFrameInfo(VideoCaptureController::ControllerId id,
+  virtual void OnFrameInfo(const VideoCaptureControllerID& id,
                            int width,
                            int height,
                            int frame_per_second);
-  virtual void OnReadyToDelete(VideoCaptureController::ControllerId id);
+  virtual void OnReadyToDelete(const VideoCaptureControllerID& id);
 
  private:
   friend class BrowserThread;
@@ -95,7 +95,7 @@ class VideoCaptureHost : public BrowserMessageFilter,
 
   // Called on the IO thread when VideoCaptureController have
   // reported that all DIBs have been returned.
-  void DoDeleteVideoCaptureController(VideoCaptureController::ControllerId id);
+  void DoDeleteVideoCaptureController(const VideoCaptureControllerID& id);
 
   // Send a filled buffer to the VideoCaptureMessageFilter.
   void DoSendFilledBuffer(int32 routing_id,
@@ -114,10 +114,10 @@ class VideoCaptureHost : public BrowserMessageFilter,
   // Handle error coming from VideoCaptureDevice.
   void DoHandleError(int32 routing_id, int device_id);
 
-  typedef std::map<VideoCaptureController::ControllerId,
+  typedef std::map<VideoCaptureControllerID,
                    scoped_refptr<VideoCaptureController> >EntryMap;
 
-  // A map of VideoCaptureController::ControllerId to VideoCaptureController
+  // A map of VideoCaptureControllerID to VideoCaptureController
   // objects that is currently active.
   EntryMap entries_;
 

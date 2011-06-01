@@ -31,36 +31,35 @@ void VideoCaptureHost::OnDestruct() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Implements VideoCaptureController::EventHandler.
-void VideoCaptureHost::OnError(VideoCaptureController::ControllerId id) {
+// Implements VideoCaptureControllerEventHandler.
+void VideoCaptureHost::OnError(const VideoCaptureControllerID& id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoHandleError, id.first,
-                        id.second));
+      NewRunnableMethod(this, &VideoCaptureHost::DoHandleError, id.routing_id,
+                        id.device_id));
 }
 
 void VideoCaptureHost::OnBufferReady(
-    VideoCaptureController::ControllerId id,
+    const VideoCaptureControllerID& id,
     TransportDIB::Handle handle,
     base::Time timestamp) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoSendFilledBuffer, id.first,
-                        id.second, handle, timestamp));
+      NewRunnableMethod(this, &VideoCaptureHost::DoSendFilledBuffer,
+                        id.routing_id, id.device_id, handle, timestamp));
 }
 
-void VideoCaptureHost::OnFrameInfo(VideoCaptureController::ControllerId id,
+void VideoCaptureHost::OnFrameInfo(const VideoCaptureControllerID& id,
                                    int width,
                                    int height,
                                    int frame_per_second) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoSendFrameInfo, id.first,
-                        id.second, width, height, frame_per_second));
+      NewRunnableMethod(this, &VideoCaptureHost::DoSendFrameInfo, id.routing_id,
+                        id.device_id, width, height, frame_per_second));
 }
 
-void VideoCaptureHost::OnReadyToDelete(
-    VideoCaptureController::ControllerId id) {
+void VideoCaptureHost::OnReadyToDelete(const VideoCaptureControllerID& id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &VideoCaptureHost::DoDeleteVideoCaptureController,
@@ -83,7 +82,7 @@ void VideoCaptureHost::DoHandleError(int32 routing_id, int device_id) {
   Send(new VideoCaptureMsg_StateChanged(routing_id, device_id,
                                         media::VideoCapture::kError));
 
-  VideoCaptureController::ControllerId id(routing_id, device_id);
+  VideoCaptureControllerID id(routing_id, device_id);
   EntryMap::iterator it = entries_.find(id);
   if (it != entries_.end()) {
     VideoCaptureController* controller = it->second;
@@ -127,8 +126,7 @@ void VideoCaptureHost::OnStartCapture(const IPC::Message& msg, int device_id,
                                       const media::VideoCaptureParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  VideoCaptureController::ControllerId controller_id(msg.routing_id(),
-                                                     device_id);
+  VideoCaptureControllerID controller_id(msg.routing_id(), device_id);
 
   DCHECK(entries_.find(controller_id) == entries_.end());
 
@@ -141,8 +139,7 @@ void VideoCaptureHost::OnStartCapture(const IPC::Message& msg, int device_id,
 void VideoCaptureHost::OnStopCapture(const IPC::Message& msg, int device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  VideoCaptureController::ControllerId controller_id(msg.routing_id(),
-                                                     device_id);
+  VideoCaptureControllerID controller_id(msg.routing_id(), device_id);
   EntryMap::iterator it = entries_.find(controller_id);
   if (it != entries_.end()) {
     scoped_refptr<VideoCaptureController> controller = it->second;
@@ -166,8 +163,7 @@ void VideoCaptureHost::OnReceiveEmptyBuffer(const IPC::Message& msg,
                                             TransportDIB::Handle handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  VideoCaptureController::ControllerId controller_id(msg.routing_id(),
-                                                     device_id);
+  VideoCaptureControllerID controller_id(msg.routing_id(), device_id);
   EntryMap::iterator it = entries_.find(controller_id);
   if (it != entries_.end()) {
     scoped_refptr<VideoCaptureController> controller = it->second;
@@ -176,11 +172,11 @@ void VideoCaptureHost::OnReceiveEmptyBuffer(const IPC::Message& msg,
 }
 
 void VideoCaptureHost::DoDeleteVideoCaptureController(
-    VideoCaptureController::ControllerId id) {
+    const VideoCaptureControllerID& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Report that the device have successfully been stopped.
-  Send(new VideoCaptureMsg_StateChanged(id.first, id.second,
+  Send(new VideoCaptureMsg_StateChanged(id.routing_id, id.device_id,
                                         media::VideoCapture::kStopped));
   entries_.erase(id);
 }
