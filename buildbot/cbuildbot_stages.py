@@ -4,6 +4,7 @@
 
 """Module containing the various stages that a builder runs."""
 
+import constants
 import datetime
 import math
 import os
@@ -378,6 +379,31 @@ class SyncStage(BuilderStage):
     self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
     for path in BuilderStage.overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
+
+
+class PatchChangesStage(BuilderStage):
+  """Stage that patches a set of Gerrit changes to the buildroot source tree."""
+  def __init__(self, bot_id, options, build_config, patches):
+    BuilderStage.__init__(self, bot_id, options, build_config)
+    self.patches = patches
+
+  def _PerformStage(self):
+    PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
+
+    for patch in self.patches:
+      url_prefix = constants.INTERNAL_SSH_URL if patch.internal else PUBLIC_URL
+      url = os.path.join(url_prefix, patch.project)
+
+      cmd = ['repo', 'forall', patch.project, '-c', 'pwd']
+      project_dir = cros_lib.RunCommand(cmd, cwd=self._build_root,
+                                        redirect_stdout=True).output.strip()
+
+      cros_lib.RunCommand(['git', 'fetch', url, patch.ref], cwd=project_dir)
+      cros_lib.RunCommand(['git', 'checkout', '--no-track',
+                           '-b', constants.PATCH_BRANCH,
+                           'FETCH_HEAD'], cwd=project_dir)
+      m_branch = 'remotes/m/' + self._tracking_branch
+      cros_lib.RunCommand(['git', 'rebase', m_branch], cwd=project_dir)
 
 
 class ManifestVersionedSyncStage(BuilderStage):

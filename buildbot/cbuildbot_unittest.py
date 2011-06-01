@@ -36,6 +36,7 @@ class CBuildBotTest(mox.MoxTestBase):
     self.options.tests = False
     self.options.archive = False
     self.options.remote_test_status = False
+    self.options.patches = None
 
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""

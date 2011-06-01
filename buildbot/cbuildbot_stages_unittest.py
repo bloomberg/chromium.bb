@@ -207,6 +207,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
+    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
+
     self.manager.GetNextBuildSpec(stages.VERSION_FILE,
         latest=True).AndReturn(self.next_version)
 
@@ -215,10 +217,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
                               self.next_version,
                               url=self.url)
 
-    os.path.isdir('/fake_root/.repo').AndReturn(True)
     os.path.isdir('/fake_root/src/third_party/'
                   'chromiumos-overlay').AndReturn(True)
-
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncStage(self.bot_id,

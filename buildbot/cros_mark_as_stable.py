@@ -23,7 +23,6 @@ from chromite.buildbot import cbuildbot_commands as commands
 from chromite.lib import cros_build_lib
 
 
-
 # TODO(sosa): Remove during OO refactor.
 VERBOSE = False
 
@@ -32,16 +31,11 @@ _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit %s as stable.'
 
 # Dictionary of valid commands with usage information.
 COMMAND_DICTIONARY = {
-                        'clean':
-                          'Cleans up previous calls to either commit or push',
                         'commit':
                           'Marks given ebuilds as stable locally',
                         'push':
                           'Pushes previous marking of ebuilds to remote repo',
                       }
-
-# Name used for stabilizing branch.
-STABLE_BRANCH_NAME = 'stabilizing_branch'
 
 
 def BestEBuild(ebuilds):
@@ -249,26 +243,6 @@ def _SimpleRunCommand(command):
 # ======================= End Global Helper Functions ========================
 
 
-def Clean(tracking_branch):
-  """Cleans up uncommitted changes.
-
-  Args:
-    tracking_branch:  The tracking branch we want to return to after the call.
-  """
-  # Safety case in case we got into a bad state with a previous build.
-  try:
-    _SimpleRunCommand('git rebase --abort')
-  except:
-    pass
-
-  _SimpleRunCommand('git reset HEAD --hard')
-  _SimpleRunCommand('git checkout ' + tracking_branch)
-  branch = GitBranch(STABLE_BRANCH_NAME, tracking_branch)
-  if branch.Exists():
-    GitBranch.Checkout(branch)
-    branch.Delete()
-
-
 def PushChange(stable_branch, tracking_branch, dryrun):
   """Pushes commits in the stable_branch to the remote git repository.
 
@@ -291,8 +265,7 @@ def PushChange(stable_branch, tracking_branch, dryrun):
                                   tracking_branch + '..')
   description = 'Marking set of ebuilds as stable\n\n%s' % description
   cros_build_lib.Info('Using description %s' % description)
-  merge_branch_name = 'merge_branch'
-  merge_branch = GitBranch(merge_branch_name, tracking_branch)
+  merge_branch = GitBranch(constants.MERGE_BRANCH, tracking_branch)
   if merge_branch.Exists():
     merge_branch.Delete()
   _SimpleRunCommand('repo sync .')
@@ -302,7 +275,8 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   _SimpleRunCommand('git merge --squash %s' % stable_branch)
   _SimpleRunCommand('git commit -m "%s"' % description)
   _SimpleRunCommand('git config push.default tracking')
-  cros_build_lib.GitPushWithRetry(merge_branch_name, cwd='.', dryrun=dryrun)
+  cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd='.',
+                                  dryrun=dryrun)
 
 
 class GitBranch(object):
@@ -556,7 +530,7 @@ def main(argv):
   VERBOSE = options.verbose
 
   if len(args) != 1:
-    _PrintUsageAndDie('Must specify a valid command [commit, clean, push]')
+    _PrintUsageAndDie('Must specify a valid command [commit, push]')
 
   command = args[0]
   package_list = None
@@ -567,7 +541,7 @@ def main(argv):
   if options.overlays:
     overlays = {}
     for path in options.overlays.split(':'):
-      if command != 'clean' and not os.path.isdir(path):
+      if not os.path.isdir(path):
         cros_build_lib.Die('Cannot find overlay: %s' % path)
       overlays[path] = []
   else:
@@ -598,12 +572,11 @@ def main(argv):
     # this parameter so that we don't need to modify the cwd globally.
     os.chdir(overlay)
 
-    if command == 'clean':
-      Clean(tracking_branch)
-    elif command == 'push':
-      PushChange(STABLE_BRANCH_NAME, tracking_branch, options.dryrun)
+    if command == 'push':
+      PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
+                 options.dryrun)
     elif command == 'commit' and ebuilds:
-      work_branch = GitBranch(STABLE_BRANCH_NAME, tracking_branch)
+      work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch)
       work_branch.CreateBranch()
       if not work_branch.Exists():
         cros_build_lib.Die('Unable to create stabilizing branch in %s' %

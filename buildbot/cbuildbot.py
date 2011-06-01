@@ -19,6 +19,7 @@ if __name__ == '__main__':
   import constants
   sys.path.append(constants.SOURCE_ROOT)
 
+from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.lib import cros_build_lib as cros_lib
@@ -59,6 +60,27 @@ def _GetChromiteTrackingBranch():
   return tracking_branch
 
 
+def _CheckBuildRootBranch(buildroot, tracking_branch):
+  """Make sure buildroot branch is the same as Chromite branch."""
+  manifest_branch = cros_lib.GetManifestDefaultBranch(buildroot)
+  if manifest_branch != tracking_branch:
+    cros_lib.Die('Chromite is not on same branch as buildroot checkout\n' +
+                 'Chromite is on branch %s.\n' % tracking_branch +
+                 'Buildroot checked out to %s\n' % manifest_branch)
+
+
+def _PreProcessPatches(patches):
+  patch_info = None
+
+  if patches:
+    try:
+      patch_info = commands.GetGerritPatchInfo(patches)
+    except commands.PatchException as e:
+      cros_lib.Die(str(e))
+
+  return patch_info
+
+
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
 
@@ -85,6 +107,12 @@ def RunBuildStages(bot_id, options, build_config):
   tracking_branch = _GetChromiteTrackingBranch()
   stages.BuilderStage.SetTrackingBranch(tracking_branch)
 
+  repo_dir = os.path.join(options.buildroot, '.repo')
+  if not options.clobber and os.path.isdir(repo_dir):
+    _CheckBuildRootBranch(options.buildroot, tracking_branch)
+
+  patches = _PreProcessPatches(options.patches)
+
   build_success = False
   build_and_test_success = False
 
@@ -92,15 +120,8 @@ def RunBuildStages(bot_id, options, build_config):
     if options.sync:
       sync_stage(bot_id, options, build_config).Run()
 
-    if not options.clobber:
-      # If we are doing an incremental checkout, make sure we are running on a
-      # buildroot checked out to same branch as chromite.  Use
-      # <build_root>/src/scripts as the spot check.
-      manifest_branch = cros_lib.GetManifestDefaultBranch(options.buildroot)
-      if manifest_branch != tracking_branch:
-        cros_lib.Die('Chromite is not on same branch as buildroot checkout\n' +
-                     'Chromite is on branch %s.\n' % tracking_branch +
-                     'Buildroot checked out to %s\n' % manifest_branch)
+    if options.patches:
+      stages.PatchChangesStage(bot_id, options, build_config, patches).Run()
 
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()
@@ -153,6 +174,14 @@ def RunBuildStages(bot_id, options, build_config):
   stages.Results.Report(sys.stdout)
   return stages.Results.Success()
 
+
+def _CheckPatches(option, opt_str, value, parser):
+  """Do an early quick check of the passed-in patches."""
+  parser.values.patches = value.split()
+  if not len(parser.values.patches):
+    raise optparse.OptionValueError('No patches specified')
+
+
 def main():
   # Parse options
   usage = "usage: %prog [options] cbuildbot_config"
@@ -191,6 +220,11 @@ def main():
   parser.add_option('--notests', action='store_false', dest='tests',
                     default=True,
                     help='Override values from buildconfig and run no tests.')
+  parser.add_option('-p', '--patches', action='callback', dest='patches',
+                    default = None, type='string', callback=_CheckPatches,
+                    help=("Space-separated list of short-form Gerrit "
+                          "Change-Id's or change numbers to patch.  Please "
+                          "prepend '*' to internal Change-Id's"))
   parser.add_option('--remoteteststatus', dest='remote_test_status',
                     default=None, help='List of remote jobs to check status')
   parser.add_option('--resume', action='store_true',

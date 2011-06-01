@@ -374,5 +374,97 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
+class GerritQueryTests(mox.MoxTestBase):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    result = ('{"project":"chromiumos/chromite","branch":"master","id":'
+             '"Icb8e1d315d465a077ffcddd7d1ab2307573017d5","number":"2144",'
+             '"subject":"Add functionality to cbuildbot to patch in a set '
+             'of Gerrit CL\u0027s","owner":{"name":"Ryan Cui","email":'
+             '"rcui@chromium.org"},"url":'
+             '"http://gerrit.chromium.org/gerrit/2144","lastUpdated":'
+             '1307577655,"sortKey":"00158e2000000860","open":true,"status":'
+             '"NEW","currentPatchSet":{"number":"3",'
+             '"revision":"b1c82d0f1c916b7f66cfece625d67fb5ecea9ea7","ref":'
+             '"refs/changes/44/2144/3","uploader":{"name":"Ryan Cui","email":'
+             '"rcui@chromium.org"}}}\n'
+             '{"type":"stats","rowCount":1,"runTimeMilliseconds":4}')
+
+    self.result = result
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+
+  def testPatchInfoNotFound(self):
+    """Test case where ChangeID isn't found on internal server."""
+    patches = ['1A3G2D1D2']
+
+    output_obj = cros_lib.CommandResult()
+    output_obj.returncode = 0
+    output_obj.output='{"type":"error","message":"Unsupported query:5S2D4D2D4"}'
+
+    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                        redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+
+    self.assertRaises(commands.PatchException, commands.GetGerritPatchInfo,
+                      patches)
+    self.mox.VerifyAll()
+
+
+  def testGetInternalPatchInfo(self):
+    """Test case where ChangeID is for an internal CL."""
+    patches = ['*1A3G2D1D2']
+
+    output_obj = cros_lib.CommandResult()
+    output_obj.returncode = 0
+    output_obj.output = self.result
+
+    cros_lib.RunCommand(mox.In('gerrit-int.chromium.org'),
+                        redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+
+    patch_info = commands.GetGerritPatchInfo(patches)
+    self.assertEquals(patch_info[0].internal, True)
+    self.mox.VerifyAll()
+
+  def testGetExternalPatchInfo(self):
+    """Test case where ChangeID is for an external CL."""
+    patches = ['1A3G2D1D2']
+
+    output_obj = cros_lib.CommandResult()
+    output_obj.returncode = 0
+    output_obj.output = self.result
+
+    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                        redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+
+    patch_info = commands.GetGerritPatchInfo(patches)
+    self.assertEquals(patch_info[0].internal, False)
+    self.mox.VerifyAll()
+
+  def testPatchInfoParsing(self):
+    """Test parsing of the JSON results."""
+    patches = ['1A3G2D1D2']
+
+    output_obj = cros_lib.CommandResult()
+    output_obj.returncode = 0
+    output_obj.output = self.result
+
+    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                        redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+
+    patch_info = commands.GetGerritPatchInfo(patches)
+    self.assertEquals(patch_info[0].project, 'chromiumos/chromite')
+    self.assertEquals(patch_info[0].ref, 'refs/changes/44/2144/3')
+
+    self.mox.VerifyAll()
+
+
 if __name__ == '__main__':
   unittest.main()

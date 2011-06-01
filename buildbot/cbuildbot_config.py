@@ -75,20 +75,23 @@ git_url -- git repository URL for our manifests.
 
 manifest_version -- URL to git repo to store per-build manifest.
                     Usually None or
-                    MANIFEST_VERSIONS_INT_URL
+                    _MANIFEST_VERSIONS_INT_URL
 """
+
+import constants
+
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
-GERRIT_URL = 'ssh://gerrit.chromium.org:29418'
-GERRIT_INT_URL = 'ssh://gerrit-int.chromium.org:29419'
+_MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
+_MANIFEST_INT_URL = constants.GERRIT_INT_SSH_URL + '/chromeos/manifest-internal'
 
-MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
-MANIFEST_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-internal'
+# TODO(sosa): Move to manifest-versions-external once its created
+_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
+_MANIFEST_VERSIONS_URL = constants.GERRIT_SSH_URL + _VERSIONS_SUFFIX
 
-# TODO(sosa): Move to manifest-versions-external once its created.
-MANIFEST_VERSIONS_URL = GERRIT_URL + '/chromiumos/manifest-versions'
-MANIFEST_VERSIONS_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-versions'
+_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
+_MANIFEST_VERSIONS_INT_URL = constants.GERRIT_INT_SSH_URL + _VERSIONS_INT_SUFFIX
 
 default = {
   # 'board' No default value
@@ -132,7 +135,7 @@ default = {
   'push_image' : False,
   'upload_symbols' : False,
 
-  'git_url' : MANIFEST_URL,
+  'git_url' : _MANIFEST_URL,
   'manifest_version' : None,
   'prebuilts' : True,
 }
@@ -177,7 +180,7 @@ full = {
 
 internal = {
   'overlays' : 'both',
-  'git_url' : MANIFEST_INT_URL,
+  'git_url' : _MANIFEST_INT_URL,
   'quick_vm' : False,
   'gs_path' : None,
 }
@@ -192,7 +195,7 @@ release = {
   #   --bvt --clean --no-gstorage --ctest
   'build_tests' : True,
   'chrome_tests' : True,
-  'manifest_version' : MANIFEST_VERSIONS_INT_URL,
+  'manifest_version' : _MANIFEST_VERSIONS_INT_URL,
   'prebuilts' : False,
   'push_image' : True,
   'upload_symbols' : True,
@@ -239,7 +242,7 @@ add_config('x86-generic-pre-flight-queue', [{
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': 'public',
-  'manifest_version': MANIFEST_VERSIONS_URL,
+  'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
 add_config('x86-generic-chrome-pre-flight-queue', [{
@@ -259,7 +262,7 @@ add_config('x86-agz-bin', [{
   'uprev' : True,
   'overlays': 'both',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
+  'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
 add_config('x86-pineview-bin', [{
@@ -268,7 +271,7 @@ add_config('x86-pineview-bin', [{
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
+  'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
 add_config('arm-tegra2-bin', [arm, {
@@ -277,7 +280,7 @@ add_config('arm-tegra2-bin', [arm, {
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
+  'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
 add_config('arm-generic-bin', [arm, {
@@ -286,7 +289,7 @@ add_config('arm-generic-bin', [arm, {
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'manifest_version': MANIFEST_VERSIONS_URL,
+  'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
 add_config('arm-generic-full', [arm, full, {
