@@ -69,14 +69,14 @@ Link::Link() : Label(L""),
                listener_(NULL),
                highlighted_(false) {
   Init();
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 Link::Link(const std::wstring& title) : Label(title),
                                         listener_(NULL),
                                         highlighted_(false) {
   Init();
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 void Link::Init() {

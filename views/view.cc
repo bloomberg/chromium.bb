@@ -934,10 +934,6 @@ void View::SetNextFocusableView(View* view) {
   next_focusable_view_ = view;
 }
 
-void View::SetFocusable(bool focusable) {
-  focusable_ = focusable;
-}
-
 bool View::IsFocusableInRootView() const {
   return IsFocusable() && IsVisibleInRootView();
 }

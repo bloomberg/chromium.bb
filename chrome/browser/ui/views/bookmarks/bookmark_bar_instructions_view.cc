@@ -33,7 +33,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
     import_link_ = new views::Link(
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_IMPORT_LINK)));
     // We don't want the link to alter tab navigation.
-    import_link_->SetFocusable(false);
+    import_link_->set_focusable(false);
     import_link_->set_listener(this);
     AddChildView(import_link_);
   }

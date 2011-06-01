@@ -20,7 +20,7 @@ namespace views {
 const char TabbedPane::kViewClassName[] = "views/TabbedPane";
 
 TabbedPane::TabbedPane() : native_tabbed_pane_(NULL), listener_(NULL) {
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 TabbedPane::~TabbedPane() {

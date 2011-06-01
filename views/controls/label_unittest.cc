@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,7 +195,7 @@ TEST(LabelTest, SingleLineSizing) {
 
 TEST(LabelTest, MultiLineSizing) {
   Label label;
-  label.SetFocusable(false);
+  label.set_focusable(false);
   std::wstring test_text(L"A random string\nwith multiple lines\nand returns!");
   label.SetText(test_text);
   label.SetMultiLine(true);
@@ -278,7 +278,7 @@ TEST(LabelTest, MultiLineSizing) {
 
 TEST(LabelTest, DrawSingleLineString) {
   Label label;
-  label.SetFocusable(false);
+  label.set_focusable(false);
 
   // Turn off mirroring so that we don't need to figure out if
   // align right really means align left.
@@ -396,7 +396,7 @@ TEST(LabelTest, DrawSingleLineString) {
 // multiline lables to not ellide in Linux only.
 TEST(LabelTest, DrawMultiLineString) {
   Label label;
-  label.SetFocusable(false);
+  label.set_focusable(false);
 
   // Turn off mirroring so that we don't need to figure out if
   // align right really means align left.
@@ -543,7 +543,7 @@ TEST(LabelTest, DrawMultiLineString) {
 
 TEST(LabelTest, DrawSingleLineStringInRTL) {
   Label label;
-  label.SetFocusable(false);
+  label.set_focusable(false);
 
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
@@ -664,7 +664,7 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
 // multiline lables to not ellide in Linux only.
 TEST(LabelTest, DrawMultiLineStringInRTL) {
   Label label;
-  label.SetFocusable(false);
+  label.set_focusable(false);
 
   // Test for RTL.
   std::string locale = l10n_util::GetApplicationLocale("");

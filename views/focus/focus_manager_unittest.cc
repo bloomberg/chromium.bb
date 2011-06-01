@@ -80,7 +80,6 @@ const int kOKButtonID = count++;
 const int kCancelButtonID = count++;
 const int kHelpButtonID = count++;
 
-
 const int kStyleContainerID = count++;  // 35
 const int kBoldCheckBoxID = count++;
 const int kItalicCheckBoxID = count++;
@@ -262,7 +261,7 @@ class BorderView : public NativeViewHost {
  public:
   explicit BorderView(View* child) : child_(child), widget_(NULL) {
     DCHECK(child);
-    SetFocusable(false);
+    set_focusable(false);
   }
 
   virtual ~BorderView() {}
@@ -711,7 +710,7 @@ void FocusTraversalTest::InitContentView() {
   y += 60;
 
   contents = new View();
-  contents->SetFocusable(true);
+  contents->set_focusable(true);
   contents->set_background(Background::CreateSolidBackground(SK_ColorBLUE));
   contents->SetID(kThumbnailContainerID);
   button = new NativeButton(NULL, L"Star");
@@ -753,7 +752,7 @@ class SimpleTestView : public View {
  public:
   SimpleTestView(std::vector<FocusTestEvent>* event_list, int view_id)
       : event_list_(event_list) {
-    SetFocusable(true);
+    set_focusable(true);
     SetID(view_id);
   }
 
@@ -818,9 +817,9 @@ class TestFocusChangeListener : public FocusChangeListener {
 
 TEST_F(FocusManagerTest, FocusChangeListener) {
   View* view1 = new View();
-  view1->SetFocusable(true);
+  view1->set_focusable(true);
   View* view2 = new View();
-  view2->SetFocusable(true);
+  view2->set_focusable(true);
   content_view_->AddChildView(view1);
   content_view_->AddChildView(view2);
 
@@ -969,7 +968,7 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
 
   NativeButton* button = new NativeButton(NULL, L"Press me");
   View* view = new View();
-  view->SetFocusable(true);
+  view->set_focusable(true);
 
   content_view_->AddChildView(button);
   button->SetBounds(10, 10, 200, 30);
@@ -1255,10 +1254,10 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
 
   FocusSearch focus_search_right(right_container_, true, true);
   right_container_->EnablePaneFocus(&focus_search_right);
-  FindViewByID(kRosettaLinkID)->SetFocusable(false);
-  FindViewByID(kStupeurEtTremblementLinkID)->SetFocusable(false);
+  FindViewByID(kRosettaLinkID)->set_focusable(false);
+  FindViewByID(kStupeurEtTremblementLinkID)->set_focusable(false);
   FindViewByID(kDinerGameLinkID)->set_accessibility_focusable(true);
-  FindViewByID(kDinerGameLinkID)->SetFocusable(false);
+  FindViewByID(kDinerGameLinkID)->set_focusable(false);
   FindViewByID(kAsterixLinkID)->RequestFocus();
 
   // Traverse the focus hierarchy within the pane several times.
@@ -1726,6 +1725,5 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   // Clear window_ so that we don't try to close it again.
   window_ = NULL;
 }
-
 
 }  // namespace views

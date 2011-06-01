@@ -58,7 +58,7 @@ CompactLocationBarView::CompactLocationBarView(CompactLocationBarViewHost* host)
       reload_button_(NULL),
       location_bar_view_(NULL),
       initialized_(false) {
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 CompactLocationBarView::~CompactLocationBarView() {

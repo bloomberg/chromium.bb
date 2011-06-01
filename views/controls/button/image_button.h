@@ -14,7 +14,7 @@ namespace views {
 // An image button.
 
 // Note that this type of button is not focusable by default and will not be
-// part of the focus chain.  Call SetFocusable(true) to make it part of the
+// part of the focus chain.  Call set_focusable(true) to make it part of the
 // focus chain.
 
 class ImageButton : public CustomButton {

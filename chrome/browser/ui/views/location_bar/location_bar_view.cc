@@ -125,7 +125,7 @@ LocationBarView::LocationBarView(Profile* profile,
       animation_offset_(0) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
-  SetFocusable(true);
+  set_focusable(true);
 
   if (mode_ == NORMAL)
     painter_.reset(new views::HorizontalPainter(kNormalModeBackgroundImages));

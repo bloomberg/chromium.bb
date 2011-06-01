@@ -24,8 +24,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
-#include "views/controls/link.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/controls/throbber.h"
 #include "views/layout/fill_layout.h"
 #include "views/layout/grid_layout.h"
@@ -79,7 +79,7 @@ const SkColor kWelcomeColor = 0xFFCDD3D6;
 
 // Initializes menu button default properties.
 static void InitMenuButtonProperties(views::MenuButton* menu_button) {
-  menu_button->SetFocusable(true);
+  menu_button->set_focusable(true);
   menu_button->SetNormalHasBorder(true);
   menu_button->SetEnabledColor(SK_ColorBLACK);
   menu_button->SetHighlightColor(SK_ColorBLACK);
@@ -319,7 +319,7 @@ void NetworkSelectionView::Init() {
   proxy_settings_link_ = new views::Link();
   proxy_settings_link_->set_listener(this);
   proxy_settings_link_->SetVisible(true);
-  proxy_settings_link_->SetFocusable(true);
+  proxy_settings_link_->set_focusable(true);
   proxy_settings_link_->SetNormalColor(login::kLinkColor);
   proxy_settings_link_->SetHighlightedColor(login::kLinkColor);
 

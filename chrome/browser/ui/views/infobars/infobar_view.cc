@@ -249,7 +249,7 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
                                 rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
         close_button_->SetAccessibleName(
             l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-        close_button_->SetFocusable(true);
+        close_button_->set_focusable(true);
         AddChildView(close_button_);
       }
     } else {

@@ -200,7 +200,7 @@ void CaptchaView::Init() {
     ok_button_ = new WideTextButton(
         this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
     ok_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-    ok_button_->SetFocusable(true);
+    ok_button_->set_focusable(true);
     ok_button_->SetNormalHasBorder(true);
     ok_button_->set_animate_on_state_change(false);
     ok_button_->SetEnabledColor(SK_ColorBLACK);

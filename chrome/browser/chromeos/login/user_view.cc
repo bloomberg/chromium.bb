@@ -81,7 +81,7 @@ class SignoutView : public views::View {
     signout_link_->set_listener(link_listener);
     signout_link_->SetFont(font);
     signout_link_->SetColor(kTextColor);
-    signout_link_->SetFocusable(true);
+    signout_link_->set_focusable(true);
     signout_link_->SetHighlightedColor(kTextColor);
     signout_link_->SetDisabledColor(kTextColor);
     signout_link_->SetNormalColor(kTextColor);

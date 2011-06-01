@@ -29,7 +29,7 @@ ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
   // This view needs to be focusable so it can act as the focused view for the
   // focus manager. This is required to have SkipDefaultKeyEventProcessing
   // called so the tab key events are forwarded to the renderer.
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 ExtensionView::~ExtensionView() {

@@ -71,7 +71,7 @@ void ShutdownButton::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(*rb.GetBitmapNamed(IDR_SHUTDOWN_ICON));
   set_icon_text_spacing(kIconTextPadding);
-  SetFocusable(true);
+  set_focusable(true);
   SetID(VIEW_ID_SCREEN_LOCKER_SHUTDOWN);
   // Set label colors.
   SetEnabledColor(SK_ColorWHITE);

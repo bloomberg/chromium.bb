@@ -14,7 +14,7 @@ namespace {
 
 // Make the provided view and all of its descendents unfocusable.
 void MakeViewHierarchyUnfocusable(views::View* view) {
-  view->SetFocusable(false);
+  view->set_focusable(false);
   for (int i = 0; i < view->child_count(); ++i) {
     MakeViewHierarchyUnfocusable(view->GetChildViewAt(i));
   }

@@ -407,7 +407,7 @@ int BrowserViewLayout::LayoutTabStripRegion() {
 int BrowserViewLayout::LayoutToolbar(int top) {
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = browser_view_->IsToolbarVisible();
-  toolbar_->location_bar()->SetFocusable(toolbar_visible);
+  toolbar_->location_bar()->set_focusable(toolbar_visible);
   int y = top;
   if (!browser_view_->UseVerticalTabs()) {
     y -= ((toolbar_visible || browser_view_->UseCompactNavigationBar()) &&

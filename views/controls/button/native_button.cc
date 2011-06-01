@@ -44,7 +44,7 @@ NativeButtonBase::NativeButtonBase(ButtonListener* listener)
       need_elevation_(false),
       ignore_minimum_size_(false) {
   InitBorder();
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 NativeButtonBase::NativeButtonBase(ButtonListener* listener,
@@ -56,7 +56,7 @@ NativeButtonBase::NativeButtonBase(ButtonListener* listener,
       ignore_minimum_size_(false) {
   SetLabel(label);  // SetLabel takes care of label layout in RTL UI.
   InitBorder();
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 NativeButtonBase::~NativeButtonBase() {
@@ -248,7 +248,7 @@ NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
     : TextButton(listener, label), is_default_(false) {
   set_alignment(TextButton::ALIGN_CENTER);
   SetNormalHasBorder(true);
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 void NativeButton::SetLabel(const std::wstring& label) {

@@ -28,7 +28,7 @@ Combobox::Combobox(ComboboxModel* model)
       model_(model),
       listener_(NULL),
       selected_item_(0) {
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 Combobox::~Combobox() {

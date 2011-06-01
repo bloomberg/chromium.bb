@@ -711,7 +711,7 @@ class View : public AcceleratorTarget {
   // Sets whether this view can accept the focus.
   // Note that this is false by default so that a view used as a container does
   // not get the focus.
-  virtual void SetFocusable(bool focusable);
+  void set_focusable(bool focusable) { focusable_ = focusable; }
 
   // Returns true if the view is focusable (IsFocusable) and visible in the root
   // view. See also IsFocusable.

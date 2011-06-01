@@ -85,7 +85,7 @@ void ExistingUserView::RecreateFields() {
     password_field_->set_background(
         views::Background::CreateVerticalGradientBackground(
             kBackgroundColorTop, kBackgroundColorBottom));
-    password_field_->SetFocusable(true);
+    password_field_->set_focusable(true);
     password_field_->SetController(this);
     AddChildView(password_field_);
   }

@@ -169,7 +169,7 @@ void TakePhotoView::Init() {
   user_image_->Init();
 
   snapshot_button_ = new views::ImageButton(this);
-  snapshot_button_->SetFocusable(true);
+  snapshot_button_->set_focusable(true);
   snapshot_button_->SetImage(views::CustomButton::BS_NORMAL,
                              ResourceBundle::GetSharedInstance().GetBitmapNamed(
                                  IDR_USER_IMAGE_CAPTURE));

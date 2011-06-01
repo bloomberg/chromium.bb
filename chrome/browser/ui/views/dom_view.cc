@@ -16,7 +16,7 @@ const char DOMView::kViewClassName[] =
     "browser/ui/views/DOMView";
 
 DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 DOMView::~DOMView() {

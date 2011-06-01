@@ -63,7 +63,7 @@ const char Separator::kViewClassName[] = "views/Separator";
 const int kSeparatorSize = 2;
 
 Separator::Separator() : native_wrapper_(NULL) {
-  SetFocusable(false);
+  set_focusable(false);
 }
 
 Separator::~Separator() {

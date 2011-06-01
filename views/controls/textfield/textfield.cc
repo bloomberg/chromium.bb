@@ -55,7 +55,7 @@ Textfield::Textfield()
       initialized_(false),
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false) {
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 Textfield::Textfield(StyleFlags style)
@@ -73,7 +73,7 @@ Textfield::Textfield(StyleFlags style)
       initialized_(false),
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false) {
-  SetFocusable(true);
+  set_focusable(true);
 }
 
 Textfield::~Textfield() {

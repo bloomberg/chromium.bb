@@ -235,7 +235,7 @@ void NewUserView::RecreatePeculiarControls() {
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_MENU_DROPARROW_SHARP));
   languages_menubutton_->SetEnabledColor(kLanguagesMenuTextColor);
-  languages_menubutton_->SetFocusable(true);
+  languages_menubutton_->set_focusable(true);
   languages_menubutton_->SetEnabled(!g_browser_process->local_state()->
       IsManagedPreference(prefs::kApplicationLocale));
 

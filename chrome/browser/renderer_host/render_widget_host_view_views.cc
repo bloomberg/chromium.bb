@@ -20,8 +20,8 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
@@ -30,8 +30,8 @@
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
-#include "views/widget/widget.h"
 #include "views/widget/native_widget_gtk.h"
+#include "views/widget/widget.h"
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
@@ -148,7 +148,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       touch_event_(),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false) {
-  SetFocusable(true);
+  set_focusable(true);
   host_->set_view(this);
 }
 
@@ -180,7 +180,7 @@ void RenderWidgetHostViewViews::InitAsPopup(
   Show();
 
   if (NeedsInputGrab()) {
-    SetFocusable(true);
+    set_focusable(true);
     RequestFocus();
   }
 }
