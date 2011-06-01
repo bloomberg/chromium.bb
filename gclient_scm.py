@@ -493,6 +493,12 @@ class GitWrapper(SCMWrapper):
       clone_cmd.append('--verbose')
     clone_cmd.extend([url, self.checkout_path])
 
+    # If the parent directory does not exist, Git clone on Windows will not
+    # create it, so we need to do it manually.
+    parent_dir = os.path.dirname(self.checkout_path)
+    if not os.path.exists(parent_dir):
+      os.makedirs(parent_dir)
+
     for _ in range(3):
       try:
         self._Run(clone_cmd, options, cwd=self._root_dir)
