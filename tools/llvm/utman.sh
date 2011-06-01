@@ -1085,20 +1085,24 @@ gcc-stage1-make() {
 
   xgcc-patch "${target}"
 
+  # TODO(robertm): may split this into a separate step
   RunWithLog libgcc.clean \
       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
              make clean-target-libgcc
 
-  StepBanner "GCC-${target}" "Make (Stage 2)"
-  # NOTE: This builds more than what we need right now. For example,
-  # libstdc++ is unused (we always use the bitcode one). This might change
-  # when we start supporting shared libraries.
+  StepBanner "GCC-${target}" "Make (Stage 2 - native libs)"
+  # NOTE: the target libgcc.a actually build libgcov.a libgcc.a libgcc_eh.a
+  #       There is no "target" in the top level Makefile to do the job.
+  #       libgcc.a and friends are actually built via gcc/libgcc.mk
+  #       which is generated on the fly by gcc/Makefile
+  spushd gcc
   RunWithLog llvm-pregcc2-${target}.make \
        env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
               CC="${CC}" \
               CXX="${CXX}" \
               CFLAGS="-Dinhibit_libc" \
-              make ${MAKE_OPTS} all
+              make ${MAKE_OPTS} libgcc.a
+  spopd
 
   xgcc-unpatch "${target}"
 
