@@ -194,6 +194,9 @@ class Demuxer : public Filter {
 
   // Alert the Demuxer that the video preload value has been changed.
   virtual void SetPreload(Preload preload) = 0;
+
+  // Returns the starting time for the media file.
+  virtual base::TimeDelta GetStartTime() const = 0;
 };
 
 

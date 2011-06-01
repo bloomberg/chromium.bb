@@ -153,6 +153,7 @@ class AdaptiveDemuxer : public Demuxer {
 
   // Demuxer implementation.
   virtual scoped_refptr<DemuxerStream> GetStream(DemuxerStream::Type type);
+  virtual base::TimeDelta GetStartTime() const;
 
  private:
   // Returns a pointer to the currently active demuxer of the given type.
@@ -225,6 +226,10 @@ class AdaptiveDemuxer : public Demuxer {
   float playback_rate_;
   bool switch_pending_;
   scoped_refptr<StreamSwitchManager> stream_switch_manager_;
+
+  // This is used to set the starting clock value to match the lowest
+  // timestamp of all |demuxers_|.
+  base::TimeDelta start_time_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveDemuxer);
 };

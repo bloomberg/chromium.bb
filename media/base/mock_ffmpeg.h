@@ -116,6 +116,19 @@ ACTION_P3(CreatePacketNoCount, stream_index, data, size) {
   return 0;
 }
 
+// Used for simulating av_read_frame().
+ACTION_P4(CreatePacketTimeNoCount, stream_index, data, size, pts) {
+  // Confirm we're dealing with AVPacket so we can safely const_cast<>.
+  ::testing::StaticAssertTypeEq<AVPacket*, arg1_type>();
+  memset(arg1, 0, sizeof(*arg1));
+  arg1->stream_index = stream_index;
+  arg1->data = const_cast<uint8*>(data);
+  arg1->size = size;
+  arg1->pts = pts;
+
+  return 0;
+}
+
 // Used for simulating av_new_packet().
 ACTION(NewPacket) {
   ::testing::StaticAssertTypeEq<AVPacket*, arg0_type>();
