@@ -218,7 +218,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     save_button_ = new views::NativeButton(this,
         UTF16ToWide(l10n_util::GetStringUTF16(
             download->is_extension_install() ?
-                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD)));
+                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD)));
     save_button_->set_ignore_minimum_size(true);
     discard_button_ = new views::NativeButton(
         this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD)));

@@ -69,7 +69,7 @@ DownloadsUIHTMLSource::DownloadsUIHTMLSource()
   // Dangerous file.
   AddLocalizedString("danger_file_desc", IDS_PROMPT_DANGEROUS_DOWNLOAD);
   AddLocalizedString("danger_url_desc", IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
-  AddLocalizedString("danger_save", IDS_SAVE_DOWNLOAD);
+  AddLocalizedString("danger_save", IDS_CONFIRM_DOWNLOAD);
   AddLocalizedString("danger_discard", IDS_DISCARD_DOWNLOAD);
 
   // Controls.

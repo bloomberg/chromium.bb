@@ -225,7 +225,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     GtkWidget* dangerous_accept = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(
             download_model->download()->is_extension_install() ?
-                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD).c_str());
+                IDS_CONTINUE_EXTENSION_DOWNLOAD :
+                IDS_CONFIRM_DOWNLOAD).c_str());
     g_signal_connect(dangerous_accept, "clicked",
                      G_CALLBACK(OnDangerousAcceptThunk), this);
     gtk_util::CenterWidgetInHBox(dangerous_hbox_.get(), dangerous_accept, false,

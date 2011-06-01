@@ -2178,7 +2178,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
 
       <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
                desc="Message shown to the user to validate the download of a dangerous file.">
-        This type of file can harm your computer. Are you sure you want to download <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph>?
+        This type of file can harm your computer. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
       </message>
       <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION"
          desc="Message shown to the user to validate the download of an extension file.">
@@ -2186,11 +2186,11 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       </message>
       <message name="IDS_PROMPT_UNSAFE_DOWNLOAD_URL"
          desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
-        This file is malicious. Are you sure you want to continue?
+        This file is malicious. Do you want to keep it anyway?
       </message>
-      <message name="IDS_SAVE_DOWNLOAD"
+      <message name="IDS_CONFIRM_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">
-        Save
+        Keep
       </message>
       <message name="IDS_CONTINUE_EXTENSION_DOWNLOAD"
                desc="Text for the button used to validate the installation of an extension.">
