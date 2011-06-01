@@ -11,7 +11,7 @@ var remoting = chrome.extension.getBackgroundPage().remoting;
 // Chromoting session API version (for this javascript).
 // This is compared with the plugin API version to verify that they are
 // compatible.
-remoting.apiVersion = 1;
+remoting.apiVersion = 2;
 
 // The oldest API version that we support.
 // This will differ from the |apiVersion| if we maintain backward
@@ -34,7 +34,7 @@ remoting.httpXmppProxy =
 function feedIq() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', remoting.httpXmppProxy + '/readIq?host_jid=' +
-           encodeURIComponent(remoting.hostjid), true);
+           encodeURIComponent(remoting.hostJid), true);
   xhr.withCredentials = true;
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
@@ -66,8 +66,13 @@ function registerConnection() {
         var clientjid = xhr.responseText;
 
         remoting.plugin.sendIq = sendIq;
-        remoting.plugin.connect(remoting.hostjid, clientjid,
-                                remoting.accessCode);
+        if (remoting.plugin.apiVersion >= 2) {
+          remoting.plugin.connect(remoting.hostJid, remoting.hostPublicKey,
+                                  clientjid, remoting.accessCode);
+        } else {
+          remoting.plugin.connect(remoting.hostJid, clientjid,
+                                  remoting.accessCode);
+        }
         // TODO(ajwong): This should just be feedIq();
         window.setTimeout(feedIq, 1000);
       } else {
@@ -77,7 +82,7 @@ function registerConnection() {
       }
     }
   }
-  xhr.send('host_jid=' + encodeURIComponent(remoting.hostjid) +
+  xhr.send('host_jid=' + encodeURIComponent(remoting.hostJid) +
            '&username=' + encodeURIComponent(remoting.username) +
            '&password=' + encodeURIComponent(remoting.oauth2.getAccessToken()));
   setClientStateMessage('Connecting');
@@ -103,7 +108,7 @@ function sendIq(msg) {
   xhr.send('to=' + encodeURIComponent(to) +
            '&payload_xml=' + encodeURIComponent(payload_xml) +
            '&id=' + id + '&type=' + type +
-           '&host_jid=' + encodeURIComponent(remoting.hostjid));
+           '&host_jid=' + encodeURIComponent(remoting.hostJid));
 }
 
 function checkVersion(plugin) {
@@ -146,9 +151,15 @@ function init() {
     if (remoting.connectMethod == 'sandboxed') {
       registerConnection();
     } else {
-      plugin.connectUnsandboxed(remoting.hostjid, remoting.username,
-                                'oauth2:' + remoting.oauth2.getAccessToken(),
-                                remoting.accessCode);
+      if (plugin.apiVersion >= 2) {
+        plugin.connectUnsandboxed(
+            remoting.hostJid, remoting.hostPublicKey, remoting.username,
+            'oauth2:' + remoting.oauth2.getAccessToken(), remoting.accessCode);
+      } else {
+        plugin.connectUnsandboxed(
+            remoting.hostJid, remoting.username,
+            'oauth2:' + remoting.oauth2.getAccessToken(), remoting.accessCode);
+      }
     }
   } else {
     addToDebugLog('ERROR: remoting plugin not loaded');

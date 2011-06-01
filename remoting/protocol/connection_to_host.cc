@@ -57,6 +57,7 @@ void ConnectionToHost::Connect(const std::string& username,
                                const std::string& auth_token,
                                const std::string& auth_service,
                                const std::string& host_jid,
+                               const std::string& host_public_key,
                                const std::string& access_code,
                                HostEventCallback* event_callback,
                                ClientStub* client_stub,
@@ -78,11 +79,13 @@ void ConnectionToHost::Connect(const std::string& username,
   // Save jid of the host. The actual connection is created later after
   // |jingle_client_| is connected.
   host_jid_ = host_jid;
+  host_public_key_ = host_public_key;
 }
 
 void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
                                         const std::string& your_jid,
                                         const std::string& host_jid,
+                                        const std::string& host_public_key,
                                         const std::string& access_code,
                                         HostEventCallback* event_callback,
                                         ClientStub* client_stub,
@@ -105,6 +108,7 @@ void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
   // Save jid of the host. The actual connection is created later after
   // |jingle_client_| is connected.
   host_jid_ = host_jid;
+  host_public_key_ = host_public_key;
 }
 
 void ConnectionToHost::Disconnect() {
@@ -146,7 +150,7 @@ void ConnectionToHost::InitSession() {
 
   // Initialize |session_|.
   session_ = session_manager_->Connect(
-      host_jid_, client_token, candidate_config,
+      host_jid_, host_public_key_, client_token, candidate_config,
       NewCallback(this, &ConnectionToHost::OnSessionStateChange));
 }
 

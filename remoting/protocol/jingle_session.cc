@@ -5,6 +5,8 @@
 #include "remoting/protocol/jingle_session.h"
 
 #include "base/message_loop.h"
+#include "base/rand_util.h"
+#include "crypto/hmac.h"
 #include "crypto/rsa_private_key.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
@@ -34,11 +36,15 @@ namespace protocol {
 const char JingleSession::kChromotingContentName[] = "chromoting";
 
 namespace {
+
 const char kControlChannelName[] = "control";
 const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
 const char kVideoRtpChannelName[] = "videortp";
 const char kVideoRtcpChannelName[] = "videortcp";
+
+const int kMasterKeyLength = 16;
+const int kChannelKeyLength = 16;
 
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
@@ -63,12 +69,54 @@ net::SSLClientSocket* CreateSSLClientSocket(
   return ssl_socket;
 }
 
+std::string GenerateRandomMasterKey() {
+  std::string result;
+  result.resize(kMasterKeyLength);
+  base::RandBytes(&result[0], result.size());
+  return result;
+}
+
+std::string EncryptMasterKey(const std::string& host_public_key,
+                             const std::string& master_key) {
+  // TODO(sergeyu): Implement RSA public key encryption in src/crypto
+  // and actually encrypt the key here.
+  return master_key;
+}
+
+bool DecryptMasterKey(const crypto::RSAPrivateKey* private_key,
+                      const std::string& encrypted_master_key,
+                      std::string* master_key) {
+  // TODO(sergeyu): Implement RSA public key encryption in src/crypto
+  // and actually encrypt the key here.
+  *master_key = encrypted_master_key;
+  return true;
+}
+
+// Generates channel key from master key and channel name. Must be
+// used to generate channel key so that we don't use the same key for
+// different channels. The key is calculated as
+//   HMAC_SHA256(master_key, channel_name)
+bool GetChannelKey(const std::string& channel_name,
+                   const std::string& master_key,
+                   std::string* channel_key) {
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  hmac.Init(channel_name);
+  channel_key->resize(kChannelKeyLength);
+  if (!hmac.Sign(master_key,
+                 reinterpret_cast<unsigned char*>(&(*channel_key)[0]),
+                 channel_key->size())) {
+    *channel_key = "";
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 // static
 JingleSession* JingleSession::CreateClientSession(
-    JingleSessionManager* manager) {
-  return new JingleSession(manager, NULL, NULL);
+    JingleSessionManager* manager, const std::string& host_public_key) {
+  return new JingleSession(manager, NULL, NULL, host_public_key);
 }
 
 // static
@@ -76,14 +124,17 @@ JingleSession* JingleSession::CreateServerSession(
     JingleSessionManager* manager,
     scoped_refptr<net::X509Certificate> certificate,
     crypto::RSAPrivateKey* key) {
-  return new JingleSession(manager, certificate, key);
+  return new JingleSession(manager, certificate, key, "");
 }
 
 JingleSession::JingleSession(
     JingleSessionManager* jingle_session_manager,
-    scoped_refptr<net::X509Certificate> server_cert, crypto::RSAPrivateKey* key)
+    scoped_refptr<net::X509Certificate> local_cert,
+    crypto::RSAPrivateKey* local_private_key,
+    const std::string& peer_public_key)
     : jingle_session_manager_(jingle_session_manager),
-      server_cert_(server_cert),
+      local_cert_(local_cert),
+      master_key_(GenerateRandomMasterKey()),
       state_(INITIALIZING),
       closed_(false),
       closing_(false),
@@ -94,11 +145,12 @@ JingleSession::JingleSession(
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_connect_callback_(
           this, &JingleSession::OnSSLConnect)) {
   // TODO(hclam): Need a better way to clone a key.
-  if (key) {
+  if (local_private_key) {
     std::vector<uint8> key_bytes;
-    CHECK(key->ExportPrivateKey(&key_bytes));
-    key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
-    CHECK(key_.get());
+    CHECK(local_private_key->ExportPrivateKey(&key_bytes));
+    local_private_key_.reset(
+        crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
+    CHECK(local_private_key_.get());
   }
 }
 
@@ -116,6 +168,10 @@ void JingleSession::Init(cricket::Session* cricket_session) {
       this, &JingleSession::OnSessionState);
   cricket_session_->SignalError.connect(
       this, &JingleSession::OnSessionError);
+}
+
+std::string JingleSession::GetEncryptedMasterKey() const {
+  return EncryptMasterKey(peer_public_key_, master_key_);
 }
 
 void JingleSession::CloseInternal(int result, bool failed) {
@@ -228,8 +284,8 @@ void JingleSession::set_candidate_config(
   candidate_config_.reset(candidate_config);
 }
 
-scoped_refptr<net::X509Certificate> JingleSession::server_certificate() const {
-  return server_cert_;
+scoped_refptr<net::X509Certificate> JingleSession::local_certificate() const {
+  return local_cert_;
 }
 
 const SessionConfig* JingleSession::config() {
@@ -324,17 +380,28 @@ void JingleSession::OnSessionError(
 void JingleSession::OnInitiate() {
   jid_ = cricket_session_->remote_name();
 
-  std::string content_name;
+  const cricket::SessionDescription* session_description;
   // If we initiate the session, we get to specify the content name. When
   // accepting one, the remote end specifies it.
   if (cricket_session_->initiator()) {
-    content_name = kChromotingContentName;
+    session_description = cricket_session_->local_description();
   } else {
-    const cricket::ContentInfo* content;
-    content = cricket_session_->remote_description()->FirstContentByType(
-        kChromotingXmlNamespace);
-    CHECK(content);
-    content_name = content->name;
+    session_description = cricket_session_->remote_description();
+  }
+  const cricket::ContentInfo* content =
+      session_description->FirstContentByType(kChromotingXmlNamespace);
+  CHECK(content);
+  const ContentDescription* content_description =
+      static_cast<const ContentDescription*>(content->description);
+  std::string content_name = content->name;
+
+  if (!cricket_session_->initiator()) {
+    if (!DecryptMasterKey(local_private_key_.get(),
+                          content_description->master_key(), &master_key_)) {
+      LOG(ERROR) << "Failed to decrypt master-key";
+      CloseInternal(net::ERR_CONNECTION_FAILED, true);
+      return;
+    }
   }
 
   // Create video RTP channels.
@@ -386,7 +453,7 @@ bool JingleSession::EstablishSSLConnection(
   if (cricket_session_->initiator()) {
     // Create client SSL socket.
     net::SSLClientSocket* socket = CreateSSLClientSocket(
-        pseudotcp, server_cert_, cert_verifier_.get());
+        pseudotcp, remote_cert_, cert_verifier_.get());
     ssl_socket->reset(new SocketWrapper(socket));
 
     int ret = socket->Connect(&ssl_connect_callback_);
@@ -401,7 +468,7 @@ bool JingleSession::EstablishSSLConnection(
     // Create server SSL socket.
     net::SSLConfig ssl_config;
     net::SSLServerSocket* socket = net::CreateSSLServerSocket(
-        pseudotcp, server_cert_, key_.get(), ssl_config);
+        pseudotcp, local_cert_, local_private_key_.get(), ssl_config);
     ssl_socket->reset(new SocketWrapper(socket));
 
     int ret = socket->Accept(&ssl_connect_callback_);
@@ -429,8 +496,8 @@ bool JingleSession::InitializeConfigFromDescription(
     static_cast<const protocol::ContentDescription*>(content->description);
   CHECK(content_description);
 
-  server_cert_ = content_description->certificate();
-  if (!server_cert_) {
+  remote_cert_ = content_description->certificate();
+  if (!remote_cert_) {
     LOG(ERROR) << "Connection response does not specify certificate";
     return false;
   }

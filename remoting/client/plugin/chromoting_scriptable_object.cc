@@ -53,11 +53,11 @@ void ChromotingScriptableObject::Init() {
 
   // Plugin API version.
   // This should be incremented whenever the API interface changes.
-  AddAttribute(kApiVersionAttribute, Var(1));
+  AddAttribute(kApiVersionAttribute, Var(2));
 
   // This should be updated whenever we remove support for an older version
   // of the API.
-  AddAttribute(kApiMinVersionAttribute, Var(1));
+  AddAttribute(kApiMinVersionAttribute, Var(2));
 
   // Connection status.
   AddAttribute(kStatusAttribute, Var(STATUS_UNKNOWN));
@@ -345,6 +345,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
                                           Var* exception) {
   // Parameter order is:
   //   host_jid
+  //   host_public_key
   //   client_jid
   //   access_code (optional)
   unsigned int arg = 0;
@@ -353,6 +354,12 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
     return Var();
   }
   std::string host_jid = args[arg++].AsString();
+
+  if (!args[arg].is_string()) {
+    *exception = Var("The host_public_key must be a string.");
+    return Var();
+  }
+  std::string host_public_key = args[arg++].AsString();
 
   if (!args[arg].is_string()) {
     *exception = Var("The client_jid must be a string.");
@@ -377,7 +384,13 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   LogDebugInfo("Connecting to host.");
   VLOG(1) << "client_jid: " << client_jid << ", host_jid: " << host_jid
           << ", access_code: " << access_code;
-  instance_->ConnectSandboxed(client_jid, host_jid, access_code);
+  ClientConfig config;
+  config.xmpp_signalling = false;
+  config.local_jid = client_jid;
+  config.host_jid = host_jid;
+  config.host_public_key = host_public_key;
+  config.access_code = access_code;
+  instance_->Connect(config);
 
   return Var();
 }
@@ -387,6 +400,7 @@ Var ChromotingScriptableObject::DoConnectUnsandboxed(
     Var* exception) {
   // Parameter order is:
   //   host_jid
+  //   host_public_key
   //   username
   //   auth_token
   //   access_code (optional)
@@ -396,6 +410,12 @@ Var ChromotingScriptableObject::DoConnectUnsandboxed(
     return Var();
   }
   std::string host_jid = args[arg++].AsString();
+
+  if (!args[arg].is_string()) {
+    *exception = Var("The host_public_key must be a string.");
+    return Var();
+  }
+  std::string host_public_key = args[arg++].AsString();
 
   if (!args[arg].is_string()) {
     *exception = Var("The username must be a string.");
@@ -430,11 +450,13 @@ Var ChromotingScriptableObject::DoConnectUnsandboxed(
 
   LogDebugInfo("Connecting to host.");
   ClientConfig config;
+  config.xmpp_signalling = true;
+  config.xmpp_username = username;
+  config.xmpp_auth_token = auth_token;
+  config.xmpp_auth_service = auth_service;
   config.host_jid = host_jid;
-  config.username = username;
-  config.auth_token = auth_token;
-  config.auth_service = auth_service;
-  config.nonce = access_code;
+  config.host_public_key = host_public_key;
+  config.access_code = access_code;
   VLOG(1) << "host_jid: " << host_jid << ", username: " << username
           << ", auth_service: " << auth_service
           << ", access_code: " << access_code;

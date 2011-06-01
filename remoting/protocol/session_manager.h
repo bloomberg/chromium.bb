@@ -79,7 +79,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // Tries to create a session to the host |jid|.
   //
   // |host_jid| is the full jid of the host to connect to.
-  // |host_public_key| is used to encrypt the client authentication token.
+  // |host_public_key| is used to for authentication.
   // |client_oauth_token| is a short-lived OAuth token identify the client.
   // |config| contains the session configurations that the client supports.
   // |state_change_callback| is called when the connection state changes.
@@ -90,6 +90,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // Ownership of the |config| is passed to the new session.
   virtual scoped_refptr<Session> Connect(
       const std::string& host_jid,
+      const std::string& host_public_key,
       const std::string& client_token,
       CandidateSessionConfig* config,
       Session::StateChangeCallback* state_change_callback) = 0;

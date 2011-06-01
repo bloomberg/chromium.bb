@@ -41,6 +41,7 @@ class ContentDescription : public cricket::ContentDescription {
  public:
   explicit ContentDescription(const CandidateSessionConfig* config,
                               const std::string& auth_token,
+                              const std::string& master_key,
                               scoped_refptr<net::X509Certificate> certificate);
   virtual ~ContentDescription();
 
@@ -49,7 +50,7 @@ class ContentDescription : public cricket::ContentDescription {
   }
 
   const std::string& auth_token() const { return auth_token_; }
-
+  const std::string& master_key() const { return master_key_; }
   scoped_refptr<net::X509Certificate> certificate() const {
     return certificate_;
   }
@@ -60,6 +61,9 @@ class ContentDescription : public cricket::ContentDescription {
   // This may contain the initiating, or the accepting token depending on
   // context.
   std::string auth_token_;
+
+  // Master key used for the session encrypted with the hosts key.
+  std::string master_key_;
 
   scoped_refptr<net::X509Certificate> certificate_;
 };
@@ -89,9 +93,10 @@ class JingleSessionManager
 
   // SessionManager interface.
   virtual scoped_refptr<protocol::Session> Connect(
-      const std::string& jid,
+      const std::string& host_jid,
+      const std::string& host_public_key,
       const std::string& client_token,
-      CandidateSessionConfig* candidate_config,
+      CandidateSessionConfig* config,
       protocol::Session::StateChangeCallback* state_change_callback);
   virtual void Close(Task* closed_task);
 
@@ -130,13 +135,18 @@ class JingleSessionManager
   void DoConnect(
       scoped_refptr<JingleSession> jingle_session,
       const std::string& host_jid,
+      const std::string& host_public_key,
       const std::string& client_token,
       protocol::Session::StateChangeCallback* state_change_callback);
 
-  // Creates outgoing session description for an incoming session.
-  cricket::SessionDescription* CreateSessionDescription(
+  // Creates session description for outgoing session.
+  cricket::SessionDescription* CreateClientSessionDescription(
       const CandidateSessionConfig* candidate_config,
       const std::string& auth_token,
+      const std::string& master_key);
+  // Creates session description for incoming session.
+  cricket::SessionDescription* CreateHostSessionDescription(
+      const CandidateSessionConfig* candidate_config,
       scoped_refptr<net::X509Certificate> certificate);
 
   std::string local_jid_;  // Full jid for the local side of the session.

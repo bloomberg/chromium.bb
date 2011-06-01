@@ -15,11 +15,20 @@ struct ClientConfig {
   ClientConfig();
   ~ClientConfig();
 
+  bool xmpp_signalling;
+
+  // Set only with |xmpp_signalling| set to true.
+  std::string xmpp_username;
+  std::string xmpp_auth_token;
+  std::string xmpp_auth_service;  // Do we still need it?
+
+  // Set only with |xmpp_signalling| set to false.
+  std::string local_jid;
+
   std::string host_jid;
-  std::string username;
-  std::string auth_token;
-  std::string auth_service;
-  std::string nonce;
+  std::string host_public_key;
+
+  std::string access_code;
 };
 
 }  // namespace remoting

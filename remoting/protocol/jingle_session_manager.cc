@@ -37,6 +37,7 @@ const char kVideoTag[] = "video";
 const char kResolutionTag[] = "initial-resolution";
 const char kAuthenticationTag[] = "authentication";
 const char kCertificateTag[] = "certificate";
+const char kMasterKeyTag[] = "master-key";
 const char kAuthTokenTag[] = "auth-token";
 
 const char kTransportAttr[] = "transport";
@@ -158,9 +159,11 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 ContentDescription::ContentDescription(
     const CandidateSessionConfig* candidate_config,
     const std::string& auth_token,
+    const std::string& master_key,
     scoped_refptr<net::X509Certificate> certificate)
     : candidate_config_(candidate_config),
       auth_token_(auth_token),
+      master_key_(master_key),
       certificate_(certificate) {
 }
 
@@ -234,17 +237,20 @@ void JingleSessionManager::set_allow_local_ips(bool allow_local_ips) {
 
 scoped_refptr<protocol::Session> JingleSessionManager::Connect(
     const std::string& host_jid,
+    const std::string& host_public_key,
     const std::string& receiver_token,
     CandidateSessionConfig* candidate_config,
     protocol::Session::StateChangeCallback* state_change_callback) {
   // Can be called from any thread.
   scoped_refptr<JingleSession> jingle_session(
-      JingleSession::CreateClientSession(this));
+      JingleSession::CreateClientSession(this, host_public_key));
   jingle_session->set_candidate_config(candidate_config);
   jingle_session->set_receiver_token(receiver_token);
+
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::DoConnect,
-                                   jingle_session, host_jid, receiver_token,
+                                   jingle_session, host_jid,
+                                   host_public_key, receiver_token,
                                    state_change_callback));
   return jingle_session;
 }
@@ -252,6 +258,7 @@ scoped_refptr<protocol::Session> JingleSessionManager::Connect(
 void JingleSessionManager::DoConnect(
     scoped_refptr<JingleSession> jingle_session,
     const std::string& host_jid,
+    const std::string& host_public_key,
     const std::string& receiver_token,
     protocol::Session::StateChangeCallback* state_change_callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
@@ -263,10 +270,9 @@ void JingleSessionManager::DoConnect(
   jingle_session->Init(cricket_session);
   sessions_.push_back(jingle_session);
 
-  cricket_session->Initiate(
-      host_jid,
-      CreateSessionDescription(jingle_session->candidate_config()->Clone(),
-                               receiver_token, NULL));
+  cricket_session->Initiate(host_jid, CreateClientSessionDescription(
+      jingle_session->candidate_config()->Clone(), receiver_token,
+      jingle_session->GetEncryptedMasterKey()));
 }
 
 JingleThread* JingleSessionManager::jingle_thread() {
@@ -288,9 +294,9 @@ void JingleSessionManager::OnSessionCreate(
   if (incoming) {
     DCHECK(certificate_);
     DCHECK(private_key_.get());
-    JingleSession* jingle_session =
-        JingleSession::CreateServerSession(this, certificate_,
-                                           private_key_.get());
+
+    JingleSession* jingle_session = JingleSession::CreateServerSession(
+        this, certificate_, private_key_.get());
     sessions_.push_back(make_scoped_refptr(jingle_session));
     jingle_session->Init(cricket_session);
   }
@@ -346,9 +352,8 @@ void JingleSessionManager::AcceptConnection(
       CandidateSessionConfig* candidate_config =
           CandidateSessionConfig::CreateFrom(jingle_session->config());
       cricket_session->Accept(
-          CreateSessionDescription(candidate_config,
-                                   jingle_session->initiator_token(),
-                                   jingle_session->server_certificate()));
+          CreateHostSessionDescription(candidate_config,
+                                       jingle_session->local_certificate()));
       break;
     }
 
@@ -434,6 +439,7 @@ bool JingleSessionManager::ParseContent(
     // Parse authentication information.
     scoped_refptr<net::X509Certificate> certificate;
     std::string auth_token;
+    std::string master_key;
     child = element->FirstNamed(QName(kChromotingXmlNamespace,
                                       kAuthenticationTag));
     if (child) {
@@ -456,6 +462,17 @@ bool JingleSessionManager::ParseContent(
         }
       }
 
+      // Parse master-key.
+      const XmlElement* master_key_tag =
+          child->FirstNamed(QName(kChromotingXmlNamespace, kMasterKeyTag));
+      if (master_key_tag) {
+        if (!base::Base64Decode(master_key_tag->BodyText(), &master_key)) {
+          LOG(ERROR) << "Failed to decode master-key received from the peer.";
+          return false;
+        }
+        master_key = master_key_tag->BodyText();
+      }
+
       // Parse auth-token.
       const XmlElement* auth_token_tag =
           child->FirstNamed(QName(kChromotingXmlNamespace, kAuthTokenTag));
@@ -464,7 +481,7 @@ bool JingleSessionManager::ParseContent(
       }
     }
 
-    *content = new ContentDescription(config.release(), auth_token,
+    *content = new ContentDescription(config.release(), auth_token, master_key,
                                       certificate);
     return true;
   }
@@ -481,6 +498,8 @@ bool JingleSessionManager::ParseContent(
 //     <initial-resolution width="800" height="600" />
 //     <authentication>
 //       <certificate>[BASE64 Encoded Certificate]</certificate>
+//       <master-key>[master key encrypted with hosts
+//                    public key encoded with BASE64]</master-key>
 //       <auth-token>...</auth-token> // Me2Mom only.
 //     </authentication>
 //   </description>
@@ -546,6 +565,19 @@ bool JingleSessionManager::WriteContent(
       authentication_tag->AddElement(certificate_tag);
     }
 
+    if (!desc->master_key().empty()) {
+      XmlElement* master_key_tag = new XmlElement(
+          QName(kChromotingXmlNamespace, kMasterKeyTag));
+
+      std::string master_key_base64;
+      if (!base::Base64Encode(desc->master_key(), &master_key_base64)) {
+        LOG(DFATAL) << "Cannot perform base64 encode on master key";
+      }
+
+      master_key_tag->SetBodyText(master_key_base64);
+      authentication_tag->AddElement(master_key_tag);
+    }
+
     if (!desc->auth_token().empty()) {
       XmlElement* auth_token_tag = new XmlElement(
           QName(kChromotingXmlNamespace, kAuthTokenTag));
@@ -560,14 +592,25 @@ bool JingleSessionManager::WriteContent(
   return true;
 }
 
-cricket::SessionDescription* JingleSessionManager::CreateSessionDescription(
+cricket::SessionDescription*
+JingleSessionManager::CreateClientSessionDescription(
     const CandidateSessionConfig* config,
     const std::string& auth_token,
+    const std::string& master_key) {
+  cricket::SessionDescription* desc = new cricket::SessionDescription();
+  desc->AddContent(
+      JingleSession::kChromotingContentName, kChromotingXmlNamespace,
+      new ContentDescription(config, auth_token, master_key, NULL));
+  return desc;
+}
+
+cricket::SessionDescription* JingleSessionManager::CreateHostSessionDescription(
+    const CandidateSessionConfig* config,
     scoped_refptr<net::X509Certificate> certificate) {
   cricket::SessionDescription* desc = new cricket::SessionDescription();
-  desc->AddContent(JingleSession::kChromotingContentName,
-                   kChromotingXmlNamespace,
-                   new ContentDescription(config, auth_token, certificate));
+  desc->AddContent(
+      JingleSession::kChromotingContentName, kChromotingXmlNamespace,
+      new ContentDescription(config, "", "", certificate));
   return desc;
 }
 

@@ -278,7 +278,8 @@ function parseServerResponse_(xhr) {
   if (xhr.status == 200) {
     var host = JSON.parse(xhr.responseText);
     if (host.data && host.data.jabberId) {
-      remoting.hostjid = host.data.jabberId;
+      remoting.hostJid = host.data.jabberId;
+      remoting.hostPublicKey = host.data.publicKey;
       startSession_();
       return;
     }

@@ -51,9 +51,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual ~ChromotingClient();
 
   void Start();
-  void StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
-                      const std::string& your_jid,
-                      const std::string& host_jid);
+  void StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy);
   void Stop();
   void ClientDone();
 

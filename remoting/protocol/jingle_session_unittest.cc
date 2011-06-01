@@ -49,6 +49,14 @@ const int kMessages = 100;
 const int kTestDataSize = kMessages * kMessageSize;
 const int kUdpWriteDelayMs = 10;
 const char kTestToken[] = "a_dummy_token";
+
+const char kTestHostPublicKey[] =
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3nk/8ILc0JBqHgOS0UCOIl4m"
+    "0GUd2FIiZ/6Fc9D/iiyUgli+FIY5dwsrSoNJ87sYGifVDh8a5fdZNV5y58CcrapI5fJI"
+    "FpXviSW4g8d/t1gcZkoz1ppmjzbgXm6ckw9Td0yRD0cHu732Ijs+eo8wT0pt4KiHkbyR"
+    "iAvjrvkNDlfiEk7tiY7YzD9zTi3146GX6KLz5GQAd/3I8I5QW3ftF1s/m93AHuc383GZ"
+    "A78Oi+IbcJf/jJUZO119VNnRKGiPsf5GZIoHyXX8O5OUQk5soKdQPeK1FwWkeZu6fuXl"
+    "QoU12I6podD6xMFa/PA/xefMwcpmuWTRhcso9bp10zVFGQIDAQAB";
 }  // namespace
 
 class MockSessionManagerCallback {
@@ -199,8 +207,7 @@ class JingleSessionTest : public testing::Test {
         .Times(1);
 
     client_session_ = client_server_->Connect(
-        SessionManagerPair::kHostJid,
-        kTestToken,
+        SessionManagerPair::kHostJid, kTestHostPublicKey, kTestToken,
         CandidateSessionConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
                     &MockSessionCallback::OnStateChange));
@@ -576,6 +583,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
   client_session_ = client_server_->Connect(
       SessionManagerPair::kHostJid,
+      kTestHostPublicKey,
       kTestToken,
       CandidateSessionConfig::CreateDefault(),
       NewCallback(&client_connection_callback_,

@@ -72,9 +72,9 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
   NOTIMPLEMENTED() << "Nonce ignored.";
 
   config->host_jid = host_jid;
-  config->username = username;
-  config->auth_token = auth_token;
-  config->auth_service = auth_service;
+  config->xmpp_username = username;
+  config->xmpp_auth_token = auth_token;
+  config->xmpp_auth_service = auth_service;
   return true;
 }
 

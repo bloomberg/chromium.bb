@@ -48,29 +48,28 @@ void ChromotingClient::Start() {
     return;
   }
 
-  connection_->Connect(config_.username, config_.auth_token,
-                       config_.auth_service, config_.host_jid,
-                       config_.nonce, this, this, this);
+  connection_->Connect(config_.xmpp_username, config_.xmpp_auth_token,
+                       config_.xmpp_auth_service, config_.host_jid,
+                       config_.host_public_key, config_.access_code, this,
+                       this, this);
 
   if (!view_->Initialize()) {
     ClientDone();
   }
 }
 
-void ChromotingClient::StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
-                                      const std::string& your_jid,
-                                      const std::string& host_jid) {
+void ChromotingClient::StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy) {
   // TODO(ajwong): Merge this with Start(), and just change behavior based on
   // ClientConfig.
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &ChromotingClient::StartSandboxed, xmpp_proxy,
-                          your_jid, host_jid));
+        NewRunnableMethod(this, &ChromotingClient::StartSandboxed, xmpp_proxy));
     return;
   }
 
-  connection_->ConnectSandboxed(xmpp_proxy, your_jid, host_jid, config_.nonce,
+  connection_->ConnectSandboxed(xmpp_proxy, config_.local_jid, config_.host_jid,
+                                config_.host_public_key, config_.access_code,
                                 this, this, this);
 
   if (!view_->Initialize()) {

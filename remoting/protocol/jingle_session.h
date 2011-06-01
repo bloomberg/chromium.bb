@@ -41,17 +41,6 @@ class JingleSession : public protocol::Session,
  public:
   static const char kChromotingContentName[];
 
-  // Create a JingleSession used in client mode. A server certificate is
-  // required.
-  static JingleSession* CreateClientSession(JingleSessionManager* manager);
-
-  // Create a JingleSession used in server mode. A server certificate and
-  // private key is provided. |key| is copied in the constructor.
-  static JingleSession* CreateServerSession(
-      JingleSessionManager* manager,
-      scoped_refptr<net::X509Certificate> certificate,
-      crypto::RSAPrivateKey* key);
-
   // Chromotocol Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
@@ -65,6 +54,8 @@ class JingleSession : public protocol::Session,
   virtual const std::string& jid();
   virtual MessageLoop* message_loop();
 
+  virtual const CandidateSessionConfig* candidate_config();
+
   virtual const SessionConfig* config();
   virtual void set_config(const SessionConfig* config);
 
@@ -73,23 +64,37 @@ class JingleSession : public protocol::Session,
   virtual const std::string& receiver_token();
   virtual void set_receiver_token(const std::string& receiver_token);
 
-  // These fields are only set on the receiving side.
-  virtual const CandidateSessionConfig* candidate_config();
-
   virtual void Close(Task* closed_task);
 
  private:
   friend class JingleSessionManager;
 
-  JingleSession(JingleSessionManager* client,
-                scoped_refptr<net::X509Certificate> server_cert,
-                crypto::RSAPrivateKey* key);
+  // Create a JingleSession used in client mode. A server certificate is
+  // required.
+  static JingleSession* CreateClientSession(JingleSessionManager* manager,
+                                            const std::string& host_public_key);
+
+  // Create a JingleSession used in server mode. A server certificate and
+  // private key is provided. |key| is copied in the constructor.
+  //
+  // TODO(sergeyu): Remove |certificate| and |key| when we stop using TLS.
+  static JingleSession* CreateServerSession(
+      JingleSessionManager* manager,
+      scoped_refptr<net::X509Certificate> certificate,
+      crypto::RSAPrivateKey* key);
+
+  // TODO(sergeyu): Change type of |peer_public_key| to RSAPublicKey.
+  JingleSession(JingleSessionManager* jingle_session_manager,
+                scoped_refptr<net::X509Certificate> local_cert,
+                crypto::RSAPrivateKey* local_private_key,
+                const std::string& peer_public_key);
   virtual ~JingleSession();
 
   // Called by JingleSessionManager.
   void set_candidate_config(const CandidateSessionConfig* candidate_config);
-  scoped_refptr<net::X509Certificate> server_certificate() const;
+  scoped_refptr<net::X509Certificate> local_certificate() const;
   void Init(cricket::Session* cricket_session);
+  std::string GetEncryptedMasterKey() const;
 
   // Close all the channels and terminate the session.
   void CloseInternal(int result, bool failed);
@@ -136,11 +141,21 @@ class JingleSession : public protocol::Session,
   // JingleSessionManager that created this session.
   scoped_refptr<JingleSessionManager> jingle_session_manager_;
 
-  // Server certificate used in SSL connections.
-  scoped_refptr<net::X509Certificate> server_cert_;
+  // Certificates used for connection. Currently only receiving side
+  // has a certificate.
+  scoped_refptr<net::X509Certificate> local_cert_;
+  scoped_refptr<net::X509Certificate> remote_cert_;
 
   // Private key used in SSL server sockets.
-  scoped_ptr<crypto::RSAPrivateKey> key_;
+  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
+
+  // Public key of the peer.
+  std::string peer_public_key_;
+
+  // Master key used to derive ice keys for each ice
+  // session. Generated on the client and sent to the host in the
+  // session-initiate message (encrypted with the host's key).
+  std::string master_key_;
 
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;

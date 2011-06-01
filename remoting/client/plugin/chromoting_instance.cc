@@ -115,57 +115,32 @@ bool ChromotingInstance::Init(uint32_t argc,
 void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(CurrentlyOnPluginThread());
 
-  logger_.Log(logging::LOG_INFO, "Connecting to %s as %s",
-               config.host_jid.c_str(),
-               config.username.c_str());
-  client_.reset(new ChromotingClient(config,
-                                     &context_,
-                                     host_connection_.get(),
-                                     view_proxy_,
-                                     rectangle_decoder_.get(),
-                                     input_handler_.get(),
-                                     &logger_,
-                                     NULL));
+  client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
+                                     view_proxy_, rectangle_decoder_.get(),
+                                     input_handler_.get(), &logger_, NULL));
 
-  // Kick off the connection.
-  client_->Start();
+  if (config.xmpp_signalling) {
+    logger_.Log(logging::LOG_INFO, "Connecting to %s as %s",
+                config.host_jid.c_str(),
+                config.xmpp_username.c_str());
+
+    // Kick off the connection.
+    client_->Start();
+  } else {
+    logger_.Log(logging::LOG_INFO, "Attempting sandboxed connection.");
+
+    // Setup the XMPP Proxy.
+    ChromotingScriptableObject* scriptable_object = GetScriptableObject();
+    scoped_refptr<PepperXmppProxy> xmpp_proxy =
+        new PepperXmppProxy(scriptable_object->AsWeakPtr(),
+                            context_.jingle_thread()->message_loop());
+    scriptable_object->AttachXmppProxy(xmpp_proxy);
+
+    // Kick off the connection.
+    client_->StartSandboxed(xmpp_proxy);
+  }
 
   logger_.Log(logging::LOG_INFO, "Connection status: Initializing");
-  GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
-                                           QUALITY_UNKNOWN);
-}
-
-void ChromotingInstance::ConnectSandboxed(const std::string& your_jid,
-                                          const std::string& host_jid,
-                                          const std::string& nonce) {
-  // TODO(ajwong): your_jid and host_jid should be moved into ClientConfig. In
-  // fact, this whole function should go away, and Connect() should just look at
-  // ClientConfig.
-  DCHECK(CurrentlyOnPluginThread());
-
-  logger_.Log(logging::LOG_INFO, "Attempting sandboxed connection.");
-
-  // Setup the XMPP Proxy.
-  ChromotingScriptableObject* scriptable_object = GetScriptableObject();
-  scoped_refptr<PepperXmppProxy> xmpp_proxy =
-      new PepperXmppProxy(scriptable_object->AsWeakPtr(),
-                          context_.jingle_thread()->message_loop());
-  scriptable_object->AttachXmppProxy(xmpp_proxy);
-
-  ClientConfig config_;
-  config_.nonce = nonce;
-  client_.reset(new ChromotingClient(config_,
-                                     &context_,
-                                     host_connection_.get(),
-                                     view_proxy_,
-                                     rectangle_decoder_.get(),
-                                     input_handler_.get(),
-                                     &logger_,
-                                     NULL));
-
-  // Kick off the connection.
-  client_->StartSandboxed(xmpp_proxy, your_jid, host_jid);
-
   GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
                                            QUALITY_UNKNOWN);
 }
