@@ -25,6 +25,7 @@ const char* PluginGroup::kQuickTimeGroupName = "QuickTime";
 const char* PluginGroup::kShockwaveGroupName = "Shockwave";
 const char* PluginGroup::kRealPlayerGroupName = "RealPlayer";
 const char* PluginGroup::kSilverlightGroupName = "Silverlight";
+const char* PluginGroup::kWindowsMediaPlayerGroupName = "Windows Media Player";
 
 /*static*/
 std::set<string16>* PluginGroup::policy_disabled_plugin_patterns_;

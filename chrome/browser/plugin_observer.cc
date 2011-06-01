@@ -126,6 +126,9 @@ BlockedPluginInfoBarDelegate::BlockedPluginInfoBarDelegate(
   else if (name == webkit::npapi::PluginGroup::kRealPlayerGroupName)
     UserMetrics::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.RealPlayer"));
+  else if (name == webkit::npapi::PluginGroup::kWindowsMediaPlayerGroupName)
+    UserMetrics::RecordAction(
+        UserMetricsAction("BlockedPluginInfobar.Shown.WindowsMediaPlayer"));
 }
 
 BlockedPluginInfoBarDelegate::~BlockedPluginInfoBarDelegate() {

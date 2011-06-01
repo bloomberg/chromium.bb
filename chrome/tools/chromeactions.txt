@@ -126,6 +126,7 @@
 0x84cc82257207df8d	BlockedPluginInfobar.Shown.QuickTime
 0x819dbe166b094c47	BlockedPluginInfobar.Shown.RealPlayer
 0x65add1afd150b840	BlockedPluginInfobar.Shown.Shockwave
+0x0ef80834f3e539cc	BlockedPluginInfobar.Shown.WindowsMediaPlayer
 0x114c3050111d8b8d	Bold
 0x02f476e54c6d58bd	BookmarkBarFolder_CtxMenu
 0x3012b56b98c28823	BookmarkBarFolder_DragEnd
@@ -869,6 +870,7 @@
 0x7242962875070018	OpenAllBookmarksIncognitoWindow
 0x5e3bd4e3535ecc38	OpenAllBookmarksNewWindow
 0x4b858349a1b8bb15	OpenFile
+0xedaa8487de2a33c6	OpenFileManager
 0x4928347f9423c013	OpenInternetOptionsDialog
 0x83af6accb98b9954	OpenLanguageOptionsDialog
 0xe7147544a7db079d	OpenSystemOptionsDialog
@@ -1085,6 +1087,7 @@
 0x417bd10a7c5e0210	TabContextMenu_CloseTab
 0xa0965146c626cd18	TabContextMenu_CloseTabsOpenedBy
 0x6adcbb467523c7d9	TabContextMenu_CloseTabsToRight
+0xaadbb71a197d76ad	TabContextMenu_CompactNavigationBar
 0x89e073e006a686d1	TabContextMenu_Duplicate
 0x88aefc727559ebaf	TabContextMenu_NewTab
 0x218d462d319b449c	TabContextMenu_OpenTabsLeftToRight
@@ -1136,6 +1139,7 @@
 0xcd4da03d7cbaeb84	UpgradeCheck_Upgraded
 0x624ddd04836efdcd	Upgrade_Started
 0xa909d722e2ae4285	ViewAboutConflicts
+0xf3768ba285ebca7e	ViewAboutFlash
 0xfb4a178539bac6bd	ViewSource
 0x6932875212d36f57	WP_EditImage
 0x34a770eb3bbf5632	WP_Gallery

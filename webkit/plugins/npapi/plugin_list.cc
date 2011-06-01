@@ -108,6 +108,9 @@ static const VersionRangeDefinition kDivXVersionRange[] = {
 static const VersionRangeDefinition kRealPlayerVersionRange[] = {
     { "", "", "12.0.1.633", true }
 };
+static const VersionRangeDefinition kWindowsMediaPlayerVersionRange[] = {
+    { "", "", "", true }
+};
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
   { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
@@ -129,8 +132,9 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     kRealPlayerVersionRange, arraysize(kRealPlayerVersionRange),
     "http://www.real.com/realplayer/download" },
   // These are here for grouping, no vulnerabilities known.
-  { "windows-media-player", "Windows Media Player", "Windows Media Player",
-    NULL, 0, "" },
+  { "windows-media-player", PluginGroup::kWindowsMediaPlayerGroupName,
+    "Windows Media Player", kWindowsMediaPlayerVersionRange,
+    arraysize(kWindowsMediaPlayerVersionRange), "" },
   { "microsoft-office", "Microsoft Office", "Microsoft Office",
     NULL, 0, "" },
 };

@@ -89,6 +89,7 @@ class PluginGroup {
   static const char* kShockwaveGroupName;
   static const char* kRealPlayerGroupName;
   static const char* kSilverlightGroupName;
+  static const char* kWindowsMediaPlayerGroupName;
 
   PluginGroup(const PluginGroup& other);
 
