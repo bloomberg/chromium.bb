@@ -47,7 +47,7 @@ function onLoad() {
 
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
-  $('dancing-dots').classList.remove('invisible');
+  showLoadingAnimation();
   chrome.send('getDefaultPrinter');
 }
 
@@ -343,7 +343,7 @@ function printFile() {
 function requestPrintPreview() {
   removeEventListeners();
   printSettings.save();
-  $('dancing-dots').classList.remove('invisible');
+  showLoadingAnimation();
   chrome.send('getPreview', [getSettingsJSON()]);
 }
 
@@ -442,7 +442,7 @@ function setColor(color) {
  * should be displayed.
  */
 function displayErrorMessage(errorMessage, showButton) {
-  $('dancing-dots').classList.remove('invisible');
+  $('overlay-layer').classList.remove('invisible');
   $('dancing-dots-text').classList.add('hidden');
   $('error-text').innerHTML = errorMessage;
   $('error-text').classList.remove('hidden');
@@ -474,7 +474,7 @@ function onPDFLoad() {
   else
     $('pdf-viewer').fitToHeight();
 
-  $('dancing-dots').classList.add('invisible');
+  hideLoadingAnimation();
 
   if (!previewModifiable)
     fadeOutElement($('landscape-option'));

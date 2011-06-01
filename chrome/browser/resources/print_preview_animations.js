@@ -44,3 +44,20 @@ function fadeOutElement(el) {
   el.classList.add('closing');
   el.classList.remove('visible');
 }
+
+function showLoadingAnimation() {
+  $('dancing-dots-text').classList.remove('hidden');
+  $('overlay-layer').classList.remove('invisible');
+}
+
+function hideLoadingAnimation() {
+  var overlayLayer = $('overlay-layer');
+  overlayLayer.addEventListener('webkitTransitionEnd', loadingAnimationCleanup);
+  overlayLayer.classList.add('invisible');
+}
+
+function loadingAnimationCleanup() {
+  $('dancing-dots-text').classList.add('hidden');
+  $('overlay-layer').removeEventListener('webkitTransitionEnd',
+                                         loadingAnimationCleanup);
+}

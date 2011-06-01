@@ -655,7 +655,7 @@ select {
   display: none;
 }
 
-#dancing-dots {
+#overlay-layer {
   -webkit-transition: opacity 0.5s linear;
   -webkit-user-select: none;
   background: -webkit-radial-gradient(#eaeaea, #b8b8b8);
@@ -666,7 +666,7 @@ select {
   width: 100%;
 }
 
-#dancing-dots.invisible {
+#overlay-layer.invisible {
   -webkit-transition: opacity 0.7s linear;
   opacity: 0;
   pointer-events: none;
