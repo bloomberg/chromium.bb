@@ -734,27 +734,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  static const bool false_start_trial =
-      base::FieldTrialList::TrialExists("SSLFalseStart");
-  if (false_start_trial) {
-    if (scheme_type == URLPattern::SCHEME_HTTPS) {
-      switch (load_type) {
-        case NavigationState::LINK_LOAD_NORMAL:
-          PLT_HISTOGRAM(base::FieldTrial::MakeName(
-              "PLT.BeginToFinish_LinkLoadNormal", "SSLFalseStart"),
-              begin_to_finish_all_loads);
-          break;
-        case NavigationState::NORMAL_LOAD:
-          PLT_HISTOGRAM(base::FieldTrial::MakeName(
-              "PLT.BeginToFinish_NormalLoad", "SSLFalseStart"),
-              begin_to_finish_all_loads);
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
   // Site isolation metrics.
   UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithCrossSiteFrameAccess",
                        cross_origin_access_count_);
