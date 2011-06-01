@@ -601,9 +601,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIframeDelayLoadPlugin) {
 // Renders a page that contains a prerender link to a page that contains an
 // iframe with a source that requires http authentication. This should not
 // prerender successfully.
-// Flaky:  http://crbug.com/82913.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FLAKY_PrerenderHttpAuthentication) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
   PrerenderTestURL("files/prerender/prerender_http_auth_container.html",
                    FINAL_STATUS_AUTH_NEEDED,
                    1);
