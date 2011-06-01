@@ -96,15 +96,17 @@
         'feature_defines': [
           'WTF_USE_ACCELERATED_COMPOSITING=1',
           'ENABLE_3D_RENDERING=1',
+        ],
+      }],
+      ['use_accelerated_compositing==1 and OS!="mac"', {
+        'feature_defines': [
           'ENABLE_ACCELERATED_2D_CANVAS=1',
         ],
-        'use_accelerated_compositing': 1,
       }],
       ['use_accelerated_compositing==1 and use_threaded_compositing==1', {
         'feature_defines': [
           'WTF_USE_THREADED_COMPOSITING=1',
         ],
-        'use_threaded_compositing': 1,
       }],
       # TODO(crogers): For the moment Windows is only enabled for
       # Google-branded build, since the FFmpeg DLLs need to be re-built
