@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
-#include "chrome/browser/chromeos/login/dom_login_display.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -59,7 +59,7 @@ LoginUIHandlerDelegate::~LoginUIHandlerDelegate() {}
 // LoginUIHandler, public: -----------------------------------------------------
 
 LoginUIHandler::LoginUIHandler() {
-  delegate_ = DOMLoginDisplay::GetInstance();
+  delegate_ = WebUILoginDisplay::GetInstance();
   delegate_->set_login_handler(this);
 }
 

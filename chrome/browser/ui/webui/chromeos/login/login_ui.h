@@ -52,7 +52,7 @@ class LoginUIHandlerDelegate {
     login_handler_ = login_handler;
   }
  protected:
-  // Reference to the DOM handling layer for the login screen
+  // Reference to the WebUI handling layer for the login screen
   LoginUIHandler* login_handler_;
 
   virtual ~LoginUIHandlerDelegate();

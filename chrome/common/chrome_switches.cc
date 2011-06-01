@@ -1009,8 +1009,8 @@ const char kVersion[]                       = "version";
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
 #if defined(OS_CHROMEOS)
-// Enable DOM based login screens.
-const char kDOMLogin[]                      = "dom-login";
+// Enable WebUI based login screens.
+const char kWebUILogin[]                    = "webui-login";
 
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";

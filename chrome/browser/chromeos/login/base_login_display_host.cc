@@ -38,7 +38,7 @@
 
 #if defined(TOUCH_UI)
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/login/dom_login_display_host.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #endif
 
 namespace {
@@ -237,8 +237,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
   // TODO(nkostylev) Create LoginDisplayHost instance based on flag.
 #if defined(TOUCH_UI)
   chromeos::LoginDisplayHost* display_host;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDOMLogin)) {
-    display_host = new chromeos::DOMLoginDisplayHost(screen_bounds);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
+    display_host = new chromeos::WebUILoginDisplayHost(screen_bounds);
   } else {
     display_host = new chromeos::ViewsLoginDisplayHost(screen_bounds);
   }

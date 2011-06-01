@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_DOM_LOGIN_DISPLAY_HOST_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_DOM_LOGIN_DISPLAY_HOST_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_DISPLAY_HOST_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_DISPLAY_HOST_H_
 #pragma once
 
 #include <string>
@@ -16,12 +16,12 @@ class Rect;
 
 namespace chromeos {
 
-// DOM-specific implementation of the OOBE/login screen host.
-// Uses DOMLoginDisplay as the login screen UI implementation,
-class DOMLoginDisplayHost : public BaseLoginDisplayHost {
+// WebUI-specific implementation of the OOBE/login screen host. Uses
+// WebUILoginDisplay as the login screen UI implementation,
+class WebUILoginDisplayHost : public BaseLoginDisplayHost {
  public:
-  explicit DOMLoginDisplayHost(const gfx::Rect& background_bounds);
-  virtual ~DOMLoginDisplayHost();
+  explicit WebUILoginDisplayHost(const gfx::Rect& background_bounds);
+  virtual ~WebUILoginDisplayHost();
 
   // LoginDisplayHost implementation:
   virtual LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate)
@@ -35,9 +35,9 @@ class DOMLoginDisplayHost : public BaseLoginDisplayHost {
   virtual void ShowBackground() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DOMLoginDisplayHost);
+  DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplayHost);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_DOM_LOGIN_DISPLAY_HOST_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_DISPLAY_HOST_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_DOM_LOGIN_DISPLAY_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_DOM_LOGIN_DISPLAY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_DISPLAY_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_DISPLAY_H_
 #pragma once
 
 #include <vector>
@@ -21,9 +21,9 @@ class Rect;
 
 namespace chromeos {
 
-class DOMBrowser;
+class WebUIBrowser;
 
-// DOM-based login UI implementation.
+// WebUI-based login UI implementation.
 // This class is a Singleton. It allows the LoginDisplayHost and LoginUIHandler
 // to access it without having to be coupled with each other. It is created with
 // NULL for the delegate and a 0-size rectangle for the background
@@ -32,22 +32,22 @@ class DOMBrowser;
 // pointer, where as accessing classes should do nothing with the pointer.
 //
 // Expected order of commands to setup for LoginDisplayHost:
-//   DOMLoginDisplay::GetInstance();
+//   WebUILoginDisplay::GetInstance();
 //   set_delegate(delegate);
 //   set_background_bounds(background_bounds());
 //   Init();
 //
 // Expected order of commands to setup for LoginUIHandler:
-//   DOMLoginDisplay::GetInstance();
+//   WebUILoginDisplay::GetInstance();
 //   set_login_handler(this);
 
-class DOMLoginDisplay : public LoginDisplay,
-                        public LoginUIHandlerDelegate {
+class WebUILoginDisplay : public LoginDisplay,
+                          public LoginUIHandlerDelegate {
  public:
-  virtual ~DOMLoginDisplay();
+  virtual ~WebUILoginDisplay();
 
   // Singleton implementation:
-  static DOMLoginDisplay* GetInstance();
+  static WebUILoginDisplay* GetInstance();
 
   // Wrapper used to help in routing keyboard key presses into the login
   // screen. This gets the Login Window widget from the Singleton, so that other
@@ -76,8 +76,8 @@ class DOMLoginDisplay : public LoginDisplay,
 
  private:
   // Singleton implementation:
-  friend struct DefaultSingletonTraits<DOMLoginDisplay>;
-  DOMLoginDisplay();
+  friend struct DefaultSingletonTraits<WebUILoginDisplay>;
+  WebUILoginDisplay();
 
   // Set of Users in the systemvisible UserControllers.
   std::vector<UserManager::User> users_;
@@ -86,9 +86,9 @@ class DOMLoginDisplay : public LoginDisplay,
   WebUILoginView* webui_login_view_;  // Owned by webui_login_window_
   views::Widget* webui_login_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(DOMLoginDisplay);
+  DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplay);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_DOM_LOGIN_DISPLAY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WEBUI_LOGIN_DISPLAY_H_
