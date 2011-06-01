@@ -23,7 +23,7 @@ class PPB_FileSystem_Impl : public Resource,
                             public ::ppapi::thunk::PPB_FileSystem_API {
  public:
   PPB_FileSystem_Impl(PluginInstance* instance, PP_FileSystemType_Dev type);
-  ~PPB_FileSystem_Impl();
+  virtual ~PPB_FileSystem_Impl();
 
   static PP_Resource Create(PP_Instance instance, PP_FileSystemType_Dev type);
 
