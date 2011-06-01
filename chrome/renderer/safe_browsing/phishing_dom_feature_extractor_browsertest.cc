@@ -187,7 +187,14 @@ TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
+// Flaky on windows, http://crbug.com/84623
+#if defined(OS_WIN)
+#define MAYBE_SubFrames FLAKY_SubFrames
+#else
+#define MAYBE_SubFrames SubFrames
+#endif
+
+TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_SubFrames) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
