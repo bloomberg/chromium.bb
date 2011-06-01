@@ -95,7 +95,7 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
   sync_api::WriteTransaction trans(share_handle());
 
   // Later logic assumes that |topmost| has been unlinked.
-  DCHECK(!topmost->parent());
+  DCHECK(topmost->is_root());
 
   // A BookmarkModel deletion event means that |node| and all its children were
   // deleted. Sync backend expects children to be deleted individually, so we do
@@ -107,7 +107,7 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
   int index = 0;
   while (node) {
     // The top of |index_stack| should always be |node|'s index.
-    DCHECK(!node->parent() || (node->parent()->GetIndexOf(node) ==
+    DCHECK(node->is_root() || (node->parent()->GetIndexOf(node) ==
       index_stack.top()));
     if (index == node->child_count()) {
       // If we've processed all of |node|'s children, delete |node| and move

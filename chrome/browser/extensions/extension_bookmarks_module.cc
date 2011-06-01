@@ -449,7 +449,7 @@ bool CreateBookmarkFunction::RunImpl() {
     error_ = keys::kNoParentError;
     return false;
   }
-  if (parent->parent() == NULL) {  // Can't create children of the root.
+  if (parent->is_root()) {  // Can't create children of the root.
     error_ = keys::kModifySpecialError;
     return false;
   }
@@ -705,7 +705,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     for (IdList::iterator it = ids.begin(); it != ids.end(); ++it) {
       BookmarkModel* model = profile_->GetBookmarkModel();
       const BookmarkNode* node = model->GetNodeByID(*it);
-      if (!node || !node->parent())
+      if (!node || node->is_root())
         return;
 
       std::string bucket_id;

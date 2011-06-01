@@ -133,6 +133,9 @@ class TreeNode : public TreeModelNode {
   const NodeType* parent() const { return parent_; }
   NodeType* parent() { return parent_; }
 
+  // Returns true if this is the root node.
+  bool is_root() const { return parent_ == NULL; }
+
   // Returns the index of |node|, or -1 if |node| is not a child of this.
   int GetIndexOf(const NodeType* node) const {
     DCHECK(node);
@@ -148,9 +151,6 @@ class TreeNode : public TreeModelNode {
 
   // TreeModelNode:
   virtual const string16& GetTitle() const OVERRIDE { return title_; }
-
-  // Returns true if this is the root.
-  bool IsRoot() const { return parent_ == NULL; }
 
   // Returns true if this == ancestor, or one of this nodes parents is
   // ancestor.

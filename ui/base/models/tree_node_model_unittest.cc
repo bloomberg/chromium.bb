@@ -317,4 +317,13 @@ TEST_F(TreeNodeModelTest, BasicOperations) {
   delete root;
 }
 
+TEST_F(TreeNodeModelTest, IsRoot) {
+  TreeNodeWithValue<int> root;
+  EXPECT_TRUE(root.is_root());
+
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
+  root.Add(child1, root.child_count());
+  EXPECT_FALSE(child1->is_root());
+}
+
 }  // namespace ui
