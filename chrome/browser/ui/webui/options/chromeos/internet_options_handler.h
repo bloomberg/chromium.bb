@@ -74,9 +74,6 @@ class InternetOptionsHandler
       const chromeos::CellularNetwork* cellular,
       DictionaryValue* dictionary);
 
-  void LoginCallback(const ListValue* args);
-  void LoginCertCallback(const ListValue* args);
-  void LoginToOtherCallback(const ListValue* args);
   void SetAutoConnectCallback(const ListValue* args);
   void SetSharedCallback(const ListValue* args);
   void SetIPConfigCallback(const ListValue* args);
@@ -136,10 +133,6 @@ class InternetOptionsHandler
 
   // Convenience pointer to netwrok library (will not change).
   chromeos::NetworkLibrary* cros_;
-
-  // A boolean flag of whether to use WebUI for connect UI. True to use WebUI
-  // and false to use Views dialogs.
-  bool use_settings_ui_;
 
   NotificationRegistrar registrar_;
 

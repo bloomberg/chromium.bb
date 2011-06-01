@@ -50,8 +50,7 @@ static const char kOtherNetworksFakePath[] = "?";
 
 InternetOptionsHandler::InternetOptionsHandler()
     : chromeos::CrosOptionsPageUIHandler(
-          new chromeos::UserCrosSettingsProvider),
-      use_settings_ui_(false) {
+          new chromeos::UserCrosSettingsProvider) {
   registrar_.Add(this, NotificationType::REQUIRE_PIN_SETTING_CHANGE_ENDED,
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::ENTER_PIN_ENDED,
@@ -350,9 +349,7 @@ void InternetOptionsHandler::GetLocalizedValues(
       chromeos::UserCrosSettingsProvider::cached_owner()));
 
   FillNetworkInfo(localized_strings);
-
-  localized_strings->SetBoolean("networkUseSettingsUI", use_settings_ui_);
-}
+ }
 
 void InternetOptionsHandler::Initialize() {
   cros_->RequestNetworkScan();
@@ -365,12 +362,6 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::ButtonClickCallback));
   web_ui_->RegisterMessageCallback("refreshCellularPlan",
       NewCallback(this, &InternetOptionsHandler::RefreshCellularPlanCallback));
-  web_ui_->RegisterMessageCallback("loginToNetwork",
-      NewCallback(this, &InternetOptionsHandler::LoginCallback));
-  web_ui_->RegisterMessageCallback("loginToCertNetwork",
-      NewCallback(this, &InternetOptionsHandler::LoginCertCallback));
-  web_ui_->RegisterMessageCallback("loginToOtherNetwork",
-      NewCallback(this, &InternetOptionsHandler::LoginToOtherCallback));
   web_ui_->RegisterMessageCallback("setAutoConnect",
       NewCallback(this, &InternetOptionsHandler::SetAutoConnectCallback));
   web_ui_->RegisterMessageCallback("setShared",
@@ -838,68 +829,7 @@ void InternetOptionsHandler::SetActivationButtonVisibility(
   }
 }
 
-void InternetOptionsHandler::LoginCallback(const ListValue* args) {
-  std::string service_path;
-  std::string password;
-
-  if (args->GetSize() != 2 ||
-      !args->GetString(0, &service_path) ||
-      !args->GetString(1, &password)) {
-    NOTREACHED();
-    return;
-  }
-
-  cros_->ConnectToWifiNetwork(service_path);
-}
-
-void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
-  std::string service_path;
-  std::string identity;
-  std::string certpath;
-  if (args->GetSize() < 3 ||
-      !args->GetString(0, &service_path) ||
-      !args->GetString(1, &certpath) ||
-      !args->GetString(2, &identity)) {
-    return;
-  }
-  chromeos::WifiNetwork* network = cros_->FindWifiNetworkByPath(service_path);
-  if (network) {
-    std::string passphrase;
-    if (args->GetSize() == 4 && args->GetString(3, &passphrase))
-      network->SetPassphrase(passphrase);
-    cros_->ConnectToWifiNetwork(network);
-  }
-}
-
-void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
-  std::string security;
-  std::string ssid;
-  std::string password;
-
-  if (args->GetSize() != 3 ||
-      !args->GetString(0, &security) ||
-      !args->GetString(1, &ssid) ||
-      !args->GetString(2, &password)) {
-    NOTREACHED();
-    return;
-  }
-
-  chromeos::ConnectionSecurity sec = chromeos::SECURITY_UNKNOWN;
-  if (security == "none") {
-    sec = chromeos::SECURITY_NONE;
-  } else if (security == "wep") {
-    sec = chromeos::SECURITY_WEP;
-  } else if (security == "wpa") {
-    sec = chromeos::SECURITY_WPA;
-  } else if (security == "rsn") {
-    sec = chromeos::SECURITY_RSN;
-  }
-
-  cros_->ConnectToWifiNetwork(ssid, sec, password);
-}
-
 void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
-  DCHECK(!use_settings_ui_);
   views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
                                                      gfx::Rect(),
                                                      view);
@@ -947,25 +877,14 @@ void InternetOptionsHandler::HandleWifiButtonClick(
   chromeos::WifiNetwork* wifi = NULL;
   if (command == "forget") {
     cros_->ForgetWifiNetwork(service_path);
-  } else if (!use_settings_ui_ && service_path == kOtherNetworksFakePath) {
+  } else if (service_path == kOtherNetworksFakePath) {
     // Other wifi networks.
     CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_WIFI));
   } else if ((wifi = cros_->FindWifiNetworkByPath(service_path))) {
     if (command == "connect") {
       // Connect to wifi here. Open password page if appropriate.
       if (wifi->IsPassphraseRequired()) {
-        if (use_settings_ui_) {
-          if (wifi->encryption() == chromeos::SECURITY_8021X) {
-            PopulateDictionaryDetails(wifi);
-          } else {
-            DictionaryValue dictionary;
-            dictionary.SetString("servicePath", wifi->service_path());
-            web_ui_->CallJavascriptFunction(
-                "options.InternetOptions.showPasswordEntry", dictionary);
-          }
-        } else {
-          CreateModalPopup(new chromeos::NetworkConfigView(wifi));
-        }
+        CreateModalPopup(new chromeos::NetworkConfigView(wifi));
       } else {
         cros_->ConnectToWifiNetwork(wifi);
       }
@@ -1003,18 +922,14 @@ void InternetOptionsHandler::HandleVPNButtonClick(
     const std::string& command) {
   chromeos::VirtualNetwork* network = NULL;
   // TODO(altimofeev): verify if service_path in condition is correct.
-  if (!use_settings_ui_ && service_path == kOtherNetworksFakePath) {
+  if (service_path == kOtherNetworksFakePath) {
     // Other VPN networks.
     CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_VPN));
   } else if ((network = cros_->FindVirtualNetworkByPath(service_path))) {
     if (command == "connect") {
       // Connect to VPN here. Open password page if appropriate.
       if (network->NeedMoreInfoToConnect()) {
-        if (use_settings_ui_) {
-          // TODO(altimofeev): implement this.
-        } else {
-          CreateModalPopup(new chromeos::NetworkConfigView(network));
-        }
+        CreateModalPopup(new chromeos::NetworkConfigView(network));
       } else {
         cros_->ConnectToVirtualNetwork(network);
       }

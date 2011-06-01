@@ -59,6 +59,10 @@ cr.define('options', function() {
         InternetOptions.setDetails();
         InternetOptions.loginFromDetails();
       });
+      $('detailsInternetDisconnect').addEventListener('click', function(event) {
+        InternetOptions.setDetails();
+        InternetOptions.disconnectNetwork();
+      });
       $('activateDetails').addEventListener('click', function(event) {
         InternetOptions.activateFromDetails();
       });
@@ -153,34 +157,21 @@ cr.define('options', function() {
   cr.defineProperty(InternetOptions, 'accesslocked', cr.PropertyKind.JS,
       InternetOptions.prototype.updateControls_);
 
-  // A boolean flag from InternerOptionsHandler to indicate whether to use
-  // inline WebUI for ethernet/wifi login/options.
-  InternetOptions.useSettingsUI = false;
-
-  // Network status update will be blocked while typing in WEP password etc.
-  InternetOptions.updateLocked = false;
-  InternetOptions.updatePending = false;
-  InternetOptions.updataData = null;
-
   InternetOptions.loginFromDetails = function () {
     var data = $('connectionState').data;
     var servicePath = data.servicePath;
-    if (data.type == options.internet.Constants.TYPE_WIFI) {
-      if (data.certInPkcs) {
-        chrome.send('loginToCertNetwork',[String(servicePath),
-                                          String(data.certPath),
-                                          String(data.ident)]);
-      } else {
-        chrome.send('loginToCertNetwork',[String(servicePath),
-                                          String($('inetCert').value),
-                                          String($('inetIdent').value),
-                                          String($('inetCertPass').value)]);
-      }
-    } else if (data.type == options.internet.Constants.TYPE_CELLULAR) {
-        chrome.send('buttonClickCallback', [String(data.type),
-                                            servicePath,
-                                            'connect']);
-    }
+    chrome.send('buttonClickCallback', [String(data.type),
+                                        servicePath,
+                                        'connect']);
+    OptionsPage.closeOverlay();
+  };
+
+  InternetOptions.disconnectNetwork = function () {
+    var data = $('connectionState').data;
+    var servicePath = data.servicePath;
+    chrome.send('buttonClickCallback', [String(data.type),
+                                        servicePath,
+                                        'disconnect']);
     OptionsPage.closeOverlay();
   };
 
@@ -248,20 +239,6 @@ cr.define('options', function() {
       $('disable-cellular').hidden = true;
       $('data-roaming').hidden = true;
     }
-
-    InternetOptions.useSettingsUI = data.networkUseSettingsUI;
-  };
-
-  // Prevent clobbering of password input field.
-  InternetOptions.lockUpdates = function () {
-    InternetOptions.updateLocked = true;
-  };
-
-  InternetOptions.unlockUpdates = function () {
-    InternetOptions.updateLocked = false;
-    if (InternetOptions.updatePending) {
-      InternetOptions.refreshNetworkData(InternetOptions.updateData);
-    }
   };
 
   //
@@ -274,23 +251,16 @@ cr.define('options', function() {
       return;
     }
     self.accesslocked = false;
-    if (InternetOptions.updateLocked) {
-      InternetOptions.updateData = data;
-      InternetOptions.updatePending = true;
-    } else {
-      $('wired-list').load(data.wiredList);
-      $('wireless-list').load(data.wirelessList);
-      $('vpn-list').load(data.vpnList);
-      $('remembered-list').load(data.rememberedList);
+    $('wired-list').load(data.wiredList);
+    $('wireless-list').load(data.wirelessList);
+    $('vpn-list').load(data.vpnList);
+    $('remembered-list').load(data.rememberedList);
 
-      $('wired-section').hidden = (data.wiredList.length == 0);
-      $('wireless-section').hidden = (data.wirelessList.length == 0);
-      $('vpn-section').hidden = (data.vpnList.length == 0);
-      InternetOptions.setupAttributes(data);
-      $('remembered-section').hidden = (data.rememberedList.length == 0);
-      InternetOptions.updateData = null;
-      InternetOptions.updatePending = false;
-    }
+    $('wired-section').hidden = (data.wiredList.length == 0);
+    $('wireless-section').hidden = (data.wirelessList.length == 0);
+    $('vpn-section').hidden = (data.vpnList.length == 0);
+    InternetOptions.setupAttributes(data);
+    $('remembered-section').hidden = (data.rememberedList.length == 0);
   };
 
   // TODO(xiyuan): This function seems belonging to DetailsInternetPage.
@@ -320,11 +290,6 @@ cr.define('options', function() {
     $('sim-card-lock-enabled').checked = data.requirePin;
   };
 
-  InternetOptions.showPasswordEntry = function (data) {
-    var element = $(data.servicePath);
-    element.showPassword();
-  };
-
   InternetOptions.showDetailedInfo = function (data) {
     var detailsPage = DetailsInternetPage.getInstance();
     // TODO(chocobo): Is this hack to cache the data here reasonable?
@@ -332,6 +297,10 @@ cr.define('options', function() {
     $('buyplanDetails').hidden = true;
     $('activateDetails').hidden = true;
     $('detailsInternetLogin').hidden = data.connected;
+    if (data.type == options.internet.Constants.TYPE_ETHERNET)
+      $('detailsInternetDisconnect').hidden = true;
+    else
+      $('detailsInternetDisconnect').hidden = !data.connected;
 
     detailsPage.deviceConnected = data.deviceConnected;
     detailsPage.connecting = data.connecting;
