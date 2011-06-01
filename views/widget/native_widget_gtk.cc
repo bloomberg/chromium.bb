@@ -322,14 +322,7 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
 }
 
 NativeWidgetGtk::~NativeWidgetGtk() {
-  if (widget_) {
-    ui::GObjectDestructorFILO::GetInstance()->Disconnect(
-        G_OBJECT(widget_), &OnDestroyedThunk, this);
-    if (ownership_ != Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-      CloseNow();
-  }
-  DCHECK(ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET ||
-         widget_ == NULL);
+  DCHECK(widget_ == NULL);
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
