@@ -12,14 +12,15 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ::ppapi::thunk::PPB_Graphics2D_API;
-using ::ppapi::thunk::EnterResource;
 
 namespace pp {
 namespace proxy {
@@ -33,7 +34,54 @@ InterfaceProxy* CreateGraphics2DProxy(Dispatcher* dispatcher,
 
 }  // namespace
 
-PPB_Graphics2D_API* Graphics2D::AsGraphics2D_API() {
+class Graphics2D : public PluginResource,
+                   public ::ppapi::thunk::PPB_Graphics2D_API {
+ public:
+  Graphics2D(const HostResource& host_resource,
+             const PP_Size& size,
+             PP_Bool is_always_opaque);
+  virtual ~Graphics2D();
+
+  // ResourceObjectBase.
+  virtual PPB_Graphics2D_API* AsPPB_Graphics2D_API();
+
+  // PPB_Graphics_2D_API.
+  PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque);
+  void PaintImageData(PP_Resource image_data,
+                      const PP_Point* top_left,
+                      const PP_Rect* src_rect);
+  void Scroll(const PP_Rect* clip_rect,
+              const PP_Point* amount);
+  void ReplaceContents(PP_Resource image_data);
+  int32_t Flush(PP_CompletionCallback callback);
+
+  // Notification that the host has sent an ACK for a pending Flush.
+  void FlushACK(int32_t result_code);
+
+ private:
+  PP_Size size_;
+  PP_Bool is_always_opaque_;
+
+  // In the plugin, this is the current callback set for Flushes. When the
+  // callback function pointer is non-NULL, we're waiting for a flush ACK.
+  PP_CompletionCallback current_flush_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(Graphics2D);
+};
+
+Graphics2D::Graphics2D(const HostResource& host_resource,
+                       const PP_Size& size,
+                       PP_Bool is_always_opaque)
+    : PluginResource(host_resource),
+      size_(size),
+      is_always_opaque_(is_always_opaque),
+      current_flush_callback_(PP_BlockUntilComplete()) {
+}
+
+Graphics2D::~Graphics2D() {
+}
+
+PPB_Graphics2D_API* Graphics2D::AsPPB_Graphics2D_API() {
   return this;
 }
 
@@ -85,13 +133,17 @@ int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
   if (!callback.func)
     return PP_ERROR_BADARGUMENT;
 
-  if (is_flush_pending())
+  if (current_flush_callback_.func)
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
-  set_current_flush_callback(callback);
+  current_flush_callback_ = callback;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Flush(
       INTERFACE_ID_PPB_GRAPHICS_2D, host_resource()));
   return PP_OK_COMPLETIONPENDING;
+}
+
+void Graphics2D::FlushACK(int32_t result_code) {
+  PP_RunAndClearCompletionCallback(&current_flush_callback_, result_code);
 }
 
 PPB_Graphics2D_Proxy::PPB_Graphics2D_Proxy(Dispatcher* dispatcher,
@@ -113,6 +165,26 @@ const InterfaceProxy::Info* PPB_Graphics2D_Proxy::GetInfo() {
     &CreateGraphics2DProxy,
   };
   return &info;
+}
+
+// static
+PP_Resource PPB_Graphics2D_Proxy::CreateProxyResource(
+    PP_Instance instance,
+    const PP_Size& size,
+    PP_Bool is_always_opaque) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+
+  HostResource result;
+  dispatcher->Send(new PpapiHostMsg_ResourceCreation_Graphics2D(
+      INTERFACE_ID_RESOURCE_CREATION, instance, size, is_always_opaque,
+      &result));
+  if (result.is_null())
+    return 0;
+  linked_ptr<Graphics2D> graphics_2d(new Graphics2D(result, size,
+                                                    is_always_opaque));
+  return PluginResourceTracker::GetInstance()->AddResource(graphics_2d);
 }
 
 bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -141,7 +213,7 @@ void PPB_Graphics2D_Proxy::OnMsgPaintImageData(
     const PP_Point& top_left,
     bool src_rect_specified,
     const PP_Rect& src_rect) {
-  EnterResource<PPB_Graphics2D_API> enter(graphics_2d.host_resource(), false);
+  EnterHostFromHostResource<PPB_Graphics2D_API> enter(graphics_2d);
   if (enter.failed())
     return;
   enter.object()->PaintImageData(image_data.host_resource(), &top_left,
@@ -152,7 +224,7 @@ void PPB_Graphics2D_Proxy::OnMsgScroll(const HostResource& graphics_2d,
                                        bool clip_specified,
                                        const PP_Rect& clip,
                                        const PP_Point& amount) {
-  EnterResource<PPB_Graphics2D_API> enter(graphics_2d.host_resource(), false);
+  EnterHostFromHostResource<PPB_Graphics2D_API> enter(graphics_2d);
   if (enter.failed())
     return;
   enter.object()->Scroll(clip_specified ? &clip : NULL, &amount);
@@ -161,7 +233,7 @@ void PPB_Graphics2D_Proxy::OnMsgScroll(const HostResource& graphics_2d,
 void PPB_Graphics2D_Proxy::OnMsgReplaceContents(
     const HostResource& graphics_2d,
     const HostResource& image_data) {
-  EnterResource<PPB_Graphics2D_API> enter(graphics_2d.host_resource(), false);
+  EnterHostFromHostResource<PPB_Graphics2D_API> enter(graphics_2d);
   if (enter.failed())
     return;
   enter.object()->ReplaceContents(image_data.host_resource());
@@ -182,24 +254,9 @@ void PPB_Graphics2D_Proxy::OnMsgFlush(const HostResource& graphics_2d) {
 
 void PPB_Graphics2D_Proxy::OnMsgFlushACK(const HostResource& host_resource,
                                          int32_t pp_error) {
-  PP_Resource plugin_resource =
-      PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
-          host_resource);
-  if (!plugin_resource)
-    return;
-
-  Graphics2D* object = PluginResource::GetAs<Graphics2D>(plugin_resource);
-  if (!object) {
-    // The plugin has released the graphics 2D object so don't issue the
-    // callback.
-    return;
-  }
-
-  // Be careful to make the callback NULL again before issuing the callback
-  // since the plugin might want to flush from within the callback.
-  PP_CompletionCallback callback = object->current_flush_callback();
-  object->set_current_flush_callback(PP_BlockUntilComplete());
-  PP_RunCompletionCallback(&callback, pp_error);
+  EnterPluginFromHostResource<PPB_Graphics2D_API> enter(host_resource);
+  if (enter.succeeded())
+    static_cast<Graphics2D*>(enter.object())->FlushACK(pp_error);
 }
 
 void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(

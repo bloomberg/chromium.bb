@@ -23,7 +23,7 @@ class AudioConfig : public PluginResource,
   virtual ~AudioConfig();
 
   // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_AudioConfig_API* AsAudioConfig_API() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioConfig);
@@ -36,7 +36,7 @@ AudioConfig::AudioConfig(const HostResource& resource)
 AudioConfig::~AudioConfig() {
 }
 
-::ppapi::thunk::PPB_AudioConfig_API* AudioConfig::AsAudioConfig_API() {
+::ppapi::thunk::PPB_AudioConfig_API* AudioConfig::AsPPB_AudioConfig_API() {
   return this;
 }
 

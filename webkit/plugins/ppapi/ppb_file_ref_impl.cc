@@ -8,6 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_file_system_api.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -16,6 +18,10 @@
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/var.h"
+
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_FileRef_API;
+using ppapi::thunk::PPB_FileSystem_API;
 
 namespace webkit {
 namespace ppapi {
@@ -40,192 +46,6 @@ void TrimTrailingSlash(std::string* path) {
   if (path->size() > 1 && path->at(path->size() - 1) == '/')
     path->erase(path->size() - 1, 1);
 }
-
-PP_Resource Create(PP_Resource file_system_id, const char* path) {
-  scoped_refptr<PPB_FileSystem_Impl> file_system(
-      Resource::GetAs<PPB_FileSystem_Impl>(file_system_id));
-  if (!file_system)
-    return 0;
-
-  if (!file_system->instance())
-    return 0;
-
-  std::string validated_path(path);
-  if (!IsValidLocalPath(validated_path))
-    return 0;
-  TrimTrailingSlash(&validated_path);
-
-  PPB_FileRef_Impl* file_ref =
-      new PPB_FileRef_Impl(file_system->instance(),
-                           file_system, validated_path);
-  return file_ref->GetReference();
-}
-
-PP_Bool IsFileRef(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_FileRef_Impl>(resource));
-}
-
-PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref_id) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_FILESYSTEMTYPE_INVALID;
-  return file_ref->GetFileSystemType();
-}
-
-PP_Var GetName(PP_Resource file_ref_id) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_MakeUndefined();
-  return StringVar::StringToPPVar(file_ref->instance()->module(),
-                                  file_ref->GetName());
-}
-
-PP_Var GetPath(PP_Resource file_ref_id) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_MakeUndefined();
-
-  if (file_ref->GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
-    return PP_MakeUndefined();
-
-  return StringVar::StringToPPVar(file_ref->instance()->module(),
-                                  file_ref->GetPath());
-}
-
-PP_Resource GetParent(PP_Resource file_ref_id) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return 0;
-
-  if (file_ref->GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
-    return 0;
-
-  scoped_refptr<PPB_FileRef_Impl> parent_ref(file_ref->GetParent());
-  if (!parent_ref)
-    return 0;
-
-  return parent_ref->GetReference();
-}
-
-int32_t MakeDirectory(PP_Resource directory_ref_id,
-                      PP_Bool make_ancestors,
-                      PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileRef_Impl> directory_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(directory_ref_id));
-  if (!directory_ref)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_FileSystem_Impl> file_system =
-      directory_ref->GetFileSystem();
-  if (!file_system || !file_system->opened() ||
-      (file_system->type() == PP_FILESYSTEMTYPE_EXTERNAL))
-    return PP_ERROR_NOACCESS;
-
-  PluginInstance* instance = file_system->instance();
-  if (!instance->delegate()->MakeDirectory(
-          directory_ref->GetFileSystemURL(), PPBoolToBool(make_ancestors),
-          new FileCallbacks(instance->module()->AsWeakPtr(), directory_ref_id,
-                            callback, NULL, NULL, NULL)))
-    return PP_ERROR_FAILED;
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t Touch(PP_Resource file_ref_id,
-              PP_Time last_access_time,
-              PP_Time last_modified_time,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_FileSystem_Impl> file_system = file_ref->GetFileSystem();
-  if (!file_system || !file_system->opened() ||
-      (file_system->type() == PP_FILESYSTEMTYPE_EXTERNAL))
-    return PP_ERROR_NOACCESS;
-
-  PluginInstance* instance = file_system->instance();
-  if (!instance->delegate()->Touch(
-          file_ref->GetFileSystemURL(),
-          base::Time::FromDoubleT(last_access_time),
-          base::Time::FromDoubleT(last_modified_time),
-          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
-                            callback, NULL, NULL, NULL)))
-    return PP_ERROR_FAILED;
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t Delete(PP_Resource file_ref_id,
-               PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_FileSystem_Impl> file_system = file_ref->GetFileSystem();
-  if (!file_system || !file_system->opened() ||
-      (file_system->type() == PP_FILESYSTEMTYPE_EXTERNAL))
-    return PP_ERROR_NOACCESS;
-
-  PluginInstance* instance = file_system->instance();
-  if (!instance->delegate()->Delete(
-          file_ref->GetFileSystemURL(),
-          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
-                            callback, NULL, NULL, NULL)))
-    return PP_ERROR_FAILED;
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t Rename(PP_Resource file_ref_id,
-               PP_Resource new_file_ref_id,
-               PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_FileRef_Impl> new_file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(new_file_ref_id));
-  if (!new_file_ref)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_FileSystem_Impl> file_system = file_ref->GetFileSystem();
-  if (!file_system || !file_system->opened() ||
-      (file_system != new_file_ref->GetFileSystem()) ||
-      (file_system->type() == PP_FILESYSTEMTYPE_EXTERNAL))
-    return PP_ERROR_NOACCESS;
-
-  // TODO(viettrungluu): Also cancel when the new file ref is destroyed?
-  // http://crbug.com/67624
-  PluginInstance* instance = file_system->instance();
-  if (!instance->delegate()->Rename(
-          file_ref->GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
-          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
-                            callback, NULL, NULL, NULL)))
-    return PP_ERROR_FAILED;
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-const PPB_FileRef_Dev ppb_fileref = {
-  &Create,
-  &IsFileRef,
-  &GetFileSystemType,
-  &GetName,
-  &GetPath,
-  &GetParent,
-  &MakeDirectory,
-  &Touch,
-  &Delete,
-  &Rename
-};
 
 }  // namespace
 
@@ -254,41 +74,78 @@ PPB_FileRef_Impl::~PPB_FileRef_Impl() {
 }
 
 // static
-const PPB_FileRef_Dev* PPB_FileRef_Impl::GetInterface() {
-  return &ppb_fileref;
+PP_Resource PPB_FileRef_Impl::Create(PP_Resource pp_file_system,
+                                     const char* path) {
+  EnterResourceNoLock<PPB_FileSystem_API> enter(pp_file_system, true);
+  if (enter.failed())
+    return 0;
+
+  PPB_FileSystem_Impl* file_system =
+      static_cast<PPB_FileSystem_Impl*>(enter.object());
+  if (!file_system->instance())
+    return 0;
+
+  std::string validated_path(path);
+  if (!IsValidLocalPath(validated_path))
+    return 0;
+  TrimTrailingSlash(&validated_path);
+
+  PPB_FileRef_Impl* file_ref =
+      new PPB_FileRef_Impl(file_system->instance(),
+                           file_system, validated_path);
+  return file_ref->GetReference();
+}
+
+PPB_FileRef_API* PPB_FileRef_Impl::AsPPB_FileRef_API() {
+  return this;
 }
 
 PPB_FileRef_Impl* PPB_FileRef_Impl::AsPPB_FileRef_Impl() {
   return this;
 }
 
-std::string PPB_FileRef_Impl::GetName() const {
+PP_FileSystemType_Dev PPB_FileRef_Impl::GetFileSystemType() const {
+  // When the file ref exists but there's no explicit filesystem object
+  // associated with it, that means it's an "external" filesystem.
+  if (!file_system_)
+    return PP_FILESYSTEMTYPE_EXTERNAL;
+  return file_system_->type();
+}
+
+PP_Var PPB_FileRef_Impl::GetName() const {
+  std::string result;
   if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL) {
     FilePath::StringType path = system_path_.value();
     size_t pos = path.rfind(FilePath::kSeparators[0]);
     DCHECK(pos != FilePath::StringType::npos);
 #if defined(OS_WIN)
-    return WideToUTF8(path.substr(pos + 1));
+    result = WideToUTF8(path.substr(pos + 1));
 #elif defined(OS_POSIX)
-    return path.substr(pos + 1);
+    result = path.substr(pos + 1);
 #else
 #error "Unsupported platform."
 #endif
+  } else if (virtual_path_.size() == 1 && virtual_path_[0] == '/') {
+    result = virtual_path_;
+  } else {
+    // There should always be a leading slash at least!
+    size_t pos = virtual_path_.rfind('/');
+    DCHECK(pos != std::string::npos);
+    result = virtual_path_.substr(pos + 1);
   }
 
-  if (virtual_path_.size() == 1 && virtual_path_[0] == '/')
-    return virtual_path_;
-
-  // There should always be a leading slash at least!
-  size_t pos = virtual_path_.rfind('/');
-  DCHECK(pos != std::string::npos);
-
-  return virtual_path_.substr(pos + 1);
+  return StringVar::StringToPPVar(instance()->module(), result);
 }
 
-scoped_refptr<PPB_FileRef_Impl> PPB_FileRef_Impl::GetParent() {
+PP_Var PPB_FileRef_Impl::GetPath() const {
   if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
-    return new PPB_FileRef_Impl();
+    return PP_MakeUndefined();
+  return StringVar::StringToPPVar(instance()->module(), virtual_path_);
+}
+
+PP_Resource PPB_FileRef_Impl::GetParent() {
+  if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
+    return 0;
 
   // There should always be a leading slash at least!
   size_t pos = virtual_path_.rfind('/');
@@ -299,26 +156,73 @@ scoped_refptr<PPB_FileRef_Impl> PPB_FileRef_Impl::GetParent() {
     pos++;
   std::string parent_path = virtual_path_.substr(0, pos);
 
-  PPB_FileRef_Impl* parent_ref = new PPB_FileRef_Impl(instance(), file_system_,
-                                                      parent_path);
-  return parent_ref;
+  scoped_refptr<PPB_FileRef_Impl> parent_ref(
+      new PPB_FileRef_Impl(instance(), file_system_, parent_path));
+  return parent_ref->GetReference();
 }
 
-scoped_refptr<PPB_FileSystem_Impl> PPB_FileRef_Impl::GetFileSystem() const {
-  return file_system_;
+int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
+                                        PP_CompletionCallback callback) {
+  if (!IsValidNonExternalFileSystem())
+    return PP_ERROR_NOACCESS;
+  if (!instance()->delegate()->MakeDirectory(
+          GetFileSystemURL(), PP_ToBool(make_ancestors),
+          new FileCallbacks(instance()->module()->AsWeakPtr(),
+                            GetReferenceNoAddRef(), callback,
+                            NULL, NULL, NULL)))
+    return PP_ERROR_FAILED;
+  return PP_OK_COMPLETIONPENDING;
 }
 
-PP_FileSystemType_Dev PPB_FileRef_Impl::GetFileSystemType() const {
-  // When the file ref exists but there's no explicit filesystem object
-  // associated with it, that means it's an "external" filesystem.
-  if (!file_system_)
-    return PP_FILESYSTEMTYPE_EXTERNAL;
-
-  return file_system_->type();
+int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
+                                PP_Time last_modified_time,
+                                PP_CompletionCallback callback) {
+  if (!IsValidNonExternalFileSystem())
+    return PP_ERROR_NOACCESS;
+  if (!instance()->delegate()->Touch(
+          GetFileSystemURL(),
+          base::Time::FromDoubleT(last_access_time),
+          base::Time::FromDoubleT(last_modified_time),
+          new FileCallbacks(instance()->module()->AsWeakPtr(),
+                            GetReferenceNoAddRef(), callback,
+                            NULL, NULL, NULL)))
+    return PP_ERROR_FAILED;
+  return PP_OK_COMPLETIONPENDING;
 }
 
-std::string PPB_FileRef_Impl::GetPath() const {
-  return virtual_path_;
+int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
+  if (!IsValidNonExternalFileSystem())
+    return PP_ERROR_NOACCESS;
+  if (!instance()->delegate()->Delete(
+          GetFileSystemURL(),
+          new FileCallbacks(instance()->module()->AsWeakPtr(),
+                            GetReferenceNoAddRef(), callback,
+                            NULL, NULL, NULL)))
+    return PP_ERROR_FAILED;
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
+                                 PP_CompletionCallback callback) {
+  EnterResourceNoLock<PPB_FileRef_API> enter(new_pp_file_ref, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  PPB_FileRef_Impl* new_file_ref =
+      static_cast<PPB_FileRef_Impl*>(enter.object());
+
+  if (!IsValidNonExternalFileSystem() ||
+      file_system_.get() != new_file_ref->file_system_.get())
+    return PP_ERROR_NOACCESS;
+
+  // TODO(viettrungluu): Also cancel when the new file ref is destroyed?
+  // http://crbug.com/67624
+  if (!instance()->delegate()->Rename(
+          GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
+          new FileCallbacks(instance()->module()->AsWeakPtr(),
+                            GetReferenceNoAddRef(), callback,
+                            NULL, NULL, NULL)))
+    return PP_ERROR_FAILED;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 FilePath PPB_FileRef_Impl::GetSystemPath() const {
@@ -343,6 +247,11 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   // TODO(ericu): Switch this to use Resolve after fixing GURL to understand
   // FileSystem URLs.
   return GURL(file_system_->root_url().spec() + virtual_path_.substr(1));
+}
+
+bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {
+  return file_system_ && file_system_->opened() &&
+      file_system_->type() != PP_FILESYSTEMTYPE_EXTERNAL;
 }
 
 }  // namespace ppapi

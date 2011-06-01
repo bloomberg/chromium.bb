@@ -24,7 +24,7 @@ PPB_CharSet_Impl::PPB_CharSet_Impl(PluginInstance* instance)
 PPB_CharSet_Impl::~PPB_CharSet_Impl() {
 }
 
-PPB_CharSet_FunctionAPI* PPB_CharSet_Impl::AsCharSet_FunctionAPI() {
+PPB_CharSet_FunctionAPI* PPB_CharSet_Impl::AsPPB_CharSet_FunctionAPI() {
   return this;
 }
 

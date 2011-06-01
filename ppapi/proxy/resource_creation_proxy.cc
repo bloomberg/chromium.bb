@@ -16,6 +16,9 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
+#include "ppapi/proxy/ppb_file_chooser_proxy.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
+#include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
@@ -37,7 +40,7 @@ ResourceCreationProxy::~ResourceCreationProxy() {
 }
 
 ::ppapi::thunk::ResourceCreationAPI*
-ResourceCreationProxy::AsResourceCreation() {
+ResourceCreationProxy::AsResourceCreationAPI() {
   return this;
 }
 
@@ -72,6 +75,34 @@ PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
 }
 
+PP_Resource ResourceCreationProxy::CreateDirectoryReader(
+    PP_Resource directory_ref) {
+  // Not proxied yet.
+  return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateFileChooser(
+    PP_Instance instance,
+    const PP_FileChooserOptions_Dev* options) {
+  return PPB_FileChooser_Proxy::CreateProxyResource(instance, options);
+}
+
+PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
+  // Not proxied yet.
+  return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateFileRef(PP_Resource file_system,
+                                                 const char* path) {
+  return PPB_FileRef_Proxy::CreateProxyResource(file_system, path);
+}
+
+PP_Resource ResourceCreationProxy::CreateFileSystem(
+    PP_Instance instance,
+    PP_FileSystemType_Dev type) {
+  return PPB_FileSystem_Proxy::CreateProxyResource(instance, type);
+}
+
 PP_Resource ResourceCreationProxy::CreateFontObject(
     PP_Instance instance,
     const PP_FontDescription_Dev* description) {
@@ -83,22 +114,11 @@ PP_Resource ResourceCreationProxy::CreateFontObject(
   return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
-PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance pp_instance,
+PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
                                                     const PP_Size& size,
                                                     PP_Bool is_always_opaque) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(pp_instance);
-  if (!dispatcher)
-    return PP_ERROR_BADARGUMENT;
-
-  HostResource result;
-  dispatcher->Send(new PpapiHostMsg_ResourceCreation_Graphics2D(
-      INTERFACE_ID_RESOURCE_CREATION, pp_instance, size, is_always_opaque,
-      &result));
-  if (result.is_null())
-    return 0;
-  linked_ptr<Graphics2D> graphics_2d(new Graphics2D(result, size,
-                                                    is_always_opaque));
-  return PluginResourceTracker::GetInstance()->AddResource(graphics_2d);
+  return PPB_Graphics2D_Proxy::CreateProxyResource(instance, size,
+                                                   is_always_opaque);
 }
 
 PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,

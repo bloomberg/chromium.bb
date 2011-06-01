@@ -40,6 +40,10 @@ class TrackerBase {
   // there isn't one.
   virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
                                             pp::proxy::InterfaceID id) = 0;
+
+  // Returns the instance corresponding to the given resource, or 0 if the
+  // resource is invalid.
+  virtual PP_Instance GetInstanceForResource(PP_Resource resource) = 0;
 };
 
 }  // namespace ppapi

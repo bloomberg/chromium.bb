@@ -49,7 +49,7 @@ const InterfaceProxy::Info* PPB_CursorControl_Proxy::GetInfo() {
 }
 
 ppapi::thunk::PPB_CursorControl_FunctionAPI*
-PPB_CursorControl_Proxy::AsCursorControl_FunctionAPI() {
+PPB_CursorControl_Proxy::AsPPB_CursorControl_FunctionAPI() {
   return this;
 }
 

@@ -52,7 +52,7 @@ const InterfaceProxy::Info* PPB_CharSet_Proxy::GetInfo() {
 }
 
 ppapi::thunk::PPB_CharSet_FunctionAPI*
-PPB_CharSet_Proxy::AsCharSet_FunctionAPI() {
+PPB_CharSet_Proxy::AsPPB_CharSet_FunctionAPI() {
   return this;
 }
 

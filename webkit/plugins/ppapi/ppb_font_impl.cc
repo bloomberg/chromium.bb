@@ -52,7 +52,7 @@ PPB_Font_Impl::PPB_Font_Impl(PluginInstance* instance,
 PPB_Font_Impl::~PPB_Font_Impl() {
 }
 
-::ppapi::thunk::PPB_Font_API* PPB_Font_Impl::AsFont_API() {
+::ppapi::thunk::PPB_Font_API* PPB_Font_Impl::AsPPB_Font_API() {
   return this;
 }
 

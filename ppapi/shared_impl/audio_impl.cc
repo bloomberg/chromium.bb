@@ -25,7 +25,7 @@ AudioImpl::~AudioImpl() {
   }
 }
 
-::ppapi::thunk::PPB_Audio_API* AudioImpl::AsAudio_API() {
+::ppapi::thunk::PPB_Audio_API* AudioImpl::AsPPB_Audio_API() {
   return this;
 }
 

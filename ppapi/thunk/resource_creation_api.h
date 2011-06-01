@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_RESOURCE_CREATION_API_H_
 #define PPAPI_THUNK_RESOURCE_CREATION_API_H_
 
+#include "ppapi/c/dev/ppb_file_chooser_dev.h"
+#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -39,6 +41,15 @@ class ResourceCreationAPI {
                                         uint32_t sample_frame_count) = 0;
   virtual PP_Resource CreateBroker(PP_Instance instance) = 0;
   virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
+  virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) = 0;
+  virtual PP_Resource CreateFileChooser(
+      PP_Instance instance,
+      const PP_FileChooserOptions_Dev* options) = 0;
+  virtual PP_Resource CreateFileIO(PP_Instance instance) = 0;
+  virtual PP_Resource CreateFileRef(PP_Resource file_system,
+                                    const char* path) = 0;
+  virtual PP_Resource CreateFileSystem(PP_Instance instance,
+                                       PP_FileSystemType_Dev type) = 0;
   // Note: can't be called CreateFont due to Windows #defines.
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,

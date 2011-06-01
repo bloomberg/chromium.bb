@@ -28,9 +28,8 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  const PPB_FileRef_Dev* ppb_file_ref_target() const {
-    return static_cast<const PPB_FileRef_Dev*>(target_interface());
-  }
+  static PP_Resource CreateProxyResource(PP_Resource file_system,
+                                         const char* path);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

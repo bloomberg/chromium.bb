@@ -13,6 +13,7 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/thunk/ppb_file_chooser_api.h"
 
 struct PPB_FileChooser_Dev;
 
@@ -28,6 +29,10 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   virtual ~PPB_FileChooser_Proxy();
 
   static const Info* GetInfo();
+
+  static PP_Resource CreateProxyResource(
+      PP_Instance instance,
+      const PP_FileChooserOptions_Dev* options);
 
   const PPB_FileChooser_Dev* ppb_file_chooser_target() const {
     return static_cast<const PPB_FileChooser_Dev*>(target_interface());

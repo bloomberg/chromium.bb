@@ -290,6 +290,13 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
   return proxy.get();
 }
 
+PP_Instance ResourceTracker::GetInstanceForResource(PP_Resource pp_resource) {
+  scoped_refptr<Resource> resource(GetResource(pp_resource));
+  if (!resource.get())
+    return 0;
+  return resource->instance()->pp_instance();
+}
+
 scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";

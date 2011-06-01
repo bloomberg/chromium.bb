@@ -15,6 +15,8 @@
 #include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_file_ref_api.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -22,162 +24,12 @@
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_FileIO_API;
+using ppapi::thunk::PPB_FileRef_API;
+
 namespace webkit {
 namespace ppapi {
-
-namespace {
-
-PP_Resource Create(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  PPB_FileIO_Impl* file_io = new PPB_FileIO_Impl(instance);
-  return file_io->GetReference();
-}
-
-PP_Bool IsFileIO(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_FileIO_Impl>(resource));
-}
-
-int32_t Open(PP_Resource file_io_id,
-             PP_Resource file_ref_id,
-             int32_t open_flags,
-             PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_ERROR_BADRESOURCE;
-
-  return file_io->Open(file_ref, open_flags, callback);
-}
-
-int32_t Query(PP_Resource file_io_id,
-              PP_FileInfo_Dev* info,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->Query(info, callback);
-}
-
-int32_t Touch(PP_Resource file_io_id,
-              PP_Time last_access_time,
-              PP_Time last_modified_time,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->Touch(last_access_time, last_modified_time, callback);
-}
-
-int32_t Read(PP_Resource file_io_id,
-             int64_t offset,
-             char* buffer,
-             int32_t bytes_to_read,
-             PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->Read(offset, buffer, bytes_to_read, callback);
-}
-
-int32_t Write(PP_Resource file_io_id,
-              int64_t offset,
-              const char* buffer,
-              int32_t bytes_to_write,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->Write(offset, buffer, bytes_to_write, callback);
-}
-
-int32_t SetLength(PP_Resource file_io_id,
-                  int64_t length,
-                  PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->SetLength(length, callback);
-}
-
-int32_t Flush(PP_Resource file_io_id,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->Flush(callback);
-}
-
-void Close(PP_Resource file_io_id) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return;
-  file_io->Close();
-}
-
-const PPB_FileIO_Dev ppb_fileio = {
-  &Create,
-  &IsFileIO,
-  &Open,
-  &Query,
-  &Touch,
-  &Read,
-  &Write,
-  &SetLength,
-  &Flush,
-  &Close
-};
-
-int32_t GetOSFileDescriptor(PP_Resource file_io_id) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->GetOSFileDescriptor();
-}
-
-int32_t WillWrite(PP_Resource file_io_id,
-                  int64_t offset,
-                  int32_t bytes_to_write,
-                  PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->WillWrite(offset, bytes_to_write, callback);
-}
-
-int32_t WillSetLength(PP_Resource file_io_id,
-                      int64_t length,
-                      PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileIO_Impl>
-      file_io(Resource::GetAs<PPB_FileIO_Impl>(file_io_id));
-  if (!file_io)
-    return PP_ERROR_BADRESOURCE;
-  return file_io->WillSetLength(length, callback);
-}
-
-const PPB_FileIOTrusted_Dev ppb_fileiotrusted = {
-  &GetOSFileDescriptor,
-  &WillWrite,
-  &WillSetLength
-};
-
-}  // namespace
 
 PPB_FileIO_Impl::PPB_FileIO_Impl(PluginInstance* instance)
     : Resource(instance),
@@ -193,22 +45,26 @@ PPB_FileIO_Impl::~PPB_FileIO_Impl() {
 }
 
 // static
-const PPB_FileIO_Dev* PPB_FileIO_Impl::GetInterface() {
-  return &ppb_fileio;
+PP_Resource PPB_FileIO_Impl::Create(PP_Instance pp_instance) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+  PPB_FileIO_Impl* file_io = new PPB_FileIO_Impl(instance);
+  return file_io->GetReference();
 }
 
-// static
-const PPB_FileIOTrusted_Dev* PPB_FileIO_Impl::GetTrustedInterface() {
-  return &ppb_fileiotrusted;
-}
-
-PPB_FileIO_Impl* PPB_FileIO_Impl::AsPPB_FileIO_Impl() {
+PPB_FileIO_API* PPB_FileIO_Impl::AsPPB_FileIO_API() {
   return this;
 }
 
-int32_t PPB_FileIO_Impl::Open(PPB_FileRef_Impl* file_ref,
+int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
                               int32_t open_flags,
                               PP_CompletionCallback callback) {
+  EnterResourceNoLock<PPB_FileRef_API> enter(pp_file_ref, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(enter.object());
+
   int32_t rv = CommonCallValidation(false, callback);
   if (rv != PP_OK)
     return rv;

@@ -52,9 +52,11 @@ class EnterFunction {
   bool succeeded() const { return !!functions_; }
   bool failed() const { return !functions_; }
 
+  PP_Instance instance() const { return instance_; }
   FunctionsT* functions() { return functions_; }
 
  private:
+  PP_Instance instance_;
   FunctionsT* functions_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterFunction);
@@ -70,6 +72,20 @@ class EnterFunctionNoLock : public EnterFunction<FunctionsT> {
     // TODO(brettw) assert the lock is held.
   }
 };
+
+// Used when a caller has a resource, and wants to do EnterFunction for the
+// instance corresponding to that resource.
+template<typename FunctionsT>
+class EnterFunctionGivenResource : public EnterFunction<FunctionsT> {
+ public:
+  EnterFunctionGivenResource(PP_Resource resource, bool report_error)
+      : EnterFunction<FunctionsT>(
+            TrackerBase::Get()->GetInstanceForResource(resource),
+            report_error) {
+  }
+};
+
+// EnterResource ---------------------------------------------------------------
 
 template<typename ResourceT>
 class EnterResource {

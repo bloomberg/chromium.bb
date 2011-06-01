@@ -30,7 +30,7 @@ class PPB_Font_Proxy : public ppapi::FunctionGroupBase,
   static const Info* GetInfo();
 
   // FunctionGroupBase overrides.
-  virtual ppapi::thunk::PPB_Font_FunctionAPI* AsFont_FunctionAPI() OVERRIDE;
+  virtual ppapi::thunk::PPB_Font_FunctionAPI* AsPPB_Font_FunctionAPI() OVERRIDE;
 
   // PPB_Font_FunctionAPI implementation.
   virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;
@@ -54,7 +54,7 @@ class Font : public PluginResource,
   virtual ~Font();
 
   // ResourceObjectBase.
-  virtual ppapi::thunk::PPB_Font_API* AsFont_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Font_API* AsPPB_Font_API() OVERRIDE;
 
   // PluginResource overrides.
   virtual Font* AsFont() OVERRIDE;

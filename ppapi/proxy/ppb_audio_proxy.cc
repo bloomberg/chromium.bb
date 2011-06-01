@@ -10,6 +10,7 @@
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -20,6 +21,8 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
+
+using ::ppapi::thunk::PPB_Audio_API;
 
 namespace pp {
 namespace proxy {
@@ -33,7 +36,7 @@ class Audio : public PluginResource, public ppapi::AudioImpl {
   virtual ~Audio();
 
   // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_Audio_API* AsAudio_API();
+  virtual PPB_Audio_API* AsPPB_Audio_API();
 
   // PPB_Audio_API implementation.
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
@@ -62,7 +65,7 @@ Audio::~Audio() {
   PluginResourceTracker::GetInstance()->ReleaseResource(config_);
 }
 
-::ppapi::thunk::PPB_Audio_API* Audio::AsAudio_API() {
+PPB_Audio_API* Audio::AsPPB_Audio_API() {
   return this;
 }
 
@@ -232,11 +235,7 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
     IPC::PlatformFileForTransit socket_handle,
     base::SharedMemoryHandle handle,
     uint32_t length) {
-  PP_Resource plugin_resource =
-      PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
-          audio_id);
-  ppapi::thunk::EnterResource<ppapi::thunk::PPB_Audio_API> enter(
-      plugin_resource, false);
+  EnterPluginFromHostResource<PPB_Audio_API> enter(audio_id);
   if (enter.failed() || result_code != PP_OK) {
     // The caller may still have given us these handles in the failure case.
     // The easiest way to clean these up is to just put them in the objects
@@ -244,11 +243,11 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
     base::SyncSocket temp_socket(
         IPC::PlatformFileForTransitToPlatformFile(socket_handle));
     base::SharedMemory temp_mem(handle, false);
-    return;
+  } else {
+    static_cast<Audio*>(enter.object())->SetStreamInfo(
+        handle, length,
+        IPC::PlatformFileForTransitToPlatformFile(socket_handle));
   }
-  Audio* audio = static_cast<Audio*>(enter.object());
-  audio->SetStreamInfo(
-      handle, length, IPC::PlatformFileForTransitToPlatformFile(socket_handle));
 }
 
 void PPB_Audio_Proxy::AudioChannelConnected(

@@ -8,30 +8,57 @@
 #include "base/task.h"
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_file_system_api.h"
+#include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
+
+using ppapi::thunk::EnterFunctionNoLock;
+using ppapi::thunk::PPB_FileSystem_API;
+using ppapi::thunk::ResourceCreationAPI;
 
 namespace pp {
 namespace proxy {
 
+namespace {
+
+InterfaceProxy* CreateFileSystemProxy(Dispatcher* dispatcher,
+                                      const void* target_interface) {
+  return new PPB_FileSystem_Proxy(dispatcher, target_interface);
+}
+
+}  // namespace
+
 // This object maintains most of the state of the ref in the plugin for fast
 // querying. It's all set in the constructor from the "create info" sent from
 // the host.
-class FileSystem : public PluginResource {
+class FileSystem : public PluginResource, public PPB_FileSystem_API {
  public:
   FileSystem(const HostResource& host_resource, PP_FileSystemType_Dev type);
   virtual ~FileSystem();
 
-  virtual FileSystem* AsFileSystem();
+  // ResourceObjectBase override.
+  virtual PPB_FileSystem_API* AsPPB_FileSystem_API() OVERRIDE;
 
+  // PPB_FileSystem_APi implementation.
+  virtual int32_t Open(int64_t expected_size,
+                       PP_CompletionCallback callback) OVERRIDE;
+  virtual PP_FileSystemType_Dev GetType() OVERRIDE;
+
+  // Called when the host has responded to our open request.
+  void OpenComplete(int32_t result);
+
+ private:
   PP_FileSystemType_Dev type_;
   bool called_open_;
   PP_CompletionCallback current_open_callback_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(FileSystem);
 };
 
@@ -57,76 +84,31 @@ FileSystem::~FileSystem() {
   }
 }
 
-FileSystem* FileSystem::AsFileSystem() {
+PPB_FileSystem_API* FileSystem::AsPPB_FileSystem_API() {
   return this;
 }
 
-namespace {
-
-PP_Resource Create(PP_Instance instance, PP_FileSystemType_Dev type) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_ERROR_BADARGUMENT;
-
-  HostResource result;
-  dispatcher->Send(new PpapiHostMsg_PPBFileSystem_Create(
-      INTERFACE_ID_PPB_FILE_SYSTEM, instance, type, &result));
-  if (result.is_null())
-    return 0;
-
-  linked_ptr<FileSystem> object(new FileSystem(result, type));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
-}
-
-PP_Bool IsFileSystem(PP_Resource resource) {
-  FileSystem* object = PluginResource::GetAs<FileSystem>(resource);
-  return BoolToPPBool(!!object);
-}
-
-int32_t Open(PP_Resource file_system,
-             int64_t expected_size,
-             struct PP_CompletionCallback callback) {
-  FileSystem* object = PluginResource::GetAs<FileSystem>(file_system);
-  if (!object)
-    return PP_ERROR_BADRESOURCE;
-
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
-  if (!dispatcher)
-    return PP_ERROR_BADARGUMENT;
-
-  if (object->current_open_callback_.func)
+int32_t FileSystem::Open(int64_t expected_size,
+                         PP_CompletionCallback callback) {
+  if (current_open_callback_.func)
     return PP_ERROR_INPROGRESS;
-  else if (object->called_open_)
+  if (called_open_)
     return PP_ERROR_FAILED;
 
-  object->current_open_callback_ = callback;
-  object->called_open_ = true;
-
-  dispatcher->Send(new PpapiHostMsg_PPBFileSystem_Open(
-      INTERFACE_ID_PPB_FILE_SYSTEM, object->host_resource(), expected_size));
+  current_open_callback_ = callback;
+  called_open_ = true;
+  GetDispatcher()->Send(new PpapiHostMsg_PPBFileSystem_Open(
+      INTERFACE_ID_PPB_FILE_SYSTEM, host_resource(), expected_size));
   return PP_OK_COMPLETIONPENDING;
 }
 
-PP_FileSystemType_Dev GetType(PP_Resource resource) {
-  FileSystem* object = PluginResource::GetAs<FileSystem>(resource);
-  if (!object)
-    return PP_FILESYSTEMTYPE_INVALID;
-  return object->type_;
+PP_FileSystemType_Dev FileSystem::GetType() {
+  return type_;
 }
 
-const PPB_FileSystem_Dev file_system_interface = {
-  &Create,
-  &IsFileSystem,
-  &Open,
-  &GetType
-};
-
-InterfaceProxy* CreateFileSystemProxy(Dispatcher* dispatcher,
-                                      const void* target_interface) {
-  return new PPB_FileSystem_Proxy(dispatcher, target_interface);
+void FileSystem::OpenComplete(int32_t result) {
+  PP_RunAndClearCompletionCallback(&current_open_callback_, result);
 }
-
-}  // namespace
 
 PPB_FileSystem_Proxy::PPB_FileSystem_Proxy(Dispatcher* dispatcher,
                                            const void* target_interface)
@@ -139,13 +121,31 @@ PPB_FileSystem_Proxy::~PPB_FileSystem_Proxy() {
 
 const InterfaceProxy::Info* PPB_FileSystem_Proxy::GetInfo() {
   static const Info info = {
-    &file_system_interface,
+    ::ppapi::thunk::GetPPB_FileSystem_Thunk(),
     PPB_FILESYSTEM_DEV_INTERFACE,
     INTERFACE_ID_PPB_FILE_SYSTEM,
     false,
     &CreateFileSystemProxy,
   };
   return &info;
+}
+
+// static
+PP_Resource PPB_FileSystem_Proxy::CreateProxyResource(
+    PP_Instance instance,
+    PP_FileSystemType_Dev type) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
+  HostResource result;
+  dispatcher->Send(new PpapiHostMsg_PPBFileSystem_Create(
+      INTERFACE_ID_PPB_FILE_SYSTEM, instance, type, &result));
+  if (result.is_null())
+    return 0;
+
+  linked_ptr<FileSystem> object(new FileSystem(result, type));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 bool PPB_FileSystem_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -162,7 +162,10 @@ bool PPB_FileSystem_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_FileSystem_Proxy::OnMsgCreate(PP_Instance instance,
                                        int type,
                                        HostResource* result) {
-  PP_Resource resource = ppb_file_system_target()->Create(
+  EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
+  if (enter.failed())
+    return;
+  PP_Resource resource = enter.functions()->CreateFileSystem(
       instance, static_cast<PP_FileSystemType_Dev>(type));
   if (!resource)
     return;  // CreateInfo default constructor initializes to 0.
@@ -171,25 +174,24 @@ void PPB_FileSystem_Proxy::OnMsgCreate(PP_Instance instance,
 
 void PPB_FileSystem_Proxy::OnMsgOpen(const HostResource& host_resource,
                                      int64_t expected_size) {
+  EnterHostFromHostResource<PPB_FileSystem_API> enter(host_resource);
+  if (enter.failed())
+    return;
+
   CompletionCallback callback = callback_factory_.NewCallback(
       &PPB_FileSystem_Proxy::OpenCompleteInHost, host_resource);
-
-  int32_t result = ppb_file_system_target()->Open(
-      host_resource.host_resource(), expected_size,
-      callback.pp_completion_callback());
+  int32_t result = enter.object()->Open(expected_size,
+                                        callback.pp_completion_callback());
   if (result != PP_OK_COMPLETIONPENDING)
     callback.Run(result);
 }
 
 // Called in the plugin to handle the open callback.
-void PPB_FileSystem_Proxy::OnMsgOpenComplete(const HostResource& filesystem,
+void PPB_FileSystem_Proxy::OnMsgOpenComplete(const HostResource& host_resource,
                                              int32_t result) {
-  FileSystem* object = PluginResource::GetAs<FileSystem>(
-      PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
-          filesystem));
-  if (!object || !object->current_open_callback_.func)
-    return;
-  PP_RunAndClearCompletionCallback(&object->current_open_callback_, result);
+  EnterPluginFromHostResource<PPB_FileSystem_API> enter(host_resource);
+  if (enter.succeeded())
+    static_cast<FileSystem*>(enter.object())->OpenComplete(result);
 }
 
 void PPB_FileSystem_Proxy::OpenCompleteInHost(
