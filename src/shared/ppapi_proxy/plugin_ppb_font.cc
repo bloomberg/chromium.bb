@@ -31,6 +31,7 @@ const nacl_abi_size_t kPPFontMetricsBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_FontMetrics_Dev));
 const nacl_abi_size_t kPPFontDescriptionBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_FontDescription_Dev));
+const int32_t kInvalidOffset = -1;
 
 PP_Var GetFontFamilies(PP_Instance instance) {
   DebugPrintf("PPB_Font::GetFontFamilies: instance=%"NACL_PRIu32"\n",
@@ -205,7 +206,7 @@ uint32_t CharacterOffsetForPixel(PP_Resource font,
   nacl_abi_size_t text_size = kMaxVarSize;
   nacl::scoped_array<char> text_bytes(
       Serialize(&text_run->text, 1, &text_size));
-  int32_t offset = 0;
+  int32_t offset = kInvalidOffset;
   NaClSrpcError srpc_result =
       PpbFontRpcClient::PPB_Font_CharacterOffsetForPixel(
           GetMainSrpcChannel(),
@@ -231,16 +232,16 @@ int32_t PixelOffsetForCharacter(PP_Resource font,
   nacl_abi_size_t text_size = kMaxVarSize;
   nacl::scoped_array<char> text_bytes(
       Serialize(&text_run->text, 1, &text_size));
-  int32_t offset = 0;
+  int32_t offset = kInvalidOffset;
   NaClSrpcError srpc_result =
       PpbFontRpcClient::PPB_Font_PixelOffsetForCharacter(
           GetMainSrpcChannel(),
           font,
-          text_size,
-          text_bytes.get(),
           kPPTextRunBytes,
           reinterpret_cast<char*>(
               const_cast<struct PP_TextRun_Dev*>(text_run)),
+          text_size,
+          text_bytes.get(),
           char_offset,
           &offset);
 
