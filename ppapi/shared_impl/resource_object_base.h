@@ -5,66 +5,58 @@
 #ifndef PPAPI_SHARED_IMPL_RESOURCE_OBJECT_BASE_H_
 #define PPAPI_SHARED_IMPL_RESOURCE_OBJECT_BASE_H_
 
+#include <stddef.h>  // For NULL.
+
+#define FOR_ALL_PPAPI_RESOURCE_APIS(F) \
+  F(PPB_Audio_API) \
+  F(PPB_AudioConfig_API) \
+  F(PPB_AudioTrusted_API) \
+  F(PPB_Broker_API) \
+  F(PPB_Buffer_API) \
+  F(PPB_DirectoryReader_API) \
+  F(PPB_FileChooser_API) \
+  F(PPB_FileIO_API) \
+  F(PPB_FileRef_API) \
+  F(PPB_FileSystem_API) \
+  F(PPB_Find_API) \
+  F(PPB_Font_API) \
+  F(PPB_Graphics2D_API) \
+  F(PPB_ImageData_API)
+
 namespace ppapi {
 
+// Forward declare all the resource APIs.
 namespace thunk {
-class PPB_Audio_API;
-class PPB_AudioConfig_API;
-class PPB_AudioTrusted_API;
-class PPB_Broker_API;
-class PPB_Buffer_API;
-class PPB_Font_API;
-class PPB_Graphics2D_API;
-class PPB_ImageData_API;
-}
+#define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;
+FOR_ALL_PPAPI_RESOURCE_APIS(DECLARE_RESOURCE_CLASS)
+#undef DECLARE_RESOURCE_CLASS
+}  // namespace thunk
 
 class ResourceObjectBase {
  public:
+  virtual ~ResourceObjectBase();
 
-  virtual thunk::PPB_Audio_API* AsAudio_API() { return NULL; }
-  virtual thunk::PPB_AudioConfig_API* AsAudioConfig_API() { return NULL; }
-  virtual thunk::PPB_AudioTrusted_API* AsAudioTrusted_API() { return NULL; }
-  virtual thunk::PPB_Buffer_API* AsBuffer_API() { return NULL; }
-  virtual thunk::PPB_Broker_API* AsBroker_API() { return NULL; }
-  virtual thunk::PPB_Font_API* AsFont_API() { return NULL; }
-  virtual thunk::PPB_Graphics2D_API* AsGraphics2D_API() { return NULL; }
-  virtual thunk::PPB_ImageData_API* AsImageData_API() { return NULL; }
+  // Dynamic casting for this object. Returns the pointer to the given type if
+  // Inheritance-based dynamic casting for this object. Returns the pointer to
+  // the given type if it's supported. Derived classes override the functions
+  // they support to return the interface.
+  #define DEFINE_TYPE_GETTER(RESOURCE) \
+    virtual thunk::RESOURCE* As##RESOURCE();
+  FOR_ALL_PPAPI_RESOURCE_APIS(DEFINE_TYPE_GETTER)
+  #undef DEFINE_TYPE_GETTER
 
+  // Template-based dynamic casting. See specializations below.
   template <typename T> T* GetAs() { return NULL; }
 };
 
-template<>
-inline thunk::PPB_Audio_API* ResourceObjectBase::GetAs() {
-  return AsAudio_API();
-}
-template<>
-inline thunk::PPB_AudioConfig_API* ResourceObjectBase::GetAs() {
-  return AsAudioConfig_API();
-}
-template<>
-inline thunk::PPB_AudioTrusted_API* ResourceObjectBase::GetAs() {
-  return AsAudioTrusted_API();
-}
-template<>
-inline thunk::PPB_Broker_API* ResourceObjectBase::GetAs() {
-  return AsBroker_API();
-}
-template<>
-inline thunk::PPB_Buffer_API* ResourceObjectBase::GetAs() {
-  return AsBuffer_API();
-}
-template<>
-inline thunk::PPB_Font_API* ResourceObjectBase::GetAs() {
-  return AsFont_API();
-}
-template<>
-inline thunk::PPB_Graphics2D_API* ResourceObjectBase::GetAs() {
-  return AsGraphics2D_API();
-}
-template<>
-inline thunk::PPB_ImageData_API* ResourceObjectBase::GetAs() {
-  return AsImageData_API();
-}
+// Template-based dynamic casting. These specializations forward to the
+// AsXXX virtual functions to return whether the given type is supported.
+#define DEFINE_RESOURCE_CAST(RESOURCE) \
+  template<> inline thunk::RESOURCE* ResourceObjectBase::GetAs() { \
+    return As##RESOURCE(); \
+  }
+FOR_ALL_PPAPI_RESOURCE_APIS(DEFINE_RESOURCE_CAST)
+#undef DEFINE_RESOURCE_CAST
 
 }  // namespace ppapi
 

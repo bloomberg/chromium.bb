@@ -17,6 +17,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 #include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
+#include "webkit/plugins/ppapi/ppb_find_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
@@ -277,6 +278,9 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
     case pp::proxy::INTERFACE_ID_PPB_CURSORCONTROL:
       proxy.reset(new PPB_CursorControl_Impl(instance));
       break;
+    case pp::proxy::INTERFACE_ID_PPB_FIND:
+      proxy.reset(new PPB_Find_Impl(instance));
+      break;
     case pp::proxy::INTERFACE_ID_PPB_FONT:
       proxy.reset(new PPB_Font_FunctionImpl(instance));
       break;
@@ -288,6 +292,13 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
   }
 
   return proxy.get();
+}
+
+PP_Instance ResourceTracker::GetInstanceForResource(PP_Resource pp_resource) {
+  scoped_refptr<Resource> resource(GetResource(pp_resource));
+  if (!resource.get())
+    return 0;
+  return resource->instance()->pp_instance();
 }
 
 scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {

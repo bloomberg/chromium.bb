@@ -55,7 +55,7 @@ class ImageData : public PluginResource,
   virtual ~ImageData();
 
   // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_ImageData_API* AsImageData_API();
+  virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API();
 
   // Resource overrides.
   virtual ImageData* AsImageData();

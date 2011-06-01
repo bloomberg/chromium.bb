@@ -21,12 +21,27 @@
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
+using ppapi::thunk::PPB_FileSystem_API;
+
 namespace webkit {
 namespace ppapi {
 
-namespace {
+PPB_FileSystem_Impl::PPB_FileSystem_Impl(PluginInstance* instance,
+                                         PP_FileSystemType_Dev type)
+    : Resource(instance),
+      instance_(instance),
+      type_(type),
+      opened_(false),
+      called_open_(false) {
+  DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
+}
 
-PP_Resource Create(PP_Instance instance, PP_FileSystemType_Dev type) {
+PPB_FileSystem_Impl::~PPB_FileSystem_Impl() {
+}
+
+// static
+PP_Resource PPB_FileSystem_Impl::Create(PP_Instance instance,
+                                        PP_FileSystemType_Dev type) {
   PluginInstance* plugin_instance =
       ResourceTracker::Get()->GetInstance(instance);
   if (!plugin_instance)
@@ -42,77 +57,38 @@ PP_Resource Create(PP_Instance instance, PP_FileSystemType_Dev type) {
   return file_system->GetReference();
 }
 
-PP_Bool IsFileSystem(PP_Resource resource) {
-  scoped_refptr<PPB_FileSystem_Impl> file_system(
-      Resource::GetAs<PPB_FileSystem_Impl>(resource));
-  return BoolToPPBool(!!file_system.get());
-}
-
-int32_t Open(PP_Resource file_system_id,
-             int64 expected_size,
-             PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileSystem_Impl> file_system(
-      Resource::GetAs<PPB_FileSystem_Impl>(file_system_id));
-  if (!file_system)
-    return PP_ERROR_BADRESOURCE;
-
-  // Should not allow multiple opens.
-  if (file_system->called_open())
-    return PP_ERROR_FAILED;
-  file_system->set_called_open();
-
-  if ((file_system->type() != PP_FILESYSTEMTYPE_LOCALPERSISTENT) &&
-      (file_system->type() != PP_FILESYSTEMTYPE_LOCALTEMPORARY))
-    return PP_ERROR_FAILED;
-
-  PluginInstance* instance = file_system->instance();
-  fileapi::FileSystemType file_system_type =
-      (file_system->type() == PP_FILESYSTEMTYPE_LOCALTEMPORARY ?
-       fileapi::kFileSystemTypeTemporary :
-       fileapi::kFileSystemTypePersistent);
-  if (!instance->delegate()->OpenFileSystem(
-          instance->container()->element().document().frame()->url(),
-          file_system_type, expected_size,
-          new FileCallbacks(instance->module()->AsWeakPtr(), file_system_id,
-                            callback, NULL, file_system, NULL)))
-    return PP_ERROR_FAILED;
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-PP_FileSystemType_Dev GetType(PP_Resource resource) {
-  scoped_refptr<PPB_FileSystem_Impl> file_system(
-      Resource::GetAs<PPB_FileSystem_Impl>(resource));
-  if (!file_system)
-    return PP_FILESYSTEMTYPE_INVALID;
-  return file_system->type();
-}
-
-const PPB_FileSystem_Dev ppb_filesystem = {
-  &Create,
-  &IsFileSystem,
-  &Open,
-  &GetType
-};
-
-}  // namespace
-
-PPB_FileSystem_Impl::PPB_FileSystem_Impl(PluginInstance* instance,
-                                         PP_FileSystemType_Dev type)
-    : Resource(instance),
-      instance_(instance),
-      type_(type),
-      opened_(false),
-      called_open_(false) {
-  DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
-}
-
-PPB_FileSystem_Impl* PPB_FileSystem_Impl::AsPPB_FileSystem_Impl() {
+PPB_FileSystem_API* PPB_FileSystem_Impl::AsPPB_FileSystem_API() {
   return this;
 }
 
-const PPB_FileSystem_Dev* PPB_FileSystem_Impl::GetInterface() {
-  return &ppb_filesystem;
+int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
+                                  PP_CompletionCallback callback) {
+  // Should not allow multiple opens.
+  if (called_open_)
+    return PP_ERROR_FAILED;
+  called_open_ = true;
+
+  if (type_ != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
+      type_ != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
+    return PP_ERROR_FAILED;
+
+  fileapi::FileSystemType file_system_type =
+      (type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ?
+       fileapi::kFileSystemTypeTemporary :
+       fileapi::kFileSystemTypePersistent);
+  if (!instance()->delegate()->OpenFileSystem(
+          instance()->container()->element().document().frame()->url(),
+          file_system_type, expected_size,
+          new FileCallbacks(instance()->module()->AsWeakPtr(),
+                            GetReferenceNoAddRef(),
+                            callback, NULL,
+                            scoped_refptr<PPB_FileSystem_Impl>(this), NULL)))
+    return PP_ERROR_FAILED;
+  return PP_OK_COMPLETIONPENDING;
+}
+
+PP_FileSystemType_Dev PPB_FileSystem_Impl::GetType() {
+  return type_;
 }
 
 }  // namespace ppapi

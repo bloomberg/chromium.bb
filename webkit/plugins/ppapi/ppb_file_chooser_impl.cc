@@ -25,6 +25,7 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/glue/webkit_glue.h"
 
+using ppapi::thunk::PPB_FileChooser_API;
 using WebKit::WebCString;
 using WebKit::WebFileChooserCompletion;
 using WebKit::WebFileChooserParams;
@@ -35,53 +36,6 @@ namespace webkit {
 namespace ppapi {
 
 namespace {
-
-PP_Resource Create(PP_Instance instance_id,
-                   const PP_FileChooserOptions_Dev* options) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  if ((options->mode != PP_FILECHOOSERMODE_OPEN) &&
-      (options->mode != PP_FILECHOOSERMODE_OPENMULTIPLE))
-    return 0;
-
-  PPB_FileChooser_Impl* chooser = new PPB_FileChooser_Impl(instance, options);
-  return chooser->GetReference();
-}
-
-PP_Bool IsFileChooser(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_FileChooser_Impl>(resource));
-}
-
-int32_t Show(PP_Resource chooser_id, PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileChooser_Impl> chooser(
-      Resource::GetAs<PPB_FileChooser_Impl>(chooser_id));
-  if (!chooser)
-    return PP_ERROR_BADRESOURCE;
-
-  return chooser->Show(callback);
-}
-
-PP_Resource GetNextChosenFile(PP_Resource chooser_id) {
-  scoped_refptr<PPB_FileChooser_Impl> chooser(
-      Resource::GetAs<PPB_FileChooser_Impl>(chooser_id));
-  if (!chooser)
-    return 0;
-
-  scoped_refptr<PPB_FileRef_Impl> file_ref(chooser->GetNextChosenFile());
-  if (!file_ref)
-    return 0;
-
-  return file_ref->GetReference();
-}
-
-const PPB_FileChooser_Dev ppb_filechooser = {
-  &Create,
-  &IsFileChooser,
-  &Show,
-  &GetNextChosenFile
-};
 
 class FileChooserCompletionImpl : public WebFileChooserCompletion {
  public:
@@ -120,11 +74,26 @@ PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
 }
 
 // static
-const PPB_FileChooser_Dev* PPB_FileChooser_Impl::GetInterface() {
-  return &ppb_filechooser;
+PP_Resource PPB_FileChooser_Impl::Create(
+    PP_Instance pp_instance,
+    const PP_FileChooserOptions_Dev* options) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  if ((options->mode != PP_FILECHOOSERMODE_OPEN) &&
+      (options->mode != PP_FILECHOOSERMODE_OPENMULTIPLE))
+    return 0;
+
+  PPB_FileChooser_Impl* chooser = new PPB_FileChooser_Impl(instance, options);
+  return chooser->GetReference();
 }
 
 PPB_FileChooser_Impl* PPB_FileChooser_Impl::AsPPB_FileChooser_Impl() {
+  return this;
+}
+
+PPB_FileChooser_API* PPB_FileChooser_Impl::AsPPB_FileChooser_API() {
   return this;
 }
 
@@ -176,7 +145,7 @@ void PPB_FileChooser_Impl::RunCallback(int32_t result) {
   callback->Run(result);  // Will complete abortively if necessary.
 }
 
-int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
+int32_t PPB_FileChooser_Impl::Show(PP_CompletionCallback callback) {
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
@@ -197,11 +166,11 @@ int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
   return PP_OK_COMPLETIONPENDING;
 }
 
-scoped_refptr<PPB_FileRef_Impl> PPB_FileChooser_Impl::GetNextChosenFile() {
+PP_Resource PPB_FileChooser_Impl::GetNextChosenFile() {
   if (next_chosen_file_index_ >= chosen_files_.size())
-    return NULL;
+    return 0;
 
-  return chosen_files_[next_chosen_file_index_++];
+  return chosen_files_[next_chosen_file_index_++]->GetReference();
 }
 
 }  // namespace ppapi

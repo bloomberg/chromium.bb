@@ -26,7 +26,8 @@ PPB_AudioConfig_Impl::PPB_AudioConfig_Impl(PluginInstance* instance)
 PPB_AudioConfig_Impl::~PPB_AudioConfig_Impl() {
 }
 
-::ppapi::thunk::PPB_AudioConfig_API* PPB_AudioConfig_Impl::AsAudioConfig_API() {
+::ppapi::thunk::PPB_AudioConfig_API*
+PPB_AudioConfig_Impl::AsPPB_AudioConfig_API() {
   return this;
 }
 
@@ -62,11 +63,11 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
   }
 }
 
-::ppapi::thunk::PPB_Audio_API* PPB_Audio_Impl::AsAudio_API() {
+::ppapi::thunk::PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {
   return this;
 }
 
-::ppapi::thunk::PPB_AudioTrusted_API* PPB_Audio_Impl::AsAudioTrusted_API() {
+::ppapi::thunk::PPB_AudioTrusted_API* PPB_Audio_Impl::AsPPB_AudioTrusted_API() {
   return this;
 }
 

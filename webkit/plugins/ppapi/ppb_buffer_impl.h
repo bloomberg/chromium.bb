@@ -31,7 +31,7 @@ class PPB_Buffer_Impl : public Resource,
   uint32_t size() const { return size_; }
 
   // ResourceObjectBase overries.
-  virtual ::ppapi::thunk::PPB_Buffer_API* AsBuffer_API() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
 
   // PPB_Buffer_API implementation.
   virtual PP_Bool Describe(uint32_t* size_in_bytes) OVERRIDE;

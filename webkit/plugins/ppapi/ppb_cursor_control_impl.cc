@@ -28,7 +28,7 @@ PPB_CursorControl_Impl::~PPB_CursorControl_Impl() {
 }
 
 PPB_CursorControl_FunctionAPI*
-PPB_CursorControl_Impl::AsCursorControl_FunctionAPI() {
+PPB_CursorControl_Impl::AsPPB_CursorControl_FunctionAPI() {
   return this;
 }
 

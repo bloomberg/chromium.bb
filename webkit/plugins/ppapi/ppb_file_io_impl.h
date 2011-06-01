@@ -13,6 +13,7 @@
 #include "base/platform_file.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/thunk/ppb_file_io_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
@@ -27,51 +28,44 @@ namespace ppapi {
 class PluginModule;
 class PPB_FileRef_Impl;
 
-class PPB_FileIO_Impl : public Resource {
+class PPB_FileIO_Impl : public Resource,
+                        public ::ppapi::thunk::PPB_FileIO_API {
  public:
   explicit PPB_FileIO_Impl(PluginInstance* instance);
   virtual ~PPB_FileIO_Impl();
 
-  // Returns a pointer to the interface implementing PPB_FileIO that is exposed
-  // to the plugin.
-  static const PPB_FileIO_Dev* GetInterface();
+  static PP_Resource Create(PP_Instance instance);
 
-  // Returns a pointer to the interface implementing PPB_FileIOTrusted that is
-  // exposed to the plugin.
-  static const PPB_FileIOTrusted_Dev* GetTrustedInterface();
+  // ResourceObjectBase overrides.
+  virtual ::ppapi::thunk::PPB_FileIO_API* AsPPB_FileIO_API() OVERRIDE;
 
-  // Resource overrides.
-  virtual PPB_FileIO_Impl* AsPPB_FileIO_Impl();
-
-  // PPB_FileIO implementation.
-  int32_t Open(PPB_FileRef_Impl* file_ref,
-               int32_t open_flags,
-               PP_CompletionCallback callback);
-  int32_t Query(PP_FileInfo_Dev* info,
-                PP_CompletionCallback callback);
-  int32_t Touch(PP_Time last_access_time,
-                PP_Time last_modified_time,
-                PP_CompletionCallback callback);
-  int32_t Read(int64_t offset,
-               char* buffer,
-               int32_t bytes_to_read,
-               PP_CompletionCallback callback);
-  int32_t Write(int64_t offset,
-                const char* buffer,
-                int32_t bytes_to_write,
-                PP_CompletionCallback callback);
-  int32_t SetLength(int64_t length,
-                    PP_CompletionCallback callback);
-  int32_t Flush(PP_CompletionCallback callback);
-  void Close();
-
-  // PPB_FileIOTrusted implementation.
-  int32_t GetOSFileDescriptor();
-  int32_t WillWrite(int64_t offset,
-                    int32_t bytes_to_write,
-                    PP_CompletionCallback callback);
-  int32_t WillSetLength(int64_t length,
-                        PP_CompletionCallback callback);
+  // PPB_FileIO_API implementation.
+  virtual int32_t Open(PP_Resource file_ref,
+                       int32_t open_flags,
+                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Query(PP_FileInfo_Dev* info,
+                        PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Touch(PP_Time last_access_time,
+                        PP_Time last_modified_time,
+                        PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Read(int64_t offset,
+                       char* buffer,
+                       int32_t bytes_to_read,
+                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Write(int64_t offset,
+                        const char* buffer,
+                        int32_t bytes_to_write,
+                        PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t SetLength(int64_t length,
+                            PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual int32_t GetOSFileDescriptor() OVERRIDE;
+  virtual int32_t WillWrite(int64_t offset,
+                            int32_t bytes_to_write,
+                            PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t WillSetLength(int64_t length,
+                                PP_CompletionCallback callback) OVERRIDE;
 
  private:
   // Verifies:

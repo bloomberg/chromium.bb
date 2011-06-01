@@ -24,7 +24,7 @@ class PPB_CursorControl_Impl
 
   // FunctionGroupBase overrides.
   virtual ::ppapi::thunk::PPB_CursorControl_FunctionAPI*
-      AsCursorControl_FunctionAPI() OVERRIDE;
+      AsPPB_CursorControl_FunctionAPI() OVERRIDE;
 
   // PPB_CursorControl_FunctionAPI implementation.
   virtual PP_Bool SetCursor(PP_Instance instance,

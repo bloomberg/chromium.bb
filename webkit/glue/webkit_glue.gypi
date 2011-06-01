@@ -258,6 +258,8 @@
         '../plugins/ppapi/ppb_file_ref_impl.h',
         '../plugins/ppapi/ppb_file_system_impl.cc',
         '../plugins/ppapi/ppb_file_system_impl.h',
+        '../plugins/ppapi/ppb_find_impl.cc',
+        '../plugins/ppapi/ppb_find_impl.h',
         '../plugins/ppapi/ppb_flash_clipboard_impl.cc',
         '../plugins/ppapi/ppb_flash_clipboard_impl.h',
         '../plugins/ppapi/ppb_flash_file_impl.cc',

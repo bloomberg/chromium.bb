@@ -42,7 +42,7 @@ class PPB_Graphics2D_Impl
 
   bool is_always_opaque() const { return is_always_opaque_; }
 
-  virtual ::ppapi::thunk::PPB_Graphics2D_API* AsGraphics2D_API();
+  virtual ::ppapi::thunk::PPB_Graphics2D_API* AsPPB_Graphics2D_API();
 
   // Resource override.
   virtual PPB_Graphics2D_Impl* AsPPB_Graphics2D_Impl();

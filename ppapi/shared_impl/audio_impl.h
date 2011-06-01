@@ -26,7 +26,7 @@ class AudioImpl : public ResourceObjectBase,
   virtual ~AudioImpl();
 
   // ResourceObjectBase implementation.
-  virtual ::ppapi::thunk::PPB_Audio_API* AsAudio_API() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_Audio_API* AsPPB_Audio_API() OVERRIDE;
 
   bool playing() const { return playing_; }
 
