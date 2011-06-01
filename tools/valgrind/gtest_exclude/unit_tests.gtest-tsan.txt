@@ -3,4 +3,4 @@
 ProfileManagerTest.CreateAndUseTwoProfiles
 
 # Crashing - http://crbug.com/84536
-HttpBridgeTest.TestMakeSynchronousPostLiveComprehensive
+HttpBridgeTest.*
