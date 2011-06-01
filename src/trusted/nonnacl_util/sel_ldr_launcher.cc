@@ -244,12 +244,7 @@ void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
     command->push_back(command_prefix_);
   }
   command->push_back(sel_ldr_);
-  if (application_file_ != NACL_NO_FILE_PATH) {
-    command->push_back("-f");
-    command->push_back(application_file_);
-  } else {
-    command->push_back("-R");  // RPC will be used to point to the nexe.
-  }
+  command->push_back("-R");  // RPC will be used to point to the nexe.
 
   command->insert(command->end(), sel_ldr_argv_.begin(), sel_ldr_argv_.end());
 
@@ -282,8 +277,7 @@ void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
   }
 }
 
-void SelLdrLauncher::InitCommandLine(const nacl::string& app_file,
-                                     int imc_fd,
+void SelLdrLauncher::InitCommandLine(int imc_fd,
                                      const vector<nacl::string>& sel_ldr_argv,
                                      const vector<nacl::string>& app_argv) {
   assert(sel_ldr_ == NACL_NO_FILE_PATH);  // Make sure we don't call this twice.
@@ -294,7 +288,6 @@ void SelLdrLauncher::InitCommandLine(const nacl::string& app_file,
   } else {
     sel_ldr_ = GetSelLdrPathName();
   }
-  application_file_ = app_file;
   copy(sel_ldr_argv.begin(), sel_ldr_argv.end(), back_inserter(sel_ldr_argv_));
   copy(app_argv.begin(), app_argv.end(), back_inserter(application_argv_));
   channel_number_ = imc_fd;

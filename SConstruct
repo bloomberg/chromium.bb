@@ -1449,7 +1449,7 @@ def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
     return []
 
   if sel_universal_flags is None:
-    sel_universal_flags = ['--rpc_load']
+    sel_universal_flags = []
 
   # when run under qemu, sel_universal must sneeak in qemu to execv
   # call that spawns sel_ldr.

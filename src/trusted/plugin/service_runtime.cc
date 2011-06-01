@@ -200,13 +200,12 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   return true;
 }
 
-bool ServiceRuntime::StartFromCommandLine(nacl::string nacl_file,
-                                          nacl::DescWrapper* nacl_file_desc,
-                                          nacl::string* error_string) {
-  PLUGIN_PRINTF(("ServiceRuntime::StartFromCommandLine "
-                 "(nacl_file='%s', nacl_file_desc='%p')\n",
-                 nacl_file.c_str(), reinterpret_cast<void*>(nacl_file_desc)));
-  CHECK(nacl_file != NACL_NO_FILE_PATH || nacl_file_desc != NULL);
+#if defined(NACL_STANDALONE)
+bool ServiceRuntime::Start(nacl::DescWrapper* nacl_file_desc,
+                           nacl::string* error_string) {
+  PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_file_desc='%p')\n",
+                 reinterpret_cast<void*>(nacl_file_desc)));
+  CHECK(nacl_file_desc != NULL);
 
   nacl::scoped_ptr<nacl::SelLdrLauncher>
       tmp_subprocess(new(std::nothrow) nacl::SelLdrLauncher());
@@ -230,10 +229,7 @@ bool ServiceRuntime::StartFromCommandLine(nacl::string nacl_file,
     args_for_sel_ldr.push_back("-B");
     args_for_sel_ldr.push_back(irt_library_path);
   }
-  tmp_subprocess->InitCommandLine(nacl_file,
-                                  -1,
-                                  args_for_sel_ldr,
-                                  args_for_nexe);
+  tmp_subprocess->InitCommandLine(-1, args_for_sel_ldr, args_for_nexe);
 
   nacl::Handle recv_handle = tmp_subprocess->ExportImcFD(6);
   if (recv_handle == nacl::kInvalidHandle) {
@@ -268,13 +264,10 @@ bool ServiceRuntime::StartFromCommandLine(nacl::string nacl_file,
   subprocess_ = tmp_subprocess.release();
   return true;
 }
-
-bool ServiceRuntime::StartFromBrowser(nacl::string nacl_url,
-                                      nacl::DescWrapper* nacl_desc,
-                                      nacl::string* error_string) {
-  PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (nacl_url=%s)\n",
-                 nacl_url.c_str()));
-  PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (nacl_desc=%p)\n",
+#else  // !defined(NACL_STANDALONE)
+bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
+                           nacl::string* error_string) {
+  PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
   nacl::scoped_ptr<nacl::SelLdrLauncher>
@@ -284,9 +277,7 @@ bool ServiceRuntime::StartFromBrowser(nacl::string nacl_url,
     return false;
   }
   nacl::Handle sockets[3];
-  if (!tmp_subprocess->StartFromBrowser(nacl_url.c_str(),
-                                        NACL_ARRAY_SIZE(sockets),
-                                        sockets)) {
+  if (!tmp_subprocess->StartFromBrowser(NACL_ARRAY_SIZE(sockets), sockets)) {
     *error_string = "sel_ldr: failed to start";
     return false;
   }
@@ -302,9 +293,10 @@ bool ServiceRuntime::StartFromBrowser(nacl::string nacl_url,
     return false;
   }
 
-  PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (return 1)\n"));
+  PLUGIN_PRINTF(("ServiceRuntime::Start (return 1)\n"));
   return true;
 }
+#endif  // defined(NACL_STANDALONE)
 
 bool ServiceRuntime::Kill() {
   return subprocess_->KillChildProcess();

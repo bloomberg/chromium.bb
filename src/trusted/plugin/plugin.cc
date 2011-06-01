@@ -519,18 +519,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
     return false;
   }
 
-  bool service_runtime_started = false;
-#if defined(NACL_STANDALONE)
-  service_runtime_started =
-      service_runtime_->StartFromCommandLine(NACL_NO_FILE_PATH,
-                                             wrapper,
-                                             error_string);
-#else
-  service_runtime_started =
-      service_runtime_->StartFromBrowser(NACL_NO_FILE_PATH,
-                                         wrapper,
-                                         error_string);
-#endif
+  bool service_runtime_started = service_runtime_->Start(wrapper, error_string);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
                  service_runtime_started));
 

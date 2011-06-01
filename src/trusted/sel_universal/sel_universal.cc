@@ -64,7 +64,6 @@ static const char* kUsage =
     "  --silence_nexe\n"
     "  --command_prefix <prefix>\n"
     "  --command_file <file>\n"
-    "  --rpc_load\n"
     "  --rpc_services\n";
 
 // NOTE: this used to be stack allocated inside main which cause
@@ -79,7 +78,6 @@ static vector<string> initial_commands;
 static bool abort_on_error = false;
 static bool silence_nexe = false;
 static string command_prefix = "";
-static bool rpc_load = false;
 static bool rpc_services = false;
 
 // When given argc and argv this function (a) extracts the nexe argument,
@@ -99,7 +97,6 @@ static nacl::string ProcessArguments(int argc,
   nacl::string app_name;
   for (int i = 1; i < argc; i++) {
     const string flag(argv[i]);
-    // Check if the argument has the form -f nexe
     if (flag == "--help") {
       printf("%s", kUsage);
       exit(0);
@@ -153,13 +150,11 @@ static nacl::string ProcessArguments(int argc,
       const string val = string(argv[i + 2]);
       i += 2;
       initial_vars[tag] = val;
-    } else if (flag == "--rpc_load") {
-      rpc_load = true;
     } else if (flag == "--rpc_services") {
       rpc_services = true;
     } else if (flag == "--") {
-      // Done processing sel_ldr args. If no '-f nexe' was given earlier,
-      // the first argument after '--' is the nexe.
+      // Done processing sel_ldr args.  The first argument after '--' is the
+      // nexe.
       i++;
       if (app_name == "" && i < argc) {
         app_name = argv[i++];
@@ -214,20 +209,14 @@ int raii_main(int argc, char* argv[]) {
     launcher.SetCommandPrefix(command_prefix);
   }
 
-  if (!launcher.StartFromCommandLine(rpc_load ? NACL_NO_FILE_PATH : app_name,
-                                     5, sel_ldr_argv, app_argv)) {
+  if (!launcher.StartFromCommandLine(5, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }
 
-  DescWrapper *host_file = NULL;
-
-  if (rpc_load) {
-    host_file = factory.OpenHostFile(app_name.c_str(),
-                                     O_RDONLY, 0);
-    if (NULL == host_file) {
-      NaClLog(LOG_ERROR, "Could not open %s\n", app_name.c_str());
-      exit(1);
-    }
+  DescWrapper *host_file = factory.OpenHostFile(app_name.c_str(), O_RDONLY, 0);
+  if (NULL == host_file) {
+    NaClLog(LOG_ERROR, "Could not open %s\n", app_name.c_str());
+    exit(1);
   }
 
   if (!launcher.SetupCommandAndLoad(&command_channel, host_file)) {

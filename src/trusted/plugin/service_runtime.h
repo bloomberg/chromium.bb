@@ -82,30 +82,16 @@ class LogToJavaScriptConsoleInterface: public nacl::ReverseInterface {
 class ServiceRuntime {
  public:
   // TODO(sehr): This class should also implement factory methods, using the
-  // current contents of the Start methods below.
+  // Start method below.
   explicit ServiceRuntime(Plugin* plugin);
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 
-  // Support for spawning sel_ldr instance and establishing a ConnectedSocket
-  // to it. The sel_ldr process can be started directly using a command line
-  // or by sending a message to the browser process (in Chrome only).
-  // The nexe can be passed:
-  // 1) via a local file (typically from browser cache, outside of a sandbox)
-  //    as command-line argument
-  // 2) as a file descriptor over RPC after sel_ldr launched
-  // 3) as shared memory descriptor over RPC after sel_ldr launched
-  // These 3 nexe options are mutually exclusive and map to the following usage:
-  // 1) StartFromCommandLine(file_path, NULL, error_string)
-  // 2) StartFromCommandLine(NACL_NO_FILE_PATH, file_desc, error_string)
-  //    StartFromBrowser(url, file_desc, error_string)
-  // 3) StartFromBrowser(url, shm_desc, error_string)
-  bool StartFromCommandLine(nacl::string nacl_file,
-                            nacl::DescWrapper* nacl_file_desc,
-                            nacl::string* error_string);
-  bool StartFromBrowser(nacl::string nacl_url,
-                        nacl::DescWrapper* nacl_desc,
-                        nacl::string* error_string);
+  // Spawn a sel_ldr instance and establish a ConnectedSocket to it.  The nexe
+  // to be started is passed through |nacl_file_desc|.  On success, returns
+  // true.  On failure, returns false and |error_string| is set to something
+  // describing the error.
+  bool Start(nacl::DescWrapper* nacl_file_desc, nacl::string* error_string);
 
   bool Kill();
   bool Log(int severity, nacl::string msg);

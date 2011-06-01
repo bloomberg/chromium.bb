@@ -87,9 +87,11 @@ struct SelLdrLauncher {
   // Returns the second socket. Returns kInvalidHandle on failure.
   Handle ExportImcFD(int dest_fd);
 
-  // |application_file| is empty if nexe reference will be passed over RPC.
-  void InitCommandLine(const nacl::string& application_file,
-                       int imc_fd,
+  // Sets up the command line to start a sel_ldr.  Specifies |imc_fd| to
+  // use for bootstrapping. |sel_ldr_argv| specifies the arguments to be
+  // passed to sel_ldr itself, while |application_argv| specifies the arguments
+  // to be passed to the nexe.
+  void InitCommandLine(int imc_fd,
                        const std::vector<nacl::string>& sel_ldr_argv,
                        const std::vector<nacl::string>& application_argv);
 
@@ -98,21 +100,23 @@ struct SelLdrLauncher {
   // You must call InitCommandLine() before calling this function.
   bool LaunchFromCommandLine();
 
-  // |application_file| is empty if nexe reference will be passed over RPC.
-  bool StartFromCommandLine(const nacl::string& application_file,
-                            int imc_fd,
+  // Combines setting up the command line with launching the sel_ldr.
+  bool StartFromCommandLine(int imc_fd,
                             const std::vector<nacl::string>& sel_ldr_argv,
                             const std::vector<nacl::string>& app_argv) {
-    InitCommandLine(application_file, imc_fd, sel_ldr_argv, app_argv);
+    InitCommandLine(imc_fd, sel_ldr_argv, app_argv);
     return LaunchFromCommandLine();
   }
 
   // Builds a command line out of the prepopulated args.
   void BuildCommandLine(std::vector<nacl::string>* command);
 
+  // Sets up the command channel |command| and sends the SRPC to load |nexe|.
   bool SetupCommandAndLoad(NaClSrpcChannel* command,
                            DescWrapper* nexe);
 
+  // Sends the SRPC to start the nexe over |command| and sets up the application
+  // SRPC chanel |out_app_chan|.
   bool StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
                                      NaClSrpcChannel* out_app_chan);
 
@@ -127,9 +131,6 @@ struct SelLdrLauncher {
   // User is responsible for invoking channel() and then taking
   // ownership of the handle prior to the Dtor firing.
   Handle channel() const { return channel_; }
-
-  // Returns the file path of the NaCl module to be run within the sel_ldr.
-  nacl::string application_file() const { return application_file_; }
 
   // Returns the socket address used to connect to the sel_ldr.
   DescWrapper* socket_addr() const { return socket_addr_.get(); }
@@ -149,9 +150,7 @@ struct SelLdrLauncher {
   // RPC after start-up.
   /////////////////////////////////////////////////////////////////////////////
 
-  bool StartFromBrowser(const char* url,
-                        int socket_count,
-                        Handle* result_sockets);
+  bool StartFromBrowser(int socket_count, Handle* result_sockets);
 
  private:
   // OpenSrpcChannels is essentially the following sequence of
@@ -164,9 +163,7 @@ struct SelLdrLauncher {
   bool SetupCommandChannel(NaClSrpcChannel* command);
 
   // LoadModule supplies, via the |command| channel, the |nexe| file
-  // for the service runtime to load.  This is needed iff
-  // InitCommandLine or StartFromComandLine were given an empty string
-  // for |application_file|.
+  // for the service runtime to load.
   bool LoadModule(NaClSrpcChannel* command, DescWrapper* nexe);
 
   // ----
@@ -195,8 +192,6 @@ struct SelLdrLauncher {
   nacl::string command_prefix_;
   // Path to the sel_ldr executable
   nacl::string sel_ldr_;
-  // Path to the nexe (if it is loaded by sel_ldr directly
-  nacl::string application_file_;
   // arguments to sel_ldr
   std::vector<nacl::string> sel_ldr_argv_;
   // arguments to the nexe

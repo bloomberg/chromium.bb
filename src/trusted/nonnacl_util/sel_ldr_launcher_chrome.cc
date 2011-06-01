@@ -10,13 +10,13 @@
 LaunchNaClProcessFunc launch_nacl_process = NULL;
 
 namespace nacl {
-  bool SelLdrLauncher::StartFromBrowser(const char* url, int socket_count,
+  bool SelLdrLauncher::StartFromBrowser(int socket_count,
                                         Handle* result_sockets) {
     // send a synchronous message to the browser process
     Handle nacl_proc_handle;
     int nacl_proc_id;
     if (!launch_nacl_process ||
-        !launch_nacl_process(url,
+        !launch_nacl_process("",
                              socket_count,
                              result_sockets,
                              &nacl_proc_handle,
