@@ -16,6 +16,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer_registrar.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/window_container_type.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -231,7 +232,7 @@ class PrerenderContents : public NotificationObserver,
   GURL url_;
   GURL icon_url_;
   NotificationRegistrar notification_registrar_;
-  TabContentsObserver::Registrar tab_contents_observer_registrar_;
+  TabContentsObserverRegistrar tab_contents_observer_registrar_;
 
   // A vector of URLs that this prerendered page matches against.
   // This array can contain more than element as a result of redirects,

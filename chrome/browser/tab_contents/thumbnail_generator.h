@@ -16,6 +16,7 @@
 #include "base/timer.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer_registrar.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -126,7 +127,6 @@ class ThumbnailGenerator : public NotificationObserver,
   // TabContentsObserver overrides.
   virtual void DidStartLoading();
   virtual void StopNavigation();
-  virtual void TabContentsDestroyed(TabContents* tab);
 
  private:
   virtual void WidgetDidReceivePaintAtSizeAck(
@@ -154,7 +154,7 @@ class ThumbnailGenerator : public NotificationObserver,
                    linked_ptr<AsyncRequestInfo> > ThumbnailCallbackMap;
   ThumbnailCallbackMap callback_map_;
 
-  TabContentsObserver::Registrar tab_contents_observer_registrar_;
+  TabContentsObserverRegistrar tab_contents_observer_registrar_;
 
   bool load_interrupted_;
 

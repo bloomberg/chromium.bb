@@ -491,9 +491,3 @@ void ThumbnailGenerator::StopNavigation() {
   // stop button.
   load_interrupted_ = true;
 }
-
-void ThumbnailGenerator::TabContentsDestroyed(TabContents* tab) {
-  // Tell the registrar the tab contents, that we started observing in
-  // StartThumbnailing(), is now destroyed.
-  tab_contents_observer_registrar_.Observe(NULL);
-}

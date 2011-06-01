@@ -8,24 +8,6 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
-TabContentsObserver::Registrar::Registrar(TabContentsObserver* observer)
-    : observer_(observer), tab_(NULL) {
-}
-
-TabContentsObserver::Registrar::~Registrar() {
-  if (tab_)
-    tab_->RemoveObserver(observer_);
-}
-
-void TabContentsObserver::Registrar::Observe(TabContents* tab) {
-  observer_->SetTabContents(tab);
-  if (tab_)
-    tab_->RemoveObserver(observer_);
-  tab_ = tab;
-  if (tab_)
-    tab_->AddObserver(observer_);
-}
-
 void TabContentsObserver::RenderViewCreated(RenderViewHost* render_view_host) {
 }
 

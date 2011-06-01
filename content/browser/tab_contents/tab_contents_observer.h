@@ -11,6 +11,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class RenderViewHost;
+class TabContentsObserverRegistrar;
 struct ViewHostMsg_FrameNavigate_Params;
 
 // An observer API implemented by classes which are interested in various page
@@ -18,28 +19,6 @@ struct ViewHostMsg_FrameNavigate_Params;
 class TabContentsObserver : public IPC::Channel::Listener,
                             public IPC::Message::Sender {
  public:
-  // Use this as a member variable in a class that uses the empty constructor
-  // version of this interface.  On destruction of TabContents being observed,
-  // the registrar must either be destroyed or explicitly set to observe
-  // another TabContents.
-  class Registrar {
-   public:
-    explicit Registrar(TabContentsObserver* observer);
-    ~Registrar();
-
-    // Call this to start observing a tab.  Passing in NULL resets it.
-    // This can only be used to watch one tab at a time.  If you call this and
-    // you're already observing another tab, the old tab won't be observed
-    // afterwards.
-    void Observe(TabContents* tab);
-
-   private:
-    TabContentsObserver* observer_;
-    TabContents* tab_;
-
-    DISALLOW_COPY_AND_ASSIGN(Registrar);
-  };
-
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void NavigateToPendingEntry(
       const GURL& url,
@@ -105,8 +84,8 @@ class TabContentsObserver : public IPC::Channel::Listener,
   explicit TabContentsObserver(TabContents* tab_contents);
 
   // Use this constructor when the object wants to observe a TabContents for
-  // part of its lifetime.  It can use a TabContentsRegistrar member variable
-  // to start and stop observing.
+  // part of its lifetime.  It can use a TabContentsObserverRegistrar member
+  // variable to start and stop observing.
   TabContentsObserver();
 
   virtual ~TabContentsObserver();
@@ -125,8 +104,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
   TabContents* tab_contents() const { return tab_contents_; }
   int routing_id() const;
 
- protected:
-  friend class Registrar;
+  friend class TabContentsObserverRegistrar;
 
   // Called from TabContents in response to having |this| added as an observer.
   void SetTabContents(TabContents* tab_contents);

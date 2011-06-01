@@ -8,8 +8,8 @@
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer_registrar.h"
 #include "views/view.h"
 
 namespace IPC {
@@ -55,7 +55,7 @@ class KeyboardContainerView : public views::View,
 
   DOMView* dom_view_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
-  TabContentsObserver::Registrar tab_contents_registrar_;
+  TabContentsObserverRegistrar tab_contents_registrar_;
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardContainerView);

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
 
