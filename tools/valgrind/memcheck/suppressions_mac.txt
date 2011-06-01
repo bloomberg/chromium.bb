@@ -665,8 +665,6 @@
    fun:AudioObjectGetPropertyData
    fun:*16HasAudioHardwareEm
    fun:_ZN15AudioManagerMac21HasAudioOutputDevicesEv
-   fun:_ZN5mediaL21HasAudioOutputDevicesEv
-   fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
 }
 {
    bug_46186_e
@@ -1699,26 +1697,6 @@
    fun:_ZN12_GLOBAL__N_*BookmarkBarFolderViewTest_*_Test8TestBodyEv
    fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-}
-{
-   bug_84142_a
-   Memcheck:Cond
-   fun:_ZN28PCMQueueOutAudioOutputStream13SwizzleLayoutIsEEvPT_j
-   fun:_ZN28PCMQueueOutAudioOutputStream14RenderCallbackEPvP16OpaqueAudioQueueP16AudioQueueBuffer
-}
-{
-   bug_84142_b
-   Memcheck:Value4
-   fun:_ZN28PCMQueueOutAudioOutputStream13SwizzleLayoutIsEEvPT_j
-   fun:_ZN28PCMQueueOutAudioOutputStream14RenderCallbackEPvP16OpaqueAudioQueueP16AudioQueueBuffer
-}
-{
-   bug_84142_c
-   Memcheck:Free
-   fun:_ZdlPv
-   fun:_ZN10scoped_ptrI18AudioChannelLayoutED2Ev
-   fun:_ZN10scoped_ptrI18AudioChannelLayoutED1Ev
-   fun:_ZN28PCMQueueOutAudioOutputStream4OpenEv
 }
 {
    bug_84329
