@@ -310,8 +310,7 @@
           </div>
           <hr>
           <h4 i18n-content="passphraseSectionTitle"></h4>
-          <div id="sync-custom-passphrase-container"
-              class="sync-customize-section-container">
+          <div class="sync-customize-section-container">
             <div id="passphrase-encryption-message"
                 i18n-content="passphraseEncryptionMessage"></div>
             <div>
@@ -348,24 +347,6 @@
                   i18n-content="mismatchErrorMessage"></div>
             </div>
           </div>
-          <div id="sync-existing-passphrase-container" hidden>
-            <div id="enter-passphrase">
-              <div id="normal-body" i18n-content="enterPassphraseBody" hidden>
-              </div>
-              <div id="passphrase-rejected-body"
-                  i18n-content="enterOtherPassphraseBody" hidden>
-              </div>
-            </div>
-            <div id="passphrase-input">
-              <input id="passphrase" name="passphrase" type="password"
-                  i18n-values="placeholder:passphraseLabel">
-              <div id="incorrect-passphrase" class="error"
-                   i18n-content="incorrectPassphrase" hidden>
-              </div>
-            </div>
-            <div id="sync-passphrase-warning">
-            </div>
-          </div>
         </div>
         <div class="action-area">
           <div class="action-area-link-container">
@@ -378,6 +359,44 @@
               i18n-values="value:cancel">
         </div>
       </form>
+    </div>
+  </div>
+  <div id="sync-setup-passphrase" hidden>
+    <h1 i18n-content="enterPassphraseTitle"></h1>
+    <div class="content-area">
+      <form id="passphrase-form">
+        <div id="enter-passphrase">
+          <div id="normal-body" class="sync-instructions-start-hidden"
+              i18n-content="enterPassphraseBody">
+          </div>
+          <div id="passphrase-rejected-body"
+              class="sync-instructions-start-hidden"
+              i18n-content="enterOtherPassphraseBody">
+          </div>
+        </div>
+        <div id="passphrase-input">
+          <label for="passphrase" i18n-content="passphraseLabel"></label>
+          <input id="passphrase" name="passphrase" type="password">
+          <div id="incorrect-passphrase" class="error"
+               i18n-content="incorrectPassphrase">
+          </div>
+        </div>
+        <span id="sync-passphrase-warning" i18n-content="passphraseRecover">
+        </span> <a href="http://google.com/dashboard" target="_blank"
+            i18n-content="clearDataLink"></a>
+        <div id="cancel-warning-box" class="overlay-warning" hidden>
+          <div id="cancel-warning-header" i18n-content="cancelWarningHeader">
+          </div>
+          <div id="cancel-warning" i18n-content="cancelWarning"></div>
+          <input id="cancel-yes-button" type="submit" i18n-values="value:yes">
+          <input id="cancel-no-button" type="submit" i18n-values="value:no">
+        </div>
+      </form>
+    </div>
+    <div class="action-area">
+      <div id="passphrase-throbber" class="throbber"></div>
+      <input id="passphrase-ok" type="submit" i18n-values="value:ok">
+      <input id="passphrase-cancel" type="button" i18n-values="value:cancel">
     </div>
   </div>
 </div>

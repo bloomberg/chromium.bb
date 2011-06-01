@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -183,10 +182,6 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       "passphraseEncryptionMessage",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE,
                       GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(
-      "passphraseRecover",
-      GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
-                      ASCIIToUTF16(chrome::kSyncGoogleDashboardURL)));
 
   static OptionsStringResource resources[] = {
     { "syncSetupOverlayTitle", IDS_SYNC_SETUP_TITLE },
@@ -232,6 +227,7 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR },
     { "mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR },
     { "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING },
+    { "clearDataLink", IDS_SYNC_CLEAR_DATA_LINK },
     { "customizeLinkLabel", IDS_SYNC_CUSTOMIZE_LINK_LABEL },
     { "confirmSyncPreferences", IDS_SYNC_CONFIRM_SYNC_PREFERENCES },
     { "syncEverything", IDS_SYNC_SYNC_EVERYTHING },
@@ -243,6 +239,7 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "enterOtherPassphraseBody", IDS_SYNC_ENTER_OTHER_PASSPHRASE_BODY },
     { "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL },
     { "incorrectPassphrase", IDS_SYNC_INCORRECT_PASSPHRASE },
+    { "passphraseRecover", IDS_SYNC_PASSPHRASE_RECOVER },
     { "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING },
     { "cancelWarningHeader", IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER },
     { "cancelWarning", IDS_SYNC_PASSPHRASE_CANCEL_WARNING },
