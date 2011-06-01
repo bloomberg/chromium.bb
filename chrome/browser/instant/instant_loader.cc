@@ -220,7 +220,6 @@ class InstantLoader::TabContentsDelegateImpl
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type) OVERRIDE;
-  virtual bool ShouldShowHungRendererDialog() OVERRIDE;
 
   // TabContentsWrapperDelegate:
   virtual void SwapTabContents(TabContentsWrapper* old_tc,
@@ -550,13 +549,6 @@ bool InstantLoader::TabContentsDelegateImpl::ShouldAddNavigationToHistory(
     add_page_vector_.push_back(
         scoped_refptr<history::HistoryAddPageArgs>(add_page_args.Clone()));
   }
-  return false;
-}
-
-bool InstantLoader::TabContentsDelegateImpl::ShouldShowHungRendererDialog() {
-  // If we allow the hung renderer dialog to be shown it'll gain focus,
-  // stealing focus from the omnibox causing instant to be cancelled. Return
-  // false so that doesn't happen.
   return false;
 }
 

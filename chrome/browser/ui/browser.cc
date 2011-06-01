@@ -75,6 +75,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -3382,13 +3383,20 @@ void Browser::ContentRestrictionsChanged(TabContents* source) {
   UpdateCommandsForContentRestrictionState();
 }
 
-void Browser::WorkerCrashed() {
-  TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
-  if (!tab_contents)
-    return;
-  tab_contents->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      tab_contents->tab_contents(), NULL,
-      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
+void Browser::RendererUnresponsive(TabContents* source) {
+  browser::ShowHungRendererDialog(source);
+}
+
+void Browser::RendererResponsive(TabContents* source) {
+  browser::HideHungRendererDialog(source);
+}
+
+void Browser::WorkerCrashed(TabContents* source) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(source);
+  wrapper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      source, NULL, l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
+      true));
 }
 
 TabContentsDelegate::MainFrameCommitDetails*

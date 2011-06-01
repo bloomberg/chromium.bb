@@ -8,8 +8,6 @@ include_rules = [
 
   "+chrome/browser/browser_process.h",
 
-  "+chrome/browser/browser_shutdown.h",
-
   "+chrome/browser/browser_url_handler.h",
 
   # http://crbug.com/84078
@@ -67,7 +65,6 @@ include_rules = [
 
   "+chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h",
   "+chrome/browser/ui/app_modal_dialogs/message_box_handler.h",
-  "+chrome/browser/ui/browser_dialogs.h",
   "+chrome/browser/ui/crypto_module_password_dialog.h",
   "+chrome/browser/ui/login/login_prompt.h",
 

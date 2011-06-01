@@ -280,11 +280,14 @@ class TabContentsDelegate {
   // changed.
   virtual void ContentRestrictionsChanged(TabContents* source);
 
-  // Returns true if the hung renderer dialog should be shown. Default is true.
-  virtual bool ShouldShowHungRendererDialog();
+  // Notification that the tab is hung.
+  virtual void RendererUnresponsive(TabContents* source);
+
+  // Notification that the tab is no longer hung.
+  virtual void RendererResponsive(TabContents* source);
 
   // Notification that a worker associated with this tab has crashed.
-  virtual void WorkerCrashed();
+  virtual void WorkerCrashed(TabContents* source);
 
   // See description above MainFrameCommitDetails for details. Default returns
   // NULL. Caller owns return value.

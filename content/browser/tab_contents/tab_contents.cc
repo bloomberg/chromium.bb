@@ -13,14 +13,12 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -224,7 +222,6 @@ TabContents::~TabContents() {
   registrar_.RemoveAll();
 
   NotifyDisconnected();
-  browser::HideHungRendererDialog(this);
 
   // First cleanly close all child windows.
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
@@ -1303,22 +1300,11 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
     return;
   }
 
-  // Let observers know first and give them a chance to act.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewGone());
-
   SetIsLoading(false, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
 
-  // Tell the view that we've crashed so it can prepare the sad tab page.
-  // Only do this if we're not in browser shutdown, so that TabContents
-  // objects that are not in a browser (e.g., HTML dialogs) and thus are
-  // visible do not flash a sad tab page.
-  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
-    view_->OnTabCrashed(status, error_code);
-
-  // Hide any visible hung renderer warning for this web contents' process.
-  browser::HideHungRendererDialog(this);
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewGone());
 }
 
 void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
@@ -1696,14 +1682,16 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
     return;
   }
 
-  if (render_view_host() && render_view_host()->IsRenderViewLive() &&
-      (!delegate() || delegate()->ShouldShowHungRendererDialog())) {
-    browser::ShowHungRendererDialog(this);
-  }
+  if (!render_view_host() || !render_view_host()->IsRenderViewLive())
+    return;
+
+  if (delegate())
+    delegate()->RendererUnresponsive(this);
 }
 
 void TabContents::RendererResponsive(RenderViewHost* render_view_host) {
-  browser::HideHungRendererDialog(this);
+  if (delegate())
+    delegate()->RendererResponsive(this);
 }
 
 void TabContents::LoadStateChanged(const GURL& url,
@@ -1730,7 +1718,7 @@ bool TabContents::IsExternalTabContainer() const {
 
 void TabContents::WorkerCrashed() {
   if (delegate())
-    delegate()->WorkerCrashed();
+    delegate()->WorkerCrashed(this);
 }
 
 void TabContents::RequestDesktopNotificationPermission(

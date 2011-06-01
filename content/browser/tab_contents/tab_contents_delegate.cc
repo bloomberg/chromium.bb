@@ -178,11 +178,13 @@ void TabContentsDelegate::UpdatePreferredSize(const gfx::Size& pref_size) {
 void TabContentsDelegate::ContentRestrictionsChanged(TabContents* source) {
 }
 
-bool TabContentsDelegate::ShouldShowHungRendererDialog() {
-  return true;
+void TabContentsDelegate::RendererUnresponsive(TabContents* source) {
 }
 
-void TabContentsDelegate::WorkerCrashed() {
+void TabContentsDelegate::RendererResponsive(TabContents* source) {
+}
+
+void TabContentsDelegate::WorkerCrashed(TabContents* source) {
 }
 
 TabContentsDelegate::MainFrameCommitDetails*

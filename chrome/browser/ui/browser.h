@@ -843,7 +843,9 @@ class Browser : public TabHandlerDelegate,
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type);
   virtual void ContentRestrictionsChanged(TabContents* source);
-  virtual void WorkerCrashed();
+  virtual void RendererUnresponsive(TabContents* source);
+  virtual void RendererResponsive(TabContents* source);
+  virtual void WorkerCrashed(TabContents* source);
   virtual MainFrameCommitDetails* CreateMainFrameCommitDetails(
       TabContents* tab);
   virtual void DidNavigateMainFramePostCommit(
