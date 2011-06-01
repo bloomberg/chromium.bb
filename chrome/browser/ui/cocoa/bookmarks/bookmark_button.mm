@@ -352,6 +352,11 @@ BookmarkButton* gDraggedButton = nil; // Weak
   return gDraggedButton;
 }
 
+- (BOOL)canBecomeKeyView {
+  // If button is an item in a folder menu, don't become key.
+  return ![[self cell] isFolderButtonCell];
+}
+
 // This only gets called after a click that wasn't a drag, and only on folders.
 - (void)secondaryMouseUpAction:(BOOL)wasInside {
   const NSTimeInterval kShortClickLength = 0.5;
