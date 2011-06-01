@@ -88,6 +88,7 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   gtk_util::ApplyMessageDialogQuirks(dialog);
   SetDialogTitle(dialog, title);
 
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
   g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   gtk_util::ShowDialog(dialog);
 }
@@ -101,6 +102,7 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
   gtk_util::ApplyMessageDialogQuirks(dialog);
   SetDialogTitle(dialog, title);
 
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   g_signal_connect(dialog,
                    "response",
                    G_CALLBACK(HandleOnResponseDialog),
