@@ -32,6 +32,12 @@
   margin: 10px 0;
 }
 
+#sync-existing-passphrase-container {
+  background: #fff29e;
+  border: 1px solid #d4cdad;
+  padding: 10px;
+}
+
 #sync-select-container {
   margin-bottom: 10px;
 }
@@ -113,8 +119,8 @@
 }
 
 #passphrase-input {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 #incorrect-passphrase {
@@ -303,11 +309,6 @@ html[os='mac'] #sync-setup-configure {
 
 .sync-errors {
   margin-top: 5px;
-}
-
-.sync-instructions-start-hidden {
-  margin-top: 10px;
-  display: none;
 }
 
 .sync-error-show {

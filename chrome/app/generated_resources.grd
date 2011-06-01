@@ -9086,9 +9086,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
         You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers using the Google Dashboard.
       </message>
-      <message name="IDS_SYNC_CLEAR_DATA_LINK" desc="Link to the Google Dashboard.">
-        Visit the Google Dashboard
-      </message>
 
       <!-- Passphrase dialog strings -->
       <if expr="not pp_ifdef('use_titlecase')">
@@ -9123,7 +9120,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The passphrase you entered is incorrect.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_RECOVER" desc="Message about how to recover from a lost passphrase.">
-        If you've forgotten your passphrase, you'll need to stop sync via the Google Dashboard.
+        If you've forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
 
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER" desc="Header for the passphrase cancel warning.  Should be phrased as a yes-or-no question.">

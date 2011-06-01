@@ -70,29 +70,13 @@ cr.define('options', function() {
         self.closeOverlay_();
       };
       $('customize-link').onclick = function() {
-        self.showCustomizePage_(true);
+        self.showCustomizePage_(null, true);
       };
       $('confirm-everything-ok').onclick = function() {
         self.sendConfiguration_();
       };
       $('use-default-link').onclick = function() {
         self.showSyncEverythingPage_();
-      };
-      $('cancel-no-button').onclick = function() {
-        self.hideCancelWarning_();
-        return false;
-      };
-      $('cancel-yes-button').onclick = function() {
-        chrome.send('SyncSetupPassphraseCancel', ['']);
-        return false;
-      };
-      $('passphrase-form').onsubmit = $('passphrase-ok').onclick = function() {
-        self.sendPassphraseAndClose_();
-        return false;
-      };
-      $('passphrase-cancel').onclick = function() {
-        self.showCancelWarning_();
-        return false;
       };
     },
 
@@ -114,17 +98,11 @@ cr.define('options', function() {
       chrome.send('SyncSetupDidClosePage');
     },
 
-    showCancelWarning_: function() {
-      $('cancel-warning-box').hidden = false;
-      $('passphrase-ok').disabled = true;
-      $('passphrase-cancel').disabled = true;
-      $('cancel-no-button').focus();
-    },
-
     sendPassphraseAndClose_: function() {
-      var f = $('passphrase-form');
+      var f = $('choose-data-types-form');
       var result = JSON.stringify({"passphrase": f.passphrase.value});
       chrome.send('SyncSetupPassphrase', [result]);
+      return false;
     },
 
     getEncryptionRadioCheckedValue_: function() {
@@ -234,12 +212,6 @@ cr.define('options', function() {
       }
 
       return true;
-    },
-
-    hideCancelWarning_: function() {
-      $('cancel-warning-box').hidden = true;
-      $('passphrase-ok').disabled = false;
-      $('passphrase-cancel').disabled = false;
     },
 
     sendConfiguration_: function() {
@@ -402,6 +374,8 @@ cr.define('options', function() {
 
       $('sync-setup-configure').hidden = false;
 
+      this.clearPassphraseInputs_();
+
       if (args) {
         if (!args['encryptionEnabled'])
           $('customize-sync-encryption').hidden = true;
@@ -409,21 +383,30 @@ cr.define('options', function() {
 
         // Whether to display the 'Sync everything' confirmation page or the
         // customize data types page.
-        var showSyncEverythingPage = args['showSyncEverythingPage'];
         var keepEverythingSynced = args['keepEverythingSynced'];
         this.usePassphrase_ = args['usePassphrase'];
-        if (showSyncEverythingPage == false ||
-            keepEverythingSynced == false || this.usePassphrase_) {
-          this.showCustomizePage_(keepEverythingSynced);
+        if (args['showSyncEverythingPage'] == false || this.usePassphrase_ ||
+            keepEverythingSynced == false || args['show_passphrase']) {
+          this.showCustomizePage_(args, keepEverythingSynced);
         } else {
           this.showSyncEverythingPage_();
         }
       }
     },
 
+    /**
+     * Clears the value of the custom passphrase inputs.
+     * @private
+     */
+    clearPassphraseInputs_: function() {
+      $('custom-passphrase').value = '';
+      $('confirm-passphrase').value = '';
+    },
+
     showSyncEverythingPage_: function() {
       $('confirm-sync-preferences').hidden = false;
       $('customize-sync-preferences').hidden = true;
+      this.clearPassphraseInputs_();
 
       // Reset the selection to 'Sync everything'.
       $('sync-select-datatypes').selectedIndex = 0;
@@ -441,17 +424,51 @@ cr.define('options', function() {
       $('confirm-everything-ok').focus();
     },
 
-    showCustomizePage_: function(syncEverything) {
-      document.getElementById('confirm-sync-preferences').hidden = true;
-      document.getElementById('customize-sync-preferences').hidden = false;
+    /**
+     * Reveals the UI for entering a custom passphrase after initial setup. This
+     * may happen if the user forgot to enter the correct (or any) custom
+     * passphrase during initial setup.
+     * @param {Array} args The args that contain the passphrase UI
+     *     configuration.
+     * @private
+     */
+    showPassphraseContainer_: function(args) {
+      $('choose-data-types-form').onsubmit =
+          this.sendPassphraseAndClose_.bind(this);
+      $('sync-custom-passphrase-container').hidden = true;
+      $('sync-existing-passphrase-container').hidden = false;
+
+      if (args["passphrase_creation_rejected"])
+        $('passphrase-rejected-body').hidden = false;
+      else
+        $('normal-body').hidden = false;
+
+      if (args["passphrase_setting_rejected"])
+        $('incorrect-passphrase').hidden = false;
+
+      $('sync-passphrase-warning').innerHTML =
+          localStrings.getString('passphraseRecover');
+
+      $('passphrase').focus();
+    },
+
+    showCustomizePage_: function(args, syncEverything) {
+      $('confirm-sync-preferences').hidden = true;
+      $('customize-sync-preferences').hidden = false;
+
+      $('sync-custom-passphrase-container').hidden = false;
+      $('sync-existing-passphrase-container').hidden = true;
 
       // If the user has selected the 'Customize' page on initial set up, it's
-      // likely he intends to change the data types.  Select the
+      // likely he intends to change the data types. Select the
       // 'Choose data types' option in this case.
       var index = syncEverything ? 0 : 1;
       document.getElementById('sync-select-datatypes').selectedIndex = index;
       this.setDataTypeCheckboxesEnabled_(!syncEverything);
       $('choose-datatypes-ok').focus();
+
+      if (args && args['show_passphrase'])
+        this.showPassphraseContainer_(args);
     },
 
     attach_: function() {
@@ -475,10 +492,8 @@ cr.define('options', function() {
 
       if (page == 'login')
         this.showGaiaLogin_(args);
-      else if (page == 'configure')
+      else if (page == 'configure' || page == 'passphrase')
         this.showConfigure_(args);
-      else if (page == 'passphrase')
-        this.showPassphrase_(args);
 
       if (page == 'done')
         this.closeOverlay_();
@@ -490,26 +505,6 @@ cr.define('options', function() {
       var throbbers = document.getElementsByClassName("throbber");
         for (var i = 0; i < throbbers.length; i++)
           throbbers[i].style.visibility = visible ? "visible" : "hidden";
-    },
-
-    showPassphrase_: function(args) {
-      $('sync-setup-passphrase').hidden = false;
-
-      $('passphrase-rejected-body').style.display = "none";
-      $('normal-body').style.display = "none";
-      $('incorrect-passphrase').style.display = "none";
-
-      if (args["passphrase_creation_rejected"]) {
-        $('passphrase-rejected-body').style.display = "block";
-      } else {
-        $('normal-body').style.display = "block";
-      }
-
-      if (args["passphrase_setting_rejected"]) {
-        $('incorrect-passphrase').style.display = "block";
-      }
-
-      $('passphrase').focus();
     },
 
     setElementDisplay_: function(id, display) {
@@ -681,7 +676,7 @@ cr.define('options', function() {
       chrome.send('SyncSetupSubmitAuth', [result]);
     },
 
-    showGaiaSuccessAndClose_: function() {
+    showSuccessAndClose_: function() {
       $('sign-in').value = localStrings.getString('loginSuccess');
       setTimeout(this.closeOverlay_, 1600);
     },
