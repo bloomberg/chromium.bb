@@ -335,6 +335,8 @@
         'browser/trace_controller.h',
         'browser/trace_message_filter.cc',
         'browser/trace_message_filter.h',
+        'browser/trace_subscriber_stdio.cc',
+        'browser/trace_subscriber_stdio.h',
         'browser/user_metrics.cc',
         'browser/user_metrics.h',
         'browser/webui/empty_web_ui_factory.cc',
