@@ -562,7 +562,10 @@ or verify this branch is set up to track another (via the --track argument to
     return output
 
   def CloseIssue(self):
-    return self.RpcServer().close_issue(int(self.GetIssue()))
+    """Updates the description and closes the issue."""
+    issue = int(self.GetIssue())
+    self.RpcServer().update_description(issue, self.description)
+    return self.RpcServer().close_issue(issue)
 
   def SetFlag(self, flag, value):
     """Patchset must match."""
