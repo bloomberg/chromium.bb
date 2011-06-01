@@ -38,6 +38,8 @@ class Menu2;
 // * X selection (only if we want to support).
 // * STYLE_MULTILINE, STYLE_LOWERCASE text. (These are not used in
 //   chromeos, so we may not need them)
+// Once completed, this will replace Textfield, NativeTextfieldWin and
+// NativeTextfieldGtk.
 class NativeTextfieldViews : public View,
                              public ContextMenuController,
                              public DragController,
@@ -111,6 +113,10 @@ class NativeTextfieldViews : public View,
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
   virtual TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual TextStyle* CreateTextStyle() OVERRIDE;
+  virtual void ApplyTextStyle(const TextStyle* style,
+                              const ui::Range& range) OVERRIDE;
+  virtual void ClearAllTextStyles() OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate overrides
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

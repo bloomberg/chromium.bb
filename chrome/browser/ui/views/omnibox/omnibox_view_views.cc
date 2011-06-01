@@ -20,12 +20,14 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "views/border.h"
+#include "views/controls/textfield/text_style.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/fill_layout.h"
 
@@ -104,6 +106,14 @@ PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
 
 const int kAutocompleteVerticalMargin = 4;
 
+// TODO(oshima): I'm currently using slightly different color than
+// gtk/win omnibox so that I can tell which one is used from its color.
+// Fix this once we finish all features.
+const SkColor kFadedTextColor = SK_ColorGRAY;
+const SkColor kNormalTextColor = SK_ColorBLACK;
+const SkColor kSecureSchemeColor = SK_ColorGREEN;
+const SkColor kSecurityErrorSchemeColor = SK_ColorRED;
+
 }  // namespace
 
 OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
@@ -120,7 +130,11 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
       ime_composing_before_change_(false),
-      delete_at_end_pressed_(false) {
+      delete_at_end_pressed_(false),
+      faded_text_style_(NULL),
+      normal_text_style_(NULL),
+      security_error_scheme_style_(NULL),
+      secure_scheme_style_(NULL) {
   set_border(views::Border::CreateEmptyBorder(kAutocompleteVerticalMargin, 0,
                                               kAutocompleteVerticalMargin, 0));
 }
@@ -159,7 +173,7 @@ void OmniboxViewViews::Init() {
 }
 
 void OmniboxViewViews::SetBaseColor() {
-  // TODO(oshima): Implment style change.
+  // TODO(oshima): Implement style change.
   NOTIMPLEMENTED();
 }
 
@@ -598,8 +612,46 @@ size_t OmniboxViewViews::GetTextLength() const {
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
-  // TODO(oshima): Update URL visual style
-  NOTIMPLEMENTED();
+  InitTextStyles();
+  // See whether the contents are a URL with a non-empty host portion, which we
+  // should emphasize.  To check for a URL, rather than using the type returned
+  // by Parse(), ask the model, which will check the desired page transition for
+  // this input.  This can tell us whether an UNKNOWN input string is going to
+  // be treated as a search or a navigation, and is the same method the Paste
+  // And Go system uses.
+  string16 text = GetText();
+  url_parse::Component scheme, host;
+  AutocompleteInput::ParseForEmphasizeComponents(
+      text, model_->GetDesiredTLD(), &scheme, &host);
+  const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
+
+  textfield_->ClearAllTextStyles();
+  if (emphasize) {
+    textfield_->ApplyTextStyle(faded_text_style_, ui::Range(0, text.length()));
+    textfield_->ApplyTextStyle(normal_text_style_,
+                               ui::Range(host.begin, host.end()));
+  } else {
+    textfield_->ApplyTextStyle(normal_text_style_, ui::Range(0, text.length()));
+  }
+  // Emphasize the scheme for security UI display purposes (if necessary).
+  if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
+      (security_level_ != ToolbarModel::NONE)) {
+    ui::Range scheme_range(scheme.begin, scheme.end());
+    switch (security_level_) {
+      case ToolbarModel::SECURITY_ERROR:
+        textfield_->ApplyTextStyle(security_error_scheme_style_, scheme_range);
+        break;
+      case ToolbarModel::SECURITY_WARNING:
+        textfield_->ApplyTextStyle(faded_text_style_, scheme_range);
+        break;
+      case ToolbarModel::EV_SECURE:
+      case ToolbarModel::SECURE:
+        textfield_->ApplyTextStyle(secure_scheme_style_, scheme_range);
+        break;
+      default:
+        NOTREACHED() << "Unknown SecurityLevel:" << security_level_;
+    }
+  }
 }
 
 void OmniboxViewViews::TextChanged() {
@@ -628,9 +680,25 @@ AutocompletePopupView* OmniboxViewViews::CreatePopupView(
     Profile* profile,
     const View* location_bar) {
 #if defined(TOUCH_UI)
-  return new TouchAutocompletePopupContentsView(
+  typedef TouchAutocompletePopupContentsView AutocompleteContentsView;
 #else
-  return new AutocompletePopupContentsView(
+  typedef AutocompletePopupContentsView AutocompleteContentsView;
 #endif
+  return new AutocompleteContentsView(
       gfx::Font(), this, model_.get(), profile, location_bar);
+}
+
+void OmniboxViewViews::InitTextStyles() {
+  if (faded_text_style_)
+    return;
+  faded_text_style_ = textfield_->CreateTextStyle();
+  normal_text_style_ = textfield_->CreateTextStyle();
+  security_error_scheme_style_ = textfield_->CreateTextStyle();
+  secure_scheme_style_ = textfield_->CreateTextStyle();
+
+  faded_text_style_->set_foreground(kFadedTextColor);
+  normal_text_style_->set_foreground(kNormalTextColor);
+  secure_scheme_style_->set_foreground(kSecureSchemeColor);
+  security_error_scheme_style_->set_foreground(kSecurityErrorSchemeColor);
+  security_error_scheme_style_->set_strike(true);
 }

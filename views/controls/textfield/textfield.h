@@ -39,6 +39,7 @@ namespace views {
 class KeyEvent;
 class NativeTextfieldWrapper;
 class TextfieldController;
+class TextStyle;
 
 // This class implements a View that wraps a native text (edit) field.
 class Textfield : public View {
@@ -188,6 +189,25 @@ class Textfield : public View {
   // Returns the current cursor position. This is views-implementation
   // only and has to be called after the wrapper is created.
   size_t GetCursorPosition() const;
+
+  // Creates a new TextStyle for this textfield. The object is owned
+  // by the textfield and gets deleted when the textfield is deleted.
+  // This is views-implementation only and has to be called after the
+  // wrapper is created.
+  TextStyle* CreateTextStyle();
+
+  // Applies the |style| to the text specified by the |range|.  If
+  // there is already a style applied in the |range|, the style of the
+  // overlapping part will be replaced by this sytle.  The style will
+  // be ignored if range is empty or invalid.  This is
+  // views-implementation only and has to be called after the wrapper
+  // is created.
+  void ApplyTextStyle(const TextStyle* style, const ui::Range& range);
+
+  // Clears All TextStyles.
+  // This is views-implementation only and has to be called after the
+  // wrapper is created.
+  void ClearAllTextStyles();
 
   // Set the accessible name of the text field.
   void SetAccessibleName(const string16& name);

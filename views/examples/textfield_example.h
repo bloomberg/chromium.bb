@@ -15,6 +15,10 @@
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/examples/example_base.h"
 
+namespace views {
+class TextStyle;
+}
+
 namespace examples {
 
 // TextfieldExample mimics login screen.
@@ -44,11 +48,17 @@ class TextfieldExample : public ExampleBase,
   views::Textfield* name_;
   views::Textfield* password_;
 
-  // Buttons to show password text and to clear the textfields.
+  // Various buttons to control textfield.
   views::TextButton* show_password_;
   views::TextButton* clear_all_;
   views::TextButton* append_;
   views::TextButton* set_;
+  views::TextButton* set_style_;
+
+  // Text Styles
+  views::TextStyle* underline_;
+  views::TextStyle* strike_;
+  views::TextStyle* color_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldExample);
 };

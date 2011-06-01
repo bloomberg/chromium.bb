@@ -86,6 +86,10 @@ class NativeTextfieldWin
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
   virtual TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual TextStyle* CreateTextStyle() OVERRIDE;
+  virtual void ApplyTextStyle(const TextStyle* style,
+                              const ui::Range& range) OVERRIDE;
+  virtual void ClearAllTextStyles() OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

@@ -371,6 +371,20 @@ TextInputClient* NativeTextfieldWin::GetTextInputClient() {
   return NULL;
 }
 
+TextStyle* NativeTextfieldWin::CreateTextStyle() {
+  NOTREACHED();
+  return NULL;
+}
+
+void NativeTextfieldWin::ApplyTextStyle(const TextStyle* style,
+                                        const ui::Range& range) {
+  NOTREACHED();
+}
+
+void NativeTextfieldWin::ClearAllTextStyles() {
+  NOTREACHED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, ui::SimpleMenuModel::Delegate implementation:
 

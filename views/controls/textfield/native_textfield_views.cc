@@ -15,12 +15,12 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/insets.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/focusable_border.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/textfield/text_style.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/textfield/textfield_views_model.h"
@@ -39,12 +39,13 @@ namespace {
 // A global flag to switch the Textfield wrapper to TextfieldViews.
 bool textfield_view_enabled = false;
 
-// Color setttings for text, backgrounds and cursor.
+// Color settings for text, backgrounds and cursor.
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
+// TODO(oshima): Change this to match the standard chrome
+// before dogfooding textfield views.
 const SkColor kSelectedTextColor = SK_ColorWHITE;
-const SkColor kReadonlyTextColor = SK_ColorDKGRAY;
-const SkColor kFocusedSelectionColor = SK_ColorBLUE;
+const SkColor kFocusedSelectionColor = SK_ColorCYAN;
 const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
 const SkColor kCursorColor = SK_ColorBLACK;
 
@@ -525,6 +526,21 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
   OnAfterUserAction();
 }
 
+TextStyle* NativeTextfieldViews::CreateTextStyle() {
+  return model_->CreateTextStyle();
+}
+
+void NativeTextfieldViews::ApplyTextStyle(const TextStyle* style,
+                                          const ui::Range& range) {
+  model_->ApplyTextStyle(style, range);
+  SchedulePaint();
+}
+
+void NativeTextfieldViews::ClearAllTextStyles() {
+  model_->ClearAllTextStyles();
+  SchedulePaint();
+}
+
 // static
 bool NativeTextfieldViews::IsTextfieldViewsEnabled() {
 #if defined(TOUCH_UI)
@@ -578,7 +594,7 @@ void NativeTextfieldViews::ClearCompositionText() {
 
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  model_->ClearCompositionText();
+  model_->CancelCompositionText();
   skip_input_method_cancel_composition_ = false;
   UpdateAfterChange(true, true);
   OnAfterUserAction();
@@ -796,31 +812,27 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
   SkColor selection_color =
       textfield_->HasFocus() ?
       kFocusedSelectionColor : kUnfocusedSelectionColor;
-  SkColor text_color =
-      textfield_->read_only() ? kReadonlyTextColor : GetTextColor();
+  gfx::Font font = GetFont();
+  gfx::Rect selection_bounds = model_->GetSelectionBounds(font);
+  if (!selection_bounds.IsEmpty()) {
+    canvas->FillRectInt(selection_color,
+                        x_offset + selection_bounds.x(),
+                        y + selection_bounds.y(),
+                        selection_bounds.width(),
+                        selection_bounds.height());
+  }
 
   for (TextfieldViewsModel::TextFragments::const_iterator iter =
            fragments.begin();
        iter != fragments.end();
        iter++) {
-    string16 text = model_->GetVisibleText(iter->start, iter->end);
-
-    gfx::Font font = GetFont();
-    if (iter->underline)
-      font = font.DeriveFont(0, font.GetStyle() | gfx::Font::UNDERLINED);
-
+    string16 text = model_->GetVisibleText(iter->range.start(),
+                                           iter->range.end());
     // TODO(oshima): This does not give the accurate position due to
-    // kerning. Figure out how webkit does this with skia.
+    // kerning. Figure out how to do.
     int width = font.GetStringWidth(text);
-
-    if (iter->selected) {
-      canvas->FillRectInt(selection_color, x_offset, y, width, text_height);
-      canvas->DrawStringInt(text, font, kSelectedTextColor,
+    iter->style->DrawString(canvas, text, font, textfield_->read_only(),
                             x_offset, y, width, text_height);
-    } else {
-      canvas->DrawStringInt(text, font, text_color,
-                            x_offset, y, width, text_height);
-    }
     x_offset += width;
   }
   canvas->Restore();

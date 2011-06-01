@@ -381,6 +381,20 @@ TextInputClient* NativeTextfieldGtk::GetTextInputClient() {
   return NULL;
 }
 
+TextStyle* NativeTextfieldGtk::CreateTextStyle() {
+  NOTREACHED();
+  return NULL;
+}
+
+void NativeTextfieldGtk::ApplyTextStyle(const TextStyle* style,
+                                        const ui::Range& range) {
+  NOTREACHED();
+}
+
+void NativeTextfieldGtk::ClearAllTextStyles() {
+  NOTREACHED();
+}
+
 void NativeTextfieldGtk::OnActivate(GtkWidget* native_widget) {
   GdkEvent* event = gtk_get_current_event();
   if (!event || event->type != GDK_KEY_PRESS)

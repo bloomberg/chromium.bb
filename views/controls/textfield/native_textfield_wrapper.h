@@ -22,6 +22,7 @@ namespace views {
 class KeyEvent;
 class Textfield;
 class TextInputClient;
+class TextStyle;
 class View;
 
 // An interface implemented by an object that provides a platform-native
@@ -124,6 +125,18 @@ class NativeTextfieldWrapper {
   // Returns the View's TextInputClient instance or NULL if the View doesn't
   // support text input.
   virtual TextInputClient* GetTextInputClient() = 0;
+
+  // Creates a new TextStyle for this textfield.
+  // See |Textfield::CreateTextStyle| for detail.
+  virtual TextStyle* CreateTextStyle() = 0;
+
+  // Applies the |style| to the text specified by the |range|.
+  // See |Textfield::ApplyTextStyle| for detail.
+  virtual void ApplyTextStyle(const TextStyle* style,
+                              const ui::Range& range) = 0;
+
+  // Clears all text styles in this textfield.
+  virtual void ClearAllTextStyles() = 0;
 
   // Creates an appropriate NativeTextfieldWrapper for the platform.
   static NativeTextfieldWrapper* CreateWrapper(Textfield* field);

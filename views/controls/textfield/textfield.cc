@@ -273,6 +273,22 @@ size_t Textfield::GetCursorPosition() const {
   return native_wrapper_->GetCursorPosition();
 }
 
+TextStyle* Textfield::CreateTextStyle() {
+  DCHECK(native_wrapper_);
+  return native_wrapper_->CreateTextStyle();
+}
+
+void Textfield::ApplyTextStyle(const TextStyle* style,
+                               const ui::Range& range) {
+  DCHECK(native_wrapper_);
+  return native_wrapper_->ApplyTextStyle(style, range);
+}
+
+void Textfield::ClearAllTextStyles() {
+  DCHECK(native_wrapper_);
+  native_wrapper_->ClearAllTextStyles();
+}
+
 void Textfield::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }

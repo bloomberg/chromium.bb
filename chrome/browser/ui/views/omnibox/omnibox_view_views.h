@@ -26,15 +26,15 @@ class AutocompletePopupView;
 class Profile;
 class TabContents;
 
+namespace views {
+class TextStyle;
+}
+
 // Views-implementation of OmniboxView. This is based on gtk implementation.
 // The following features are not yet supported.
 //
-// IME support.
 // LTR support.
-// Selection behavior.
-// Cut,copy and paste behavior.
 // Drag and drop behavior.
-// URL styles (strikestrough insecure scheme, emphasize host).
 // Custom context menu for omnibox.
 // Instant.
 class OmniboxViewViews : public views::View,
@@ -158,6 +158,10 @@ class OmniboxViewViews : public views::View,
   AutocompletePopupView* CreatePopupView(Profile* profile,
                                          const View* location_bar);
 
+  // Lazy initialization of TextStyle objects. They can not be
+  // initialized in Init as native wrapper isn't available at that time.
+  void InitTextStyles();
+
   views::Textfield* textfield_;
 
   scoped_ptr<AutocompleteEditModel> model_;
@@ -186,6 +190,12 @@ class OmniboxViewViews : public views::View,
 
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
+
+  // TextStyles for URL decoration. They're owned by textfield_.
+  views::TextStyle* faded_text_style_;
+  views::TextStyle* normal_text_style_;
+  views::TextStyle* security_error_scheme_style_;
+  views::TextStyle* secure_scheme_style_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

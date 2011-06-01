@@ -10,6 +10,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/range/range.h"
+#include "views/controls/textfield/text_style.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/test/test_views_delegate.h"
@@ -247,58 +248,23 @@ TEST_F(TextfieldViewsModelTest, Word) {
 TEST_F(TextfieldViewsModelTest, TextFragment) {
   TextfieldViewsModel model(NULL);
   TextfieldViewsModel::TextFragments fragments;
-  // Empty string
+  // Empty string has no fragment.
   model.GetFragments(&fragments);
-  EXPECT_EQ(1U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].start);
-  EXPECT_EQ(0U, fragments[0].end);
-  EXPECT_FALSE(fragments[0].selected);
+  EXPECT_EQ(0U, fragments.size());
 
   // Some string
   model.Append(ASCIIToUTF16("Hello world"));
   model.GetFragments(&fragments);
   EXPECT_EQ(1U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].start);
-  EXPECT_EQ(11U, fragments[0].end);
-  EXPECT_FALSE(fragments[0].selected);
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(11U, fragments[0].range.end());
 
-  // Select 1st word
+  // Selection won't change fragment.
   model.MoveCursorToNextWord(true);
   model.GetFragments(&fragments);
-  EXPECT_EQ(2U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].start);
-  EXPECT_EQ(5U, fragments[0].end);
-  EXPECT_TRUE(fragments[0].selected);
-  EXPECT_EQ(5U, fragments[1].start);
-  EXPECT_EQ(11U, fragments[1].end);
-  EXPECT_FALSE(fragments[1].selected);
-
-  // Select empty string
-  model.ClearSelection();
-  model.MoveCursorRight(true);
-  model.GetFragments(&fragments);
-  EXPECT_EQ(3U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].start);
-  EXPECT_EQ(5U, fragments[0].end);
-  EXPECT_FALSE(fragments[0].selected);
-  EXPECT_EQ(5U, fragments[1].start);
-  EXPECT_EQ(6U, fragments[1].end);
-  EXPECT_TRUE(fragments[1].selected);
-
-  EXPECT_EQ(6U, fragments[2].start);
-  EXPECT_EQ(11U, fragments[2].end);
-  EXPECT_FALSE(fragments[2].selected);
-
-  // Select to the end.
-  model.MoveCursorToEnd(true);
-  model.GetFragments(&fragments);
-  EXPECT_EQ(2U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].start);
-  EXPECT_EQ(5U, fragments[0].end);
-  EXPECT_FALSE(fragments[0].selected);
-  EXPECT_EQ(5U, fragments[1].start);
-  EXPECT_EQ(11U, fragments[1].end);
-  EXPECT_TRUE(fragments[1].selected);
+  EXPECT_EQ(1U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(11U, fragments[0].range.end());
 }
 
 TEST_F(TextfieldViewsModelTest, SetText) {
@@ -546,41 +512,36 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
 
   model.GetTextRange(&range);
   EXPECT_EQ(10U, range.end());
+  EXPECT_STR_EQ("1234567890", model.text());
 
   model.GetCompositionTextRange(&range);
   EXPECT_EQ(5U, range.start());
   EXPECT_EQ(8U, range.end());
+  // composition text
+  EXPECT_STR_EQ("456", model.GetTextFromRange(ui::Range(3, 6)));
 
   model.GetSelectedRange(&range);
   EXPECT_EQ(7U, range.start());
   EXPECT_EQ(8U, range.end());
-
-  EXPECT_STR_EQ("1234567890", model.text());
   EXPECT_STR_EQ("8", model.GetSelectedText());
-  EXPECT_STR_EQ("456", model.GetTextFromRange(ui::Range(3, 6)));
 
   TextfieldViewsModel::TextFragments fragments;
   model.GetFragments(&fragments);
-  EXPECT_EQ(4U, fragments.size());
-  EXPECT_EQ(0U, fragments[0].start);
-  EXPECT_EQ(5U, fragments[0].end);
-  EXPECT_FALSE(fragments[0].selected);
-  EXPECT_FALSE(fragments[0].underline);
-  EXPECT_EQ(5U, fragments[1].start);
-  EXPECT_EQ(7U, fragments[1].end);
-  EXPECT_FALSE(fragments[1].selected);
-  EXPECT_TRUE(fragments[1].underline);
-  EXPECT_EQ(7U, fragments[2].start);
-  EXPECT_EQ(8U, fragments[2].end);
-  EXPECT_TRUE(fragments[2].selected);
-  EXPECT_TRUE(fragments[2].underline);
-  EXPECT_EQ(8U, fragments[3].start);
-  EXPECT_EQ(10U, fragments[3].end);
-  EXPECT_FALSE(fragments[3].selected);
-  EXPECT_FALSE(fragments[3].underline);
+  EXPECT_EQ(3U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(5U, fragments[0].range.end());
+  EXPECT_FALSE(fragments[0].style->underline());
+
+  EXPECT_EQ(5U, fragments[1].range.start());
+  EXPECT_EQ(8U, fragments[1].range.end());
+  EXPECT_TRUE(fragments[1].style->underline());
+
+  EXPECT_EQ(8U, fragments[2].range.start());
+  EXPECT_EQ(10U, fragments[2].range.end());
+  EXPECT_FALSE(fragments[2].style->underline());
 
   EXPECT_FALSE(composition_text_confirmed_or_cleared_);
-  model.ClearCompositionText();
+  model.CancelCompositionText();
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_FALSE(model.HasCompositionText());
@@ -1047,7 +1008,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
   model.MoveCursorToHome(false);
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("abcABCDEabc", model.text());
-  model.ClearCompositionText();
+  model.CancelCompositionText();
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_FALSE(model.Redo());
   EXPECT_STR_EQ("ABCDEabc", model.text());
@@ -1087,6 +1048,216 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
   EXPECT_FALSE(model.Redo());
 
   // TODO(oshima): We need MockInputMethod to test the behavior with IME.
+}
+
+TEST_F(TextfieldViewsModelTest, TextStyleTest) {
+  const SkColor black = 0xFF000000;  // black is default text color.
+  const SkColor white = 0xFFFFFFFF;
+  TextfieldViewsModel model(NULL);
+  TextStyle* color = model.CreateTextStyle();
+  color->set_foreground(white);
+  TextStyle* underline = model.CreateTextStyle();
+  underline->set_underline(true);
+  underline->set_foreground(white);
+  TextStyle* strike = model.CreateTextStyle();
+  strike->set_strike(true);
+  strike->set_foreground(white);
+
+  // Case 1: No overlaps
+  model.ApplyTextStyle(color, ui::Range(1, 3));
+  model.ApplyTextStyle(underline, ui::Range(5, 6));
+
+  TextfieldViewsModel::TextFragments fragments;
+  model.GetFragments(&fragments);
+  // Styles with empty string simply returns an empty fragments.
+  EXPECT_EQ(0U, fragments.size());
+
+  // 1st style only.
+  model.SetText(ASCIIToUTF16("01234"));  // SetText doesn't change styles.
+  model.GetFragments(&fragments);
+  EXPECT_EQ(3U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(1U, fragments[0].range.end());
+  EXPECT_EQ(black, fragments[0].style->foreground());
+
+  EXPECT_EQ(1U, fragments[1].range.start());
+  EXPECT_EQ(3U, fragments[1].range.end());
+  EXPECT_EQ(color, fragments[1].style);
+
+  EXPECT_EQ(3U, fragments[2].range.start());
+  EXPECT_EQ(5U, fragments[2].range.end());
+  EXPECT_EQ(black, fragments[2].style->foreground());
+
+  // Clear styles
+  model.ClearAllTextStyles();
+  model.GetFragments(&fragments);
+  EXPECT_EQ(1U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(5U, fragments[0].range.end());
+  EXPECT_EQ(black, fragments[0].style->foreground());
+
+  // Case 2: Overlaps on left and on right
+  model.ApplyTextStyle(color, ui::Range(1, 3));
+  model.ApplyTextStyle(strike, ui::Range(6, 8));
+  model.ApplyTextStyle(underline, ui::Range(2, 7));
+
+  // With short string
+  model.SetText(ASCIIToUTF16("0"));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(1U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(1U, fragments[0].range.end());
+  EXPECT_EQ(black, fragments[0].style->foreground());
+
+  // With mid-length string
+  model.SetText(ASCIIToUTF16("0123"));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(3U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(1U, fragments[0].range.end());
+  EXPECT_EQ(black, fragments[0].style->foreground());
+
+  EXPECT_EQ(1U, fragments[1].range.start());
+  EXPECT_EQ(2U, fragments[1].range.end());
+  EXPECT_EQ(color, fragments[1].style);
+
+  EXPECT_EQ(2U, fragments[2].range.start());
+  EXPECT_EQ(4U, fragments[2].range.end());
+  EXPECT_EQ(underline, fragments[2].style);
+
+  // With long (longer than styles) string
+  model.SetText(ASCIIToUTF16("0123456789"));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(5U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(1U, fragments[0].range.end());
+  EXPECT_EQ(black, fragments[0].style->foreground());
+
+  EXPECT_EQ(1U, fragments[1].range.start());
+  EXPECT_EQ(2U, fragments[1].range.end());
+  EXPECT_EQ(color, fragments[1].style);
+
+  EXPECT_EQ(2U, fragments[2].range.start());
+  EXPECT_EQ(7U, fragments[2].range.end());
+  EXPECT_EQ(underline, fragments[2].style);
+
+  EXPECT_EQ(7U, fragments[3].range.start());
+  EXPECT_EQ(8U, fragments[3].range.end());
+  EXPECT_EQ(strike, fragments[3].style);
+
+  EXPECT_EQ(8U, fragments[4].range.start());
+  EXPECT_EQ(10U, fragments[4].range.end());
+  EXPECT_EQ(black, fragments[4].style->foreground());
+
+  model.ClearAllTextStyles();
+
+  // Case 3: The underline style splits the color style underneath.
+  model.ApplyTextStyle(color, ui::Range(0, 15));
+  model.ApplyTextStyle(underline, ui::Range(5, 6));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(3U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(5U, fragments[0].range.end());
+  EXPECT_EQ(color, fragments[0].style);
+
+  EXPECT_EQ(5U, fragments[1].range.start());
+  EXPECT_EQ(6U, fragments[1].range.end());
+  EXPECT_EQ(underline, fragments[1].style);
+
+  EXPECT_EQ(6U, fragments[2].range.start());
+  EXPECT_EQ(10U, fragments[2].range.end());
+  EXPECT_EQ(color, fragments[2].style);
+
+  model.ClearAllTextStyles();
+
+  // Case 4: The underline style moves the color style underneath.
+  model.ApplyTextStyle(color, ui::Range(0, 15));
+  model.ApplyTextStyle(underline, ui::Range(0, 6));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(2U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(6U, fragments[0].range.end());
+  EXPECT_EQ(underline, fragments[0].style);
+
+  EXPECT_EQ(6U, fragments[1].range.start());
+  EXPECT_EQ(10U, fragments[1].range.end());
+  EXPECT_EQ(color, fragments[1].style);
+
+  model.ClearAllTextStyles();
+
+  model.ApplyTextStyle(color, ui::Range(0, 10));
+  model.ApplyTextStyle(underline, ui::Range(6, 10));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(2U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(6U, fragments[0].range.end());
+  EXPECT_EQ(color, fragments[0].style);
+
+  EXPECT_EQ(6U, fragments[1].range.start());
+  EXPECT_EQ(10U, fragments[1].range.end());
+  EXPECT_EQ(underline, fragments[1].style);
+
+  model.ClearAllTextStyles();
+  // Case 5: The strike style hides the unerline style underneath.
+  model.ApplyTextStyle(color, ui::Range(0, 15));
+  model.ApplyTextStyle(underline, ui::Range(0, 6));
+  model.ApplyTextStyle(strike, ui::Range(4, 7));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(3U, fragments.size());
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(4U, fragments[0].range.end());
+  EXPECT_EQ(underline, fragments[0].style);
+
+  EXPECT_EQ(4U, fragments[1].range.start());
+  EXPECT_EQ(7U, fragments[1].range.end());
+  EXPECT_EQ(strike, fragments[1].style);
+
+  EXPECT_EQ(7U, fragments[2].range.start());
+  EXPECT_EQ(10U, fragments[2].range.end());
+  EXPECT_EQ(color, fragments[2].style);
+
+  // Case 6: Reversed range.
+  model.ClearAllTextStyles();
+  model.ApplyTextStyle(color, ui::Range(3, 1));
+  model.ApplyTextStyle(underline, ui::Range(6, 4));
+  model.ApplyTextStyle(strike, ui::Range(5, 2));
+  model.GetFragments(&fragments);
+  EXPECT_EQ(5U, fragments.size());
+
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(1U, fragments[0].range.end());
+  EXPECT_EQ(black, fragments[0].style->foreground());
+
+  EXPECT_EQ(1U, fragments[1].range.start());
+  EXPECT_EQ(2U, fragments[1].range.end());
+  EXPECT_EQ(color, fragments[1].style);
+
+  EXPECT_EQ(2U, fragments[2].range.start());
+  EXPECT_EQ(5U, fragments[2].range.end());
+  EXPECT_EQ(strike, fragments[2].style);
+
+  EXPECT_EQ(5U, fragments[3].range.start());
+  EXPECT_EQ(6U, fragments[3].range.end());
+  EXPECT_EQ(underline, fragments[3].style);
+
+  EXPECT_EQ(6U, fragments[4].range.start());
+  EXPECT_EQ(10U, fragments[4].range.end());
+  EXPECT_EQ(black, fragments[4].style->foreground());
+
+  // Case 7: empty / invald range
+  model.ClearAllTextStyles();
+  model.ApplyTextStyle(color, ui::Range(0, 0));
+  model.ApplyTextStyle(underline, ui::Range(4, 4));
+  ui::Range invalid = ui::Range(0, 2).Intersect(ui::Range(3, 4));
+  ASSERT_FALSE(invalid.IsValid());
+
+  model.ApplyTextStyle(strike, invalid);
+  model.GetFragments(&fragments);
+  EXPECT_EQ(1U, fragments.size());
+
+  EXPECT_EQ(0U, fragments[0].range.start());
+  EXPECT_EQ(10U, fragments[0].range.end());
+  EXPECT_EQ(black, fragments[0].style->foreground());
 }
 
 }  // namespace views

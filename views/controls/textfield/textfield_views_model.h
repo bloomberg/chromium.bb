@@ -25,10 +25,18 @@ class Range;
 
 namespace views {
 
+class TextStyle;
+typedef std::vector<TextStyle*> TextStyles;
+
 namespace internal {
 // Internal Edit class that keeps track of edits for undo/redo.
 class Edit;
+
+struct TextStyleRange;
+
 }  // namespace internal
+
+typedef std::vector<internal::TextStyleRange*> TextStyleRanges;
 
 // A model that represents a text content for TextfieldViews.
 // It supports editing, selection and cursor manipulation.
@@ -54,21 +62,17 @@ class TextfieldViewsModel {
   // in the future to support multi-color text
   // for omnibox.
   struct TextFragment {
-    TextFragment(size_t s, size_t e, bool sel, bool u)
-        : start(s), end(e), selected(sel), underline(u) {
+    TextFragment(size_t start, size_t end, const views::TextStyle* s)
+        : range(start, end), style(s) {
     }
     // The start and end position of text fragment.
-    size_t start, end;
-    // True if the text is selected.
-    bool selected;
-    // True if the text has underline.
-    // TODO(suzhe): support underline color and thick style.
-    bool underline;
+    ui::Range range;
+    const TextStyle* style;
   };
   typedef std::vector<TextFragment> TextFragments;
 
   // Gets the text element info.
-  void GetFragments(TextFragments* elements) const;
+  void GetFragments(TextFragments* elements);
 
   void set_is_password(bool is_password) {
     is_password_ = is_password;
@@ -167,6 +171,9 @@ class TextfieldViewsModel {
   // Returns the bounds of character at the current cursor.
   gfx::Rect GetCursorBounds(const gfx::Font& font) const;
 
+  // Returns the bounds of selected text.
+  gfx::Rect GetSelectionBounds(const gfx::Font& font) const;
+
   // Selection related method
 
   // Returns the selected text.
@@ -252,7 +259,7 @@ class TextfieldViewsModel {
   void ConfirmCompositionText();
 
   // Removes current composition text.
-  void ClearCompositionText();
+  void CancelCompositionText();
 
   // Retrieves the range of current composition text.
   void GetCompositionTextRange(ui::Range* range) const;
@@ -260,10 +267,15 @@ class TextfieldViewsModel {
   // Returns true if there is composition text.
   bool HasCompositionText() const;
 
+  TextStyle* CreateTextStyle();
+
+  void ClearAllTextStyles();
+
  private:
   friend class NativeTextfieldViews;
   friend class NativeTextfieldViewsTest;
   friend class TextfieldViewsModelTest;
+  friend class TextStyle;
   friend class UndoRedo_BasicTest;
   friend class UndoRedo_CutCopyPasteTest;
   friend class UndoRedo_ReplaceTest;
@@ -272,6 +284,7 @@ class TextfieldViewsModel {
   FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_BasicTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_ReplaceTest);
+  FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, TextStyleTest);
 
   // Returns the visible text given |start| and |end|.
   string16 GetVisibleText(size_t start, size_t end) const;
@@ -321,6 +334,12 @@ class TextfieldViewsModel {
                   size_t new_text_insert_at,
                   size_t new_cursor_pos);
 
+  void ClearComposition();
+
+  void ApplyTextStyle(const TextStyle* style, const ui::Range& range);
+
+  static TextStyle* CreateUnderlineStyle();
+
   // Pointer to a TextfieldViewsModel::Delegate instance, should be provided by
   // the View object.
   Delegate* delegate_;
@@ -337,9 +356,6 @@ class TextfieldViewsModel {
   // Composition text range.
   size_t composition_start_;
   size_t composition_end_;
-
-  // Underline information of the composition text.
-  ui::CompositionUnderlines composition_underlines_;
 
   // True if the text is the password.
   bool is_password_;
@@ -359,6 +375,19 @@ class TextfieldViewsModel {
   // 2) new edit is added. (redo history is cleared)
   // 3) redone all undone edits.
   EditHistory::iterator current_edit_;
+
+  // This manages all styles objects.
+  TextStyles text_styles_;
+
+  // List of style ranges. Elements in the list never overlap each other.
+  // Elements are not sorted at the time of insertion, and gets sorted
+  // when it's painted (if necessary).
+  TextStyleRanges style_ranges_;
+  // True if the style_ranges_ needs to be sorted.
+  bool sort_style_ranges_;
+
+  // List of style ranges for composition text.
+  TextStyleRanges composition_style_ranges_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldViewsModel);
 };
