@@ -189,6 +189,7 @@ void BackgroundApplicationListModel::AssociateApplicationData(
     }
     application = new Application(this, extension);
     applications_[extension->id()] = application;
+    Update();
     application->RequestIcon(Extension::EXTENSION_ICON_BITTY);
   }
 }
@@ -287,7 +288,6 @@ void BackgroundApplicationListModel::OnExtensionLoaded(Extension* extension) {
   if (!IsBackgroundApp(*extension))
     return;
   AssociateApplicationData(extension);
-  Update();
 }
 
 void BackgroundApplicationListModel::OnExtensionUnloaded(
