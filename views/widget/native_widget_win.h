@@ -196,6 +196,15 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual bool IsMouseButtonDown() const OVERRIDE;
   virtual InputMethod* GetInputMethodNative() OVERRIDE;
   virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
+  virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
+  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                bool* maximized) const OVERRIDE;
+  virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
+  virtual void SetWindowIcons(const SkBitmap& window_icon,
+                              const SkBitmap& app_icon) OVERRIDE;
+  virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
+  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
+  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -221,6 +230,7 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
+  virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void RunShellDrag(View* view,
@@ -419,6 +429,11 @@ class NativeWidgetWin : public ui::WindowImpl,
   // Executes the specified SC_command.
   void ExecuteSystemMenuCommand(int command);
 
+  // Accessors and setters for various properties.
+  void set_focus_on_creation(bool focus_on_creation) {
+    focus_on_creation_ = focus_on_creation;
+  }
+
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.
@@ -517,6 +532,10 @@ class NativeWidgetWin : public ui::WindowImpl,
   // store if necessary.
   bool can_update_layered_window_;
 
+  // Whether we should SetFocus() on a newly created window after
+  // Init(). Defaults to true.
+  bool focus_on_creation_;
+
   // Whether the focus should be restored next time we get enabled.  Needed to
   // restore focus correctly when Windows modal dialogs are displayed.
   bool restore_focus_when_enabled_;
@@ -557,6 +576,10 @@ class NativeWidgetWin : public ui::WindowImpl,
   // ShowWindow(SW_RESTORE) make the window visible in addition to restoring it,
   // when all we want to do is restore it.
   int force_hidden_count_;
+
+  // The window styles before we modified them for the drag frame appearance.
+  DWORD drag_frame_saved_window_style_;
+  DWORD drag_frame_saved_window_ex_style_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };

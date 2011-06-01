@@ -61,35 +61,12 @@ class NativeWindow {
   // Makes the NativeWindow modal.
   virtual void BecomeModal() = 0;
 
-  // Centers the window and sizes it to the specified size.
-  virtual void CenterWindow(const gfx::Size& size) = 0;
-
-  // Retrieves the window's current restored bounds and maximized state, for
-  // persisting.
-  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                bool* maximized) const = 0;
-
   // Enables or disables the close button for the window.
   virtual void EnableClose(bool enable) = 0;
-
-  // Sets the NativeWindow title.
-  virtual void SetWindowTitle(const std::wstring& title) = 0;
-
-  // Sets the Window icons. |window_icon| is a 16x16 icon suitable for use in
-  // a title bar. |app_icon| is a larger size for use in the host environment
-  // app switching UI.
-  virtual void SetWindowIcons(const SkBitmap& window_icon,
-                              const SkBitmap& app_icon) = 0;
-
-  // Update native accessibility properties on the native window.
-  virtual void SetAccessibleName(const std::wstring& name) = 0;
-  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
-  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
 
   // Window pass-thrus ---------------------------------------------------------
   // See documentation in window.h
 
-  virtual void SetUseDragFrame(bool use_drag_frame) = 0;
   virtual NonClientFrameView* CreateFrameViewForWindow() = 0;
   virtual void UpdateFrameAfterFrameChange() = 0;
   virtual bool ShouldUseNativeFrame() const = 0;

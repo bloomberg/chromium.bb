@@ -50,11 +50,6 @@ class NativeWindowWin : public NativeWidgetWin,
   // Show the window with the specified show command.
   void Show(int show_state);
 
-  // Accessors and setters for various properties.
-  void set_focus_on_creation(bool focus_on_creation) {
-    focus_on_creation_ = focus_on_creation;
-  }
-
   // Returns the system set window title font.
   static gfx::Font GetWindowTitleFont();
 
@@ -80,14 +75,6 @@ class NativeWindowWin : public NativeWidgetWin,
   // Overridden from NativeWidgetWin:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual void OnActivateApp(BOOL active, DWORD thread_id) OVERRIDE;
-  virtual LRESULT OnAppCommand(HWND window,
-                               short app_command,
-                               WORD device,
-                               int keystate) OVERRIDE;
-  virtual void OnClose() OVERRIDE;
-  virtual void OnCommand(UINT notification_code,
-                         int command_id,
-                         HWND window) OVERRIDE;
   virtual void OnDestroy() OVERRIDE;
   virtual LRESULT OnDwmCompositionChanged(UINT msg,
                                           WPARAM w_param,
@@ -117,12 +104,9 @@ class NativeWindowWin : public NativeWidgetWin,
                               LPARAM l_param) OVERRIDE;
   virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon) OVERRIDE;
   virtual LRESULT OnSetText(const wchar_t* text) OVERRIDE;
-  virtual void OnSettingChange(UINT flags, const wchar_t* section) OVERRIDE;
   virtual void OnSize(UINT size_param, const CSize& new_size) OVERRIDE;
   virtual void OnSysCommand(UINT notification_code, CPoint click) OVERRIDE;
   virtual void OnWindowPosChanging(WINDOWPOS* window_pos) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void SetInitialFocus() OVERRIDE;
 
   // Overridden from NativeWindow:
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
@@ -130,17 +114,7 @@ class NativeWindowWin : public NativeWidgetWin,
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
-  virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
-  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                bool* maximized) const OVERRIDE;
   virtual void EnableClose(bool enable) OVERRIDE;
-  virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
-  virtual void SetWindowIcons(const SkBitmap& window_icon,
-                              const SkBitmap& app_icon) OVERRIDE;
-  virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
-  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
-  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
-  virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
@@ -184,10 +158,6 @@ class NativeWindowWin : public NativeWidgetWin,
   // A delegate implementation that handles events received here.
   internal::NativeWindowDelegate* delegate_;
 
-  // Whether we should SetFocus() on a newly created window after
-  // Init(). Defaults to true.
-  bool focus_on_creation_;
-
   // Whether all ancestors have been enabled. This is only used if is_modal_ is
   // true.
   bool restored_enabled_;
@@ -218,10 +188,6 @@ class NativeWindowWin : public NativeWidgetWin,
   // used to catch updates to the rect and work area and react accordingly.
   HMONITOR last_monitor_;
   gfx::Rect last_monitor_rect_, last_work_area_;
-
-  // The window styles before we modified them for the drag frame appearance.
-  DWORD drag_frame_saved_window_style_;
-  DWORD drag_frame_saved_window_ex_style_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWindowWin);
 };

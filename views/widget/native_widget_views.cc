@@ -124,6 +124,35 @@ void NativeWidgetViews::ReplaceInputMethod(InputMethod* input_method) {
   GetParentNativeWidget()->ReplaceInputMethod(input_method);
 }
 
+void NativeWidgetViews::CenterWindow(const gfx::Size& size) {
+  // TODO(beng): actually center.
+  GetView()->SetBounds(0, 0, size.width(), size.height());
+}
+
+void NativeWidgetViews::GetWindowBoundsAndMaximizedState(
+    gfx::Rect* bounds,
+    bool* maximized) const {
+  *bounds = GetView()->bounds();
+  *maximized = false;
+}
+
+void NativeWidgetViews::SetWindowTitle(const std::wstring& title) {
+}
+
+void NativeWidgetViews::SetWindowIcons(const SkBitmap& window_icon,
+                                       const SkBitmap& app_icon) {
+}
+
+void NativeWidgetViews::SetAccessibleName(const std::wstring& name) {
+}
+
+void NativeWidgetViews::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
+}
+
+void NativeWidgetViews::SetAccessibleState(
+    ui::AccessibilityTypes::State state) {
+}
+
 gfx::AcceleratedWidget NativeWidgetViews::GetAcceleratedWidget() {
   // TODO(sky):
   return gfx::kNullAcceleratedWidget;
@@ -235,6 +264,10 @@ bool NativeWidgetViews::IsFullscreen() const {
 }
 
 void NativeWidgetViews::SetOpacity(unsigned char opacity) {
+  NOTIMPLEMENTED();
+}
+
+void NativeWidgetViews::SetUseDragFrame(bool use_drag_frame) {
   NOTIMPLEMENTED();
 }
 

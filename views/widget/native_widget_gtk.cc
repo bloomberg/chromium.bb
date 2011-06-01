@@ -29,6 +29,7 @@
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method_gtk.h"
+#include "views/screen.h"
 #include "views/views_delegate.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
@@ -832,6 +833,52 @@ void NativeWidgetGtk::ReplaceInputMethod(InputMethod* input_method) {
   }
 }
 
+void NativeWidgetGtk::CenterWindow(const gfx::Size& size) {
+  gfx::Rect center_rect;
+
+  GtkWindow* parent = gtk_window_get_transient_for(GetNativeWindow());
+  if (parent) {
+    // We have a parent window, center over it.
+    gint parent_x = 0;
+    gint parent_y = 0;
+    gtk_window_get_position(parent, &parent_x, &parent_y);
+    gint parent_w = 0;
+    gint parent_h = 0;
+    gtk_window_get_size(parent, &parent_w, &parent_h);
+    center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
+  } else {
+    // We have no parent window, center over the screen.
+    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+  }
+  gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
+                   center_rect.y() + (center_rect.height() - size.height()) / 2,
+                   size.width(), size.height());
+  SetBoundsConstrained(bounds, NULL);
+}
+
+void NativeWidgetGtk::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                       bool* maximized) const {
+  // Do nothing for now. ChromeOS isn't yet saving window placement.
+}
+
+void NativeWidgetGtk::SetWindowTitle(const std::wstring& title) {
+  // We don't have a window title on ChromeOS (right now).
+}
+
+void NativeWidgetGtk::SetWindowIcons(const SkBitmap& window_icon,
+                                     const SkBitmap& app_icon) {
+  // We don't have window icons on ChromeOS.
+}
+
+void NativeWidgetGtk::SetAccessibleName(const std::wstring& name) {
+}
+
+void NativeWidgetGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
+}
+
+void NativeWidgetGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
+}
+
 gfx::Rect NativeWidgetGtk::GetWindowScreenBounds() const {
   // Client == Window bounds on Gtk.
   return GetClientAreaScreenBounds();
@@ -1031,6 +1078,10 @@ void NativeWidgetGtk::SetOpacity(unsigned char opacity) {
     gdk_window_set_opacity(widget_->window, static_cast<gdouble>(opacity) /
         static_cast<gdouble>(255));
   }
+}
+
+void NativeWidgetGtk::SetUseDragFrame(bool use_drag_frame) {
+  NOTIMPLEMENTED();
 }
 
 bool NativeWidgetGtk::IsAccessibleWidget() const {

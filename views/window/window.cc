@@ -116,10 +116,6 @@ void Window::DisableInactiveRendering() {
   non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
 }
 
-void Window::SetUseDragFrame(bool use_drag_frame) {
-  native_window_->SetUseDragFrame(use_drag_frame);
-}
-
 void Window::EnableClose(bool enable) {
   non_client_view_->EnableClose(enable);
   native_window_->EnableClose(enable);
@@ -138,13 +134,14 @@ void Window::UpdateWindowTitle() {
   else
     window_title = WideToUTF16(window_delegate_->GetWindowTitle());
   base::i18n::AdjustStringForLocaleDirection(&window_title);
-  native_window_->SetWindowTitle(UTF16ToWide(window_title));
+  native_window_->AsNativeWidget()->SetWindowTitle(UTF16ToWide(window_title));
 }
 
 void Window::UpdateWindowIcon() {
   non_client_view_->UpdateWindowIcon();
-  native_window_->SetWindowIcons(window_delegate_->GetWindowIcon(),
-                                 window_delegate_->GetWindowAppIcon());
+  native_window_->AsNativeWidget()->SetWindowIcons(
+      window_delegate_->GetWindowIcon(),
+      window_delegate_->GetWindowAppIcon());
 }
 
 NonClientFrameView* Window::CreateFrameViewForWindow() {
@@ -251,9 +248,9 @@ void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
   SetContentsView(non_client_view_);
 
   UpdateWindowTitle();
-  native_window_->SetAccessibleRole(
+  native_window_->AsNativeWidget()->SetAccessibleRole(
       window_delegate_->GetAccessibleWindowRole());
-  native_window_->SetAccessibleState(
+  native_window_->AsNativeWidget()->SetAccessibleState(
       window_delegate_->GetAccessibleWindowState());
 
   SetInitialBounds(bounds);
@@ -336,7 +333,8 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
     if (bounds.IsEmpty()) {
       // No initial bounds supplied, so size the window to its content and
       // center over its parent.
-      native_window_->CenterWindow(non_client_view_->GetPreferredSize());
+      native_window_->AsNativeWidget()->CenterWindow(
+          non_client_view_->GetPreferredSize());
     } else {
       // Use the supplied initial bounds.
       SetBoundsConstrained(bounds, NULL);
@@ -354,7 +352,9 @@ void Window::SaveWindowPosition() {
 
   bool maximized;
   gfx::Rect bounds;
-  native_window_->GetWindowBoundsAndMaximizedState(&bounds, &maximized);
+  native_window_->AsNativeWidget()->GetWindowBoundsAndMaximizedState(
+      &bounds,
+      &maximized);
   window_delegate_->SaveWindowPlacement(bounds, maximized);
 }
 

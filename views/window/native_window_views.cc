@@ -53,39 +53,8 @@ void NativeWindowViews::BecomeModal() {
   NOTIMPLEMENTED();
 }
 
-void NativeWindowViews::CenterWindow(const gfx::Size& size) {
-  // TODO(beng): actually center.
-  GetView()->SetBounds(0, 0, size.width(), size.height());
-}
-
-void NativeWindowViews::GetWindowBoundsAndMaximizedState(
-    gfx::Rect* bounds,
-    bool* maximized) const {
-  *bounds = GetView()->bounds();
-  *maximized = false;
-}
 
 void NativeWindowViews::EnableClose(bool enable) {
-}
-
-void NativeWindowViews::SetWindowTitle(const std::wstring& title) {
-}
-
-void NativeWindowViews::SetWindowIcons(const SkBitmap& window_icon,
-                                       const SkBitmap& app_icon) {
-}
-
-void NativeWindowViews::SetAccessibleName(const std::wstring& name) {
-}
-
-void NativeWindowViews::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
-}
-
-void NativeWindowViews::SetAccessibleState(
-    ui::AccessibilityTypes::State state) {
-}
-
-void NativeWindowViews::SetUseDragFrame(bool use_drag_frame) {
 }
 
 NonClientFrameView* NativeWindowViews::CreateFrameViewForWindow() {

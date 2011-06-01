@@ -273,6 +273,10 @@ void Widget::SetOpacity(unsigned char opacity) {
   native_widget_->SetOpacity(opacity);
 }
 
+void Widget::SetUseDragFrame(bool use_drag_frame) {
+  native_widget_->SetUseDragFrame(use_drag_frame);
+}
+
 View* Widget::GetRootView() {
   if (!root_view_.get()) {
     // First time the root view is being asked for, create it now.

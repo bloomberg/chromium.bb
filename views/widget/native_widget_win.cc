@@ -19,6 +19,7 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/icon_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/path.h"
 #include "views/accessibility/native_view_accessibility_win.h"
@@ -178,6 +179,8 @@ const int kCustomObjectID = 1;
 // after the window is nudged back on screen. Pixels.
 const int kMonitorEdgePadding = 10;
 
+const int kDragFrameWindowAlpha = 200;
+
 }  // namespace
 
 // static
@@ -187,7 +190,8 @@ bool NativeWidgetWin::screen_reader_active_ = false;
 // NativeWidgetWin, public:
 
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
-    : delegate_(delegate),
+    : is_window_(false),
+      delegate_(delegate),
       close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
       use_layered_buffer_(false),
@@ -195,7 +199,7 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       ALLOW_THIS_IN_INITIALIZER_LIST(paint_layered_window_factory_(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       can_update_layered_window_(true),
-      is_window_(false),
+      focus_on_creation_(true),
       restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
@@ -374,6 +378,105 @@ void NativeWidgetWin::ReplaceInputMethod(InputMethod* input_method) {
   is_input_method_win_ = false;
 }
 
+void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
+  HWND parent = GetParent();
+  if (!IsWindow())
+    parent = ::GetWindow(GetNativeView(), GW_OWNER);
+  ui::CenterAndSizeWindow(parent, GetNativeView(), size, false);
+}
+
+void NativeWidgetWin::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                       bool* maximized) const {
+  WINDOWPLACEMENT wp;
+  wp.length = sizeof(wp);
+  const bool succeeded = !!GetWindowPlacement(GetNativeView(), &wp);
+  DCHECK(succeeded);
+
+  if (bounds != NULL) {
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    const bool succeeded = !!GetMonitorInfo(
+        MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST), &mi);
+    DCHECK(succeeded);
+    *bounds = gfx::Rect(wp.rcNormalPosition);
+    // Convert normal position from workarea coordinates to screen coordinates.
+    bounds->Offset(mi.rcWork.left - mi.rcMonitor.left,
+                   mi.rcWork.top - mi.rcMonitor.top);
+  }
+
+  if (maximized != NULL)
+    *maximized = (wp.showCmd == SW_SHOWMAXIMIZED);
+}
+
+void NativeWidgetWin::SetWindowTitle(const std::wstring& title) {
+  SetWindowText(GetNativeView(), title.c_str());
+  SetAccessibleName(title);
+}
+
+void NativeWidgetWin::SetWindowIcons(const SkBitmap& window_icon,
+                                     const SkBitmap& app_icon) {
+  if (!window_icon.isNull()) {
+    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(window_icon);
+    // We need to make sure to destroy the previous icon, otherwise we'll leak
+    // these GDI objects until we crash!
+    HICON old_icon = reinterpret_cast<HICON>(
+        SendMessage(GetNativeView(), WM_SETICON, ICON_SMALL,
+                    reinterpret_cast<LPARAM>(windows_icon)));
+    if (old_icon)
+      DestroyIcon(old_icon);
+  }
+  if (!app_icon.isNull()) {
+    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(app_icon);
+    HICON old_icon = reinterpret_cast<HICON>(
+        SendMessage(GetNativeView(), WM_SETICON, ICON_BIG,
+                    reinterpret_cast<LPARAM>(windows_icon)));
+    if (old_icon)
+      DestroyIcon(old_icon);
+  }
+}
+
+void NativeWidgetWin::SetAccessibleName(const std::wstring& name) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    var.vt = VT_BSTR;
+    var.bstrVal = SysAllocString(name.c_str());
+    hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+                                       CHILDID_SELF, PROPID_ACC_NAME, var);
+  }
+}
+
+void NativeWidgetWin::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    if (role) {
+      var.vt = VT_I4;
+      var.lVal = NativeViewAccessibilityWin::MSAARole(role);
+      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+                                         CHILDID_SELF, PROPID_ACC_ROLE, var);
+    }
+  }
+}
+
+void NativeWidgetWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    if (state) {
+      var.lVal = NativeViewAccessibilityWin::MSAAState(state);
+      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+                                         CHILDID_SELF, PROPID_ACC_STATE, var);
+    }
+  }
+}
+
 gfx::Rect NativeWidgetWin::GetWindowScreenBounds() const {
   RECT r;
   GetWindowRect(&r);
@@ -432,6 +535,22 @@ void NativeWidgetWin::Close() {
     MessageLoop::current()->PostTask(FROM_HERE,
         close_widget_factory_.NewRunnableMethod(
             &NativeWidgetWin::CloseNow));
+  }
+
+  // If the user activates another app after opening us, then comes back and
+  // closes us, we want our owner to gain activation.  But only if the owner
+  // is visible. If we don't manually force that here, the other app will
+  // regain activation instead.
+  // It's tempting to think that this could be done from OnDestroy, but by then
+  // it's too late - GetForegroundWindow() will return the window that Windows
+  // has decided to re-activate for us instead of this dialog. It's also
+  // tempting to think about removing the foreground window check entirely, but
+  // it's necessary to this code path from being triggered when an inactive
+  // window is closed.
+  HWND owner = ::GetWindow(GetNativeView(), GW_OWNER);
+  if (owner && GetNativeView() == GetForegroundWindow() &&
+      IsWindowVisible(owner)) {
+    SetForegroundWindow(owner);
   }
 }
 
@@ -580,6 +699,24 @@ void NativeWidgetWin::SetOpacity(unsigned char opacity) {
   layered_alpha_ = static_cast<BYTE>(opacity);
 }
 
+void NativeWidgetWin::SetUseDragFrame(bool use_drag_frame) {
+  if (use_drag_frame) {
+    // Make the frame slightly transparent during the drag operation.
+    drag_frame_saved_window_style_ = GetWindowLong(GWL_STYLE);
+    drag_frame_saved_window_ex_style_ = GetWindowLong(GWL_EXSTYLE);
+    SetWindowLong(GWL_EXSTYLE,
+                  drag_frame_saved_window_ex_style_ | WS_EX_LAYERED);
+    // Remove the captions tyle so the window doesn't have window controls for a
+    // more "transparent" look.
+    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_ & ~WS_CAPTION);
+    SetLayeredWindowAttributes(GetNativeWindow(), RGB(0xFF, 0xFF, 0xFF),
+                               kDragFrameWindowAlpha, LWA_ALPHA);
+  } else {
+    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_);
+    SetWindowLong(GWL_EXSTYLE, drag_frame_saved_window_ex_style_);
+  }
+}
+
 bool NativeWidgetWin::IsAccessibleWidget() const {
   return screen_reader_active_;
 }
@@ -692,8 +829,9 @@ LRESULT NativeWidgetWin::OnAppCommand(HWND window,
                                       short app_command,
                                       WORD device,
                                       int keystate) {
-  SetMsgHandled(FALSE);
-  return 0;
+  // We treat APPCOMMAND ids as an extension of our command namespace, and just
+  // let the delegate figure out what to do...
+  return GetWidget()->widget_delegate()->ExecuteWindowsCommand(app_command);
 }
 
 void NativeWidgetWin::OnCancelMode() {
@@ -704,13 +842,18 @@ void NativeWidgetWin::OnCaptureChanged(HWND hwnd) {
 }
 
 void NativeWidgetWin::OnClose() {
-  Close();
+  GetWidget()->Close();
 }
 
 void NativeWidgetWin::OnCommand(UINT notification_code,
                                 int command_id,
                                 HWND window) {
-  SetMsgHandled(FALSE);
+  // If the notification code is > 1 it means it is control specific and we
+  // should ignore it.
+  if (notification_code > 1 ||
+      GetWidget()->widget_delegate()->ExecuteWindowsCommand(command_id)) {
+    SetMsgHandled(FALSE);
+  }
 }
 
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
@@ -1086,10 +1229,18 @@ LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
 }
 
 void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
-  // TODO(beng): move to Widget.
-  if (flags == SPI_SETWORKAREA && GetWidget()->widget_delegate())
-    GetWidget()->widget_delegate()->OnWorkAreaChanged();
-  SetMsgHandled(FALSE);
+  if (!GetParent() && (flags == SPI_SETWORKAREA)) {
+    // Fire a dummy SetWindowPos() call, so we'll trip the code in
+    // OnWindowPosChanging() below that notices work area changes.
+    ::SetWindowPos(GetNativeView(), 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE |
+        SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    SetMsgHandled(TRUE);
+  } else {
+    // TODO(beng): move to Widget.
+    if (flags == SPI_SETWORKAREA && GetWidget()->widget_delegate())
+      GetWidget()->widget_delegate()->OnWorkAreaChanged();
+    SetMsgHandled(FALSE);
+  }
 }
 
 void NativeWidgetWin::OnSize(UINT param, const CSize& size) {
@@ -1163,11 +1314,19 @@ void NativeWidgetWin::OnScreenReaderDetected() {
 }
 
 void NativeWidgetWin::SetInitialFocus() {
+  if (!focus_on_creation_)
+    return;
+
   // TODO(beng): move to Widget.
   View* v = GetWidget()->widget_delegate() ?
       GetWidget()->widget_delegate()->GetInitiallyFocusedView() : NULL;
-  if (v)
+  if (v) {
     v->RequestFocus();
+  } else if (!(GetWindowLong(GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
+             !(GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
+    // The window does not get keyboard messages unless we focus it.
+    SetFocus(GetNativeView());
+  }
 }
 
 void NativeWidgetWin::ExecuteSystemMenuCommand(int command) {

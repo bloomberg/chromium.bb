@@ -88,10 +88,6 @@ class Window : public Widget,
   // leads to sync problems.
   void DisableInactiveRendering();
 
-  // Sets whether or not the window should show its frame as a "transient drag
-  // frame" - slightly transparent and without the standard window controls.
-  void SetUseDragFrame(bool use_drag_frame);
-
   // Toggles the enable state for the Close button (and the Close menu item in
   // the system menu).
   void EnableClose(bool enable);

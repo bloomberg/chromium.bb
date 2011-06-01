@@ -275,6 +275,10 @@ class Widget : public internal::NativeWidgetDelegate,
   // repaint to allow this change to take effect.
   void SetOpacity(unsigned char opacity);
 
+  // Sets whether or not the window should show its frame as a "transient drag
+  // frame" - slightly transparent and without the standard window controls.
+  void SetUseDragFrame(bool use_drag_frame);
+
   // Returns the View at the root of the View hierarchy contained by this
   // Widget.
   View* GetRootView();

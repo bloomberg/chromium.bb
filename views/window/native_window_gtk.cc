@@ -10,7 +10,6 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "views/events/event.h"
-#include "views/screen.h"
 #include "views/window/hit_test.h"
 #include "views/window/native_window_delegate.h"
 #include "views/window/non_client_view.h"
@@ -227,54 +226,8 @@ void NativeWindowGtk::BecomeModal() {
   gtk_window_set_modal(GetNativeWindow(), true);
 }
 
-void NativeWindowGtk::CenterWindow(const gfx::Size& size) {
-  gfx::Rect center_rect;
-
-  GtkWindow* parent = gtk_window_get_transient_for(GetNativeWindow());
-  if (parent) {
-    // We have a parent window, center over it.
-    gint parent_x = 0;
-    gint parent_y = 0;
-    gtk_window_get_position(parent, &parent_x, &parent_y);
-    gint parent_w = 0;
-    gint parent_h = 0;
-    gtk_window_get_size(parent, &parent_w, &parent_h);
-    center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
-  } else {
-    // We have no parent window, center over the screen.
-    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
-  }
-  gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
-                   center_rect.y() + (center_rect.height() - size.height()) / 2,
-                   size.width(), size.height());
-  SetBoundsConstrained(bounds, NULL);
-}
-
-void NativeWindowGtk::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                       bool* maximized) const {
-  // Do nothing for now. ChromeOS isn't yet saving window placement.
-}
-
 void NativeWindowGtk::EnableClose(bool enable) {
   gtk_window_set_deletable(GetNativeWindow(), enable);
-}
-
-void NativeWindowGtk::SetWindowTitle(const std::wstring& title) {
-  // We don't have a window title on ChromeOS (right now).
-}
-
-void NativeWindowGtk::SetWindowIcons(const SkBitmap& window_icon,
-                                     const SkBitmap& app_icon) {
-  // We don't have window icons on ChromeOS.
-}
-
-void NativeWindowGtk::SetAccessibleName(const std::wstring& name) {
-}
-
-void NativeWindowGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
-}
-
-void NativeWindowGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
 Window* NativeWindowGtk::GetWindow() {
@@ -283,10 +236,6 @@ Window* NativeWindowGtk::GetWindow() {
 
 const Window* NativeWindowGtk::GetWindow() const {
   return delegate_->AsWindow();
-}
-
-void NativeWindowGtk::SetUseDragFrame(bool use_drag_frame) {
-  NOTIMPLEMENTED();
 }
 
 NonClientFrameView* NativeWindowGtk::CreateFrameViewForWindow() {
