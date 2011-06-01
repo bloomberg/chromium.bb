@@ -474,7 +474,6 @@ class QuotaManager::PersistentHostQuotaQueryTask
         host_(host),
         quota_(-1),
         callback_(callback) {
-    DCHECK(!host_.empty());
   }
  protected:
   virtual void RunOnTargetThread() OVERRIDE {
@@ -505,7 +504,6 @@ class QuotaManager::PersistentHostQuotaUpdateTask
         host_(host),
         new_quota_(new_quota),
         callback_(callback) {
-    DCHECK(!host_.empty());
     DCHECK_GE(new_quota_, 0);
   }
  protected:
@@ -894,34 +892,47 @@ void QuotaManager::SetTemporaryGlobalQuota(int64 new_quota,
 }
 
 void QuotaManager::GetPersistentHostQuota(const std::string& host,
-                                          HostQuotaCallback* callback) {
+                                          HostQuotaCallback* callback_ptr) {
+  scoped_ptr<HostQuotaCallback> callback(callback_ptr);
   LazyInitialize();
+  if (host.empty()) {
+    // This could happen if we are called on file:///.
+    // TODO(kinuko) We may want to respect --allow-file-access-from-files
+    // command line switch.
+    callback->Run(kQuotaStatusOk, host, kStorageTypePersistent, 0);
+    return;
+  }
   scoped_refptr<PersistentHostQuotaQueryTask> task(
       new PersistentHostQuotaQueryTask(
-          this, database_.get(), db_thread_, host, callback));
+          this, database_.get(), db_thread_, host, callback.release()));
   task->Start();
 }
 
 void QuotaManager::SetPersistentHostQuota(const std::string& host,
                                           int64 new_quota,
-                                          HostQuotaCallback* callback) {
+                                          HostQuotaCallback* callback_ptr) {
+  scoped_ptr<HostQuotaCallback> callback(callback_ptr);
   LazyInitialize();
+  if (host.empty()) {
+    // This could happen if we are called on file:///.
+    callback->Run(kQuotaErrorNotSupported, host, kStorageTypePersistent, 0);
+    return;
+  }
   if (new_quota < 0) {
     callback->Run(kQuotaErrorInvalidModification,
                   host, kStorageTypePersistent, -1);
-    delete callback;
     return;
   }
 
   if (!db_disabled_) {
     scoped_refptr<PersistentHostQuotaUpdateTask> task(
         new PersistentHostQuotaUpdateTask(
-            this, database_.get(), db_thread_, host, new_quota, callback));
+            this, database_.get(), db_thread_, host, new_quota,
+            callback.release()));
     task->Start();
   } else {
     callback->Run(kQuotaErrorInvalidAccess,
                   host, kStorageTypePersistent, -1);
-    delete callback;
   }
 }
 

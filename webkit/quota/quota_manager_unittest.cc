@@ -1377,4 +1377,15 @@ TEST_F(QuotaManagerTest, DumpLastAccessTimeTable) {
   }
   EXPECT_TRUE(entries.empty());
 }
+
+TEST_F(QuotaManagerTest, QuotaForEmptyHost) {
+  GetPersistentHostQuota(std::string());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(0, quota());
+
+  SetPersistentHostQuota(std::string(), 10);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaErrorNotSupported, status());
+}
 }  // namespace quota
