@@ -14,7 +14,7 @@
 class TabContentsObserverRegistrar : public TabContentsObserver {
  public:
   explicit TabContentsObserverRegistrar(TabContentsObserver* observer);
-  ~TabContentsObserverRegistrar();
+  virtual ~TabContentsObserverRegistrar();
 
   // Call this to start observing a tab.  Passing in NULL resets it.
   // This can only be used to watch one tab at a time.  If you call this and
