@@ -585,6 +585,10 @@ void AutocompleteEditModel::OnSetFocus(bool control_down) {
   NotificationService::current()->Notify(NotificationType::OMNIBOX_FOCUSED,
                                          Source<AutocompleteEditModel>(this),
                                          NotificationService::NoDetails());
+  InstantController* instant = controller_->GetInstant();
+  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+  if (instant && tab)
+    instant->OnAutocompleteGotFocus(tab);
 }
 
 void AutocompleteEditModel::OnWillKillFocus(

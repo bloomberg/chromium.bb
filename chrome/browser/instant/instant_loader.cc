@@ -728,32 +728,8 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
             complete_suggested_text_.substr(user_text_.size());
       }
     } else {
-      preview_tab_contents_delegate_->PrepareForNewLoad();
-
-      // Load the instant URL. We don't reflect the url we load in url() as
-      // callers expect that we're loading the URL they tell us to.
-      //
-      // This uses an empty string for the replacement text as the url doesn't
-      // really have the search params, but we need to use the replace
-      // functionality so that embeded tags (like {google:baseURL}) are escaped
-      // correctly.
-      // TODO(sky): having to use a replaceable url is a bit of a hack here.
-      GURL instant_url(
-          template_url->instant_url()->ReplaceSearchTerms(
-              *template_url, string16(), -1, string16()));
-      CommandLine* cl = CommandLine::ForCurrentProcess();
-      if (cl->HasSwitch(switches::kInstantURL))
-        instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
-      preview_contents_->controller().LoadURL(
-          instant_url, GURL(), transition_type);
-      RenderViewHost* host = preview_contents_->render_view_host();
-      host->Send(new ViewMsg_SearchBoxChange(
-          host->routing_id(), user_text_, verbatim, 0, 0));
-      frame_load_observer_.reset(
-          new FrameLoadObserver(this,
-                                preview_contents()->tab_contents(),
-                                user_text_,
-                                verbatim));
+      LoadInstantURL(tab_contents, template_url, transition_type, user_text_,
+                     verbatim);
     }
   } else {
     DCHECK(template_url_id_ == 0);
@@ -854,6 +830,21 @@ bool InstantLoader::ShouldCommitInstantOnMouseUp() {
 
 void InstantLoader::CommitInstantLoader() {
   delegate_->CommitInstantLoader(this);
+}
+
+void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
+                                        const TemplateURL* template_url) {
+  DCHECK(template_url_id_ == template_url->id());
+
+  // If we already have a |preview_contents_|, future search queries will be
+  // issued into it (see the "if (!created_preview_contents)" block in |Update|
+  // above), so there is no need to load the |template_url|'s instant URL.
+  if (preview_contents_.get())
+    return;
+
+  CreatePreviewContents(tab_contents);
+  LoadInstantURL(tab_contents, template_url, PageTransition::GENERATED,
+                 string16(), true);
 }
 
 void InstantLoader::SetCompleteSuggestedText(
@@ -1092,4 +1083,32 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
   SetupPreviewContents(tab_contents);
 
   preview_contents_->tab_contents()->ShowContents();
+}
+
+void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
+                                   const TemplateURL* template_url,
+                                   PageTransition::Type transition_type,
+                                   const string16& user_text,
+                                   bool verbatim) {
+  preview_tab_contents_delegate_->PrepareForNewLoad();
+
+  // Load the instant URL. We don't reflect the url we load in url() as
+  // callers expect that we're loading the URL they tell us to.
+  //
+  // This uses an empty string for the replacement text as the url doesn't
+  // really have the search params, but we need to use the replace
+  // functionality so that embeded tags (like {google:baseURL}) are escaped
+  // correctly.
+  // TODO(sky): having to use a replaceable url is a bit of a hack here.
+  GURL instant_url(template_url->instant_url()->ReplaceSearchTerms(
+      *template_url, string16(), -1, string16()));
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kInstantURL))
+    instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
+  preview_contents_->controller().LoadURL(instant_url, GURL(), transition_type);
+  RenderViewHost* host = preview_contents_->render_view_host();
+  host->Send(new ViewMsg_SearchBoxChange(
+      host->routing_id(), user_text, verbatim, 0, 0));
+  frame_load_observer_.reset(new FrameLoadObserver(
+      this, preview_contents()->tab_contents(), user_text, verbatim));
 }

@@ -781,6 +781,11 @@ const char kParentProfile[]                 = "parent-profile";
 // renderer process rather than in a separate plugin process.
 const char kPpapiFlashInProcess[]          = "ppapi-flash-in-process";
 
+// Aggressively preload the default search engine's Instant URL, so it's ready
+// to receive queries. Only has an effect if Instant is turned on (via "Enable
+// Instant for faster searching and browsing" in Preferences -> Basics).
+const char kPreloadInstantSearch[]          = "preload-instant-search";
+
 // Controls speculative prerendering of pages, and content prefetching.  Both
 // are dispatched from <link rel=prefetch href=...> elements.
 const char kPrerender[]                     = "prerender";

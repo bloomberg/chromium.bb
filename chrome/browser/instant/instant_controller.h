@@ -121,6 +121,10 @@ class InstantController : public InstantLoaderDelegate {
   // lost focus. Commit or discard the preview accordingly.
   void OnAutocompleteLostFocus(gfx::NativeView view_gaining_focus);
 
+  // The autocomplete edit has gained focus. Preload the instant URL of the
+  // default search engine, in anticipation of the user typing a query.
+  void OnAutocompleteGotFocus(TabContentsWrapper* tab_contents);
+
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
   // not notify the delegate.

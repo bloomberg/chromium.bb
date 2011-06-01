@@ -141,14 +141,14 @@ void InstantLoaderManager::RemoveLoaderFromInstant(InstantLoader* loader) {
   instant_loaders_.erase(i);
 }
 
+InstantLoader* InstantLoaderManager::GetInstantLoader(TemplateURLID id) {
+  Loaders::iterator i = instant_loaders_.find(id);
+  return i == instant_loaders_.end() ? CreateLoader(id) : i->second;
+}
+
 InstantLoader* InstantLoaderManager::CreateLoader(TemplateURLID id) {
   InstantLoader* loader = new InstantLoader(loader_delegate_, id);
   if (id)
     instant_loaders_[id] = loader;
   return loader;
-}
-
-InstantLoader* InstantLoaderManager::GetInstantLoader(TemplateURLID id) {
-  Loaders::iterator i = instant_loaders_.find(id);
-  return i == instant_loaders_.end() ? CreateLoader(id) : i->second;
 }

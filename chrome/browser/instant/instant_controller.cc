@@ -356,6 +356,33 @@ void InstantController::OnAutocompleteLostFocus(
 }
 #endif
 
+void InstantController::OnAutocompleteGotFocus(
+    TabContentsWrapper* tab_contents) {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (!cl->HasSwitch(switches::kPreloadInstantSearch))
+    return;
+
+  if (is_active_)
+    return;
+
+  TemplateURLModel* model = tab_contents->profile()->GetTemplateURLModel();
+  if (!model)
+    return;
+
+  const TemplateURL* template_url = model->GetDefaultSearchProvider();
+  if (!template_url)
+    return;
+
+  if (tab_contents != tab_contents_)
+    DestroyPreviewContents();
+  tab_contents_ = tab_contents;
+
+  if (!loader_manager_.get())
+    loader_manager_.reset(new InstantLoaderManager(this));
+  loader_manager_->GetInstantLoader(template_url->id())
+                 ->MaybeLoadInstantURL(tab_contents, template_url);
+}
+
 TabContentsWrapper* InstantController::ReleasePreviewContents(
     InstantCommitType type) {
   if (!loader_manager_.get())

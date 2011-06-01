@@ -316,6 +316,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kLevelDBIndexedDatabase)
   },
+  {
+    "preload-instant-search",
+    IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME,
+    IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kPreloadInstantSearch)
+  },
 };
 
 const Experiment* experiments = kExperiments;

@@ -65,6 +65,10 @@ class InstantLoaderManager {
   // If |loader| is in |instant_loaders_| it is removed.
   void RemoveLoaderFromInstant(InstantLoader* loader);
 
+  // Returns the loader for loading instant results with the specified id. If
+  // there is no loader for the specified id a new one is created.
+  InstantLoader* GetInstantLoader(TemplateURLID id);
+
   // Returns the current loader, may be null.
   InstantLoader* current_loader() const { return current_loader_; }
 
@@ -86,10 +90,6 @@ class InstantLoaderManager {
 
   // Creates a loader and if |id| is non-zero registers it in instant_loaders_.
   InstantLoader* CreateLoader(TemplateURLID id);
-
-  // Returns the loader for loading instant results with the specified id. If
-  // there is no loader for the specified id a new one is created.
-  InstantLoader* GetInstantLoader(TemplateURLID id);
 
   InstantLoaderDelegate* loader_delegate_;
 

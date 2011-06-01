@@ -4290,6 +4290,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_INDEXEDDB_USE_LEVELDB_DESCRIPTION" desc="Description for the flag to use the LevelDB back-end for IndexedDB">
         Enable the experimental LevelDB back-end for IndexedDB.
       </message>
+      <message name="IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME" desc="Title for the flag to preload Instant search">
+        Preload Instant Search
+      </message>
+      <message name="IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION" desc="Description for the flag to preload Instant search">
+        Preload the default search engine for Instant.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
