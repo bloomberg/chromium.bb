@@ -126,6 +126,17 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     logging.error('Current repo %s status:\n%s', git_repo, git_status)
     _GitCleanDirectory(git_repo)
     raise GitCommandException(err_msg)
+  finally:
+    # Figure out whether we can use repo (if repo returns 0).
+    output = cros_lib.RunCommand(
+        ['repo'], error_ok=True, redirect_stdout=True, redirect_stderr=True,
+        cwd=git_repo, exit_code=True, print_cmd=False)
+    use_repo = output.returncode == 0
+    if use_repo:
+      # Needed for chromeos version file.  Otherwise on increment, we leave
+      # local commit behind in tree.
+      cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH], cwd=git_repo,
+                          error_ok=True)
 
 
 def _RemoveDirs(dir_name):
@@ -459,8 +470,8 @@ class BuildSpecsManager(object):
 
     version = version_info.VersionString()
     if version in self.all:
-      message = ('Automatic: Updating the new version number %s' %
-                 version)
+      message = ('Automatic: %s - Updating to a new version number from %s' % (
+                 self.build_name, version))
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
       logging.debug('Incremented version number to  %s', version)
       self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)

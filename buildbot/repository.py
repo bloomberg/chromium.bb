@@ -84,8 +84,8 @@ class RepoRepository(object):
 
       self._ReinitializeIfNecessary(local_manifest)
 
-      cros_lib.RunCommand(['repo', 'sync', '--quiet', '--jobs', '8'],
-                          cwd=self.directory)
+      cros_lib.OldRunCommand(['repo', 'sync', '--quiet', '--jobs', '8'],
+                             cwd=self.directory, num_retries=2)
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
       logging.error(err_msg)
