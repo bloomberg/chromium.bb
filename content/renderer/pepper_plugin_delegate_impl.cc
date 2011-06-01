@@ -654,10 +654,10 @@ void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     int request_id,
     base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& handle) {
-
-  scoped_refptr<PpapiBrokerImpl> broker =
-      *pending_connect_broker_.Lookup(request_id);
-  if (broker) {
+  scoped_refptr<PpapiBrokerImpl>* broker_ptr =
+      pending_connect_broker_.Lookup(request_id);
+  if (broker_ptr) {
+    scoped_refptr<PpapiBrokerImpl> broker = *broker_ptr;
     pending_connect_broker_.Remove(request_id);
     broker->OnBrokerChannelConnected(broker_process_handle, handle);
   } else {
