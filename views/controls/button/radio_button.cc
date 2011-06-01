@@ -20,7 +20,7 @@ const char RadioButton::kViewClassName[] = "views/RadioButton";
 // NativeRadioButton, public:
 
 NativeRadioButton::NativeRadioButton(const std::wstring& label, int group_id)
-    : Checkbox(label) {
+    : NativeCheckbox(label) {
   SetGroup(group_id);
 }
 
@@ -58,14 +58,14 @@ void NativeRadioButton::SetChecked(bool checked) {
       }
     }
   }
-  Checkbox::SetChecked(checked);
+  NativeCheckbox::SetChecked(checked);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeRadioButton, View overrides:
 
 void NativeRadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
-  Checkbox::GetAccessibleState(state);
+  NativeCheckbox::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_RADIOBUTTON;
 }
 
@@ -122,7 +122,7 @@ NativeButtonWrapper* NativeRadioButton::CreateWrapper() {
 ////////////////////////////////////////////////////////////////////////////////
 
 RadioButton::RadioButton(const std::wstring& label, int group_id)
-    : CheckboxNt(label) {
+    : Checkbox(label) {
   SetGroup(group_id);
   focusable_ = true;
 }
@@ -157,7 +157,7 @@ void RadioButton::SetChecked(bool checked) {
       }
     }
   }
-  CheckboxNt::SetChecked(checked);
+  Checkbox::SetChecked(checked);
 }
 
 std::string RadioButton::GetClassName() const {
@@ -165,7 +165,7 @@ std::string RadioButton::GetClassName() const {
 }
 
 void RadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
-  CheckboxNt::GetAccessibleState(state);
+  Checkbox::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_RADIOBUTTON;
 }
 
@@ -192,7 +192,7 @@ bool RadioButton::IsGroupFocusTraversable() const {
 }
 
 void RadioButton::OnFocus() {
-  CheckboxNt::OnFocus();
+  Checkbox::OnFocus();
   SetChecked(true);
   views::MouseEvent event(ui::ET_MOUSE_PRESSED, 0, 0, 0);
   TextButtonBase::NotifyClick(event);

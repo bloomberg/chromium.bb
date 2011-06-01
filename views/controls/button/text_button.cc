@@ -374,6 +374,18 @@ gfx::Size TextButtonBase::GetPreferredSize() {
   return prefsize;
 }
 
+int TextButtonBase::GetHeightForWidth(int w) {
+  if (!multi_line_)
+    return View::GetHeightForWidth(w);
+
+  if (max_width_ > 0)
+    w = std::min(max_width_, w);
+
+  gfx::Size text_size;
+  CalculateTextSize(&text_size, w);
+  return text_size.height() + GetInsets().height();
+}
+
 void TextButtonBase::OnPaint(gfx::Canvas* canvas) {
   PaintButton(canvas, PB_NORMAL);
 }
@@ -387,8 +399,16 @@ void TextButtonBase::UpdateColor() {
 }
 
 void TextButtonBase::UpdateTextSize() {
+  CalculateTextSize(&text_size_, width());
+  max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
+                         std::max(max_text_size_.height(),
+                                  text_size_.height()));
+  PreferredSizeChanged();
+}
+
+void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {
   int h = font_.GetHeight();
-  int w = multi_line_ ? width() : 0;
+  int w = multi_line_ ? max_width : 0;
   int flags = ComputeCanvasStringFlags();
   if (!multi_line_)
     flags |= gfx::Canvas::NO_ELLIPSIS;
@@ -401,11 +421,7 @@ void TextButtonBase::UpdateTextSize() {
     h += 2;
   }
 
-  text_size_.SetSize(w, h);
-  max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
-                         std::max(max_text_size_.height(),
-                                  text_size_.height()));
-  PreferredSizeChanged();
+  text_size->SetSize(w, h);
 }
 
 int TextButtonBase::ComputeCanvasStringFlags() const {

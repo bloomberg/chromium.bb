@@ -16,14 +16,14 @@ namespace views {
 class Label;
 
 // A NativeButton subclass representing a checkbox.
-class Checkbox : public NativeButtonBase {
+class NativeCheckbox : public NativeButtonBase {
  public:
   // The button's class name.
   static const char kViewClassName[];
 
-  Checkbox();
-  explicit Checkbox(const std::wstring& label);
-  virtual ~Checkbox();
+  NativeCheckbox();
+  explicit NativeCheckbox(const std::wstring& label);
+  virtual ~NativeCheckbox();
 
   // Returns the indentation of the text from the left edge of the view.
   static int GetTextIndent();
@@ -85,18 +85,18 @@ class Checkbox : public NativeButtonBase {
   // True if the checkbox is checked.
   bool checked_;
 
-  DISALLOW_COPY_AND_ASSIGN(Checkbox);
+  DISALLOW_COPY_AND_ASSIGN(NativeCheckbox);
 };
 
 // A native themed class representing a checkbox.  This class does not use
 // platform specific objects to replicate the native platforms looks and feel.
-//
-// This class will eventually be renamed to Checkbox to replace the class
-// above.
-class CheckboxNt : public TextButtonBase {
+class Checkbox : public TextButtonBase {
  public:
-  explicit CheckboxNt(const std::wstring& label);
-  virtual ~CheckboxNt();
+  // The button's class name.
+  static const char kViewClassName[];
+
+  explicit Checkbox(const std::wstring& label);
+  virtual ~Checkbox();
 
   // Sets a listener for this checkbox. Checkboxes aren't required to have them
   // since their state can be read independently of them being toggled.
@@ -105,6 +105,10 @@ class CheckboxNt : public TextButtonBase {
   // Sets/Gets whether or not the checkbox is checked.
   virtual void SetChecked(bool checked);
   bool checked() const { return checked_; }
+
+  void SetLabel(const std::wstring& label) {
+    SetText(label);
+  }
 
  protected:
   // Overridden from View:
@@ -127,10 +131,7 @@ class CheckboxNt : public TextButtonBase {
   // True if the checkbox is checked.
   bool checked_;
 
-  // The button's class name.
-  static const char kViewClassName[];
-
-  DISALLOW_COPY_AND_ASSIGN(CheckboxNt);
+  DISALLOW_COPY_AND_ASSIGN(Checkbox);
 };
 
 }  // namespace views

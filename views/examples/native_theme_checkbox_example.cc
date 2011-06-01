@@ -20,12 +20,11 @@ NativeThemeCheckboxExample::~NativeThemeCheckboxExample() {
 }
 
 std::wstring NativeThemeCheckboxExample::GetExampleTitle() {
-  return L"CheckboxNt";
+  return L"Checkbox";
 }
 
 void NativeThemeCheckboxExample::CreateExampleView(views::View* container) {
-  //button_ = new views::RadioButtonNt(L"RadioButtonNt", 3);
-  button_ = new views::CheckboxNt(L"CheckboxNt");
+  button_ = new views::Checkbox(L"Checkbox");
   button_->set_listener(this);
   container->SetLayoutManager(new views::FillLayout);
   container->AddChildView(button_);

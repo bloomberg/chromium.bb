@@ -12,42 +12,42 @@
 namespace views {
 
 // static
-const char Checkbox::kViewClassName[] = "views/Checkbox";
+const char NativeCheckbox::kViewClassName[] = "views/NativeCheckbox";
 
 // static
-const char CheckboxNt::kViewClassName[] = "views/CheckboxNt";
+const char Checkbox::kViewClassName[] = "views/Checkbox";
 
 static const int kCheckboxLabelSpacing = 4;
 static const int kLabelFocusPaddingHorizontal = 2;
 static const int kLabelFocusPaddingVertical = 1;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checkbox, public:
+// NativeCheckbox, public:
 
-Checkbox::Checkbox() : NativeButtonBase(NULL), checked_(false) {
+NativeCheckbox::NativeCheckbox() : NativeButtonBase(NULL), checked_(false) {
   Init(std::wstring());
 }
 
-Checkbox::Checkbox(const std::wstring& label)
+NativeCheckbox::NativeCheckbox(const std::wstring& label)
     : NativeButtonBase(NULL, label),
       checked_(false) {
   Init(label);
 }
 
-Checkbox::~Checkbox() {
+NativeCheckbox::~NativeCheckbox() {
 }
 
 // static
-int Checkbox::GetTextIndent() {
+int NativeCheckbox::GetTextIndent() {
   return NativeButtonWrapper::GetFixedWidth() + kCheckboxLabelSpacing;
 }
 
-void Checkbox::SetMultiLine(bool multiline) {
+void NativeCheckbox::SetMultiLine(bool multiline) {
   label_->SetMultiLine(multiline);
   PreferredSizeChanged();
 }
 
-void Checkbox::SetChecked(bool checked) {
+void NativeCheckbox::SetChecked(bool checked) {
   if (checked_ == checked)
     return;
   checked_ = checked;
@@ -56,9 +56,9 @@ void Checkbox::SetChecked(bool checked) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checkbox, View overrides:
+// NativeCheckbox, View overrides:
 
-gfx::Size Checkbox::GetPreferredSize() {
+gfx::Size NativeCheckbox::GetPreferredSize() {
   if (!native_wrapper_)
     return gfx::Size();
 
@@ -77,7 +77,7 @@ gfx::Size Checkbox::GetPreferredSize() {
   return prefsize;
 }
 
-int Checkbox::GetHeightForWidth(int w) {
+int NativeCheckbox::GetHeightForWidth(int w) {
   if (!native_wrapper_)
     return 0;
 
@@ -90,13 +90,13 @@ int Checkbox::GetHeightForWidth(int w) {
   return label_->GetHeightForWidth(std::max(prefsize.height(), w - width));
 }
 
-void Checkbox::OnEnabledChanged() {
+void NativeCheckbox::OnEnabledChanged() {
   NativeButtonBase::OnEnabledChanged();
   if (label_)
     label_->SetEnabled(IsEnabled());
 }
 
-void Checkbox::Layout() {
+void NativeCheckbox::Layout() {
   if (!native_wrapper_)
     return;
 
@@ -121,20 +121,20 @@ void Checkbox::Layout() {
   native_wrapper_->GetView()->Layout();
 }
 
-std::string Checkbox::GetClassName() const {
+std::string NativeCheckbox::GetClassName() const {
   return kViewClassName;
 }
 
-bool Checkbox::OnMousePressed(const MouseEvent& event) {
+bool NativeCheckbox::OnMousePressed(const MouseEvent& event) {
   native_wrapper_->SetPushed(HitTestLabel(event));
   return true;
 }
 
-bool Checkbox::OnMouseDragged(const MouseEvent& event) {
+bool NativeCheckbox::OnMouseDragged(const MouseEvent& event) {
   return false;
 }
 
-void Checkbox::OnMouseReleased(const MouseEvent& event) {
+void NativeCheckbox::OnMouseReleased(const MouseEvent& event) {
   OnMouseCaptureLost();
   if (HitTestLabel(event)) {
     SetChecked(!checked());
@@ -142,77 +142,77 @@ void Checkbox::OnMouseReleased(const MouseEvent& event) {
   }
 }
 
-void Checkbox::OnMouseCaptureLost() {
+void NativeCheckbox::OnMouseCaptureLost() {
   native_wrapper_->SetPushed(false);
 }
 
-void Checkbox::OnMouseMoved(const MouseEvent& event) {
+void NativeCheckbox::OnMouseMoved(const MouseEvent& event) {
   native_wrapper_->SetPushed(HitTestLabel(event));
 }
 
-void Checkbox::OnMouseEntered(const MouseEvent& event) {
+void NativeCheckbox::OnMouseEntered(const MouseEvent& event) {
   native_wrapper_->SetPushed(HitTestLabel(event));
 }
 
-void Checkbox::OnMouseExited(const MouseEvent& event) {
+void NativeCheckbox::OnMouseExited(const MouseEvent& event) {
   native_wrapper_->SetPushed(false);
 }
 
-void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
+void NativeCheckbox::GetAccessibleState(ui::AccessibleViewState* state) {
   Button::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_CHECKBUTTON;
   state->state = checked() ? ui::AccessibilityTypes::STATE_CHECKED : 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checkbox, NativeButton overrides:
+// NativeCheckbox, NativeButton overrides:
 
-void Checkbox::SetLabel(const std::wstring& label) {
+void NativeCheckbox::SetLabel(const std::wstring& label) {
   NativeButtonBase::SetLabel(label);
   if (!native_wrapper_->UsesNativeLabel())
     label_->SetText(label);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checkbox, protected:
+// NativeCheckbox, protected:
 
-bool Checkbox::HitTestLabel(const MouseEvent& event) {
+bool NativeCheckbox::HitTestLabel(const MouseEvent& event) {
   gfx::Point tmp(event.location());
   ConvertPointToView(this, label_, &tmp);
   return label_->HitTest(tmp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checkbox, View overrides, protected:
+// NativeCheckbox, View overrides, protected:
 
-void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
+void NativeCheckbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Our focus border is rendered by the label, so we don't do anything here.
 }
-void Checkbox::OnFocus() {
+void NativeCheckbox::OnFocus() {
   NativeButtonBase::OnFocus();
   label_->set_paint_as_focused(true);
 }
 
-void Checkbox::OnBlur() {
+void NativeCheckbox::OnBlur() {
   label_->set_paint_as_focused(false);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checkbox, NativeButton overrides, protected:
+// NativeCheckbox, NativeButton overrides, protected:
 
-NativeButtonWrapper* Checkbox::CreateWrapper() {
+NativeButtonWrapper* NativeCheckbox::CreateWrapper() {
   return NativeButtonWrapper::CreateCheckboxWrapper(this);
 }
 
-void Checkbox::InitBorder() {
+void NativeCheckbox::InitBorder() {
   // No border, so we do nothing.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checkbox, private:
+// NativeCheckbox, private:
 
-void Checkbox::Init(const std::wstring& label_text) {
+void NativeCheckbox::Init(const std::wstring& label_text) {
   // Checkboxs don't need to enforce a minimum size.
   set_ignore_minimum_size(true);
   label_ = new Label(label_text);
@@ -222,23 +222,23 @@ void Checkbox::Init(const std::wstring& label_text) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CheckboxNt, public:
+// Checkbox, public:
 
-CheckboxNt::CheckboxNt(const std::wstring& label)
+Checkbox::Checkbox(const std::wstring& label)
     : TextButtonBase(NULL, label),
       checked_(false) {
   set_border(new TextButtonNativeThemeBorder(this));
 }
 
-CheckboxNt::~CheckboxNt() {
+Checkbox::~Checkbox() {
 }
 
-void CheckboxNt::SetChecked(bool checked) {
+void Checkbox::SetChecked(bool checked) {
   checked_ = checked;
   SchedulePaint();
 }
 
-gfx::Size CheckboxNt::GetPreferredSize() {
+gfx::Size Checkbox::GetPreferredSize() {
   gfx::Size prefsize(TextButtonBase::GetPreferredSize());
   gfx::NativeTheme::ExtraParams extra;
   gfx::NativeTheme::State state = GetThemeState(&extra);
@@ -254,17 +254,17 @@ gfx::Size CheckboxNt::GetPreferredSize() {
   return prefsize;
 }
 
-std::string CheckboxNt::GetClassName() const {
+std::string Checkbox::GetClassName() const {
   return kViewClassName;
 }
 
-void CheckboxNt::GetAccessibleState(ui::AccessibleViewState* state) {
+void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
   TextButtonBase::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_CHECKBUTTON;
   state->state = checked() ? ui::AccessibilityTypes::STATE_CHECKED : 0;
 }
 
-void CheckboxNt::OnPaintFocusBorder(gfx::Canvas* canvas) {
+void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView())) {
     gfx::Rect bounds(GetTextBounds());
     // Increate the bounding box by one on each side so that that focus border
@@ -275,35 +275,36 @@ void CheckboxNt::OnPaintFocusBorder(gfx::Canvas* canvas) {
   }
 }
 
-void CheckboxNt::NotifyClick(const views::Event& event) {
+void Checkbox::NotifyClick(const views::Event& event) {
   SetChecked(!checked());
   RequestFocus();
   TextButtonBase::NotifyClick(event);
 }
 
-gfx::NativeTheme::Part CheckboxNt::GetThemePart() const {
+gfx::NativeTheme::Part Checkbox::GetThemePart() const {
   return gfx::NativeTheme::kCheckbox;
 }
 
-gfx::Rect CheckboxNt::GetThemePaintRect() const {
+gfx::Rect Checkbox::GetThemePaintRect() const {
   gfx::NativeTheme::ExtraParams extra;
   gfx::NativeTheme::State state = GetThemeState(&extra);
   gfx::Size size(gfx::NativeTheme::instance()->GetPartSize(GetThemePart(),
                                                            state,
                                                            extra));
   gfx::Insets insets = GetInsets();
-  gfx::Rect rect(insets.left(), 0, size.width(), height());
+  int y_offset = (height() - size.height()) / 2;
+  gfx::Rect rect(insets.left(), y_offset, size.width(), size.height());
   rect.set_x(GetMirroredXForRect(rect));
   return rect;
 }
 
-void CheckboxNt::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
+void Checkbox::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
   TextButtonBase::GetExtraParams(params);
   params->button.is_default = false;
   params->button.checked = checked_;
 }
 
-gfx::Rect CheckboxNt::GetTextBounds() const {
+gfx::Rect Checkbox::GetTextBounds() const {
   gfx::Rect bounds(TextButtonBase::GetTextBounds());
   gfx::NativeTheme::ExtraParams extra;
   gfx::NativeTheme::State state = GetThemeState(&extra);

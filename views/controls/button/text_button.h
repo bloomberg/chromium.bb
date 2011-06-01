@@ -188,6 +188,7 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -210,6 +211,9 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   // Updates text_size_ and max_text_size_ from the current text/font. This is
   // invoked when the font or text changes.
   void UpdateTextSize();
+
+  // Calculate the size of the text size without setting any of the members.
+  void CalculateTextSize(gfx::Size* text_size, int max_width);
 
   // Overridden from NativeThemeDelegate:
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;

@@ -61,7 +61,7 @@ class NativeButtonGtk : public NativeControlGtk, public NativeButtonWrapper {
 // A View that hosts a native Gtk checkbox button.
 class NativeCheckboxGtk : public NativeButtonGtk {
  public:
-  explicit NativeCheckboxGtk(Checkbox* checkbox);
+  explicit NativeCheckboxGtk(NativeCheckbox* checkbox);
 
  protected:
   // Update checkbox's check state.
@@ -69,7 +69,7 @@ class NativeCheckboxGtk : public NativeButtonGtk {
 
  private:
   // Return Checkbox we are bound to.
-  Checkbox* checkbox();
+  NativeCheckbox* checkbox();
 
   virtual void CreateNativeControl();
 

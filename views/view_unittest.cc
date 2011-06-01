@@ -1037,9 +1037,9 @@ class ButtonTest : public NativeButtonBase {
   }
 };
 
-class CheckboxTest : public Checkbox {
+class CheckboxTest : public NativeCheckbox {
  public:
-  explicit CheckboxTest(const std::wstring& label) : Checkbox(label) {
+  explicit CheckboxTest(const std::wstring& label) : NativeCheckbox(label) {
   }
 
   HWND GetHWND() {
@@ -1206,7 +1206,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
       contents_ = new View();
       button1_ = new NativeButtonBase(this, L"Button1");
       button2_ = new NativeButtonBase(this, L"Button2");
-      checkbox_ = new Checkbox(L"My checkbox");
+      checkbox_ = new NativeCheckbox(L"My checkbox");
       button_drop_ = new ButtonDropDown(this, mock_menu_model_);
       contents_->AddChildView(button1_);
       contents_->AddChildView(button2_);

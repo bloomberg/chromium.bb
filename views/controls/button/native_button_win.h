@@ -61,7 +61,7 @@ class NativeButtonWin : public NativeControlWin,
 // A View that hosts a native Windows checkbox.
 class NativeCheckboxWin : public NativeButtonWin {
  public:
-  explicit NativeCheckboxWin(Checkbox* native_button);
+  explicit NativeCheckboxWin(NativeCheckbox* native_button);
   virtual ~NativeCheckboxWin();
 
   // Overridden from View:
@@ -89,7 +89,7 @@ class NativeCheckboxWin : public NativeButtonWin {
 
  private:
   // The Checkbox we are bound to.
-  Checkbox* checkbox_;
+  NativeCheckbox* checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeCheckboxWin);
 };

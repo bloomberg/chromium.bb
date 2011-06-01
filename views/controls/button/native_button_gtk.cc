@@ -135,7 +135,7 @@ void NativeButtonGtk::OnClicked() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeCheckboxGtk
-NativeCheckboxGtk::NativeCheckboxGtk(Checkbox* checkbox)
+NativeCheckboxGtk::NativeCheckboxGtk(NativeCheckbox* checkbox)
     : NativeButtonGtk(checkbox) {
 }
 
@@ -144,8 +144,8 @@ void NativeCheckboxGtk::SyncCheckState() {
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(native_view())));
 }
 
-Checkbox* NativeCheckboxGtk::checkbox() {
-  return static_cast<Checkbox*>(native_button_);
+NativeCheckbox* NativeCheckboxGtk::checkbox() {
+  return static_cast<NativeCheckbox*>(native_button_);
 }
 
 void NativeCheckboxGtk::CreateNativeControl() {
@@ -297,7 +297,7 @@ NativeButtonWrapper* NativeButtonWrapper::CreateNativeButtonWrapper(
 
 // static
 NativeButtonWrapper* NativeButtonWrapper::CreateCheckboxWrapper(
-    Checkbox* checkbox) {
+    NativeCheckbox* checkbox) {
   return new NativeCheckboxGtk(checkbox);
 }
 

@@ -12,12 +12,12 @@
 #include "views/examples/example_base.h"
 
 namespace views {
-class CheckboxNt;
+class Checkbox;
 }
 
 namespace examples {
 
-// NativeThemeCheckboxExample exercises a CheckboxNt control.
+// NativeThemeCheckboxExample exercises a Checkbox control.
 class NativeThemeCheckboxExample : public ExampleBase,
                                    public views::ButtonListener {
  public:
@@ -34,7 +34,7 @@ class NativeThemeCheckboxExample : public ExampleBase,
                              const views::Event& event) OVERRIDE;
 
   // The only control in this test.
-  views::CheckboxNt* button_;
+  views::Checkbox* button_;
 
   int count_;
 

@@ -12,8 +12,8 @@ namespace views {
 
 class NativeRadioButtonGtk;
 
-// A Checkbox subclass representing a radio button.
-class NativeRadioButton : public Checkbox {
+// A NativeCheckbox subclass representing a radio button.
+class NativeRadioButton : public NativeCheckbox {
  public:
   // The button's class name.
   static const char kViewClassName[];
@@ -21,7 +21,7 @@ class NativeRadioButton : public Checkbox {
   NativeRadioButton(const std::wstring& label, int group_id);
   virtual ~NativeRadioButton();
 
-  // Overridden from Checkbox:
+  // Overridden from NativeCheckbox:
   virtual void SetChecked(bool checked) OVERRIDE;
 
   // Overridden from View:
@@ -48,7 +48,7 @@ class NativeRadioButton : public Checkbox {
 
 // A native themed class representing a radio button.  This class does not use
 // platform specific objects to replicate the native platforms looks and feel.
-class RadioButton : public CheckboxNt {
+class RadioButton : public Checkbox {
  public:
   // The button's class name.
   static const char kViewClassName[];
@@ -69,7 +69,7 @@ class RadioButton : public CheckboxNt {
   // Overridden from TextButtonBase:
   virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
 
-  // Overridden from CheckboxNt:
+  // Overridden from Checkbox:
   virtual void SetChecked(bool checked) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(RadioButton);

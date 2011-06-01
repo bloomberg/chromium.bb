@@ -171,7 +171,7 @@ static const int kCheckboxSize = 13; // pixels
 ////////////////////////////////////////////////////////////////////////////////
 // NativeCheckboxWin, public:
 
-NativeCheckboxWin::NativeCheckboxWin(Checkbox* checkbox)
+NativeCheckboxWin::NativeCheckboxWin(NativeCheckbox* checkbox)
     : NativeButtonWin(checkbox),
       checkbox_(checkbox) {
 }
@@ -277,7 +277,7 @@ NativeButtonWrapper* NativeButtonWrapper::CreateNativeButtonWrapper(
 
 // static
 NativeButtonWrapper* NativeButtonWrapper::CreateCheckboxWrapper(
-    Checkbox* checkbox) {
+    NativeCheckbox* checkbox) {
   return new NativeCheckboxWin(checkbox);
 }
 

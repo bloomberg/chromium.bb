@@ -65,35 +65,6 @@ enum kLayoutColumnsets {
   LAST_ROW
 };
 
-// Helper class that disables using native label for subclassed GTK control.
-class EULANativeCheckboxGtk : public views::NativeCheckboxGtk {
- public:
-  explicit EULANativeCheckboxGtk(views::Checkbox* checkbox)
-      : views::NativeCheckboxGtk(checkbox) {
-    set_fast_resize(true);
-  }
-  virtual ~EULANativeCheckboxGtk() { }
-  virtual bool UsesNativeLabel() const { return false; }
-  virtual void UpdateLabel() { }
-};
-
-// views::Checkbox specialization that uses its internal views::Label
-// instead of native one. We need this because native label does not
-// support multiline property and we need it for certain languages.
-class EULACheckbox : public views::Checkbox {
- public:
-  EULACheckbox() { }
-  virtual ~EULACheckbox() { }
-
- protected:
-  virtual views::NativeButtonWrapper* CreateWrapper() {
-    views::NativeButtonWrapper* native_wrapper =
-        new EULANativeCheckboxGtk(this);
-    native_wrapper->UpdateChecked();
-    return native_wrapper;
-  }
-};
-
 // A simple LayoutManager that causes the associated view's one child to be
 // sized to match the bounds of its parent except the bounds, if set.
 struct FillLayoutWithBorder : public views::LayoutManager {
@@ -363,7 +334,7 @@ void EulaView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, SINGLE_CONTROL_WITH_SHIFT_ROW);
-  usage_statistics_checkbox_ = new EULACheckbox();
+  usage_statistics_checkbox_ = new views::Checkbox(L"");
   usage_statistics_checkbox_->SetMultiLine(true);
   usage_statistics_checkbox_->SetChecked(
       actor_->screen()->IsUsageStatsEnabled());
