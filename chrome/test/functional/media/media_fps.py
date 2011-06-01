@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -23,12 +22,13 @@ from ui_perf_test_utils import UIPerfTestUtils
 
 class MediaPerformanceTest(MediaTestBase):
   """Tests for basic media performance."""
-  # The following parallel lists specify data type names and their
-  # corresponding units.  The data is produced by webkit metrics and
-  # is captured in this test.
-  FPS_NAME_LIST = ['fps-player-time', 'fps_clock_time', 'player-fps',
-                   'clock-fps', 'droppedframe']
+  # The following parallel lists specify data type names, their
+  # corresponding units, and their corresponding trace names
+  # (used in the perf graph legend).
+  FPS_NAME_LIST = ['playertime', 'clocktime', 'fps',
+                   'clockfps', 'droppedframe']
   FPS_UNIT_LIST = ['sec', 'sec', 'count', 'count', 'count']
+  FPS_TRACE_LIST = ['t', 't', 'c', 'c', 'c']
 
   # Instance variables that are shared across methods.
   run_counter = 0
@@ -64,7 +64,9 @@ class MediaPerformanceTest(MediaTestBase):
           measured_data_name_list=self.FPS_NAME_LIST,
           measured_data_unit_list=self.FPS_UNIT_LIST,
           remove_first_result=True, parameter_string=self.parameter_str,
-          title=self.current_trace_type)
+          trace_list=self.FPS_TRACE_LIST,
+          reference_build=self.reference_build,
+          display_filter=['playertime', 'fps'])
 
   def PostEachRunProcess(self, run_counter):
     """A method to execute after each run.

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -39,22 +38,22 @@ class MediaPerformanceTest(MediaTestBase):
   # These predefined names are coming from library psutil
   # except for 'measure-time' which represents the timestamp at the start
   # of program execution.
-  CHROME_PROCESS_INFO_NAMES = ['measure-time',
-                               'cpu-util',
-  # pct-cpu: a float representing the current system-wide CPU utilization
+  CHROME_PROCESS_INFO_NAMES = ['time',
+                               'procutil',
+  # procutil: a float representing the current system-wide CPU utilization
   # as a percentage. When interval is > 0.0 compares system CPU times
   # elapsed before and after the interval (blocking).
-                               'cpu-user',
-                               'cpu-system',
-  # cpu-user, cpu-system: process CPU user and system times which means
+                               'procuser',
+                               'procsystem',
+  # procuser, procsystem: process CPU user and system times which means
   # the amount of time expressed in seconds that a process has spent in
   # user/system mode.
-                               'memory-rss',
-                               'memory-vms',
-  # memory-rss, memory-vms: values representing RSS (Resident Set Size) and
+                               'memoryrss',
+                               'memoryvms',
+  # memoryrss, memoryvms: values representing RSS (Resident Set Size) and
   # VMS (Virtual Memory Size) in bytes.
-                               'memory-util']
-  # pct-process-memory: compare physical system memory to process resident
+                               'memoryutil']
+  # memoryutil: compare physical system memory to process resident
   # memory and calculate process memory utilization as a percentage.
   CHROME_PROCESS_INFO_UNITS = ['sec',
                                'percent',
@@ -63,6 +62,10 @@ class MediaPerformanceTest(MediaTestBase):
                                'MB',
                                'MB',
                                'percent']
+  # A trace list is used for legends in perf graph. One letter is
+  # preferable for trace and can be any one character letter. Here
+  # I use the first letter of each unit except for 'sec'.
+  CHROME_PROCESS_TRACE_LIST = ['t', 'p', 'l', 'l', 'm', 'm', 'p']
   # Instance variables.
   run_counter = 0
   chrome_renderer_process_infos = []
@@ -88,7 +91,8 @@ class MediaPerformanceTest(MediaTestBase):
         measured_data_unit_list=self.CHROME_PROCESS_INFO_UNITS,
         remove_first_result=self.remove_first_result,
         parameter_string=self.parameter_str,
-        title=self.current_trace_type)
+        trace_list=self.CHROME_PROCESS_TRACE_LIST,
+        reference_build=self.reference_build)
 
   def PreEachRunProcess(self, run_counter):
     """A method to execute before each run.

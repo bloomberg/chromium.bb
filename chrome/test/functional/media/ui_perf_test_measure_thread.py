@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -76,17 +75,20 @@ def Main():
     measure_thread.stop_measurement = True
     measure_thread.join(5)
     chrome_renderer_process_infos.append(
-        perf_thread.chrome_renderer_process_info)
-
-  chrome_process_info_names = ['measure-time', 'cpu-util', 'cpu-user',
-                               'cpu-system', 'memory-rss', 'memory-vms',
-                               'memory-util']
+        measure_thread.chrome_renderer_process_info)
+  chrome_process_info_names = ['time', 'procutil', 'procuser',
+                               'procsystem', 'memrss', 'memvms',
+                               'memutil']
   chrome_process_info_units = ['sec', 'percent', 'load',
                                'load', 'MB', 'MB', 'percent']
-  print UIPerfTestUtils.PrintMeasuredData(
-      chrome_renderer_process_infos, chrome_process_info_names,
-      chrome_process_info_units, True, 'p', 'title')
+  chrome_process_trace_names = ['t', 'p', 'l', 'l', 'm', 'm', 'p']
 
+  print UIPerfTestUtils.PrintMeasuredData(
+      measured_data_list=chrome_renderer_process_infos,
+      measured_data_name_list=chrome_process_info_names,
+      measured_data_unit_list=chrome_process_info_units,
+      parameter_string='', trace_list=chrome_process_trace_names,
+      remove_first_result=False)
 
 if __name__ == "__main__":
   Main()

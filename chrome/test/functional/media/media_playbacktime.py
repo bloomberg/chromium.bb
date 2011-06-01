@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -38,9 +37,12 @@ class MediaPlaybackTimeTest(MediaTestBase):
         MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME,
         self.media_filename)
     # Print out playback time for each run.
+    trace = 't'
+    if self.reference_build:
+      trace += '_ref'
     print UIPerfTestUtils.GetResultStringForPerfBot(
-        measurement=self.parameter_str + '-playback', modifier='',
-        trace=self.current_trace_type, values=self.times[1:],
+        measurement='playback', modifier='',
+        trace=trace, values=self.times[1:],
         units='sec')
 
   def PostEachRunProcess(self, unused_run_counter):

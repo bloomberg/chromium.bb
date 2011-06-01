@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -49,9 +48,7 @@ class MediaTestBase(pyauto.PyUITest):
   media_filename = ''
   media_filename_nickname = ''
   _test_scenarios = []
-  # Used for tracing performance results on PerfBot: can be 't' (tests with
-  # normal build) or 't_ref' (tests with reference build).
-  current_trace_type = 't'
+  reference_build = False
 
   def _GetMediaURLAndParameterString(self, media_filename):
     """Get media url and parameter string.
@@ -171,6 +168,8 @@ class MediaTestBase(pyauto.PyUITest):
     self.url, self.parameter_str = self._GetMediaURLAndParameterString(
         self.media_filename)
     self.times = []
+    self.reference_build = os.getenv(
+        MediaTestEnvNames.REFERENCE_BUILD_ENV_NAME, False)
 
   def PostAllRunsProcess(self):
     """A method to execute after all runs.
@@ -188,8 +187,6 @@ class MediaTestBase(pyauto.PyUITest):
       run_counter: counter for each run.
     """
     self.start = time.time()
-    if os.getenv(MediaTestEnvNames.REFERENCE_BUILD_ENV_NAME):
-      self.current_trace_type = 't_ref'
 
   def PostEachRunProcess(self, run_counter):
     """A method to execute after each run.

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -15,6 +14,7 @@ this.
 """
 
 # Standard library imports.
+import logging
 import re
 import time
 
@@ -168,19 +168,27 @@ class UIPerfTestUtils:
       a renderer process info tuple: measured_time, cpu_time in
         percent, user cpu time, system cpu time, resident memory size, virtual
         memory size, and memory usage. Or returns an empty list if the Chrome
-        renderer process is not found.
+        renderer process is not found or more than one renderer process exists.
+        In this case, an error message is written to the log.
     """
     chrome_process_list = UIPerfTestUtils.FindProcesses('chrome')
+    chrome_process_info_list = []
     for p in chrome_process_list:
       if UIPerfTestUtils.IsChromeRendererProcess(p):
         # Return the first renderer process's resource info.
         resource_info = UIPerfTestUtils.GetResourceInfo(p, start_time)
         if resource_info is not None:
-          return resource_info
-    return []
+          chrome_process_info_list.append(resource_info)
+    if not chrome_process_info_list:
+      logging.error('Chrome renderer process does not exist')
+      return []
+    if len(chrome_process_info_list) > 1:
+      logging.error('More than one Chrome renderer processes exists')
+      return []
+    return chrome_process_info_list[0]
 
   @staticmethod
-  def __getMaxDataLength(chrome_renderer_process_infos):
+  def _GetMaxDataLength(chrome_renderer_process_infos):
     """Get max data length of process render info.
 
     This method is necessary since reach run may have different data length.
@@ -207,8 +215,9 @@ class UIPerfTestUtils:
 
   @staticmethod
   def PrintMeasuredData(measured_data_list, measured_data_name_list,
-                        measured_data_unit_list, remove_first_result,
-                        parameter_string, title):
+                        measured_data_unit_list, parameter_string, trace_list,
+                        remove_first_result=True, show_time_index=False,
+                        reference_build=False, display_filter=None):
     """Calculate statistics over all results and print them in the format that
     can be shown on BuildBot.
 
@@ -228,31 +237,101 @@ class UIPerfTestUtils:
       measured_data_unit_list: a list of the names of the units for an element
         of measured_data_list. The size of this list should be same as the size
         of measured_data_name_list.
-      remove_first_result: a boolean for removing the first result
-         (the first result contains browser startup time).
       parameter_string: a string that contains all parameters used.
-      title: a title string for identifying perf data.
+        (currently not used).
+      trace_list: a list of trace names used for legends in perf graph
+        (for example, ['t','c']). Generally, a trace name is one letter.
+      remove_first_result: a boolean for removing the first result
+        (the first result contains browser startup time).
+      show_time_index: a boolean for showing time index (such as '0' or '1' in
+        'procutil-0' or 'procutil-1') if it is true. Time index is necessary
+        when the same kind of data is measured over a period of time.
+        For example, 'procutil-0' is the first result and 'procutil-1' is the
+        second result.  If this is false, the results are aggregated into one
+        result (such as 'procutil', which includes the results from
+        'procutil-0' and 'procutil-1').
+      reference_build: a boolean for indicating this result is computed with
+        reference build binaries. '_ref' is added in trace in the case of
+        reference build.
+      display_filter: a list of names that you want to display in the results.
+        The names should be in |measured_data_name_list|.
     Returns:
       An output string that contains all information, or the empty string
         if there is no information to output.
     """
     output_string = ''
-    for i in range(len(measured_data_name_list)):
-      max_data_length = UIPerfTestUtils.__getMaxDataLength(
-          measured_data_list)
-      for time_index in range(max_data_length):
-        psutil_data = []
-        for counter in range(len(measured_data_list)):
-          if not remove_first_result or counter > 0:
-            data_length_for_each = (
-                len(measured_data_list[counter]))
-            if (data_length_for_each > time_index):
-              data = measured_data_list[counter][time_index][i]
-              psutil_data.append(data)
-        name = measured_data_name_list[i] + '-' + str(time_index)
-        output_string_line = UIPerfTestUtils.GetResultStringForPerfBot(
-            parameter_string + '-', name, title, psutil_data,
-            measured_data_unit_list[i])
-        if output_string_line:
-          output_string += output_string_line + '\n'
+    for measured_data_index in range(len(measured_data_name_list)):
+      if not display_filter or (display_filter and (
+          measured_data_name_list[measured_data_index] in display_filter)):
+        max_data_length = UIPerfTestUtils._GetMaxDataLength(
+            measured_data_list)
+        trace_name = trace_list[measured_data_index]
+        if reference_build:
+          trace_name += '_ref'
+        if show_time_index:
+          for time_index in range(max_data_length):
+            psutil_data = []
+            UIPerfTestUtils._AppendPsUtilData(psutil_data, measured_data_list,
+                                              remove_first_result, time_index,
+                                              measured_data_index)
+            name = '%s-%s' % (measured_data_name_list[measured_data_index],
+                              str(time_index))
+            output_string += UIPerfTestUtils._GenerateOutputString(
+                name, output_string, trace_name, psutil_data,
+                measured_data_unit_list[measured_data_index])
+        else:
+          psutil_data = []
+          for time_index in range(max_data_length):
+            UIPerfTestUtils._AppendPsUtilData(psutil_data, measured_data_list,
+                                              remove_first_result, time_index,
+                                              measured_data_index)
+          name = measured_data_name_list[measured_data_index]
+          output_string += UIPerfTestUtils._GenerateOutputString(
+              name, output_string, trace_name, psutil_data,
+              measured_data_unit_list[measured_data_index])
     return output_string
+
+  @staticmethod
+  def _AppendPsUtilData(psutil_data, measured_data_list,
+                        remove_first_result, time_index, measured_data_index):
+    """Append data measured by psutil to a list.
+
+    Args:
+      psutil_data: a list of data measured by psutil.
+      measured_data_list: current data measured by psutil, which will be
+        appended to |psutil_data|.
+      remove_first_result: a boolean indicating whether or not to remove
+        the first result.
+      time_index: a integer that shows time-wise index for measured data
+        (For example, '0' or '1' in 'procutil-0' or 'procutil-1').
+      measured_data_index: the loop index for |measured_data_list|.
+    """
+    for counter in range(len(measured_data_list)):
+      if not remove_first_result or counter > 0:
+        data_length_for_each = (len(measured_data_list[counter]))
+        if (data_length_for_each > time_index):
+          data = measured_data_list[counter][time_index][measured_data_index]
+          psutil_data.append(data)
+
+  @staticmethod
+  def _GenerateOutputString(name, output_string, trace_name, psutil_data,
+                            measured_data_unit):
+    """Generates the output string that will be used for perf result.
+
+    Args:
+      name: a string for the graph name.
+      output_string: the whole string for displaying results.
+      trace_name: the name for legend in the performance graph.
+      psutil_data: the measured list of data measured by psutil.
+      measured_data_unit: the measurement unit name.
+
+    Returns:
+      a string for performance results that are used for PerfBot if there
+      is any result. Otherwise, returns an empty string.
+    """
+    output_string_line = UIPerfTestUtils.GetResultStringForPerfBot(
+        '', name, trace_name, psutil_data, measured_data_unit)
+    if output_string_line:
+      return output_string_line + '\n'
+    else:
+      return ''
