@@ -8,7 +8,6 @@
 #include <map>
 #include <utility>
 
-#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -57,11 +56,10 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
 
   // TrackerBase.
   virtual ::ppapi::ResourceObjectBase* GetResourceAPI(
-      PP_Resource res) OVERRIDE;
+      PP_Resource res);
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance inst,
-      pp::proxy::InterfaceID id) OVERRIDE;
-  virtual PP_Instance GetInstanceForResource(PP_Resource resource) OVERRIDE;
+      pp::proxy::InterfaceID id);
 
  private:
   friend struct DefaultSingletonTraits<PluginResourceTracker>;

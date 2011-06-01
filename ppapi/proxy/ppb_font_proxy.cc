@@ -64,7 +64,7 @@ const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
   return &info;
 }
 
-::ppapi::thunk::PPB_Font_FunctionAPI* PPB_Font_Proxy::AsPPB_Font_FunctionAPI() {
+::ppapi::thunk::PPB_Font_FunctionAPI* PPB_Font_Proxy::AsFont_FunctionAPI() {
   return this;
 }
 
@@ -114,7 +114,7 @@ Font::Font(const HostResource& resource,
 Font::~Font() {
 }
 
-ppapi::thunk::PPB_Font_API* Font::AsPPB_Font_API() {
+ppapi::thunk::PPB_Font_API* Font::AsFont_API() {
   return this;
 }
 

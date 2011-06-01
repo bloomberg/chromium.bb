@@ -29,7 +29,7 @@ class PPB_CharSet_Proxy : public ppapi::FunctionGroupBase,
   static const Info* GetInfo();
 
   // FunctionGroupBase overrides.
-  virtual ppapi::thunk::PPB_CharSet_FunctionAPI* AsPPB_CharSet_FunctionAPI()
+  virtual ppapi::thunk::PPB_CharSet_FunctionAPI* AsCharSet_FunctionAPI()
       OVERRIDE;
 
   // PPB_CharSet_FunctionAPI implementation.

@@ -52,7 +52,7 @@ class Broker : public ppapi::thunk::PPB_Broker_API,
   virtual ~Broker();
 
   // ResourceObjectBase overries.
-  virtual ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Broker_API* AsBroker_API() OVERRIDE;
 
   // PPB_Broker_API implementation.
   virtual int32_t Connect(PP_CompletionCallback connect_callback) OVERRIDE;
@@ -95,7 +95,7 @@ Broker::~Broker() {
   socket_handle_ = base::kInvalidPlatformFileValue;
 }
 
-ppapi::thunk::PPB_Broker_API* Broker::AsPPB_Broker_API() {
+ppapi::thunk::PPB_Broker_API* Broker::AsBroker_API() {
   return this;
 }
 

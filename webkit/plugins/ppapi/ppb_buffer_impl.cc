@@ -41,7 +41,7 @@ PPB_Buffer_Impl* PPB_Buffer_Impl::AsPPB_Buffer_Impl() {
   return this;
 }
 
-PPB_Buffer_API* PPB_Buffer_Impl::AsPPB_Buffer_API() {
+PPB_Buffer_API* PPB_Buffer_Impl::AsBuffer_API() {
   return this;
 }
 

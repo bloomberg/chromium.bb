@@ -6,10 +6,8 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_FILE_SYSTEM_IMPL_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
-#include "ppapi/thunk/ppb_file_system_api.h"
 #include "webkit/plugins/ppapi/resource.h"
 
 struct PPB_FileSystem_Dev;
@@ -19,16 +17,14 @@ namespace ppapi {
 
 class PluginInstance;
 
-class PPB_FileSystem_Impl : public Resource,
-                            public ::ppapi::thunk::PPB_FileSystem_API {
+class PPB_FileSystem_Impl : public Resource {
  public:
+  // Returns a pointer to the interface implementing PPB_FileSystem that is
+  // exposed to the plugin.
+  static const PPB_FileSystem_Dev* GetInterface();
+
   PPB_FileSystem_Impl(PluginInstance* instance, PP_FileSystemType_Dev type);
-  ~PPB_FileSystem_Impl();
-
-  static PP_Resource Create(PP_Instance instance, PP_FileSystemType_Dev type);
-
-  // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_FileSystem_API* AsPPB_FileSystem_API() OVERRIDE;
+  virtual PPB_FileSystem_Impl* AsPPB_FileSystem_Impl();
 
   PluginInstance* instance() { return instance_; }
   PP_FileSystemType_Dev type() { return type_; }
@@ -36,11 +32,8 @@ class PPB_FileSystem_Impl : public Resource,
   void set_root_url(const GURL& root_url) { root_url_ = root_url; }
   bool opened() const { return opened_; }
   void set_opened(bool opened) { opened_ = opened; }
-
-  // PPB_FileSystem_API implementation.
-  virtual int32_t Open(int64_t expected_size,
-                       PP_CompletionCallback callback) OVERRIDE;
-  virtual PP_FileSystemType_Dev GetType() OVERRIDE;
+  bool called_open() const { return called_open_; }
+  void set_called_open() { called_open_ = true; }
 
  private:
   PluginInstance* instance_;

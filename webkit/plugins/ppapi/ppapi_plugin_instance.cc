@@ -233,6 +233,34 @@ const PPB_Instance_Private ppb_instance_private = {
   &ExecuteScript
 };
 
+void NumberOfFindResultsChanged(PP_Instance instance_id,
+                                int32_t total,
+                                PP_Bool final_result) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+
+  DCHECK_NE(instance->find_identifier(), -1);
+  instance->delegate()->NumberOfFindResultsChanged(
+      instance->find_identifier(), total, PPBoolToBool(final_result));
+}
+
+void SelectedFindResultChanged(PP_Instance instance_id,
+                               int32_t index) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+
+  DCHECK_NE(instance->find_identifier(), -1);
+  instance->delegate()->SelectedFindResultChanged(
+      instance->find_identifier(), index);
+}
+
+const PPB_Find_Dev ppb_find = {
+  &NumberOfFindResultsChanged,
+  &SelectedFindResultChanged,
+};
+
 PP_Bool IsFullscreen(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
@@ -379,6 +407,11 @@ const void* PluginInstance::GetInterface(const char* if_name) {
     return &ppb_instance_0_4;
   }
   return NULL;
+}
+
+// static
+const PPB_Find_Dev* PluginInstance::GetFindInterface() {
+  return &ppb_find;
 }
 
 // static

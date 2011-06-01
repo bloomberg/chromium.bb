@@ -22,7 +22,7 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
   virtual ~ResourceCreationImpl();
 
   // FunctionGroupBase implementation.
-  virtual ::ppapi::thunk::ResourceCreationAPI* AsResourceCreationAPI();
+  virtual ::ppapi::thunk::ResourceCreationAPI* AsResourceCreation();
 
   // ResourceCreationAPI implementation.
   virtual PP_Resource CreateAudio(PP_Instance instance,
@@ -36,15 +36,6 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) OVERRIDE;
-  virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) OVERRIDE;
-  virtual PP_Resource CreateFileChooser(
-      PP_Instance instance,
-      const PP_FileChooserOptions_Dev* options) OVERRIDE;
-  virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateFileRef(PP_Resource file_system,
-                                    const char* path) OVERRIDE;
-  virtual PP_Resource CreateFileSystem(PP_Instance instance,
-                                       PP_FileSystemType_Dev type) OVERRIDE;
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,
       const PP_FontDescription_Dev* description) OVERRIDE;

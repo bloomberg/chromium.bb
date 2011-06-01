@@ -10,11 +10,6 @@
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
-#include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_chooser_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_io_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -30,7 +25,7 @@ ResourceCreationImpl::~ResourceCreationImpl() {
 }
 
 ::ppapi::thunk::ResourceCreationAPI*
-ResourceCreationImpl::AsResourceCreationAPI() {
+ResourceCreationImpl::AsResourceCreation() {
   return this;
 }
 
@@ -78,32 +73,6 @@ PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
                                                uint32_t size) {
   return PPB_Buffer_Impl::Create(instance, size);
-}
-
-PP_Resource ResourceCreationImpl::CreateDirectoryReader(
-    PP_Resource directory_ref) {
-  return PPB_DirectoryReader_Impl::Create(directory_ref);
-}
-
-PP_Resource ResourceCreationImpl::CreateFileChooser(
-    PP_Instance instance,
-    const PP_FileChooserOptions_Dev* options) {
-  return PPB_FileChooser_Impl::Create(instance, options);
-}
-
-PP_Resource ResourceCreationImpl::CreateFileIO(PP_Instance instance) {
-  return PPB_FileIO_Impl::Create(instance);
-}
-
-PP_Resource ResourceCreationImpl::CreateFileRef(PP_Resource file_system,
-                                                const char* path) {
-  return PPB_FileRef_Impl::Create(file_system, path);
-}
-
-PP_Resource ResourceCreationImpl::CreateFileSystem(
-    PP_Instance instance,
-    PP_FileSystemType_Dev type) {
-  return PPB_FileSystem_Impl::Create(instance, type);
 }
 
 PP_Resource ResourceCreationImpl::CreateFontObject(

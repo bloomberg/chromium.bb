@@ -139,14 +139,6 @@ PP_Resource PluginResourceTracker::PluginResourceForHostResource(
   return NULL;
 }
 
-PP_Instance PluginResourceTracker::GetInstanceForResource(
-    PP_Resource resource) {
-  ResourceMap::iterator found = resource_map_.find(resource);
-  if (found == resource_map_.end())
-    return 0;
-  return found->second.resource->instance();
-}
-
 void PluginResourceTracker::ReleasePluginResourceRef(
     const PP_Resource& resource,
     bool notify_browser_on_release) {

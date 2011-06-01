@@ -32,7 +32,7 @@ class PPB_Broker_Impl : public Resource,
   virtual PPB_Broker_Impl* AsPPB_Broker_Impl() OVERRIDE;
 
   // ResourceObjectBase override.
-  virtual ::ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_Broker_API* AsBroker_API() OVERRIDE;
 
   // PPB_BrokerTrusted implementation.
   virtual int32_t Connect(PP_CompletionCallback connect_callback) OVERRIDE;

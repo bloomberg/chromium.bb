@@ -176,8 +176,7 @@ bool PPB_Graphics2D_Impl::Init(int width, int height, bool is_always_opaque) {
   return true;
 }
 
-::ppapi::thunk::PPB_Graphics2D_API*
-PPB_Graphics2D_Impl::AsPPB_Graphics2D_API() {
+::ppapi::thunk::PPB_Graphics2D_API* PPB_Graphics2D_Impl::AsGraphics2D_API() {
   return this;
 }
 

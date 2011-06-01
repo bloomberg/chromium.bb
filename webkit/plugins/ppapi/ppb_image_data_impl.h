@@ -53,7 +53,7 @@ class PPB_ImageData_Impl : public Resource,
   static const PPB_ImageData* GetInterface();
   static const PPB_ImageDataTrusted* GetTrustedInterface();
 
-  virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API();
+  virtual ::ppapi::thunk::PPB_ImageData_API* AsImageData_API();
 
   // Resource overrides.
   virtual PPB_ImageData_Impl* AsPPB_ImageData_Impl();

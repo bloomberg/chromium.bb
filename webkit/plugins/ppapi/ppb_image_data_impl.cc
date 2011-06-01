@@ -62,7 +62,7 @@ const PPB_ImageDataTrusted* PPB_ImageData_Impl::GetTrustedInterface() {
   return &ppb_imagedata_trusted;
 }
 
-::ppapi::thunk::PPB_ImageData_API* PPB_ImageData_Impl::AsPPB_ImageData_API() {
+::ppapi::thunk::PPB_ImageData_API* PPB_ImageData_Impl::AsImageData_API() {
   return this;
 }
 

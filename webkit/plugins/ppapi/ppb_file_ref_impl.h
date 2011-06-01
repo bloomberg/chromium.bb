@@ -10,7 +10,6 @@
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/ppb_file_ref_dev.h"
-#include "ppapi/thunk/ppb_file_ref_api.h"
 #include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
@@ -20,8 +19,7 @@ class PPB_FileSystem_Impl;
 class PluginInstance;
 class PluginModule;
 
-class PPB_FileRef_Impl : public Resource,
-                         public ::ppapi::thunk::PPB_FileRef_API {
+class PPB_FileRef_Impl : public Resource {
  public:
   PPB_FileRef_Impl();
   PPB_FileRef_Impl(PluginInstance* instance,
@@ -31,32 +29,27 @@ class PPB_FileRef_Impl : public Resource,
                    const FilePath& external_file_path);
   virtual ~PPB_FileRef_Impl();
 
-  static PP_Resource Create(PP_Resource file_system, const char* path);
+  // Returns a pointer to the interface implementing PPB_FileRef that is
+  // exposed to the plugin.
+  static const PPB_FileRef_Dev* GetInterface();
 
   // Resource overrides.
   virtual PPB_FileRef_Impl* AsPPB_FileRef_Impl();
 
-  // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
+  // PPB_FileRef implementation.
+  std::string GetName() const;
+  scoped_refptr<PPB_FileRef_Impl> GetParent();
 
-  // PPB_FileRef_API implementation.
-  virtual PP_FileSystemType_Dev GetFileSystemType() const OVERRIDE;
-  virtual PP_Var GetName() const OVERRIDE;
-  virtual PP_Var GetPath() const OVERRIDE;
-  virtual PP_Resource GetParent() OVERRIDE;
-  virtual int32_t MakeDirectory(PP_Bool make_ancestors,
-                                PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Touch(PP_Time last_access_time,
-                        PP_Time last_modified_time,
-                        PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Delete(PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Rename(PP_Resource new_file_ref,
-                         PP_CompletionCallback callback) OVERRIDE;
+  // Returns the file system to which this PPB_FileRef_Impl belongs.
+  scoped_refptr<PPB_FileSystem_Impl> GetFileSystem() const;
 
-  PPB_FileSystem_Impl* file_system() const { return file_system_.get(); }
-  const std::string& virtual_path() const { return virtual_path_; }
+  // Returns the type of the file system to which this PPB_FileRef_Impl belongs.
+  PP_FileSystemType_Dev GetFileSystemType() const;
 
   // Returns the virtual path (i.e., the path that the pepper plugin sees)
+  // corresponding to this file.
+  std::string GetPath() const;
+
   // Returns the system path corresponding to this file.
   FilePath GetSystemPath() const;
 
@@ -64,11 +57,6 @@ class PPB_FileRef_Impl : public Resource,
   GURL GetFileSystemURL() const;
 
  private:
-  // Many mutation functions are allow only to non-external filesystems, This
-  // function returns true if the filesystem is opened and isn't external as an
-  // access check for these functions.
-  bool IsValidNonExternalFileSystem() const;
-
   scoped_refptr<PPB_FileSystem_Impl> file_system_;
   std::string virtual_path_;  // UTF-8 encoded
   FilePath system_path_;

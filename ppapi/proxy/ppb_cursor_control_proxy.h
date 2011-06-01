@@ -31,7 +31,7 @@ class PPB_CursorControl_Proxy
   static const Info* GetInfo();
 
   // FunctionGroupBase overrides.
-  ppapi::thunk::PPB_CursorControl_FunctionAPI* AsPPB_CursorControl_FunctionAPI()
+  ppapi::thunk::PPB_CursorControl_FunctionAPI* AsCursorControl_FunctionAPI()
       OVERRIDE;
 
   // PPB_CursorControl_FunctionAPI implementation.

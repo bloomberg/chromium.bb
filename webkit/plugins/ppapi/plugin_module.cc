@@ -270,21 +270,21 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_CURSOR_CONTROL_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_CursorControl_Thunk();
   if (strcmp(name, PPB_DIRECTORYREADER_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_DirectoryReader_Thunk();
+    return PPB_DirectoryReader_Impl::GetInterface();
   if (strcmp(name, PPB_FILECHOOSER_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_FileChooser_Thunk();
+    return PPB_FileChooser_Impl::GetInterface();
   if (strcmp(name, PPB_FILEIO_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_FileIO_Thunk();
+    return PPB_FileIO_Impl::GetInterface();
   if (strcmp(name, PPB_NACL_PRIVATE_INTERFACE) == 0)
     return PPB_NaCl_Private_Impl::GetInterface();
   if (strcmp(name, PPB_FILEIOTRUSTED_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
+    return PPB_FileIO_Impl::GetTrustedInterface();
   if (strcmp(name, PPB_FILEREF_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_FileRef_Thunk();
+    return PPB_FileRef_Impl::GetInterface();
   if (strcmp(name, PPB_FILESYSTEM_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
+    return PPB_FileSystem_Impl::GetInterface();
   if (strcmp(name, PPB_FIND_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Find_Thunk();
+    return PluginInstance::GetFindInterface();
   if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
     return PPB_Flash_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE) == 0)

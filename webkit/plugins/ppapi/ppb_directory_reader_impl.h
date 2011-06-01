@@ -8,7 +8,6 @@
 #include <queue>
 
 #include "base/file_util_proxy.h"
-#include "ppapi/thunk/ppb_directory_reader_api.h"
 #include "webkit/plugins/ppapi/resource.h"
 
 struct PP_CompletionCallback;
@@ -20,25 +19,21 @@ namespace ppapi {
 
 class PPB_FileRef_Impl;
 
-class PPB_DirectoryReader_Impl
-    : public Resource,
-      public ::ppapi::thunk::PPB_DirectoryReader_API {
+class PPB_DirectoryReader_Impl : public Resource {
  public:
   explicit PPB_DirectoryReader_Impl(PPB_FileRef_Impl* directory_ref);
   virtual ~PPB_DirectoryReader_Impl();
 
-  static PP_Resource Create(PP_Resource directory_ref);
+  // Returns a pointer to the interface implementing PPB_DirectoryReader that
+  // is exposed to the plugin.
+  static const PPB_DirectoryReader_Dev* GetInterface();
 
   // Resource overrides.
-  virtual PPB_DirectoryReader_Impl* AsPPB_DirectoryReader_Impl() OVERRIDE;
+  virtual PPB_DirectoryReader_Impl* AsPPB_DirectoryReader_Impl();
 
-  // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_DirectoryReader_API* AsPPB_DirectoryReader_API()
-      OVERRIDE;
-
-  // PPB_DirectoryReader_API implementation.
-  virtual int32_t GetNextEntry(PP_DirectoryEntry_Dev* entry,
-                               PP_CompletionCallback callback) OVERRIDE;
+  // PPB_DirectoryReader implementation.
+  int32_t GetNextEntry(PP_DirectoryEntry_Dev* entry,
+                       PP_CompletionCallback callback);
 
   void AddNewEntries(const std::vector<base::FileUtilProxy::Entry>& entries,
                      bool has_more);

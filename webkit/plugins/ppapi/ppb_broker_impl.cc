@@ -61,7 +61,7 @@ PPB_Broker_Impl* PPB_Broker_Impl::AsPPB_Broker_Impl() {
   return this;
 }
 
-PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() {
+PPB_Broker_API* PPB_Broker_Impl::AsBroker_API() {
   return this;
 }
 

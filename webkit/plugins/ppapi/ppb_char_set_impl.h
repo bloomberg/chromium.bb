@@ -22,7 +22,7 @@ class PPB_CharSet_Impl : public ::ppapi::FunctionGroupBase,
   virtual ~PPB_CharSet_Impl();
 
   // FunctionGroupBase overrides.
-  virtual ::ppapi::thunk::PPB_CharSet_FunctionAPI* AsPPB_CharSet_FunctionAPI();
+  virtual ::ppapi::thunk::PPB_CharSet_FunctionAPI* AsCharSet_FunctionAPI();
 
   // PPB_CharSet_FunctionAPI implementation.
   virtual char* UTF16ToCharSet(PP_Instance instance,

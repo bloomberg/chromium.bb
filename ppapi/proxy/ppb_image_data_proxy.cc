@@ -76,7 +76,7 @@ ImageData::ImageData(const HostResource& resource,
 ImageData::~ImageData() {
 }
 
-::ppapi::thunk::PPB_ImageData_API* ImageData::AsPPB_ImageData_API() {
+::ppapi::thunk::PPB_ImageData_API* ImageData::AsImageData_API() {
   return this;
 }
 

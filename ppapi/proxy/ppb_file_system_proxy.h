@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
@@ -30,8 +29,9 @@ class PPB_FileSystem_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  static PP_Resource CreateProxyResource(PP_Instance instance,
-                                         PP_FileSystemType_Dev type);
+  const PPB_FileSystem_Dev* ppb_file_system_target() const {
+    return static_cast<const PPB_FileSystem_Dev*>(target_interface());
+  }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

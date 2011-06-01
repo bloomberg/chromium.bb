@@ -34,7 +34,7 @@ class PPB_AudioConfig_Impl : public Resource,
   virtual ~PPB_AudioConfig_Impl();
 
   // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_AudioConfig_API* AsAudioConfig_API() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Impl);
@@ -57,8 +57,8 @@ class PPB_Audio_Impl : public Resource,
             PPB_Audio_Callback user_callback, void* user_data);
 
   // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_Audio_API* AsPPB_Audio_API();
-  virtual ::ppapi::thunk::PPB_AudioTrusted_API* AsPPB_AudioTrusted_API();
+  virtual ::ppapi::thunk::PPB_Audio_API* AsAudio_API();
+  virtual ::ppapi::thunk::PPB_AudioTrusted_API* AsAudioTrusted_API();
 
   // PPB_Audio_API implementation.
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
