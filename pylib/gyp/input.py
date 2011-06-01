@@ -1545,14 +1545,6 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
           target_dict['dependencies'] = []
         if not dependency in target_dict['dependencies']:
           target_dict['dependencies'].append(dependency)
-      # Sort the dependencies list in the order from dependents to dependencies.
-      # e.g. If A and B depend on C and C depends on D, sort them in A, B, C, D.
-      # Note: flat_list is already sorted in the order from dependencies to
-      # dependents.
-      if 'dependencies' in target_dict:
-        target_dict['dependencies'] = [
-            dep for dep in flat_list if dep in target_dict['dependencies']]
-        target_dict['dependencies'].reverse()
 
 # Initialize this here to speed up MakePathRelative.
 exception_re = re.compile(r'''["']?[-/$<>]''')
