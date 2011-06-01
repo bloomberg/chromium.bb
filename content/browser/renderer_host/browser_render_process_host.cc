@@ -543,7 +543,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableJavaScriptI18NAPI,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
     // Enabled by default in Google Chrome builds, except on CrOS.
     switches::kDisablePrintPreview,
 #else
