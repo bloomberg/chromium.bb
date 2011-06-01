@@ -218,7 +218,7 @@ void AboutChromeView::Init() {
       ResourceBundle::BaseFont));
   AddChildView(version_label_);
 
-  os_version_label_ = new views::Textfield(views::Textfield::STYLE_MULTILINE);
+  os_version_label_ = new views::Textfield();
   os_version_label_->SetText(UTF8ToUTF16(version_info.OSType()));
   os_version_label_->SetReadOnly(true);
   os_version_label_->RemoveBorder();
