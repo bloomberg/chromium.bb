@@ -56,6 +56,15 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestMissingFileGetInfo) {
   EXPECT_FALSE(db()->GetFileInfo(file_id, &info));
 }
 
+TEST_F(FileSystemDirectoryDatabaseTest, TestGetRootFileInfoBeforeCreate) {
+  FileId file_id = 0;
+  FileInfo info;
+  EXPECT_TRUE(db()->GetFileInfo(file_id, &info));
+  EXPECT_EQ(0, info.parent_id);
+  EXPECT_TRUE(info.name.empty());
+  EXPECT_TRUE(info.data_path.empty());
+}
+
 TEST_F(FileSystemDirectoryDatabaseTest, TestMissingParentAddFileInfo) {
   FileId parent_id = 7;
   EXPECT_FALSE(AddFileInfo(parent_id, FILE_PATH_LITERAL("foo")));

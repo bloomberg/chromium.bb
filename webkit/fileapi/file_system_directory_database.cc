@@ -76,8 +76,6 @@ const char kLastIntegerKey[] = "LAST_INTEGER";
 std::string GetChildLookupKey(
     fileapi::FileSystemDirectoryDatabase::FileId parent_id,
     const FilePath::StringType& child_name) {
-  // TODO(ericu): child_name may need to be case-folded, pending discussion on
-  // public-webapps.
   std::string name;
 #if defined(OS_POSIX)
   name = child_name;
@@ -194,8 +192,6 @@ bool FileSystemDirectoryDatabase::ListChildren(
 }
 
 bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
-  // TODO(ericu): Should we always be able to look up the root, just for
-  // consistency?
   if (!Init())
     return false;
   DCHECK(info);
@@ -206,6 +202,16 @@ bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
   if (status.ok()) {
     return FileInfoFromPickle(
         Pickle(file_data_string.data(), file_data_string.length()), info);
+  }
+  // Special-case the root, for databases that haven't been initialized yet.
+  // Without this, a query for the root's file info, made before creating the
+  // first file in the database, will fail and confuse callers.
+  if (status.IsNotFound() && !file_id) {
+    info->name = FilePath::StringType();
+    info->data_path = FilePath();
+    info->modification_time = base::Time::Now();
+    info->parent_id = 0;
+    return true;
   }
   HandleError(status);
   return false;
