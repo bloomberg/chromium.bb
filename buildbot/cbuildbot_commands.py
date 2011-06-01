@@ -592,4 +592,4 @@ def PushImages(buildroot, board, branch_name, archive_dir):
         '--branch=%s' % branch_name,
         archive_dir]
 
-  cros_lib.RunCommand(cmd, cwd=constants.CROSTOOLS_DIR)
+  cros_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'crostools'))
