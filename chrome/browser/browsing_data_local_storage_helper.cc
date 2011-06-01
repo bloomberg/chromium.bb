@@ -166,7 +166,7 @@ CannedBrowsingDataLocalStorageHelper::Clone() {
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
     const GURL& origin) {
   base::AutoLock auto_lock(lock_);
-  pending_local_storage_info_.push_back(origin);
+  pending_local_storage_info_.insert(origin);
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {
@@ -199,7 +199,7 @@ CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
 
 void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfoInWebKitThread() {
   base::AutoLock auto_lock(lock_);
-  for (std::vector<GURL>::iterator info = pending_local_storage_info_.begin();
+  for (std::set<GURL>::iterator info = pending_local_storage_info_.begin();
        info != pending_local_storage_info_.end(); ++info) {
     WebSecurityOrigin web_security_origin =
         WebSecurityOrigin::createFromString(

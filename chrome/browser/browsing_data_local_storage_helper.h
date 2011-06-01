@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_
 #pragma once
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -140,7 +141,7 @@ class CannedBrowsingDataLocalStorageHelper
   mutable base::Lock lock_;
 
   // May mutate on WEBKIT and UI threads.
-  std::vector<GURL> pending_local_storage_info_;
+  std::set<GURL> pending_local_storage_info_;
 
   Profile* profile_;
 
