@@ -50,15 +50,17 @@ struct NaClNameServiceEntry {
 struct NaClSrpcHandlerDesc const kNaClNameServiceHandlers[];
 /* fwd */
 
-int NaClNameServiceCtor(struct NaClNameService *self) {
+int NaClNameServiceCtor(struct NaClNameService      *self,
+                        NaClThreadIfFactoryFunction thread_factory_fn,
+                        void                        *thread_factory_data) {
   int     retval = 0;  /* fail */
 
   NaClLog(4, "Entered NaClNameServiceCtor\n");
   if (!NaClSimpleLtdServiceCtor(&self->base,
                                 kNaClNameServiceHandlers,
                                 NACL_NAME_SERVICE_CONNECTION_MAX,
-                                NaClThreadInterfaceThreadFactory,
-                                (void *) NULL)) {
+                                thread_factory_fn,
+                                thread_factory_data)) {
     NaClLog(4, "NaClSimpleLtdServiceCtor failed\n");
     goto done;
   }

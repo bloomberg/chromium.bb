@@ -18,6 +18,8 @@
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
 
+#include "native_client/src/trusted/threading/nacl_thread_interface.h"
+
 EXTERN_C_BEGIN
 
 /*
@@ -47,7 +49,9 @@ struct NaClNameService {
   struct NaClNameServiceEntry *head;
 };
 
-int NaClNameServiceCtor(struct NaClNameService *self);
+int NaClNameServiceCtor(struct NaClNameService      *self,
+                        NaClThreadIfFactoryFunction thread_factory_fn,
+                        void                        *thread_factory_data);
 
 int NaClNameServiceCreateDescEntry(
     struct NaClNameService  *self,

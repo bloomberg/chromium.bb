@@ -47,6 +47,9 @@
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 #include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
 
+#include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
+#include "native_client/src/trusted/threading/nacl_thread_interface.h"
+
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
@@ -124,23 +127,8 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->reverse_client = NULL;
   nap->reverse_channel_initialized = 0;
 
-  nap->name_service = (struct NaClNameService *) malloc(
-      sizeof *nap->name_service);
-  if (NULL == nap->name_service) {
-    goto cleanup_dynamic_load_mutex;
-  }
-  if (!NaClNameServiceCtor(nap->name_service)) {
-    free(nap->name_service);
-    goto cleanup_dynamic_load_mutex;
-  }
-  nap->name_service_conn_cap = NaClDescRef(nap->name_service->
-                                           base.base.bound_and_cap[1]);
-  if (!NaClDefaultNameServiceInit(nap->name_service)) {
-    goto cleanup_name_service;
-  }
-
   if (!NaClMutexCtor(&nap->mu)) {
-    goto cleanup_name_service;
+    goto cleanup_dynamic_load_mutex;
   }
   if (!NaClCondVarCtor(&nap->cv)) {
     goto cleanup_mu;
@@ -151,6 +139,23 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->module_load_status = LOAD_STATUS_UNKNOWN;
   nap->module_may_start = 0;  /* only when secure_service != NULL */
+
+  nap->name_service = (struct NaClNameService *) malloc(
+      sizeof *nap->name_service);
+  if (NULL == nap->name_service) {
+    goto cleanup_cv;
+  }
+  if (!NaClNameServiceCtor(nap->name_service,
+                           NaClAddrSpSquattingThreadIfFactoryFunction,
+                           nap)) {
+    free(nap->name_service);
+    goto cleanup_cv;
+  }
+  nap->name_service_conn_cap = NaClDescRef(nap->name_service->
+                                           base.base.bound_and_cap[1]);
+  if (!NaClDefaultNameServiceInit(nap->name_service)) {
+    goto cleanup_name_service;
+  }
 
   nap->ignore_validator_result = 0;
   nap->skip_validator = 0;
@@ -211,13 +216,13 @@ int NaClAppCtor(struct NaClApp  *nap) {
   NaClMutexDtor(&nap->threads_mu);
  cleanup_work_queue:
   NaClSyncQueueDtor(&nap->work_queue);
+ cleanup_name_service:
+  NaClDescUnref(nap->name_service_conn_cap);
+  NaClRefCountUnref((struct NaClRefCount *) nap->name_service);
  cleanup_cv:
   NaClCondVarDtor(&nap->cv);
  cleanup_mu:
   NaClMutexDtor(&nap->mu);
- cleanup_name_service:
-  NaClDescUnref(nap->name_service_conn_cap);
-  NaClRefCountUnref((struct NaClRefCount *) nap->name_service);
  cleanup_dynamic_load_mutex:
   NaClMutexDtor(&nap->dynamic_load_mutex);
  cleanup_effp_dtor:
@@ -1561,6 +1566,37 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
   NaClLog(4, "Leaving NaClSecureCommandChannel\n");
 }
 
+
+void NaClVmHoleWaitToStartThread(struct NaClApp *nap) {
+  NaClXMutexLock(&nap->mu);
+
+  /* ensure no virtual memory hole may appear */
+  while (nap->vm_hole_may_exist) {
+    NaClXCondVarWait(&nap->cv, &nap->mu);
+  }
+
+  ++nap->threads_launching;
+  NaClXMutexUnlock(&nap->mu);
+  /*
+   * NB: Dropped lock, so many threads launching can starve VM
+   * operations.  If this becomes a problem in practice, we can use a
+   * reader/writer lock so that a waiting writer will block new
+   * readers.
+   */
+}
+
+void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap) {
+  NaClXMutexLock(&nap->mu);
+
+  if (0 == --nap->threads_launching) {
+    /*
+     * Wake up the threads waiting to do VM operations.
+     */
+    NaClXCondVarBroadcast(&nap->cv);
+  }
+
+  NaClXMutexUnlock(&nap->mu);
+}
 
 #ifdef __GNUC__
 

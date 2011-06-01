@@ -7,6 +7,7 @@
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -24,7 +25,7 @@ void Test(NaClSrpcRpc* rpc,
   UNREFERENCED_PARAMETER(out_args);
   // use rpc->channel rather than rpc->channel->server_instance_data
   // to show that Test RPCs arrive in different channels.
-  NaClLog(0, "Test: [%"NACL_PRIxPTR"] %s\n",
+  NaClLog(1, "Test: [%"NACL_PRIxPTR"] %s\n",
           reinterpret_cast<uintptr_t>(rpc->channel), msg);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
@@ -69,11 +70,45 @@ namespace nacl {
 // need NaClThreadIfFactoryFunction that keeps "this" to do counting
 
 struct ReverseCountingThreadInterface {
-  struct NaClThreadInterface  base;
+  struct NaClThreadInterface base NACL_IS_REFCOUNT_SUBCLASS;
   nacl::ReverseService* rev;
 };
 
 /* fwd */ extern NaClThreadInterfaceVtbl const kReverseThreadInterfaceVtbl;
+
+int ReverseThreadIfFactoryFn(
+    void* factory_data,
+    NaClThreadIfStartFunction fn_ptr,
+    void* thread_data,
+    size_t thread_stack_size,
+    NaClThreadInterface** out_new_thread);  // fwd
+
+int ReverseThreadIfCtor_protected(
+    ReverseCountingThreadInterface* self,
+    void* factory_data,
+    NaClThreadIfStartFunction fn_ptr,
+    void* thread_data,
+    size_t thread_stack_size) {
+  ReverseService* rev = reinterpret_cast<ReverseService*>(factory_data);
+
+  if (!NaClThreadInterfaceCtor_protected(
+          reinterpret_cast<NaClThreadInterface*>(self),
+          ReverseThreadIfFactoryFn,
+          reinterpret_cast<void*>(rev->Ref()),
+          fn_ptr,
+          thread_data,
+          thread_stack_size)) {
+    NaClLog(4,
+            ("ReverseService::ReverseThreadIfFactoryFn:"
+             " placement base class ctor failed\n"));
+    return 0;
+  }
+  self->rev = rev;
+  rev->IncrThreadCount();
+  NACL_VTBL(NaClRefCount, self) =
+      reinterpret_cast<NaClRefCountVtbl const*>(&kReverseThreadInterfaceVtbl);
+  return 1;
+}
 
 /*
  * Takes ownership of rev reference.  Caller should Ref() the argument
@@ -85,36 +120,24 @@ int ReverseThreadIfFactoryFn(
     void* thread_data,
     size_t thread_stack_size,
     NaClThreadInterface** out_new_thread) {
-  ReverseService* rev = reinterpret_cast<ReverseService*>(factory_data);
-  ReverseCountingThreadInterface* new_thread;
-  int rv;
-
   NaClLog(4, "ReverseService::ReverseThreadIfFactoryFn\n");
-  new_thread = reinterpret_cast<ReverseCountingThreadInterface*>(
-      malloc(sizeof *new_thread));
-  if (NULL == new_thread) {
+
+  nacl::scoped_ptr_malloc<ReverseCountingThreadInterface> new_thread(
+      reinterpret_cast<ReverseCountingThreadInterface*>(
+          malloc(sizeof *new_thread)));
+  if (NULL == new_thread.get()) {
     return 0;
   }
-  new_thread->rev = rev;
-  rev->IncrThreadCount();
-  if (0 != (rv =
-            NaClThreadInterfaceThreadPlacementFactory(
-                ReverseThreadIfFactoryFn,
-                reinterpret_cast<void*>(rev->Ref()),
-                fn_ptr,
-                thread_data,
-                thread_stack_size,
-                reinterpret_cast<NaClRefCountVtbl const*>(
-                    &kReverseThreadInterfaceVtbl),
-                reinterpret_cast<NaClThreadInterface*>(new_thread)))) {
-    *out_new_thread = reinterpret_cast<NaClThreadInterface*>(new_thread);
-    new_thread = NULL;
-  } else {
-    NaClLog(4, "ReverseService::ReverseThreadIfFactoryFn FAILED TO LAUNCH\n");
-    rev->DecrThreadCount();
+  if (!ReverseThreadIfCtor_protected(new_thread.get(),
+                                     factory_data,
+                                     fn_ptr,
+                                     thread_data,
+                                     thread_stack_size)) {
+    return 0;
   }
-  free(new_thread);
-  return rv;
+  *out_new_thread = reinterpret_cast<NaClThreadInterface*>(
+      new_thread.release());
+  return 1;
 }
 
 void ReverseThreadIfDtor(struct NaClRefCount* vself) {
@@ -154,6 +177,7 @@ NaClThreadInterfaceVtbl const kReverseThreadInterfaceVtbl = {
   {
     ReverseThreadIfDtor,
   },
+  NaClThreadInterfaceStartThread,
   ReverseThreadIfLaunchCallback,
   ReverseThreadIfExit,
 };
