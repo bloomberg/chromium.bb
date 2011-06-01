@@ -648,10 +648,6 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	  install_root="$(INST_GLIBC_PREFIX)/glibc" install
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64 \
 	  install_root="$(INST_GLIBC_PREFIX)/glibc" install
-	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32 \
-	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
-	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64 \
-	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
 
 .PHONY: export-headers
 export-headers:
@@ -712,21 +708,6 @@ scons-libs-glibc: glibc-adhoc-files
 	    MODE=nacl_extra_sdk --nacl_glibc \
 	    extra_sdk_update_header extra_sdk_update \
 	    targetplatform=x86-$(LIB_BITS) --verbose )
-
-NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/staging/ncval_stubout)
-.PHONY: stubout
-stubout:
-	cd .. && ./$(SCONS) --mode=opt-$(PLATFORM) platform=x86-$(LIB_BITS) \
-	    $(SCONS_DESTINATIONS_NOLIB) ncval_stubout
-	set -e; find $(ARCH_DEST)/lib/ -type f -name '*.so*' -print0 | \
-	    while IFS="" read -r -d "" library; do \
-	        winlibpath="$$($(WINPATH) "$$library")"; \
-	        if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
-	            echo "$(NCVAL_STUBOUT) $$winlibpath -o $$winlibpath"; \
-	            $(NCVAL_STUBOUT) "$$winlibpath" -o "$$winlibpath"; \
-	        fi \
-	    done
-
 
 ##################################################################
 # gcc:
@@ -998,8 +979,6 @@ ifeq ($(INST_GLIBC_PROGRAM), none)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc32
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc64
-	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32
-	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64
 else
 	$(INST_GLIBC_PROGRAM) "$(DESTDIR)$(SDKROOT)"
 endif
