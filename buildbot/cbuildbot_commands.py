@@ -491,7 +491,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   keep_max = 3
 
   if buildconfig['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
-    gsutil_archive = 'gs://chromeos-archive/' + bot_id
+    gsutil_archive = 'gs://chromeos-image-archive/' + bot_id
   else:
     gsutil_archive = buildconfig['gs_path']
 
