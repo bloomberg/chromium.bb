@@ -1329,7 +1329,7 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
   http_data_dir = 'native_client' + staging_dir.replace(main_dir, '')
 
   command = (GetHeadlessPrefix(env) +
-             [pyauto_python, test, pyautolib_dir,
+             [pyauto_python, '-u', test, pyautolib_dir,
               '--http-data-dir=%s' % http_data_dir,
               '--chrome-flags="%s"' % chrome_flags])
   command.extend(args)
