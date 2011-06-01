@@ -803,13 +803,19 @@ class BuildStagesResultsTest(unittest.TestCase):
     # Break out the asserts to be per item to make debugging easier
     self.assertEqual(len(expectedResults), len(actualResults))
     for i in xrange(len(expectedResults)):
-      expectedName, expectedResult, expectedDescription = actualResults[i]
+      name, result, description, runtime = actualResults[i]
 
-      if expectedResult not in (stages.Results.SUCCESS,
-                                stages.Results.SKIPPED):
-        self.assertTrue(isinstance(expectedDescription, str))
+      if result not in (stages.Results.SUCCESS,
+                         stages.Results.SKIPPED):
+        self.assertTrue(isinstance(description, str))
 
-      self.assertEqual(expectedResults[i], (expectedName, expectedResult))
+      # Skipped stages take no time, all other test stages take a little time
+      if result == stages.Results.SKIPPED:
+        self.assertEqual(runtime, 0)
+      else:
+        self.assertTrue(runtime >= 0 and runtime < 2.0)
+
+      self.assertEqual(expectedResults[i], (name, result))
 
   def testRunStages(self):
     """Run some stages and verify the captured results"""
@@ -835,7 +841,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     self.assertTrue(stages.Results.Success())
 
-    stages.Results.Record('Fail', self.failException)
+    stages.Results.Record('Fail', self.failException, time=1)
 
     self.assertFalse(stages.Results.Success())
 
@@ -846,23 +852,24 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
 
+    stages.BuilderStage.archive_url = None
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
     stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SKIPPED)
-    stages.Results.Record('Pass2', stages.Results.SUCCESS)
-    stages.Results.Record('Fail', self.failException)
+    stages.Results.Record('Pass', stages.Results.SKIPPED, time=1)
+    stages.Results.Record('Pass2', stages.Results.SUCCESS, time=2)
+    stages.Results.Record('Fail', self.failException, time=3)
     stages.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
-            ['/bin/false', '/nosuchdir']))
+            ['/bin/false', '/nosuchdir']), time=4)
     stages.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
-            ['/bin/false', '/nosuchdir']))
+            ['/bin/false', '/nosuchdir']), time=5)
 
     results = StringIO.StringIO()
 
@@ -874,13 +881,13 @@ class BuildStagesResultsTest(unittest.TestCase):
         "************************************************************\n"
         "** Pass previously completed\n"
         "************************************************************\n"
-        "** Pass2\n"
+        "** PASS Pass2 (0:00:02)\n"
         "************************************************************\n"
-        "** Fail failed with Exception\n"
+        "** FAIL Fail (0:00:03) with Exception\n"
         "************************************************************\n"
-        "** FailRunCommand failed in /bin/false\n"
+        "** FAIL FailRunCommand (0:00:04) in /bin/false\n"
         "************************************************************\n"
-        "** FailOldRunCommand failed in /bin/false\n"
+        "** FAIL FailOldRunCommand (0:00:05) in /bin/false\n"
         "************************************************************\n")
 
     expectedLines = expectedResults.split('\n')
@@ -894,26 +901,27 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testStagesReportError(self):
     """Tests Stage reporting with exceptions."""
 
+    stages.BuilderStage.archive_url = None
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
     stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SKIPPED)
-    stages.Results.Record('Pass2', stages.Results.SUCCESS)
+    stages.Results.Record('Pass', stages.Results.SKIPPED, time=1)
+    stages.Results.Record('Pass2', stages.Results.SUCCESS, time=2)
     stages.Results.Record('Fail', self.failException,
-                                       'failException Msg\nLine 2')
+                                       'failException Msg\nLine 2', time=3)
     stages.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             ['/bin/false', '/nosuchdir']),
-        'FailRunCommand msg')
+        'FailRunCommand msg', time=4)
     stages.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
             ['/bin/false', '/nosuchdir']),
-        'FailOldRunCommand msg')
+        'FailOldRunCommand msg', time=5)
 
     results = StringIO.StringIO()
 
@@ -925,13 +933,13 @@ class BuildStagesResultsTest(unittest.TestCase):
         "************************************************************\n"
         "** Pass previously completed\n"
         "************************************************************\n"
-        "** Pass2\n"
+        "** PASS Pass2 (0:00:02)\n"
         "************************************************************\n"
-        "** Fail failed with Exception\n"
+        "** FAIL Fail (0:00:03) with Exception\n"
         "************************************************************\n"
-        "** FailRunCommand failed in /bin/false\n"
+        "** FAIL FailRunCommand (0:00:04) in /bin/false\n"
         "************************************************************\n"
-        "** FailOldRunCommand failed in /bin/false\n"
+        "** FAIL FailOldRunCommand (0:00:05) in /bin/false\n"
         "************************************************************\n"
         "\n"
         "Build failed with:\n"
@@ -954,9 +962,11 @@ class BuildStagesResultsTest(unittest.TestCase):
     manifest_manager.current_version = "release_tag_string"
     stages.ManifestVersionedSyncStage.manifest_manager = manifest_manager
 
+    stages.BuilderStage.archive_url = 'result_url'
+
     # Store off a known set of results and generate a report
     stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SUCCESS)
+    stages.Results.Record('Pass', stages.Results.SUCCESS, time=1)
 
     results = StringIO.StringIO()
 
@@ -964,11 +974,14 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     expectedResults = (
         "************************************************************\n"
-        "** RELEASETAG: release_tag_string\n"
+        "** RELEASE VERSION: release_tag_string\n"
         "************************************************************\n"
         "** Stage Results\n"
         "************************************************************\n"
-        "** Pass\n"
+        "** PASS Pass (0:00:01)\n"
+        "************************************************************\n"
+        "** BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n"
+        "**  result_url\n"
         "************************************************************\n")
 
     expectedLines = expectedResults.split('\n')

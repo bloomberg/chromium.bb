@@ -4,10 +4,13 @@
 
 """Module containing the various stages that a builder runs."""
 
+import datetime
+import math
 import os
 import re
 import sys
 import tempfile
+import time
 import traceback
 
 import chromite.buildbot.cbuildbot_commands as commands
@@ -60,7 +63,7 @@ class Results:
   def Success(cls):
     """Return true if all stages so far have passed."""
     for entry in cls._results_log:
-      _, result, _ = entry
+      _, result, _, _ = entry
 
       if not result in (cls.SUCCESS, cls.SKIPPED):
         return False
@@ -68,7 +71,7 @@ class Results:
     return True
 
   @classmethod
-  def Record(cls, name, result, description=None):
+  def Record(cls, name, result, description=None, time=0):
     """Store off an additional stage result.
 
        Args:
@@ -81,7 +84,7 @@ class Results:
          description:
            The textual backtrace of the exception, or None
     """
-    cls._results_log.append((name, result, description))
+    cls._results_log.append((name, result, description, time))
 
   @classmethod
   def Get(cls):
@@ -102,20 +105,9 @@ class Results:
     return cls._previous
 
   @classmethod
-  def Error(cls):
-    """If if there has been an error in any stage"""
-    for stage in cls._results_log:
-      _, result, _ = stage
-
-      if result not in (cls.SUCCESS, cls.SKIPPED):
-        return True
-
-    return False
-
-  @classmethod
   def SaveCompletedStages(cls, file):
     """Save out the successfully completed stages to the provided file."""
-    for name, result, _ in cls._results_log:
+    for name, result, _, _ in cls._results_log:
       if result != cls.SUCCESS and result != cls.SKIPPED: break
       file.write(name)
       file.write('\n')
@@ -137,7 +129,7 @@ class Results:
     if ManifestVersionedSyncStage.manifest_manager:
       file.write(line)
       file.write(edge +
-                 " RELEASETAG: " +
+                 ' RELEASE VERSION: ' +
                  ManifestVersionedSyncStage.manifest_manager.current_version +
                  '\n')
 
@@ -146,12 +138,14 @@ class Results:
 
     first_exception = None
 
-    for name, result, description in results:
+    for name, result, description, run_time in results:
+      timestr = datetime.timedelta(seconds=math.ceil(run_time))
+
       file.write(line)
 
       if result == cls.SUCCESS:
         # These was no error
-        file.write('%s %s\n' % (edge, name))
+        file.write('%s PASS %s (%s)\n' % (edge, name, timestr))
 
       elif result == cls.SKIPPED:
         # The stage was executed previously, and skipped this time
@@ -163,17 +157,23 @@ class Results:
           # If there was a RunCommand error, give just the command that
           # failed, not it's full argument list, since those are usually
           # too long.
-          file.write('%s %s failed in %s\n' %
-                     (edge, name, result.cmd[0]))
+          file.write('%s FAIL %s (%s) in %s\n' %
+                     (edge, name, timestr, result.cmd[0]))
         else:
           # There was a normal error, give the type of exception
-          file.write('%s %s failed with %s\n' %
-                     (edge, name, type(result).__name__))
+          file.write('%s FAIL %s (%s) with %s\n' %
+                     (edge, name, timestr, type(result).__name__))
 
         if not first_exception:
           first_exception = description
 
     file.write(line)
+
+    if BuilderStage.archive_url:
+      file.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
+      file.write('%s  %s\n' % (edge, BuilderStage.archive_url))
+      file.write(line)
+
     if first_exception:
       file.write('\n')
       file.write('Build failed with:\n')
@@ -270,12 +270,24 @@ class BuilderStage():
 
     return paths
 
-  def _PrintLoudly(self, msg, is_start):
+  def _PrintLoudly(self, msg):
     """Prints a msg with loudly."""
-    if is_start:
-      cros_lib.Info('!!! STAGE START !!!------------------------------------\n')
 
-    cros_lib.Info('%s\n' % msg)
+    border_line = '*' * 60
+    edge = '*' * 2
+
+    print border_line
+
+    msg_lines = msg.split('\n')
+
+    # If the last line is whitespace only drop it.
+    if not msg_lines[-1].rstrip():
+      del msg_lines[-1]
+
+    for msg_line in msg_lines:
+      print '%s %s'% (edge, msg_line)
+
+    print border_line
 
   def _GetPortageEnvVar(self, envvar, board):
     """Get a portage environment variable for the configuration's board.
@@ -298,12 +310,12 @@ class BuilderStage():
 
   def _Begin(self):
     """Can be overridden.  Called before a stage is performed."""
-    self._PrintLoudly('Beginning Stage %s\nDescription:  %s' % (
-        self._name, self.__doc__), is_start=True)
+    self._PrintLoudly('Start Stage %s\n\n%s' % (
+        self._name, self.__doc__))
 
   def _Finish(self):
     """Can be overridden.  Called after a stage has been performed."""
-    self._PrintLoudly('Finished Stage %s' % self._name, is_start=False)
+    self._PrintLoudly('Finished Stage %s' % self._name)
 
   def _PerformStage(self):
     """Subclassed stages must override this function to perform what they want
@@ -315,9 +327,11 @@ class BuilderStage():
     """Have the builder execute the stage."""
 
     if Results.PreviouslyCompleted(self._name):
-      self._PrintLoudly('Skipping Stage, Finished it last time', is_start=False)
+      self._PrintLoudly('Skipping Stage %s' % self._name)
       Results.Record(self._name, Results.SKIPPED)
       return
+
+    start_time = time.time()
 
     self._Begin()
     try:
@@ -326,11 +340,13 @@ class BuilderStage():
       # Tell the user about the exception, and record it
       description = traceback.format_exc()
       print >> sys.stderr, description
-      Results.Record(self._name, e, description)
+      elapsed_time = time.time() - start_time
+      Results.Record(self._name, e, description, time=elapsed_time)
 
       raise BuildException()
     else:
-      Results.Record(self._name, Results.SUCCESS)
+      elapsed_time = time.time() - start_time
+      Results.Record(self._name, Results.SUCCESS, time=elapsed_time)
     finally:
       self._Finish()
 

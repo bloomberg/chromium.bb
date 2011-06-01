@@ -140,9 +140,6 @@ def RunBuildStages(bot_id, options, build_config):
     except stages.BuildException:
       pass
 
-    cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
-    cros_lib.Info(stages.BuilderStage.archive_url)
-
   if os.path.exists(options.buildroot):
     with open(completed_stages_file, 'w+') as save_file:
       stages.Results.SaveCompletedStages(save_file)
