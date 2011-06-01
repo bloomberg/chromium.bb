@@ -211,7 +211,7 @@ def add_config(name, updates):
 # External Builds
 #
 
-add_config('chroot-builder', [full, {
+add_config('chromiumos-sdk', [full, {
   'board' : ['x86-generic', 'arm-generic', 'amd64-host'],
   'build_type' : 'chroot',
   'usepkg_chroot' : True,
