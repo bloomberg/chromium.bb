@@ -39,6 +39,7 @@ struct WebPreferences {
   bool loads_images_automatically;
   bool plugins_enabled;
   bool dom_paste_enabled;
+  bool developer_extras_enabled;
   typedef std::vector<std::pair<std::string, std::string> >
       WebInspectorPreferences;
   WebInspectorPreferences inspector_settings;
