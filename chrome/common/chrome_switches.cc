@@ -1165,7 +1165,7 @@ const char kExposePrivateExtensionApi[]   = "expose-private-extension-api";
 const char kTouchDevices[]                  = "touch-devices";
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
 // Disable print preview (Not exposed via about:flags. Only used for testing.)
 const char kDisablePrintPreview[]           = "disable-print-preview";
 

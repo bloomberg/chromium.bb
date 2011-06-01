@@ -101,7 +101,7 @@ class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
 
   virtual void SetUp() {
     // Append the print preview switch before creating the PrintWebViewHelper.
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisablePrintPreview);
 #endif
@@ -301,7 +301,7 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
 
   virtual void SetUp() {
     // Append the print preview switch before creating the PrintWebViewHelper.
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_MACOSX)
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnablePrintPreview);
 #endif

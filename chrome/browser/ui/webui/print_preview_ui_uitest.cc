@@ -19,7 +19,7 @@ class PrintPreviewUITest : public UITest {
  public:
   PrintPreviewUITest() {
     dom_automation_enabled_ = true;
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
     launch_arguments_.AppendSwitch(switches::kEnablePrintPreview);
 #endif
   }
