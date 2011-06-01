@@ -383,7 +383,7 @@ const ui::Animation* TextButtonBase::GetAnimation() const {
 }
 
 void TextButtonBase::UpdateColor() {
-  color_ = IsEnabled() ? color_enabled_ : color_disabled_;
+  color_ = View::IsEnabled() ? color_enabled_ : color_disabled_;
 }
 
 void TextButtonBase::UpdateTextSize() {
@@ -738,5 +738,3 @@ gfx::Rect TextButton::GetTextBounds() const {
 }
 
 }  // namespace views
-
-
