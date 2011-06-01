@@ -2432,9 +2432,12 @@ if nacl_env.Bit('running_on_valgrind'):
   nacl_env.Append(CCFLAGS = ['-g', '-Wno-overlength-strings',
                              '-fno-optimize-sibling-calls'],
                   CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
-                                ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ]],
-                  LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
-                  LIBS = ['valgrind'])
+                                ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ]])
+  # With GLibC, libvalgrind.so is preloaded at runtime.
+  # With Newlib, it has to be linked in.
+  if not nacl_env.Bit('nacl_glibc'):
+    nacl_env.Append(LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
+                    LIBS = ['valgrind'])
 
 if not nacl_env.Bit('bitcode'):
   if nacl_env.Bit('build_x86_32'):

@@ -107,4 +107,6 @@ test_binary = gtest_env.ComponentProgram('sel_ldr_launcher_test',
 test_node = gtest_env.CommandTest(name='sel_ldr_launcher_test.out',
                                   command=[ test_binary ],
                                   osenv=test_osenv)
-env.AddNodeToTestSuite(test_node, ['small_tests'], 'run_sel_ldr_launcher_test')
+
+if not env.IsRunningUnderValgrind():
+  env.AddNodeToTestSuite(test_node, ['small_tests'], 'run_sel_ldr_launcher_test')
