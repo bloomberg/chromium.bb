@@ -423,7 +423,9 @@ PassiveLogCollector::SocketTracker::DoAddEntry(const ChromeNetLog::Entry& entry,
   //               to summarize transaction read/writes for each SOCKET_IN_USE
   //               section.
   if (entry.type == net::NetLog::TYPE_SOCKET_BYTES_SENT ||
-      entry.type == net::NetLog::TYPE_SOCKET_BYTES_RECEIVED) {
+      entry.type == net::NetLog::TYPE_SOCKET_BYTES_RECEIVED ||
+      entry.type == net::NetLog::TYPE_SSL_SOCKET_BYTES_SENT ||
+      entry.type == net::NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED) {
     return ACTION_NONE;
   }
 
@@ -456,6 +458,10 @@ PassiveLogCollector::RequestTracker::DoAddEntry(
         static_cast<net::NetLogSourceParameter*>(entry.params.get())->value();
     AddReferenceToSourceDependency(source_dependency, out_info);
   }
+
+  // Don't keep read bytes around in the log, to save memory.
+  if (entry.type == net::NetLog::TYPE_URL_REQUEST_JOB_FILTERED_BYTES_READ)
+    return ACTION_NONE;
 
   AddEntryToSourceInfo(entry, out_info);
 
