@@ -25,8 +25,3 @@ BUGADAMK WIN : svg/zoom/page/zoom-foreignObject.svg = IMAGE TEXT IMAGE+TEXT
 // Webkit test does not follow ES5 spec on this, will upstream
 // new expectations.
 BUGRICOW : fast/js/property-getters-and-setters.html = TEXT
-
-// We now follow the ES5 spec with regards to the semantics of the receiver
-// given through eval to builtins (undefined). Test assumes that the global
-// object is given as receiver.
-BUGRICOW : fast/js/eval-var-decl.html = TEXT
