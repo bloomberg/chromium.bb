@@ -84,6 +84,10 @@ class ContentSettingsObserver
   // Stores if images, scripts, and plugins have actually been blocked.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
 
+  // Caches the result of AllowStorage.
+  typedef std::pair<GURL, bool> StoragePermissionsKey;
+  std::map<StoragePermissionsKey, bool> cached_storage_permissions_;
+
   bool plugins_temporarily_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);

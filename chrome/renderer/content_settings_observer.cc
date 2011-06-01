@@ -221,11 +221,18 @@ bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
     return false; // Uninitialized document.
   bool result = false;
 
+  StoragePermissionsKey key(GURL(frame->securityOrigin().toString()), local);
+  std::map<StoragePermissionsKey, bool>::const_iterator permissions =
+      cached_storage_permissions_.find(key);
+  if (permissions != cached_storage_permissions_.end())
+    return permissions->second;
+
   Send(new ViewHostMsg_AllowDOMStorage(
       routing_id(), GURL(frame->securityOrigin().toString()),
       GURL(frame->top()->securityOrigin().toString()),
       local ? DOM_STORAGE_LOCAL : DOM_STORAGE_SESSION,
       &result));
+  cached_storage_permissions_[key] = result;
   return result;
 }
 
@@ -257,4 +264,5 @@ bool ContentSettingsObserver::AllowContentType(
 void ContentSettingsObserver::ClearBlockedContentSettings() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i)
     content_blocked_[i] = false;
+  cached_storage_permissions_.clear();
 }
