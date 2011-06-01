@@ -93,7 +93,7 @@ class GpuChannel : public IPC::Channel::Listener,
   void LoseAllContexts();
 
   // Look up a GLSurface by ID. In this case the ID is the IPC routing ID.
-  gfx::GLSurface* LookupSurface(int surface_id);
+  virtual gfx::GLSurface* LookupSurface(int surface_id);
 
   // Get the TransportTexture by ID.
   TransportTexture* GetTransportTexture(int32 route_id);
