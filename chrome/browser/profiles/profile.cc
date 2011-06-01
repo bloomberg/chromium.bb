@@ -561,11 +561,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual WebKitContext* GetWebKitContext() {
-    if (!webkit_context_.get()) {
-      webkit_context_ = new WebKitContext(
-          IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
-          false);
-    }
+    CreateQuotaManagerAndClients();
     return webkit_context_.get();
   }
 
@@ -690,6 +686,7 @@ class OffTheRecordProfileImpl : public Profile,
     if (quota_manager_.get()) {
       DCHECK(file_system_context_.get());
       DCHECK(db_tracker_.get());
+      DCHECK(webkit_context_.get());
       return;
     }
 
@@ -714,6 +711,10 @@ class OffTheRecordProfileImpl : public Profile,
         GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy(),
         quota_manager_->proxy(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+    webkit_context_ = new WebKitContext(
+        IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
+        false, quota_manager_->proxy(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT));
     appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
