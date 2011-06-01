@@ -12,6 +12,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -231,13 +232,85 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 
 }  // namespace
 
+// A SafeBrowingService implementation that returns a fixed result for a given
+// URL.
+class FakeSafeBrowsingService :  public SafeBrowsingService {
+ public:
+  FakeSafeBrowsingService() :
+      result_(SAFE) {}
+
+  virtual ~FakeSafeBrowsingService() {}
+
+  // Called on the IO thread to check if the given url is safe or not.  If we
+  // can synchronously determine that the url is safe, CheckUrl returns true.
+  // Otherwise it returns false, and "client" is called asynchronously with the
+  // result when it is ready.
+  // Returns true, indicating a SAFE result, unless the URL is the fixed URL
+  // specified by the user, and the user-specified result is not SAFE
+  // (in which that result will be communicated back via a call into the
+  // client, and false will be returned).
+  // Overrides SafeBrowsingService::CheckBrowseUrl.
+  virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) OVERRIDE {
+    if (gurl != url_ || result_ == SAFE)
+      return true;
+
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &FakeSafeBrowsingService::OnCheckBrowseURLDone,
+                          gurl, client));
+    return false;
+  }
+
+  void SetResultForUrl(const GURL& url, UrlCheckResult result) {
+    url_ = url;
+    result_ = result;
+  }
+
+ private:
+  void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
+    SafeBrowsingService::SafeBrowsingCheck check;
+    check.urls.push_back(gurl);
+    check.client = client;
+    check.result = result_;
+    client->OnSafeBrowsingResult(check);
+  }
+
+  GURL url_;
+  UrlCheckResult result_;
+};
+
+// Factory that creates FakeSafeBrowsingService instances.
+class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
+ public:
+  TestSafeBrowsingServiceFactory() :
+      most_recent_service_(NULL) { }
+  virtual ~TestSafeBrowsingServiceFactory() { }
+
+  virtual SafeBrowsingService* CreateSafeBrowsingService() OVERRIDE {
+    most_recent_service_ =  new FakeSafeBrowsingService();
+    return most_recent_service_;
+  }
+
+  FakeSafeBrowsingService* most_recent_service() const {
+    return most_recent_service_;
+  }
+
+ private:
+  FakeSafeBrowsingService* most_recent_service_;
+};
+
 class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
-      : prerender_contents_factory_(NULL),
+      : safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
+        prerender_contents_factory_(NULL),
         use_https_src_server_(false),
         call_javascript_(true) {
     EnableDOMAutomation();
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    SafeBrowsingService::RegisterFactory(safe_browsing_factory_.get());
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -260,6 +333,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                  false);
+    ASSERT_TRUE(test_server()->Start());
   }
 
   // Overload for a single expected final status
@@ -277,7 +351,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       const std::string& html_file,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int total_navigations) {
-    ASSERT_TRUE(test_server()->Start());
     PrerenderTestURLImpl(test_server()->GetURL(html_file),
                          expected_final_status_queue,
                          total_navigations);
@@ -287,7 +360,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       const GURL& url,
       FinalStatus expected_final_status,
       int total_navigations) {
-    ASSERT_TRUE(test_server()->Start());
     std::deque<FinalStatus> expected_final_status_queue(1,
                                                         expected_final_status);
     PrerenderTestURLImpl(url, expected_final_status_queue, total_navigations);
@@ -357,6 +429,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     Profile* profile = browser()->GetSelectedTabContents()->profile();
     PrerenderManager* prerender_manager = profile->GetPrerenderManager();
     return prerender_manager;
+  }
+
+  FakeSafeBrowsingService* GetSafeBrowsingService() {
+    return safe_browsing_factory_->most_recent_service();
   }
 
  private:
@@ -460,6 +536,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     }
   }
 
+  scoped_ptr<TestSafeBrowsingServiceFactory> safe_browsing_factory_;
   WaitForLoadPrerenderContentsFactory* prerender_contents_factory_;
   GURL dest_url_;
   bool use_https_src_server_;
@@ -1211,6 +1288,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
   PrerenderTestURL(replacement_path,
                    FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED,
                    1);
+}
+
+// Ensures that we do not prerender pages with a safe browsing
+// interstitial.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SafeBrowsingPage) {
+  GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
+  GetSafeBrowsingService()->SetResultForUrl(
+      url, SafeBrowsingService::URL_MALWARE);
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_SAFE_BROWSING, 1);
 }
 
 }  // namespace prerender
