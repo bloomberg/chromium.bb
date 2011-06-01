@@ -109,6 +109,9 @@ void GpuChannel::OnChannelConnected(int32 peer_pid) {
 }
 
 bool GpuChannel::Send(IPC::Message* message) {
+  // The GPU process must never send a synchronous IPC message to the renderer
+  // process. This could result in deadlock.
+  DCHECK(!message->is_sync());
   if (log_messages_) {
     VLOG(1) << "sending message @" << message << " on channel @" << this
             << " with type " << message->type();

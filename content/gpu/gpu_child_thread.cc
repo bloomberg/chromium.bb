@@ -86,12 +86,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 
 bool GpuChildThread::Send(IPC::Message* msg) {
   // The GPU process must never send a synchronous IPC message to the browser
-  // process. This could result in deadlock. Unfortunately linux does this for
-  // GpuHostMsg_ResizeXID. TODO(apatrick): fix this before issuing any GL calls
-  // on the browser process' GPU thread.
-#if !defined(TOOLKIT_USES_GTK)
-    DCHECK(!msg->is_sync());
-#endif
+  // process. This could result in deadlock.
+  DCHECK(!msg->is_sync());
 
   return ChildThread::Send(msg);
 }

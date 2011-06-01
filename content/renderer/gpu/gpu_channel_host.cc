@@ -92,6 +92,9 @@ void GpuChannelHost::OnChannelError() {
 }
 
 bool GpuChannelHost::Send(IPC::Message* message) {
+  // The GPU process never sends synchronous IPCs so clear the unblock flag to
+  // preserve order.
+  message->set_unblock(false);
   if (channel_.get())
     return channel_->Send(message);
 

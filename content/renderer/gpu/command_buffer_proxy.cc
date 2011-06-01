@@ -154,10 +154,9 @@ void CommandBufferProxy::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  IPC::Message *message = new GpuCommandBufferMsg_AsyncFlush(
-      route_id_, put_offset, ++flush_count_);
-  message->set_unblock(true);
-  Send(message);
+  Send(new GpuCommandBufferMsg_AsyncFlush(route_id_,
+                                          put_offset,
+                                          ++flush_count_));
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
@@ -333,22 +332,7 @@ void CommandBufferProxy::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  IPC::Message* message =
-      new GpuCommandBufferMsg_ResizeOffscreenFrameBuffer(route_id_, size);
-
-  // We need to set the unblock flag on this message to guarantee the
-  // order in which it is processed in the GPU process. Ordinarily in
-  // certain situations, namely if a synchronous message is being
-  // processed, other synchronous messages may be processed before
-  // asynchronous messages. During some page reloads WebGL seems to
-  // send three messages (sync, async, sync) in rapid succession in
-  // that order, and the sync message (GpuCommandBufferMsg_Flush, on
-  // behalf of SwapBuffers) is sometimes processed before the async
-  // message (GpuCommandBufferMsg_ResizeOffscreenFrameBuffer). This
-  // causes the WebGL content to disappear because the back buffer is
-  // not correctly resized.
-  message->set_unblock(true);
-  Send(message);
+  Send(new GpuCommandBufferMsg_ResizeOffscreenFrameBuffer(route_id_, size));
 }
 
 void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
