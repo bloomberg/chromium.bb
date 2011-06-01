@@ -151,6 +151,7 @@ void SyncSetupFlow::GetArgsForEnterPassphrase(
     bool tried_creating_explicit_passphrase,
     bool tried_setting_explicit_passphrase,
     DictionaryValue* args) {
+  args->SetBoolean("show_passphrase", true);
   args->SetBoolean("passphrase_creation_rejected",
                    tried_creating_explicit_passphrase);
   args->SetBoolean("passphrase_setting_rejected",
@@ -350,6 +351,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::ENTER_PASSPHRASE: {
       DictionaryValue args;
+      SyncSetupFlow::GetArgsForConfigure(service_, &args);
       SyncSetupFlow::GetArgsForEnterPassphrase(
           tried_creating_explicit_passphrase_,
           tried_setting_explicit_passphrase_,
