@@ -242,7 +242,7 @@ bool GetWindowRect(XID window, gfx::Rect* rect) {
 bool PropertyExists(XID window, const std::string& property_name) {
   Atom type = None;
   int format = 0;  // size in bits of each item in 'property'
-  long unsigned int num_items = 0;
+  unsigned long num_items = 0;
   unsigned char* property = NULL;
 
   int result = GetProperty(window, property_name, 1,
@@ -257,7 +257,7 @@ bool PropertyExists(XID window, const std::string& property_name) {
 bool GetIntProperty(XID window, const std::string& property_name, int* value) {
   Atom type = None;
   int format = 0;  // size in bits of each item in 'property'
-  long unsigned int num_items = 0;
+  unsigned long num_items = 0;
   unsigned char* property = NULL;
 
   int result = GetProperty(window, property_name, 1,
@@ -270,7 +270,7 @@ bool GetIntProperty(XID window, const std::string& property_name, int* value) {
     return false;
   }
 
-  *value = *(reinterpret_cast<int*>(property));
+  *value = static_cast<int>(*(reinterpret_cast<long*>(property)));
   XFree(property);
   return true;
 }
@@ -280,7 +280,7 @@ bool GetIntArrayProperty(XID window,
                          std::vector<int>* value) {
   Atom type = None;
   int format = 0;  // size in bits of each item in 'property'
-  long unsigned int num_items = 0;
+  unsigned long num_items = 0;
   unsigned char* properties = NULL;
 
   int result = GetProperty(window, property_name,
@@ -294,9 +294,11 @@ bool GetIntArrayProperty(XID window,
     return false;
   }
 
-  int* int_properties = reinterpret_cast<int*>(properties);
+  long* int_properties = reinterpret_cast<long*>(properties);
   value->clear();
-  value->insert(value->begin(), int_properties, int_properties + num_items);
+  for (unsigned long i = 0; i < num_items; ++i) {
+    value->push_back(static_cast<int>(int_properties[i]));
+  }
   XFree(properties);
   return true;
 }
@@ -306,7 +308,7 @@ bool GetAtomArrayProperty(XID window,
                           std::vector<Atom>* value) {
   Atom type = None;
   int format = 0;  // size in bits of each item in 'property'
-  long unsigned int num_items = 0;
+  unsigned long num_items = 0;
   unsigned char* properties = NULL;
 
   int result = GetProperty(window, property_name,
@@ -331,7 +333,7 @@ bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value) {
   Atom type = None;
   int format = 0;  // size in bits of each item in 'property'
-  long unsigned int num_items = 0;
+  unsigned long num_items = 0;
   unsigned char* property = NULL;
 
   int result = GetProperty(window, property_name, 1024,
