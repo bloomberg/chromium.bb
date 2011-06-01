@@ -990,6 +990,8 @@ URL.
     base_url = args[0].rstrip('/')
     if not options.name:
       name = base_url.split('/')[-1]
+      if name.endswith('.git'):
+        name = name[:-4]
     else:
       # specify an alternate relpath for the given URL.
       name = options.name
