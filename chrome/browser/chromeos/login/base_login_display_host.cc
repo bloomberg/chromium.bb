@@ -159,6 +159,10 @@ void BaseLoginDisplayHost::StartSignInScreen() {
   sign_in_controller_.reset();  // Only one controller in a time.
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
   ShowBackground();
+  if (!WizardController::IsDeviceRegistered()) {
+    SetOobeProgressBarVisible(true);
+    SetOobeProgress(chromeos::BackgroundView::SIGNIN);
+  }
   SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(users);
 
