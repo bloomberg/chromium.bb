@@ -64,7 +64,7 @@ VarPrivate InstancePrivate::GetOwnerElementObject() {
           pp_instance()));
 }
 
-VarPrivate InstancePrivate::ExecuteScript(const VarPrivate& script,
+VarPrivate InstancePrivate::ExecuteScript(const Var& script,
                                           VarPrivate* exception) {
   if (!has_interface<PPB_Instance_Private>())
     return VarPrivate();
