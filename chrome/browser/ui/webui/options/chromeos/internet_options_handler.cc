@@ -179,26 +179,6 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetShowPass",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD));
-  localized_strings->SetString("inetSecurityNone",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE)));
-  localized_strings->SetString("inetSecurityWEP",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP)));
-  localized_strings->SetString("inetSecurityWPA",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA)));
-  localized_strings->SetString("inetSecurityRSN",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN)));
   localized_strings->SetString("inetPassPrompt",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD));

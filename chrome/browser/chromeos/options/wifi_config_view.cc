@@ -35,9 +35,8 @@ bool Is8021x(const WifiNetwork* wifi) {
 enum SecurityComboboxIndex {
   SECURITY_INDEX_NONE  = 0,
   SECURITY_INDEX_WEP   = 1,
-  SECURITY_INDEX_WPA   = 2,
-  SECURITY_INDEX_RSN   = 3,
-  SECURITY_INDEX_COUNT = 4
+  SECURITY_INDEX_PSK   = 2,
+  SECURITY_INDEX_COUNT = 3
 };
 
 class SecurityComboboxModel : public ui::ComboboxModel {
@@ -54,12 +53,9 @@ class SecurityComboboxModel : public ui::ComboboxModel {
     else if (index == SECURITY_INDEX_WEP)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP);
-    else if (index == SECURITY_INDEX_WPA)
+    else if (index == SECURITY_INDEX_PSK)
       return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA);
-    else if (index == SECURITY_INDEX_RSN)
-      return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN);
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_PSK);
     NOTREACHED();
     return string16();
   }
@@ -441,11 +437,8 @@ bool WifiConfigView::Login() {
         case SECURITY_INDEX_WEP:
           sec = SECURITY_WEP;
           break;
-        case SECURITY_INDEX_WPA:
-          sec = SECURITY_WPA;
-          break;
-        case SECURITY_INDEX_RSN:
-          sec = SECURITY_RSN;
+        case SECURITY_INDEX_PSK:
+          sec = SECURITY_PSK;
           break;
       }
       cros->ConnectToWifiNetwork(GetSsid(), sec, GetPassphrase());
