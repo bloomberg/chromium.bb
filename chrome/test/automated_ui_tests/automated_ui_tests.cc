@@ -113,7 +113,7 @@ std::string GetChromeRevision() {
   file_info.reset(
       FileVersionInfo::CreateFileVersionInfo(FilePath(kChromeDll)));
   last_change = WideToASCII(file_info->last_change());
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
+#elif defined(OS_POSIX)
   chrome::VersionInfo version_info;
   last_change = version_info.LastChange();
 #endif // !defined(OS_WIN)

@@ -61,8 +61,8 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
     result.push_back(process_entry->pid());
   }
 
-#if defined(OS_LINUX)
-  // On Linux we might be running with a zygote process for the renderers.
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // On Unix we might be running with a zygote process for the renderers.
   // Because of that we sweep the list of processes again and pick those which
   // are children of one of the processes that we've already seen.
   {
@@ -72,9 +72,9 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
     while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
       result.push_back(process_entry->pid());
   }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   // On Mac OS X we run the subprocesses with a different bundle, and
   // on Linux via /proc/self/exe, so they end up with a different
   // name.  We must collect them in a second pass.

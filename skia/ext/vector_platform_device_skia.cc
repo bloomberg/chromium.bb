@@ -56,7 +56,7 @@ PlatformDevice::PlatformSurface VectorPlatformDeviceSkia::BeginPlatformPaint() {
                                                  pdf_device_->height(),
                                                  false, /* not opaque */
                                                  NULL);
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
   raster_surface_ = BitmapPlatformDevice::Create(pdf_device_->width(),
                                                  pdf_device_->height(),
                                                  false /* not opaque */);

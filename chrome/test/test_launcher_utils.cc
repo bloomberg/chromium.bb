@@ -67,7 +67,7 @@ bool OverrideUserDataDir(const FilePath& user_data_dir) {
   // This matches what is done in ChromeMain().
   success = PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Make sure the cache directory is inside our clear profile. Otherwise
   // the cache may contain data from earlier tests that could break the
   // current test.

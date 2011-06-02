@@ -289,7 +289,7 @@ void RunMessageLoop() {
 #if defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler handler;
   loop->Run(&handler);
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
   loop->Run(NULL);
 #else
   loop->Run();

@@ -193,7 +193,7 @@ class PageLoadTest : public UITest {
     file_info.reset(
         FileVersionInfo::CreateFileVersionInfo(FilePath(kChromeDll)));
     last_change = WideToASCII(file_info->last_change());
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
+#elif defined(OS_POSIX)
     // TODO(fmeawad): On Mac, the version retrieved here belongs to the test
     // module and not the chrome binary, need to be changed to chrome binary
     // instead.

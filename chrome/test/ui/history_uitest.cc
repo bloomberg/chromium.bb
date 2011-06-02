@@ -84,7 +84,7 @@ TEST_F(HistoryTester, VerifyHistoryLength3) {
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
 TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
   // Test the history length for the following page transition.
   //
@@ -116,7 +116,7 @@ TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
   WaitForFinish("History_Length_Test_12", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(HistoryTester, ConsiderSlowRedirectAsUserInitiated) {
   // Test the history length for the following page transition.

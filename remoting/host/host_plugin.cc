@@ -919,9 +919,9 @@ OSCALL NPError NP_GetEntryPoints(NPPluginFuncs* nppfuncs) {
 }
 
 OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
                             , NPPluginFuncs* nppfuncs
-#endif  // OS_LINUX
+#endif
                             ) {
   LOG(INFO) << "NP_Initialize";
   if (g_at_exit_manager)
@@ -935,9 +935,9 @@ OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 
   g_at_exit_manager = new base::AtExitManager;
   g_npnetscape_funcs = npnetscape_funcs;
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   NP_GetEntryPoints(nppfuncs);
-#endif  // OS_LINUX
+#endif
   return NPERR_NO_ERROR;
 }
 

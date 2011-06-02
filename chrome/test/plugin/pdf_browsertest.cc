@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
     std::string filename = file_path.BaseName().MaybeAsASCII();
     ASSERT_FALSE(filename.empty());
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_POSIX)
     if (filename == "sample.pdf")
       continue;  // Crashes on Mac and Linux.  http://crbug.com/63549
 #endif

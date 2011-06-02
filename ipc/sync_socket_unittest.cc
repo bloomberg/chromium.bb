@@ -20,9 +20,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif
 
 enum IPCMessageIds {
   UNUSED_IPC_TYPE,

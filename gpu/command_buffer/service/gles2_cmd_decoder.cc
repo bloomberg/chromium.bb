@@ -2629,7 +2629,7 @@ void GLES2DecoderImpl::DoCopyTextureToParentTextureCHROMIUM(
 }
 
 void GLES2DecoderImpl::DoResizeCHROMIUM(GLuint width, GLuint height) {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Make sure that we are done drawing to the back buffer before resizing.
   glFinish();
 #endif

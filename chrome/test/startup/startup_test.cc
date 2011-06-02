@@ -366,7 +366,7 @@ TEST_F(StartupTest, PerfComplexTheme) {
                  ProxyLauncher::COMPLEX_THEME, 0, 0);
 }
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 TEST_F(StartupTest, PerfGtkTheme) {
   RunStartupTest("warm", "gtk-theme", WARM, NOT_IMPORTANT,
                  ProxyLauncher::NATIVE_THEME, 0, 0);

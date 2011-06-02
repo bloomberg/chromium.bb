@@ -8,9 +8,9 @@
 #include "gpu/demos/framework/window.h"
 #include "ui/gfx/gl/gl_surface.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
-#endif  // OS_LINUX
+#endif  // TOOLKIT_USES_GTK
 
 namespace {
 static const int kWindowWidth = 512;
@@ -18,9 +18,9 @@ static const int kWindowHeight = 512;
 }  // namespace.
 
 int main(int argc, char** argv) {
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   gtk_init(&argc, &argv);
-#endif  // OS_LINUX
+#endif  // TOOLKIT_USES_GTK
 
   // AtExitManager is used by singleton classes to delete themselves when
   // the program terminates.

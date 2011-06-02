@@ -1382,7 +1382,7 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_UserGestureTargetBlank) {
 #endif  // defined(OS_WIN)
 
 // TODO(port): Need to port autocomplete_edit_proxy.* first.
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
 TEST_F(AutomationProxyTest, AutocompleteGetSetText) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -1426,7 +1426,7 @@ TEST_F(AutomationProxyTest, AutocompleteParallelProxy) {
   EXPECT_EQ(text_to_set2, actual_text2);
 }
 
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_MACOSX)
 // Disabled, http://crbug.com/48601.

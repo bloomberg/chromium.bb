@@ -151,7 +151,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::USER_STYLE_SHEET_UPDATED,
                  NotificationService::AllSources());
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 #endif
@@ -413,7 +413,7 @@ void TabContentsWrapper::Observe(NotificationType type,
     case NotificationType::USER_STYLE_SHEET_UPDATED:
       UpdateWebPreferences();
       break;
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     case NotificationType::BROWSER_THEME_CHANGED: {
       UpdateRendererPreferences();
       break;

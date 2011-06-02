@@ -5,9 +5,9 @@
 #include "base/at_exit.h"
 #include "base/message_loop.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
-#endif  // OS_LINUX
+#endif
 
 extern "C" {
 #if defined(GLES2_CONFORM_SUPPORT_ONLY)
@@ -18,9 +18,9 @@ extern "C" {
 }
 
 int main(int argc, char *argv[]) {
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   gtk_init(&argc, &argv);
-#endif  // OS_LINUX
+#endif
 
   base::AtExitManager at_exit;
   MessageLoopForUI message_loop;

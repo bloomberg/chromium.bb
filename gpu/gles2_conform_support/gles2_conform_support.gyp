@@ -54,7 +54,7 @@
         'egl_native',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': ['../../build/linux/system.gyp:gtk'],
         }],
       ],
@@ -76,7 +76,7 @@
         '<(DEPTH)/third_party/expat/expat.gyp:expat',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['toolkit_uses_gtk == 1', {
           'dependencies': ['../../build/linux/system.gyp:gtk'],
         }],
       ],
