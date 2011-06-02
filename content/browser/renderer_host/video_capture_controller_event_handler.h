@@ -12,10 +12,8 @@
 
 // ID used for identifying an object of VideoCaptureController.
 struct VideoCaptureControllerID {
- public:
-  VideoCaptureControllerID();
-  VideoCaptureControllerID(int32 rid, int did);
-  ~VideoCaptureControllerID();
+  VideoCaptureControllerID(int32 routing_id, int device_id);
+
   bool operator<(const VideoCaptureControllerID& vc) const;
 
   int32 routing_id;

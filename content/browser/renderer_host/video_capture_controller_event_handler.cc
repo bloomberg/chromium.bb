@@ -4,15 +4,10 @@
 
 #include "content/browser/renderer_host/video_capture_controller_event_handler.h"
 
-VideoCaptureControllerID::VideoCaptureControllerID()
-    :routing_id(0),
-     device_id(0) {}
-
 VideoCaptureControllerID::VideoCaptureControllerID(int32 rid, int did)
-    :routing_id(rid),
-     device_id(did) {}
-
-VideoCaptureControllerID::~VideoCaptureControllerID() {}
+    : routing_id(rid),
+      device_id(did) {
+}
 
 bool VideoCaptureControllerID::operator<(
     const VideoCaptureControllerID& vc) const {
