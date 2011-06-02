@@ -65,7 +65,7 @@ bool AppModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(user_share_);
   const syncable::ModelTypeSet& encrypted_types =
-      GetEncryptedDataTypes(trans.GetWrappedTrans());
+      sync_api::GetEncryptedTypes(&trans);
   return encrypted_types.count(traits_.model_type) == 0 ||
       trans.GetCryptographer()->is_ready();
 }

@@ -25,7 +25,6 @@ namespace browser_sync {
 using sessions::SyncSession;
 using std::string;
 using syncable::Entry;
-using syncable::GetEncryptedDataTypes;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::ReadTransaction;
@@ -344,9 +343,9 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
     cryptographer =
         session()->context()->directory_manager()->GetCryptographer(&trans);
+    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
   }
 
   // Nigori node updates should update the Cryptographer.
@@ -389,9 +388,10 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
     cryptographer =
         session()->context()->directory_manager()->GetCryptographer(&trans);
+    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+
 
     // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -467,7 +467,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
+    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -486,9 +486,10 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
     cryptographer =
         session()->context()->directory_manager()->GetCryptographer(&trans);
+    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+
 
     // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -571,7 +572,8 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
     encrypted_types.clear();
     encrypted_types.insert(syncable::PASSWORDS);
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
+    encrypted_types.insert(syncable::BOOKMARKS);
+    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
 
     Syncer::UnsyncedMetaHandles handles;
     SyncerUtil::GetUnsyncedEntries(&trans, &handles);

@@ -17,6 +17,7 @@ const char kNigoriTag[] = "google_chrome_nigori";
 const char kNigoriKeyName[] = "nigori-key";
 
 Cryptographer::Cryptographer() : default_nigori_(NULL) {
+  encrypted_types_.insert(syncable::PASSWORDS);
 }
 
 Cryptographer::~Cryptographer() {}
@@ -239,6 +240,48 @@ Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
   }
 
   return nigori.release();
+}
+
+Cryptographer::UpdateResult Cryptographer::Update(
+    const sync_pb::NigoriSpecifics& nigori) {
+  SetEncryptedTypes(nigori);
+  if (!nigori.encrypted().blob().empty()) {
+    if (CanDecrypt(nigori.encrypted())) {
+      SetKeys(nigori.encrypted());
+      return Cryptographer::SUCCESS;
+    } else {
+      SetPendingKeys(nigori.encrypted());
+      return Cryptographer::NEEDS_PASSPHRASE;
+    }
+  }
+  return Cryptographer::SUCCESS;
+}
+
+void Cryptographer::SetEncryptedTypes(const sync_pb::NigoriSpecifics& nigori) {
+  encrypted_types_.clear();
+  if (nigori.encrypt_bookmarks())
+    encrypted_types_.insert(syncable::BOOKMARKS);
+  if (nigori.encrypt_preferences())
+    encrypted_types_.insert(syncable::PREFERENCES);
+  if (nigori.encrypt_autofill_profile())
+    encrypted_types_.insert(syncable::AUTOFILL_PROFILE);
+  if (nigori.encrypt_autofill())
+    encrypted_types_.insert(syncable::AUTOFILL);
+  if (nigori.encrypt_themes())
+    encrypted_types_.insert(syncable::THEMES);
+  if (nigori.encrypt_typed_urls())
+    encrypted_types_.insert(syncable::TYPED_URLS);
+  if (nigori.encrypt_extensions())
+    encrypted_types_.insert(syncable::EXTENSIONS);
+  if (nigori.encrypt_sessions())
+    encrypted_types_.insert(syncable::SESSIONS);
+  if (nigori.encrypt_apps())
+    encrypted_types_.insert(syncable::APPS);
+  encrypted_types_.insert(syncable::PASSWORDS);
+}
+
+syncable::ModelTypeSet Cryptographer::GetEncryptedTypes() const {
+  return encrypted_types_;
 }
 
 void Cryptographer::InstallKeys(const std::string& default_key_name,

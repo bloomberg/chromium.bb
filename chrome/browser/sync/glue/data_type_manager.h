@@ -91,6 +91,9 @@ class DataTypeManager {
   virtual void Configure(const TypeSet& desired_types,
                          sync_api::ConfigureReason reason) = 0;
 
+  virtual void ConfigureWithoutNigori(const TypeSet& desired_types,
+      sync_api::ConfigureReason reason) = 0;
+
   // Synchronously stops all registered data types.  If called after
   // Configure() is called but before it finishes, it will abort the
   // configure and any data types that have been started will be
