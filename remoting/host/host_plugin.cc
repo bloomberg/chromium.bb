@@ -70,6 +70,9 @@ namespace {
 // Global netscape functions initialized in NP_Initialize.
 NPNetscapeFuncs* g_npnetscape_funcs = NULL;
 
+// Global AtExitManager, created in NP_Initialize and destroyed in NP_Shutdown.
+base::AtExitManager* g_at_exit_manager = NULL;
+
 // The name and description are returned by GetValue, but are also
 // combined with the MIME type to satisfy GetMIMEDescription, so we
 // use macros here to allow that to happen at compile-time.
@@ -314,7 +317,6 @@ class HostNPScriptObject {
   int state_;
   std::string access_code_;
   NPObject* on_state_changed_func_;
-  base::AtExitManager exit_manager_;
   base::PlatformThreadId np_thread_id_;
 
   scoped_refptr<remoting::RegisterSupportHostRequest> register_request_;
@@ -922,12 +924,16 @@ OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 #endif  // OS_LINUX
                             ) {
   LOG(INFO) << "NP_Initialize";
+  if (g_at_exit_manager)
+    return NPERR_MODULE_LOAD_FAILED_ERROR;
+
   if(npnetscape_funcs == NULL)
     return NPERR_INVALID_FUNCTABLE_ERROR;
 
   if(((npnetscape_funcs->version & 0xff00) >> 8) > NP_VERSION_MAJOR)
     return NPERR_INCOMPATIBLE_VERSION_ERROR;
 
+  g_at_exit_manager = new base::AtExitManager;
   g_npnetscape_funcs = npnetscape_funcs;
 #if defined(OS_LINUX)
   NP_GetEntryPoints(nppfuncs);
@@ -937,6 +943,8 @@ OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 
 OSCALL NPError NP_Shutdown() {
   LOG(INFO) << "NP_Shutdown";
+  delete g_at_exit_manager;
+  g_at_exit_manager = NULL;
   return NPERR_NO_ERROR;
 }
 
