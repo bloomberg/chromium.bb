@@ -809,21 +809,6 @@
    fun:RC4_Encrypt
 }
 {
-   bug_39963_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*ChromeCookieMonsterDelegateC1EP7Profile
-   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   ...
-   fun:_ZN11ProfileImpl36RegisterExtensionWithRequestContextsEP9Extension
-   fun:_ZN16ExtensionService21NotifyExtensionLoadedEP9Extension
-   fun:_ZN16ExtensionService17OnExtensionLoadedEP9Extensionb
-   fun:_ZN16ExtensionService23LoadComponentExtensionsEv
-   fun:_ZN16ExtensionService17LoadAllExtensionsEv
-   fun:_ZN16ExtensionService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEv
-}
-{
    # Intentionally leaking NSS to prevent shutdown crashes
    bug_61585a
    Memcheck:Leak
