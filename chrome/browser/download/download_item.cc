@@ -141,7 +141,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
     state_ = CANCELLED;
   if (IsComplete())
     all_data_saved_ = true;
-  Init(false /* don't start progress timer */);
+  Init(false /* not actively downloading */);
 }
 
 // Constructing for a regular download:
@@ -178,7 +178,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       all_data_saved_(false),
       opened_(false),
       open_enabled_(true) {
-  Init(true /* start progress timer */);
+  Init(true /* actively downloading */);
 }
 
 // Constructing for the "Save Page As..." feature:
@@ -207,7 +207,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       all_data_saved_(false),
       opened_(false),
       open_enabled_(true) {
-  Init(true /* start progress timer */);
+  Init(true /* actively downloading */);
 }
 
 DownloadItem::~DownloadItem() {
@@ -360,7 +360,7 @@ void DownloadItem::Completed() {
   state_ = COMPLETE;
   UpdateObservers();
   download_manager_->DownloadCompleted(id());
-  download_util::RecordDownloadCount(download_util::COMPLETED_COUNT);
+  download_util::RecordDownloadCompleted(start_tick_);
 
   // Handle chrome extensions explicitly and skip the shell execute.
   if (is_extension_install()) {
@@ -390,6 +390,7 @@ void DownloadItem::Interrupted(int64 size, int os_error) {
   last_os_error_ = os_error;
   UpdateSize(size);
   StopProgressTimer();
+  download_util::RecordDownloadInterrupted(os_error);
   UpdateObservers();
 }
 
@@ -591,10 +592,12 @@ FilePath DownloadItem::GetUserVerifiedFilePath() const {
       GetTargetFilePath() : full_path_;
 }
 
-void DownloadItem::Init(bool start_timer) {
+void DownloadItem::Init(bool active) {
   UpdateTarget();
-  if (start_timer)
+  if (active) {
     StartProgressTimer();
+    download_util::RecordDownloadCount(download_util::START_COUNT);
+  }
   VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
 }
 

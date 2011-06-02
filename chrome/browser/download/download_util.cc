@@ -374,6 +374,19 @@ void RecordDownloadCount(DownloadCountTypes type) {
       "Download.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
+void RecordDownloadCompleted(const base::TimeTicks& start) {
+  download_util::RecordDownloadCount(download_util::COMPLETED_COUNT);
+  UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
+}
+
+void RecordDownloadInterrupted(int os_error) {
+  download_util::RecordDownloadCount(download_util::INTERRUPTED_COUNT);
+  // |os_error| is probably < 256, so use that as the maximum value of the
+  // "enum". The histogram implementation uses a separate bucket for any
+  // unlikely value of os_error >= 256.
+  UMA_HISTOGRAM_ENUMERATION("Download.InterruptedError", os_error, 0x100);
+}
+
 // Download progress painting --------------------------------------------------
 
 // Common bitmaps used for download progress animations. We load them once the

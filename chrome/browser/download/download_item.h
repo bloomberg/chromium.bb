@@ -323,7 +323,9 @@ class DownloadItem {
 #endif
 
  private:
-  void Init(bool start_timer);
+  // Construction common to all constructors. |active| should be true for new
+  // downloads and false for downloads from the history.
+  void Init(bool active);
 
   // Internal helper for maintaining consistent received and total sizes.
   void UpdateSize(int64 size);

@@ -32,6 +32,10 @@ class SkBitmap;
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 
+namespace base {
+class TimeTicks;
+}
+
 namespace content {
 class ResourceContext;
 }
@@ -159,11 +163,23 @@ enum DownloadCountTypes {
   // Downloads that are cancelled before completion (user action or error).
   CANCELLED_COUNT,
 
+  // Downloads that are started. Should be equal to UNTHROTTLED_COUNT.
+  START_COUNT,
+
+  // Downloads that were interrupted by the OS.
+  INTERRUPTED_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
 // Increment one of the above counts.
 void RecordDownloadCount(DownloadCountTypes type);
+
+// Record COMPLETED_COUNT and how long the download took.
+void RecordDownloadCompleted(const base::TimeTicks& start);
+
+// Record INTERRUPTED_COUNT and os_error.
+void RecordDownloadInterrupted(int os_error);
 
 // Paint the common download animation progress foreground and background,
 // clipping the foreground to 'percent' full. If percent is -1, then we don't
