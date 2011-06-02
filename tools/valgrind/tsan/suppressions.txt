@@ -288,6 +288,20 @@
   fun:sqlite3PcacheFetch
 }
 
+{
+  bug_84726_a
+  fun:qsort_r
+  fun:qsort
+  fun:_xdg_mime_alias_read_from_file
+}
+
+{
+  bug_84726_b
+  fun:qsort_r
+  fun:qsort
+  fun:_cairo_bentley_ottmann_tessellate_polygon
+}
+
 ############################
 # Data races in tests
 
