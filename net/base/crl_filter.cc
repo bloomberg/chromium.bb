@@ -435,6 +435,9 @@ class BitWriter {
   unsigned num_bits_;
 };
 
+CRLFilter::CRLFilter() {
+}
+
 CRLFilter::~CRLFilter() {
 }
 

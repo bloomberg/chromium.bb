@@ -82,6 +82,8 @@ class CRLFilter : public base::RefCounted<CRLFilter> {
   std::string SHA256() const;
 
  private:
+  CRLFilter();
+
   // These are the range coder symbols used in delta updates.
   enum {
     SYMBOL_SAME = 0,
