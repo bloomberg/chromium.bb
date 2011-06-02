@@ -137,23 +137,11 @@ class XKeyboard {
   // Sets the current keyboard layout to |layout_name|. This function does not
   // change the current mapping of the modifier keys. Returns true on success.
   bool SetLayout(const std::string& layout_name) {
-    if (SetLayoutInternal(layout_name, current_modifier_map_, false)) {
+    if (SetLayoutInternal(layout_name, current_modifier_map_)) {
       current_layout_name_ = layout_name;
       return true;
     }
     return false;
-  }
-
-  // Sets the current keyboard layout to |current_layout_name_| again.
-  // See crosbug.com/15851 for details.
-  bool ReapplyLayout() {
-    if (current_layout_name_.empty()) {
-      LOG(ERROR) << "Can't reapply XKB layout: layout unknown";
-      return false;
-    }
-    VLOG(1) << "ReapplyLayout: setting to " << current_layout_name_;
-    return SetLayoutInternal(
-        current_layout_name_, current_modifier_map_, true /* force */);
   }
 
   // Remaps modifier keys. This function does not change the current keyboard
@@ -161,7 +149,7 @@ class XKeyboard {
   bool RemapModifierKeys(const ModifierMap& modifier_map) {
     const std::string layout_name = current_layout_name_.empty() ?
         kDefaultLayoutName : current_layout_name_;
-    if (SetLayoutInternal(layout_name, modifier_map, false)) {
+    if (SetLayoutInternal(layout_name, modifier_map)) {
       current_layout_name_ = layout_name;
       current_modifier_map_ = modifier_map;
       return true;
@@ -222,8 +210,7 @@ class XKeyboard {
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
   // setxkbmap command if needed, and updates the last_full_layout_name_ cache.
   bool SetLayoutInternal(const std::string& layout_name,
-                         const ModifierMap& modifier_map,
-                         bool force) {
+                         const ModifierMap& modifier_map) {
     if (!CrosLibrary::Get()->EnsureLoaded()) {
       // We should not try to change a layout inside ui_tests.
       return false;
@@ -238,7 +225,7 @@ class XKeyboard {
     if (!current_layout_name_.empty()) {
       const std::string current_layout = CreateFullXkbLayoutName(
           current_layout_name_, current_modifier_map_);
-      if (!force && (current_layout == layouts_to_set)) {
+      if (current_layout == layouts_to_set) {
         DLOG(INFO) << "The requested layout is already set: " << layouts_to_set;
         return true;
       }
@@ -402,10 +389,6 @@ bool ContainsModifierKeyAsReplacement(
 
 bool SetCurrentKeyboardLayoutByName(const std::string& layout_name) {
   return XKeyboard::GetInstance()->SetLayout(layout_name);
-}
-
-bool ReapplyCurrentKeyboardLayout() {
-  return XKeyboard::GetInstance()->ReapplyLayout();
 }
 
 bool RemapModifierKeys(const ModifierMap& modifier_map) {

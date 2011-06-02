@@ -737,8 +737,6 @@
         'browser/chromeos/wm_ipc.h',
         'browser/chromeos/wm_message_listener.cc',
         'browser/chromeos/wm_message_listener.h',
-        'browser/chromeos/xinput_hierarchy_changed_event_listener.cc',
-        'browser/chromeos/xinput_hierarchy_changed_event_listener.h',
         'browser/cocoa/authorization_util.h',
         'browser/cocoa/authorization_util.mm',
         'browser/cocoa/file_metadata.h',

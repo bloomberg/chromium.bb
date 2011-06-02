@@ -54,7 +54,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
-#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #endif
 
 using base::Time;
@@ -132,10 +131,6 @@ void Shutdown() {
   // The system key event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
   chromeos::SystemKeyEventListener::GetInstance()->Stop();
-
-  // The XInput2 event listener needs to be shut down earlier than when
-  // Singletons are finally destroyed in AtExitManager.
-  chromeos::XInputHierarchyChangedEventListener::GetInstance()->Stop();
 #endif
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough

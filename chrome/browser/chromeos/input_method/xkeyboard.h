@@ -46,11 +46,6 @@ typedef std::vector<ModifierKeyPair> ModifierMap;
 // change the current mapping of the modifier keys. Returns true on success.
 bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
 
-// Sets the current keyboard layout again. We have to call the function every
-// time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
-// xinput_hierarchy_changed_event_listener.h for details.
-bool ReapplyCurrentKeyboardLayout();
-
 // Remaps modifier keys. This function does not change the current keyboard
 // layout. Returns true on success.
 // Notice: For now, you can't remap Left Control and Left Alt keys to CapsLock.
