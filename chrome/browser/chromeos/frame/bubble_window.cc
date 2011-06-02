@@ -30,9 +30,9 @@ namespace chromeos {
 // static
 const SkColor BubbleWindow::kBackgroundColor = SK_ColorWHITE;
 
-BubbleWindow::BubbleWindow(views::Window* window)
-    : views::NativeWindowGtk(window) {
-  MakeTransparent();
+BubbleWindow::BubbleWindow(views::Window* window, Style style)
+    : views::NativeWindowGtk(window),
+      style_(style) {
 }
 
 void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
@@ -54,6 +54,11 @@ void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
   gdk_window_set_back_pixmap(GetNativeView()->window, NULL, FALSE);
   gtk_widget_realize(window_contents());
   gdk_window_set_back_pixmap(window_contents()->window, NULL, FALSE);
+}
+
+views::NonClientFrameView* BubbleWindow::CreateNonClientFrameView() {
+  views::Window* window = GetWindow();
+  return new BubbleFrameView(window, window->window_delegate(), style_);
 }
 
 void BubbleWindow::TrimMargins(int margin_left, int margin_right,
@@ -115,9 +120,7 @@ views::Window* BubbleWindow::Create(
     Style style,
     views::WindowDelegate* window_delegate) {
   views::Window* window = new views::Window;
-  BubbleWindow* bubble_window = new BubbleWindow(window);
-  window->non_client_view()->SetFrameView(
-      new BubbleFrameView(window, window_delegate, style));
+  BubbleWindow* bubble_window = new BubbleWindow(window, style);
   views::Window::InitParams params(window_delegate);
   params.parent_window = parent;
   params.native_window = bubble_window;
@@ -125,6 +128,7 @@ views::Window* BubbleWindow::Create(
   params.widget_init_params.bounds = bounds;
   params.widget_init_params.parent = GTK_WIDGET(parent);
   params.widget_init_params.native_widget = bubble_window;
+  params.widget_init_params.transparent = true;
   window->InitWindow(params);
 
   if (style == STYLE_XSHAPE) {

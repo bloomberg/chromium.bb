@@ -7,8 +7,8 @@
 #pragma once
 
 #include "views/controls/button/image_button.h"
+#include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
-#include "views/window/window.h"
 #include "views/window/window_resources.h"
 
 namespace gfx {
@@ -32,7 +32,7 @@ namespace views {
 class CustomFrameView : public NonClientFrameView,
                         public ButtonListener {
  public:
-  explicit CustomFrameView(Window* frame);
+  explicit CustomFrameView(Widget* frame);
   virtual ~CustomFrameView();
 
   // Overridden from NonClientFrameView:
@@ -114,7 +114,7 @@ class CustomFrameView : public NonClientFrameView,
   bool should_show_client_edge_;
 
   // The window that owns this view.
-  Window* frame_;
+  Widget* frame_;
 
   // Initialize various static resources.
   static void InitClass();

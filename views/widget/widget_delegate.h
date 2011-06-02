@@ -20,6 +20,7 @@ class Rect;
 namespace views {
 class ClientView;
 class DialogDelegate;
+class NonClientFrameView;
 class View;
 class Window;
 
@@ -138,6 +139,10 @@ class WidgetDelegate {
   // Called by the Window to create the Client View used to host the contents
   // of the window.
   virtual ClientView* CreateClientView(Window* window);
+
+  // Called by the Widget to create the NonClient Frame View for this widget.
+  // Return NULL to use the default one.
+  virtual NonClientFrameView* CreateNonClientFrameView();
 
   Window* window() const { return window_; }
 

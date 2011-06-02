@@ -31,6 +31,9 @@ class NativeWidgetDelegate {
   // Called when the native widget is created.
   virtual void OnNativeWidgetCreated() = 0;
 
+  // Called just after the native widget is destroyed.
+  virtual void OnNativeWidgetDestroyed() = 0;
+
   // Called when the NativeWidget changed size to |new_size|.
   virtual void OnSizeChanged(const gfx::Size& new_size) = 0;
 

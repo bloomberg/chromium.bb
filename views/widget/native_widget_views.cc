@@ -48,6 +48,21 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   // TODO(beng): SetInitParams().
 }
 
+NonClientFrameView* NativeWidgetViews::CreateNonClientFrameView() {
+  return NULL;
+}
+
+void NativeWidgetViews::UpdateFrameAfterFrameChange() {
+}
+
+bool NativeWidgetViews::ShouldUseNativeFrame() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void NativeWidgetViews::FrameTypeChanged() {
+}
+
 Widget* NativeWidgetViews::GetWidget() {
   return delegate_->AsWidget();
 }

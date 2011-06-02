@@ -176,6 +176,10 @@ class NativeWidgetWin : public ui::WindowImpl,
 
   // Overridden from NativeWidget:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
+  virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual void FrameTypeChanged() OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -474,6 +478,11 @@ class NativeWidgetWin : public ui::WindowImpl,
   // Responds to the client area changing size, either at window creation time
   // or subsequently.
   void ClientAreaSizeChanged();
+
+  // Resets the window region for the current widget bounds if necessary.
+  // If |force| is true, the window region is reset to NULL even for native
+  // frame windows.
+  void ResetWindowRegion(bool force);
 
   // Overridden from NativeWidget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;

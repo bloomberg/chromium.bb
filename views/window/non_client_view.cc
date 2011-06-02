@@ -29,9 +29,8 @@ static const int kClientViewIndex = 1;
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, public:
 
-NonClientView::NonClientView(Window* frame)
-    : frame_(frame),
-      client_view_(NULL) {
+NonClientView::NonClientView()
+    : client_view_(NULL) {
 }
 
 NonClientView::~NonClientView() {
@@ -59,11 +58,12 @@ void NonClientView::WindowClosing() {
 }
 
 void NonClientView::UpdateFrame() {
-  SetFrameView(frame_->CreateFrameViewForWindow());
-  GetWidget()->ThemeChanged();
+  Widget* widget = GetWidget();
+  SetFrameView(widget->CreateNonClientFrameView());
+  widget->ThemeChanged();
   Layout();
   SchedulePaint();
-  frame_->UpdateFrameAfterFrameChange();
+  widget->UpdateFrameAfterFrameChange();
 }
 
 void NonClientView::DisableInactiveRendering(bool disable) {

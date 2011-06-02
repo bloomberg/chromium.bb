@@ -571,7 +571,6 @@ ConstrainedWindowViews::ConstrainedWindowViews(
     : owner_(owner),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
-  non_client_view()->SetFrameView(CreateFrameViewForWindow());
   views::Window::InitParams params(window_delegate);
   params.native_window = native_constrained_window_->AsNativeWindow();
   params.widget_init_params.child = true;
@@ -619,7 +618,7 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowViews, views::Window overrides:
 
-views::NonClientFrameView* ConstrainedWindowViews::CreateFrameViewForWindow() {
+views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
   return new ConstrainedWindowFrameView(this);
 }
 
