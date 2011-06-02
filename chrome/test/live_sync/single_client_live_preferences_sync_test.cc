@@ -8,14 +8,9 @@
 
 IN_PROC_BROWSER_TEST_F(SingleClientLivePreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  bool new_value = !GetVerifierPrefs()->GetBoolean(
-      prefs::kHomePageIsNewTabPage);
-  GetVerifierPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, new_value);
-  GetPrefs(0)->SetBoolean(prefs::kHomePageIsNewTabPage, new_value);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for prefs change."));
-
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage),
-      GetPrefs(0)->GetBoolean(prefs::kHomePageIsNewTabPage));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/pref_names.h"
