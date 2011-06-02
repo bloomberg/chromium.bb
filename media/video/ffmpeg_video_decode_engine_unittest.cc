@@ -23,6 +23,8 @@ namespace media {
 
 static const int kWidth = 320;
 static const int kHeight = 240;
+static const int kSurfaceWidth = 522;
+static const int kSurfaceHeight = 288;
 static const AVRational kFrameRate = { 100, 1 };
 
 static void InitializeFrame(uint8_t* data, int width, AVFrame* frame) {
@@ -50,7 +52,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
                                     public VideoDecodeEngine::EventHandler {
  public:
   FFmpegVideoDecodeEngineTest()
-      : config_(kCodecH264, kWidth, kHeight,
+      : config_(kCodecH264, kWidth, kHeight, kSurfaceWidth, kSurfaceHeight,
                 kFrameRate.num, kFrameRate.den, NULL, 0) {
 
     // Setup FFmpeg structures.

@@ -49,9 +49,13 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
 
   int width = av_stream->codec->coded_width;
   int height = av_stream->codec->coded_height;
-  if (width > media::Limits::kMaxDimension ||
-      height > media::Limits::kMaxDimension ||
-      (width * height) > media::Limits::kMaxCanvas) {
+
+  int surface_width = media::GetSurfaceWidth(av_stream);
+  int surface_height = media::GetSurfaceHeight(av_stream);
+
+  if (surface_width > media::Limits::kMaxDimension ||
+      surface_height > media::Limits::kMaxDimension ||
+      (surface_width * surface_height) > media::Limits::kMaxCanvas) {
     media::VideoCodecInfo info = {0};
     OnInitializeComplete(info);
     return;
@@ -69,6 +73,7 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   media::VideoDecoderConfig config(
       media::CodecIDToVideoCodec(av_stream->codec->codec_id),
       width, height,
+      surface_width, surface_height,
       av_stream->r_frame_rate.num,
       av_stream->r_frame_rate.den,
       av_stream->codec->extradata,
