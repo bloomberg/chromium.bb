@@ -9,6 +9,7 @@
 #include "base/sha1.h"
 #include "base/string_util.h"
 #include "crypto/sha2.h"
+#include "net/base/asn1_util.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnssec_keyset.h"
 
@@ -242,95 +243,6 @@ uint16 DNSSECChainVerifier::rrtype() const {
 const std::vector<base::StringPiece>& DNSSECChainVerifier::rrdatas() const {
   DCHECK(valid_);
   return rrdatas_;
-}
-
-// static
-std::map<std::string, std::string>
-DNSSECChainVerifier::ParseTLSTXTRecord(base::StringPiece rrdata) {
-  std::map<std::string, std::string> ret;
-
-  if (rrdata.empty())
-    return ret;
-
-  std::string txt;
-  txt.reserve(rrdata.size());
-
-  // TXT records are a series of 8-bit length prefixed substrings that we
-  // concatenate into |txt|
-  while (!rrdata.empty()) {
-    unsigned len = rrdata[0];
-    if (len == 0 || len + 1 > rrdata.size())
-      return ret;
-    txt.append(rrdata.data() + 1, len);
-    rrdata.remove_prefix(len + 1);
-  }
-
-  // We append a space to |txt| to make the parsing code, below, cleaner.
-  txt.append(" ");
-
-  // RECORD = KV (' '+ KV)*
-  // KV = KEY '=' VALUE
-  // KEY = [a-zA-Z0-9]+
-  // VALUE = [^ \0]*
-
-  enum State {
-    STATE_KEY,
-    STATE_VALUE,
-    STATE_SPACE,
-  };
-
-  State state = STATE_KEY;
-
-  std::map<std::string, std::string> m;
-
-  unsigned start = 0;
-  std::string key;
-
-  for (unsigned i = 0; i < txt.size(); i++) {
-    char c = txt[i];
-    if (c == 0)
-      return ret;  // NUL values are never allowed.
-
-    switch (state) {
-      case STATE_KEY:
-        if (c == '=') {
-          if (i == start)
-            return ret;  // zero length keys are not allowed.
-          key = txt.substr(start, i - start);
-          start = i + 1;
-          state = STATE_VALUE;
-          continue;
-        }
-        if (!IsAsciiAlpha(c) && !IsAsciiDigit(c))
-          return ret;  // invalid key value
-        break;
-      case STATE_VALUE:
-        if (c == ' ') {
-          if (m.find(key) == m.end())
-            m.insert(make_pair(key, txt.substr(start, i - start)));
-          state = STATE_SPACE;
-          continue;
-        }
-        break;
-      case STATE_SPACE:
-        if (c != ' ') {
-          start = i;
-          i--;
-          state = STATE_KEY;
-          continue;
-        }
-        break;
-      default:
-        NOTREACHED();
-        return ret;
-    }
-  }
-
-  if (state != STATE_SPACE)
-    return ret;
-
-  ret.swap(m);
-  return ret;
 }
 
 // MatchingLabels returns the number of labels which |a| and |b| share,
@@ -650,7 +562,7 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::LeaveZone(
 
   if (rrtype == kDNS_DS) {
     err = ReadDSSet(&rrdatas, *next_name);
-  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT) {
+  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT || rrtype == kDNS_CAA) {
     err = ReadGenericRRs(&rrdatas);
   } else if (rrtype == kDNS_CNAME) {
     err = ReadCNAME(&rrdatas);
@@ -670,7 +582,7 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::LeaveZone(
     // 'closer' to the target than the current zone.
     if (MatchingLabels(target_, *next_name) <= current_zone_->matching_labels)
       return OFF_COURSE;
-  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT) {
+  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT || rrtype == kDNS_CAA) {
     // If this is the final entry in the chain then the name must match target_
     if (next_name->size() != target_.size() ||
         memcmp(next_name->data(), target_.data(), target_.size())) {
@@ -805,6 +717,197 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::ReadCNAME(
   rrdatas->resize(1);
   (*rrdatas)[0] = name;
   return OK;
+}
+
+struct CAAHashTargetOID {
+  uint8 length;
+  uint8 bytes[13];
+  DnsCAARecord::Policy::HashTarget value;
+};
+
+// kCAAHashTargets maps from the DER encoding of a hash target OID to our
+// internal enumeration values.
+static CAAHashTargetOID kCAAHashTargets[] = {
+  { 5, "\x06\x03\x55\x04\x24", DnsCAARecord::Policy::USER_CERTIFICATE },
+  { 5, "\x06\x03\x55\x04\x25", DnsCAARecord::Policy::CA_CERTIFICATE },
+  { 12 , "\x06\x0a\x2b\x06\x01\x04\x01\xd6\x79\x02\x03\x01",
+    DnsCAARecord::Policy::SUBJECT_PUBLIC_KEY_INFO},
+  { 0 },
+};
+
+struct CAAHashFunctionOID {
+  uint8 length;
+  uint8 bytes[12];
+  int value;
+};
+
+// The values here are taken from NSS's freebl/hasht.h. Sadly, we cannot
+// include it because it pulls in #defines that conflict with Chromium headers.
+// However, these values are part of NSS's public API and so are stable.
+static const int kHashSHA256 = 4;
+static const int kHashSHA384 = 5;
+static const int kHashSHA512 = 6;
+
+// kCAAHashFunctions maps from the DER encoding of hash function OIDs to NSS's
+// hash function enumeration.
+static CAAHashFunctionOID kCAAHashFunctions[] = {
+  { 11, "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", kHashSHA256 },
+  { 11, "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x02", kHashSHA384 },
+  { 11, "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x03", kHashSHA512 },
+  // WARNING: if you update this, be sure to update DigestLength too.
+  { 0 },
+};
+
+// DigestLength returns the expected length of the digest for a given hash
+// function.
+static unsigned DigestLength(int algorithm) {
+  switch (algorithm) {
+    case kHashSHA256:
+      return 32;
+    case kHashSHA384:
+      return 48;
+    case kHashSHA512:
+      return 64;
+    default:
+      CHECK_NE(algorithm, algorithm);
+      return 0;
+  }
+}
+
+// ParseEnumeratedOID parses an OID from |i| and sets |*result| to one of the
+// values from |values|, depending on the OID found. |i| is then advanced over
+// the OID.
+//
+// If no OID is found then DISCARD is returned, unless |critical| is true, in
+// which case |UNKNOWN_CRITICAL| is returned.
+template<typename A, typename Enum>
+static DnsCAARecord::ParseResult ParseEnumeratedOID(base::StringPiece* i,
+                                                    bool critical,
+                                                    const A* values,
+                                                    Enum* result) {
+  base::StringPiece element;
+  if (!asn1::ParseElement(i, asn1::kOID, &element, NULL))
+    return DnsCAARecord::SYNTAX_ERROR;
+  unsigned j;
+  for (j = 0; values[j].length; j++) {
+    if (element.size() == values[j].length &&
+        memcmp(element.data(), values[j].bytes, element.size()) == 0) {
+      *result = values[j].value;
+      return DnsCAARecord::SUCCESS;
+    }
+  }
+
+  if (critical)
+    return DnsCAARecord::UNKNOWN_CRITICAL;
+  return DnsCAARecord::DISCARD;
+}
+
+// static
+DnsCAARecord::ParseResult DnsCAARecord::Parse(
+    const std::vector<base::StringPiece>& rrdatas,
+    DnsCAARecord::Policy* output) {
+  // see http://tools.ietf.org/html/draft-hallambaker-donotissue-04
+  output->authorized_hashes.clear();
+
+  for (std::vector<base::StringPiece>::const_iterator
+       ii = rrdatas.begin(); ii != rrdatas.end(); ++ii) {
+    base::StringPiece i = *ii;
+
+    if (i.size() < 2)
+      return SYNTAX_ERROR;
+    const bool critical = (i[0] & 128) != 0;
+    const bool must_be_zero = (i[0] & 4) != 0;
+    const bool relying_use = (i[0] & 2) != 0;
+    const unsigned tag_length = i[1];
+    i.remove_prefix(2);
+
+    if (must_be_zero)
+      return UNKNOWN_CRITICAL;
+
+    if (!relying_use)
+      continue;
+
+    if (tag_length == 0 || tag_length > i.size())
+      return SYNTAX_ERROR;
+
+    const std::string tag(i.data(), tag_length);
+    i.remove_prefix(tag_length);
+
+    if (tag_length == 4 && LowerCaseEqualsASCII(tag, "auth")) {
+      Policy::Hash hash;
+
+      //  AuthData ::= SEQUENCE {
+      //    odi  ObjectDigestIdentifier
+      //    port INTEGER
+      //  }
+      //  ObjectDigestIdentifier ::= SEQUENCE {
+      //    type             OBJECT IDENTIFIER,
+      //    digestAlgorithm  OBJECT IDENTIFIER,
+      //    digest           OCTET STRING
+      //  }
+      base::StringPiece seq;
+      if (!asn1::GetElement(&i, asn1::kSEQUENCE, &seq))
+        return SYNTAX_ERROR;
+
+      base::StringPiece odi;
+      if (!asn1::GetElement(&seq, asn1::kSEQUENCE, &odi))
+        return SYNTAX_ERROR;
+
+      // type
+      ParseResult r = ParseEnumeratedOID(&odi, critical, kCAAHashTargets,
+                                         &hash.target);
+      if (r == DISCARD)
+        continue;
+      if (r != SUCCESS)
+        return r;
+
+      // hash function
+      r = ParseEnumeratedOID(&odi, critical, kCAAHashFunctions,
+                             &hash.algorithm);
+      if (r == DISCARD)
+        continue;
+      if (r != SUCCESS)
+        return r;
+
+      base::StringPiece hash_bytes;
+      if (!asn1::GetElement(&odi, asn1::kOCTETSTRING, &hash_bytes))
+        return SYNTAX_ERROR;
+
+      if (hash_bytes.size() != DigestLength(hash.algorithm))
+        return SYNTAX_ERROR;
+      hash.data = hash_bytes.as_string();
+
+      base::StringPiece port_bytes;
+      if (!asn1::GetElement(&seq, asn1::kINTEGER, &port_bytes))
+        return SYNTAX_ERROR;
+
+      // The port is 1, 2 or 3 bytes. The three byte form is needed because
+      // values >= 0x8000 would be treated as signed unless padded with a
+      // leading zero byte.
+      if (port_bytes.size() == 0 || port_bytes.size() > 3)
+          return SYNTAX_ERROR;
+      hash.port = reinterpret_cast<const uint8*>(port_bytes.data())[0];
+      if (port_bytes.size() > 1) {
+        hash.port <<= 8;
+        hash.port |= reinterpret_cast<const uint8*>(port_bytes.data())[1];
+      }
+      if (port_bytes.size() > 2) {
+        hash.port <<= 8;
+        hash.port |= reinterpret_cast<const uint8*>(port_bytes.data())[2];
+      }
+      if (hash.port > 65535)
+        return SYNTAX_ERROR;
+
+      output->authorized_hashes.push_back(hash);
+    } else if (critical) {
+      return UNKNOWN_CRITICAL;
+    }
+  }
+
+  if (output->authorized_hashes.empty())
+    return DISCARD;
+
+  return SUCCESS;
 }
 
 }  // namespace net

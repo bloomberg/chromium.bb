@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/asn1_util.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnssec_chain_verifier.h"
 #include "net/base/dnssec_keyset.h"
@@ -600,89 +601,287 @@ TEST(DNSSECChainVerifierTest, DISABLED_Fuzz) {
   }
 }
 
-// StringToTXTRecord takes a NUL terminated string and returns a valid TXT
-// RRDATA by prefixing an 8-bit length.
-static std::string StringToTXTRecord(const char* in) {
-  const unsigned len = strlen(in);
-  CHECK_LT(len, 256u);
-  std::string wrapped;
-  char l = len;
-  wrapped.append(&l, 1);
-  wrapped.append(in, len);
-  return wrapped;
+static std::string MakeCAA(bool critical,
+                           bool relying_use,
+                           const char* key,
+                           const std::string& value) {
+  std::string r;
+
+  char a = 0;
+  if (critical)
+    a |= 128;
+  if (relying_use) {
+    a |= 2;
+  } else {
+    // For issuer use only.
+    a |= 1;
+  }
+  r.push_back(a);
+  r.push_back(static_cast<char>(strlen(key)));
+  r += key;
+  r += value;
+
+  return r;
 }
 
-TEST(DNSSECChainVerifierTest, BadTXT) {
-  static const char *const kBadTXTRecords[] = {
-    "",
-    " ",
-    " a=b",
-    "a=b \t",
-    "abc!=1",
-  };
+static std::string MakeAuth(const char* target_oid,
+                            const char* hash_func_oid,
+                            unsigned num_hash_bytes,
+                            unsigned port) {
+  // AuthData ::= SEQUENCE {
+  //   odi ObjectDigestIdentifier
+  //   port INTEGER
+  // }
+  // ObjectDigestIdentifier ::= SEQUENCE {
+  //   type OBJECT IDENTIFIER,
+  //   digestAlgorithm OBJECT IDENTIFIER,
+  //   digest OCTET STRING
+  // }
+  unsigned odi_len = strlen(target_oid) +
+                     strlen(hash_func_oid) +
+                     2 /* OCTET STRING and length bytes */ +
+                     num_hash_bytes;
+  unsigned len = odi_len +
+                 2 /* SEQUENCE and length bytes */ +
+                 2 /* INTEGER and length bytes */ +
+                 1 /* at least one byte of port number */;
+  if (port >= 256)
+    len++;  // port number needs at least two bytes.
+  if (port >= 0x8000)
+    len++;  // port number needs three bytes.
+  CHECK_LT(len, 128u);
 
-  for (unsigned i = 0; i < arraysize(kBadTXTRecords); i++) {
-    std::string wrapped(StringToTXTRecord(kBadTXTRecords[i]));
-    EXPECT_TRUE(DNSSECChainVerifier::ParseTLSTXTRecord(wrapped).empty());
+  std::string r;
+  r.push_back(static_cast<char>(asn1::kSEQUENCE));
+  r.push_back(static_cast<char>(len));
+  r.push_back(static_cast<char>(asn1::kSEQUENCE));
+  r.push_back(static_cast<char>(odi_len));
+  r += target_oid;
+  r += hash_func_oid;
+  r.push_back(static_cast<char>(asn1::kOCTETSTRING));
+  r.push_back(static_cast<char>(num_hash_bytes));
+  r += std::string(num_hash_bytes, 'a');
+  r.push_back(static_cast<char>(asn1::kINTEGER));
+  if (port < 256) {
+    r.push_back(static_cast<char>(1));
+    r.push_back(static_cast<char>(port));
+  } else if (port < 0x8000) {
+    r.push_back(static_cast<char>(2));
+    r.push_back(static_cast<char>(port >> 8));
+    r.push_back(static_cast<char>(port));
+  } else {
+    r.push_back(static_cast<char>(3));
+    // A leading zero is needed to stop the MSB from indicating that the number
+    // is signed.
+    r.push_back(static_cast<char>(0));
+    r.push_back(static_cast<char>(port >> 8));
+    r.push_back(static_cast<char>(port));
   }
-
-  EXPECT_TRUE(DNSSECChainVerifier::ParseTLSTXTRecord(
-        std::string("a=b\0", 4)).empty());
+  return r;
 }
 
-static bool MatchMap(const std::map<std::string, std::string>& m,
-                     const char* const* match) {
-  unsigned matched = 0;
+TEST(CAAParserTest, Empty) {
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
 
-  for (unsigned i = 0; match[i]; i += 2) {
-    const char* key = match[i];
-    const char* value = match[i+1];
-    std::map<std::string, std::string>::const_iterator j;
-    j = m.find(key);
-    if (j == m.end())
-      return false;
-    if (j->second != value)
-      return false;
-    matched++;
-  }
-
-  if (m.size() != matched)
-    return false;
-  return true;
+  ASSERT_EQ(net::DnsCAARecord::DISCARD,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
 }
 
-TEST(DNSSECChainVerifierTest, GoodTXT) {
-  // This array consists of a NULL terminated series of records. A record
-  // consists of a TXT string followed by a NULL terminated series of key,
-  // value pairs.
-  static const char *const kTXTRecords[] = {
-    "a=",
-    "a", "", NULL,
+TEST(CAAParserTest, UnknownCriticalCAEntry) {
+  // Check that unknown critical keys that aren't for relying parties are
+  // ignored.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(true /* critical */, false /* CAs only */,
+                                "foo", ""));
+  rrdatas.push_back(caa);
 
-    "a=b",
-    "a", "b", NULL,
+  ASSERT_EQ(net::DnsCAARecord::DISCARD,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
 
-    "a=b c=",
-    "a", "b", "c", "", NULL,
+TEST(CAAParserTest, UnknownCriticalEntry) {
+  // Check that unknown critical keys for relying parties cause an error.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(true /* critical */, true /* for us */,
+                                "foo", ""));
+  rrdatas.push_back(caa);
 
-    "a=b a=c",
-    "a", "b", NULL,
+  ASSERT_EQ(net::DnsCAARecord::UNKNOWN_CRITICAL,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
 
-    "v=tls1 ha=sha1 h=<hexhash> sts=1",
-    "v", "tls1", "ha", "sha1", "h", "<hexhash>", "sts", "1", NULL,
+TEST(CAAParserTest, UnknownEntry) {
+  // Check that unknown, non-critical keys are ignored
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(false /* not critical */, true /* for us */,
+                                "foo", ""));
+  rrdatas.push_back(caa);
 
-    NULL,
-  };
+  ASSERT_EQ(net::DnsCAARecord::DISCARD,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
 
-  for (unsigned i = 0; kTXTRecords[i]; i++) {
-    std::string wrapped(StringToTXTRecord(kTXTRecords[i]));
-    std::map<std::string, std::string> m(
-        DNSSECChainVerifier::ParseTLSTXTRecord(wrapped));
-    ASSERT_FALSE(m.empty());
-    ASSERT_TRUE(MatchMap(m, &kTXTRecords[i+1]));
-    while (kTXTRecords[i])
-      i++;
+static void CAAFuzz(const std::string& in) {
+  net::DnsCAARecord::Policy policy;
+
+  for (unsigned i = 0; i < in.size() * 8; i++) {
+    const unsigned byte = i >> 3;
+    const unsigned bit = i & 7;
+
+    std::string copy(in);
+    copy[byte] ^= static_cast<char>(1) << bit;
+
+    std::vector<base::StringPiece> rrdatas;
+    rrdatas.push_back(copy);
+
+    net::DnsCAARecord::Parse(rrdatas, &policy);
   }
+}
+
+TEST(CAAParserTest, PolicyFuzz) {
+  // Fuzz the policy input for valgrind's.
+  const std::string policy_value("\x06\x03\x55\x04\x24");
+  const std::string in =
+      MakeCAA(false /* not critical */, true /* for us */, "policy",
+              policy_value);
+
+  CAAFuzz(in);
+}
+
+TEST(CAAParserTest, Auth) {
+  // Check that a hash element is parsed correctly.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      false /* not critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x04\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", 32, 443)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::SUCCESS,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+  ASSERT_EQ(1u, policy.authorized_hashes.size());
+  ASSERT_EQ(4 /* SHA256 */, policy.authorized_hashes[0].algorithm);
+  ASSERT_EQ(net::DnsCAARecord::Policy::USER_CERTIFICATE,
+            policy.authorized_hashes[0].target);
+  ASSERT_EQ(32u, policy.authorized_hashes[0].data.size());
+  ASSERT_EQ(443u, policy.authorized_hashes[0].port);
+}
+
+TEST(CAAParserTest, AuthFuzz) {
+  // Fuzz the auth value for valgrind.
+  const std::string in = MakeCAA(
+      false /* not critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x04\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", 32, 443));
+
+  CAAFuzz(in);
+}
+
+TEST(CAAParserTest, UnknownHashFunction) {
+  // Check that an unknown hash is ignored.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      false /* not critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x04\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x70", 32, 443)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::DISCARD,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
+
+TEST(CAAParserTest, CriticalUnknownHashFunction) {
+  // Check that a critical unknown hash is an error.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      true /* critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x04\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x70", 32, 443)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::UNKNOWN_CRITICAL,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
+
+TEST(CAAParserTest, UnknownHashTarget) {
+  // Check that an unknown hash is ignored.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      false /* not critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x55\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", 32, 443)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::DISCARD,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
+
+TEST(CAAParserTest, CriticalUnknownHashTarget) {
+  // Check that a critical unknown hash target is an error.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      true /* critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x55\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", 32, 443)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::UNKNOWN_CRITICAL,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
+
+TEST(CAAParserTest, IncorrectDigestLength) {
+  // Check that a digest with the wrong length is an error.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      false /* not critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x04\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", 31, 443)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::SYNTAX_ERROR,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+}
+
+TEST(CAAParserTest, ZeroPort) {
+  // Check that a hash element with a zero port is parsed correctly.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      false /* not critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x04\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", 32, 0)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::SUCCESS,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+  ASSERT_EQ(1u, policy.authorized_hashes.size());
+  ASSERT_EQ(0u, policy.authorized_hashes[0].port);
+}
+
+TEST(CAAParserTest, LargePort) {
+  // Check that a hash element with a large port is parsed correctly.
+  std::vector<base::StringPiece> rrdatas;
+  net::DnsCAARecord::Policy policy;
+  const std::string caa(MakeCAA(
+      false /* not critical */, true /* for us */, "auth",
+      MakeAuth("\x06\x03\x55\x04\x24",
+               "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01", 32, 40000)));
+  rrdatas.push_back(caa);
+
+  ASSERT_EQ(net::DnsCAARecord::SUCCESS,
+            net::DnsCAARecord::Parse(rrdatas, &policy));
+  ASSERT_EQ(1u, policy.authorized_hashes.size());
+  ASSERT_EQ(40000u, policy.authorized_hashes[0].port);
 }
 
 }  // namespace net
