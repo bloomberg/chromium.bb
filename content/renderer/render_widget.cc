@@ -659,7 +659,8 @@ void RenderWidget::DoDeferredUpdate() {
     TRACE_EVENT0("renderer", "EarlyOut_UpdateReplyPending");
     return;
   }
-  if (num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending) {
+  if (is_accelerated_compositing_active_ &&
+      num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending) {
     TRACE_EVENT0("renderer", "EarlyOut_MaxSwapBuffersPending");
     return;
   }
