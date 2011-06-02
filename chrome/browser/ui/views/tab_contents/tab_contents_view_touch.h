@@ -32,6 +32,9 @@ class NativeViewHost;
 // Touch-specific implementation of the TabContentsView for the touch UI.
 class TabContentsViewTouch : public TabContentsView, public views::View {
  public:
+  // Internal class name
+  static const char kViewClassName[];
+
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
@@ -64,6 +67,7 @@ class TabContentsViewTouch : public TabContentsView, public views::View {
   // views::View implementation
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);

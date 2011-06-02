@@ -23,6 +23,9 @@ class SingleSplitView : public views::View {
     VERTICAL_SPLIT
   };
 
+  // Internal class name
+  static const char kViewClassName[];
+
   class Observer {
    public:
     // Invoked when split handle is moved by the user. |source|'s divider_offset
@@ -40,6 +43,7 @@ class SingleSplitView : public views::View {
                   Observer* observer);
 
   virtual void Layout() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 

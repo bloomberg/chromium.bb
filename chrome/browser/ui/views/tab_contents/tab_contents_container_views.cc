@@ -16,6 +16,10 @@
 #include "content/common/notification_source.h"
 #include "views/layout/fill_layout.h"
 
+// static
+const char TabContentsContainer::kViewClassName[] =
+    "browser/ui/views/tab_contents/TabContentsContainer";
+
 // Some of this class is implemented in tab_contents_container.cc, where
 // the implementation doesn't vary between a pure views approach and a
 // native view host approach. See the header file for details.
@@ -52,6 +56,10 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
     Layout();
     AddObservers();
   }
+}
+
+std::string TabContentsContainer::GetClassName() const {
+  return kViewClassName;
 }
 
 void TabContentsContainer::TabContentsFocused(TabContents* tab_contents) {

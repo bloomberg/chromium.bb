@@ -25,6 +25,9 @@ class Widget;
 // TabContents and one for instant's TabContents.
 class ContentsContainer : public views::View, public ui::AnimationDelegate {
  public:
+  // Internal class name
+  static const char kViewClassName[];
+
   explicit ContentsContainer(views::View* active);
   virtual ~ContentsContainer();
 
@@ -55,7 +58,8 @@ class ContentsContainer : public views::View, public ui::AnimationDelegate {
   void RemoveFade();
 
   // View overrides:
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationProgressed(const ui::Animation* animation);

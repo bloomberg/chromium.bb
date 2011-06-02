@@ -14,6 +14,10 @@
 static const int kMinOpacity = 0;
 static const int kMaxOpacity = 192;
 
+// static
+const char ContentsContainer::kViewClassName[] =
+    "browser/ui/views/frame/ContentsContainer";
+
 // View used to track when the overlay widget is destroyed. If the
 // ContentsContainer is still valid when the destructor is invoked this invokes
 // |OverlayViewDestroyed| on the ContentsContainer.
@@ -147,6 +151,10 @@ void ContentsContainer::Layout() {
   // Need to invoke views::View in case any views whose bounds didn't change
   // still need a layout.
   views::View::Layout();
+}
+
+std::string ContentsContainer::GetClassName() const {
+  return kViewClassName;
 }
 
 void ContentsContainer::CreateOverlay(int initial_opacity) {

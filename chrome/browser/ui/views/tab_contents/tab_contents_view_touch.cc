@@ -30,6 +30,10 @@ using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
 
 // static
+const char TabContentsViewTouch::kViewClassName[] =
+    "browser/ui/views/tab_contents/TabContentsViewTouch";
+
+// static
 TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
   return new TabContentsViewTouch(tab_contents);
 }
@@ -230,6 +234,10 @@ void TabContentsViewTouch::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void TabContentsViewTouch::OnPaint(gfx::Canvas* canvas) {
+}
+
+std::string TabContentsViewTouch::GetClassName() const {
+  return kViewClassName;
 }
 
 void TabContentsViewTouch::UpdateDragCursor(WebDragOperation operation) {

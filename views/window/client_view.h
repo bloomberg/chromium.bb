@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,9 @@ class Window;
 //  "DialogClientView".
 class ClientView : public View {
  public:
+  // Internal class name
+  static const char kViewClassName[];
+
   // Constructs a ClientView object for the specified window with the specified
   // contents. Since this object is created during the process of creating
   // |window|, |contents_view| must be valid if you want the initial size of
@@ -57,6 +60,7 @@ class ClientView : public View {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  protected:
   // Overridden from View:

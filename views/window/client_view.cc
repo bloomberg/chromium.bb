@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,10 @@
 #include "views/window/window_delegate.h"
 
 namespace views {
+
+// static
+const char ClientView::kViewClassName[] =
+    "views/window/ClientView";
 
 ///////////////////////////////////////////////////////////////////////////////
 // ClientView, public:
@@ -52,6 +56,10 @@ void ClientView::Layout() {
   // is attached to a Container.
   if (contents_view_)
     contents_view_->SetBounds(0, 0, width(), height());
+}
+
+std::string ClientView::GetClassName() const {
+  return kViewClassName;
 }
 
 void ClientView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
