@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
@@ -220,6 +221,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   LoadAccelerators();
   SetupExternalTabView();
+  tab_contents_->blocked_content_tab_helper()->set_delegate(this);
   return true;
 }
 
@@ -500,6 +502,11 @@ void ExternalTabContainer::MoveContents(TabContents* source,
                                         const gfx::Rect& pos) {
   if (automation_ && is_popup_window_)
     automation_->Send(new AutomationMsg_MoveWindow(tab_handle_, pos));
+}
+
+TabContentsWrapper* ExternalTabContainer::GetConstrainingContentsWrapper(
+    TabContentsWrapper* source) {
+  return source;
 }
 
 bool ExternalTabContainer::IsPopup(const TabContents* source) const {

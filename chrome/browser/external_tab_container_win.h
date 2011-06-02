@@ -15,6 +15,7 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_bubble_host.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
@@ -51,7 +52,8 @@ class ExternalTabContainer : public TabContentsDelegate,
                              public base::RefCounted<ExternalTabContainer>,
                              public views::AcceleratorTarget,
                              public InfoBarContainer::Delegate,
-                             public BrowserBubbleHost {
+                             public BrowserBubbleHost,
+                             public BlockedContentTabHelperDelegate {
  public:
   typedef std::map<uintptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
 
@@ -219,6 +221,10 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void TabContentsCreated(TabContents* new_contents);
 
   void RunUnloadHandlers(IPC::Message* reply_message);
+
+  // Overridden from BlockedContentTabHelperDelegate:
+  virtual TabContentsWrapper* GetConstrainingContentsWrapper(
+      TabContentsWrapper* source) OVERRIDE;
 
  protected:
   ~ExternalTabContainer();
