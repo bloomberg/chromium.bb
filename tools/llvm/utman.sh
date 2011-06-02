@@ -1111,6 +1111,43 @@ gcc-stage1-make() {
   spopd
 }
 
+#+ build-libgcc_eh-bitcode - build/install bitcode version of libgcc_eh
+#+                           Note: this is highly EXPERIMENTAL
+build-libgcc_eh-bitcode() {
+  # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
+  #       objdir. So, to be safe, you have to run gcc-stage1-make first
+  local target=$1
+  local srcdir="${TC_SRC_LLVM_GCC}"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  spushd ${objdir}/gcc
+  StepBanner "bitcode libgcc_eh" "cleaning"
+  RunWithLog libgcc_eh.clean \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+             make clean-target-libgcc
+
+  # NOTE: usually gcc/libgcc.mk is generate and invoked implicitly by
+  #       gcc/Makefile.
+  #       Since we are calling it directly we need to make up for some
+  #       missing flags, e.g.  include paths ann defines like
+  #       'ATTRIBUTE_UNUSED' which is used to mark unused function
+  #       parameters.
+  StepBanner "bitcode libgcc_eh" "building"
+  RunWithLog libgcc_eh.bitcode.make \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
+              "${STD_ENV_FOR_LIBSTDCPP[@]}" \
+              "INCLUDES=-I${srcdir}/llvm-gcc-4.2/include -I." \
+              "LIBGCC2_CFLAGS=-DATTRIBUTE_UNUSED=" \
+              "AR_CREATE_FOR_TARGET=${PNACL_AR} rc" \
+              make ${MAKE_OPTS} -f libgcc.mk libgcc_eh.a
+
+  StepBanner "bitcode libgcc_eh" "installing"
+  # removed the old native version if any
+  rm -f toolchain/pnacl_linux_x86_64/libs-*newlib/libgcc_eh.a
+  # install the new bitcode version
+  cp libgcc_eh.a ${PNACL_BITCODE_ROOT}
+  spopd
+}
+
 #+ xgcc-patch          - Patch xgcc and clean libgcc
 xgcc-patch() {
   # This is a hack. Ideally gcc would be configured with a pnacl-nacl target
