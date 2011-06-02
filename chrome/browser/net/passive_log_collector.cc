@@ -460,8 +460,10 @@ PassiveLogCollector::RequestTracker::DoAddEntry(
   }
 
   // Don't keep read bytes around in the log, to save memory.
-  if (entry.type == net::NetLog::TYPE_URL_REQUEST_JOB_FILTERED_BYTES_READ)
+  if (entry.type == net::NetLog::TYPE_URL_REQUEST_JOB_BYTES_READ ||
+      entry.type == net::NetLog::TYPE_URL_REQUEST_JOB_FILTERED_BYTES_READ) {
     return ACTION_NONE;
+  }
 
   AddEntryToSourceInfo(entry, out_info);
 
