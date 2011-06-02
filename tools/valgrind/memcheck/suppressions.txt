@@ -4630,6 +4630,24 @@
    fun:_ZN9FormField15MatchAndAdvanceEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
    fun:_ZN9FormField19ParseFieldSpecificsEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
 }
+{
+   bug_84770_a
+   Memcheck:Addr4
+   fun:_ZN6WebKit21FrameLoaderClientImpl12allowPluginsEb
+   fun:_ZN7WebCore14SubframeLoader12allowPluginsENS_28ReasonForCallingAllowPluginsE
+}
+{
+   bug_84770_b
+   Memcheck:Addr4
+   fun:_ZN6WebKit21FrameLoaderClientImpl15allowJavaScriptEb
+   fun:_ZN7WebCore16ScriptController17canExecuteScriptsENS_33ReasonForCallingCanExecuteScriptsE
+}
+{
+   bug_84770_c
+   Memcheck:Addr4
+   fun:_ZN6WebKit21FrameLoaderClientImpl20allowScriptExtensionERKN3WTF6StringEi
+   fun:_ZN7WebCore16V8DOMWindowShell16createNewContextEN2v86HandleINS1_6ObjectEEEi
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
