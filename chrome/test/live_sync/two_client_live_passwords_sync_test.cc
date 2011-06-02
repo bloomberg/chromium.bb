@@ -11,6 +11,7 @@ using webkit_glue::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
 
+// TCM ID - 3732277
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
@@ -113,6 +114,88 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_EQ(1, GetPasswordCount(1));
+}
+
+// TCM ID - 4603879
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Update) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+
+  PasswordForm form = CreateTestPasswordForm(0);
+  AddLogin(GetVerifierPasswordStore(), form);
+  AddLogin(GetPasswordStore(0), form);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  form.password_value = ASCIIToUTF16("updated");
+  UpdateLogin(GetVerifierPasswordStore(), form);
+  UpdateLogin(GetPasswordStore(1), form);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  ASSERT_EQ(1, GetVerifierPasswordCount());
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+}
+
+// TCM ID - 3719309
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Delete) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetVerifierPasswordStore(), form0);
+  AddLogin(GetPasswordStore(0), form0);
+  PasswordForm form1 = CreateTestPasswordForm(1);
+  AddLogin(GetVerifierPasswordStore(), form1);
+  AddLogin(GetPasswordStore(0), form1);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  RemoveLogin(GetPasswordStore(1), form0);
+  RemoveLogin(GetVerifierPasswordStore(), form0);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  ASSERT_EQ(1, GetVerifierPasswordCount());
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+}
+
+// TCM ID - 7573511
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DeleteAll) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetVerifierPasswordStore(), form0);
+  AddLogin(GetPasswordStore(0), form0);
+  PasswordForm form1 = CreateTestPasswordForm(1);
+  AddLogin(GetVerifierPasswordStore(), form1);
+  AddLogin(GetPasswordStore(0), form1);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  RemoveLogins(GetPasswordStore(1));
+  RemoveLogins(GetVerifierPasswordStore());
+  ASSERT_TRUE(AwaitQuiescence());
+
+  ASSERT_EQ(0, GetVerifierPasswordCount());
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+}
+
+// TCM ID - 3694311
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Merge) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetVerifierPasswordStore(), form0);
+  AddLogin(GetPasswordStore(0), form0);
+  PasswordForm form1 = CreateTestPasswordForm(1);
+  AddLogin(GetVerifierPasswordStore(), form1);
+  AddLogin(GetPasswordStore(0), form1);
+  AddLogin(GetPasswordStore(1), form1);
+  PasswordForm form2 = CreateTestPasswordForm(2);
+  AddLogin(GetVerifierPasswordStore(), form2);
+  AddLogin(GetPasswordStore(1), form2);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  ASSERT_EQ(3, GetVerifierPasswordCount());
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
 // TODO(rsimha): Flaky due to http://crbug.com/80180.

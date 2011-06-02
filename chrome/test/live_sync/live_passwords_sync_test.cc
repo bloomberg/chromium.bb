@@ -18,9 +18,9 @@ using webkit_glue::PasswordForm;
 
 const std::string kFakeSignonRealm = "http://fake-signon-realm.google.com/";
 
-// We use a WaitableEvent to wait on AddLogin instead of running the UI message
-// loop because of a restriction that prevents a DB thread from initiating a
-// quit of the UI message loop.
+// We use a WaitableEvent to wait when logins are added, removed, or updated
+// instead of running the UI message loop because of a restriction that
+// prevents a DB thread from initiating a quit of the UI message loop.
 void PasswordStoreCallback(base::WaitableEvent* wait_event) {
   // Wake up LivePasswordsSyncTest::AddLogin.
   wait_event->Signal();
@@ -78,6 +78,15 @@ void LivePasswordsSyncTest::AddLogin(PasswordStore* store,
   wait_event.Wait();
 }
 
+void LivePasswordsSyncTest::UpdateLogin(PasswordStore* store,
+                                        const PasswordForm& form) {
+  ASSERT_TRUE(store);
+  base::WaitableEvent wait_event(true, false);
+  store->UpdateLogin(form);
+  store->ScheduleTask(NewRunnableFunction(&PasswordStoreCallback, &wait_event));
+  wait_event.Wait();
+}
+
 void LivePasswordsSyncTest::GetLogins(PasswordStore* store,
                                       std::vector<PasswordForm>& matches) {
   ASSERT_TRUE(store);
@@ -86,6 +95,24 @@ void LivePasswordsSyncTest::GetLogins(PasswordStore* store,
   PasswordStoreConsumerHelper consumer(&matches);
   store->GetLogins(matcher_form, &consumer);
   ui_test_utils::RunMessageLoop();
+}
+
+void LivePasswordsSyncTest::RemoveLogin(PasswordStore* store,
+                                         const PasswordForm& form) {
+  ASSERT_TRUE(store);
+  base::WaitableEvent wait_event(true, false);
+  store->RemoveLogin(form);
+  store->ScheduleTask(NewRunnableFunction(&PasswordStoreCallback, &wait_event));
+  wait_event.Wait();
+}
+
+void LivePasswordsSyncTest::RemoveLogins(PasswordStore* store) {
+  std::vector<PasswordForm> forms;
+  GetLogins(store, forms);
+  for (std::vector<PasswordForm>::iterator it = forms.begin();
+       it != forms.end(); ++it) {
+    RemoveLogin(store, *it);
+  }
 }
 
 void LivePasswordsSyncTest::SetPassphrase(int index,
@@ -166,13 +193,6 @@ PasswordForm LivePasswordsSyncTest::CreateTestPasswordForm(int index) {
 }
 
 void LivePasswordsSyncTest::CleanupTestPasswordForms() {
-  std::vector<PasswordForm> forms;
-  GetLogins(GetVerifierPasswordStore(), forms);
-  for (std::vector<PasswordForm>::iterator it = forms.begin();
-       it != forms.end(); ++it) {
-    GetVerifierPasswordStore()->RemoveLogin(*it);
-  }
-  forms.clear();
-  GetLogins(GetVerifierPasswordStore(), forms);
-  ASSERT_EQ(0U, forms.size());
+  RemoveLogins(GetVerifierPasswordStore());
+  ASSERT_EQ(0, GetVerifierPasswordCount());
 }

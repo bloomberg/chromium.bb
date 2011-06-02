@@ -36,12 +36,24 @@ class LivePasswordsSyncTest : public LiveSyncTest {
   void AddLogin(PasswordStore* store,
                 const webkit_glue::PasswordForm& form);
 
+  // Update the data held in password store |store| with a modified |form|.
+  // This method blocks until the operation is complete.
+  void UpdateLogin(PasswordStore* store,
+                   const webkit_glue::PasswordForm& form);
+
   // Searches |store| for all logins matching a fake signon realm used only by
   // LivePasswordsSyncTest and adds the results to |matches|. Note that the
   // caller is responsible for deleting the forms added to |matches|.
   void GetLogins(PasswordStore* store,
                  std::vector<webkit_glue::PasswordForm>& matches);
 
+  // Removes the login held in |form| from the password store |store|.  This
+  // method blocks until the operation is complete.
+  void RemoveLogin(PasswordStore* store,
+                   const webkit_glue::PasswordForm& form);
+
+  // Removes all password forms from the password store |store|.
+  void RemoveLogins(PasswordStore* store);
 
   // Sets the cryptographer's passphrase for the profile at index |index| to
   // |passphrase|. |is_creation| is true if a new passphrase is being set up
