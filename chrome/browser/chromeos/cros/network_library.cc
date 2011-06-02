@@ -3388,28 +3388,30 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
     }
 
-    // If switching from dhcp to static, then create new static ip config.
     IPConfigStatus* ipconfig_status2 = NULL;
-    if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4 && !ipconfig_static) {
-      // Create new static ip config.
-      chromeos::AddIPConfig(ipconfig.device_path.c_str(),
-                            chromeos::IPCONFIG_TYPE_IPV4);
-      // Now find the newly created IP config.
-      ipconfig_status2 = chromeos::ListIPConfigs(ipconfig.device_path.c_str());
-      if (ipconfig_status2) {
-        for (int i = 0; i < ipconfig_status2->size; i++) {
-          if (ipconfig_status2->ips[i].type == chromeos::IPCONFIG_TYPE_IPV4)
-            ipconfig_static = &ipconfig_status2->ips[i];
+    if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP) {
+      // If switching from static to dhcp, create new dhcp ip config.
+      if (!ipconfig_dhcp)
+        chromeos::AddIPConfig(ipconfig.device_path.c_str(),
+                              chromeos::IPCONFIG_TYPE_DHCP);
+      // User wants DHCP now. So delete the static ip config.
+      if (ipconfig_static)
+        chromeos::RemoveIPConfig(ipconfig_static);
+    } else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4) {
+      // If switching from dhcp to static, create new static ip config.
+      if (!ipconfig_static) {
+        chromeos::AddIPConfig(ipconfig.device_path.c_str(),
+                              chromeos::IPCONFIG_TYPE_IPV4);
+        // Now find the newly created IP config.
+        ipconfig_status2 =
+            chromeos::ListIPConfigs(ipconfig.device_path.c_str());
+        if (ipconfig_status2) {
+          for (int i = 0; i < ipconfig_status2->size; i++) {
+            if (ipconfig_status2->ips[i].type == chromeos::IPCONFIG_TYPE_IPV4)
+              ipconfig_static = &ipconfig_status2->ips[i];
+          }
         }
       }
-    }
-
-    if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP) {
-      if (ipconfig_static) {
-        // User wants DHCP now. So delete the static ip config.
-        chromeos::RemoveIPConfig(ipconfig_static);
-      }
-    } else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4) {
       if (ipconfig_static) {
         // Save any changed details.
         if (ipconfig.address != ipconfig_static->address) {
@@ -3444,9 +3446,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                                value.get());
         }
         // Remove dhcp ip config if there is one.
-        if (ipconfig_dhcp) {
+        if (ipconfig_dhcp)
           chromeos::RemoveIPConfig(ipconfig_dhcp);
-        }
       }
     }
 

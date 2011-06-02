@@ -336,8 +336,14 @@ cr.define('options', function() {
       inetDns = data.ipconfigDHCP.dns;
     }
 
+    // Hide the dhcp/static radio if not ethernet or wifi
+    var ethernet_wifi = data.type == options.internet.Constants.TYPE_WIFI ||
+                        data.type == options.internet.Constants.TYPE_ETHERNET;
+    $('ipTypeDHCPDiv').hidden = !ethernet_wifi;
+    $('ipTypeStaticDiv').hidden = !ethernet_wifi;
+
     var ipConfigList = $('ipConfigList');
-    ipConfigList.disabled = $('ipTypeDHCP').checked;
+    ipConfigList.disabled = $('ipTypeDHCP').checked || !ethernet_wifi;
     options.internet.IPConfigList.decorate(ipConfigList);
     ipConfigList.autoExpands = true;
     var model = new ArrayDataModel([]);
@@ -381,18 +387,7 @@ cr.define('options', function() {
     });
 
     $('ipTypeStatic').addEventListener('click', function(event) {
-      // enable ipConfigList and switch back to static values (if any)
-      if (data.ipconfigStatic) {
-        ipConfigList.dataModel.item(0).value = data.ipconfigStatic.address;
-        ipConfigList.dataModel.item(1).value =
-          data.ipconfigStatic.subnetAddress;
-        ipConfigList.dataModel.item(2).value = data.ipconfigStatic.gateway;
-        ipConfigList.dataModel.item(3).value = data.ipconfigStatic.dns;
-      }
-      ipConfigList.dataModel.updateIndex(0);
-      ipConfigList.dataModel.updateIndex(1);
-      ipConfigList.dataModel.updateIndex(2);
-      ipConfigList.dataModel.updateIndex(3);
+      // enable ipConfigList
       ipConfigList.disabled = false;
       ipConfigList.focus();
       ipConfigList.selectionModel.selectedIndex = 0;
