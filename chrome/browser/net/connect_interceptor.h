@@ -44,6 +44,7 @@ class ConnectInterceptor : public net::URLRequest::Interceptor {
   class TimedCache {
    public:
     explicit TimedCache(const base::TimeDelta& max_duration);
+    ~TimedCache();
 
     // Evicts any entries that have been in the FIFO "too long," and then checks
     // to see if the given url is (still) in the FIFO cache.

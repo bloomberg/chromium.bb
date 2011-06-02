@@ -100,6 +100,9 @@ ConnectInterceptor::TimedCache::TimedCache(const base::TimeDelta& max_duration)
       max_duration_(max_duration) {
 }
 
+// Make Clang compilation happy with explicit destructor.
+ConnectInterceptor::TimedCache::~TimedCache() {}
+
 bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) {
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Evict any overly old entries.
