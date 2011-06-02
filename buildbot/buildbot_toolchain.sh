@@ -86,7 +86,7 @@ cd ../../..
 
 
 if [[ ${PLATFORM} == win ]]; then
-  python buildbot\buildbot_win.py opt 64 newlib
+  python buildbot/buildbot_win.py opt 64 newlib
 elif [[ ${PLATFORM} == mac ]]; then
   buildbot/buildbot_mac.sh opt 32 newlib
 elif [[ ${PLATFORM} == linux ]]; then
