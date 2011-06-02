@@ -148,15 +148,13 @@ void ActiveDownloadsUIHTMLSource::StartDataRequest(const std::string& path,
                                               int request_id) {
   DictionaryValue localized_strings;
   localized_strings.SetString("allowdownload",
-      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_DOWNLOAD));
+      l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION));
   localized_strings.SetString("cancel",
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL));
-  localized_strings.SetString("confirmcancel",
-      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_CANCEL));
-  localized_strings.SetString("confirmyes",
-      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_YES));
-  localized_strings.SetString("open",
-      l10n_util::GetStringUTF16(IDS_FILEBROWSER_OPEN));
+  localized_strings.SetString("discard",
+      l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+  localized_strings.SetString("continue",
+      l10n_util::GetStringUTF16(IDS_CONTINUE_EXTENSION_DOWNLOAD));
   localized_strings.SetString("pause",
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_PAUSE));
   localized_strings.SetString("resume",
@@ -425,8 +423,7 @@ Browser* ActiveDownloadsUI::GetPopup(Profile* profile) {
       const GURL& url = tab_contents->GetURL();
 
       if (url.SchemeIs(chrome::kChromeUIScheme) &&
-          url.host() == chrome::kChromeUIActiveDownloadsHost &&
-          (*it)->profile() == profile) {
+          url.host() == chrome::kChromeUIActiveDownloadsHost) {
         return (*it);
       }
     }

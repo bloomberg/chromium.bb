@@ -663,6 +663,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_value->SetString("file_name", file_name);
   file_value->SetString("url", download->GetURL().spec());
   file_value->SetBoolean("otr", download->is_otr());
+  file_value->SetInteger("total", static_cast<int>(download->total_bytes()));
 
   if (download->IsInProgress()) {
     if (download->safety_state() == DownloadItem::DANGEROUS) {
@@ -704,10 +705,11 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
     } else {
       file_value->SetString("state", "COMPLETE");
     }
+  } else if (download->state() == DownloadItem::REMOVING) {
+    file_value->SetString("state", "REMOVING");
+  } else {
+    NOTREACHED() << "state undefined";
   }
-
-  file_value->SetInteger("total",
-      static_cast<int>(download->total_bytes()));
 
   return file_value;
 }

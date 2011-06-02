@@ -977,7 +977,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
 #endif
 
   // Verify that the regular window does not have a download shelf.
-  CheckDownloadUIVisible(browser(), false, false);
+  // On ChromeOS, the download panel is common to both profiles, so
+  // it is still visible.
+  CheckDownloadUIVisible(browser(), false, true);
 
   CheckDownload(browser(), file, file);
 }

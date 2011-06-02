@@ -22,25 +22,25 @@ ul.downloadlist {
 }
 
 .menuicon {
-  position: absolute;
-  right: 9px;
-  top: 11px;
-  height: 100%;
+  margin: 20px auto auto auto;
+  height: 4px;
   width: 5px;
-  margin-left: 0;
   background: url('chrome://resources/images/active_downloads_menu.png');
-  margin-top: 5px;
   background-repeat: no-repeat;
 }
 
 .menubutton {
-  position: absolute;
-  margin-top: -36px;
-  right: 0;
-  height: 35px;
+  float: right;
+  height: 43px;
   width: 24px;
+  border-left: 1px solid #CCC;
   border-bottom: 1px solid #CCC;
   cursor: pointer;
+}
+
+/* TODO(achuith): fix rtl */
+html[dir=rtl] .menubutton {
+  float: left;
 }
 
 .rowbg {
@@ -64,10 +64,9 @@ ul.downloadlist {
 }
 
 .rowbutton {
-  padding: 5px 5px 0 34px;
+  padding: 5px 5px 0 7px;
   position: relative;
-  right: 24px;
-  border-right: 1px solid #CCC;
+  width:213px;
   height: 30px;
 }
 
@@ -87,30 +86,19 @@ ul.downloadlist {
   white-space: nowrap;
   display: inline-block;
   overflow: hidden;
-  width: 189px;
+  width: 191px;
+  margin-right: -20px;
   color: #325282;
-}
-
-.rowbutton span.downloading {
-  top: -6px;
   font-size: .8em;
 }
 
-.rowbutton span.downloaded {
-  font-size: .8em;
-}
-
-.rowbutton span.error {
-  font-size: .6em;
-}
-
-.allowdownload {
-  margin: -10px 5px 5px 30px;
+.dangerousprompt {
+  margin: 0 5px 5px 3px;
   display: block;
 }
 
-.allowdownloadtext {
-  font-size: .6em;
+.dangerousprompttext {
+  font-size: .7em;
   color: #325282;
 }
 
@@ -123,10 +111,10 @@ ul.downloadlist {
 }
 
 .progress {
-  font-size: .6em;
+  font-size: .7em;
   text-align: right;
-  margin-left: auto;
-  margin-top: -5px;
+  color: #325282;
+  margin-top: 2px;
 }
 
 div.columnlist {
@@ -157,9 +145,8 @@ div.showalldownloads {
 }
 
 .menu {
-  top: 14px;
-  right: 2px;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 3px;
+  margin-top: 5px;
+  right: 15px;
   border-bottom-left-radius: 4px 4px;
   border-bottom-right-radius: 4px 4px;
   border-top-left-radius: 4px 4px;
@@ -167,10 +154,10 @@ div.showalldownloads {
   position: absolute;
   display: none;
   z-index: 999;
-  background: white;
-  border-top-left-radius: 4px;
+  background: -webkit-gradient(linear, left top, left bottom,
+    from(#f3f3f3), to(#ebebeb), color-stop(0.8, #ededed));
   border: 1px solid rgba(0, 0, 0, 0.6);
-  padding: 5px;
+  padding: 2px 5px 0 5px;
 }
 
 .menuitem {
@@ -213,14 +200,14 @@ div.iconmusic {
 <script src="shared/js/util.js"></script>
 <script>
 
-var localStrings = null;
-var downloadRowList = null;
+var localStrings;
+var downloadRowList;
 
 function init() {
   localStrings = new LocalStrings();
   initTestHarness();
 
-  // Suppress browser shortcuts. 
+  // Suppress browser shortcuts.
   window.onkeydown = function(e) {
     e.preventDefault();
   };
@@ -229,60 +216,93 @@ function init() {
       localStrings.getString('showalldownloads');
 
   downloadRowList = new DownloadRowList();
-  chrome.send('getDownloads', []);
+  chromeSend('getDownloads');
 }
+
+/**
+ * Wrapper for chrome.send.
+ */
+function chromeSend(func, arg) {
+  if (arg == undefined)
+    arg = '';
+
+  // Convert to string.
+  if (typeof arg == 'number')
+    arg = '' + arg;
+
+  chrome.send(func, [arg]);
+};
 
 /**
  * Testing. Allow this page to be loaded in a browser.
  * Create stubs for localStrings and chrome.send.
  */
-var testHarnessEnabled = false;
 function initTestHarness() {
-  if (testHarnessEnabled) {
-    localStrings = {
-      getString: function(name) {
-        if (name == 'showalldownloads')
-          return 'Show All Downloads';
-        if (name == 'allowdownload')
-          return 'Allow Download?';
-        if (name == 'confirmyes')
-          return 'Yes';
-        if (name == 'confirmcancel')
-          return 'Cancel';
-        return name;
-      },
-      getStringF: function(name, path) {
-        return path + ' - Unknown file type.';
-      },
-    };
-    chrome.send = function(name, ary) {
-      console.log('chrome.send ' + name + ' ' + ary);
-      if (name == 'getDownloads' ||
-          (name == 'openNewFullWindow' &&
-          ary[0] == 'chrome://downloads'))
-        sendTestResults();
-    };
-    document.body.oncontextmenu = '';
+  if (location.protocol != 'file:')
+    return;
+
+  // Fix localStrings.
+  localStrings = {
+    getString: function(name) {
+      if (name == 'showalldownloads')
+        return 'Show All Downloads';
+      if (name == 'allowdownload')
+        return 'Extensions, apps, and themes can harm your computer.' +
+            ' Are you sure you want to continue?'
+      if (name == 'continue')
+        return 'Continue';
+      if (name == 'discard')
+        return 'Discard';
+      return name;
+    },
+    getStringF: function(name, path) {
+      return path + ' - Unknown file type.';
+    },
+  };
+
+  // Log chrome.send calls.
+  chrome.send = function(name, ary) {
+    console.log('chrome.send ' + name + ' ' + ary);
+    if (name == 'getDownloads' ||
+        (name == 'openNewFullWindow' &&
+        ary[0] == 'chrome://downloads'))
+      sendTestResults();
+  };
+
+  // Enable right click for dom inspector.
+  document.body.oncontextmenu = '';
+
+  // Fix resource images.
+  var cssRules = document.styleSheets[0].cssRules;
+  for (var i = 0; i < cssRules.length; i++) {
+    var cssRule = cssRules[i];
+    if (cssRule.selectorText.match(/^div\.icon|^\.menuicon/)) {
+      cssRule.style.backgroundImage =
+          cssRule.style.backgroundImage.replace('chrome://resources', 'shared');
+    }
   }
 }
 
 /**
  * Create a results array with test data and call downloadsList.
  */
-var id = 0;
-var results = [];
+var testElement;
+var testId = 0;
+var testResults = [];
 function sendTestResults() {
-  results.push({
-      state: (id % 2 ? 'DANGEROUS' : 'COMPLETE'),
-      percent: (id % 2 ? 90 : 100),
-      id: id,
-      file_name: ' Test' + id + '.pdf',
-      file_path: '/home/achuith/Downloads/Test' + id + '.pdf',
-      progress_status_text : (id % 2 ?
-          'download progressing nicely' : 'download complete'),
+  var testState = (testId % 3 == 0 ? 'IN_PROGRESS' :
+      (testId % 3 == 1 ? 'DANGEROUS' : 'COMPLETE'));
+  state1 = (testId % 3 == 0);
+  testResults.push({
+      state: testState,
+      percent: (testId % 3 == 0 ? 90 : 100),
+      id: testId,
+      file_name: ' Test' + testId + '.pdf',
+      file_path: '/home/achuith/Downloads/Test' + testId + '.pdf',
+      progress_status_text : '107 MB/s - 108 MB of 672 MB, 5 secs left',
     });
-  id++;
-  downloadsList(results);
+  testId++;
+  downloadsList(testResults);
 }
 
 /**
@@ -292,8 +312,8 @@ var menu = {
   current_: null,
 
   /**
-  * Close the current menu.
-  */
+   * Close the current menu.
+   */
   clear: function() {
     var current = this.current_;
     if (current) {
@@ -304,9 +324,9 @@ var menu = {
   },
 
   /**
-  * If it's a second click on an open menu, close the menu.
-  * Otherwise, close any other open menu and open the clicked menu.
-  */
+   * If it's a second click on an open menu, close the menu.
+   * Otherwise, close any other open menu and open the clicked menu.
+   */
   clicked: function(row) {
     var menuicon = row.menuicon;
     if (this.current_ === menuicon) {
@@ -324,6 +344,12 @@ var menu = {
   },
 };
 
+function DiscardResult(result) {
+    return (result.state == 'CANCELLED' ||
+            result.state == 'INTERRUPTED' ||
+            result.state == 'REMOVING');
+};
+
 /**
  * C++ api calls.
  */
@@ -336,12 +362,7 @@ function downloadUpdated(result) {
 }
 
 function showAllDownloads() {
-  chrome.send('openNewFullWindow', ['chrome://downloads']);
-  dialogClose();
-}
-
-function dialogClose() {
-  chrome.send('DialogClose', ['']);
+  chromeSend('openNewFullWindow', 'chrome://downloads');
 }
 
 /**
@@ -359,16 +380,17 @@ function DownloadRow(list, result) {
   this.id = result.id;
 
   this.createRow_(list);
-  this.createRowButton_();
   this.createMenu_();
+  this.createRowButton_();
+  this.setMenuHidden_(true);
 }
 
 DownloadRow.prototype = {
   /**
-  * Create the row html element and book-keeping for the row.
-  * @param {DownloadRowList} list global DownloadRowList instance.
-  * @private
-  */
+   * Create the row html element and book-keeping for the row.
+   * @param {DownloadRowList} list global DownloadRowList instance.
+   * @private
+   */
   createRow_: function(list) {
     var row = document.createElement('li');
     row.className = 'downloadrow';
@@ -393,7 +415,6 @@ DownloadRow.prototype = {
 
   setErrorText_: function(text) {
     this.filename.textContent = text;
-    this.filename.className = 'error title';
   },
 
   supportsPdf_: function() {
@@ -401,25 +422,25 @@ DownloadRow.prototype = {
   },
 
   openFilePath_: function() {
-    chrome.send('openNewFullWindow', ['file://' + this.path]);
+    chromeSend('openNewFullWindow', 'file://' + this.path);
   },
 
   /**
-  * Determine onclick behavior based on filename.
-  * @private
-  */
+   * Determine onclick behavior based on filename.
+   * @private
+   */
   getFunctionForItem_: function() {
     var path = this.path;
     var self = this;
 
     if (pathIsAudioFile(path)) {
       return function() {
-        chrome.send('playMediaFile', [path]);
+        chromeSend('playMediaFile', path);
       };
     }
     if (pathIsVideoFile(path)) {
       return function() {
-        chrome.send('playMediaFile', [path]);
+        chromeSend('playMediaFile', path);
       };
     }
     if (pathIsImageFile(path)) {
@@ -445,15 +466,15 @@ DownloadRow.prototype = {
   },
 
   /**
-  * Create a child element.
-  *
-  * @param {string} type The type - div, span, etc.
-  * @param {string} className The class name
-  * @param {HTMLElement} parent Parent to append this child to.
-  * @param {string} textContent optional text content of child.
-  * @param {function(*)} onclick onclick function of child.
-  * @private
-  */
+   * Create a child element.
+   *
+   * @param {string} type The type - div, span, etc.
+   * @param {string} className The class name
+   * @param {HTMLElement} parent Parent to append this child to.
+   * @param {string} textContent optional text content of child.
+   * @param {function(*)} onclick onclick function of child.
+   * @private
+   */
   createChild_: function(type, className, parent, textContent, onclick) {
     var elem = document.createElement(type);
     elem.className = className;
@@ -465,27 +486,40 @@ DownloadRow.prototype = {
   },
 
   /**
-    * Create the row button for the left of the row.
-    * This contains the icon, filename and error elements.
-    * @private
-    */
+   * Create the row button for the left of the row.
+   * This contains the icon, filename and error elements.
+   * @private
+   */
   createRowButton_: function () {
     this.rowbutton = this.createChild_('div', 'rowbutton rowbg', this.element);
 
     // Icon.
     var icon = this.createChild_('div', this.getIconClass_(), this.rowbutton);
+    // TODO(achuith): Make chrome://fileicon work.
+    //icon.style.background = 'url(chrome://fileicon' + 
+    //    this.path + '?size=small) no-repeat';
 
     // Filename.
-    this.filename = this.createChild_('span', 'downloaded title',
+    this.filename = this.createChild_('span', 'title',
         this.rowbutton, this.name);
   },
 
+  setMenuHidden_: function(hidden) {
+    this.menubutton.hidden = hidden;
+    testElement = this.menubutton;
+    if (hidden) {
+      this.rowbutton.style.width = '238px';
+    } else {
+      this.rowbutton.style.width = '';
+    }
+  },
+
   /**
-  * Create the menu button on the right of the row.
-  * This contains the menuicon. The menuicon contains the menu, which
-  * contains items for Open, Pause/Resume and Cancel.
-  * @private
-  */
+   * Create the menu button on the right of the row.
+   * This contains the menuicon. The menuicon contains the menu, which
+   * contains items for Pause/Resume and Cancel.
+   * @private
+   */
   createMenu_: function() {
     var self = this;
     this.menubutton = this.createChild_('div', 'menubutton rowbg',
@@ -495,12 +529,8 @@ DownloadRow.prototype = {
         });
 
     this.menuicon = this.createChild_('div', 'menuicon', this.menubutton);
-    this.menuicon.align = 'right';
 
     var menudiv = this.createChild_('div', 'menu', this.menuicon);
-
-    this.open = this.createChild_('div', 'menuitem', menudiv,
-      localStrings.getString('open'), this.getFunctionForItem_());
 
     this.pause = this.createChild_('div', 'menuitem', menudiv,
       localStrings.getString('pause'), function() {
@@ -511,17 +541,14 @@ DownloadRow.prototype = {
       localStrings.getString('cancel'), function() {
                                           self.cancelDownload_();
                                         });
-
-    this.pause.style.display = 'none';
-    this.cancel.style.display = 'none';
   },
 
   allowDownload_: function() {
-    chrome.send('allowDownload', ['' + this.id]);
+    chromeSend('allowDownload', this.id);
   },
 
   cancelDownload_: function() {
-    chrome.send('cancelDownload', ['' + this.id]);
+    chromeSend('cancelDownload', this.id);
   },
 
   pauseToggleDownload_: function() {
@@ -530,70 +557,77 @@ DownloadRow.prototype = {
       localStrings.getString('resume') :
       localStrings.getString('pause');
 
-    // Convert id to string before send.
-    chrome.send('pauseToggleDownload', ['' + this.id]);
+    chromeSend('pauseToggleDownload', this.id);
   },
 
-  resetRow_: function() {
-    this.rowbutton.onclick = '';
-    this.rowbutton.style.cursor = '';
-    this.rowbutton.setAttribute('draggable', 'false');
+  changeElemHeight_: function(elem, x) {
+    elem.style.height = elem.clientHeight + x + 'px';
   },
 
-  createAllowDownload_: function() {
-    if (this.allowdownload)
+  changeRowHeight_: function(x) {
+    this.list.rowsHeight += x;
+    this.changeElemHeight_(this.element, x);
+    // rowbutton has 5px padding.
+    this.changeElemHeight_(this.rowbutton, x - 5);
+    this.list.resize();
+  },
+
+  DANGEROUS_HEIGHT: 60,
+  createDangerousPrompt_: function() {
+    if (this.dangerous)
       return;
 
-    this.allowdownload = this.createChild_('div', 'allowdownload',
+    this.dangerous = this.createChild_('div', 'dangerousprompt',
         this.rowbutton);
 
-    this.createChild_('span', 'allowdownloadtext', this.allowdownload,
+    this.createChild_('span', 'dangerousprompttext', this.dangerous,
         localStrings.getString('allowdownload'));
 
     var self = this;
-    this.createChild_('span', 'confirm', this.allowdownload,
-        localStrings.getString('confirmyes'),
-        function() {
-          self.allowDownload_();
-        });
-    this.createChild_('span', 'confirm', this.allowdownload,
-        localStrings.getString('confirmcancel'),
+    this.createChild_('span', 'confirm', this.dangerous,
+        localStrings.getString('discard'),
         function() {
           self.cancelDownload_();
         });
+    this.createChild_('span', 'confirm', this.dangerous,
+        localStrings.getString('continue'),
+        function() {
+          self.allowDownload_();
+        });
 
-    this.resetRow_();
-    this.menubutton.onclick = '';
+    this.changeRowHeight_(this.DANGEROUS_HEIGHT);
   },
 
-  removeAllowDownload_: function() {
-    if (this.allowdownload) {
-      this.rowbutton.removeChild(this.allowdownload);
-      this.allowdownload = null;
-      var self = this;
-      this.menubutton.onclick = function() {
-        menu.clicked(self);
-      };
-    }
+  removeDangerousPrompt_: function() {
+    if (!this.dangerous)
+      return;
+
+    this.rowbutton.removeChild(this.dangerous);
+    this.dangerous = null;
+
+    this.changeRowHeight_(-this.DANGEROUS_HEIGHT);
   },
 
+  PROGRESS_HEIGHT: 8,
   createProgress_: function() {
     if (this.progress)
       return;
 
     this.progress = this.createChild_('div', 'progress', this.rowbutton);
 
-    // Menu has Pause/Cancel. Open hidden.
-    this.open.style.display = 'none';
-    this.pause.style.display = '';
-    this.cancel.style.display = '';
+    this.setMenuHidden_(false);
+    this.changeRowHeight_(this.PROGRESS_HEIGHT);
   },
 
   removeProgress_: function() {
-    if (this.progress) {
-      this.rowbutton.removeChild(this.progress);
-      this.progress = null;
-    }
+    if (!this.progress)
+      return;
+
+    this.rowbutton.removeChild(this.progress);
+    this.progress = null;
+
+    this.changeRowHeight_(-this.PROGRESS_HEIGHT);
+    this.setMenuHidden_(true);
   },
 
   updatePause_: function(result) {
@@ -612,26 +646,41 @@ DownloadRow.prototype = {
     }
   },
 
+  progressStatusText_: function(progress) {
+    if (!progress)
+      return progress;
+
+    /* m looks like this:
+    ["107 MB/s - 108 MB of 672 MB, 5 secs left",
+    "107 MB/s", "108", "MB", "672", "MB", "5 secs left"]
+    We want to return progress text like this:
+    "108 / 672 MB, 5 secs left"
+    or
+    "108 kB / 672 MB, 5 secs left"
+    */
+    var m = progress.match(
+      /([^-]*) - ([0-9\.]*) ([a-zA-Z]*) of ([0-9\.]*) ([a-zA-Z]*), (.*)/);
+    if (!m || m.length != 7)
+      return progress;
+
+    return m[2] + (m[3] == m[5] ? '' : ' ' + m[3]) +
+        ' / ' + m[4] + ' ' + m[5] + ', ' + m[6];
+  },
+
   updateProgress_: function(result) {
-    this.removeAllowDownload_();
+    this.removeDangerousPrompt_();
     this.createProgress_();
-    this.progress.textContent = result.progress_status_text;
+    this.progress.textContent =
+        this.progressStatusText_(result.progress_status_text);
     this.updatePause_(result);
   },
 
   /**
-  * Called when the item has finished downloading. Switch the menu
-  * and remove the progress bar.
-  * @private
-  */
+   * Called when the item has finished downloading. Switch the menu
+   * and remove the progress bar.
+   * @private
+   */
   finishedDownloading_: function() {
-    this.filename.className = 'downloaded title';
-
-    // Menu has Open. Pause/Cancel hidden.
-    this.open.style.display = '';
-    this.pause.style.display = 'none';
-    this.cancel.style.display = 'none';
-
     // Make rowbutton clickable.
     this.rowbutton.onclick = this.getFunctionForItem_();
     this.rowbutton.style.cursor = 'pointer';
@@ -645,26 +694,24 @@ DownloadRow.prototype = {
       e.dataTransfer.setData('URL', 'file:///' + self.path);
     }, false);
 
-    this.removeAllowDownload_();
+    this.removeDangerousPrompt_();
     this.removeProgress_();
   },
 
   /**
-  * One of the DownloadItem we are observing has updated.
-  * @param {Object} result JSON representation of DownloadItem.
-  */
-  downloadUpdated: function(result) {
+   * One of the DownloadItem we are observing has updated.
+   * @param {Object} result JSON representation of DownloadItem.
+   */
+  update: function(result) {
     this.filename.textContent = result.file_name;
-    this.filename.className = 'downloading title';
 
-    if (result.state == 'CANCELLED' ||
-        result.state == 'INTERRUPTED') {
+    if (DiscardResult(result)) {
       this.list.remove(this);
     } else if (result.state == 'DANGEROUS') {
-      this.createAllowDownload_();
+      this.createDangerousPrompt_();
     } else if (result.percent < 100) {
       this.updateProgress_(result);
-    } else {
+    } else if (result.state == 'COMPLETE') {
       this.finishedDownloading_();
     }
   },
@@ -690,66 +737,72 @@ function DownloadRowList() {
 DownloadRowList.prototype = {
 
   /**
-  * ROW_HEIGHT is height of each row.
-  * MAX_ROWS is maximum number of rows displayed (to display a new row
-  * beyond MAX_ROWS, we delete the oldest row).
-  * MIN_ROWS is the minimum number of rows displayed.
-  * numRows is the current number of rows.
-  * downloadList is the list of DownloadRow elements.
-  */
-  ROW_HEIGHT: 36,
-  MAX_ROWS: 5,
-  MIN_ROWS: 1,
+   * numRows is the current number of rows.
+   * rowsHeight is the sum of the heights of all rows.
+   * rowListHeight is the height of the container containing the rows.
+   * downloadList is the list of DownloadRow elements.
+   */
   numRows: 0,
+  rowsHeight: 0,
+  rowListHeight: 72,
   downloadList: [],
 
-  numRowsOutsideRange_: function() {
-    return this.numRows > this.MIN_ROWS && this.numRows < this.MAX_ROWS;
+  /**
+   * Resize the panel to accomodate all rows.
+   */
+  resize: function() {
+    var diff = this.rowsHeight - this.rowListHeight;
+    if (diff != 0 && (this.rowListHeight + diff > 72)) {
+      window.resizeBy(0, diff);
+      this.rowListHeight += diff;
+    }
   },
 
   /**
-  * Remove a row from the list, as when a download is canceled, or
-  * the the number of rows has exceeded the max allowed.
-  *
-  * @param {DownloadRow} row Row to be removed.
-  * @private
-  */
+   * Remove a row from the list, as when a download is canceled, or
+   * the the number of rows has exceeded the max allowed.
+   *
+   * @param {DownloadRow} row Row to be removed.
+   * @private
+   */
   remove: function(row) {
+    var rowHeight = row.element.offsetHeight;
     this.downloadList.splice(this.downloadList.indexOf(row), 1);
     this.element.removeChild(row.element);
     row.element.downloadRow = null;
 
     this.numRows--;
-    if (this.numRowsOutsideRange_())
-      window.resizeBy(0, -this.ROW_HEIGHT);
+    this.rowsHeight -= rowHeight;
+    this.resize();
   },
 
   /**
-  * Append a new row to the list, removing the last row if we exceed the
-  * maximum allowed.
-  * @param {DownloadRow} row Row to be removed.
-  */
+   * Append a new row to the list, removing the last row if we exceed the
+   * maximum allowed.
+   * @param {DownloadRow} row Row to be removed.
+   */
   append: function(row) {
-    if (this.numRowsOutsideRange_())
-      window.resizeBy(0, this.ROW_HEIGHT);
-
-    this.numRows++;
-
     var list = this.element;
-    if (this.numRows > this.MAX_ROWS)
-      this.remove(list.lastChild.downloadRow);
-
     if (list.firstChild) {
       list.insertBefore(row, list.firstChild);
     } else {
       list.appendChild(row);
     }
+
+    this.rowsHeight += row.offsetHeight;
+
+    this.numRows++;
+    // We display no more than 5 elements.
+    if (this.numRows > 5)
+      this.remove(list.lastChild.downloadRow);
+
+    this.resize();
   },
 
   /**
-  * Handle list callback with list of DownloadItems.
-  * @param {Array} results Array of JSONified DownloadItems.
-  */
+   * Handle list callback with list of DownloadItems.
+   * @param {Array} results Array of JSONified DownloadItems.
+   */
   list: function(results) {
     var removeList = [];
     removeList.pushUnique = function(element) {
@@ -780,20 +833,17 @@ DownloadRowList.prototype = {
   },
 
   /**
-  * Handle update of a DownloadItem we're observing.
-  * @param {Object} result JSON representation of DownloadItem.
-  */
+   * Handle update of a DownloadItem we're observing.
+   * @param {Object} result JSON representation of DownloadItem.
+   */
   update: function(result) {
     var element = $(result.file_path);
     var row = element && element.downloadRow;
 
-    if (!row &&
-        result.state != 'CANCELLED' &&
-        result.state != 'INTERRUPTED') {
+    if (!row && !DiscardResult(result))
       row = new DownloadRow(this, result);
-    }
 
-    row && row.downloadUpdated(result);
+    row && row.update(result);
   },
 };
 
