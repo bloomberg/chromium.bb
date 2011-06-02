@@ -379,9 +379,6 @@ class ExtensionService
   // been loaded from a file and installed.
   void AddExtension(const Extension* extension);
 
-  // Called by the backend when an unpacked extension has been loaded.
-  void OnLoadSingleExtension(const Extension* extension);
-
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(const Extension* extension);
 
@@ -653,7 +650,7 @@ class ExtensionService
   ExtensionToolbarModel toolbar_model_;
 
   // Map unloaded extensions' ids to their paths. When a temporarily loaded
-  // extension is unloaded, we lose the information about it and don't have
+  // extension is unloaded, we lose the infomation about it and don't have
   // any in the extension preferences file.
   typedef std::map<std::string, FilePath> UnloadedExtensionPathMap;
   UnloadedExtensionPathMap unloaded_extension_paths_;
