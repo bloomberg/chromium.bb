@@ -2554,6 +2554,12 @@ void TestingAutomationProvider::GetBrowserInfo(
 #endif
   properties->SetString("branding", branding);
 
+  bool is_official_build = false;
+#if defined(OFFICIAL_BUILD)
+  is_official_build = true;
+#endif
+  properties->SetBoolean("is_official", is_official_build);
+
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set("properties", properties);
 
