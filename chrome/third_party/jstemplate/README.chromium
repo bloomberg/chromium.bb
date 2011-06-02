@@ -10,15 +10,8 @@ output with an incremental change to the original input data."
 Uncalled functions have been removed from util.js to make the resulting
 javascript smaller.
 
-compile.py is a simple program used to generate the single compiled jsfile.
+compile.py is a simple program used to generate the single compiled
+jsfile.
 
-NOTE: output is now simply written to stdout so as to allow you to redirect
-it to a location required by the shared resource bundle. 
-
-See IDR_SHARED_JS_JSTEMPLATE_COMPILED's file attribute in shared_resources.grd
-to determine the correct location for the output.
-
-The jstemplate_compiled.js file which formerly resided in this directory is
-no longer used.
-
-
+jstemplate_compiled.js is the output after passing the code through
+compile.sh.

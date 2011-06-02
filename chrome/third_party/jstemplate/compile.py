@@ -4,14 +4,13 @@
 # found in the LICENSE file.
 
 # A python script that combines the javascript files needed by jstemplate into
-# a single file.  Writes to standard output; you are responsible for putting
-# the file into the tree where it belongs.
+# a single file.
 
 import httplib
-import sys
 import urllib
 
 srcs ="util.js jsevalcontext.js jstemplate.js exports.js".split()
+out = "jstemplate_compiled.js"
 
 # Wrap the output in an anonymous function to prevent poluting the global
 # namespace.
@@ -33,5 +32,7 @@ headers = {'Content-type': 'application/x-www-form-urlencoded'}
 conn = httplib.HTTPConnection('closure-compiler.appspot.com')
 conn.request('POST', '/compile', params, headers)
 response = conn.getresponse()
-sys.stdout.write(output_wrapper % response.read())
+out_file = file(out, 'w')
+out_file.write(output_wrapper % response.read())
+out_file.close()
 conn.close()
