@@ -74,8 +74,8 @@ class TreeNode : public TreeModelNode {
   // Adds |node| as a child of this one, at |index|.
   virtual void Add(NodeType* node, int index) {
     DCHECK(node);
-    DCHECK_LE(0, index);
-    DCHECK_GE(child_count(), index);
+    DCHECK_GE(index, 0);
+    DCHECK_LE(index, child_count());
     // If the node has a parent, remove it from its parent.
     NodeType* parent = node->parent_;
     if (parent)
@@ -116,8 +116,8 @@ class TreeNode : public TreeModelNode {
 
   // Returns the node at |index|.
   const NodeType* GetChild(int index) const {
-    DCHECK_LE(0, index);
-    DCHECK_GT(child_count(), index);
+    DCHECK_GE(index, 0);
+    DCHECK_LT(index, child_count());
     return children_[index];
   }
   NodeType* GetChild(int index) {
