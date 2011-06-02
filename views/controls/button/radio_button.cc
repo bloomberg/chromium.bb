@@ -124,7 +124,7 @@ NativeButtonWrapper* NativeRadioButton::CreateWrapper() {
 RadioButton::RadioButton(const std::wstring& label, int group_id)
     : Checkbox(label) {
   SetGroup(group_id);
-  focusable_ = true;
+  set_focusable(true);
 }
 
 RadioButton::~RadioButton() {

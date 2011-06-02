@@ -95,8 +95,7 @@ Widget* View::GetChildWidget() {
 // Creation and lifetime -------------------------------------------------------
 
 View::View()
-    : focusable_(false),
-      parent_owned_(true),
+    : parent_owned_(true),
       id_(0),
       group_(-1),
       parent_(NULL),
@@ -116,6 +115,7 @@ View::View()
       registered_accelerator_count_(0),
       next_focusable_view_(NULL),
       previous_focusable_view_(NULL),
+      focusable_(false),
       accessibility_focusable_(false),
       context_menu_controller_(NULL),
       drag_controller_(NULL) {

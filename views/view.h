@@ -1053,9 +1053,6 @@ class View : public AcceleratorTarget {
   void Focus();
   void Blur();
 
-  // Whether the view can be focused.
-  bool focusable_;
-
   // System events -------------------------------------------------------------
 
   // Called when the UI theme has changed, overriding allows individual Views to
@@ -1411,6 +1408,9 @@ class View : public AcceleratorTarget {
 
   // Next view to be focused when the Shift-Tab key combination is pressed.
   View* previous_focusable_view_;
+
+  // Whether this view can be focused.
+  bool focusable_;
 
   // Whether this view is focusable if the user requires full keyboard access,
   // even though it may not be normally focusable.
