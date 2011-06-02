@@ -292,19 +292,9 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
-  SafeBrowsingService::Client* client;
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(
-                  phishing_url,
-                  phishing_url,
-                  _,
-                  ResourceType::MAIN_FRAME,
-                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
-                  _ /* a CsdClient object */,
-                  contents()->GetRenderProcessHost()->id(),
-                  contents()->render_view_host()->routing_id()))
-      .WillOnce(SaveArg<5>(&client));
-
+  SafeBrowsingService::UnsafeResource resource;
+  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
+      .WillOnce(SaveArg<0>(&resource));
   cb->Run(phishing_url, true);
   delete cb;
 
@@ -312,7 +302,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
   EXPECT_EQ(phishing_url, resource.url);
   EXPECT_EQ(phishing_url, resource.original_url);
-  EXPECT_EQ(ResourceType::MAIN_FRAME, resource.resource_type);
+  EXPECT_EQ(false, resource.is_subresource);
   EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
@@ -376,21 +366,9 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
 
   // We expect that the interstitial is shown for the second phishing URL and
   // not for the first phishing URL.
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(phishing_url, phishing_url,_, _, _, _, _, _))
-      .Times(0);
-  SafeBrowsingService::Client* client;
-  EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(
-                  other_phishing_url,
-                  other_phishing_url,
-                  _,
-                  ResourceType::MAIN_FRAME,
-                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
-                  _ /* a CsdClient object */,
-                  contents()->GetRenderProcessHost()->id(),
-                  contents()->render_view_host()->routing_id()))
-      .WillOnce(SaveArg<5>(&client));
+  SafeBrowsingService::UnsafeResource resource;
+  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
+      .WillOnce(SaveArg<0>(&resource));
 
   cb->Run(phishing_url, true);  // Should have no effect.
   delete cb;
@@ -401,7 +379,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
   EXPECT_EQ(other_phishing_url, resource.url);
   EXPECT_EQ(other_phishing_url, resource.original_url);
-  EXPECT_EQ(ResourceType::MAIN_FRAME, resource.resource_type);
+  EXPECT_EQ(false, resource.is_subresource);
   EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
