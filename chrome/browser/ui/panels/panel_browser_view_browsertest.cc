@@ -197,7 +197,7 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
 #else
     FilePath full_path(FILE_PATH_LITERAL("/"));
 #endif
-    full_path.Append(path);
+    full_path = full_path.Append(path);
     DictionaryValue input_value;
     input_value.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
     input_value.SetString(extension_manifest_keys::kName, "Sample Extension");
