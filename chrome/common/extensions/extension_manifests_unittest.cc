@@ -501,6 +501,8 @@ TEST_F(ExtensionManifestTest, ParseHomepageURLs) {
                      extension_manifest_errors::kInvalidHomepageURL);
   LoadAndExpectError("homepage_invalid.json",
                      extension_manifest_errors::kInvalidHomepageURL);
+  LoadAndExpectError("homepage_bad_schema.json",
+                     extension_manifest_errors::kInvalidHomepageURL);
 }
 
 TEST_F(ExtensionManifestTest, GetHomepageURL) {

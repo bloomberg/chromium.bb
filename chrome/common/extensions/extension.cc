@@ -1797,7 +1797,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       return false;
     }
     homepage_url_ = GURL(tmp);
-    if (!homepage_url_.is_valid()) {
+    if (!homepage_url_.is_valid() ||
+        (!homepage_url_.SchemeIs("http") &&
+            !homepage_url_.SchemeIs("https"))) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidHomepageURL, tmp);
       return false;
