@@ -84,7 +84,8 @@ FormStructure::FormStructure(const FormData& form)
     : form_name_(form.name),
       source_url_(form.origin),
       target_url_(form.action),
-      autofill_count_(0) {
+      autofill_count_(0),
+      upload_required_(USE_UPLOAD_RATES) {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = form.fields.begin();
@@ -236,14 +237,14 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
 // static
 void FormStructure::ParseQueryResponse(const std::string& response_xml,
                                        const std::vector<FormStructure*>& forms,
-                                       UploadRequired* upload_required,
                                        const AutofillMetrics& metric_logger) {
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
   // Parse the field types from the server response to the query.
   std::vector<AutofillFieldType> field_types;
+  UploadRequired upload_required;
   std::string experiment_id;
-  AutofillQueryXmlParser parse_handler(&field_types, upload_required,
+  AutofillQueryXmlParser parse_handler(&field_types, &upload_required,
                                        &experiment_id);
   buzz::XmlParser parser(&parse_handler);
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
@@ -260,6 +261,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     FormStructure* form = *iter;
+    form->upload_required_ = upload_required;
     form->server_experiment_id_ = experiment_id;
 
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();

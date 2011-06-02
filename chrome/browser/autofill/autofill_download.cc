@@ -113,7 +113,9 @@ bool AutofillDownloadManager::StartUploadRequest(
   // Flip a coin to see if we should upload this form.
   double upload_rate = form_was_autofilled ? GetPositiveUploadRate() :
                                              GetNegativeUploadRate();
-  if (base::RandDouble() > upload_rate) {
+  if (form.upload_required() == UPLOAD_NOT_REQUIRED ||
+      (form.upload_required() == USE_UPLOAD_RATES &&
+       base::RandDouble() > upload_rate)) {
     VLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
     // If we ever need notification that upload was skipped, add it here.
     return false;
