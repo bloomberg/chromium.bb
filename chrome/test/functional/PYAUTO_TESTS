@@ -85,6 +85,7 @@
       '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
       # crbug.com/83827
       '-popups.PopupsTest.testUnblockedPopupShowsInHistory',
+      '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
       'prefs',
       'search_engines',
       'shortcuts',
