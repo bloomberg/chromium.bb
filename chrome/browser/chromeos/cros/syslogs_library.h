@@ -9,11 +9,12 @@
 #include "base/callback_old.h"
 #include "base/memory/singleton.h"
 #include "content/browser/cancelable_request.h"
-#include "third_party/cros/chromeos_syslogs.h"
 
 class CancelableRequestConsumerBase;
 
 namespace chromeos {
+
+typedef std::map<std::string, std::string> LogDictionaryType;
 
 // This interface defines interaction with the ChromeOS syslogs APIs.
 class SyslogsLibrary : public CancelableRequestProvider {
