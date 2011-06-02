@@ -10,9 +10,6 @@ if 'TRUSTED_ENV' not in env:
 if env.Bit('nacl_static_link'):
   Return()
 
-stubout_tool = env['TRUSTED_ENV'].File(
-    '${STAGING_DIR}/${PROGPREFIX}ncval_stubout${PROGSUFFIX}')
-
 libraries = (
     'runnable-ld.so',
     'libc.so.6',
@@ -30,15 +27,8 @@ libraries = (
     )
 file_mapping = []
 for library_name in libraries:
-  # nacl-glibc has some validator failures so we need to apply
-  # ncval_stubout before we can load the libraries in the browser.
-  # TODO(mseaborn): Remove the need for running ncval_stubout here.
-  # See http://code.google.com/p/nativeclient/issues/detail?id=876
-  node = env.Command(
-      target='%s.stubout' % library_name,
-      source=[stubout_tool, env.File('${NACL_SDK_LIB}/%s' % library_name)],
-      action=[Action('${SOURCES[0]} ${SOURCES[1]} -o $TARGET')])
-  file_mapping.append(('lib/%s' % library_name, node))
+  file_mapping.append(('lib/%s' % library_name,
+                       env.File('${NACL_SDK_LIB}/' + library_name)))
 
 
 test_prog_fname = 'ppapi_core_' + env.get('TARGET_FULLARCH') + ".nexe"
