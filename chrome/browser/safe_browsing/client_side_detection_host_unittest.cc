@@ -302,7 +302,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
   EXPECT_EQ(phishing_url, resource.url);
   EXPECT_EQ(phishing_url, resource.original_url);
-  EXPECT_EQ(false, resource.is_subresource);
+  EXPECT_FALSE(resource.is_subresource);
   EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
@@ -379,7 +379,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
   EXPECT_EQ(other_phishing_url, resource.url);
   EXPECT_EQ(other_phishing_url, resource.original_url);
-  EXPECT_EQ(false, resource.is_subresource);
+  EXPECT_FALSE(resource.is_subresource);
   EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
