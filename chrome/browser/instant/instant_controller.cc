@@ -370,7 +370,7 @@ void InstantController::OnAutocompleteGotFocus(
     return;
 
   const TemplateURL* template_url = model->GetDefaultSearchProvider();
-  if (!template_url)
+  if (!template_url || !template_url->instant_url())
     return;
 
   if (tab_contents != tab_contents_)
