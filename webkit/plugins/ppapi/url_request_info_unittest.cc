@@ -194,6 +194,12 @@ TEST_F(URLRequestInfoTest, SetURL) {
   ASSERT_TRUE(IsExpected(GetURL(), url));
 }
 
+TEST_F(URLRequestInfoTest, SetInvalidURL) {
+  const char* url = "javascript:foo = bar";
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_URL, url));
+}
+
 TEST_F(URLRequestInfoTest, SetMethod) {
   // Test default method is "GET".
   ASSERT_TRUE(IsExpected(GetMethod(), "GET"));

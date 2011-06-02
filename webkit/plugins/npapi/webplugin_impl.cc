@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -1056,7 +1057,8 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
   // case in that the request is a javascript url and the target is "_self",
   // in which case we route the output to the plugin rather than routing it
   // to the plugin's frame.
-  bool is_javascript_url = StartsWithASCII(url, "javascript:", false);
+  bool is_javascript_url = url_util::FindAndCompareScheme(
+      url, strlen(url), "javascript", NULL);
   RoutingStatus routing_status = RouteToFrame(
       url, is_javascript_url, popups_allowed, method, target, buf, len,
       notify_id, referrer_flag);

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_util.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
@@ -288,6 +289,9 @@ bool PPB_URLRequestInfo_Impl::SetStringProperty(PP_URLRequestProperty property,
   // TODO(darin): Validate input.  Perhaps at a different layer?
   switch (property) {
     case PP_URLREQUESTPROPERTY_URL:
+      // Don't allow Javascript URLs.
+      if (url_util::FindAndCompareScheme(value, "javascript", NULL))
+        return false;
       url_ = value;  // NOTE: This may be a relative URL.
       return true;
     case PP_URLREQUESTPROPERTY_METHOD:
