@@ -126,6 +126,11 @@ void WebUILoginView::FocusWillChange(views::View* focused_before,
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
+  // TODO(rharrison): Hide touch specific code behind TOUCH_UI defines
+  DCHECK(webui_login_);
+  DCHECK(status_area_);
+
+  // Layout the Status Area up in the right corner. This should always be done.
   const int kCornerPadding = 5;
   gfx::Size status_area_size = status_area_->GetPreferredSize();
   status_area_->SetBounds(
@@ -134,13 +139,21 @@ void WebUILoginView::Layout() {
       status_area_size.width(),
       status_area_size.height());
 
-  if (webui_login_)
+  // Figure out if the login page is going to take up all the screen or just
+  // part of the screen
+  if (keyboard_showing_) {
+    gfx::Rect webui_login_bounds = bounds();
+    webui_login_bounds.set_height(webui_login_bounds.height()
+                                  - kKeyboardHeight);
+    webui_login_->SetBoundsRect(webui_login_bounds);
+  } else {
     webui_login_->SetBoundsRect(bounds());
+  }
 
-  // TODO(rharrison): Hide touch specific code behind TOUCH_UI defines
   if (!keyboard_)
     return;
 
+  // Lastly layout the keyboard
   keyboard_->SetVisible(keyboard_showing_);
   gfx::Rect keyboard_bounds = bounds();
   keyboard_bounds.set_y(keyboard_bounds.height() - kKeyboardHeight);
