@@ -32,11 +32,13 @@ PP_Resource Create(PP_Instance instance,
 
   std::vector<int32_t> attribs;
   if (attrib_list) {
-    for (const int32_t* attr = attrib_list; attr; ++attr)
-      attribs.push_back(*attr);
-  } else {
-    attribs.push_back(0);
+    const int32_t* attr = attrib_list;
+    while(*attr != PP_GRAPHICS3DATTRIB_NONE) {
+      attribs.push_back(*(attr++));  // Attribute.
+      attribs.push_back(*(attr++));  // Value.
+    }
   }
+  attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);  // Always terminate.
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBSurface3D_Create(
@@ -159,7 +161,8 @@ void PPB_Surface3D_Proxy::OnMsgCreate(PP_Instance instance,
                                       PP_Config3D_Dev config,
                                       std::vector<int32_t> attribs,
                                       HostResource* result) {
-  DCHECK(attribs.back() == 0);
+  DCHECK(attribs.size() % 2 == 1);
+  DCHECK(attribs.back() == PP_GRAPHICS3DATTRIB_NONE);
   PP_Resource resource =
       ppb_surface_3d_target()->Create(instance, config, &attribs.front());
   result->SetHostResource(instance, resource);
