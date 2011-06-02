@@ -1179,8 +1179,13 @@ bool IsPrintPreviewEnabled() {
 #endif
 
 bool IsInBrowserThumbnailingEnabled() {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // The in-browser-thumbnailing is enabled for Linux and Chrome OS.
+  return true;
+#else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableInBrowserThumbnailing);
+#endif
 }
 
 // -----------------------------------------------------------------------------
