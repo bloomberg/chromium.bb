@@ -315,7 +315,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   params.bounds = contents_rect;
   html_container_->Init(params);
   html_container_->SetContentsView(html_contents_->view());
-  html_container_->SetAlwaysOnTop(true);
 
   gfx::Rect balloon_rect(x(), y(), GetTotalWidth(), GetTotalHeight());
   frame_container_ = new Widget;
@@ -324,8 +323,12 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   params.bounds = balloon_rect;
   frame_container_->Init(params);
   frame_container_->SetContentsView(this);
-  frame_container_->SetAlwaysOnTop(true);
   frame_container_->MoveAboveWidget(html_container_);
+
+  // SetAlwaysOnTop should be called after MoveAboveWidget because otherwise
+  // the top-most flag will be removed.
+  html_container_->SetAlwaysOnTop(true);
+  frame_container_->SetAlwaysOnTop(true);
 
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_TAB_CLOSE));
