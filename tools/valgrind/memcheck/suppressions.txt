@@ -4655,6 +4655,13 @@
    fun:_ZN6WebKit21FrameLoaderClientImpl20allowScriptExtensionERKN3WTF6StringEi
    fun:_ZN7WebCore16V8DOMWindowShell16createNewContextEN2v86HandleINS1_6ObjectEEEi
 }
+{
+   bug_84774
+   Memcheck:Addr4
+   fun:_ZN10CppVariant3setEP8NPObject
+   fun:_ZN13CppBoundClass15getAsCppVariantEv
+   fun:_ZN13CppBoundClass16bindToJavascriptEPN6WebKit8WebFrameERKNS0_9WebStringE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
