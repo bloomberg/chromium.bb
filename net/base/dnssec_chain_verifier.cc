@@ -777,6 +777,9 @@ static unsigned DigestLength(int algorithm) {
 DnsCAARecord::Policy::Policy() {
 }
 
+DnsCAARecord::Policy::~Policy() {
+}
+
 // ParseEnumeratedOID parses an OID from |i| and sets |*result| to one of the
 // values from |values|, depending on the OID found. |i| is then advanced over
 // the OID.

@@ -118,6 +118,7 @@ class DnsCAARecord {
   struct Policy {
    public:
     Policy();
+    ~Policy();
 
     // A HashTarget identifies the object that we are hashing.
     enum HashTarget {
