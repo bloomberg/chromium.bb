@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -224,8 +225,7 @@ void PPB_Broker_Proxy::OnMsgConnectComplete(
   DCHECK(result == PP_OK ||
          socket_handle == IPC::InvalidPlatformFileForTransit());
 
-  ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_Broker_API> enter(
-      resource.host_resource(), true);
+  EnterPluginFromHostResource<ppapi::thunk::PPB_Broker_API> enter(resource);
   if (enter.failed()) {
     // As in Broker::ConnectComplete, we need to close the resource on error.
     base::SyncSocket temp_socket(
