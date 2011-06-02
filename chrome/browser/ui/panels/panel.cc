@@ -5,9 +5,24 @@
 #include "chrome/browser/ui/panels/panel.h"
 
 #include "base/logging.h"
+#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/extensions/extension.h"
 #include "ui/gfx/rect.h"
+
+// static
+const Extension* Panel::GetExtension(Browser* browser) {
+  // Find the extension. When we create a panel from an extension, the extension
+  // ID is passed as the app name to the Browser.
+  ExtensionService* extension_service =
+      browser->GetProfile()->GetExtensionService();
+  return extension_service->GetExtensionById(
+      web_app::GetExtensionIdFromApplicationName(browser->app_name()), false);
+}
 
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
     : bounds_(bounds),

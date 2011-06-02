@@ -36,7 +36,7 @@ class PanelBrowserView : public ::BrowserView,
  private:
   friend class PanelBrowserViewTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideInfoButton);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideSettingsButton);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, SetBoundsAnimation);
 
   // Overridden from BrowserView:

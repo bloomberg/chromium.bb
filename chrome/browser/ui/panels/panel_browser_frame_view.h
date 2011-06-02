@@ -9,19 +9,28 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/button.h"
+#include "views/controls/menu/view_menu_delegate.h"
 
+class Extension;
 class PanelBrowserView;
 namespace views {
 class ImageButton;
 class Label;
+class Menu2;
+class MenuButton;
 }
 
 class PanelBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
-                              public TabIconView::TabIconViewModel {
+                              public views::ViewMenuDelegate,
+                              public ui::SimpleMenuModel::Delegate,
+                              public TabIconView::TabIconViewModel,
+                              public ExtensionUninstallDialog::Delegate {
  public:
   PanelBrowserFrameView(BrowserFrame* frame, PanelBrowserView* browser_view);
   virtual ~PanelBrowserFrameView();
@@ -60,19 +69,41 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)
       OVERRIDE;
 
+  // Overridden from views::ViewMenuDelegate:
+  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
+
+  // Overridden from ui::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id, ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
 
+  // ExtensionUninstallDialog::Delegate:
+  virtual void ExtensionDialogAccepted() OVERRIDE;
+  virtual void ExtensionDialogCanceled() OVERRIDE;
+
  private:
   friend class PanelBrowserViewTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideInfoButton);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideSettingsButton);
 
   enum PaintState {
     NOT_PAINTED,
     PAINT_AS_INACTIVE,
     PAINT_AS_ACTIVE
+  };
+
+  enum {
+    COMMAND_NAME = 0,
+    COMMAND_CONFIGURE,
+    COMMAND_DISABLE,
+    COMMAND_UNINSTALL,
+    COMMAND_MANAGE
   };
 
   class MouseWatcher : public MessageLoopForUI::Observer {
@@ -117,10 +148,14 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // Called by MouseWatcher to notify if the mouse enters or leaves the window.
   void OnMouseEnterOrLeaveWindow(bool mouse_entered);
 
-  // Make info button visible if either of the conditions is met:
+  // Make settings button visible if either of the conditions is met:
   // 1) The panel is active, i.e. having focus.
   // 2) The mouse is over the panel.
-  void UpdateInfoButtonVisibility(bool active, bool cursor_in_view);
+  void UpdateSettingsButtonVisibility(bool active, bool cursor_in_view);
+
+  const Extension* GetExtension() const;
+
+  void EnsureSettingsMenuCreated();
 
 #ifdef UNIT_TEST
   void set_mouse_watcher(MouseWatcher* mouse_watcher) {
@@ -138,12 +173,15 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   PanelBrowserView* browser_view_;
 
   PaintState paint_state_;
-  views::ImageButton* info_button_;
+  views::MenuButton* settings_button_;
   views::ImageButton* close_button_;
   TabIconView* title_icon_;
   views::Label* title_label_;
   gfx::Rect client_view_bounds_;
   scoped_ptr<MouseWatcher> mouse_watcher_;
+  scoped_ptr<views::Menu2> settings_menu_;
+  scoped_ptr<ui::SimpleMenuModel> settings_menu_contents_;
+  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);
 };

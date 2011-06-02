@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/panels/about_panel_bubble.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
@@ -21,9 +20,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/animation/slide_animation.h"
 #include "views/controls/button/image_button.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/textfield.h"
 
 class PanelBrowserViewTest : public InProcessBrowserTest {
@@ -35,6 +36,11 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
   }
 
  protected:
+  struct MenuItem {
+    int id;
+    bool enabled;
+  };
+
   class MockMouseWatcher : public PanelBrowserFrameView::MouseWatcher {
    public:
     explicit MockMouseWatcher(PanelBrowserFrameView* view)
@@ -161,6 +167,94 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
       }
     }
   }
+
+  void ValidateSettingsMenuItems(ui::SimpleMenuModel* settings_menu_contents,
+                                 size_t num_expected_menu_items,
+                                 const MenuItem* expected_menu_items) {
+    ASSERT_TRUE(settings_menu_contents);
+    EXPECT_EQ(static_cast<int>(num_expected_menu_items),
+              settings_menu_contents->GetItemCount());
+    for (size_t i = 0; i < num_expected_menu_items; ++i) {
+      if (expected_menu_items[i].id == -1) {
+        EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
+                  settings_menu_contents->GetTypeAt(i));
+      } else {
+        EXPECT_EQ(expected_menu_items[i].id,
+                  settings_menu_contents->GetCommandIdAt(i));
+        EXPECT_EQ(expected_menu_items[i].enabled,
+                  settings_menu_contents->IsEnabledAt(i));
+      }
+    }
+  }
+
+  void TestCreateSettingsMenuForExtension(const FilePath::StringType& path,
+                                          Extension::Location location,
+                                          const std::string& homepage_url,
+                                          const std::string& options_page) {
+    // Creates a testing extension.
+#if defined(OS_WIN)
+    FilePath full_path(FILE_PATH_LITERAL("c:\\"));
+#else
+    FilePath full_path(FILE_PATH_LITERAL("/"));
+#endif
+    full_path.Append(path);
+    DictionaryValue input_value;
+    input_value.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
+    input_value.SetString(extension_manifest_keys::kName, "Sample Extension");
+    if (!homepage_url.empty()) {
+      input_value.SetString(extension_manifest_keys::kHomepageURL,
+                            homepage_url);
+    }
+    if (!options_page.empty()) {
+      input_value.SetString(extension_manifest_keys::kOptionsPage,
+                            options_page);
+    }
+    std::string error;
+    scoped_refptr<Extension> extension = Extension::Create(
+        full_path, location, input_value, Extension::STRICT_ERROR_CHECKS,
+        &error);
+    ASSERT_TRUE(extension.get());
+    EXPECT_STREQ("", error.c_str());
+    browser()->GetProfile()->GetExtensionService()->AddExtension(
+        extension.get());
+
+    // Makes sure that async task ExtensionPrefs::OnExtensionInstalled gets a
+    // chance to be procesed.
+    MessageLoop::current()->RunAllPending();
+
+    // Creates a panel with the app name that comes from the extension ID.
+    PanelBrowserView* browser_view = CreatePanelBrowserView(
+        web_app::GenerateApplicationNameFromExtensionId(extension->id()));
+    PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
+
+    frame_view->EnsureSettingsMenuCreated();
+    ASSERT_TRUE(frame_view->settings_menu_.get());
+    ASSERT_TRUE(frame_view->settings_menu_contents_.get());
+
+    // Validates the settings menu items.
+    MenuItem expected_panel_menu_items[] = {
+        { PanelBrowserFrameView::COMMAND_NAME, false },
+        { -1, false },  // Separator
+        { PanelBrowserFrameView::COMMAND_CONFIGURE, false },
+        { PanelBrowserFrameView::COMMAND_DISABLE, false },
+        { PanelBrowserFrameView::COMMAND_UNINSTALL, false },
+        { -1, false },  // Separator
+        { PanelBrowserFrameView::COMMAND_MANAGE, true }
+    };
+    if (!homepage_url.empty())
+      expected_panel_menu_items[0].enabled = true;
+    if (!options_page.empty())
+      expected_panel_menu_items[2].enabled = true;
+    if (location != Extension::EXTERNAL_POLICY_DOWNLOAD) {
+      expected_panel_menu_items[3].enabled = true;
+      expected_panel_menu_items[4].enabled = true;
+    }
+    ValidateSettingsMenuItems(frame_view->settings_menu_contents_.get(),
+                              arraysize(expected_panel_menu_items),
+                              expected_panel_menu_items);
+
+    browser_view->panel()->Close();
+  }
 };
 
 // Panel is not supported for Linux view yet.
@@ -173,11 +267,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   // first time.
   EXPECT_FALSE(browser_view->bounds_animator_.get());
 
-  // We should have icon, text, options button and close button.
+  // We should have icon, text, settings button and close button.
   EXPECT_EQ(4, frame_view->child_count());
   EXPECT_TRUE(frame_view->Contains(frame_view->title_icon_));
   EXPECT_TRUE(frame_view->Contains(frame_view->title_label_));
-  EXPECT_TRUE(frame_view->Contains(frame_view->info_button_));
+  EXPECT_TRUE(frame_view->Contains(frame_view->settings_button_));
   EXPECT_TRUE(frame_view->Contains(frame_view->close_button_));
 
   // These controls should be visible.
@@ -194,18 +288,18 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   EXPECT_GT(frame_view->title_label_->width(), 0);
   EXPECT_GT(frame_view->title_label_->height(), 0);
   EXPECT_LT(frame_view->title_label_->height(), title_bar_height);
-  EXPECT_GT(frame_view->info_button_->width(), 0);
-  EXPECT_GT(frame_view->info_button_->height(), 0);
-  EXPECT_LT(frame_view->info_button_->height(), title_bar_height);
+  EXPECT_GT(frame_view->settings_button_->width(), 0);
+  EXPECT_GT(frame_view->settings_button_->height(), 0);
+  EXPECT_LT(frame_view->settings_button_->height(), title_bar_height);
   EXPECT_GT(frame_view->close_button_->width(), 0);
   EXPECT_GT(frame_view->close_button_->height(), 0);
   EXPECT_LT(frame_view->close_button_->height(), title_bar_height);
   EXPECT_LT(frame_view->title_icon_->x() + frame_view->title_icon_->width(),
       frame_view->title_label_->x());
   EXPECT_LT(frame_view->title_label_->x() + frame_view->title_label_->width(),
-      frame_view->info_button_->x());
+      frame_view->settings_button_->x());
   EXPECT_LT(
-      frame_view->info_button_->x() + frame_view->info_button_->width(),
+      frame_view->settings_button_->x() + frame_view->settings_button_->width(),
       frame_view->close_button_->x());
 
   // Validate that the controls should be updated when the activation state is
@@ -217,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   EXPECT_NE(title_label_font1.GetStyle(), title_label_font2.GetStyle());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideInfoButton) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
   PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
   PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
 
@@ -231,21 +325,21 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideInfoButton) {
   // test the cases that the panel is active first.
   EXPECT_TRUE(browser_view->panel()->IsActive());
 
-  // When the panel is active, the info button should always be visible.
+  // When the panel is active, the settings button should always be visible.
   mouse_watcher->MoveMouse(true);
-  EXPECT_TRUE(frame_view->info_button_->IsVisible());
+  EXPECT_TRUE(frame_view->settings_button_->IsVisible());
   mouse_watcher->MoveMouse(false);
-  EXPECT_TRUE(frame_view->info_button_->IsVisible());
+  EXPECT_TRUE(frame_view->settings_button_->IsVisible());
 
-  // When the panel is inactive, the info button is active per the mouse over
+  // When the panel is inactive, the options button is active per the mouse over
   // the panel or not.
   browser_view->panel()->Deactivate();
   EXPECT_FALSE(browser_view->panel()->IsActive());
 
   mouse_watcher->MoveMouse(true);
-  EXPECT_TRUE(frame_view->info_button_->IsVisible());
+  EXPECT_TRUE(frame_view->settings_button_->IsVisible());
   mouse_watcher->MoveMouse(false);
-  EXPECT_FALSE(frame_view->info_button_->IsVisible());
+  EXPECT_FALSE(frame_view->settings_button_->IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
@@ -423,97 +517,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, AboutPanelBubble) {
-  ExtensionService* extension_service =
-      browser()->GetProfile()->GetExtensionService();
-
-  // Create a testing extension.
-#if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("c:\\foo"));
-#else
-  FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-  DictionaryValue input_value;
-  input_value.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
-  input_value.SetString(extension_manifest_keys::kName, "Sample Extension");
-  input_value.SetString(extension_manifest_keys::kDescription,
-                        "Sample Description");
-  scoped_refptr<Extension> extension(Extension::Create(path, Extension::INVALID,
-      input_value, Extension::STRICT_ERROR_CHECKS, NULL));
-  ASSERT_TRUE(extension.get());
-  extension_service->AddExtension(extension.get());
-  // Make sure that async task ExtensionPrefs::OnExtensionInstalled gets a
-  // chance to be procesed.
-  MessageLoop::current()->RunAllPending();
-
-  extension_service->extension_prefs()->OnExtensionInstalled(
-      extension, Extension::ENABLED);
-
-  // Create a panel with the app name that comes from the extension ID.
-  PanelBrowserView* browser_view = CreatePanelBrowserView(
-      web_app::GenerateApplicationNameFromExtensionId(extension->id()));
-
-  AboutPanelBubble* bubble = AboutPanelBubble::Show(
-      browser_view->GetWidget(),
-      gfx::Rect(),
-      BubbleBorder::BOTTOM_RIGHT,
-      SkBitmap(),
-      browser_view->browser());
-  AboutPanelBubble::AboutPanelBubbleView* contents =
-      static_cast<AboutPanelBubble::AboutPanelBubbleView*>(bubble->contents());
-
-  // We should have the expected controls.
-  EXPECT_EQ(6, contents->child_count());
-  EXPECT_TRUE(contents->Contains(contents->icon_));
-  EXPECT_TRUE(contents->Contains(contents->title_));
-  EXPECT_TRUE(contents->Contains(contents->install_date_));
-  EXPECT_TRUE(contents->Contains(contents->description_));
-  EXPECT_TRUE(contents->Contains(contents->uninstall_link_));
-  EXPECT_TRUE(contents->Contains(contents->report_abuse_link_));
-
-  // These controls should be visible.
-  EXPECT_TRUE(contents->icon_->IsVisible());
-  EXPECT_TRUE(contents->title_->IsVisible());
-  EXPECT_TRUE(contents->install_date_->IsVisible());
-  EXPECT_TRUE(contents->description_->IsVisible());
-  EXPECT_TRUE(contents->uninstall_link_->IsVisible());
-  EXPECT_TRUE(contents->report_abuse_link_->IsVisible());
-
-  // Validate their layouts.
-  EXPECT_GT(contents->title_->x(), contents->icon_->x());
-  EXPECT_GT(contents->title_->width(), 0);
-  EXPECT_GT(contents->title_->height(), 0);
-  EXPECT_EQ(contents->install_date_->x(), contents->title_->x());
-  EXPECT_GT(contents->install_date_->y(), contents->title_->y());
-  EXPECT_GT(contents->install_date_->width(), 0);
-  EXPECT_GT(contents->install_date_->height(), 0);
-  EXPECT_EQ(contents->description_->x(), contents->install_date_->x());
-  EXPECT_GT(contents->description_->y(), contents->install_date_->y());
-  EXPECT_GT(contents->description_->width(), 0);
-  EXPECT_GT(contents->description_->height(), 0);
-  EXPECT_EQ(contents->uninstall_link_->x(), contents->description_->x());
-  EXPECT_GT(contents->uninstall_link_->y(), contents->description_->y());
-  EXPECT_GT(contents->uninstall_link_->width(), 0);
-  EXPECT_GT(contents->uninstall_link_->height(), 0);
-  EXPECT_GT(contents->report_abuse_link_->x(), contents->uninstall_link_->x());
-  EXPECT_EQ(contents->report_abuse_link_->y(), contents->uninstall_link_->y());
-  EXPECT_GT(contents->report_abuse_link_->width(), 0);
-  EXPECT_GT(contents->report_abuse_link_->height(), 0);
-
-  // Validates the texts.
-  base::Time install_time =
-      extension_service->extension_prefs()->GetInstallTime(extension->id());
-  string16 time_text = l10n_util::GetStringFUTF16(
-      IDS_ABOUT_PANEL_BUBBLE_EXTENSION_INSTALL_DATE,
-      base::TimeFormatFriendlyDate(
-          extension_service->extension_prefs()->GetInstallTime(
-              extension->id())));
-  EXPECT_STREQ(UTF16ToUTF8(time_text).c_str(),
-               WideToUTF8(contents->install_date_->GetText()).c_str());
-  EXPECT_STREQ(extension->description().c_str(),
-               UTF16ToUTF8(contents->description_->text()).c_str());
-}
-
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
   PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
 
@@ -549,5 +552,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
   browser_view->OnTitleBarMouseCaptureLost();
 
   browser_view->panel()->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateSettingsMenu) {
+  TestCreateSettingsMenuForExtension(
+      FILE_PATH_LITERAL("extension1"), Extension::EXTERNAL_POLICY_DOWNLOAD,
+      "", "");
+  TestCreateSettingsMenuForExtension(
+      FILE_PATH_LITERAL("extension2"), Extension::INVALID,
+      "http://home", "options.html");
 }
 #endif

@@ -133,6 +133,10 @@ class Panel : public BrowserWindow {
   // |browser|.
   static BrowserWindow* CreateNativePanel(Browser* browser, Panel* panel);
 
+  // Gets the extension from the browser that a panel is created from.
+  // Returns NULL if it cannot be found.
+  static const Extension* GetExtension(Browser* browser);
+
 #ifdef UNIT_TEST
   BrowserWindow* browser_window() { return browser_window_.get(); }
 #endif
