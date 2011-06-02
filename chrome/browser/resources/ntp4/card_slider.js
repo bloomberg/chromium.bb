@@ -278,13 +278,9 @@ var CardSlider = (function() {
      * @param {boolean=} opt_animate Whether to animate.
      */
     selectCardByValue: function(newCard, opt_animate) {
-      for (var i = 0; i < this.cards_.length; i++) {
-        if (newCard == this.cards_[i]) {
-          this.selectCard(i, opt_animate);
-          return;
-        }
-      }
-      assert(false);
+      var i = this.cards_.indexOf(newCard);
+      assert(i != -1);
+      this.selectCard(i, opt_animate);
     },
 
     /**

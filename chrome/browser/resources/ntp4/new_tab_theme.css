@@ -93,12 +93,13 @@ body {
   background-color: $$2; /* COLOR_NTP_SECTION_BORDER */
 }
 
-.dot span:focus {
+.dot input:focus {
   background-color: $2; /* COLOR_NTP_BACKGROUND */
 }
 
 .tile-page-title,
-#footer-content span {
+#footer-content span,
+#footer-content input {
   color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
 }
 

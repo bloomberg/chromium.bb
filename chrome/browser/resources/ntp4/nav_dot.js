@@ -35,18 +35,20 @@ cr.define('ntp4', function() {
       this.page_ = page;
 
       // TODO(estade): should there be some limit to the number of characters?
-      this.span_ = this.ownerDocument.createElement('span');
-      this.span_.setAttribute('spellcheck', false);
-      this.span_.textContent = page.pageName;
-      this.appendChild(this.span_);
+      this.input_ = this.ownerDocument.createElement('input');
+      this.input_.setAttribute('spellcheck', false);
+      this.input_.value = page.pageName;
+      this.appendChild(this.input_);
 
       this.addEventListener('click', this.onClick_);
       this.addEventListener('dblclick', this.onDoubleClick_);
       this.addEventListener('dragenter', this.onDragEnter_);
       this.addEventListener('dragleave', this.onDragLeave_);
 
-      this.span_.addEventListener('blur', this.onSpanBlur_.bind(this));
-      this.span_.addEventListener('keydown', this.onSpanKeyDown_.bind(this));
+      this.input_.addEventListener('blur', this.onInputBlur_.bind(this));
+      this.input_.addEventListener('mousedown',
+                                   this.onInputMouseDown_.bind(this));
+      this.input_.addEventListener('keydown', this.onInputKeyDown_.bind(this));
     },
 
     /**
@@ -63,6 +65,10 @@ cr.define('ntp4', function() {
      */
     onClick_: function(e) {
       this.switchToPage();
+      // The explicit focus call is necessary because of overriding the default
+      // handling in onInputMouseDown_.
+      if (this.ownerDocument.activeElement != this.input_)
+        this.focus();
       e.stopPropagation();
     },
 
@@ -72,40 +78,42 @@ cr.define('ntp4', function() {
      * @private
      */
     onDoubleClick_: function(e) {
-      this.span_.setAttribute('contenteditable', true);
-      this.span_.focus();
-
-      // This will select the text.
-      var range = document.createRange();
-      range.setStart(this.span_, 0);
-      range.setEnd(this.span_, 1);
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
+      this.input_.focus();
+      this.input_.select();
     },
 
     /**
-     * Handle keypresses on the span.
+     * Prevent mouse down on the input from selecting it.
      * @param {Event} e The click event.
      * @private
      */
-    onSpanKeyDown_: function(e) {
+    onInputMouseDown_: function(e) {
+      if (this.ownerDocument.activeElement != this.input_)
+        e.preventDefault();
+    },
+
+    /**
+     * Handle keypresses on the input.
+     * @param {Event} e The click event.
+     * @private
+     */
+    onInputKeyDown_: function(e) {
       switch (e.keyIdentifier) {
         case 'U+001B':  // Escape cancels edits.
-          this.span_.textContent = this.page_.pageName;
+          this.input_.value = this.page_.pageName;
         case 'Enter':  // Fall through.
-          this.span_.blur();
+          this.input_.blur();
           break;
       }
     },
 
     /**
-     * When the span blurs, commit the edited changes.
+     * When the input blurs, commit the edited changes.
      * @param {Event} e The blur event.
      * @private
      */
-    onSpanBlur_: function(e) {
-      this.span_.setAttribute('contenteditable', false);
+    onInputBlur_: function(e) {
+      window.getSelection().removeAllRanges();
       // TODO(estade): persist changes to textContent.
     },
 

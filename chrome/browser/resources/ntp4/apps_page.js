@@ -206,6 +206,9 @@ cr.define('ntp4', function() {
       if (!(draggedTile.firstChild instanceof App))
         return;
 
+      var pageIndex = ntp4.getAppsPageIndex(this);
+      chrome.send('setPageIndex', [draggedTile.firstChild.appId, pageIndex]);
+
       var appIds = [];
       for (var i = 0; i < this.tileElements_.length; i++) {
         var tileContents = this.tileElements_[i].firstChild;

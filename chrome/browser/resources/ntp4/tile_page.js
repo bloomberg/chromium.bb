@@ -11,6 +11,13 @@ cr.define('ntp4', function() {
   function getCurrentlyDraggingTile() {
     return currentlyDraggingTile;
   }
+  function setCurrentlyDraggingTile(tile) {
+    currentlyDraggingTile = tile;
+    if (tile)
+      ntp4.enterRearrangeMode();
+    else
+      ntp4.leaveRearrangeMode();
+  }
 
   /**
    * Creates a new Tile object. Tiles wrap content on a TilePage, providing
@@ -83,7 +90,7 @@ cr.define('ntp4', function() {
       if (this.classList.contains('dragging'))
         this.finalizeDrag_();
 
-      currentlyDraggingTile = this;
+      setCurrentlyDraggingTile(this);
 
       e.dataTransfer.effectAllowed = 'copyMove';
       // TODO(estade): fill this in.
@@ -132,7 +139,7 @@ cr.define('ntp4', function() {
       this.dragClone.classList.remove('hidden');
       this.dragClone.classList.add('placing');
 
-      currentlyDraggingTile = null;
+      setCurrentlyDraggingTile(null);
       this.tilePage.positionTile_(this.index);
 
       // The tile's contents may have moved following the respositioning; adjust
@@ -332,12 +339,20 @@ cr.define('ntp4', function() {
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
 
+      this.addEventListener('DOMNodeInsertedIntoDocument',
+                            this.calculateLayoutValues_);
+
       this.tileGrid_.addEventListener('dragenter',
                                       this.onDragEnter_.bind(this));
       this.tileGrid_.addEventListener('dragover', this.onDragOver_.bind(this));
       this.tileGrid_.addEventListener('drop', this.onDrop_.bind(this));
       this.tileGrid_.addEventListener('dragleave',
                                       this.onDragLeave_.bind(this));
+
+    },
+
+    get tileCount() {
+      return this.tileElements_.length;
     },
 
     /**
@@ -548,7 +563,9 @@ cr.define('ntp4', function() {
 
       // The top margin is set so that the vertical midpoint of the grid will
       // be 1/3 down the page.
-      var numRows = Math.ceil(this.tileElements_.length / layout.numRowTiles);
+      var numTiles = this.tileCount +
+          (this.isCurrentDragTarget_ && !this.withinPageDrag_ ? 1 : 0);
+      var numRows = Math.ceil(numTiles / layout.numRowTiles);
       var usedHeight = layout.rowHeight * numRows;
       // 100 matches the top padding of tile-page.
       var newMargin = document.documentElement.clientHeight / 3 -
@@ -662,9 +679,8 @@ cr.define('ntp4', function() {
      * @private
      */
     doDragEnter_: function(e) {
-      if (!this.shouldAcceptDrag(e.dataTransfer)) {
+      if (!this.shouldAcceptDrag(e.dataTransfer))
         return;
-      }
 
       this.isCurrentDragTarget_ = true;
 
@@ -676,6 +692,11 @@ cr.define('ntp4', function() {
       this.dragItemIndex_ = this.withinPageDrag_ ?
           currentlyDraggingTile.index : this.tileElements_.length;
       this.currentDropIndex_ = this.dragItemIndex_;
+
+      // The new tile may change the number of rows, hence the top margin
+      // will change.
+      if (!this.withinPageDrag_)
+        this.updateTopMargin_();
     },
 
     /**
@@ -713,9 +734,13 @@ cr.define('ntp4', function() {
         var adjustedIndex = this.currentDropIndex_ +
             (index > this.dragItemIndex_ ? 1 : 0);
         if (currentlyDraggingTile) {
+          var originalPage = currentlyDraggingTile.tilePage;
           this.tileGrid_.insertBefore(
               currentlyDraggingTile,
               this.tileElements_[adjustedIndex]);
+
+          if (originalPage != this)
+            originalPage.cleanUpDrag_();
           this.tileMoved(currentlyDraggingTile);
         } else {
           this.addOutsideData(e.dataTransfer, adjustedIndex);

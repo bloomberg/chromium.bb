@@ -119,35 +119,7 @@ cr.define('ntp4', function() {
             curDot.classList.remove('selected');
           var newPageIndex = e.cardSlider.currentCard;
           dots[newPageIndex].classList.add('selected');
-          // If an app was being dragged, move it to the end of the new page
-          if (draggingAppContainer)
-            appsPages[newPageIndex].appendChild(draggingAppContainer);
         });
-
-    // Add a drag handler to the body (for drags that don't land on an existing
-    // app)
-    document.addEventListener(Grabber.EventType.DRAG_ENTER, appDragEnter);
-
-    // Handle dropping an app anywhere other than on the trash
-    document.addEventListener(Grabber.EventType.DROP, appDrop);
-
-    // Add handles to manage the transition into/out-of rearrange mode
-    // Note that we assume here that we only use a Grabber for moving apps,
-    // so ANY GRAB event means we're enterring rearrange mode.
-    sliderFrame.addEventListener(Grabber.EventType.GRAB, enterRearrangeMode);
-    sliderFrame.addEventListener(Grabber.EventType.RELEASE, leaveRearrangeMode);
-
-    // Add handlers for the tash can
-    trash.addEventListener(Grabber.EventType.DRAG_ENTER, function(e) {
-      trash.classList.add('hover');
-      e.grabbedElement.classList.add('trashing');
-      e.stopPropagation();
-    });
-    trash.addEventListener(Grabber.EventType.DRAG_LEAVE, function(e) {
-      e.grabbedElement.classList.remove('trashing');
-      trash.classList.remove('hover');
-    });
-    trash.addEventListener(Grabber.EventType.DROP, appTrash);
 
     cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
     chrome.send('getRecentlyClosedTabs');
@@ -304,17 +276,18 @@ cr.define('ntp4', function() {
    * @param {boolean=} opt_animate If true, add the class 'new' to the created
    *        dot.
    */
-  function appendTilePage(page, opt_animate) {
+  function appendTilePage(page) {
     pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
     var newDot = new ntp4.NavDot(page);
-    if (opt_animate)
-      newDot.classList.add('new');
+    if (page.classList.contains('temporary'))
+      newDot.classList.add('temporary');
 
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
   }
+
   /**
    * Search an elements ancestor chain for the nearest element that is a member
    * of the specified class.
@@ -331,245 +304,14 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * The container where the app currently being dragged came from.
-   * @type {!Element|undefined}
-   */
-  var draggingAppContainer;
-
-  /**
-   * The apps-page that the app currently being dragged camed from.
-   * @type {!Element|undefined}
-   */
-  var draggingAppOriginalPage;
-
-  /**
-   * The element that was originally after the app currently being dragged (or
-   * null if it was the last on the page).
-   * @type {!Element|undefined}
-   */
-  var draggingAppOriginalPosition;
-
-  /**
-   * Invoked when app dragging begins.
-   * @param {Grabber.Event} e The event from the Grabber indicating the drag.
-   */
-  function appDragStart(e) {
-    // Pull the element out to the sliderFrame using fixed positioning. This
-    // ensures that the app is not affected (remains under the finger) if the
-    // slider changes cards and is translated.  An alternate approach would be
-    // to use fixed positioning for the slider (so that changes to its position
-    // don't affect children that aren't positioned relative to it), but we
-    // don't yet have GPU acceleration for this.
-    var element = e.grabbedElement;
-
-    var pos = element.getBoundingClientRect();
-    element.style.webkitTransform = '';
-
-    element.style.position = 'fixed';
-    // Don't want to zoom around the middle since the left/top co-ordinates
-    // are post-transform values.
-    element.style.webkitTransformOrigin = 'left top';
-    element.style.left = pos.left + 'px';
-    element.style.top = pos.top + 'px';
-
-    // Keep track of what app is being dragged and where it came from
-    assert(!draggingAppContainer, 'got DRAG_START without DRAG_END');
-    draggingAppContainer = element.parentNode;
-    assert(draggingAppContainer.classList.contains('app-container'));
-    draggingAppOriginalPosition = draggingAppContainer.nextSibling;
-    draggingAppOriginalPage = draggingAppContainer.parentNode;
-
-    // Move the app out of the container
-    // Note that appendChild also removes the element from its current parent.
-    sliderFrame.appendChild(element);
-  }
-
-  /**
-   * Invoked when app dragging terminates (either successfully or not)
-   * @param {Grabber.Event} e The event from the Grabber.
-   */
-  function appDragEnd(e) {
-    // Stop floating the app
-    var appBeingDragged = e.grabbedElement;
-    assert(appBeingDragged.classList.contains('app'));
-    appBeingDragged.style.position = '';
-    appBeingDragged.style.webkitTransformOrigin = '';
-    appBeingDragged.style.left = '';
-    appBeingDragged.style.top = '';
-
-    // Ensure the trash can is not active (we won't necessarily get a DRAG_LEAVE
-    // for it - eg. if we drop on it, or the drag is cancelled)
-    trash.classList.remove('hover');
-    appBeingDragged.classList.remove('trashing');
-
-    // If we have an active drag (i.e. it wasn't aborted by an app update)
-    if (draggingAppContainer) {
-      // Put the app back into it's container
-      if (appBeingDragged.parentNode != draggingAppContainer)
-        draggingAppContainer.appendChild(appBeingDragged);
-
-      // If we care about the container's original position
-      if (draggingAppOriginalPage) {
-        // Then put the container back where it came from
-        if (draggingAppOriginalPosition) {
-          draggingAppOriginalPage.insertBefore(draggingAppContainer,
-                                               draggingAppOriginalPosition);
-        } else {
-          draggingAppOriginalPage.appendChild(draggingAppContainer);
-        }
-      }
-    }
-
-    draggingAppContainer = undefined;
-    draggingAppOriginalPage = undefined;
-    draggingAppOriginalPosition = undefined;
-  }
-
-  /**
-   * Invoked when an app is dragged over another app.  Updates the DOM to affect
-   * the rearrangement (but doesn't commit the change until the app is dropped).
-   * @param {Grabber.Event} e The event from the Grabber indicating the drag.
-   */
-  function appDragEnter(e) {
-    assert(draggingAppContainer, 'expected stored container');
-    var sourceContainer = draggingAppContainer;
-
-    // Ensure enter events delivered to an app-container don't also get
-    // delivered to the document.
-    e.stopPropagation();
-
-    var curPage = appsPages[cardSlider.currentCard];
-    var followingContainer = null;
-
-    // If we dragged over a specific app, determine which one to insert before
-    if (e.currentTarget != document) {
-
-      // Start by assuming we'll insert the app before the one dragged over
-      followingContainer = e.currentTarget;
-      assert(followingContainer.classList.contains('app-container'),
-             'expected drag over container');
-      assert(followingContainer.parentNode == curPage);
-      if (followingContainer == draggingAppContainer)
-        return;
-
-      // But if it's after the current container position then we'll need to
-      // move ahead by one to account for the container being removed.
-      if (curPage == draggingAppContainer.parentNode) {
-        for (var c = draggingAppContainer; c; c = c.nextElementSibling) {
-          if (c == followingContainer) {
-            followingContainer = followingContainer.nextElementSibling;
-            break;
-          }
-        }
-      }
-    }
-
-    // Move the container to the appropriate place on the page
-    curPage.insertBefore(draggingAppContainer, followingContainer);
-  }
-
-  /**
-   * Invoked when an app is dropped on the trash
-   * @param {Grabber.Event} e The event from the Grabber indicating the drop.
-   */
-  function appTrash(e) {
-    var appElement = e.grabbedElement;
-    assert(appElement.classList.contains('app'));
-    var appId = appElement.getAttribute('app-id');
-    assert(appId);
-
-    // Mark this drop as handled so that the catch-all drop handler
-    // on the document doesn't see this event.
-    e.stopPropagation();
-
-    // Tell chrome to uninstall the app (prompting the user)
-    chrome.send('uninstallApp', [appId]);
-  }
-
-  /**
-   * Called when an app is dropped anywhere other than the trash can.  Commits
-   * any movement that has occurred.
-   * @param {Grabber.Event} e The event from the Grabber indicating the drop.
-   */
-  function appDrop(e) {
-    if (!draggingAppContainer)
-      // Drag was aborted (eg. due to an app update) - do nothing
-      return;
-
-    // If the app is dropped back into it's original position then do nothing
-    assert(draggingAppOriginalPage);
-    if (draggingAppContainer.parentNode == draggingAppOriginalPage &&
-        draggingAppContainer.nextSibling == draggingAppOriginalPosition)
-      return;
-
-    // Determine which app was being dragged
-    var appElement = e.grabbedElement;
-    assert(appElement.classList.contains('app'));
-    var appId = appElement.getAttribute('app-id');
-    assert(appId);
-
-    // Update the page index for the app if it's changed.  This doesn't trigger
-    // a call to getAppsCallback so we want to do it before reorderApps
-    var pageIndex = cardSlider.currentCard;
-    assert(pageIndex >= 0 && pageIndex < appsPages.length,
-           'page number out of range');
-    if (appsPages[pageIndex] != draggingAppOriginalPage)
-      chrome.send('setPageIndex', [appId, pageIndex]);
-
-    // Put the app being dragged back into it's container
-    draggingAppContainer.appendChild(appElement);
-
-    // Create a list of all appIds in the order now present in the DOM
-    var appIds = [];
-    for (var page = 0; page < appsPages.length; page++) {
-      var appsOnPage = appsPages[page].getElementsByClassName('app');
-      for (var i = 0; i < appsOnPage.length; i++) {
-        var id = appsOnPage[i].getAttribute('app-id');
-        if (id)
-          appIds.push(id);
-      }
-    }
-
-    // We are going to commit this repositioning - clear the original position
-    draggingAppOriginalPage = undefined;
-    draggingAppOriginalPosition = undefined;
-
-    // Tell chrome to update its database to persist this new order of apps This
-    // will cause getAppsCallback to be invoked and the apps to be redrawn.
-    chrome.send('reorderApps', [appId, appIds]);
-    appMoved = true;
-  }
-
-  /**
-   * Set to true if we're currently in rearrange mode and an app has
-   * been successfully dropped to a new location.  This indicates that
-   * a getAppsCallback call is pending and we can rely on the DOM being
-   * updated by that.
-   * @type {boolean}
-   */
-  var appMoved = false;
-
-  /**
    * Invoked whenever some app is grabbed
    * @param {Grabber.Event} e The Grabber Grab event.
    */
   function enterRearrangeMode(e) {
-    // Stop the slider from sliding for this touch
-    cardSlider.cancelTouch();
-
-    // Add an extra blank page in case the user wants to create a new page
-    appendTilePage(new ntp4.AppsPage(''), true);
-    var pageAdded = appsPages.length - 1;
-    window.setTimeout(function() {
-      dots[pageAdded].classList.remove('new');
-    }, 0);
-
+    var tempPage = new ntp4.AppsPage('');
+    tempPage.classList.add('temporary');
+    appendTilePage(tempPage);
     updateSliderCards();
-
-    // Cause the dot-list to grow
-    getRequiredElement('footer').classList.add('rearrange-mode');
-
-    assert(!appMoved, 'appMoved should not be set yet');
   }
 
   /**
@@ -577,42 +319,24 @@ cr.define('ntp4', function() {
    * @param {Grabber.Event} e The Grabber RELEASE event.
    */
   function leaveRearrangeMode(e) {
-    // Return the dot-list to normal
-    getRequiredElement('footer').classList.remove('rearrange-mode');
-
-    // If we didn't successfully re-arrange an app, then we won't be
-    // refreshing the app view in getAppCallback and need to explicitly remove
-    // the extra empty page we added.  We don't want to do this in the normal
-    // case because if we did actually drop an app there, we want to retain that
-    // page as our current page number.
-    if (!appMoved) {
-      assert(appsPages[appsPages.length - 1].
-             getElementsByClassName('app-container').length == 0,
-             'Last app page should be empty');
-      removePage(appsPages.length - 1);
+    var tempPage = document.querySelector('.tile-page.temporary');
+    var dot = tempPage.navigationDot;
+    if (!tempPage.tileCount) {
+      dot.parentNode.removeChild(dot);
+      tempPage.parentNode.removeChild(tempPage);
+    } else {
+      dot.classList.remove('temporary');
+      tempPage.classList.remove('temporary');
     }
-    appMoved = false;
   }
 
   /**
-   * Remove the page with the specified index and update the slider.
-   * @param {number} pageNo The index of the page to remove.
+   * Returns the index of the given page.
+   * @param {AppsPage} page The AppsPage for we wish to find.
+   * @return {number} The index of |page|, or -1 if it is not here.
    */
-  function removePage(pageNo) {
-    pageList.removeChild(tilePages[pageNo]);
-
-    // Remove the corresponding dot
-    // Need to give it a chance to animate though
-    var dot = dots[pageNo];
-    dot.classList.add('new');
-    window.setTimeout(function() {
-      // If we've re-created the apps (eg. because an app was uninstalled) then
-      // we will have removed the old dots from the document already, so skip.
-      if (dot.parentNode)
-        dot.parentNode.removeChild(dot);
-    }, DEFAULT_TRANSITION_TIME);
-
-    updateSliderCards();
+  function getAppsPageIndex(page) {
+    return Array.prototype.indexOf.call(appsPages, page);
   }
 
   // TODO(estade): rename newtab.css to new_tab_theme.css
@@ -662,9 +386,12 @@ cr.define('ntp4', function() {
   return {
     assert: assert,
     appsPrefChangeCallback: appsPrefChangeCallback,
+    enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,
     getCardSlider: getCardSlider,
+    getAppsPageIndex: getAppsPageIndex,
     initialize: initialize,
+    leaveRearrangeMode: leaveRearrangeMode,
     themeChanged: themeChanged,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     setMostVisitedPages: setMostVisitedPages,

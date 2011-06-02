@@ -38,12 +38,14 @@
   -webkit-transform: translate(0, 40px);
 }
 
-.dot span {
-  /* Inline block looks better when the multi-line text is selected. */
-  display: inline-block;
+.dot input {
+  background-color: transparent;
+  cursor: inherit;
+  /* 10 less than the width of the dot. */
+  width: 50px;
+  -webkit-appearance: caret;
 }
 
-.dot span:focus {
-  background-color: white;
-  -webkit-user-select: text;
+.dot input:focus {
+  cursor: auto;
 }
