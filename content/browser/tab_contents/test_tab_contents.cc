@@ -78,5 +78,7 @@ void TestTabContents::CommitPendingNavigation() {
 void TestTabContents::ProceedWithCrossSiteNavigation() {
   if (!pending_rvh())
     return;
-  render_manager_.ShouldClosePage(true, true);
+  TestRenderViewHost* rvh = static_cast<TestRenderViewHost*>(
+      render_manager_.current_host());
+  rvh->SendShouldCloseACK(true);
 }

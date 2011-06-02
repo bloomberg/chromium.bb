@@ -71,14 +71,20 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 
   // Load the two URLs in the second tab. Note that the first navigation creates
   // a RVH that's not pending (since there is no cross-site transition), so
-  // we use the committed one, but the second one is the opposite.
+  // we use the committed one.
   contents2.controller().LoadURL(kNtpUrl, GURL(), PageTransition::LINK);
   TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
       contents2.render_manager()->current_host());
+  EXPECT_FALSE(contents2.cross_navigation_pending());
   ntp_rvh2->SendNavigate(100, kNtpUrl);
+
+  // The second one is the opposite, creating a cross-site transition and
+  // requiring a beforeunload ack.
   contents2.controller().LoadURL(kDestUrl, GURL(), PageTransition::LINK);
   TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
       contents2.render_manager()->pending_render_view_host());
+  EXPECT_TRUE(contents2.cross_navigation_pending());
+  ntp_rvh2->SendShouldCloseACK(true);
   dest_rvh2->SendNavigate(101, kDestUrl);
   ntp_rvh2->OnSwapOutACK();
 

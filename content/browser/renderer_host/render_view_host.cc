@@ -799,25 +799,17 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
       Read(&msg, &iter, &validated_params))
     return;
 
-  // If we're waiting for a beforeunload ack from this renderer and we receive
-  // a Navigate message from the main frame, then the renderer was navigating
-  // before it received the request.  If it is during a cross-site navigation,
-  // then we should forget about the beforeunload, because the navigation will
-  // now be canceled.  (If it is instead during an attempt to close the page,
-  // we should be sure to keep waiting for the ack, which the new page will
-  // send.)
-  //
-  // If we did not clear this state, an unresponsiveness timer might think we
-  // are waiting for an ack but are not in a cross-site navigation, and would
-  // close the tab.  TODO(creis): That timer code should be refactored to only
-  // close the tab if we explicitly know the user tried to close the tab, and
-  // not just check for the absence of a cross-site navigation.  Once that's
-  // fixed, this check can go away.
+  // If we're waiting for a cross-site beforeunload ack from this renderer and
+  // we receive a Navigate message from the main frame, then the renderer was
+  // navigating already and sent it before hearing the ViewMsg_Stop message.
+  // We do not want to cancel the pending navigation in this case, since the
+  // old page will soon be stopped.  Instead, treat this as a beforeunload ack
+  // to allow the pending navigation to continue.
   if (is_waiting_for_beforeunload_ack_ &&
       unload_ack_is_for_cross_site_transition_ &&
       PageTransition::IsMainFrame(validated_params.transition)) {
-    is_waiting_for_beforeunload_ack_ = false;
-    StopHangMonitorTimeout();
+    OnMsgShouldCloseACK(true);
+    return;
   }
 
   // If we're waiting for an unload ack from this renderer and we receive a

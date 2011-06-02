@@ -714,40 +714,40 @@ TEST_F(TabContentsTest, CrossSiteNavigationNotPreemptedByFrame) {
   EXPECT_TRUE(contents()->cross_navigation_pending());
 }
 
-// Test that the original renderer can preempt a cross-site navigation while the
-// beforeunload request is in flight.
-TEST_F(TabContentsTest, CrossSitePreemptDuringBeforeUnload) {
+// Test that a cross-site navigation is not preempted if the previous
+// renderer sends a FrameNavigate message just before being told to stop.
+// We should only preempt the cross-site navigation if the previous renderer
+// has started a new navigation.  See http://crbug.com/79176.
+TEST_F(TabContentsTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   contents()->transition_cross_site = true;
-  TestRenderViewHost* orig_rvh = rvh();
-  SiteInstance* instance1 = contents()->GetSiteInstance();
 
-  // Navigate to URL.  First URL should use first RenderViewHost.
-  const GURL url("http://www.google.com");
+  // Navigate to NTP URL.
+  const GURL url("chrome://newtab");
   controller().LoadURL(url, GURL(), PageTransition::TYPED);
-  ViewHostMsg_FrameNavigate_Params params1;
-  InitNavigateParams(&params1, 1, url, PageTransition::TYPED);
-  contents()->TestDidNavigate(orig_rvh, params1);
+  TestRenderViewHost* orig_rvh = rvh();
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
 
-  // Navigate to new site, with the befureunload request in flight.
+  // Navigate to new site, with the beforeunload request in flight.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  TestRenderViewHost* pending_rvh = contents()->pending_rvh();
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
 
-  // Suppose the original renderer navigates now, while the beforeunload request
-  // is in flight.  We must cancel the pending navigation and show this new
-  // page, because the beforeunload handler might return false.
-  orig_rvh->SendNavigate(2, GURL("http://www.google.com/foo"));
+  // Suppose the first navigation tries to commit now, with a
+  // ViewMsg_Stop in flight.  This should not cancel the pending navigation,
+  // but it should act as if the beforeunload ack arrived.
+  orig_rvh->SendNavigate(1, GURL("chrome://newtab"));
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
 
-  // Verify that the pending navigation is cancelled.
-  SiteInstance* instance2 = contents()->GetSiteInstance();
+  // The pending navigation should be able to commit successfully.
+  ViewHostMsg_FrameNavigate_Params params2;
+  InitNavigateParams(&params2, 1, url2, PageTransition::TYPED);
+  contents()->TestDidNavigate(pending_rvh, params2);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, rvh());
-  EXPECT_EQ(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
-
-  // Make sure the beforeunload ack doesn't cause problems if it arrives here.
-  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+  EXPECT_EQ(pending_rvh, contents()->render_view_host());
 }
 
 // Test that the original renderer cannot preempt a cross-site navigation once
