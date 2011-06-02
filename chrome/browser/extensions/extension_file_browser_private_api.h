@@ -31,6 +31,47 @@ class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.requestLocalFileSystem");
 };
 
+// Implements the chrome.fileBrowserPrivate.addFileWatch method.
+class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
+ protected:
+  virtual bool PerformFileWatchOperation(
+      const FilePath& local_path, const FilePath& virtual_path,
+      const std::string& extension_id) = 0;
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  bool GetLocalFilePath(const GURL& file_url, FilePath* local_path,
+                        FilePath* virtual_path);
+  void RespondOnUIThread(bool success);
+  void RunFileWatchOperationOnFileThread(const GURL& file_url,
+                                         const std::string& extension_id);
+};
+
+// Implements the chrome.fileBrowserPrivate.addFileWatch method.
+class AddFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
+ protected:
+  virtual bool PerformFileWatchOperation(
+      const FilePath& local_path, const FilePath& virtual_path,
+      const std::string& extension_id) OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.addFileWatch");
+};
+
+
+// Implements the chrome.fileBrowserPrivate.removeFileWatch method.
+class RemoveFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
+ protected:
+  virtual bool PerformFileWatchOperation(
+      const FilePath& local_path, const FilePath& virtual_path,
+      const std::string& extension_id) OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.removeFileWatch");
+};
+
 // Implements the chrome.fileBrowserPrivate.getFileTasks method.
 class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
  protected:

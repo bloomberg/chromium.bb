@@ -32,6 +32,7 @@ extern const char kOnExtensionDisabled[];
 
 // FileBrowser.
 extern const char kOnFileBrowserDiskChanged[];
+extern const char kOnFileChanged[];
 
 };  // namespace extension_event_names
 

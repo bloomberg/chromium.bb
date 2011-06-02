@@ -14,6 +14,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -376,6 +377,98 @@ void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   error_ = base::StringPrintf(kFileError, static_cast<int>(error_code));
   SendResponse(false);
+}
+
+bool FileWatchBrowserFunctionBase::GetLocalFilePath(
+    const GURL& file_url, FilePath* local_path, FilePath* virtual_path) {
+  fileapi::FileSystemPathManager* path_manager =
+      profile_->GetFileSystemContext()->path_manager();
+  GURL file_origin_url;
+  fileapi::FileSystemType type;
+  if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
+                          virtual_path)) {
+    return false;
+  }
+  if (type != fileapi::kFileSystemTypeExternal)
+    return false;
+
+  FilePath root_path =
+      path_manager->ValidateFileSystemRootAndGetPathOnFileThread(
+          file_origin_url,
+          fileapi::kFileSystemTypeExternal,
+          *virtual_path,
+          false);
+  if (root_path == FilePath())
+    return false;
+
+  *local_path = root_path.Append(*virtual_path);
+  return true;
+}
+
+void FileWatchBrowserFunctionBase::RespondOnUIThread(bool success) {
+  result_.reset(Value::CreateBooleanValue(success));
+  SendResponse(success);
+}
+
+bool FileWatchBrowserFunctionBase::RunImpl() {
+  if (!render_view_host() || !render_view_host()->process())
+    return false;
+
+  // First param is url of a file to watch.
+  std::string url;
+  if (!args_->GetString(0, &url) || url.empty())
+    return false;
+
+  GURL file_watch_url(url);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread,
+          file_watch_url,
+          extension_id()));
+
+  return true;
+}
+
+void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
+    const GURL& file_url, const std::string& extension_id) {
+  FilePath local_path;
+  FilePath virtual_path;
+  if (!GetLocalFilePath(file_url, &local_path, &virtual_path) ||
+      local_path == FilePath()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &FileWatchBrowserFunctionBase::RespondOnUIThread,
+            false));
+  }
+  if (!PerformFileWatchOperation(local_path, virtual_path, extension_id)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &FileWatchBrowserFunctionBase::RespondOnUIThread,
+            false));
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+          &FileWatchBrowserFunctionBase::RespondOnUIThread,
+          true));
+}
+
+bool AddFileWatchBrowserFunction::PerformFileWatchOperation(
+    const FilePath& local_path, const FilePath& virtual_path,
+    const std::string& extension_id) {
+  return ExtensionFileBrowserEventRouter::GetInstance()->AddFileWatch(
+      local_path, virtual_path, extension_id);
+}
+
+bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
+    const FilePath& local_path, const FilePath& unused,
+    const std::string& extension_id) {
+  ExtensionFileBrowserEventRouter::GetInstance()->RemoveFileWatch(
+      local_path, extension_id);
+  return true;
 }
 
 bool GetFileTasksFileBrowserFunction::RunImpl() {

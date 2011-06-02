@@ -4949,6 +4949,22 @@
             "description":"Volume information that this mount event applies to."
           }
         }
+      },
+      {
+        "id": "FileWatchEvent",
+        "type": "object",
+        "description": "Payload data for disk mount / unmount event.",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "enum": ["changed", "error"],
+            "description": "Specifies type of event that is raised."
+          },
+          "fileUrl": {
+            "type": "string",
+            "description":"URL of watched file"
+          }
+        }
       }
     ],
     "functions": [
@@ -5032,6 +5048,54 @@
         ]
       },
       {
+        "name": "addFileWatch",
+        "description": "Adds file watch.",
+        "parameters": [
+          {
+            "name": "fileUrl",
+            "type": "string",
+            "description": "URL of file to watch"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "success",
+                "type": "boolean",
+                "optional": "true",
+                "description": "True when file watch is successfully added."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "removeFileWatch",
+        "description": "Removes file watch.",
+        "parameters": [
+          {
+            "name": "fileUrl",
+            "type": "string",
+            "description": "URL of watched file to remove"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "success",
+                "type": "boolean",
+                "optional": "true",
+                "description": "True when file watch is successfully removed."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "requestLocalFileSystem",
         "description": "Requests access to local file system",
         "parameters": [
@@ -5104,8 +5168,20 @@
         "parameters": [
           {
             "$ref": "MountEvent",
-            "name": "fullPath",
+            "name": "event",
             "description": "Mount event information."
+          }
+        ]
+      },
+      {
+        "name": "onFileChanged",
+        "type": "function",
+        "description": "Fired when watched file change event is detected.",
+        "parameters": [
+          {
+            "$ref": "FileWatchEvent",
+            "name": "event",
+            "description": "File watch event information."
           }
         ]
       }

@@ -332,6 +332,8 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<FileDialogStringsFunction>();
   RegisterFunction<GetFileTasksFileBrowserFunction>();
   RegisterFunction<RequestLocalFileSystemFunction>();
+  RegisterFunction<AddFileWatchBrowserFunction>();
+  RegisterFunction<RemoveFileWatchBrowserFunction>();
   RegisterFunction<SelectFileFunction>();
   RegisterFunction<SelectFilesFunction>();
   RegisterFunction<ViewFilesFunction>();
