@@ -48,9 +48,6 @@
    to 0 if you don't. */
 #define HAVE_DECL_PROGRAM_INVOCATION_NAME 0
 
-/* Define to 1 if decoder components are enabled. */
-/* #undef HAVE_DECODER */
-
 /* Define to 1 if arm decoder is enabled. */
 /* #undef HAVE_DECODER_ARM */
 
@@ -80,9 +77,6 @@
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
-
-/* Define to 1 if encoder components are enabled. */
-/* #undef HAVE_ENCODER */
 
 /* Define to 1 if arm encoder is enabled. */
 /* #undef HAVE_ENCODER_ARM */
@@ -140,6 +134,9 @@
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
+
+/* Define to 1 if mbrtowc and mbstate_t are properly declared. */
+#define HAVE_MBRTOWC 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -232,6 +229,9 @@
    declarations. */
 #define HAVE_VISIBILITY 1
 
+/* Define to 1 if you have the `wcwidth' function. */
+#define HAVE_WCWIDTH 1
+
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
 
@@ -255,7 +255,7 @@
 #define PACKAGE_NAME "XZ Utils"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "XZ Utils 4.999.9beta"
+#define PACKAGE_STRING "XZ Utils 5.0.3"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "xz"
@@ -264,14 +264,18 @@
 #define PACKAGE_URL "http://tukaani.org/xz/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.999.9beta"
+#define PACKAGE_VERSION "5.0.3"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
 /* #undef PTHREAD_CREATE_JOINABLE */
 
 /* The size of `size_t', as computed by sizeof. */
+#ifdef __LP64__
 #define SIZEOF_SIZE_T 8
+#else
+#define SIZEOF_SIZE_T 4
+#endif
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
@@ -343,7 +347,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.999.9beta"
+#define VERSION "5.0.3"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

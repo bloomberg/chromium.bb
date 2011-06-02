@@ -1,8 +1,8 @@
 Name: XZ Utils
 URL: http://tukaani.org/xz/
 Source URL: git://ctrl.tukaani.org/xz.git
-Version: git commit c15c42abb3c8c6e77c778ef06c97a4a10b8b5d00
-         (2010-06-15 14:06:29 +0300), newer than 4.999.9beta
+Version: 5.0.3 (git tag v5.0.3, e32cb264ea72a4459810f30abad70dae5a4fa17d,
+         2011-05-21 16:59:22 +0300)
 License: Public domain/license grant, LGPL 2.1, GPL 2, GPL 3
 
 Description:
@@ -16,13 +16,12 @@ The upstream source is present in the xz directory. Other entries in this
 directory are present for build integration:
   - README.chromium.
   - xz.gyp.
-  - config/mac/config.h, the ouptut of a "configure" run. Various macros are
-    undefined, because feature selection is handled by xz.gyp. These macros
-    are affected:
+  - config/mac/config.h, the ouptut of a "configure" run. SIZEOF_SIZE_T's
+    definition is made conditional on __LP64__. Various macros are undefined,
+    because feature selection is handled by xz.gyp. These macros are affected:
      - HAVE_CHECK_CRC32
      - HAVE_CHECK_CRC64
      - HAVE_CHECK_SHA256
-     - HAVE_DECODER
      - HAVE_DECODER_ARM
      - HAVE_DECODER_ARMTHUMB
      - HAVE_DECODER_DELTA
@@ -32,7 +31,6 @@ directory are present for build integration:
      - HAVE_DECODER_POWERPC
      - HAVE_DECODER_SPARC
      - HAVE_DECODER_X86
-     - HAVE_ENCODER
      - HAVE_ENCODER_ARM
      - HAVE_ENCODER_ARMTHUMB
      - HAVE_ENCODER_DELTA

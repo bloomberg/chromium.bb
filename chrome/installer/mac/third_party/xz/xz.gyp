@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,10 +26,8 @@
       'HAVE_CONFIG_H',
     ],
     'lzma_decompress_defines': [
-      'HAVE_DECODER=1',
     ],
     'lzma_compress_defines': [
-      'HAVE_ENCODER=1',
     ],
 
     'lzma_include_dirs': [
@@ -344,6 +342,8 @@
       'sources': [
         'xz/src/common/tuklib_cpucores.c',
         'xz/src/common/tuklib_exit.c',
+        'xz/src/common/tuklib_mbstr_fw.c',
+        'xz/src/common/tuklib_mbstr_width.c',
         'xz/src/common/tuklib_open_stdxxx.c',
         'xz/src/common/tuklib_progname.c',
         'xz/src/xz/args.c',

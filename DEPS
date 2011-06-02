@@ -298,7 +298,7 @@ deps_os = {
       "/trunk/deps/third_party/nss@83672",
 
     "src/chrome/installer/mac/third_party/xz/xz":
-      "/trunk/deps/third_party/xz@50504",
+      "/trunk/deps/third_party/xz@87706",
   },
   "unix": {
     # Linux, really.
