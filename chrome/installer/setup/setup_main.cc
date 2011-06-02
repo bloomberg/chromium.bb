@@ -809,6 +809,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       installer_state->WriteInstallerResult(status, IDS_SETUP_PATCH_FAILED_BASE,
           NULL);
     }
+    // We will be exiting normally, so clear the stage indicator.
+    installer_state->UpdateStage(installer::NO_STAGE);
   } else if (cmd_line.HasSwitch(installer::switches::kShowEula)) {
     // Check if we need to show the EULA. If it is passed as a command line
     // then the dialog is shown and regardless of the outcome setup exits here.
