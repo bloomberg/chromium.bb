@@ -117,6 +117,8 @@ class DnsCAARecord {
   // to validate the chain.
   struct Policy {
    public:
+    Policy();
+
     // A HashTarget identifies the object that we are hashing.
     enum HashTarget {
       USER_CERTIFICATE,
