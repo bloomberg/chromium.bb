@@ -5,6 +5,7 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/crl_filter.h"
@@ -32,19 +33,24 @@ static bool DecompressZlib(char* out, int out_len, base::StringPiece in,
 
   if (inflateInit(&z) != Z_OK)
     return false;
+  bool ret = false;
   int r = inflate(&z, Z_FINISH);
   if (r == Z_NEED_DICT) {
     r = inflateSetDictionary(&z, reinterpret_cast<const Bytef*>(dict.data()),
                              dict.size());
     if (r != Z_OK)
-      return false;
+      goto err;
     r = inflate(&z, Z_FINISH);
   }
   if (r != Z_STREAM_END)
-    return false;
+    goto err;
   if (z.avail_in || z.avail_out)
-    return false;
-  return true;
+    goto err;
+  ret = true;
+
+ err:
+  inflateEnd(&z);
+  return ret;
 }
 
 /* A RangeDecoder is a type of entropy coder. It is superior to a Huffman
@@ -107,7 +113,7 @@ class RangeDecoder {
   // in: the input bytes
   // spans: the probabilities of the symbols. The sum of these values must
   //     equal 2**32 - 1.
-  RangeDecoder(base::StringPiece in, const std::vector<uint32> spans)
+  RangeDecoder(base::StringPiece in, const std::vector<uint32>& spans)
       : in_(in),
         spans_(spans),
         high_(-1),
@@ -120,7 +126,7 @@ class RangeDecoder {
   bool Decode(unsigned* out_symbol) {
     // high_ and low_ mirror the state of the encoder so, when they agree on
     // the first byte, we have to perform span expansion.
-    while (high_ >> 24 == low_ >> 24) {
+    while ((high_ >> 24) == (low_ >> 24)) {
       vhigh_ <<= 8;
       vhigh_ |= 0xff;
       vlow_ <<= 8;
@@ -136,14 +142,14 @@ class RangeDecoder {
 
     // We consider each symbol in turn and decide if the final span is such
     // that it must be the next symbol.
-    for (unsigned i = 0; i < spans_.size(); i++) {
+    for (size_t i = 0; i < spans_.size(); i++) {
       const uint32 span = spans_[i];
       const uint32 scaled = (r * span) >> 32;
 
       // Since our knowledge of the final span is incremental, |vhigh_| and
       // |vlow_| might be sufficiently far apart that we can't determine the
       // next symbol. In this case we have to read more data.
-      while (vhigh_ > low_ + scaled && vlow_ <= low_ + scaled) {
+      while (vhigh_ > (low_ + scaled) && vlow_ <= (low_ + scaled)) {
         // We need more information to disambiguate this. Note that 32-bits of
         // information is always sufficient to disambiguate.
         uint32 b = 0;
@@ -158,7 +164,7 @@ class RangeDecoder {
 
       // This symbol covers all the possible values for the final span, so this
       // must be the next symbol.
-      if (vhigh_ <= low_ + scaled) {
+      if (vhigh_ <= (low_ + scaled)) {
         high_ = low_ + scaled;
         *out_symbol = i;
         return true;
@@ -322,9 +328,9 @@ class GolombCompressedSet {
     bool ReadWord() {
       DCHECK_LE(bits_pending_, 32u);
 
-      uint32 w;
       if (data_.size() < 4)
         return false;
+      uint32 w;
       memcpy(&w, data_.data(), 4);
       data_.remove_prefix(4);
 
@@ -354,7 +360,6 @@ class GolombCompressedSet {
   }
 
  private:
-
   base::StringPiece full_data_;
   const unsigned num_values_;
 
@@ -372,6 +377,11 @@ class BitWriter {
         buf_used_(0),
         current_(0),
         num_bits_(0) {
+  }
+
+  ~BitWriter() {
+    free(buf_);
+    buf_ = NULL;
   }
 
   void WriteBit(bool b) {
@@ -400,9 +410,8 @@ class BitWriter {
   }
 
   void Flush() {
-    if (num_bits_ > 0) {
+    if (num_bits_ > 0)
       current_ >>= 32 - num_bits_;
-    }
 
     if (buf_len_ < buf_used_ + sizeof(current_)) {
       if (buf_) {
@@ -429,10 +438,12 @@ class BitWriter {
 
  private:
   uint8* buf_;
-  unsigned buf_len_;
-  unsigned buf_used_;
+  size_t buf_len_;
+  size_t buf_used_;
   uint32 current_;
   unsigned num_bits_;
+
+  DISALLOW_COPY_AND_ASSIGN(BitWriter);
 };
 
 CRLFilter::CRLFilter() {
@@ -591,8 +602,8 @@ CRLFilter* CRLFilter::CRLFilterFromHeader(base::StringPiece header_bytes) {
     }
     crl_filter->crls_included_.insert(
         std::make_pair<std::string, std::string>(
-          url,
-          parent_spki_sha256));
+            url,
+            parent_spki_sha256));
   }
 
   return crl_filter.release();
@@ -603,7 +614,8 @@ CRLFilter* CRLFilter::CRLFilterFromHeader(base::StringPiece header_bytes) {
 static const int kMaxHeaderLengthBytes = 1024 * 1024;
 
 // static
-CRLFilter* CRLFilter::Parse(base::StringPiece data) {
+bool CRLFilter::Parse(base::StringPiece data,
+                      scoped_refptr<CRLFilter>* out_crl_filter) {
   // Other parts of Chrome assume that we're little endian, so we don't lose
   // anything by doing this.
 #if defined(__BYTE_ORDER)
@@ -618,64 +630,66 @@ CRLFilter* CRLFilter::Parse(base::StringPiece data) {
   scoped_ptr<DictionaryValue> description_dict(
       ReadDescription(&data));
   if (!description_dict.get())
-    return NULL;
+    return false;
 
   std::string contents;
   if (!description_dict->GetString("Contents", &contents))
-    return NULL;
+    return false;
   if (contents != "CRLFilter")
-    return NULL;
+    return false;
 
   int version;
   if (!description_dict->GetInteger("Version", &version) ||
       version != 0) {
-    return NULL;
+    return false;
   }
 
   int compressed_header_len;
   if (!description_dict->GetInteger("HeaderZLength", &compressed_header_len))
-    return NULL;
+    return false;
 
   if (compressed_header_len <= 0 ||
       data.size() < static_cast<unsigned>(compressed_header_len)) {
-    return NULL;
+    return false;
   }
   const base::StringPiece compressed_header(data.data(), compressed_header_len);
   data.remove_prefix(compressed_header_len);
 
   int header_len;
   if (!description_dict->GetInteger("HeaderLength", &header_len))
-    return NULL;
+    return false;
   if (header_len < 0 || header_len > kMaxHeaderLengthBytes) {
     NOTREACHED();
-    return NULL;
+    return false;
   }
 
   scoped_array<char> header_bytes(new char[header_len]);
   base::StringPiece no_dict;
   if (!DecompressZlib(header_bytes.get(), header_len, compressed_header,
                       no_dict)) {
-    return NULL;
+    return false;
   }
 
   scoped_refptr<CRLFilter> crl_filter(CRLFilterFromHeader(
         base::StringPiece(header_bytes.get(), header_len)));
 
   if (!crl_filter.get())
-    return NULL;
+    return false;
 
   // The remainder is the Golomb Compressed Set.
   crl_filter->gcs_bytes_ = data.as_string();
   crl_filter->gcs_.reset(new GolombCompressedSet(crl_filter->gcs_bytes_,
                                                  crl_filter->num_entries_));
-  return crl_filter.release();
+  *out_crl_filter = crl_filter;
+  return true;
 }
 
-CRLFilter* CRLFilter::ApplyDelta(base::StringPiece data) {
+bool CRLFilter::ApplyDelta(base::StringPiece data,
+                           scoped_refptr<CRLFilter>* out_crl_filter) {
   scoped_ptr<DictionaryValue> description_dict(
       ReadDescription(&data));
   if (!description_dict.get())
-    return NULL;
+    return false;
 
   int compressed_header_len, header_len, delta_from, version, range_length;
   std::string contents;
@@ -685,20 +699,20 @@ CRLFilter* CRLFilter::ApplyDelta(base::StringPiece data) {
       !description_dict->GetInteger("DeltaFrom", &delta_from) ||
       !description_dict->GetInteger("Version", &version) ||
       !description_dict->GetString("Contents", &contents)) {
-    return NULL;
+    return false;
   }
 
   if (version != 0 || contents != "CRLFilterDelta")
-    return NULL;
+    return false;
 
   if (delta_from < 0 || static_cast<unsigned>(delta_from) != sequence_)
-    return NULL;
+    return false;
 
   if (compressed_header_len <= 0 ||
       data.size() < static_cast<unsigned>(compressed_header_len) ||
       header_len < 0 ||
       header_len > kMaxHeaderLengthBytes) {
-    return NULL;
+    return false;
   }
 
   const base::StringPiece compressed_header(data.data(), compressed_header_len);
@@ -707,26 +721,27 @@ CRLFilter* CRLFilter::ApplyDelta(base::StringPiece data) {
   scoped_array<char> header_bytes(new char[header_len]);
   if (!DecompressZlib(header_bytes.get(), header_len, compressed_header,
                       header_bytes_)) {
-    return NULL;
+    return false;
   }
 
   scoped_refptr<CRLFilter> crl_filter(CRLFilterFromHeader(
         base::StringPiece(header_bytes.get(), header_len)));
 
   if (!crl_filter.get())
-    return NULL;
+    return false;
 
   // Next are the three span values.
-  static const unsigned num_span_values = 3;
-  if (data.size() < num_span_values * sizeof(uint32))
-    return NULL;
+  static const unsigned kNumSpanValues = 3;
+  static const size_t kNumSpanBytes = kNumSpanValues * sizeof(uint32);
+  if (data.size() < kNumSpanBytes)
+    return false;
 
-  std::vector<uint32> spans(num_span_values);
-  memcpy(&spans[0], data.data(), num_span_values * sizeof(uint32));
-  data.remove_prefix(num_span_values * sizeof(uint32));
+  std::vector<uint32> spans(kNumSpanBytes);
+  memcpy(&spans[0], data.data(), kNumSpanBytes);
+  data.remove_prefix(kNumSpanBytes);
 
   if (data.size() < static_cast<unsigned>(range_length))
-    return NULL;
+    return false;
   RangeDecoder decoder(data.substr(0, range_length), spans);
   data.remove_prefix(range_length);
 
@@ -739,32 +754,33 @@ CRLFilter* CRLFilter::ApplyDelta(base::StringPiece data) {
   for (unsigned i = 0; i < crl_filter->num_entries_;) {
     unsigned symbol, delta;
     if (!decoder.Decode(&symbol))
-      return NULL;
+      return false;
     if (symbol == SYMBOL_SAME) {
       if (!gcs_prev.Next(&v))
-        return NULL;
+        return false;
       bitwriter.WriteGolomb10(v - last);
       last = v;
       i++;
     } else if (symbol == SYMBOL_INSERT) {
       if (!gcs_deltas.NextDelta(&delta))
-        return NULL;
+        return false;
       bitwriter.WriteGolomb10(delta);
       last += delta;
       i++;
     } else if (symbol == SYMBOL_DELETE) {
       if (!gcs_prev.Next(&v))
-        return NULL;
+        return false;
     } else {
       NOTREACHED();
-      return NULL;
+      return false;
     }
   }
 
   crl_filter->gcs_bytes_ = bitwriter.as_string();
   crl_filter->gcs_.reset(new GolombCompressedSet(crl_filter->gcs_bytes_,
                                                  crl_filter->num_entries_));
-  return crl_filter.release();
+  *out_crl_filter = crl_filter;
+  return true;
 }
 
 bool CRLFilter::CRLIsCovered(
@@ -772,7 +788,7 @@ bool CRLFilter::CRLIsCovered(
     const std::string& parent_spki_sha256) {
   for (std::vector<base::StringPiece>::const_iterator
        i = crl_urls.begin(); i != crl_urls.end(); i++) {
-    if (crls_included_.count(std::make_pair<std::string, std::string>(
+    if (ContainsKey(crls_included_, std::make_pair<std::string, std::string>(
             i->as_string(), parent_spki_sha256))) {
       return true;
     }

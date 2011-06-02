@@ -143,7 +143,8 @@ static const uint8 kDeltaResultSHA256[] = {
 TEST(CRLFilterTest, Parse) {
   base::StringPiece s(reinterpret_cast<const char*>(kTestFilter),
                       sizeof(kTestFilter));
-  scoped_refptr<net::CRLFilter> filter(net::CRLFilter::Parse(s));
+  scoped_refptr<net::CRLFilter> filter;
+  EXPECT_TRUE(net::CRLFilter::Parse(s, &filter));
   ASSERT_TRUE(filter.get() != NULL);
 
   EXPECT_EQ(filter->num_entries(), kTestFilterExpectedNumValues);
@@ -160,13 +161,15 @@ TEST(CRLFilterTest, Parse) {
 TEST(CRLFilterTest, DeltaUpdates) {
   base::StringPiece s(reinterpret_cast<const char *>(kDeltaTestFilter1),
                       sizeof(kDeltaTestFilter1));
-  scoped_refptr<net::CRLFilter> filter(net::CRLFilter::Parse(s));
+  scoped_refptr<net::CRLFilter> filter;
+  EXPECT_TRUE(net::CRLFilter::Parse(s, &filter));
   ASSERT_TRUE(filter.get() != NULL);
 
   base::StringPiece delta_bytes(
       reinterpret_cast<const char*>(kDeltaTestFilter2),
       sizeof(kDeltaTestFilter2));
-  scoped_refptr<net::CRLFilter> delta(filter->ApplyDelta(delta_bytes));
+  scoped_refptr<net::CRLFilter> delta;
+  EXPECT_TRUE(filter->ApplyDelta(delta_bytes, &delta));
   ASSERT_TRUE(delta.get() != NULL);
 
   ASSERT_TRUE(delta->SHA256() ==
@@ -177,7 +180,8 @@ TEST(CRLFilterTest, DeltaUpdates) {
 TEST(CRLFilterTest, Entries) {
   base::StringPiece s(reinterpret_cast<const char*>(kTestFilter),
                       sizeof(kTestFilter));
-  scoped_refptr<net::CRLFilter> filter(net::CRLFilter::Parse(s));
+  scoped_refptr<net::CRLFilter> filter;
+  EXPECT_TRUE(net::CRLFilter::Parse(s, &filter));
   ASSERT_TRUE(filter.get() != NULL);
 
   base::StringPiece cert_spki;

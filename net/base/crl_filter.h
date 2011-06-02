@@ -41,7 +41,8 @@ class CRLFilter : public base::RefCounted<CRLFilter> {
 
   ~CRLFilter();
 
-  static CRLFilter* Parse(base::StringPiece data);
+  static bool Parse(base::StringPiece data,
+                    scoped_refptr<CRLFilter>* out_crl_filter);
 
   // CheckCertificate returns the information contained in the filter for a
   // given certificate:
@@ -58,9 +59,11 @@ class CRLFilter : public base::RefCounted<CRLFilter> {
       std::vector<base::StringPiece> crl_urls,
       base::StringPiece parent_spki);
 
-  // ApplyDelta returns a new CRLFilter that is the result of updating the
-  // current filter with the delta information in |delta_bytes|.
-  CRLFilter* ApplyDelta(base::StringPiece delta_bytes);
+  // ApplyDelta returns a new CRLFilter in |out_crl_filter| that is the result
+  // of updating the current filter with the delta information in
+  // |delta_bytes|.
+  bool ApplyDelta(base::StringPiece delta_bytes,
+                  scoped_refptr<CRLFilter>* out_crl_filter);
 
   // not_before and not_after return the validity timespan of this filter.
   // |CheckCertificate| does not check the current time so it's up to the
