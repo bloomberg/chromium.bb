@@ -37,8 +37,6 @@ from idl_option import GetOption, Option, ParseOptions
 
 
 Option('output', 'Generate output.')
-Option('test_same', 'Test that the output matches.')
-Option('test_expect', 'Test that the output matches.')
 
 #
 # IDL Lexer

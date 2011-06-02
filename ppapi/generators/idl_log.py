@@ -27,6 +27,12 @@ class IDLLog(object):
     self.log = []
 
   def Log(self, msg):
+    line = "%s\n" % (msg)
+    if self.console: self.out.write(line)
+    if self.capture:
+      self.log.append(msg)
+
+  def LogTag(self, msg):
     line = "%s%s\n" % (self.name, msg)
     if self.console: self.out.write(line)
     if self.capture:

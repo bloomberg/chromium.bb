@@ -394,11 +394,11 @@ class IDLParser(IDLLexer):
   def p_param_list(self, p):
     """param_list : param_item param_cont
                   | """
-    func = self.BuildExtAttribute('FUNCTION', 'True')
     if len(p) > 1:
-      p[0] = ListFromConcat(p[1], p[2], func)
+      args = ListFromConcat(p[1], p[2])
     else:
-      p[0] = [func]
+      args = []
+    p[0] = self.BuildProduction('Callspec', p, -1, args)
     if self.parse_debug: DumpReduction('param_list', p)
 
   def p_param_item(self, p):
@@ -450,6 +450,23 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('arrays', p)
 
 #
+# Typedef
+#
+# A typedef creates a new referencable type.  The tyepdef can specify an array
+# definition as well as a function declaration.
+#
+  def p_typedef_data(self, p):
+    """typedef_def : modifiers TYPEDEF typeref SYMBOL ';' """
+    p[0] = self.BuildProduction('Typedef', p, 4, ListFromConcat(p[1], p[3]))
+    if self.parse_debug: DumpReduction('typedef_data', p)
+
+  def p_typedef_func(self, p):
+    """typedef_def : modifiers TYPEDEF typeref SYMBOL '(' param_list ')' ';'"""
+    children = ListFromConcat(p[1], p[3], p[6])
+    p[0] = self.BuildProduction('Typedef', p, 4, children)
+    if self.parse_debug: DumpReduction('typedef_func', p)
+
+#
 # Enumeration
 #
 # An enumeration is a set of named integer constants.  An enumeration
@@ -457,7 +474,8 @@ class IDLParser(IDLLexer):
 #
   def p_enum_block(self, p):
     """enum_block : modifiers ENUM SYMBOL '{' enum_list '}' ';'"""
-    p[0] = self.BuildProduction('Enum', p, 3, ListFromConcat(p[1], p[5]))
+    Type = self.BuildExtAttribute('TYPEREF', 'enum')
+    p[0] = self.BuildProduction('Enum', p, 3, ListFromConcat(Type, p[1], p[5]))
     if self.parse_debug: DumpReduction('enum_block', p)
 
   def p_enum_list(self, p):
@@ -498,7 +516,8 @@ class IDLParser(IDLLexer):
 
   def p_member_function(self, p):
     """member_function : modifiers typeref SYMBOL '(' param_list ')' ';'"""
-    p[0] = self.BuildProduction('Function', p, 3, ListFromConcat(p[1], p[5]))
+    children = ListFromConcat(p[1], p[2], p[5])
+    p[0] = self.BuildProduction('Function', p, 3, children)
     if self.parse_debug: DumpReduction('member_function', p)
 
   def p_member_error(self, p):
@@ -513,7 +532,9 @@ class IDLParser(IDLLexer):
 #
   def p_struct_block(self, p):
     """struct_block : modifiers STRUCT SYMBOL '{' struct_list '}' ';'"""
-    p[0] = self.BuildProduction('Struct', p, 3, ListFromConcat(p[1], p[5]))
+    Type = self.BuildExtAttribute('TYPEREF', 'struct')
+    children = ListFromConcat(Type, p[1], p[5])
+    p[0] = self.BuildProduction('Struct', p, 3, children)
     if self.parse_debug: DumpReduction('struct_block', p)
 
   def p_struct_list(self, p):
@@ -524,22 +545,7 @@ class IDLParser(IDLLexer):
       p[0] = ListFromConcat(member, p[5])
     if self.parse_debug: DumpReduction('struct_list', p)
 
-#
-# Typedef
-#
-# A typedef creates a new referencable type.  The tyepdef can specify an array
-# definition as well as a function declaration.
-#
-  def p_typedef_data(self, p):
-    """typedef_def : modifiers TYPEDEF typeref SYMBOL ';' """
-    p[0] = self.BuildProduction('Typedef', p, 4, ListFromConcat(p[1], p[3]))
-    if self.parse_debug: DumpReduction('typedef_data', p)
 
-  def p_typedef_func(self, p):
-    """typedef_def : modifiers TYPEDEF typeref SYMBOL '(' param_list ')' ';'"""
-    children = ListFromConcat(p[1], p[3], p[6])
-    p[0] = self.BuildProduction('Typedef', p, 4, children)
-    if self.parse_debug: DumpReduction('typedef_func', p)
 
 
 #
@@ -577,6 +583,9 @@ class IDLParser(IDLLexer):
     ErrOut.LogLine(filename, lineno, pos, msg)
     self.parse_errors += 1
 
+  def Warn(self, node, msg):
+    WarnOut.LogLine(node.filename, node.lineno, node.pos, msg)
+    self.parse_warnings += 1
 
   def __init__(self):
     IDLLexer.__init__(self)
@@ -604,6 +613,22 @@ class IDLParser(IDLLexer):
     return tok
 
 #
+# VerifyProduction
+#
+# Once the node is built, we will check for certain types of issues
+#
+  def VerifyProduction(self, node):
+    comment = node.GetOneOf('Comment')
+    if node.cls in ['Interface', 'Struct', 'Function'] and not comment:
+      self.Warn(node, 'Missing comment.')
+    if node.cls in ['Param']:
+      found = False;
+      for form in ['in', 'inout', 'out']:
+        if node.GetProperty(form): found = True
+      if not found: self.Warn(node, 'Missing argument type: [in|out|inout]')
+
+
+#
 # BuildProduction
 #
 # Production is the set of items sent to a grammar rule resulting in a new
@@ -621,6 +646,7 @@ class IDLParser(IDLLexer):
     if self.build_debug:
       InfoOut.Log("Building %s(%s)" % (cls, name))
     out = IDLNode(cls, name, filename, lineno, pos, childlist)
+    self.VerifyProduction(out)
     return out
 
 #
@@ -641,9 +667,11 @@ class IDLParser(IDLLexer):
 #
 # Attempts to parse the current data loaded in the lexer.
 #
-  def ParseData(self):
+  def ParseData(self, data, filename='<Internal>'):
+    self.SetData(filename, data)
     try:
       self.parse_errors = 0
+      self.parse_warnings = 0
       return self.yaccobj.parse(lexer=self)
 
     except lex.LexError as le:
@@ -657,11 +685,10 @@ class IDLParser(IDLLexer):
 #
   def ParseFile(self, filename):
     data = open(filename).read()
-    self.SetData(filename, data)
     if self.verbose:
       InfoOut.Log("Parsing %s" % filename)
     try:
-      out = self.ParseData()
+      out = self.ParseData(data, filename)
       return StageResult(filename, out, self.parse_errors)
 
     except Exception as e:

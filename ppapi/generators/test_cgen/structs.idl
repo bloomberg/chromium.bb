@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* This file will test that the IDL snippet matches the comment */
+
+/* typedef uint8_t s_array[3]; */
+typedef uint8_t[3] s_array;
+
+/* enum senum { esv1 = 1, esv2 = 2 }; */
+enum senum {
+  esv1=1,
+  esv2=2
+};
+
+/* struct st1 { int32_t i; senum j; }; */
+struct st1 {
+  int32_t i;
+  senum j;
+};
+
+/* struct st2 { s_array pixels[640][480]; }; */
+struct st2 {
+  s_array[640][480] pixels;
+};
+

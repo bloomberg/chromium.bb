@@ -17,6 +17,7 @@
 # as the source data by the various generators.
 #
 
+import re
 import sys
 import hashlib
 
@@ -46,6 +47,10 @@ NamedSet = set(['Enum', 'EnumItem', 'Function', 'Interface', 'Member', 'Param',
 # a.k.a. ExtendedAttributes.
 #
 class IDLNode(object):
+  # Regular expression to parse property keys in a string such that a string
+  #  "My string #NAME#" will find the key "NAME".
+  regex_var = re.compile("(?P<src>[^\\$]+)|(?P<key>\\$\\w+\\$)")
+
   def __init__(self, cls, name, filename, lineno, pos, children):
     self.cls = cls
     self.name = name
@@ -100,6 +105,13 @@ class IDLNode(object):
   def GetListOf(self, key):
     return self.children.get(key, [])
 
+  def GetOneOf(self, key):
+    children = self.children.get(key, None)
+    if children:
+      assert(len(children) == 1)
+      return children[0]
+    return None
+
   # Get a list of all objects
   def Children(self):
     out = []
@@ -108,7 +120,7 @@ class IDLNode(object):
     return out
 
   # Dump this object and its children
-  def Dump(self, depth, comments = False, out=sys.stdout):
+  def Dump(self, depth=0, comments=False, out=sys.stdout):
     if self.cls == 'Comment' or self.cls == 'Copyright':
       is_comment = True
     else:
@@ -151,7 +163,7 @@ class IDLNode(object):
       if child.cls in NamedSet:
         if name in self.namespace:
           other = self.namespace[name]
-          child.Error('Attempting to add % to namespace of %s when already '
+          child.Error('Attempting to add %s to namespace of %s when already '
                       'declared in %s' % (name, str(self), str(other)))
         self.namespace[name] = child
 
@@ -169,6 +181,9 @@ class IDLNode(object):
         self.Error('Unable to resolve typename %s.' % typename)
         errs += 1
         sys.exit(-1)
+      self.typeinfo = typeinfo
+    else:
+      self.typeinfo = None
 
     for child in self.Children():
       errs += child.Resolve()
@@ -190,12 +205,32 @@ class IDLNode(object):
     self.hash = hash.hexdigest()
     return self.hash
 
+  def GetProperty(self, name):
+    return self.properties.get(name, None)
+
+  # Recursively expands text keys in the form of $KEY$ with the value
+  # of the property of the same name.  Since this is done recursively
+  # one property can be defined in tems of another.
+  def Replace(self, text):
+    itr = IDLNode.regex_var.finditer(text)
+    out = ""
+    for m in itr:
+      (min,max) = m.span()
+      if m.lastgroup == "src":
+        out += text[min:max]
+      if m.lastgroup == "key":
+        key = text[min+1:max-1]
+        val = self.properties.get(key, None)
+        if not val:
+          self.Error("No property '%s'" % key)
+        out += self.Replace(str(val))
+    return out
 #
 # IDL Predefined types
 #
 BuiltIn = set(['int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t', 'uint16_t',
               'uint32_t', 'uint64_t', 'double_t', 'float_t', 'handle_t',
-              'mem_t', 'str_t', 'void', 'enum', 'struct', 'struct_by_value'])
+              'mem_t', 'str_t', 'void', 'enum', 'struct', 'bool'])
 
 #
 # IDLAst
