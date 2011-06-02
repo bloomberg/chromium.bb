@@ -4333,34 +4333,21 @@
    bug_80462_a
    Memcheck:Leak
    fun:malloc
-   fun:_ZN7WebCore15allocV8NPObjectEP4_NPPP7NPClass
+   fun:_ZN7WebCoreL15allocV8NPObjectEP4_NPPP7NPClass
    fun:_NPN_CreateObject
    fun:_ZN7WebCore22npCreateV8ScriptObjectEP4_NPPN2v86HandleINS2_6ObjectEEEPNS_9DOMWindowE
    fun:_ZN6WebKit16makeIntArrayImplERKNS_9WebVectorIiEE
    fun:_ZN6WebKit11WebBindings12makeIntArrayERKNS_9WebVectorIiEE
-   fun:_ZN19TextInputController11markedRangeERKN3WTF6VectorI10CppVariantLj0EEEPS2_
 }
 {
    bug_80462_b
    Memcheck:Leak
    fun:malloc
-   fun:_ZN7WebCore15allocV8NPObjectEP4_NPPP7NPClass
+   fun:_ZN7WebCoreL15allocV8NPObjectEP4_NPPP7NPClass
    fun:_NPN_CreateObject
    fun:_ZN7WebCore22npCreateV8ScriptObjectEP4_NPPN2v86HandleINS2_6ObjectEEEPNS_9DOMWindowE
-   fun:_ZN6WebKit16makeIntArrayImplERKNS_9WebVectorIiEE
-   fun:_ZN6WebKit11WebBindings12makeIntArrayERKNS_9WebVectorIiEE
-   fun:_ZN19TextInputController13selectedRangeERKN3WTF6VectorI10CppVariantLj0EEEPS2_
-}
-{
-   bug_80462_c
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN7WebCore15allocV8NPObjectEP4_NPPP7NPClass
-   fun:_NPN_CreateObject
-   fun:_ZN7WebCore22npCreateV8ScriptObjectEP4_NPPN2v86HandleINS2_6ObjectEEEPNS_9DOMWindowE
-   fun:_ZN6WebKit16makeIntArrayImplERKNS_9WebVectorIiEE
-   fun:_ZN6WebKit11WebBindings12makeIntArrayERKNS_9WebVectorIiEE
-   fun:_ZN19TextInputController26firstRectForCharacterRangeERKN3WTF6VectorI10CppVariantLj0EEEPS2_
+   fun:_ZN6WebKitL19makeStringArrayImplERKNS_9WebVectorINS_9WebStringEEE
+   fun:_ZN6WebKit11WebBindings15makeStringArrayERKNS_9WebVectorINS_9WebStringEEE
 }
 {
    bug_80527
