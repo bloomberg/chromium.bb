@@ -247,8 +247,10 @@ cr.define('gpu', function() {
       for (var tI = 0; tI < threads.length; tI++) {
         var thread = threads[tI];
         thread.updateBounds();
-        wmin = Math.min(wmin, thread.minTimestamp);
-        wmax = Math.max(wmax, thread.maxTimestamp);
+        if (thread.minTimestamp && thread.maxTimestamp) {
+          wmin = Math.min(wmin, thread.minTimestamp);
+          wmax = Math.max(wmax, thread.maxTimestamp);
+        }
       }
       this.minTimestamp = wmin;
       this.maxTimestamp = wmax;

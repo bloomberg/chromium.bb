@@ -80,6 +80,8 @@ cr.define('gpu', function() {
       if (!browserBridge.debugMode) {
         chrome.send('beginTracing');
         this.beginRequestBufferPercentFull_();
+      } else {
+        gpu.tracingControllerTestHarness.beginTracing();
       }
 
       this.tracingEnabled_ = true;
@@ -94,10 +96,6 @@ cr.define('gpu', function() {
 
       window.addEventListener('keypress', this.onKeypressBoundToThis_);
       window.addEventListener('keydown', this.onKeydownBoundToThis_);
-
-      // In debug mode, stop tracing automatically
-      if (browserBridge.debugMode)
-        window.setTimeout(this.endTracing.bind(this), 100);
     },
 
     onKeydown_: function(e) {
@@ -146,19 +144,16 @@ cr.define('gpu', function() {
       console.log('Finishing trace');
       this.statusDiv_.textContent = 'Downloading trace data...';
       this.stopButton_.hidden = true;
-      if (!browserBridge.debugMode) {
-        // delay sending endTracingAsync until we get a chance to
-        // update the screen...
-        window.setTimeout(function() {
+      // delay sending endTracingAsync until we get a chance to
+      // update the screen...
+      window.setTimeout(function() {
+        if (!browserBridge.debugMode) {
           chrome.send('endTracingAsync');
-        }, 100);
-      } else {
-        var events = tracingControllerTestEvents;
-        this.onTraceDataCollected(events);
-        window.setTimeout(this.onEndTracingComplete.bind(this), 250);
-      }
+        } else {
+          gpu.tracingControllerTestHarness.endTracing();
+        }
+      }, 100);
     },
-
 
     /**
      * Called by the browser when all processes complete tracing.
