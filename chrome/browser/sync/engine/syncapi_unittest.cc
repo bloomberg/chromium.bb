@@ -1171,7 +1171,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   {
     ReadTransaction trans(sync_manager_.GetUserShare());
     EXPECT_EQ(expected_types,
-              GetEncryptedDataTypes(trans.GetWrappedTrans()));
+              GetEncryptedTypes(&trans));
   }
 }
 
@@ -1226,7 +1226,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   {
     ReadTransaction trans(sync_manager_.GetUserShare());
     EXPECT_EQ(encrypted_types,
-              GetEncryptedDataTypes(trans.GetWrappedTrans()));
+              GetEncryptedTypes(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
                                                    syncable::BOOKMARKS,
                                                    true /* is encrypted */));

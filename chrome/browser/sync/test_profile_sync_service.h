@@ -47,7 +47,8 @@ class SyncBackendHostForProfileSyncTest
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
       sync_api::ConfigureReason reason,
-      CancelableTask* ready_task);
+      CancelableTask* ready_task,
+      bool nigori_enabled);
 
   // Called when a nudge comes in.
   void SimulateSyncCycleCompletedInitialSyncEnded(

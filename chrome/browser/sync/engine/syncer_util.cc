@@ -295,17 +295,11 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   if (specifics.HasExtension(sync_pb::nigori)) {
     const sync_pb::NigoriSpecifics& nigori =
         specifics.GetExtension(sync_pb::nigori);
-    if (!nigori.encrypted().blob().empty()) {
-      if (cryptographer->CanDecrypt(nigori.encrypted())) {
-        cryptographer->SetKeys(nigori.encrypted());
-      } else {
-        cryptographer->SetPendingKeys(nigori.encrypted());
-      }
-    }
+    cryptographer->Update(nigori);
 
     // Make sure any unsynced changes are properly encrypted as necessary.
     syncable::ModelTypeSet encrypted_types =
-        syncable::GetEncryptedDataTypesFromNigori(nigori);
+        cryptographer->GetEncryptedTypes();
     if (!VerifyUnsyncedChangesAreEncrypted(trans, encrypted_types) &&
         (!cryptographer->is_ready() ||
          !syncable::ProcessUnsyncedChangesForEncryption(trans, encrypted_types,

@@ -114,6 +114,38 @@ TEST_F(BackendMigratorTest, Sanity) {
   EXPECT_EQ(BackendMigrator::IDLE, migrator.state());
 }
 
+// Test that in the normal case with Nigori a migration transitions through
+// each state and wind up back in IDLE.
+TEST_F(BackendMigratorTest, MigrateNigori) {
+  BackendMigrator migrator(service(), manager());
+  syncable::ModelTypeSet to_migrate, difference;
+  to_migrate.insert(syncable::NIGORI);
+  difference.insert(syncable::AUTOFILL);
+  difference.insert(syncable::BOOKMARKS);
+
+  EXPECT_CALL(*manager(), state())
+      .WillOnce(Return(DataTypeManager::CONFIGURED));
+
+  EXPECT_CALL(*manager(), ConfigureWithoutNigori(_,
+      sync_api::CONFIGURE_REASON_MIGRATION));
+
+  migrator.MigrateTypes(to_migrate);
+  EXPECT_EQ(BackendMigrator::DISABLING_TYPES, migrator.state());
+
+  SendConfigureDone(DataTypeManager::OK, difference);
+  EXPECT_EQ(BackendMigrator::WAITING_FOR_PURGE, migrator.state());
+
+  ReturnEmptyProgressMarkersInSnapshot();
+  EXPECT_CALL(*manager(), Configure(preferred_types(),
+      sync_api::CONFIGURE_REASON_MIGRATION));
+  migrator.OnStateChanged();
+  EXPECT_EQ(BackendMigrator::REENABLING_TYPES, migrator.state());
+
+  SendConfigureDone(DataTypeManager::OK, preferred_types());
+  EXPECT_EQ(BackendMigrator::IDLE, migrator.state());
+}
+
+
 // Test that the migrator waits for the data type manager to be idle before
 // starting a migration.
 TEST_F(BackendMigratorTest, WaitToStart) {

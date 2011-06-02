@@ -14,7 +14,7 @@ ACTION(InvokeTask) {
 SyncBackendHostMock::SyncBackendHostMock() {
   // By default, invoke the ready callback.
   ON_CALL(*this, ConfigureDataTypes(testing::_, testing::_, testing::_,
-          testing::_)).
+    testing::_, testing::_)).
       WillByDefault(InvokeTask());
 }
 

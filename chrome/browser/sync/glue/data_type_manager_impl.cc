@@ -101,7 +101,18 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
 }
 
 void DataTypeManagerImpl::Configure(const TypeSet& desired_types,
-                                    sync_api::ConfigureReason reason) {
+                                        sync_api::ConfigureReason reason) {
+  ConfigureImpl(desired_types, reason, true);
+}
+
+void DataTypeManagerImpl::ConfigureWithoutNigori(const TypeSet& desired_types,
+    sync_api::ConfigureReason reason) {
+  ConfigureImpl(desired_types, reason, false);
+}
+
+void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
+                                        sync_api::ConfigureReason reason,
+                                        bool enable_nigori) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
@@ -116,6 +127,14 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types,
             << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
     last_configure_reason_ = reason;
+
+    // Note we should never be in a state to reconfigure with nigori disabled.
+    // Reconfigures serve to store teh configure request from the user if
+    // another one is already in progress. Since enable_nigori is set to false
+    // only on migration and migration code should not initialize configure
+    // if there is already one in progress, enable_nigori should always be true
+    // if we are here.
+    DCHECK(enable_nigori);
     return;
   }
 
@@ -150,10 +169,11 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types,
   // types to start/stop, because it could be that some types haven't
   // started due to crypto errors but the backend host needs to know that we're
   // disabling them anyway).
-  Restart(reason);
+  Restart(reason, enable_nigori);
 }
 
-void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason) {
+void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
+                                  bool enable_nigori) {
   VLOG(1) << "Restarting...";
   last_restart_time_ = base::Time::Now();
 
@@ -178,7 +198,8 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason) {
       controllers_,
       last_requested_types_,
       reason,
-      method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady));
+      method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady),
+      enable_nigori);
 }
 
 void DataTypeManagerImpl::DownloadReady() {
