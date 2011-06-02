@@ -266,7 +266,8 @@ button:not(:disabled):not(.disabled):hover {
   -webkit-box-shadow: inset 0 1px 2px white,
                       0 2px 4px rgba(0, 0, 0, .2);
   background: -webkit-linear-gradient(#fff, #e6e6e6);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
+  /* Using opacity 0.99 instead of 1 because of http://crbug.com/68370 */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.99);
 }
 
 button:not(:disabled):not(.disabled):active,
@@ -548,7 +549,8 @@ select:not(:disabled):not(.disabled):hover {
                       0 2px 4px rgba(0, 0, 0, .2);
   background-image: url('./print_preview/black_arrow.png'),
                     -webkit-linear-gradient(#fff, #e6e6e6);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
+  /* Using opacity 0.99 instead of 1 because of http://crbug.com/68370 */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.99);
 }
 
 label {
