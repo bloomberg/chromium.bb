@@ -363,6 +363,12 @@ pre_base_env = Environment(
     **kwargs
 )
 
+# ----------------------------------------------------------
+# CODE COVERAGE
+# ----------------------------------------------------------
+DeclareBit('coverage_enabled', 'The build should be instrumented to generate'
+           'coverage information')
+
 # If the environment valriable BUILDBOT_BUILDERNAME is set, we can determine
 # if we are running in a VM by the lack of a '-bare-' (aka bare metal) in the
 # bot name.  Otherwise if the builder name is not set, then assume real HW.
@@ -910,6 +916,9 @@ def DualLibrary(env, lib_name, *args, **kwargs):
   shared_objs = [i for i in Flatten(args[0]) if not HasSuffix(i, '.o')]
   # Built static library as ususal.
   env.ComponentLibrary(lib_name, static_objs, **kwargs)
+  # For coverage bots, we only want one object file since two versions would
+  # write conflicting information to the same .gdca/.gdna files.
+  if env.Bit('coverage_enabled'): return
   # Build a static library using -fPIC for the .o's.
   if env.Bit('target_x86_64') and env.Bit('linux'):
     env_shared = env.Clone(OBJSUFFIX='.os')
@@ -927,6 +936,9 @@ def DualObject(env, *args, **kwargs):
   """
   # Built static library as ususal.
   ret = env.ComponentObject(*args, **kwargs)
+  # For coverage bots, we only want one object file since two versions would
+  # write conflicting information to the same .gdca/.gdna files.
+  if env.Bit('coverage_enabled'): return ret
   # Build a static library using -fPIC for the .o's.
   if env.Bit('target_x86_64') and env.Bit('linux'):
     env_shared = env.Clone(OBJSUFFIX='.os')
@@ -938,7 +950,12 @@ def DualObject(env, *args, **kwargs):
 def AddDualLibrary(env):
   env.AddMethod(DualLibrary)
   env.AddMethod(DualObject)
-  env['SHARED_LIBS_SPECIAL'] = env.Bit('target_x86_64') and env.Bit('linux')
+  # For coverage bots we only build one set of objects and we always set
+  # '-fPIC' so we do not need a "special" library.
+  if env.Bit('coverage_enabled'):
+    env['SHARED_LIBS_SPECIAL'] = False
+  else:
+    env['SHARED_LIBS_SPECIAL'] = env.Bit('target_x86_64') and env.Bit('linux')
 
 
 def InstallPlugin(target, source, env):
@@ -2839,12 +2856,6 @@ nacl_extra_sdk_env.Command('extra_sdk_clean', [],
                             'rm -rf ${NACL_SDK_LIB}/libgoogle*',
                             'rm -rf ${NACL_SDK_LIB_PLATFORM}/crt[1in].*'])
 
-# ----------------------------------------------------------
-# CODE COVERAGE
-# ----------------------------------------------------------
-DeclareBit('coverage_enabled', 'The build should be instrumented to generate'
-           'coverage information')
-
 windows_coverage_env = windows_env.Clone(
     tools = ['code_coverage'],
     BUILD_TYPE = 'coverage-win',
@@ -2883,6 +2894,10 @@ linux_coverage_env = linux_debug_env.Clone(
     # magically baked into the compiler.
     LIBS_STRICT = False,
 )
+
+if linux_coverage_env.Bit('target_x86_64'):
+  linux_coverage_env.Append(CCFLAGS=['-fPIC'])
+
 linux_coverage_env['OPTIONAL_COVERAGE_LIBS'] = '$COVERAGE_LIBS'
 AddDualLibrary(linux_coverage_env)
 environment_list.append(linux_coverage_env)
