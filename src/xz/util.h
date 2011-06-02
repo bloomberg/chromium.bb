@@ -19,11 +19,12 @@
 
 
 /// \brief      Safe realloc() that never returns NULL
-extern void *xrealloc(void *ptr, size_t size);
+extern void *xrealloc(void *ptr, size_t size)
+		lzma_attribute((__malloc__)) lzma_attr_alloc_size(2);
 
 
 /// \brief      Safe strdup() that never returns NULL
-extern char *xstrdup(const char *src);
+extern char *xstrdup(const char *src) lzma_attribute((__malloc__));
 
 
 /// \brief      Fancy version of strtoull()
@@ -96,19 +97,12 @@ extern const char *uint64_to_nicestr(uint64_t value,
 		bool always_also_bytes, uint32_t slot);
 
 
-/// \brief      Convert double to a string with one decimal place
-///
-/// This is like uint64_to_str() except that this converts a double and
-/// uses exactly one decimal place.
-extern const char *double_to_str(double value);
-
-
 /// \brief      Wrapper for snprintf() to help constructing a string in pieces
 ///
 /// A maximum of *left bytes is written starting from *pos. *pos and *left
 /// are updated accordingly.
 extern void my_snprintf(char **pos, size_t *left, const char *fmt, ...)
-		lzma_attribute((format(printf, 3, 4)));
+		lzma_attribute((__format__(__printf__, 3, 4)));
 
 
 /// \brief      Check if filename is empty and print an error message

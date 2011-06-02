@@ -56,10 +56,11 @@ struct lzma_coder_s {
 static lzma_ret
 index_decode(lzma_coder *coder, lzma_allocator *allocator,
 		const uint8_t *restrict in, size_t *restrict in_pos,
-		size_t in_size, uint8_t *restrict out lzma_attribute((unused)),
-		size_t *restrict out_pos lzma_attribute((unused)),
-		size_t out_size lzma_attribute((unused)),
-		lzma_action action lzma_attribute((unused)))
+		size_t in_size,
+		uint8_t *restrict out lzma_attribute((__unused__)),
+		size_t *restrict out_pos lzma_attribute((__unused__)),
+		size_t out_size lzma_attribute((__unused__)),
+		lzma_action action lzma_attribute((__unused__)))
 {
 	// Similar optimization as in index_encoder.c
 	const size_t in_start = *in_pos;
@@ -291,6 +292,7 @@ lzma_index_decoder(lzma_stream *strm, lzma_index **i, uint64_t memlimit)
 	lzma_next_strm_init(index_decoder_init, strm, i, memlimit);
 
 	strm->internal->supported_actions[LZMA_RUN] = true;
+	strm->internal->supported_actions[LZMA_FINISH] = true;
 
 	return LZMA_OK;
 }

@@ -35,7 +35,7 @@ lzma_version_string(void)
 // Memory allocation //
 ///////////////////////
 
-extern void * lzma_attribute((malloc))
+extern void * lzma_attribute((__malloc__)) lzma_attr_alloc_size(1)
 lzma_alloc(size_t size, lzma_allocator *allocator)
 {
 	// Some malloc() variants return NULL if called with size == 0.
@@ -181,6 +181,20 @@ lzma_code(lzma_stream *strm, lzma_action action)
 			|| (unsigned int)(action) > LZMA_FINISH
 			|| !strm->internal->supported_actions[action])
 		return LZMA_PROG_ERROR;
+
+	// Check if unsupported members have been set to non-zero or non-NULL,
+	// which would indicate that some new feature is wanted.
+	if (strm->reserved_ptr1 != NULL
+			|| strm->reserved_ptr2 != NULL
+			|| strm->reserved_ptr3 != NULL
+			|| strm->reserved_ptr4 != NULL
+			|| strm->reserved_int1 != 0
+			|| strm->reserved_int2 != 0
+			|| strm->reserved_int3 != 0
+			|| strm->reserved_int4 != 0
+			|| strm->reserved_enum1 != LZMA_RESERVED_ENUM
+			|| strm->reserved_enum2 != LZMA_RESERVED_ENUM)
+		return LZMA_OPTIONS_ERROR;
 
 	switch (strm->internal->sequence) {
 	case ISEQ_RUN:

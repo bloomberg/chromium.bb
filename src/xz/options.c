@@ -150,7 +150,7 @@ enum {
 
 static void
 set_delta(void *options, uint32_t key, uint64_t value,
-		const char *valuestr lzma_attribute((unused)))
+		const char *valuestr lzma_attribute((__unused__)))
 {
 	lzma_options_delta *opt = options;
 	switch (key) {
@@ -194,7 +194,7 @@ enum {
 
 static void
 set_bcj(void *options, uint32_t key, uint64_t value,
-		const char *valuestr lzma_attribute((unused)))
+		const char *valuestr lzma_attribute((__unused__)))
 {
 	lzma_options_bcj *opt = options;
 	switch (key) {
@@ -241,7 +241,7 @@ enum {
 };
 
 
-static void lzma_attribute((noreturn))
+static void lzma_attribute((__noreturn__))
 error_lzma_preset(const char *valuestr)
 {
 	message_fatal(_("Unsupported LZMA1/LZMA2 preset: %s"), valuestr);
@@ -346,24 +346,13 @@ options_lzma(const char *str)
 	};
 
 	lzma_options_lzma *options = xmalloc(sizeof(lzma_options_lzma));
-	*options = (lzma_options_lzma){
-		.dict_size = LZMA_DICT_SIZE_DEFAULT,
-		.preset_dict =  NULL,
-		.preset_dict_size = 0,
-		.lc = LZMA_LC_DEFAULT,
-		.lp = LZMA_LP_DEFAULT,
-		.pb = LZMA_PB_DEFAULT,
-		.mode = LZMA_MODE_NORMAL,
-		.nice_len = 64,
-		.mf = LZMA_MF_BT4,
-		.depth = 0,
-	};
+	if (lzma_lzma_preset(options, LZMA_PRESET_DEFAULT))
+		message_bug();
 
 	parse_options(str, opts, &set_lzma, options);
 
 	if (options->lc + options->lp > LZMA_LCLP_MAX)
-		message_fatal(_("The sum of lc and lp must be at "
-				"maximum of 4"));
+		message_fatal(_("The sum of lc and lp must not exceed 4"));
 
 	const uint32_t nice_len_min = options->mf & 0x0F;
 	if (options->nice_len < nice_len_min)
