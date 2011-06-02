@@ -1846,8 +1846,6 @@
         'browser/service/service_process_control.cc',
         'browser/service/service_process_control_mac.mm',
         'browser/service/service_process_control.h',
-        'browser/service/service_process_control_manager.cc',
-        'browser/service/service_process_control_manager.h',
         'browser/sessions/base_session_service.cc',
         'browser/sessions/base_session_service.h',
         'browser/sessions/session_backend.cc',

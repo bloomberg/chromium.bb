@@ -16,7 +16,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service/service_process_control.h"
-#include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/pref_names.h"
@@ -158,8 +157,7 @@ void CloudPrintProxyService::OnCloudPrintSetupClosed() {
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ServiceProcessControl* process_control =
-      ServiceProcessControlManager::GetInstance()->GetProcessControl(profile_);
+  ServiceProcessControl* process_control = ServiceProcessControl::GetInstance();
   DCHECK(process_control->is_connected());
   ServiceProcessControl::CloudPrintProxyInfoHandler* callback =
        NewCallback(this, &CloudPrintProxyService::ProxyInfoCallback);
@@ -169,8 +167,7 @@ void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
 
 void CloudPrintProxyService::EnableCloudPrintProxy(const std::string& lsid,
                                                    const std::string& email) {
-  ServiceProcessControl* process_control =
-      ServiceProcessControlManager::GetInstance()->GetProcessControl(profile_);
+  ServiceProcessControl* process_control = ServiceProcessControl::GetInstance();
   DCHECK(process_control->is_connected());
   process_control->Send(new ServiceMsg_EnableCloudPrintProxy(lsid));
   // Assume the IPC worked.
@@ -181,8 +178,7 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
     const std::string& user_email) {
-  ServiceProcessControl* process_control =
-      ServiceProcessControlManager::GetInstance()->GetProcessControl(profile_);
+  ServiceProcessControl* process_control = ServiceProcessControl::GetInstance();
   DCHECK(process_control->is_connected());
   process_control->Send(new ServiceMsg_EnableCloudPrintProxyWithRobot(
       robot_auth_code,
@@ -194,8 +190,7 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
 
 
 void CloudPrintProxyService::DisableCloudPrintProxy() {
-  ServiceProcessControl* process_control =
-      ServiceProcessControlManager::GetInstance()->GetProcessControl(profile_);
+  ServiceProcessControl* process_control = ServiceProcessControl::GetInstance();
   DCHECK(process_control->is_connected());
   process_control->Send(new ServiceMsg_DisableCloudPrintProxy);
   // Assume the IPC worked.
@@ -210,10 +205,6 @@ void CloudPrintProxyService::ProxyInfoCallback(
 }
 
 bool CloudPrintProxyService::InvokeServiceTask(Task* task) {
-  ServiceProcessControl* process_control =
-      ServiceProcessControlManager::GetInstance()->GetProcessControl(profile_);
-  DCHECK(process_control);
-  if (process_control)
-    process_control->Launch(task, NULL);
-  return !!process_control;
+  ServiceProcessControl::GetInstance()->Launch(task, NULL);
+  return true;
 }

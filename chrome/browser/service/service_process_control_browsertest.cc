@@ -5,7 +5,6 @@
 #include "base/process_util.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/service/service_process_control.h"
-#include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
@@ -21,8 +20,6 @@ class ServiceProcessControlBrowserTest
   ~ServiceProcessControlBrowserTest() {
     base::CloseProcessHandle(service_process_handle_);
     service_process_handle_ = base::kNullProcessHandle;
-    // Delete all instances of ServiceProcessControl.
-    ServiceProcessControlManager::GetInstance()->Shutdown();
   }
 
 #if defined(OS_MACOSX)
@@ -34,13 +31,8 @@ class ServiceProcessControlBrowserTest
 
  protected:
   void LaunchServiceProcessControl() {
-    ServiceProcessControl* process =
-        ServiceProcessControlManager::GetInstance()->GetProcessControl(
-            browser()->profile());
-    process_ = process;
-
     // Launch the process asynchronously.
-    process->Launch(
+    ServiceProcessControl::GetInstance()->Launch(
         NewRunnableMethod(
             this,
             &ServiceProcessControlBrowserTest::ProcessControlLaunched),
@@ -54,7 +46,7 @@ class ServiceProcessControlBrowserTest
 
   // Send a Cloud Print status request and wait for a reply from the service.
   void SendRequestAndWait() {
-    process()->GetCloudPrintProxyInfo(NewCallback(
+    ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(NewCallback(
         this, &ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
     ui_test_utils::RunMessageLoop();
   }
@@ -65,10 +57,8 @@ class ServiceProcessControlBrowserTest
   }
 
   void Disconnect() {
-    // This will delete all instances of ServiceProcessControl and close the IPC
-    // connections.
-    ServiceProcessControlManager::GetInstance()->Shutdown();
-    process_ = NULL;
+    // This will close the IPC connection.
+    ServiceProcessControl::GetInstance()->Disconnect();
   }
 
   void WaitForShutdown() {
@@ -97,10 +87,7 @@ class ServiceProcessControlBrowserTest
     MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 
-  ServiceProcessControl* process() { return process_; }
-
  private:
-  ServiceProcessControl* process_;
   base::ProcessHandle service_process_handle_;
 };
 
@@ -112,11 +99,11 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(process()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
   SendRequestAndWait();
 
   // And then shutdown the service process.
-  EXPECT_TRUE(process()->Shutdown());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
 // This tests the case when a service process is launched when the browser
@@ -132,16 +119,16 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(process()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
   SendRequestAndWait();
 
   // Launch the service process again.
   LaunchServiceProcessControl();
-  EXPECT_TRUE(process()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
   SendRequestAndWait();
 
   // And then shutdown the service process.
-  EXPECT_TRUE(process()->Shutdown());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
 static void DecrementUntilZero(int* count) {
@@ -160,9 +147,7 @@ static void DecrementUntilZero(int* count) {
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
                        MAYBE_MultipleLaunchTasks) {
-  ServiceProcessControl* process =
-      ServiceProcessControlManager::GetInstance()->GetProcessControl(
-          browser()->profile());
+  ServiceProcessControl* process = ServiceProcessControl::GetInstance();
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
     // Launch the process asynchronously.
@@ -185,9 +170,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 #define MAYBE_SameLaunchTask SameLaunchTask
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
-  ServiceProcessControl* process =
-      ServiceProcessControlManager::GetInstance()->GetProcessControl(
-          browser()->profile());
+  ServiceProcessControl* process = ServiceProcessControl::GetInstance();
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
     // Launch the process asynchronously.
@@ -214,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(process()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
   Disconnect();
   WaitForShutdown();
 }
@@ -225,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(process()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
   base::ProcessId service_pid;
   EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
@@ -247,6 +230,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_CheckPid) {
   LaunchServiceProcessControl();
   EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
+  // Disconnect from service process.
+  ServiceProcessControl::GetInstance()->Disconnect();
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControlBrowserTest);

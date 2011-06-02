@@ -22,8 +22,7 @@
 
 
 // ServiceProcessControl implementation.
-ServiceProcessControl::ServiceProcessControl(Profile* profile)
-    : profile_(profile) {
+ServiceProcessControl::ServiceProcessControl() {
 }
 
 ServiceProcessControl::~ServiceProcessControl() {
@@ -166,6 +165,11 @@ void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
       NewRunnableMethod(this, &ServiceProcessControl::OnProcessLaunched));
 }
 
+void ServiceProcessControl::Disconnect() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  channel_.reset();
+}
+
 void ServiceProcessControl::OnProcessLaunched() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (launcher_->launched()) {
@@ -241,15 +245,22 @@ void ServiceProcessControl::OnCloudPrintProxyInfo(
 
 bool ServiceProcessControl::GetCloudPrintProxyInfo(
     CloudPrintProxyInfoHandler* cloud_print_info_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(cloud_print_info_callback);
   cloud_print_info_callback_.reset(cloud_print_info_callback);
   return Send(new ServiceMsg_GetCloudPrintProxyInfo());
 }
 
 bool ServiceProcessControl::Shutdown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool ret = Send(new ServiceMsg_Shutdown());
   channel_.reset();
   return ret;
+}
+
+// static
+ServiceProcessControl* ServiceProcessControl::GetInstance() {
+  return Singleton<ServiceProcessControl>::get();
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControl);

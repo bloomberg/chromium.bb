@@ -28,7 +28,7 @@
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/service/service_process_control_manager.h"
+#include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -124,8 +124,8 @@ void Shutdown() {
   // shutdown.
   base::ThreadRestrictions::SetIOAllowed(true);
 
-  // Shutdown all IPC channels to service processes.
-  ServiceProcessControlManager::GetInstance()->Shutdown();
+  // Shutdown the IPC channel to the service processes.
+  ServiceProcessControl::GetInstance()->Disconnect();
 
 #if defined(OS_CHROMEOS)
   // The system key event listener needs to be shut down earlier than when

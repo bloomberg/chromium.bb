@@ -14,13 +14,13 @@
 #include "base/callback_old.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/process.h"
 #include "base/task.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ipc/ipc_sync_channel.h"
 
-class Profile;
 class CommandLine;
 
 namespace cloud_print {
@@ -46,13 +46,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   typedef Callback1<const cloud_print::CloudPrintProxyInfo&>::Type
       CloudPrintProxyInfoHandler;
 
-  // Construct a ServiceProcessControl with |profile|..
-  explicit ServiceProcessControl(Profile* profile);
-  virtual ~ServiceProcessControl();
-
-  // Return the user profile associated with this service process.
-  Profile* profile() const { return profile_; }
-
+  // Returns the singleton instance of this class.
+  static ServiceProcessControl* GetInstance();
   // Return true if this object is connected to the service.
   bool is_connected() const { return channel_.get() != NULL; }
 
@@ -69,6 +64,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // |success_task| can be invoked in the context of the Launch call.
   // Takes ownership of |success_task| and |failure_task|.
   void Launch(Task* success_task, Task* failure_task);
+  // Disconnect the IPC channel from the service process.
+  void Disconnect();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -128,6 +125,11 @@ class ServiceProcessControl : public IPC::Channel::Sender,
     uint32 retry_count_;
   };
 
+  ServiceProcessControl();
+  virtual ~ServiceProcessControl();
+
+  friend struct DefaultSingletonTraits<ServiceProcessControl>;
+
   typedef std::vector<Task*> TaskList;
 
   // Helper method to invoke all the callbacks based on success on failure.
@@ -140,8 +142,6 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   void ConnectInternal();
 
   static void RunAllTasksHelper(TaskList* task_list);
-
-  Profile* profile_;
 
   // IPC channel to the service process.
   scoped_ptr<IPC::SyncChannel> channel_;
