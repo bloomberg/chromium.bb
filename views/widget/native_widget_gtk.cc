@@ -446,19 +446,14 @@ void NativeWidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
 }
 
 void NativeWidgetGtk::IsActiveChanged() {
-  WidgetDelegate* d = GetWidget()->widget_delegate();
-  if (d) {
-    bool a = IsActive();
-    d->OnWidgetActivated(a);
-  }
+  GetWidget()->widget_delegate()->OnWidgetActivated(IsActive());
 }
 
 void NativeWidgetGtk::SetInitialFocus() {
   if (!focus_on_creation_)
     return;
 
-  View* v = GetWidget()->widget_delegate() ?
-      GetWidget()->widget_delegate()->GetInitiallyFocusedView() : NULL;
+  View* v = GetWidget()->widget_delegate()->GetInitiallyFocusedView();
   if (v)
     v->RequestFocus();
 }

@@ -161,7 +161,8 @@ class UserController : public views::WidgetDelegate,
 
   // Creates the widget that holds the controls. Caller owns the returned
   // widget.
-  static views::Widget* CreateControlsWidget(const gfx::Rect& bounds);
+  static views::Widget* CreateControlsWidget(views::WidgetDelegate* delegate,
+                                             const gfx::Rect& bounds);
 
   // Creates a Widget that selects the user any time the widget is
   // clicked. Caller owns the returned widget.

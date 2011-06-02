@@ -53,7 +53,6 @@ const int kVerticalIntervalSize = 10;
 void CloseWindow(views::Widget* window) {
   if (!window)
     return;
-  window->set_widget_delegate(NULL);
   window->Close();
 }
 
@@ -332,7 +331,6 @@ void UserController::ConfigureAndShow(Widget* widget,
                                       chromeos::WmIpcWindowType type,
                                       views::View* contents_view) {
   widget->SetContentsView(contents_view);
-  widget->set_widget_delegate(this);
 
   std::vector<int> params;
   params.push_back(index);
@@ -378,12 +376,12 @@ void UserController::SetupControlsWidget(
     *height = size.height();
   }
 
-  controls_widget_ = CreateControlsWidget(gfx::Rect(*width, *height));
-  ConfigureAndShow(controls_widget_, index, WM_IPC_WINDOW_LOGIN_CONTROLS,
-                   control_view);
   controls_widget_delegate_.reset(
       new ControlsWidgetDelegate(this, control_view));
-  controls_widget_->set_widget_delegate(controls_widget_delegate_.get());
+  controls_widget_ = CreateControlsWidget(controls_widget_delegate_.get(),
+                                          gfx::Rect(*width, *height));
+  ConfigureAndShow(controls_widget_, index, WM_IPC_WINDOW_LOGIN_CONTROLS,
+                   control_view);
 }
 
 Widget* UserController::CreateImageWidget(int index) {

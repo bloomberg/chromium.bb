@@ -104,6 +104,8 @@ class Widget : public internal::NativeWidgetDelegate,
     explicit InitParams(Type type);
 
     Type type;
+    // If NULL, a default implementation will be constructed.
+    WidgetDelegate* delegate;
     bool child;
     bool transient;
     bool transparent;
@@ -196,9 +198,6 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Gets/Sets the WidgetDelegate.
   WidgetDelegate* widget_delegate() const { return widget_delegate_; }
-  void set_widget_delegate(WidgetDelegate* widget_delegate) {
-    widget_delegate_ = widget_delegate;
-  }
 
   // Sets the specified view as the contents of this Widget. There can only
   // be one contents view child of this Widget's RootView. This view is sized to

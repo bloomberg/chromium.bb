@@ -81,11 +81,9 @@ gfx::Size Window::GetLocalizedContentsSize(int col_resource_id,
 
 void Window::InitWindow(const InitParams& params) {
   window_delegate_ = params.window_delegate;
-  AsWidget()->set_widget_delegate(window_delegate_);
   DCHECK(window_delegate_);
   DCHECK(!window_delegate_->window_);
   window_delegate_->window_ = this;
-  set_widget_delegate(window_delegate_);
   native_window_ =
       params.native_window ? params.native_window
                            : NativeWindow::CreateNativeWindow(this);
@@ -93,6 +91,7 @@ void Window::InitWindow(const InitParams& params) {
   if (!non_client_view()->frame_view())
     non_client_view()->SetFrameView(CreateFrameViewForWindow());
   InitParams modified_params = params;
+  modified_params.widget_init_params.delegate = params.window_delegate;
   modified_params.widget_init_params.native_widget =
       native_window_->AsNativeWidget();
   Init(modified_params.widget_init_params);

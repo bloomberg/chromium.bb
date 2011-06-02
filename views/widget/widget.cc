@@ -13,6 +13,7 @@
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
 #include "views/widget/native_widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -26,6 +27,7 @@ bool use_pure_views = false;
 
 Widget::InitParams::InitParams()
     : type(TYPE_WINDOW),
+      delegate(NULL),
       child(false),
       transient(false),
       transparent(false),
@@ -43,6 +45,7 @@ Widget::InitParams::InitParams()
 
 Widget::InitParams::InitParams(Type type)
     : type(type),
+      delegate(NULL),
       child(type == TYPE_CONTROL),
       transient(type == TYPE_POPUP || type == TYPE_MENU),
       transparent(false),
@@ -101,6 +104,7 @@ Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
 }
 
 void Widget::Init(const InitParams& params) {
+  widget_delegate_ = params.delegate ? params.delegate : new WidgetDelegate;
   ownership_ = params.ownership;
   native_widget_ =
       params.native_widget ? params.native_widget

@@ -319,7 +319,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   gfx::Rect balloon_rect(x(), y(), GetTotalWidth(), GetTotalHeight());
   frame_container_ = new Widget;
-  frame_container_->set_widget_delegate(this);
+  params.delegate = this;
   params.transparent = true;
   params.bounds = balloon_rect;
   frame_container_->Init(params);

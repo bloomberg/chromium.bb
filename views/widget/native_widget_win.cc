@@ -924,8 +924,7 @@ void NativeWidgetWin::OnDestroy() {
 }
 
 void NativeWidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
-  if (GetWidget()->widget_delegate())
-    GetWidget()->widget_delegate()->OnDisplayChanged();
+  GetWidget()->widget_delegate()->OnDisplayChanged();
 }
 
 LRESULT NativeWidgetWin::OnDwmCompositionChanged(UINT msg,
@@ -1115,15 +1114,13 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
 
 void NativeWidgetWin::OnMove(const CPoint& point) {
   // TODO(beng): move to Widget.
-  if (GetWidget()->widget_delegate())
-    GetWidget()->widget_delegate()->OnWidgetMove();
+  GetWidget()->widget_delegate()->OnWidgetMove();
   SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
   // TODO(beng): move to Widget.
-  if (GetWidget()->widget_delegate())
-    GetWidget()->widget_delegate()->OnWidgetMove();
+  GetWidget()->widget_delegate()->OnWidgetMove();
 }
 
 LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
@@ -1237,7 +1234,7 @@ void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
     SetMsgHandled(TRUE);
   } else {
     // TODO(beng): move to Widget.
-    if (flags == SPI_SETWORKAREA && GetWidget()->widget_delegate())
+    if (flags == SPI_SETWORKAREA)
       GetWidget()->widget_delegate()->OnWorkAreaChanged();
     SetMsgHandled(FALSE);
   }
@@ -1318,8 +1315,7 @@ void NativeWidgetWin::SetInitialFocus() {
     return;
 
   // TODO(beng): move to Widget.
-  View* v = GetWidget()->widget_delegate() ?
-      GetWidget()->widget_delegate()->GetInitiallyFocusedView() : NULL;
+  View* v = GetWidget()->widget_delegate()->GetInitiallyFocusedView();
   if (v) {
     v->RequestFocus();
   } else if (!(GetWindowLong(GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
