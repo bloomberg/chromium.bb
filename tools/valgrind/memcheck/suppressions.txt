@@ -4344,11 +4344,18 @@
    fun:_ZN7fileapi87_GLOBAL__N_webkit_fileapi_file_system_dir_url_request_job_unittest.cc_00000000_61D9D1F530FileSystemDirURLRequestJobTest5SetUpEv
 }
 {
-   bug_80537
+   bug_80537_a
    Memcheck:Leak
    fun:calloc
    ...
    fun:_ZN3gfx15GLContextOSMesa11MakeCurrentEv
+}
+{
+   bug_80537_b
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN3gfx15GLContextOSMesa11MakeCurrentEPNS_9GLSurfaceE
 }
 {
    bug_80551
