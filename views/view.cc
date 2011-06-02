@@ -110,6 +110,7 @@ View::View()
       texture_id_(0),  // TODO(sadrul): 0 can be a valid texture id.
 #endif
       texture_needs_updating_(true),
+      paint_to_texture_(false),
       accelerator_registration_delayed_(false),
       accelerator_focus_manager_(NULL),
       registered_accelerator_count_(0),
@@ -411,7 +412,8 @@ void View::SetTransform(const ui::Transform& transform) {
 #if !defined(COMPOSITOR_2)
     canvas_.reset();
 #else
-    texture_.reset();
+    if (!paint_to_texture_)
+      texture_.reset();
 #endif
     SchedulePaint();
   } else {
@@ -433,6 +435,17 @@ void View::SetTransform(const ui::Transform& transform) {
     }
 #endif
   }
+}
+
+void View::SetPaintToTexture(bool value) {
+#if defined(COMPOSITOR_2)
+  if (value == paint_to_texture_)
+    return;
+
+  paint_to_texture_ = value;
+  if (!ShouldPaintToTexture())
+    texture_.reset();
+#endif
 }
 
 // RTL positioning -------------------------------------------------------------
@@ -1205,8 +1218,9 @@ void View::PaintToTexture(const gfx::Rect& dirty_region) {
 #endif
 
 bool View::ShouldPaintToTexture() const {
-  return use_acceleration_when_possible && transform_.get() &&
-      transform_->HasChange() && GetCompositor();
+  return use_acceleration_when_possible &&
+      (paint_to_texture_ || (transform_.get() && transform_->HasChange())) &&
+       GetCompositor();
 }
 
 const ui::Compositor* View::GetCompositor() const {

@@ -338,6 +338,12 @@ class View : public AcceleratorTarget {
   // Sets the transform to the supplied transform.
   void SetTransform(const ui::Transform& transform);
 
+  // Sets whether this view paints to a texture. A view paints to a texture if
+  // either of the following are true:
+  // . the view has a non-identity transform.
+  // . SetPaintToTexture(true) has been invoked.
+  void SetPaintToTexture(bool value);
+
   // RTL positioning -----------------------------------------------------------
 
   // Methods for accessing the bounds and position of the view, relative to its
@@ -1385,6 +1391,9 @@ class View : public AcceleratorTarget {
 
   // Is the texture out of date?
   bool texture_needs_updating_;
+
+  // Should we paint to a texture? See description above setter for details.
+  bool paint_to_texture_;
 
   // Accelerators --------------------------------------------------------------
 
