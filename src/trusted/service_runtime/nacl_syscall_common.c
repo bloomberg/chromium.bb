@@ -74,6 +74,7 @@ static int const kKnownInvalidDescNumber = -1;
 void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
   struct NaClApp  *nap;
   size_t          thread_idx;
+  int             process_exit_status;
 
   /*
    * mark this thread as dead; doesn't matter if some other thread is
@@ -110,6 +111,9 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
   NaClAppThreadDtor(natp);
   NaClLog(3, " NaClThreadExit\n");
 
+  NaClXMutexLock(&nap->mu);
+  process_exit_status = nap->exit_status;
+  NaClXMutexUnlock(&nap->mu);
   /*
    * There appears to be a race on Windows where the process can sometimes
    * return a thread exit status instead of the process exit status when
@@ -118,7 +122,7 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
    * process exit status to mitigate the possibility of exiting with an
    * incorrect value.  See BUG= nacl1715
    */
-  NaClThreadExit(nap->exit_status);
+  NaClThreadExit(process_exit_status);
   /* should not return */
   NaClLog(LOG_ERROR, "INCONCEIVABLE!\n");
   NaClAbort();
