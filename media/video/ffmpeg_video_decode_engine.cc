@@ -117,8 +117,8 @@ void FFmpegVideoDecodeEngine::Initialize(
   info.provides_buffers = true;
   info.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
   info.stream_info.surface_format = GetSurfaceFormat();
-  info.stream_info.surface_width = config.surface_width();
-  info.stream_info.surface_height = config.surface_height();
+  info.stream_info.surface_width = config.width();
+  info.stream_info.surface_height = config.height();
 
   // If we do not have enough buffers, we will report error too.
   bool buffer_allocated = true;
