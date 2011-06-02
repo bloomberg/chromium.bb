@@ -128,7 +128,7 @@ TabContentsSSLHelper::SSLAddCertData::SSLAddCertData(
     TabContentsWrapper* tab_contents)
     : tab_contents_(tab_contents),
       infobar_delegate_(NULL) {
-  Source<TabContents> source(tab_contents_->tab_contents());
+  Source<TabContentsWrapper> source(tab_contents_);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED, source);
 }
@@ -155,11 +155,12 @@ void TabContentsSSLHelper::SSLAddCertData::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarDelegatePair;
+  DCHECK(type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED ||
+         type.value == NotificationType::TAB_CONTENTS_INFOBAR_REPLACED);
   if (infobar_delegate_ ==
       ((type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) ?
-          Details<InfoBarDelegate>(details).ptr() :
-          Details<InfoBarDelegatePair>(details).ptr()->first))
+          Details<std::pair<InfoBarDelegate*, bool> >(details)->first :
+          Details<std::pair<InfoBarDelegate*, InfoBar*> >(details)->first))
     infobar_delegate_ = NULL;
 }
 

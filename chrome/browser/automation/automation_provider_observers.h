@@ -698,7 +698,7 @@ class InfoBarCountObserver : public NotificationObserver {
  public:
   InfoBarCountObserver(AutomationProvider* automation,
                        IPC::Message* reply_message,
-                       TabContents* tab_contents,
+                       TabContentsWrapper* tab_contents,
                        size_t target_count);
   virtual ~InfoBarCountObserver();
 
@@ -715,7 +715,7 @@ class InfoBarCountObserver : public NotificationObserver {
   NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
 
   const size_t target_count_;
 

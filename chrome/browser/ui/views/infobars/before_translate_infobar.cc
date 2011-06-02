@@ -179,7 +179,12 @@ void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
 }
 
 void BeforeTranslateInfoBar::OriginalLanguageChanged() {
-  UpdateLanguageButtonText(language_menu_button_, LanguagesMenuModel::ORIGINAL);
+  // Tests can call this function when the infobar has never been added to a
+  // view hierarchy and thus there is no button.
+  if (language_menu_button_) {
+    UpdateLanguageButtonText(language_menu_button_,
+                             LanguagesMenuModel::ORIGINAL);
+  }
 }
 
 void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {

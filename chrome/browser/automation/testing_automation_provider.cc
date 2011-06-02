@@ -5757,8 +5757,9 @@ void TestingAutomationProvider::WaitForInfoBarCount(
   }
 
   // The delegate will delete itself.
-  new InfoBarCountObserver(this, reply_message, controller->tab_contents(),
-                           target_count);
+  new InfoBarCountObserver(this, reply_message,
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          controller->tab_contents()), target_count);
 }
 
 // Gets the current used encoding name of the page in the specified tab.

@@ -148,13 +148,21 @@ int AfterTranslateInfoBar::ContentMinimumWidth() const {
 }
 
 void AfterTranslateInfoBar::OriginalLanguageChanged() {
-  UpdateLanguageButtonText(original_language_menu_button_,
-                           LanguagesMenuModel::ORIGINAL);
+  // Tests can call this function when the infobar has never been added to a
+  // view hierarchy and thus there is no button.
+  if (original_language_menu_button_) {
+    UpdateLanguageButtonText(original_language_menu_button_,
+                             LanguagesMenuModel::ORIGINAL);
+  }
 }
 
 void AfterTranslateInfoBar::TargetLanguageChanged() {
-  UpdateLanguageButtonText(target_language_menu_button_,
-                           LanguagesMenuModel::TARGET);
+  // Tests can call this function when the infobar has never been added to a
+  // view hierarchy and thus there is no button.
+  if (target_language_menu_button_) {
+    UpdateLanguageButtonText(target_language_menu_button_,
+                             LanguagesMenuModel::TARGET);
+  }
 }
 
 void AfterTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {

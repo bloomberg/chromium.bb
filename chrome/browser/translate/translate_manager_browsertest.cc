@@ -138,7 +138,8 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     DCHECK_EQ(NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, type.value);
-    removed_infobars_.insert(Details<InfoBarDelegate>(details).ptr());
+    removed_infobars_.insert(
+        Details<std::pair<InfoBarDelegate*, bool> >(details)->first);
   }
 
  protected:
@@ -161,7 +162,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
     notification_registrar_.Add(this,
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<TabContents>(contents()));
+        Source<TabContentsWrapper>(contents_wrapper()));
   }
 
   virtual void TearDown() {
@@ -169,7 +170,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
     notification_registrar_.Remove(this,
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<TabContents>(contents()));
+        Source<TabContentsWrapper>(contents_wrapper()));
 
     TabContentsWrapperTestHarness::TearDown();
 

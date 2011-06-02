@@ -1364,13 +1364,13 @@ void TabLanguageDeterminedObserver::Observe(
 
 InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
                                            IPC::Message* reply_message,
-                                           TabContents* tab_contents,
+                                           TabContentsWrapper* tab_contents,
                                            size_t target_count)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       tab_contents_(tab_contents),
       target_count_(target_count) {
-  Source<TabContents> source(tab_contents);
+  Source<TabContentsWrapper> source(tab_contents);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
   CheckCount();
@@ -1387,9 +1387,7 @@ void InfoBarCountObserver::Observe(NotificationType type,
 }
 
 void InfoBarCountObserver::CheckCount() {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
-  if (wrapper->infobar_count() != target_count_)
+  if (tab_contents_->infobar_count() != target_count_)
     return;
 
   if (automation_) {

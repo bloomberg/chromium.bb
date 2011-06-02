@@ -51,7 +51,7 @@ TestTabContentsWithPendingInfoBar::TestTabContentsWithPendingInfoBar(
     : TabContentsWrapper(
           new TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL)),
       removed_infobar_delegate_(NULL) {
-  Source<TabContents> source(tab_contents());
+  Source<TabContentsWrapper> source(this);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
                  source);
 }
@@ -63,10 +63,12 @@ void TestTabContentsWithPendingInfoBar::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED)
-    removed_infobar_delegate_ = Details<InfoBarDelegate>(details).ptr();
-  else
+  if (type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) {
+    removed_infobar_delegate_ =
+        Details<std::pair<InfoBarDelegate*, bool> >(details)->first;
+  } else {
     TabContentsWrapper::Observe(type, source, details);
+  }
 }
 
 }  // namespace

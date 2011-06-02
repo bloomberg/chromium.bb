@@ -8,7 +8,11 @@
 
 #include "base/logging.h"  // for DCHECK
 
+#if defined(__OBJC__)
 @class InfoBarController;
+#else
+class InfoBarController;
+#endif
 
 // A C++ wrapper around an Objective-C InfoBarController.  This class
 // exists solely to be the return value for InfoBarDelegate::CreateInfoBar(),
@@ -29,18 +33,24 @@
 
 class InfoBar {
  public:
-  InfoBar(InfoBarController* controller) {
+  InfoBar(InfoBarController* controller, InfoBarDelegate* delegate)
+      : controller_(controller), delegate_(delegate) {
     DCHECK(controller);
-    controller_ = controller;
+    DCHECK(delegate);
   }
 
   InfoBarController* controller() {
     return controller_;
   }
 
+  InfoBarDelegate* delegate() {
+    return delegate_;
+  }
+
  private:
   // Pointer to the infobar controller.  Is never null.
   InfoBarController* controller_;  // weak
+  InfoBarDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };

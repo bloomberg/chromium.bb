@@ -461,8 +461,8 @@ void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
   infobar_delegates_.push_back(delegate);
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
-      Source<TabContents>(tab_contents_.get()),
-      Details<InfoBarDelegate>(delegate));
+      Source<TabContentsWrapper>(this),
+      Details<InfoBar>(delegate->CreateInfoBar(this)));
 
   // Add ourselves as an observer for navigations the first time a delegate is
   // added. We use this notification to expire InfoBars that need to expire on
@@ -480,11 +480,12 @@ void TabContentsWrapper::RemoveInfoBar(InfoBarDelegate* delegate) {
   std::vector<InfoBarDelegate*>::iterator it =
       find(infobar_delegates_.begin(), infobar_delegates_.end(), delegate);
   if (it != infobar_delegates_.end()) {
-    InfoBarDelegate* delegate = *it;
+    typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
+    RemoveDetails remove_details(*it, true);
     NotificationService::current()->Notify(
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<TabContents>(tab_contents_.get()),
-        Details<InfoBarDelegate>(delegate));
+        Source<TabContentsWrapper>(this),
+        Details<RemoveDetails>(&remove_details));
 
     infobar_delegates_.erase(it);
     // Remove ourselves as an observer if we are tracking no more InfoBars.
@@ -508,13 +509,13 @@ void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
   DCHECK(it != infobar_delegates_.end());
 
   // Notify the container about the change of plans.
-  scoped_ptr<std::pair<InfoBarDelegate*, InfoBarDelegate*> > details(
-    new std::pair<InfoBarDelegate*, InfoBarDelegate*>(
-        old_delegate, new_delegate));
+  typedef std::pair<InfoBarDelegate*, InfoBar*> ReplaceDetails;
+  ReplaceDetails replace_details(old_delegate,
+                                 new_delegate->CreateInfoBar(this));
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
-      Source<TabContents>(tab_contents_.get()),
-      Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details.get()));
+      Source<TabContentsWrapper>(this),
+      Details<ReplaceDetails>(&replace_details));
 
   // Remove the old one.
   infobar_delegates_.erase(it);

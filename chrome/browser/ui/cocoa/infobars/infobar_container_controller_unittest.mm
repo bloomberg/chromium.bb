@@ -56,18 +56,23 @@ TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
 
   // These delegates delete themselves when they're told their infobars have
   // closed.
-  MockLinkInfoBarDelegate* linkDelegate = new MockLinkInfoBarDelegate(NULL);
-  MockLinkInfoBarDelegate* linkDelegate2 = new MockLinkInfoBarDelegate(NULL);
-  MockConfirmInfoBarDelegate* confirmDelegate =
-      new MockConfirmInfoBarDelegate(NULL);
+  InfoBarDelegate* linkDelegate = new MockLinkInfoBarDelegate(NULL);
+  InfoBarDelegate* linkDelegate2 = new MockLinkInfoBarDelegate(NULL);
+  InfoBarDelegate* confirmDelegate = new MockConfirmInfoBarDelegate(NULL);
 
-  [controller_ addInfoBar:linkDelegate animate:NO];
+  [controller_ addInfoBar:linkDelegate->CreateInfoBar(NULL)
+                  animate:NO
+        deleteImmediately:YES];
   EXPECT_EQ(1U, [[view subviews] count]);
 
-  [controller_ addInfoBar:confirmDelegate animate:NO];
+  [controller_ addInfoBar:confirmDelegate->CreateInfoBar(NULL)
+                  animate:NO
+        deleteImmediately:YES];
   EXPECT_EQ(2U, [[view subviews] count]);
 
-  [controller_ addInfoBar:linkDelegate2 animate:NO];
+  [controller_ addInfoBar:linkDelegate2->CreateInfoBar(NULL)
+                  animate:NO
+        deleteImmediately:YES];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   // Just to mix things up, remove them in a different order.
@@ -91,10 +96,19 @@ TEST_F(InfoBarContainerControllerTest, RemoveAllInfoBars) {
   MockLinkInfoBarDelegate linkDelegate(NULL);
   MockConfirmInfoBarDelegate confirmDelegate(NULL);
   MockConfirmInfoBarDelegate confirmDelegate2(NULL);
+  InfoBarDelegate* linkDelegatePtr = &linkDelegate;
+  InfoBarDelegate* confirmDelegatePtr = &confirmDelegate;
+  InfoBarDelegate* confirmDelegate2Ptr = &confirmDelegate2;
 
-  [controller_ addInfoBar:&linkDelegate animate:NO];
-  [controller_ addInfoBar:&confirmDelegate animate:NO];
-  [controller_ addInfoBar:&confirmDelegate2 animate:NO];
+  [controller_ addInfoBar:linkDelegatePtr->CreateInfoBar(NULL)
+                  animate:NO
+        deleteImmediately:YES];
+  [controller_ addInfoBar:confirmDelegatePtr->CreateInfoBar(NULL)
+                  animate:NO
+        deleteImmediately:YES];
+  [controller_ addInfoBar:confirmDelegate2Ptr->CreateInfoBar(NULL)
+                  animate:NO
+        deleteImmediately:YES];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   [controller_ removeAllInfoBars];

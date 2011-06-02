@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(TOOLKIT_VIEWS)  // TODO(pkasting): Port non-views to use this.
+
 #ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
 #define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
 #pragma once
@@ -115,3 +117,9 @@ class InfoBar : public ui::AnimationDelegate {
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
+
+#elif defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#endif

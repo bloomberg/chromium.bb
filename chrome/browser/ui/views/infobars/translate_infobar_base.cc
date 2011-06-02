@@ -79,6 +79,7 @@ void TranslateInfoBarBase::ViewHierarchyChanged(bool is_add,
 void TranslateInfoBarBase::UpdateLanguageButtonText(
     views::MenuButton* button,
     LanguagesMenuModel::LanguageType language_type) {
+  DCHECK(button);
   TranslateInfoBarDelegate* delegate = GetDelegate();
   button->SetText(UTF16ToWideHack(delegate->GetLanguageDisplayableNameAt(
       (language_type == LanguagesMenuModel::ORIGINAL) ?

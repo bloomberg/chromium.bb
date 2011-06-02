@@ -92,7 +92,7 @@ void InfoBarContainerGtk::ChangeTabContents(TabContentsWrapper* contents) {
 
   tab_contents_ = contents;
   if (tab_contents_) {
-    Source<TabContents> source(tab_contents_->tab_contents());
+    Source<TabContentsWrapper> source(tab_contents_);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
                    source);
@@ -100,7 +100,7 @@ void InfoBarContainerGtk::ChangeTabContents(TabContentsWrapper* contents) {
                    source);
     for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
       InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
-      AddInfoBar(delegate, false);
+      AddInfoBar(delegate->CreateInfoBar(tab_contents_), false);
     }
   }
 }
@@ -118,19 +118,29 @@ int InfoBarContainerGtk::TotalHeightOfAnimatingBars() const {
 void InfoBarContainerGtk::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  if (type == NotificationType::TAB_CONTENTS_INFOBAR_ADDED) {
-    AddInfoBar(Details<InfoBarDelegate>(details).ptr(), true);
-  } else if (type == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) {
-    RemoveInfoBar(Details<InfoBarDelegate>(details).ptr(), true);
-  } else if (type == NotificationType::TAB_CONTENTS_INFOBAR_REPLACED) {
-    std::pair<InfoBarDelegate*, InfoBarDelegate*>* delegates =
-        Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details).ptr();
+  switch (type.value) {
+    case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
+      AddInfoBar(Details<InfoBar>(details).ptr(), true);
+      break;
 
-    // By not animating the removal/addition, this appears to be a replace.
-    RemoveInfoBar(delegates->first, false);
-    AddInfoBar(delegates->second, false);
-  } else {
-    NOTREACHED();
+    case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
+      typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
+      RemoveDetails* remove_details = Details<RemoveDetails>(details).ptr();
+      RemoveInfoBar(remove_details->first, remove_details->second);
+      break;
+    }
+
+    case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
+      typedef std::pair<InfoBarDelegate*, InfoBar*> ReplaceDetails;
+      ReplaceDetails* replace_details = Details<ReplaceDetails>(details).ptr();
+      RemoveInfoBar(replace_details->first, false);
+      AddInfoBar(replace_details->second, false);
+      break;
+    }
+
+    default:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -164,15 +174,14 @@ void InfoBarContainerGtk::ShowArrowForDelegate(InfoBarDelegate* delegate,
   g_list_free(children);
 }
 
-void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
-  InfoBar* infobar = delegate->CreateInfoBar(tab_contents_);
+void InfoBarContainerGtk::AddInfoBar(InfoBar* infobar, bool animate) {
   infobar->set_container(this);
   infobar->SetThemeProvider(GtkThemeService::GetFrom(profile_));
   gtk_box_pack_start(GTK_BOX(widget()), infobar->widget(),
                      FALSE, FALSE, 0);
 
   infobar->Show(animate);
-  ShowArrowForDelegate(delegate, animate);
+  ShowArrowForDelegate(infobar->delegate(), animate);
 }
 
 void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,

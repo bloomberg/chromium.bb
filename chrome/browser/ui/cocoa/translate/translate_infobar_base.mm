@@ -128,7 +128,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
     default:
       NOTREACHED();
   }
-  return new InfoBar(infobar_controller);
+  return new InfoBar(infobar_controller, this);
 }
 
 @implementation TranslateInfoBarControllerBase (FrameChangeObserver)

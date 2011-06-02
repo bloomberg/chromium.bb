@@ -14,6 +14,7 @@
 #include "content/common/notification_registrar.h"
 
 @class InfoBarController;
+class InfoBar;
 class InfoBarDelegate;
 class InfoBarNotificationObserver;
 class TabContentsWrapper;
@@ -109,18 +110,15 @@ const CGFloat kBaseHeight = 36.0;
 
 @interface InfoBarContainerController (ForTheObserverAndTesting)
 
-// Adds an infobar view for the given delegate.
-- (void)addInfoBar:(InfoBarDelegate*)delegate animate:(BOOL)animate;
+// Adds the given infobar.  Takes ownership of |infobar|.
+- (void)addInfoBar:(InfoBar*)infobar
+    animate:(BOOL)animate
+    deleteImmediately:(BOOL)deleteImmediately;
 
 // Closes all the infobar views for a given delegate, either immediately or by
 // starting a close animation.
 - (void)closeInfoBarsForDelegate:(InfoBarDelegate*)delegate
                          animate:(BOOL)animate;
-
-// Replaces all info bars for the delegate with a new info bar.
-// This simply calls closeInfoBarsForDelegate: and then addInfoBar:.
-- (void)replaceInfoBarsForDelegate:(InfoBarDelegate*)old_delegate
-                              with:(InfoBarDelegate*)new_delegate;
 
 // Positions the infobar views in the container view and notifies
 // |browser_controller_| that it needs to resize the container view.

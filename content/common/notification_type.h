@@ -333,25 +333,24 @@ class NotificationType {
     // is a Details<TitleUpdatedDetails> that contains more information.
     TAB_CONTENTS_TITLE_UPDATED,
 
-    // This message is sent when a new InfoBar has been added to a TabContents.
-    // The source is a Source<TabContents> with a pointer to the TabContents
-    // the InfoBar was added to. The details is a Details<InfoBarDelegate> with
-    // a pointer to an object implementing the InfoBarDelegate interface for
-    // the InfoBar that was added.
+    // This message is sent when a new InfoBar has been added to a
+    // TabContentsWrapper.  The source is a Source<TabContentsWrapper> with a
+    // pointer to the TabContentsWrapper the InfoBar was added to.  The details
+    // is a Details<InfoBar> with a pointer to the InfoBar that was added.
     TAB_CONTENTS_INFOBAR_ADDED,
 
     // This message is sent when an InfoBar is about to be removed from a
-    // TabContents. The source is a Source<TabContents> with a pointer to the
-    // TabContents the InfoBar was removed from. The details is a
-    // Details<InfoBarDelegate> with a pointer to an object implementing the
-    // InfoBarDelegate interface for the InfoBar that was removed.
+    // TabContentsWrapper.  The source is a Source<TabContentsWrapper> with a
+    // pointer to the TabContentsWrapper the InfoBar was removed from.  The
+    // details is a Details<std::pair<InfoBarDelegate*, bool> > with a pointer
+    // to the removed delegate and whether the removal should be animated.
     TAB_CONTENTS_INFOBAR_REMOVED,
 
     // This message is sent when an InfoBar is replacing another infobar in a
-    // TabContents. The source is a Source<TabContents> with a pointer to the
-    // TabContents the InfoBar was removed from. The details is a
-    // Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> > with a pointer
-    // to the old and new InfoBarDelegates, respectively.
+    // TabContentsWrapper.  The source is a Source<TabContentsWrapper> with a
+    // pointer to the TabContentsWrapper the InfoBar was removed from.  The
+    // details is a Details<std::pair<InfoBarDelegate*, InfoBar*> > with a
+    // pointer to the removed delegate and new InfoBar, respectively.
     TAB_CONTENTS_INFOBAR_REPLACED,
 
     // This is sent when an externally hosted tab is created. The details
