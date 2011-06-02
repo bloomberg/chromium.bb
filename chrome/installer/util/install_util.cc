@@ -195,8 +195,21 @@ void InstallUtil::UpdateInstallerStage(bool system_install,
   LONG result = state_key.Open(root, state_key_path.c_str(),
                                KEY_QUERY_VALUE | KEY_SET_VALUE);
   if (result == ERROR_SUCCESS) {
-    // TODO(grt): switch to using Google Update's new InstallerExtraCode1 value
-    // once it exists.  In the meantime, encode the stage into the channel name.
+    if (stage == installer::NO_STAGE) {
+      result = state_key.DeleteValue(installer::kInstallerExtraCode1);
+      LOG_IF(ERROR, result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND)
+          << "Failed deleting installer stage from " << state_key_path
+          << "; result: " << result;
+    } else {
+      const DWORD extra_code_1 = static_cast<DWORD>(stage);
+      result = state_key.WriteValue(installer::kInstallerExtraCode1,
+                                    extra_code_1);
+      LOG_IF(ERROR, result != ERROR_SUCCESS)
+          << "Failed writing installer stage to " << state_key_path
+          << "; result: " << result;
+    }
+    // TODO(grt): Remove code below here once we're convinced that our use of
+    // Google Update's new InstallerExtraCode1 value is good.
     installer::ChannelInfo channel_info;
     // This will return false if the "ap" value isn't present, which is fine.
     channel_info.Initialize(state_key);

@@ -186,14 +186,14 @@ extern const wchar_t kUninstallInstallationDate[];
 extern const char kUninstallMetricsName[];
 extern const wchar_t kUninstallStringField[];
 
-// Used by InstallUtil::WriteInstallerResult.
-extern const wchar_t kInstallerResult[];
+// Google Update installer result API
 extern const wchar_t kInstallerError[];
+extern const wchar_t kInstallerExtraCode1[];
+extern const wchar_t kInstallerResult[];
 extern const wchar_t kInstallerResultUIString[];
 extern const wchar_t kInstallerSuccessLaunchCmdLine[];
 
 // Product options.
-extern const wchar_t kOptionCeee[];
 extern const wchar_t kOptionMultiInstall[];
 extern const wchar_t kOptionReadyMode[];
 

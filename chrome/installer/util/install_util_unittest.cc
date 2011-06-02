@@ -69,7 +69,7 @@ TEST_F(InstallUtilTest, GetCurrentDate) {
   }
 }
 
-TEST_F(InstallUtilTest, UpdateInstallerStage) {
+TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
   const bool system_level = false;
   const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   std::wstring state_key_path(L"PhonyClientState");
@@ -115,6 +115,57 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
               RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
                   .ReadValue(google_update::kRegApField, &value));
     EXPECT_EQ(L"2.0-dev", value);
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+}
+
+TEST_F(InstallUtilTest, UpdateInstallerStage) {
+  const bool system_level = false;
+  const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  std::wstring state_key_path(L"PhonyClientState");
+
+  // Update the stage when there's no "InstallerExtraCode1" value.
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
+        .DeleteValue(installer::kInstallerExtraCode1);
+    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
+                                      installer::BUILDING);
+    DWORD value;
+    EXPECT_EQ(ERROR_SUCCESS,
+              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
+                  .ReadValueDW(installer::kInstallerExtraCode1, &value));
+    EXPECT_EQ(static_cast<DWORD>(installer::BUILDING), value);
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  // Update the stage when there is an "InstallerExtraCode1" value.
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
+        .WriteValue(installer::kInstallerExtraCode1,
+                    static_cast<DWORD>(installer::UNPACKING));
+    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
+                                      installer::BUILDING);
+    DWORD value;
+    EXPECT_EQ(ERROR_SUCCESS,
+              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
+                  .ReadValueDW(installer::kInstallerExtraCode1, &value));
+    EXPECT_EQ(static_cast<DWORD>(installer::BUILDING), value);
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  // Clear the stage.
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
+        .WriteValue(installer::kInstallerExtraCode1, static_cast<DWORD>(5));
+    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
+                                      installer::NO_STAGE);
+    DWORD value;
+    EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
+                  .ReadValueDW(installer::kInstallerExtraCode1, &value));
   }
   TempRegKeyOverride::DeleteAllTempKeys();
 }
