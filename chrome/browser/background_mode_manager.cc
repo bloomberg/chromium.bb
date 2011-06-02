@@ -469,16 +469,16 @@ void BackgroundModeManager::UpdateContextMenuEntryIcon(
 void BackgroundModeManager::UpdateStatusTrayIconContextMenu(Profile* profile) {
   BackgroundModeInfo bmd = GetBackgroundModeInfo(profile);
   DCHECK(bmd.get());
-  if (!bmd->status_icon_) {
-    // If no status icon exists, it's either because one wasn't created when
-    // it should have been which can happen when extensions load after the
-    // profile has already been registered with the background mode manager.
-    // The other case is if we aren't in background mode.
-    if (in_background_mode_)
-      CreateStatusTrayIcon(profile);
-    else
-      return;
-  }
+  // If no status icon exists, it's either because one wasn't created when
+  // it should have been which can happen when extensions load after the
+  // profile has already been registered with the background mode manager.
+  if (in_background_mode_ && !bmd->status_icon_)
+     CreateStatusTrayIcon(profile);
+
+  // If we don't have a status icon or one could not be created succesfully,
+  // then no need to continue the update.
+  if (!bmd->status_icon_)
+    return;
 
   // TODO(rlp): Add current profile color.
   // Create a context menu item for Chrome.
