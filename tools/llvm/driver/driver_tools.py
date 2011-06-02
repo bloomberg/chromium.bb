@@ -89,8 +89,6 @@ INITIAL_ENV = {
 
   # Tool Pathnames
   'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold${SO_EXT}',
-  'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
-                      '-plugin-opt=emit-llvm',
 
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',

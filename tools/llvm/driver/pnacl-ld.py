@@ -56,6 +56,11 @@ EXTRA_ENV = {
   'LD_GOLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} '
                    '${GOLD_FIX ? -T ${LD_SCRIPT} : -Ttext=0x20000}',
 
+  'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
+                      '-plugin-opt=emit-llvm ' +
+                      '${!USE_GLIBC ? ' +
+                      '  -plugin-opt=-add-nacl-read-tp-dependency}',
+
    # Symbols to wrap
   'WRAP_SYMBOLS': '',
 
