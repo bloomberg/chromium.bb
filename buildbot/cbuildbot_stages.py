@@ -448,7 +448,8 @@ class BuildBoardStage(BuilderStage):
     if isinstance(self._build_config['board'], str):
       board = [self._build_config['board']]
     else:
-      assert self._build_config == 'chroot', 'Board array requires chroot type.'
+      assert self._build_config['build_type'] == 'chroot', \
+        'Board array requires chroot type.'
       board = self._build_config['board']
 
     assert isinstance(board, list), 'Board was neither an array or a string.'
