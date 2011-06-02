@@ -534,6 +534,18 @@ LEAK
 ############################
 # Real issues in Chromium
 
+# http://crbug.com/32623
+LEAK
+...
+*!ssl3_HandleHandshakeMessage
+*!ssl3_HandleHandshake
+*!ssl3_HandleRecord
+*!ssl3_GatherCompleteHandshake
+...
+*!SSL_ForceHandshake
+*!net::SSLServerSocketNSS::DoHandshake
+*!net::SSLServerSocketNSS::DoHandshakeLoop
+
 # http://crbug.com/57266 (1)
 UNINITIALIZED READ
 ...
