@@ -142,31 +142,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetShelfVisibility(int handle, bool* visible);
   void IsFullscreen(int handle, bool* is_fullscreen);
   void GetFullscreenBubbleVisibility(int handle, bool* is_visible);
-  void GetAutocompleteEditForBrowser(int browser_handle, bool* success,
-                                     int* autocomplete_edit_handle);
-
-  // Retrieves the visible text from the autocomplete edit.
-  void GetAutocompleteEditText(int autocomplete_edit_handle,
-                               bool* success, string16* text);
-
-  // Sets the visible text from the autocomplete edit.
-  void SetAutocompleteEditText(int autocomplete_edit_handle,
-                               const string16& text,
-                               bool* success);
-
-  // Retrieves if a query to an autocomplete provider is in progress.
-  void AutocompleteEditIsQueryInProgress(int autocomplete_edit_handle,
-                                         bool* success,
-                                         bool* query_in_progress);
-
-  // Retrieves the individual autocomplete matches displayed by the popup.
-  void AutocompleteEditGetMatches(int autocomplete_edit_handle,
-                                  bool* success,
-                                  std::vector<AutocompleteMatchData>* matches);
-
-  // Waits for the autocomplete edit to receive focus
-  void WaitForAutocompleteEditFocus(int autocomplete_edit_handle,
-                                    IPC::Message* reply_message);
 
   void ExecuteJavascript(int handle,
                          const std::wstring& frame_xpath,

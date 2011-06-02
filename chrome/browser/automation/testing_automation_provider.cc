@@ -29,7 +29,6 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
-#include "chrome/browser/automation/automation_omnibox_tracker.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
@@ -81,6 +80,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
@@ -302,18 +302,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreen, IsFullscreen)
     IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreenBubbleVisible,
                         GetFullscreenBubbleVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditForBrowser,
-                        GetAutocompleteEditForBrowser)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetText,
-                        GetAutocompleteEditText)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditSetText,
-                        SetAutocompleteEditText)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditIsQueryInProgress,
-                        AutocompleteEditIsQueryInProgress)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetMatches,
-                        AutocompleteEditGetMatches)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForAutocompleteEditFocus,
-                                    WaitForAutocompleteEditFocus)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
                                     ExecuteJavascript)
     IPC_MESSAGE_HANDLER(AutomationMsg_ConstrainedWindowCount,
@@ -1211,100 +1199,6 @@ void TestingAutomationProvider::GetFullscreenBubbleVisibility(int handle,
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser)
       *visible = browser->window()->IsFullscreenBubbleVisible();
-  }
-}
-
-void TestingAutomationProvider::GetAutocompleteEditText(
-    int autocomplete_edit_handle,
-    bool* success,
-    string16* text) {
-  *success = false;
-  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    *text = automation_omnibox_tracker_->GetResource(autocomplete_edit_handle)->
-        GetText();
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::SetAutocompleteEditText(
-    int autocomplete_edit_handle,
-    const string16& text,
-    bool* success) {
-  *success = false;
-  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    automation_omnibox_tracker_->GetResource(autocomplete_edit_handle)->
-        SetUserText(text);
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::AutocompleteEditGetMatches(
-    int autocomplete_edit_handle,
-    bool* success,
-    std::vector<AutocompleteMatchData>* matches) {
-  *success = false;
-  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    const AutocompleteResult& result = automation_omnibox_tracker_->
-        GetResource(autocomplete_edit_handle)->model()->result();
-    for (AutocompleteResult::const_iterator i = result.begin();
-        i != result.end(); ++i)
-      matches->push_back(AutocompleteMatchData(*i));
-    *success = true;
-  }
-}
-
-// Waits for the autocomplete edit to receive focus
-void  TestingAutomationProvider::WaitForAutocompleteEditFocus(
-    int autocomplete_edit_handle,
-    IPC::Message* reply_message) {
-  if (!automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
-        reply_message_, false);
-    Send(reply_message);
-    return;
-  }
-
-  AutocompleteEditModel* model = automation_omnibox_tracker_->
-      GetResource(autocomplete_edit_handle)-> model();
-  if (model->has_focus()) {
-    AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
-        reply_message, true);
-    Send(reply_message);
-    return;
-  }
-
-  // The observer deletes itself when the notification arrives.
-  new AutocompleteEditFocusedObserver(this, model, reply_message);
-}
-
-void TestingAutomationProvider::GetAutocompleteEditForBrowser(
-    int browser_handle,
-    bool* success,
-    int* autocomplete_edit_handle) {
-  *success = false;
-  *autocomplete_edit_handle = 0;
-
-  if (browser_tracker_->ContainsHandle(browser_handle)) {
-    Browser* browser = browser_tracker_->GetResource(browser_handle);
-    LocationBar* loc_bar = browser->window()->GetLocationBar();
-    OmniboxView* omnibox_view = loc_bar->location_entry();
-    // Add() returns the existing handle for the resource if any.
-    *autocomplete_edit_handle = automation_omnibox_tracker_->Add(omnibox_view);
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::AutocompleteEditIsQueryInProgress(
-    int autocomplete_edit_handle,
-    bool* success,
-    bool* query_in_progress) {
-  *success = false;
-  *query_in_progress = false;
-  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    *query_in_progress = !automation_omnibox_tracker_->
-        GetResource(autocomplete_edit_handle)->model()->
-        autocomplete_controller()->done();
-    *success = true;
   }
 }
 

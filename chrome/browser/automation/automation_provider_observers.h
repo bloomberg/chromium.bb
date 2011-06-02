@@ -1257,28 +1257,6 @@ class AppLaunchObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(AppLaunchObserver);
 };
 
-// Allows automation provider to wait until the autocomplete edit
-// has received focus.
-class AutocompleteEditFocusedObserver : public NotificationObserver {
- public:
-  AutocompleteEditFocusedObserver(AutomationProvider* automation,
-                                  AutocompleteEditModel* autocomplete_edit,
-                                  IPC::Message* reply_message);
-  virtual ~AutocompleteEditFocusedObserver();
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
- private:
-  NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  AutocompleteEditModel* autocomplete_edit_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteEditFocusedObserver);
-};
-
 // Observes when Autofill information is displayed in the renderer.  This can
 // happen in two different ways: (1) a popup containing Autofill suggestions
 // has been shown in the renderer; (2) a webpage form is filled or previewed

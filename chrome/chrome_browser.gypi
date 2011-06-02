@@ -204,8 +204,6 @@
         'browser/automation/automation_browser_tracker.h',
         'browser/automation/automation_extension_tracker.cc',
         'browser/automation/automation_extension_tracker.h',
-        'browser/automation/automation_omnibox_tracker.cc',
-        'browser/automation/automation_omnibox_tracker.h',
         'browser/automation/automation_provider.cc',
         'browser/automation/automation_provider.h',
         'browser/automation/automation_provider_gtk.cc',

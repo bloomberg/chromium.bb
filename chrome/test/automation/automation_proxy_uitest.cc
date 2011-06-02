@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/automation/autocomplete_edit_proxy.h"
 #include "chrome/test/automation/automation_proxy_uitest.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
@@ -1378,81 +1377,7 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_UserGestureTargetBlank) {
   ::DestroyWindow(foo_host);
   mock_->DestroyHostWindow();
 }
-
 #endif  // defined(OS_WIN)
-
-// TODO(port): Need to port autocomplete_edit_proxy.* first.
-#if !defined(OS_MACOSX)
-TEST_F(AutomationProxyTest, AutocompleteGetSetText) {
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<AutocompleteEditProxy> edit(
-      browser->GetAutocompleteEdit());
-  ASSERT_TRUE(edit.get());
-  EXPECT_TRUE(edit->is_valid());
-  const string16 text_to_set = ASCIIToUTF16("Lollerskates");
-  string16 actual_text;
-  EXPECT_TRUE(edit->SetText(text_to_set));
-  EXPECT_TRUE(edit->GetText(&actual_text));
-  EXPECT_EQ(text_to_set, actual_text);
-  scoped_refptr<AutocompleteEditProxy> edit2(
-      browser->GetAutocompleteEdit());
-  EXPECT_TRUE(edit2->GetText(&actual_text));
-  EXPECT_EQ(text_to_set, actual_text);
-}
-
-TEST_F(AutomationProxyTest, AutocompleteParallelProxy) {
-  scoped_refptr<BrowserProxy> browser1(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser1.get());
-  scoped_refptr<AutocompleteEditProxy> edit1(
-      browser1->GetAutocompleteEdit());
-  ASSERT_TRUE(edit1.get());
-  EXPECT_TRUE(browser1->RunCommand(IDC_NEW_WINDOW));
-  scoped_refptr<BrowserProxy> browser2(automation()->GetBrowserWindow(1));
-  ASSERT_TRUE(browser2.get());
-  scoped_refptr<AutocompleteEditProxy> edit2(
-      browser2->GetAutocompleteEdit());
-  ASSERT_TRUE(edit2.get());
-  EXPECT_TRUE(browser2->GetTab(0)->WaitForTabToBeRestored(
-      TestTimeouts::action_max_timeout_ms()));
-  const string16 text_to_set1 = ASCIIToUTF16("Lollerskates");
-  const string16 text_to_set2 = ASCIIToUTF16("Roflcopter");
-  string16 actual_text1, actual_text2;
-  EXPECT_TRUE(edit1->SetText(text_to_set1));
-  EXPECT_TRUE(edit2->SetText(text_to_set2));
-  EXPECT_TRUE(edit1->GetText(&actual_text1));
-  EXPECT_TRUE(edit2->GetText(&actual_text2));
-  EXPECT_EQ(text_to_set1, actual_text1);
-  EXPECT_EQ(text_to_set2, actual_text2);
-}
-
-#endif  // !defined(OS_MACOSX)
-
-#if defined(OS_MACOSX)
-// Disabled, http://crbug.com/48601.
-#define AutocompleteMatchesTest DISABLED_AutocompleteMatchesTest
-#else
-// Flaky, http://crbug.com/19876.
-#define AutocompleteMatchesTest FLAKY_AutocompleteMatchesTest
-#endif
-TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<AutocompleteEditProxy> edit(
-      browser->GetAutocompleteEdit());
-  ASSERT_TRUE(edit.get());
-  EXPECT_TRUE(edit->is_valid());
-  EXPECT_TRUE(browser->ApplyAccelerator(IDC_FOCUS_LOCATION));
-  ASSERT_TRUE(edit->WaitForFocus());
-  EXPECT_TRUE(edit->SetText(ASCIIToUTF16("Roflcopter")));
-  EXPECT_TRUE(edit->WaitForQuery(TestTimeouts::action_max_timeout_ms()));
-  bool query_in_progress;
-  EXPECT_TRUE(edit->IsQueryInProgress(&query_in_progress));
-  EXPECT_FALSE(query_in_progress);
-  std::vector<AutocompleteMatchData> matches;
-  EXPECT_TRUE(edit->GetAutocompleteMatches(&matches));
-  EXPECT_FALSE(matches.empty());
-}
 
 // Flaky especially on Windows. See crbug.com/25039.
 TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -2149,32 +2150,6 @@ void AppLaunchObserver::Observe(NotificationType type,
   } else {
     NOTREACHED();
   }
-}
-
-AutocompleteEditFocusedObserver::AutocompleteEditFocusedObserver(
-    AutomationProvider* automation,
-    AutocompleteEditModel* autocomplete_edit,
-    IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message),
-      autocomplete_edit_model_(autocomplete_edit) {
-  Source<AutocompleteEditModel> source(autocomplete_edit);
-  registrar_.Add(this, NotificationType::OMNIBOX_FOCUSED, source);
-}
-
-AutocompleteEditFocusedObserver::~AutocompleteEditFocusedObserver() {}
-
-void AutocompleteEditFocusedObserver::Observe(
-    NotificationType type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  DCHECK(type == NotificationType::OMNIBOX_FOCUSED);
-  if (automation_) {
-    AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
-        reply_message_.get(), true);
-    automation_->Send(reply_message_.release());
-  }
-  delete this;
 }
 
 AutofillDisplayedObserver::AutofillDisplayedObserver(

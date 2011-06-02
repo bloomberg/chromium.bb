@@ -9,14 +9,12 @@
 
 #include "base/string16.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/test/automation/autocomplete_edit_proxy.h"
 #include "content/common/navigation_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
-
 
 // NOTE: All IPC messages have either a routing_id of 0 (for asynchronous
 //       messages), or one that's been assigned by the proxy (for calls
@@ -30,6 +28,8 @@
 //       remain the same.  This means that you should not change the line number
 //       of any of the messages below.  This will be fixed once Xcode supports
 //       __COUNTER__, in which case we can get rid of the __LINE__.
+
+
 
 #define IPC_MESSAGE_START AutomationMsgStart
 
@@ -341,10 +341,10 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_WindowForBrowser,
                             bool /* success flag */,
                             int /* window handle */)
 
-// This message requests the AutocompleteEdit associated with the specified
-// browser handle.
-// The return value contains a success flag and the handle of the omnibox.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditForBrowser,
+// TODO(phajdan.jr): Remove when the reference build is updated (this and
+// all others marked "DEPRECATED MESSAGE").
+// (intentionally blank line)
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_AutocompleteEditForBrowser,
                             int /* browser handle */,
                             bool /* success flag */,
                             int /* AutocompleteEdit handle */)
@@ -647,44 +647,44 @@ IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_SavePage,
                             int,
                             bool)
 
-// This message requests the text currently being displayed in the
-// AutocompleteEdit.  The parameter is the handle to the AutocompleteEdit.
-// The return value is a string indicating the text in the AutocompleteEdit.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditGetText,
+// TODO(phajdan.jr): Remove when the reference build is updated (this and
+// all others marked "DEPRECATED MESSAGE").
+// (intentionally blank line)
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_AutocompleteEditGetText,
                             int /* autocomplete edit handle */,
                             bool /* the requested autocomplete edit exists */,
                             string16 /* omnibox text */)
 
-// This message sets the text being displayed in the AutocompleteEdit.  The
-// first parameter is the handle to the omnibox and the second parameter is
-// the text to be displayed in the AutocompleteEdit.
-// The return value has no parameters and is returned when the operation has
-// completed.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_AutocompleteEditSetText,
+// TODO(phajdan.jr): Remove when the reference build is updated (this and
+// all others marked "DEPRECATED MESSAGE").
+// (intentionally blank line)
+// (intentionally blank line)
+// (intentionally blank line)
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_AutocompleteEditSetText,
                             int /* autocomplete edit handle */,
                             string16 /* text to set */,
                             bool /* the requested autocomplete edit exists */)
 
-// This message requests if a query to a autocomplete provider is still in
-// progress.  The first parameter in the request is the handle to the
-// autocomplete edit.
-// The first return value indicates if the request succeeded.
-// The second return value indicates if a query is still in progress.
+// TODO(phajdan.jr): Remove when the reference build is updated (this and
+// all others marked "DEPRECATED MESSAGE").
+// (intentionally blank line)
+// (intentionally blank line)
+// (intentionally blank line)
 IPC_SYNC_MESSAGE_CONTROL1_2( \
-    AutomationMsg_AutocompleteEditIsQueryInProgress,
+    AutomationMsg_DEPRECATED_AutocompleteEditIsQueryInProgress,
     int /* autocomplete edit handle*/,
     bool /* the requested autocomplete edit exists */,
     bool /* indicates if a query is in progress */)
 
-// This message requests a list of the autocomplete messages currently being
-// displayed by the popup.  The parameter in the request is a handle to the
-// autocomplete edit.
-// The first return value indicates if the request was successful, while
-// while the second is the actual list of matches.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditGetMatches,
+// TODO(phajdan.jr): Remove when the reference build is updated (this and
+// all others marked "DEPRECATED MESSAGE").
+// (intentionally blank line)
+// (intentionally blank line)
+// (intentionally blank line)
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_AutocompleteEditGetMatches,
                             int /* autocomplete edit handle*/,
                             bool /* the requested autocomplete edit exists */,
-                            std::vector<AutocompleteMatchData> /* matches */)
+                            std::vector<int> /* matches */)
 
 // This message requests the execution of a browser command in the browser
 // for which the handle is specified.
@@ -764,7 +764,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_ClickInfoBarAccept,
                             int /* tab_handle */,
                             size_t /* info bar index */,
                             bool /* wait for navigation */,
-// This line blank on purpose, see comment atop file about __LINE__.
+// (intentionally blank line), see comment atop file about __LINE__.
                             /* navigation result */
                             AutomationMsg_NavigationResponseValues)
 
@@ -779,7 +779,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetLastNavigationTime,
 IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForNavigation,
                             int /* tab_handle */,
                             int64 /* last navigation time */,
-// This line blank on purpose, see comment atop file about __LINE__.
+// (intentionally blank line), see comment atop file about __LINE__.
                             /* navigation result */
                             AutomationMsg_NavigationResponseValues)
 
@@ -1417,8 +1417,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForInfoBarCount,
                             size_t /* target count */,
                             bool /* success */)
 
-// Waits for the autocomplete edit to receive focus.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForAutocompleteEditFocus,
+// TODO(phajdan.jr): Remove this message.
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_WaitForAutocompleteEditFocus,
                             int /* autocomplete edit handle */,
                             bool /* success */)
 

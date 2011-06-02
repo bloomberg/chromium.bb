@@ -1481,8 +1481,6 @@
             '..',
           ],
           'sources': [
-             'test/automation/autocomplete_edit_proxy.cc',
-             'test/automation/autocomplete_edit_proxy.h',
              'test/automation/automation_handle_tracker.cc',
              'test/automation/automation_handle_tracker.h',
              'test/automation/automation_json_requests.cc',

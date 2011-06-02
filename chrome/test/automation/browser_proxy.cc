@@ -13,7 +13,6 @@
 #include "base/time.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
-#include "chrome/test/automation/autocomplete_edit_proxy.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -21,7 +20,6 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
-
 
 bool BrowserProxy::ActivateTab(int tab_index) {
   if (!is_valid())
@@ -507,33 +505,6 @@ scoped_refptr<WindowProxy> BrowserProxy::GetWindow() const {
   // Since there is no scoped_refptr::attach.
   scoped_refptr<WindowProxy> result;
   result.swap(&window);
-  return result;
-}
-
-scoped_refptr<AutocompleteEditProxy> BrowserProxy::GetAutocompleteEdit() {
-  if (!is_valid())
-    return NULL;
-
-  bool handle_ok = false;
-  int autocomplete_edit_handle = 0;
-
-  sender_->Send(new AutomationMsg_AutocompleteEditForBrowser(
-      handle_, &handle_ok, &autocomplete_edit_handle));
-
-  if (!handle_ok)
-    return NULL;
-
-  AutocompleteEditProxy* p = static_cast<AutocompleteEditProxy*>(
-        tracker_->GetResource(autocomplete_edit_handle));
-
-  if (!p) {
-    p = new AutocompleteEditProxy(sender_, tracker_, autocomplete_edit_handle);
-    p->AddRef();
-  }
-
-  // Since there is no scoped_refptr::attach.
-  scoped_refptr<AutocompleteEditProxy> result;
-  result.swap(&p);
   return result;
 }
 

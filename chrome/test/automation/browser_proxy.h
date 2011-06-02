@@ -14,7 +14,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 
-class AutocompleteEditProxy;
 class GURL;
 class TabProxy;
 class WindowProxy;
@@ -84,11 +83,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // owns the returned WindowProxy.
   // On failure, returns NULL.
   scoped_refptr<WindowProxy> GetWindow() const;
-
-  // Returns an AutocompleteEdit for this browser's window. It can be used to
-  // manipulate the omnibox.  The caller owns the returned pointer.
-  // On failure, returns NULL.
-  scoped_refptr<AutocompleteEditProxy> GetAutocompleteEdit();
 
   // Apply the accelerator with given id (IDC_BACK, IDC_NEWTAB ...)
   // The list can be found at chrome/app/chrome_command_ids.h

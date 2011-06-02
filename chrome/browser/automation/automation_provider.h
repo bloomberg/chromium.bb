@@ -177,7 +177,6 @@ class AutomationProvider
   // and closes the IPC channel.
   void OnMessageDeserializationFailure();
 
-  scoped_ptr<AutomationOmniboxTracker> automation_omnibox_tracker_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<InitialLoadObserver> initial_load_observer_;
   scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;

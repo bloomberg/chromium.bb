@@ -34,18 +34,6 @@ namespace IPC {
 class Message;
 }
 
-enum FindInPageDirection { BACK = 0, FWD = 1 };
-enum FindInPageCase { IGNORE_CASE = 0, CASE_SENSITIVE = 1 };
-// Specifies the font size on a page which is requested by an automation
-// client.
-enum AutomationPageFontSize {
-  SMALLEST_FONT = 8,
-  SMALL_FONT = 12,
-  MEDIUM_FONT = 16,
-  LARGE_FONT = 24,
-  LARGEST_FONT = 36
-};
-
 class TabProxy : public AutomationResourceProxy,
                  public JavaScriptExecutionController {
  public:
