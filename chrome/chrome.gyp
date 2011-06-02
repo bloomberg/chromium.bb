@@ -26,7 +26,7 @@
       'debugger',
       'profile_import',
       'renderer',
-      'syncapi',
+      'syncapi_core',
       'utility',
       'service',
       '../content/content.gyp:content_gpu',
@@ -514,7 +514,7 @@
     {
       # Provides a syncapi dynamic library target from checked-in binaries,
       # or from compiling a stub implementation.
-      'target_name': 'syncapi',
+      'target_name': 'syncapi_core',
       'type': 'static_library',
       'sources': [
         'browser/sync/engine/http_post_provider_factory.h',
@@ -550,6 +550,38 @@
       # This target exports a hard dependency because syncapi.h includes
       # generated proto header files from sync_proto_cpp.
       'hard_dependency': 1,
+    },
+    {
+      # Provides the API that Chrome services use to talk to sync.
+      'target_name': 'syncapi_service',
+      'type': 'static_library',
+      'sources': [
+        'browser/sync/api/syncable_service.cc',
+        'browser/sync/api/syncable_service.h',
+        'browser/sync/api/sync_data.h',
+        'browser/sync/api/sync_data.cc',
+        'browser/sync/api/sync_change.h',
+        'browser/sync/api/sync_change.cc',
+        'browser/sync/api/sync_change_processor.h',
+        'browser/sync/api/sync_change_processor.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'sync',
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'sync',
+      ],
+      # Even though this target depends on sync_proto_cpp, it doesn't
+      # need to export a hard dependency since we explicitly avoid
+      # including the generated proto header files from this target's
+      # header files.
     },
     {
       'target_name': 'sync',

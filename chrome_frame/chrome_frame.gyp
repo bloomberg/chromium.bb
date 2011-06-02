@@ -386,7 +386,7 @@
         '../chrome/chrome.gyp:chrome_resources',
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:renderer',
-        '../chrome/chrome.gyp:syncapi',
+        '../chrome/chrome.gyp:syncapi_core',
         '../content/content.gyp:content_gpu',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
@@ -786,7 +786,7 @@
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
             # Make the archive build happy.
-            '../chrome/chrome.gyp:syncapi',
+            '../chrome/chrome.gyp:syncapi_core',
             # Installer
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
@@ -917,7 +917,7 @@
             '../breakpad/breakpad.gyp:breakpad_handler_dll',
             '../chrome/chrome.gyp:automation',
             # Make the archive build happy.
-            '../chrome/chrome.gyp:syncapi',
+            '../chrome/chrome.gyp:syncapi_core',
             # Installer
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
