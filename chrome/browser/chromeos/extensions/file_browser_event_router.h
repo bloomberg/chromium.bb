@@ -59,6 +59,7 @@ class ExtensionFileBrowserEventRouter
       virtual_path = path;
       extensions.insert(extension_id);
     }
+    ~FileWatcherExtensions() {}
     linked_ptr<base::files::FilePathWatcher> file_watcher;
     FilePath local_path;
     FilePath virtual_path;
