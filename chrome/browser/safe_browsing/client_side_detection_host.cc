@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -355,9 +354,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(2) << "Received server phishing verdict for URL:" << phishing_url
           << " is_phishing:" << is_phishing;
-  if (is_phishing &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClientSidePhishingInterstitial)) {
+  if (is_phishing) {
     DCHECK(tab_contents());
     if (sb_service_) {
       SafeBrowsingService::UnsafeResource resource;

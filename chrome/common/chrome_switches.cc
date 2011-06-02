@@ -365,13 +365,6 @@ const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 // for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
-// At this point, even if client-side phishing detection is enabled we will not,
-// by default, display an interstitial if we detected a phishing site.  Once
-// we are confident that the false-positive rate is as low as expected we can
-// remove this flag.
-const char kEnableClientSidePhishingInterstitial[] =
-    "enable-client-side-phishing-interstitial";
-
 // This flag enables UI for clearing server data.  Temporarily in place
 // until there's a server endpoint deployed.
 const char kEnableClearServerData[]         = "enable-clear-server-data";

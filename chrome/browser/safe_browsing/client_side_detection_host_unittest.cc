@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -133,18 +132,12 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     csd_host_ = contents_wrapper()->safebrowsing_detection_host();
     csd_host_->set_client_side_detection_service(csd_service_.get());
     csd_host_->set_safe_browsing_service(sb_service_.get());
-
-    // Save command-line so that it can be restored for every test.
-    original_cmd_line_.reset(
-        new CommandLine(*CommandLine::ForCurrentProcess()));
   }
 
   virtual void TearDown() {
     io_thread_.reset();
     ui_thread_.reset();
     TabContentsWrapperTestHarness::TearDown();
-    // Restore the command-line like it was before we ran the test.
-    *CommandLine::ForCurrentProcess() = *original_cmd_line_;
   }
 
   void OnDetectedPhishingSite(const std::string& verdict_str) {
@@ -213,7 +206,6 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
  private:
   scoped_ptr<BrowserThread> ui_thread_;
   scoped_ptr<BrowserThread> io_thread_;
-  scoped_ptr<CommandLine> original_cmd_line_;
 };
 
 TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteInvalidVerdict) {
@@ -282,9 +274,6 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableClientSidePhishingInterstitial);
-
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
       .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
@@ -336,9 +325,6 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   verdict.set_url(phishing_url.spec());
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
-
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableClientSidePhishingInterstitial);
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
@@ -563,8 +549,6 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
 
   // If result is cached, we will try and display the blocking page directly
   // with no start classification message.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableClientSidePhishingInterstitial);
   url = GURL("http://host8.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kTrue, NULL,
                                 NULL);
