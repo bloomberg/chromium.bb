@@ -36,8 +36,9 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
     return false;
 
   std::string temp = url.path();
-  // TODO(ericu) remove this code when that ceases to be true, which should be
-  // soon.
+  // TODO(ericu) remove this code when that ceases to be true, which will be as
+  // soon as the WEBFILESYSTEMCALLBACKS_USE_URL_NOT_STRING macro goes into
+  // WebKit.
   // On Windows, this will have backslashes for now.
   // url will look something like:
   //    filesystem:http://example.com/temporary/\dir\file.txt
@@ -63,8 +64,7 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   }
 
   // bare_url will look something like:
-  //    http://example.com/temporary//dir/file.txt [on Windows; the double slash
-  //    before dir will be single on posix].
+  //    http://example.com/temporary/dir/file.txt.
   GURL bare_url(temp);
 
   // The input URL was malformed, bail out early.

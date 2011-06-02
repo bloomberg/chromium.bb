@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemEntry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -37,6 +38,7 @@ using WebKit::WebFileWriterClient;
 using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebVector;
 
 using fileapi::FileSystemCallbackDispatcher;
@@ -100,8 +102,13 @@ class SimpleFileSystemCallbackDispatcher
     if (!root.is_valid())
       callbacks_->didFail(WebKit::WebFileErrorSecurity);
     else
+// Temporary hack to ease a 4-phase Chromium/WebKit commit.
+#ifdef WEBFILESYSTEMCALLBACKS_USE_URL_NOT_STRING
+      callbacks_->didOpenFileSystem(WebString::fromUTF8(name), root);
+#else
       callbacks_->didOpenFileSystem(
           WebString::fromUTF8(name), WebString::fromUTF8(root.spec()));
+#endif
   }
 
   virtual void DidFail(base::PlatformFileError error_code) {
@@ -169,61 +176,120 @@ void SimpleFileSystem::OpenFileSystem(
   GetNewOperation(callbacks)->OpenFileSystem(origin_url, type, create);
 }
 
+void SimpleFileSystem::move(const WebString& src_path,
+                            const WebString& dest_path,
+                            WebFileSystemCallbacks* callbacks) {
+  move(GURL(src_path), GURL(dest_path), callbacks);
+}
+
+void SimpleFileSystem::copy(const WebString& src_path,
+                            const WebString& dest_path,
+                            WebFileSystemCallbacks* callbacks) {
+  copy(GURL(src_path), GURL(dest_path), callbacks);
+}
+
+void SimpleFileSystem::remove(const WebString& path,
+                              WebFileSystemCallbacks* callbacks) {
+  remove(GURL(path), callbacks);
+}
+
+void SimpleFileSystem::removeRecursively(const WebString& path,
+                                         WebFileSystemCallbacks* callbacks) {
+  removeRecursively(GURL(path), callbacks);
+}
+
+void SimpleFileSystem::readMetadata(const WebString& path,
+                                    WebFileSystemCallbacks* callbacks) {
+  readMetadata(GURL(path), callbacks);
+}
+
+void SimpleFileSystem::createFile(const WebString& path,
+                                  bool exclusive,
+                                  WebFileSystemCallbacks* callbacks) {
+  createFile(GURL(path), exclusive, callbacks);
+}
+
+void SimpleFileSystem::createDirectory(const WebString& path,
+                                       bool exclusive,
+                                       WebFileSystemCallbacks* callbacks) {
+  createDirectory(GURL(path), exclusive, callbacks);
+}
+
+void SimpleFileSystem::fileExists(const WebString& path,
+                                  WebFileSystemCallbacks* callbacks) {
+  fileExists(GURL(path), callbacks);
+}
+
+void SimpleFileSystem::directoryExists(const WebString& path,
+                                       WebFileSystemCallbacks* callbacks) {
+  directoryExists(GURL(path), callbacks);
+}
+
+void SimpleFileSystem::readDirectory(const WebString& path,
+                                     WebFileSystemCallbacks* callbacks) {
+  readDirectory(GURL(path), callbacks);
+}
+
+WebKit::WebFileWriter* SimpleFileSystem::createFileWriter(
+    const WebString& path, WebKit::WebFileWriterClient* client) {
+  return createFileWriter(GURL(path), client);
+}
+
 void SimpleFileSystem::move(
-    const WebString& src_path,
-    const WebString& dest_path, WebFileSystemCallbacks* callbacks) {
+    const WebURL& src_path,
+    const WebURL& dest_path, WebFileSystemCallbacks* callbacks) {
   GetNewOperation(callbacks)->Move(GURL(src_path), GURL(dest_path));
 }
 
 void SimpleFileSystem::copy(
-    const WebString& src_path, const WebString& dest_path,
+    const WebURL& src_path, const WebURL& dest_path,
     WebFileSystemCallbacks* callbacks) {
   GetNewOperation(callbacks)->Copy(GURL(src_path), GURL(dest_path));
 }
 
 void SimpleFileSystem::remove(
-    const WebString& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->Remove(GURL(path), false /* recursive */);
+    const WebURL& path, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->Remove(path, false /* recursive */);
 }
 
 void SimpleFileSystem::removeRecursively(
-    const WebString& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->Remove(GURL(path), true /* recursive */);
+    const WebURL& path, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->Remove(path, true /* recursive */);
 }
 
 void SimpleFileSystem::readMetadata(
-    const WebString& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->GetMetadata(GURL(path));
+    const WebURL& path, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->GetMetadata(path);
 }
 
 void SimpleFileSystem::createFile(
-    const WebString& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->CreateFile(GURL(path), exclusive);
+    const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->CreateFile(path, exclusive);
 }
 
 void SimpleFileSystem::createDirectory(
-    const WebString& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->CreateDirectory(GURL(path), exclusive, false);
+    const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->CreateDirectory(path, exclusive, false);
 }
 
 void SimpleFileSystem::fileExists(
-    const WebString& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->FileExists(GURL(path));
+    const WebURL& path, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->FileExists(path);
 }
 
 void SimpleFileSystem::directoryExists(
-    const WebString& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->DirectoryExists(GURL(path));
+    const WebURL& path, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->DirectoryExists(path);
 }
 
 void SimpleFileSystem::readDirectory(
-    const WebString& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(callbacks)->ReadDirectory(GURL(path));
+    const WebURL& path, WebFileSystemCallbacks* callbacks) {
+  GetNewOperation(callbacks)->ReadDirectory(path);
 }
 
 WebFileWriter* SimpleFileSystem::createFileWriter(
-    const WebString& path, WebFileWriterClient* client) {
-  return new SimpleFileWriter(GURL(path), client, file_system_context_.get());
+    const WebURL& path, WebFileWriterClient* client) {
+  return new SimpleFileWriter(path, client, file_system_context_.get());
 }
 
 FileSystemOperation* SimpleFileSystem::GetNewOperation(

@@ -9,6 +9,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 
 namespace WebKit {
+class WebURL;
 class WebFileWriter;
 class WebFileWriterClient;
 }
@@ -18,6 +19,55 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
   WebFileSystemImpl();
   virtual ~WebFileSystemImpl() { }
 
+  // New WebFileSystem overrides.
+  virtual void move(
+      const WebKit::WebURL& src_path,
+      const WebKit::WebURL& dest_path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void copy(
+      const WebKit::WebURL& src_path,
+      const WebKit::WebURL& dest_path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void remove(
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void removeRecursively(
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void readMetadata(
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void createFile(
+      const WebKit::WebURL& path,
+      bool exclusive,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void createDirectory(
+      const WebKit::WebURL& path,
+      bool exclusive,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void fileExists(
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void directoryExists(
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual void readDirectory(
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks*);
+
+  virtual WebKit::WebFileWriter* createFileWriter(
+      const WebKit::WebURL& path, WebKit::WebFileWriterClient*);
+
+  // Old WebFileSystem overrides, soon to go away.
   virtual void move(
       const WebKit::WebString& src_path,
       const WebKit::WebString& dest_path,
