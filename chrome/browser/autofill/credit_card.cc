@@ -14,7 +14,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_scanner.h"
+#include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/common/guid.h"
@@ -320,7 +320,7 @@ const string16 CreditCard::Label() const {
 
 void CreditCard::SetInfoForMonthInputType(const string16& value) {
   // Check if |text| is "yyyy-mm" format first, and check normal month format.
-  if (!autofill::MatchString(value, UTF8ToUTF16("^[0-9]{4}-[0-9]{1,2}$")))
+  if (!autofill::MatchesPattern(value, UTF8ToUTF16("^[0-9]{4}-[0-9]{1,2}$")))
     return;
 
   std::vector<string16> year_month;

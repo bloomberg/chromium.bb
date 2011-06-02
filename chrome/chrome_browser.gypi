@@ -164,6 +164,8 @@
         'browser/autofill/autofill_metrics.h',
         'browser/autofill/autofill_profile.cc',
         'browser/autofill/autofill_profile.h',
+        'browser/autofill/autofill_regexes.cc',
+        'browser/autofill/autofill_regexes.h',
         'browser/autofill/autofill_scanner.cc',
         'browser/autofill/autofill_scanner.h',
         'browser/autofill/autofill_type.cc',

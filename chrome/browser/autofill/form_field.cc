@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/credit_card_field.h"
 #include "chrome/browser/autofill/email_field.h"
@@ -151,12 +152,12 @@ bool FormField::Match(const AutofillField* field,
                       const string16& pattern,
                       int match_type) {
   if ((match_type & FormField::MATCH_LABEL) &&
-      autofill::MatchString(field->label, pattern)) {
+      autofill::MatchesPattern(field->label, pattern)) {
     return true;
   }
 
   if ((match_type & FormField::MATCH_NAME) &&
-      autofill::MatchString(field->name, pattern)) {
+      autofill::MatchesPattern(field->name, pattern)) {
     return true;
   }
 

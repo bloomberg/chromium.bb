@@ -13,7 +13,7 @@
 #include "chrome/browser/autofill/autofill-inl.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
-#include "chrome/browser/autofill/autofill_scanner.h"
+#include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
@@ -76,14 +76,14 @@ bool IsValidEmail(const string16& value) {
   // This regex is more permissive than the official rfc2822 spec on the
   // subject, but it does reject obvious non-email addresses.
   const string16 kEmailPattern = ASCIIToUTF16("^[^@]+@[^@]+\\.[a-z]{2,6}$");
-  return autofill::MatchString(value, kEmailPattern);
+  return autofill::MatchesPattern(value, kEmailPattern);
 }
 
 // Valid for US zip codes only.
 bool IsValidZip(const string16& value) {
   // Basic US zip code matching.
   const string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
-  return autofill::MatchString(value, kZipPattern);
+  return autofill::MatchesPattern(value, kZipPattern);
 }
 
 // Returns true if minimum requirements for import of a given |profile| have

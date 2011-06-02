@@ -49,13 +49,4 @@ class AutofillScanner {
   DISALLOW_COPY_AND_ASSIGN(AutofillScanner);
 };
 
-// Parsing utilities.
-namespace autofill {
-
-// Case-insensitive regular expression matching.  Returns true if |pattern| is
-// found in |input|.
-bool MatchString(const string16& input, const string16& pattern);
-
-}  // namespace autofill
-
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_SCANNER_H_
