@@ -100,7 +100,7 @@ views::internal::RootView* BrowserFrame::CreateRootView() {
   return root_view_;
 }
 
-views::NonClientFrameView* BrowserFrame::CreateNonClientFrameView() {
+views::NonClientFrameView* BrowserFrame::CreateFrameViewForWindow() {
 #if defined(OS_WIN)
   if (ShouldUseNativeFrame()) {
     browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);

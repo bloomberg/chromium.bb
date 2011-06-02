@@ -22,6 +22,7 @@
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/window/client_view.h"
 #include "views/window/native_window_delegate.h"
+#include "views/window/native_frame_view.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window_delegate.h"
 
@@ -72,6 +73,13 @@ void SendFrameChanged(HWND window) {
       SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS |
       SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREPOSITION |
       SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
+}
+
+// Callback used to notify child windows that the top level window received a
+// DWMCompositionChanged message.
+BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
+  SendMessage(window, WM_DWMCOMPOSITIONCHANGED, 0, 0);
+  return TRUE;
 }
 
 // Enables or disables the menu item for the specified command and menu.
@@ -306,6 +314,11 @@ void NativeWindowWin::OnEnterSizeMove() {
 void NativeWindowWin::OnExitSizeMove() {
   NativeWidgetWin::OnExitSizeMove();
   delegate_->OnNativeWindowEndUserBoundsChange();
+}
+
+void NativeWindowWin::OnFinalMessage(HWND window) {
+  delegate_->OnNativeWindowDestroyed();
+  NativeWidgetWin::OnFinalMessage(window);
 }
 
 void NativeWindowWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
@@ -724,7 +737,10 @@ LRESULT NativeWindowWin::OnSetText(const wchar_t* text) {
 void NativeWindowWin::OnSize(UINT size_param, const CSize& new_size) {
   delegate_->OnNativeWindowBoundsChanged();
   RedrawWindow(GetNativeView(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
-  NativeWidgetWin::OnSize(size_param, new_size);
+
+  // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
+  // invoked OnSize we ensure the RootView has been laid out.
+  ResetWindowRegion(false);
 }
 
 void NativeWindowWin::OnSysCommand(UINT notification_code, CPoint click) {
@@ -903,6 +919,49 @@ void NativeWindowWin::EnableClose(bool enable) {
   SendFrameChanged(GetNativeView());
 }
 
+NonClientFrameView* NativeWindowWin::CreateFrameViewForWindow() {
+  return GetWindow()->ShouldUseNativeFrame() ?
+      new NativeFrameView(GetWindow()) : NULL;
+}
+
+void NativeWindowWin::UpdateFrameAfterFrameChange() {
+  // We've either gained or lost a custom window region, so reset it now.
+  ResetWindowRegion(true);
+}
+
+bool NativeWindowWin::ShouldUseNativeFrame() const {
+  return NativeWidgetWin::IsAeroGlassEnabled();
+}
+
+void NativeWindowWin::FrameTypeChanged() {
+  // Called when the frame type could possibly be changing (theme change or
+  // DWM composition change).
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    // We need to toggle the rendering policy of the DWM/glass frame as we
+    // change from opaque to glass. "Non client rendering enabled" means that
+    // the DWM's glass non-client rendering is enabled, which is why
+    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
+    // DWM doesn't render glass, and so is used in the custom frame case.
+    DWMNCRENDERINGPOLICY policy = GetWindow()->ShouldUseNativeFrame() ?
+        DWMNCRP_ENABLED : DWMNCRP_DISABLED;
+    DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
+                          &policy, sizeof(DWMNCRENDERINGPOLICY));
+  }
+
+  // Send a frame change notification, since the non-client metrics have
+  // changed.
+  SendFrameChanged(GetNativeView());
+
+  // Update the non-client view with the correct frame view for the active frame
+  // type.
+  GetWindow()->non_client_view()->UpdateFrame();
+
+  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
+  // to notify our children too, since we can have MDI child windows who need to
+  // update their appearance.
+  EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWindowWin, NativeWidgetWin overrides:
 
@@ -962,6 +1021,49 @@ void NativeWindowWin::LockUpdates() {
 void NativeWindowWin::UnlockUpdates() {
   SetWindowLong(GWL_STYLE, saved_window_style_);
   lock_updates_ = false;
+}
+
+void NativeWindowWin::ResetWindowRegion(bool force) {
+  // A native frame uses the native window region, and we don't want to mess
+  // with it.
+  if (GetWindow()->ShouldUseNativeFrame()) {
+    if (force)
+      SetWindowRgn(NULL, TRUE);
+    return;
+  }
+
+  // Changing the window region is going to force a paint. Only change the
+  // window region if the region really differs.
+  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
+  int current_rgn_result = GetWindowRgn(GetNativeView(), current_rgn);
+
+  CRect window_rect;
+  GetWindowRect(&window_rect);
+  HRGN new_region;
+  if (IsMaximized()) {
+    HMONITOR monitor =
+        MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi;
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(monitor, &mi);
+    CRect work_rect = mi.rcWork;
+    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
+    new_region = CreateRectRgnIndirect(&work_rect);
+  } else {
+    gfx::Path window_mask;
+    GetWindow()->non_client_view()->GetWindowMask(
+        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    new_region = window_mask.CreateNativeRegion();
+  }
+
+  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
+    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
+    SetWindowRgn(new_region, TRUE);
+  } else {
+    DeleteObject(new_region);
+  }
+
+  DeleteObject(current_rgn);
 }
 
 LRESULT NativeWindowWin::CallDefaultNCActivateHandler(BOOL active) {

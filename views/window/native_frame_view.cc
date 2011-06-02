@@ -4,16 +4,16 @@
 
 #include "views/window/native_frame_view.h"
 
-#include "views/widget/native_widget.h"
 #include "views/widget/native_widget_win.h"
-#include "views/widget/widget.h"
+#include "views/window/native_window.h"
+#include "views/window/window.h"
 
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeFrameView, public:
 
-NativeFrameView::NativeFrameView(Widget* frame)
+NativeFrameView::NativeFrameView(Window* frame)
     : NonClientFrameView(),
       frame_(frame) {
 }
@@ -32,7 +32,7 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   RECT rect = client_bounds.ToRECT();
   NativeWidgetWin* widget_win =
-      static_cast<NativeWidgetWin*>(frame_->native_widget());
+      static_cast<NativeWidgetWin*>(frame_->native_window()->AsNativeWidget());
   AdjustWindowRectEx(&rect, widget_win->window_style(), FALSE,
                      widget_win->window_ex_style());
   return gfx::Rect(rect);

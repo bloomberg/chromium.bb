@@ -63,6 +63,14 @@ class NativeWindow {
 
   // Enables or disables the close button for the window.
   virtual void EnableClose(bool enable) = 0;
+
+  // Window pass-thrus ---------------------------------------------------------
+  // See documentation in window.h
+
+  virtual NonClientFrameView* CreateFrameViewForWindow() = 0;
+  virtual void UpdateFrameAfterFrameChange() = 0;
+  virtual bool ShouldUseNativeFrame() const = 0;
+  virtual void FrameTypeChanged() = 0;
 };
 
 }  // namespace views

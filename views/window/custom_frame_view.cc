@@ -63,7 +63,7 @@ const int kTitleCaptionSpacing = 5;
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, public:
 
-CustomFrameView::CustomFrameView(Widget* frame)
+CustomFrameView::CustomFrameView(Window* frame)
     : ALLOW_THIS_IN_INITIALIZER_LIST(close_button_(new ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(restore_button_(new ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(maximize_button_(new ImageButton(this))),
@@ -112,10 +112,10 @@ CustomFrameView::CustomFrameView(Widget* frame)
                              rb.GetBitmapNamed(IDR_MINIMIZE_P));
   AddChildView(minimize_button_);
 
-  should_show_minmax_buttons_ = frame_->widget_delegate()->CanMaximize();
-  should_show_client_edge_ = frame_->widget_delegate()->ShouldShowClientEdge();
+  should_show_minmax_buttons_ = frame_->window_delegate()->CanMaximize();
+  should_show_client_edge_ = frame_->window_delegate()->ShouldShowClientEdge();
 
-  if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
+  if (frame_->window_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new ImageButton(this);
     AddChildView(window_icon_);
   }
@@ -176,7 +176,7 @@ int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
 
   int window_component = GetHTComponentForFrame(point, FrameBorderThickness(),
       NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
-      frame_->widget_delegate()->CanResize());
+      frame_->window_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -403,7 +403,7 @@ void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 }
 
 void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
-  WidgetDelegate* d = frame_->widget_delegate();
+  WindowDelegate* d = frame_->window_delegate();
 
   // It seems like in some conditions we can be asked to paint after the window
   // that contains us is WM_DESTROYed. At this point, our delegate is NULL. The
@@ -536,11 +536,11 @@ void CustomFrameView::LayoutTitleBar() {
   // The window title is based on the calculated icon position, even when there
   // is no icon.
   gfx::Rect icon_bounds(IconBounds());
-  if (frame_->widget_delegate()->ShouldShowWindowIcon())
+  if (frame_->window_delegate()->ShouldShowWindowIcon())
     window_icon_->SetBoundsRect(icon_bounds);
 
   // Size the title.
-  int title_x = frame_->widget_delegate()->ShouldShowWindowIcon() ?
+  int title_x = frame_->window_delegate()->ShouldShowWindowIcon() ?
       icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
   int title_height = title_font_->GetHeight();
   // We bias the title position so that when the difference between the icon and

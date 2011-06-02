@@ -10,11 +10,11 @@
 
 namespace views {
 
-class Widget;
+class Window;
 
 class NativeFrameView : public NonClientFrameView {
  public:
-  explicit NativeFrameView(Widget* frame);
+  explicit NativeFrameView(Window* frame);
   virtual ~NativeFrameView();
 
   // NonClientFrameView overrides:
@@ -33,7 +33,7 @@ class NativeFrameView : public NonClientFrameView {
 
  private:
   // Our containing frame.
-  Widget* frame_;
+  Window* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFrameView);
 };

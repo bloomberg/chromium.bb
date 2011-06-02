@@ -14,6 +14,7 @@
 #include "ui/gfx/size.h"
 #include "views/widget/widget.h"
 #include "views/widget/native_widget.h"
+#include "views/window/custom_frame_view.h"
 #include "views/window/native_window.h"
 #include "views/window/window_delegate.h"
 
@@ -31,10 +32,14 @@ Window::InitParams::InitParams(WindowDelegate* window_delegate)
 
 Window::Window()
     : native_window_(NULL),
+      window_delegate_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          non_client_view_(new NonClientView(this))),
       saved_maximized_state_(false),
       minimum_size_(100, 100),
       disable_inactive_rendering_(false),
-      window_closed_(false) {
+      window_closed_(false),
+      frame_type_(FRAME_TYPE_DEFAULT) {
 }
 
 Window::~Window() {
@@ -75,13 +80,18 @@ gfx::Size Window::GetLocalizedContentsSize(int col_resource_id,
 }
 
 void Window::InitWindow(const InitParams& params) {
+  window_delegate_ = params.window_delegate;
+  DCHECK(window_delegate_);
+  DCHECK(!window_delegate_->window_);
+  window_delegate_->window_ = this;
   native_window_ =
       params.native_window ? params.native_window
                            : NativeWindow::CreateNativeWindow(this);
+  // If frame_view was set already, don't replace it with default one.
+  if (!non_client_view()->frame_view())
+    non_client_view()->SetFrameView(CreateFrameViewForWindow());
   InitParams modified_params = params;
   modified_params.widget_init_params.delegate = params.window_delegate;
-  DCHECK(!modified_params.widget_init_params.delegate->window_);
-  modified_params.widget_init_params.delegate->window_ = this;
   modified_params.widget_init_params.native_widget =
       native_window_->AsNativeWidget();
   Init(modified_params.widget_init_params);
@@ -102,36 +112,65 @@ void Window::ShowInactive() {
 
 void Window::DisableInactiveRendering() {
   disable_inactive_rendering_ = true;
-  non_client_view()->DisableInactiveRendering(disable_inactive_rendering_);
+  non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
 }
 
 void Window::EnableClose(bool enable) {
-  non_client_view()->EnableClose(enable);
+  non_client_view_->EnableClose(enable);
   native_window_->EnableClose(enable);
 }
 
 void Window::UpdateWindowTitle() {
   // If the non-client view is rendering its own title, it'll need to relayout
   // now.
-  non_client_view()->Layout();
+  non_client_view_->Layout();
 
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
   string16 window_title;
-  if (native_window_->AsNativeWidget()->IsScreenReaderActive()) {
-    window_title = WideToUTF16(widget_delegate()->GetAccessibleWindowTitle());
-  } else {
-    window_title = WideToUTF16(widget_delegate()->GetWindowTitle());
-  }
+  if (native_window_->AsNativeWidget()->IsScreenReaderActive())
+    window_title = WideToUTF16(window_delegate_->GetAccessibleWindowTitle());
+  else
+    window_title = WideToUTF16(window_delegate_->GetWindowTitle());
   base::i18n::AdjustStringForLocaleDirection(&window_title);
   native_window_->AsNativeWidget()->SetWindowTitle(UTF16ToWide(window_title));
 }
 
 void Window::UpdateWindowIcon() {
-  non_client_view()->UpdateWindowIcon();
+  non_client_view_->UpdateWindowIcon();
   native_window_->AsNativeWidget()->SetWindowIcons(
-      widget_delegate()->GetWindowIcon(),
-      widget_delegate()->GetWindowAppIcon());
+      window_delegate_->GetWindowIcon(),
+      window_delegate_->GetWindowAppIcon());
+}
+
+NonClientFrameView* Window::CreateFrameViewForWindow() {
+  NonClientFrameView* frame_view = native_window_->CreateFrameViewForWindow();
+  return frame_view ? frame_view : new CustomFrameView(this);
+}
+
+void Window::UpdateFrameAfterFrameChange() {
+  native_window_->UpdateFrameAfterFrameChange();
+}
+
+bool Window::ShouldUseNativeFrame() const {
+  if (frame_type_ != FRAME_TYPE_DEFAULT)
+    return frame_type_ == FRAME_TYPE_FORCE_NATIVE;
+  return native_window_->ShouldUseNativeFrame();
+}
+
+void Window::DebugToggleFrameType() {
+  if (frame_type_ == FRAME_TYPE_DEFAULT) {
+    frame_type_ = ShouldUseNativeFrame() ? FRAME_TYPE_FORCE_CUSTOM :
+        FRAME_TYPE_FORCE_NATIVE;
+  } else {
+    frame_type_ = frame_type_ == FRAME_TYPE_FORCE_CUSTOM ?
+        FRAME_TYPE_FORCE_NATIVE : FRAME_TYPE_FORCE_CUSTOM;
+  }
+  FrameTypeChanged();
+}
+
+void Window::FrameTypeChanged() {
+  native_window_->FrameTypeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +194,7 @@ void Window::Close() {
     return;
   }
 
-  if (non_client_view()->CanClose()) {
+  if (non_client_view_->CanClose()) {
     SaveWindowPosition();
     Widget::Close();
     window_closed_ = true;
@@ -166,7 +205,7 @@ void Window::Close() {
 // Window, internal::NativeWindowDelegate implementation:
 
 bool Window::CanActivate() const {
-  return widget_delegate()->CanActivate();
+  return window_delegate_->CanActivate();
 }
 
 bool Window::IsInactiveRenderingDisabled() const {
@@ -175,44 +214,43 @@ bool Window::IsInactiveRenderingDisabled() const {
 
 void Window::EnableInactiveRendering() {
   disable_inactive_rendering_ = false;
-  non_client_view()->DisableInactiveRendering(false);
+  non_client_view_->DisableInactiveRendering(false);
 }
 
 bool Window::IsModal() const {
-  return widget_delegate()->IsModal();
+  return window_delegate_->IsModal();
 }
 
 bool Window::IsDialogBox() const {
-  return !!widget_delegate()->AsDialogDelegate();
+  return !!window_delegate_->AsDialogDelegate();
 }
 
-gfx::Size Window::GetMinimumSize() {
-  return non_client_view()->GetMinimumSize();
+gfx::Size Window::GetMinimumSize() const {
+  return non_client_view_->GetMinimumSize();
 }
 
-int Window::GetNonClientComponent(const gfx::Point& point) {
-  return non_client_view()->NonClientHitTest(point);
+int Window::GetNonClientComponent(const gfx::Point& point) const {
+  return non_client_view_->NonClientHitTest(point);
 }
 
 bool Window::ExecuteCommand(int command_id) {
-  return widget_delegate()->ExecuteWindowsCommand(command_id);
+  return window_delegate_->ExecuteWindowsCommand(command_id);
 }
 
 void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
-  if (widget_delegate()->IsModal())
+  if (window_delegate_->IsModal())
     native_window_->BecomeModal();
 
   // Create the ClientView, add it to the NonClientView and add the
   // NonClientView to the RootView. This will cause everything to be parented.
-  non_client_view()->set_client_view(
-      widget_delegate()->CreateClientView(this));
-  SetContentsView(non_client_view());
+  non_client_view_->set_client_view(window_delegate_->CreateClientView(this));
+  SetContentsView(non_client_view_);
 
   UpdateWindowTitle();
   native_window_->AsNativeWidget()->SetAccessibleRole(
-      widget_delegate()->GetAccessibleWindowRole());
+      window_delegate_->GetAccessibleWindowRole());
   native_window_->AsNativeWidget()->SetAccessibleState(
-      widget_delegate()->GetAccessibleWindowState());
+      window_delegate_->GetAccessibleWindowState());
 
   SetInitialBounds(bounds);
 }
@@ -220,20 +258,25 @@ void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
 void Window::OnNativeWindowActivationChanged(bool active) {
   if (!active)
     SaveWindowPosition();
-  widget_delegate()->OnWindowActivationChanged(active);
+  window_delegate_->OnWindowActivationChanged(active);
 }
 
 void Window::OnNativeWindowBeginUserBoundsChange() {
-  widget_delegate()->OnWindowBeginUserBoundsChange();
+  window_delegate_->OnWindowBeginUserBoundsChange();
 }
 
 void Window::OnNativeWindowEndUserBoundsChange() {
-  widget_delegate()->OnWindowEndUserBoundsChange();
+  window_delegate_->OnWindowEndUserBoundsChange();
 }
 
 void Window::OnNativeWindowDestroying() {
-  non_client_view()->WindowClosing();
-  widget_delegate()->WindowClosing();
+  non_client_view_->WindowClosing();
+  window_delegate_->WindowClosing();
+}
+
+void Window::OnNativeWindowDestroyed() {
+  window_delegate_->DeleteDelegate();
+  window_delegate_ = NULL;
 }
 
 void Window::OnNativeWindowBoundsChanged() {
@@ -258,14 +301,13 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
   // state will have been lost. Sadly there's no way to tell on Windows when
   // a window is restored from maximized state, so we can't more accurately
   // track maximized state independently of sizing information.
-  widget_delegate()->GetSavedMaximizedState(
-      &saved_maximized_state_);
+  window_delegate_->GetSavedMaximizedState(&saved_maximized_state_);
 
   // Restore the window's placement from the controller.
   gfx::Rect saved_bounds = bounds;
-  if (widget_delegate()->GetSavedWindowBounds(&saved_bounds)) {
-    if (!widget_delegate()->ShouldRestoreWindowSize()) {
-      saved_bounds.set_size(non_client_view()->GetPreferredSize());
+  if (window_delegate_->GetSavedWindowBounds(&saved_bounds)) {
+    if (!window_delegate_->ShouldRestoreWindowSize()) {
+      saved_bounds.set_size(non_client_view_->GetPreferredSize());
     } else {
       // Make sure the bounds are at least the minimum size.
       if (saved_bounds.width() < minimum_size_.width()) {
@@ -291,7 +333,7 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
       // No initial bounds supplied, so size the window to its content and
       // center over its parent.
       native_window_->AsNativeWidget()->CenterWindow(
-          non_client_view()->GetPreferredSize());
+          non_client_view_->GetPreferredSize());
     } else {
       // Use the supplied initial bounds.
       SetBoundsConstrained(bounds, NULL);
@@ -304,7 +346,7 @@ void Window::SaveWindowPosition() {
   // by go/crash) that in some circumstances we can end up here after
   // WM_DESTROY, at which point the window delegate is likely gone. So just
   // bail.
-  if (!widget_delegate())
+  if (!window_delegate_)
     return;
 
   bool maximized;
@@ -312,7 +354,7 @@ void Window::SaveWindowPosition() {
   native_window_->AsNativeWidget()->GetWindowBoundsAndMaximizedState(
       &bounds,
       &maximized);
-  widget_delegate()->SaveWindowPlacement(bounds, maximized);
+  window_delegate_->SaveWindowPlacement(bounds, maximized);
 }
 
 }  // namespace views

@@ -130,7 +130,7 @@ class NonClientFrameView : public View {
 //
 class NonClientView : public View {
  public:
-  NonClientView();
+  explicit NonClientView(Window* frame);
   virtual ~NonClientView();
 
   // Returns the current NonClientFrameView instance, or NULL if
@@ -213,6 +213,9 @@ class NonClientView : public View {
       OVERRIDE;
 
  private:
+  // The frame that hosts this NonClientView.
+  Window* frame_;
+
   // A ClientView object or subclass, responsible for sizing the contents view
   // of the window, hit testing and perhaps other tasks depending on the
   // implementation.

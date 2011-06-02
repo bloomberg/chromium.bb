@@ -140,9 +140,5 @@ ClientView* WidgetDelegate::CreateClientView(Window* window) {
   return new ClientView(window, GetContentsView());
 }
 
-NonClientFrameView* WidgetDelegate::CreateNonClientFrameView() {
-  return NULL;
-}
-
 }  // namespace views
 

@@ -81,6 +81,7 @@ class NativeWindowWin : public NativeWidgetWin,
                                           LPARAM l_param) OVERRIDE;
   virtual void OnEnterSizeMove() OVERRIDE;
   virtual void OnExitSizeMove() OVERRIDE;
+  virtual void OnFinalMessage(HWND window) OVERRIDE;
   virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info) OVERRIDE;
   virtual void OnInitMenu(HMENU menu) OVERRIDE;
   virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param)
@@ -114,6 +115,10 @@ class NativeWindowWin : public NativeWidgetWin,
   virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
   virtual void EnableClose(bool enable) OVERRIDE;
+  virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual void FrameTypeChanged() OVERRIDE;
 
   // Overridden from NativeWidgetWin:
   virtual bool IsActive() const OVERRIDE;
@@ -134,6 +139,11 @@ class NativeWindowWin : public NativeWidgetWin,
 
   // Stops ignoring SetWindowPos() requests (see below).
   void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }
+
+  // Resets the window region for the current window bounds if necessary.
+  // If |force| is true, the window region is reset to NULL even for native
+  // frame windows.
+  void ResetWindowRegion(bool force);
 
   //  Update accessibility information via our WindowDelegate.
   void UpdateAccessibleName(std::wstring& accessible_name);

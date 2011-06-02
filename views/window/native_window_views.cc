@@ -57,4 +57,19 @@ void NativeWindowViews::BecomeModal() {
 void NativeWindowViews::EnableClose(bool enable) {
 }
 
+NonClientFrameView* NativeWindowViews::CreateFrameViewForWindow() {
+  return NULL;
+}
+
+void NativeWindowViews::UpdateFrameAfterFrameChange() {
+}
+
+bool NativeWindowViews::ShouldUseNativeFrame() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void NativeWindowViews::FrameTypeChanged() {
+}
+
 }  // namespace views

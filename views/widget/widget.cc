@@ -14,7 +14,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget_delegate.h"
-#include "views/window/custom_frame_view.h"
 
 namespace views {
 
@@ -22,22 +21,6 @@ namespace {
 // Set to true if a pure Views implementation is preferred
 bool use_pure_views = false;
 }
-
-// A default implementation of WidgetDelegate, used by Widget when no
-// WidgetDelegate is supplied.
-class DefaultWidgetDelegate : public WidgetDelegate {
- public:
-  DefaultWidgetDelegate() {}
-  virtual ~DefaultWidgetDelegate() {}
-
-  // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() OVERRIDE {
-    delete this;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, InitParams:
@@ -90,13 +73,10 @@ Widget::Widget()
     : is_mouse_button_pressed_(false),
       last_mouse_event_was_move_(false),
       native_widget_(NULL),
-      type_(InitParams::TYPE_WINDOW),
       widget_delegate_(NULL),
-      non_client_view_(NULL),
       dragged_view_(NULL),
       ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      is_secondary_widget_(true),
-      frame_type_(FRAME_TYPE_DEFAULT) {
+      is_secondary_widget_(true) {
 }
 
 Widget::~Widget() {
@@ -124,9 +104,7 @@ Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
 }
 
 void Widget::Init(const InitParams& params) {
-  type_ = params.type;
-  widget_delegate_ =
-      params.delegate ? params.delegate : new DefaultWidgetDelegate;
+  widget_delegate_ = params.delegate ? params.delegate : new WidgetDelegate;
   ownership_ = params.ownership;
   native_widget_ =
       params.native_widget ? params.native_widget
@@ -136,10 +114,6 @@ void Widget::Init(const InitParams& params) {
   if (params.type == InitParams::TYPE_MENU)
     is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
   native_widget_->InitNativeWidget(params);
-  if (type_ == InitParams::TYPE_WINDOW) {
-    non_client_view_ = new NonClientView;
-    non_client_view_->SetFrameView(CreateNonClientFrameView());
-  }
 }
 
 // Unconverted methods (see header) --------------------------------------------
@@ -407,38 +381,6 @@ void Widget::SetFocusTraversableParentView(View* parent_view) {
   root_view_->SetFocusTraversableParentView(parent_view);
 }
 
-void Widget::UpdateFrameAfterFrameChange() {
-  native_widget_->UpdateFrameAfterFrameChange();
-}
-
-NonClientFrameView* Widget::CreateNonClientFrameView() {
-  NonClientFrameView* frame_view = widget_delegate_->CreateNonClientFrameView();
-  if (!frame_view)
-    frame_view = native_widget_->CreateNonClientFrameView();
-  return frame_view ? frame_view : new CustomFrameView(this);
-}
-
-bool Widget::ShouldUseNativeFrame() const {
-  if (frame_type_ != FRAME_TYPE_DEFAULT)
-    return frame_type_ == FRAME_TYPE_FORCE_NATIVE;
-  return native_widget_->ShouldUseNativeFrame();
-}
-
-void Widget::DebugToggleFrameType() {
-  if (frame_type_ == FRAME_TYPE_DEFAULT) {
-    frame_type_ = ShouldUseNativeFrame() ? FRAME_TYPE_FORCE_CUSTOM :
-        FRAME_TYPE_FORCE_NATIVE;
-  } else {
-    frame_type_ = frame_type_ == FRAME_TYPE_FORCE_CUSTOM ?
-        FRAME_TYPE_FORCE_NATIVE : FRAME_TYPE_FORCE_CUSTOM;
-  }
-  FrameTypeChanged();
-}
-
-void Widget::FrameTypeChanged() {
-  native_widget_->FrameTypeChanged();
-}
-
 void Widget::NotifyAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type,
@@ -473,11 +415,6 @@ void Widget::OnNativeWidgetCreated() {
     focus_manager_.reset(new FocusManager(this));
   }
   EnsureCompositor();
-}
-
-void Widget::OnNativeWidgetDestroyed() {
-  widget_delegate_->DeleteDelegate();
-  widget_delegate_ = NULL;
 }
 
 void Widget::OnSizeChanged(const gfx::Size& new_size) {

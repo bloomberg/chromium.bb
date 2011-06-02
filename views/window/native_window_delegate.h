@@ -36,11 +36,11 @@ class NativeWindowDelegate {
   virtual bool IsDialogBox() const = 0;
 
   // Returns the smallest size the window can be resized to by the user.
-  virtual gfx::Size GetMinimumSize() = 0;
+  virtual gfx::Size GetMinimumSize() const = 0;
 
   // Returns the non-client component (see views/window/hit_test.h) containing
   // |point|, in client coordinates.
-  virtual int GetNonClientComponent(const gfx::Point& point) = 0;
+  virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
 
   // Runs the specified native command. Returns true if the command is handled.
   virtual bool ExecuteCommand(int command_id) = 0;
@@ -58,6 +58,9 @@ class NativeWindowDelegate {
   // Called just before the native window is destroyed. This is the delegate's
   // last chance to do anything with the native window handle.
   virtual void OnNativeWindowDestroying() = 0;
+
+  // Called just after the native window is destroyed.
+  virtual void OnNativeWindowDestroyed() = 0;
 
   // Called when the native window's position or size has changed.
   virtual void OnNativeWindowBoundsChanged() = 0;

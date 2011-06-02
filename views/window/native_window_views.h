@@ -33,6 +33,10 @@ class NativeWindowViews : public NativeWidgetViews,
   virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
   virtual void EnableClose(bool enable) OVERRIDE;
+  virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual void FrameTypeChanged() OVERRIDE;
 
   internal::NativeWindowDelegate* delegate_;
 

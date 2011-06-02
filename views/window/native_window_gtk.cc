@@ -238,6 +238,27 @@ const Window* NativeWindowGtk::GetWindow() const {
   return delegate_->AsWindow();
 }
 
+NonClientFrameView* NativeWindowGtk::CreateFrameViewForWindow() {
+  return NULL;
+}
+
+void NativeWindowGtk::UpdateFrameAfterFrameChange() {
+  // We currently don't support different frame types on Gtk, so we don't
+  // need to implement this.
+  NOTIMPLEMENTED();
+}
+
+bool NativeWindowGtk::ShouldUseNativeFrame() const {
+  return false;
+}
+
+void NativeWindowGtk::FrameTypeChanged() {
+  // This is called when the Theme has changed, so forward the event to the root
+  // widget.
+  GetWidget()->ThemeChanged();
+  GetWidget()->GetRootView()->SchedulePaint();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWindowGtk, NativeWidgetGtk overrides:
 
@@ -279,6 +300,11 @@ void NativeWindowGtk::SaveWindowPosition() {
 void NativeWindowGtk::OnDestroy(GtkWidget* widget) {
   delegate_->OnNativeWindowDestroying();
   NativeWidgetGtk::OnDestroy(widget);
+}
+
+void NativeWindowGtk::OnDestroyed(GObject *where_the_object_was) {
+  delegate_->OnNativeWindowDestroyed();
+  NativeWidgetGtk::OnDestroyed(where_the_object_was);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
