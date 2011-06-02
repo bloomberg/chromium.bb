@@ -12,18 +12,30 @@ BOT_ASSIGNMENT = {
     ######################################################################
     # Buildbots.
     ######################################################################
-    'xp-newlib-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
-    'xp-glibc-opt': 'buildbot\\buildbot_win.bat opt 32 glibc',
-    'vista-64-newlib-dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
-    'vista-64-newlib-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
-    'win7-64-glibc-dbg': 'buildbot\\buildbot_win.bat dbg 64 glibc',
-    'win7-64-glibc-opt': 'buildbot\\buildbot_win.bat opt 64 glibc',
-    'xp-bare-newlib-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
-    'xp-bare-glibc-opt': 'buildbot\\buildbot_win.bat opt 32 glibc',
-    'win7-32-bare-newlib-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
-    'win7-32-bare-glibc-opt': 'buildbot\\buildbot_win.bat opt 32 glibc',
-    'win7-64-bare-newlib-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
-    'win7-64-bare-glibc-opt': 'buildbot\\buildbot_win.bat opt 64 glibc',
+    'xp-newlib-opt':
+        '%s buildbot\\buildbot_win.py opt 32 newlib' % sys.executable,
+    'xp-glibc-opt':
+        '%s buildbot\\buildbot_win.py opt 32 glibc' % sys.executable,
+    'vista-64-newlib-dbg':
+        '%s buildbot\\buildbot_win.py dbg 64 newlib' % sys.executable,
+    'vista-64-newlib-opt':
+        '%s buildbot\\buildbot_win.py opt 64 newlib' % sys.executable,
+    'win7-64-glibc-dbg':
+        '%s buildbot\\buildbot_win.py dbg 64 glibc' % sys.executable,
+    'win7-64-glibc-opt':
+        '%s buildbot\\buildbot_win.py opt 64 glibc' % sys.executable,
+    'xp-bare-newlib-opt':
+        '%s buildbot\\buildbot_win.py opt 32 newlib' % sys.executable,
+    'xp-bare-glibc-opt':
+        '%s buildbot\\buildbot_win.py opt 32 glibc' % sys.executable,
+    'win7-32-bare-newlib-opt':
+        '%s buildbot\\buildbot_win.py opt 32 newlib' % sys.executable,
+    'win7-32-bare-glibc-opt':
+        '%s buildbot\\buildbot_win.py opt 32 glibc' % sys.executable,
+    'win7-64-bare-newlib-opt':
+        '%s buildbot\\buildbot_win.py opt 64 newlib' % sys.executable,
+    'win7-64-bare-glibc-opt':
+        '%s buildbot\\buildbot_win.py opt 64 glibc' % sys.executable,
     'mac10.5-newlib-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
     'mac10.6-newlib-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
     'mac10.5-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
@@ -95,11 +107,16 @@ BOT_ASSIGNMENT = {
     ######################################################################
     # Trybots.
     ######################################################################
-    'nacl-win32_newlib_opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
-    'nacl-win32_glibc_opt': 'buildbot\\buildbot_win.bat opt 32 glibc',
-    'nacl-win64_newlib_dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
-    'nacl-win64_newlib_opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
-    'nacl-win64_glibc_opt': 'buildbot\\buildbot_win.bat opt 64 glibc',
+    'nacl-win32_newlib_opt':
+        '%s buildbot\\buildbot_win.py opt 32 newlib' % sys.executable,
+    'nacl-win32_glibc_opt':
+        '%s buildbot\\buildbot_win.py opt 32 glibc' % sys.executable,
+    'nacl-win64_newlib_dbg':
+        '%s buildbot\\buildbot_win.py dbg 64 newlib' % sys.executable,
+    'nacl-win64_newlib_opt':
+        '%s buildbot\\buildbot_win.py opt 64 newlib' % sys.executable,
+    'nacl-win64_glibc_opt':
+        '%s buildbot\\buildbot_win.py opt 64 glibc' % sys.executable,
     'nacl-mac10.5_newlib_opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
     'nacl-mac10.5_glibc_opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
     'nacl-mac10.6_newlib_opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',

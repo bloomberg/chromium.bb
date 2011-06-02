@@ -2936,16 +2936,13 @@ def DumpCompilerVersion(cc, env):
                            bufsize=1000*1000,
                            stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE)
+      stdout, stderr = p.communicate()
+      print stderr[0:stderr.find("\r")]
     except WindowsError:
-      print 'ERROR: Visual Studio tools are not in your path.'
-      print '       Please run vcvars32.bat'
-      print '       Typically located in:'
-      print '          c:\\Program Files\\Microsoft Visual Studio 8\\VC\\Bin'
-      sys.exit(1)
-    stderr = p.stderr.read()
-    stdout = p.stdout.read()
-    retcode = p.wait()
-    print stderr[0:stderr.find("\r")]
+      # If vcvars was not run before running SCons, we won't be able to find
+      # the compiler at this point.  SCons has built in functions for finding
+      # the compiler, but they haven't run yet.
+      print 'Can not find the compiler, assuming SCons will find it later.'
   else:
     print "UNKNOWN COMPILER"
 

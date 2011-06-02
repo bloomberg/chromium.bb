@@ -33,5 +33,5 @@ echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_
 :: Run tests
 
 set INSIDE_TOOLCHAIN=1
-buildbot\buildbot_win.bat opt 64 glibc
+python buildbot\buildbot_win.py opt 64 glibc
 
