@@ -7,24 +7,30 @@ found in the LICENSE file.
 
 <html>
   <head>
-    <title id="title">Remoting Session</title>
-    <link rel="stylesheet" type="text/css" href="main.css" />
-    <script type="text/javascript" src="oauth2.js"></script>
-    <script type="text/javascript" src="remoting_session.js"></script>
+    <title>Chromoting Session</title>
+    <link rel="shortcut icon" href="chromoting128.png" />
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="remoting_session.css" />
+    <script src="oauth2.js"></script>
+    <script src="remoting_session.js"></script>
   </head>
-  <body class="remoting_body" onload="init();">
-    <div id="status_msg_div">
-      <span id="status_msg" class="status_msg">Initializing...</span>
-      <input type="button" value="Scale to fit" class="scale_to_fit_toggle"
-             id="scale_to_fit_toggle" onclick="toggleScaleToFit();"/>
-      <input type="button" value="Show Debug Log" class="debug_log_toggle"
-             id="debug_log_toggle" onclick="toggleDebugLog();"/>
+  <body id="session-body">
+    <div id="session-controls">
+      <form id="session-buttons">
+        <input id="scale-to-fit-toggle" type="button" value="Scale to fit"
+               onclick="toggleScaleToFit();"/>
+        <input id="debug-log-toggle" type="button" value="Show Debug Log"
+               onclick="toggleDebugLog(); return false;"/>
+      </form>
+      <span id="status-msg">Initializing...</span>
     </div>
-    <div id="plugin_scroll_panel" class="plugin-scroll-panel">
+    <div id="session-controls-padding">
+    </div>
+    <div id="plugin-scroll-panel">
       <embed name="remoting" id="remoting"
              src="about://none" type="pepper-application/x-chromoting">
     </div>
-    <div id="debug_log" class="debug_log">
+    <div id="debug-log">
     </div>
   </body>
 </html>

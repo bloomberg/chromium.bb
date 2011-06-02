@@ -1,0 +1,186 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Elements */
+a {
+  color: rgb(0, 102, 204);
+  text-decoration: none;
+}
+
+
+body {
+  background: -webkit-gradient(radial, center center, 0, center center, 400,
+                               from(rgb(254, 254, 254)),
+                               to(rgb(239, 239, 239)));
+  font-family: Arial, sans-serif;
+  margin:0;
+  padding:0;
+}
+
+button {
+  background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
+  border: 1px solid #aaa;
+  height: 2em;
+  font-size: 16px;
+  padding: .5em 1em;
+  -webkit-border-radius: 2px;
+  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  -webkit-user-select: none;
+}
+
+button:hover {
+  background: #ebebeb -webkit-linear-gradient(#fefefe, #f8f8f8 40%, #e9e9e9);
+  border-color: #999;
+  color: #222;
+  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+  background: #ebebeb -webkit-linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
+  color: #333;
+  -webkit-box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+button[disabled], .button[disabled]:hover {
+  background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
+  border-color: #aaa;
+  color: #888;
+  -webkit-box-shadow: none;
+}
+
+footer {
+  font-size: 14px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 24px;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
+label {
+  color: black;
+  font-weight: bold;
+}
+
+section {
+  margin-top: 17px;
+  padding-bottom: 20px;
+}
+
+/* Classes */
+
+.auth-status-control {
+  /* Class used to denote controls that affect authorization status. */
+}
+
+.centered-form {
+  /*
+    Used to force buttons to center correctly on Chrome due to bug laying out
+    buttons. http://crbug.com/84654
+    When 84654 is fixed we can remove the forms that have this class that
+    are wrapping our buttons.
+  */
+  margin: 25px auto;
+  display: table;
+}
+
+.client-element {
+  /* Class used to denote client UI elements. */
+}
+
+.description {
+  margin-bottom: 25px;
+}
+
+.display-inline {
+  /*
+    Class used to denote elements that should be displayed inline as opposed
+    to block.
+  */
+}
+
+.host-element {
+  /* Class used to denote host UI elements. */
+}
+
+.icon-label {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.message {
+  text-align:center;
+}
+
+.mode {
+  /*
+    Class used to denote different modes of a given UI.
+    e.g. "Connecting" is a mode of the client UI.
+  */
+}
+
+/* Ids */
+#auth-panel {
+  border-bottom: 2px solid gray;
+  padding: 5px 10px;
+}
+
+#access-code-display {
+  background-color: lightgray;
+  border-style: solid;
+  font-size: 200%;
+  margin: 0 auto 25px auto;
+  padding: 0 4px 0 4px;
+  text-align: center;
+  width: 350px;
+}
+
+#access-code-entry {
+  font-weight: bold;
+  font-size: 18px;
+  height: 25px;
+  margin: 0 10px;
+  padding-left: 5px;
+  width: 12em;
+}
+
+#access-code-entry-row {
+  text-align: center;
+}
+
+#main-panel {
+  color: rgb(115, 115, 115);
+  font-size: 16px;
+  margin: 100px auto 0 auto;
+  padding: 10px;
+  width: 640px;
+}
+
+#current-email {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+#divider-top {
+  margin: 10px 0 15px 0;
+}
+
+#divider-bottom {
+  margin: 25px 0 10px 0;
+}
+
+#icon {
+  height: 64px;
+  width: 64px;
+}
+#oauth2-entry {
+  display: inline-block;
+  width: 400px;
+}
+
+#server-response {
+  font-weight: bolder;
+}

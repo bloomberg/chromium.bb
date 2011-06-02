@@ -6,188 +6,189 @@ found in the LICENSE file.
 -->
 
 <html>
-
   <head>
-    <link rel="stylesheet" type="text/css" href="main.css" />
-    <script type="text/javascript" src="remoting.js"></script>
-    <script type="text/javascript" src="oauth2.js"></script>
-    <title>Select Role</title>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="chromoting128.png" />
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="choice.css" />
+    <script src="remoting.js"></script>
+    <script src="oauth2.js"></script>
+    <title>Chromoting</title>
   </head>
 
-  <body onload="init();">
-
-    <!-- Auth panel -->
-    <div id="auth_panel">
-      OAuth2 Token: <span id="oauth2_status"></span>
-      <button onclick="remoting.oauth2.openOAuth2Window();"
-              id="oauth2_code_button">
-        Open OAuth2 Window
-      </button>
-      <button onclick="clearOAuth2();" id="oauth2_clear_button">
-        Clear
-      </button>
-      <form id='oauth2_form' action=""
-            onsubmit="authorizeOAuth2(this['oauth2_code'].value); return false;"
-            style="display:none">
-        <label for="auth2_code">OAuth2 Code (from window):</label>
-        <input type="text" name="oauth2_code" id="oauth2_code" />
-        <input type="submit"/>
-      </form>
-      <div id="email_div">
-        Current Email: <span id="current_email"></span>
-        <form id='new_email_form' action=""
-          onsubmit="setEmail(this); return false;">
-          <label for="new_email">New Email:</label>
-          <input type="text" name="new_email" id="new_email" />
-          <input type="submit" name="Set E-mail"/>
+  <body>
+    <div id="auth-panel">
+      <span id="oauth2-entry">
+        <form action="" onsubmit="authorizeOAuth2(); return false;">
+          <label for="oauth2-code">OAuth2 Token:</label>
+          <input id="oauth2-code" class="display-inline" type="text"
+                 onkeyup="handleOAuth2CodeChange();"
+                 onchange="handleOAuth2CodeChange();" />
+          <input id="oauth2-submit-button" class="display-inline"
+                 type="submit" />
+          <input id="oauth2-code-button" class="display-inline" type="button"
+                 onclick="remoting.oauth2.openOAuth2Window(); return false;"
+                 value="Get OAuth2 Token&hellip;" />
+          <input id="oauth2-clear-button" class="display-inline" type="button"
+                 onclick="clearOAuth2(); return false;" value="Revoke" />
         </form>
-      </div>
-      <div id="xmpp_div" style="display:none;">
-        XMPP Token: <span id="xmpp_status"></span>
-        <button onclick="clearXmpp();" id="xmpp_clear" style="display:none;">
-            Clear
-          </button>
+      </span> <!-- oauth2-entry -->
 
-        <form id='xmpp_form' action=""
-          onsubmit="authorizeXmpp(this); return false;">
-          <label for="xmpp_username">Email:</label>
-          <input type="text" name="xmpp_username" id="xmpp_username" />
-          <label for="xmpp_password">App-specific Password:</label>
-          <input type="password" name="xmpp_password" id="xmpp_password" />
-          <div id="xmpp_captcha" style="display:none;">
-            <img style="display:block;" id="xmpp_captcha_img" />
-            <input type="hidden" name="xmpp_captcha_token" />
-            <input type="text" name="xmpp_captcha_result" />
+      <span id="email-entry">
+        <form action=""
+              onsubmit="setEmail(this['new-email'].value); return false;">
+          <label for="new-email">Email:</label>
+          <span id="current-email" class="display-inline"></span>
+          <input id="new-email" class="display-inline" name="new-email"
+                 type="text" />
+          <input id="email-submit-button" class="display-inline"
+                 type="submit" />
+          <input id="change-email-button" class="display-inline" type="button"
+                 onclick="setEmail(''); return false;" value="Change Email" />
+        </form>
+      </span> <!-- email-entry -->
+
+    </div> <!-- auth-panel -->
+
+    <div id="main-panel">
+      <header>
+        <img id="icon" src="chromoting128.png">
+        <h1 class="icon-label host-element display-inline">
+          Chromoting&nbsp;>&nbsp;Share
+        </h1>
+        <h1 class="icon-label client-element display-inline">
+          Chromoting&nbsp;>&nbsp;Connect
+        </h1>
+        <img id="divider-top" src="dividertop.png">
+      </header>
+
+      <section id="host-section" class="host-element">
+        <div id="unshared" class="mode">
+          <div class="description">
+            With Chromoting you can easily let another Chrome user see and
+            control your computer.
           </div>
-          <input type="submit"/>
-        </form>
-        <span id="xmpp_last_error" style="display:none"></span>
-        <iframe id="xmpp_error" style="display:none">
-          <p> No iframe support
-        </iframe>
-      </div>
+          <form class="centered-form">
+            <button id="share-button" class="auth-status-control"
+                    type="button" onclick="tryShare(); return false;">
+              Share this computer
+            </button>
+          </form>
+        </div> <!-- unshared -->
+
+        <div id="preparing-to-share" class="mode">
+          <div class="message">
+            Connecting...
+          </div>
+        </div> <!-- preparing-to-share -->
+
+        <div id="ready-to-share" class="mode">
+          <div class="description">
+            To begin sharing your desktop, read out the access code below to the
+            person who will be assisting you.
+          </div>
+          <div id="access-code-display">
+            FAILED!
+          </div>
+          <div class="message">
+            Waiting for connection...
+          </div>
+          <form class="centered-form">
+            <button type="button" onclick="cancelShare(); return false;">
+              Cancel
+            </button>
+          </form>
+        </div> <!-- ready-to-share -->
+
+        <div id="shared" class="mode">
+          <div class="message">
+            Your desktop is currently being shared.
+          </div>
+          <form class="centered-form">
+            <button type="button" onclick="cancelShare(); return false;">
+              Stop sharing
+            </button>
+          </form>
+        </div> <!-- shared -->
+      </section> <!-- host-section -->
+
+      <section id="client-section" class="client-element">
+        <div id="unconnected"  class="mode">
+          <div class="description">
+            Have the user whose computer you wish to access click
+            ‘Share this computer with another user’ and then have them read
+            their access code to you.
+          </div>
+          <div id="access-code-entry-row">
+            <form action="">
+              <label class="auth-status-control" for="access-code-entry">
+                Access code:
+              </label>
+              <input id="access-code-entry" class="auth-status-control"
+                     type="text"/>
+            </form>
+            <form class="centered-form">
+              <button id="connect-button" class="auth-status-control"
+                      type="button" onclick="tryConnect();  return false;">
+                Connect
+              </button>
+            </form>
+          </div> <!-- code-entry-row -->
+        </div> <!-- unconnected -->
+
+        <div id="connecting" class="mode">
+          <div class="message">
+            Verifying access code...
+            <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
+                 the eventual server response not to ignore responses for any
+                 subsequent requests.
+            <form class="centered-form">
+              <button onclick="cancelConnect(); return false;">
+                Cancel
+              </button>
+            </form>
+            -->
+          </div>
+        </div> <!-- connecting -->
+
+        <div id="connect-failed" class="mode">
+          <div id="invalid-access-code" class="message">
+            Invalid access code.
+          </div>
+          <div id="other-connect-error" class="message">
+            An error occurred. The server response was
+            <div id="server-response"></div>.
+          </div>
+          <form class="centered-form">
+            <button type="button"
+                    onclick="setClientMode('unconnected'); return false;">
+              OK
+            </button>
+          </form>
+        </div> <!-- connect-failed -->
+      </section> <!-- client-section -->
+
+      <footer>
+        <img id="divider-bottom" src="dividerbottom.png">
+        <div class="client-element">
+          Click here to
+          <a class="switch-mode"
+             href="#"
+             onclick="setGlobalModePersistent(remoting.HOST_MODE);
+                      return false;">
+            share this computer with another user</a>.
+        </div> <!-- client-footer -->
+
+        <div class="host-element">
+          Click here to <a class="switch-mode"
+             href="#"
+             onclick="setGlobalModePersistent(remoting.CLIENT_MODE);
+                      return false;">
+            access a shared computer</a>.
+        </div> <!-- host-footer -->
+      </footer>
+    </div> <!-- main-panel -->
+    <div id="plugin-wrapper">
     </div>
-
-    <!-- Host UI -->
-    <div id="host">
-      <div id="plugin_wrapper">
-      </div>
-
-      <div id="unshared">
-        <p class="message">
-          Your desktop is currently unshared.
-        </p>
-        <button type="button"
-                class="ok"
-                onclick="tryShare();">
-          Start sharing
-        </button>
-        <p>
-          <a class="switch_mode"
-             href="#c"
-             onclick="setGlobalModePersistent('client');">
-            I want to connect to another computer instead...
-          </a>
-        </p>
-      </div>
-
-      <div id="preparing_to_share">
-        <p class="message">
-          Connecting...
-        </p>
-      </div>
-
-      <div id="ready_to_share">
-        <p class="message">
-          To begin sharing your desktop, read out the access code below to the
-          person who will be assisting you.
-        </p>
-        <p id="access_code_display">
-          FAILED!
-        </p>
-        <p class="message">
-          Waiting for connection...
-          <button type="button"
-                  class="cancel"
-                  onclick="cancelShare();">
-            Cancel
-          </button>
-        </p>
-        <p class="message mock">
-          (For this mock-up, this message will disappear automatically.)
-        </p>
-      </div>
-
-      <div id="shared">
-        <p class="message">
-          Your desktop is currently being shared.
-        </p>
-        <button type="button"
-                class="cancel"
-                onclick="cancelShare();">
-          Stop sharing
-        </button>
-      </div>
-
-    </div>
-
-    <!-- Client UI -->
-    <div id="client">
-
-      <div id="unconnected">
-        <p class="message">
-          To connect to another computer, enter the access code provided to you
-          by that computer's user.
-        </p>
-        <form action="" onsubmit="tryConnect(this['access_code_entry'].value);
-              return false;">
-          <input type="text"
-                 id="access_code_entry"/>
-          <button type="submit">
-            Connect
-          </button>
-        </form>
-        <a class="switch_mode"
-           href="#h"
-           onclick="setGlobalModePersistent('host');">
-          I want to share this computer instead...
-        </a>
-      </div>
-
-      <div id="connecting">
-        <p class="message">
-          Verifying access code...
-          <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
-               the eventual server response not to ignore responses for any
-               subsequent requests.
-          <button type="button"
-                  class="cancel"
-                  onclick="cancelConnect();">
-            Cancel
-          </button>
-          -->
-        </p>
-      </div>
-
-      <div id="connect_failed">
-        <p class="message"
-           id="invalid_access_code">
-          Invalid access code.
-        </p>
-        <p class="message"
-           id="other_connect_error">
-          An error occurred. The server response was
-          <strong id="server_response"></strong>.
-        </p>
-        <button type="button"
-                class="ok"
-                onclick="setClientMode('unconnected');">
-          OK
-        </button>
-      </div>
-
-    </div>
-
   </body>
-
 </html>

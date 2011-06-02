@@ -2,91 +2,77 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+"use strict";
+
 // TODO(ajwong): This seems like a bad idea to share the exact same object
 // with the background page.  Why are we doing it like this?
 var remoting = chrome.extension.getBackgroundPage().remoting;
+remoting.CLIENT_MODE='client';
+remoting.HOST_MODE='host';
+remoting.PLUGIN_MIMETYPE='HOST_PLUGIN_MIMETYPE';
+remoting.XMPP_LOGIN_NAME = 'xmpp_login';
+remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
-XMPP_LOGIN_NAME = 'xmpp_login';
-XMPP_TOKEN_NAME = 'xmpp_token';
-HOST_PLUGIN_ID = 'host_plugin_id';
+window.addEventListener("load", init_, false);
+
+function hasClass(element, cls) {
+  return element.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+}
+
+function showElement(element, visible) {
+  if (visible) {
+    if (hasClass(element, 'display-inline')) {
+      element.style.display = 'inline';
+    } else {
+      element.style.display = 'block';
+    }
+  } else {
+    element.style.display = 'none';
+  }
+}
+
+function showElementById(id, visible) {
+  showElement(document.getElementById(id), visible);
+}
+
+// This code moved into this subroutine (instead of being inlined in
+// updateAuthStatus_() because of bug in V8.
+// http://code.google.com/p/v8/issues/detail?id=1423
+function updateControls_(disable) {
+  var authStatusControls =
+      document.getElementsByClassName('auth-status-control');
+  for (var i = 0; i < authStatusControls.length; ++i) {
+    authStatusControls[i].disabled = disable;
+  }
+}
 
 function updateAuthStatus_() {
-  var oauth2_status = document.getElementById('oauth2_status');
-  if (remoting.oauth2.isAuthenticated()) {
-    oauth2_status.innerText = 'OK';
-    oauth2_status.style.color = 'green';
-    document.getElementById('oauth2_code_button').style.display = 'none';
-    document.getElementById('oauth2_clear_button').style.display = 'inline';
-    document.getElementById('oauth2_form').style.display = 'none';
+  var oauthValid = remoting.oauth2.isAuthenticated();
+  if (!oauthValid) {
+    document.getElementById('oauth2-code').value = "";
+  }
+  showElementById('oauth2-submit-button', false);
+  showElementById('oauth2-code', !oauthValid);
+  showElementById('oauth2-code-button', !oauthValid);
+  showElementById('oauth2-clear-button', oauthValid);
+
+  var loginName = remoting.getItem(remoting.XMPP_LOGIN_NAME);
+  if (loginName) {
+    document.getElementById('current-email').innerText = loginName;
+  }
+  showElementById('current-email', loginName);
+  showElementById('change-email-button', loginName);
+  showElementById('new-email', !loginName);
+  showElementById('email-submit-button', !loginName);
+
+  var disableControls = !(loginName && oauthValid);
+  var authPanel = document.getElementById('auth-panel');
+  if (disableControls) {
+    authPanel.style.backgroundColor = 'rgba(204, 0, 0, 0.15)';
   } else {
-    oauth2_status.innerText = 'Unauthorized';
-    oauth2_status.style.color = 'red';
-    document.getElementById('oauth2_code_button').style.display = 'inline';
-    document.getElementById('oauth2_clear_button').style.display = 'none';
-    document.getElementById('oauth2_form').style.display = 'inline';
+    authPanel.style.backgroundColor = 'rgba(0, 204, 102, 0.15)';
   }
-  var xmpp_status = document.getElementById('xmpp_status');
-  if (remoting.getItem(XMPP_TOKEN_NAME) && remoting.getItem(XMPP_LOGIN_NAME)) {
-    document.getElementById('xmpp_clear').style.display = 'inline';
-    document.getElementById('xmpp_form').style.display = 'none';
-    xmpp_status.innerText = 'OK';
-    xmpp_status.style.color = 'green';
-  } else {
-    document.getElementById('xmpp_clear').style.display = 'none';
-    document.getElementById('xmpp_form').style.display = 'inline';
-    xmpp_status.innerText = 'Unauthorized';
-    xmpp_status.style.color = 'red';
-  }
-  var current_email = document.getElementById('current_email');
-  if (remoting.getItem(XMPP_LOGIN_NAME)) {
-    oauth2_status.style.color = 'green';
-    current_email.innerText = remoting.getItem(XMPP_LOGIN_NAME);
-  } else {
-    oauth2_status.style.color = 'red';
-    current_email.innerText = 'missing e-mail';
-  }
-}
-
-function clientLoginError_(xhr) {
-  // If there's an error URL, load it into an iframe.
-  var url_line = xhr.responseText.match('Url=.*');
-  if (url_line) {
-    url = url_line[0].substr(4);
-    var error_frame = document.getElementById('xmpp_error');
-    error_frame.src = url;
-    error_frame.style.display = 'block';
-  }
-
-  var log_msg = 'Client Login failed. Status: ' + xhr.status +
-      ' body: ' + xhr.responseText;
-  console.log(log_msg);
-  var last_error = document.getElementById('xmpp_last_error');
-  last_error.innerText = log_msg;
-  last_error.style.display = 'inline';
-}
-
-function resetXmppErrors_() {
-  document.getElementById('xmpp_captcha').style.display = 'none';
-  document.getElementById('xmpp_error').style.display = 'none';
-  document.getElementById('xmpp_last_error').style.display = 'none';
-}
-
-function displayCaptcha_(form, url, token) {
-  form['xmpp_captcha_token'].value = token;
-  document.getElementById('xmpp_captcha_img').src = url;
-  document.getElementById('xmpp_captcha').style.display = 'inline';
-}
-
-function readAndClearCaptcha_(form) {
-  var captcha_token = form['xmpp_captcha_token'].value;
-  form['xmpp_captcha_token'].value = '';
-  resetXmppErrors_();
-  return [captcha_token, form['xmpp_captcha_result'].value];
-}
-
-function initAuthPanel_() {
-  updateAuthStatus_();
-  resetXmppErrors_();
+  updateControls_(disableControls);
 }
 
 function initBackgroundFuncs_() {
@@ -96,63 +82,21 @@ function initBackgroundFuncs_() {
   remoting.oauth2 = new OAuth2();
 }
 
-function authorizeXmpp(form) {
-  var xhr = new XMLHttpRequest();
-  var captcha_result = readAndClearCaptcha_(form);
-
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) {
-      return;
-    }
-
-    if (xhr.status == 200) {
-      var auth_line = xhr.responseText.match('Auth=.*');
-      if (!auth_line) {
-        clientLoginError_(xhr);
-        return;
-      }
-      remoting.setItem(XMPP_TOKEN_NAME, auth_line[0].substr(5));
-      remoting.setItem(XMPP_LOGIN_NAME, form['xmpp_username'].value);
-      updateAuthStatus_();
-    } else if (xhr.status == 403) {
-      var error_line = xhr.responseText.match('Error=.*');
-      if (error_line && error_line == 'Error=CaptchaRequired') {
-        var captcha_token = xhr.responseText.match('CaptchaToken=.*');
-        var captcha_url = xhr.responseText.match('CaptchaUrl=.*');
-        displayCaptcha_(
-            form,
-            'https://www.google.com/accounts/' + captcha_url[0].substr(11),
-            captcha_token[0].substr(13));
-        return;
-      }
-      clientLoginError_(xhr);
-    } else {
-      clientLoginError_(xhr);
-    }
-  };
-  xhr.open('POST', 'https://www.google.com/accounts/ClientLogin', true);
-  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  var post_data =
-      'accountType=HOSTED_OR_GOOGLE' +
-      '&service=chromiumsync' +
-      '&source=remoting-webapp' +
-      '&Email=' + encodeURIComponent(form['xmpp_username'].value) +
-      '&Passwd=' + encodeURIComponent(form['xmpp_password'].value);
-
-  if (captcha_result[0]) {
-    post_data += '&logintoken=' + encodeURIComponent(captcha_result[0]) +
-        '&logincaptcha=' + encodeURIComponent(captcha_result[1]);
-  }
-  xhr.send(post_data);
-}
-
-function setEmail(form) {
-  remoting.setItem(XMPP_LOGIN_NAME, form['new_email'].value);
+function setEmail(value) {
+  remoting.setItem(remoting.XMPP_LOGIN_NAME, value);
   updateAuthStatus_();
 }
 
-function authorizeOAuth2(code) {
-  remoting.oauth2.exchangeCodeForToken(code, updateAuthStatus_);
+function exchangedCodeForToken_() {
+  if (!remoting.oauth2.isAuthenticated()) {
+    alert("Your OAuth2 token was invalid. Please try again.");
+  }
+  updateAuthStatus_();
+}
+
+function authorizeOAuth2() {
+  remoting.oauth2.exchangeCodeForToken(
+      document.getElementById('oauth2-code').value, exchangedCodeForToken_);
 }
 
 function clearOAuth2() {
@@ -160,33 +104,46 @@ function clearOAuth2() {
   updateAuthStatus_();
 }
 
-function clearXmpp() {
-  remoting.removeItem(XMPP_TOKEN_NAME);
-  updateAuthStatus_();
+function handleOAuth2CodeChange() {
+  var hasCode = document.getElementById('oauth2-code').value.length > 0;
+
+  showElementById('oauth2-submit-button', hasCode);
+  showElementById('oauth2-code-button', !hasCode);
 }
 
 // Show the div with id |mode| and hide those with other ids in |modes|.
 function setMode_(mode, modes) {
   for (var i = 0; i < modes.length; ++i) {
-    var div = document.getElementById(modes[i]);
-    if (mode == modes[i]) {
-      div.style.display = 'block';
-    } else {
-      div.style.display = 'none';
-    }
+    showElement(modes[i], mode == modes[i].id);
   }
 }
 
-function init() {
+function init_() {
   initBackgroundFuncs_();
-  initAuthPanel_();
+  updateAuthStatus_();
   setHostMode('unshared');
   setClientMode('unconnected');
-  setGlobalMode(remoting.getItem('startup-mode', 'host'));
+  setGlobalMode(remoting.getItem('startup-mode', remoting.HOST_MODE));
 }
 
 function setGlobalMode(mode) {
-  setMode_(mode, ['host', 'client']);
+  var elementsToShow = [];
+  var elementsToHide = [];
+  var hostElements = document.getElementsByClassName('host-element');
+  var clientElements = document.getElementsByClassName('client-element');
+  if (mode == remoting.HOST_MODE) {
+    elementsToShow = hostElements;
+    elementsToHide = clientElements;
+  } else {
+    elementsToShow = clientElements;
+    elementsToHide = hostElements;
+  }
+  for (var i = 0; i < elementsToShow.length; ++i) {
+    showElement(elementsToShow[i], true);
+  }
+  for (var i = 0; i < elementsToHide.length; ++i) {
+    showElement(elementsToHide[i], false);
+  }
 }
 
 function setGlobalModePersistent(mode) {
@@ -195,14 +152,15 @@ function setGlobalModePersistent(mode) {
 }
 
 function setHostMode(mode) {
-  setMode_(mode, ['unshared',
-                  'preparing_to_share',
-                  'ready_to_share',
-                  'shared']);
+  var section = document.getElementById('host-section');
+  var modes = section.getElementsByClassName('mode');
+  setMode_(mode, modes);
 }
 
 function setClientMode(mode) {
-  setMode_(mode, ['unconnected', 'connecting', 'connect_failed']);
+  var section = document.getElementById('client-section');
+  var modes = section.getElementsByClassName('mode');
+  setMode_(mode, modes);
 }
 
 function tryShare() {
@@ -217,27 +175,27 @@ function tryShare() {
     return;
   }
 
-  var div = document.getElementById('plugin_wrapper');
+  var div = document.getElementById('plugin-wrapper');
   var plugin = document.createElement('embed');
-  plugin.setAttribute('type', 'HOST_PLUGIN_MIMETYPE');
+  plugin.setAttribute('type', remoting.PLUGIN_MIMETYPE);
   plugin.setAttribute('hidden', 'true');
-  plugin.setAttribute('id', HOST_PLUGIN_ID);
+  plugin.setAttribute('id', remoting.HOST_PLUGIN_ID);
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
-  plugin.connect(remoting.getItem(XMPP_LOGIN_NAME),
+  plugin.connect(remoting.getItem(remoting.XMPP_LOGIN_NAME),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }
 
 function onStateChanged_() {
-  var plugin = document.getElementById(HOST_PLUGIN_ID);
+  var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   var state = plugin.state;
   if (state == plugin.REQUESTED_ACCESS_CODE) {
-    setHostMode('preparing_to_share');
+    setHostMode('preparing-to-share');
   } else if (state == plugin.RECEIVED_ACCESS_CODE) {
-    var access_code = plugin.accessCode;
-    var access_code_display = document.getElementById('access_code_display');
-    access_code_display.innerText = access_code;
-    setHostMode('ready_to_share');
+    var accessCode = plugin.accessCode;
+    var accessCodeDisplay = document.getElementById('access-code-display');
+    accessCodeDisplay.innerText = accessCode;
+    setHostMode('ready-to-share');
   } else if (state == plugin.CONNECTED) {
     setHostMode('shared');
   } else if (state == plugin.DISCONNECTED) {
@@ -249,29 +207,29 @@ function onStateChanged_() {
 }
 
 function cancelShare() {
-  var plugin = document.getElementById(HOST_PLUGIN_ID);
+  var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   plugin.disconnect();
 }
 
 function startSession_() {
-  remoting.username = remoting.getItem(XMPP_LOGIN_NAME);
+  remoting.username = remoting.getItem(remoting.XMPP_LOGIN_NAME);
   document.location = 'remoting_session.html';
 }
 
 function showConnectError_(responseCode, responseString) {
-  var invalid = document.getElementById('invalid_access_code');
-  var other = document.getElementById('other_connect_error');
+  var invalid = document.getElementById('invalid-access-code');
+  var other = document.getElementById('other-connect-error');
   if (responseCode == 404) {
     invalid.style.display = 'block';
     other.style.display = 'none';
   } else {
     invalid.style.display = 'none';
     other.style.display = 'block';
-    var responseNode = document.getElementById('server_response');
+    var responseNode = document.getElementById('server-response');
     responseNode.innerText = responseString + ' (' + responseCode + ')';
   }
   remoting.accessCode = '';
-  setClientMode('connect_failed');
+  setClientMode('connect-failed');
 }
 
 function parseServerResponse_(xhr) {
@@ -293,7 +251,7 @@ function normalizeAccessCode(accessCode) {
   return accessCode.replace(/^\s+|\s+$/, '');
 }
 
-function resolveSupportId(support_id) {
+function resolveSupportId(supportId) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
       if (xhr.readyState != 4) {
@@ -304,25 +262,25 @@ function resolveSupportId(support_id) {
 
     xhr.open('GET',
              'https://www.googleapis.com/chromoting/v1/support-hosts/' +
-                 encodeURIComponent(support_id),
+                 encodeURIComponent(supportId),
              true);
     xhr.setRequestHeader('Authorization',
                          'OAuth ' + remoting.oauth2.getAccessToken());
     xhr.send(null);
 }
 
-function tryConnect(accessCode) {
+function tryConnect() {
   if (remoting.oauth2.needsNewAccessToken()) {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
         throw "Unable to get access token";
       }
-      tryConnect(accessCode);
+      tryConnect();
     });
     return;
   }
-
+  var accessCode = document.getElementById('access-code-entry').value;
   remoting.accessCode = accessCode;
   // TODO(jamiewalch): Since the mapping from (SupportId, HostSecret) to
   // AccessCode is not yet defined, assume it's hyphen-separated for now.

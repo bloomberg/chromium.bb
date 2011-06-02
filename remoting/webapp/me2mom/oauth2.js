@@ -8,6 +8,9 @@
 // to copy and paste a code, but that does not support extension URL schemes
 // quite yet. Instead, we currently use the native app flow with an
 // authorization code that the user must cut/paste.
+
+var remoting = chrome.extension.getBackgroundPage().remoting;
+
 function OAuth2() {
   this.OAUTH2_REFRESH_TOKEN_NAME = 'oauth2_refresh_token';
 

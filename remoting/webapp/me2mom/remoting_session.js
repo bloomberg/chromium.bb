@@ -29,6 +29,8 @@ remoting.connectMethod = 'sandboxed';
 remoting.httpXmppProxy =
     'https://chromoting-httpxmpp-oauth2-dev.corp.google.com';
 
+window.addEventListener("load", init_, false);
+
 // This executes a poll loop on the server for more Iq packets, and feeds them
 // to the plugin.
 function feedIq() {
@@ -116,7 +118,7 @@ function checkVersion(plugin) {
       plugin.apiVersion >= remoting.apiMinVersion;
 }
 
-function init() {
+function init_() {
   // Kick off the connection.
   var plugin = document.getElementById('remoting');
 
@@ -169,8 +171,8 @@ function init() {
 }
 
 function toggleDebugLog() {
-  debugLog = document.getElementById('debug_log');
-  toggleButton = document.getElementById('debug_log_toggle');
+  debugLog = document.getElementById('debug-log');
+  toggleButton = document.getElementById('debug-log-toggle');
 
   if (!debugLog.style.display || debugLog.style.display == 'none') {
     debugLog.style.display = 'block';
@@ -183,7 +185,7 @@ function toggleDebugLog() {
 
 function toggleScaleToFit() {
   remoting.scaleToFit = !remoting.scaleToFit;
-  document.getElementById('scale_to_fit_toggle').value =
+  document.getElementById('scale-to-fit-toggle').value =
       remoting.scaleToFit ? 'No scaling' : 'Scale to fit';
   remoting.plugin.setScaleToFit(remoting.scaleToFit);
 }
@@ -244,7 +246,7 @@ function setClientStateMessage(message) {
   remoting.messageId++;
 
   // Update the status message.
-  var msg = document.getElementById('status_msg');
+  var msg = document.getElementById('status-msg');
   msg.innerText = message;
   msg.style.opacity = 1;
   msg.style.display = '';
@@ -260,7 +262,7 @@ function setClientStateMessageFade(message, duration) {
   setClientStateMessage(message);
 
   // Set message duration.
-  window.setTimeout("fade('status_msg', " + remoting.messageId + ', ' +
+  window.setTimeout("fade('status-msg', " + remoting.messageId + ', ' +
                           '100, 10, 200)',
                     duration);
 }
@@ -292,7 +294,7 @@ function fade(name, id, val, delta, delay) {
     if (newVal > 0) {
       // Decrease opacity and set timer for next fade event.
       e.style.opacity = newVal / 100;
-      window.setTimeout("fade('status_msg', " + id + ', ' + newVal + ', ' +
+      window.setTimeout("fade('status-msg', " + id + ', ' + newVal + ', ' +
                               delta + ', ' + delay + ')',
                         delay);
     } else {
@@ -317,7 +319,7 @@ function debugInfoCallback(msg) {
  * @param {string} message The debug info to add to the log.
  */
 function addToDebugLog(message) {
-  var debugLog = document.getElementById('debug_log');
+  var debugLog = document.getElementById('debug-log');
 
   // Remove lines from top if we've hit our max log size.
   if (debugLog.childNodes.length == MAX_DEBUG_LOG_SIZE) {
@@ -346,22 +348,22 @@ function updateStatusBarStats() {
   if (videoBandwidth < 1024) {
     units = 'Bps';
   } else if (videoBandwidth < 1048576) {
-    units = 'KBps';
+    units = 'KiBps';
     videoBandwidth = videoBandwidth / 1024;
   } else if (videoBandwidth < 1073741824) {
-    units = 'MBps';
+    units = 'MiBps';
     videoBandwidth = videoBandwidth / 1048576;
   } else {
-    units = 'GBps';
+    units = 'GiBps';
     videoBandwidth = videoBandwidth / 1073741824;
   }
 
   setClientStateMessage(
-      'Video stats: bandwidth: ' + videoBandwidth.toFixed(2) + units +
-      ', Latency: capture: ' + videoCaptureLatency.toFixed(2) + 'ms' +
-      ', encode: ' + videoEncodeLatency.toFixed(2) + 'ms' +
-      ', decode: ' + videoDecodeLatency.toFixed(2) + 'ms' +
-      ', render: ' + videoRenderLatency.toFixed(2) + 'ms');
+      'Bandwidth: ' + videoBandwidth.toFixed(2) + units +
+      ', Capture: ' + videoCaptureLatency.toFixed(2) + 'ms' +
+      ', Encode: ' + videoEncodeLatency.toFixed(2) + 'ms' +
+      ', Decode: ' + videoDecodeLatency.toFixed(2) + 'ms' +
+      ', Render: ' + videoRenderLatency.toFixed(2) + 'ms');
 
   // Update the stats once per second.
   window.setTimeout('updateStatusBarStats()', 1000);
