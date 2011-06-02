@@ -11,36 +11,36 @@ function expect(expected, message) {
 }
 chrome.test.runTests([
   function getRegular() {
-    cs.misc.blockThirdPartyCookies.get(
+    cs.global.thirdPartyCookiesAllowed.get(
         {},
-        expect({ 'value': false,
+        expect({ 'value': true,
                  'levelOfControl': "controllable_by_this_extension" },
                "third-party cookies should not be blocked"));
   },
   function getIncognito() {
-    cs.misc.blockThirdPartyCookies.get(
+    cs.global.thirdPartyCookiesAllowed.get(
         { 'incognito': true },
-        expect({ 'value': false,
+        expect({ 'value': true,
                  'incognitoSpecific': false,
                  'levelOfControl': "controllable_by_this_extension" },
                "third-party cookies should not be blocked in incognito mode"));
   },
   function set() {
-    cs.misc.blockThirdPartyCookies.set(
-        { 'scope': 'incognito_persistent', 'value': true },
+    cs.global.thirdPartyCookiesAllowed.set(
+        { 'scope': 'incognito_persistent', 'value': false },
         chrome.test.callbackPass());
   },
   function getRegular2() {
-    cs.misc.blockThirdPartyCookies.get(
+    cs.global.thirdPartyCookiesAllowed.get(
         {},
-        expect({ 'value': false,
+        expect({ 'value': true,
                  'levelOfControl': "controllable_by_this_extension" },
                "third-party cookies should not be blocked"));
   },
   function getIncognito2() {
-    cs.misc.blockThirdPartyCookies.get(
+    cs.global.thirdPartyCookiesAllowed.get(
         { 'incognito': true },
-        expect({ 'value': true,
+        expect({ 'value': false,
                  'incognitoSpecific': true,
                  'levelOfControl': "controlled_by_this_extension" },
                "third-party cookies should be blocked in incognito mode"));

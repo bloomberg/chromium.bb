@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.contentSettings.misc - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.experimental.contentSettings.global - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,7 +251,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.contentSettings.misc</h1>
+        <h1 class="page_title">chrome.experimental.contentSettings.global</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -266,17 +266,17 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.contentSettings.misc</a>
+                <a href="#apiReference">API reference: chrome.experimental.contentSettings.global</a>
                 <ol>
                   <li>
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
-                        <a href="#property-blockThirdPartyCookies">blockThirdPartyCookies</a>
+                        <a href="#property-thirdPartyCookiesAllowed">thirdPartyCookiesAllowed</a>
                       </li><li>
-                        <a href="#property-enableReferrers">enableReferrers</a>
+                        <a href="#property-referrersEnabled">referrersEnabled</a>
                       </li><li>
-                        <a href="#property-enableHyperlinkAuditing">enableHyperlinkAuditing</a>
+                        <a href="#property-hyperlinkAuditingEnabled">hyperlinkAuditingEnabled</a>
                       </li>
                     </ol>
                   </li>
@@ -321,7 +321,7 @@
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.contentSettings.misc</h2>
+        <h2>API reference: chrome.experimental.contentSettings.global</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup">
@@ -329,15 +329,15 @@
             <h3 id="properties">Properties</h3>
 
             <div>
-              <a name="property-blockThirdPartyCookies"></a>
-              <h4>blockThirdPartyCookies</h4>
+              <a name="property-thirdPartyCookiesAllowed"></a>
+              <h4>thirdPartyCookiesAllowed</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.experimental.contentSettings.misc.</span><span>blockThirdPartyCookies</span>
+                <span>chrome.experimental.contentSettings.global.</span><span>thirdPartyCookiesAllowed</span>
               </div>
               <div>
           <dt>
-            <var>blockThirdPartyCookies</var>
+            <var>thirdPartyCookiesAllowed</var>
               <em>
 
                 <!-- TYPE -->
@@ -365,7 +365,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether third party cookies should be blocked. The value of this preference is of type boolean.</dd>
+          <dd>Whether third party cookies should be allowed. The value of this preference is of type boolean, and the default value is true.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -403,15 +403,15 @@
 
         </div>
             </div><div>
-              <a name="property-enableReferrers"></a>
-              <h4>enableReferrers</h4>
+              <a name="property-referrersEnabled"></a>
+              <h4>referrersEnabled</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.experimental.contentSettings.misc.</span><span>enableReferrers</span>
+                <span>chrome.experimental.contentSettings.global.</span><span>referrersEnabled</span>
               </div>
               <div>
           <dt>
-            <var>enableReferrers</var>
+            <var>referrersEnabled</var>
               <em>
 
                 <!-- TYPE -->
@@ -439,7 +439,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether referrers should be enabled. The value of this preference is of type boolean.</dd>
+          <dd>Whether referrers should be enabled. The value of this preference is of type boolean, and the default value is true.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -477,15 +477,15 @@
 
         </div>
             </div><div>
-              <a name="property-enableHyperlinkAuditing"></a>
-              <h4>enableHyperlinkAuditing</h4>
+              <a name="property-hyperlinkAuditingEnabled"></a>
+              <h4>hyperlinkAuditingEnabled</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.experimental.contentSettings.misc.</span><span>enableHyperlinkAuditing</span>
+                <span>chrome.experimental.contentSettings.global.</span><span>hyperlinkAuditingEnabled</span>
               </div>
               <div>
           <dt>
-            <var>enableHyperlinkAuditing</var>
+            <var>hyperlinkAuditingEnabled</var>
               <em>
 
                 <!-- TYPE -->
@@ -513,7 +513,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to enable hyperlink auditing ("&lt;a ping&gt;"). The value of this preference is of type boolean.</dd>
+          <dd>Whether to enable hyperlink auditing ("&lt;a ping&gt;"). The value of this preference is of type boolean, and the default value is true.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

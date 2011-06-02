@@ -301,7 +301,7 @@ var chrome = chrome || {};
       "devtools",
       "experimental.accessibility",
       "experimental.bookmarkManager",
-      "experimental.contentSettings.misc",
+      "experimental.contentSettings.global",
       "experimental.debugger",
       "experimental.extension",
       "experimental.infobars",

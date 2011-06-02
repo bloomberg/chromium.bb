@@ -58,15 +58,15 @@ const char kPermissionErrorMessage[] =
     "Be sure to declare in your manifest what permissions you need.";
 
 PrefMappingEntry kPrefMapping[] = {
-  { "blockThirdPartyCookies",
+  { "thirdPartyCookiesAllowed",
     prefs::kBlockThirdPartyCookies,
     Extension::kContentSettingsPermission
   },
-  { "enableReferrers",
+  { "referrersEnabled",
     prefs::kEnableReferrers,
     Extension::kContentSettingsPermission
   },
-  { "enableHyperlinkAuditing",
+  { "hyperlinkAuditingEnabled",
     prefs::kEnableHyperlinkAuditing,
     Extension::kContentSettingsPermission
   },
@@ -78,9 +78,6 @@ PrefMappingEntry kPrefMapping[] = {
 
 class IdentityPrefTransformer : public PrefTransformerInterface {
  public:
-  IdentityPrefTransformer() { }
-  virtual ~IdentityPrefTransformer() { }
-
   virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
                                         std::string* error,
                                         bool* bad_message) {
@@ -89,6 +86,27 @@ class IdentityPrefTransformer : public PrefTransformerInterface {
 
   virtual Value* BrowserToExtensionPref(const Value* browser_pref) {
     return browser_pref->DeepCopy();
+  }
+};
+
+class InvertBooleanTransformer : public PrefTransformerInterface {
+ public:
+  virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
+                                        std::string* error,
+                                        bool* bad_message) {
+    return InvertBooleanValue(extension_pref);
+  }
+
+  virtual Value* BrowserToExtensionPref(const Value* browser_pref) {
+    return InvertBooleanValue(browser_pref);
+  }
+
+ private:
+  static Value* InvertBooleanValue(const Value* value) {
+    bool bool_value = false;
+    bool result = value->GetAsBoolean(&bool_value);
+    DCHECK(result);
+    return Value::CreateBooleanValue(!bool_value);
   }
 };
 
@@ -190,6 +208,8 @@ class PrefMapping {
     DCHECK_EQ(arraysize(kPrefMapping), mapping_.size());
     DCHECK_EQ(arraysize(kPrefMapping), event_mapping_.size());
     RegisterPrefTransformer(prefs::kProxy, new ProxyPrefTransformer());
+    RegisterPrefTransformer(prefs::kBlockThirdPartyCookies,
+                            new InvertBooleanTransformer());
   }
 
   ~PrefMapping() {

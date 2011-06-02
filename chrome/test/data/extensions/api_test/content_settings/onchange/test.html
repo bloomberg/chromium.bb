@@ -22,73 +22,73 @@ chrome.test.runTests([
   function changeDefault() {
     // Changing the regular settings when no incognito-specific settings are
     // defined should fire two events.
-    listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
-      'value': true,
+    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+      'value': false,
       'levelOfControl': 'controlled_by_this_extension'
     },
     {
-      'value': true,
+      'value': false,
       'incognitoSpecific': false,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.misc.blockThirdPartyCookies.set({
-      'value':true
+    cs.global.thirdPartyCookiesAllowed.set({
+      'value':false
     }, chrome.test.callbackPass());
   },
   function changeIncognitoOnly() {
-    listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
-      'value': false,
+    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+      'value': true,
       'incognitoSpecific': true,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.misc.blockThirdPartyCookies.set({
-      'value': false,
+    cs.global.thirdPartyCookiesAllowed.set({
+      'value': true,
       'scope': 'incognito_persistent'
     }, chrome.test.callbackPass());
   },
   function changeDefaultOnly() {
-    listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
-      'value': false,
+    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+      'value': true,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.misc.blockThirdPartyCookies.set({
-      'value': false
+    cs.global.thirdPartyCookiesAllowed.set({
+      'value': true
     }, chrome.test.callbackPass());
   },
   function changeIncognitoOnlyBack() {
-    // Change the incognito setting back to true so that we get an event when
+    // Change the incognito setting back to false so that we get an event when
     // clearing the value.
-    listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
-      'value': true,
+    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+      'value': false,
       'incognitoSpecific': true,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.misc.blockThirdPartyCookies.set({
-      'value': true,
+    cs.global.thirdPartyCookiesAllowed.set({
+      'value': false,
       'scope': 'incognito_persistent'
     }, chrome.test.callbackPass());
   },
   function clearIncognito() {
-    listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
-      'value': false,
+    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+      'value': true,
       'incognitoSpecific': false,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.misc.blockThirdPartyCookies.clear({
+    cs.global.thirdPartyCookiesAllowed.clear({
       'scope': 'incognito_persistent'
     }, chrome.test.callbackPass());
   },
   function clearDefault() {
-    listenUntil(cs.misc.blockThirdPartyCookies.onChange, [{
-      'value': false,
+    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+      'value': true,
       'levelOfControl': 'controllable_by_this_extension'
     },
     {
-      'value': false,
+      'value': true,
       'incognitoSpecific': false,
       'levelOfControl': 'controllable_by_this_extension'
     }]);
-    cs.misc.blockThirdPartyCookies.clear({}, chrome.test.callbackPass());
+    cs.global.thirdPartyCookiesAllowed.clear({}, chrome.test.callbackPass());
   }
 ]);
 

@@ -9,27 +9,27 @@ function expect(expected, message) {
   });
 }
 chrome.test.runTests([
-  function getBlockThirdPartyCookies() {
-    cs.misc.blockThirdPartyCookies.get(
+  function getThirdPartyCookiesAllowed() {
+    cs.global.thirdPartyCookiesAllowed.get(
         {}, 
-        expect({ 'value': true,
+        expect({ 'value': false,
                  'levelOfControl': "controllable_by_this_extension" },
                "third-party cookies should be blocked"));
   },
-  function getEnableReferrers() {
-    cs.misc.enableReferrers.get(
+  function getReferrersEnabled() {
+    cs.global.referrersEnabled.get(
         {},
         expect({ 'value': false,
                  'levelOfControl': "controllable_by_this_extension" },
                "referrers should be disabled"));
   },
-  function setBlockThirdPartyCookies() {
-    cs.misc.blockThirdPartyCookies.set(
-        {'value': false},
+  function setThirdPartyCookiesAllowed() {
+    cs.global.thirdPartyCookiesAllowed.set(
+        {'value': true},
         chrome.test.callbackPass());
   },
-  function setEnableReferrers() {
-    cs.misc.enableReferrers.set(
+  function setReferrersEnabled() {
+    cs.global.referrersEnabled.set(
         {'value': true},
         chrome.test.callbackPass());
   }

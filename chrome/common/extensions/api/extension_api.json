@@ -5653,22 +5653,22 @@
     ]
   },
   {
-    "namespace": "experimental.contentSettings.misc",
+    "namespace": "experimental.contentSettings.global",
     "properties": {
-      "blockThirdPartyCookies": {
+      "thirdPartyCookiesAllowed": {
         "$ref": "Preference",
-        "value": ["blockThirdPartyCookies", {"type": "boolean"}],
-        "description": "Whether third party cookies should be blocked. The value of this preference is of type boolean."
+        "value": ["thirdPartyCookiesAllowed", {"type": "boolean"}],
+        "description": "Whether third party cookies should be allowed. The value of this preference is of type boolean, and the default value is true."
       },
-      "enableReferrers": {
+      "referrersEnabled": {
         "$ref": "Preference",
-        "value": ["enableReferrers", {"type":"boolean"}],
-        "description": "Whether referrers should be enabled. The value of this preference is of type boolean."
+        "value": ["referrersEnabled", {"type":"boolean"}],
+        "description": "Whether referrers should be enabled. The value of this preference is of type boolean, and the default value is true."
       },
-      "enableHyperlinkAuditing": {
+      "hyperlinkAuditingEnabled": {
         "$ref": "Preference",
-        "value": ["enableHyperlinkAuditing", {"type":"boolean"}],
-        "description": "Whether to enable hyperlink auditing (\"&lt;a ping&gt;\"). The value of this preference is of type boolean."
+        "value": ["hyperlinkAuditingEnabled", {"type":"boolean"}],
+        "description": "Whether to enable hyperlink auditing (\"&lt;a ping&gt;\"). The value of this preference is of type boolean, and the default value is true."
       }
     }
   },

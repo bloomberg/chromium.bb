@@ -2,8 +2,7 @@
 <html>
 <head>
   <script>
-var cs = chrome.experimental.contentSettings;
-var pref = cs.misc.enableReferrers;
+var pref = chrome.experimental.contentSettings.global.referrersEnabled;
 
 /**
  * Returns whether the |levelOfControl| means that the extension can change the

@@ -675,7 +675,7 @@
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "97a0009e38509549b1dd3eca84ee7aacd3aae4d7",
+      "source_hash": "2919c196fec8721c240b529b7763c36f7330d986",
       "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
     },
     {
