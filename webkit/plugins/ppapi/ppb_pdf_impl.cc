@@ -157,11 +157,9 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
     return 0;
 
   skia::PlatformCanvas* canvas = image_data->mapped_canvas();
-  SkBitmap& ret_bitmap =
-      const_cast<SkBitmap&>(skia::GetTopDevice(*canvas)->accessBitmap(true));
-  if (!res_bitmap->copyTo(&ret_bitmap, SkBitmap::kARGB_8888_Config, NULL)) {
-    return 0;
-  }
+  // Note: Do not grab the bitmap directly using accessBitmap, many operations
+  // that write to skBitmaps overwrite the allocated pixels in shared memory.
+  skia::GetTopDevice(*canvas)->writePixels(*res_bitmap, 0, 0);
 
   return image_data->GetReference();
 }
