@@ -3710,7 +3710,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN13ProfileIOData23InitializeProfileParamsEP7ProfilePNS_13ProfileParamsE
+   fun:_ZN13ProfileIOData23InitializeProfileParamsEP7Profile
 }
 {
    bug_72698_b
