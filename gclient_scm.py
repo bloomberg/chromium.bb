@@ -313,7 +313,7 @@ class GitWrapper(SCMWrapper):
       # case 0
       self._CheckClean(rev_str)
       self._CheckDetachedHead(rev_str, options)
-      self._Capture(['checkout', '--quiet', '%s^0' % revision])
+      self._Capture(['checkout', '--quiet', '%s' % revision])
       if not printed_path:
         print('\n_____ %s%s' % (self.relpath, rev_str))
     elif current_type == 'hash':
@@ -518,7 +518,7 @@ class GitWrapper(SCMWrapper):
 
     if detach_head:
       # Squelch git's very verbose detached HEAD warning and use our own
-      self._Capture(['checkout', '--quiet', '%s^0' % revision])
+      self._Capture(['checkout', '--quiet', '%s' % revision])
       print(
         ('Checked out %s to a detached HEAD. Before making any commits\n'
          'in this repo, you should use \'git checkout <branch>\' to switch to\n'
