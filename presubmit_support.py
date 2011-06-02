@@ -243,6 +243,7 @@ class InputApi(object):
     self.cPickle = cPickle
     self.cStringIO = cStringIO
     self.json = json
+    self.logging = logging.getLogger('PRESUBMIT')
     self.os_listdir = os.listdir
     self.os_walk = os.walk
     self.os_path = os.path

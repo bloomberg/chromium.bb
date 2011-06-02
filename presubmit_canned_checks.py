@@ -600,6 +600,8 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
     # were listed, try to run pylint.
     try:
       from pylint import lint
+      input_api.logging.debug(
+          'Using pylint v%s from %s' % (lint.version, lint.__file__))
     except ImportError:
       if input_api.platform == 'win32':
         return [output_api.PresubmitNotifyResult(
