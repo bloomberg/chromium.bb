@@ -583,6 +583,8 @@ installer::InstallStatus InstallProductsHelper(
           }
         }
 
+        installer_state.UpdateStage(installer::FINISHING);
+
         // Only do Chrome-specific stuff (like launching the browser) if
         // Chrome was specifically requested (rather than being upgraded as
         // part of a multi-install).

@@ -39,13 +39,19 @@ namespace {
 
 const wchar_t kStageBinaryPatching[] = L"binary_patching";
 const wchar_t kStageBuilding[] = L"building";
+const wchar_t kStageCopyingPreferencesFile[] = L"copying_prefs";
+const wchar_t kStageCreatingShortcuts[] = L"creating_shortcuts";
 const wchar_t kStageEnsemblePatching[] = L"ensemble_patching";
 const wchar_t kStageExecuting[] = L"executing";
 const wchar_t kStageFinishing[] = L"finishing";
 const wchar_t kStagePreconditions[] = L"preconditions";
+const wchar_t kStageRefreshingPolicy[] = L"refreshing_policy";
+const wchar_t kStageRegisteringChrome[] = L"registering_chrome";
+const wchar_t kStageRemovingOldVersions[] = L"removing_old_ver";
 const wchar_t kStageRollingback[] = L"rollingback";
 const wchar_t kStageUncompressing[] = L"uncompressing";
 const wchar_t kStageUnpacking[] = L"unpacking";
+const wchar_t kStageUpdatingChannels[] = L"updating_channels";
 
 const wchar_t* const kStages[] = {
   NULL,
@@ -57,6 +63,12 @@ const wchar_t* const kStages[] = {
   kStageBuilding,
   kStageExecuting,
   kStageRollingback,
+  kStageRefreshingPolicy,
+  kStageUpdatingChannels,
+  kStageCopyingPreferencesFile,
+  kStageCreatingShortcuts,
+  kStageRegisteringChrome,
+  kStageRemovingOldVersions,
   kStageFinishing
 };
 

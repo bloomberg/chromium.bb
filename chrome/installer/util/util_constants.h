@@ -35,7 +35,7 @@ enum InstallStatus {
   CHROME_RUNNING,         // 16. Chrome currently running (when trying to
                           // uninstall)
   UNINSTALL_CONFIRMED,    // 17. User has confirmed Chrome uninstall
-  UNINSTALL_DELETE_PROFILE, // 18. User confirmed uninstall and profile deletion
+  UNINSTALL_DELETE_PROFILE,  // 18. User okayed uninstall and profile deletion.
   UNINSTALL_SUCCESSFUL,   // 19. Chrome successfully uninstalled
   UNINSTALL_FAILED,       // 20. Chrome uninstallation failed
   UNINSTALL_CANCELLED,    // 21. User cancelled Chrome uninstallation
@@ -101,11 +101,19 @@ enum InstallerStage {
   BUILDING,                    // 6: Building the install work item list.
   EXECUTING,                   // 7: Executing the install work item list.
   ROLLINGBACK,                 // 8: Rolling-back the install work item list.
-  FINISHING,                   // 9: Finishing after the install work item list.
-  NUM_STAGES                   // 10: The number of stages.
+  REFRESHING_POLICY,           // 9: Refreshing the elevation policy.
+  UPDATING_CHANNELS,           // 10: Updating channel information.
+  COPYING_PREFERENCES_FILE,    // 11: Copying preferences file.
+  CREATING_SHORTCUTS,          // 12: Creating shortcuts.
+  REGISTERING_CHROME,          // 13: Performing Chrome registration.
+  REMOVING_OLD_VERSIONS,       // 14: Deleting old version directories.
+  FINISHING,                   // 15: Finishing the install.
+  NUM_STAGES                   // 16: The number of stages.
 };
 
-COMPILE_ASSERT(FINISHING == 9,
+// When we start reporting the numerical values from the enum, the order
+// above MUST be preserved.
+COMPILE_ASSERT(FINISHING == 15,
                never_ever_ever_change_InstallerStage_values_bang);
 
 namespace switches {

@@ -298,7 +298,7 @@ installer::InstallStatus InstallNewVersion(
     return result;
   }
 
-  installer_state.UpdateStage(installer::FINISHING);
+  installer_state.UpdateStage(installer::REFRESHING_POLICY);
 
   installer::RefreshElevationPolicy();
 
@@ -365,9 +365,13 @@ InstallStatus InstallOrUpdateProduct(
   // TODO(robertshield): Everything below this line should instead be captured
   // by WorkItems.
   if (!InstallUtil::GetInstallReturnCode(result)) {
+    installer_state.UpdateStage(installer::UPDATING_CHANNELS);
+
     // Update the modifiers on the channel values for the product(s) being
     // installed and for the binaries in case of multi-install.
     installer_state.UpdateChannels();
+
+    installer_state.UpdateStage(installer::COPYING_PREFERENCES_FILE);
 
     if (result == FIRST_INSTALL_SUCCESS && !prefs_path.empty())
       CopyPreferenceFileForFirstRun(installer_state, prefs_path);
@@ -381,6 +385,8 @@ InstallStatus InstallOrUpdateProduct(
     const Product* chrome_install =
         installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
     if (chrome_install && !do_not_create_shortcuts) {
+      installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
+
       bool create_all_shortcut = false;
       prefs.GetBool(master_preferences::kCreateAllShortcuts,
                     &create_all_shortcut);
@@ -407,9 +413,13 @@ InstallStatus InstallOrUpdateProduct(
                       &force_chrome_default_for_user);
       }
 
+      installer_state.UpdateStage(installer::REGISTERING_CHROME);
+
       RegisterChromeOnMachine(installer_state, *chrome_install,
           make_chrome_default || force_chrome_default_for_user);
     }
+
+    installer_state.UpdateStage(installer::REMOVING_OLD_VERSIONS);
 
     installer_state.RemoveOldVersionDirectories(
         new_version,
