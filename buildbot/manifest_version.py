@@ -494,7 +494,7 @@ class BuildSpecsManager(object):
 
     return None
 
-  def GetNextBuildSpec(self, version_file, latest=False, retries=2):
+  def GetNextBuildSpec(self, version_file, latest=False, retries=5):
     """Gets the version number of the next build spec to build.
       Args:
         version_file: File to use in cros when checking for cros version.
@@ -524,6 +524,8 @@ class BuildSpecsManager(object):
                                                        self.current_version)
           self._SetInFlight(commit_message)
           return self.GetLocalManifest(self.current_version)
+        else:
+          return None
 
       except (GitCommandException, cros_lib.RunCommandError) as e:
         last_error = 'Failed to generate buildspec. error: %s' % e
@@ -579,7 +581,7 @@ class BuildSpecsManager(object):
   def _PushSpecChanges(self, commit_message):
     _PushGitChanges(self.manifests_dir, commit_message, dry_run=self.dry_run)
 
-  def UpdateStatus(self, success, retries=3):
+  def UpdateStatus(self, success, retries=5):
     """Updates the status of the build for the current build spec.
     Args:
       success: True for success, False for failure
