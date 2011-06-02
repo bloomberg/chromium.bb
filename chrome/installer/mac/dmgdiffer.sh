@@ -413,7 +413,7 @@ shell_safe_path() {
 }
 
 usage() {
-  echo "usage: ${ME} old_dmg new_dmg patch_dmg" >& 2
+  echo "usage: ${ME} product_name old_dmg new_dmg patch_dmg" >& 2
 }
 
 main() {
