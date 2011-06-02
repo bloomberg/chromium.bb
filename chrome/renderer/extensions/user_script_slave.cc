@@ -238,6 +238,10 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
   if (frame_url.is_empty())
     return;
 
+  if (frame->isViewSourceModeEnabled())
+    frame_url = GURL(chrome::kViewSourceScheme + std::string(":") +
+                     frame_url.spec());
+
   PerfTimer timer;
   int num_css = 0;
   int num_scripts = 0;

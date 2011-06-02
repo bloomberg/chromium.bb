@@ -182,7 +182,7 @@ class URLPattern {
   bool IsValidScheme(const std::string& scheme) const;
 
   // Returns true if this instance matches the specified URL.
-  bool MatchesURL(const GURL& url) const;
+  bool MatchesURL(const GURL& test) const;
 
   // Returns true if |test| matches our scheme.
   bool MatchesScheme(const std::string& test) const;

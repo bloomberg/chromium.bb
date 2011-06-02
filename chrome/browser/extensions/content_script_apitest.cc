@@ -48,3 +48,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptIgnoreHostPermissions) {
   ASSERT_TRUE(RunExtensionTest(
       "content_scripts/dont_match_host_permissions")) << message_;
 }
+
+// crbug.com/39249 -- content scripts js should not run on view source.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptViewSource) {
+  ASSERT_TRUE(StartTestServer());
+  host_resolver()->AddRule("c.com", "127.0.0.1");
+  ASSERT_TRUE(RunExtensionTest("content_scripts/view_source")) << message_;
+}
