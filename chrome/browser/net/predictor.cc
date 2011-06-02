@@ -150,13 +150,14 @@ void Predictor::Resolve(const GURL& url,
 void Predictor::LearnFromNavigation(const GURL& referring_url,
                                     const GURL& target_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(referring_url == referring_url.GetWithEmptyPath());
-  DCHECK(target_url == target_url.GetWithEmptyPath());
-  if (referring_url.has_host()) {
-    referrers_[referring_url].SuggestHost(target_url);
-    // Possibly do some referrer trimming.
-    TrimReferrers();
-  }
+  DCHECK_EQ(referring_url, Predictor::CanonicalizeUrl(referring_url));
+  DCHECK_NE(referring_url, GURL::EmptyGURL());
+  DCHECK_EQ(target_url, Predictor::CanonicalizeUrl(target_url));
+  DCHECK_NE(target_url, GURL::EmptyGURL());
+
+  referrers_[referring_url].SuggestHost(target_url);
+  // Possibly do some referrer trimming.
+  TrimReferrers();
 }
 
 enum SubresourceValue {
@@ -194,11 +195,12 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
       // TODO(jar): Use an A/B test to optimize this.
       const int kMinConsecutiveRequests = 8;
       if (consecutive_omnibox_preconnect_count_ >= kMinConsecutiveRequests) {
-        // TODO(jar): The wild guess of 30 seconds could be tuned/tested, but it
-        // currently is just a guess that most sockets will remain open for at
-        // least 30 seconds.  This avoids a lot of cross-thread posting, and
-        // exercise of the network stack in this common case.
-        const int kMaxSearchKeepaliveSeconds(30);
+        // TODO(jar): Perhaps we should do a GET to leave the socket open in the
+        // pool.  Currently, we just do a connect, which MAY be reset if we
+        // don't use it in 10 secondes!!!  As a result, we may do more
+        // connections, and actually cost the server more than if we did a real
+        // get with a fake request (/gen_204 might be the good path on Google).
+        const int kMaxSearchKeepaliveSeconds(10);
         if ((now - last_omnibox_preconnect_).InSeconds() <
              kMaxSearchKeepaliveSeconds)
           return;  // We've done a preconnect recently.
@@ -245,7 +247,7 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url) {
 }
 
 void Predictor::PredictFrameSubresources(const GURL& url) {
-  DCHECK(url.GetWithEmptyPath() == url);
+  DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Add one pass through the message loop to allow current navigation to
   // proceed.
   BrowserThread::PostTask(
@@ -256,7 +258,7 @@ void Predictor::PredictFrameSubresources(const GURL& url) {
 
 void Predictor::PrepareFrameSubresources(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(url.GetWithEmptyPath() == url);
+  DCHECK_EQ(url.GetWithEmptyPath(), url);
   Referrers::iterator it = referrers_.find(url);
   if (referrers_.end() == it) {
     // Only when we don't know anything about this url, make 2 connections

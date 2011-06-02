@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,16 @@
 
 namespace chrome_browser_net {
 
-ConnectInterceptor::ConnectInterceptor() {
+// We don't bother learning to preconnect via a GET if the original URL
+// navigation was so long ago, that a preconnection would have been dropped
+// anyway.  We believe most servers will drop the connection in 10 seconds, so
+// we currently estimate this time-till-drop at 10 seconds.
+// TODO(jar): We should do a persistent field trial to validate/optimize this.
+static const int kMaxUnusedSocketLifetimeSecondsWithoutAGet = 10;
+
+ConnectInterceptor::ConnectInterceptor()
+    : timed_cache_(base::TimeDelta::FromSeconds(
+          kMaxUnusedSocketLifetimeSecondsWithoutAGet)) {
   net::URLRequest::RegisterRequestInterceptor(this);
 }
 
@@ -19,7 +28,9 @@ ConnectInterceptor::~ConnectInterceptor() {
 
 net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
     net::URLRequest* request) {
-  GURL request_scheme_host(request->url().GetWithEmptyPath());
+  GURL request_scheme_host(Predictor::CanonicalizeUrl(request->url()));
+  if (request_scheme_host == GURL::EmptyGURL())
+    return NULL;
 
   // Learn what URLs are likely to be needed during next startup.
   LearnAboutInitialNavigation(request_scheme_host);
@@ -41,7 +52,8 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
         // system will not respond until several identical redirects have taken
         // place.  Hence a use of a path (that changes) wouldn't really be
         // learned from anyway.
-        if (request->original_url().path().length() <= 1) {
+        if (request->original_url().path().length() <= 1 &&
+            timed_cache_.WasRecentlySeen(original_scheme_host)) {
           // TODO(jar): These definite redirects could be learned much faster.
           LearnFromNavigation(original_scheme_host, request_scheme_host);
         }
@@ -51,14 +63,18 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
     GURL referring_scheme_host = GURL(request->referrer()).GetWithEmptyPath();
     bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
     // Learn about our referring URL, for use in the future.
-    if (is_subresource)
+    if (is_subresource && timed_cache_.WasRecentlySeen(referring_scheme_host))
       LearnFromNavigation(referring_scheme_host, request_scheme_host);
     if (referring_scheme_host == request_scheme_host) {
       // We've already made any/all predictions when we navigated to the
       // referring host, so we can bail out here.
+      // We don't update the RecentlySeen() time because any preconnections
+      // need to be made at the first navigation (i.e., when referer was loaded)
+      // and wouldn't have waited for this current request navigation.
       return NULL;
     }
   }
+  timed_cache_.SetRecentlySeen(request_scheme_host);
 
   // Subresources for main frames usually get predicted when we detected the
   // main frame request - way back in RenderViewHost::Navigate.  So only handle
@@ -77,6 +93,30 @@ net::URLRequestJob* ConnectInterceptor::MaybeInterceptRedirect(
     net::URLRequest* request,
     const GURL& location) {
   return NULL;
+}
+
+ConnectInterceptor::TimedCache::TimedCache(const base::TimeDelta& max_duration)
+    : mru_cache_(UrlMruTimedCache::NO_AUTO_EVICT),
+      max_duration_(max_duration) {
+}
+
+bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) {
+  DCHECK_EQ(url.GetWithEmptyPath(), url);
+  // Evict any overly old entries.
+  base::TimeTicks now = base::TimeTicks::Now();
+  UrlMruTimedCache::reverse_iterator eldest = mru_cache_.rbegin();
+  while (!mru_cache_.empty()) {
+    DCHECK(eldest == mru_cache_.rbegin());
+    if (now - eldest->second < max_duration_)
+      break;
+    eldest = mru_cache_.Erase(eldest);
+  }
+  return mru_cache_.end() != mru_cache_.Peek(url);
+}
+
+void ConnectInterceptor::TimedCache::SetRecentlySeen(const GURL& url) {
+  DCHECK_EQ(url.GetWithEmptyPath(), url);
+  mru_cache_.Put(url, base::TimeTicks::Now());
 }
 
 }  // namespace chrome_browser_net
