@@ -255,10 +255,14 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundle(
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
       request_context_->GetURLRequestContext());
 
-  FilePath extension_path =
-      context->extension_info_map()->GetPathForExtension(extension_id);
-  std::string default_locale =
-      context->extension_info_map()->GetDefaultLocaleForExtension(extension_id);
+  const Extension* extension =
+      context->extension_info_map()->extensions().GetByID(extension_id);
+  FilePath extension_path;
+  std::string default_locale;
+  if (extension) {
+    extension_path = extension->path();
+    default_locale = extension->default_locale();
+  }
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -433,8 +437,10 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,
                                                           bool* allowed) {
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
       request_context_->GetURLRequestContext());
-  *allowed = context->extension_info_map()->CheckURLAccessToExtensionPermission(
-      url, Extension::kClipboardReadPermission);
+  const Extension* extension =
+      context->extension_info_map()->extensions().GetByURL(url);
+  *allowed = extension &&
+      extension->HasApiPermission(Extension::kClipboardReadPermission);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
@@ -443,9 +449,11 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
       request_context_->GetURLRequestContext());
   // Since all extensions could historically write to the clipboard, preserve it
   // for compatibility.
+  const Extension* extension =
+      context->extension_info_map()->extensions().GetByURL(url);
   *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
-      context->extension_info_map()->CheckURLAccessToExtensionPermission(
-          url, Extension::kClipboardWritePermission);
+      (extension &&
+       extension->HasApiPermission(Extension::kClipboardWritePermission));
 }
 
 void ChromeRenderMessageFilter::OnClearPredictorCache(int* result) {

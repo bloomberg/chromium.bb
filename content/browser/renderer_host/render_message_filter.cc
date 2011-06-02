@@ -391,8 +391,10 @@ void RenderMessageFilter::OnMsgCreateWindow(
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.
   if (params.window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
-    if (!extension_info_map_->CheckURLAccessToExtensionPermission(
-            params.opener_url, Extension::kBackgroundPermission)) {
+    const Extension* extension =
+        extension_info_map_->extensions().GetByURL(params.opener_url);
+    if (!extension ||
+        !extension->HasApiPermission(Extension::kBackgroundPermission)) {
       *route_id = MSG_ROUTING_NONE;
       return;
     }
@@ -615,8 +617,10 @@ void RenderMessageFilter::OnCheckNotificationPermission(
     const GURL& source_url, int* result) {
   *result = WebKit::WebNotificationPresenter::PermissionNotAllowed;
 
-  if (extension_info_map_->CheckURLAccessToExtensionPermission(
-          source_url, Extension::kNotificationPermission)) {
+  const Extension* extension =
+      extension_info_map_->extensions().GetByURL(source_url);
+  if (extension &&
+      extension->HasApiPermission(Extension::kNotificationPermission)) {
     *result = WebKit::WebNotificationPresenter::PermissionAllowed;
     return;
   }

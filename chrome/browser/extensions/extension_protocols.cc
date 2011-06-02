@@ -115,6 +115,14 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   net::HttpResponseInfo response_info_;
 };
 
+bool ExtensionCanLoadInIncognito(const std::string& extension_id,
+                                 ExtensionInfoMap* extension_info_map) {
+  const Extension* extension =
+      extension_info_map->extensions().GetByID(extension_id);
+  // Only split-mode extensions can load in incognito profiles.
+  return extension && extension->incognito_split_mode();
+}
+
 // Returns true if an chrome-extension:// resource should be allowed to load.
 // TODO(aa): This should be moved into ExtensionResourceRequestPolicy, but we
 // first need to find a way to get CanLoadInIncognito state into the renderers.
@@ -137,13 +145,27 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // incognito tab prevents that.
   if (is_incognito &&
       info->resource_type() == ResourceType::MAIN_FRAME &&
-      !extension_info_map->ExtensionCanLoadInIncognito(request->url().host())) {
+      !ExtensionCanLoadInIncognito(request->url().host(), extension_info_map)) {
     LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
                << "incognito tab.";
     return false;
   }
 
   return true;
+}
+
+// Returns true if the given URL references an icon in the given extension.
+bool URLIsForExtensionIcon(const GURL& url, const Extension* extension) {
+  DCHECK(url.SchemeIs(chrome::kExtensionScheme));
+
+  if (!extension)
+    return false;
+
+  std::string path = url.path();
+  DCHECK_EQ(url.host(), extension->id());
+  DCHECK(path.length() > 0 && path[0] == '/');
+  path = path.substr(1);
+  return extension->icons().ContainsPath(path);
 }
 
 class ExtensionProtocolHandler
@@ -177,20 +199,25 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
 
   // chrome-extension://extension-id/resource/path.js
   const std::string& extension_id = request->url().host();
-  FilePath directory_path = extension_info_map_->
-      GetPathForExtension(extension_id);
+  const Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
+  FilePath directory_path;
+  if (extension)
+    directory_path = extension->path();
   if (directory_path.value().empty()) {
-    if (extension_info_map_->URLIsForExtensionIcon(request->url()))
-      directory_path = extension_info_map_->
-          GetPathForDisabledExtension(extension_id);
+    const Extension* disabled_extension =
+        extension_info_map_->disabled_extensions().GetByID(extension_id);
+    if (URLIsForExtensionIcon(request->url(), disabled_extension))
+      directory_path = disabled_extension->path();
     if (directory_path.value().empty()) {
       LOG(WARNING) << "Failed to GetPathForExtension: " << extension_id;
       return NULL;
     }
   }
 
-  const std::string& content_security_policy = extension_info_map_->
-      GetContentSecurityPolicyForExtension(extension_id);
+  std::string content_security_policy;
+  if (extension)
+    content_security_policy = extension->content_security_policy();
 
   FilePath resources_path;
   if (PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&

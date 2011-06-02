@@ -465,10 +465,11 @@ void WorkerProcessHost::UpdateTitle() {
 
     // Check if it's an extension-created worker, in which case we want to use
     // the name of the extension.
-    std::string extension_name = resource_context_->
-        extension_info_map()->GetNameForExtension(title);
-    if (!extension_name.empty()) {
-      titles.insert(extension_name);
+    // TODO(mpcomplete): move out of content. http:://crbug.com/76789
+    const Extension* extension =
+        resource_context_->extension_info_map()->extensions().GetByID(title);
+    if (extension) {
+      titles.insert(extension->name());
       continue;
     }
 

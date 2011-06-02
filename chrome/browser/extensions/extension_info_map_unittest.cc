@@ -112,15 +112,9 @@ TEST_F(ExtensionInfoMapTest, Properties) {
   info_map->AddExtension(extension1);
   info_map->AddExtension(extension2);
 
-  EXPECT_EQ(extension1->name(),
-            info_map->GetNameForExtension(extension1->id()));
-  EXPECT_EQ(extension2->name(),
-            info_map->GetNameForExtension(extension2->id()));
-
-  EXPECT_EQ(extension1->path().value(),
-            info_map->GetPathForExtension(extension1->id()).value());
-  EXPECT_EQ(extension2->path().value(),
-            info_map->GetPathForExtension(extension2->id()).value());
+  EXPECT_EQ(2u, info_map->extensions().size());
+  EXPECT_EQ(extension1.get(), info_map->extensions().GetByID(extension1->id()));
+  EXPECT_EQ(extension2.get(), info_map->extensions().GetByID(extension2->id()));
 }
 
 // Tests CheckURLAccessToExtensionPermission given both extension and app URLs.
@@ -128,9 +122,9 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
 
   scoped_refptr<Extension> app(LoadManifest("manifest_tests",
-                                         "valid_app.json"));
+                                            "valid_app.json"));
   scoped_refptr<Extension> extension(LoadManifest("manifest_tests",
-                                               "tabs_extension.json"));
+                                                  "tabs_extension.json"));
 
   GURL app_url("http://www.google.com/mail/foo.html");
   ASSERT_TRUE(app->is_app());
@@ -141,24 +135,26 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
 
   // The app should have the notifications permission, either from a
   // chrome-extension URL or from its web extent.
-  EXPECT_TRUE(info_map->CheckURLAccessToExtensionPermission(
-      app->GetResourceURL("a.html"), Extension::kNotificationPermission));
-  EXPECT_TRUE(info_map->CheckURLAccessToExtensionPermission(
-      app_url, Extension::kNotificationPermission));
-  EXPECT_FALSE(info_map->CheckURLAccessToExtensionPermission(
-      app_url, Extension::kTabPermission));
+  const Extension* match = info_map->extensions().GetByURL(
+      app->GetResourceURL("a.html"));
+  EXPECT_TRUE(match &&
+              match->HasApiPermission(Extension::kNotificationPermission));
+  match = info_map->extensions().GetByURL(app_url);
+  EXPECT_TRUE(match &&
+              match->HasApiPermission(Extension::kNotificationPermission));
+  EXPECT_FALSE(match &&
+               match->HasApiPermission(Extension::kTabPermission));
 
   // The extension should have the tabs permission.
-  EXPECT_TRUE(info_map->CheckURLAccessToExtensionPermission(
-      extension->GetResourceURL("a.html"), Extension::kTabPermission));
-  EXPECT_FALSE(info_map->CheckURLAccessToExtensionPermission(
-      extension->GetResourceURL("a.html"), Extension::kNotificationPermission));
+  match = info_map->extensions().GetByURL(extension->GetResourceURL("a.html"));
+  EXPECT_TRUE(match &&
+      match->HasApiPermission(Extension::kTabPermission));
+  EXPECT_FALSE(match &&
+      match->HasApiPermission(Extension::kNotificationPermission));
 
   // Random URL should not have any permissions.
-  EXPECT_FALSE(info_map->CheckURLAccessToExtensionPermission(
-      GURL("http://evil.com/a.html"), Extension::kNotificationPermission));
-  EXPECT_FALSE(info_map->CheckURLAccessToExtensionPermission(
-      GURL("http://evil.com/a.html"), Extension::kTabPermission));
+  match = info_map->extensions().GetByURL(GURL("http://evil.com/a.html"));
+  EXPECT_FALSE(match);
 }
 
 }  // namespace
