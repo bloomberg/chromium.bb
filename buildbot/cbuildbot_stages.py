@@ -310,12 +310,13 @@ class BuilderStage():
 
   def _Begin(self):
     """Can be overridden.  Called before a stage is performed."""
-    self._PrintLoudly('Start Stage %s\n\n%s' % (
-        self._name, self.__doc__))
+    self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
+        self._name, time.strftime('%H:%M:%S'), self.__doc__))
 
   def _Finish(self):
     """Can be overridden.  Called after a stage has been performed."""
-    self._PrintLoudly('Finished Stage %s' % self._name)
+    self._PrintLoudly('Finished Stage %s - %s' %
+                      (self._name, time.strftime('%H:%M:%S')))
 
   def _PerformStage(self):
     """Subclassed stages must override this function to perform what they want
