@@ -170,14 +170,26 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
     TabContents* initiator_tab) {
   Browser* current_browser = BrowserList::FindBrowserWithID(
       initiator_tab->controller().window_id().id());
-  if (!current_browser)
-    return NULL;
+  if (!current_browser) {
+    if (initiator_tab->delegate()->IsExternalTabContainer()) {
+      current_browser = Browser::CreateForType(Browser::TYPE_POPUP,
+                                               initiator_tab->profile());
+      if (!current_browser) {
+        NOTREACHED() << "Failed to create popup browser window";
+        return NULL;
+      }
+    } else {
+      return NULL;
+    }
+  }
 
   // Add a new tab next to initiator tab.
   browser::NavigateParams params(current_browser,
                                  GURL(chrome::kChromeUIPrintURL),
                                  PageTransition::LINK);
   params.disposition = NEW_FOREGROUND_TAB;
+  if (initiator_tab->delegate()->IsExternalTabContainer())
+    params.disposition = NEW_POPUP;
   params.tabstrip_index = current_browser->tabstrip_model()->
       GetWrapperIndex(initiator_tab) + 1;
   browser::Navigate(&params);
