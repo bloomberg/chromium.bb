@@ -4458,7 +4458,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
         <!-- 3G data Notifications -->
         <message name="IDS_3G_NOTIFICATION_MESSAGE" desc="Text of the 3G data notification telling that 3G data is enabled.">
-          Chrome will use 3G data when no WiFi connection is present.
+          Google Chrome will use mobile data if you're not connected to another network.
         </message>
 
         <!-- about:system strings -->
@@ -10074,7 +10074,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
-        Purchase more...
+        Buy plan...
       </message>
       <message name="IDS_NETWORK_MORE_INFO_MESSAGE" desc="Message for more info link on cellular plan low data notification">
         More info...
@@ -10098,7 +10098,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         No data available
       </message>
       <message name="IDS_NETWORK_NO_DATA_PLAN_MESSAGE" desc="Message for network data remaining notification">
-        No active <ph name="network">$1<ex>YBH</ex></ph> data plan
+        You are out of mobile data. Purchase another plan to use <ph name="network">$1<ex>YBH</ex></ph>.
       </message>
       <message name="IDS_NETWORK_NEARING_EXPIRATION_TITLE" desc="Title for network nearing expiration notification">
         Nearing <ph name="network">$1<ex>YBH</ex></ph> expiration
@@ -11467,7 +11467,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         fast
       </message>
       <message name="IDS_STATUSBAR_NETWORK_LOCKED" desc="Message displayed while access to network devices is temporarily locked due to mobile network activation">
-        Please wait while we setup your mobile network.
+        Please wait while we set up your mobile network.
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
