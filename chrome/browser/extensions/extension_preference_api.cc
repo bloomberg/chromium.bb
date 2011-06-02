@@ -43,8 +43,7 @@ const char kIncognitoPersistent[] = "incognito_persistent";
 const char kIncognitoSessionOnly[] = "incognito_session_only";
 const char kValue[] = "value";
 
-const char kOnPrefChangeFormat[] =
-    "preferences.%s.onChange";
+const char kOnPrefChangeFormat[] = "types.ChromeSetting.%s.onChange";
 
 const char kIncognitoErrorMessage[] =
     "You do not have permission to access incognito preferences.";

@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>Preferences - Google Chrome Extensions - Google Code</title></head>
+  <title>Types - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,36 +251,24 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Preferences</h1>
+        <h1 class="page_title">Types</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#description">Overview</a>
+              <a href="#ChromeSetting">Chrome settings</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#lifecycle">Scope and life cycle of preferences</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#precedence">Precedence</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
+                <li>
+                  <a href="#ChromeSetting-lifecycle">Scope and life cycle</a>
+                </li><li>
+                  <a href="#ChromeSetting-precedence">Precedence</a>
                 </li>
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.preferences</a>
+                <a href="#apiReference">API reference: chrome.types</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -310,7 +298,7 @@
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#type-Preference">Preference</a>
+                        <a href="#type-ChromeSetting">ChromeSetting</a>
                       </li>
                     </ol>
                   </li>
@@ -326,64 +314,65 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Preferences</div>
+        <div id="static"><div id="pageData-name" class="pageData">Types</div>
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-The <code>chrome.preferences</code> module contains a prototype for giving other
-modules access to manage preferences stored by Chrome. This prototype is used,
+The <code>chrome.types</code> module contains type declarations for Chrome.
+Currently this comprises only a prototype for giving other
+modules access to manage Chrome browser settings. This prototype is used,
 for example, for <a href="proxy.html#property-settings"><code>chrome.proxy.settings</code></a>.
 </p>
 
-<h2 id="description">Overview</h2>
+<h2 id="ChromeSetting">Chrome settings</h2>
 
 <p>
-The preferences API provides a common set of functions
+The <code>ChromeSetting</code> prototype provides a common set of functions
 (<code>get()</code>, <code>set()</code>, and <code>clear()</code>) as
-well as an event publisher (<code>onChange</code>) for various
-preferences in Chrome. The <a href="proxy.html#overview-examples">proxy settings
+well as an event publisher (<code>onChange</code>) for settings of the
+Chrome browser. The <a href="proxy.html#overview-examples">proxy settings
  examples</a> demonstrate how these functions are intended to be used.
 </p>
 
-<h2 id="lifecycle">Scope and life cycle of preferences</h2>
+<h3 id="ChromeSetting-lifecycle">Scope and life cycle</h3>
 
 <p>
-Chrome distinguishes between three different scopes of preferences:
+Chrome distinguishes between three different scopes of browser settings:
 </p><dl>
   <dt><code>regular</code></dt>
-  <dd>Preferences set in the <code>regular</code> scope apply to regular
-  browser windows and are inherited by the incognito windows if they are not
-  overwritten. These preferences are stored to disk and remain in place until
+  <dd>Settings set in the <code>regular</code> scope apply to regular
+  browser windows and are inherited by incognito windows if they are not
+  overwritten. These settings are stored to disk and remain in place until
   they are cleared by the governing extension, or the governing extension is
   disabled or uninstalled.</dd>
 
   <dt><code>incognito_persistent</code></dt>
-  <dd>Preferences set in the <code>incognito_persistent</code> scope apply only
+  <dd>Settings set in the <code>incognito_persistent</code> scope apply only
   to incognito windows. For these, they override <code>regular</code>
-  preferences. These preferences are stored to disk and remain in place until
+  settings. These settings are stored to disk and remain in place until
   they are cleared by the governing extension, or the governing extension is
   disabled or uninstalled.</dd>
 
   <dt><code>incognito_session_only</code></dt>
-  <dd>Preferences set in the <code>incognito_session_only</code> scope apply only
+  <dd>Settings set in the <code>incognito_session_only</code> scope apply only
   to incognito windows. For these, they override <code>regular</code> and
-  <code>incognito_session_only</code> preferences. These preferences are not
+  <code>incognito_session_only</code> settings. These settings are not
   stored to disk and are cleared when the last incognito window is closed. They
   can only be set when at least one incognito window is open.</dd>
 
 </dl>
 <p></p>
 
-<h2 id="precedence">Precedence</h2>
+<h3 id="ChromeSetting-precedence">Precedence</h3>
 
 <p>
-Chrome manages preferences on different layers. The following list describes the
-layers that may influence the effective preferences, in increasing order of
+Chrome manages settings on different layers. The following list describes the
+layers that may influence the effective settings, in increasing order of
 precedence.
 </p><ol>
-  <li>System preferences provided by the operating system</li>
+  <li>System settings provided by the operating system</li>
   <li>Command-line parameters</li>
-  <li>Preferences set by extensions</li>
+  <li>Settings provided by extensions</li>
   <li>Policies</li>
 </ol>
 <p></p>
@@ -391,40 +380,40 @@ precedence.
 <p>
 As the list implies, policies might overrule any changes that you specify with
 your extension. You can use the <code>get()</code> function to determine whether
-your extension is capable of setting a preference or whether this setting would
+your extension is capable of providing a setting or whether this setting would
 be overridden.
 </p>
 
 <p>
-As discussed above, Chrome allows using different preferences for regular
+As discussed above, Chrome allows using different settings for regular
 windows and incognito windows. The following example illustrates the behavior.
-Assume that no policy overrides the preferences and that an extension can set
-preferences for regular windows <b>(R)</b> and preferences for incognito windows
+Assume that no policy overrides the settings and that an extension can set
+settings for regular windows <b>(R)</b> and settings for incognito windows
 <b>(I)</b>.
 </p>
 
 <p>
 </p><ul>
-  <li>If only <b>(R)</b> is set, these preferences are effective for both
+  <li>If only <b>(R)</b> is set, these settings are effective for both
   regular and incognito windows.</li>
-  <li>If only <b>(I)</b> is set, these preferences are effective for only
-  incognito windows. Regular windows use the preferences determined by the lower
+  <li>If only <b>(I)</b> is set, these settings are effective for only
+  incognito windows. Regular windows use the settings determined by the lower
   layers (command-line options and system settings).</li>
-  <li>If both <b>(R)</b> and <b>(I)</b> are set, the respective preferences are
+  <li>If both <b>(R)</b> and <b>(I)</b> are set, the respective settings are
   used for regular and incognito windows.</li>
 </ul>
 <p></p>
 
 <p>
-If two or more extensions want to set the same preference to different values,
+If two or more extensions want to set the same setting to different values,
 the extension installed most recently takes precedence over the other
 extensions.  If the most recently installed extension sets only <b>(I)</b>, the
-preference of regular windows can be defined by previously installed extensions.
+settings of regular windows can be defined by previously installed extensions.
 </p>
 
 <p>
-The <em>effective</em> preference value is the setting that results from
-considering the preference rules. It is used by Chrome.
+The <em>effective</em> value of a setting is the one that results from
+considering the precedence rules. It is used by Chrome.
 </p><p>
 
 <!-- END AUTHORED CONTENT -->
@@ -433,7 +422,7 @@ considering the preference rules. It is used by Chrome.
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.preferences</h2>
+        <h2>API reference: chrome.types</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -592,8 +581,8 @@ considering the preference rules. It is used by Chrome.
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-Preference"></a>
-              <h4>Preference</h4>
+              <a name="type-ChromeSetting"></a>
+              <h4>ChromeSetting</h4>
 
               <div>
           <dt>
@@ -625,7 +614,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An object which allows access to a preference.</dd>
+          <dd>An interface which allows access to a Chrome browser setting.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -649,23 +638,23 @@ considering the preference rules. It is used by Chrome.
           <!-- OBJECT METHODS -->
           <dd>
             <div class="apiGroup" style="">
-            <a name="global-Preference-methods"></a>
-            <h3>Methods of Preference</h3>
+            <a name="global-ChromeSetting-methods"></a>
+            <h3>Methods of ChromeSetting</h3>
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-Preference-clear"></a> <!-- method-anchor -->
+              <a name="method-ChromeSetting-clear"></a> <!-- method-anchor -->
               <h4>clear</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>preference.clear</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chromeSetting.clear</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Clears the setting in the user preferences. This way default settings can become effective again.</p>
+                <p>Clears the setting. This way default settings can become effective again.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -701,7 +690,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>What preference to clear.</dd>
+          <dd>What setting to clear.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -746,7 +735,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Where to set the preference (default: regular). One of<br><var>regular</var>: preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: preference for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: preference for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
+          <dd>Where to clear the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: setting for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -834,7 +823,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Called after the preference has been cleared.</dd>
+          <dd>Called after the setting has been cleared.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -917,18 +906,18 @@ considering the preference rules. It is used by Chrome.
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-Preference-get"></a> <!-- method-anchor -->
+              <a name="method-ChromeSetting-get"></a> <!-- method-anchor -->
               <h4>get</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>preference.get</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chromeSetting.get</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Get the setting from the user preferences.</p>
+                <p>Get the value of a setting.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -964,7 +953,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>What setting to return.</dd>
+          <dd>What setting to consider.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1195,7 +1184,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Details of the currently effective preference value.</dd>
+          <dd>Details of the currently effective value.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1240,7 +1229,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The value of the preference.</dd>
+          <dd>The value of the setting.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1448,18 +1437,18 @@ considering the preference rules. It is used by Chrome.
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-Preference-set"></a> <!-- method-anchor -->
+              <a name="method-ChromeSetting-set"></a> <!-- method-anchor -->
               <h4>set</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>preference.set</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chromeSetting.set</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Set the setting in the user preferences</p>
+                <p>Set the value of a setting.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1540,7 +1529,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The value of the preference. <br>Note that every preference has a specific value type, which is described together with the preference. An extension should <em>not</em> set a preference value of a different type.</dd>
+          <dd>The value of the setting. <br>Note that every setting has a specific value type, which is described together with the setting. An extension should <em>not</em> set a value of a different type.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1608,7 +1597,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Where to set the preference (default: regular). One of<br><var>regular</var>: preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: preference for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: preference for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
+          <dd>Where to set the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: setting for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1696,7 +1685,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Called after the preference has been set.</dd>
+          <dd>Called after the setting has been set.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1786,21 +1775,21 @@ considering the preference rules. It is used by Chrome.
           <!-- OBJECT EVENT FIELDS -->
           <dd>
             <div class="apiGroup" style="">
-            <a name="global-Preference-events"></a>
-            <h3>Events of Preference</h3>
+            <a name="global-ChromeSetting-events"></a>
+            <h3>Events of ChromeSetting</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-Preference-onChange"></a>
+              <a name="event-ChromeSetting-onChange"></a>
               <h4>onChange</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">preference.</span><span>onChange</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>));
+                <span class="subdued">chromeSetting.</span><span>onChange</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when the value of the preference changes.</p>
+                <p>Fired when the value of the setting changes.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -1884,7 +1873,7 @@ considering the preference rules. It is used by Chrome.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The value of the preference.</dd>
+          <dd>The value of the setting.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

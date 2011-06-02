@@ -346,12 +346,12 @@ var chrome = chrome || {};
 
   var customBindings = {};
 
-  function setupPreferences() {
-    customBindings['Preference'] = function(prefKey, valueSchema) {
+  function setupChromeSetting() {
+    customBindings['ChromeSetting'] = function(prefKey, valueSchema) {
       this.get = function(details, callback) {
         var getSchema = this.parameters.get;
         chromeHidden.validate([details, callback], getSchema);
-        return sendRequest('preferences.get',
+        return sendRequest('types.ChromeSetting.get',
                            [prefKey, details, callback],
                            extendSchema(getSchema));
       };
@@ -359,20 +359,21 @@ var chrome = chrome || {};
         var setSchema = this.parameters.set.slice();
         setSchema[0].properties.value = valueSchema;
         chromeHidden.validate([details, callback], setSchema);
-        return sendRequest('preferences.set',
+        return sendRequest('types.ChromeSetting.set',
                            [prefKey, details, callback],
                            extendSchema(setSchema));
       };
       this.clear = function(details, callback) {
         var clearSchema = this.parameters.clear;
         chromeHidden.validate([details, callback], clearSchema);
-        return sendRequest('preferences.clear',
+        return sendRequest('types.ChromeSetting.clear',
                            [prefKey, details, callback],
                            extendSchema(clearSchema));
       };
-      this.onChange = new chrome.Event('preferences.' + prefKey + '.onChange');
+      this.onChange = new chrome.Event('types.ChromeSetting.' + prefKey +
+                                       '.onChange');
     };
-    customBindings['Preference'].prototype = new CustomBindingsObject();
+    customBindings['ChromeSetting'].prototype = new CustomBindingsObject();
   }
 
   // Page action events send (pageActionId, {tabId, tabUrl}).
@@ -504,9 +505,9 @@ var chrome = chrome || {};
     }
     chrome.initExtension(extensionId, false, IsIncognitoProcess());
 
-    // Setup the Preference class so we can use it to construct Preference
-    // objects from the API definition.
-    setupPreferences();
+    // Setup the ChromeSetting class so we can use it to construct
+    // ChromeSetting objects from the API definition.
+    setupChromeSetting();
 
     // |apiFunctions| is a hash of name -> object that stores the
     // name & definition of the apiFunction. Custom handling of api functions

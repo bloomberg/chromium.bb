@@ -343,8 +343,9 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.proxy</code> module to manage Chrome's
-proxy settings. This module relies on the <a href="preferences.html">preferences
-  API</a> for getting and setting the proxy configuration.
+proxy settings. This module relies on the <a href="types.html#ChromeSetting">
+ChromeSetting prototype of the type API</a> for getting and setting the proxy
+configuration.
 </p>
 
 <h2 id="manifest">Manifest</h2>
@@ -494,8 +495,8 @@ Individual servers may be excluded from being proxied with the
 <p>
 The following code sets a SOCKS 5 proxy for HTTP connections to all servers but
 foobar.com and uses direct connections for all other protocols. The settings
-apply to regular and incognito windows, as incognito windows inherit preferences
-from regular windows. Please also consult the <a href="preferences.html">Preferences API</a> documentation.
+apply to regular and incognito windows, as incognito windows inherit settings
+from regular windows. Please also consult the <a href="types.html#ChromeSetting">Types API</a> documentation.
 </p>
 
 <pre>var config = {
@@ -534,7 +535,7 @@ chrome.proxy.settings.set(
 
 <p>
 The next snippet queries the currently effective proxy settings. The effective
-proxy settings can be determined by another extension or by a policy. See the <a href="preferences.html">Preferences API</a> documentation for details.
+proxy settings can be determined by another extension or by a policy. See the <a href="types.html#ChromeSetting">Types API</a> documentation for details.
 </p>
 
 <pre>chrome.proxy.settings.get(
@@ -581,7 +582,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="preferences.html#type-Preference">Preference</a>
+                        <a href="types.html#type-ChromeSetting">ChromeSetting</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -599,7 +600,7 @@ identical to the <code>value</code> object passed to callback function of
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Proxy settings to be used. The value of this preference is a ProxyConfig object.</dd>
+          <dd>Proxy settings to be used. The value of this setting is a ProxyConfig object.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

@@ -4246,8 +4246,8 @@
     ],
     "properties": {
       "settings": {
-        "$ref": "Preference",
-        "description": "Proxy settings to be used. The value of this preference is a ProxyConfig object.",
+        "$ref": "ChromeSetting",
+        "description": "Proxy settings to be used. The value of this setting is a ProxyConfig object.",
         "value": [
           "proxy",
           {"$ref": "ProxyConfig"}
@@ -5508,23 +5508,23 @@
     "events": []
   },
   {
-    "namespace": "preferences",
+    "namespace": "types",
     "types": [
       {
-        "id": "Preference",
+        "id": "ChromeSetting",
         "type": "object",
-        "customBindings": "Preference",
-        "description": "An object which allows access to a preference.",
+        "customBindings": "ChromeSetting",
+        "description": "An interface which allows access to a Chrome browser setting.",
         "functions": [
           {
             "name": "get",
             "type": "function",
-            "description": "Get the setting from the user preferences.",
+            "description": "Get the value of a setting.",
             "parameters": [
               {
                 "name": "details",
                 "type": "object",
-                "description": "What setting to return.",
+                "description": "What setting to consider.",
                 "properties": {
                   "incognito": {
                     "type": "boolean",
@@ -5540,10 +5540,10 @@
                   {
                     "name": "details",
                     "type": "object",
-                    "description": "Details of the currently effective preference value.",
+                    "description": "Details of the currently effective value.",
                     "properties": {
                       "value": {
-                        "description": "The value of the preference.",
+                        "description": "The value of the setting.",
                         "type": "any"
                       },
                       "levelOfControl": {
@@ -5565,7 +5565,7 @@
           {
             "name": "set",
             "type": "function",
-            "description": "Set the setting in the user preferences",
+            "description": "Set the value of a setting.",
             "parameters": [
               {
                 "name": "details",
@@ -5573,21 +5573,21 @@
                 "description": "What setting to change.",
                 "properties": {
                   "value": {
-                    "description": "The value of the preference. <br>Note that every preference has a specific value type, which is described together with the preference. An extension should <em>not</em> set a preference value of a different type.",
+                    "description": "The value of the setting. <br>Note that every setting has a specific value type, which is described together with the setting. An extension should <em>not</em> set a value of a different type.",
                     "type": "any"
                   },
                   "scope": {
                     "type": "string",
                     "enum": ["regular", "incognito_persistent", "incognito_session_only"],
                     "optional": true,
-                    "description": "Where to set the preference (default: regular). One of<br><var>regular</var>: preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: preference for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: preference for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences)."
+                    "description": "Where to set the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: setting for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences)."
                   }
                 }
               },
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Called after the preference has been set.",
+                "description": "Called after the setting has been set.",
                 "optional": true,
                 "parameters": []
               }
@@ -5596,25 +5596,25 @@
           {
             "name": "clear",
             "type": "function",
-            "description": "Clears the setting in the user preferences. This way default settings can become effective again.",
+            "description": "Clears the setting. This way default settings can become effective again.",
             "parameters": [
               {
                 "name": "details",
                 "type": "object",
-                "description": "What preference to clear.",
+                "description": "What setting to clear.",
                 "properties": {
                   "scope": {
                     "type": "string",
                     "enum": ["regular", "incognito_persistent", "incognito_session_only"],
                     "optional": true,
-                    "description": "Where to set the preference (default: regular). One of<br><var>regular</var>: preference for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: preference for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: preference for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences)."
+                    "description": "Where to clear the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: setting for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences)."
                   }
                 }
               },
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Called after the preference has been cleared.",
+                "description": "Called after the setting has been cleared.",
                 "optional": true,
                 "parameters": []
               }
@@ -5624,14 +5624,14 @@
         "events": [
           {
             "name": "onChange",
-            "description": "Fired when the value of the preference changes.",
+            "description": "Fired when the value of the setting changes.",
             "parameters": [
               {
                 "type": "object",
                 "name": "details",
                 "properties": {
                   "value": {
-                    "description": "The value of the preference.",
+                    "description": "The value of the setting.",
                     "type": "any"
                   },
                   "levelOfControl": {
@@ -5656,17 +5656,17 @@
     "namespace": "experimental.contentSettings.global",
     "properties": {
       "thirdPartyCookiesAllowed": {
-        "$ref": "Preference",
+        "$ref": "ChromeSetting",
         "value": ["thirdPartyCookiesAllowed", {"type": "boolean"}],
         "description": "Whether third party cookies should be allowed. The value of this preference is of type boolean, and the default value is true."
       },
       "referrersEnabled": {
-        "$ref": "Preference",
+        "$ref": "ChromeSetting",
         "value": ["referrersEnabled", {"type":"boolean"}],
         "description": "Whether referrers should be enabled. The value of this preference is of type boolean, and the default value is true."
       },
       "hyperlinkAuditingEnabled": {
-        "$ref": "Preference",
+        "$ref": "ChromeSetting",
         "value": ["hyperlinkAuditingEnabled", {"type":"boolean"}],
         "description": "Whether to enable hyperlink auditing (\"&lt;a ping&gt;\"). The value of this preference is of type boolean, and the default value is true."
       }
