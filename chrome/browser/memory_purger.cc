@@ -96,8 +96,7 @@ void MemoryPurger::PurgeBrowser() {
 
   // Per-profile cleanup.
   scoped_refptr<PurgeMemoryIOHelper> purge_memory_io_helper(
-      new PurgeMemoryIOHelper(g_browser_process->resource_dispatcher_host()->
-          safe_browsing_service()));
+      new PurgeMemoryIOHelper(g_browser_process->safe_browsing_service()));
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {

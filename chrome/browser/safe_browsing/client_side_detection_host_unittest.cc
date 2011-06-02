@@ -292,9 +292,19 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
-  SafeBrowsingService::UnsafeResource resource;
-  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
-      .WillOnce(SaveArg<0>(&resource));
+  SafeBrowsingService::Client* client;
+  EXPECT_CALL(*sb_service_,
+              DisplayBlockingPage(
+                  phishing_url,
+                  phishing_url,
+                  _,
+                  ResourceType::MAIN_FRAME,
+                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
+                  _ /* a CsdClient object */,
+                  contents()->GetRenderProcessHost()->id(),
+                  contents()->render_view_host()->routing_id()))
+      .WillOnce(SaveArg<5>(&client));
+
   cb->Run(phishing_url, true);
   delete cb;
 
@@ -366,9 +376,22 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
 
   // We expect that the interstitial is shown for the second phishing URL and
   // not for the first phishing URL.
-  SafeBrowsingService::UnsafeResource resource;
-  EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
-      .WillOnce(SaveArg<0>(&resource));
+  EXPECT_CALL(*sb_service_,
+              DisplayBlockingPage(phishing_url, phishing_url,_, _, _, _, _, _))
+      .Times(0);
+  SafeBrowsingService::Client* client;
+  EXPECT_CALL(*sb_service_,
+              DisplayBlockingPage(
+                  other_phishing_url,
+                  other_phishing_url,
+                  _,
+                  ResourceType::MAIN_FRAME,
+                  SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
+                  _ /* a CsdClient object */,
+                  contents()->GetRenderProcessHost()->id(),
+                  contents()->render_view_host()->routing_id()))
+      .WillOnce(SaveArg<5>(&client));
+
   cb->Run(phishing_url, true);  // Should have no effect.
   delete cb;
   cb_other->Run(other_phishing_url, true);  // Should show interstitial.

@@ -119,10 +119,9 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
     contents()->TestDidNavigate(contents()->pending_rvh(), params);
   }
 
-  void ShowInterstitial(ResourceType::Type resource_type,
-                        const char* url) {
+  void ShowInterstitial(bool is_subresource, const char* url) {
     SafeBrowsingService::UnsafeResource resource;
-    InitResource(&resource, resource_type, GURL(url));
+    InitResource(&resource, is_subresource, GURL(url));
     SafeBrowsingBlockingPage::ShowBlockingPage(service_, resource);
   }
 
@@ -157,11 +156,11 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
 
  private:
   void InitResource(SafeBrowsingService::UnsafeResource* resource,
-                    ResourceType::Type resource_type,
+                    bool is_subresource,
                     const GURL& url) {
     resource->client = this;
     resource->url = url;
-    resource->resource_type = resource_type;
+    resource->is_subresource = is_subresource;
     resource->threat_type = SafeBrowsingService::URL_MALWARE;
     resource->render_process_host_id = contents()->GetRenderProcessHost()->id();
     resource->render_view_id = contents()->render_view_host()->routing_id();
@@ -184,7 +183,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
 
 
   // Simulate the load causing a safe browsing interstitial to be shown.
-  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
@@ -215,7 +214,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
 
   // Simulate the load causing a safe browsing interstitial to be shown.
-  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
@@ -248,7 +247,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   Navigate(kGoodURL, 2);
 
   // Simulate that page loading a bad-resource triggering an interstitial.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL);
+  ShowInterstitial(true, kBadURL);
 
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -279,7 +278,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
   Navigate(kGoodURL, 1);
 
   // Simulate that page loading a bad-resource triggering an interstitial.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL);
+  ShowInterstitial(true, kBadURL);
 
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -314,12 +313,12 @@ TEST_F(SafeBrowsingBlockingPageTest,
   Navigate(kGoodURL, 2);
 
   // Simulate that page loading a bad-resource triggering an interstitial.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL);
+  ShowInterstitial(true, kBadURL);
 
   // More bad resources loading causing more interstitials. The new
   // interstitials should be queued.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL2);
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL3);
+  ShowInterstitial(true, kBadURL2);
+  ShowInterstitial(true, kBadURL3);
 
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -354,12 +353,12 @@ TEST_F(SafeBrowsingBlockingPageTest,
   Navigate(kGoodURL, 2);
 
   // Simulate that page loading a bad-resource triggering an interstitial.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL);
+  ShowInterstitial(true, kBadURL);
 
   // More bad resources loading causing more interstitials. The new
   // interstitials should be queued.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL2);
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL3);
+  ShowInterstitial(true, kBadURL2);
+  ShowInterstitial(true, kBadURL3);
 
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -406,12 +405,12 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   Navigate(kGoodURL, 1);
 
   // Simulate that page loading a bad-resource triggering an interstitial.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL);
+  ShowInterstitial(true, kBadURL);
 
   // More bad resources loading causing more interstitials. The new
   // interstitials should be queued.
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL2);
-  ShowInterstitial(ResourceType::SUB_RESOURCE, kBadURL3);
+  ShowInterstitial(true, kBadURL2);
+  ShowInterstitial(true, kBadURL3);
 
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -457,7 +456,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 
   // Now navigate to a bad page triggerring an interstitial.
   controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
-  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
@@ -474,7 +473,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 
   // Navigate forward to the malware URL.
   contents()->controller().GoForward();
-  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  ShowInterstitial(false, kBadURL);
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
@@ -502,7 +501,7 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
 
   // Simulate the load causing a safe browsing interstitial to be shown.
-  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
@@ -535,7 +534,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
 
   // Simulate the load causing a safe browsing interstitial to be shown.
-  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
@@ -566,7 +565,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
   controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
 
   // Simulate the load causing a safe browsing interstitial to be shown.
-  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 

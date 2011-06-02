@@ -130,6 +130,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_sidebar_manager_(false),
       created_browser_policy_connector_(false),
       created_notification_ui_manager_(false),
+      created_safe_browsing_service_(false),
       created_safe_browsing_detection_service_(false),
       module_ref_count_(0),
       did_start_(false),
@@ -212,12 +213,10 @@ BrowserProcessImpl::~BrowserProcessImpl() {
     devtools_legacy_handler_ = NULL;
   }
 
-  if (resource_dispatcher_host_.get()) {
-    // Need to tell Safe Browsing Service that the IO thread is going away
-    // since it cached a pointer to it.
-    if (resource_dispatcher_host()->safe_browsing_service())
-      resource_dispatcher_host()->safe_browsing_service()->ShutDown();
+  if (safe_browsing_service_.get())
+    safe_browsing_service()->ShutDown();
 
+  if (resource_dispatcher_host_.get()) {
     // Cancel pending requests and prevent new requests.
     resource_dispatcher_host()->Shutdown();
   }
@@ -629,12 +628,19 @@ StatusTray* BrowserProcessImpl::status_tray() {
   return status_tray_.get();
 }
 
+
+SafeBrowsingService* BrowserProcessImpl::safe_browsing_service() {
+  DCHECK(CalledOnValidThread());
+  if (!created_safe_browsing_service_)
+    CreateSafeBrowsingService();
+  return safe_browsing_service_.get();
+}
+
 safe_browsing::ClientSideDetectionService*
     BrowserProcessImpl::safe_browsing_detection_service() {
   DCHECK(CalledOnValidThread());
-  if (!created_safe_browsing_detection_service_) {
+  if (!created_safe_browsing_detection_service_)
     CreateSafeBrowsingDetectionService();
-  }
   return safe_browsing_detection_service_.get();
 }
 
@@ -975,6 +981,13 @@ void BrowserProcessImpl::CreateBackgroundPrintingManager() {
   background_printing_manager_.reset(new printing::BackgroundPrintingManager());
 }
 
+void BrowserProcessImpl::CreateSafeBrowsingService() {
+  DCHECK(safe_browsing_service_.get() == NULL);
+  created_safe_browsing_service_ = true;
+  safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
+  safe_browsing_service_->Initialize();
+}
+
 void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
   DCHECK(safe_browsing_detection_service_.get() == NULL);
   // Set this flag to true so that we don't retry indefinitely to
@@ -1005,8 +1018,8 @@ bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
   std::string channel = platform_util::GetVersionStringModifier();
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableClientSidePhishingDetection) &&
-      resource_dispatcher_host()->safe_browsing_service() &&
-      resource_dispatcher_host()->safe_browsing_service()->CanReportStats() &&
+      safe_browsing_service() &&
+      safe_browsing_service()->CanReportStats() &&
       // TODO(noelutz): use platform_util::GetChannel() once it has been
       // pushed to the release branch.
       (channel == "beta" || channel == "dev" || channel == "canary" ||

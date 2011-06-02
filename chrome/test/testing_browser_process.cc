@@ -116,6 +116,10 @@ StatusTray* TestingBrowserProcess::status_tray() {
   return NULL;
 }
 
+SafeBrowsingService* TestingBrowserProcess::safe_browsing_service() {
+  return NULL;
+}
+
 safe_browsing::ClientSideDetectionService*
 TestingBrowserProcess::safe_browsing_detection_service() {
   return NULL;

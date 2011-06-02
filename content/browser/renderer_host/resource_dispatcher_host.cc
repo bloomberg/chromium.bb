@@ -26,9 +26,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
-#include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/renderer_host/save_file_resource_handler.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -78,11 +76,6 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/deletable_file_reference.h"
-
-// TODO(oshima): Enable this for other platforms.
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/renderer_host/offline_resource_handler.h"
-#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -242,7 +235,6 @@ ResourceDispatcherHost::ResourceDispatcherHost(
       download_request_limiter_(new DownloadRequestLimiter()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
-      safe_browsing_(SafeBrowsingService::CreateSafeBrowsingService()),
       webkit_thread_(new WebKitThread),
       request_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_runner_(this)),
@@ -263,7 +255,6 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
 void ResourceDispatcherHost::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   webkit_thread_->Initialize();
-  safe_browsing_->Initialize();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&appcache::AppCacheInterceptor::EnsureRegistered));
@@ -463,10 +454,6 @@ void ResourceDispatcherHost::BeginRequest(
   if (sync_result)
     load_flags |= net::LOAD_IGNORE_LIMITS;
 
-  // Allow the observer to change the load flags.
-  if (observer_)
-    observer_->MutateLoadFlags(child_id, route_id, &load_flags);
-
   // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
   // allow requesting them if requestor has ReadRawCookies permission.
   if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
@@ -508,19 +495,13 @@ void ResourceDispatcherHost::BeginRequest(
   // Insert a buffered event handler before the actual one.
   handler = new BufferedResourceHandler(handler, this, request);
 
-  // Insert safe browsing at the front of the chain, so it gets to decide
-  // on policies first.
-  if (safe_browsing_->enabled()) {
-    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
-                                                request_data.resource_type);
+  if (observer_) {
+    bool sub = request_data.resource_type != ResourceType::MAIN_FRAME;
+    ResourceHandler* temp_handler = handler;
+    observer_->RequestBeginning(
+        &temp_handler, request, sub, child_id, route_id);
+    handler = temp_handler;
   }
-
-#if defined(OS_CHROMEOS)
-  // We check offline first, then check safe browsing so that we still can block
-  // unsafe site after we remove offline page.
-  handler =
-      new OfflineResourceHandler(handler, child_id, route_id, this, request);
-#endif
 
   // Make extra info and read footer (contains request ID).
   ResourceDispatcherHostRequestInfo* extra_info =
@@ -655,13 +636,6 @@ void ResourceDispatcherHost::OnFollowRedirect(
                          new_first_party_for_cookies);
 }
 
-ResourceHandler* ResourceDispatcherHost::CreateSafeBrowsingResourceHandler(
-    ResourceHandler* handler, int child_id, int route_id,
-    ResourceType::Type resource_type) {
-  return SafeBrowsingResourceHandler::Create(
-      handler, child_id, route_id, resource_type, safe_browsing_, this);
-}
-
 ResourceDispatcherHostRequestInfo*
 ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
     ResourceHandler* handler,
@@ -742,9 +716,10 @@ void ResourceDispatcherHost::BeginDownload(
                                   prompt_for_save_location,
                                   save_info));
 
-  if (safe_browsing_->enabled()) {
-    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
-                                                ResourceType::MAIN_FRAME);
+  if (observer_) {
+    ResourceHandler* temp_handler = handler;
+    observer_->DownloadStarting(&temp_handler, child_id, route_id);
+    handler = temp_handler;
   }
 
   const net::URLRequestContext* request_context = context.request_context();

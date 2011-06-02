@@ -46,7 +46,7 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
       ResourceHandler* handler,
       int render_process_host_id,
       int render_view_id,
-      ResourceType::Type resource_type,
+      bool is_subresource,
       SafeBrowsingService* safe_browsing,
       ResourceDispatcherHost* resource_dispatcher_host);
 
@@ -91,7 +91,7 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   SafeBrowsingResourceHandler(ResourceHandler* handler,
                               int render_process_host_id,
                               int render_view_id,
-                              ResourceType::Type resource_type,
+                              bool is_subresource,
                               SafeBrowsingService* safe_browsing,
                               ResourceDispatcherHost* resource_dispatcher_host);
 
@@ -154,7 +154,7 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   int render_view_id_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
   ResourceDispatcherHost* rdh_;
-  ResourceType::Type resource_type_;
+  bool is_subresource_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceHandler);
 };

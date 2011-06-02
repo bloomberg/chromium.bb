@@ -253,8 +253,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
                     SafeBrowsingService::UrlCheckResult checkresult) {
     FakeSafeBrowsingService* service =
         static_cast<FakeSafeBrowsingService*>(
-            g_browser_process->resource_dispatcher_host()->
-            safe_browsing_service());
+            g_browser_process->safe_browsing_service());
 
     ASSERT_TRUE(service);
     service->AddURLResult(url, checkresult);
@@ -332,8 +331,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
 
     FakeSafeBrowsingService* service =
         static_cast<FakeSafeBrowsingService*>(
-            g_browser_process->resource_dispatcher_host()->
-            safe_browsing_service());
+            g_browser_process->safe_browsing_service());
 
     std::string serialized = service->GetReport();
 

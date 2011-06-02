@@ -47,19 +47,13 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual ~TestingBrowserProcess();
 
   virtual void EndSession();
-
   virtual ResourceDispatcherHost* resource_dispatcher_host();
-
   virtual MetricsService* metrics_service();
-
   virtual IOThread* io_thread();
 
   virtual base::Thread* file_thread();
-
   virtual base::Thread* db_thread();
-
   virtual base::Thread* cache_thread();
-
   virtual WatchDogThread* watchdog_thread();
 
 #if defined(OS_CHROMEOS)
@@ -67,28 +61,18 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   virtual ProfileManager* profile_manager();
-
   virtual PrefService* local_state();
-
   virtual policy::BrowserPolicyConnector* browser_policy_connector();
-
   virtual IconManager* icon_manager();
-
   virtual ThumbnailGenerator* GetThumbnailGenerator();
-
   virtual DevToolsManager* devtools_manager();
-
   virtual SidebarManager* sidebar_manager();
-
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
-
   virtual BackgroundModeManager* background_mode_manager();
-
   virtual StatusTray* status_tray();
-
+  virtual SafeBrowsingService* safe_browsing_service();
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service();
-
   virtual net::URLRequestContextGetter* system_request_context();
 
 #if defined(OS_CHROMEOS)
@@ -97,45 +81,27 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif  // defined(OS_CHROMEOS)
 
   virtual ui::Clipboard* clipboard();
-
   virtual ExtensionEventRouterForwarder* extension_event_router_forwarder();
-
   virtual NotificationUIManager* notification_ui_manager();
-
   virtual GoogleURLTracker* google_url_tracker();
-
   virtual IntranetRedirectDetector* intranet_redirect_detector();
-
   virtual AutomationProviderList* InitAutomationProviderList();
-
   virtual void InitDevToolsHttpProtocolHandler(
       const std::string& ip,
       int port,
       const std::string& frontend_url);
-
   virtual void InitDevToolsLegacyProtocolHandler(int port);
-
   virtual unsigned int AddRefModule();
   virtual unsigned int ReleaseModule();
-
   virtual bool IsShuttingDown();
-
   virtual printing::PrintJobManager* print_job_manager();
-
   virtual printing::PrintPreviewTabController* print_preview_tab_controller();
-
   virtual printing::BackgroundPrintingManager* background_printing_manager();
-
   virtual const std::string& GetApplicationLocale();
-
   virtual void SetApplicationLocale(const std::string& app_locale);
-
   virtual DownloadStatusUpdater* download_status_updater();
-
   virtual base::WaitableEvent* shutdown_event();
-
   virtual bool plugin_finder_disabled() const;
-
   virtual void CheckForInspectorFiles() {}
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -143,7 +109,6 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   virtual ChromeNetLog* net_log();
-
   virtual prerender::PrerenderTracker* prerender_tracker();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)

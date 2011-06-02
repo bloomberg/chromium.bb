@@ -110,7 +110,7 @@ struct SafeBrowsingService::WhiteListedEntry {
 };
 
 SafeBrowsingService::UnsafeResource::UnsafeResource()
-    : resource_type(ResourceType::MAIN_FRAME),
+    : is_subresource(false),
       threat_type(SAFE),
       client(NULL),
       render_process_host_id(-1),
@@ -335,7 +335,7 @@ void SafeBrowsingService::DisplayBlockingPage(
     const GURL& url,
     const GURL& original_url,
     const std::vector<GURL>& redirect_urls,
-    ResourceType::Type resource_type,
+    bool is_subresource,
     UrlCheckResult result,
     Client* client,
     int render_process_host_id,
@@ -345,7 +345,7 @@ void SafeBrowsingService::DisplayBlockingPage(
   resource.url = url;
   resource.original_url = original_url;
   resource.redirect_urls = redirect_urls;
-  resource.resource_type = resource_type;
+  resource.is_subresource = is_subresource;
   resource.threat_type= result;
   resource.client = client;
   resource.render_process_host_id = render_process_host_id;
@@ -1004,7 +1004,6 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     NavigationEntry* entry = wc->controller().GetActiveEntry();
     if (entry)
       referrer_url = entry->referrer();
-    bool is_subresource = resource.resource_type != ResourceType::MAIN_FRAME;
 
     // When the malicious url is on the main frame, and resource.original_url
     // is not the same as the resource.url, that means we have a redirect from
@@ -1012,14 +1011,15 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     // Also, at this point, page_url points to the _previous_ page that we
     // were on. We replace page_url with resource.original_url and referrer
     // with page_url.
-    if (!is_subresource &&
+    if (!resource.is_subresource &&
         !resource.original_url.is_empty() &&
         resource.original_url != resource.url) {
       referrer_url = page_url;
       page_url = resource.original_url;
     }
-    ReportSafeBrowsingHit(resource.url, page_url, referrer_url, is_subresource,
-                          resource.threat_type, std::string() /* post_data */);
+    ReportSafeBrowsingHit(resource.url, page_url, referrer_url,
+                          resource.is_subresource, resource.threat_type,
+                          std::string() /* post_data */);
   }
 
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);

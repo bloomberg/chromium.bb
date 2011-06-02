@@ -37,7 +37,6 @@ class PluginService;
 class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
 class ResourceMessageFilter;
-class SafeBrowsingService;
 class SaveFileManager;
 class SSLClientAuthHandler;
 class WebKitThread;
@@ -68,10 +67,19 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
         const content::ResourceContext& resource_context,
         const GURL& referrer) = 0;
 
-    // Called after the load flags have been set when a request begins. Use it
-    // to add or remove load flags.
-    virtual void MutateLoadFlags(int child_id, int route_id,
-                                 int* load_flags) = 0;
+    // Called after ShouldBeginRequest when all the resource handlers from the
+    // content layer have been added.
+    virtual void RequestBeginning(ResourceHandler** handler,
+                                  net::URLRequest* request,
+                                  bool is_subresource,
+                                  int child_id,
+                                  int route_id) = 0;
+
+    // Called when a download is starting, after the resource handles from the
+    // content layer have been added.
+    virtual void DownloadStarting(ResourceHandler** handler,
+                                  int child_id,
+                                  int route_id) = 0;
 
     // Called to determine whether a request's start should be deferred. This
     // is only called if the ResourceHandler associated with the request does
@@ -190,10 +198,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   SaveFileManager* save_file_manager() const {
     return save_file_manager_;
-  }
-
-  SafeBrowsingService* safe_browsing_service() const {
-    return safe_browsing_;
   }
 
   WebKitThread* webkit_thread() const {
@@ -425,10 +429,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                         const GURL& new_first_party_for_cookies);
   void OnReleaseDownloadedFile(int request_id);
 
-  ResourceHandler* CreateSafeBrowsingResourceHandler(
-      ResourceHandler* handler, int child_id, int route_id,
-      ResourceType::Type resource_type);
-
   // Creates ResourceDispatcherHostRequestInfo for a browser-initiated request
   // (a download or a page save). |download| should be true if the request
   // is a file download.
@@ -492,8 +492,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // We own the save file manager.
   scoped_refptr<SaveFileManager> save_file_manager_;
-
-  scoped_refptr<SafeBrowsingService> safe_browsing_;
 
   // We own the WebKit thread and see to its destruction.
   scoped_ptr<WebKitThread> webkit_thread_;

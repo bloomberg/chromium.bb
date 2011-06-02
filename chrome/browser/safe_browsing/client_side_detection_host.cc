@@ -268,11 +268,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
       cb_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service_ might be NULL.
-  ResourceDispatcherHost* resource =
-      g_browser_process->resource_dispatcher_host();
-  if (resource) {
-    sb_service_ = resource->safe_browsing_service();
-  }
+  sb_service_ = g_browser_process->safe_browsing_service();
 }
 
 ClientSideDetectionHost::~ClientSideDetectionHost() {
@@ -367,7 +363,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       SafeBrowsingService::UnsafeResource resource;
       resource.url = phishing_url;
       resource.original_url = phishing_url;
-      resource.resource_type = ResourceType::MAIN_FRAME;
+      resource.is_subresource = false;
       resource.threat_type = SafeBrowsingService::CLIENT_SIDE_PHISHING_URL;
       resource.render_process_host_id =
           tab_contents()->GetRenderProcessHost()->id();

@@ -30,19 +30,19 @@ SafeBrowsingResourceHandler* SafeBrowsingResourceHandler::Create(
     ResourceHandler* handler,
     int render_process_host_id,
     int render_view_id,
-    ResourceType::Type resource_type,
+    bool is_subresource,
     SafeBrowsingService* safe_browsing,
     ResourceDispatcherHost* resource_dispatcher_host) {
   return new SafeBrowsingResourceHandler(
       handler, render_process_host_id, render_view_id,
-      resource_type, safe_browsing, resource_dispatcher_host);
+      is_subresource, safe_browsing, resource_dispatcher_host);
 }
 
 SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
     ResourceHandler* handler,
     int render_process_host_id,
     int render_view_id,
-    ResourceType::Type resource_type,
+    bool is_subresource,
     SafeBrowsingService* safe_browsing,
     ResourceDispatcherHost* resource_dispatcher_host)
     : state_(STATE_NONE),
@@ -54,7 +54,7 @@ SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
       render_view_id_(render_view_id),
       safe_browsing_(safe_browsing),
       rdh_(resource_dispatcher_host),
-      resource_type_(resource_type) {
+      is_subresource_(is_subresource) {
 }
 
 SafeBrowsingResourceHandler::~SafeBrowsingResourceHandler() {
@@ -220,7 +220,7 @@ void SafeBrowsingResourceHandler::StartDisplayingBlockingPage(
     original_url = url;
 
   safe_browsing_->DisplayBlockingPage(
-      url, original_url, redirect_urls_, resource_type_,
+      url, original_url, redirect_urls_, is_subresource_,
       result, this, render_process_host_id_, render_view_id_);
 }
 

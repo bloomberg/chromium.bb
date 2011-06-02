@@ -31,7 +31,7 @@ DownloadSBClient::DownloadSBClient(int32 download_id,
   DCHECK(!url_chain.empty());
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
   if (rdh)
-    sb_service_ = rdh->safe_browsing_service();
+    sb_service_ = g_browser_process->safe_browsing_service();
 }
 
 DownloadSBClient::~DownloadSBClient() {}

@@ -443,7 +443,6 @@ class TestSBClient
  public:
   TestSBClient() : result_(SafeBrowsingService::SAFE),
                    safe_browsing_service_(g_browser_process->
-                                          resource_dispatcher_host()->
                                           safe_browsing_service()) {
   }
 
@@ -596,8 +595,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
   //
   // Now introducing delays and we should hit timeout.
   //
-  SafeBrowsingService* sb_service =
-      g_browser_process->resource_dispatcher_host()->safe_browsing_service();
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   const int64 kOneSec = 1000;
   const int64 kOneMs = 1;
   int64 default_urlcheck_timeout = DownloadUrlCheckTimeout(sb_service);
@@ -629,8 +627,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
   //
   // Now introducing delays and we should hit timeout.
   //
-  SafeBrowsingService* sb_service =
-      g_browser_process->resource_dispatcher_host()->safe_browsing_service();
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   const int64 kOneSec = 1000;
   const int64 kOneMs = 1;
   int64 default_hashcheck_timeout = DownloadHashCheckTimeout(sb_service);

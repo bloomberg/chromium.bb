@@ -667,8 +667,7 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
 
   InterstitialPage* interstitial =
       InterstitialPage::GetInterstitialPage(tab_contents);
-  if (interstitial &&
-      unsafe_resource.resource_type == ResourceType::MAIN_FRAME) {
+  if (interstitial && !unsafe_resource.is_subresource) {
     // There is already an interstitial showing and we are about to display a
     // new one for the main frame. Just hide the current one, it is now
     // irrelevent
@@ -707,6 +706,5 @@ bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
   }
 
   // Otherwise, check the threat type.
-  return unsafe_resources.size() == 1 &&
-         unsafe_resources[0].resource_type == ResourceType::MAIN_FRAME;
+  return unsafe_resources.size() == 1 && !unsafe_resources[0].is_subresource;
 }

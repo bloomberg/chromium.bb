@@ -22,7 +22,6 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/resource_type.h"
 
 class MalwareDetails;
 class PrefService;
@@ -66,7 +65,7 @@ class SafeBrowsingService
     GURL url;
     GURL original_url;
     std::vector<GURL> redirect_urls;
-    ResourceType::Type resource_type;
+    bool is_subresource;
     UrlCheckResult threat_type;
     Client* client;
     int render_process_host_id;
@@ -186,7 +185,7 @@ class SafeBrowsingService
   void DisplayBlockingPage(const GURL& url,
                            const GURL& original_url,
                            const std::vector<GURL>& redirect_urls,
-                           ResourceType::Type resource_type,
+                           bool is_subresource,
                            UrlCheckResult result,
                            Client* client,
                            int render_process_host_id,

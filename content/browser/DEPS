@@ -46,12 +46,6 @@ include_rules = [
 
   "+chrome/browser/renderer_host/download_throttling_resource_handler.h",
 
-  "+chrome/browser/renderer_host/offline_resource_handler.h",
-
-  # http://crbug.com/77089
-  "+chrome/browser/safe_browsing/safe_browsing_service.h",
-  "+chrome/browser/renderer_host/safe_browsing_resource_handler.h",
-
   "+chrome/browser/sessions/session_id.h",
   "+chrome/browser/sessions/session_types.h",
 
@@ -78,5 +72,4 @@ include_rules = [
   "+chrome/browser/net/url_request_mock_http_job.h",
   "+chrome/browser/ui/browser.h",
   "+chrome/browser/ui/cocoa/find_pasteboard.h",
-  "+chrome/common/net/test_url_fetcher_factory.h",
 ]

@@ -281,8 +281,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
  protected:
   bool InitSafeBrowsingService() {
-    safe_browsing_service_ =
-        g_browser_process->resource_dispatcher_host()->safe_browsing_service();
+    safe_browsing_service_ = g_browser_process->safe_browsing_service();
     return safe_browsing_service_ != NULL;
   }
 

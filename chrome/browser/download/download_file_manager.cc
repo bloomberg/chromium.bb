@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_create_info.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_process_handle.h"
@@ -158,7 +159,7 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 
   manager->CreateDownloadItem(info);
 
-  bool hash_needed = resource_dispatcher_host_->safe_browsing_service()->
+  bool hash_needed = g_browser_process->safe_browsing_service()->
       DownloadBinHashNeeded();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,

@@ -8,6 +8,8 @@
 
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
+class SafeBrowsingService;
+
 namespace prerender {
 class PrerenderTracker;
 }
@@ -32,23 +34,29 @@ class ChromeResourceDispatcherHostObserver
       const ResourceHostMsg_Request& request_data,
       const content::ResourceContext& resource_context,
       const GURL& referrer) OVERRIDE;
-
+  virtual void RequestBeginning(ResourceHandler** handler,
+                                  net::URLRequest* request,
+                                  bool is_subresource,
+                                  int child_id,
+                                  int route_id) OVERRIDE;
+  virtual void DownloadStarting(ResourceHandler** handler,
+                                int child_id,
+                                int route_id) OVERRIDE;
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
       const content::ResourceContext& resource_context) OVERRIDE;
-
-  virtual void MutateLoadFlags(int child_id, int route_id,
-                               int* load_flags) OVERRIDE;
-
   virtual bool AcceptSSLClientCertificateRequest(
         net::URLRequest* request,
         net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
-
   virtual bool AcceptAuthRequest(net::URLRequest* request,
                                  net::AuthChallengeInfo* auth_info) OVERRIDE;
 
  private:
+  ResourceHandler* CreateSafeBrowsingResourceHandler(
+      ResourceHandler* handler, int child_id, int route_id, bool subresource);
+
   ResourceDispatcherHost* resource_dispatcher_host_;
+  scoped_refptr<SafeBrowsingService> safe_browsing_;
   prerender::PrerenderTracker* prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostObserver);

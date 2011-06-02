@@ -19,11 +19,6 @@
 #include "ipc/ipc_message.h"
 
 class AutomationProviderList;
-
-namespace safe_browsing {
-class ClientSideDetectionService;
-}
-
 class BackgroundModeManager;
 class ChromeNetLog;
 class DevToolsManager;
@@ -39,6 +34,7 @@ class NotificationUIManager;
 class PrefService;
 class ProfileManager;
 class ResourceDispatcherHost;
+class SafeBrowsingService;
 class SidebarManager;
 class StatusTray;
 class TabCloseableStateWatcher;
@@ -72,6 +68,10 @@ class PrintPreviewTabController;
 
 namespace policy {
 class BrowserPolicyConnector;
+}
+
+namespace safe_browsing {
+class ClientSideDetectionService;
 }
 
 namespace ui {
@@ -200,6 +200,9 @@ class BrowserProcess {
   // in the system status tray. Returns NULL if status icons are not supported
   // on this platform (or this is a unit test).
   virtual StatusTray* status_tray() = 0;
+
+  // Returns the SafeBrowsing service.
+  virtual SafeBrowsingService* safe_browsing_service() = 0;
 
   // Returns an object which handles communication with the SafeBrowsing
   // client-side detection servers.
