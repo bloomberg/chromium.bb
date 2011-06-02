@@ -10,6 +10,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
+        '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
